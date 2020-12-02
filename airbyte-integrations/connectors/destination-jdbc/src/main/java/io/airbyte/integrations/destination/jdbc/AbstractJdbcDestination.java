@@ -46,9 +46,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This abstract destination subclass extends AbstractBufferedSqlDestination for more specific destinations that are able to provide
- * JDBC drivers compatible with our DB ORM, which provides a common interface for communications with the destination databases with slight
- * change in SQL Dialect.
+ * This abstract destination subclass extends AbstractBufferedSqlDestination for more specific
+ * destinations that are able to provide JDBC drivers compatible with our DB ORM, which provides a
+ * common interface for communications with the destination databases with slight change in SQL
+ * Dialect.
  */
 public abstract class AbstractJdbcDestination extends AbstractBufferedSqlDestination implements Destination {
 

@@ -30,8 +30,11 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.CloseableQueue;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.SyncMode;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -65,14 +68,22 @@ public class BufferedRecordConsumer extends FailureTrackingConsumer<AirbyteMessa
   private final BufferedWriteOperations destination;
   private final Map<String, BufferedWriteConfig> writeConfigs;
   private final ConfiguredAirbyteCatalog catalog;
-  private final ScheduledExecutorService writerPool;
+  private ScheduledExecutorService writerPool;
 
   public BufferedRecordConsumer(BufferedWriteOperations destination,
-                                Map<String, BufferedWriteConfig> writeConfigs,
                                 ConfiguredAirbyteCatalog catalog) {
     this.destination = destination;
-    this.writeConfigs = writeConfigs;
     this.catalog = catalog;
+    this.writeConfigs = new HashMap<>();
+  }
+
+  @Override
+  public void addStream(String streamName, String schemaName, String tableName, String tmpTableName, SyncMode syncMode) throws IOException {
+    writeConfigs.put(streamName, new BufferedWriteConfig(streamName, schemaName, tableName, tmpTableName, syncMode));
+  }
+
+  @Override
+  public void start() {
     this.writerPool = Executors.newSingleThreadScheduledExecutor();
     Runtime.getRuntime().addShutdownHook(new GracefulShutdownHandler(Duration.ofMinutes(GRACEFUL_SHUTDOWN_MINUTES), writerPool));
 

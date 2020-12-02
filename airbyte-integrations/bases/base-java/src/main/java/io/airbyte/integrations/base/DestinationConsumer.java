@@ -25,6 +25,8 @@
 package io.airbyte.integrations.base;
 
 import io.airbyte.commons.functional.CheckedConsumer;
+import io.airbyte.protocol.models.SyncMode;
+import java.io.IOException;
 
 /**
  * Lifecyle:
@@ -40,4 +42,10 @@ import io.airbyte.commons.functional.CheckedConsumer;
  *
  * @param <T> - type of the message to be consumed.
  */
-public interface DestinationConsumer<T> extends CheckedConsumer<T, Exception>, AutoCloseable {}
+public interface DestinationConsumer<T> extends CheckedConsumer<T, Exception>, AutoCloseable {
+
+  void addStream(String streamName, String schemaName, String tableName, String tmpTableName, SyncMode syncMode) throws IOException;
+
+  void start();
+
+}

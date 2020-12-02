@@ -29,38 +29,41 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 /**
- * Resolve adequate names of destination identifiers, create necessary schemas and tables, prepare the proper stream consumer
- * that will accumulate and insert data into final destinations using a temporary staging area if stream is completed successfully.
+ * Resolve adequate names of destination identifiers, create necessary schemas and tables, prepare
+ * the proper stream consumer that will accumulate and insert data into final destinations using a
+ * temporary staging area if stream is completed successfully.
  */
 public abstract class AbstractDestination implements Destination {
 
   @Override
   public DestinationConsumer<AirbyteMessage> write(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
     connectDatabase(config);
-    final Map<String, WriteConfig> writeConfigs = new HashMap<>();
     final Set<String> schemaSet = new HashSet<>();
-    // create tmp tables if not exist
+    final String schemaName = getNamingResolver().getIdentifier(getDefaultSchemaName(config));
+    final DestinationConsumer<AirbyteMessage> result = createConsumer(catalog);
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getStream().getName();
-      final String schemaName = getNamingResolver().getIdentifier(getDefaultSchemaName(config));
       final String tableName = getNamingResolver().getRawTableName(streamName);
       final String tmpTableName = getNamingResolver().getTmpTableName(streamName);
+      // get a schemaName override from stream?
       if (!schemaSet.contains(schemaName)) {
         createSchema(schemaName);
         schemaSet.add(schemaName);
       }
+      // create tmp tables if not exist
       createTable(schemaName, tmpTableName);
       final SyncMode syncMode = stream.getSyncMode() == null ? SyncMode.FULL_REFRESH : stream.getSyncMode();
-      writeConfigs.put(streamName, configureStream(streamName, schemaName, tableName, tmpTableName, syncMode));
+      result.addStream(streamName, schemaName, tableName, tmpTableName, syncMode);
     }
-    return createConsumer(writeConfigs, catalog);
+    result.start();
+    return result;
   }
+
+  protected abstract DestinationConsumer<AirbyteMessage> createConsumer(ConfiguredAirbyteCatalog catalog);
 
   protected abstract void connectDatabase(JsonNode config);
 
@@ -70,7 +73,4 @@ public abstract class AbstractDestination implements Destination {
 
   public abstract void createTable(String schemaName, String tableName) throws Exception;
 
-  protected abstract WriteConfig configureStream(String streamName, String schemaName, String tableName, String tmpTableName, SyncMode syncMode) throws Exception;
-
-  protected abstract DestinationConsumer<AirbyteMessage> createConsumer(Map<String, WriteConfig> writeConfigs, ConfiguredAirbyteCatalog catalog);
 }

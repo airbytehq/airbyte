@@ -48,4 +48,5 @@ public class BufferedWriteConfig extends WriteConfig {
   public CloseableQueue<byte[]> getWriteBuffer() {
     return writeBuffer;
   }
+
 }

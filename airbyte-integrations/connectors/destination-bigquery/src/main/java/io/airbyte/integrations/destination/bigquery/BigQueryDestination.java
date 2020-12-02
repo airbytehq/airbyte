@@ -102,6 +102,11 @@ public class BigQueryDestination extends AbstractDestination implements Destinat
   }
 
   @Override
+  protected DestinationConsumer<AirbyteMessage> createConsumer(ConfiguredAirbyteCatalog catalog) {
+    return new BigQueryRecordConsumer(bigquery, catalog);
+  }
+
+  @Override
   public ConnectorSpecification spec() throws IOException {
     // return a jsonschema representation of the spec for the integration.
     final String resourceString = MoreResources.readResource("spec.json");
@@ -148,31 +153,6 @@ public class BigQueryDestination extends AbstractDestination implements Destinat
   @Override
   protected void connectDatabase(JsonNode config) {
     getBigQuery(config);
-  }
-
-  @Override
-  protected WriteConfig configureStream(String streamName, String schemaName, String tableName, String tmpTableName, SyncMode syncMode) {
-    // https://cloud.google.com/bigquery/docs/loading-data-local#loading_data_from_a_local_data_source
-    final WriteChannelConfiguration writeChannelConfiguration = WriteChannelConfiguration
-        .newBuilder(TableId.of(schemaName, tmpTableName))
-        .setCreateDisposition(CreateDisposition.CREATE_IF_NEEDED)
-        .setSchema(SCHEMA)
-        .setFormatOptions(FormatOptions.json()).build(); // new-line delimited json.
-
-    final TableDataWriteChannel writer = bigquery.writer(JobId.of(UUID.randomUUID().toString()), writeChannelConfiguration);
-    return new BigQueryWriteConfig(schemaName, tableName, tmpTableName, syncMode, writer);
-  }
-
-  @Override
-  protected DestinationConsumer<AirbyteMessage> createConsumer(Map<String, WriteConfig> writeConfigs,
-      ConfiguredAirbyteCatalog catalog) {
-    Map<String, BigQueryWriteConfig> bigqueryConfigs = new HashMap<>();
-    for (Map.Entry<String, WriteConfig> entry : writeConfigs.entrySet()) {
-      if (entry.getValue() instanceof BigQueryWriteConfig){
-        bigqueryConfigs.put(entry.getKey(), (BigQueryWriteConfig) entry.getValue());
-      }
-    }
-    return new BigQueryRecordConsumer(bigquery, bigqueryConfigs, catalog);
   }
 
   @Override
@@ -257,9 +237,10 @@ public class BigQueryDestination extends AbstractDestination implements Destinat
 
   // https://cloud.google.com/bigquery/docs/managing-tables#copying_a_single_source_table
   private static void copyTable(
-      BigQuery bigquery,
-      TableId sourceTableId,
-      TableId destinationTableId, WriteDisposition syncMode) {
+                                BigQuery bigquery,
+                                TableId sourceTableId,
+                                TableId destinationTableId,
+                                WriteDisposition syncMode) {
 
     final CopyJobConfiguration configuration = CopyJobConfiguration.newBuilder(destinationTableId, sourceTableId)
         .setCreateDisposition(CreateDisposition.CREATE_IF_NEEDED)
@@ -273,17 +254,33 @@ public class BigQueryDestination extends AbstractDestination implements Destinat
     }
   }
 
-
   public static class BigQueryRecordConsumer extends FailureTrackingConsumer<AirbyteMessage> implements DestinationConsumer<AirbyteMessage> {
 
     private final BigQuery bigquery;
     private final Map<String, BigQueryWriteConfig> writeConfigs;
     private final ConfiguredAirbyteCatalog catalog;
 
-    public BigQueryRecordConsumer(BigQuery bigquery, Map<String, BigQueryWriteConfig> writeConfigs, ConfiguredAirbyteCatalog catalog) {
+    public BigQueryRecordConsumer(BigQuery bigquery, ConfiguredAirbyteCatalog catalog) {
       this.bigquery = bigquery;
-      this.writeConfigs = writeConfigs;
       this.catalog = catalog;
+      this.writeConfigs = new HashMap<>();
+    }
+
+    @Override
+    public void addStream(String streamName, String schemaName, String tableName, String tmpTableName, SyncMode syncMode) {
+      // https://cloud.google.com/bigquery/docs/loading-data-local#loading_data_from_a_local_data_source
+      final WriteChannelConfiguration writeChannelConfiguration = WriteChannelConfiguration
+          .newBuilder(TableId.of(schemaName, tmpTableName))
+          .setCreateDisposition(CreateDisposition.CREATE_IF_NEEDED)
+          .setSchema(SCHEMA)
+          .setFormatOptions(FormatOptions.json()).build(); // new-line delimited json.
+      final TableDataWriteChannel writer = bigquery.writer(JobId.of(UUID.randomUUID().toString()), writeChannelConfiguration);
+      writeConfigs.put(streamName, new BigQueryWriteConfig(schemaName, tableName, tmpTableName, syncMode, writer));
+    }
+
+    @Override
+    public void start() {
+      LOGGER.info("Consumer initialized.");
     }
 
     @Override
@@ -325,13 +322,15 @@ public class BigQueryDestination extends AbstractDestination implements Destinat
         }));
         if (!hasFailed) {
           LOGGER.error("executing on success close procedure.");
-          writeConfigs.values().forEach(writeConfig -> copyTable(bigquery, writeConfig.getTmpTable(), writeConfig.getTable(), getWriteDisposition(writeConfig.getSyncMode())));
+          writeConfigs.values().forEach(
+              writeConfig -> copyTable(bigquery, writeConfig.getTmpTable(), writeConfig.getTable(), getWriteDisposition(writeConfig.getSyncMode())));
         }
       } finally {
         // clean up tmp tables;
         writeConfigs.values().forEach(writeConfig -> bigquery.delete(writeConfig.getTmpTable()));
       }
     }
+
   }
 
   private static class BigQueryWriteConfig extends WriteConfig {
@@ -347,7 +346,9 @@ public class BigQueryDestination extends AbstractDestination implements Destinat
       this.tmpTable = TableId.of(schemaName, tmpTableName);
     }
 
-    public TableId getTable() { return table; }
+    public TableId getTable() {
+      return table;
+    }
 
     public TableId getTmpTable() {
       return tmpTable;
@@ -356,6 +357,7 @@ public class BigQueryDestination extends AbstractDestination implements Destinat
     public TableDataWriteChannel getWriter() {
       return writer;
     }
+
   }
 
   public static void main(String[] args) throws Exception {

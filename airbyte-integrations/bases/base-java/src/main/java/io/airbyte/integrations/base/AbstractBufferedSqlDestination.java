@@ -27,31 +27,18 @@ package io.airbyte.integrations.base;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.SyncMode;
-import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
- * This abstract destination subclass adds some on-disk buffering functionalities to each stream and expose the necessary abstractions for write operations
- * required to interact with a SQL-type of destination
+ * This abstract destination subclass adds some on-disk buffering functionalities to each stream and
+ * expose the necessary abstractions for write operations required to interact with a SQL-type of
+ * destination
  */
 public abstract class AbstractBufferedSqlDestination extends AbstractDestination implements BufferedWriteOperations {
 
   @Override
-  protected WriteConfig configureStream(String streamName, String schemaName, String tableName, String tmpTableName, SyncMode syncMode) throws IOException {
-    return new BufferedWriteConfig(streamName, schemaName, tableName, tmpTableName, syncMode);
-  }
-
-  @Override
-  protected DestinationConsumer<AirbyteMessage> createConsumer(Map<String, WriteConfig> writeConfigs, ConfiguredAirbyteCatalog catalog) {
-    Map<String, BufferedWriteConfig> bufferedConfigs = new HashMap<>();
-    for (Map.Entry<String, WriteConfig> entry : writeConfigs.entrySet()) {
-      if (entry.getValue() instanceof BufferedWriteConfig){
-        bufferedConfigs.put(entry.getKey(), (BufferedWriteConfig) entry.getValue());
-      }
-    }
-    return new BufferedRecordConsumer(this, bufferedConfigs, catalog);
+  protected DestinationConsumer<AirbyteMessage> createConsumer(ConfiguredAirbyteCatalog catalog) {
+    return new BufferedRecordConsumer(this, catalog);
   }
 
   @Override

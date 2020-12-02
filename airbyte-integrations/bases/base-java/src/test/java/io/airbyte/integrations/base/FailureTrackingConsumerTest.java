@@ -29,6 +29,8 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
+import io.airbyte.protocol.models.SyncMode;
+import java.io.IOException;
 import org.junit.jupiter.api.Test;
 
 class FailureTrackingConsumerTest {
@@ -63,6 +65,16 @@ class FailureTrackingConsumerTest {
 
     @Override
     protected void close(boolean hasFailed) {
+
+    }
+
+    @Override
+    public void addStream(String streamName, String schemaName, String tableName, String tmpTableName, SyncMode syncMode) throws IOException {
+
+    }
+
+    @Override
+    public void start() {
 
     }
 

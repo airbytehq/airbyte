@@ -25,9 +25,9 @@
 package io.airbyte.integrations.destination.csv;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.base.Preconditions;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.integrations.base.AbstractDestination;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
@@ -38,14 +38,13 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.SyncMode;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -55,7 +54,7 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CsvDestination implements Destination {
+public class CsvDestination extends AbstractDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CsvDestination.class);
 
@@ -65,6 +64,7 @@ public class CsvDestination implements Destination {
   static final String DESTINATION_PATH_FIELD = "destination_path";
 
   private final SQLNamingResolvable namingResolver;
+  private String destinationDir;
 
   public CsvDestination() {
     namingResolver = new StandardSQLNaming();
@@ -79,7 +79,7 @@ public class CsvDestination implements Destination {
   @Override
   public AirbyteConnectionStatus check(JsonNode config) {
     try {
-      FileUtils.forceMkdir(getDestinationPath(config).toFile());
+      createSchema(getDefaultSchemaName(config));
     } catch (Exception e) {
       return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(e.getMessage());
     }
@@ -91,46 +91,32 @@ public class CsvDestination implements Destination {
     return namingResolver;
   }
 
-  /**
-   * @param config - csv destination config.
-   * @param catalog - schema of the incoming messages.
-   * @return - a consumer to handle writing records to the filesystem.
-   * @throws IOException - exception throw in manipulating the filesytem.
-   */
   @Override
-  public DestinationConsumer<AirbyteMessage> write(JsonNode config, ConfiguredAirbyteCatalog catalog) throws IOException {
-    final Path destinationDir = getDestinationPath(config);
-
-    FileUtils.forceMkdir(destinationDir.toFile());
-
-    final long now = Instant.now().toEpochMilli();
-    final Map<String, WriteConfig> writeConfigs = new HashMap<>();
-    for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
-      final String streamName = stream.getStream().getName();
-      final String tableName = getNamingResolver().getRawTableName(streamName);
-      final String tmpTableName = getNamingResolver().getTmpTableName(streamName);
-      final Path tmpPath = destinationDir.resolve(tmpTableName + ".csv");
-      final Path finalPath = destinationDir.resolve(tableName + ".csv");
-      final FileWriter fileWriter = new FileWriter(tmpPath.toFile());
-      final CSVPrinter printer = new CSVPrinter(fileWriter, CSVFormat.DEFAULT.withHeader(COLUMN_AB_ID, COLUMN_EMITTED_AT, COLUMN_DATA));
-      writeConfigs.put(stream.getStream().getName(), new WriteConfig(printer, tmpPath, finalPath));
-    }
-
-    return new CsvConsumer(writeConfigs, catalog);
+  protected DestinationConsumer<AirbyteMessage> createConsumer(ConfiguredAirbyteCatalog catalog) {
+    return new CsvConsumer(catalog, destinationDir);
   }
 
-  /**
-   * Extract provided relative path from csv config object and append to local mount path.
-   *
-   * @param config - csv config object
-   * @return absolute path with the relative path appended to the local volume mount.
-   */
-  private Path getDestinationPath(JsonNode config) {
-    final String destinationRelativePath = config.get(DESTINATION_PATH_FIELD).asText();
-    Preconditions.checkNotNull(destinationRelativePath);
+  @Override
+  protected void connectDatabase(JsonNode config) {}
 
-    return Path.of(destinationRelativePath);
+  @Override
+  protected String getDefaultSchemaName(JsonNode config) {
+    destinationDir = config.get(DESTINATION_PATH_FIELD).asText();
+    return "";
   }
+
+  static protected Path getDestinationPath(String schemaName) {
+    return Path.of(schemaName);
+  }
+
+  @Override
+  public void createSchema(String schemaName) throws IOException {
+    // We don't create dirs with resolved schema paths names
+    FileUtils.forceMkdir(getDestinationPath(destinationDir).toFile());
+  }
+
+  @Override
+  public void createTable(String schemaName, String tableName) {}
 
   /**
    * This consumer writes individual records to temporary files. If all of the messages are written
@@ -139,15 +125,27 @@ public class CsvDestination implements Destination {
    */
   private static class CsvConsumer extends FailureTrackingConsumer<AirbyteMessage> {
 
-    private final Map<String, WriteConfig> writeConfigs;
     private final ConfiguredAirbyteCatalog catalog;
+    private final String destinationDir;
+    private final Map<String, WriteConfig> writeConfigs;
 
-    public CsvConsumer(Map<String, WriteConfig> writeConfigs, ConfiguredAirbyteCatalog catalog) {
+    public CsvConsumer(ConfiguredAirbyteCatalog catalog, String destinationDir) {
       this.catalog = catalog;
-      LOGGER.info("initializing consumer.");
-
-      this.writeConfigs = writeConfigs;
+      this.destinationDir = destinationDir;
+      this.writeConfigs = new HashMap<>();
     }
+
+    @Override
+    public void addStream(String streamName, String schemaName, String tableName, String tmpTableName, SyncMode syncMode) throws IOException {
+      final Path tmpPath = getDestinationPath(destinationDir).resolve(schemaName + tmpTableName + ".csv");
+      final Path finalPath = getDestinationPath(destinationDir).resolve(schemaName + tableName + ".csv");
+      final FileWriter fileWriter = new FileWriter(tmpPath.toFile());
+      final CSVPrinter printer = new CSVPrinter(fileWriter, CSVFormat.DEFAULT.withHeader(COLUMN_AB_ID, COLUMN_EMITTED_AT, COLUMN_DATA));
+      writeConfigs.put(streamName, new WriteConfig(printer, tmpPath, finalPath));
+    }
+
+    @Override
+    public void start() {}
 
     @Override
     protected void acceptTracked(AirbyteMessage message) throws Exception {
