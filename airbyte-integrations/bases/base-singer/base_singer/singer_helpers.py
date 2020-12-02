@@ -91,8 +91,8 @@ class SingerHelper:
             name = stream.get("stream")
             schema = stream.get("schema")
             airbyte_stream = AirbyteStream(name=name, json_schema=schema)
-            metadatas = stream.get("metadata")
-            stream_metadata = get_stream_level_metadata(metadatas) if metadatas else {}
+            metadatas = stream.get("metadata", [])
+            stream_metadata = get_stream_level_metadata(metadatas)
             if stream_metadata:
                 # TODO unclear from the singer spec what behavior should be if there are no valid replication keys, but forced-replication-method is INCREMENTAL.
                 #  For now requiring replication keys for a stream to be considered incremental.
