@@ -24,12 +24,15 @@
 
 package io.airbyte.integrations.standardtest.source;
 
+import static io.airbyte.protocol.models.SyncMode.FULL_REFRESH;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.StandardCheckConnectionInput;
@@ -40,11 +43,13 @@ import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.config.StandardGetSpecOutput;
 import io.airbyte.config.StandardSync.SyncMode;
 import io.airbyte.config.StandardTapConfig;
+import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
 import io.airbyte.workers.DefaultDiscoverCatalogWorker;
@@ -55,12 +60,16 @@ import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import io.airbyte.workers.protocols.airbyte.AirbyteSource;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteSource;
+
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -101,12 +110,23 @@ public abstract class TestSource {
   protected abstract JsonNode getConfig() throws Exception;
 
   /**
-   * Catalog to be used when attempting read operations.
+   * The catalog to use to validate the output of read operations. This will be used as follows:
+   * <p>
+   * Full Refresh syncs will be tested on all the input streams which support it
+   * Incremental syncs:
+   * - if the stream declares a source-defined cursor, it will be tested with an incremental sync using the default cursor.
+   * - if the stream requires a user-defined cursor, it will be tested with the input cursor
+   * in both cases, the input {@link #getState()} will be used as the input state.
    *
-   * @return the catalog
-   * @throws Exception - do what must be done.
+   * @return
+   * @throws Exception
    */
-  protected abstract AirbyteCatalog getCatalog() throws Exception;
+  protected abstract ConfiguredAirbyteCatalog getConfiguredCatalog() throws Exception;
+
+  /**
+   * @return a JSON file representing the state file to use when testing incremental syncs
+   */
+  protected abstract JsonNode getState() throws Exception;
 
   /**
    * List of regular expressions that should match the output of the test sync.
@@ -208,8 +228,8 @@ public abstract class TestSource {
    * schemas (aspirationally, anyway).
    */
   @Test
-  public void testRead() throws Exception {
-    final List<AirbyteMessage> allMessages = runRead(CatalogHelpers.toDefaultConfiguredCatalog(getCatalog()));
+  public void testFullRefreshRead() throws Exception {
+    final List<AirbyteMessage> allMessages = runRead(getConfiguredCatalog());
     final List<AirbyteMessage> recordMessages = allMessages.stream().filter(m -> m.getType() == Type.RECORD).collect(Collectors.toList());
     // the worker validates the message formats, so we just validate the message content
     // We don't need to validate message format as long as we use the worker, which we will not want to
@@ -225,15 +245,12 @@ public abstract class TestSource {
     });
   }
 
-  /**
-   * Verify that the integration overwrites the first sync with the second sync.
-   */
   @Test
-  public void testSecondRead() throws Exception {
-    final List<AirbyteMessage> recordMessagesFirstRun = runRead(CatalogHelpers.toDefaultConfiguredCatalog(getCatalog()))
+  public void testIdenticalFullRefreshes() throws Exception {
+    final List<AirbyteMessage> recordMessagesFirstRun = runRead(getConfiguredCatalog())
         .stream().filter(m -> m.getType() == Type.RECORD)
         .collect(Collectors.toList());
-    final List<AirbyteMessage> recordMessagesSecondRun = runRead(CatalogHelpers.toDefaultConfiguredCatalog(getCatalog()))
+    final List<AirbyteMessage> recordMessagesSecondRun = runRead(getConfiguredCatalog())
         .stream().filter(m -> m.getType() == Type.RECORD)
         .collect(Collectors.toList());
     // the worker validates the messages, so we just validate the message, so we do not need to validate
@@ -241,6 +258,47 @@ public abstract class TestSource {
     assertFalse(recordMessagesFirstRun.isEmpty());
     assertFalse(recordMessagesSecondRun.isEmpty());
     assertSameMessages(recordMessagesSecondRun, recordMessagesSecondRun);
+  }
+
+  /**
+   * Verify that the source is able to read data incrementally with a given input state.
+   */
+  @Test
+  public void testReadWithState() throws Exception {
+    List<AirbyteMessage> airbyteMessages = runRead(getConfiguredCatalog(), getState());
+    List<AirbyteMessage> recordMessages = airbyteMessages.stream().filter(m -> m.getType() == Type.RECORD).collect(Collectors.toList());
+    List<AirbyteMessage> stateMessages = airbyteMessages.stream().filter(m -> m.getType() == Type.STATE).collect(Collectors.toList());
+
+    assertFalse(recordMessages.isEmpty());
+    assertFalse(stateMessages.isEmpty());
+  }
+
+  @Test
+  public void testEmptyStateReadIdenticalToFullRefreshRead() throws Exception {
+    ConfiguredAirbyteCatalog configuredCatalog = getConfiguredCatalog();
+    ConfiguredAirbyteCatalog fullRefreshCatalog = withFullRefreshSyncModes(configuredCatalog);
+
+    final List<AirbyteMessage> fullRefreshRecords = runRead(fullRefreshCatalog)
+        .stream().filter(m -> m.getType() == Type.RECORD)
+        .collect(Collectors.toList());
+
+    final List<AirbyteMessage> emptyStateRecords = runRead(configuredCatalog, Jsons.jsonNode(new HashMap<>()))
+        .stream().filter(m -> m.getType() == Type.RECORD)
+        .collect(Collectors.toList());
+
+    assertFalse(fullRefreshRecords.isEmpty());
+    assertFalse(emptyStateRecords.isEmpty());
+    assertSameMessages(fullRefreshRecords, emptyStateRecords);
+  }
+
+  private ConfiguredAirbyteCatalog withFullRefreshSyncModes(ConfiguredAirbyteCatalog catalog) {
+    ConfiguredAirbyteCatalog clone = Jsons.clone(catalog);
+    for (ConfiguredAirbyteStream configuredStream : clone.getStreams()) {
+      if (configuredStream.getStream().getSupportedSyncModes().contains(FULL_REFRESH)) {
+        configuredStream.setSyncMode(FULL_REFRESH);
+      }
+    }
+    return clone;
   }
 
   private OutputAndStatus<StandardGetSpecOutput> runSpec() {
@@ -258,12 +316,17 @@ public abstract class TestSource {
         .run(new StandardDiscoverCatalogInput().withConnectionConfiguration(getConfig()), jobRoot);
   }
 
+  private List<AirbyteMessage> runRead(ConfiguredAirbyteCatalog configuredCatalog) throws Exception {
+    return runRead(configuredCatalog, null);
+  }
+
   // todo (cgardens) - assume no state since we are all full refresh right now.
-  private List<AirbyteMessage> runRead(ConfiguredAirbyteCatalog catalog) throws Exception {
+  private List<AirbyteMessage> runRead(ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception {
     final StandardTapConfig tapConfig = new StandardTapConfig()
         .withConnectionId(UUID.randomUUID())
         .withSourceConnectionConfiguration(getConfig())
         .withSyncMode(SyncMode.FULL_REFRESH)
+        .withState(state == null ? null : new State().withState(state).withConnectionId(UUID.randomUUID()))
         .withCatalog(catalog);
 
     final AirbyteSource source = new DefaultAirbyteSource(new AirbyteIntegrationLauncher(getImageName(), pbf));

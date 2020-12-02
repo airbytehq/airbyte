@@ -43,6 +43,9 @@ class StandardSourceTestIface(object):
     def get_regex_tests(self) -> List[str]:
         return []
 
+    def get_state(self) -> object:
+        return {}
+
     def setup(self) -> None:
         pass
 
