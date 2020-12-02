@@ -24,7 +24,9 @@
 
 package io.airbyte.integrations.base;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.text.Names;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.time.Instant;
 
 public class StandardSQLNaming implements SQLNamingResolvable {
@@ -42,6 +44,17 @@ public class StandardSQLNaming implements SQLNamingResolvable {
   @Override
   public String getTmpTableName(String streamName) {
     return convertStreamName(streamName + "_" + Instant.now().toEpochMilli());
+  }
+
+  @Override
+  public String getSchemaName(JsonNode config, ConfiguredAirbyteStream stream) {
+    // FIXME implement
+    return "";
+  }
+
+  @Override
+  public String getTableName(String streamName) {
+    return convertStreamName(streamName);
   }
 
   protected String convertStreamName(String input) {

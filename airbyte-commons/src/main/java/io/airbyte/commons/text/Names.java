@@ -43,4 +43,8 @@ public class Names {
         .replaceAll(NON_ALPHANUMERIC_AND_UNDERSCORE_PATTERN, "_");
   }
 
+  public static String concatNames(String name, String s) {
+    return name + s;
+  }
+
 }
