@@ -52,6 +52,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
 
   public enum DestinationType {
     BIGQUERY,
+    JDBC_POSTGRES,
     POSTGRES,
     SNOWFLAKE
   }
