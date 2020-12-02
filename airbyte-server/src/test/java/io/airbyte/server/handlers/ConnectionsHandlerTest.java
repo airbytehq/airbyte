@@ -118,6 +118,7 @@ class ConnectionsHandlerTest {
   void testUpdateConnection() throws JsonValidationException, ConfigNotFoundException, IOException {
     final SourceSchema newApiSchema = ConnectionHelpers.generateBasicApiSchema();
     newApiSchema.getStreams().get(0).setName("azkaban_users");
+    newApiSchema.getStreams().get(0).cleanedName("azkaban_users");
 
     final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
         .connectionId(standardSync.getConnectionId())

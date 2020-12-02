@@ -9,7 +9,8 @@ ENV AIRBYTE_IMPL_PATH="SourceGoogleAdwordsSinger"
 WORKDIR /airbyte/integration_code
 COPY $CODE_PATH ./$CODE_PATH
 COPY setup.py ./
+RUN pip install tap-adwords==1.12.0
 RUN pip install ".[main]"
 
-LABEL io.airbyte.version=0.1.3
+LABEL io.airbyte.version=0.1.4
 LABEL io.airbyte.name=airbyte/source-google-adwords-singer

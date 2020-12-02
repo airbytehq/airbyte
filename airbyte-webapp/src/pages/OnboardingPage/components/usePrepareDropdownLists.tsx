@@ -4,7 +4,7 @@ import { useResource } from "rest-hooks";
 import SourceDefinitionResource from "../../../core/resources/SourceDefinition";
 import DestinationDefinitionResource from "../../../core/resources/DestinationDefinition";
 
-const PrepareDropDownLists = () => {
+const usePrepareDropdownLists = () => {
   const { sourceDefinitions } = useResource(
     SourceDefinitionResource.listShape(),
     {}
@@ -48,4 +48,4 @@ const PrepareDropDownLists = () => {
   };
 };
 
-export default PrepareDropDownLists;
+export default usePrepareDropdownLists;

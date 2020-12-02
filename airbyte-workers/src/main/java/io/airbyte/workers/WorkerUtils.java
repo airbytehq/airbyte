@@ -96,6 +96,7 @@ public class WorkerUtils {
    */
   public static StandardTapConfig syncToTapConfig(StandardSyncInput sync) {
     return new StandardTapConfig()
+        .withConnectionId(sync.getConnectionId())
         .withSourceConnectionConfiguration(sync.getSourceConnection().getConfiguration())
         .withCatalog(sync.getCatalog())
         .withSyncMode(sync.getSyncMode())

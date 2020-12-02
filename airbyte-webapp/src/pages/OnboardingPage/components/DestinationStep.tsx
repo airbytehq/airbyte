@@ -1,18 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
-import { useResource, useFetcher } from "rest-hooks";
+import { useResource } from "rest-hooks";
 
 import ContentCard from "../../../components/ContentCard";
 import ServiceForm from "../../../components/ServiceForm";
 import ConnectionBlock from "../../../components/ConnectionBlock";
-import DestinationDefinitionSpecificationResource, {
-  DestinationDefinitionSpecification
-} from "../../../core/resources/DestinationDefinitionSpecification";
 import SourceDefinitionResource from "../../../core/resources/SourceDefinition";
 import { AnalyticsService } from "../../../core/analytics/AnalyticsService";
 import config from "../../../config";
-import PrepareDropDownLists from "./PrepareDropDownLists";
+import usePrepareDropdownLists from "./usePrepareDropdownLists";
 import { Destination } from "../../../core/resources/Destination";
+import { useDestinationDefinitionSpecificationLoad } from "../../../components/hooks/services/useDestinationHook";
 
 type IProps = {
   destination?: Destination;
@@ -26,37 +24,6 @@ type IProps = {
   }) => void;
   errorStatus?: number;
   currentSourceDefinitionId: string;
-};
-
-const useDestinationDefinitionSpecificationLoad = (
-  destinationDefinitionId: string
-) => {
-  const [
-    destinationDefinitionSpecification,
-    setDestinationSpecification
-  ] = useState<null | DestinationDefinitionSpecification>(null);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const fetchDestinationDefinitionSpecification = useFetcher(
-    DestinationDefinitionSpecificationResource.detailShape(),
-    true
-  );
-
-  useEffect(() => {
-    (async () => {
-      if (destinationDefinitionId) {
-        setIsLoading(true);
-        setDestinationSpecification(
-          await fetchDestinationDefinitionSpecification({
-            destinationDefinitionId
-          })
-        );
-        setIsLoading(false);
-      }
-    })();
-  }, [fetchDestinationDefinitionSpecification, destinationDefinitionId]);
-
-  return { destinationDefinitionSpecification, isLoading };
 };
 
 const DestinationStep: React.FC<IProps> = ({
@@ -75,7 +42,7 @@ const DestinationStep: React.FC<IProps> = ({
   const currentSource = useResource(SourceDefinitionResource.detailShape(), {
     sourceDefinitionId: currentSourceDefinitionId
   });
-  const { getDestinationDefinitionById } = PrepareDropDownLists();
+  const { getDestinationDefinitionById } = usePrepareDropdownLists();
 
   const onDropDownSelect = (sourceId: string) => {
     const destinationConnector = getDestinationDefinitionById(sourceId);
