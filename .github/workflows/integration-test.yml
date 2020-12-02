@@ -16,3 +16,4 @@ jobs:
       - run: |
           echo "Running integration ${{ github.event.inputs.integration }}!"
           echo "With git ref ${{ github.event.inputs.ref }}!"
+          echo "V3"
