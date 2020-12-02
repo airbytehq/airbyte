@@ -44,7 +44,7 @@ abstract class AirbyteDockerTask extends DefaultTask {
     }
 
     @TaskAction
-    def airbyteDocker() {
+    def dockerTask() {
         def scriptPath = Paths.get(rootDir.absolutePath, 'tools/bin/build_image.sh').toString()
         buildDockerfile(scriptPath, dockerfileName)
     }
