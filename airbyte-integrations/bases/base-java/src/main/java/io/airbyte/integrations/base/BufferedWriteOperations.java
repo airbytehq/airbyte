@@ -30,16 +30,10 @@ import java.util.Map;
 /**
  * Utility methods to write back to the destination databases
  */
-interface DestinationWriteOperations {
-
-  void createSchema(String schemaName) throws Exception;
-
-  void createTable(String schemaName, String tableName) throws Exception;
-
+interface BufferedWriteOperations {
   void insertBufferedRecords(int batchSize, CloseableQueue<byte[]> writeBuffer, String schemaName, String tmpTableName);
 
   void commitFinalTables(Map<String, BufferedWriteConfig> writeConfigs) throws Exception;
 
   void dropTable(String schemaName, String tableName) throws Exception;
-
 }

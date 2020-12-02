@@ -26,45 +26,26 @@ package io.airbyte.integrations.base;
 
 import io.airbyte.commons.lang.CloseableQueue;
 import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.queue.BigQueue;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * Associate a Stream Buffer with informations on where and how this data should be written while
  * buffering or when reaching end of streams.
  */
-public class BufferedWriteConfig {
+public class BufferedWriteConfig extends WriteConfig {
 
-  private final String schemaName;
-  private final String tableName;
-  private final String tmpTableName;
   private final CloseableQueue<byte[]> writeBuffer;
-  private final SyncMode syncMode;
 
-  public BufferedWriteConfig(String schemaName, String tableName, String tmpTableName, CloseableQueue<byte[]> writeBuffer, SyncMode syncMode) {
-    this.schemaName = schemaName;
-    this.tableName = tableName;
-    this.tmpTableName = tmpTableName;
-    this.writeBuffer = writeBuffer;
-    this.syncMode = syncMode;
-  }
-
-  public String getSchemaName() {
-    return schemaName;
-  }
-
-  public String getTableName() {
-    return tableName;
-  }
-
-  public String getTmpTableName() {
-    return tmpTableName;
+  public BufferedWriteConfig(String streamName, String schemaName, String tableName, String tmpTableName, SyncMode syncMode) throws IOException {
+    super(schemaName, tableName, tmpTableName, syncMode);
+    final Path queueRoot = Files.createTempDirectory("queues");
+    this.writeBuffer = new BigQueue(queueRoot.resolve(streamName), streamName);
   }
 
   public CloseableQueue<byte[]> getWriteBuffer() {
     return writeBuffer;
   }
-
-  public SyncMode getSyncMode() {
-    return syncMode;
-  }
-
 }

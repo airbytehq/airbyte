@@ -30,7 +30,7 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.CloseableQueue;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.integrations.base.AbstractDestination;
+import io.airbyte.integrations.base.AbstractBufferedSqlDestination;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.SQLNamingResolvable;
@@ -50,7 +50,7 @@ import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SnowflakeDestination extends AbstractDestination implements Destination {
+public class SnowflakeDestination extends AbstractBufferedSqlDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeDestination.class);
 

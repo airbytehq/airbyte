@@ -29,47 +29,21 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
-import io.airbyte.queue.BigQueue;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public abstract class AbstractDestination implements Destination, DestinationWriteOperations {
+/**
+ * Resolve adequate names of destination identifiers, create necessary schemas and tables, prepare the proper stream consumer
+ * that will accumulate and insert data into final destinations using a temporary staging area if stream is completed successfully.
+ */
+public abstract class AbstractDestination implements Destination {
 
-  /**
-   * Strategy:
-   * <p>
-   * 1. Create a temporary table for each stream
-   * </p>
-   * <p>
-   * 2. Accumulate records in a buffer. One buffer per stream.
-   * </p>
-   * <p>
-   * 3. As records accumulate write them in batch to the database. We set a minimum numbers of records
-   * before writing to avoid wasteful record-wise writes.
-   * </p>
-   * <p>
-   * 4. Once all records have been written to buffer, flush the buffer and write any remaining records
-   * to the database (regardless of how few are left).
-   * </p>
-   * <p>
-   * 5. In a single transaction, delete the target tables if they exist and rename the temp tables to
-   * the final table name.
-   * </p>
-   *
-   * @param config - integration-specific configuration object as json. e.g. { "username": "airbyte",
-   *        "password": "super secure" }
-   * @param catalog - schema of the incoming messages.
-   * @return consumer that writes singer messages to the database.
-   * @throws Exception - anything could happen!
-   */
   @Override
   public DestinationConsumer<AirbyteMessage> write(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
     connectDatabase(config);
-    final Map<String, BufferedWriteConfig> writeBuffers = new HashMap<>();
+    final Map<String, WriteConfig> writeConfigs = new HashMap<>();
     final Set<String> schemaSet = new HashSet<>();
     // create tmp tables if not exist
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
@@ -82,81 +56,21 @@ public abstract class AbstractDestination implements Destination, DestinationWri
         schemaSet.add(schemaName);
       }
       createTable(schemaName, tmpTableName);
-
-      final Path queueRoot = Files.createTempDirectory("queues");
-      final BigQueue writeBuffer = new BigQueue(queueRoot.resolve(streamName), streamName);
       final SyncMode syncMode = stream.getSyncMode() == null ? SyncMode.FULL_REFRESH : stream.getSyncMode();
-      writeBuffers.put(streamName, new BufferedWriteConfig(schemaName, tableName, tmpTableName, writeBuffer, syncMode));
+      writeConfigs.put(streamName, configureStream(streamName, schemaName, tableName, tmpTableName, syncMode));
     }
-    // write to tmp tables
-    // if success copy delete main table if exists. rename tmp tables to real tables.
-    return new BufferedRecordConsumer(this, writeBuffers, catalog);
-  }
-
-  @Override
-  public void createSchema(String schemaName) throws Exception {
-    queryDatabase(createSchemaQuery(schemaName));
-  }
-
-  protected String createSchemaQuery(String schemaName) {
-    return String.format("CREATE SCHEMA IF NOT EXISTS %s;\n", schemaName);
-  }
-
-  @Override
-  public void createTable(String schemaName, String tableName) throws Exception {
-    queryDatabase(createTableQuery(schemaName, tableName));
-  }
-
-  protected abstract String createTableQuery(String schemaName, String tableName);
-
-  @Override
-  public void commitFinalTables(Map<String, BufferedWriteConfig> writeConfigs) throws Exception {
-    final StringBuilder query = new StringBuilder();
-    for (final BufferedWriteConfig writeConfig : writeConfigs.values()) {
-      // create tables if not exist.
-      createTable(writeConfig.getSchemaName(), writeConfig.getTableName());
-
-      switch (writeConfig.getSyncMode()) {
-        case FULL_REFRESH -> query.append(truncateTableQuery(writeConfig.getSchemaName(), writeConfig.getTableName()));
-        case INCREMENTAL -> {}
-        default -> throw new IllegalStateException("Unrecognized sync mode: " + writeConfig.getSyncMode());
-      }
-      // always copy data from tmp table into "main" table.
-      query.append(
-          insertIntoFromQuery(writeConfig.getSchemaName(), writeConfig.getTmpTableName(), writeConfig.getSchemaName(), writeConfig.getTableName()));
-    }
-    queryDatabaseInTransaction(query.toString());
-  }
-
-  protected String insertIntoFromQuery(String srcSchemaName, String srcTableName, String dstSchemaName, String dstTableName) {
-    return String.format("INSERT INTO %s.%s SELECT * FROM %s.%s;\n", dstSchemaName, dstTableName, srcSchemaName, srcTableName);
-  }
-
-  protected String truncateTableQuery(String schemaName, String tableName) {
-    return String.format("TRUNCATE TABLE %s.%s;\n", schemaName, tableName);
-  }
-
-  @Override
-  public void dropTable(String schemaName, String tableName) throws Exception {
-    queryDatabase(dropTableQuery(schemaName, tableName));
-  }
-
-  protected String dropTableQuery(String schemaName, String tableName) {
-    return String.format("DROP TABLE IF EXISTS %s.%s;\n", schemaName, tableName);
+    return createConsumer(writeConfigs, catalog);
   }
 
   protected abstract void connectDatabase(JsonNode config);
 
-  protected abstract void queryDatabase(String query) throws Exception;
+  protected abstract String getDefaultSchemaName(JsonNode config);
 
-  protected abstract void queryDatabaseInTransaction(String queries) throws Exception;
+  public abstract void createSchema(String schemaName) throws Exception;
 
-  protected String getDefaultSchemaName(JsonNode config) {
-    if (config.has("schema")) {
-      return config.get("schema").asText();
-    } else {
-      return "public";
-    }
-  }
+  public abstract void createTable(String schemaName, String tableName) throws Exception;
 
+  protected abstract WriteConfig configureStream(String streamName, String schemaName, String tableName, String tmpTableName, SyncMode syncMode) throws Exception;
+
+  protected abstract DestinationConsumer<AirbyteMessage> createConsumer(Map<String, WriteConfig> writeConfigs, ConfiguredAirbyteCatalog catalog);
 }

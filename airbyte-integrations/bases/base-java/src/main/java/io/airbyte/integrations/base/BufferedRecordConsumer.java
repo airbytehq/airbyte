@@ -62,12 +62,12 @@ public class BufferedRecordConsumer extends FailureTrackingConsumer<AirbyteMessa
   private static final int MIN_RECORDS = 500;
   private static final int BATCH_SIZE = 500;
 
-  private final DestinationWriteOperations destination;
+  private final BufferedWriteOperations destination;
   private final Map<String, BufferedWriteConfig> writeConfigs;
   private final ConfiguredAirbyteCatalog catalog;
   private final ScheduledExecutorService writerPool;
 
-  public BufferedRecordConsumer(DestinationWriteOperations destination,
+  public BufferedRecordConsumer(BufferedWriteOperations destination,
                                 Map<String, BufferedWriteConfig> writeConfigs,
                                 ConfiguredAirbyteCatalog catalog) {
     this.destination = destination;
@@ -95,7 +95,7 @@ public class BufferedRecordConsumer extends FailureTrackingConsumer<AirbyteMessa
   private static void writeStreamsWithNRecords(int minRecords,
                                                int batchSize,
                                                Map<String, BufferedWriteConfig> writeBuffers,
-                                               DestinationWriteOperations destination) {
+                                               BufferedWriteOperations destination) {
     for (final Map.Entry<String, BufferedWriteConfig> entry : writeBuffers.entrySet()) {
       final String schemaName = entry.getValue().getSchemaName();
       final String tmpTableName = entry.getValue().getTmpTableName();
