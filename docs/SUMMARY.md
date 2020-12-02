@@ -29,6 +29,7 @@
     * [Salesforce](integrations/sources/salesforce.md)
     * [Sendgrid](integrations/sources/sendgrid.md)
     * [Shopify](integrations/sources/shopify.md)
+    * [Slack](integrations/sources/slack.md)
     * [Stripe](integrations/sources/stripe.md)
     * [Twilio](integrations/sources/twilio.md)
   * [Destinations](integrations/destinations/README.md)
