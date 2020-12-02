@@ -61,7 +61,7 @@ mkdir $RECURLY_SECRETS_DIR
 echo "$SOURCE_RECURLY_INTEGRATION_TEST_CREDS" > "${RECURLY_SECRETS_DIR}/config.json"
 
 FRESHDESK_SECRETS_DIR=airbyte-integrations/connectors/source-freshdesk/secrets
-MKDIR $FRESHDESK_SECRETS_DIR
+mkdir $FRESHDESK_SECRETS_DIR
 echo "$FRESHDESK_TEST_CREDS" > "${FRESHDESK_SECRETS_DIR}/config.json"
 
 TWILIO_SECRETS_DIR=airbyte-integrations/connectors/source-twilio/secrets
