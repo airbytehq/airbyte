@@ -23,7 +23,16 @@ include ':airbyte-config:models'
 include ':airbyte-config:init'
 include ':airbyte-config:persistence'
 include ':airbyte-db'
-include ':airbyte-integrations'
+include ':airbyte-integrations:bases:airbyte-protocol'
+include ':airbyte-integrations:bases:base'
+include ':airbyte-integrations:bases:base-java'
+include ':airbyte-integrations:bases:base-normalization'
+include ':airbyte-integrations:bases:base-python'
+include ':airbyte-integrations:bases:base-python-test'
+include ':airbyte-integrations:bases:base-singer'
+include ':airbyte-integrations:bases:standard-destination-test'
+include ':airbyte-integrations:bases:standard-source-test'
+include ':airbyte-integrations:connector-templates:generator'
 include ':airbyte-json-validation'
 include ':airbyte-protocol:models'
 include ':airbyte-queue'
@@ -35,17 +44,13 @@ include ':airbyte-tests'
 include ':airbyte-test-utils'
 include ':tools:code-generator'
 
-// include all integration subprojects
-def integrationsPath = rootDir.toPath().resolve('airbyte-integrations')
-def symlinkPrefixes = [] as Set<String>
-integrationsPath.eachFileRecurse(FileType.ANY) { path ->
-    if (Files.isSymbolicLink(path)) {
-        symlinkPrefixes.add(path.toString())
-    } else if(!(symlinkPrefixes.any {prefix -> path.toString().startsWith(prefix)})) {
-        def relativePath = integrationsPath.relativize(path)
+// include all connector projects
+def integrationsPath = rootDir.toPath().resolve('airbyte-integrations/connectors')
+println integrationsPath
+integrationsPath.eachDir { dir ->
+    def buildFiles = file(dir).list { file, name -> name == "build.gradle" }
 
-        if (path.endsWith('build.gradle') && !path.contains("build") && relativePath.getNameCount() > 1) {
-            include ":airbyte-integrations:${relativePath.parent.join(':')}"
-        }
+    if (buildFiles.length == 1) {
+        include ":airbyte-integrations:connectors:${dir.getFileName()}"
     }
 }
