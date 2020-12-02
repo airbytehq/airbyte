@@ -2,7 +2,8 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import TreeView, { INode } from "../../TreeView/TreeView";
+import { INode } from "../../TreeView/types";
+import TreeView from "../../TreeView";
 import { Cell, Header, LightCell } from "../../SimpleTableComponents";
 
 type IProps = {

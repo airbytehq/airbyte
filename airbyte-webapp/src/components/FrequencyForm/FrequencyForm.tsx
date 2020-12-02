@@ -8,7 +8,7 @@ import LabeledDropDown from "../LabeledDropDown";
 import FrequencyConfig from "../../data/FrequencyConfig.json";
 import BottomBlock from "./components/BottomBlock";
 import Label from "../Label";
-import { INode } from "../TreeView/TreeView";
+import { INode } from "../TreeView/types";
 import SchemaView from "./components/SchemaView";
 import { IDataItem } from "../DropDown/components/ListItem";
 import EditControls from "../ServiceForm/components/EditControls";
