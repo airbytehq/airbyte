@@ -1,0 +1,18 @@
+name: Integration Test
+on:
+  workflow_dispatch:
+    inputs:
+      integration:
+        description: 'Integration Name'
+        required: true
+      ref:
+        description: 'Git Ref'
+        required: true
+
+jobs:
+  integration_test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "Running integration ${{ github.event.inputs.integration }}!"
+          echo "With git ref ${{ github.event.inputs.ref }}!"
