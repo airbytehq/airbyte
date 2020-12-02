@@ -15,4 +15,4 @@ jobs:
           static-args: |
             ref=${{ github.event.pull_request.head.sha }}
           dispatch-type: workflow
-          event-type-suffix: ""
+          event-type-suffix: "" # used to map this command to integration-test.yml
