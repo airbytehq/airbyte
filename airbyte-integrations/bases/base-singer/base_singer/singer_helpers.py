@@ -66,8 +66,8 @@ def configured_for_incremental(configured_stream: ConfiguredAirbyteStream):
 
 def get_stream_level_metadata(metadatas: List[Dict[str, any]]) -> Optional[Dict[str, any]]:
     for metadata in metadatas:
-        if not is_field_metadata(metadata) and "metadata" in metadata:
-            return metadata.get("metadata")
+        if not is_field_metadata(metadata):
+            return metadata
     return None
 
 
@@ -91,7 +91,9 @@ class SingerHelper:
             name = stream.get("stream")
             schema = stream.get("schema")
             airbyte_stream = AirbyteStream(name=name, json_schema=schema)
-            stream_metadata = get_stream_level_metadata(stream.get("metadata"))
+            metadatas = stream.get("metadata")
+            stream_metadata_container = get_stream_level_metadata(metadatas) if metadatas else None
+            stream_metadata = stream_metadata_container.get("metadata")
             if stream_metadata:
                 # TODO unclear from the singer spec what behavior should be if there are no valid replication keys, but forced-replication-method is INCREMENTAL.
                 #  For now requiring replication keys for a stream to be considered incremental.
