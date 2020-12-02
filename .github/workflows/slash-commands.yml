@@ -13,6 +13,6 @@ jobs:
           commands: |
             source-exchangeratesapi-singer
           static-args: |
-            ref=${{ github.event.pull_request.head.ref }}
+            ref=${{ github.event.issue.pull_request.head.ref }}
           dispatch-type: workflow
           event-type-suffix: "" # used to map this command to integration-test.yml
