@@ -1,7 +1,0 @@
-{
-  "merchant_id": "<your_merchant_id>",
-  "public_key": "<your_public_key>",
-  "start_date": "2020-11-22T20:32:05Z",
-  "private_key": "<your_private_key>",
-  "environment": "Sandbox"
-}
