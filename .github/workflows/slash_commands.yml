@@ -1,0 +1,18 @@
+name: Slash Command Dispatch
+on:
+  issue_comment:
+    types: [created]
+jobs:
+  slashCommandDispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Slash Command Dispatch
+        uses: peter-evans/slash-command-dispatch@v2
+        with:
+          token: ${{ secrets.SLASH_COMMAND_PAT }}
+          commands: |
+            integration-test
+          static-args: |
+            ref=${{ github.event.pull_request.head.sha }}
+          dispatch-type: workflow
+          event-type-suffix: ""
