@@ -27,5 +27,6 @@ else
     ./gradlew --no-daemon --scan "$integrationTestCommand"
   else
     echo "Connector '$connector' not found..."
+    exit 1
   fi
 fi
