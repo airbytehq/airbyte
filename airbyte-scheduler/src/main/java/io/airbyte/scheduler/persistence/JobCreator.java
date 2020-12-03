@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.scheduler.client;
+package io.airbyte.scheduler.persistence;
 
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;

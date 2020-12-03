@@ -47,8 +47,6 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.SyncMode;
 import io.airbyte.config.Stream;
 import io.airbyte.scheduler.ScopeHelper;
-import io.airbyte.scheduler.client.DefaultJobCreator;
-import io.airbyte.scheduler.client.JobCreator;
 import java.io.IOException;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;

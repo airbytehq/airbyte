@@ -29,7 +29,7 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncSchedule;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.scheduler.client.DefaultJobCreator;
+import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.scheduler.job_factory.DefaultSyncJobFactory;
 import io.airbyte.scheduler.job_factory.SyncJobFactory;
 import io.airbyte.scheduler.persistence.JobPersistence;

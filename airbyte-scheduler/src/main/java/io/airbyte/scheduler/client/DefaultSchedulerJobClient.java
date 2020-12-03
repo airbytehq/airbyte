@@ -29,6 +29,7 @@ import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.JobStatus;
+import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import java.io.IOException;
 import org.slf4j.Logger;
