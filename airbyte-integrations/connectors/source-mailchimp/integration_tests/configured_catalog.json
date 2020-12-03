@@ -1,6 +1,6 @@
 {
   "streams": [
-    {
+    {"stream": {
       "name": "Lists",
       "json_schema": {
         "type": "object",
@@ -358,6 +358,6 @@
           }
         }
       }
-    }
+    }}
   ]
 }
