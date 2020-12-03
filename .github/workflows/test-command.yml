@@ -10,6 +10,10 @@ jobs:
   integration_test:
     runs-on: ubuntu-latest
     steps:
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
       - name: Search for valid integration name format
         id: regex
         uses: AsasInnab/regex-action@v1
