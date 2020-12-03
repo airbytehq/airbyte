@@ -71,3 +71,7 @@ echo "$FRESHDESK_TEST_CREDS" > "${FRESHDESK_SECRETS_DIR}/config.json"
 TWILIO_SECRETS_DIR=airbyte-integrations/connectors/source-twilio-singer/secrets
 mkdir $TWILIO_SECRETS_DIR
 echo "$TWILIO_TEST_CREDS" > "${TWILIO_SECRETS_DIR}/config.json"
+
+GREENHOUSE_SECRETS_DIR=airbyte-integrations/connectors/source-greenhouse/secrets
+mkdir GREENHOUSE_SECRETS_DIR
+echo "$GREENHOUSE_TEST_CREDS" > "${GREENHOUSE_SECRETS_DIR}/config.json"
