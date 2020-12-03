@@ -34,7 +34,7 @@ jobs:
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
-            > https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+            > :clock2: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
       - name: Checkout Airbyte
         uses: actions/checkout@v2
       - uses: actions/setup-java@v1
@@ -67,3 +67,19 @@ jobs:
           MAILCHIMP_TEST_CREDS: ${{ secrets.MAILCHIMP_TEST_CREDS }}
       - run: |
           echo ${{ github.event.inputs.connector }} TODO temp to not waste time
+      - name: Add Success Reaction
+          if: success()
+          uses: peter-evans/create-or-update-comment@v1
+          with:
+            comment-id: ${{ github.event.inputs.comment-id }}
+            body: |
+              > :white_check_mark: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+            reaction-type: +1
+      - name: Add Failure Reaction
+          if: failure() || cancelled()
+          uses: peter-evans/create-or-update-comment@v1
+          with:
+            comment-id: ${{ github.event.inputs.comment-id }}
+            body: |
+              > :x: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+            reactions: -1
