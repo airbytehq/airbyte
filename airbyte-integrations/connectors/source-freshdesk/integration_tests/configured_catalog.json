@@ -1,6 +1,6 @@
 {
   "streams": [
-    {
+    {"stream": {
       "stream": {
         "name": "agents",
         "json_schema": {
@@ -79,8 +79,8 @@
         },
         "supported_sync_modes": ["full_refresh"]
       }
-    },
-    {
+    }},
+    {"stream": {
       "stream": {
         "name": "companies",
         "json_schema": {
@@ -130,6 +130,6 @@
         },
         "supported_sync_modes": ["full_refresh"]
       }
-    }
+    }}
   ]
 }
