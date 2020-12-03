@@ -269,8 +269,7 @@ public abstract class TestSource {
    */
   @Test
   public void testIncrementalSyncWithState() throws Exception {
-    AirbyteCatalog inputCatalog = runDiscover().getOutput().get().getCatalog();
-    if (!sourceSupportsIncremental(inputCatalog)) {
+    if (!sourceSupportsIncremental()) {
       return;
     }
 
@@ -295,8 +294,7 @@ public abstract class TestSource {
 
   @Test
   public void testEmptyStateIncrementalIdenticalToFullRefresh() throws Exception {
-    AirbyteCatalog inputCatalog = runDiscover().getOutput().get().getCatalog();
-    if (!sourceSupportsIncremental(inputCatalog)) {
+    if (!sourceSupportsIncremental()) {
       return;
     }
 
@@ -338,7 +336,8 @@ public abstract class TestSource {
     return clone;
   }
 
-  private boolean sourceSupportsIncremental(AirbyteCatalog catalog) {
+  private boolean sourceSupportsIncremental() throws Exception {
+    AirbyteCatalog catalog = runDiscover().getOutput().get().getCatalog();
     for (AirbyteStream stream : catalog.getStreams()) {
       if (stream.getSupportedSyncModes().contains(INCREMENTAL)) {
         return true;
