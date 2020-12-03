@@ -1,15 +1,15 @@
 name: integration-test
-inputs:
-  connector:
-    description: 'Airbyte Connector'
-    required: true
-    default: 'all'
 on:
   push:
     branches:
       - master
       - jrhizor/add-other-builds # temporary for testing
   workflow_dispatch:
+    inputs:
+      connector:
+        description: 'Airbyte Connector'
+        required: true
+        default: 'all'
 
 jobs:
   integration_test:
