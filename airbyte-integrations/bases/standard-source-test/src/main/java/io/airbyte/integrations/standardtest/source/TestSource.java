@@ -285,6 +285,7 @@ public abstract class TestSource {
 
     assertFalse(recordMessages.isEmpty());
     assertFalse(stateMessages.isEmpty());
+    // TODO validate exact records
 
     // when we run incremental sync again there should be no new records. Run a sync with the latest state message and assert no records were emitted.
     JsonNode latestState = stateMessages.get(stateMessages.size() - 1).getData();
