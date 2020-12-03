@@ -1,6 +1,6 @@
 {
   "streams": [
-    {
+    {"stream": {
       "name": "sheet1",
       "json_schema": {
         "$schema": "http://json-schema.org/draft-07/schema#",
@@ -20,8 +20,8 @@
           }
         }
       }
-    },
-    {
+    }},
+    {"stream": {
       "name": "sheet2",
       "json_schema": {
         "$schema": "http://json-schema.org/draft-07/schema#",
@@ -41,6 +41,6 @@
           }
         }
       }
-    }
+    }}
   ]
 }
