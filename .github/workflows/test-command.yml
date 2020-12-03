@@ -3,6 +3,7 @@ on:
   push:
     branches:
       master
+      jrhizor/add-other-builds # temporary for testing
     inputs:
       connector:
         description: 'Airbyte Connector'
