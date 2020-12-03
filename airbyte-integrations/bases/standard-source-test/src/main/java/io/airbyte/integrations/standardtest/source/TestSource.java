@@ -25,6 +25,7 @@
 package io.airbyte.integrations.standardtest.source;
 
 import static io.airbyte.protocol.models.SyncMode.FULL_REFRESH;
+import static io.airbyte.protocol.models.SyncMode.INCREMENTAL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -266,7 +267,8 @@ public abstract class TestSource {
    */
   @Test
   public void testReadWithState() throws Exception {
-    List<AirbyteMessage> airbyteMessages = runRead(getConfiguredCatalog(), getState());
+    ConfiguredAirbyteCatalog configuredAirbyteCatalog = withSourceDefinedCursors(getConfiguredCatalog());
+    List<AirbyteMessage> airbyteMessages = runRead(configuredAirbyteCatalog, getState());
     List<AirbyteRecordMessage> recordMessages = filterRecords(airbyteMessages);
     List<AirbyteMessage> stateMessages = airbyteMessages.stream().filter(m -> m.getType() == Type.STATE).collect(Collectors.toList());
 
@@ -293,6 +295,16 @@ public abstract class TestSource {
         .filter(m -> m.getType() == Type.RECORD)
         .map(AirbyteMessage::getRecord)
         .collect(Collectors.toList());
+  }
+
+  private ConfiguredAirbyteCatalog withSourceDefinedCursors(ConfiguredAirbyteCatalog catalog){
+    ConfiguredAirbyteCatalog clone = Jsons.clone(catalog);
+    for (ConfiguredAirbyteStream configuredStream : clone.getStreams()) {
+      if (configuredStream.getSyncMode() == INCREMENTAL && configuredStream.getStream().getSourceDefinedCursor()){
+        configuredStream.setCursorField(configuredStream.getStream().getDefaultCursorField());
+      }
+    }
+    return clone;
   }
 
   private ConfiguredAirbyteCatalog withFullRefreshSyncModes(ConfiguredAirbyteCatalog catalog) {
