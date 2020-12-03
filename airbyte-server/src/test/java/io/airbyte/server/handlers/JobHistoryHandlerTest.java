@@ -49,6 +49,7 @@ import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.JobStatus;
 import io.airbyte.scheduler.ScopeHelper;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.server.converters.JobConverter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -145,9 +146,10 @@ public class JobHistoryHandlerTest {
     assertEquals(JOB_INFO, jobInfoActual);
   }
 
+  // todo move test.
   @Test
   public void testGetJobRead() {
-    final JobWithAttemptsRead jobReadActual = JobHistoryHandler.getJobWithAttemptsRead(job);
+    final JobWithAttemptsRead jobReadActual = JobConverter.getJobWithAttemptsRead(job);
     assertEquals(JOB_WITH_ATTEMPTS_READ, jobReadActual);
   }
 

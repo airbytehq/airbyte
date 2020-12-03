@@ -47,13 +47,13 @@ import io.airbyte.scheduler.Attempt;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.ScopeHelper;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.server.converters.JobConverter;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class JobHistoryHandler {
 
-  private static final int LOG_TAIL_SIZE = 100;
   private final JobPersistence jobPersistence;
 
   public JobHistoryHandler(JobPersistence jobPersistence) {
@@ -66,7 +66,7 @@ public class JobHistoryHandler {
 
     final List<JobWithAttemptsRead> jobReads = jobPersistence.listJobs(configType, configId)
         .stream()
-        .map(JobHistoryHandler::getJobWithAttemptsRead)
+        .map(JobConverter::getJobWithAttemptsRead)
         .collect(Collectors.toList());
 
     return new JobReadList().jobs(jobReads);
@@ -75,58 +75,6 @@ public class JobHistoryHandler {
   public JobInfoRead getJobInfo(JobIdRequestBody jobIdRequestBody) throws IOException {
     final Job job = jobPersistence.getJob(jobIdRequestBody.getId());
 
-    return new JobInfoRead()
-        .job(getJobWithAttemptsRead(job).getJob())
-        .attempts(job.getAttempts().stream().map(JobHistoryHandler::getAttemptInfoRead).collect(Collectors.toList()));
+    return JobConverter.getJobInfo(job);
   }
-
-  private static AttemptInfoRead getAttemptInfoRead(Attempt attempt) {
-    return new AttemptInfoRead()
-        .attempt(getAttemptRead(attempt))
-        .logs(getLogRead(attempt));
-  }
-
-  private static AttemptRead getAttemptRead(Attempt attempt) {
-    return new AttemptRead()
-        .id(attempt.getId())
-        .status(Enums.convertTo(attempt.getStatus(), AttemptStatus.class))
-        .bytesSynced(attempt.getOutput()
-            .map(JobOutput::getSync)
-            .map(StandardSyncOutput::getStandardSyncSummary)
-            .map(StandardSyncSummary::getBytesSynced)
-            .orElse(null))
-        .recordsSynced(attempt.getOutput()
-            .map(JobOutput::getSync)
-            .map(StandardSyncOutput::getStandardSyncSummary)
-            .map(StandardSyncSummary::getRecordsSynced)
-            .orElse(null))
-        .createdAt(attempt.getCreatedAtInSecond())
-        .updatedAt(attempt.getUpdatedAtInSecond())
-        .endedAt(attempt.getEndedAtInSecond().orElse(null));
-  }
-
-  private static LogRead getLogRead(Attempt attempt) {
-    try {
-      return new LogRead().logLines(IOs.getTail(LOG_TAIL_SIZE, attempt.getLogPath()));
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  @VisibleForTesting
-  protected static JobWithAttemptsRead getJobWithAttemptsRead(Job job) {
-    final String configId = ScopeHelper.getConfigId(job.getScope());
-    final JobConfigType configType = Enums.convertTo(job.getConfig().getConfigType(), JobConfigType.class);
-
-    return new JobWithAttemptsRead()
-        .job(new JobRead()
-            .id(job.getId())
-            .configId(configId)
-            .configType(configType)
-            .createdAt(job.getCreatedAtInSecond())
-            .updatedAt(job.getUpdatedAtInSecond())
-            .status(Enums.convertTo(job.getStatus(), JobStatus.class)))
-        .attempts(job.getAttempts().stream().map(JobHistoryHandler::getAttemptRead).collect(Collectors.toList()));
-  }
-
 }

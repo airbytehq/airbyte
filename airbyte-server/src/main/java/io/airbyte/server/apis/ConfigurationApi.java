@@ -320,12 +320,12 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public JobStatusRead syncConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
+  public JobInfoRead syncConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
     return execute(() -> schedulerHandler.syncConnection(connectionIdRequestBody));
   }
 
   @Override
-  public JobStatusRead resetConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
+  public JobInfoRead resetConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
     return execute(() -> schedulerHandler.resetConnection(connectionIdRequestBody));
   }
 
