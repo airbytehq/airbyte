@@ -25,4 +25,3 @@ else
     echo "Connector '$connector' not found..."
   fi
 fi
-
