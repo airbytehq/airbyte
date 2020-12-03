@@ -74,7 +74,6 @@ jobs:
             comment-id: ${{ github.event.inputs.comment-id }}
             body: |
               > :white_check_mark: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
-            reaction-type: +1
       - name: Add Failure Reaction
           if: failure() || cancelled()
           uses: peter-evans/create-or-update-comment@v1
@@ -82,4 +81,3 @@ jobs:
             comment-id: ${{ github.event.inputs.comment-id }}
             body: |
               > :x: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
-            reactions: -1
