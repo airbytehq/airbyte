@@ -67,3 +67,7 @@ echo "$FRESHDESK_TEST_CREDS" > "${FRESHDESK_SECRETS_DIR}/config.json"
 TWILIO_SECRETS_DIR=airbyte-integrations/connectors/source-twilio-singer/secrets
 mkdir $TWILIO_SECRETS_DIR
 echo "$TWILIO_TEST_CREDS" > "${TWILIO_SECRETS_DIR}/config.json"
+
+INTERCOM_SECRETS_DIR=airbyte-integrations/connectors/source-intercom-singer/secrets
+mkdir $INTERCOM_SECRETS_DIR
+echo "$INTERCOM_TEST_CREDS" > "${INTERCOM_SECRETS_DIR}/config.json"
