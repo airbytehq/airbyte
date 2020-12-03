@@ -19,7 +19,7 @@ jobs:
         run: |
           SUBMITTED_CONNECTOR=${{ github.event.inputs.connector }}
           CONNECTOR=${SUBMITTED_CONNECTOR:-all}
-          echo "::set-output name=value::CONNECTOR"
+          echo "::set-output name=value::$CONNECTOR"
       - name: Search for valid integration name format
         id: regex
         uses: AsasInnab/regex-action@v1
