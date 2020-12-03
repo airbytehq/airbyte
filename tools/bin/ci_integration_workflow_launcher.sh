@@ -10,12 +10,12 @@ if [[ -z "$GITHUB_TOKEN" ]] ; then
 fi
 
 REPO_API=https://api.github.com/repos/airbytehq/airbyte
-WORKFLOW_NAME=integration-test
-WORKFLOW_ID=$(curl --header "Authorization: Bearer $GITHUB_TOKEN" "$REPO_API/actions/workflows" | jq -r ".workflows[] | select( .name == \"$WORKFLOW_NAME\" ) | .id")
+WORKFLOW_PATH=.github/workflows/test-command.yml
+WORKFLOW_ID=$(curl --header "Authorization: Bearer $GITHUB_TOKEN" "$REPO_API/actions/workflows" | jq -r ".workflows[] | select( .path == \"$WORKFLOW_PATH\" ) | .id")
 MATCHING_WORKFLOW_IDS=$(wc -l <<< "${WORKFLOW_ID}")
 
 if [ "$MATCHING_WORKFLOW_IDS" -ne "1" ]  ; then
-  echo "More than one workflow exists with the name $WORKFLOW_NAME"
+  echo "More than one workflow exists with the path $WORKFLOW_PATH"
   exit 1
 fi
 
