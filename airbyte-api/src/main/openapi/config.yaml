@@ -1671,8 +1671,9 @@ components:
       enum:
         - pending
         - running
+        - incomplete
         - failed
-        - completed
+        - succeeded
         - cancelled
     AttemptRead:
       type: object
@@ -1699,7 +1700,7 @@ components:
         bytesSynced:
           type: integer
           format: int64
-        recordsSync:
+        recordsSynced:
           type: integer
           format: int64
     AttemptStatus:
@@ -1707,7 +1708,7 @@ components:
       enum:
         - running
         - failed
-        - completed
+        - succeeded
     JobReadList:
       type: object
       required:

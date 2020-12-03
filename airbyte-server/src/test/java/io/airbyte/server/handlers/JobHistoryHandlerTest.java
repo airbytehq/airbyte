@@ -154,9 +154,8 @@ public class JobHistoryHandlerTest {
   @Test
   public void testEnumConversion() {
     assertTrue(Enums.isCompatible(JobConfig.ConfigType.class, JobConfigType.class));
-    // todo (cgardens) - bring back in next PR.
-    // assertTrue(Enums.isCompatible(JobStatus.class, io.airbyte.api.model.JobStatus.class));
-    // assertTrue(Enums.isCompatible(AttemptStatus.class, io.airbyte.api.model.AttemptStatus.class));
+    assertTrue(Enums.isCompatible(JobStatus.class, io.airbyte.api.model.JobStatus.class));
+    assertTrue(Enums.isCompatible(AttemptStatus.class, io.airbyte.api.model.AttemptStatus.class));
   }
 
 }

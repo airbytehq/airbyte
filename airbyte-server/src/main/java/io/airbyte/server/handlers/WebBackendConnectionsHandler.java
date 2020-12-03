@@ -105,7 +105,7 @@ public class WebBackendConnectionsHandler {
     final JobReadList jobReadList = jobHistoryHandler.listJobsFor(jobListRequestBody);
     wbConnectionRead.setIsSyncing(jobReadList.getJobs()
         .stream().map(JobWithAttemptsRead::getJob)
-        .anyMatch(job -> job.getStatus() != JobStatus.COMPLETED && job.getStatus() != JobStatus.CANCELLED));
+        .anyMatch(job -> job.getStatus() != JobStatus.FAILED && job.getStatus() != JobStatus.SUCCEEDED && job.getStatus() != JobStatus.CANCELLED));
     jobReadList.getJobs().stream().map(JobWithAttemptsRead::getJob).findFirst().ifPresent(job -> wbConnectionRead.setLastSync(job.getCreatedAt()));
 
     return wbConnectionRead;

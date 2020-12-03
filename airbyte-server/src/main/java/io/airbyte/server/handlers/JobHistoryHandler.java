@@ -25,6 +25,9 @@
 package io.airbyte.server.handlers;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.api.model.AttemptInfoRead;
+import io.airbyte.api.model.AttemptRead;
+import io.airbyte.api.model.AttemptStatus;
 import io.airbyte.api.model.JobConfigType;
 import io.airbyte.api.model.JobIdRequestBody;
 import io.airbyte.api.model.JobInfoRead;
@@ -37,12 +40,14 @@ import io.airbyte.api.model.LogRead;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.config.JobConfig;
+import io.airbyte.config.JobOutput;
+import io.airbyte.config.StandardSyncOutput;
+import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.scheduler.Attempt;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.ScopeHelper;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import java.io.IOException;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -81,6 +86,25 @@ public class JobHistoryHandler {
         .logs(getLogRead(attempt));
   }
 
+  private static AttemptRead getAttemptRead(Attempt attempt) {
+    return new AttemptRead()
+        .id(attempt.getId())
+        .status(Enums.convertTo(attempt.getStatus(), AttemptStatus.class))
+        .bytesSynced(attempt.getOutput()
+            .map(JobOutput::getSync)
+            .map(StandardSyncOutput::getStandardSyncSummary)
+            .map(StandardSyncSummary::getBytesSynced)
+            .orElse(null))
+        .recordsSynced(attempt.getOutput()
+            .map(JobOutput::getSync)
+            .map(StandardSyncOutput::getStandardSyncSummary)
+            .map(StandardSyncSummary::getRecordsSynced)
+            .orElse(null))
+        .createdAt(attempt.getCreatedAtInSecond())
+        .updatedAt(attempt.getUpdatedAtInSecond())
+        .endedAt(attempt.getEndedAtInSecond().orElse(null));
+  }
+
   private static LogRead getLogRead(Attempt attempt) {
     try {
       return new LogRead().logLines(IOs.getTail(LOG_TAIL_SIZE, attempt.getLogPath()));
@@ -103,22 +127,6 @@ public class JobHistoryHandler {
             .updatedAt(job.getUpdatedAtInSecond())
             .status(Enums.convertTo(job.getStatus(), JobStatus.class)))
         .attempts(job.getAttempts().stream().map(JobHistoryHandler::getAttemptRead).collect(Collectors.toList()));
-  }
-
-  // todo (cgardens) - temporary to maintain backwards compatibility. will be removed in the next PR.
-  private static JobStatus toApiJobStatus(io.airbyte.scheduler.JobStatus jobStatus) {
-    switch (jobStatus) {
-      case INCOMPLETE -> {
-        return JobStatus.FAILED;
-      }
-      case FAILED, PENDING, RUNNING, CANCELLED -> {
-        return Enums.convertTo(jobStatus, JobStatus.class);
-      }
-      case SUCCEEDED -> {
-        return JobStatus.COMPLETED;
-      }
-      default -> throw new IllegalStateException("Cannot convert job status to api job status: " + jobStatus);
-    }
   }
 
 }
