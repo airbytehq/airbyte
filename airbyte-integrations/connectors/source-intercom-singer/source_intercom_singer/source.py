@@ -22,26 +22,55 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-
 from airbyte_protocol import AirbyteConnectionStatus
 from base_python import AirbyteLogger, ConfigContainer
 from base_singer import SingerSource
+from tap_intercom.client import IntercomClient, IntercomError
 
 
-class SourceIntercomSinger(SingerSource):
-    def __init__(self):
-        super().__init__()
-
-    def check(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
-        cmd = "tap-intercom - -config config.json - -discover > catalog.json"
-        raise Exception("unimplemented")
+class BaseSingerSource(SingerSource):
+    tap_cmd = None
 
     def discover_cmd(self, logger: AirbyteLogger, config_path: str) -> str:
-        cmd = "tap-intercom - -config config.json - -discover > catalog.json"
+        return f"{self.tap_cmd} --config {config_path} --discover"
 
-        # discover the schema with the provided config
-        raise Exception("unimplemented")
+    def read_cmd(self, logger: AirbyteLogger, config_path: str,
+                 catalog_path: str, state_path: str = None) -> str:
+        args = {
+            "--config": config_path,
+            "--catalog": catalog_path,
+            "--state": state_path
+        }
+        cmd = " ".join([f"{k} {v}" for k, v in args.items() if v is not None])
 
-    def read_cmd(self, logger: AirbyteLogger, config_path: str, catalog_path: str, state_path: str = None) -> str:
-        cmd = "tap-intercom - -config config.json - -discover > catalog.json"
-        raise Exception("unimplemented")
+        return f"{self.tap_cmd} {cmd}"
+
+    def check(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
+        try:
+            json_config = config_container.rendered_config
+            self.try_connect(logger, json_config)
+        except IntercomError as err:
+            logger.error("Exception while connecting to the %s: %s", self.tap_name, str(err))
+            # this should be in UI
+            error_msg = (
+                f"Unable to connect to the {self.tap_name} with the provided credentials. "
+                "Please make sure the input credentials and environment are correct. "
+                f"Error: {err}"
+            )
+            return AirbyteConnectionStatus(status=Status.FAILED, message=error_msg)
+
+        return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+
+    def try_connect(self, logger: AirbyteLogger, config: dict):
+        raise NotImplementedError
+
+
+class SourceIntercomSinger(BaseSingerSource):
+    tap_cmd = "tap-intercom"
+    tap_name = "Intercom API"
+
+    def try_connect(self, logger: AirbyteLogger, config: dict):
+        client = IntercomClient(user_agent=config["user_agent"], api_key=config["api_key"])
+        ok = client.check_access_token()
+        if not ok:
+            raise IntercomError(f"Got an empty response from {self.tap_name}, check your permissions")

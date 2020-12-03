@@ -15,8 +15,8 @@ WORKDIR /airbyte/integration_code
 COPY $MODULE_NAME $MODULE_NAME
 COPY $CODE_PATH $CODE_PATH
 COPY secrets/* $CODE_PATH
-COPY $MODULE_NAME/*.json $CODE_PATH
-COPY sample_files/*.json $CODE_PATH
+COPY $MODULE_NAME/*.json $CODE_PATH/
+COPY sample_files/*.json $CODE_PATH/
 COPY setup.py ./
 
 RUN pip install ".[tests]"
