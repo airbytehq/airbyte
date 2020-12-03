@@ -22,36 +22,28 @@
  * SOFTWARE.
  */
 
-package io.airbyte.server.cache;
+package io.airbyte.scheduler.client;
 
-import io.airbyte.protocol.models.ConnectorSpecification;
-import java.util.Optional;
+import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.SourceConnection;
+import io.airbyte.config.StandardSync;
+import java.io.IOException;
 
-public interface SpecCache {
+public interface JobCreator {
 
-  Optional<ConnectorSpecification> get(String imageName);
+  long createSourceCheckConnectionJob(SourceConnection source, String dockerImage) throws IOException;
 
-  void put(String imageName, ConnectorSpecification spec);
+  long createDestinationCheckConnectionJob(DestinationConnection destination, String dockerImage) throws IOException;
 
-  void evict(String imageName);
+  long createDiscoverSchemaJob(SourceConnection source, String dockerImage) throws IOException;
 
-  public static class AlwaysMissCache implements SpecCache {
+  long createGetSpecJob(String integrationImage) throws IOException;
 
-    @Override
-    public Optional<ConnectorSpecification> get(String imageName) {
-      return Optional.empty();
-    }
-
-    @Override
-    public void put(String imageName, ConnectorSpecification spec) {
-      // no op.
-    }
-
-    @Override
-    public void evict(String imageName) {
-      // no op.
-    }
-
-  }
+  long createSyncJob(SourceConnection source,
+                     DestinationConnection destination,
+                     StandardSync standardSync,
+                     String sourceDockerImage,
+                     String destinationDockerImage)
+      throws IOException;
 
 }

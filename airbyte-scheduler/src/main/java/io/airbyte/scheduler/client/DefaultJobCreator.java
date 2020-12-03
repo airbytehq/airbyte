@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.scheduler.persistence;
+package io.airbyte.scheduler.client;
 
 import com.google.common.collect.Lists;
 import io.airbyte.config.DestinationConnection;
@@ -40,6 +40,7 @@ import io.airbyte.scheduler.Attempt;
 import io.airbyte.scheduler.AttemptStatus;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.ScopeHelper;
+import io.airbyte.scheduler.persistence.JobPersistence;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;

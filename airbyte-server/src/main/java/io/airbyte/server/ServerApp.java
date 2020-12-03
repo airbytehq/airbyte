@@ -34,10 +34,10 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DefaultConfigPersistence;
 import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.db.Databases;
+import io.airbyte.scheduler.client.SpecCachingSchedulerJobClient;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.apis.ConfigurationApi;
-import io.airbyte.server.cache.DefaultSpecCache;
 import io.airbyte.server.errors.InvalidInputExceptionMapper;
 import io.airbyte.server.errors.InvalidJsonExceptionMapper;
 import io.airbyte.server.errors.InvalidJsonInputExceptionMapper;
@@ -80,7 +80,7 @@ public class ServerApp {
 
     ServletContextHandler handler = new ServletContextHandler();
 
-    ConfigurationApiFactory.setSpecCache(new DefaultSpecCache());
+    ConfigurationApiFactory.setSpecCache(new SpecCachingSchedulerJobClient(jobPersistence));
     ConfigurationApiFactory.setConfigRepository(configRepository);
     ConfigurationApiFactory.setJobPersistence(jobPersistence);
 

@@ -22,28 +22,14 @@
  * SOFTWARE.
  */
 
-package io.airbyte.scheduler.persistence;
+package io.airbyte.scheduler.client;
 
-import io.airbyte.config.DestinationConnection;
-import io.airbyte.config.SourceConnection;
-import io.airbyte.config.StandardSync;
-import java.io.IOException;
+/**
+ * This client is meant to be an interface over a cached implementation of
+ * {@link SchedulerJobClient}. It exposes functionality to allow invalidating the cache.
+ */
+public interface CachingSchedulerJobClient extends SchedulerJobClient {
 
-public interface JobCreator {
-
-  long createSourceCheckConnectionJob(SourceConnection source, String dockerImage) throws IOException;
-
-  long createDestinationCheckConnectionJob(DestinationConnection destination, String dockerImage) throws IOException;
-
-  long createDiscoverSchemaJob(SourceConnection source, String dockerImage) throws IOException;
-
-  long createGetSpecJob(String integrationImage) throws IOException;
-
-  long createSyncJob(SourceConnection source,
-                     DestinationConnection destination,
-                     StandardSync standardSync,
-                     String sourceDockerImage,
-                     String destinationDockerImage)
-      throws IOException;
+  void resetCache();
 
 }
