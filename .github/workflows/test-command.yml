@@ -1,5 +1,13 @@
 name: integration-test
 on:
+  push:
+    branches:
+      master
+    inputs:
+      connector:
+        description: 'Airbyte Connector'
+        required: true
+        default: 'all'
   workflow_dispatch:
     inputs:
       connector:
