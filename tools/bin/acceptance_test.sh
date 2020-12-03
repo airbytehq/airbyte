@@ -15,7 +15,7 @@ echo "Starting app..."
 mkdir -p /tmp/airbyte_local
 
 # Detach so we can run subsequent commands
-VERSION=dev docker-compose up -d
+VERSION=dev TRACKING_STRATEGY=logging docker-compose up -d
 trap "echo 'docker-compose logs:' && docker-compose logs -t --tail 150 && docker-compose down" EXIT
 
 echo "Waiting for services to begin"
