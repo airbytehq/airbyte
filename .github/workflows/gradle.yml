@@ -12,6 +12,12 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
 
+      - name: Launch Integration Tests
+        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/jrhizor/add-other-builds'
+        run: ./tools/bin/ci_integration_workflow_launcher.sh
+        env:
+          GITHUB_TOKEN: ${{ secrets.SLASH_COMMAND_PAT }}
+
       - name: Check images exist
         run: ./tools/bin/check_images_exist.sh
 

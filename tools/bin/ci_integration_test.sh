@@ -2,7 +2,7 @@
 
 set -e
 
-# launches all of the integration and/or standard tests for an integration name
+# runs integration and/or standard tests for an integration name
 
 connector="$1"
 all_integration_tests=$(./gradlew integrationTest --dry-run | grep 'integrationTest SKIPPED' | cut -d: -f 4)
