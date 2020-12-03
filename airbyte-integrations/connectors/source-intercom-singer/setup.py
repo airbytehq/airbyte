@@ -34,7 +34,7 @@ setup(
         "airbyte-protocol",
         "base-singer",
         "base-python",
-        "git+https://github.com/singer-io/tap-intercom@v1.1.1"
+        "tap-intercom @ git+https://github.com/singer-io/tap-intercom@v1.1.1"
     ],
     package_data={"": ["*.json"]},
     setup_requires=["pytest-runner"],

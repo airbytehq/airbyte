@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from airbyte_protocol import AirbyteConnectionStatus
+from airbyte_protocol import AirbyteConnectionStatus, Status
 from base_python import AirbyteLogger, ConfigContainer
 from base_singer import SingerSource
 from tap_intercom.client import IntercomClient, IntercomError
