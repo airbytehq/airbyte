@@ -34,5 +34,5 @@ echo "$CONNECTORS" | while read -r connector ; do
     -X POST \
     --header "Authorization: Bearer $GITHUB_TOKEN" \
     "$REPO_API/actions/workflows/$WORKFLOW_ID/dispatches" \
-    -d "{\"ref\":\"master\", \"connector\": \"$connector\"}"
+    -d "{\"ref\":\"master\", \"inputs\": { \"connector\": \"$connector\"} }"
 done
