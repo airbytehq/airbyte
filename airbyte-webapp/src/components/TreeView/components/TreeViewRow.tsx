@@ -4,6 +4,8 @@ import styled from "styled-components";
 import { Row, Cell } from "../../SimpleTableComponents";
 import { INode } from "../types";
 import MainInfoCell from "./MainInfoCell";
+import SyncSettingsCell from "./SyncSettingsCell";
+import { IDataItem } from "../../DropDown/components/ListItem";
 
 type IProps = {
   isChild?: boolean;
@@ -12,9 +14,10 @@ type IProps = {
   onCheck: (data: string[]) => void;
 };
 
-const ItemRow = styled(Row)`
+const ItemRow = styled(Row)<{ isChild?: boolean }>`
   height: 100%;
   white-space: nowrap;
+  margin-left: ${({ isChild }) => (isChild ? -64 : 0)}px;
 `;
 
 const TreeItem = styled.div<{ isChild?: boolean }>`
@@ -61,10 +64,12 @@ const TreeViewRow: React.FC<IProps> = ({ item, checked, onCheck, isChild }) => {
     }
   };
 
+  const selectSyncMode = (data: IDataItem) => console.log(data);
+
   return (
     <>
       <TreeItem isChild={isChild}>
-        <ItemRow>
+        <ItemRow isChild={isChild}>
           <MainInfoCell
             hideCheckbox={item.hideCheckbox}
             label={item.label}
@@ -73,10 +78,15 @@ const TreeViewRow: React.FC<IProps> = ({ item, checked, onCheck, isChild }) => {
             isItemChecked={isItemChecked}
             isItemHasChildren={isItemHasChildren}
             isItemOpen={isItemOpen}
+            isChild={isChild}
           />
-          <Cell />
-          <Cell />
-          <Cell />
+          <Cell>{item.dataType}</Cell>
+          <Cell>{item.cleanedName}</Cell>
+          {isChild ? (
+            <Cell />
+          ) : (
+            <SyncSettingsCell item={item} onSelect={selectSyncMode} />
+          )}
         </ItemRow>
       </TreeItem>
       {isItemOpen &&

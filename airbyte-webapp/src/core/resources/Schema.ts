@@ -9,18 +9,20 @@ export type SyncSchemaField = {
   dataType: string;
 };
 
+export type SyncSchemaStream = {
+  name: string;
+  cleanedName: string;
+  fields: SyncSchemaField[];
+  supportedSyncModes: string[];
+  sourceDefinedCursor: boolean | null;
+  defaultCursorField: string[];
+  selected: boolean | null;
+  syncMode: string | null;
+  cursorField: string[];
+};
+
 export type SyncSchema = {
-  streams: {
-    name: string;
-    cleanedName: string;
-    fields: SyncSchemaField[];
-    supportedSyncModes: string[];
-    sourceDefinedCursor: boolean | null;
-    defaultCursorField: string[];
-    selected: boolean | null;
-    syncMode: string | null;
-    cursorField: string[];
-  }[];
+  streams: SyncSchemaStream[];
 };
 
 export interface Schema {

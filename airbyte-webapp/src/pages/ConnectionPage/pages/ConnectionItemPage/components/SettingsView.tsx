@@ -59,10 +59,14 @@ const SettingsView: React.FC<IProps> = ({ connection, onAfterSaveSchema }) => {
     }
   };
 
-  const { formSyncSchema, initialChecked, allSchemaChecked } = useMemo(
-    () => constructInitialSchemaState(connection.syncSchema),
-    [connection.syncSchema]
-  );
+  const {
+    formSyncSchema,
+    initialChecked,
+    allSchemaChecked,
+    syncModeInitialState
+  } = useMemo(() => constructInitialSchemaState(connection.syncSchema), [
+    connection.syncSchema
+  ]);
 
   const onDelete = () => {
     deleteConnection({ connectionId: connection.connectionId });
@@ -74,6 +78,7 @@ const SettingsView: React.FC<IProps> = ({ connection, onAfterSaveSchema }) => {
         title={<FormattedMessage id="connection.connectionSettings" />}
       >
         <FrequencyForm
+          syncModeInitialState={syncModeInitialState}
           isEditMode
           schema={formSyncSchema}
           initialCheckedSchema={initialChecked}

@@ -15,19 +15,31 @@ export const constructInitialSchemaState = (syncSchema: SyncSchema) => {
     )
   );
 
+  const syncModeInitialState: Array<any> = [];
+  syncSchema.streams.map(item => ({
+    value: item.name,
+    syncMode: item.syncMode
+  }));
+
   const formSyncSchema = syncSchema.streams.map((item: any) => ({
     value: item.name,
     label: item.name,
+    supportedSyncModes: item.supportedSyncModes,
+    syncMode: item.syncMode || "full_refresh",
+    cleanedName: item.cleanedName,
     children: item.fields.map((field: any) => ({
       value: `${item.name}_${field.name}`,
-      label: field.name
+      label: field.name,
+      dataType: field.dataType,
+      cleanedName: item.cleanedName
     }))
   }));
 
   return {
     formSyncSchema,
     initialChecked,
-    allSchemaChecked
+    allSchemaChecked,
+    syncModeInitialState
   };
 };
 

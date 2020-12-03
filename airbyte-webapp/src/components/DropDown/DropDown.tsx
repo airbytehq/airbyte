@@ -17,10 +17,15 @@ export type IProps = {
   data: Array<IDataItem>;
   onSelect?: (item: IDataItem) => void;
   withButton?: boolean;
+  withBorder?: boolean;
   textButton?: string;
 };
 
-const StyledDropdownList = styled(DropdownList)<{ disabled?: boolean }>`
+const StyledDropdownList = styled(DropdownList)<{
+  disabled?: boolean;
+  withBorder?: boolean;
+}>`
+  text-align: left;
   &.rw-state-disabled {
     pointer-events: none;
     cursor: auto;
@@ -35,9 +40,11 @@ const StyledDropdownList = styled(DropdownList)<{ disabled?: boolean }>`
   }
 
   & > .rw-widget-container {
-    height: 36px;
+    height: ${({ withBorder }) => (withBorder ? 31 : 36)}px;
     box-shadow: none;
-    border: 1px solid ${({ theme }) => theme.greyColor0};
+    border: 1px solid
+      ${({ theme, withBorder }) =>
+        withBorder ? theme.greyColor30 : theme.greyColor0};
     background: ${({ theme }) => theme.greyColor0};
     border-radius: 4px;
 
@@ -149,6 +156,7 @@ const DropDown: React.FC<IProps> = props => {
 
   return (
     <StyledDropdownList
+      withBorder={props.withBorder}
       containerClassName={props.withButton ? "withButton" : ""}
       filter={props.hasFilter ? "contains" : false}
       placeholder={

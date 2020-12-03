@@ -15,6 +15,7 @@ import EditControls from "../ServiceForm/components/EditControls";
 
 type IProps = {
   className?: string;
+  syncModeInitialState: { value: string; syncMode: string }[];
   schema: INode[];
   allSchemaChecked: string[];
   errorMessage?: React.ReactNode;
@@ -53,6 +54,7 @@ const FrequencyForm: React.FC<IProps> = ({
   frequencyValue,
   isEditMode,
   successMessage
+  // syncModeInitialState
 }) => {
   const formatMessage = useIntl().formatMessage;
   const dropdownData = React.useMemo(
@@ -76,6 +78,8 @@ const FrequencyForm: React.FC<IProps> = ({
 
   const [checkedState, setCheckedState] = useState(initialCheckedSchema);
   const onCheckAction = (data: Array<string>) => setCheckedState(data);
+
+  // const [syncMode, setSyncMode] = useState(syncModeInitialState);
 
   return (
     <Formik

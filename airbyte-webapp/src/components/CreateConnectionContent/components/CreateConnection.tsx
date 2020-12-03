@@ -25,7 +25,8 @@ const CreateConnection: React.FC<IProps> = ({
   const {
     formSyncSchema,
     initialChecked,
-    allSchemaChecked
+    allSchemaChecked,
+    syncModeInitialState
   } = constructInitialSchemaState(schema);
 
   const onSubmitForm = async (
@@ -45,6 +46,7 @@ const CreateConnection: React.FC<IProps> = ({
 
   return (
     <FrequencyForm
+      syncModeInitialState={syncModeInitialState}
       allSchemaChecked={allSchemaChecked}
       onDropDownSelect={onSelectFrequency}
       onSubmit={onSubmitForm}
