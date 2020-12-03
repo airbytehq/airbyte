@@ -28,6 +28,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+/**
+ * Implementation of TmpToFinalTable in order to move data from a tmp destination to a final target.
+ *
+ * This implementation is geared towards databases using queries based on Truncate table & Insert Into SQL statements.
+ * (The truncate operation is performed depending on the sync mode incremental or not, in which case data is appended to the table when inserting)
+ */
 public class TruncateInsertIntoConsumer implements TmpToFinalTable {
 
   private final InsertTableOperations destination;

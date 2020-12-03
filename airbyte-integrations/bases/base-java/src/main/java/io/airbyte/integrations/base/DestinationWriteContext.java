@@ -26,6 +26,9 @@ package io.airbyte.integrations.base;
 
 import io.airbyte.protocol.models.SyncMode;
 
+/**
+ * This configuration is used by the RecordConsumers to adapt their behavior at runtime such as where to apply their task and the kind of data operations
+ */
 public class DestinationWriteContext {
 
   private final String outputNamespaceName;

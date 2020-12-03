@@ -26,6 +26,11 @@ package io.airbyte.integrations.base;
 
 import java.util.Map;
 
+/**
+ * Interface to move data from one temporary location to a final target destination
+ *
+ * Parameters per String are first set by the setContext methods before executing the actual move
+ */
 public interface TmpToFinalTable {
 
   void setContext(Map<String, DestinationCopyContext> configs);

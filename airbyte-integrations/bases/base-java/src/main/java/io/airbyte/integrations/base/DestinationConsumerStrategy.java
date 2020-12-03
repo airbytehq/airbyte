@@ -27,6 +27,10 @@ package io.airbyte.integrations.base;
 import io.airbyte.protocol.models.AirbyteMessage;
 import java.util.Map;
 
+/**
+ * DestinationConsumer configured with a DestinationWriteContext configuration object to
+ * slightly change their behavior at runtime.
+ */
 public interface DestinationConsumerStrategy extends DestinationConsumer<AirbyteMessage> {
 
   void setContext(Map<String, DestinationWriteContext> configs) throws Exception;
