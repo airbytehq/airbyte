@@ -32,9 +32,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.StandardCheckConnectionInput;
@@ -52,7 +49,6 @@ import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
@@ -65,8 +61,6 @@ import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import io.airbyte.workers.protocols.airbyte.AirbyteSource;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteSource;
-
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -75,7 +69,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -118,11 +111,10 @@ public abstract class TestSource {
   /**
    * The catalog to use to validate the output of read operations. This will be used as follows:
    * <p>
-   * Full Refresh syncs will be tested on all the input streams which support it
-   * Incremental syncs:
-   * - if the stream declares a source-defined cursor, it will be tested with an incremental sync using the default cursor.
-   * - if the stream requires a user-defined cursor, it will be tested with the input cursor
-   * in both cases, the input {@link #getState()} will be used as the input state.
+   * Full Refresh syncs will be tested on all the input streams which support it Incremental syncs: -
+   * if the stream declares a source-defined cursor, it will be tested with an incremental sync using
+   * the default cursor. - if the stream requires a user-defined cursor, it will be tested with the
+   * input cursor in both cases, the input {@link #getState()} will be used as the input state.
    *
    * @return
    * @throws Exception
@@ -286,7 +278,8 @@ public abstract class TestSource {
     assertFalse(stateMessages.isEmpty());
     // TODO validate exact records
 
-    // when we run incremental sync again there should be no new records. Run a sync with the latest state message and assert no records were emitted.
+    // when we run incremental sync again there should be no new records. Run a sync with the latest
+    // state message and assert no records were emitted.
     JsonNode latestState = stateMessages.get(stateMessages.size() - 1).getData();
     List<AirbyteRecordMessage> secondSyncRecords = filterRecords(runRead(configuredAirbyteCatalog, latestState));
     assertTrue(secondSyncRecords.isEmpty());
