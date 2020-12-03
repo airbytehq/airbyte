@@ -59,7 +59,7 @@ public class ScheduleJobPredicate implements BiPredicate<Optional<Job>, Standard
     final Job previousJob = previousJobOptional.get();
     switch (previousJob.getStatus()) {
       case CANCELLED:
-      case COMPLETED:
+      case SUCCEEDED:
         return timeForJobNewJob;
       case FAILED:
       case PENDING:
