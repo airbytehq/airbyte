@@ -123,7 +123,7 @@ public class JobSubmitter implements Runnable {
       metadataBuilder.put("attempt_stage", "STARTED");
       track(metadataBuilder.build());
     } catch (Exception e) {
-      LOGGER.error("failed while reporting usage.");
+      LOGGER.error("failed while reporting usage.", e);
     }
   }
 
@@ -135,7 +135,7 @@ public class JobSubmitter implements Runnable {
       metadataBuilder.put("attempt_completion_status", status);
       track(metadataBuilder.build());
     } catch (Exception e) {
-      LOGGER.error("failed while reporting usage.");
+      LOGGER.error("failed while reporting usage.", e);
     }
   }
 
