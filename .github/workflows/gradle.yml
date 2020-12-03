@@ -61,6 +61,9 @@ jobs:
       - name: Ensure no file change
         run: git status --porcelain && test -z "$(git status --porcelain)"
 
+      - name: Run End-to-End Acceptance Tests
+        run: ./tools/bin/acceptance_test.sh
+
       - name: Check documentation
         if: success() && github.ref == 'refs/heads/master'
         run: ./tools/site/link_checker.sh check_docs
@@ -113,9 +116,6 @@ jobs:
         run: ./gradlew --no-daemon composeBuild --scan
         env:
           GIT_REVISION: ${{ github.sha }}
-
-      - name: Run End-to-End Acceptance Tests
-        run: ./tools/bin/acceptance_test.sh
 
       - name: Push Core Docker Images
         if: success() && github.ref == 'refs/heads/master'
