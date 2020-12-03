@@ -57,7 +57,7 @@ class IOsTest {
 
   @Test
   public void testGetTailDoesNotExist() throws IOException {
-    List<String> tail = IOs.getTail(100, RandomStringUtils.random(100));
+    List<String> tail = IOs.getTail(100, Path.of(RandomStringUtils.random(100)));
     assertEquals(Collections.emptyList(), tail);
   }
 
@@ -85,7 +85,7 @@ class IOsTest {
 
     writer.close();
 
-    List<String> tail = IOs.getTail(expectedTail.size(), stdoutFile.toString());
+    List<String> tail = IOs.getTail(expectedTail.size(), stdoutFile);
     assertEquals(expectedTail, tail);
   }
 

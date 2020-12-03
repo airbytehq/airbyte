@@ -27,15 +27,12 @@ package io.airbyte.scheduler;
 import com.google.common.collect.Sets;
 import java.util.Set;
 
-public enum JobStatus {
+public enum AttemptStatus {
 
-  PENDING,
   RUNNING,
-  INCOMPLETE,
   FAILED,
-  SUCCEEDED,
-  CANCELLED;
+  SUCCEEDED;
 
-  public static Set<JobStatus> TERMINAL_STATUSES = Sets.newHashSet(FAILED, SUCCEEDED, CANCELLED);
+  public static Set<AttemptStatus> TERMINAL_STATUSES = Sets.newHashSet(FAILED, SUCCEEDED);
 
 }

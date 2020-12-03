@@ -27,7 +27,9 @@ package io.airbyte.scheduler;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -43,12 +45,13 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.scheduler.persistence.SchedulerPersistence;
+import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
 import io.airbyte.workers.WorkerConstants;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
@@ -59,29 +62,38 @@ import org.slf4j.MDC;
 
 public class JobSubmitterTest {
 
-  public static final OutputAndStatus<JobOutput> SUCCESS_OUTPUT = new OutputAndStatus<>(JobStatus.SUCCEEDED, new JobOutput());
-  public static final OutputAndStatus<JobOutput> FAILED_OUTPUT = new OutputAndStatus<>(JobStatus.FAILED);
+  private static final OutputAndStatus<JobOutput> SUCCESS_OUTPUT = new OutputAndStatus<>(JobStatus.SUCCEEDED, new JobOutput());
+  private static final OutputAndStatus<JobOutput> FAILED_OUTPUT = new OutputAndStatus<>(JobStatus.FAILED);
+  private static final long JOB_ID = 1L;
+  private static final int ATTEMPT_NUMBER = 12;
 
-  private SchedulerPersistence persistence;
+  private JobPersistence persistence;
   private WorkerRunFactory workerRunFactory;
   private WorkerRun workerRun;
   private Job job;
+  private Path logPath;
 
   private JobSubmitter jobSubmitter;
 
   @BeforeEach
   public void setup() throws IOException {
-    job = mock(Job.class);
-    when(job.getId()).thenReturn(1L);
-    persistence = mock(SchedulerPersistence.class);
-    when(persistence.getOldestPendingJob()).thenReturn(Optional.of(job));
+    job = mock(Job.class, RETURNS_DEEP_STUBS);
+    when(job.getId()).thenReturn(JOB_ID);
+    when(job.getAttempts().size()).thenReturn(ATTEMPT_NUMBER);
 
     final ConfigRepository configRepository = mock(ConfigRepository.class);
 
     workerRun = mock(WorkerRun.class);
-    when(workerRun.getJobRoot()).thenReturn(Files.createTempDirectory("test"));
+    final Path jobRoot = Files.createTempDirectory("test");
+    final Path logPath = jobRoot.resolve(WorkerConstants.LOG_FILENAME);
+    when(workerRun.getJobRoot()).thenReturn(jobRoot);
     workerRunFactory = mock(WorkerRunFactory.class);
     when(workerRunFactory.create(job)).thenReturn(workerRun);
+
+    persistence = mock(JobPersistence.class);
+    this.logPath = jobRoot.resolve(WorkerConstants.LOG_FILENAME);
+    when(persistence.getOldestPendingJob()).thenReturn(Optional.of(job));
+    when(persistence.createAttempt(JOB_ID, logPath)).thenReturn(ATTEMPT_NUMBER);
 
     jobSubmitter = spy(new JobSubmitter(
         MoreExecutors.newDirectExecutorService(),
@@ -118,12 +130,12 @@ public class JobSubmitterTest {
   public void testSuccess() throws Exception {
     doReturn(SUCCESS_OUTPUT).when(workerRun).call();
 
-    jobSubmitter.run();
+    jobSubmitter.submitJob(job);
 
     InOrder inOrder = inOrder(persistence, jobSubmitter);
-    inOrder.verify(persistence).updateStatus(1L, io.airbyte.scheduler.JobStatus.RUNNING);
-    inOrder.verify(persistence).writeOutput(1L, new JobOutput());
-    inOrder.verify(persistence).updateStatus(1L, io.airbyte.scheduler.JobStatus.COMPLETED);
+    inOrder.verify(persistence).createAttempt(JOB_ID, logPath);
+    inOrder.verify(persistence).writeOutput(JOB_ID, ATTEMPT_NUMBER, new JobOutput());
+    inOrder.verify(persistence).succeedAttempt(JOB_ID, ATTEMPT_NUMBER);
     inOrder.verify(jobSubmitter).trackCompletion(job, JobStatus.SUCCEEDED);
     inOrder.verifyNoMoreInteractions();
   }
@@ -135,8 +147,8 @@ public class JobSubmitterTest {
     jobSubmitter.run();
 
     InOrder inOrder = inOrder(persistence, jobSubmitter);
-    inOrder.verify(persistence).updateStatus(1L, io.airbyte.scheduler.JobStatus.RUNNING);
-    inOrder.verify(persistence).updateStatus(1L, io.airbyte.scheduler.JobStatus.FAILED);
+    inOrder.verify(persistence).createAttempt(JOB_ID, logPath);
+    inOrder.verify(persistence).failAttempt(JOB_ID, ATTEMPT_NUMBER);
     inOrder.verify(jobSubmitter).trackCompletion(job, JobStatus.FAILED);
     inOrder.verifyNoMoreInteractions();
   }
@@ -148,35 +160,48 @@ public class JobSubmitterTest {
     jobSubmitter.run();
 
     InOrder inOrder = inOrder(persistence, jobSubmitter);
-    inOrder.verify(persistence).updateStatus(1L, io.airbyte.scheduler.JobStatus.RUNNING);
-    inOrder.verify(persistence).incrementAttempts(1L);
-    inOrder.verify(persistence).updateStatus(1L, io.airbyte.scheduler.JobStatus.FAILED);
+    inOrder.verify(persistence).createAttempt(JOB_ID, logPath);
+    inOrder.verify(persistence).failAttempt(JOB_ID, ATTEMPT_NUMBER);
+    inOrder.verify(jobSubmitter).trackCompletion(job, JobStatus.FAILED);
+    inOrder.verifyNoMoreInteractions();
+  }
+
+  @Test
+  public void testPersistenceExceptionMismatchAttemptId() throws Exception {
+    when(persistence.createAttempt(JOB_ID, logPath)).thenReturn(ATTEMPT_NUMBER + 1);
+
+    jobSubmitter.run();
+
+    InOrder inOrder = inOrder(persistence, jobSubmitter);
+    inOrder.verify(persistence).createAttempt(JOB_ID, logPath);
+    inOrder.verify(persistence).failAttempt(JOB_ID, ATTEMPT_NUMBER);
     inOrder.verify(jobSubmitter).trackCompletion(job, JobStatus.FAILED);
     inOrder.verifyNoMoreInteractions();
   }
 
   @Test
   public void testPersistenceExceptionStart() throws Exception {
-    doThrow(new RuntimeException()).when(persistence).updateStatus(anyLong(), any());
+    doThrow(new RuntimeException()).when(persistence).createAttempt(anyLong(), any());
 
     jobSubmitter.run();
 
     InOrder inOrder = inOrder(persistence, jobSubmitter);
-    inOrder.verify(persistence).updateStatus(1L, io.airbyte.scheduler.JobStatus.FAILED);
+    inOrder.verify(persistence).createAttempt(JOB_ID, logPath);
+    inOrder.verify(persistence).failAttempt(JOB_ID, ATTEMPT_NUMBER);
+    inOrder.verify(jobSubmitter).trackCompletion(job, JobStatus.FAILED);
     inOrder.verifyNoMoreInteractions();
   }
 
   @Test
   public void testPersistenceExceptionOutput() throws Exception {
     doReturn(SUCCESS_OUTPUT).when(workerRun).call();
-    doThrow(new RuntimeException()).when(persistence).writeOutput(anyLong(), any());
+    doThrow(new RuntimeException()).when(persistence).writeOutput(anyLong(), anyInt(), any());
 
     jobSubmitter.run();
 
     InOrder inOrder = inOrder(persistence, jobSubmitter);
-    inOrder.verify(persistence).updateStatus(1L, io.airbyte.scheduler.JobStatus.RUNNING);
-    inOrder.verify(persistence).incrementAttempts(1L);
-    inOrder.verify(persistence).updateStatus(1L, io.airbyte.scheduler.JobStatus.FAILED);
+    inOrder.verify(persistence).createAttempt(JOB_ID, logPath);
+    inOrder.verify(persistence).failAttempt(JOB_ID, ATTEMPT_NUMBER);
     inOrder.verify(jobSubmitter).trackCompletion(job, JobStatus.FAILED);
     inOrder.verifyNoMoreInteractions();
   }

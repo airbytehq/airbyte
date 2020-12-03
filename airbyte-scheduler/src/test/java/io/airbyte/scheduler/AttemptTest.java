@@ -24,18 +24,22 @@
 
 package io.airbyte.scheduler;
 
-import com.google.common.collect.Sets;
-import java.util.Set;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public enum JobStatus {
+import org.junit.jupiter.api.Test;
 
-  PENDING,
-  RUNNING,
-  INCOMPLETE,
-  FAILED,
-  SUCCEEDED,
-  CANCELLED;
+class AttemptTest {
 
-  public static Set<JobStatus> TERMINAL_STATUSES = Sets.newHashSet(FAILED, SUCCEEDED, CANCELLED);
+  @Test
+  void testIsAttemptInTerminalState() {
+    assertFalse(Attempt.isAttemptInTerminalState(attemptWithStatus(AttemptStatus.RUNNING)));
+    assertTrue(Attempt.isAttemptInTerminalState(attemptWithStatus(AttemptStatus.FAILED)));
+    assertTrue(Attempt.isAttemptInTerminalState(attemptWithStatus(AttemptStatus.SUCCEEDED)));
+  }
+
+  private static Attempt attemptWithStatus(AttemptStatus attemptStatus) {
+    return new Attempt(1L, 1L, null, null, attemptStatus, 0L, 0L, null);
+  }
 
 }
