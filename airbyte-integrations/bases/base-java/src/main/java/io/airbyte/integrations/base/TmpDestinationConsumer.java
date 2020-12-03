@@ -37,12 +37,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This consumer will delegate actual Record Consumer tasks to Consumers provided in the constructors.
+ * This consumer will delegate actual Record Consumer tasks to Consumers provided in the
+ * constructors.
  *
- * However this class will actually dispatch such records towards a temporary consumer first to accumulate data in a staging location.
+ * However this class will actually dispatch such records towards a temporary consumer first to
+ * accumulate data in a staging location.
  *
- * If this temporary operation ends successfully without errors, then the second consumer to finalize a copy from temporary location to final destination
- * will be invoked by this consumer.
+ * If this temporary operation ends successfully without errors, then the second consumer to
+ * finalize a copy from temporary location to final destination will be invoked by this consumer.
  */
 public class TmpDestinationConsumer extends FailureTrackingConsumer<AirbyteMessage> implements DestinationConsumerStrategy {
 

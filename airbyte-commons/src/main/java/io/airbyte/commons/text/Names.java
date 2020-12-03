@@ -45,6 +45,7 @@ public class Names {
 
   /**
    * Concatenate Strings together, but handles the case where the first string is already quoted
+   *
    * @param name Quoted or Unquoted name to append more characters to
    * @param suffix additional string to concatenate
    * @return name and suffix concatenated together

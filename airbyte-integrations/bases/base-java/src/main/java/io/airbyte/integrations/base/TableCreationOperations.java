@@ -25,8 +25,8 @@
 package io.airbyte.integrations.base;
 
 /**
- * Necessary Operations to manipulate schema and table creation (or deletion) that may be
- * required by some RecordConsumer to properly function.
+ * Necessary Operations to manipulate schema and table creation (or deletion) that may be required
+ * by some RecordConsumer to properly function.
  *
  */
 public interface TableCreationOperations {

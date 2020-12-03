@@ -27,7 +27,8 @@ package io.airbyte.integrations.base;
 import io.airbyte.protocol.models.SyncMode;
 
 /**
- * This configuration is used by the TmpToFinalTable consumers to configure their behavior on where to apply their task and data operations
+ * This configuration is used by the TmpToFinalTable consumers to configure their behavior on where
+ * to apply their task and data operations
  */
 public class DestinationCopyContext extends DestinationWriteContext {
 

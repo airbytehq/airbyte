@@ -33,8 +33,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Factory class to convert from config and catalog objects into DestinationWriterContext configuration object.
- * This configuration is then used by the RecordConsumers configure their behavior on where to apply their task and data operations
+ * Factory class to convert from config and catalog objects into DestinationWriterContext
+ * configuration object. This configuration is then used by the RecordConsumers configure their
+ * behavior on where to apply their task and data operations
  */
 public class DestinationWriteContextFactory {
 

@@ -24,10 +24,9 @@
 
 package io.airbyte.integrations.base;
 
-
 /**
- * Necessary Operations to manipulate table creation and row insertions that may be
- * required by some RecordConsumer to properly function.
+ * Necessary Operations to manipulate table creation and row insertions that may be required by some
+ * RecordConsumer to properly function.
  */
 public interface InsertTableOperations {
 
