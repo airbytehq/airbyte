@@ -52,6 +52,10 @@ REDSHIFT_DIR=airbyte-integrations/connectors/source-redshift/secrets
 mkdir $REDSHIFT_DIR
 echo "$AWS_REDSHIFT_INTEGRATION_TEST_CREDS" > "${REDSHIFT_DIR}/config.json"
 
+REDSHIFT_DIR=airbyte-integrations/connectors/destination-redshift/secrets
+mkdir $REDSHIFT_DIR
+echo "$AWS_REDSHIFT_INTEGRATION_TEST_CREDS" > "${REDSHIFT_DIR}/config.json"
+
 MAILCHIMP_SECRETS_DIR=airbyte-integrations/connectors/source-mailchimp/secrets
 mkdir $MAILCHIMP_SECRETS_DIR
 echo "$MAILCHIMP_TEST_CREDS" > "${MAILCHIMP_SECRETS_DIR}/config.json"
