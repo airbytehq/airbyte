@@ -2,6 +2,7 @@ plugins {
     id 'application'
     id 'airbyte-docker'
     id 'airbyte-integration-test-java'
+    // todo: needs standard destination test
 }
 
 application {
@@ -12,7 +13,7 @@ dependencies {
     implementation project(':airbyte-db')
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-protocol:models')
-    implementation project(':airbyte-queue')
+    implementation project(':airbyte-integrations:connectors:destination-jdbc')
 
     testImplementation "org.testcontainers:postgresql:1.15.0-rc2"
 
