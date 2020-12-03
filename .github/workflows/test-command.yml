@@ -24,7 +24,7 @@ jobs:
         uses: AsasInnab/regex-action@v1
         with:
           regex_pattern: '^[a-zA-Z0-9-_]+$'
-          regex_flags: ''
+          regex_flags: 'i' # required to be set for this plugin
           search_string: ${{ github.event.inputs.connector }}
       - name: Validate input workflow format
         if: steps.regex.outputs.first_match != github.event.inputs.connector
