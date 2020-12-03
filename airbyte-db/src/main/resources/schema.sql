@@ -62,7 +62,7 @@ CREATE
 
 CREATE
     UNIQUE INDEX job_attempt_idx ON
-    table_name(
+    ATTEMPTS(
         job_id,
         attempt_number
     );
