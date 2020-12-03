@@ -5,7 +5,7 @@ plugins {
 }
 
 airbytePython {
-    moduleDirectory 'source_mytest_singer'
+    moduleDirectory 'source_intercom_singer'
 }
 
 dependencies {
