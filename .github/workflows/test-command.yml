@@ -68,16 +68,16 @@ jobs:
       - run: |
           echo ${{ github.event.inputs.connector }} TODO temp to not waste time
       - name: Add Success Reaction
-          if: ${{ success() }}
-          uses: peter-evans/create-or-update-comment@v1
-          with:
-            comment-id: ${{ github.event.inputs.comment-id }}
-            body: |
-              > :white_check_mark: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+        if: success()
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          body: |
+            > :white_check_mark: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
       - name: Add Failure Reaction
-          if: ${{ failure() }} || ${{ cancelled() }}
-          uses: peter-evans/create-or-update-comment@v1
-          with:
-            comment-id: ${{ github.event.inputs.comment-id }}
-            body: |
-              > :x: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+        if: !success()
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          body: |
+            > :x: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
