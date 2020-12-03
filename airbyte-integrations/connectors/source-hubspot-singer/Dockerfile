@@ -13,7 +13,6 @@ LABEL io.airbyte.name=airbyte/source-hubspot-singer
 
 WORKDIR /airbyte/integration_code
 COPY $CODE_PATH ./$CODE_PATH
-COPY resources ./$CODE_PATH
 COPY setup.py ./
 RUN pip install ".[main]"
 

@@ -14,9 +14,9 @@ LABEL io.airbyte.name=airbyte/source-hubspot-singer-standard-test
 
 WORKDIR /airbyte/integration_code
 COPY secrets ./$CODE_PATH
-COPY resources ./$CODE_PATH
 COPY resourcesstandardtest ./$CODE_PATH
 COPY $CODE_PATH ./$CODE_PATH
+COPY source_hubspot_singer/*.json $CODE_PATH/
 COPY setup.py ./
 RUN pip install ".[standardtest]"
 
