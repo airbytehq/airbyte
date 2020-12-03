@@ -1,14 +1,14 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/postgres",
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/redshift",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Postgres Destination Spec",
+    "title": "Redshift Destination Spec",
     "type": "object",
-    "required": ["host", "port", "username", "database"],
+    "required": ["host", "port", "database", "username", "password"],
     "additionalProperties": false,
     "properties": {
       "host": {
-        "description": "Hostname of the database.",
+        "description": "Host Endpoint of the Redshift Cluster (must include the cluster-id, region and end with .redshift.amazonaws.com)",
         "type": "string"
       },
       "port": {
@@ -16,8 +16,8 @@
         "type": "integer",
         "minimum": 0,
         "maximum": 65536,
-        "default": 5432,
-        "examples": ["5432"]
+        "default": 5439,
+        "examples": ["5439"]
       },
       "username": {
         "description": "Username to use to access the database.",
