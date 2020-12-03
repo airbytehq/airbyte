@@ -61,7 +61,7 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractJdbcDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcDestination.class);
-  static final String COLUMN_NAME = "data";
+  protected static final String COLUMN_NAME = "data";
 
   private final String driverClass;
   private final SQLDialect dialect;
@@ -129,6 +129,14 @@ public abstract class AbstractJdbcDestination implements Destination {
     DestinationConsumerStrategy result = new TmpDestinationConsumer(destination, buffer, commit);
     result.setContext(writeConfigs);
     return result;
+  }
+
+  protected String getDefaultSchemaName(JsonNode config) {
+    if (config.has("schema")) {
+      return config.get("schema").asText();
+    } else {
+      return "public";
+    }
   }
 
   protected String createSchemaQuery(String schemaName) {
