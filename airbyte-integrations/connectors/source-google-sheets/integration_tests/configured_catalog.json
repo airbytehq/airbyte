@@ -1,46 +1,50 @@
 {
   "streams": [
-    {"stream": {
-      "name": "sheet1",
-      "json_schema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "type": "object",
-        "properties": {
-          "header1": {
-            "type": "string"
-          },
-          "irrelevant": {
-            "type": "string"
-          },
-          "header3": {
-            "type": "string"
-          },
-          "ignored": {
-            "type": "string"
+    {
+      "stream": {
+        "name": "sheet1",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "header1": {
+              "type": "string"
+            },
+            "irrelevant": {
+              "type": "string"
+            },
+            "header3": {
+              "type": "string"
+            },
+            "ignored": {
+              "type": "string"
+            }
           }
         }
       }
-    }},
-    {"stream": {
-      "name": "sheet2",
-      "json_schema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "type": "object",
-        "properties": {
-          "header1": {
-            "type": "string"
-          },
-          "irrelevant": {
-            "type": "string"
-          },
-          "header3": {
-            "type": "string"
-          },
-          "ignored": {
-            "type": "string"
+    },
+    {
+      "stream": {
+        "name": "sheet2",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "header1": {
+              "type": "string"
+            },
+            "irrelevant": {
+              "type": "string"
+            },
+            "header3": {
+              "type": "string"
+            },
+            "ignored": {
+              "type": "string"
+            }
           }
         }
       }
-    }}
+    }
   ]
 }
