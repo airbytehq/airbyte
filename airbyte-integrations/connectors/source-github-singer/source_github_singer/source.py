@@ -23,8 +23,8 @@ SOFTWARE.
 """
 
 import requests
-from airbyte_protocol import AirbyteConnectionStatus, Status, AirbyteCatalog
-from base_python import AirbyteLogger, ConfigContainer, CatalogHelper
+from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, Status
+from base_python import AirbyteLogger, CatalogHelper, ConfigContainer
 from base_singer import SingerSource
 
 
@@ -51,7 +51,6 @@ class SourceGithubSinger(SingerSource):
     def discover(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteCatalog:
         catalog = super().discover(logger, config_container)
         return CatalogHelper.coerce_catalog_as_full_refresh(catalog)
-
 
     def read_cmd(self, logger, config_path, catalog_path, state_path=None) -> str:
         config_option = f"--config {config_path}"

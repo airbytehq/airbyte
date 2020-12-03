@@ -83,7 +83,7 @@ class SourceHubspotSinger(SingerSource):
         config_option = f"--config {config_path}"
         properties_option = f"--properties {catalog_path}"
         # state_option = f"--state {state_path}" if state_path else ""
-        # TODO we don't pass in state to coerce this source to behave in a fullrefresh manner. See #1178 for context. 
+        # TODO we don't pass in state to coerce this source to behave in a fullrefresh manner. See #1178 for context.
         return f"tap-hubspot {config_option} {properties_option} "
 
     def transform_config(self, raw_config):
