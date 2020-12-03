@@ -43,7 +43,7 @@ public class Names {
         .replaceAll(NON_ALPHANUMERIC_AND_UNDERSCORE_PATTERN, "_");
   }
 
-  public static String concatNames(String name, String s) {
+  public static String concatQuotedNames(String name, String s) {
     if (name.endsWith("\"")) {
       return name.substring(0, name.length() - 1) + s + "\"";
     } else {

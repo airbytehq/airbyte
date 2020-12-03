@@ -25,13 +25,6 @@
         "type": "string",
         "examples": ["public"],
         "default": "public"
-      },
-      "basic_normalization": {
-        "type": "boolean",
-        "default": false,
-        "description": "Whether or not to normalize the data in the destination. See <a href=\"https://docs.airbyte.io/architecture/basic-normalization.md\">basic normalization</a> for more details.",
-        "title": "Basic Normalization",
-        "examples": [true, false]
       }
     }
   }

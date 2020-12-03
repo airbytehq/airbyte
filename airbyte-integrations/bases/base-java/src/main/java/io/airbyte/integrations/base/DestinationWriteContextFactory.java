@@ -32,20 +32,20 @@ import io.airbyte.protocol.models.SyncMode;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DestinationConfiguration {
+public class DestinationWriteContextFactory {
 
   private final SQLNamingResolvable namingResolver;
 
-  public DestinationConfiguration(SQLNamingResolvable namingResolver) {
+  public DestinationWriteContextFactory(SQLNamingResolvable namingResolver) {
     this.namingResolver = namingResolver;
   }
 
-  public Map<String, DestinationWriteContext> getDestinationWriteContext(JsonNode config, ConfiguredAirbyteCatalog catalog) {
+  public Map<String, DestinationWriteContext> build(JsonNode config, ConfiguredAirbyteCatalog catalog) {
     Map<String, DestinationWriteContext> result = new HashMap<>();
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getStream().getName();
-      final String schemaName = getNamingResolver().getSchemaName(getSchemaName(config, stream));
-      final String tableName = Names.concatNames(getNamingResolver().getTableName(streamName), "_raw");
+      final String schemaName = getNamingResolver().getIdentifier(getSchemaName(config, stream));
+      final String tableName = Names.concatQuotedNames(getNamingResolver().getIdentifier(streamName), "_raw");
       final SyncMode syncMode = stream.getSyncMode() != null ? stream.getSyncMode() : SyncMode.FULL_REFRESH;
       result.put(streamName, new DestinationWriteContext(schemaName, tableName, syncMode));
     }
@@ -53,6 +53,8 @@ public class DestinationConfiguration {
   }
 
   protected String getSchemaName(JsonNode config, ConfiguredAirbyteStream stream) {
+    // do we need to retrieve another more specific schema from this stream?
+
     if (config.has("schema")) {
       return config.get("schema").asText();
     } else {

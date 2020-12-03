@@ -44,16 +44,6 @@ public class StandardSQLNaming implements SQLNamingResolvable {
     return convertStreamName(streamName + "_" + Instant.now().toEpochMilli());
   }
 
-  @Override
-  public String getSchemaName(String schemaName) {
-    return convertStreamName(schemaName);
-  }
-
-  @Override
-  public String getTableName(String streamName) {
-    return convertStreamName(streamName);
-  }
-
   protected String convertStreamName(String input) {
     return Names.toAlphanumericAndUnderscore(input);
   }

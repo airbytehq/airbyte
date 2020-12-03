@@ -24,7 +24,9 @@
 
 package io.airbyte.integrations.base;
 
-public interface InsertTableOperations extends TableCreationOperations {
+public interface InsertTableOperations {
+
+  void createDestinationTable(String schemaName, String tmpTableName) throws Exception;
 
   void truncateTable(String schemaName, String tableName) throws Exception;
 

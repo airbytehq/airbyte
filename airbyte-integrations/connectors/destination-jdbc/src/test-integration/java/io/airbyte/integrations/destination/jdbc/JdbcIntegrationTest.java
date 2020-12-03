@@ -44,7 +44,7 @@ public class JdbcIntegrationTest extends TestDestination {
 
   private static final String RAW_DATA_COLUMN = "data";
   private PostgreSQLContainer<?> db;
-  private ExtendedSQLNaming namingResolver = new ExtendedSQLNaming();
+  private final ExtendedSQLNaming namingResolver = new ExtendedSQLNaming();
 
   @Override
   protected String getImageName() {
@@ -87,7 +87,7 @@ public class JdbcIntegrationTest extends TestDestination {
 
   @Override
   protected boolean implementsBasicNormalization() {
-    return true;
+    return false;
   }
 
   @Override

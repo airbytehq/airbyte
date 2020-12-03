@@ -54,8 +54,4 @@ public interface SQLNamingResolvable {
    */
   String getTmpTableName(String name);
 
-  String getSchemaName(String schemaName);
-
-  String getTableName(String streamName);
-
 }

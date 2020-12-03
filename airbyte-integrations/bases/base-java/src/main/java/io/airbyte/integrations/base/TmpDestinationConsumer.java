@@ -64,7 +64,7 @@ public class TmpDestinationConsumer extends FailureTrackingConsumer<AirbyteMessa
 
       final String schemaName = config.getOutputNamespaceName();
       final String tableName = config.getOutputTableName();
-      final String tmpTableName = Names.concatNames(tableName, "_" + Instant.now().toEpochMilli());
+      final String tmpTableName = Names.concatQuotedNames(tableName, "_" + Instant.now().toEpochMilli());
 
       DestinationWriteContext tmpConfig = new DestinationWriteContext(schemaName, tmpTableName, SyncMode.FULL_REFRESH);
       tmpConfigs.put(entry.getKey(), tmpConfig);

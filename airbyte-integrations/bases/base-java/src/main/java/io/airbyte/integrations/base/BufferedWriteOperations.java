@@ -28,6 +28,6 @@ import io.airbyte.commons.lang.CloseableQueue;
 
 public interface BufferedWriteOperations {
 
-  void insertBufferedRecords(int batchSize, CloseableQueue<byte[]> writeBuffer, String schemaName, String tableName) throws Exception;
+  void insertBufferedRecords(int batchSize, CloseableQueue<byte[]> writeBuffer, String namespace, String streamName) throws Exception;
 
 }

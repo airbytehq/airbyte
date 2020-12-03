@@ -45,6 +45,9 @@ public class TruncateInsertIntoConsumer implements TmpToFinalTable {
 
   @Override
   public void execute() throws Exception {
+    if (copyConfigs.isEmpty()) {
+      throw new RuntimeException("copyConfigs is empty, did you setContext() beforehand?");
+    }
     for (Entry<String, DestinationCopyContext> entry : copyConfigs.entrySet()) {
       final DestinationCopyContext config = entry.getValue();
       final String schemaName = config.getOutputNamespaceName();

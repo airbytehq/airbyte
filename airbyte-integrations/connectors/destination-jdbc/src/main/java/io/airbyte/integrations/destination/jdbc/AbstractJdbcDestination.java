@@ -35,10 +35,10 @@ import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.BufferedStreamConsumer;
 import io.airbyte.integrations.base.BufferedWriteOperations;
 import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.DestinationConfiguration;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.DestinationConsumerStrategy;
 import io.airbyte.integrations.base.DestinationWriteContext;
+import io.airbyte.integrations.base.DestinationWriteContextFactory;
 import io.airbyte.integrations.base.InsertTableOperations;
 import io.airbyte.integrations.base.SQLNamingResolvable;
 import io.airbyte.integrations.base.TableCreationOperations;
@@ -58,7 +58,7 @@ import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class AbstractJdbcDestination implements Destination, TableCreationOperations, InsertTableOperations, BufferedWriteOperations {
+public abstract class AbstractJdbcDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcDestination.class);
   static final String COLUMN_NAME = "data";
@@ -66,7 +66,6 @@ public abstract class AbstractJdbcDestination implements Destination, TableCreat
   private final String driverClass;
   private final SQLDialect dialect;
   private final SQLNamingResolvable namingResolver;
-  private Database database;
 
   public AbstractJdbcDestination(final String driverClass, final SQLDialect dialect, final SQLNamingResolvable namingResolver) {
     this.driverClass = driverClass;
@@ -111,7 +110,7 @@ public abstract class AbstractJdbcDestination implements Destination, TableCreat
 
   public abstract JsonNode toJdbcConfig(JsonNode config);
 
-  protected String getCurrentDatabaseName(DSLContext ctx) {
+  private String getCurrentDatabaseName(DSLContext ctx) {
     return ctx.select(currentSchema()).fetch().get(0).getValue(0, String.class);
   }
 
@@ -122,64 +121,74 @@ public abstract class AbstractJdbcDestination implements Destination, TableCreat
 
   @Override
   public DestinationConsumer<AirbyteMessage> write(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
-    database = getDatabase(config);
     final Map<String, DestinationWriteContext> writeConfigs =
-        new DestinationConfiguration(getNamingResolver()).getDestinationWriteContext(config, catalog);
-    DestinationConsumerStrategy buffer = new BufferedStreamConsumer(this, catalog);
-    TmpToFinalTable commit = new TruncateInsertIntoConsumer(this);
-    DestinationConsumerStrategy result = new TmpDestinationConsumer(this, buffer, commit);
+        new DestinationWriteContextFactory(getNamingResolver()).build(config, catalog);
+    final DestinationImpl destination = new DestinationImpl(getDatabase(config));
+    DestinationConsumerStrategy buffer = new BufferedStreamConsumer(destination, catalog);
+    TmpToFinalTable commit = new TruncateInsertIntoConsumer(destination);
+    DestinationConsumerStrategy result = new TmpDestinationConsumer(destination, buffer, commit);
     result.setContext(writeConfigs);
     return result;
   }
 
-  @Override
-  public void createSchema(String schemaName) throws SQLException {
-    database.query(ctx -> ctx.execute(createSchemaQuery(schemaName)));
-  }
-
-  public String createSchemaQuery(String schemaName) {
+  protected String createSchemaQuery(String schemaName) {
     return String.format("CREATE SCHEMA IF NOT EXISTS %s;\n", schemaName);
   }
 
-  @Override
-  public void createDestinationTable(String schemaName, String tableName) throws SQLException {
-    database.query(ctx -> ctx.execute(createDestinationTableQuery(schemaName, tableName)));
-  }
+  protected abstract String createDestinationTableQuery(String schemaName, String tableName);
 
-  public abstract String createDestinationTableQuery(String schemaName, String tableName);
-
-  @Override
-  public void dropDestinationTable(String schemaName, String tableName) throws SQLException {
-    database.query(ctx -> ctx.execute(dropDestinationTableQuery(schemaName, tableName)));
-  }
-
-  public String dropDestinationTableQuery(String schemaName, String tableName) {
+  protected String dropDestinationTableQuery(String schemaName, String tableName) {
     return String.format("DROP TABLE IF EXISTS %s.%s;\n", schemaName, tableName);
   }
 
-  @Override
-  public void truncateTable(String schemaName, String tableName) throws Exception {
-    database.query(ctx -> ctx.execute(truncateTableQuery(schemaName, tableName)));
-  }
-
-  public String truncateTableQuery(String schemaName, String tableName) {
+  protected String truncateTableQuery(String schemaName, String tableName) {
     return String.format("TRUNCATE TABLE %s.%s;\n", schemaName, tableName);
   }
 
-  @Override
-  public void insertIntoFromSelect(String schemaName, String srcTableName, String dstTableName) throws Exception {
-    database.query(ctx -> ctx.execute(insertIntoFromSelectQuery(schemaName, srcTableName, dstTableName)));
-  }
-
-  public String insertIntoFromSelectQuery(String schemaName, String srcTableName, String dstTableName) {
+  protected String insertIntoFromSelectQuery(String schemaName, String srcTableName, String dstTableName) {
     return String.format("INSERT INTO %s.%s SELECT * FROM %s.%s;\n", schemaName, dstTableName, schemaName, srcTableName);
   }
 
-  @Override
-  public void insertBufferedRecords(int batchSize, CloseableQueue<byte[]> writeBuffer, String schemaName, String tableName) throws Exception {
-    database.query(ctx -> ctx.execute(insertBufferedRecordsQuery(batchSize, writeBuffer, schemaName, tableName)));
-  }
+  protected abstract String insertBufferedRecordsQuery(int batchSize, CloseableQueue<byte[]> writeBuffer, String schemaName, String tableName);
 
-  public abstract String insertBufferedRecordsQuery(int batchSize, CloseableQueue<byte[]> writeBuffer, String schemaName, String tableName);
+  private class DestinationImpl implements TableCreationOperations, InsertTableOperations, BufferedWriteOperations {
+
+    private final Database database;
+
+    public DestinationImpl(Database database) {
+      this.database = database;
+    }
+
+    @Override
+    public void createSchema(String schemaName) throws Exception {
+      database.query(ctx -> ctx.execute(createSchemaQuery(schemaName)));
+    }
+
+    @Override
+    public void createDestinationTable(String schemaName, String tableName) throws SQLException {
+      database.query(ctx -> ctx.execute(createDestinationTableQuery(schemaName, tableName)));
+    }
+
+    @Override
+    public void insertBufferedRecords(int batchSize, CloseableQueue<byte[]> writeBuffer, String schemaName, String tableName) throws Exception {
+      database.query(ctx -> ctx.execute(insertBufferedRecordsQuery(batchSize, writeBuffer, schemaName, tableName)));
+    }
+
+    @Override
+    public void truncateTable(String schemaName, String tableName) throws Exception {
+      database.query(ctx -> ctx.execute(truncateTableQuery(schemaName, tableName)));
+    }
+
+    @Override
+    public void insertIntoFromSelect(String schemaName, String srcTableName, String dstTableName) throws Exception {
+      database.query(ctx -> ctx.execute(insertIntoFromSelectQuery(schemaName, srcTableName, dstTableName)));
+    }
+
+    @Override
+    public void dropDestinationTable(String schemaName, String tableName) throws SQLException {
+      database.query(ctx -> ctx.execute(dropDestinationTableQuery(schemaName, tableName)));
+    }
+
+  }
 
 }
