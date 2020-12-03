@@ -24,28 +24,14 @@
 
 package io.airbyte.server.handlers;
 
-import com.google.common.annotations.VisibleForTesting;
-import io.airbyte.api.model.AttemptInfoRead;
-import io.airbyte.api.model.AttemptRead;
-import io.airbyte.api.model.AttemptStatus;
-import io.airbyte.api.model.JobConfigType;
 import io.airbyte.api.model.JobIdRequestBody;
 import io.airbyte.api.model.JobInfoRead;
 import io.airbyte.api.model.JobListRequestBody;
-import io.airbyte.api.model.JobRead;
 import io.airbyte.api.model.JobReadList;
-import io.airbyte.api.model.JobStatus;
 import io.airbyte.api.model.JobWithAttemptsRead;
-import io.airbyte.api.model.LogRead;
 import io.airbyte.commons.enums.Enums;
-import io.airbyte.commons.io.IOs;
 import io.airbyte.config.JobConfig;
-import io.airbyte.config.JobOutput;
-import io.airbyte.config.StandardSyncOutput;
-import io.airbyte.config.StandardSyncSummary;
-import io.airbyte.scheduler.Attempt;
 import io.airbyte.scheduler.Job;
-import io.airbyte.scheduler.ScopeHelper;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.converters.JobConverter;
 import java.io.IOException;
@@ -75,6 +61,7 @@ public class JobHistoryHandler {
   public JobInfoRead getJobInfo(JobIdRequestBody jobIdRequestBody) throws IOException {
     final Job job = jobPersistence.getJob(jobIdRequestBody.getId());
 
-    return JobConverter.getJobInfo(job);
+    return JobConverter.getJobInfoRead(job);
   }
+
 }

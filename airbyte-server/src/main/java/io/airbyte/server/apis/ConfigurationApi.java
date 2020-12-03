@@ -48,7 +48,6 @@ import io.airbyte.api.model.JobIdRequestBody;
 import io.airbyte.api.model.JobInfoRead;
 import io.airbyte.api.model.JobListRequestBody;
 import io.airbyte.api.model.JobReadList;
-import io.airbyte.api.model.JobStatusRead;
 import io.airbyte.api.model.SlugRequestBody;
 import io.airbyte.api.model.SourceCreate;
 import io.airbyte.api.model.SourceDefinitionCreate;

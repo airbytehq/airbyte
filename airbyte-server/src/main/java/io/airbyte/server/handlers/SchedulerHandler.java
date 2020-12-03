@@ -241,7 +241,7 @@ public class SchedulerHandler {
         .put("job_id", jobId)
         .build());
 
-    return JobConverter.getJobInfo(job);
+    return JobConverter.getJobInfoRead(job);
   }
 
   // todo (cgardens) - can be a no op while UI is being developed. need to figure out the

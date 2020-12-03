@@ -40,8 +40,6 @@ import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.JobInfoRead;
-import io.airbyte.api.model.JobStatusRead;
-import io.airbyte.api.model.JobStatusReadStatus;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
@@ -303,7 +301,7 @@ class SchedulerHandlerTest {
 
     final JobInfoRead jobStatusRead = schedulerHandler.syncConnection(request);
 
-    assertEquals( io.airbyte.api.model.JobStatus.SUCCEEDED, jobStatusRead.getJob().getStatus());
+    assertEquals(io.airbyte.api.model.JobStatus.SUCCEEDED, jobStatusRead.getJob().getStatus());
     verify(configRepository).getStandardSync(standardSync.getConnectionId());
     verify(configRepository).getSourceConnection(standardSync.getSourceId());
     verify(configRepository).getDestinationConnection(standardSync.getDestinationId());
