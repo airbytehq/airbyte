@@ -24,7 +24,7 @@ SOFTWARE.
 
 from typing import List
 
-from airbyte_protocol import AirbyteCatalog, ConnectorSpecification
+from airbyte_protocol import ConfiguredAirbyteCatalog, ConnectorSpecification
 
 
 class StandardSourceTestIface(object):
@@ -37,7 +37,7 @@ class StandardSourceTestIface(object):
     def get_config(self) -> object:
         raise Exception("Not Implemented")
 
-    def get_catalog(self) -> AirbyteCatalog:
+    def get_catalog(self) -> ConfiguredAirbyteCatalog:
         raise Exception("Not Implemented")
 
     def get_regex_tests(self) -> List[str]:
