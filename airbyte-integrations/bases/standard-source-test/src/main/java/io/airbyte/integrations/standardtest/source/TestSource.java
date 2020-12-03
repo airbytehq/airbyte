@@ -330,9 +330,9 @@ public abstract class TestSource {
   }
 
   private boolean sourceSupportsIncremental() throws Exception {
-    AirbyteCatalog catalog = runDiscover().getOutput().get().getCatalog();
-    for (AirbyteStream stream : catalog.getStreams()) {
-      if (stream.getSupportedSyncModes().contains(INCREMENTAL)) {
+    ConfiguredAirbyteCatalog catalog = getConfiguredCatalog();
+    for (ConfiguredAirbyteStream stream : catalog.getStreams()) {
+      if (stream.getStream().getSupportedSyncModes().contains(INCREMENTAL)) {
         return true;
       }
     }
