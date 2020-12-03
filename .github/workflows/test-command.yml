@@ -5,6 +5,10 @@ on:
       connector:
         description: 'Airbyte Connector'
         required: true
+      comment-id:
+        description: 'The comment-id of the slash command. Used to update the comment with the status.'
+        required: false
+        default: 738450400 # TODO remove after testing
 
 jobs:
   integration_test:
@@ -25,9 +29,10 @@ jobs:
         if: steps.regex.outputs.first_match != github.event.inputs.connector
         run: echo "The connector provided has an invalid format!" && exit 1
       - name: Link comment to workflow run
+        if: github.event.inputs.comment-id
         uses: peter-evans/create-or-update-comment@v1
         with:
-          comment-id: ${{ github.event.comment.id }}
+          comment-id: ${{ github.event.inputs.comment-id }}
           body: |
             > https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
       - name: Checkout Airbyte
