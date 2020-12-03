@@ -184,7 +184,7 @@ public abstract class TestSource {
   /**
    * Verify that when the integrations returns a valid spec.
    */
-  //  @Test
+  @Test
   public void testGetSpec() throws Exception {
     final OutputAndStatus<StandardGetSpecOutput> output = runSpec();
     assertTrue(output.getOutput().isPresent());
