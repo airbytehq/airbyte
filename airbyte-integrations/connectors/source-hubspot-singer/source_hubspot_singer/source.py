@@ -23,8 +23,8 @@ SOFTWARE.
 """
 
 import requests
-from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, Status
-from base_python import AirbyteLogger, CatalogHelper, ConfigContainer
+from airbyte_protocol import AirbyteConnectionStatus, Status, AirbyteCatalog
+from base_python import AirbyteLogger, ConfigContainer, CatalogHelper
 from base_singer import SingerSource
 
 
@@ -83,7 +83,11 @@ class SourceHubspotSinger(SingerSource):
         config_option = f"--config {config_path}"
         properties_option = f"--properties {catalog_path}"
         # state_option = f"--state {state_path}" if state_path else ""
+<<<<<<< HEAD
         # TODO we don't pass in state to coerce this source to behave in a fullrefresh manner. See #1178 for context.
+=======
+        # TODO we don't pass in state to coerce this source to behave in a fullrefresh manner. See #1178 for context. 
+>>>>>>> 7280d92735a663368fba77d6ed6982e05f5050e1
         return f"tap-hubspot {config_option} {properties_option} "
 
     def transform_config(self, raw_config):
