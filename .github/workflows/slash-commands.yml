@@ -6,6 +6,11 @@ jobs:
   slashCommandDispatch:
     runs-on: ubuntu-latest
     steps:
+      - name: Get PR Ref
+        id: getref
+        run: |
+          echo "::set-output name=ref::$(curl ${{ github.event.issue.pull_request.url }} | jq -r '.head.ref')"
+
       - name: Slash Command Dispatch
         uses: peter-evans/slash-command-dispatch@v2
         with:
@@ -13,5 +18,5 @@ jobs:
           commands: |
             test
           static-args: |
-            ref=${{ github.event.issue.pull_request.head.ref }}
+            ref=${{ steps.getref.outputs.ref }}
           dispatch-type: workflow
