@@ -26,18 +26,20 @@ from .client import BaseClient
 from .integration import AirbyteSpec, ConfigContainer, Destination, Integration, Source
 from .logger import AirbyteLogger
 from .source import BaseSource
+from .catalog_helpers import CatalogHelper
 
 # Must be the last one because the way we load the connector module creates a circular
 # dependency and models might not have been loaded yet
 from .entrypoint import AirbyteEntrypoint  # noqa isort:skip
 
 __all__ = [
+    "AirbyteLogger",
+    "AirbyteSpec",
     "BaseClient",
     "BaseSource",
-    "AirbyteSpec",
+    "CatalogHelper",
     "ConfigContainer",
-    "Integration",
-    "Source",
     "Destination",
-    "AirbyteLogger",
+    "Integration",
+    "Source"
 ]
