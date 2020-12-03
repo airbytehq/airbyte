@@ -34,6 +34,7 @@
     * [Slack](integrations/sources/slack.md)
     * [Stripe](integrations/sources/stripe.md)
     * [Twilio](integrations/sources/twilio.md)
+    * [Zendesk Support](integrations/sources/zendesk.md)
   * [Destinations](integrations/destinations/README.md)
     * [BigQuery](integrations/destinations/bigquery.md)
     * [Local CSV](integrations/destinations/local-csv.md)
