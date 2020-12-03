@@ -9,21 +9,26 @@ on:
       connector:
         description: 'Airbyte Connector'
         required: true
-        default: 'all'
 
 jobs:
   integration_test:
     runs-on: ubuntu-latest
     steps:
+      - name: Set connector value
+        id: connector
+        run: |
+          SUBMITTED_CONNECTOR=${{ github.event.inputs.connector }}
+          CONNECTOR=${SUBMITTED_CONNECTOR:-all}
+          echo "::set-output name=value::CONNECTOR"
       - name: Search for valid integration name format
         id: regex
         uses: AsasInnab/regex-action@v1
         with:
           regex_pattern: '^[a-zA-Z0-9-_]+$'
           regex_flags: 'i' # required to be set for this plugin
-          search_string: ${{ github.event.inputs.connector }}
+          search_string: ${{ steps.connector.outputs.value }}
       - name: Validate input workflow format
-        if: steps.regex.outputs.first_match != github.event.inputs.connector
+        if: steps.regex.outputs.first_match != steps.connector.outputs.value
         run: echo "The connector provided has an invalid format!" && exit 1
       - name: Checkout Airbyte
         uses: actions/checkout@v2
@@ -56,4 +61,4 @@ jobs:
           AWS_REDSHIFT_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_REDSHIFT_INTEGRATION_TEST_CREDS }}
           MAILCHIMP_TEST_CREDS: ${{ secrets.MAILCHIMP_TEST_CREDS }}
       - run: |
-          ./tools/bin/ci_integration_test.sh ${{ github.event.inputs.connector }}
+          ./tools/bin/ci_integration_test.sh ${{ steps.connector.outputs.value }}
