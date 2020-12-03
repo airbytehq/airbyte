@@ -1,0 +1,54 @@
+# Intercom
+
+## Overview
+
+The Intercom source supports Full Refresh syncs. That is, every time a sync is run, 
+Airbyte will copy all rows in the tables and columns you set up for replication into the destination in a new table.
+
+This Hubspot source wraps the [Singer Intercom Tap](https://github.com/singer-io/tap-intercom).
+
+### Output schema
+
+Several output streams are available from this source:
+
+* [Admins](https://developers.intercom.com/intercom-api-reference/reference#list-admins)
+* [Companies](https://developers.intercom.com/intercom-api-reference/reference#list-companies)
+* [Conversations](https://developers.intercom.com/intercom-api-reference/reference#list-conversations)
+    * [Conversation Parts](https://developers.intercom.com/intercom-api-reference/reference#get-a-single-conversation)
+* [Data Attributes](https://developers.intercom.com/intercom-api-reference/reference#data-attributes)
+    * [Customer Attributes](https://developers.intercom.com/intercom-api-reference/reference#list-customer-data-attributes)
+    * [Company Attributes](https://developers.intercom.com/intercom-api-reference/reference#list-company-data-attributes)
+* [Leads](https://developers.intercom.com/intercom-api-reference/reference#list-leads)
+* [Segments](https://developers.intercom.com/intercom-api-reference/reference#list-segments)
+    * [Company Segments](https://developers.intercom.com/intercom-api-reference/reference#list-segments)
+* [Tags](https://developers.intercom.com/intercom-api-reference/reference#list-tags-for-an-app)
+* [Teams](https://developers.intercom.com/intercom-api-reference/reference#list-teams)
+* [Users](https://developers.intercom.com/intercom-api-reference/reference#list-users)
+
+If there are more endpoints you'd like Airbyte to support, please 
+[create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
+
+### Features
+
+| Feature | Supported? |
+| :--- | :--- |
+| Full Refresh Sync | Yes |
+| Incremental Sync | Yes |
+| Replicate Incremental Deletes | No |
+| SSL connection | Yes |
+
+### Performance considerations
+
+The Intercom connector should not run into Intercom API limitations under normal usage. 
+Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate 
+limit issues that are not automatically retried successfully.
+
+## Getting started
+
+### Requirements
+
+* Intercom API Key
+
+### Setup guide
+
+Please read [How to find your API key](https://support.freshdesk.com/support/solutions/articles/215517).

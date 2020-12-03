@@ -30,6 +30,7 @@ from tap_intercom.client import IntercomClient, IntercomError
 
 class BaseSingerSource(SingerSource):
     tap_cmd = None
+    tap_name = None
 
     def discover_cmd(self, logger: AirbyteLogger, config_path: str) -> str:
         return f"{self.tap_cmd} --config {config_path} --discover"

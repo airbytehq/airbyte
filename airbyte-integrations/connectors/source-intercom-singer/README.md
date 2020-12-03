@@ -4,7 +4,6 @@ This is the repository for the Intercom source connector, based on a Singer tap.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/intercom).
 
 ## Local development
-
 ### Prerequisites
 **To iterate on this connector, make sure to complete this prerequisites section.**
 
@@ -29,7 +28,6 @@ See `sample_files/sample_config.json` for a sample config file.
 
 **If you are an Airbyte core member**, copy the credentials in RPass under the secret name `source-freshdesk-integration-test-config`
 and place them into `secrets/config.json`.
-
 
 ### Locally running the connector
 ```
