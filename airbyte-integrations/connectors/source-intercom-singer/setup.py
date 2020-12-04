@@ -30,11 +30,7 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=[
-        "airbyte-protocol",
-        "base-python",
-        "tap-intercom==1.1.1"
-    ],
+    install_requires=["airbyte-protocol", "base-python", "tap-intercom==1.1.1"],
     package_data={"": ["*.json"]},
     setup_requires=["pytest-runner"],
     tests_require=["pytest"],

@@ -36,13 +36,8 @@ class BaseSingerSource(SingerSource):
     def discover_cmd(self, logger: AirbyteLogger, config_path: str) -> str:
         return f"{self.tap_cmd} --config {config_path} --discover"
 
-    def read_cmd(self, logger: AirbyteLogger, config_path: str,
-                 catalog_path: str, state_path: str = None) -> str:
-        args = {
-            "--config": config_path,
-            "--catalog": catalog_path,
-            "--state": state_path
-        }
+    def read_cmd(self, logger: AirbyteLogger, config_path: str, catalog_path: str, state_path: str = None) -> str:
+        args = {"--config": config_path, "--catalog": catalog_path, "--state": state_path}
         cmd = " ".join([f"{k} {v}" for k, v in args.items() if v is not None])
 
         return f"{self.tap_cmd} {cmd}"
@@ -80,7 +75,7 @@ class SourceIntercomSinger(BaseSingerSource):
         }
 
     def try_connect(self, logger: AirbyteLogger, config: dict):
-        client = IntercomClient(user_agent=config.get("user_agent", "airbyte"), access_token=config["api_key"])
+        client = IntercomClient(user_agent=config["user_agent"], access_token=config["api_key"])
         ok = client.check_access_token()
         if not ok:
             raise IntercomError(f"Got an empty response from {self.tap_name}, check your permissions")
