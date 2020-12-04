@@ -112,14 +112,6 @@ public class SnowflakeDestination implements Destination {
     return String.format("DROP TABLE IF EXISTS %s.%s;\n", schemaName, tableName);
   }
 
-  protected String truncateTableQuery(String schemaName, String tableName) {
-    return String.format("TRUNCATE TABLE %s.%s;\n", schemaName, tableName);
-  }
-
-  protected String insertIntoFromSelectQuery(String schemaName, String srcTableName, String dstTableName) {
-    return String.format("INSERT INTO %s.%s SELECT * FROM %s.%s;\n", schemaName, dstTableName, schemaName, srcTableName);
-  }
-
   public static void main(String[] args) throws Exception {
     final Destination destination = new SnowflakeDestination();
     LOGGER.info("starting destination: {}", SnowflakeDestination.class);
@@ -146,13 +138,19 @@ public class SnowflakeDestination implements Destination {
     }
 
     @Override
-    public void truncateTable(String schemaName, String tableName) throws SQLException, InterruptedException {
-      SnowflakeDatabase.executeSync(connectionFactory, truncateTableQuery(schemaName, tableName));
+    public String truncateTableQuery(String schemaName, String tableName) {
+      return String.format("TRUNCATE TABLE %s.%s;\n", schemaName, tableName);
     }
 
     @Override
-    public void insertIntoFromSelect(String schemaName, String srcTableName, String dstTableName) throws SQLException, InterruptedException {
-      SnowflakeDatabase.executeSync(connectionFactory, insertIntoFromSelectQuery(schemaName, srcTableName, dstTableName));
+    public String insertIntoFromSelectQuery(String schemaName, String srcTableName, String dstTableName) {
+      return String.format("INSERT INTO %s.%s SELECT * FROM %s.%s;\n", schemaName, dstTableName, schemaName, srcTableName);
+    }
+
+    @Override
+    public void executeTransaction(String queries) throws Exception {
+      String renameQuery = "BEGIN;\n" + queries + "COMMIT;";
+      SnowflakeDatabase.executeSync(connectionFactory, renameQuery, true, rs -> null);
     }
 
     @Override

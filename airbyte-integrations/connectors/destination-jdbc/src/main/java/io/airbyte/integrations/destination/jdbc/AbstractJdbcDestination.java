@@ -134,14 +134,6 @@ public abstract class AbstractJdbcDestination implements Destination {
     return String.format("DROP TABLE IF EXISTS %s.%s;\n", schemaName, tableName);
   }
 
-  protected String truncateTableQuery(String schemaName, String tableName) {
-    return String.format("TRUNCATE TABLE %s.%s;\n", schemaName, tableName);
-  }
-
-  protected String insertIntoFromSelectQuery(String schemaName, String srcTableName, String dstTableName) {
-    return String.format("INSERT INTO %s.%s SELECT * FROM %s.%s;\n", schemaName, dstTableName, schemaName, srcTableName);
-  }
-
   protected abstract String insertBufferedRecordsQuery(int batchSize, CloseableQueue<byte[]> writeBuffer, String schemaName, String tableName);
 
   private class DestinationImpl implements SqlDestinationOperations {
@@ -168,13 +160,18 @@ public abstract class AbstractJdbcDestination implements Destination {
     }
 
     @Override
-    public void truncateTable(String schemaName, String tableName) throws Exception {
-      database.query(ctx -> ctx.execute(truncateTableQuery(schemaName, tableName)));
+    public String truncateTableQuery(String schemaName, String tableName) {
+      return String.format("TRUNCATE TABLE %s.%s;\n", schemaName, tableName);
     }
 
     @Override
-    public void insertIntoFromSelect(String schemaName, String srcTableName, String dstTableName) throws Exception {
-      database.query(ctx -> ctx.execute(insertIntoFromSelectQuery(schemaName, srcTableName, dstTableName)));
+    public String insertIntoFromSelectQuery(String schemaName, String srcTableName, String dstTableName) {
+      return String.format("INSERT INTO %s.%s SELECT * FROM %s.%s;\n", schemaName, dstTableName, schemaName, srcTableName);
+    }
+
+    @Override
+    public void executeTransaction(String queries) throws Exception {
+      database.transaction(ctx -> ctx.execute(queries));
     }
 
     @Override
