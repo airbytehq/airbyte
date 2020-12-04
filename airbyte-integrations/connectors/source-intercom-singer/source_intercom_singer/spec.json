@@ -10,7 +10,7 @@
       "access_token": {
         "type": "string",
         "description": "Intercom Access Token. See the <a href=\"https://docs.airbyte.io/integrations/sources/intercom\">docs</a> for more information on how to obtain this key.",
-        "examples": ["1234567890ABCDEFG"]
+        "airbyte_secret": true
       },
       "start_date": {
         "type": "string",

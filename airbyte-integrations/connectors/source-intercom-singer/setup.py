@@ -32,14 +32,14 @@ setup(
     packages=find_packages(),
     install_requires=[
         "airbyte-protocol",
-        "base-singer",
         "base-python",
-        "tap-intercom @ git+https://github.com/singer-io/tap-intercom@v1.1.1"
+        "tap-intercom==1.1.1"
     ],
     package_data={"": ["*.json"]},
     setup_requires=["pytest-runner"],
     tests_require=["pytest"],
     extras_require={
+        "main": ["base-singer"],
         "tests": ["airbyte_python_test", "pytest"],
     },
 )

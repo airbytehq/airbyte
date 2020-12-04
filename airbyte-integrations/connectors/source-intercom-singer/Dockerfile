@@ -4,7 +4,6 @@ FROM airbyte/integration-base-singer:dev
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
     && apt-get install -y bash \
-    && apt-get install -y git \
     && apt-get install -y gcc \
     && rm -rf /var/lib/apt/lists/*
 
