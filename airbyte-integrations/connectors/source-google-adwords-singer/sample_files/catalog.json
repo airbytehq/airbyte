@@ -1,6 +1,6 @@
 {
   "streams": [
-    {
+    {"stream": {
       "name": "accounts",
       "json_schema": {
         "properties": {
@@ -9,6 +9,6 @@
           }
         }
       }
-    }
+    }}
   ]
 }
