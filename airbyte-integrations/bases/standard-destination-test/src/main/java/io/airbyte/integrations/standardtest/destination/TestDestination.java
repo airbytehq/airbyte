@@ -139,7 +139,7 @@ public abstract class TestDestination {
 
   /**
    * Detects if a destination implements incremental mode from the spec.json that should include
-   * 'incrementalSupport' = true
+   * 'supportsIncremental' = true
    *
    * @return - a boolean.
    */
@@ -283,7 +283,7 @@ public abstract class TestDestination {
   @Test
   public void testIncrementalSync() throws Exception {
     if (!implementsIncremental()) {
-      LOGGER.info("Destination's spec.json does not include '\"incrementalSupport\" ; true'");
+      LOGGER.info("Destination's spec.json does not include '\"supportsIncremental\" ; true'");
       return;
     }
 
