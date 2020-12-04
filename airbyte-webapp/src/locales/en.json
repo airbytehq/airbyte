@@ -182,7 +182,7 @@
   "admin.manageSource": "Manage your source connectors",
   "admin.availableSource": "Available source connectors",
   "admin.manageDestination": "Manage your destination connectors",
-  "admin.supportMultipleDestinations": "We will soon support multiple destinations within a single Airbyte instance",
+  "admin.availableDestinations": "Available destination connectors",
   "admin.connectors": "Connectors",
   "admin.image": "Image",
   "admin.codeSource": "Code source",
