@@ -32,19 +32,11 @@ import io.airbyte.commons.lang.CloseableQueue;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
-import io.airbyte.integrations.base.BufferedStreamConsumer;
-import io.airbyte.integrations.base.BufferedWriteOperations;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
-import io.airbyte.integrations.base.DestinationConsumerStrategy;
-import io.airbyte.integrations.base.DestinationWriteContext;
-import io.airbyte.integrations.base.DestinationWriteContextFactory;
-import io.airbyte.integrations.base.InsertTableOperations;
+import io.airbyte.integrations.base.DestinationConsumerFactory;
 import io.airbyte.integrations.base.SQLNamingResolvable;
-import io.airbyte.integrations.base.TableCreationOperations;
-import io.airbyte.integrations.base.TmpDestinationConsumer;
-import io.airbyte.integrations.base.TmpToFinalTable;
-import io.airbyte.integrations.base.TruncateInsertIntoConsumer;
+import io.airbyte.integrations.base.SqlDestinationOperations;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -52,7 +44,6 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Map;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.slf4j.Logger;
@@ -121,14 +112,8 @@ public abstract class AbstractJdbcDestination implements Destination {
 
   @Override
   public DestinationConsumer<AirbyteMessage> write(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
-    final Map<String, DestinationWriteContext> writeConfigs =
-        new DestinationWriteContextFactory(getNamingResolver()).build(config, catalog);
     final DestinationImpl destination = new DestinationImpl(getDatabase(config));
-    DestinationConsumerStrategy buffer = new BufferedStreamConsumer(destination, catalog);
-    TmpToFinalTable commit = new TruncateInsertIntoConsumer(destination);
-    DestinationConsumerStrategy result = new TmpDestinationConsumer(destination, buffer, commit);
-    result.setContext(writeConfigs);
-    return result;
+    return DestinationConsumerFactory.build(destination, getNamingResolver(), config, catalog);
   }
 
   protected String getDefaultSchemaName(JsonNode config) {
@@ -159,7 +144,7 @@ public abstract class AbstractJdbcDestination implements Destination {
 
   protected abstract String insertBufferedRecordsQuery(int batchSize, CloseableQueue<byte[]> writeBuffer, String schemaName, String tableName);
 
-  private class DestinationImpl implements TableCreationOperations, InsertTableOperations, BufferedWriteOperations {
+  private class DestinationImpl implements SqlDestinationOperations {
 
     private final Database database;
 

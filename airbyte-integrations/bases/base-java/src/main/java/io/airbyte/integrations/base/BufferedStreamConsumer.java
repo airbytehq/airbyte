@@ -77,24 +77,23 @@ public class BufferedStreamConsumer extends FailureTrackingConsumer<AirbyteMessa
       writeBuffers.put(streamName, writeBuffer);
     }
     writerPool.scheduleWithFixedDelay(
-        () -> writeStreamsWithNRecords(MIN_RECORDS, BATCH_SIZE, writeConfigs, writeBuffers, destination),
+        () -> writeStreamsWithNRecords(MIN_RECORDS, writeConfigs, writeBuffers, destination),
         THREAD_DELAY_MILLIS,
         THREAD_DELAY_MILLIS,
         TimeUnit.MILLISECONDS);
   }
 
   private static void writeStreamsWithNRecords(int minRecords,
-                                               int batchSize,
-                                               Map<String, DestinationWriteContext> writeConfigs,
-                                               Map<String, CloseableQueue<byte[]>> writeBuffers,
-                                               BufferedWriteOperations destination) {
+      Map<String, DestinationWriteContext> writeConfigs,
+      Map<String, CloseableQueue<byte[]>> writeBuffers,
+      BufferedWriteOperations destination) {
     for (final Map.Entry<String, DestinationWriteContext> entry : writeConfigs.entrySet()) {
       final String schemaName = entry.getValue().getOutputNamespaceName();
       final String tmpTableName = entry.getValue().getOutputTableName();
       final CloseableQueue<byte[]> writeBuffer = writeBuffers.get(entry.getKey());
       while (writeBuffer.size() > minRecords) {
         try {
-          destination.insertBufferedRecords(batchSize, writeBuffer, schemaName, tmpTableName);
+          destination.insertBufferedRecords(BufferedStreamConsumer.BATCH_SIZE, writeBuffer, schemaName, tmpTableName);
         } catch (Exception e) {
           throw new RuntimeException(e);
         }
@@ -103,7 +102,7 @@ public class BufferedStreamConsumer extends FailureTrackingConsumer<AirbyteMessa
   }
 
   @Override
-  protected void acceptTracked(AirbyteMessage message) throws Exception {
+  protected void acceptTracked(AirbyteMessage message) {
     // ignore other message types.
     if (message.getType() == AirbyteMessage.Type.RECORD) {
       if (!writeConfigs.containsKey(message.getRecord().getStream())) {
@@ -131,7 +130,7 @@ public class BufferedStreamConsumer extends FailureTrackingConsumer<AirbyteMessa
       writerPool.awaitTermination(GRACEFUL_SHUTDOWN_MINUTES, TimeUnit.MINUTES);
 
       // write anything that is left in the buffers.
-      writeStreamsWithNRecords(0, BATCH_SIZE, writeConfigs, writeBuffers, destination);
+      writeStreamsWithNRecords(0, writeConfigs, writeBuffers, destination);
     }
     for (CloseableQueue<byte[]> writeBuffer : writeBuffers.values()) {
       writeBuffer.close();
