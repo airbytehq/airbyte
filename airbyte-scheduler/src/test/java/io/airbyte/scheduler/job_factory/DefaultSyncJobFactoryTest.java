@@ -37,7 +37,7 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.scheduler.persistence.SchedulerPersistence;
+import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.UUID;
@@ -52,7 +52,7 @@ class DefaultSyncJobFactoryTest {
     final UUID connectionId = UUID.randomUUID();
     final UUID sourceId = UUID.randomUUID();
     final UUID destinationId = UUID.randomUUID();
-    final SchedulerPersistence schedulerPersistence = mock(SchedulerPersistence.class);
+    final DefaultJobCreator jobCreator = mock(DefaultJobCreator.class);
     final ConfigRepository configRepository = mock(ConfigRepository.class);
     final long jobId = 11L;
 
@@ -74,7 +74,7 @@ class DefaultSyncJobFactoryTest {
     when(configRepository.getStandardSync(connectionId)).thenReturn(standardSync);
     when(configRepository.getSourceConnection(sourceId)).thenReturn(sourceConnection);
     when(configRepository.getDestinationConnection(destinationId)).thenReturn(destinationConnection);
-    when(schedulerPersistence
+    when(jobCreator
         .createSyncJob(sourceConnection, destinationConnection, standardSync, srcDockerImage, dstDockerImage))
             .thenReturn(jobId);
     when(configRepository.getStandardSourceDefinition(sourceDefinitionId))
@@ -85,11 +85,11 @@ class DefaultSyncJobFactoryTest {
         .thenReturn(new StandardDestinationDefinition().withDestinationDefinitionId(destinationDefinitionId).withDockerRepository(dstDockerRepo)
             .withDockerImageTag(dstDockerTag));
 
-    final SyncJobFactory factory = new DefaultSyncJobFactory(schedulerPersistence, configRepository);
+    final SyncJobFactory factory = new DefaultSyncJobFactory(jobCreator, configRepository);
     final long actualJobId = factory.create(connectionId);
     assertEquals(jobId, actualJobId);
 
-    verify(schedulerPersistence)
+    verify(jobCreator)
         .createSyncJob(sourceConnection, destinationConnection, standardSync, srcDockerImage, dstDockerImage);
   }
 

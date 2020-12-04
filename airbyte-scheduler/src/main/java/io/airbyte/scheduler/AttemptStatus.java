@@ -22,13 +22,17 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.base;
+package io.airbyte.scheduler;
 
-public class RedshiftSQLNaming extends ExtendedSQLNaming {
+import com.google.common.collect.Sets;
+import java.util.Set;
 
-  @Override
-  protected String convertStreamName(String input) {
-    return super.convertStreamName(input).toLowerCase();
-  }
+public enum AttemptStatus {
+
+  RUNNING,
+  FAILED,
+  SUCCEEDED;
+
+  public static Set<AttemptStatus> TERMINAL_STATUSES = Sets.newHashSet(FAILED, SUCCEEDED);
 
 }

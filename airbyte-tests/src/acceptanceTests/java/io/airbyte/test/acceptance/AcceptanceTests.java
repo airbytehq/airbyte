@@ -47,8 +47,8 @@ import io.airbyte.api.client.model.DataType;
 import io.airbyte.api.client.model.DestinationCreate;
 import io.airbyte.api.client.model.DestinationIdRequestBody;
 import io.airbyte.api.client.model.DestinationRead;
-import io.airbyte.api.client.model.JobStatus;
 import io.airbyte.api.client.model.JobStatusRead;
+import io.airbyte.api.client.model.JobStatusReadStatus;
 import io.airbyte.api.client.model.SourceCreate;
 import io.airbyte.api.client.model.SourceIdRequestBody;
 import io.airbyte.api.client.model.SourceRead;
@@ -293,7 +293,7 @@ public class AcceptanceTests {
 
     final JobStatusRead connectionSyncRead = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    assertEquals(JobStatus.SUCCEEDED, connectionSyncRead.getStatus());
+    assertEquals(JobStatusReadStatus.SUCCEEDED, connectionSyncRead.getStatus());
     assertSourceAndTargetDbInSync(sourcePsql);
   }
 
@@ -325,7 +325,7 @@ public class AcceptanceTests {
 
     final JobStatusRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    assertEquals(JobStatus.SUCCEEDED, connectionSyncRead1.getStatus());
+    assertEquals(JobStatusReadStatus.SUCCEEDED, connectionSyncRead1.getStatus());
     assertSourceAndTargetDbInSync(sourcePsql);
 
     // add new records and run again.
@@ -345,7 +345,7 @@ public class AcceptanceTests {
 
     final JobStatusRead connectionSyncRead2 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    assertEquals(JobStatus.SUCCEEDED, connectionSyncRead2.getStatus());
+    assertEquals(JobStatusReadStatus.SUCCEEDED, connectionSyncRead2.getStatus());
     assertDestinationContains(expectedRecords, TABLE_NAME);
     assertSourceAndTargetDbInSync(sourcePsql);
   }

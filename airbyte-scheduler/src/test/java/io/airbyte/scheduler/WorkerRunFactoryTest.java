@@ -70,7 +70,7 @@ class WorkerRunFactoryTest {
   void setUp() throws IOException {
     job = mock(Job.class, RETURNS_DEEP_STUBS);
     when(job.getId()).thenReturn(1L);
-    when(job.getAttempts()).thenReturn(2);
+    when(job.getAttemptsCount()).thenReturn(2);
     when(job.getConfig().getSync().getDestinationDockerImage()).thenReturn("airbyte/destination-moon:0.1.0");
 
     creator = mock(WorkerRunFactory.Creator.class);

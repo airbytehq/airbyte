@@ -4,7 +4,7 @@ description: A high level view of Airbyte's components.
 
 # High-level View
 
-![3.048-Kilometer view](../.gitbook/assets/10-000-feet-view%20%281%29%20%281%29%20%281%29%20%282%29%20%281%29%20%281%29%20%281%29%20%283%29%20%282%29%20%2816%29%20%2816%29.png)
+![3.048-Kilometer view](../.gitbook/assets/10-000-feet-view%20%281%29%20%281%29%20%281%29%20%282%29%20%281%29%20%281%29%20%281%29%20%283%29%20%282%29%20%2816%29%20%285%29%20%2816%29.png)
 
 * `UI`: Acts as the control center for Airbyte. From the UI, you can configure new integration connections. You can also track the different syncing jobs and view logs.
 * `Config Store`: Stores all the connections information \(credentials, frequency...\).

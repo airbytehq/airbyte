@@ -53,6 +53,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
   public enum DestinationType {
     BIGQUERY,
     POSTGRES,
+    REDSHIFT,
     SNOWFLAKE
   }
 
