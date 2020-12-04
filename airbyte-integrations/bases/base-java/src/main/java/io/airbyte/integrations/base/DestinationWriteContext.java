@@ -35,11 +35,13 @@ public class DestinationWriteContext {
   private final String outputNamespaceName;
   private final String outputTableName;
   private final SyncMode syncMode;
+  private boolean transactionMode;
 
   DestinationWriteContext(String outputNamespaceName, String outputTableName, SyncMode syncMode) {
     this.outputNamespaceName = outputNamespaceName;
     this.outputTableName = outputTableName;
     this.syncMode = syncMode;
+    this.transactionMode = true;
   }
 
   public String getOutputNamespaceName() {
@@ -52,6 +54,14 @@ public class DestinationWriteContext {
 
   public SyncMode getSyncMode() {
     return syncMode;
+  }
+
+  public boolean getTransactionMode() {
+    return transactionMode;
+  }
+
+  public void setTransactionMode(boolean transactionMode) {
+    this.transactionMode = transactionMode;
   }
 
 }
