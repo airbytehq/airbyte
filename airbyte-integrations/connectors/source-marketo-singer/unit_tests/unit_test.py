@@ -40,5 +40,6 @@ def test_read_cmd_no_state():
     assert f"tap-marketo -c {config} -p {catalog}" == source.read_cmd(logger, config, catalog).strip()
 
 
-def test_read_cmd_with_state():
-    assert f"tap-marketo -c {config} -p {catalog} --state {state}" == source.read_cmd(logger, config, catalog, state).strip()
+# TODO state is temporarily disabled
+# def test_read_cmd_with_state():
+#     assert f"tap-marketo -c {config} -p {catalog} --state {state}" == source.read_cmd(logger, config, catalog, state).strip()
