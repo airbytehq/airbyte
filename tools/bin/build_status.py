@@ -25,13 +25,14 @@ for stat in res:
 
 print("-" * 81)
 
+
 def get_terminal_link_str(text, url):
     return f"\u001b]8;;{url}\u001b\\{text}\u001b]8;;\u001b\\"
 
+
 for connector, states in connector_to_states.items():
-    sorted_states = sorted(states, key=lambda x: -1 * x[0])
-    line_items = []
-    line_items.append(connector)
+    sorted_states = sorted(states, key=lambda x: -1*int(x[0]))
+    line_items = [connector]
     for i in range(0, 10):
         if i < len(sorted_states):
             state = sorted_states[i]
