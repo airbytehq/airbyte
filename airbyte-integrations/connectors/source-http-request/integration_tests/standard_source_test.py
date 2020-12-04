@@ -25,7 +25,7 @@ SOFTWARE.
 import json
 import pkgutil
 
-from airbyte_protocol import AirbyteCatalog, ConnectorSpecification
+from airbyte_protocol import ConfiguredAirbyteCatalog, ConnectorSpecification
 from base_python_test import StandardSourceTestIface
 
 
@@ -44,9 +44,9 @@ class SourceHttpRequestStandardTest(StandardSourceTestIface):
             "headers": '{"Content-Type": "application/json"}',
         }
 
-    def get_catalog(self) -> AirbyteCatalog:
-        raw_catalog = pkgutil.get_data(self.__class__.__module__.split(".")[0], "catalog.json")
-        return AirbyteCatalog.parse_obj(json.loads(raw_catalog))
+    def get_catalog(self) -> ConfiguredAirbyteCatalog:
+        raw_catalog = pkgutil.get_data(self.__class__.__module__.split(".")[0], "configured_catalog.json")
+        return ConfiguredAirbyteCatalog.parse_obj(json.loads(raw_catalog))
 
     def setup(self) -> None:
         pass
