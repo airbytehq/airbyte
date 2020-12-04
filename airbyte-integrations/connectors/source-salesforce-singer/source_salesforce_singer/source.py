@@ -23,8 +23,8 @@ SOFTWARE.
 """
 
 import requests
-from airbyte_protocol import AirbyteConnectionStatus, Status, AirbyteCatalog
-from base_python import CatalogHelper, AirbyteLogger, ConfigContainer
+from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, Status
+from base_python import AirbyteLogger, CatalogHelper, ConfigContainer
 from base_singer import SingerSource
 
 

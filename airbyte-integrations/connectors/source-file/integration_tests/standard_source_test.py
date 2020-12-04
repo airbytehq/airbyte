@@ -25,7 +25,7 @@ SOFTWARE.
 import json
 import pkgutil
 
-from airbyte_protocol import ConnectorSpecification, ConfiguredAirbyteCatalog
+from airbyte_protocol import ConfiguredAirbyteCatalog, ConnectorSpecification
 from base_python_test import StandardSourceTestIface
 
 
