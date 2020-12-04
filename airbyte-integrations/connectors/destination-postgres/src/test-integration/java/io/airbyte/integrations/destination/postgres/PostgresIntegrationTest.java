@@ -89,11 +89,6 @@ public class PostgresIntegrationTest extends TestDestination {
   }
 
   @Override
-  protected boolean implementsIncremental() {
-    return true;
-  }
-
-  @Override
   protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv env, String streamName)
       throws Exception {
     String tableName = namingResolver.getIdentifier(streamName);
