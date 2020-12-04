@@ -1,7 +1,2 @@
-*
-!Dockerfile
-!Dockerfile.test
-!source_intercom_singer
-!setup.py
-!integration_tests
-!secrets
+build
+.venv
