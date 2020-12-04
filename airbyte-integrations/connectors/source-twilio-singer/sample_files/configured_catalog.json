@@ -8,71 +8,41 @@
           "additionalProperties": false,
           "properties": {
             "auth_token": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "date_created": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "date_updated": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "friendly_name": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "owner_account_sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "status": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "subresource_uris": {
               "anyOf": [
                 {
                   "type": "array",
                   "items": {
-                    "type": [
-                      "null",
-                      "object"
-                    ],
+                    "type": ["null", "object"],
                     "additionalProperties": false,
                     "properties": {
                       "subresource": {
-                        "type": [
-                          "null",
-                          "string"
-                        ]
+                        "type": ["null", "string"]
                       },
                       "uri": {
-                        "type": [
-                          "null",
-                          "string"
-                        ]
+                        "type": ["null", "string"]
                       }
                     }
                   }
@@ -81,147 +51,78 @@
                   "type": "null"
                 },
                 {
-                  "type": [
-                    "null",
-                    "object"
-                  ],
+                  "type": ["null", "object"],
                   "additionalProperties": false,
                   "properties": {
                     "addresses": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "conferences": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "signing_keys": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "transcriptions": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "connect_apps": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "sip": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "authorized_connect_apps": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "usage": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "keys": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "applications": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "recordings": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "short_codes": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "calls": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "notifications": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "incoming_phone_numbers": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "queues": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "messages": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "outgoing_caller_ids": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "available_phone_numbers": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "balance": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     }
                   }
                 }
               ]
             },
             "type": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "uri": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             }
           }
         }
