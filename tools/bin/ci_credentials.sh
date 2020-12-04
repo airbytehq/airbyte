@@ -7,7 +7,7 @@ set -e
 function write_standard_creds() {
   local connector_name=$1
   local creds=$2
-  local cred_filename=$3 || "config.json"
+  local cred_filename=${3:-config.json}
 
   [ -z "$connector_name" ] && error "Empty connector name"
   [ -z "$creds" ] && error "Creds not set for $connector_name"
