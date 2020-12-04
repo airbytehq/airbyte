@@ -12,11 +12,11 @@ The instructions have been tested on `Amazon Linux 2 AMI (HVM)`
 
 * Select instance AMI
 
-![](../.gitbook/assets/aws_ec2_ami%20%281%29%20%281%29%20%281%29%20%282%29%20%281%29%20%281%29%20%281%29%20%281%29%20%289%29%20%286%29.png)
+![](../.gitbook/assets/aws_ec2_ami%20%281%29%20%281%29%20%281%29%20%282%29%20%281%29%20%281%29%20%281%29%20%281%29%20%289%29%20%285%29%20%286%29.png)
 
 * Select instance type
 
-![](../.gitbook/assets/aws_ec2_instance_type%20%281%29%20%281%29%20%281%29%20%282%29%20%2810%29%20%287%29.png)
+![](../.gitbook/assets/aws_ec2_instance_type%20%281%29%20%281%29%20%281%29%20%282%29%20%2810%29%20%286%29%20%287%29.png)
 
 * `Next: Configure Instance Details` 
   * You can tune parameters or keep the defaults
@@ -34,11 +34,11 @@ The instructions have been tested on `Amazon Linux 2 AMI (HVM)`
 * Create a ssh key so you can connect to the instance
   * Download the key \(and don't lose it or you won't be able to connect to the instance\)
 
-![](../.gitbook/assets/aws_ec2_ssh_key%20%281%29%20%281%29%20%281%29%20%283%29%20%2810%29%20%2810%29.png)
+![](../.gitbook/assets/aws_ec2_ssh_key%20%281%29%20%281%29%20%281%29%20%283%29%20%2810%29%20%283%29%20%2810%29.png)
 
 * `Launch Instances`
 
-![](../.gitbook/assets/aws_ec2_instance_view%20%281%29%20%281%29%20%281%29%20%282%29%20%281%29%20%281%29%20%281%29%20%281%29%20%289%29%20%281%29.png)
+![](../.gitbook/assets/aws_ec2_instance_view%20%281%29%20%281%29%20%281%29%20%282%29%20%281%29%20%281%29%20%281%29%20%281%29%20%289%29%20%2810%29%20%281%29.png)
 
 * Wait for the instance to become `Running`
 
