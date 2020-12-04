@@ -1,0 +1,78 @@
+name: integration-test
+on:
+  workflow_dispatch:
+    inputs:
+      connector:
+        description: 'Airbyte Connector'
+        required: true
+      comment-id:
+        description: 'The comment-id of the slash command. Used to update the comment with the status.'
+        required: false
+
+jobs:
+  integration_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Search for valid integration name format
+        id: regex
+        uses: AsasInnab/regex-action@v1
+        with:
+          regex_pattern: '^[a-zA-Z0-9-_]+$'
+          regex_flags: 'i' # required to be set for this plugin
+          search_string: ${{ github.event.inputs.connector }}
+      - name: Validate input workflow format
+        if: steps.regex.outputs.first_match != github.event.inputs.connector
+        run: echo "The connector provided has an invalid format!" && exit 1
+      - name: Link comment to workflow run
+        if: github.event.inputs.comment-id
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          body: |
+            > :clock2: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+      - uses: actions/setup-java@v1
+        with:
+          java-version: '14'
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '14.7'
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.7'
+      - name: Write Integration Test Credentials
+        run: ./tools/bin/ci_credentials.sh
+        env:
+          BIGQUERY_INTEGRATION_TEST_CREDS: ${{ secrets.BIGQUERY_INTEGRATION_TEST_CREDS }}
+          STRIPE_INTEGRATION_TEST_CREDS: ${{ secrets.STRIPE_INTEGRATION_TEST_CREDS }}
+          GH_INTEGRATION_TEST_CREDS: ${{ secrets.GH_INTEGRATION_TEST_CREDS }}
+          SALESFORCE_INTEGRATION_TESTS_CREDS: ${{ secrets.SALESFORCE_INTEGRATION_TESTS_CREDS }}
+          GOOGLE_ANALYTICS_TEST_CREDS: ${{ secrets.GOOGLE_ANALYTICS_TEST_CREDS }}
+          GOOGLE_ANALYTICS_TEST_TRACKING_ID: ${{ secrets.GOOGLE_ANALYTICS_TEST_TRACKING_ID }}
+          HUBSPOT_INTEGRATION_TESTS_CREDS: ${{ secrets.HUBSPOT_INTEGRATION_TESTS_CREDS }}
+          GSHEETS_INTEGRATION_TESTS_CREDS: ${{ secrets.GSHEETS_INTEGRATION_TESTS_CREDS }}
+          SNOWFLAKE_INTEGRATION_TEST_CREDS: ${{ secrets.SNOWFLAKE_INTEGRATION_TEST_CREDS }}
+          ADWORDS_INTEGRATION_TEST_CREDS: ${{ secrets.ADWORDS_INTEGRATION_TEST_CREDS }}
+          FACEBOOK_MARKETING_API_TEST_INTEGRATION_CREDS: ${{ secrets.FACEBOOK_MARKETING_API_TEST_INTEGRATION_CREDS }}
+          SOURCE_MARKETO_SINGER_INTEGRATION_TEST_CONFIG: ${{ secrets.SOURCE_MARKETO_SINGER_INTEGRATION_TEST_CONFIG }}
+          SHOPIFY_INTEGRATION_TEST_CREDS: ${{ secrets.SHOPIFY_INTEGRATION_TEST_CREDS }}
+          AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
+          AWS_REDSHIFT_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_REDSHIFT_INTEGRATION_TEST_CREDS }}
+          MAILCHIMP_TEST_CREDS: ${{ secrets.MAILCHIMP_TEST_CREDS }}
+      - run: |
+          ./tools/bin/ci_integration_test.sh ${{ github.event.inputs.connector }}
+      - name: Add Success Comment
+        if: github.event.inputs.comment-id && success()
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          body: |
+            > :white_check_mark: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+      - name: Add Failure Comment
+        if: github.event.inputs.comment-id && !success()
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          body: |
+            > :x: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}

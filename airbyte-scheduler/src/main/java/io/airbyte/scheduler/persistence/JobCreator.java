@@ -25,18 +25,11 @@
 package io.airbyte.scheduler.persistence;
 
 import io.airbyte.config.DestinationConnection;
-import io.airbyte.config.JobConfig;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
-import io.airbyte.scheduler.Job;
-import io.airbyte.scheduler.JobStatus;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
-public interface SchedulerPersistence {
+public interface JobCreator {
 
   long createSourceCheckConnectionJob(SourceConnection source, String dockerImage) throws IOException;
 
@@ -52,29 +45,5 @@ public interface SchedulerPersistence {
                      String sourceDockerImage,
                      String destinationDockerImage)
       throws IOException;
-
-  Job getJob(long jobId) throws IOException;
-
-  void updateStatus(long jobId, JobStatus status) throws IOException;
-
-  void updateLogPath(long jobId, Path logPath) throws IOException;
-
-  void incrementAttempts(long jobId) throws IOException;
-
-  <T> void writeOutput(long jobId, T output) throws IOException;
-
-  /**
-   * @param configType - type of config, e.g. sync
-   * @param configId - id of that config
-   * @return lists job in descending order by created_at
-   * @throws IOException - what you do when you IO
-   */
-  List<Job> listJobs(JobConfig.ConfigType configType, String configId) throws IOException;
-
-  List<Job> listJobsWithStatus(JobConfig.ConfigType configType, JobStatus status) throws IOException;
-
-  Optional<Job> getLastSyncJob(UUID connectionId) throws IOException;
-
-  Optional<Job> getOldestPendingJob() throws IOException;
 
 }

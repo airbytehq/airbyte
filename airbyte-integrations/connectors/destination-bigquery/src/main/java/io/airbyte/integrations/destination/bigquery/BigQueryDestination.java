@@ -30,6 +30,7 @@ import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.CopyJobConfiguration;
+import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.DatasetInfo;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.FormatOptions;
@@ -64,6 +65,7 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.SyncMode;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -111,11 +113,7 @@ public class BigQueryDestination implements Destination {
     try {
       final String datasetId = config.get(CONFIG_DATASET_ID).asText();
       final BigQuery bigquery = getBigQuery(config);
-
-      if (bigquery.getDataset(datasetId) == null || !bigquery.getDataset(datasetId).exists()) {
-        final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).build();
-        bigquery.create(datasetInfo);
-      }
+      createSchemaTable(bigquery, datasetId);
       QueryJobConfiguration queryConfig = QueryJobConfiguration
           .newBuilder(String.format("SELECT * FROM %s.INFORMATION_SCHEMA.TABLES LIMIT 1;", datasetId))
           .setUseLegacySql(false)
@@ -130,6 +128,14 @@ public class BigQueryDestination implements Destination {
     } catch (Exception e) {
       LOGGER.info("Check failed.", e);
       return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(e.getMessage() != null ? e.getMessage() : e.toString());
+    }
+  }
+
+  private void createSchemaTable(BigQuery bigquery, String datasetId) {
+    final Dataset dataset = bigquery.getDataset(datasetId);
+    if (dataset == null || !dataset.exists()) {
+      final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).build();
+      bigquery.create(datasetInfo);
     }
   }
 
@@ -218,13 +224,11 @@ public class BigQueryDestination implements Destination {
       final String tableName = getNamingResolver().getRawTableName(streamName);
       final String tmpTableName = getNamingResolver().getTmpTableName(streamName);
       if (!schemaSet.contains(schemaName)) {
-        if (!bigquery.getDataset(schemaName).exists()) {
-          final DatasetInfo datasetInfo = DatasetInfo.newBuilder(schemaName).build();
-          bigquery.create(datasetInfo);
-        }
+        createSchemaTable(bigquery, schemaName);
         schemaSet.add(schemaName);
       }
       createTable(bigquery, schemaName, tmpTableName);
+
       // https://cloud.google.com/bigquery/docs/loading-data-local#loading_data_from_a_local_data_source
       final WriteChannelConfiguration writeChannelConfiguration = WriteChannelConfiguration
           .newBuilder(TableId.of(schemaName, tmpTableName))
@@ -233,14 +237,25 @@ public class BigQueryDestination implements Destination {
           .setFormatOptions(FormatOptions.json()).build(); // new-line delimited json.
 
       final TableDataWriteChannel writer = bigquery.writer(JobId.of(UUID.randomUUID().toString()), writeChannelConfiguration);
+      final WriteDisposition syncMode = getWriteDisposition(stream.getSyncMode());
 
       writeConfigs.put(stream.getStream().getName(),
-          new WriteConfig(TableId.of(schemaName, tableName), TableId.of(schemaName, tmpTableName), writer));
+          new WriteConfig(TableId.of(schemaName, tableName), TableId.of(schemaName, tmpTableName), writer, syncMode));
     }
 
     // write to tmp tables
     // if success copy delete main table if exists. rename tmp tables to real tables.
     return new RecordConsumer(bigquery, writeConfigs, catalog);
+  }
+
+  private static WriteDisposition getWriteDisposition(SyncMode syncMode) {
+    if (syncMode == null || syncMode == SyncMode.FULL_REFRESH) {
+      return WriteDisposition.WRITE_TRUNCATE;
+    } else if (syncMode == SyncMode.INCREMENTAL) {
+      return WriteDisposition.WRITE_APPEND;
+    } else {
+      throw new IllegalStateException("Unrecognized sync mode: " + syncMode);
+    }
   }
 
   // https://cloud.google.com/bigquery/docs/tables#create-table
@@ -262,11 +277,12 @@ public class BigQueryDestination implements Destination {
   private static void copyTable(
                                 BigQuery bigquery,
                                 TableId sourceTableId,
-                                TableId destinationTableId) {
+                                TableId destinationTableId,
+                                WriteDisposition syncMode) {
 
     final CopyJobConfiguration configuration = CopyJobConfiguration.newBuilder(destinationTableId, sourceTableId)
         .setCreateDisposition(CreateDisposition.CREATE_IF_NEEDED)
-        .setWriteDisposition(WriteDisposition.WRITE_TRUNCATE)
+        .setWriteDisposition(syncMode)
         .build();
 
     final Job job = bigquery.create(JobInfo.of(configuration));
@@ -327,7 +343,8 @@ public class BigQueryDestination implements Destination {
         }));
         if (!hasFailed) {
           LOGGER.error("executing on success close procedure.");
-          writeConfigs.values().forEach(writeConfig -> copyTable(bigquery, writeConfig.getTmpTable(), writeConfig.getTable()));
+          writeConfigs.values()
+              .forEach(writeConfig -> copyTable(bigquery, writeConfig.getTmpTable(), writeConfig.getTable(), writeConfig.getSyncMode()));
         }
       } finally {
         // clean up tmp tables;
@@ -342,11 +359,13 @@ public class BigQueryDestination implements Destination {
     private final TableId table;
     private final TableId tmpTable;
     private final TableDataWriteChannel writer;
+    private final WriteDisposition syncMode;
 
-    private WriteConfig(TableId table, TableId tmpTable, TableDataWriteChannel writer) {
+    private WriteConfig(TableId table, TableId tmpTable, TableDataWriteChannel writer, WriteDisposition syncMode) {
       this.table = table;
       this.tmpTable = tmpTable;
       this.writer = writer;
+      this.syncMode = syncMode;
     }
 
     public TableId getTable() {
@@ -359,6 +378,10 @@ public class BigQueryDestination implements Destination {
 
     public TableDataWriteChannel getWriter() {
       return writer;
+    }
+
+    public WriteDisposition getSyncMode() {
+      return syncMode;
     }
 
   }

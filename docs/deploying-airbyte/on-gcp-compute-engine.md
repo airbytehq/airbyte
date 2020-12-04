@@ -12,7 +12,7 @@ The instructions have been tested on `Debian GNU/Linux 10 (buster)`
 
 * Configure new instance
 
-![](../.gitbook/assets/gcp_ce_configure%20%281%29%20%281%29%20%281%29%20%282%29%20%281%29%20%281%29%20%281%29%20%281%29%20%289%29%20%281%29.png)
+![](../.gitbook/assets/gcp_ce_configure%20%281%29%20%281%29%20%281%29%20%282%29%20%281%29%20%281%29%20%281%29%20%281%29%20%289%29%20%285%29%20%281%29.png)
 
 * `Create`
 

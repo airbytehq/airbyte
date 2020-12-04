@@ -11,7 +11,12 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 ## Currently under construction
 
 **New sources:** Hive, Intercom, Braintree, MongoDB, Mixpanel, Mailgun  
-**New destinations:** Redshift, S3, MySQL, Kafka, MongoDB
+**New destinations:** Panoply, S3, MySQL, Kafka, MongoDB
+
+## 12/04/2020
+
+**New source:** [Redshift](sources/redshift.md)  
+**New destination:** [Redshift](destinations/redshift.md)
 
 ## 11/30/2020
 

@@ -32,6 +32,7 @@ import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.DestinationDefinitionSpecificationRead;
 import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.JobStatusRead;
+import io.airbyte.api.model.JobStatusReadStatus;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
 import io.airbyte.api.model.SourceDefinitionSpecificationRead;
 import io.airbyte.api.model.SourceDiscoverSchemaRead;
@@ -52,7 +53,8 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.JobStatus;
-import io.airbyte.scheduler.persistence.SchedulerPersistence;
+import io.airbyte.scheduler.persistence.JobCreator;
+import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.cache.SpecCache;
 import io.airbyte.server.converters.SchemaConverter;
 import io.airbyte.validation.json.JsonValidationException;
@@ -68,13 +70,19 @@ public class SchedulerHandler {
   private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerHandler.class);
 
   private final ConfigRepository configRepository;
-  private final SchedulerPersistence schedulerPersistence;
+  private final JobPersistence jobPersistence;
   private final SpecCache specCache;
+  private final JobCreator jobCreator;
 
-  public SchedulerHandler(final ConfigRepository configRepository, final SchedulerPersistence schedulerPersistence, final SpecCache specCache) {
+  public SchedulerHandler(
+                          final ConfigRepository configRepository,
+                          final JobPersistence jobPersistence,
+                          final JobCreator jobCreator,
+                          final SpecCache specCache) {
     this.specCache = specCache;
     this.configRepository = configRepository;
-    this.schedulerPersistence = schedulerPersistence;
+    this.jobPersistence = jobPersistence;
+    this.jobCreator = jobCreator;
   }
 
   public CheckConnectionRead checkSourceConnection(SourceIdRequestBody sourceIdRequestBody)
@@ -84,7 +92,7 @@ public class SchedulerHandler {
 
     final StandardSourceDefinition source = configRepository.getStandardSourceDefinition(connectionImplementation.getSourceDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(source.getDockerRepository(), source.getDockerImageTag());
-    final long jobId = schedulerPersistence.createSourceCheckConnectionJob(connectionImplementation, imageName);
+    final long jobId = jobCreator.createSourceCheckConnectionJob(connectionImplementation, imageName);
     LOGGER.debug("jobId = " + jobId);
     final CheckConnectionRead checkConnectionRead = reportConnectionStatus(waitUntilJobIsTerminalOrTimeout(jobId));
 
@@ -108,7 +116,7 @@ public class SchedulerHandler {
     final StandardDestinationDefinition destination =
         configRepository.getStandardDestinationDefinition(connectionImplementation.getDestinationDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(destination.getDockerRepository(), destination.getDockerImageTag());
-    final long jobId = schedulerPersistence.createDestinationCheckConnectionJob(connectionImplementation, imageName);
+    final long jobId = jobCreator.createDestinationCheckConnectionJob(connectionImplementation, imageName);
     LOGGER.debug("jobId = " + jobId);
     final CheckConnectionRead checkConnectionRead = reportConnectionStatus(waitUntilJobIsTerminalOrTimeout(jobId));
 
@@ -131,11 +139,11 @@ public class SchedulerHandler {
 
     final StandardSourceDefinition source = configRepository.getStandardSourceDefinition(connectionImplementation.getSourceDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(source.getDockerRepository(), source.getDockerImageTag());
-    final long jobId = schedulerPersistence.createDiscoverSchemaJob(connectionImplementation, imageName);
+    final long jobId = jobCreator.createDiscoverSchemaJob(connectionImplementation, imageName);
     LOGGER.debug("jobId = " + jobId);
     final Job job = waitUntilJobIsTerminalOrTimeout(jobId);
 
-    final Schema schema = job.getOutput()
+    final Schema schema = job.getSuccessOutput()
         .map(out -> AirbyteProtocolConverters.toSchema(out.getDiscoverCatalog().getCatalog()))
         // the job should always produce an output, but if does not, we fall back on an empty schema.
         .orElse(new Schema().withStreams(Collections.emptyList()));
@@ -171,14 +179,13 @@ public class SchedulerHandler {
       LOGGER.debug("cache hit: " + imageName);
       return cachedSpec.get();
     } else {
-
       LOGGER.debug("cache miss: " + imageName);
-      final long jobId = schedulerPersistence.createGetSpecJob(imageName);
+      final long jobId = jobCreator.createGetSpecJob(imageName);
       LOGGER.debug("getSourceSpec jobId = {}", jobId);
 
       final Job job = waitUntilJobIsTerminalOrTimeout(jobId);
 
-      final ConnectorSpecification spec = job.getOutput().orElseThrow().getGetSpec().getSpecification();
+      final ConnectorSpecification spec = job.getSuccessOutput().orElseThrow().getGetSpec().getSpecification();
       specCache.put(imageName, spec);
       return spec;
     }
@@ -214,7 +221,7 @@ public class SchedulerHandler {
         configRepository.getStandardDestinationDefinition(destinationConnection.getDestinationDefinitionId());
     final String destinationImageName = DockerUtils.getTaggedImageName(destination.getDockerRepository(), destination.getDockerImageTag());
 
-    final long jobId = schedulerPersistence.createSyncJob(
+    final long jobId = jobCreator.createSyncJob(
         sourceConnection,
         destinationConnection,
         standardSync,
@@ -234,18 +241,18 @@ public class SchedulerHandler {
         .build());
 
     return new JobStatusRead()
-        .status(job.getStatus().equals(JobStatus.COMPLETED) ? io.airbyte.api.model.JobStatus.SUCCEEDED : io.airbyte.api.model.JobStatus.FAILED);
+        .status(job.getStatus().equals(JobStatus.SUCCEEDED) ? JobStatusReadStatus.SUCCEEDED : JobStatusReadStatus.FAILED);
   }
 
   // todo (cgardens) - can be a no op while UI is being developed. need to figure out the
   // implementation here.
   public JobStatusRead resetConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
-    return new JobStatusRead().status(io.airbyte.api.model.JobStatus.SUCCEEDED);
+    return new JobStatusRead().status(JobStatusReadStatus.SUCCEEDED);
   }
 
   private Job waitUntilJobIsTerminalOrTimeout(final long jobId) throws IOException {
     for (int i = 0; i < 120; i++) {
-      final Job job = schedulerPersistence.getJob(jobId);
+      final Job job = jobPersistence.getJob(jobId);
 
       if (JobStatus.TERMINAL_STATUSES.contains(job.getStatus())) {
         return job;
@@ -262,7 +269,7 @@ public class SchedulerHandler {
   }
 
   private CheckConnectionRead reportConnectionStatus(final Job job) {
-    final StandardCheckConnectionOutput output = job.getOutput().map(JobOutput::getCheckConnection)
+    final StandardCheckConnectionOutput output = job.getSuccessOutput().map(JobOutput::getCheckConnection)
         // the job should always produce an output, but if it does not, we assume a failure.
         .orElse(new StandardCheckConnectionOutput().withStatus(StandardCheckConnectionOutput.Status.FAILED));
 

@@ -6,6 +6,16 @@ on:
   push:
 
 jobs:
+  launch_integration_tests:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+      - name: Launch Integration Tests
+        run: ./tools/bin/ci_integration_workflow_launcher.sh
+        env:
+          GITHUB_TOKEN: ${{ secrets.SLASH_COMMAND_PAT }}
   build:
     runs-on: ubuntu-latest
     steps:
@@ -64,49 +74,6 @@ jobs:
       - name: Check documentation
         if: success() && github.ref == 'refs/heads/master'
         run: ./tools/site/link_checker.sh check_docs
-
-      # this should happen as late as possible so we don't accidentally have tests in the wrong stage depending on creds
-      - name: Write Integration Test Credentials
-        run: ./tools/bin/ci_credentials.sh
-        env:
-          BIGQUERY_INTEGRATION_TEST_CREDS: ${{ secrets.BIGQUERY_INTEGRATION_TEST_CREDS }}
-          STRIPE_INTEGRATION_TEST_CREDS: ${{ secrets.STRIPE_INTEGRATION_TEST_CREDS }}
-          GH_INTEGRATION_TEST_CREDS: ${{ secrets.GH_INTEGRATION_TEST_CREDS }}
-          SALESFORCE_INTEGRATION_TESTS_CREDS: ${{ secrets.SALESFORCE_INTEGRATION_TESTS_CREDS }}
-          GOOGLE_ANALYTICS_TEST_CREDS: ${{ secrets.GOOGLE_ANALYTICS_TEST_CREDS }}
-          GOOGLE_ANALYTICS_TEST_TRACKING_ID: ${{ secrets.GOOGLE_ANALYTICS_TEST_TRACKING_ID }}
-          HUBSPOT_INTEGRATION_TESTS_CREDS: ${{ secrets.HUBSPOT_INTEGRATION_TESTS_CREDS }}
-          GSHEETS_INTEGRATION_TESTS_CREDS: ${{ secrets.GSHEETS_INTEGRATION_TESTS_CREDS }}
-          SNOWFLAKE_INTEGRATION_TEST_CREDS: ${{ secrets.SNOWFLAKE_INTEGRATION_TEST_CREDS }}
-          ADWORDS_INTEGRATION_TEST_CREDS: ${{ secrets.ADWORDS_INTEGRATION_TEST_CREDS }}
-          FACEBOOK_MARKETING_API_TEST_INTEGRATION_CREDS: ${{ secrets.FACEBOOK_MARKETING_API_TEST_INTEGRATION_CREDS }}
-          SOURCE_MARKETO_SINGER_INTEGRATION_TEST_CONFIG: ${{ secrets.SOURCE_MARKETO_SINGER_INTEGRATION_TEST_CONFIG }}
-          SHOPIFY_INTEGRATION_TEST_CREDS: ${{ secrets.SHOPIFY_INTEGRATION_TEST_CREDS }}
-          AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
-          AWS_REDSHIFT_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_REDSHIFT_INTEGRATION_TEST_CREDS }}
-          MAILCHIMP_TEST_CREDS: ${{ secrets.MAILCHIMP_TEST_CREDS }}
-
-      - name: Run Integration Tests (PR)
-        if: success() && github.ref != 'refs/heads/master'
-        run: ./tools/bin/integration_test_pr.sh
-
-      - name: Run Integration Tests (Master)
-        if: success() && github.ref == 'refs/heads/master'
-        run: ./gradlew --no-daemon integrationTest --scan
-
-      - name: Run Standard Source Tests (PR)
-        if: success() && github.ref != 'refs/heads/master'
-        run: ./tools/bin/standard_test_pr.sh
-
-      # todo (cgardens) - just run pr integration tests, until we can fix the build.
-      # https://airbytehq.slack.com/archives/C019WEENQRM/p1606012092002600?thread_ts=1605924059.000200&cid=C019WEENQRM
-      - name: Run Standard Source Tests (Master Tmp)
-        if: success() && github.ref == 'refs/heads/master'
-        run: ./tools/bin/standard_test_pr.sh
-
-      # - name: Run Standard Source Tests (Master)
-      #   if: success() && github.ref == 'refs/heads/master'
-      #   run: ./gradlew --no-daemon standardSourceTestPython --scan
 
       - name: Build Core Docker Images
         if: success() && github.ref == 'refs/heads/master'
