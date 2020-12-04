@@ -10,8 +10,8 @@ jobs:
         id: getref
         run: |
           echo "::set-output name=ref::$(curl ${{ github.event.issue.pull_request.url }} | jq -r '.head.ref')"
-
       - name: Slash Command Dispatch
+        id: scd
         uses: peter-evans/slash-command-dispatch@v2
         with:
           token: ${{ secrets.SLASH_COMMAND_PAT }}
@@ -21,3 +21,10 @@ jobs:
             ref=${{ steps.getref.outputs.ref }}
             comment-id=${{ github.event.comment.id }}
           dispatch-type: workflow
+      - name: Edit comment with success
+        if: ${{ !steps.scd.outputs.error-message }}
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.comment.id }}
+          body: |
+            > Error: ${{ steps.scd.outputs.error-message }}
