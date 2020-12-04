@@ -22,8 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from airbyte_protocol import AirbyteConnectionStatus, Status
-from base_python import AirbyteLogger, ConfigContainer
+from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, Status
+from base_python import AirbyteLogger, CatalogHelper, ConfigContainer
 from base_singer import SingerSource
 
 TAP_CMD = "tap-marketo"
@@ -56,6 +56,10 @@ class SourceMarketoSinger(SingerSource):
     def discover_cmd(self, logger: AirbyteLogger, config_path: str) -> str:
         return f"{TAP_CMD} -c {config_path} --discover"
 
+    def discover(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteCatalog:
+        catalog = super().discover(logger, config_container)
+        return CatalogHelper.coerce_catalog_as_full_refresh(catalog)
+
     def read_cmd(self, logger: AirbyteLogger, config_path: str, catalog_path: str, state_path: str = None) -> str:
-        state_flag = f"--state {state_path}" if state_path else ""
-        return f"{TAP_CMD} -c {config_path} -p {catalog_path} {state_flag}"
+        # We don't pass in state to force the tap to run in full refresh since this tap does not respect the replication-method flag.
+        return f"{TAP_CMD} -c {config_path} -p {catalog_path}"
