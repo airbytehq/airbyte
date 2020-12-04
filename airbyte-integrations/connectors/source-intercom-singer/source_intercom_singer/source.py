@@ -31,6 +31,7 @@ from tap_intercom.client import IntercomClient, IntercomError
 class BaseSingerSource(SingerSource):
     tap_cmd = None
     tap_name = None
+    api_error = Exception
 
     def discover_cmd(self, logger: AirbyteLogger, config_path: str) -> str:
         return f"{self.tap_cmd} --config {config_path} --discover"
@@ -69,9 +70,17 @@ class BaseSingerSource(SingerSource):
 class SourceIntercomSinger(BaseSingerSource):
     tap_cmd = "tap-intercom"
     tap_name = "Intercom API"
+    api_error = IntercomError
+
+    def transform_config(self, raw_config):
+        return {
+            "user_agent": "airbyte",
+            "access_token": raw_config["access_token"],
+            "start_date": raw_config["start_date"],
+        }
 
     def try_connect(self, logger: AirbyteLogger, config: dict):
-        client = IntercomClient(user_agent=config["user_agent"], api_key=config["api_key"])
+        client = IntercomClient(user_agent=config.get("user_agent", "airbyte"), access_token=config["api_key"])
         ok = client.check_access_token()
         if not ok:
             raise IntercomError(f"Got an empty response from {self.tap_name}, check your permissions")
