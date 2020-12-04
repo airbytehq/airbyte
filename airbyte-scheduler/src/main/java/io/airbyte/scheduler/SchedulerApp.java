@@ -34,8 +34,8 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DefaultConfigPersistence;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
-import io.airbyte.scheduler.persistence.DefaultSchedulerPersistence;
-import io.airbyte.scheduler.persistence.SchedulerPersistence;
+import io.airbyte.scheduler.persistence.DefaultJobPersistence;
+import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import java.nio.file.Path;
@@ -66,16 +66,16 @@ public class SchedulerApp {
 
   private final Path workspaceRoot;
   private final ProcessBuilderFactory pbf;
-  private final SchedulerPersistence schedulerPersistence;
+  private final JobPersistence jobPersistence;
   private final ConfigRepository configRepository;
 
   public SchedulerApp(Path workspaceRoot,
                       ProcessBuilderFactory pbf,
-                      SchedulerPersistence schedulerPersistence,
+                      JobPersistence jobPersistence,
                       ConfigRepository configRepository) {
     this.workspaceRoot = workspaceRoot;
     this.pbf = pbf;
-    this.schedulerPersistence = schedulerPersistence;
+    this.jobPersistence = jobPersistence;
     this.configRepository = configRepository;
   }
 
@@ -84,9 +84,9 @@ public class SchedulerApp {
     final ScheduledExecutorService scheduledPool = Executors.newSingleThreadScheduledExecutor();
     final WorkerRunFactory workerRunFactory = new WorkerRunFactory(workspaceRoot, pbf);
 
-    final JobRetrier jobRetrier = new JobRetrier(schedulerPersistence, Instant::now);
-    final JobScheduler jobScheduler = new JobScheduler(schedulerPersistence, configRepository);
-    final JobSubmitter jobSubmitter = new JobSubmitter(workerThreadPool, schedulerPersistence, configRepository, workerRunFactory);
+    final JobRetrier jobRetrier = new JobRetrier(jobPersistence, Instant::now);
+    final JobScheduler jobScheduler = new JobScheduler(jobPersistence, configRepository);
+    final JobSubmitter jobSubmitter = new JobSubmitter(workerThreadPool, jobPersistence, configRepository, workerRunFactory);
 
     scheduledPool.scheduleWithFixedDelay(
         () -> {
@@ -122,14 +122,14 @@ public class SchedulerApp {
         configs.getLocalDockerMount(),
         configs.getDockerNetwork());
 
-    final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(database);
+    final JobPersistence jobPersistence = new DefaultJobPersistence(database);
     final ConfigPersistence configPersistence = new DefaultConfigPersistence(configRoot);
     final ConfigRepository configRepository = new ConfigRepository(configPersistence);
 
     TrackingClientSingleton.initialize(configs.getTrackingStrategy(), configs.getAirbyteVersion(), configRepository);
 
     LOGGER.info("Launching scheduler...");
-    new SchedulerApp(workspaceRoot, pbf, schedulerPersistence, configRepository).start();
+    new SchedulerApp(workspaceRoot, pbf, jobPersistence, configRepository).start();
   }
 
 }

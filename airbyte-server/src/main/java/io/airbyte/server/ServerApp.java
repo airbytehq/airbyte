@@ -34,8 +34,8 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DefaultConfigPersistence;
 import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.db.Databases;
-import io.airbyte.scheduler.persistence.DefaultSchedulerPersistence;
-import io.airbyte.scheduler.persistence.SchedulerPersistence;
+import io.airbyte.scheduler.persistence.DefaultJobPersistence;
+import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.apis.ConfigurationApi;
 import io.airbyte.server.cache.DefaultSpecCache;
 import io.airbyte.server.errors.InvalidInputExceptionMapper;
@@ -65,12 +65,12 @@ public class ServerApp {
   private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
 
   private final ConfigRepository configRepository;
-  private final SchedulerPersistence schedulerPersistence;
+  private final JobPersistence jobPersistence;
 
-  public ServerApp(final ConfigRepository configRepository, final SchedulerPersistence schedulerPersistence) {
+  public ServerApp(final ConfigRepository configRepository, final JobPersistence jobPersistence) {
 
     this.configRepository = configRepository;
-    this.schedulerPersistence = schedulerPersistence;
+    this.jobPersistence = jobPersistence;
   }
 
   public void start() throws Exception {
@@ -82,7 +82,7 @@ public class ServerApp {
 
     ConfigurationApiFactory.setSpecCache(new DefaultSpecCache());
     ConfigurationApiFactory.setConfigRepository(configRepository);
-    ConfigurationApiFactory.setSchedulerPersistence(schedulerPersistence);
+    ConfigurationApiFactory.setJobPersistence(jobPersistence);
 
     ResourceConfig rc =
         new ResourceConfig()
@@ -167,13 +167,13 @@ public class ServerApp {
     TrackingClientSingleton.initialize(configs.getTrackingStrategy(), configs.getAirbyteVersion(), configRepository);
 
     LOGGER.info("Creating Scheduler persistence...");
-    final SchedulerPersistence schedulerPersistence = new DefaultSchedulerPersistence(Databases.createPostgresDatabase(
+    final JobPersistence jobPersistence = new DefaultJobPersistence(Databases.createPostgresDatabase(
         configs.getDatabaseUser(),
         configs.getDatabasePassword(),
         configs.getDatabaseUrl()));
 
     LOGGER.info("Starting server...");
-    new ServerApp(configRepository, schedulerPersistence).start();
+    new ServerApp(configRepository, jobPersistence).start();
   }
 
 }

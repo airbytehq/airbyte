@@ -1,0 +1,30 @@
+name: Slash Command Dispatch
+on:
+  issue_comment:
+    types: [created]
+jobs:
+  slashCommandDispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get PR Ref
+        id: getref
+        run: |
+          echo "::set-output name=ref::$(curl ${{ github.event.issue.pull_request.url }} | jq -r '.head.ref')"
+      - name: Slash Command Dispatch
+        id: scd
+        uses: peter-evans/slash-command-dispatch@v2
+        with:
+          token: ${{ secrets.SLASH_COMMAND_PAT }}
+          commands: |
+            test
+          static-args: |
+            ref=${{ steps.getref.outputs.ref }}
+            comment-id=${{ github.event.comment.id }}
+          dispatch-type: workflow
+      - name: Edit comment with error message
+        if: steps.scd.outputs.error-message
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.comment.id }}
+          body: |
+            > Error: ${{ steps.scd.outputs.error-message }}

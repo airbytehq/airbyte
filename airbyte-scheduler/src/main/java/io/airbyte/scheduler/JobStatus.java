@@ -31,10 +31,11 @@ public enum JobStatus {
 
   PENDING,
   RUNNING,
+  INCOMPLETE,
   FAILED,
-  COMPLETED,
+  SUCCEEDED,
   CANCELLED;
 
-  public static Set<JobStatus> TERMINAL_STATUSES = Sets.newHashSet(FAILED, COMPLETED, CANCELLED);
+  public static Set<JobStatus> TERMINAL_STATUSES = Sets.newHashSet(FAILED, SUCCEEDED, CANCELLED);
 
 }

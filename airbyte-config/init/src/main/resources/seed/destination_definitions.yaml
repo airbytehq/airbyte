@@ -6,15 +6,20 @@
 - destinationDefinitionId: 25c5221d-dce2-4163-ade9-739ef790f503
   name: Postgres
   dockerRepository: airbyte/destination-postgres
-  dockerImageTag: 0.1.6
+  dockerImageTag: 0.1.7
   documentationUrl: https://hub.docker.com/r/airbyte/integration-singer-postgres-destination
 - destinationDefinitionId: 22f6c74f-5699-40ff-833c-4a879ea40133
   name: BigQuery
   dockerRepository: airbyte/destination-bigquery
-  dockerImageTag: 0.1.8
+  dockerImageTag: 0.1.9
   documentationUrl: https://hub.docker.com/r/airbyte/integration-singer-bigquery-destination
 - destinationDefinitionId: 424892c4-daac-4491-b35d-c6688ba547ba
   name: Snowflake
   dockerRepository: airbyte/destination-snowflake
   dockerImageTag: 0.1.8
   documentationUrl: https://docs.airbyte.io/integrations/destinations/snowflake
+- destinationDefinitionId: f7a7d195-377f-cf5b-70a5-be6b819019dc
+  name: Redshift
+  dockerRepository: airbyte/destination-redshift
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/redshift
