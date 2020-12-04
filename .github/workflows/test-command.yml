@@ -66,15 +66,15 @@ jobs:
           MAILCHIMP_TEST_CREDS: ${{ secrets.MAILCHIMP_TEST_CREDS }}
       - run: |
           ./tools/bin/ci_integration_test.sh ${{ github.event.inputs.connector }}
-      - name: Add Success Reaction
-        if: success()
+      - name: Add Success Comment
+        if: github.event.inputs.comment-id && success()
         uses: peter-evans/create-or-update-comment@v1
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
             > :white_check_mark: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
-      - name: Add Failure Reaction
-        if: ${{ !success() }}
+      - name: Add Failure Comment
+        if: github.event.inputs.comment-id && !success()
         uses: peter-evans/create-or-update-comment@v1
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
