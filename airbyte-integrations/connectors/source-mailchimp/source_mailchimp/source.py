@@ -26,7 +26,15 @@ import json
 from collections import defaultdict
 from typing import DefaultDict, Generator
 
-from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status
+from airbyte_protocol import (
+    AirbyteCatalog,
+    AirbyteConnectionStatus,
+    AirbyteMessage,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    Status,
+    SyncMode,
+)
 from base_python import AirbyteLogger, ConfigContainer, Source
 
 from .client import Client
@@ -70,9 +78,7 @@ class SourceMailchimp(Source):
 
         logger.info("Starting syncing mailchimp")
         for configured_stream in catalog.streams:
-            stream = configured_stream.stream
-            for record in self._read_record(client=client, stream=stream.name, state=state):
-                yield record
+            yield from self._read_record(client=client, configured_stream=configured_stream, state=state)
 
         logger.info("Finished syncing mailchimp")
 
@@ -82,11 +88,15 @@ class SourceMailchimp(Source):
 
         return client
 
-    def _read_record(self, client: Client, stream: str, state: DefaultDict[str, any] = None) -> Generator[AirbyteMessage, None, None]:
+    def _read_record(
+        self, client: Client, configured_stream: ConfiguredAirbyteStream, state: DefaultDict[str, any] = None
+    ) -> Generator[AirbyteMessage, None, None]:
         entity_map = {
             "Lists": client.lists,
             "Campaigns": client.campaigns,
         }
 
-        for record in entity_map[stream](state=state):
+        stream_name = configured_stream.stream.name
+        input_state = state if configured_stream.sync_mode == SyncMode.incremental else defaultdict(dict)
+        for record in entity_map[stream_name](state=input_state):
             yield record
