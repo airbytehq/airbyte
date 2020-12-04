@@ -10,7 +10,7 @@ all_standard_python_tests=$(./gradlew standardSourceTestPython --dry-run | grep 
 
 if [[ "$connector" == "all" ]] ; then
   echo "Running: ./gradlew --no-daemon --scan integrationTest standardSourceTestPython"
-  ./gradlew --no-daemon --scan integrationTest standardSourceTestPython
+#  ./gradlew --no-daemon --scan integrationTest standardSourceTestPython
 else
   STAT_KEY="$connector"-"$ACTION_RUN_ID"
   trap 'catch $? $LINENO' EXIT
@@ -42,13 +42,13 @@ else
   standardPythonTestCommand=":airbyte-integrations:connectors:$connector:standardSourceTestPython"
   if [ -n "$selected_integration_test" ] && [ -n "$selected_standard_python_test" ] ; then
     echo "Running: ./gradlew --no-daemon --scan $integrationTestCommand $standardPythonTestCommand"
-    ./gradlew --no-daemon --scan "$integrationTestCommand" "$standardPythonTestCommand"
+#    ./gradlew --no-daemon --scan "$integrationTestCommand" "$standardPythonTestCommand"
   elif [ -z "$selected_integration_test" ] && [ -n "$selected_standard_python_test" ] ; then
     echo "Running: ./gradlew --no-daemon --scan $standardPythonTestCommand"
-    ./gradlew --no-daemon --scan "$standardPythonTestCommand"
+#    ./gradlew --no-daemon --scan "$standardPythonTestCommand"
   elif [ -n "$selected_integration_test" ] && [ -z "$selected_standard_python_test" ] ; then
     echo "Running: ./gradlew --no-daemon --scan $integrationTestCommand"
-    ./gradlew --no-daemon --scan "$integrationTestCommand"
+#    ./gradlew --no-daemon --scan "$integrationTestCommand"
   else
     echo "Connector '$connector' not found..."
     exit 1
