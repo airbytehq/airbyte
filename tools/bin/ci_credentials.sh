@@ -67,3 +67,7 @@ echo "$FRESHDESK_TEST_CREDS" > "${FRESHDESK_SECRETS_DIR}/config.json"
 TWILIO_SECRETS_DIR=airbyte-integrations/connectors/source-twilio-singer/secrets
 mkdir $TWILIO_SECRETS_DIR
 echo "$TWILIO_TEST_CREDS" > "${TWILIO_SECRETS_DIR}/config.json"
+
+BRAINTREE_SECRETS_DIR=airbyte-integrations/connectors/source-braintree-singer/secrets
+mkdir $BRAINTREE_SECRETS_DIR
+echo "$BRAINTREE_TEST_CREDS" > "${BRAINTREE_SECRETS_DIR}/config.json"
