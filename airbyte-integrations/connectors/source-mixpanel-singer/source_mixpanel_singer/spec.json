@@ -31,6 +31,7 @@
       "project_timezone": {
         "type": "string",
         "description": "Time zone in which integer date times are stored. The project timezone may be found in the project settings in the Mixpanel console.",
+        "default": "US/Pacific",
         "examples": ["US/Pacific", "UTC"]
       },
       "select_properties_by_default": {

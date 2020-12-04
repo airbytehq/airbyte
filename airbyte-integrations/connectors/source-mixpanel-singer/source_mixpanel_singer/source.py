@@ -66,8 +66,8 @@ class BaseSingerSource(SingerSource):
 class SourceMixpanelSinger(BaseSingerSource):
     tap_cmd = "tap-mixpanel"
     tap_name = "Mixpanel API"
-    api_error = MixpanelClient
-    client_class = MixpanelError
+    api_error = MixpanelError
+    client_class = MixpanelClient
 
     def transform_config(self, raw_config):
         airbyte_config = {
@@ -76,7 +76,7 @@ class SourceMixpanelSinger(BaseSingerSource):
             "start_date": raw_config.get("start_date"),
             "date_window_size": raw_config.get("date_window_size", 30),
             "attribution_window": raw_config.get("attribution_window", 5),
-            "project_timezone": raw_config.get("US/Pacific"),
+            "project_timezone": raw_config.get("project_timezone", "US/Pacific"),
             "select_properties_by_default": raw_config.get("select_properties_by_default"),
         }
         # drop None values as some of them has no default fallback
@@ -84,6 +84,6 @@ class SourceMixpanelSinger(BaseSingerSource):
 
     def try_connect(self, logger: AirbyteLogger, config: dict):
         client = self.client_class(user_agent=config["user_agent"], api_secret=config["api_secret"])
-        ok = client.check_access_token()
+        ok = client.check_access()
         if not ok:
             raise self.api_error(f"Got an empty response from {self.tap_name}, check your permissions")
