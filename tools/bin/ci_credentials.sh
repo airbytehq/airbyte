@@ -1,11 +1,17 @@
 #!/usr/bin/env bash
 
+. tools/lib/lib.sh
+
 set -e
 
 function write_standard_creds() {
   local connector_name=$1
   local creds=$2
   local cred_filename=$3 || "config.json"
+
+  [ -z "$connector_name" ] && error "Empty connector name"
+  [ -z "$creds" ] && error "Creds not set for $connector_name"
+
   local secrets_dir="airbyte-integrations/connectors/${connector_name}/secrets"
   mkdir -p "$secrets_dir"
   echo "$creds" > "${secrets_dir}/${cred_filename}"
