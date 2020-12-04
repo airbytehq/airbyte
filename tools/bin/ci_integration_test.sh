@@ -30,11 +30,25 @@ else
     fi
   }
 
+    if [[ -z "$BUILD_STAT_BUCKET" ]] ; then
+      echo "empty BUILD_STAT_BUCKET"
+    fi
+
+    if [[ -z "$BUILD_STAT_WRITE_KEY" ]] ; then
+      echo "empty BUILD_STAT_WRITE_KEY"
+    fi
+
+    if [[ -z "$ACTION_RUN_ID" ]] ; then
+      echo "empty ACTION_RUN_ID"
+    fi
+
+    echo "action run id is $ACTION_RUN_ID"
     echo "stat key is $STAT_KEY"
+    echo "======"
     curl "https://kvdb.io/$BUILD_STAT_BUCKET/$STAT_KEY" \
       -u "$BUILD_STAT_WRITE_KEY:" \
-      -d "in_progress-$(date +%s )" -vvv
-    echo ""
+      -d "in_progress-$(date +%s )"
+    echo "======"
     echo "Reported in_progress build status."
 
   selected_integration_test=$(echo "$all_integration_tests" | grep "^$connector$" || echo "")
