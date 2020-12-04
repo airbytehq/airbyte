@@ -67,3 +67,7 @@ echo "$FRESHDESK_TEST_CREDS" > "${FRESHDESK_SECRETS_DIR}/config.json"
 TWILIO_SECRETS_DIR=airbyte-integrations/connectors/source-twilio/secrets
 mkdir $TWILIO_SECRETS_DIR
 echo "$TWILIO_TEST_CREDS" > "${TWILIO_SECRETS_DIR}/config.json"
+
+SLACK_SECRETS_DIR=airbyte-integrations/connectors/source-slack-singer/secrets
+mkdir $SLACK_SECRETS_DIR
+echo "$SLACK_TEST_CREDS" > "${SLACK_SECRETS_DIR}/config.json"
