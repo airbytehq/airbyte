@@ -147,8 +147,8 @@ public abstract class TestDestination {
     final OutputAndStatus<StandardGetSpecOutput> output = runSpec();
     assertTrue(output.getOutput().isPresent());
     final StandardGetSpecOutput spec = output.getOutput().get();
-    if (spec.getSpecification().getIncrementalSupport() != null) {
-      return spec.getSpecification().getIncrementalSupport();
+    if (spec.getSpecification().getSupportsIncremental() != null) {
+      return spec.getSpecification().getSupportsIncremental();
     } else {
       return false;
     }
