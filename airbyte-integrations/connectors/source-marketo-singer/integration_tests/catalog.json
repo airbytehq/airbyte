@@ -14,16 +14,10 @@
               "type": "string"
             },
             "description": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "primaryAttribute": {
-              "type": [
-                "object",
-                "null"
-              ],
+              "type": ["object", "null"],
               "properties": {
                 "name": {
                   "type": "string"
@@ -34,10 +28,7 @@
               }
             },
             "attributes": {
-              "type": [
-                "array",
-                "null"
-              ],
+              "type": ["array", "null"],
               "items": {
                 "type": "object",
                 "properties": {
