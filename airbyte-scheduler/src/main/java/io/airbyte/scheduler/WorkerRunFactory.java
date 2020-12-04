@@ -65,18 +65,22 @@ public class WorkerRunFactory {
   private final Path workspaceRoot;
   private final ProcessBuilderFactory pbf;
   private final Creator creator;
+  private final NormalizationRunnerFactory normalizationRunnerFactory;
 
   public WorkerRunFactory(final Path workspaceRoot,
-                          final ProcessBuilderFactory pbf) {
-    this(workspaceRoot, pbf, WorkerRun::new);
+                          final ProcessBuilderFactory pbf,
+                          final NormalizationRunnerFactory normalizationRunnerFactory) {
+    this(workspaceRoot, pbf, WorkerRun::new, normalizationRunnerFactory);
   }
 
   WorkerRunFactory(final Path workspaceRoot,
                    final ProcessBuilderFactory pbf,
-                   final Creator creator) {
+                   final Creator creator,
+                   final NormalizationRunnerFactory normalizationRunnerFactory) {
     this.workspaceRoot = workspaceRoot;
     this.pbf = pbf;
     this.creator = creator;
+    this.normalizationRunnerFactory = normalizationRunnerFactory;
   }
 
   public WorkerRun create(final Job job) {
@@ -141,7 +145,7 @@ public class WorkerRunFactory {
                 new DefaultAirbyteSource(sourceLauncher),
                 new DefaultAirbyteDestination(destinationLauncher),
                 new AirbyteMessageTracker(),
-                NormalizationRunnerFactory.create(
+                normalizationRunnerFactory.create(
                     config.getDestinationDockerImage(),
                     pbf,
                     syncInput.getDestinationConnection().getConfiguration()))));

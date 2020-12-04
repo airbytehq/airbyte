@@ -36,6 +36,7 @@ import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import java.nio.file.Path;
@@ -68,21 +69,24 @@ public class SchedulerApp {
   private final ProcessBuilderFactory pbf;
   private final JobPersistence jobPersistence;
   private final ConfigRepository configRepository;
+  private final String airbyteVersion;
 
   public SchedulerApp(Path workspaceRoot,
                       ProcessBuilderFactory pbf,
                       JobPersistence jobPersistence,
-                      ConfigRepository configRepository) {
+                      ConfigRepository configRepository,
+                      String airbyteVersion) {
     this.workspaceRoot = workspaceRoot;
     this.pbf = pbf;
     this.jobPersistence = jobPersistence;
     this.configRepository = configRepository;
+    this.airbyteVersion = airbyteVersion;
   }
 
   public void start() {
     final ExecutorService workerThreadPool = Executors.newFixedThreadPool(MAX_WORKERS, THREAD_FACTORY);
     final ScheduledExecutorService scheduledPool = Executors.newSingleThreadScheduledExecutor();
-    final WorkerRunFactory workerRunFactory = new WorkerRunFactory(workspaceRoot, pbf);
+    final WorkerRunFactory workerRunFactory = new WorkerRunFactory(workspaceRoot, pbf, new NormalizationRunnerFactory(airbyteVersion));
 
     final JobRetrier jobRetrier = new JobRetrier(jobPersistence, Instant::now);
     final JobScheduler jobScheduler = new JobScheduler(jobPersistence, configRepository);
@@ -129,7 +133,7 @@ public class SchedulerApp {
     TrackingClientSingleton.initialize(configs.getTrackingStrategy(), configs.getAirbyteVersion(), configRepository);
 
     LOGGER.info("Launching scheduler...");
-    new SchedulerApp(workspaceRoot, pbf, jobPersistence, configRepository).start();
+    new SchedulerApp(workspaceRoot, pbf, jobPersistence, configRepository, configs.getAirbyteVersion()).start();
   }
 
 }

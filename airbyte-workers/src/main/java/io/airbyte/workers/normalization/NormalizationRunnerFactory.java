@@ -42,7 +42,13 @@ public class NormalizationRunnerFactory {
           .put("airbyte/destination-snowflake", DefaultNormalizationRunner.DestinationType.SNOWFLAKE)
           .build();
 
-  public static NormalizationRunner create(String imageName, ProcessBuilderFactory pbf, JsonNode config) {
+  private final String normalizationVersion;
+
+  public NormalizationRunnerFactory(String normalizationVersion) {
+    this.normalizationVersion = normalizationVersion;
+  }
+
+  public NormalizationRunner create(String imageName, ProcessBuilderFactory pbf, JsonNode config) {
     if (!shouldNormalize(config)) {
       return new NoOpNormalizationRunner();
     }
@@ -50,7 +56,7 @@ public class NormalizationRunnerFactory {
     final String imageNameWithoutTag = imageName.split(":")[0];
 
     if (NORMALIZATION_MAPPING.containsKey(imageNameWithoutTag)) {
-      return new DefaultNormalizationRunner(NORMALIZATION_MAPPING.get(imageNameWithoutTag), pbf);
+      return new DefaultNormalizationRunner(NORMALIZATION_MAPPING.get(imageNameWithoutTag), pbf, normalizationVersion);
     } else {
       throw new IllegalStateException(
           String.format("Requested normalization for %s, but it is not included in the normalization mapping.", imageName));

@@ -40,6 +40,7 @@ import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.workers.Worker;
+import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import io.airbyte.workers.wrappers.JobOutputCheckConnectionWorker;
 import io.airbyte.workers.wrappers.JobOutputDiscoverSchemaWorker;
@@ -65,6 +66,8 @@ class WorkerRunFactoryTest {
   private WorkerRunFactory.Creator creator;
 
   private WorkerRunFactory factory;
+  private ProcessBuilderFactory pbf;
+  private NormalizationRunnerFactory normalizationRunnerFactory;
 
   @BeforeEach
   void setUp() throws IOException {
@@ -74,9 +77,11 @@ class WorkerRunFactoryTest {
     when(job.getConfig().getSync().getDestinationDockerImage()).thenReturn("airbyte/destination-moon:0.1.0");
 
     creator = mock(WorkerRunFactory.Creator.class);
+    pbf = mock(ProcessBuilderFactory.class);
+    normalizationRunnerFactory = mock(NormalizationRunnerFactory.class);
     rootPath = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "test");
 
-    factory = new WorkerRunFactory(rootPath, mock(ProcessBuilderFactory.class), creator);
+    factory = new WorkerRunFactory(rootPath, pbf, creator, normalizationRunnerFactory);
   }
 
   @SuppressWarnings("unchecked")
@@ -114,9 +119,7 @@ class WorkerRunFactoryTest {
   void testSync() {
     when(job.getConfig().getConfigType()).thenReturn(JobConfig.ConfigType.SYNC);
 
-    factory.create(job);
-
-    StandardSyncInput expectedInput = new StandardSyncInput()
+    final StandardSyncInput expectedInput = new StandardSyncInput()
         .withSourceConnection(job.getConfig().getSync().getSourceConnection())
         .withDestinationConnection(job.getConfig().getSync().getDestinationConnection())
         .withCatalog(AirbyteProtocolConverters.toConfiguredCatalog(job.getConfig().getSync().getStandardSync().getSchema()))
@@ -124,8 +127,13 @@ class WorkerRunFactoryTest {
         .withSyncMode(job.getConfig().getSync().getStandardSync().getSyncMode())
         .withState(job.getConfig().getSync().getState());
 
+    factory.create(job);
+
     ArgumentCaptor<Worker<StandardSyncInput, JobOutput>> argument = ArgumentCaptor.forClass(Worker.class);
     verify(creator).create(eq(rootPath.resolve("1").resolve("2")), eq(expectedInput), argument.capture());
+    verify(normalizationRunnerFactory)
+        .create(job.getConfig().getSync().getDestinationDockerImage(), pbf, expectedInput.getDestinationConnection().getConfiguration());
+
     Assertions.assertTrue(argument.getValue() instanceof JobOutputSyncWorker);
   }
 
