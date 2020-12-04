@@ -63,6 +63,7 @@ jobs:
           FRESHDESK_TEST_CREDS: ${{ secrets.FRESHDESK_TEST_CREDS }}
           TWILIO_TEST_CREDS: ${{ secrets.TWILIO_TEST_CREDS }}
           SOURCE_RECURLY_INTEGRATION_TEST_CREDS: ${{ secrets.SOURCE_RECURLY_INTEGRATION_TEST_CREDS }}
+          SENDGRID_INTEGRATION_TEST_CREDS: ${{ secrets.SENDGRID_INTEGRATION_TEST_CREDS }}
       - run: |
           ./tools/bin/ci_integration_test.sh ${{ github.event.inputs.connector }}
         env:
