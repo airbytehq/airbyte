@@ -30,12 +30,11 @@ else
     fi
   }
 
-  if [ "$GITHUB_REF" == "refs/heads/master" ]; then
+
     curl "https://kvdb.io/$BUILD_STAT_BUCKET/$STAT_KEY" \
       -u "$BUILD_STAT_WRITE_KEY:" \
-      -d "in_progress-$(date +%s )"
+      -d "in_progress-$(date +%s )" -vvv
     echo "Reported in_progress build status."
-  fi
 
   selected_integration_test=$(echo "$all_integration_tests" | grep "^$connector$" || echo "")
   selected_standard_python_test=$(echo "$all_standard_python_tests" | grep "^$connector$" || echo "")
