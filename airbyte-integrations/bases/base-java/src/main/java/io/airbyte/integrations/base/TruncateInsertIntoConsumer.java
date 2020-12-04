@@ -27,6 +27,8 @@ package io.airbyte.integrations.base;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of TmpToFinalTable in order to move data from a tmp destination to a final target.
@@ -36,6 +38,8 @@ import java.util.Map.Entry;
  * or not, in which case data is appended to the table when inserting)
  */
 public class TruncateInsertIntoConsumer implements TmpToFinalTable {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(TruncateInsertIntoConsumer.class);
 
   private final InsertTableOperations destination;
   private Map<String, DestinationCopyContext> copyConfigs;
@@ -55,6 +59,7 @@ public class TruncateInsertIntoConsumer implements TmpToFinalTable {
     if (copyConfigs.isEmpty()) {
       throw new RuntimeException("copyConfigs is empty, did you setContext() beforehand?");
     }
+    StringBuilder queries = new StringBuilder();
     for (Entry<String, DestinationCopyContext> entry : copyConfigs.entrySet()) {
       final DestinationCopyContext config = entry.getValue();
       final String schemaName = config.getOutputNamespaceName();
@@ -63,12 +68,21 @@ public class TruncateInsertIntoConsumer implements TmpToFinalTable {
 
       destination.createDestinationTable(schemaName, dstTableName);
       switch (config.getSyncMode()) {
-        case FULL_REFRESH -> destination.truncateTable(schemaName, dstTableName);
+        case FULL_REFRESH -> queries.append(destination.truncateTableQuery(schemaName, dstTableName));
         case INCREMENTAL -> {}
         default -> throw new IllegalStateException("Unrecognized sync mode: " + config.getSyncMode());
       }
-      destination.insertIntoFromSelect(schemaName, srcTableName, dstTableName);
+      queries.append(destination.insertIntoFromSelectQuery(schemaName, srcTableName, dstTableName));
+      if (!config.getTransactionMode()) {
+        try {
+          destination.executeTransaction(queries.toString());
+        } catch (Exception e) {
+          LOGGER.error(String.format("Failed to write %s.%s because of ", schemaName, dstTableName), e);
+        }
+        queries = new StringBuilder();
+      }
     }
+    destination.executeTransaction(queries.toString());
   }
 
 }

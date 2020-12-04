@@ -32,8 +32,10 @@ public interface InsertTableOperations {
 
   void createDestinationTable(String schemaName, String tmpTableName) throws Exception;
 
-  void truncateTable(String schemaName, String tableName) throws Exception;
+  String truncateTableQuery(String schemaName, String tableName);
 
-  void insertIntoFromSelect(String schemaName, String srcTableName, String dstTableName) throws Exception;
+  String insertIntoFromSelectQuery(String schemaName, String srcTableName, String dstTableName);
+
+  void executeTransaction(String queries) throws Exception;
 
 }
