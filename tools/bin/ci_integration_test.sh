@@ -18,11 +18,11 @@ else
     if [ "$GITHUB_REF" == "refs/heads/master" ]; then
       if [ "$1" == "0" ]; then
         curl "https://kvdb.io/$BUILD_STAT_BUCKET/$STAT_KEY" \
-          -d "write_key=$BUILD_STAT_WRITE_KEY" \
+          -u "$BUILD_STAT_WRITE_KEY:" \
           -d "success-$(date +%s )" || true
       else
         curl "https://kvdb.io/$BUILD_STAT_BUCKET/$STAT_KEY" \
-          -d "write_key=$BUILD_STAT_WRITE_KEY" \
+          -u "$BUILD_STAT_WRITE_KEY:" \
           -d "failure-$(date +%s )" || true
       fi
     fi
@@ -30,7 +30,7 @@ else
 
   if [ "$GITHUB_REF" == "refs/heads/master" ]; then
     curl "https://kvdb.io/$BUILD_STAT_BUCKET/$STAT_KEY" \
-      -d "write_key=$BUILD_STAT_WRITE_KEY" \
+      -u "$BUILD_STAT_WRITE_KEY:" \
       -d "in_progress-$(date +%s )" || true
   fi
 
