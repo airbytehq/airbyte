@@ -144,7 +144,14 @@ public abstract class TestDestination {
    * @return - a boolean.
    */
   protected boolean implementsIncremental() {
-    return false;
+    final OutputAndStatus<StandardGetSpecOutput> output = runSpec();
+    assertTrue(output.getOutput().isPresent());
+    final StandardGetSpecOutput spec = output.getOutput().get();
+    if (spec.getSpecification().getIncrementalSupport() != null) {
+      return spec.getSpecification().getIncrementalSupport();
+    } else {
+      return false;
+    }
   }
 
   /**
@@ -276,6 +283,7 @@ public abstract class TestDestination {
   @Test
   public void testIncrementalSync() throws Exception {
     if (!implementsIncremental()) {
+      LOGGER.info("Destination's spec.json does not include '\"incrementalSupport\" ; true'");
       return;
     }
 
