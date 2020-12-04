@@ -70,3 +70,7 @@ echo "$FRESHDESK_TEST_CREDS" > "${FRESHDESK_SECRETS_DIR}/config.json"
 TWILIO_SECRETS_DIR=airbyte-integrations/connectors/source-twilio-singer/secrets
 mkdir $TWILIO_SECRETS_DIR
 echo "$TWILIO_TEST_CREDS" > "${TWILIO_SECRETS_DIR}/config.json"
+
+SENDGRID_SECRETS_DIR=airbyte-integrations/connectors/source-sendgrid/secrets
+mkdir $SENDGRID_SECRETS_DIR
+echo "$SENDGRID_INTEGRATION_TEST_CREDS" > "${SENDGRID_SECRETS_DIR}/config.json"
