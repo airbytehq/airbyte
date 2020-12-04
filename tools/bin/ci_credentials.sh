@@ -73,4 +73,4 @@ echo "$TWILIO_TEST_CREDS" > "${TWILIO_SECRETS_DIR}/config.json"
 
 SENDGRID_SECRETS_DIR=airbyte-integrations/connectors/source-sendgrid/secrets
 mkdir $SENDGRID_SECRETS_DIR
-echo "$SENDGRID_SECRETS_DIR" > "${SENDGRID_SECRETS_DIR}/config.json"
+echo "$SENDGRID_INTEGRATION_TEST_CREDS" > "${SENDGRID_SECRETS_DIR}/config.json"
