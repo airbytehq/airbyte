@@ -60,6 +60,9 @@ jobs:
           AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
           AWS_REDSHIFT_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_REDSHIFT_INTEGRATION_TEST_CREDS }}
           MAILCHIMP_TEST_CREDS: ${{ secrets.MAILCHIMP_TEST_CREDS }}
+          ACTION_RUN_ID: ${{github.run_id}}
+          BUILD_STAT_WRITE_KEY: ${{ secrets.BUILD_STAT_WRITE_KEY }}
+          BUILD_STAT_BUCKET: ${{ secrets.BUILD_STAT_BUCKET }}
       - run: |
           ./tools/bin/ci_integration_test.sh ${{ github.event.inputs.connector }}
       - name: Add Success Comment
