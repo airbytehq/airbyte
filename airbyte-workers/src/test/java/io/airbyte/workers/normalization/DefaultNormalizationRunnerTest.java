@@ -63,7 +63,7 @@ class DefaultNormalizationRunnerTest {
     config = mock(JsonNode.class);
     catalog = mock(ConfiguredAirbyteCatalog.class);
 
-    when(pbf.create(jobRoot, DefaultNormalizationRunner.NORMALIZATION_IMAGE_NAME, "run",
+    when(pbf.create(jobRoot, DefaultNormalizationRunner.NORMALIZATION_IMAGE_NAME + ":" + NORMALIZATION_IMAGE_VERSION, "run",
         "--integration-type", "bigquery",
         "--config", WorkerConstants.TARGET_CONFIG_JSON_FILENAME,
         "--catalog", WorkerConstants.CATALOG_JSON_FILENAME))

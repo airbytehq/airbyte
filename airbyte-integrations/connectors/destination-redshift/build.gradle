@@ -32,5 +32,6 @@ dependencies {
     integrationTestImplementation project(':airbyte-integrations:bases:standard-destination-test')
 
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
-    integrationTestImplementation files(project(':airbyte-integrations:bases:base-normalization').airbyteDocker.outputs)
+    // depends on normalization docker image creation, which is handled in composeBuild.
+    integrationTestImplementation files(task('composeBuild').outputs)
 }
