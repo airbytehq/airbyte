@@ -30,10 +30,11 @@ else
     fi
   }
 
-
+    echo "stat key is $STAT_KEY"
     curl "https://kvdb.io/$BUILD_STAT_BUCKET/$STAT_KEY" \
       -u "$BUILD_STAT_WRITE_KEY:" \
       -d "in_progress-$(date +%s )" -vvv
+    echo ""
     echo "Reported in_progress build status."
 
   selected_integration_test=$(echo "$all_integration_tests" | grep "^$connector$" || echo "")
