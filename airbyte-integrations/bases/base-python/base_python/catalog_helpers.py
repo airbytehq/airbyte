@@ -22,30 +22,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import json
-import pkgutil
-
-from airbyte_protocol import ConfiguredAirbyteCatalog, ConnectorSpecification
-from base_python_test import StandardSourceTestIface
+from airbyte_protocol import AirbyteCatalog, SyncMode
 
 
-class SourceGoogleAdwordsSingerStandardTest(StandardSourceTestIface):
-    def __init__(self):
-        pass
+class CatalogHelper:
+    @staticmethod
+    def coerce_catalog_as_full_refresh(catalog: AirbyteCatalog) -> AirbyteCatalog:
+        """
+        Updates the sync mode on all streams in this catalog to be full refresh
+        """
+        coerced_catalog = catalog.copy()
+        for stream in catalog.streams:
+            stream.source_defined_cursor = False
+            stream.supported_sync_modes = [SyncMode.full_refresh]
+            stream.default_cursor_field = None
 
-    def get_spec(self) -> ConnectorSpecification:
-        raw_spec = pkgutil.get_data(self.__class__.__module__.split(".")[0], "spec.json")
-        return ConnectorSpecification.parse_obj(json.loads(raw_spec))
-
-    def get_config(self) -> object:
-        return json.loads(pkgutil.get_data(self.__class__.__module__.split(".")[0], "config.json"))
-
-    def get_catalog(self) -> ConfiguredAirbyteCatalog:
-        raw_catalog = pkgutil.get_data(self.__class__.__module__.split(".")[0], "catalog.json")
-        return ConfiguredAirbyteCatalog.parse_obj(json.loads(raw_catalog))
-
-    def setup(self) -> None:
-        pass
-
-    def teardown(self) -> None:
-        pass
+        # remove nulls
+        return AirbyteCatalog.parse_raw(coerced_catalog.json(exclude_unset=True, exclude_none=True))

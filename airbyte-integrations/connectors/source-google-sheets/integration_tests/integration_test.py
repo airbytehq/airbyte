@@ -28,7 +28,7 @@ import shutil
 from pathlib import Path
 from typing import Dict
 
-from airbyte_protocol import AirbyteCatalog, ConnectorSpecification
+from airbyte_protocol import ConfiguredAirbyteCatalog, ConnectorSpecification
 from apiclient import discovery
 from base_python_test import StandardSourceTestIface
 from google_sheets_source.helpers import Helpers
@@ -54,9 +54,9 @@ class GoogleSheetsSourceStandardTest(StandardSourceTestIface):
         config = {"credentials_json": json.dumps(self._get_creds()), "spreadsheet_id": self._get_spreadsheet_id()}
         return config
 
-    def get_catalog(self) -> AirbyteCatalog:
-        raw_catalog = pkgutil.get_data(self.__class__.__module__.split(".")[0], "catalog.json")
-        return AirbyteCatalog.parse_obj(json.loads(raw_catalog))
+    def get_catalog(self) -> ConfiguredAirbyteCatalog:
+        raw_catalog = pkgutil.get_data(self.__class__.__module__.split(".")[0], "configured_catalog.json")
+        return ConfiguredAirbyteCatalog.parse_obj(json.loads(raw_catalog))
 
     def setup(self) -> None:
         Path(self._get_tmp_dir()).mkdir(parents=True, exist_ok=True)
