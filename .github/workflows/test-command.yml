@@ -75,7 +75,7 @@ jobs:
           body: |
             > :white_check_mark: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
       - name: Add Failure Reaction
-        if: !success()
+        if: failure()
         uses: peter-evans/create-or-update-comment@v1
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
