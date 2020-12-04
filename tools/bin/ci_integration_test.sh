@@ -10,7 +10,7 @@ all_standard_python_tests=$(./gradlew standardSourceTestPython --dry-run | grep 
 
 if [[ "$connector" == "all" ]] ; then
   echo "Running: ./gradlew --no-daemon --scan integrationTest standardSourceTestPython"
-#  ./gradlew --no-daemon --scan integrationTest standardSourceTestPython
+  ./gradlew --no-daemon --scan integrationTest standardSourceTestPython
 else
   STAT_KEY="$connector"-"$ACTION_RUN_ID"
   trap 'catch $? $LINENO' EXIT
@@ -30,26 +30,12 @@ else
     fi
   }
 
-    if [[ -z "$BUILD_STAT_BUCKET" ]] ; then
-      echo "empty BUILD_STAT_BUCKET"
-    fi
-
-    if [[ -z "$BUILD_STAT_WRITE_KEY" ]] ; then
-      echo "empty BUILD_STAT_WRITE_KEY"
-    fi
-
-    if [[ -z "$ACTION_RUN_ID" ]] ; then
-      echo "empty ACTION_RUN_ID"
-    fi
-
-    echo "action run id is $ACTION_RUN_ID"
-    echo "stat key is $STAT_KEY"
-    echo "======"
+  if [ "$GITHUB_REF" == "refs/heads/master" ]; then
     curl "https://kvdb.io/$BUILD_STAT_BUCKET/$STAT_KEY" \
       -u "$BUILD_STAT_WRITE_KEY:" \
       -d "in_progress-$(date +%s )"
-    echo "======"
     echo "Reported in_progress build status."
+  fi
 
   selected_integration_test=$(echo "$all_integration_tests" | grep "^$connector$" || echo "")
   selected_standard_python_test=$(echo "$all_standard_python_tests" | grep "^$connector$" || echo "")
@@ -57,13 +43,13 @@ else
   standardPythonTestCommand=":airbyte-integrations:connectors:$connector:standardSourceTestPython"
   if [ -n "$selected_integration_test" ] && [ -n "$selected_standard_python_test" ] ; then
     echo "Running: ./gradlew --no-daemon --scan $integrationTestCommand $standardPythonTestCommand"
-#    ./gradlew --no-daemon --scan "$integrationTestCommand" "$standardPythonTestCommand"
+    ./gradlew --no-daemon --scan "$integrationTestCommand" "$standardPythonTestCommand"
   elif [ -z "$selected_integration_test" ] && [ -n "$selected_standard_python_test" ] ; then
     echo "Running: ./gradlew --no-daemon --scan $standardPythonTestCommand"
-#    ./gradlew --no-daemon --scan "$standardPythonTestCommand"
+    ./gradlew --no-daemon --scan "$standardPythonTestCommand"
   elif [ -n "$selected_integration_test" ] && [ -z "$selected_standard_python_test" ] ; then
     echo "Running: ./gradlew --no-daemon --scan $integrationTestCommand"
-#    ./gradlew --no-daemon --scan "$integrationTestCommand"
+    ./gradlew --no-daemon --scan "$integrationTestCommand"
   else
     echo "Connector '$connector' not found..."
     exit 1
