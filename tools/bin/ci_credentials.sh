@@ -16,7 +16,7 @@ write_standard_creds destination-snowflake "$SNOWFLAKE_INTEGRATION_TEST_CREDS"
 write_standard_creds destination-redshift "$AWS_REDSHIFT_INTEGRATION_TEST_CREDS"
 
 
-write_standard_creds souce-google-adwords-singer "$ADWORDS_INTEGRATION_TEST_CREDS"
+write_standard_creds source-google-adwords-singer "$ADWORDS_INTEGRATION_TEST_CREDS"
 write_standard_creds source-googleanalytics-singer "$GOOGLE_ANALYTICS_TEST_CREDS"
 write_standard_creds source-googleanalytics-singer "$GOOGLE_ANALYTICS_TEST_TRACKING_ID" "tracker.txt"
 write_standard_creds source-google-sheets "$GSHEETS_INTEGRATION_TESTS_CREDS" "creds.json"
