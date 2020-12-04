@@ -19,11 +19,13 @@ else
       if [ "$1" == "0" ]; then
         curl "https://kvdb.io/$BUILD_STAT_BUCKET/$STAT_KEY" \
           -u "$BUILD_STAT_WRITE_KEY:" \
-          -d "success-$(date +%s )" || true
+          -d "success-$(date +%s )"
+        echo "Reported success build status."
       else
         curl "https://kvdb.io/$BUILD_STAT_BUCKET/$STAT_KEY" \
           -u "$BUILD_STAT_WRITE_KEY:" \
-          -d "failure-$(date +%s )" || true
+          -d "failure-$(date +%s )"
+        echo "Reported failure build status."
       fi
     fi
   }
@@ -31,7 +33,8 @@ else
   if [ "$GITHUB_REF" == "refs/heads/master" ]; then
     curl "https://kvdb.io/$BUILD_STAT_BUCKET/$STAT_KEY" \
       -u "$BUILD_STAT_WRITE_KEY:" \
-      -d "in_progress-$(date +%s )" || true
+      -d "in_progress-$(date +%s )"
+    echo "Reported in_progress build status."
   fi
 
   selected_integration_test=$(echo "$all_integration_tests" | grep "^$connector$" || echo "")
