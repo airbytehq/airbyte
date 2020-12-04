@@ -8,7 +8,6 @@ on:
       comment-id:
         description: 'The comment-id of the slash command. Used to update the comment with the status.'
         required: false
-        default: 738450400 # TODO remove after testing
 
 jobs:
   integration_test:
@@ -66,7 +65,7 @@ jobs:
           AWS_REDSHIFT_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_REDSHIFT_INTEGRATION_TEST_CREDS }}
           MAILCHIMP_TEST_CREDS: ${{ secrets.MAILCHIMP_TEST_CREDS }}
       - run: |
-          echo ${{ github.event.inputs.connector }} TODO temp to not waste time
+          ./tools/bin/ci_integration_test.sh ${{ github.event.inputs.connector }}
       - name: Add Success Reaction
         if: success()
         uses: peter-evans/create-or-update-comment@v1
