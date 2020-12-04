@@ -47,8 +47,8 @@ limit issues that are not automatically retried successfully.
 
 ### Requirements
 
-* Intercom API Key
+* Intercom Access Token
 
 ### Setup guide
 
-Please read [How to find your API key](https://support.freshdesk.com/support/solutions/articles/215517).
+Please read [How to get your Access Token](https://developers.intercom.com/building-apps/docs/authentication-types#section-how-to-get-your-access-token).
