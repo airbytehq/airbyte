@@ -44,7 +44,7 @@ public class SnowflakeIntegrationTest extends TestDestination {
   private JsonNode baseConfig;
   // config which refers to the schema that the test is being run in.
   private JsonNode config;
-  private ExtendedSQLNaming namingResolver = new ExtendedSQLNaming();
+  private final ExtendedSQLNaming namingResolver = new ExtendedSQLNaming();
 
   @Override
   protected String getImageName() {
@@ -69,7 +69,7 @@ public class SnowflakeIntegrationTest extends TestDestination {
 
   @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
-    return retrieveRecordsFromTable(env, namingResolver.getRawTableName(streamName))
+    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName))
         .stream()
         .map(j -> Jsons.deserialize(j.get(COLUMN_NAME).asText()))
         .collect(Collectors.toList());
@@ -87,7 +87,7 @@ public class SnowflakeIntegrationTest extends TestDestination {
       // Currently, Normalization always quote tables identifiers
       tableName = "\"" + tableName + "\"";
     }
-    return retrieveRecordsFromTable(testEnv, tableName);
+    return retrieveRecordsFromTable(tableName);
   }
 
   @Override
@@ -103,7 +103,7 @@ public class SnowflakeIntegrationTest extends TestDestination {
     return result;
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(TestDestinationEnv env, String tableName) throws SQLException, InterruptedException {
+  private List<JsonNode> retrieveRecordsFromTable(String tableName) throws SQLException, InterruptedException {
     return SnowflakeDatabase.executeSync(
         SnowflakeDatabase.getConnectionFactory(getConfig()),
         String.format("SELECT * FROM %s ORDER BY emitted_at ASC;", tableName),
