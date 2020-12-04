@@ -63,7 +63,7 @@ class BaseSingerSource(SingerSource):
         raise NotImplementedError
 
 
-class SourceIntercomSinger(BaseSingerSource):
+class SourceMixpanelSinger(BaseSingerSource):
     tap_cmd = "tap-mixpanel"
     tap_name = "Mixpanel API"
     api_error = MixpanelClient
