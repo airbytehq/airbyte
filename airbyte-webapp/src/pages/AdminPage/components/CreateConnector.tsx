@@ -35,9 +35,6 @@ const CreateConnector: React.FC<IProps> = ({ type }) => {
     SourceDefinitionResource.createShape()
   );
 
-  const createDestinationDefinition = useFetcher(
-    DestinationDefinitionResource.createShape()
-  );
   const onSubmitSource = async (sourceDefinition: ICreateProps) => {
     setErrorMessage("");
     try {
@@ -66,6 +63,9 @@ const CreateConnector: React.FC<IProps> = ({ type }) => {
     }
   };
 
+  const createDestinationDefinition = useFetcher(
+    DestinationDefinitionResource.createShape()
+  );
   const onSubmitDestination = async (destinationDefinition: ICreateProps) => {
     setErrorMessage("");
     try {
@@ -78,10 +78,10 @@ const CreateConnector: React.FC<IProps> = ({ type }) => {
             { workspaceId: config.ui.workspaceId },
             (
               newDestinationDefinitionId: string,
-              sourceDefinitionIds: { sourceDefinitions: string[] }
+              destinationDefinitionIds: { destinationDefinitions: string[] }
             ) => ({
               destinationDefinitions: [
-                ...sourceDefinitionIds.sourceDefinitions,
+                ...destinationDefinitionIds.destinationDefinitions,
                 newDestinationDefinitionId
               ]
             })

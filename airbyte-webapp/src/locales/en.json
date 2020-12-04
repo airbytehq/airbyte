@@ -182,7 +182,7 @@
   "admin.manageSource": "Manage your source connectors",
   "admin.availableSource": "Available source connectors",
   "admin.manageDestination": "Manage your destination connectors",
-  "admin.availableDestinations": "Available source destinations",
+  "admin.availableDestinations": "Available destination connectors",
   "admin.connectors": "Connectors",
   "admin.image": "Image",
   "admin.codeSource": "Code source",
