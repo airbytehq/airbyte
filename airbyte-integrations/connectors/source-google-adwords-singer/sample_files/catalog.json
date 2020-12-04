@@ -1,11 +1,13 @@
 {
   "streams": [
     {
-      "name": "accounts",
-      "json_schema": {
-        "properties": {
-          "name": {
-            "type": ["null", "string"]
+      "stream": {
+        "name": "accounts",
+        "json_schema": {
+          "properties": {
+            "name": {
+              "type": ["null", "string"]
+            }
           }
         }
       }

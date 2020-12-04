@@ -25,7 +25,7 @@ SOFTWARE.
 import json
 import pkgutil
 
-from airbyte_protocol import AirbyteStream
+from airbyte_protocol import AirbyteStream, SyncMode
 from python_http_client import ForbiddenError, UnauthorizedError
 from sendgrid import SendGridAPIClient
 
@@ -51,7 +51,7 @@ class Client:
         streams = []
         for schema, method in self.ENTITY_MAP.items():
             raw_schema = json.loads(pkgutil.get_data(self.__class__.__module__.split(".")[0], f"schemas/{schema}.json"))
-            streams.append(AirbyteStream(name=schema, json_schema=raw_schema))
+            streams.append(AirbyteStream(name=schema, json_schema=raw_schema, supported_sync_modes=[SyncMode.full_refresh]))
         return streams
 
     def lists(self):

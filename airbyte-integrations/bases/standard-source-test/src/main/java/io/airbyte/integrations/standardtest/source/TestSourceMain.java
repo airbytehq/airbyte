@@ -58,6 +58,9 @@ public class TestSourceMain {
     parser.addArgument("--catalog")
         .help("Path to file that contains catalog json");
 
+    parser.addArgument("--state")
+        .help("Path to the file containing state");
+
     Namespace ns = null;
     try {
       ns = parser.parseArgs(args);
@@ -70,7 +73,8 @@ public class TestSourceMain {
     final String specFile = ns.getString("spec");
     final String configFile = ns.getString("config");
     final String catalogFile = ns.getString("catalog");
-    ExecutableTestSource.TEST_CONFIG = new TestConfig(imageName, Path.of(specFile), Path.of(configFile), Path.of(catalogFile));
+    final String stateFile = ns.getString("state");
+    ExecutableTestSource.TEST_CONFIG = new TestConfig(imageName, Path.of(specFile), Path.of(configFile), Path.of(catalogFile), Path.of(stateFile));
 
     TestRunner.runTestClass(ExecutableTestSource.class);
   }
