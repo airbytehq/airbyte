@@ -43,30 +43,32 @@ class NormalizationRunnerFactoryTest {
 
   private static final JsonNode CONFIG_WITH_NORMALIZATION = Jsons.jsonNode(ImmutableMap.of("basic_normalization", true));
   private ProcessBuilderFactory pbf;
+  private NormalizationRunnerFactory normalizationRunnerFactory;
 
   @BeforeEach
   void setup() {
     pbf = mock(ProcessBuilderFactory.class);
+    normalizationRunnerFactory = new NormalizationRunnerFactory("organic");
   }
 
   @Test
   void testMappings() {
     assertEquals(DestinationType.BIGQUERY,
-        ((DefaultNormalizationRunner) NormalizationRunnerFactory.create(
+        ((DefaultNormalizationRunner) normalizationRunnerFactory.create(
             "airbyte/destination-bigquery:0.1.0", pbf, CONFIG_WITH_NORMALIZATION)).getDestinationType());
     assertEquals(DestinationType.POSTGRES,
-        ((DefaultNormalizationRunner) NormalizationRunnerFactory.create(
+        ((DefaultNormalizationRunner) normalizationRunnerFactory.create(
             "airbyte/destination-postgres:0.1.0", pbf, CONFIG_WITH_NORMALIZATION)).getDestinationType());
     assertEquals(DestinationType.SNOWFLAKE,
-        ((DefaultNormalizationRunner) NormalizationRunnerFactory.create(
+        ((DefaultNormalizationRunner) normalizationRunnerFactory.create(
             "airbyte/destination-snowflake:0.1.0", pbf, CONFIG_WITH_NORMALIZATION)).getDestinationType());
     assertThrows(IllegalStateException.class,
-        () -> NormalizationRunnerFactory.create("airbyte/destination-csv:0.1.0", pbf, CONFIG_WITH_NORMALIZATION));
+        () -> normalizationRunnerFactory.create("airbyte/destination-csv:0.1.0", pbf, CONFIG_WITH_NORMALIZATION));
   }
 
   @Test
   void testShouldNotNormalize() {
-    assertTrue(NormalizationRunnerFactory.create("airbyte/destination-bigquery:0.1.0", pbf,
+    assertTrue(normalizationRunnerFactory.create("airbyte/destination-bigquery:0.1.0", pbf,
         Jsons.jsonNode(Collections.emptyMap())) instanceof NoOpNormalizationRunner);
   }
 

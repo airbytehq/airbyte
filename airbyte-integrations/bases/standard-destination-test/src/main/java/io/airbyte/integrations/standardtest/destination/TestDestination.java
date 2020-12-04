@@ -386,7 +386,7 @@ public abstract class TestDestination {
       return;
     }
 
-    final NormalizationRunner runner = NormalizationRunnerFactory.create(
+    final NormalizationRunner runner = new NormalizationRunnerFactory("dev").create(
         getImageName(),
         pbf, targetConfig.getDestinationConnectionConfiguration());
     runner.start();
