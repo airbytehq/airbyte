@@ -15,7 +15,7 @@ else
   STAT_KEY="$connector"-"$ACTION_RUN_ID"
   trap 'catch $? $LINENO' EXIT
   catch() {
-    if [ "$BRANCH" == "master" ]; then
+    if [ "$GITHUB_REF" == "refs/heads/master" ]; then
       if [ "$1" == "0" ]; then
         curl "https://kvdb.io/$BUILD_STAT_BUCKET/$STAT_KEY" \
           -d "write_key=$BUILD_STAT_WRITE_KEY" \
@@ -28,7 +28,7 @@ else
     fi
   }
 
-  if [ "$BRANCH" == "master" ]; then
+  if [ "$GITHUB_REF" == "refs/heads/master" ]; then
     curl "https://kvdb.io/$BUILD_STAT_BUCKET/$STAT_KEY" \
       -d "write_key=$BUILD_STAT_WRITE_KEY" \
       -d "in_progress-$(date +%s )" || true

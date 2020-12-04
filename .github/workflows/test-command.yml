@@ -63,6 +63,7 @@ jobs:
           ACTION_RUN_ID: ${{github.run_id}}
           BUILD_STAT_WRITE_KEY: ${{ secrets.BUILD_STAT_WRITE_KEY }}
           BUILD_STAT_BUCKET: ${{ secrets.BUILD_STAT_BUCKET }}
+          GITHUB_REF: ${{ github.ref }}
       - run: |
           ./tools/bin/ci_integration_test.sh ${{ github.event.inputs.connector }}
       - name: Add Success Comment
