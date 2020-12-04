@@ -84,9 +84,9 @@ public class BufferedStreamConsumer extends FailureTrackingConsumer<AirbyteMessa
   }
 
   private static void writeStreamsWithNRecords(int minRecords,
-      Map<String, DestinationWriteContext> writeConfigs,
-      Map<String, CloseableQueue<byte[]>> writeBuffers,
-      BufferedWriteOperations destination) {
+                                               Map<String, DestinationWriteContext> writeConfigs,
+                                               Map<String, CloseableQueue<byte[]>> writeBuffers,
+                                               BufferedWriteOperations destination) {
     for (final Map.Entry<String, DestinationWriteContext> entry : writeConfigs.entrySet()) {
       final String schemaName = entry.getValue().getOutputNamespaceName();
       final String tmpTableName = entry.getValue().getOutputTableName();

@@ -206,7 +206,8 @@ public class SnowflakeDestination implements Destination {
     }
 
     /**
-     * Accumulate AirbyteRecordMessages from each buffer into batches of records so we can avoid wasteful inserts queries.
+     * Accumulate AirbyteRecordMessages from each buffer into batches of records so we can avoid
+     * wasteful inserts queries.
      *
      * @param writeBuffer the buffer of messages
      * @param maxRecords up to how many records should be accumulated
@@ -225,6 +226,7 @@ public class SnowflakeDestination implements Destination {
 
       return records;
     }
+
   }
 
 }

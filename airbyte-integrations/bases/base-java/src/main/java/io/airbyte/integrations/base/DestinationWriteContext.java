@@ -56,7 +56,12 @@ public class DestinationWriteContext {
     return syncMode;
   }
 
-  public boolean getTransactionMode() { return transactionMode; }
+  public boolean getTransactionMode() {
+    return transactionMode;
+  }
 
-  public void setTransactionMode(boolean transactionMode) { this.transactionMode = transactionMode; }
+  public void setTransactionMode(boolean transactionMode) {
+    this.transactionMode = transactionMode;
+  }
+
 }

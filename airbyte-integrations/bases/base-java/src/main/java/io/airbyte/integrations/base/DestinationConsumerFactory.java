@@ -1,3 +1,27 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2020 Airbyte
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package io.airbyte.integrations.base;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -11,7 +35,8 @@ import java.util.Map;
 public class DestinationConsumerFactory {
 
   /**
-   * This pipeline is based on DestinationConsumers that can interact with some kind of Sql based database destinations.
+   * This pipeline is based on DestinationConsumers that can interact with some kind of Sql based
+   * database destinations.
    *
    * The Strategy used here is:
    * <p>
@@ -33,14 +58,19 @@ public class DestinationConsumerFactory {
    * the final table name.
    * </p>
    *
-   * @param destination is a destination based on Sql engine which provides certain SQL Queries to interact with
-   * @param namingResolver is a SQLNamingResolvable object to translate strings into valid identifiers supported by the underlying Sql Database
+   * @param destination is a destination based on Sql engine which provides certain SQL Queries to
+   *        interact with
+   * @param namingResolver is a SQLNamingResolvable object to translate strings into valid identifiers
+   *        supported by the underlying Sql Database
    * @param config the destination configuration object
    * @param catalog describing the streams of messages to write to the destination
    * @return A DestinationConsumer able to accept the Airbyte Messages
    * @throws Exception
    */
-  public static DestinationConsumer<AirbyteMessage> build(SqlDestinationOperations destination, SQLNamingResolvable namingResolver, JsonNode config, ConfiguredAirbyteCatalog catalog)
+  public static DestinationConsumer<AirbyteMessage> build(SqlDestinationOperations destination,
+                                                          SQLNamingResolvable namingResolver,
+                                                          JsonNode config,
+                                                          ConfiguredAirbyteCatalog catalog)
       throws Exception {
     final Map<String, DestinationWriteContext> writeConfigs =
         new DestinationWriteContextFactory(namingResolver).build(config, catalog);
@@ -53,4 +83,5 @@ public class DestinationConsumerFactory {
     result.setContext(writeConfigs);
     return result;
   }
+
 }
