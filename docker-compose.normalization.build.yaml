@@ -1,0 +1,10 @@
+version: "3.7"
+
+services:
+  normalization:
+    image: airbyte/normalization:dev
+    build:
+      dockerfile: Dockerfile
+      context: airbyte-integrations/bases/base-normalization
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}

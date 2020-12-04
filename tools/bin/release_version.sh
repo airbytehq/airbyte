@@ -15,7 +15,9 @@ GIT_REVISION=$(git rev-parse HEAD)
 echo "Building and publishing version $VERSION for git revision $GIT_REVISION..."
 ./gradlew clean build
 GIT_REVISION=$GIT_REVISION docker-compose -f docker-compose.build.yaml -f docker-compose.yaml build
+GIT_REVISION=$GIT_REVISION docker-compose -f docker-compose.normalization.build.yaml -f docker-compose.normalization.yaml build
 GIT_REVISION=$GIT_REVISION docker-compose -f docker-compose.build.yaml -f docker-compose.yaml push
+GIT_REVISION=$GIT_REVISION docker-compose -f docker-compose.normalization.build.yaml -f docker-compose.normalization.yaml push
 echo "Completed building and publishing..."
 
 echo "Tagging git revision..."

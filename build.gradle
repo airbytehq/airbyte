@@ -91,15 +91,20 @@ allprojects {
     apply plugin: 'base'
 
     afterEvaluate { project ->
+        // format is '{project.group}.{project.name}'.
+        // note: project.group returns a period delimited the fully qualified package name.
         def composeDeps = [
-                "airbyte-config:init",
-                "airbyte-db",
-                "airbyte-scheduler",
-                "airbyte-server",
-                "airbyte-webapp",
+                'io.airbyte.airbyte-config.init',
+                'io.airbyte.airbyte-db',
+                'io.airbyte.airbyte-scheduler',
+                'io.airbyte.airbyte-server',
+                'io.airbyte.airbyte-webapp',
+                'io.airbyte.airbyte-integrations.bases.base-normalization'
         ].toSet().asImmutable()
 
-        if (project.name in composeDeps) {
+
+        def fullProjectName = (project.group + "." + project.name).toString()
+        if (fullProjectName in composeDeps) {
             composeBuild.dependsOn(project.tasks.assemble)
         }
     }
@@ -198,7 +203,6 @@ task composeBuild {
         }
     }
 }
-build.dependsOn(composeBuild)
 
 task('format') {
     dependsOn spotlessApply

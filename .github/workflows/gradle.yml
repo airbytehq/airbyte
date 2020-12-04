@@ -89,6 +89,7 @@ jobs:
         run: |
           docker login -u airbytebot -p ${DOCKER_PASSWORD}
           docker-compose -f docker-compose.build.yaml push
+          docker-compose -f docker-compose.normalization.build.yaml push
         env:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
