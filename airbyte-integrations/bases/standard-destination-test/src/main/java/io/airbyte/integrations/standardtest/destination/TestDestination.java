@@ -138,8 +138,8 @@ public abstract class TestDestination {
   }
 
   /**
-   * Override to return true to if the destination implements incremental syncs and it should be
-   * tested here.
+   * Detects if a destination implements incremental mode from the spec.json that should include
+   * 'incrementalSupport' = true
    *
    * @return - a boolean.
    */
