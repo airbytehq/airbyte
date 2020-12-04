@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from .catalog_helpers import CatalogHelper
 from .client import BaseClient
 from .integration import AirbyteSpec, ConfigContainer, Destination, Integration, Source
 from .logger import AirbyteLogger
@@ -32,12 +33,13 @@ from .source import BaseSource
 from .entrypoint import AirbyteEntrypoint  # noqa isort:skip
 
 __all__ = [
+    "AirbyteLogger",
+    "AirbyteSpec",
     "BaseClient",
     "BaseSource",
-    "AirbyteSpec",
+    "CatalogHelper",
     "ConfigContainer",
+    "Destination",
     "Integration",
     "Source",
-    "Destination",
-    "AirbyteLogger",
 ]

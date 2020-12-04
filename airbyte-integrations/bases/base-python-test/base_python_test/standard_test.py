@@ -35,7 +35,8 @@ from .test_iface import StandardSourceTestIface
 class TestAction(Enum):
     GET_SPEC = "get_spec"
     GET_CONFIG = "get_config"
-    GET_CATALOG = "get_catalog"
+    GET_CONFIGURED_CATALOG = "get_configured_catalog"
+    GET_STATE = "get_state"
     GET_REGEX_TESTS = "get_regex_tests"
     SETUP = "setup"
     TEARDOWN = "teardown"
@@ -74,8 +75,10 @@ class StandardSourceTestRunner(StandardSourceTestIface):
             output = self.test.get_spec().json(exclude_unset=True)
         elif cmd == TestAction.GET_CONFIG:
             output = json.dumps(self.test.get_config())
-        elif cmd == TestAction.GET_CATALOG:
+        elif cmd == TestAction.GET_CONFIGURED_CATALOG:
             output = self.test.get_catalog().json(exclude_unset=True)
+        elif cmd == TestAction.GET_STATE:
+            output = json.dumps(self.test.get_state())
         elif cmd == TestAction.SETUP:
             self.test.setup()
         elif cmd == TestAction.TEARDOWN:

@@ -54,7 +54,6 @@ class GoogleAnalyticsSingerSource(SingerSource):
     def transform_config(self, raw_config):
         with open(CREDENTIALS_FILE, "w") as fh:
             fh.write(raw_config["credentials_json"])
-
         return {"key_file_location": CREDENTIALS_FILE, "view_id": raw_config["view_id"], "start_date": raw_config["start_date"]}
 
     def discover_cmd(self, logger, config_path) -> str:
