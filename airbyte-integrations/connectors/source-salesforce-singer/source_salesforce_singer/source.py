@@ -23,7 +23,8 @@ SOFTWARE.
 """
 
 import requests
-from airbyte_protocol import AirbyteConnectionStatus, Status
+from airbyte_protocol import AirbyteConnectionStatus, Status, AirbyteCatalog
+from base_python import CatalogHelper, AirbyteLogger, ConfigContainer
 from base_singer import SingerSource
 
 
@@ -76,11 +77,14 @@ class SourceSalesforceSinger(SingerSource):
     def discover_cmd(self, logger, config_path) -> str:
         return f"tap-salesforce --config {config_path} --discover"
 
+    def discover(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteCatalog:
+        catalog = super().discover(logger, config_container)
+        return CatalogHelper.coerce_catalog_as_full_refresh(catalog)
+
     def read_cmd(self, logger, config_path, catalog_path, state_path=None) -> str:
         config_option = f"--config {config_path}"
         properties_option = f"--properties {catalog_path}"
-        state_option = f"--state {state_path}" if state_path else ""
-        return f"tap-salesforce {config_option} {properties_option} {state_option}"
+        return f"tap-salesforce {config_option} {properties_option} "
 
     def transform_config(self, raw_config):
         # the select_fields_by_default is opinionated about schema changes. we want to reserve the right for the Airbyte system to handle these changes, instead of the singer source.
