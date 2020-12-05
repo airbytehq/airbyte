@@ -18,7 +18,7 @@ type IProps = {
   schema: SyncSchema;
   errorMessage?: React.ReactNode;
   successMessage?: React.ReactNode;
-  onSubmit: (values: { frequency: string }, checkedState: string[]) => void;
+  onSubmit: (values: { frequency: string; schema: SyncSchema }) => void;
   onDropDownSelect?: (item: IDataItem) => void;
   frequencyValue?: string;
   isEditMode?: boolean;
@@ -80,7 +80,7 @@ const FrequencyForm: React.FC<IProps> = ({
       validateOnChange={true}
       validationSchema={connectionValidationSchema}
       onSubmit={async (values, { setSubmitting }) => {
-        await onSubmit(values, []); // TODO: FIX
+        await onSubmit({ frequency: values.frequency, schema: newSchema });
         setSubmitting(false);
       }}
     >

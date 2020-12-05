@@ -8,6 +8,7 @@ import FrequencyConfig from "../../../../../data/FrequencyConfig.json";
 import useConnection from "../../../../../components/hooks/services/useConnectionHook";
 import DeleteBlock from "../../../../../components/DeleteBlock";
 import FrequencyForm from "../../../../../components/FrequencyForm";
+import { SyncSchema } from "../../../../../core/resources/Schema";
 
 type IProps = {
   connection: Connection;
@@ -28,17 +29,18 @@ const SettingsView: React.FC<IProps> = ({ connection, onAfterSaveSchema }) => {
     item => JSON.stringify(item.config) === JSON.stringify(connection.schedule)
   );
 
-  const onSubmit = async (
-    values: { frequency: string },
-    checkedState: string[]
-  ) => {
+  const onSubmit = async (values: {
+    frequency: string;
+    schema: SyncSchema;
+  }) => {
     const frequencyData = FrequencyConfig.find(
       item => item.value === values.frequency
     );
+    const initialSyncSchema = connection.syncSchema;
 
     const result = await updateConnection({
       connectionId: connection.connectionId,
-      syncSchema: connection.syncSchema, //todo: fix
+      syncSchema: values.schema,
       status: connection.status,
       schedule: frequencyData?.config || null
     });
@@ -47,8 +49,7 @@ const SettingsView: React.FC<IProps> = ({ connection, onAfterSaveSchema }) => {
       setErrorMessage(result.message);
     } else {
       setSaved(true);
-      //todo: fix
-      if (JSON.stringify(checkedState) !== JSON.stringify([])) {
+      if (JSON.stringify(values.schema) !== JSON.stringify(initialSyncSchema)) {
         onAfterSaveSchema();
       }
     }

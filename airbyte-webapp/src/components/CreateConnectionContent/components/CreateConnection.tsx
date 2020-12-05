@@ -18,14 +18,15 @@ const CreateConnection: React.FC<IProps> = ({
   schema,
   onSelectFrequency
 }) => {
-  // FIXME: fix
-  // const onSubmitForm = async (
-  //   values: { frequency: string },
-  //   checkedState: string[]
-  // ) => {
-  //   await onSubmit({ ...values, syncSchema: newSchema });
-  // };
-  const onSubmitForm = (data: any) => onSubmit(data);
+  const onSubmitForm = async (values: {
+    frequency: string;
+    schema: SyncSchema;
+  }) => {
+    await onSubmit({
+      frequency: values.frequency,
+      syncSchema: values.schema
+    });
+  };
 
   const errorMessage =
     errorStatus === 0 ? null : errorStatus === 400 ? (
