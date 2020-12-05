@@ -22,17 +22,17 @@ write_standard_creds destination-snowflake "$SNOWFLAKE_INTEGRATION_TEST_CREDS"
 write_standard_creds destination-redshift "$AWS_REDSHIFT_INTEGRATION_TEST_CREDS"
 
 
+write_standard_creds source-file "$BIGQUERY_INTEGRATION_TEST_CREDS" "gcs.json"
+write_standard_creds source-file "$AWS_S3_INTEGRATION_TEST_CREDS" "aws.json"
+write_standard_creds source-freshdesk "$FRESHDESK_TEST_CREDS"
+write_standard_creds source-facebook-marketing-api-singer "$FACEBOOK_MARKETING_API_TEST_INTEGRATION_CREDS"
+# pull sample config. add in the access key. write to secrets.
+GH_CREDS=$(jq --arg v "$GH_INTEGRATION_TEST_CREDS" '.access_token = $v' airbyte-integrations/connectors/source-github-singer/config.sample.json)
+write_standard_creds source-github-singer "$GH_CREDS"
 write_standard_creds source-google-adwords-singer "$ADWORDS_INTEGRATION_TEST_CREDS"
 write_standard_creds source-googleanalytics-singer "$GOOGLE_ANALYTICS_TEST_CREDS"
 write_standard_creds source-googleanalytics-singer "$GOOGLE_ANALYTICS_TEST_TRACKING_ID" "tracker.txt"
 write_standard_creds source-google-sheets "$GSHEETS_INTEGRATION_TESTS_CREDS" "creds.json"
-write_standard_creds source-facebook-marketing-api-singer "$FACEBOOK_MARKETING_API_TEST_INTEGRATION_CREDS"
-write_standard_creds source-file "$BIGQUERY_INTEGRATION_TEST_CREDS" "gcs.json"
-write_standard_creds source-file "$AWS_S3_INTEGRATION_TEST_CREDS" "aws.json"
-write_standard_creds source-freshdesk "$FRESHDESK_TEST_CREDS"
-# pull sample config. add in the access key. write to secrets.
-GH_CREDS=$(jq --arg v "$GH_INTEGRATION_TEST_CREDS" '.access_token = $v' airbyte-integrations/connectors/source-github-singer/config.sample.json)
-write_standard_creds source-github-singer "$GH_CREDS"
 write_standard_creds source-greenhouse "$GREENHOUSE_TEST_CREDS"
 write_standard_creds source-hubspot-singer "$HUBSPOT_INTEGRATION_TESTS_CREDS"
 write_standard_creds source-mailchimp "$MAILCHIMP_TEST_CREDS"
