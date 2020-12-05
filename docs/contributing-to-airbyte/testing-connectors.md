@@ -1,6 +1,6 @@
 # Testing Connectors
 
-The GitHub `master` and branch builds will build the core Airbyte infrastructure (scheduler, ui, etc) as well as the Docker images for all connectors. Integration tests (tests that run a connector's Docker image against an external resource) can be run one of three ways. 
+The GitHub `master` and branch builds will build the core Airbyte infrastructure (scheduler, ui, etc) as well as the images for all connectors. Integration tests (tests that run a connector's image against an external resource) can be run one of three ways.
 
 ## 1. Local iteration
 
@@ -28,7 +28,7 @@ This option is not available to PRs from forks, so it is effectively limited to 
 
 Commits to `master` attempt to launch integration tests. Two workflows launch for each commit: one is a launcher for integration tests, the other is the core build (the same as the default for PR and branch builds).
 
-Since some of our connectors use rate-limited external resources, we don't want to overload from multiple commits to master. If a certain threshold of `master` integration tests are running, the integration test launcher passes but does not launch any tests. This can manually be re-run if necessary.
+Since some of our connectors use rate-limited external resources, we don't want to overload from multiple commits to master. If a certain threshold of `master` integration tests are running, the integration test launcher passes but does not launch any tests. This can manually be re-run if necessary. The `master` build also runs every few hours automatically, and will launch the integration tests at that time.
 
 ### Connector Health
 
