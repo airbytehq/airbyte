@@ -8,8 +8,12 @@ import json
 Create tools/bin/secrets/build_status.json with the secret in the "build stat secrets" in LastPass
 """
 
-with open('tools/bin/secrets/build_status.json') as f:
-    secrets = json.load(f)
+try:
+    with open('tools/bin/secrets/build_status.json') as f:
+        secrets = json.load(f)
+except FileNotFoundError:
+    print("ERROR: Failed to read tools/bin/secrets/build_status.json. Place credentials there from LastPass.")
+    exit(1)
 
 res = requests.get(f"https://kvdb.io/{secrets['bucket']}/?values=true&format=json",
                    auth=(secrets['secret_key'], '')).json()
@@ -23,7 +27,9 @@ for stat in res:
     timestamp = stat[1][stat[1].rfind('-') + 1:len(stat[1])]
     connector_to_states[connector].append([timestamp, run_id, status])
 
-print("-" * 81)
+print("=" * 81)
+print("{:<50} {:<1}".format("Integration", "Most Recent <-- Least Recent"))
+print("=" * 81)
 
 
 def get_terminal_link_str(text, url):
