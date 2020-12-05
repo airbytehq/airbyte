@@ -25,27 +25,31 @@
 package io.airbyte.integrations.destination.snowflake;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.base.Charsets;
+import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.lang.CloseableQueue;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
+import io.airbyte.integrations.base.DestinationConsumerFactory;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.SQLNamingResolvable;
+import io.airbyte.integrations.base.SqlDestinationOperations;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.queue.BigQueue;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.sql.Connection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,70 +88,28 @@ public class SnowflakeDestination implements Destination {
     return namingResolver;
   }
 
-  /**
-   * Strategy:
-   * <p>
-   * 1. Create a temporary table for each stream
-   * </p>
-   * <p>
-   * 2. Accumulate records in a buffer. One buffer per stream.
-   * </p>
-   * <p>
-   * 3. As records accumulate write them in batch to the database. We set a minimum numbers of records
-   * before writing to avoid wasteful record-wise writes.
-   * </p>
-   * <p>
-   * 4. Once all records have been written to buffer, flush the buffer and write any remaining records
-   * to the database (regardless of how few are left).
-   * </p>
-   * <p>
-   * 5. In a single transaction, delete the target tables if they exist and rename the temp tables to
-   * the final table name.
-   * </p>
-   *
-   * @param config - Snowflake-specific configuration object as json.
-   * @param catalog - schema of the incoming messages.
-   * @return consumer that writes singer messages to the database.
-   * @throws Exception - anything could happen!
-   */
   @Override
   public DestinationConsumer<AirbyteMessage> write(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
-    // connect to snowflake
-    final Supplier<Connection> connectionFactory = SnowflakeDatabase.getConnectionFactory(config);
-    Map<String, SnowflakeWriteContext> writeBuffers = new HashMap<>();
-    Set<String> schemaSet = new HashSet<>();
+    final DestinationImpl destination = new DestinationImpl(SnowflakeDatabase.getConnectionFactory(config));
+    return DestinationConsumerFactory.build(destination, getNamingResolver(), config, catalog);
+  }
 
-    // create temporary tables if they do not exist
-    // we don't use temporary/transient since we want to control the lifecycle
-    for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
-      final String streamName = stream.getStream().getName();
-      final String schemaName = getNamingResolver().getIdentifier(config.get("schema").asText());
-      final String tableName = getNamingResolver().getRawTableName(streamName);
-      final String tmpTableName = getNamingResolver().getTmpTableName(streamName);
-      if (!schemaSet.contains(schemaName)) {
-        final String query = String.format("CREATE SCHEMA IF NOT EXISTS %s;", schemaName);
+  protected String createSchemaQuery(String schemaName) {
+    return String.format("CREATE SCHEMA IF NOT EXISTS %s;\n", schemaName);
+  }
 
-        SnowflakeDatabase.executeSync(connectionFactory, query);
-        schemaSet.add(schemaName);
-      }
-      final String query = String.format(
-          "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
-              + "ab_id VARCHAR PRIMARY KEY,\n"
-              + "\"%s\" VARIANT,\n"
-              + "emitted_at TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp()\n"
-              + ") data_retention_time_in_days = 0;",
-          schemaName, tmpTableName, COLUMN_NAME);
+  protected String createDestinationTableQuery(String schemaName, String tableName) {
+    return String.format(
+        "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
+            + "ab_id VARCHAR PRIMARY KEY,\n"
+            + "\"%s\" VARIANT,\n"
+            + "emitted_at TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp()\n"
+            + ") data_retention_time_in_days = 0;",
+        schemaName, tableName, COLUMN_NAME);
+  }
 
-      SnowflakeDatabase.executeSync(connectionFactory, query);
-
-      final Path queueRoot = Files.createTempDirectory("queues");
-      final BigQueue writeBuffer = new BigQueue(queueRoot.resolve(stream.getStream().getName()), stream.getStream().getName());
-      writeBuffers.put(stream.getStream().getName(), new SnowflakeWriteContext(schemaName, tableName, tmpTableName, writeBuffer));
-    }
-
-    // write to transient tables
-    // if success copy delete main table if exists. rename transient tables to real tables.
-    return new SnowflakeRecordConsumer(connectionFactory, writeBuffers, catalog);
+  protected String dropDestinationTableQuery(String schemaName, String tableName) {
+    return String.format("DROP TABLE IF EXISTS %s.%s;\n", schemaName, tableName);
   }
 
   public static void main(String[] args) throws Exception {
@@ -155,6 +117,116 @@ public class SnowflakeDestination implements Destination {
     LOGGER.info("starting destination: {}", SnowflakeDestination.class);
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", SnowflakeDestination.class);
+  }
+
+  private class DestinationImpl implements SqlDestinationOperations {
+
+    private final Supplier<Connection> connectionFactory;
+
+    public DestinationImpl(Supplier<Connection> connectionFactory) {
+      this.connectionFactory = connectionFactory;
+    }
+
+    @Override
+    public void createSchema(String schemaName) throws SQLException, InterruptedException {
+      SnowflakeDatabase.executeSync(connectionFactory, createSchemaQuery(schemaName));
+    }
+
+    @Override
+    public void createDestinationTable(String schemaName, String tableName) throws SQLException, InterruptedException {
+      SnowflakeDatabase.executeSync(connectionFactory, createDestinationTableQuery(schemaName, tableName));
+    }
+
+    @Override
+    public String truncateTableQuery(String schemaName, String tableName) {
+      return String.format("TRUNCATE TABLE %s.%s;\n", schemaName, tableName);
+    }
+
+    @Override
+    public String insertIntoFromSelectQuery(String schemaName, String srcTableName, String dstTableName) {
+      return String.format("INSERT INTO %s.%s SELECT * FROM %s.%s;\n", schemaName, dstTableName, schemaName, srcTableName);
+    }
+
+    @Override
+    public void executeTransaction(String queries) throws Exception {
+      String renameQuery = "BEGIN;\n" + queries + "COMMIT;";
+      SnowflakeDatabase.executeSync(connectionFactory, renameQuery, true, rs -> null);
+    }
+
+    @Override
+    public void dropDestinationTable(String schemaName, String tableName) throws SQLException, InterruptedException {
+      SnowflakeDatabase.executeSync(connectionFactory, dropDestinationTableQuery(schemaName, tableName));
+    }
+
+    @Override
+    public void insertBufferedRecords(int batchSize, CloseableQueue<byte[]> writeBuffer, String schemaName, String tmpTableName) {
+      final List<AirbyteRecordMessage> records = accumulateRecordsFromBuffer(writeBuffer, batchSize);
+
+      LOGGER.info("max size of batch: {}", batchSize);
+      LOGGER.info("actual size of batch: {}", records.size());
+
+      if (records.isEmpty()) {
+        return;
+      }
+
+      try (final Connection conn = connectionFactory.get()) {
+        // Strategy: We want to use PreparedStatement because it handles binding values to the SQL query
+        // (e.g. handling formatting timestamps). A PreparedStatement statement is created by supplying the
+        // full SQL string at creation time. Then subsequently specifying which values are bound to the
+        // string. Thus there will be two loops below.
+        // 1) Loop over records to build the full string.
+        // 2) Loop over the records and bind the appropriate values to the string.
+        final StringBuilder sql = new StringBuilder().append(String.format(
+            "INSERT INTO %s.%s (ab_id, \"%s\", emitted_at) SELECT column1, parse_json(column2), column3 FROM VALUES\n",
+            schemaName,
+            tmpTableName,
+            SnowflakeDestination.COLUMN_NAME));
+
+        // first loop: build SQL string.
+        records.forEach(r -> sql.append("(?, ?, ?),\n"));
+        final String s = sql.toString();
+        final String s1 = s.substring(0, s.length() - 2) + ";";
+
+        try (final PreparedStatement statement = conn.prepareStatement(s1)) {
+          // second loop: bind values to the SQL string.
+          int i = 1;
+          for (final AirbyteRecordMessage message : records) {
+            // 1-indexed
+            statement.setString(i, UUID.randomUUID().toString());
+            statement.setString(i + 1, Jsons.serialize(message.getData()));
+            statement.setTimestamp(i + 2, Timestamp.from(Instant.ofEpochMilli(message.getEmittedAt())));
+            i += 3;
+          }
+
+          statement.execute();
+        }
+      } catch (SQLException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+    /**
+     * Accumulate AirbyteRecordMessages from each buffer into batches of records so we can avoid
+     * wasteful inserts queries.
+     *
+     * @param writeBuffer the buffer of messages
+     * @param maxRecords up to how many records should be accumulated
+     * @return list of messages buffered together in a list
+     */
+    private List<AirbyteRecordMessage> accumulateRecordsFromBuffer(CloseableQueue<byte[]> writeBuffer, int maxRecords) {
+      final List<AirbyteRecordMessage> records = Lists.newArrayList();
+      for (int i = 0; i < maxRecords; i++) {
+        final byte[] record = writeBuffer.poll();
+        if (record == null) {
+          break;
+        }
+        final AirbyteRecordMessage message = Jsons.deserialize(new String(record, Charsets.UTF_8), AirbyteRecordMessage.class);
+        records.add(message);
+      }
+
+      return records;
+    }
+
   }
 
 }
