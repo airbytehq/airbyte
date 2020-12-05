@@ -49,7 +49,8 @@ def createSpotlessTarget = { pattern ->
         '.venv',
         '*.egg-info',
         'build',
-        'dbt-project-template'
+        'dbt-project-template',
+        'tools'
     ]
     return fileTree(dir: rootDir, include: pattern, exclude: excludes.collect {"**/${it}"})
 }
