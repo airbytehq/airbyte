@@ -33,6 +33,7 @@ write_standard_creds source-freshdesk "$FRESHDESK_TEST_CREDS"
 # pull sample config. add in the access key. write to secrets.
 GH_CREDS=$(jq --arg v "$GH_INTEGRATION_TEST_CREDS" '.access_token = $v' airbyte-integrations/connectors/source-github-singer/config.sample.json)
 write_standard_creds source-github-singer "$GH_CREDS"
+write_standard_creds source-greenhouse "$GREENHOUSE_TEST_CREDS"
 write_standard_creds source-hubspot-singer "$HUBSPOT_INTEGRATION_TESTS_CREDS"
 write_standard_creds source-mailchimp "$MAILCHIMP_TEST_CREDS"
 write_standard_creds source-marketo-singer "$SOURCE_MARKETO_SINGER_INTEGRATION_TEST_CONFIG"
