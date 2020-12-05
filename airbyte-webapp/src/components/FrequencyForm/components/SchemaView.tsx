@@ -2,15 +2,13 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { INode } from "../../TreeView/types";
 import TreeView from "../../TreeView";
 import { Cell, Header, LightCell } from "../../SimpleTableComponents";
+import { SyncSchema } from "../../../core/resources/Schema";
 
 type IProps = {
-  schema: INode[];
-  allSchemaChecked: string[];
-  checkedState: string[];
-  onCheckAction: (data: string[]) => void;
+  schema: SyncSchema;
+  onChangeSchema: (schema: SyncSchema) => void;
 };
 
 const TreeViewContainer = styled.div`
@@ -21,12 +19,7 @@ const TreeViewContainer = styled.div`
   overflow: hidden;
 `;
 
-const SchemaView: React.FC<IProps> = ({
-  schema,
-  checkedState,
-  allSchemaChecked,
-  onCheckAction
-}) => {
+const SchemaView: React.FC<IProps> = ({ schema, onChangeSchema }) => {
   return (
     <>
       <Header>
@@ -44,12 +37,7 @@ const SchemaView: React.FC<IProps> = ({
         </LightCell>
       </Header>
       <TreeViewContainer>
-        <TreeView
-          checkedAll={allSchemaChecked}
-          nodes={schema}
-          onCheck={onCheckAction}
-          checked={checkedState}
-        />
+        <TreeView schema={schema} onChangeSchema={onChangeSchema} />
       </TreeViewContainer>
     </>
   );

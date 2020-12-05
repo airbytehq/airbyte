@@ -2,17 +2,17 @@ import React from "react";
 import styled from "styled-components";
 
 import { Cell } from "../../SimpleTableComponents";
-import { INode } from "../types";
 import DropDown from "../../DropDown";
 import { IDataItem } from "../../DropDown/components/ListItem";
+import { SyncSchemaStream } from "../../../core/resources/Schema";
 
-const SyncCell = styled(Cell)`
+const DropDownContainer = styled.div`
   padding-right: 10px;
 `;
 
 type IProps = {
-  item: INode;
-  onSelect: (data: IDataItem) => void;
+  item: SyncSchemaStream;
+  onSelect: (value: string) => void;
 };
 
 const SyncSettingsCell: React.FC<IProps> = ({ item, onSelect }) => {
@@ -21,15 +21,19 @@ const SyncSettingsCell: React.FC<IProps> = ({ item, onSelect }) => {
     { text: "Incremental - based on...", value: "incremental" }
   ];
 
+  const onSelectMode = (data: IDataItem) => onSelect(data.value);
+
   return (
-    <SyncCell>
-      <DropDown
-        withBorder
-        value={item.syncMode}
-        data={data}
-        onSelect={onSelect}
-      />
-    </SyncCell>
+    <Cell>
+      <DropDownContainer>
+        <DropDown
+          withBorder
+          value={item.syncMode || "full_refresh"}
+          data={data}
+          onSelect={onSelectMode}
+        />
+      </DropDownContainer>
+    </Cell>
   );
 };
 

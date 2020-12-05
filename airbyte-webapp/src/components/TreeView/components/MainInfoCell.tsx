@@ -13,12 +13,14 @@ type IProps = {
   isChild?: boolean;
   isItemChecked?: boolean;
   isItemOpen?: boolean;
-  onExpand: () => void;
+  onExpand?: () => void;
   onCheckBoxClick: () => void;
 };
 
 const ArrowContainer = styled.span`
-  padding: 0 9px 0 18px;
+  padding: 0 19px 0 18px;
+  width: 10px;
+  display: inline-block;
 `;
 
 const Arrow = styled(FontAwesomeIcon)<{ isOpen?: boolean }>`
@@ -37,7 +39,7 @@ const MainCell = styled(Cell)`
 const Content = styled.div<{ isChild?: boolean }>`
   overflow: hidden;
   text-overflow: ellipsis;
-  padding-left: ${({ isChild }) => (isChild ? 64 : 0)}px;
+  padding-left: ${({ isChild }) => (isChild ? 58 : 0)}px;
 `;
 
 const ItemLable = styled.span`
@@ -60,13 +62,15 @@ const MainInfoCell: React.FC<IProps> = ({
   return (
     <MainCell flex={2}>
       <Content isChild={isChild}>
-        {isItemHasChildren && (
+        {(isItemHasChildren || !isChild) && (
           <ArrowContainer>
-            <Arrow
-              icon={faChevronRight}
-              isOpen={isItemOpen}
-              onClick={onExpand}
-            />
+            {(isItemHasChildren || !onExpand) && (
+              <Arrow
+                icon={faChevronRight}
+                isOpen={isItemOpen}
+                onClick={onExpand}
+              />
+            )}
           </ArrowContainer>
         )}
         {!hideCheckbox && (

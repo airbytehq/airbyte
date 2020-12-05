@@ -8,21 +8,18 @@ import LabeledDropDown from "../LabeledDropDown";
 import FrequencyConfig from "../../data/FrequencyConfig.json";
 import BottomBlock from "./components/BottomBlock";
 import Label from "../Label";
-import { INode } from "../TreeView/types";
 import SchemaView from "./components/SchemaView";
 import { IDataItem } from "../DropDown/components/ListItem";
 import EditControls from "../ServiceForm/components/EditControls";
+import { SyncSchema } from "../../core/resources/Schema";
 
 type IProps = {
   className?: string;
-  syncModeInitialState: { value: string; syncMode: string }[];
-  schema: INode[];
-  allSchemaChecked: string[];
+  schema: SyncSchema;
   errorMessage?: React.ReactNode;
   successMessage?: React.ReactNode;
   onSubmit: (values: { frequency: string }, checkedState: string[]) => void;
   onDropDownSelect?: (item: IDataItem) => void;
-  initialCheckedSchema: Array<string>;
   frequencyValue?: string;
   isEditMode?: boolean;
 };
@@ -48,14 +45,12 @@ const FrequencyForm: React.FC<IProps> = ({
   className,
   errorMessage,
   schema,
-  initialCheckedSchema,
   onDropDownSelect,
-  allSchemaChecked,
   frequencyValue,
   isEditMode,
   successMessage
-  // syncModeInitialState
 }) => {
+  const [newSchema, setNewSchema] = useState(schema);
   const formatMessage = useIntl().formatMessage;
   const dropdownData = React.useMemo(
     () =>
@@ -76,11 +71,6 @@ const FrequencyForm: React.FC<IProps> = ({
     [formatMessage]
   );
 
-  const [checkedState, setCheckedState] = useState(initialCheckedSchema);
-  const onCheckAction = (data: Array<string>) => setCheckedState(data);
-
-  // const [syncMode, setSyncMode] = useState(syncModeInitialState);
-
   return (
     <Formik
       initialValues={{
@@ -90,18 +80,13 @@ const FrequencyForm: React.FC<IProps> = ({
       validateOnChange={true}
       validationSchema={connectionValidationSchema}
       onSubmit={async (values, { setSubmitting }) => {
-        await onSubmit(values, checkedState);
+        await onSubmit(values, []); // TODO: FIX
         setSubmitting(false);
       }}
     >
       {({ isSubmitting, setFieldValue, isValid, dirty, resetForm }) => (
         <FormContainer className={className}>
-          <SchemaView
-            onCheckAction={onCheckAction}
-            checkedState={checkedState}
-            schema={schema}
-            allSchemaChecked={allSchemaChecked}
-          />
+          <SchemaView schema={newSchema} onChangeSchema={setNewSchema} />
           {!isEditMode ? (
             <EditLaterMessage
               message={<FormattedMessage id="form.dataSync.message" />}
@@ -136,9 +121,7 @@ const FrequencyForm: React.FC<IProps> = ({
               isSubmitting={isSubmitting}
               isValid={isValid}
               dirty={
-                dirty ||
-                JSON.stringify(checkedState) !==
-                  JSON.stringify(initialCheckedSchema)
+                dirty || JSON.stringify(newSchema) !== JSON.stringify(schema)
               }
               resetForm={resetForm}
               successMessage={successMessage}

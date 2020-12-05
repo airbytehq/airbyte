@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
@@ -8,10 +8,6 @@ import FrequencyConfig from "../../../../../data/FrequencyConfig.json";
 import useConnection from "../../../../../components/hooks/services/useConnectionHook";
 import DeleteBlock from "../../../../../components/DeleteBlock";
 import FrequencyForm from "../../../../../components/FrequencyForm";
-import {
-  constructInitialSchemaState,
-  constructNewSchema
-} from "../../../../../core/helpers";
 
 type IProps = {
   connection: Connection;
@@ -36,15 +32,13 @@ const SettingsView: React.FC<IProps> = ({ connection, onAfterSaveSchema }) => {
     values: { frequency: string },
     checkedState: string[]
   ) => {
-    const newSchema = constructNewSchema(connection.syncSchema, checkedState);
-
     const frequencyData = FrequencyConfig.find(
       item => item.value === values.frequency
     );
 
     const result = await updateConnection({
       connectionId: connection.connectionId,
-      syncSchema: newSchema,
+      syncSchema: connection.syncSchema, //todo: fix
       status: connection.status,
       schedule: frequencyData?.config || null
     });
@@ -53,20 +47,12 @@ const SettingsView: React.FC<IProps> = ({ connection, onAfterSaveSchema }) => {
       setErrorMessage(result.message);
     } else {
       setSaved(true);
-      if (JSON.stringify(checkedState) !== JSON.stringify(initialChecked)) {
+      //todo: fix
+      if (JSON.stringify(checkedState) !== JSON.stringify([])) {
         onAfterSaveSchema();
       }
     }
   };
-
-  const {
-    formSyncSchema,
-    initialChecked,
-    allSchemaChecked,
-    syncModeInitialState
-  } = useMemo(() => constructInitialSchemaState(connection.syncSchema), [
-    connection.syncSchema
-  ]);
 
   const onDelete = () => {
     deleteConnection({ connectionId: connection.connectionId });
@@ -78,11 +64,8 @@ const SettingsView: React.FC<IProps> = ({ connection, onAfterSaveSchema }) => {
         title={<FormattedMessage id="connection.connectionSettings" />}
       >
         <FrequencyForm
-          syncModeInitialState={syncModeInitialState}
           isEditMode
-          schema={formSyncSchema}
-          initialCheckedSchema={initialChecked}
-          allSchemaChecked={allSchemaChecked}
+          schema={connection.syncSchema}
           onSubmit={onSubmit}
           frequencyValue={schedule?.value}
           errorMessage={errorMessage}
