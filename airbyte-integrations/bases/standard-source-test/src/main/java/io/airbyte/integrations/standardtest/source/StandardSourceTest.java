@@ -73,9 +73,9 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class TestSource {
+public abstract class StandardSourceTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(TestSource.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(StandardSourceTest.class);
 
   private TestDestinationEnv testEnv;
 
@@ -186,7 +186,7 @@ public abstract class TestSource {
 
   /**
    * Verify that when given valid credentials, that check connection returns a success response.
-   * Assume that the {@link TestSource#getConfig()} is valid.
+   * Assume that the {@link StandardSourceTest#getConfig()} is valid.
    */
   @Test
   public void testCheckConnection() throws Exception {
@@ -208,7 +208,7 @@ public abstract class TestSource {
 
   /**
    * Verify that when given valid credentials, that discover returns a valid catalog. Assume that the
-   * {@link TestSource#getConfig()} is valid.
+   * {@link StandardSourceTest#getConfig()} is valid.
    */
   @Test
   public void testDiscover() throws Exception {

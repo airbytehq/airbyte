@@ -62,7 +62,7 @@ class SourceMailchimp(Source):
         return AirbyteCatalog(streams=client.get_streams())
 
     def read(
-            self, logger: AirbyteLogger, config_container: ConfigContainer, catalog_path, state_path: str = None
+        self, logger: AirbyteLogger, config_container: ConfigContainer, catalog_path, state_path: str = None
     ) -> Generator[AirbyteMessage, None, None]:
         client = self._client(config_container)
 
@@ -89,7 +89,7 @@ class SourceMailchimp(Source):
         return client
 
     def _read_record(
-            self, client: Client, configured_stream: ConfiguredAirbyteStream, state: DefaultDict[str, any]
+        self, client: Client, configured_stream: ConfiguredAirbyteStream, state: DefaultDict[str, any]
     ) -> Generator[AirbyteMessage, None, None]:
         entity_map = {
             "Lists": client.lists,
