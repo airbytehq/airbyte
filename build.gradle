@@ -203,6 +203,7 @@ task composeBuild {
         }
     }
 }
+build.dependsOn(composeBuild)
 
 task('format') {
     dependsOn spotlessApply
