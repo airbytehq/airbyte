@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string"
+    },
+    "parent_id": {
+      "type": ["null", "integer"]
+    },
+    "parent_department_external_id": {
+      "type": ["null", "string"]
+    },
+    "child_ids": {
+      "type": "array"
+    },
+    "child_department_external_ids": {
+      "type": "array"
+    },
+    "external_id": {
+      "type": ["null", "string"]
+    }
+  }
+}

@@ -23,7 +23,8 @@ SOFTWARE.
 """
 
 import requests
-from airbyte_protocol import AirbyteConnectionStatus, Status
+from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, Status
+from base_python import AirbyteLogger, CatalogHelper, ConfigContainer
 from base_singer import SingerSource
 
 
@@ -45,8 +46,11 @@ class SourceStripeSinger(SingerSource):
     def discover_cmd(self, logger, config_path) -> str:
         return f"tap-stripe --config {config_path} --discover"
 
+    def discover(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteCatalog:
+        catalog = super().discover(logger, config_container)
+        return CatalogHelper.coerce_catalog_as_full_refresh(catalog)
+
     def read_cmd(self, logger, config_path, catalog_path, state_path=None) -> str:
         config_option = f"--config {config_path}"
         catalog_option = f"--catalog {catalog_path}"
-        state_option = f"--state {state_path}" if state_path else ""
-        return f"tap-stripe {config_option} {catalog_option} {state_option}"
+        return f"tap-stripe {config_option} {catalog_option}"

@@ -37,6 +37,7 @@ setup(
             "pipelinewise-tap-google-analytics==1.1.1",
             "pydantic==1.6.1",
             "base-singer",
+            "base-python",
             "airbyte-protocol",
         ],
         "standardtest": ["airbyte-python-test", "requests"],

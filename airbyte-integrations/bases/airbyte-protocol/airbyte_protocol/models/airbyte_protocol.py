@@ -91,6 +91,7 @@ class ConnectorSpecification(BaseModel):
         ...,
         description="ConnectorDefinition specific blob. Must be a valid JSON string.",
     )
+    supportsIncremental: Optional[bool] = Field(None, description="If the connector supports incremental mode or not.")
 
 
 class AirbyteStream(BaseModel):
