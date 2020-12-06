@@ -15,7 +15,7 @@ type ICellProps = {
 type IProps = {
   columns: Array<IHeaderProps | Column>;
   erroredRows?: boolean;
-  data: Array<object>;
+  data: any[];
   onClickRow?: (data: object) => void;
 };
 

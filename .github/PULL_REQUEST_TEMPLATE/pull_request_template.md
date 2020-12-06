@@ -1,3 +1,8 @@
+---
+name: Standard PR Template
+about: Use this for any changes that don't have other templates
+--- 
+
 ## What
 *Describe what the change is solving*
 *It helps to add screenshots if it affects the frontend.*

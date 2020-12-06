@@ -24,6 +24,8 @@
 
 package io.airbyte.integrations.standardtest.source;
 
+import static io.airbyte.protocol.models.SyncMode.FULL_REFRESH;
+import static io.airbyte.protocol.models.SyncMode.INCREMENTAL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -40,11 +42,13 @@ import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.config.StandardGetSpecOutput;
 import io.airbyte.config.StandardSync.SyncMode;
 import io.airbyte.config.StandardTapConfig;
-import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
 import io.airbyte.workers.DefaultDiscoverCatalogWorker;
@@ -58,6 +62,8 @@ import io.airbyte.workers.protocols.airbyte.DefaultAirbyteSource;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -101,12 +107,22 @@ public abstract class TestSource {
   protected abstract JsonNode getConfig() throws Exception;
 
   /**
-   * Catalog to be used when attempting read operations.
+   * The catalog to use to validate the output of read operations. This will be used as follows:
+   * <p>
+   * Full Refresh syncs will be tested on all the input streams which support it Incremental syncs: -
+   * if the stream declares a source-defined cursor, it will be tested with an incremental sync using
+   * the default cursor. - if the stream requires a user-defined cursor, it will be tested with the
+   * input cursor in both cases, the input {@link #getState()} will be used as the input state.
    *
-   * @return the catalog
-   * @throws Exception - do what must be done.
+   * @return
+   * @throws Exception
    */
-  protected abstract AirbyteCatalog getCatalog() throws Exception;
+  protected abstract ConfiguredAirbyteCatalog getConfiguredCatalog() throws Exception;
+
+  /**
+   * @return a JSON file representing the state file to use when testing incremental syncs
+   */
+  protected abstract JsonNode getState() throws Exception;
 
   /**
    * List of regular expressions that should match the output of the test sync.
@@ -208,8 +224,8 @@ public abstract class TestSource {
    * schemas (aspirationally, anyway).
    */
   @Test
-  public void testRead() throws Exception {
-    final List<AirbyteMessage> allMessages = runRead(CatalogHelpers.toDefaultConfiguredCatalog(getCatalog()));
+  public void testFullRefreshRead() throws Exception {
+    final List<AirbyteMessage> allMessages = runRead(withFullRefreshSyncModes(getConfiguredCatalog()));
     final List<AirbyteMessage> recordMessages = allMessages.stream().filter(m -> m.getType() == Type.RECORD).collect(Collectors.toList());
     // the worker validates the message formats, so we just validate the message content
     // We don't need to validate message format as long as we use the worker, which we will not want to
@@ -225,22 +241,100 @@ public abstract class TestSource {
     });
   }
 
-  /**
-   * Verify that the integration overwrites the first sync with the second sync.
-   */
   @Test
-  public void testSecondRead() throws Exception {
-    final List<AirbyteMessage> recordMessagesFirstRun = runRead(CatalogHelpers.toDefaultConfiguredCatalog(getCatalog()))
-        .stream().filter(m -> m.getType() == Type.RECORD)
-        .collect(Collectors.toList());
-    final List<AirbyteMessage> recordMessagesSecondRun = runRead(CatalogHelpers.toDefaultConfiguredCatalog(getCatalog()))
-        .stream().filter(m -> m.getType() == Type.RECORD)
-        .collect(Collectors.toList());
+  public void testIdenticalFullRefreshes() throws Exception {
+    ConfiguredAirbyteCatalog configuredCatalog = withFullRefreshSyncModes(getConfiguredCatalog());
+    final List<AirbyteRecordMessage> recordMessagesFirstRun = filterRecords(runRead(configuredCatalog));
+    final List<AirbyteRecordMessage> recordMessagesSecondRun = filterRecords(runRead(configuredCatalog));
     // the worker validates the messages, so we just validate the message, so we do not need to validate
     // again (as long as we use the worker, which we will not want to do long term).
     assertFalse(recordMessagesFirstRun.isEmpty());
     assertFalse(recordMessagesSecondRun.isEmpty());
-    assertSameMessages(recordMessagesSecondRun, recordMessagesSecondRun);
+
+    assertSameRecords(recordMessagesFirstRun, recordMessagesSecondRun);
+  }
+
+  /**
+   * Verify that the source is able to read data incrementally with a given input state.
+   */
+  @Test
+  public void testIncrementalSyncWithState() throws Exception {
+    if (!sourceSupportsIncremental()) {
+      return;
+    }
+
+    ConfiguredAirbyteCatalog configuredAirbyteCatalog = withSourceDefinedCursors(getConfiguredCatalog());
+    List<AirbyteMessage> airbyteMessages = runRead(configuredAirbyteCatalog, getState());
+    List<AirbyteRecordMessage> recordMessages = filterRecords(airbyteMessages);
+    List<AirbyteStateMessage> stateMessages = airbyteMessages
+        .stream()
+        .filter(m -> m.getType() == Type.STATE)
+        .map(AirbyteMessage::getState)
+        .collect(Collectors.toList());
+
+    assertFalse(recordMessages.isEmpty());
+    assertFalse(stateMessages.isEmpty());
+    // TODO validate exact records
+
+    // when we run incremental sync again there should be no new records. Run a sync with the latest
+    // state message and assert no records were emitted.
+    JsonNode latestState = stateMessages.get(stateMessages.size() - 1).getData();
+    List<AirbyteRecordMessage> secondSyncRecords = filterRecords(runRead(configuredAirbyteCatalog, latestState));
+    assertTrue(secondSyncRecords.isEmpty());
+  }
+
+  @Test
+  public void testEmptyStateIncrementalIdenticalToFullRefresh() throws Exception {
+    if (!sourceSupportsIncremental()) {
+      return;
+    }
+
+    ConfiguredAirbyteCatalog configuredCatalog = getConfiguredCatalog();
+    ConfiguredAirbyteCatalog fullRefreshCatalog = withFullRefreshSyncModes(configuredCatalog);
+
+    final List<AirbyteRecordMessage> fullRefreshRecords = filterRecords(runRead(fullRefreshCatalog));
+    final List<AirbyteRecordMessage> emptyStateRecords = filterRecords(runRead(configuredCatalog, Jsons.jsonNode(new HashMap<>())));
+
+    assertFalse(fullRefreshRecords.isEmpty());
+    assertFalse(emptyStateRecords.isEmpty());
+    assertSameRecords(fullRefreshRecords, emptyStateRecords);
+  }
+
+  private List<AirbyteRecordMessage> filterRecords(Collection<AirbyteMessage> messages) {
+    return messages.stream()
+        .filter(m -> m.getType() == Type.RECORD)
+        .map(AirbyteMessage::getRecord)
+        .collect(Collectors.toList());
+  }
+
+  private ConfiguredAirbyteCatalog withSourceDefinedCursors(ConfiguredAirbyteCatalog catalog) {
+    ConfiguredAirbyteCatalog clone = Jsons.clone(catalog);
+    for (ConfiguredAirbyteStream configuredStream : clone.getStreams()) {
+      if (configuredStream.getSyncMode() == INCREMENTAL && configuredStream.getStream().getSourceDefinedCursor()) {
+        configuredStream.setCursorField(configuredStream.getStream().getDefaultCursorField());
+      }
+    }
+    return clone;
+  }
+
+  private ConfiguredAirbyteCatalog withFullRefreshSyncModes(ConfiguredAirbyteCatalog catalog) {
+    ConfiguredAirbyteCatalog clone = Jsons.clone(catalog);
+    for (ConfiguredAirbyteStream configuredStream : clone.getStreams()) {
+      if (configuredStream.getStream().getSupportedSyncModes().contains(FULL_REFRESH)) {
+        configuredStream.setSyncMode(FULL_REFRESH);
+      }
+    }
+    return clone;
+  }
+
+  private boolean sourceSupportsIncremental() throws Exception {
+    ConfiguredAirbyteCatalog catalog = getConfiguredCatalog();
+    for (ConfiguredAirbyteStream stream : catalog.getStreams()) {
+      if (stream.getStream().getSupportedSyncModes().contains(INCREMENTAL)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private OutputAndStatus<StandardGetSpecOutput> runSpec() {
@@ -258,12 +352,17 @@ public abstract class TestSource {
         .run(new StandardDiscoverCatalogInput().withConnectionConfiguration(getConfig()), jobRoot);
   }
 
+  private List<AirbyteMessage> runRead(ConfiguredAirbyteCatalog configuredCatalog) throws Exception {
+    return runRead(configuredCatalog, null);
+  }
+
   // todo (cgardens) - assume no state since we are all full refresh right now.
-  private List<AirbyteMessage> runRead(ConfiguredAirbyteCatalog catalog) throws Exception {
+  private List<AirbyteMessage> runRead(ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception {
     final StandardTapConfig tapConfig = new StandardTapConfig()
         .withConnectionId(UUID.randomUUID())
         .withSourceConnectionConfiguration(getConfig())
         .withSyncMode(SyncMode.FULL_REFRESH)
+        .withState(state == null ? null : new State().withState(state).withConnectionId(UUID.randomUUID()))
         .withCatalog(catalog);
 
     final AirbyteSource source = new DefaultAirbyteSource(new AirbyteIntegrationLauncher(getImageName(), pbf));
@@ -278,11 +377,16 @@ public abstract class TestSource {
     return messages;
   }
 
-  private void assertSameMessages(List<AirbyteMessage> expected, List<AirbyteMessage> actual) {
-    // we want to ignore order in this comparison.
-    assertEquals(expected.size(), actual.size());
-    assertTrue(expected.containsAll(actual));
-    assertTrue(actual.containsAll(expected));
+  private void assertSameRecords(List<AirbyteRecordMessage> expected, List<AirbyteRecordMessage> actual) {
+    List<AirbyteRecordMessage> prunedExpected = expected.stream().map(this::pruneEmittedAt).collect(Collectors.toList());
+    List<AirbyteRecordMessage> prunedActual = actual.stream().map(this::pruneEmittedAt).collect(Collectors.toList());
+    assertEquals(prunedExpected.size(), prunedActual.size());
+    assertTrue(prunedExpected.containsAll(prunedActual));
+    assertTrue(prunedActual.containsAll(prunedExpected));
+  }
+
+  private AirbyteRecordMessage pruneEmittedAt(AirbyteRecordMessage m) {
+    return Jsons.clone(m).withEmittedAt(null);
   }
 
   public static class TestDestinationEnv {
