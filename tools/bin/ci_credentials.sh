@@ -21,7 +21,7 @@ write_standard_creds destination-bigquery "$BIGQUERY_INTEGRATION_TEST_CREDS" "cr
 write_standard_creds destination-snowflake "$SNOWFLAKE_INTEGRATION_TEST_CREDS"
 write_standard_creds destination-redshift "$AWS_REDSHIFT_INTEGRATION_TEST_CREDS"
 
-write_standard_creds source-braintree-singer $BRAINTREE_TEST_CREDS
+write_standard_creds source-braintree-singer "$BRAINTREE_TEST_CREDS"
 write_standard_creds source-file "$BIGQUERY_INTEGRATION_TEST_CREDS" "gcs.json"
 write_standard_creds source-file "$AWS_S3_INTEGRATION_TEST_CREDS" "aws.json"
 write_standard_creds source-freshdesk "$FRESHDESK_TEST_CREDS"
@@ -44,4 +44,4 @@ write_standard_creds source-shopify-singer "$SHOPIFY_INTEGRATION_TEST_CREDS"
 write_standard_creds source-sendgrid "$SENDGRID_INTEGRATION_TEST_CREDS"
 write_standard_creds source-stripe-singer "$STRIPE_INTEGRATION_TEST_CREDS"
 write_standard_creds source-twilio-singer "$TWILIO_TEST_CREDS"
->>>>>>> e540283f964d2f9d59865ddc665c76b6b7dbb2ed
+
