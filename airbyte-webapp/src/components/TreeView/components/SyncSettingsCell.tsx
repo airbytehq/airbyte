@@ -58,7 +58,7 @@ const SyncSettingsCell: React.FC<IProps> = ({ item, onSelect }) => {
           value={currentSyncMode}
           data={data}
           onSelect={onSelectMode}
-          groupBy="groupValueText"
+          groupBy={supportIncremental ? "groupValueText" : undefined}
         />
       </DropDownContainer>
     </Cell>

@@ -71,6 +71,10 @@
   "form.pattern.error": "Note: The value must match the pattern {pattern}",
   "form.schemaFailed": "Fetching the schema is failed. Please try again",
   "form.tryAgain": "Try again",
+  "form.noNeed": "No need!",
+  "form.reset": "Reset",
+  "form.resetData": "Reset your data",
+  "form.changedColumns": "You have changed which column is used to detect new records for a stream. You may want to reset the data in your stream.",
 
   "preferences.title": "Specify your preferences",
   "preferences.anonymizeUsage": "Anonymize usage data collection",

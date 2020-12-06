@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo, useState } from "react";
+import styled from "styled-components";
 
 import { Cell } from "../../SimpleTableComponents";
 import MainInfoCell from "./MainInfoCell";
@@ -12,6 +13,11 @@ import {
 import ItemRow from "./ItemRow";
 import TreeItem from "./TreeItem";
 import { IDataItem } from "../../DropDown/components/ListItem";
+
+const StyledCell = styled(Cell)`
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
 
 type IProps = {
   isChild?: boolean;
@@ -106,7 +112,7 @@ const TreeViewRow: React.FC<IProps> = ({ item, updateItem }) => {
             isItemOpen={isItemOpen}
           />
           <Cell />
-          <Cell>{item.cleanedName}</Cell>
+          <StyledCell>{item.cleanedName}</StyledCell>
           <SyncSettingsCell item={item} onSelect={onSelectSyncMode} />
         </ItemRow>
       </TreeItem>

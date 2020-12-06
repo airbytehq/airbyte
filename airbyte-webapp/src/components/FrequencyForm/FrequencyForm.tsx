@@ -12,6 +12,7 @@ import SchemaView from "./components/SchemaView";
 import { IDataItem } from "../DropDown/components/ListItem";
 import EditControls from "../ServiceForm/components/EditControls";
 import { SyncSchema } from "../../core/resources/Schema";
+import SaveModal from "./components/SaveModal";
 
 type IProps = {
   className?: string;
@@ -56,7 +57,7 @@ const FrequencyForm: React.FC<IProps> = ({
         !item.syncMode
           ? {
               ...item,
-              syncModes: ["full_refresh"]
+              syncMode: "full_refresh"
             }
           : item
       )
@@ -65,6 +66,7 @@ const FrequencyForm: React.FC<IProps> = ({
   );
 
   const [newSchema, setNewSchema] = useState(initialSchema);
+  const [modalIsOpen, setModalIsOpen] = useState(false);
   const formatMessage = useIntl().formatMessage;
   const dropdownData = React.useMemo(
     () =>
@@ -93,12 +95,26 @@ const FrequencyForm: React.FC<IProps> = ({
       validateOnBlur={true}
       validateOnChange={true}
       validationSchema={connectionValidationSchema}
-      onSubmit={async (values, { setSubmitting }) => {
-        await onSubmit({ frequency: values.frequency, schema: newSchema });
-        setSubmitting(false);
+      onSubmit={async values => {
+        if (
+          isEditMode &&
+          JSON.stringify(newSchema) !== JSON.stringify(initialSchema)
+        ) {
+          setModalIsOpen(true);
+        } else {
+          await onSubmit({ frequency: values.frequency, schema: newSchema });
+        }
       }}
     >
-      {({ isSubmitting, setFieldValue, isValid, dirty, resetForm }) => (
+      {({
+        isSubmitting,
+        setFieldValue,
+        isValid,
+        dirty,
+        resetForm,
+        values,
+        setSubmitting
+      }) => (
         <FormContainer className={className}>
           <SchemaView schema={newSchema} onChangeSchema={setNewSchema} />
           {!isEditMode ? (
@@ -131,17 +147,33 @@ const FrequencyForm: React.FC<IProps> = ({
             )}
           </Field>
           {isEditMode ? (
-            <EditControls
-              isSubmitting={isSubmitting}
-              isValid={isValid}
-              dirty={
-                dirty ||
-                JSON.stringify(newSchema) !== JSON.stringify(initialSchema)
-              }
-              resetForm={resetForm}
-              successMessage={successMessage}
-              errorMessage={errorMessage}
-            />
+            <>
+              <EditControls
+                isSubmitting={isSubmitting}
+                isValid={isValid}
+                dirty={
+                  dirty ||
+                  JSON.stringify(newSchema) !== JSON.stringify(initialSchema)
+                }
+                resetForm={resetForm}
+                successMessage={successMessage}
+                errorMessage={errorMessage}
+              />
+              {modalIsOpen && (
+                <SaveModal
+                  onClose={() => setModalIsOpen(false)}
+                  onSubmit={async () => {
+                    setSubmitting(true);
+                    setModalIsOpen(false);
+                    await onSubmit({
+                      frequency: values.frequency,
+                      schema: newSchema
+                    });
+                    setSubmitting(false);
+                  }}
+                />
+              )}
+            </>
           ) : (
             <BottomBlock
               isSubmitting={isSubmitting}

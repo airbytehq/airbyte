@@ -22,6 +22,11 @@ const ChildTreeItem = styled(TreeItem)`
   margin-left: 64px;
 `;
 
+const StyledCell = styled(Cell)`
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
 const ChildRow: React.FC<IProps> = ({ item, updateItem }) => {
   const onCheckBoxClick = useCallback(
     () => updateItem({ ...item, selected: !item.selected }),
@@ -43,8 +48,8 @@ const ChildRow: React.FC<IProps> = ({ item, updateItem }) => {
             isItemHasChildren={false}
             isChild
           />
-          <Cell>{item.dataType}</Cell>
-          <Cell>{item.cleanedName}</Cell>
+          <StyledCell>{item.dataType}</StyledCell>
+          <StyledCell>{item.cleanedName}</StyledCell>
           <Cell />
         </ChildItemRow>
       </ChildTreeItem>
