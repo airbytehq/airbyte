@@ -1,0 +1,260 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "channels",
+        "json_schema": {
+          "type": [
+            "null",
+            "object"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "name": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "is_channel": {
+              "type": [
+                "null",
+                "boolean"
+              ]
+            },
+            "is_group": {
+              "type": [
+                "null",
+                "boolean"
+              ]
+            },
+            "is_im": {
+              "type": [
+                "null",
+                "boolean"
+              ]
+            },
+            "created": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "creator": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "is_archived": {
+              "type": [
+                "null",
+                "boolean"
+              ]
+            },
+            "is_general": {
+              "type": [
+                "null",
+                "boolean"
+              ]
+            },
+            "unlinked": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "name_normalized": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "is_shared": {
+              "type": [
+                "null",
+                "boolean"
+              ]
+            },
+            "is_ext_shared": {
+              "type": [
+                "null",
+                "boolean"
+              ]
+            },
+            "is_org_shared": {
+              "type": [
+                "null",
+                "boolean"
+              ]
+            },
+            "is_pending_ext_shared": {
+              "type": [
+                "null",
+                "boolean"
+              ]
+            },
+            "shared_team_ids": {
+              "type": [
+                "null",
+                "array"
+              ],
+              "items": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              }
+            },
+            "pending_shared": {
+              "type": [
+                "null",
+                "array"
+              ],
+              "items": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              }
+            },
+            "pending_connected_team_ids": {
+              "type": [
+                "null",
+                "array"
+              ],
+              "items": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              }
+            },
+            "parent_conversation": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "is_member": {
+              "type": [
+                "null",
+                "boolean"
+              ]
+            },
+            "is_private": {
+              "type": [
+                "null",
+                "boolean"
+              ]
+            },
+            "is_mpim": {
+              "type": [
+                "null",
+                "boolean"
+              ]
+            },
+            "topic": {
+              "type": [
+                "null",
+                "object"
+              ],
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "creator": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "last_set": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                }
+              }
+            },
+            "purpose": {
+              "type": [
+                "null",
+                "object"
+              ],
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "creator": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "last_set": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                }
+              }
+            },
+            "previous_names": {
+              "type": [
+                "null",
+                "array"
+              ],
+              "items": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              }
+            },
+            "num_members": {
+              "type": [
+                "null",
+                "integer"
+              ]
+            },
+            "members": {
+              "type": [
+                "null",
+                "array"
+              ],
+              "items": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              }
+            },
+            "channel_id": {
+              "type": [
+                "null",
+                "string"
+              ]
+            }
+          }
+        }
+      }
+    }
+  ]
+}
