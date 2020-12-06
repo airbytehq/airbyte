@@ -44,4 +44,4 @@ write_standard_creds source-shopify-singer "$SHOPIFY_INTEGRATION_TEST_CREDS"
 write_standard_creds source-sendgrid "$SENDGRID_INTEGRATION_TEST_CREDS"
 write_standard_creds source-stripe-singer "$STRIPE_INTEGRATION_TEST_CREDS"
 write_standard_creds source-twilio-singer "$TWILIO_TEST_CREDS"
->>>>>>> e540283f964d2f9d59865ddc665c76b6b7dbb2ed
+
