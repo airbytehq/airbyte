@@ -28,8 +28,8 @@ import tempfile
 from datetime import datetime
 
 import braintree
-from airbyte_protocol import AirbyteConnectionStatus, Status
-from base_python import AirbyteLogger, ConfigContainer
+from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, Status
+from base_python import AirbyteLogger, CatalogHelper, ConfigContainer
 from base_singer import SingerSource
 from braintree.exceptions.authentication_error import AuthenticationError
 from dateutil import parser
@@ -81,6 +81,10 @@ class SourceBraintreeSinger(SingerSource):
             + ' | grep "\\"type\\": \\"SCHEMA\\"" | head -1'
             + '| jq -c "{\\"streams\\":[{\\"stream\\": .stream, \\"schema\\": .schema}]}"'
         )
+
+    def discover(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteCatalog:
+        catalog = super().discover(logger, config_container)
+        return CatalogHelper.coerce_catalog_as_full_refresh(catalog)
 
     def read_cmd(self, logger: AirbyteLogger, config_path: str, catalog_path: str, state_path: str = None) -> str:
         state_flag = f"--state {state_path}" if state_path else ""
