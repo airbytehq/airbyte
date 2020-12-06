@@ -19,6 +19,8 @@ export type IProps = {
   withButton?: boolean;
   withBorder?: boolean;
   textButton?: string;
+  className?: string;
+  groupBy?: string;
 };
 
 const StyledDropdownList = styled(DropdownList)<{
@@ -79,7 +81,8 @@ const StyledDropdownList = styled(DropdownList)<{
 
   & .rw-list-option.rw-state-focus,
   & .rw-list-option,
-  & .rw-list-empty {
+  & .rw-list-empty,
+  & .rw-list-optgroup {
     color: ${({ theme }) => theme.textColor};
     border: none;
     padding: 10px 16px;
@@ -98,6 +101,7 @@ const StyledDropdownList = styled(DropdownList)<{
   & .rw-list-option.rw-state-selected {
     background: ${({ theme }) => theme.primaryColor12};
     color: ${({ theme }) => theme.primaryColor};
+    pointer-events: none;
   }
 
   &.rw-state-focus {
@@ -110,6 +114,12 @@ const StyledDropdownList = styled(DropdownList)<{
     & .rw-btn {
       color: ${({ theme }) => theme.primaryColor};
     }
+  }
+
+  & .rw-list-optgroup {
+    border-top: 1px solid ${({ theme }) => theme.greyColor20};
+    background: ${({ theme }) => theme.greyColor0};
+    font-weight: normal;
   }
 
   & .withButton,
@@ -154,10 +164,14 @@ const StyledDropdownList = styled(DropdownList)<{
 const DropDown: React.FC<IProps> = props => {
   const formatMessage = useIntl().formatMessage;
 
+  const className = `${props.className} ${
+    props.withButton ? "withButton" : ""
+  }`;
+
   return (
     <StyledDropdownList
       withBorder={props.withBorder}
-      containerClassName={props.withButton ? "withButton" : ""}
+      containerClassName={className}
       filter={props.hasFilter ? "contains" : false}
       placeholder={
         props.withButton ? props.textButton : props.placeholder || "..."
@@ -172,6 +186,7 @@ const DropDown: React.FC<IProps> = props => {
       textField="text"
       valueField="value"
       value={props.value}
+      groupBy={props.groupBy}
       disabled={props.disabled}
       valueComponent={({ item }: { item: IDataItem }) =>
         props.withButton ? (

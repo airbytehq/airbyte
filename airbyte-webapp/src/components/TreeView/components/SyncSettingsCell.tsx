@@ -10,27 +10,55 @@ const DropDownContainer = styled.div`
   padding-right: 10px;
 `;
 
+const StyledDropDown = styled(DropDown)`
+  & ~ .rw-popup-container {
+    min-width: 260px;
+    left: auto;
+  }
+`;
+
 type IProps = {
   item: SyncSchemaStream;
-  onSelect: (value: string) => void;
+  onSelect: (data: IDataItem) => void;
 };
 
 const SyncSettingsCell: React.FC<IProps> = ({ item, onSelect }) => {
-  const data = [
-    { text: "Full refresh", value: "full_refresh" },
-    { text: "Incremental - based on...", value: "incremental" }
-  ];
+  const supportIncremental = !!item.supportedSyncModes.find(
+    mode => mode === "incremental"
+  );
 
-  const onSelectMode = (data: IDataItem) => onSelect(data.value);
+  const currentSyncMode = item.defaultCursorField.length
+    ? item.defaultCursorField[0]
+    : item.syncMode || "full_refresh";
+
+  const data: IDataItem[] = [{ text: "Full refresh", value: "full_refresh" }];
+
+  if (supportIncremental && item.cursorField.length) {
+    item.cursorField.forEach(fieldData =>
+      data.push({
+        text: fieldData,
+        value: fieldData,
+        secondary: true,
+        groupValue: "incremental",
+        groupValueText: "Incremental - based on..."
+      })
+    );
+  }
+
+  const onSelectMode = (data: IDataItem) => {
+    onSelect(data);
+  };
 
   return (
     <Cell>
       <DropDownContainer>
-        <DropDown
+        <StyledDropDown
+          hasFilter
           withBorder
-          value={item.syncMode || "full_refresh"}
+          value={currentSyncMode}
           data={data}
           onSelect={onSelectMode}
+          groupBy="groupValueText"
         />
       </DropDownContainer>
     </Cell>

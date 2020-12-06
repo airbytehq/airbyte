@@ -50,7 +50,21 @@ const FrequencyForm: React.FC<IProps> = ({
   isEditMode,
   successMessage
 }) => {
-  const [newSchema, setNewSchema] = useState(schema);
+  const initialSchema = React.useMemo(
+    () => ({
+      streams: schema.streams.map(item =>
+        !item.syncMode
+          ? {
+              ...item,
+              syncModes: ["full_refresh"]
+            }
+          : item
+      )
+    }),
+    [schema.streams]
+  );
+
+  const [newSchema, setNewSchema] = useState(initialSchema);
   const formatMessage = useIntl().formatMessage;
   const dropdownData = React.useMemo(
     () =>
@@ -121,7 +135,8 @@ const FrequencyForm: React.FC<IProps> = ({
               isSubmitting={isSubmitting}
               isValid={isValid}
               dirty={
-                dirty || JSON.stringify(newSchema) !== JSON.stringify(schema)
+                dirty ||
+                JSON.stringify(newSchema) !== JSON.stringify(initialSchema)
               }
               resetForm={resetForm}
               successMessage={successMessage}

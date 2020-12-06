@@ -1,6 +1,22 @@
 import styled from "styled-components";
 
-const Text = styled.div<{ primary?: boolean }>`
+type IProps = {
+  primary?: boolean;
+  secondary?: boolean;
+};
+
+const setColor = (props: IProps & { theme: any }) => {
+  if (props.primary) {
+    return props.theme.primaryColor;
+  }
+  if (props.secondary) {
+    return props.theme.greyColor40;
+  }
+
+  return "inhered";
+};
+
+const Text = styled.div<IProps>`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -10,7 +26,7 @@ const Text = styled.div<{ primary?: boolean }>`
   font-style: normal;
   font-weight: normal;
   max-width: 94%;
-  color: ${({ theme, primary }) => (primary ? theme.primaryColor : "inhered")};
+  color: ${props => setColor(props)};
 
   .rw-list-option.rw-state-selected & {
     color: ${({ theme }) => theme.primaryColor};

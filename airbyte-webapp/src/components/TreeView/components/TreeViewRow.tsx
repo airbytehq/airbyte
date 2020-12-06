@@ -11,6 +11,7 @@ import {
 } from "../../../core/resources/Schema";
 import ItemRow from "./ItemRow";
 import TreeItem from "./TreeItem";
+import { IDataItem } from "../../DropDown/components/ListItem";
 
 type IProps = {
   isChild?: boolean;
@@ -37,8 +38,20 @@ const TreeViewRow: React.FC<IProps> = ({ item, updateItem }) => {
   const isItemHasChildren = !!(item.fields && item.fields.length);
 
   const onSelectSyncMode = useCallback(
-    (mode: string) => {
-      return updateItem({ ...item, syncMode: mode });
+    (data: IDataItem) => {
+      if (data.groupValue) {
+        return updateItem({
+          ...item,
+          syncMode: data.groupValue,
+          defaultCursorField: [data.value]
+        });
+      }
+
+      return updateItem({
+        ...item,
+        syncMode: data.value,
+        defaultCursorField: []
+      });
     },
     [item, updateItem]
   );
@@ -94,10 +107,7 @@ const TreeViewRow: React.FC<IProps> = ({ item, updateItem }) => {
           />
           <Cell />
           <Cell>{item.cleanedName}</Cell>
-          <SyncSettingsCell
-            item={item as SyncSchemaStream}
-            onSelect={onSelectSyncMode}
-          />
+          <SyncSettingsCell item={item} onSelect={onSelectSyncMode} />
         </ItemRow>
       </TreeItem>
       {isItemOpen &&

@@ -16,7 +16,6 @@ const TreeViewContainer = styled.div`
   background: ${({ theme }) => theme.greyColor0};
   margin-bottom: 29px;
   border-radius: 4px;
-  overflow: hidden;
 `;
 
 const SchemaView: React.FC<IProps> = ({ schema, onChangeSchema }) => {
