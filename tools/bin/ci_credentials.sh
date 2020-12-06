@@ -41,6 +41,6 @@ write_standard_creds source-redshift "$AWS_REDSHIFT_INTEGRATION_TEST_CREDS"
 write_standard_creds source-salesforce-singer "$SALESFORCE_INTEGRATION_TESTS_CREDS"
 write_standard_creds source-sendgrid "$SENDGRID_INTEGRATION_TEST_CREDS"
 write_standard_creds source-shopify-singer "$SHOPIFY_INTEGRATION_TEST_CREDS"
-write_standard_creds source-slack-singer $SLACK_TEST_CREDS
+write_standard_creds source-slack-singer "$SLACK_TEST_CREDS"
 write_standard_creds source-stripe-singer "$STRIPE_INTEGRATION_TEST_CREDS"
 write_standard_creds source-twilio-singer "$TWILIO_TEST_CREDS"
