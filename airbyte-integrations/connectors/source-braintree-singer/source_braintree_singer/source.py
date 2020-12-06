@@ -87,5 +87,4 @@ class SourceBraintreeSinger(SingerSource):
         return CatalogHelper.coerce_catalog_as_full_refresh(catalog)
 
     def read_cmd(self, logger: AirbyteLogger, config_path: str, catalog_path: str, state_path: str = None) -> str:
-        state_flag = f"--state {state_path}" if state_path else ""
-        return f"{TAP_CMD} -c {config_path} -p {catalog_path} {state_flag}"
+        return f"{TAP_CMD} -c {config_path} -p {catalog_path}"
