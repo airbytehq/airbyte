@@ -113,6 +113,11 @@
   dockerRepository: airbyte/source-braintree-singer
   dockerImageTag: 0.1.0
   documentationUrl: https://hub.docker.com/r/airbyte/source-braintree-singer
+- sourceDefinitionId: 41375467-61ae-4204-8e38-e2b8b7365f23
+  name: Slack
+  dockerRepository: airbyte/source-slack-singer
+  dockerImageTag: 0.1.0
+  documentationUrl: https://hub.docker.com/repository/docker/airbyte/source-slack-singer
 - sourceDefinitionId: 59f1e50a-331f-4f09-b3e8-2e8d4d355f44
   name: Greenhouse
   dockerRepository: airbyte/source-greenhouse
