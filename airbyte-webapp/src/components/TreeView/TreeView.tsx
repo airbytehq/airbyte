@@ -56,7 +56,7 @@ const TreeView: React.FC<IProps> = ({ schema, onChangeSchema }) => {
     });
 
     onChangeSchema({ streams: newSchema });
-  }, [hasSelectedItem, schema.streams]);
+  }, [hasSelectedItem, onChangeSchema, schema.streams]);
 
   return (
     <div>
