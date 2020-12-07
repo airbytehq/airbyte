@@ -22,7 +22,7 @@ import Link from "../../components/Link";
 
 const Content = styled.div`
   width: 100%;
-  max-width: 638px;
+  max-width: 813px;
   margin: 0 auto;
   padding: 33px 0;
 `;

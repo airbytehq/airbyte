@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
@@ -8,10 +8,8 @@ import FrequencyConfig from "../../../../../data/FrequencyConfig.json";
 import useConnection from "../../../../../components/hooks/services/useConnectionHook";
 import DeleteBlock from "../../../../../components/DeleteBlock";
 import FrequencyForm from "../../../../../components/FrequencyForm";
-import {
-  constructInitialSchemaState,
-  constructNewSchema
-} from "../../../../../core/helpers";
+import { SyncSchema } from "../../../../../core/resources/Schema";
+import { equal } from "../../../../../utils/objects";
 
 type IProps = {
   connection: Connection;
@@ -19,32 +17,35 @@ type IProps = {
 };
 
 const Content = styled.div`
-  max-width: 639px;
+  max-width: 813px;
   margin: 18px auto;
 `;
 
 const SettingsView: React.FC<IProps> = ({ connection, onAfterSaveSchema }) => {
   const [saved, setSaved] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const { updateConnection, deleteConnection } = useConnection();
+  const {
+    updateConnection,
+    deleteConnection,
+    resetConnection
+  } = useConnection();
 
-  const schedule = FrequencyConfig.find(
-    item => JSON.stringify(item.config) === JSON.stringify(connection.schedule)
+  const schedule = FrequencyConfig.find(item =>
+    equal(connection.schedule, item.config)
   );
 
-  const onSubmit = async (
-    values: { frequency: string },
-    checkedState: string[]
-  ) => {
-    const newSchema = constructNewSchema(connection.syncSchema, checkedState);
-
+  const onSubmit = async (values: {
+    frequency: string;
+    schema: SyncSchema;
+  }) => {
     const frequencyData = FrequencyConfig.find(
       item => item.value === values.frequency
     );
+    const initialSyncSchema = connection.syncSchema;
 
     const result = await updateConnection({
       connectionId: connection.connectionId,
-      syncSchema: newSchema,
+      syncSchema: values.schema,
       status: connection.status,
       schedule: frequencyData?.config || null
     });
@@ -53,20 +54,21 @@ const SettingsView: React.FC<IProps> = ({ connection, onAfterSaveSchema }) => {
       setErrorMessage(result.message);
     } else {
       setSaved(true);
-      if (JSON.stringify(checkedState) !== JSON.stringify(initialChecked)) {
+      if (!equal(values.schema, initialSyncSchema)) {
         onAfterSaveSchema();
       }
     }
   };
 
-  const { formSyncSchema, initialChecked, allSchemaChecked } = useMemo(
-    () => constructInitialSchemaState(connection.syncSchema),
-    [connection.syncSchema]
+  const onDelete = useCallback(
+    () => deleteConnection({ connectionId: connection.connectionId }),
+    [deleteConnection, connection.connectionId]
   );
 
-  const onDelete = () => {
-    deleteConnection({ connectionId: connection.connectionId });
-  };
+  const onReset = useCallback(() => resetConnection(connection.connectionId), [
+    resetConnection,
+    connection.connectionId
+  ]);
 
   return (
     <Content>
@@ -75,10 +77,9 @@ const SettingsView: React.FC<IProps> = ({ connection, onAfterSaveSchema }) => {
       >
         <FrequencyForm
           isEditMode
-          schema={formSyncSchema}
-          initialCheckedSchema={initialChecked}
-          allSchemaChecked={allSchemaChecked}
+          schema={connection.syncSchema}
           onSubmit={onSubmit}
+          onReset={onReset}
           frequencyValue={schedule?.value}
           errorMessage={errorMessage}
           successMessage={saved && <FormattedMessage id="form.changesSaved" />}
