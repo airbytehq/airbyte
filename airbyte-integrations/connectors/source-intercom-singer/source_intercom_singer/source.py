@@ -51,7 +51,6 @@ class BaseSingerSource(SingerSource):
             # this should be in UI
             error_msg = (
                 f"Unable to connect to the {self.tap_name} with the provided credentials. "
-                "Please make sure the input credentials and environment are correct. "
                 f"Error: {err}"
             )
             return AirbyteConnectionStatus(status=Status.FAILED, message=error_msg)
