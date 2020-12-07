@@ -24,7 +24,10 @@
 
 package io.airbyte.scheduler.persistence;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.AirbyteProtocolConverters;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobConfig;
@@ -36,6 +39,7 @@ import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.State;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.scheduler.Attempt;
 import io.airbyte.scheduler.AttemptStatus;
 import io.airbyte.scheduler.Job;
@@ -127,16 +131,33 @@ public class DefaultJobCreator implements JobCreator {
                             String sourceDockerImageName,
                             String destinationDockerImageName)
       throws IOException {
-    final UUID connectionId = standardSync.getConnectionId();
+    return createSyncJobInternal(
+        standardSync.getConnectionId(),
+        source.getConfiguration(),
+        destination.getConfiguration(),
+        AirbyteProtocolConverters.toConfiguredCatalog(standardSync.getSchema()),
+        sourceDockerImageName,
+        destinationDockerImageName);
+  }
 
+  private long createSyncJobInternal(
+                                     UUID connectionId,
+                                     JsonNode sourceConfiguration,
+                                     JsonNode destinationConfiguration,
+                                     ConfiguredAirbyteCatalog configuredAirbyteCatalog,
+                                     String sourceDockerImageName,
+                                     String destinationDockerImageName)
+      throws IOException {
     final String scope = ScopeHelper.createScope(JobConfig.ConfigType.SYNC, connectionId.toString());
 
+    // reusing this isn't going to quite work.
     final JobSyncConfig jobSyncConfig = new JobSyncConfig()
-        .withSourceConnection(source)
         .withSourceDockerImage(sourceDockerImageName)
-        .withDestinationConnection(destination)
+        .withSourceConfiguration(sourceConfiguration)
         .withDestinationDockerImage(destinationDockerImageName)
-        .withStandardSync(standardSync);
+        .withDestinationConfiguration(destinationConfiguration)
+        .withConfiguredAirbyteCatalog(configuredAirbyteCatalog)
+        .withState(null);
 
     // todo (cgardens) - this will not have the intended behavior if the last job failed. then the next
     // job will assume there is no state and re-sync everything! this is already wrong, so i'm not going

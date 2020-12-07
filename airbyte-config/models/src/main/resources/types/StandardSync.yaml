@@ -23,6 +23,7 @@ properties:
     format: uuid
   name:
     type: string
+  # deprecated.
   syncMode:
     "$ref": SyncMode.yaml
   schema:

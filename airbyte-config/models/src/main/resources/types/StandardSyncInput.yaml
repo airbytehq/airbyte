@@ -6,22 +6,22 @@ description: job sync config
 type: object
 additionalProperties: false
 required:
-  - sourceConnection
-  - destinationConnection
-  - standardSync
-  - connectionId
+  - sourceConfiguration
+  - destinationConfiguration
+  - configuredAirbyteCatalog
 properties:
-  sourceConnection:
-    "$ref": SourceConnection.yaml
-  destinationConnection:
-    "$ref": DestinationConnection.yaml
-  syncMode:
-    "$ref": SyncMode.yaml
+  sourceConfiguration:
+    description: Integration specific blob. Must be a valid JSON string.
+    type: object
+    existingJavaType: com.fasterxml.jackson.databind.JsonNode
+  destinationConfiguration:
+    description: Integration specific blob. Must be a valid JSON string.
+    type: object
+    existingJavaType: com.fasterxml.jackson.databind.JsonNode
   catalog:
+    description: the configured airbyte catalog
     type: object
     existingJavaType: io.airbyte.protocol.models.ConfiguredAirbyteCatalog
-  connectionId:
-    type: string
-    format: uuid
   state:
+    description: optional state of the previous run. this object is defined per integration.
     "$ref": State.yaml

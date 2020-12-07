@@ -105,7 +105,7 @@ public class DefaultSyncWorker implements SyncWorker {
       LOGGER.info("Running normalization.");
       normalizationRunner.start();
       final Path normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"));
-      if (!normalizationRunner.normalize(normalizationRoot, syncInput.getDestinationConnection().getConfiguration(), syncInput.getCatalog())) {
+      if (!normalizationRunner.normalize(normalizationRoot, syncInput.getDestinationConfiguration(), syncInput.getCatalog())) {
         throw new WorkerException("Normalization Failed.");
       }
     } catch (Exception e) {
@@ -125,7 +125,6 @@ public class DefaultSyncWorker implements SyncWorker {
     final StandardSyncOutput output = new StandardSyncOutput().withStandardSyncSummary(summary);
     messageTracker.getOutputState().ifPresent(capturedState -> {
       final State state = new State()
-          .withConnectionId(tapConfig.getConnectionId())
           .withState(capturedState);
       output.withState(state);
     });
