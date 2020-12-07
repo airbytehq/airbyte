@@ -5,7 +5,7 @@ import org.gradle.api.tasks.testing.Test
 class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
     void apply(Project project) {
         project.sourceSets {
-            integrationTest {
+            integrationTestJava {
                 java {
                     srcDir 'src/test-integration/java'
                 }
@@ -14,16 +14,16 @@ class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
                 }
             }
         }
-        project.test.dependsOn('compileIntegrationTestJava')
+        project.test.dependsOn('compileIntegrationTestJavaJava')
 
         project.configurations {
-            integrationTestImplementation.extendsFrom testImplementation
-            integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
+            integrationTestJavaImplementation.extendsFrom testImplementation
+            integrationTestJavaRuntimeOnly.extendsFrom testRuntimeOnly
         }
 
-        project.task('integrationTest', type: Test) {
-            testClassesDirs += project.sourceSets.integrationTest.output.classesDirs
-            classpath += project.sourceSets.integrationTest.runtimeClasspath
+        project.task('integrationTestJava', type: Test) {
+            testClassesDirs += project.sourceSets.integrationTestJava.output.classesDirs
+            classpath += project.sourceSets.integrationTestJava.runtimeClasspath
 
             useJUnitPlatform()
             testLogging() {
@@ -37,5 +37,11 @@ class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
             mustRunAfter project.test
         }
 
+        // make sure we create the integrationTest task once in case a standard source test was already initialized
+        if(!project.hasProperty('integrationTest')) {
+            project.task('integrationTest')
+        }
+
+        project.integrationTest.dependsOn(project.integrationTestJava)
     }
 }
