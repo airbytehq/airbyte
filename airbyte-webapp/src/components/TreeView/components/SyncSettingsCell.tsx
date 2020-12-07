@@ -1,10 +1,10 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import styled from "styled-components";
 
 import { Cell } from "../../SimpleTableComponents";
 import DropDown from "../../DropDown";
 import { IDataItem } from "../../DropDown/components/ListItem";
-import { SyncSchemaStream } from "../../../core/resources/Schema";
+import { SyncMode, SyncSchemaStream } from "../../../core/resources/Schema";
 import { useIntl } from "react-intl";
 
 const DropDownContainer = styled.div`
@@ -25,69 +25,70 @@ type IProps = {
 
 const SyncSettingsCell: React.FC<IProps> = ({ item, onSelect }) => {
   const formatMessage = useIntl().formatMessage;
-  const [supportIncremental, setSupportIncremental] = useState(false);
-
-  const data: IDataItem[] = useMemo(
-    () =>
-      item.supportedSyncModes
-        .filter(mode => {
-          if (mode === "incremental") {
-            setSupportIncremental(true);
-            return false;
-          }
-          return true;
-        })
-        .map(mode => ({
-          value: mode,
-          text: formatMessage({
-            id: `sources.${mode}`,
-            defaultMessage: mode
-          })
-        })),
-    [formatMessage, item.supportedSyncModes]
-  );
 
   const fullData = useMemo(() => {
+    const syncData: {
+      value: string;
+      text: string;
+      secondary?: boolean;
+      groupValue?: string;
+      groupValueText?: string;
+    }[] = item.supportedSyncModes
+      .filter(mode => mode !== SyncMode.Incremental)
+      .map(mode => ({
+        value: mode,
+        text: formatMessage({
+          id: `sources.${mode}`,
+          defaultMessage: mode
+        })
+      }));
+
+    const isIncrementalSupported = item.supportedSyncModes.includes(
+      SyncMode.Incremental
+    );
+
     // If INCREMENTAL is included in the supported sync modes...
-    if (supportIncremental) {
+    if (isIncrementalSupported) {
       if (item.sourceDefinedCursor) {
         // If sourceDefinedCursor is true, In the dropdown we should just have one row for incremental
-        data.push({
+        syncData.push({
           text: formatMessage({
             id: "sources.incrementalSourceCursor"
           }),
-          value: "incremental"
+          value: SyncMode.Incremental
         });
       } else {
         // If sourceDefinedCursor is false...
 
         // If defaultCursorField is set, then the field specified in there should be at the top of the list
         // and have the word "(default)" next to it
-        item.defaultCursorField.forEach(field =>
-          data.push({
+        if (item.defaultCursorField?.length) {
+          syncData.push({
             text: formatMessage(
               {
                 id: "sources.incrementalDefault"
               },
-              { value: field }
+              { value: item.defaultCursorField[0] }
             ),
-            value: field,
+            value: item.defaultCursorField[0],
             secondary: true,
-            groupValue: "incremental",
+            groupValue: SyncMode.Incremental,
             groupValueText: formatMessage({
               id: "sources.incremental"
             })
-          })
-        );
+          });
+        }
 
         // Any column in the stream can be used as the cursor
         item.fields.forEach(field => {
-          if (!data.find(dataItem => dataItem.value === field.cleanedName)) {
-            data.push({
+          if (
+            !syncData.find(dataItem => dataItem.value === field.cleanedName)
+          ) {
+            syncData.push({
               text: field.cleanedName,
               value: field.cleanedName,
               secondary: true,
-              groupValue: "incremental",
+              groupValue: SyncMode.Incremental,
               groupValueText: formatMessage({
                 id: "sources.incremental"
               })
@@ -96,14 +97,14 @@ const SyncSettingsCell: React.FC<IProps> = ({ item, onSelect }) => {
         });
       }
     }
-    return data;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [item.fields, supportIncremental]);
 
-  const currentValue =
-    item.cursorField && item.cursorField.length
-      ? item.cursorField[0]
-      : item.syncMode || "";
+    return syncData;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [item.supportedSyncModes, item.fields]);
+
+  const currentValue = item.cursorField?.length
+    ? item.cursorField[0]
+    : item.syncMode || "";
 
   return (
     <Cell>

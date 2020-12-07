@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
@@ -9,6 +9,7 @@ import useConnection from "../../../../../components/hooks/services/useConnectio
 import DeleteBlock from "../../../../../components/DeleteBlock";
 import FrequencyForm from "../../../../../components/FrequencyForm";
 import { SyncSchema } from "../../../../../core/resources/Schema";
+import { equal } from "../../../../../utils/objects";
 
 type IProps = {
   connection: Connection;
@@ -23,10 +24,14 @@ const Content = styled.div`
 const SettingsView: React.FC<IProps> = ({ connection, onAfterSaveSchema }) => {
   const [saved, setSaved] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const { updateConnection, deleteConnection } = useConnection();
+  const {
+    updateConnection,
+    deleteConnection,
+    resetConnection
+  } = useConnection();
 
-  const schedule = FrequencyConfig.find(
-    item => JSON.stringify(item.config) === JSON.stringify(connection.schedule)
+  const schedule = FrequencyConfig.find(item =>
+    equal(connection.schedule, item.config)
   );
 
   const onSubmit = async (values: {
@@ -49,15 +54,21 @@ const SettingsView: React.FC<IProps> = ({ connection, onAfterSaveSchema }) => {
       setErrorMessage(result.message);
     } else {
       setSaved(true);
-      if (JSON.stringify(values.schema) !== JSON.stringify(initialSyncSchema)) {
+      if (!equal(values.schema, initialSyncSchema)) {
         onAfterSaveSchema();
       }
     }
   };
 
-  const onDelete = () => {
-    deleteConnection({ connectionId: connection.connectionId });
-  };
+  const onDelete = useCallback(
+    () => deleteConnection({ connectionId: connection.connectionId }),
+    [deleteConnection, connection.connectionId]
+  );
+
+  const onReset = useCallback(() => resetConnection(connection.connectionId), [
+    resetConnection,
+    connection.connectionId
+  ]);
 
   return (
     <Content>
@@ -68,6 +79,7 @@ const SettingsView: React.FC<IProps> = ({ connection, onAfterSaveSchema }) => {
           isEditMode
           schema={connection.syncSchema}
           onSubmit={onSubmit}
+          onReset={onReset}
           frequencyValue={schedule?.value}
           errorMessage={errorMessage}
           successMessage={saved && <FormattedMessage id="form.changesSaved" />}

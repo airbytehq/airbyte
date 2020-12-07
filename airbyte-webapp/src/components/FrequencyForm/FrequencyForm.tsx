@@ -11,8 +11,9 @@ import Label from "../Label";
 import SchemaView from "./components/SchemaView";
 import { IDataItem } from "../DropDown/components/ListItem";
 import EditControls from "../ServiceForm/components/EditControls";
-import { SyncSchema } from "../../core/resources/Schema";
+import { SyncMode, SyncSchema } from "../../core/resources/Schema";
 import SaveModal from "./components/SaveModal";
+import { equal } from "../../utils/objects";
 
 type IProps = {
   className?: string;
@@ -20,6 +21,7 @@ type IProps = {
   errorMessage?: React.ReactNode;
   successMessage?: React.ReactNode;
   onSubmit: (values: { frequency: string; schema: SyncSchema }) => void;
+  onReset?: (connectionId?: string) => void;
   onDropDownSelect?: (item: IDataItem) => void;
   frequencyValue?: string;
   isEditMode?: boolean;
@@ -43,6 +45,7 @@ const connectionValidationSchema = yup.object().shape({
 
 const FrequencyForm: React.FC<IProps> = ({
   onSubmit,
+  onReset,
   className,
   errorMessage,
   schema,
@@ -58,7 +61,7 @@ const FrequencyForm: React.FC<IProps> = ({
         const itemWithSyncMode = !item.syncMode
           ? {
               ...item,
-              syncMode: "full_refresh"
+              syncMode: SyncMode.FullRefresh
             }
           : item;
 
@@ -66,7 +69,7 @@ const FrequencyForm: React.FC<IProps> = ({
         // Otherwise it supports whatever sync modes are present.
         return !itemWithSyncMode.supportedSyncModes ||
           !itemWithSyncMode.supportedSyncModes.length
-          ? { ...itemWithSyncMode, supportedSyncModes: ["full_refresh"] }
+          ? { ...itemWithSyncMode, supportedSyncModes: [SyncMode.FullRefresh] }
           : itemWithSyncMode;
       })
     }),
@@ -74,7 +77,7 @@ const FrequencyForm: React.FC<IProps> = ({
   );
 
   const [newSchema, setNewSchema] = useState(initialSchema);
-  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [modalIsOpen, setResetModalIsOpen] = useState(false);
   const formatMessage = useIntl().formatMessage;
   const dropdownData = React.useMemo(
     () =>
@@ -104,25 +107,15 @@ const FrequencyForm: React.FC<IProps> = ({
       validateOnChange={true}
       validationSchema={connectionValidationSchema}
       onSubmit={async values => {
-        if (
-          isEditMode &&
-          JSON.stringify(newSchema) !== JSON.stringify(initialSchema)
-        ) {
-          setModalIsOpen(true);
-        } else {
-          await onSubmit({ frequency: values.frequency, schema: newSchema });
+        const requiresReset = isEditMode && !equal(initialSchema, newSchema);
+        await onSubmit({ frequency: values.frequency, schema: newSchema });
+
+        if (requiresReset) {
+          setResetModalIsOpen(true);
         }
       }}
     >
-      {({
-        isSubmitting,
-        setFieldValue,
-        isValid,
-        dirty,
-        resetForm,
-        values,
-        setSubmitting
-      }) => (
+      {({ isSubmitting, setFieldValue, isValid, dirty, resetForm }) => (
         <FormContainer className={className}>
           <SchemaView schema={newSchema} onChangeSchema={setNewSchema} />
           {!isEditMode ? (
@@ -159,25 +152,17 @@ const FrequencyForm: React.FC<IProps> = ({
               <EditControls
                 isSubmitting={isSubmitting}
                 isValid={isValid}
-                dirty={
-                  dirty ||
-                  JSON.stringify(newSchema) !== JSON.stringify(initialSchema)
-                }
+                dirty={dirty || !equal(initialSchema, newSchema)}
                 resetForm={resetForm}
                 successMessage={successMessage}
                 errorMessage={errorMessage}
               />
               {modalIsOpen && (
                 <SaveModal
-                  onClose={() => setModalIsOpen(false)}
+                  onClose={() => setResetModalIsOpen(false)}
                   onSubmit={async () => {
-                    setSubmitting(true);
-                    setModalIsOpen(false);
-                    await onSubmit({
-                      frequency: values.frequency,
-                      schema: newSchema
-                    });
-                    setSubmitting(false);
+                    await onReset?.();
+                    setResetModalIsOpen(false);
                   }}
                 />
               )}
