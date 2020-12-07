@@ -33,6 +33,6 @@ setup(
     install_requires=["tap-braintree==0.9.1", "python-dateutil==2.8.1", "airbyte-protocol", "base-singer", "base-python"],
     package_data={"": ["*.json"]},
     extras_require={
-        "standardtest": ["airbyte_python_test"],
+        "integration_tests": ["airbyte_python_test"],
     },
 )
