@@ -1,6 +1,6 @@
 FROM airbyte/base-python-test:dev
 
-# Bash is installed for convenient debugging.
+# Bash is installed for convenient debugging. GCC is required by tap-intercom to compile ciso8601. 
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
     && apt-get install -y bash \
