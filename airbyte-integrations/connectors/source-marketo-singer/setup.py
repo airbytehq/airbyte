@@ -30,7 +30,7 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=["airbyte-protocol","base-singer", "base-python", "tap-marketo==2.4.1"],
+    install_requires=["airbyte-protocol", "base-singer", "base-python", "tap-marketo==2.4.1"],
     package_data={"": ["*.json"]},
     setup_requires=["pytest-runner"],
     tests_require=["pytest"],
