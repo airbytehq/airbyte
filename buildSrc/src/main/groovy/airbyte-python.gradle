@@ -58,7 +58,7 @@ class AirbytePythonPlugin implements Plugin<Project> {
 
         project.task('installReqs', type: PythonTask, dependsOn: project.installLocalReqs) {
             module = "pip"
-            command = "install .[main]"
+            command = "install ."
             inputs.file('setup.py')
             outputs.file('build/installedreqs.txt')
         }

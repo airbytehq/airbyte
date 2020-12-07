@@ -30,10 +30,10 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
+    install_requires=["tap-github==1.9.0", "requests", "airbyte-protocol", "base-singer", "base-python"],
     package_data={"": ["*.json"]},
     # two sets of dependencies: 1) for main 2) for standard test deps. 2 does not have all of the dependencies of 1, which is we cannot use install_requires.
     extras_require={
-        "main": ["tap-github==1.9.0", "requests", "airbyte-protocol", "base-singer", "base-python"],
         "standardtest": ["airbyte_python_test"],
     },
 )

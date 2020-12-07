@@ -35,10 +35,6 @@ setup(
     setup_requires=["pytest-runner"],
     tests_require=["pytest"],
     extras_require={
-        # Dependencies required by the main package but not integration tests should go in main. Deps required by
-        # integration tests but not the main package go in integration_tests. Deps required by both should go in
-        # install_requires.
-        "main": [],
         "tests": ["airbyte-python-test", "pytest"],
     },
 )

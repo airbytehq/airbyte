@@ -30,11 +30,11 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
+    install_requires=["tap-slack==1.0.0", "slack-sdk==3.0.0", "airbyte-protocol", "base-singer", "base-python"],
     package_data={"": ["*.json"]},
     setup_requires=["pytest-runner"],
     tests_require=["pytest"],
     extras_require={
-        "main": ["tap-slack==1.0.0", "slack-sdk==3.0.0", "airbyte-protocol", "base-singer", "base-python"],
         "standardtest": ["airbyte_python_test"],
     },
 )

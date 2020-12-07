@@ -12,7 +12,7 @@ COPY $CODE_PATH ./$CODE_PATH
 COPY setup.py ./
 RUN pip install pip==20.3
 RUN pip install tap-shopify==1.2.6
-RUN pip install ".[main]"
+RUN pip install .
 
 LABEL io.airbyte.version=0.1.4
 LABEL io.airbyte.name=airbyte/source-shopify-singer

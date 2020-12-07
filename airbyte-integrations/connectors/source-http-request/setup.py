@@ -30,12 +30,11 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=["airbyte-protocol", "requests"],
+    install_requires=["airbyte-protocol", "requests", "base-python"],
     package_data={"": ["*.json"]},
     setup_requires=["pytest-runner"],
     tests_require=["pytest"],
     extras_require={
-        "main": ["base-python"],
         "tests": ["airbyte-python-test", "pytest"],
     },
 )

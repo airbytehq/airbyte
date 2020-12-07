@@ -30,12 +30,11 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=["airbyte-protocol"],
+    install_requires=["airbyte-protocol", "base-singer", "base-python", "tap-facebook==1.9.4"],
     package_data={"": ["*.json"]},
     setup_requires=["pytest-runner"],
     tests_require=["pytest"],
     extras_require={
-        "main": ["base-singer", "base-python", "tap-facebook==1.9.4"],
         "tests": ["airbyte-python-test", "pytest"],
     },
 )

@@ -30,9 +30,9 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
+    install_requires=["tap-hubspot==2.8.1", "requests", "airbyte-protocol", "base-singer"],
     package_data={"": ["*.json"]},
     extras_require={
-        "main": ["tap-hubspot==2.8.1", "requests", "airbyte-protocol", "base-singer"],
         "standardtest": ["airbyte_python_test"],
     },
 )

@@ -30,9 +30,9 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
+    install_requires=["tap-braintree==0.9.1", "python-dateutil==2.8.1", "airbyte-protocol", "base-singer", "base-python"],
     package_data={"": ["*.json"]},
     extras_require={
-        "main": ["tap-braintree==0.9.1", "python-dateutil==2.8.1", "airbyte-protocol", "base-singer", "base-python"],
         "standardtest": ["airbyte_python_test"],
     },
 )

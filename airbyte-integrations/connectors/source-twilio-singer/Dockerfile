@@ -12,7 +12,7 @@ LABEL io.airbyte.name=airbyte/source-twilio-singer
 WORKDIR /airbyte/integration_code
 COPY $CODE_PATH ./$CODE_PATH
 COPY setup.py ./
-RUN pip install ".[main]"
+RUN pip install .
 
 WORKDIR /airbyte
 
