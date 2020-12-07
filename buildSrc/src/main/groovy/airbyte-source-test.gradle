@@ -27,6 +27,8 @@ class AirbyteSourceTestPlugin implements Plugin<Project> {
                             '--pythonContainerName', pythonContainerName
                 }
             }
+
+            outputs.upToDateWhen { false }
         }
         project.airbyteDockerTest.dependsOn(':airbyte-integrations:bases:base-python-test:airbyteDocker')
         project.standardSourceTestPython.dependsOn(':airbyte-integrations:bases:standard-source-test:airbyteDocker')
