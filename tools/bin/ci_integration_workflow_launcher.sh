@@ -27,7 +27,7 @@ if [ "$RUNNING_MASTER_WORKFLOWS" -gt "$MAX_RUNNING_MASTER_WORKFLOWS" ]  ; then
   exit 0
 fi
 
-CONNECTORS=$(./gradlew integrationTest standardSourceTestPython --dry-run | grep 'integrationTest SKIPPED\|standardSourceTestPython SKIPPED' | cut -d: -f 4 | sort | uniq)
+CONNECTORS=$(./gradlew integrationTest --dry-run | grep 'integrationTest SKIPPED' | cut -d: -f 4 | sort | uniq)
 echo "$CONNECTORS" | while read -r connector ; do
   echo "Issuing request for connector $connector..."
   curl \
