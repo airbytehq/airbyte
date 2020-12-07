@@ -22,18 +22,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from .catalog_helpers import CatalogHelper
+from .client import BaseClient
 from .integration import AirbyteSpec, ConfigContainer, Destination, Integration, Source
 from .logger import AirbyteLogger
+from .source import BaseSource
 
 # Must be the last one because the way we load the connector module creates a circular
 # dependency and models might not have been loaded yet
 from .entrypoint import AirbyteEntrypoint  # noqa isort:skip
 
 __all__ = [
+    "AirbyteLogger",
     "AirbyteSpec",
+    "BaseClient",
+    "BaseSource",
+    "CatalogHelper",
     "ConfigContainer",
+    "Destination",
     "Integration",
     "Source",
-    "Destination",
-    "AirbyteLogger",
 ]

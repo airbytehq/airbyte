@@ -13,15 +13,11 @@ import ConnectionStep from "./components/ConnectionStep";
 import SourceResource from "../../core/resources/Source";
 import DestinationResource from "../../core/resources/Destination";
 import config from "../../config";
-import StepsConfig, { StepsTypes } from "./components/StepsConfig";
-import PrepareDropDownLists from "./components/PrepareDropDownLists";
-import { Routes } from "../routes";
-import useRouter from "../../components/hooks/useRouterHook";
-import { SyncSchema } from "../../core/resources/Schema";
+import UseGetStepsConfig, { StepsTypes } from "./components/useGetStepsConfig";
+import usePrepareDropdownLists from "./components/usePrepareDropdownLists";
 import { AnalyticsService } from "../../core/analytics/AnalyticsService";
 import useSource from "../../components/hooks/services/useSourceHook";
 import useDestination from "../../components/hooks/services/useDestinationHook";
-import useConnection from "../../components/hooks/services/useConnectionHook";
 import Link from "../../components/Link";
 
 const Content = styled.div`
@@ -72,10 +68,8 @@ const OnboardingPage: React.FC = () => {
     AnalyticsService.page("Onboarding Page");
   }, []);
 
-  const { push } = useRouter();
   const { createSource, recreateSource } = useSource();
   const { createDestination, recreateDestination } = useDestination();
-  const { createConnection } = useConnection();
 
   const { sources } = useResource(SourceResource.listShape(), {
     workspaceId: config.ui.workspaceId
@@ -92,7 +86,7 @@ const OnboardingPage: React.FC = () => {
     setErrorStatusRequest(0);
   };
 
-  const { currentStep, steps, setCurrentStep } = StepsConfig(
+  const { currentStep, steps, setCurrentStep } = UseGetStepsConfig(
     !!sources.length,
     !!destinations.length,
     afterUpdateStep
@@ -103,7 +97,7 @@ const OnboardingPage: React.FC = () => {
     destinationsDropDownData,
     getSourceDefinitionById,
     getDestinationDefinitionById
-  } = PrepareDropDownLists();
+  } = usePrepareDropdownLists();
 
   const onSubmitSourceStep = async (values: {
     name: string;
@@ -168,33 +162,6 @@ const OnboardingPage: React.FC = () => {
     }
   };
 
-  const onSubmitConnectionStep = async (values: {
-    frequency: string;
-    syncSchema: SyncSchema;
-  }) => {
-    const sourceDefinition = getSourceDefinitionById(
-      sources[0].sourceDefinitionId
-    );
-    const destinationDefinition = getDestinationDefinitionById(
-      destinations[0].destinationDefinitionId
-    );
-
-    setErrorStatusRequest(0);
-    try {
-      await createConnection({
-        values,
-        source: sources[0],
-        destination: destinations[0],
-        sourceDefinition,
-        destinationDefinition
-      });
-
-      push(Routes.Root);
-    } catch (e) {
-      setErrorStatusRequest(e.status);
-    }
-  };
-
   const renderStep = () => {
     if (currentStep === StepsTypes.CREATE_SOURCE) {
       return (
@@ -224,11 +191,9 @@ const OnboardingPage: React.FC = () => {
 
     return (
       <ConnectionStep
-        onSubmit={onSubmitConnectionStep}
-        sourceDefinitionId={sources[0].sourceDefinitionId}
-        destinationDefinitionId={destinations[0].destinationDefinitionId}
         errorStatus={errorStatusRequest}
-        sourceId={sources[0].sourceId}
+        source={sources.length ? sources[0] : undefined}
+        destination={destinations.length ? destinations[0] : undefined}
       />
     );
   };

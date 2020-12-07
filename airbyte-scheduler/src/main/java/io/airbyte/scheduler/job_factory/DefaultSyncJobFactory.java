@@ -32,20 +32,20 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.scheduler.persistence.SchedulerPersistence;
+import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.UUID;
 
 public class DefaultSyncJobFactory implements SyncJobFactory {
 
-  private final SchedulerPersistence schedulerPersistence;
+  private final DefaultJobCreator jobCreator;
   private final ConfigRepository configRepository;
 
-  public DefaultSyncJobFactory(final SchedulerPersistence schedulerPersistence,
+  public DefaultSyncJobFactory(final DefaultJobCreator jobCreator,
                                final ConfigRepository configRepository) {
 
-    this.schedulerPersistence = schedulerPersistence;
+    this.jobCreator = jobCreator;
     this.configRepository = configRepository;
   }
 
@@ -65,7 +65,7 @@ public class DefaultSyncJobFactory implements SyncJobFactory {
       final String destinationImageName =
           DockerUtils.getTaggedImageName(destinationDefinition.getDockerRepository(), destinationDefinition.getDockerImageTag());
 
-      return schedulerPersistence.createSyncJob(
+      return jobCreator.createSyncJob(
           sourceConnection,
           destinationConnection,
           standardSync,

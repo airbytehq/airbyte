@@ -27,7 +27,7 @@ import pkgutil
 from typing import List
 
 import requests
-from airbyte_protocol import AirbyteCatalog, ConnectorSpecification
+from airbyte_protocol import ConfiguredAirbyteCatalog, ConnectorSpecification
 from base_python_test import StandardSourceTestIface
 
 
@@ -39,9 +39,9 @@ class GoogleAnalyticsStandardSourceTest(StandardSourceTestIface):
     def get_config(self) -> object:
         return json.loads(pkgutil.get_data(self.__class__.__module__.split(".")[0], "config.json"))
 
-    def get_catalog(self) -> AirbyteCatalog:
+    def get_catalog(self) -> ConfiguredAirbyteCatalog:
         raw_spec = pkgutil.get_data(self.__class__.__module__.split(".")[0], "test_catalog.json")
-        return AirbyteCatalog.parse_obj(json.loads(raw_spec))
+        return ConfiguredAirbyteCatalog.parse_obj(json.loads(raw_spec))
 
     # send a page view to GA using a URL constructed with
     # the documentation from https://developers.google.com/analytics/devguides/collection/protocol/v1/devguide#page

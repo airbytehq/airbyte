@@ -29,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.Lists;
 import io.airbyte.api.model.JobConfigType;
 import io.airbyte.api.model.JobIdRequestBody;
 import io.airbyte.api.model.JobInfoRead;
@@ -39,11 +40,13 @@ import io.airbyte.api.model.LogRead;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobConfig;
+import io.airbyte.scheduler.Attempt;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.JobStatus;
 import io.airbyte.scheduler.ScopeHelper;
-import io.airbyte.scheduler.persistence.SchedulerPersistence;
+import io.airbyte.scheduler.persistence.JobPersistence;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import org.junit.jupiter.api.BeforeEach;
@@ -67,38 +70,38 @@ public class JobHistoryHandlerTest {
 
   private static final JobInfoRead JOB_INFO =
       new JobInfoRead()
-          .job(
-              new JobRead()
-                  .id(JOB_ID)
-                  .configId(JOB_CONFIG_ID)
-                  .status(JobRead.StatusEnum.PENDING)
-                  .configType(JobConfigType.CHECK_CONNECTION_SOURCE)
-                  .createdAt(CREATED_AT)
-                  .startedAt(null)
-                  .updatedAt(CREATED_AT))
+          .job(new JobRead()
+              .id(JOB_ID)
+              .configId(JOB_CONFIG_ID)
+              .status(io.airbyte.api.model.JobStatus.PENDING)
+              .configType(JobConfigType.CHECK_CONNECTION_SOURCE)
+              .createdAt(CREATED_AT)
+              .updatedAt(CREATED_AT))
           .logs(new LogRead().logLines(new ArrayList<>()));
 
-  private SchedulerPersistence schedulerPersistence;
+  private JobPersistence jobPersistence;
   private JobHistoryHandler jobHistoryHandler;
 
   @BeforeEach
   public void setUp() {
     job = mock(Job.class);
+    final Attempt attempt = mock(Attempt.class);
     when(job.getId()).thenReturn(JOB_ID);
     when(job.getScope()).thenReturn(SCOPE);
     when(job.getConfig()).thenReturn(JOB_CONFIG);
     when(job.getStatus()).thenReturn(JOB_STATUS);
-    when(job.getLogPath()).thenReturn(LOG_PATH);
+    when(job.getAttempts()).thenReturn(Lists.newArrayList(attempt));
+    when(attempt.getLogPath()).thenReturn(Path.of(LOG_PATH));
     when(job.getCreatedAtInSecond()).thenReturn(CREATED_AT);
     when(job.getUpdatedAtInSecond()).thenReturn(CREATED_AT);
 
-    schedulerPersistence = mock(SchedulerPersistence.class);
-    jobHistoryHandler = new JobHistoryHandler(schedulerPersistence);
+    jobPersistence = mock(JobPersistence.class);
+    jobHistoryHandler = new JobHistoryHandler(jobPersistence);
   }
 
   @Test
   public void testListJobsFor() throws IOException {
-    when(schedulerPersistence.listJobs(CONFIG_TYPE, JOB_CONFIG_ID)).thenReturn(Collections.singletonList(job));
+    when(jobPersistence.listJobs(CONFIG_TYPE, JOB_CONFIG_ID)).thenReturn(Collections.singletonList(job));
 
     JobListRequestBody requestBody = new JobListRequestBody().configType(CONFIG_TYPE_FOR_API).configId(JOB_CONFIG_ID);
     JobReadList jobReadList = jobHistoryHandler.listJobsFor(requestBody);
@@ -110,7 +113,7 @@ public class JobHistoryHandlerTest {
 
   @Test
   public void testGetJobInfo() throws IOException {
-    when(schedulerPersistence.getJob(JOB_ID)).thenReturn(job);
+    when(jobPersistence.getJob(JOB_ID)).thenReturn(job);
 
     JobIdRequestBody requestBody = new JobIdRequestBody().id(JOB_ID);
     JobInfoRead jobInfoActual = jobHistoryHandler.getJobInfo(requestBody);
@@ -127,7 +130,9 @@ public class JobHistoryHandlerTest {
   @Test
   public void testEnumConversion() {
     assertTrue(Enums.isCompatible(JobConfig.ConfigType.class, JobConfigType.class));
-    assertTrue(Enums.isCompatible(JobStatus.class, JobRead.StatusEnum.class));
+    // todo (cgardens) - bring back in next PR.
+    // assertTrue(Enums.isCompatible(JobStatus.class, io.airbyte.api.model.JobStatus.class));
+    // assertTrue(Enums.isCompatible(AttemptStatus.class, io.airbyte.api.model.AttemptStatus.class));
   }
 
 }

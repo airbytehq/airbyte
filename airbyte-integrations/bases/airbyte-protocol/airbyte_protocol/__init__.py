@@ -34,6 +34,7 @@ from .models import (
     ConfiguredAirbyteStream,
     ConnectorSpecification,
     Status,
+    SyncMode,
     Type,
 )
 
@@ -49,5 +50,6 @@ __all__ = [
     "ConfiguredAirbyteStream",
     "ConnectorSpecification",
     "Status",
+    "SyncMode",
     "Type",
 ]

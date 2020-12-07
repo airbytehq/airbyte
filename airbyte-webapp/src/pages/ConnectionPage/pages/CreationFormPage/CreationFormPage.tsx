@@ -1,6 +1,5 @@
-import React, { Suspense, useState } from "react";
+import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 
 import useRouter from "../../../../components/hooks/useRouterHook";
 import MainPageWithScroll from "../../../../components/MainPageWithScroll";
@@ -11,15 +10,8 @@ import CreateEntityView from "./components/CreateEntityView";
 import SourceForm from "./components/SourceForm";
 import DestinationForm from "./components/DestinationForm";
 import ConnectionBlock from "../../../../components/ConnectionBlock";
-import CreateConnection from "./components/CreateConnection";
-import { IDataItem } from "../../../../components/DropDown/components/ListItem";
-import { AnalyticsService } from "../../../../core/analytics/AnalyticsService";
-import config from "../../../../config";
-import { SyncSchema } from "../../../../core/resources/Schema";
 import { Routes } from "../../../routes";
-import useConnection from "../../../../components/hooks/services/useConnectionHook";
-import ContentCard from "../../../../components/ContentCard";
-import Spinner from "../../../../components/Spinner";
+import CreateConnectionContent from "../../../../components/CreateConnectionContent";
 import { useResource } from "rest-hooks/lib/react-integration/hooks";
 import SourceResource from "../../../../core/resources/Source";
 import DestinationResource from "../../../../core/resources/Destination";
@@ -39,19 +31,6 @@ export enum EntityStepsTypes {
   CONNECTION = "connection"
 }
 
-const SpinnerBlock = styled.div`
-  margin: 40px;
-  text-align: center;
-`;
-
-const FetchMessage = styled.div`
-  font-size: 14px;
-  line-height: 17px;
-  color: ${({ theme }) => theme.textColor};
-  margin-top: 15px;
-  white-space: pre-line;
-`;
-
 const CreationFormPage: React.FC<IProps> = ({ type }) => {
   const { location, push }: any = useRouter();
   const source = useResource(
@@ -70,9 +49,6 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
         }
       : null
   );
-
-  const { createConnection } = useConnection();
-  const [errorStatusRequest, setErrorStatusRequest] = useState<number>(0);
 
   const steps = [
     {
@@ -94,16 +70,12 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
     EntityStepsTypes.SOURCE
   );
 
-  const onSelectFrequency = (item: IDataItem) => {
-    AnalyticsService.track("New Connection - Action", {
-      user_id: config.ui.workspaceId,
-      action: "Select a frequency",
-      frequency: item?.text,
-      connector_source_definition: source?.name,
-      connector_source_definition_id: source?.sourceDefinitionId,
-      connector_destination_definition: destination?.name,
-      connector_destination_definition_id: destination?.destinationDefinitionId
-    });
+  const afterSubmitConnection = () => {
+    if (type === "destination") {
+      push(`${Routes.Source}/${source?.sourceId}`);
+    } else {
+      push(`${Routes.Destination}/${destination?.destinationId}`);
+    }
   };
 
   const renderStep = () => {
@@ -151,66 +123,12 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
       }
     }
 
-    const onSubmitConnectionStep = async (values: {
-      frequency: string;
-      syncSchema: SyncSchema;
-    }) => {
-      setErrorStatusRequest(0);
-      try {
-        await createConnection({
-          values,
-          source: source || undefined,
-          destination: destination || undefined,
-          sourceDefinition: {
-            name: source?.name || "",
-            sourceDefinitionId: source?.sourceDefinitionId || ""
-          },
-          destinationDefinition: {
-            name: destination?.name || "",
-            destinationDefinitionId: destination?.destinationDefinitionId || ""
-          }
-        });
-
-        if (type === "destination") {
-          push(`${Routes.Source}/${source?.sourceId}`);
-        } else {
-          push(`${Routes.Destination}/${destination?.destinationId}`);
-        }
-      } catch (e) {
-        setErrorStatusRequest(e.status);
-        console.log(e);
-      }
-    };
-
-    const onSubmitStep = async (values: {
-      frequency: string;
-      syncSchema: SyncSchema;
-    }) => {
-      await onSubmitConnectionStep({
-        ...values
-      });
-    };
-
     return (
-      <ContentCard title={<FormattedMessage id="onboarding.setConnection" />}>
-        <Suspense
-          fallback={
-            <SpinnerBlock>
-              <Spinner />
-              <FetchMessage>
-                <FormattedMessage id="onboarding.fetchingSchema" />
-              </FetchMessage>
-            </SpinnerBlock>
-          }
-        >
-          <CreateConnection
-            sourceId={location.state?.sourceId}
-            onSelectFrequency={onSelectFrequency}
-            onSubmit={onSubmitStep}
-            errorStatus={errorStatusRequest}
-          />
-        </Suspense>
-      </ContentCard>
+      <CreateConnectionContent
+        source={source}
+        destination={destination}
+        afterSubmitConnection={afterSubmitConnection}
+      />
     );
   };
 

@@ -31,12 +31,13 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.standardtest.source.TestSource;
-import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.MySQLContainer;
@@ -101,8 +102,8 @@ public class MySqlIntegrationTest extends TestSource {
   }
 
   @Override
-  protected AirbyteCatalog getCatalog() {
-    return CatalogHelpers.createAirbyteCatalog(
+  protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
+    return CatalogHelpers.createConfiguredAirbyteCatalog(
         String.format("%s.%s", config.get("database").asText(), STREAM_NAME),
         Field.of("id", JsonSchemaPrimitive.NUMBER),
         Field.of("name", JsonSchemaPrimitive.STRING));
@@ -111,6 +112,11 @@ public class MySqlIntegrationTest extends TestSource {
   @Override
   protected List<String> getRegexTests() {
     return Collections.emptyList();
+  }
+
+  @Override
+  protected JsonNode getState() {
+    return Jsons.jsonNode(new HashMap<>());
   }
 
 }

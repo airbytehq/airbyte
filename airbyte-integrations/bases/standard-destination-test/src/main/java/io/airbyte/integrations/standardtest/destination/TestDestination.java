@@ -138,13 +138,20 @@ public abstract class TestDestination {
   }
 
   /**
-   * Override to return true to if the destination implements incremental syncs and it should be
-   * tested here.
+   * Detects if a destination implements incremental mode from the spec.json that should include
+   * 'supportsIncremental' = true
    *
    * @return - a boolean.
    */
   protected boolean implementsIncremental() {
-    return false;
+    final OutputAndStatus<StandardGetSpecOutput> output = runSpec();
+    assertTrue(output.getOutput().isPresent());
+    final StandardGetSpecOutput spec = output.getOutput().get();
+    if (spec.getSpecification().getSupportsIncremental() != null) {
+      return spec.getSpecification().getSupportsIncremental();
+    } else {
+      return false;
+    }
   }
 
   /**
@@ -276,6 +283,7 @@ public abstract class TestDestination {
   @Test
   public void testIncrementalSync() throws Exception {
     if (!implementsIncremental()) {
+      LOGGER.info("Destination's spec.json does not include '\"supportsIncremental\" ; true'");
       return;
     }
 

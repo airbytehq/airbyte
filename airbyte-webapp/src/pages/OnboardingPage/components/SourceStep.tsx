@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
-import { useFetcher } from "rest-hooks";
 
 import ContentCard from "../../../components/ContentCard";
 import ServiceForm from "../../../components/ServiceForm";
-import SourceDefinitionSpecificationResource, {
-  SourceDefinitionSpecification
-} from "../../../core/resources/SourceDefinitionSpecification";
 import { AnalyticsService } from "../../../core/analytics/AnalyticsService";
-import config from "../../../config";
-import PrepareDropDownLists from "./PrepareDropDownLists";
 import { Source } from "../../../core/resources/Source";
+
+import { useSourceDefinitionSpecificationLoad } from "../../../components/hooks/services/useSourceHook";
+
+import usePrepareDropdownLists from "./usePrepareDropdownLists";
+
+import config from "../../../config";
 
 type IProps = {
   source?: Source;
@@ -25,33 +25,6 @@ type IProps = {
   errorStatus?: number;
 };
 
-const useSourceDefinitionSpecificationLoad = (sourceDefinitionId: string) => {
-  const [
-    sourceDefinitionSpecification,
-    setSourceDefinitionSpecification
-  ] = useState<null | SourceDefinitionSpecification>(null);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const fetchSourceDefinitionSpecification = useFetcher(
-    SourceDefinitionSpecificationResource.detailShape(),
-    true
-  );
-
-  useEffect(() => {
-    (async () => {
-      if (sourceDefinitionId) {
-        setIsLoading(true);
-        setSourceDefinitionSpecification(
-          await fetchSourceDefinitionSpecification({ sourceDefinitionId })
-        );
-        setIsLoading(false);
-      }
-    })();
-  }, [fetchSourceDefinitionSpecification, sourceDefinitionId]);
-
-  return { sourceDefinitionSpecification, isLoading };
-};
-
 const SourceStep: React.FC<IProps> = ({
   onSubmit,
   dropDownData,
@@ -64,7 +37,7 @@ const SourceStep: React.FC<IProps> = ({
     sourceDefinitionSpecification,
     isLoading
   } = useSourceDefinitionSpecificationLoad(sourceId);
-  const { getSourceDefinitionById } = PrepareDropDownLists();
+  const { getSourceDefinitionById } = usePrepareDropdownLists();
 
   const onDropDownSelect = (sourceId: string) => {
     const sourceDefinition = getSourceDefinitionById(sourceId);

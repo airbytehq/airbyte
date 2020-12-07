@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string"
+    },
+    "first_name": {
+      "type": "string"
+    },
+    "last_name": {
+      "type": "string"
+    },
+    "primary_email_address": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "disabled": {
+      "type": "boolean"
+    },
+    "site_admin": {
+      "type": "boolean"
+    },
+    "emails": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "employee_id": {
+      "type": ["null", "integer"]
+    },
+    "linked_candidate_ids": {
+      "type": "array"
+    }
+  }
+}

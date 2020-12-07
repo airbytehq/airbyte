@@ -66,6 +66,8 @@
   "form.imageCannotFound": "The docker image cannot be found. Please ensure that the input tag points to a valid Airbyte docker image",
   "form.loadingConfiguration": "Loading required configuration parameters for {connector}",
   "form.pattern.error": "Note: The value must match the pattern {pattern}",
+  "form.schemaFailed": "Fetching the schema is failed. Please try again",
+  "form.tryAgain": "Try again",
 
   "preferences.title": "Specify your preferences",
   "preferences.anonymizeUsage": "Anonymize usage data collection",
@@ -180,7 +182,7 @@
   "admin.manageSource": "Manage your source connectors",
   "admin.availableSource": "Available source connectors",
   "admin.manageDestination": "Manage your destination connectors",
-  "admin.supportMultipleDestinations": "We will soon support multiple destinations within a single Airbyte instance",
+  "admin.availableDestinations": "Available destination connectors",
   "admin.connectors": "Connectors",
   "admin.image": "Image",
   "admin.codeSource": "Code source",

@@ -1,0 +1,14 @@
+plugins {
+    id 'airbyte-docker'
+    id 'airbyte-integration-test-java'
+    id 'airbyte-python'
+    id 'airbyte-source-test'
+}
+
+airbytePython {
+    moduleDirectory 'source_braintree_singer'
+}
+
+dependencies {
+    implementation files(project(':airbyte-integrations:bases:base-singer').airbyteDocker.outputs)
+}
