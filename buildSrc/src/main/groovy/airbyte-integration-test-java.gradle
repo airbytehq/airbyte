@@ -37,6 +37,7 @@ class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
             mustRunAfter project.test
         }
 
+        // make sure we create the integrationTest task once in case a standard source test was already initialized
         if(!project.hasProperty('integrationTest')) {
             project.task('integrationTest')
         }

@@ -36,6 +36,7 @@ class AirbyteSourceTestPlugin implements Plugin<Project> {
         project.standardSourceTestPython.dependsOn(project.airbyteDocker)
         project.standardSourceTestPython.dependsOn(project.airbyteDockerTest)
 
+        // make sure we create the integrationTest task once in case a java integration test was already initialized
         if(!project.hasProperty('integrationTest')) {
             project.task('integrationTest')
         }
