@@ -25,6 +25,7 @@
 package io.airbyte.scheduler.persistence;
 
 import io.airbyte.config.JobConfig;
+import io.airbyte.config.State;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.JobStatus;
 import java.io.IOException;
@@ -129,6 +130,8 @@ public interface JobPersistence {
   List<Job> listJobsWithStatus(JobConfig.ConfigType configType, JobStatus status) throws IOException;
 
   Optional<Job> getLastSyncJob(UUID connectionId) throws IOException;
+
+  Optional<State> getCurrentState(UUID connectionId) throws IOException;
 
   Optional<Job> getOldestPendingJob() throws IOException;
 

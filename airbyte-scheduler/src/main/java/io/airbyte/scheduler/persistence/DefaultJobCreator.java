@@ -158,10 +158,7 @@ public class DefaultJobCreator implements JobCreator {
         .withConfiguredAirbyteCatalog(configuredAirbyteCatalog)
         .withState(null);
 
-    // todo (cgardens) - this will not have the intended behavior if the last job failed. then the next
-    // job will assume there is no state and re-sync everything! this is already wrong, so i'm not going
-    // to increase the scope of the current project.
-    final Optional<Job> previousJobOptional = jobPersistence.getLastSyncJob(connectionId);
+    final Optional<State> previousJobOptional = jobPersistence.getCurrentState(connectionId);
 
     final Optional<State> stateOptional = previousJobOptional.flatMap(j -> {
       final List<Attempt> attempts = j.getAttempts() != null ? j.getAttempts() : Lists.newArrayList();
