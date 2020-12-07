@@ -23,7 +23,7 @@ SOFTWARE.
 """
 
 import shopify
-from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, Status
+from airbyte_protocol import AirbyteConnectionStatus, Status
 from base_python import AirbyteLogger, ConfigContainer
 from base_singer import SingerSource
 
@@ -56,18 +56,6 @@ class SourceShopifySinger(SingerSource):
             return AirbyteConnectionStatus(
                 status=Status.FAILED, message="Unable to connect to the Shopify API with the provided credentials."
             )
-
-    def discover(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteCatalog:
-        catalog = super().discover(logger, config_container)
-
-        filtered_streams = []
-        for stream in catalog.streams:
-            if stream.name == "transactions":
-                continue
-            filtered_streams.append(stream)
-
-        catalog.streams = filtered_streams
-        return catalog
 
     def discover_cmd(self, logger: AirbyteLogger, config_path: str) -> str:
         return f"{TAP_CMD} -c {config_path} --discover"
