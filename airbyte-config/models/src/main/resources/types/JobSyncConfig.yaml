@@ -25,8 +25,10 @@ properties:
     type: object
     existingJavaType: io.airbyte.protocol.models.ConfiguredAirbyteCatalog
   sourceDockerImage:
+    description: Image name of the source with tag. Will be a placeholder if using the empty source. See SchedulerConstants.RESET_SOURCE_IMAGE_PLACEHOLDER for more details.
     type: string
   destinationDockerImage:
+    description: Image name of the destination with tag.
     type: string
   state:
     description: optional state of the previous run. this object is defined per integration.

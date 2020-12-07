@@ -51,4 +51,10 @@ public interface SchedulerJobClient {
                     String destinationDockerImage)
       throws IOException;
 
+  Job createResetConnectionJob(
+                               DestinationConnection destination,
+                               StandardSync standardSync,
+                               String destinationDockerImage)
+      throws IOException;
+
 }

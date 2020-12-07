@@ -33,6 +33,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Charsets;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
@@ -86,6 +87,10 @@ public class Jsons {
 
   public static <T> JsonNode jsonNode(final T object) {
     return OBJECT_MAPPER.valueToTree(object);
+  }
+
+  public static JsonNode emptyObject() {
+    return jsonNode(Collections.emptyMap());
   }
 
   public static <T> T object(final JsonNode jsonNode, final Class<T> klass) {

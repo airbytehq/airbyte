@@ -24,7 +24,6 @@
 
 package io.airbyte.scheduler;
 
-import com.google.common.base.Preconditions;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
@@ -43,8 +42,10 @@ import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import io.airbyte.workers.protocols.airbyte.AirbyteMessageTracker;
+import io.airbyte.workers.protocols.airbyte.AirbyteSource;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteDestination;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteSource;
+import io.airbyte.workers.protocols.airbyte.EmptyAirbyteSource;
 import io.airbyte.workers.wrappers.JobOutputCheckConnectionWorker;
 import io.airbyte.workers.wrappers.JobOutputDiscoverSchemaWorker;
 import io.airbyte.workers.wrappers.JobOutputGetSpecWorker;
@@ -129,15 +130,18 @@ public class WorkerRunFactory {
     final IntegrationLauncher sourceLauncher = createLauncher(config.getSourceDockerImage());
     final IntegrationLauncher destinationLauncher = createLauncher(config.getDestinationDockerImage());
 
-    Preconditions.checkArgument(sourceLauncher.getClass().equals(destinationLauncher.getClass()),
-        "Source and Destination must be using the same protocol");
+    // Switch to using the empty source when the placeholder is found. This is used for resetting the
+    // data in the destination.
+    final AirbyteSource airbyteSource =
+        config.getSourceDockerImage().equals(SchedulerConstants.RESET_SOURCE_IMAGE_PLACEHOLDER) ? new EmptyAirbyteSource()
+            : new DefaultAirbyteSource(sourceLauncher);
 
     return creator.create(
         jobRoot,
         syncInput,
         new JobOutputSyncWorker(
             new DefaultSyncWorker(
-                new DefaultAirbyteSource(sourceLauncher),
+                airbyteSource,
                 new DefaultAirbyteDestination(destinationLauncher),
                 new AirbyteMessageTracker(),
                 NormalizationRunnerFactory.create(

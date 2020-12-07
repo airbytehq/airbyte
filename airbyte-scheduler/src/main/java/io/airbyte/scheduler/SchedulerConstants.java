@@ -22,30 +22,12 @@
  * SOFTWARE.
  */
 
-package io.airbyte.scheduler.persistence;
+package io.airbyte.scheduler;
 
-import io.airbyte.config.DestinationConnection;
-import io.airbyte.config.SourceConnection;
-import io.airbyte.config.StandardSync;
-import java.io.IOException;
+public class SchedulerConstants {
 
-public interface JobCreator {
-
-  long createSourceCheckConnectionJob(SourceConnection source, String dockerImage) throws IOException;
-
-  long createDestinationCheckConnectionJob(DestinationConnection destination, String dockerImage) throws IOException;
-
-  long createDiscoverSchemaJob(SourceConnection source, String dockerImage) throws IOException;
-
-  long createGetSpecJob(String integrationImage) throws IOException;
-
-  long createSyncJob(SourceConnection source,
-                     DestinationConnection destination,
-                     StandardSync standardSync,
-                     String sourceDockerImage,
-                     String destinationDockerImage)
-      throws IOException;
-
-  long createResetConnectionJob(DestinationConnection destination, StandardSync standardSync, String destinationDockerImage) throws IOException;
+  // Placeholder value for when we use the empty source. The empty source is used to trigger resets of
+  // data in the destination.
+  public static final String RESET_SOURCE_IMAGE_PLACEHOLDER = "reset-source";
 
 }
