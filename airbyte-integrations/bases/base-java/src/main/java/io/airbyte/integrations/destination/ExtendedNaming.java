@@ -22,12 +22,31 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.base;
+package io.airbyte.integrations.destination;
 
-import io.airbyte.commons.lang.CloseableQueue;
+public class ExtendedNaming extends StandardNaming {
 
-public interface BufferedWriteOperations {
+  @Override
+  protected String convertStreamName(String input) {
+    if (useExtendedIdentifiers(input)) {
+      return "\"" + input + "\"";
+    } else {
+      return applyDefaultCase(input);
+    }
+  }
 
-  void insertBufferedRecords(int batchSize, CloseableQueue<byte[]> writeBuffer, String namespace, String streamName) throws Exception;
+  protected String applyDefaultCase(String input) {
+    return input;
+  }
+
+  protected boolean useExtendedIdentifiers(String input) {
+    boolean result = false;
+    if (input.matches("[^\\p{Alpha}_].*")) {
+      result = true;
+    } else if (input.matches(".*[^\\p{Alnum}_].*")) {
+      result = true;
+    }
+    return result;
+  }
 
 }

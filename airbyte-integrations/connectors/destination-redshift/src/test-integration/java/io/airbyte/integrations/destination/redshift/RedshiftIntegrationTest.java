@@ -30,7 +30,7 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
-import io.airbyte.integrations.base.ExtendedSQLNaming;
+import io.airbyte.integrations.destination.ExtendedNaming;
 import io.airbyte.integrations.standardtest.destination.TestDestination;
 import java.nio.file.Path;
 import java.sql.SQLException;
@@ -49,7 +49,7 @@ public class RedshiftIntegrationTest extends TestDestination {
   private JsonNode baseConfig;
   // config which refers to the schema that the test is being run in.
   private JsonNode config;
-  private final ExtendedSQLNaming namingResolver = new ExtendedSQLNaming();
+  private final ExtendedNaming namingResolver = new ExtendedNaming();
 
   @Override
   protected String getImageName() {

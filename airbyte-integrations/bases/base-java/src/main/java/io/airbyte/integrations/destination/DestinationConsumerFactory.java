@@ -22,9 +22,10 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.base;
+package io.airbyte.integrations.destination;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.Map;
@@ -68,7 +69,7 @@ public class DestinationConsumerFactory {
    * @throws Exception
    */
   public static DestinationConsumer<AirbyteMessage> build(SqlDestinationOperations destination,
-                                                          SQLNamingResolvable namingResolver,
+                                                          IdentifierNamingResolvable namingResolver,
                                                           JsonNode config,
                                                           ConfiguredAirbyteCatalog catalog)
       throws Exception {

@@ -22,31 +22,36 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.base;
+package io.airbyte.integrations.destination;
 
-public class ExtendedSQLNaming extends StandardSQLNaming {
+public interface IdentifierNamingResolvable {
 
-  @Override
-  protected String convertStreamName(String input) {
-    if (useExtendedIdentifiers(input)) {
-      return "\"" + input + "\"";
-    } else {
-      return applyDefaultCase(input);
-    }
-  }
+  /**
+   * Handle Naming Conversions of an input name to output a valid identifier name for the desired SQL
+   * dialect.
+   *
+   * @param name of the identifier to check proper naming conventions
+   * @return modified name with invalid characters replaced by '_' and adapted for the chosen SQL
+   *         dialect.
+   */
+  String getIdentifier(String name);
 
-  protected String applyDefaultCase(String input) {
-    return input;
-  }
+  /**
+   * Same as getIdentifier but returns also the name of the table for storing raw data
+   *
+   * @param name of the identifier to check proper naming conventions
+   * @return modified name with invalid characters replaced by '_' and adapted for the chosen SQL
+   *         dialect.
+   */
+  String getRawTableName(String name);
 
-  protected boolean useExtendedIdentifiers(String input) {
-    boolean result = false;
-    if (input.matches("[^\\p{Alpha}_].*")) {
-      result = true;
-    } else if (input.matches(".*[^\\p{Alnum}_].*")) {
-      result = true;
-    }
-    return result;
-  }
+  /**
+   * Same as getIdentifier but returns also the name of the table for storing tmp data
+   *
+   * @param name of the identifier to check proper naming conventions
+   * @return modified name with invalid characters replaced by '_' and adapted for the chosen SQL
+   *         dialect.
+   */
+  String getTmpTableName(String name);
 
 }

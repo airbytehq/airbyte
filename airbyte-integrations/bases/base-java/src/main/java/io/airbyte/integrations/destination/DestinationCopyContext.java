@@ -22,46 +22,25 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.base;
+package io.airbyte.integrations.destination;
 
 import io.airbyte.protocol.models.SyncMode;
 
 /**
- * This configuration is used by the RecordConsumers to adapt their behavior at runtime such as
- * where to apply their task and the kind of data operations
+ * This configuration is used by the TmpToFinalTable consumers to configure their behavior on where
+ * to apply their task and data operations
  */
-public class DestinationWriteContext {
+public class DestinationCopyContext extends DestinationWriteContext {
 
-  private final String outputNamespaceName;
-  private final String outputTableName;
-  private final SyncMode syncMode;
-  private boolean transactionMode;
+  private final String inputTableName;
 
-  DestinationWriteContext(String outputNamespaceName, String outputTableName, SyncMode syncMode) {
-    this.outputNamespaceName = outputNamespaceName;
-    this.outputTableName = outputTableName;
-    this.syncMode = syncMode;
-    this.transactionMode = true;
+  DestinationCopyContext(String outputNamespaceName, String inputTableName, String outputTableName, SyncMode syncMode) {
+    super(outputNamespaceName, outputTableName, syncMode);
+    this.inputTableName = inputTableName;
   }
 
-  public String getOutputNamespaceName() {
-    return outputNamespaceName;
-  }
-
-  public String getOutputTableName() {
-    return outputTableName;
-  }
-
-  public SyncMode getSyncMode() {
-    return syncMode;
-  }
-
-  public boolean getTransactionMode() {
-    return transactionMode;
-  }
-
-  public void setTransactionMode(boolean transactionMode) {
-    this.transactionMode = transactionMode;
+  public String getInputTableName() {
+    return inputTableName;
   }
 
 }

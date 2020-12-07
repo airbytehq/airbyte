@@ -33,8 +33,8 @@ import com.google.common.base.Charsets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.CloseableQueue;
 import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.ExtendedSQLNaming;
 import io.airbyte.integrations.base.IntegrationRunner;
+import io.airbyte.integrations.destination.ExtendedNaming;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -53,7 +53,7 @@ public class JdbcDestination extends AbstractJdbcDestination implements Destinat
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcDestination.class);
 
   public JdbcDestination() {
-    super("org.postgresql.Driver", SQLDialect.POSTGRES, new ExtendedSQLNaming());
+    super("org.postgresql.Driver", SQLDialect.POSTGRES, new ExtendedNaming());
   }
 
   // no-op for JdbcIntegration since the config it receives is designed to be use for JDBC.

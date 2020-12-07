@@ -26,13 +26,16 @@ package io.airbyte.integrations.base;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import io.airbyte.integrations.destination.ExtendedNaming;
+import io.airbyte.integrations.destination.IdentifierNamingResolvable;
+import io.airbyte.integrations.destination.StandardNaming;
 import org.junit.jupiter.api.Test;
 
 class NamingResolverTest {
 
   @Test
   void testStandardSQLNaming() {
-    final SQLNamingResolvable namingResolver = new StandardSQLNaming();
+    final IdentifierNamingResolvable namingResolver = new StandardNaming();
     assertEquals("identifier_name", namingResolver.getIdentifier("identifier_name"));
     assertEquals("iDenTiFieR_name", namingResolver.getIdentifier("iDenTiFieR_name"));
     assertEquals("__identifier_name", namingResolver.getIdentifier("__identifier_name"));
@@ -54,7 +57,7 @@ class NamingResolverTest {
 
   @Test
   void testExtendedSQLNaming() {
-    final SQLNamingResolvable namingResolver = new ExtendedSQLNaming();
+    final IdentifierNamingResolvable namingResolver = new ExtendedNaming();
     assertEquals("identifier_name", namingResolver.getIdentifier("identifier_name"));
     assertEquals("iDenTiFieR_name", namingResolver.getIdentifier("iDenTiFieR_name"));
     assertEquals("__identifier_name", namingResolver.getIdentifier("__identifier_name"));

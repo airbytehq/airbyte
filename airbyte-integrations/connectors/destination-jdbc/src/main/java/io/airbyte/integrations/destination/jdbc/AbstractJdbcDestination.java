@@ -34,9 +34,9 @@ import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
-import io.airbyte.integrations.base.DestinationConsumerFactory;
-import io.airbyte.integrations.base.SQLNamingResolvable;
-import io.airbyte.integrations.base.SqlDestinationOperations;
+import io.airbyte.integrations.destination.DestinationConsumerFactory;
+import io.airbyte.integrations.destination.IdentifierNamingResolvable;
+import io.airbyte.integrations.destination.SqlDestinationOperations;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -56,9 +56,9 @@ public abstract class AbstractJdbcDestination implements Destination {
 
   private final String driverClass;
   private final SQLDialect dialect;
-  private final SQLNamingResolvable namingResolver;
+  private final IdentifierNamingResolvable namingResolver;
 
-  public AbstractJdbcDestination(final String driverClass, final SQLDialect dialect, final SQLNamingResolvable namingResolver) {
+  public AbstractJdbcDestination(final String driverClass, final SQLDialect dialect, final IdentifierNamingResolvable namingResolver) {
     this.driverClass = driverClass;
     this.dialect = dialect;
     this.namingResolver = namingResolver;
@@ -106,7 +106,7 @@ public abstract class AbstractJdbcDestination implements Destination {
   }
 
   @Override
-  public SQLNamingResolvable getNamingResolver() {
+  public IdentifierNamingResolvable getNamingResolver() {
     return namingResolver;
   }
 

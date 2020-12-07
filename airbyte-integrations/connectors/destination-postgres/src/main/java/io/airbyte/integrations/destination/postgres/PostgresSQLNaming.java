@@ -24,9 +24,9 @@
 
 package io.airbyte.integrations.destination.postgres;
 
-import io.airbyte.integrations.base.ExtendedSQLNaming;
+import io.airbyte.integrations.destination.ExtendedNaming;
 
-public class PostgresSQLNaming extends ExtendedSQLNaming {
+public class PostgresSQLNaming extends ExtendedNaming {
 
   @Override
   protected String applyDefaultCase(String input) {

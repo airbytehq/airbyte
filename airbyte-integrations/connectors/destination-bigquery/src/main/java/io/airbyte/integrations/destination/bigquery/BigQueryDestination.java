@@ -57,8 +57,8 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.SQLNamingResolvable;
-import io.airbyte.integrations.base.StandardSQLNaming;
+import io.airbyte.integrations.destination.IdentifierNamingResolvable;
+import io.airbyte.integrations.destination.StandardNaming;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -95,10 +95,10 @@ public class BigQueryDestination implements Destination {
       Field.of(COLUMN_DATA, StandardSQLTypeName.STRING),
       Field.of(COLUMN_EMITTED_AT, StandardSQLTypeName.TIMESTAMP));
 
-  private final SQLNamingResolvable namingResolver;
+  private final IdentifierNamingResolvable namingResolver;
 
   public BigQueryDestination() {
-    namingResolver = new StandardSQLNaming();
+    namingResolver = new StandardNaming();
   }
 
   @Override
@@ -184,7 +184,7 @@ public class BigQueryDestination implements Destination {
   }
 
   @Override
-  public SQLNamingResolvable getNamingResolver() {
+  public IdentifierNamingResolvable getNamingResolver() {
     return namingResolver;
   }
 

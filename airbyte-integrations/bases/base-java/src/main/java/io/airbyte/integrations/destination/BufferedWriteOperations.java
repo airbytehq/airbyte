@@ -22,19 +22,12 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.base;
+package io.airbyte.integrations.destination;
 
-import java.util.Map;
+import io.airbyte.commons.lang.CloseableQueue;
 
-/**
- * Interface to move data from one temporary location to a final target destination
- *
- * Parameters per String are first set by the setContext methods before executing the actual move
- */
-public interface TmpToFinalTable {
+public interface BufferedWriteOperations {
 
-  void setContext(Map<String, DestinationCopyContext> configs);
-
-  void execute() throws Exception;
+  void insertBufferedRecords(int batchSize, CloseableQueue<byte[]> writeBuffer, String namespace, String streamName) throws Exception;
 
 }

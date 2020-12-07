@@ -22,36 +22,19 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.base;
+package io.airbyte.integrations.destination;
 
-public interface SQLNamingResolvable {
+import java.util.Map;
 
-  /**
-   * Handle Naming Conversions of an input name to output a valid identifier name for the desired SQL
-   * dialect.
-   *
-   * @param name of the identifier to check proper naming conventions
-   * @return modified name with invalid characters replaced by '_' and adapted for the chosen SQL
-   *         dialect.
-   */
-  String getIdentifier(String name);
+/**
+ * Interface to move data from one temporary location to a final target destination
+ *
+ * Parameters per String are first set by the setContext methods before executing the actual move
+ */
+public interface TmpToFinalTable {
 
-  /**
-   * Same as getIdentifier but returns also the name of the table for storing raw data
-   *
-   * @param name of the identifier to check proper naming conventions
-   * @return modified name with invalid characters replaced by '_' and adapted for the chosen SQL
-   *         dialect.
-   */
-  String getRawTableName(String name);
+  void setContext(Map<String, DestinationCopyContext> configs);
 
-  /**
-   * Same as getIdentifier but returns also the name of the table for storing tmp data
-   *
-   * @param name of the identifier to check proper naming conventions
-   * @return modified name with invalid characters replaced by '_' and adapted for the chosen SQL
-   *         dialect.
-   */
-  String getTmpTableName(String name);
+  void execute() throws Exception;
 
 }

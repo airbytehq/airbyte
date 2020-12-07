@@ -24,9 +24,9 @@
 
 package io.airbyte.integrations.destination.redshift;
 
-import io.airbyte.integrations.base.ExtendedSQLNaming;
+import io.airbyte.integrations.destination.ExtendedNaming;
 
-public class RedshiftSQLNaming extends ExtendedSQLNaming {
+public class RedshiftSQLNaming extends ExtendedNaming {
 
   @Override
   protected String convertStreamName(String input) {

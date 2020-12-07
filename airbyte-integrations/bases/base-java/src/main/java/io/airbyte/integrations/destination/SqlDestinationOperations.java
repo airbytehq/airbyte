@@ -22,6 +22,6 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.base;
+package io.airbyte.integrations.destination;
 
 public interface SqlDestinationOperations extends BufferedWriteOperations, InsertTableOperations, TableCreationOperations {}

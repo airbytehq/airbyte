@@ -32,10 +32,10 @@ import io.airbyte.commons.lang.CloseableQueue;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
-import io.airbyte.integrations.base.DestinationConsumerFactory;
 import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.SQLNamingResolvable;
-import io.airbyte.integrations.base.SqlDestinationOperations;
+import io.airbyte.integrations.destination.DestinationConsumerFactory;
+import io.airbyte.integrations.destination.IdentifierNamingResolvable;
+import io.airbyte.integrations.destination.SqlDestinationOperations;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -60,7 +60,7 @@ public class SnowflakeDestination implements Destination {
 
   protected static final String COLUMN_NAME = "data";
 
-  private final SQLNamingResolvable namingResolver;
+  private final IdentifierNamingResolvable namingResolver;
 
   public SnowflakeDestination() {
     namingResolver = new SnowflakeSQLNaming();
@@ -84,7 +84,7 @@ public class SnowflakeDestination implements Destination {
   }
 
   @Override
-  public SQLNamingResolvable getNamingResolver() {
+  public IdentifierNamingResolvable getNamingResolver() {
     return namingResolver;
   }
 

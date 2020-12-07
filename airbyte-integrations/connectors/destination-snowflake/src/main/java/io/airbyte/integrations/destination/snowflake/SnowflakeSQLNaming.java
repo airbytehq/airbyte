@@ -24,9 +24,9 @@
 
 package io.airbyte.integrations.destination.snowflake;
 
-import io.airbyte.integrations.base.ExtendedSQLNaming;
+import io.airbyte.integrations.destination.ExtendedNaming;
 
-public class SnowflakeSQLNaming extends ExtendedSQLNaming {
+public class SnowflakeSQLNaming extends ExtendedNaming {
 
   @Override
   protected String applyDefaultCase(String input) {

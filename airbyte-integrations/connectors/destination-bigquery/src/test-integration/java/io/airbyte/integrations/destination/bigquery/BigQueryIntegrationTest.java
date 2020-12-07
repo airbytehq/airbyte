@@ -43,7 +43,7 @@ import com.google.cloud.bigquery.TableResult;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.StandardSQLNaming;
+import io.airbyte.integrations.destination.StandardNaming;
 import io.airbyte.integrations.standardtest.destination.TestDestination;
 import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
@@ -73,7 +73,7 @@ public class BigQueryIntegrationTest extends TestDestination {
   private Dataset dataset;
   private boolean tornDown;
   private JsonNode config;
-  private StandardSQLNaming namingResolver = new StandardSQLNaming();
+  private StandardNaming namingResolver = new StandardNaming();
 
   @Override
   protected String getImageName() {

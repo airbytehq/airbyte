@@ -22,20 +22,19 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.base;
+package io.airbyte.integrations.destination;
 
 /**
- * Necessary Operations to manipulate table creation and row insertions that may be required by some
- * RecordConsumer to properly function.
+ * Necessary Operations to manipulate schema and table creation (or deletion) that may be required
+ * by some RecordConsumer to properly function.
+ *
  */
-public interface InsertTableOperations {
+public interface TableCreationOperations {
+
+  void createSchema(String schemaName) throws Exception;
 
   void createDestinationTable(String schemaName, String tmpTableName) throws Exception;
 
-  String truncateTableQuery(String schemaName, String tableName);
-
-  String insertIntoFromSelectQuery(String schemaName, String srcTableName, String dstTableName);
-
-  void executeTransaction(String queries) throws Exception;
+  void dropDestinationTable(String schemaName, String tmpTableName) throws Exception;
 
 }

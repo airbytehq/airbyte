@@ -32,8 +32,8 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.SQLNamingResolvable;
-import io.airbyte.integrations.base.StandardSQLNaming;
+import io.airbyte.integrations.destination.IdentifierNamingResolvable;
+import io.airbyte.integrations.destination.StandardNaming;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -64,10 +64,10 @@ public class CsvDestination implements Destination {
   static final String COLUMN_EMITTED_AT = "emitted_at"; // we output all data as a blob to a single column.
   static final String DESTINATION_PATH_FIELD = "destination_path";
 
-  private final SQLNamingResolvable namingResolver;
+  private final IdentifierNamingResolvable namingResolver;
 
   public CsvDestination() {
-    namingResolver = new StandardSQLNaming();
+    namingResolver = new StandardNaming();
   }
 
   @Override
@@ -87,7 +87,7 @@ public class CsvDestination implements Destination {
   }
 
   @Override
-  public SQLNamingResolvable getNamingResolver() {
+  public IdentifierNamingResolvable getNamingResolver() {
     return namingResolver;
   }
 

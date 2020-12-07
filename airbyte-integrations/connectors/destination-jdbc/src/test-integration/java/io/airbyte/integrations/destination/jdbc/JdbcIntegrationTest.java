@@ -28,7 +28,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Databases;
-import io.airbyte.integrations.base.ExtendedSQLNaming;
+import io.airbyte.integrations.destination.ExtendedNaming;
 import io.airbyte.integrations.standardtest.destination.TestDestination;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -44,7 +44,7 @@ public class JdbcIntegrationTest extends TestDestination {
 
   private static final String RAW_DATA_COLUMN = "data";
   private PostgreSQLContainer<?> db;
-  private final ExtendedSQLNaming namingResolver = new ExtendedSQLNaming();
+  private final ExtendedNaming namingResolver = new ExtendedNaming();
 
   @Override
   protected String getImageName() {

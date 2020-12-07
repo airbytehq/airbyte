@@ -22,19 +22,30 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.base;
+package io.airbyte.integrations.destination;
 
-/**
- * Necessary Operations to manipulate schema and table creation (or deletion) that may be required
- * by some RecordConsumer to properly function.
- *
- */
-public interface TableCreationOperations {
+import io.airbyte.commons.text.Names;
+import java.time.Instant;
 
-  void createSchema(String schemaName) throws Exception;
+public class StandardNaming implements IdentifierNamingResolvable {
 
-  void createDestinationTable(String schemaName, String tmpTableName) throws Exception;
+  @Override
+  public String getIdentifier(String name) {
+    return convertStreamName(name);
+  }
 
-  void dropDestinationTable(String schemaName, String tmpTableName) throws Exception;
+  @Override
+  public String getRawTableName(String streamName) {
+    return convertStreamName(streamName + "_raw");
+  }
+
+  @Override
+  public String getTmpTableName(String streamName) {
+    return convertStreamName(streamName + "_" + Instant.now().toEpochMilli());
+  }
+
+  protected String convertStreamName(String input) {
+    return Names.toAlphanumericAndUnderscore(input);
+  }
 
 }
