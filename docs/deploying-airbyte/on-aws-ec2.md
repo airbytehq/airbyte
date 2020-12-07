@@ -15,7 +15,7 @@ The instructions have been tested on `Amazon Linux 2 AMI (HVM)`
 ![](../.gitbook/assets/aws_ec2_ami%20%281%29%20%281%29%20%281%29%20%282%29%20%281%29%20%281%29%20%281%29%20%281%29%20%289%29%20%285%29%20%286%29.png)
 
 * Select instance type
-  * For testing out Airbyte, a `t2.small` or `t2.medium` instance is likely sufficient.
+  * For testing out Airbyte, a `t2.medium` instance is likely sufficient.
   * For long-running Airbyte installations, we recommend a `t2.large` instance.
 
 ![](../.gitbook/assets/aws_ec2_instance_type%20%281%29%20%281%29%20%281%29%20%282%29%20%2810%29%20%286%29%20%287%29.png)
