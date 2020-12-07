@@ -1,7 +1,7 @@
 ---
 "$schema": http://json-schema.org/draft-07/schema#
-"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/JobSyncConfig.yaml
-title: JobSyncConfig
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/StandardSyncInput.yaml
+title: StandardSyncInput
 description: job sync config
 type: object
 additionalProperties: false
