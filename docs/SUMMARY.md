@@ -58,6 +58,7 @@
   * [Building New Connectors](contributing-to-airbyte/building-new-connector/README.md)
     * [Python Connectors](contributing-to-airbyte/building-new-connector/python-connectors.md)
     * [Java Connectors](contributing-to-airbyte/building-new-connector/java-connectors.md)
+    * [Testing Connectors](contributing-to-airbyte/testing-connectors.md)
   * [Code Style](contributing-to-airbyte/code-style.md)
   * [Updating Documentation](contributing-to-airbyte/updating-documentation.md)
   * [Templates](contributing-to-airbyte/templates/README.md)
