@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
 import styled from "styled-components";
 
 import { Cell } from "../../SimpleTableComponents";
 import DropDown from "../../DropDown";
 import { IDataItem } from "../../DropDown/components/ListItem";
 import { SyncSchemaStream } from "../../../core/resources/Schema";
+import { useIntl } from "react-intl";
 
 const DropDownContainer = styled.div`
   padding-right: 10px;
@@ -23,31 +24,86 @@ type IProps = {
 };
 
 const SyncSettingsCell: React.FC<IProps> = ({ item, onSelect }) => {
-  const supportIncremental = !!item.supportedSyncModes.find(
-    mode => mode === "incremental"
+  const formatMessage = useIntl().formatMessage;
+  const [supportIncremental, setSupportIncremental] = useState(false);
+
+  const data: IDataItem[] = useMemo(
+    () =>
+      item.supportedSyncModes
+        .filter(mode => {
+          if (mode === "incremental") {
+            setSupportIncremental(true);
+            return false;
+          }
+          return true;
+        })
+        .map(mode => ({
+          value: mode,
+          text: formatMessage({
+            id: `sources.${mode}`,
+            defaultMessage: mode
+          })
+        })),
+    [formatMessage, item.supportedSyncModes]
   );
 
-  const currentSyncMode = item.defaultCursorField.length
-    ? item.defaultCursorField[0]
-    : item.syncMode || "full_refresh";
+  const fullData = useMemo(() => {
+    // If INCREMENTAL is included in the supported sync modes...
+    if (supportIncremental) {
+      if (item.sourceDefinedCursor) {
+        // If sourceDefinedCursor is true, In the dropdown we should just have one row for incremental
+        data.push({
+          text: formatMessage({
+            id: "sources.incrementalSourceCursor"
+          }),
+          value: "incremental"
+        });
+      } else {
+        // If sourceDefinedCursor is false...
 
-  const data: IDataItem[] = [{ text: "Full refresh", value: "full_refresh" }];
+        // If defaultCursorField is set, then the field specified in there should be at the top of the list
+        // and have the word "(default)" next to it
+        item.defaultCursorField.forEach(field =>
+          data.push({
+            text: formatMessage(
+              {
+                id: "sources.incrementalDefault"
+              },
+              { value: field }
+            ),
+            value: field,
+            secondary: true,
+            groupValue: "incremental",
+            groupValueText: formatMessage({
+              id: "sources.incremental"
+            })
+          })
+        );
 
-  if (supportIncremental && item.cursorField.length) {
-    item.cursorField.forEach(fieldData =>
-      data.push({
-        text: fieldData,
-        value: fieldData,
-        secondary: true,
-        groupValue: "incremental",
-        groupValueText: "Incremental - based on..."
-      })
-    );
-  }
+        // Any column in the stream can be used as the cursor
+        item.fields.forEach(field => {
+          if (!data.find(dataItem => dataItem.value === field.cleanedName)) {
+            data.push({
+              text: field.cleanedName,
+              value: field.cleanedName,
+              secondary: true,
+              groupValue: "incremental",
+              groupValueText: formatMessage({
+                id: "sources.incremental"
+              })
+            });
+          }
+        });
+      }
+    }
+    return data;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [item.fields, supportIncremental]);
 
-  const onSelectMode = (data: IDataItem) => {
-    onSelect(data);
-  };
+  const currentValue =
+    item.cursorField && item.cursorField.length
+      ? item.cursorField[0]
+      : item.syncMode || "";
 
   return (
     <Cell>
@@ -55,10 +111,13 @@ const SyncSettingsCell: React.FC<IProps> = ({ item, onSelect }) => {
         <StyledDropDown
           hasFilter
           withBorder
-          value={currentSyncMode}
-          data={data}
-          onSelect={onSelectMode}
-          groupBy={supportIncremental ? "groupValueText" : undefined}
+          value={currentValue}
+          data={fullData}
+          onSelect={onSelect}
+          groupBy="groupValueText"
+          filterPlaceholder={formatMessage({
+            id: "sources.searchIncremental"
+          })}
         />
       </DropDownContainer>
     </Cell>

@@ -53,14 +53,22 @@ const FrequencyForm: React.FC<IProps> = ({
 }) => {
   const initialSchema = React.useMemo(
     () => ({
-      streams: schema.streams.map(item =>
-        !item.syncMode
+      streams: schema.streams.map(item => {
+        // If syncMode is null, FULL_REFRESH should be selected by default.
+        const itemWithSyncMode = !item.syncMode
           ? {
               ...item,
               syncMode: "full_refresh"
             }
-          : item
-      )
+          : item;
+
+        // If the value in supportedSyncModes is empty assume the only supported sync mode is FULL_REFRESH.
+        // Otherwise it supports whatever sync modes are present.
+        return !itemWithSyncMode.supportedSyncModes ||
+          !itemWithSyncMode.supportedSyncModes.length
+          ? { ...itemWithSyncMode, supportedSyncModes: ["full_refresh"] }
+          : itemWithSyncMode;
+      })
     }),
     [schema.streams]
   );

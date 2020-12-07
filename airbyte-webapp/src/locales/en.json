@@ -100,6 +100,11 @@
   "onboarding.fetchingSchema": "We are fetching the schema of your data source.\nThis should take less than a minute...",
   "onboarding.tutorial": "Check how you can sync PostgreSQL databases in minutes",
 
+  "sources.searchIncremental": "Search cursor value for incremental",
+  "sources.incrementalDefault": "{value} (default)",
+  "sources.incrementalSourceCursor": "Incremental - source-defined cursor",
+  "sources.full_refresh": "Full refresh",
+  "sources.incremental": "Incremental - based on...",
   "sources.newSource": "+ new source",
   "sources.newSourceTitle": "New Source",
   "sources.selectSource": "Select a source",

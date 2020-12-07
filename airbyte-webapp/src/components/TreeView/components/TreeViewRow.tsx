@@ -49,14 +49,14 @@ const TreeViewRow: React.FC<IProps> = ({ item, updateItem }) => {
         return updateItem({
           ...item,
           syncMode: data.groupValue,
-          defaultCursorField: [data.value]
+          cursorField: [data.value]
         });
       }
 
       return updateItem({
         ...item,
         syncMode: data.value,
-        defaultCursorField: []
+        cursorField: []
       });
     },
     [item, updateItem]

@@ -7,6 +7,7 @@ import { useIntl } from "react-intl";
 import ListItem, { IDataItem } from "./components/ListItem";
 import ValueInput from "./components/ValueInput";
 import WithButtonItem from "./components/WithButtonItem";
+import GroupHeader from "./components/GroupHeader";
 
 export type IProps = {
   disabled?: boolean;
@@ -66,6 +67,7 @@ const StyledDropdownList = styled(DropdownList)<{
     border-radius: 0;
     border-bottom: 1px solid ${({ theme }) => theme.greyColor20};
     padding: 10px 16px;
+    width: 100%;
   }
 
   & .rw-placeholder {
@@ -81,8 +83,7 @@ const StyledDropdownList = styled(DropdownList)<{
 
   & .rw-list-option.rw-state-focus,
   & .rw-list-option,
-  & .rw-list-empty,
-  & .rw-list-optgroup {
+  & .rw-list-empty {
     color: ${({ theme }) => theme.textColor};
     border: none;
     padding: 10px 16px;
@@ -116,10 +117,16 @@ const StyledDropdownList = styled(DropdownList)<{
     }
   }
 
-  & .rw-list-optgroup {
-    border-top: 1px solid ${({ theme }) => theme.greyColor20};
-    background: ${({ theme }) => theme.greyColor0};
-    font-weight: normal;
+  & > .rw-popup-container {
+    & .rw-select {
+      display: none;
+    }
+
+    & .rw-list-optgroup {
+      width: 100%;
+      padding: 0;
+      border: none;
+    }
   }
 
   & .withButton,
@@ -186,7 +193,8 @@ const DropDown: React.FC<IProps> = props => {
       textField="text"
       valueField="value"
       value={props.value}
-      groupBy={props.groupBy}
+      groupBy={props.groupBy || undefined}
+      groupComponent={GroupHeader}
       disabled={props.disabled}
       valueComponent={({ item }: { item: IDataItem }) =>
         props.withButton ? (
