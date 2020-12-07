@@ -22,6 +22,7 @@ write_standard_creds destination-snowflake "$SNOWFLAKE_INTEGRATION_TEST_CREDS"
 write_standard_creds destination-redshift "$AWS_REDSHIFT_INTEGRATION_TEST_CREDS"
 
 write_standard_creds source-file "$BIGQUERY_INTEGRATION_TEST_CREDS" "gcs.json"
+write_standard_creds source-braintree-singer "$BRAINTREE_TEST_CREDS"
 write_standard_creds source-file "$AWS_S3_INTEGRATION_TEST_CREDS" "aws.json"
 write_standard_creds source-freshdesk "$FRESHDESK_TEST_CREDS"
 write_standard_creds source-facebook-marketing-api-singer "$FACEBOOK_MARKETING_API_TEST_INTEGRATION_CREDS"
