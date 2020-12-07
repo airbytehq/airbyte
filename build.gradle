@@ -201,7 +201,14 @@ task composeBuild {
 }
 build.dependsOn(composeBuild)
 
+task('generate') {
+    dependsOn subprojects.collect { it.getTasksByName('generateSeed', true) }
+    dependsOn subprojects.collect { it.getTasksByName('generateProtocolClassFiles', true) }
+    dependsOn subprojects.collect { it.getTasksByName('generateJsonSchema2Pojo', true) }
+}
+
 task('format') {
+    dependsOn generate
     dependsOn spotlessApply
     dependsOn subprojects.collect { it.getTasksByName('blackFormat', true) }
 }

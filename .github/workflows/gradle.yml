@@ -65,8 +65,8 @@ jobs:
         with:
           python-version: '3.7'
 
-      - name: Format & Generate
-        run: ./gradlew --no-daemon generateSeed generateProtocolClassFiles generateJsonSchema2Pojo format --scan
+      - name: Format
+        run: ./gradlew --no-daemon format --scan
 
       - name: Ensure no file change
         run: git status --porcelain && test -z "$(git status --porcelain)"
