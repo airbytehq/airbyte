@@ -65,6 +65,12 @@ jobs:
         with:
           python-version: '3.7'
 
+      - name: Format
+        run: ./gradlew --no-daemon format --scan
+
+      - name: Ensure no file change
+        run: git status --porcelain && test -z "$(git status --porcelain)"
+
       - name: Build
         run: ./gradlew --no-daemon build --scan
 
