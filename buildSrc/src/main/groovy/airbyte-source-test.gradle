@@ -27,11 +27,20 @@ class AirbyteSourceTestPlugin implements Plugin<Project> {
                             '--pythonContainerName', pythonContainerName
                 }
             }
+
+            outputs.upToDateWhen { false }
         }
         project.airbyteDockerTest.dependsOn(':airbyte-integrations:bases:base-python-test:airbyteDocker')
         project.standardSourceTestPython.dependsOn(':airbyte-integrations:bases:standard-source-test:airbyteDocker')
         project.standardSourceTestPython.dependsOn(project.build)
         project.standardSourceTestPython.dependsOn(project.airbyteDocker)
         project.standardSourceTestPython.dependsOn(project.airbyteDockerTest)
+
+        // make sure we create the integrationTest task once in case a java integration test was already initialized
+        if(!project.hasProperty('integrationTest')) {
+            project.task('integrationTest')
+        }
+
+        project.integrationTest.dependsOn(project.standardSourceTestPython)
     }
 }

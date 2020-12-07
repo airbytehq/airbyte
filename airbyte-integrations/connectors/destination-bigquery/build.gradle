@@ -17,8 +17,8 @@ dependencies {
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-queue')
 
-    integrationTestImplementation project(':airbyte-integrations:bases:standard-destination-test')
-    integrationTestImplementation files(project(':airbyte-integrations:bases:base-normalization').airbyteDocker.outputs)
+    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
+    integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-normalization').airbyteDocker.outputs)
 
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 }
