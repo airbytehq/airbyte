@@ -10,7 +10,7 @@ type IProps = {
 const Content = styled.div`
   background: ${({ theme }) => theme.lightPrimaryColor};
   border-radius: 4px;
-  width: 257px;
+  width: 356px;
   height: 36px;
   display: flex;
   align-items: center;

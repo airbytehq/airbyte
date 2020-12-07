@@ -1,22 +1,10 @@
 import { FetchOptions, Resource } from "rest-hooks";
 import BaseResource from "./BaseResource";
+import { SyncSchema } from "./Schema";
 
 export type ScheduleProperties = {
   units: number;
   timeUnit: string;
-};
-
-export type SyncSchemaField = {
-  name: string;
-  selected: boolean;
-  type: string;
-};
-
-export type SyncSchema = {
-  streams: {
-    name: string;
-    fields: SyncSchemaField[];
-  }[];
 };
 
 type SourceInformation = {
@@ -157,6 +145,22 @@ export default class ConnectionResource extends BaseResource
         body: any
       ): Promise<any> => {
         return { ...params, ...body };
+      }
+    };
+  }
+
+  static reset<T extends typeof Resource>(this: T) {
+    return {
+      ...super.detailShape(),
+      getFetchKey: (params: any) =>
+        "POST " + this.url(params) + "/reset" + JSON.stringify(params),
+      fetch: async (
+        params: Readonly<{ connectionId: string }>
+      ): Promise<any> => {
+        await this.fetch("post", `${this.url(params)}/reset`, params);
+        return {
+          connectionId: params.connectionId
+        };
       }
     };
   }
