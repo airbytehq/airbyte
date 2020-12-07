@@ -30,7 +30,13 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=["pipelinewise-tap-google-analytics==1.1.1", "pydantic==1.6.1", "base-singer", "base-python", "airbyte-protocol",],
+    install_requires=[
+        "pipelinewise-tap-google-analytics==1.1.1",
+        "pydantic==1.6.1",
+        "base-singer",
+        "base-python",
+        "airbyte-protocol",
+    ],
     package_data={"": ["*.json", "*.txt"]},
     extras_require={
         "standardtest": ["airbyte-python-test", "requests"],
