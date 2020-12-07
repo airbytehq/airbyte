@@ -114,7 +114,7 @@ public abstract class AbstractJdbcSource implements Source {
       return new AirbyteCatalog()
           .withStreams(getTables(database)
               .stream()
-              .map(t -> CatalogHelpers.createAirbyteStream(t.getName(), t.getFields()))
+              .map(t -> CatalogHelpers.createAirbyteStream2(t.getName(), t.getFields()))
               .collect(Collectors.toList()));
     }
   }

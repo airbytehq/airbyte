@@ -52,6 +52,13 @@ public class CatalogHelpers {
     return new AirbyteStream().withName(streamName).withJsonSchema(fieldsToJsonSchema(fields));
   }
 
+  public static AirbyteStream createAirbyteStream2(String streamName, List<Field> fields) {
+    return new AirbyteStream().
+        withName(streamName)
+        .withJsonSchema(fieldsToJsonSchema(fields))
+        .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
+  }
+
   public static ConfiguredAirbyteCatalog createConfiguredAirbyteCatalog(String streamName, Field... fields) {
     return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(createConfiguredAirbyteStream(streamName, fields)));
   }
