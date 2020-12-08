@@ -22,9 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from .test_iface import DefaultStandardSourceTest, StandardSourceTestIface
+import sys
 
-__all__ = [
-    "DefaultStandardSourceTest",
-    "StandardSourceTestIface",
-]
+from base_python.entrypoint import launch
+from source_intercom_singer import SourceIntercomSinger
+
+if __name__ == "__main__":
+    source = SourceIntercomSinger()
+    launch(source, sys.argv[1:])

@@ -22,9 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from .test_iface import DefaultStandardSourceTest, StandardSourceTestIface
+from base_python_test import DefaultStandardSourceTest
 
-__all__ = [
-    "DefaultStandardSourceTest",
-    "StandardSourceTestIface",
-]
+
+class SourceIntercomSingerStandardTest(DefaultStandardSourceTest):
+    pass
