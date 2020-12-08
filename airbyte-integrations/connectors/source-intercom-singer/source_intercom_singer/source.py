@@ -24,7 +24,7 @@ SOFTWARE.
 
 from typing import Mapping, Any
 
-from base_python import AirbyteLogger, ConfigContainer
+from base_python import AirbyteLogger
 from base_singer import BaseSingerSource
 from tap_intercom.client import IntercomClient, IntercomError
 
