@@ -184,13 +184,13 @@ public abstract class AbstractJooqSource implements Source {
 
       final Stream<AirbyteMessage> stream;
       if (airbyteStream.getSyncMode() == SyncMode.INCREMENTAL) {
-        final JdbcStateManager stateManager = new JdbcStateManager(state == null ? new JdbcState() : Jsons.object(state, JdbcState.class));
+        final JdbcStateManager stateManager = new JdbcStateManager(state == null ? new JdbcState() : Jsons.object(state, JdbcState.class), catalog);
         final String cursorField = IncrementalUtils.getCursorField(airbyteStream);
         final JsonSchemaPrimitive cursorType = IncrementalUtils.getCursorType(airbyteStream, cursorField);
-        final Optional<String> initialCursorOptional = stateManager.getOriginalCursor(streamName);
+        final Optional<String> cursorOptional = stateManager.getCursor(streamName);
 
         final Stream<AirbyteMessage> internalMessageStream;
-        if (initialCursorOptional.isPresent()) {
+        if (cursorOptional.isPresent()) {
           final org.jooq.Field<?> cursorJooqField = Arrays
               .stream(table.fields())
               .filter(f -> f.getName().equals(cursorField))
@@ -203,7 +203,7 @@ public abstract class AbstractJooqSource implements Source {
               selectedDatabaseFields,
               table,
               cursorJooqField,
-              initialCursorOptional.get());
+              cursorOptional.get());
           internalMessageStream = getMessageStream(queryStream, streamName, now.toEpochMilli());
         } else {
           internalMessageStream = getMessageStream(executeFullRefreshQuery(database, selectedDatabaseFields, table), streamName, now.toEpochMilli());
@@ -214,7 +214,7 @@ public abstract class AbstractJooqSource implements Source {
             stateManager,
             streamName,
             cursorField,
-            initialCursorOptional.orElse(null),
+            cursorOptional.orElse(null),
             cursorType);
 
         stream = MoreStreams.toStream(stateDecoratingIterator);
@@ -235,15 +235,15 @@ public abstract class AbstractJooqSource implements Source {
   }
 
   private static <T> Stream<Record> executeIncrementalQuery(Database database,
-                                                            List<org.jooq.Field<?>> fields,
-                                                            Table<?> table,
-                                                            org.jooq.Field<T> cursorField,
-                                                            String cursor)
+      List<org.jooq.Field<?>> fields,
+      Table<?> table,
+      org.jooq.Field<T> cursorField,
+      String cursor)
       throws SQLException {
 
     return database.query(ctx -> ctx.select(fields)
         .from(table)
-        .where(cursorField.greaterThan(AbstractJooqSource.toField(cursorField.getDataType(), cursor)))
+        .where(cursorField.greaterThan(toField(cursorField.getDataType(), cursor)))
         .fetchStream());
   }
 

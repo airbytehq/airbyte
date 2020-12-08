@@ -38,6 +38,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
+import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.models.JdbcState;
 import io.airbyte.integrations.source.jdbc.models.JdbcStreamState;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -54,7 +55,6 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -87,11 +87,11 @@ class JooqSourceTest {
 
   private PostgreSQLContainer<?> container;
   private Database database;
-  private JooqSource jooqSource;
+  private Source source;
 
   @BeforeEach
   void setup() throws Exception {
-    jooqSource = new JooqSource();
+    source = new PostgresJooqTestSource();
     container = new PostgreSQLContainer<>("postgres:13-alpine");
     container.start();
 
@@ -124,8 +124,8 @@ class JooqSourceTest {
   }
 
   @Test
-  void testSpec() throws IOException {
-    final ConnectorSpecification actual = jooqSource.spec();
+  void testSpec() throws Exception {
+    final ConnectorSpecification actual = source.spec();
     final String resourceString = MoreResources.readResource("spec.json");
     final ConnectorSpecification expected = Jsons.deserialize(resourceString, ConnectorSpecification.class);
 
@@ -133,16 +133,16 @@ class JooqSourceTest {
   }
 
   @Test
-  void testCheckSuccess() {
-    final AirbyteConnectionStatus actual = jooqSource.check(config);
+  void testCheckSuccess() throws Exception {
+    final AirbyteConnectionStatus actual = source.check(config);
     final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     assertEquals(expected, actual);
   }
 
   @Test
-  void testCheckFailure() {
+  void testCheckFailure() throws Exception {
     ((ObjectNode) config).put("password", "fake");
-    final AirbyteConnectionStatus actual = jooqSource.check(config);
+    final AirbyteConnectionStatus actual = source.check(config);
     final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.FAILED)
         .withMessage("Can't connect with provided configuration.");
     assertEquals(expected, actual);
@@ -150,13 +150,13 @@ class JooqSourceTest {
 
   @Test
   void testDiscover() throws Exception {
-    final AirbyteCatalog actual = jooqSource.discover(config);
+    final AirbyteCatalog actual = source.discover(config);
     assertEquals(CATALOG, actual);
   }
 
   @Test
   void testReadSuccess() throws Exception {
-    final List<AirbyteMessage> actualMessages = jooqSource.read(config, getConfiguredCatalog(), null).collect(Collectors.toList());
+    final List<AirbyteMessage> actualMessages = source.read(config, getConfiguredCatalog(), null).collect(Collectors.toList());
 
     actualMessages.forEach(r -> {
       if (r.getRecord() != null) {
@@ -171,7 +171,7 @@ class JooqSourceTest {
   void testReadOneColumn() throws Exception {
     final ConfiguredAirbyteCatalog catalog = CatalogHelpers.createConfiguredAirbyteCatalog(STREAM_NAME, Field.of("id", JsonSchemaPrimitive.NUMBER));
 
-    final List<AirbyteMessage> actualMessages = jooqSource.read(config, catalog, null).collect(Collectors.toList());
+    final List<AirbyteMessage> actualMessages = source.read(config, catalog, null).collect(Collectors.toList());
 
     actualMessages.forEach(r -> {
       if (r.getRecord() != null) {
@@ -205,7 +205,7 @@ class JooqSourceTest {
             streamName2,
             Field.of("id", JsonSchemaPrimitive.NUMBER),
             Field.of("name", JsonSchemaPrimitive.STRING))));
-    final List<AirbyteMessage> actualMessages = jooqSource.read(config, catalog, null).collect(Collectors.toList());
+    final List<AirbyteMessage> actualMessages = source.read(config, catalog, null).collect(Collectors.toList());
 
     actualMessages.forEach(r -> {
       if (r.getRecord() != null) {
@@ -233,8 +233,6 @@ class JooqSourceTest {
     final ConfiguredAirbyteStream spiedAbStream = spy(getConfiguredCatalog().getStreams().get(0));
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(spiedAbStream));
     doCallRealMethod().doThrow(new RuntimeException()).when(spiedAbStream).getStream();
-
-    final JooqSource source = jooqSource;
 
     assertThrows(RuntimeException.class, () -> source.read(config, catalog, null));
   }
@@ -275,7 +273,31 @@ class JooqSourceTest {
         Lists.newArrayList(MESSAGES.get(1), MESSAGES.get(2)));
   }
 
+  @Test
+  void testIncrementalCursorChanges() throws Exception {
+    incrementalCursorCheck(
+        "id",
+        "name",
+        // cheesing this value a little bit. in the correct implementation this initial cursor value should
+        // be ignored because the cursor field changed. setting it to a value that if used, will cause
+        // records to (incorrectly) be filtered out.
+        "data",
+        "vash",
+        Lists.newArrayList(MESSAGES));
+  }
+
+  // when initial and final cursor fields are the same.
   private void incrementalCursorCheck(
+                                      String cursorField,
+                                      String initialCursorValue,
+                                      String endCursorValue,
+                                      List<AirbyteMessage> expectedRecordMessages)
+      throws Exception {
+    incrementalCursorCheck(cursorField, cursorField, initialCursorValue, endCursorValue, expectedRecordMessages);
+  }
+
+  private void incrementalCursorCheck(
+                                      String initialCursorField,
                                       String cursorField,
                                       String initialCursorValue,
                                       String endCursorValue,
@@ -290,10 +312,10 @@ class JooqSourceTest {
     final JdbcState state = new JdbcState()
         .withStreams(Lists.newArrayList(new JdbcStreamState()
             .withStreamName(STREAM_NAME)
-            .withCursorField(ImmutableList.of(cursorField))
+            .withCursorField(ImmutableList.of(initialCursorField))
             .withCursor(initialCursorValue)));
 
-    final List<AirbyteMessage> actualMessages = jooqSource.read(config, configuredCatalog, Jsons.jsonNode(state)).collect(Collectors.toList());
+    final List<AirbyteMessage> actualMessages = source.read(config, configuredCatalog, Jsons.jsonNode(state)).collect(Collectors.toList());
 
     actualMessages.forEach(r -> {
       if (r.getRecord() != null) {

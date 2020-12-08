@@ -32,11 +32,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 // for ease of testing testing purposes only
-public class JooqSource extends AbstractJooqSource implements Source {
+public class PostgresJooqTestSource extends AbstractJooqSource implements Source {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(JooqSource.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(PostgresJooqTestSource.class);
 
-  public JooqSource() {
+  public PostgresJooqTestSource() {
     super("org.postgresql.Driver", SQLDialect.POSTGRES);
   }
 
@@ -47,10 +47,10 @@ public class JooqSource extends AbstractJooqSource implements Source {
   }
 
   public static void main(String[] args) throws Exception {
-    final Source source = new JooqSource();
-    LOGGER.info("starting source: {}", JooqSource.class);
+    final Source source = new PostgresJooqTestSource();
+    LOGGER.info("starting source: {}", PostgresJooqTestSource.class);
     new IntegrationRunner(source).run(args);
-    LOGGER.info("completed source: {}", JooqSource.class);
+    LOGGER.info("completed source: {}", PostgresJooqTestSource.class);
   }
 
 }

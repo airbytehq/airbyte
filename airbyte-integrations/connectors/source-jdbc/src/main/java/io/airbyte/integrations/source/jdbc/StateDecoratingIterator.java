@@ -72,10 +72,8 @@ class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> implement
       }
 
       return message;
-    }
-
-    if (!hasEmittedState) {
-      final AirbyteStateMessage stateMessage = stateManager.updateAndEmit(streamName, cursorField, maxCursor);
+    } else if (!hasEmittedState) {
+      final AirbyteStateMessage stateMessage = stateManager.updateAndEmit(streamName, maxCursor);
       LOGGER.info("State Report: stream name: {}, original cursor field: {}, original cursor {}, cursor field: {}, new cursor: {}",
           streamName,
           stateManager.getOriginalCursorField(streamName).orElse(null),
@@ -88,9 +86,10 @@ class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> implement
 
       hasEmittedState = true;
       return new AirbyteMessage().withType(Type.STATE).withState(stateMessage);
-    }
+    } else {
+      return endOfData();
 
-    return endOfData();
+    }
   }
 
 }

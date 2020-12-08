@@ -71,7 +71,7 @@ class StateDecoratingIteratorTest {
 
   @Test
   void test() {
-    when(stateManager.updateAndEmit(STREAM_NAME, UUID_FIELD_NAME, "def")).thenReturn(stateMessage);
+    when(stateManager.updateAndEmit(STREAM_NAME, "def")).thenReturn(stateMessage);
 
     final StateDecoratingIterator iterator = new StateDecoratingIterator(
         messageStream,
@@ -89,7 +89,7 @@ class StateDecoratingIteratorTest {
 
   @Test
   void testWithInitialCursor() {
-    when(stateManager.updateAndEmit(STREAM_NAME, UUID_FIELD_NAME, "xyz")).thenReturn(stateMessage);
+    when(stateManager.updateAndEmit(STREAM_NAME, "xyz")).thenReturn(stateMessage);
 
     final StateDecoratingIterator iterator = new StateDecoratingIterator(
         messageStream,
@@ -107,7 +107,7 @@ class StateDecoratingIteratorTest {
 
   @Test
   void testEmptyStream() {
-    when(stateManager.updateAndEmit(STREAM_NAME, UUID_FIELD_NAME, null)).thenReturn(stateMessage);
+    when(stateManager.updateAndEmit(STREAM_NAME, null)).thenReturn(stateMessage);
 
     final StateDecoratingIterator iterator = new StateDecoratingIterator(
         Stream.empty(),

@@ -24,10 +24,8 @@
 
 package io.airbyte.integrations.source.jdbc;
 
-import com.google.common.base.Charsets;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
-import java.nio.ByteBuffer;
 
 public class IncrementalUtils {
 
@@ -77,7 +75,7 @@ public class IncrementalUtils {
 
     switch (type) {
       case STRING -> {
-         return original.compareTo(candidate);
+        return original.compareTo(candidate);
       }
       case NUMBER -> {
         // todo (cgardens) - handle big decimal. this is currently an overflow risk.
