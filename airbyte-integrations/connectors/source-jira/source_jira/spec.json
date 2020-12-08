@@ -1,0 +1,25 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/jira",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Jira Spec",
+    "type": "object",
+    "required": ["api_token", "domain", "email"],
+    "additionalProperties": false,
+    "properties": {
+      "api_token": {
+        "type": "string",
+        "description": "Jira API Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/jira\">docs</a> for more information on how to generate this key.",
+        "airbyte_secret": true
+      },
+      "domain": {
+        "type": "string",
+        "description": ""
+      },
+      "email": {
+        "type": "string",
+        "description": ""
+      }
+    }
+  }
+}
