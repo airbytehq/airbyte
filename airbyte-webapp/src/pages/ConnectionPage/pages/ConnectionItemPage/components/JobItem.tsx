@@ -10,14 +10,18 @@ import dayjs from "dayjs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
 
-import { Job } from "../../../../../core/resources/Job";
+import {
+  JobItem as JobApiItem,
+  Attempt
+} from "../../../../../core/resources/Job";
 import { Row, Cell } from "../../../../../components/SimpleTableComponents";
 import StatusIcon from "../../../../../components/StatusIcon";
 import Spinner from "../../../../../components/Spinner";
 import JobLogs from "./JobLogs";
 
 type IProps = {
-  job: Job;
+  job: JobApiItem;
+  attempts: Attempt[];
 };
 
 const Item = styled.div<{ isFailed: boolean }>`

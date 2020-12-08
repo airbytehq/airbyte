@@ -21,7 +21,7 @@ const JobLogs: React.FC<IProps> = ({ id }) => {
   const job = useResource(JobResource.detailShape(), { id });
   useSubscription(JobResource.detailShape(), { id });
 
-  if (!job.logs.logLines?.length) {
+  if (!job.attempts.length) {
     return (
       <Logs>
         <FormattedMessage id="sources.emptyLogs" />
@@ -31,7 +31,7 @@ const JobLogs: React.FC<IProps> = ({ id }) => {
 
   return (
     <Logs>
-      {job.logs.logLines.map((item, key) => (
+      {job.attempts[0].logs?.logLines.map((item, key) => (
         <div key={`log-${id}-${key}`}>{item}</div>
       ))}
     </Logs>

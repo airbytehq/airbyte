@@ -122,6 +122,7 @@
   "sources.sourceSettings": "Source Settings",
   "sources.failed": "Failed",
   "sources.completed": "Completed",
+  "sources.succeeded": "Succeeded",
   "sources.pending": "Pending",
   "sources.running": "Running",
   "sources.cancelled": "Cancelled",

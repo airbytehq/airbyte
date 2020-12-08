@@ -1,7 +1,7 @@
 import { Resource, FetchOptions } from "rest-hooks";
 import BaseResource from "./BaseResource";
 
-export interface Job {
+export interface JobItem {
   id: number;
   configType: string;
   configId: string;
@@ -11,14 +11,39 @@ export interface Job {
   status: string;
 }
 
+export interface Logs {
+  logLines: string[];
+}
+
+export interface Attempt {
+  id: number;
+  status: string;
+  createdAt: number;
+  updatedAt: number;
+  endedAt: number;
+  bytesSynced: number;
+  recordsSynced: number;
+  logs?: Logs;
+}
+
+export interface Job {
+  job: JobItem;
+  attempts: Attempt[];
+}
+
+// TODO: fix shape ! ! !
 export default class JobResource extends BaseResource implements Job {
-  readonly id: number = 0;
-  readonly configType: string = "";
-  readonly configId: string = "";
-  readonly createdAt: number = 0;
-  readonly startedAt: number = 0;
-  readonly updatedAt: number = 0;
-  readonly status: string = "";
+  readonly id: number = 0; // TODO: delete ? ? ?
+  readonly job: JobItem = {
+    id: 0,
+    configType: "",
+    configId: "",
+    createdAt: 0,
+    startedAt: 0,
+    updatedAt: 0,
+    status: ""
+  };
+  readonly attempts: Attempt[] = [];
 
   pk() {
     return this.id?.toString();
@@ -35,6 +60,22 @@ export default class JobResource extends BaseResource implements Job {
   static listShape<T extends typeof Resource>(this: T) {
     return {
       ...super.listShape(),
+      fetch: async (
+        params: Readonly<Record<string, string | number>>
+      ): Promise<any> => {
+        const jobsResult = await this.fetch(
+          "post",
+          `${this.listUrl(params)}/list`,
+          { ...params }
+        );
+
+        return {
+          jobs: jobsResult.jobs.map((item: any) => ({
+            ...item,
+            id: item.job.id
+          }))
+        };
+      },
       schema: { jobs: [this.asSchema()] }
     };
   }
@@ -42,10 +83,27 @@ export default class JobResource extends BaseResource implements Job {
   static detailShape<T extends typeof Resource>(this: T) {
     return {
       ...super.detailShape(),
-      schema: {
-        job: this.asSchema(),
-        logs: { logLines: [] }
-      }
+      fetch: async (
+        params: Readonly<Record<string, string | number>>
+      ): Promise<any> => {
+        const jobResult = await this.fetch(
+          "post",
+          `${this.url(params)}/get`,
+          params
+        );
+
+        const attemptsValue = jobResult.attempts.map((attemptItem: any) => ({
+          ...attemptItem.attempt,
+          logs: attemptItem.logs
+        }));
+
+        return {
+          id: jobResult.job.id,
+          job: jobResult.job,
+          attempts: attemptsValue
+        };
+      },
+      schema: this.asSchema()
     };
   }
 }
