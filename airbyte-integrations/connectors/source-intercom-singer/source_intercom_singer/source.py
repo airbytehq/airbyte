@@ -22,9 +22,28 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from .test_iface import DefaultStandardSourceTest, StandardSourceTestIface
+from typing import Any, Mapping
 
-__all__ = [
-    "DefaultStandardSourceTest",
-    "StandardSourceTestIface",
-]
+from base_python import AirbyteLogger
+from base_singer import BaseSingerSource
+from tap_intercom.client import IntercomClient, IntercomError
+
+
+class SourceIntercomSinger(BaseSingerSource):
+    tap_cmd = "tap-intercom"
+    tap_name = "Intercom API"
+    api_error = IntercomError
+    force_full_refresh = True
+
+    def transform_config(self, raw_config) -> Mapping[str, Any]:
+        return {
+            "user_agent": "airbyte",
+            "access_token": raw_config["access_token"],
+            "start_date": raw_config["start_date"],
+        }
+
+    def try_connect(self, logger: AirbyteLogger, config: dict):
+        client = IntercomClient(user_agent=config["user_agent"], access_token=config["access_token"])
+        ok = client.check_access_token()
+        if not ok:
+            raise IntercomError("No data. Please check your permissions.")
