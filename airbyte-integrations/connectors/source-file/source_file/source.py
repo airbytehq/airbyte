@@ -31,6 +31,7 @@ from typing import Generator, List
 from urllib.parse import urlparse
 
 import gcsfs
+import numpy as np
 import pandas as pd
 from airbyte_protocol import (
     AirbyteCatalog,
@@ -188,6 +189,7 @@ class SourceFile(Source):
                         columns = selection.intersection(set(df.columns))
                     else:
                         columns = df.columns
+                    df = df.replace(np.nan, "NaN", regex=True)
                     for data in df[columns].to_dict(orient="records"):
                         yield AirbyteMessage(
                             type=Type.RECORD,
