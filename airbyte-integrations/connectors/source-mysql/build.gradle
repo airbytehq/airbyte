@@ -22,9 +22,9 @@ dependencies {
 
     implementation 'org.apache.commons:commons-lang3:3.11'
 
-    integrationTestImplementation project(':airbyte-integrations:bases:standard-source-test')
+    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     testImplementation 'org.testcontainers:mysql:1.15.0-rc2'
 
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
-    integrationTestImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+    integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 }

@@ -11,10 +11,10 @@ airbytePython {
 }
 
 dependencies {
-    integrationTestImplementation project(':airbyte-workers')
-    integrationTestImplementation project(':airbyte-config:models')
-    integrationTestImplementation project(':airbyte-protocol:models')
+    integrationTestJavaImplementation project(':airbyte-workers')
+    integrationTestJavaImplementation project(':airbyte-config:models')
+    integrationTestJavaImplementation project(':airbyte-protocol:models')
     implementation files(project(':airbyte-integrations:bases:base-singer').airbyteDocker.outputs)
 }
 
-integrationTest.dependsOn airbyteDocker
+integrationTestJava.dependsOn airbyteDocker

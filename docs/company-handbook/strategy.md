@@ -41,9 +41,7 @@ We will build out and release the enterprise edition only after the Series-A. It
 
 ## **Our hiring strategy**
 
-Our team is composed of 4 engineering leaders, all from one of the highest-growing data companies in the world. We have already built 500+ integrations in the past on high-scale volume projects. This is why we can afford our ambitious technological goals.
+Our team is composed of 5 engineering leaders, all from one of the highest-growing data companies in the world. We have already built 1,000+ integrations in the past on high-scale volume projects. This is why we can afford our ambitious technological goals.
 
-We are working closely with a contractor on the frontend side and are doing all the UI design specs in-house for the moment.
-
-Until the Series-A, we will stay lean. But if we ever hire a person, it will be a 5th A-player data engineer, as our focus is only on what is key to our company: data engineering.
+We are working closely with contractors on the frontend side and to help us ramp up the number of connectors. We are doing all the UI design specs in-house for the moment though.
 

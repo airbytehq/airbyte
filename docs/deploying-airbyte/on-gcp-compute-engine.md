@@ -8,7 +8,7 @@ The instructions have been tested on `Debian GNU/Linux 10 (buster)`
 
 * Launch a new instance
 
-![](../.gitbook/assets/gcp_ce_launch%20%281%29%20%281%29%20%281%29%20%282%29%20%281%29%20%281%29%20%282%29%20%288%29.png)
+![](../.gitbook/assets/gcp_ce_launch%20%281%29%20%281%29%20%281%29%20%282%29%20%281%29%20%281%29%20%282%29.png)
 
 * Configure new instance
   * For testing out Airbyte, an `e2.medium` instance is likely sufficient.
