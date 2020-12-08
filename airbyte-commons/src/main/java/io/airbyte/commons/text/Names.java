@@ -43,4 +43,19 @@ public class Names {
         .replaceAll(NON_ALPHANUMERIC_AND_UNDERSCORE_PATTERN, "_");
   }
 
+  /**
+   * Concatenate Strings together, but handles the case where the first string is already quoted
+   *
+   * @param name Quoted or Unquoted name to append more characters to
+   * @param suffix additional string to concatenate
+   * @return name and suffix concatenated together
+   */
+  public static String concatQuotedNames(String name, String suffix) {
+    if (name.endsWith("\"")) {
+      return name.substring(0, name.length() - 1) + suffix + "\"";
+    } else {
+      return name + suffix;
+    }
+  }
+
 }

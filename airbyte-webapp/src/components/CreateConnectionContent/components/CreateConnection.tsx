@@ -4,10 +4,6 @@ import { FormattedMessage } from "react-intl";
 import FrequencyForm from "../../FrequencyForm";
 import { SyncSchema } from "../../../core/resources/Schema";
 import { IDataItem } from "../../DropDown/components/ListItem";
-import {
-  constructInitialSchemaState,
-  constructNewSchema
-} from "../../../core/helpers";
 
 type IProps = {
   onSubmit: (values: { frequency: string; syncSchema: SyncSchema }) => void;
@@ -22,18 +18,14 @@ const CreateConnection: React.FC<IProps> = ({
   schema,
   onSelectFrequency
 }) => {
-  const {
-    formSyncSchema,
-    initialChecked,
-    allSchemaChecked
-  } = constructInitialSchemaState(schema);
-
-  const onSubmitForm = async (
-    values: { frequency: string },
-    checkedState: string[]
-  ) => {
-    const newSchema = constructNewSchema(schema, checkedState);
-    await onSubmit({ ...values, syncSchema: newSchema });
+  const onSubmitForm = async (values: {
+    frequency: string;
+    schema: SyncSchema;
+  }) => {
+    await onSubmit({
+      frequency: values.frequency,
+      syncSchema: values.schema
+    });
   };
 
   const errorMessage =
@@ -45,12 +37,10 @@ const CreateConnection: React.FC<IProps> = ({
 
   return (
     <FrequencyForm
-      allSchemaChecked={allSchemaChecked}
       onDropDownSelect={onSelectFrequency}
       onSubmit={onSubmitForm}
       errorMessage={errorMessage}
-      schema={formSyncSchema}
-      initialCheckedSchema={initialChecked}
+      schema={schema}
     />
   );
 };

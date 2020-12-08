@@ -10,14 +10,14 @@ airbytePython {
 }
 
 dependencies {
-    integrationTestImplementation 'org.apache.commons:commons-dbcp2:2.7.0'
-    integrationTestImplementation 'com.fasterxml.jackson.core:jackson-databind'
-    integrationTestImplementation 'org.apache.commons:commons-text:1.9'
-    integrationTestImplementation "com.stripe:stripe-java:20.6.0"
+    integrationTestJavaImplementation 'org.apache.commons:commons-dbcp2:2.7.0'
+    integrationTestJavaImplementation 'com.fasterxml.jackson.core:jackson-databind'
+    integrationTestJavaImplementation 'org.apache.commons:commons-text:1.9'
+    integrationTestJavaImplementation "com.stripe:stripe-java:20.6.0"
 
-    integrationTestImplementation project(':airbyte-workers')
-    integrationTestImplementation project(':airbyte-config:models')
-    integrationTestImplementation project(':airbyte-protocol:models')
+    integrationTestJavaImplementation project(':airbyte-workers')
+    integrationTestJavaImplementation project(':airbyte-config:models')
+    integrationTestJavaImplementation project(':airbyte-protocol:models')
 
     implementation files(project(':airbyte-integrations:bases:base-singer').airbyteDocker.outputs)
 }

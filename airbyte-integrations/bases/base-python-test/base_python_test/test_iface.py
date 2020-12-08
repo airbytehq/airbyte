@@ -40,11 +40,14 @@ class StandardSourceTestIface:
     def get_config(self) -> object:
         raise NotImplementedError
 
-    def get_catalog(self) -> AirbyteCatalog:
+    def get_catalog(self) -> ConfiguredAirbyteCatalog:
         raise NotImplementedError
 
     def get_regex_tests(self) -> List[str]:
         return []
+
+    def get_state(self) -> object:
+        return {}
 
     def setup(self) -> None:
         pass

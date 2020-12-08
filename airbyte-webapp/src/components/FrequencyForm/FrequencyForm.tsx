@@ -8,19 +8,21 @@ import LabeledDropDown from "../LabeledDropDown";
 import FrequencyConfig from "../../data/FrequencyConfig.json";
 import BottomBlock from "./components/BottomBlock";
 import Label from "../Label";
-import TreeView, { INode } from "../TreeView/TreeView";
+import SchemaView from "./components/SchemaView";
 import { IDataItem } from "../DropDown/components/ListItem";
 import EditControls from "../ServiceForm/components/EditControls";
+import { SyncMode, SyncSchema } from "../../core/resources/Schema";
+import SaveModal from "./components/SaveModal";
+import { equal } from "../../utils/objects";
 
 type IProps = {
   className?: string;
-  schema: INode[];
-  allSchemaChecked: string[];
+  schema: SyncSchema;
   errorMessage?: React.ReactNode;
   successMessage?: React.ReactNode;
-  onSubmit: (values: { frequency: string }, checkedState: string[]) => void;
+  onSubmit: (values: { frequency: string; schema: SyncSchema }) => void;
+  onReset?: (connectionId?: string) => void;
   onDropDownSelect?: (item: IDataItem) => void;
-  initialCheckedSchema: Array<string>;
   frequencyValue?: string;
   isEditMode?: boolean;
 };
@@ -33,12 +35,8 @@ const FormContainer = styled(Form)`
   padding: 22px 27px 23px 24px;
 `;
 
-const TreeViewContainer = styled.div`
-  width: 100%;
-  background: ${({ theme }) => theme.greyColor0};
-  margin-bottom: 29px;
-  border-radius: 4px;
-  overflow: hidden;
+const EditLaterMessage = styled(Label)`
+  margin: -20px 0 29px;
 `;
 
 const connectionValidationSchema = yup.object().shape({
@@ -47,16 +45,39 @@ const connectionValidationSchema = yup.object().shape({
 
 const FrequencyForm: React.FC<IProps> = ({
   onSubmit,
+  onReset,
   className,
   errorMessage,
   schema,
-  initialCheckedSchema,
   onDropDownSelect,
-  allSchemaChecked,
   frequencyValue,
   isEditMode,
   successMessage
 }) => {
+  const initialSchema = React.useMemo(
+    () => ({
+      streams: schema.streams.map(item => {
+        // If syncMode is null, FULL_REFRESH should be selected by default.
+        const itemWithSyncMode = !item.syncMode
+          ? {
+              ...item,
+              syncMode: SyncMode.FullRefresh
+            }
+          : item;
+
+        // If the value in supportedSyncModes is empty assume the only supported sync mode is FULL_REFRESH.
+        // Otherwise it supports whatever sync modes are present.
+        return !itemWithSyncMode.supportedSyncModes ||
+          !itemWithSyncMode.supportedSyncModes.length
+          ? { ...itemWithSyncMode, supportedSyncModes: [SyncMode.FullRefresh] }
+          : itemWithSyncMode;
+      })
+    }),
+    [schema.streams]
+  );
+
+  const [newSchema, setNewSchema] = useState(initialSchema);
+  const [modalIsOpen, setResetModalIsOpen] = useState(false);
   const formatMessage = useIntl().formatMessage;
   const dropdownData = React.useMemo(
     () =>
@@ -77,9 +98,6 @@ const FrequencyForm: React.FC<IProps> = ({
     [formatMessage]
   );
 
-  const [checkedState, setCheckedState] = useState(initialCheckedSchema);
-  const onCheckAction = (data: Array<string>) => setCheckedState(data);
-
   return (
     <Formik
       initialValues={{
@@ -88,24 +106,23 @@ const FrequencyForm: React.FC<IProps> = ({
       validateOnBlur={true}
       validateOnChange={true}
       validationSchema={connectionValidationSchema}
-      onSubmit={async (values, { setSubmitting }) => {
-        await onSubmit(values, checkedState);
-        setSubmitting(false);
+      onSubmit={async values => {
+        const requiresReset = isEditMode && !equal(initialSchema, newSchema);
+        await onSubmit({ frequency: values.frequency, schema: newSchema });
+
+        if (requiresReset) {
+          setResetModalIsOpen(true);
+        }
       }}
     >
       {({ isSubmitting, setFieldValue, isValid, dirty, resetForm }) => (
         <FormContainer className={className}>
-          <Label message={<FormattedMessage id="form.dataSync.message" />}>
-            <FormattedMessage id="form.dataSync" />
-          </Label>
-          <TreeViewContainer>
-            <TreeView
-              checkedAll={allSchemaChecked}
-              nodes={schema}
-              onCheck={onCheckAction}
-              checked={checkedState}
+          <SchemaView schema={newSchema} onChangeSchema={setNewSchema} />
+          {!isEditMode ? (
+            <EditLaterMessage
+              message={<FormattedMessage id="form.dataSync.message" />}
             />
-          </TreeViewContainer>
+          ) : null}
           <Field name="frequency">
             {({ field }: FieldProps<string>) => (
               <SmallLabeledDropDown
@@ -131,18 +148,25 @@ const FrequencyForm: React.FC<IProps> = ({
             )}
           </Field>
           {isEditMode ? (
-            <EditControls
-              isSubmitting={isSubmitting}
-              isValid={isValid}
-              dirty={
-                dirty ||
-                JSON.stringify(checkedState) !==
-                  JSON.stringify(initialCheckedSchema)
-              }
-              resetForm={resetForm}
-              successMessage={successMessage}
-              errorMessage={errorMessage}
-            />
+            <>
+              <EditControls
+                isSubmitting={isSubmitting}
+                isValid={isValid}
+                dirty={dirty || !equal(initialSchema, newSchema)}
+                resetForm={resetForm}
+                successMessage={successMessage}
+                errorMessage={errorMessage}
+              />
+              {modalIsOpen && (
+                <SaveModal
+                  onClose={() => setResetModalIsOpen(false)}
+                  onSubmit={async () => {
+                    await onReset?.();
+                    setResetModalIsOpen(false);
+                  }}
+                />
+              )}
+            </>
           ) : (
             <BottomBlock
               isSubmitting={isSubmitting}

@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useFetcher, useResource } from "rest-hooks";
 
@@ -10,7 +10,7 @@ import ImageCell from "./ImageCell";
 import VersionCell from "./VersionCell";
 import config from "../../../config";
 import DestinationDefinitionResource from "../../../core/resources/DestinationDefinition";
-import DestinationResource from "../../../core/resources/Destination";
+import ConnectionResource from "../../../core/resources/Connection";
 
 const DestinationsView: React.FC = () => {
   const formatMessage = useIntl().formatMessage;
@@ -20,13 +20,11 @@ const DestinationsView: React.FC = () => {
       workspaceId: config.ui.workspaceId
     }
   );
-  const destinations = useResource(DestinationResource.listShape(), {
+  const { connections } = useResource(ConnectionResource.listShape(), {
     workspaceId: config.ui.workspaceId
   });
 
-  const [feedback, setFeedback] = useState(""); // only one destination !
-  // Now we have only one destination. If we support multiple destinations we will change it
-  const currentDestination = destinations.destinations[0];
+  const [feedbackList, setFeedbackList] = useState<any>({});
 
   const updateDestinationDefinition = useFetcher(
     DestinationDefinitionResource.updateShape()
@@ -42,7 +40,7 @@ const DestinationsView: React.FC = () => {
             dockerImageTag: version
           }
         );
-        setFeedback("success");
+        setFeedbackList({ ...feedbackList, [id]: "success" });
       } catch (e) {
         const message =
           e.status === 422
@@ -52,10 +50,10 @@ const DestinationsView: React.FC = () => {
             : formatMessage({
                 id: "form.someError"
               });
-        setFeedback(message);
+        setFeedbackList({ ...feedbackList, [id]: message });
       }
     },
-    [formatMessage, updateDestinationDefinition]
+    [feedbackList, formatMessage, updateDestinationDefinition]
   );
 
   const columns = React.useMemo(
@@ -101,12 +99,12 @@ const DestinationsView: React.FC = () => {
             version={cell.value}
             id={row.original.destinationDefinitionId}
             onChange={onUpdateVersion}
-            feedback={feedback}
+            feedback={feedbackList[row.original.destinationDefinitionId]}
           />
         )
       }
     ],
-    [columns, feedback, onUpdateVersion]
+    [columns, feedbackList, onUpdateVersion]
   );
 
   const columnsAllDestinations = React.useMemo(
@@ -133,14 +131,31 @@ const DestinationsView: React.FC = () => {
     [columns]
   );
 
-  const destinationInfo = destinationDefinitions.find(
-    // TODO change to destinationDefId when changing destinationImpl
-    item =>
-      item.destinationDefinitionId ===
-      currentDestination.destinationDefinitionId
-  );
+  const usedDestination = useMemo(() => {
+    const allDestination = connections.map(item => {
+      const destinationInfo = destinationDefinitions.find(
+        destination =>
+          destination.destinationDefinitionId ===
+          item.destination?.destinationDefinitionId
+      );
+      return {
+        name: item.destination?.destinationName,
+        destinationDefinitionId:
+          item.destination?.destinationDefinitionId || "",
+        dockerRepository: destinationInfo?.dockerRepository,
+        dockerImageTag: destinationInfo?.dockerImageTag,
+        documentationUrl: destinationInfo?.documentationUrl,
+        feedback: ""
+      };
+    });
 
-  const usedDestination = destinationInfo ? [destinationInfo] : [];
+    const uniqDestination = allDestination.reduce(
+      (map, item) => ({ ...map, [item.destinationDefinitionId]: item }),
+      {}
+    );
+
+    return Object.values(uniqDestination);
+  }, [connections, destinationDefinitions]);
 
   return (
     <>
@@ -153,7 +168,7 @@ const DestinationsView: React.FC = () => {
 
       <Block>
         <Title bold>
-          <FormattedMessage id="admin.supportMultipleDestinations" />
+          <FormattedMessage id="admin.availableDestinations" />
         </Title>
         <Table columns={columnsAllDestinations} data={destinationDefinitions} />
       </Block>

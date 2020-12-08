@@ -31,7 +31,8 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.job_factory.DefaultSyncJobFactory;
 import io.airbyte.scheduler.job_factory.SyncJobFactory;
-import io.airbyte.scheduler.persistence.SchedulerPersistence;
+import io.airbyte.scheduler.persistence.DefaultJobCreator;
+import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.time.Instant;
@@ -45,29 +46,29 @@ public class JobScheduler implements Runnable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JobScheduler.class);
 
-  private final SchedulerPersistence schedulerPersistence;
+  private final JobPersistence jobPersistence;
   private final ConfigRepository configRepository;
   private final BiPredicate<Optional<Job>, StandardSyncSchedule> scheduleJobPredicate;
   private final SyncJobFactory jobFactory;
 
   @VisibleForTesting
-  JobScheduler(final SchedulerPersistence schedulerPersistence,
+  JobScheduler(final JobPersistence jobPersistence,
                final ConfigRepository configRepository,
                final BiPredicate<Optional<Job>, StandardSyncSchedule> scheduleJobPredicate,
                final SyncJobFactory jobFactory) {
-    this.schedulerPersistence = schedulerPersistence;
+    this.jobPersistence = jobPersistence;
     this.configRepository = configRepository;
     this.scheduleJobPredicate = scheduleJobPredicate;
     this.jobFactory = jobFactory;
   }
 
-  public JobScheduler(final SchedulerPersistence schedulerPersistence,
+  public JobScheduler(final JobPersistence jobPersistence,
                       final ConfigRepository configRepository) {
     this(
-        schedulerPersistence,
+        jobPersistence,
         configRepository,
         new ScheduleJobPredicate(Instant::now),
-        new DefaultSyncJobFactory(schedulerPersistence, configRepository));
+        new DefaultSyncJobFactory(new DefaultJobCreator(jobPersistence), configRepository));
   }
 
   @Override
@@ -85,7 +86,7 @@ public class JobScheduler implements Runnable {
 
   private void scheduleSyncJobs() throws IOException {
     for (StandardSync connection : getAllActiveConnections()) {
-      Optional<Job> previousJobOptional = schedulerPersistence.getLastSyncJob(connection.getConnectionId());
+      Optional<Job> previousJobOptional = jobPersistence.getLastSyncJob(connection.getConnectionId());
       final StandardSyncSchedule standardSyncSchedule = getStandardSyncSchedule(connection);
 
       if (scheduleJobPredicate.test(previousJobOptional, standardSyncSchedule)) {

@@ -32,7 +32,7 @@ import com.google.common.collect.Streams;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.workers.WorkerUtils;
 import java.io.IOException;
@@ -73,8 +73,13 @@ public class PythonTestSource extends TestSource {
   }
 
   @Override
-  protected AirbyteCatalog getCatalog() throws IOException {
-    return runExecutable(Command.GET_CATALOG, AirbyteCatalog.class);
+  protected ConfiguredAirbyteCatalog getConfiguredCatalog() throws IOException {
+    return runExecutable(Command.GET_CONFIGURED_CATALOG, ConfiguredAirbyteCatalog.class);
+  }
+
+  @Override
+  protected JsonNode getState() throws IOException {
+    return runExecutable(Command.GET_STATE);
   }
 
   @Override
@@ -98,7 +103,8 @@ public class PythonTestSource extends TestSource {
   private enum Command {
     GET_SPEC,
     GET_CONFIG,
-    GET_CATALOG,
+    GET_CONFIGURED_CATALOG,
+    GET_STATE,
     GET_REGEX_TESTS,
     SETUP,
     TEARDOWN

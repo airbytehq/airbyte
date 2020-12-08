@@ -24,8 +24,12 @@ export const Header = styled(Row)`
 
 export const Cell = styled.div<{ flex?: number }>`
   flex: ${({ flex }) => flex || 1} 0 0;
-
   &:last-child {
     text-align: right;
   }
+`;
+
+export const LightCell = styled(Cell)`
+  color: ${({ theme }) => theme.greyColor60};
+  font-weight: normal;
 `;
