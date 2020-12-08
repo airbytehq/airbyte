@@ -284,8 +284,7 @@ public abstract class TestSource {
     List<AirbyteRecordMessage> secondSyncRecords = filterRecords(runRead(configuredAirbyteCatalog, latestState));
     assertTrue(
         secondSyncRecords.isEmpty(),
-        "Expected the second incremental sync to produce no records when given the first sync's output state."
-    );
+        "Expected the second incremental sync to produce no records when given the first sync's output state.");
   }
 
   @Test
