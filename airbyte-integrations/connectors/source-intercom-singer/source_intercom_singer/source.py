@@ -42,7 +42,7 @@ class SourceIntercomSinger(BaseSingerSource):
         }
 
     def try_connect(self, logger: AirbyteLogger, config: dict):
-        client = IntercomClient(user_agent=config["user_agent"], access_token=config["api_key"])
+        client = IntercomClient(user_agent=config["user_agent"], access_token=config["access_token"])
         ok = client.check_access_token()
         if not ok:
             raise IntercomError("No data. Please check your permissions.")

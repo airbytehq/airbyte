@@ -27,7 +27,7 @@ from typing import List
 import json
 import pkgutil
 
-from airbyte_protocol import AirbyteCatalog, ConfiguredAirbyteCatalog, ConnectorSpecification
+from airbyte_protocol import ConfiguredAirbyteCatalog, ConnectorSpecification
 
 
 class StandardSourceTestIface:
@@ -52,7 +52,7 @@ class StandardSourceTestIface:
     def setup(self) -> None:
         pass
 
-    def tear_down(self) -> None:
+    def teardown(self) -> None:
         pass
 
 
