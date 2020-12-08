@@ -178,6 +178,7 @@ public abstract class AbstractJooqSource implements Source {
           .collect(Collectors.toList());
 
       if (selectedDatabaseFields.isEmpty()) {
+        LOGGER.info("Skipping {} because the source does not contain its selected fields.", streamName);
         continue;
       }
 
