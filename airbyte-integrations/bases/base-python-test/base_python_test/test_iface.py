@@ -22,10 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import List
-
 import json
 import pkgutil
+from typing import List
 
 from airbyte_protocol import ConfiguredAirbyteCatalog, ConnectorSpecification
 

@@ -22,9 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from .test_iface import StandardSourceTestIface, DefaultStandardSourceTest
+from .test_iface import DefaultStandardSourceTest, StandardSourceTestIface
 
 __all__ = [
-    "StandardSourceTestIface",
     "DefaultStandardSourceTest",
+    "StandardSourceTestIface",
 ]

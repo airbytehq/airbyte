@@ -24,7 +24,7 @@ SOFTWARE.
 
 from typing import Generator, Type
 
-from airbyte_protocol import AirbyteCatalog, AirbyteMessage, ConfiguredAirbyteCatalog, AirbyteConnectionStatus, Status
+from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status
 from base_python import AirbyteLogger, CatalogHelper, ConfigContainer, Source
 
 from .singer_helpers import SingerHelper

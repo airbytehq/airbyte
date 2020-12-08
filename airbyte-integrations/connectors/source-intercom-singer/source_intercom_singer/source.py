@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Mapping, Any
+from typing import Any, Mapping
 
 from base_python import AirbyteLogger
 from base_singer import BaseSingerSource
