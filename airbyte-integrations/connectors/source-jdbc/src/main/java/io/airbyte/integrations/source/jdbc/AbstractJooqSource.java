@@ -234,11 +234,12 @@ public abstract class AbstractJooqSource implements Source {
         .fetchStream());
   }
 
-  private static <T> Stream<Record> executeIncrementalQuery(Database database,
-      List<org.jooq.Field<?>> fields,
-      Table<?> table,
-      org.jooq.Field<T> cursorField,
-      String cursor)
+  private static <T> Stream<Record> executeIncrementalQuery(
+                                                            Database database,
+                                                            List<org.jooq.Field<?>> fields,
+                                                            Table<?> table,
+                                                            org.jooq.Field<T> cursorField,
+                                                            String cursor)
       throws SQLException {
 
     return database.query(ctx -> ctx.select(fields)

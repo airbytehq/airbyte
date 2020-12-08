@@ -83,9 +83,10 @@ public class JdbcStateManager {
 
   @VisibleForTesting
   @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-  static CursorInfo createCursorInfoForStream(String streamName,
-      Optional<JdbcStreamState> stateOptional,
-      Optional<ConfiguredAirbyteStream> streamOptional) {
+  static CursorInfo createCursorInfoForStream(
+                                              String streamName,
+                                              Optional<JdbcStreamState> stateOptional,
+                                              Optional<ConfiguredAirbyteStream> streamOptional) {
     final String originalCursorField = stateOptional
         .map(JdbcStreamState::getCursorField)
         .flatMap(f -> f.size() > 0 ? Optional.of(f.get(0)) : Optional.empty())
@@ -237,6 +238,7 @@ public class JdbcStateManager {
           ", cursor='" + cursor + '\'' +
           '}';
     }
+
   }
 
 }
