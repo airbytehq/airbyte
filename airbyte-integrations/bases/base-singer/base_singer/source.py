@@ -25,7 +25,7 @@ SOFTWARE.
 from typing import Generator, Type
 
 from airbyte_protocol import AirbyteCatalog, AirbyteMessage, ConfiguredAirbyteCatalog, AirbyteConnectionStatus, Status
-from base_python import AirbyteLogger, ConfigContainer, Source
+from base_python import AirbyteLogger, CatalogHelper, ConfigContainer, Source
 
 from .singer_helpers import SingerHelper
 
@@ -71,10 +71,13 @@ class SingerSource(Source):
 
 
 class BaseSingerSource(SingerSource):
+    force_full_refresh = False
+
     def discover_cmd(self, logger: AirbyteLogger, config_path: str) -> str:
         return f"{self.tap_cmd} --config {config_path} --discover"
 
     def read_cmd(self, logger: AirbyteLogger, config_path: str, catalog_path: str, state_path: str = None) -> str:
+        state_path = None if self.force_full_refresh else state_path
         args = {"--config": config_path, "--catalog": catalog_path, "--state": state_path}
         cmd = " ".join([f"{k} {v}" for k, v in args.items() if v is not None])
 
@@ -94,6 +97,12 @@ class BaseSingerSource(SingerSource):
             return AirbyteConnectionStatus(status=Status.FAILED, message=error_msg)
 
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+
+    def discover(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteCatalog:
+        catalog = super().discover(logger, config_container)
+        if self.force_full_refresh:
+            return CatalogHelper.coerce_catalog_as_full_refresh(catalog)
+        return catalog
 
     def try_connect(self, logger: AirbyteLogger, config: dict):
         """ Test provided credentials, raises self.api_error if something goes wrong
