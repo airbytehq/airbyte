@@ -62,10 +62,7 @@
               "type": "string",
               "description": "The default assignee when creating issues for this project.",
               "readOnly": true,
-              "enum": [
-                "PROJECT_LEAD",
-                "UNASSIGNED"
-              ]
+              "enum": ["PROJECT_LEAD", "UNASSIGNED"]
             },
             "versions": {
               "type": "array",
@@ -99,11 +96,7 @@
               "type": "string",
               "description": "The [project type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes) of the project.",
               "readOnly": true,
-              "enum": [
-                "software",
-                "service_desk",
-                "business"
-              ]
+              "enum": ["software", "service_desk", "business"]
             },
             "simplified": {
               "type": "boolean",
@@ -114,10 +107,7 @@
               "type": "string",
               "description": "The type of the project.",
               "readOnly": true,
-              "enum": [
-                "classic",
-                "next-gen"
-              ]
+              "enum": ["classic", "next-gen"]
             },
             "favourite": {
               "type": "boolean",
@@ -194,9 +184,7 @@
           "additionalProperties": false,
           "description": "Details about a project."
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       }
     },
     {
@@ -227,9 +215,7 @@
           "additionalProperties": false,
           "description": "Details of an issue resolution."
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       }
     },
     {
@@ -258,12 +244,7 @@
               "type": "string",
               "description": "The user account type. Can take the following values:\n\n *  `atlassian` regular Atlassian user account\n *  `app` system account used for Connect applications and OAuth to represent external systems\n *  `customer` Jira Service Desk account representing an external service desk",
               "readOnly": true,
-              "enum": [
-                "atlassian",
-                "app",
-                "customer",
-                "unknown"
-              ]
+              "enum": ["atlassian", "app", "customer", "unknown"]
             },
             "name": {
               "type": "string",
@@ -318,9 +299,7 @@
           "additionalProperties": false,
           "description": "A user with details as permitted by the user's Atlassian Account privacy settings. However, be aware of these exceptions:\n\n *  User record deleted from Atlassian: This occurs as the result of a right to be forgotten request. In this case, `displayName` provides an indication and other parameters have default values or are blank (for example, email is blank).\n *  User record corrupted: This occurs as a results of events such as a server import and can only happen to deleted users. In this case, `accountId` returns *unknown* and all other parameters have fallback values.\n *  User record unavailable: This usually occurs due to an internal service outage. In this case, all parameters have fallback values."
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       }
     },
     {
@@ -423,9 +402,7 @@
           },
           "additionalProperties": false
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       }
     },
     {
@@ -489,9 +466,7 @@
           "additionalProperties": true,
           "description": "A comment."
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       }
     }
   ]

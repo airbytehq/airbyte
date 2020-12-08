@@ -62,10 +62,7 @@
               "type": "string",
               "description": "The default assignee when creating issues for this project.",
               "readOnly": true,
-              "enum": [
-                "PROJECT_LEAD",
-                "UNASSIGNED"
-              ]
+              "enum": ["PROJECT_LEAD", "UNASSIGNED"]
             },
             "versions": {
               "type": "array",
@@ -99,11 +96,7 @@
               "type": "string",
               "description": "The [project type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes) of the project.",
               "readOnly": true,
-              "enum": [
-                "software",
-                "service_desk",
-                "business"
-              ]
+              "enum": ["software", "service_desk", "business"]
             },
             "simplified": {
               "type": "boolean",
@@ -114,10 +107,7 @@
               "type": "string",
               "description": "The type of the project.",
               "readOnly": true,
-              "enum": [
-                "classic",
-                "next-gen"
-              ]
+              "enum": ["classic", "next-gen"]
             },
             "favourite": {
               "type": "boolean",
@@ -194,9 +184,7 @@
           "additionalProperties": false,
           "description": "Details about a project."
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       }
     }
   ]
