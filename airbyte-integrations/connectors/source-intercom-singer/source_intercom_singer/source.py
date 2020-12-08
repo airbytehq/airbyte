@@ -33,6 +33,7 @@ class SourceIntercomSinger(BaseSingerSource):
     tap_cmd = "tap-intercom"
     tap_name = "Intercom API"
     api_error = IntercomError
+    force_full_refresh = True
 
     def transform_config(self, raw_config) -> Mapping[str, Any]:
         return {
