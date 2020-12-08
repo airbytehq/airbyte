@@ -90,7 +90,7 @@ class BaseSingerSource(SingerSource):
         except self.api_error as err:
             logger.error("Exception while connecting to the %s: %s", self.tap_name, str(err))
             # this should be in UI
-            error_msg = f"Unable to connect to the {self.tap_name} with the provided credentials. Error: {err}"
+            error_msg = f"Unable to connect to {self.tap_name} with the provided credentials. Error: {err}"
             return AirbyteConnectionStatus(status=Status.FAILED, message=error_msg)
 
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)
