@@ -10,11 +10,11 @@ This Source Connector is based on a [Singer Tap](https://github.com/singer-io/ta
 
 This Source is capable of syncing the following core Streams:
 
-* [Channels (Conversations)](https://api.slack.com/methods/conversations.list)
-* [Channel Members (Conversation Members)](https://api.slack.com/methods/conversations.members)
-* [Messages (Conversation History)](https://api.slack.com/methods/conversations.history)
+* [Channels \(Conversations\)](https://api.slack.com/methods/conversations.list)
+* [Channel Members \(Conversation Members\)](https://api.slack.com/methods/conversations.members)
+* [Messages \(Conversation History\)](https://api.slack.com/methods/conversations.history)
 * [Users](https://api.slack.com/methods/users.list)
-* [Threads (Conversation Replies)](https://api.slack.com/methods/conversations.replies)
+* [Threads \(Conversation Replies\)](https://api.slack.com/methods/conversations.replies)
 * [User Groups](https://api.slack.com/methods/usergroups.list)
 * [Files](https://api.slack.com/methods/files.list)
 * [Remote Files](https://api.slack.com/methods/files.remote.list)
@@ -52,3 +52,4 @@ The Slack connector should not run into Slack API limitations under normal usage
 Generate a API access token using the [Slack documentation](https://slack.com/intl/en-ua/help/articles/215770388-Create-and-regenerate-API-tokens)
 
 We recommend creating a restricted, read-only key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access.
+

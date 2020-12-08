@@ -48,3 +48,4 @@ The Braintree connector should not run into Braintree API limitations under norm
 Generate all requirements using the [Braintree documentation](https://articles.braintreepayments.com/control-panel/important-gateway-credentials).
 
 We recommend creating a restricted, read-only key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access.
+
