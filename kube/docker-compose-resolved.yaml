@@ -1,0 +1,82 @@
+services:
+  db:
+    container_name: airbyte-db
+    environment:
+      POSTGRES_DB: db-airbyte
+      POSTGRES_PASSWORD: docker
+      POSTGRES_USER: docker
+    image: airbyte/db:0.6.2-alpha
+    volumes:
+    - db:/var/lib/postgresql/data:rw
+  init:
+    command: /bin/sh -c "./scripts/create_mount_directories.sh /local_parent /tmp
+      /tmp/airbyte_local"
+    container_name: init
+    environment:
+      HACK_LOCAL_ROOT_PARENT: /tmp
+      LOCAL_ROOT: /tmp/airbyte_local
+    image: airbyte/init:0.6.2-alpha
+    volumes:
+    - /tmp:/local_parent:rw
+  scheduler:
+    container_name: airbyte-scheduler
+    environment:
+      AIRBYTE_VERSION: 0.6.2-alpha
+      CONFIG_ROOT: /data
+      DATABASE_PASSWORD: docker
+      DATABASE_URL: jdbc:postgresql://db:5432/airbyte
+      DATABASE_USER: docker
+      LOCAL_DOCKER_MOUNT: /tmp/airbyte_local
+      TRACKING_STRATEGY: segment
+      WAIT_BEFORE_HOSTS: '5'
+      WAIT_HOSTS: db:5432
+      WAIT_HOSTS_TIMEOUT: '45'
+      WORKSPACE_DOCKER_MOUNT: workspace
+      WORKSPACE_ROOT: /tmp/workspace
+    image: airbyte/scheduler:0.6.2-alpha
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock:rw
+    - workspace:/tmp/workspace:rw
+    - /tmp/airbyte_local:/tmp/airbyte_local:rw
+    - data:/data:rw
+  seed:
+    container_name: airbyte-data-seed
+    image: airbyte/seed:0.6.2-alpha
+    volumes:
+    - data:/app/seed:rw
+  server:
+    container_name: airbyte-server
+    environment:
+      AIRBYTE_VERSION: 0.6.2-alpha
+      CONFIG_ROOT: /data
+      DATABASE_PASSWORD: docker
+      DATABASE_URL: jdbc:postgresql://db:5432/airbyte
+      DATABASE_USER: docker
+      TRACKING_STRATEGY: segment
+      WAIT_BEFORE_HOSTS: '5'
+      WAIT_HOSTS: db:5432
+      WAIT_HOSTS_TIMEOUT: '45'
+    image: airbyte/server:0.6.2-alpha
+    ports:
+    - published: 8001
+      target: 8001
+    volumes:
+    - workspace:/tmp/workspace:rw
+    - data:/data:rw
+  webapp:
+    container_name: airbyte-webapp
+    environment:
+      AIRBYTE_VERSION: 0.6.2-alpha
+      API_URL: http://localhost:8001
+      TRACKING_STRATEGY: segment
+    image: airbyte/webapp:0.6.2-alpha
+    ports:
+    - published: 8000
+      target: 80
+version: '3.7'
+volumes:
+  data: {}
+  db: {}
+  workspace:
+    name: workspace
+

@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f kube/docker-compose-resolved.yaml -o kube/local
+    kompose.version: 1.21.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: webapp
+  name: webapp
+spec:
+  ports:
+  - name: "8000"
+    port: 8000
+    targetPort: 80
+  selector:
+    io.kompose.service: webapp
+status:
+  loadBalancer: {}

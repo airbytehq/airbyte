@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f kube/docker-compose-resolved.yaml -o kube/local
+    kompose.version: 1.21.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: init
+  name: init
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: init
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f kube/docker-compose-resolved.yaml -o kube/local
+        kompose.version: 1.21.0 (HEAD)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: init
+    spec:
+      containers:
+      - args:
+        - /bin/sh
+        - -c
+        - ./scripts/create_mount_directories.sh /local_parent /tmp /tmp/airbyte_local
+        env:
+        - name: HACK_LOCAL_ROOT_PARENT
+          value: /tmp
+        - name: LOCAL_ROOT
+          value: /tmp/airbyte_local
+        image: airbyte/init:0.6.2-alpha
+        imagePullPolicy: ""
+        name: init
+        resources: {}
+        volumeMounts:
+        - mountPath: /local_parent
+          name: init-claim0
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes:
+      - name: init-claim0
+        persistentVolumeClaim:
+          claimName: init-claim0
+status: {}

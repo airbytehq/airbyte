@@ -21,8 +21,6 @@ services:
       - POSTGRES_DB=db-${DATABASE_DB}
     volumes:
       - db:/var/lib/postgresql/data
-    depends_on:
-      - init
   seed:
     image: airbyte/seed:${VERSION}
     container_name: airbyte-data-seed
@@ -30,8 +28,6 @@ services:
     # See: https://docs.docker.com/storage/volumes/#populate-a-volume-using-a-container
     volumes:
       - data:/app/seed
-    depends_on:
-      - init
   scheduler:
     image: airbyte/scheduler:${VERSION}
     container_name: airbyte-scheduler
@@ -53,9 +49,6 @@ services:
       - workspace:${WORKSPACE_ROOT}
       - ${LOCAL_ROOT}:${LOCAL_ROOT}
       - data:${CONFIG_ROOT}
-    depends_on:
-      - db
-      - seed
   server:
     image: airbyte/server:${VERSION}
     container_name: airbyte-server
@@ -74,15 +67,11 @@ services:
     volumes:
       - workspace:${WORKSPACE_ROOT}
       - data:${CONFIG_ROOT}
-    depends_on:
-      - db
   webapp:
     image: airbyte/webapp:${VERSION}
     container_name: airbyte-webapp
     ports:
       - 8000:80
-    depends_on:
-      - server
     environment:
       - TRACKING_STRATEGY=${TRACKING_STRATEGY}
       - AIRBYTE_VERSION=${VERSION}
