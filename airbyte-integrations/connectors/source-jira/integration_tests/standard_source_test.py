@@ -38,7 +38,7 @@ class SourceJiraStandardTest(StandardSourceTestIface):
         return json.loads(pkgutil.get_data(self.__class__.__module__.split(".")[0], "config.json"))
 
     def get_catalog(self) -> ConfiguredAirbyteCatalog:
-        raw_catalog = pkgutil.get_data(self.__class__.__module__.split(".")[0], "full_configured_catalog.json")
+        raw_catalog = pkgutil.get_data(self.__class__.__module__.split(".")[0], "configured_catalog.json")
         return ConfiguredAirbyteCatalog.parse_obj(json.loads(raw_catalog))
 
     def setup(self) -> None:

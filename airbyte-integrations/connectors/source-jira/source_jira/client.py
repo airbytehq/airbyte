@@ -55,13 +55,12 @@ class Client(BaseClient):
         while True:
             response = requests.get(f"{self.base_api_url}{kwargs['url']}", params=kwargs["params"], auth=self.auth)
             data = kwargs["func"](response.json())
-            print(data)
-            for d in data:
+            for obj in data:
                 if name == "issue_comments":
-                    for comment in d["fields"]["comment"]["comments"]:
+                    for comment in obj["fields"]["comment"]["comments"]:
                         yield comment
                 else:
-                    yield d
+                    yield obj
             kwargs["params"]["startAt"] += self.DEFAULT_ITEMS_PER_PAGE
             if len(data) < self.DEFAULT_ITEMS_PER_PAGE:
                 break
