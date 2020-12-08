@@ -25,7 +25,6 @@ SOFTWARE.
 import sys
 
 from base_python.entrypoint import launch
-
 from source_intercom_singer import SourceIntercomSinger
 
 if __name__ == "__main__":
