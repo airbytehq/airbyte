@@ -21,8 +21,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+from datetime import datetime, timedelta
 
-from base_python import AirbyteLogger, ConfigContainer
+from base_python import AirbyteLogger
 from base_singer import BaseSingerSource
 from tap_mixpanel.client import MixpanelClient, MixpanelError
 
@@ -36,11 +37,16 @@ class SourceMixpanelSinger(BaseSingerSource):
 
     USER_AGENT = "tap-mixpanel contact@airbyte.io"
 
+    @property
+    def default_start_date(self):
+        one_year_ago = datetime.now() - timedelta(days=365)
+        return one_year_ago.replace(microsecond=0).isoformat() + 'Z'
+
     def transform_config(self, raw_config):
         airbyte_config = {
             "user_agent": self.USER_AGENT,
             "api_secret": raw_config["api_secret"],
-            "start_date": raw_config.get("start_date"),
+            "start_date": raw_config.get("start_date", self.default_start_date),
             "date_window_size": raw_config.get("date_window_size", 30),
             "attribution_window": raw_config.get("attribution_window", 5),
             "project_timezone": raw_config.get("project_timezone", "US/Pacific"),
