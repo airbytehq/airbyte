@@ -90,10 +90,7 @@ class BaseSingerSource(SingerSource):
         except self.api_error as err:
             logger.error("Exception while connecting to the %s: %s", self.tap_name, str(err))
             # this should be in UI
-            error_msg = (
-                f"Unable to connect to the {self.tap_name} with the provided credentials. "
-                f"Error: {err}"
-            )
+            error_msg = f"Unable to connect to the {self.tap_name} with the provided credentials. Error: {err}"
             return AirbyteConnectionStatus(status=Status.FAILED, message=error_msg)
 
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)
@@ -105,24 +102,20 @@ class BaseSingerSource(SingerSource):
         return catalog
 
     def try_connect(self, logger: AirbyteLogger, config: dict):
-        """ Test provided credentials, raises self.api_error if something goes wrong
-        """
+        """Test provided credentials, raises self.api_error if something goes wrong"""
         raise NotImplementedError
 
     @property
     def api_error(self) -> Type[Exception]:
-        """ Class/Base class of the exception that will be thrown if the tap is misconfigured or service unavailable
-        """
+        """Class/Base class of the exception that will be thrown if the tap is misconfigured or service unavailable"""
         raise NotImplementedError
 
     @property
     def tap_cmd(self) -> str:
-        """ Tap command
-        """
+        """Tap command"""
         raise NotImplementedError
 
     @property
     def tap_name(self) -> str:
-        """ Tap name
-        """
+        """Tap name"""
         raise NotImplementedError
