@@ -45,4 +45,4 @@ class SourceIntercomSinger(BaseSingerSource):
         client = IntercomClient(user_agent=config["user_agent"], access_token=config["api_key"])
         ok = client.check_access_token()
         if not ok:
-            raise IntercomError(f"Unable to connect to the Intercom API. Please verify that your access token is correct.")
+            raise IntercomError(f"No data. Please check your permissions.")
