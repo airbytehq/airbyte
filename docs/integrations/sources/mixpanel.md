@@ -5,7 +5,7 @@
 The Mixpanel source supports Full Refresh syncs. That is, every time a sync is run, 
 Airbyte will copy all rows in the tables and columns you set up for replication into the destination in a new table.
 
-This Hubspot source wraps the [Singer Mixpanel Tap](https://github.com/singer-io/tap-intercom).
+This Hubspot source wraps the [Singer Mixpanel Tap](https://github.com/singer-io/tap-mixpanel).
 
 ### Output schema
 
@@ -27,7 +27,7 @@ If there are more endpoints you'd like Airbyte to support, please
 | Feature | Supported? |
 | :--- | :--- |
 | Full Refresh Sync | Yes |
-| Incremental Sync | Yes |
+| Incremental Sync | No |
 | Replicate Incremental Deletes | No |
 | SSL connection | Yes |
 

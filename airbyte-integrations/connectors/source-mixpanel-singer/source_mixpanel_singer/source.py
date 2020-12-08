@@ -22,45 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-
-from airbyte_protocol import AirbyteConnectionStatus, Status
 from base_python import AirbyteLogger, ConfigContainer
-from base_singer import SingerSource
+from base_singer import BaseSingerSource
 from tap_mixpanel.client import MixpanelClient, MixpanelError
-
-
-class BaseSingerSource(SingerSource):
-    tap_cmd = None
-    tap_name = None
-    api_error = Exception
-
-    def discover_cmd(self, logger: AirbyteLogger, config_path: str) -> str:
-        return f"{self.tap_cmd} --config {config_path} --discover"
-
-    def read_cmd(self, logger: AirbyteLogger, config_path: str, catalog_path: str, state_path: str = None) -> str:
-        args = {"--config": config_path, "--catalog": catalog_path, "--state": state_path}
-        cmd = " ".join([f"{k} {v}" for k, v in args.items() if v is not None])
-
-        return f"{self.tap_cmd} {cmd}"
-
-    def check(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
-        try:
-            json_config = config_container.rendered_config
-            self.try_connect(logger, json_config)
-        except self.api_error as err:
-            logger.error("Exception while connecting to the %s: %s", self.tap_name, str(err))
-            # this should be in UI
-            error_msg = (
-                f"Unable to connect to the {self.tap_name} with the provided credentials. "
-                "Please make sure the input credentials and environment are correct. "
-                f"Error: {err}"
-            )
-            return AirbyteConnectionStatus(status=Status.FAILED, message=error_msg)
-
-        return AirbyteConnectionStatus(status=Status.SUCCEEDED)
-
-    def try_connect(self, logger: AirbyteLogger, config: dict):
-        raise NotImplementedError
 
 
 class SourceMixpanelSinger(BaseSingerSource):
@@ -68,11 +32,14 @@ class SourceMixpanelSinger(BaseSingerSource):
     tap_name = "Mixpanel API"
     api_error = MixpanelError
     client_class = MixpanelClient
+    force_full_refresh = True
+
+    USER_AGENT = "tap-mixpanel contact@airbyte.io"
 
     def transform_config(self, raw_config):
         airbyte_config = {
-            "user_agent": "tap-mixpanel contact@airbyte.io",
-            "api_secret": raw_config["api_key"],
+            "user_agent": self.USER_AGENT,
+            "api_secret": raw_config["api_secret"],
             "start_date": raw_config.get("start_date"),
             "date_window_size": raw_config.get("date_window_size", 30),
             "attribution_window": raw_config.get("attribution_window", 5),
@@ -86,4 +53,4 @@ class SourceMixpanelSinger(BaseSingerSource):
         client = self.client_class(user_agent=config["user_agent"], api_secret=config["api_secret"])
         ok = client.check_access()
         if not ok:
-            raise self.api_error(f"Got an empty response from {self.tap_name}, check your permissions")
+            raise self.api_error("No data. Please check your permissions.")
