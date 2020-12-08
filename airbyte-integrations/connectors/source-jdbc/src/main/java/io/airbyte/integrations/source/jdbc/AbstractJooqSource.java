@@ -166,6 +166,7 @@ public abstract class AbstractJooqSource implements Source {
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
       final String streamName = airbyteStream.getStream().getName();
       if (!tableNameToTable.containsKey(streamName)) {
+        LOGGER.info("Skipping stream {} because it is not in the source", streamName);
         continue;
       }
 
