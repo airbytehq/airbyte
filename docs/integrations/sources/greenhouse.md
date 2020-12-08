@@ -7,6 +7,7 @@ The Greenhouse source supports Full Refresh syncs. That is, every time a sync is
 ### Output schema
 
 Several output streams are available from this source:
+
 * [Applications](https://developers.greenhouse.io/harvest.html#applications)
 * [Candidates](https://developers.greenhouse.io/harvest.html#candidates)
 * [Close Reasons](https://developers.greenhouse.io/harvest.html#close-reasons)
@@ -42,4 +43,5 @@ The Greenhouse connector should not run into Greenhouse API limitations under no
 
 ### Setup guide
 
-Please follow the [Greenhouse documentation for generating an API key](https://developers.greenhouse.io/harvest.html#authentication). 
+Please follow the [Greenhouse documentation for generating an API key](https://developers.greenhouse.io/harvest.html#authentication).
+
