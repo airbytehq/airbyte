@@ -21,11 +21,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+from typing import Dict
 
 import requests
-from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, Status
-from base_python import AirbyteLogger, CatalogHelper, ConfigContainer
-from base_singer import SingerSource
+from airbyte_protocol import AirbyteConnectionStatus, Status, SyncMode
+from base_singer import SingerSource, SyncModeInfo
 
 
 class SourceGithubSinger(SingerSource):
@@ -48,13 +48,38 @@ class SourceGithubSinger(SingerSource):
     def discover_cmd(self, logger, config_path) -> str:
         return f"tap-github --config {config_path} --discover"
 
-    def discover(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteCatalog:
-        catalog = super().discover(logger, config_container)
-        return CatalogHelper.coerce_catalog_as_full_refresh(catalog)
+    def sync_mode_overrides(self) -> Dict[str, SyncModeInfo]:
+        incrementals = [
+            "team_memberships",
+            "events",
+            "comments",
+            "commit_comments",
+            "project_cards",
+            "issue_milestones",
+            "commits",
+            "collaborators",
+            "stargazers",
+            "teams",
+            "review_comments",
+            "projects",
+            "issue_labels",
+            "issues",
+            "issue_events",
+            "project_columns",
+            "team_members",
+            "pull_request_reviews",
+            "pr_commits"]
+
+        full_refreshes = ["assignees", "collaborators", "pull_requests", "reviews", "releases"]
+        overrides = {}
+        for incremental in incrementals:
+            overrides[incremental] = SyncModeInfo(supported_sync_modes=[SyncMode.incremental])
+        for fr in full_refreshes:
+            overrides[fr] = SyncModeInfo(supported_sync_modes=[SyncMode.full_refresh])
+        return overrides
 
     def read_cmd(self, logger, config_path, catalog_path, state_path=None) -> str:
         config_option = f"--config {config_path}"
         properties_option = f"--properties {catalog_path}"
-        # We don't pass in state to force the tap to run in full refresh. See https://github.com/airbytehq/airbyte/pull/1179 for the kind of hack
-        # needed to make this tap support incremental.
-        return f"tap-github {config_option} {properties_option}"
+        state_option = f"--state {state_path}" if state_path else ""
+        return f"tap-github {config_option} {properties_option} {state_option}"
