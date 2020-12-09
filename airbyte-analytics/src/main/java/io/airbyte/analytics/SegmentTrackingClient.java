@@ -29,6 +29,8 @@ import com.google.common.collect.ImmutableMap;
 import com.segment.analytics.Analytics;
 import com.segment.analytics.messages.IdentifyMessage;
 import com.segment.analytics.messages.TrackMessage;
+import org.apache.logging.log4j.util.Strings;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -38,20 +40,23 @@ public class SegmentTrackingClient implements TrackingClient {
 
   private static final String SEGMENT_WRITE_KEY = "7UDdp5K55CyiGgsauOr2pNNujGvmhaeu";
   private static final String AIRBYTE_VERSION_KEY = "airbyte_version";
+  private static final String AIRBYTE_ROLE = "airbyte_role";
 
   // Analytics is threadsafe.
   private final Analytics analytics;
   private final Supplier<TrackingIdentity> identitySupplier;
+  private final Supplier<String> roleSupplier;
 
-  @VisibleForTesting
-  SegmentTrackingClient(Supplier<TrackingIdentity> identitySupplier, Analytics analytics) {
+  @VisibleForTesting SegmentTrackingClient(final Supplier<TrackingIdentity> identitySupplier,
+                                           final Analytics analytics,
+                                           final Supplier<String> roleSupplier) {
     this.identitySupplier = identitySupplier;
     this.analytics = analytics;
+    this.roleSupplier = roleSupplier;
   }
 
   public SegmentTrackingClient(Supplier<TrackingIdentity> identitySupplier) {
-    this.analytics = Analytics.builder(SEGMENT_WRITE_KEY).build();
-    this.identitySupplier = identitySupplier;
+    this(identitySupplier, Analytics.builder(SEGMENT_WRITE_KEY).build(), () -> System.getenv(AIRBYTE_ROLE.toUpperCase()));
   }
 
   @Override
@@ -62,6 +67,12 @@ public class SegmentTrackingClient implements TrackingClient {
         .put("anonymized", trackingIdentity.isAnonymousDataCollection())
         .put("subscribed_newsletter", trackingIdentity.isNews())
         .put("subscribed_security", trackingIdentity.isSecurityUpdates());
+
+    final String airbyteRole = roleSupplier.get();
+    if (!Strings.isEmpty(airbyteRole)) {
+      identityMetadataBuilder.put(AIRBYTE_ROLE, airbyteRole);
+    }
+
     trackingIdentity.getEmail().ifPresent(email -> identityMetadataBuilder.put("email", email));
 
     analytics.enqueue(IdentifyMessage.builder()
