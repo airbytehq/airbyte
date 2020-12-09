@@ -78,13 +78,13 @@ class JooqSourceTest {
   private static final List<AirbyteMessage> MESSAGES = Lists.newArrayList(
       new AirbyteMessage().withType(Type.RECORD)
           .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME)
-              .withData(Jsons.jsonNode(ImmutableMap.of("id", 1, "name", "picard", "updated_at", "2004-10-19T10:23:54-07:00")))),
+              .withData(Jsons.jsonNode(ImmutableMap.of("id", 1, "name", "picard", "updated_at", "2004-10-19")))),
       new AirbyteMessage().withType(Type.RECORD)
           .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME)
-              .withData(Jsons.jsonNode(ImmutableMap.of("id", 2, "name", "crusher", "updated_at", "2005-10-19T10:23:54-07:00")))),
+              .withData(Jsons.jsonNode(ImmutableMap.of("id", 2, "name", "crusher", "updated_at", "2005-10-19")))),
       new AirbyteMessage().withType(Type.RECORD)
           .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME)
-              .withData(Jsons.jsonNode(ImmutableMap.of("id", 3, "name", "vash", "updated_at", "2006-10-19T10:23:54-07:00")))));
+              .withData(Jsons.jsonNode(ImmutableMap.of("id", 3, "name", "vash", "updated_at", "2006-10-19")))));
 
   private JsonNode config;
 
@@ -113,9 +113,12 @@ class JooqSourceTest {
         config.get("jdbc_url").asText());
 
     database.query(ctx -> {
-      ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), updated_at TIMESTAMP WITH TIME ZONE);");
+      // todo (cgardens) - jooq has inconsistent behavior in how it picks the current timezone across mac
+      // and the CI. it does not in the DSL allow us to set a timezone. this may be the last straw for
+      // jooq, because it means we can't fully abstract over it it with this source.
+      ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), updated_at DATE);");
       ctx.fetch(
-          "INSERT INTO id_and_name (id, name, updated_at) VALUES (1,'picard', '2004-10-19T10:23:54-07:00'),  (2, 'crusher', '2005-10-19T10:23:54-07:00'), (3, 'vash', '2006-10-19T10:23:54-07:00');");
+          "INSERT INTO id_and_name (id, name, updated_at) VALUES (1,'picard', '2004-10-19'),  (2, 'crusher', '2005-10-19'), (3, 'vash', '2006-10-19');");
       return null;
     });
   }
@@ -271,8 +274,8 @@ class JooqSourceTest {
   void testIncrementalTimestampCheckCursor() throws Exception {
     incrementalCursorCheck(
         "updated_at",
-        "2005-10-19T9:23:54-07:00",
-        "2006-10-19T10:23:54-07:00",
+        "2005-10-18",
+        "2006-10-19",
         Lists.newArrayList(MESSAGES.get(1), MESSAGES.get(2)));
   }
 
@@ -305,7 +308,7 @@ class JooqSourceTest {
 
     database.query(ctx -> {
       ctx.fetch(
-          "INSERT INTO id_and_name (id, name, updated_at) VALUES (4,'riker', '2006-10-19T10:23:54-07:00'),  (5, 'data', '2006-10-19T10:23:54-07:00');");
+          "INSERT INTO id_and_name (id, name, updated_at) VALUES (4,'riker', '2006-10-19'),  (5, 'data', '2006-10-19');");
       return null;
     });
 
@@ -317,10 +320,10 @@ class JooqSourceTest {
     final List<AirbyteMessage> expectedMessages = new ArrayList<>();
     expectedMessages.add(new AirbyteMessage().withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME)
-            .withData(Jsons.jsonNode(ImmutableMap.of("id", 4, "name", "riker", "updated_at", "2006-10-19T10:23:54-07:00")))));
+            .withData(Jsons.jsonNode(ImmutableMap.of("id", 4, "name", "riker", "updated_at", "2006-10-19")))));
     expectedMessages.add(new AirbyteMessage().withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME)
-            .withData(Jsons.jsonNode(ImmutableMap.of("id", 5, "name", "data", "updated_at", "2006-10-19T10:23:54-07:00")))));
+            .withData(Jsons.jsonNode(ImmutableMap.of("id", 5, "name", "data", "updated_at", "2006-10-19")))));
     expectedMessages.add(new AirbyteMessage()
         .withType(Type.STATE)
         .withState(new AirbyteStateMessage()
