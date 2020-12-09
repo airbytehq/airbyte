@@ -48,6 +48,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 public class PostgresIntegrationTests extends TestSource {
 
   private static final String STREAM_NAME = "public.id_and_name";
+  private static final String STREAM_NAME2 = "public.starships";
 
   private PostgreSQLContainer<?> container;
   private JsonNode config;
@@ -77,7 +78,9 @@ public class PostgresIntegrationTests extends TestSource {
 
     database.query(ctx -> {
       ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
-      ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'arthur'),  (2, 'thomas'), (3, 'finn');");
+      ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
+      ctx.fetch("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
+      ctx.fetch("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
       return null;
     });
 
@@ -106,16 +109,23 @@ public class PostgresIntegrationTests extends TestSource {
 
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
-    final ConfiguredAirbyteStream configuredAirbyteStream = new ConfiguredAirbyteStream()
-        .withSyncMode(SyncMode.INCREMENTAL)
-        .withCursorField(Lists.newArrayList("id"))
-        .withStream(CatalogHelpers.createAirbyteStream(
-            STREAM_NAME,
-            Field.of("id", JsonSchemaPrimitive.NUMBER),
-            Field.of("name", JsonSchemaPrimitive.STRING))
-            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)));
-
-    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(configuredAirbyteStream));
+    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.INCREMENTAL)
+            .withCursorField(Lists.newArrayList("id"))
+            .withStream(CatalogHelpers.createAirbyteStream(
+                STREAM_NAME,
+                Field.of("id", JsonSchemaPrimitive.NUMBER),
+                Field.of("name", JsonSchemaPrimitive.STRING))
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.INCREMENTAL)
+            .withCursorField(Lists.newArrayList("id"))
+            .withStream(CatalogHelpers.createAirbyteStream(
+                STREAM_NAME2,
+                Field.of("id", JsonSchemaPrimitive.NUMBER),
+                Field.of("name", JsonSchemaPrimitive.STRING))
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
 
   @Override
