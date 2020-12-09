@@ -278,8 +278,6 @@ public class DefaultJobPersistence implements JobPersistence {
         .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE CAST(jobs.status AS VARCHAR) = 'pending' ORDER BY jobs.created_at ASC LIMIT 1")));
   }
 
-  // record) interactions are confined to this class. would like to keep it that way for now, but
-  // once we have other classes that interact with the db, this can be moved out.
   private static List<Job> getJobsFromResult(Result<Record> result) {
     final Map<Long, List<Record>> jobIdToAttempts = result.stream().collect(Collectors.groupingBy(r -> r.getValue("job_id", Long.class)));
 
@@ -290,18 +288,18 @@ public class DefaultJobPersistence implements JobPersistence {
           List<Attempt> attempts = Collections.emptyList();
           if (jobEntry.get("attempt_number") != null) {
             attempts = records.stream().map(attemptRecord -> {
-              final String outputDb = jobEntry.get("attempt_output", String.class);
+              final String outputDb = attemptRecord.get("attempt_output", String.class);
               final JobOutput output = outputDb == null ? null : Jsons.deserialize(outputDb, JobOutput.class);
               return new Attempt(
                   attemptRecord.get("attempt_number", Long.class),
                   attemptRecord.get("job_id", Long.class),
-                  Path.of(jobEntry.get("log_path", String.class)),
+                  Path.of(attemptRecord.get("log_path", String.class)),
                   output,
-                  AttemptStatus.valueOf(jobEntry.get("attempt_status", String.class).toUpperCase()),
-                  getEpoch(jobEntry, "attempt_created_at"),
-                  getEpoch(jobEntry, "attempt_updated_at"),
-                  Optional.ofNullable(jobEntry.get("attempt_ended_at"))
-                      .map(value -> getEpoch(jobEntry, "attempt_ended_at"))
+                  AttemptStatus.valueOf(attemptRecord.get("attempt_status", String.class).toUpperCase()),
+                  getEpoch(attemptRecord, "attempt_created_at"),
+                  getEpoch(attemptRecord, "attempt_updated_at"),
+                  Optional.ofNullable(attemptRecord.get("attempt_ended_at"))
+                      .map(value -> getEpoch(attemptRecord, "attempt_ended_at"))
                       .orElse(null));
             })
                 .collect(Collectors.toList());

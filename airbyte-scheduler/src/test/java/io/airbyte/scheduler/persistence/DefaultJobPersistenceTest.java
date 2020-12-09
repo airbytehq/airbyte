@@ -307,6 +307,34 @@ class DefaultJobPersistenceTest {
   }
 
   @Test
+  public void testListJobsWithMultipleAttempts() throws IOException {
+    final long jobId = jobPersistence.createJob(SCOPE, JOB_CONFIG);
+    final int attemptNumber0 = jobPersistence.createAttempt(jobId, LOG_PATH);
+    jobPersistence.failAttempt(jobId, attemptNumber0);
+    final Path secondAttemptLogPath = LOG_PATH.resolve("2");
+    final int attemptNumber1 = jobPersistence.createAttempt(jobId, secondAttemptLogPath);
+    jobPersistence.succeedAttempt(jobId, attemptNumber1);
+
+    final List<Job> actualList = jobPersistence.listJobs(JobConfig.ConfigType.SYNC, CONNECTION_ID.toString());
+
+    final Job actual = actualList.get(0);
+    final Job expected = getExpectedJobOneAttempt(jobId, JobStatus.SUCCEEDED, AttemptStatus.FAILED);
+    final Attempt expectedAttempt2 = new Attempt(
+        1L,
+        jobId,
+        secondAttemptLogPath,
+        null,
+        AttemptStatus.SUCCEEDED,
+        NOW.getEpochSecond(),
+        NOW.getEpochSecond(),
+        null);
+    expected.getAttempts().add(expectedAttempt2);
+
+    assertEquals(1, actualList.size());
+    assertEquals(expected, actual);
+  }
+
+  @Test
   public void testListJobsWithStatus() throws IOException {
     // not failed.
     jobPersistence.createJob(SCOPE, JOB_CONFIG);
