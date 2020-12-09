@@ -77,7 +77,36 @@ class Catalogs:
     airbyte_catalog: AirbyteCatalog
 
 
+@dataclass
+class SyncModeInfo:
+    supported_sync_modes: Optional[List[SyncMode]] = None
+    source_defined_cursor: Optional[bool] = None
+    default_cursor_field: Optional[List[str]] = None
+
+
+@staticmethod
+def override_sync_modes_from_metadata(airbyte_stream: AirbyteStream, metadatas: List[Dict[str, any]]):
+    stream_metadata = get_stream_level_metadata(metadatas)
+    if stream_metadata:
+        # TODO unclear from the singer spec what behavior should be if there are no valid replication keys, but forced-replication-method is INCREMENTAL.
+        #  For now requiring replication keys for a stream to be considered incremental.
+        replication_keys = stream_metadata.get("valid-replication-keys", [])
+        if len(replication_keys) > 0:
+            airbyte_stream.source_defined_cursor = True
+            airbyte_stream.supported_sync_modes = [SyncMode.full_refresh, SyncMode.incremental]
+            # TODO if there are multiple replication keys, allow configuring which one is used. For now we deterministically take the first
+            airbyte_stream.default_cursor_field = [sorted(replication_keys)[0]]
+
+@staticmethod
+def override_sync_modes_from_overrides(airbyte_stream: AirbyteStream, overrides: SyncModeInfo):
+    airbyte_stream.source_defined_cursor = overrides.source_defined_cursor or False
+    if overrides.supported_sync_modes:
+        airbyte_stream.supported_sync_modes = overrides.supported_sync_modes
+    if overrides.default_cursor_field:
+        airbyte_stream.default_cursor_field = overrides.default_cursor_field
+
 class SingerHelper:
+
     @staticmethod
     def _transform_types(stream_properties: DefaultDict):
         for field_name in stream_properties:
@@ -85,29 +114,28 @@ class SingerHelper:
             field_object["type"] = SingerHelper._parse_type(field_object["type"])
 
     @staticmethod
-    def singer_catalog_to_airbyte_catalog(singer_catalog: Dict[str, any]) -> AirbyteCatalog:
+    def singer_catalog_to_airbyte_catalog(singer_catalog: Dict[str, any], sync_mode_overrides: Dict[str, SyncModeInfo]) -> AirbyteCatalog:
+        """
+        :param singer_catalog:
+        :param sync_mode_overrides: A dict from stream name to the sync modes it should use. Each stream in this dict must exist in the Singer catalog,
+        but not every stream in the catalog should exist in this
+        :return: Airbyte Catalog
+        """
         airbyte_streams = []
         for stream in singer_catalog.get("streams"):
             name = stream.get("stream")
             schema = stream.get("schema")
             airbyte_stream = AirbyteStream(name=name, json_schema=schema)
-            metadatas = stream.get("metadata", [])
-            stream_metadata = get_stream_level_metadata(metadatas)
-            if stream_metadata:
-                # TODO unclear from the singer spec what behavior should be if there are no valid replication keys, but forced-replication-method is INCREMENTAL.
-                #  For now requiring replication keys for a stream to be considered incremental.
-                replication_keys = stream_metadata.get("valid-replication-keys", [])
-                if len(replication_keys) > 0:
-                    airbyte_stream.source_defined_cursor = True
-                    airbyte_stream.supported_sync_modes = [SyncMode.full_refresh, SyncMode.incremental]
-                    # TODO if there are multiple replication keys, allow configuring which one is used. For now we deterministically take the first
-                    airbyte_stream.default_cursor_field = [sorted(replication_keys)[0]]
+            if name in sync_mode_overrides:
+                override_sync_modes_from_overrides(airbyte_stream, sync_mode_overrides[name])
+            else:
+                override_sync_modes_from_metadata(airbyte_stream, stream.get("metadata", []))
 
             airbyte_streams += [airbyte_stream]
         return AirbyteCatalog(streams=airbyte_streams)
 
     @staticmethod
-    def get_catalogs(logger, shell_command) -> Catalogs:
+    def get_catalogs(logger, shell_command: str, sync_mode_overrides: Dict[str, SyncModeInfo]) -> Catalogs:
         completed_process = subprocess.run(
             shell_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True
         )
@@ -116,7 +144,7 @@ class SingerHelper:
             logger.log_by_prefix(line, "ERROR")
 
         singer_catalog = json.loads(completed_process.stdout)
-        airbyte_catalog = SingerHelper.singer_catalog_to_airbyte_catalog(singer_catalog)
+        airbyte_catalog = SingerHelper.singer_catalog_to_airbyte_catalog(singer_catalog, sync_mode_overrides)
 
         return Catalogs(singer_catalog=singer_catalog, airbyte_catalog=airbyte_catalog)
 

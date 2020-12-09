@@ -22,12 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Generator, Type
+from typing import Generator, Type, Dict
 
 from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status
 from base_python import AirbyteLogger, CatalogHelper, ConfigContainer, Source
 
-from .singer_helpers import SingerHelper
+from .singer_helpers import SingerHelper, Catalogs, SyncModeInfo
 
 
 class SingerSource(Source):
@@ -46,14 +46,17 @@ class SingerSource(Source):
         """
         raise NotImplementedError
 
+    def _discover_internal(self, logger: AirbyteLogger, config_container: ConfigContainer) -> Catalogs:
+        cmd = self.discover_cmd(logger, config_container.rendered_config_path)
+        catalogs = SingerHelper.get_catalogs(logger, cmd, self.sync_mode_overrides)
+
+        return catalogs
+
     def discover(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteCatalog:
         """
         Implements the parent class discover method.
         """
-        cmd = self.discover_cmd(logger, config_container.rendered_config_path)
-        catalogs = SingerHelper.get_catalogs(logger, cmd)
-
-        return catalogs.airbyte_catalog
+        return self._discover_internal(logger, config_container).airbyte_catalog
 
     def read(
         self, logger: AirbyteLogger, config_container: ConfigContainer, catalog_path: str, state_path: str = None
@@ -61,13 +64,19 @@ class SingerSource(Source):
         """
         Implements the parent class read method.
         """
-        discover_cmd = self.discover_cmd(logger, config_container.rendered_config_path)
-        catalogs = SingerHelper.get_catalogs(logger, discover_cmd)
+        catalogs = self._discover_internal(logger, config_container)
         masked_airbyte_catalog = ConfiguredAirbyteCatalog.parse_obj(self.read_config(catalog_path))
         selected_singer_catalog_path = SingerHelper.create_singer_catalog_with_selection(masked_airbyte_catalog, catalogs.singer_catalog)
 
         read_cmd = self.read_cmd(logger, config_container.rendered_config_path, selected_singer_catalog_path, state_path)
         return SingerHelper.read(logger, read_cmd)
+
+    @property
+    def sync_mode_overrides(self) -> Dict[str, SyncModeInfo]:
+        """
+        :return: A dict from stream name to the sync modes that should be applied to this stream.
+        """
+        return {}
 
 
 class BaseSingerSource(SingerSource):

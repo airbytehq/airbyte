@@ -21,11 +21,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+from typing import Dict
 
 import requests
-from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, Status
-from base_python import AirbyteLogger, CatalogHelper, ConfigContainer
-from base_singer import SingerSource
+from airbyte_protocol import AirbyteConnectionStatus, Status, SyncMode
+from base_singer import SingerSource, SyncModeInfo
 
 
 class SourceStripeSinger(SingerSource):
@@ -46,11 +46,30 @@ class SourceStripeSinger(SingerSource):
     def discover_cmd(self, logger, config_path) -> str:
         return f"tap-stripe --config {config_path} --discover"
 
-    def discover(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteCatalog:
-        catalog = super().discover(logger, config_container)
-        return CatalogHelper.coerce_catalog_as_full_refresh(catalog)
+    def sync_mode_overrides(self) -> Dict[str, SyncModeInfo]:
+        streams = [
+            "charges",
+            "customers",
+            "coupons",
+            "disputes",
+            "events",
+            "plans",
+            "invoices",
+            "invoice_items",
+            "invoice_line_items",
+            "subscriptions",
+            "subscription_items",
+            "balance_transactions",
+            "payouts",
+            "payout_transactions",
+            "products"
+            "transfers",
+        ]
+        #  All streams are incremental only
+        return {stream: SyncModeInfo(supported_sync_modes=[SyncMode.incremental]) for stream in streams}
 
     def read_cmd(self, logger, config_path, catalog_path, state_path=None) -> str:
         config_option = f"--config {config_path}"
         catalog_option = f"--catalog {catalog_path}"
-        return f"tap-stripe {config_option} {catalog_option}"
+        state_option = f"--state {state_path}" if state_path else ""
+        return f"tap-stripe {config_option} {catalog_option} {state_option}"
