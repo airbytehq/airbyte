@@ -39,14 +39,15 @@ import io.airbyte.api.model.CheckConnectionRead;
 import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.DestinationIdRequestBody;
-import io.airbyte.api.model.JobStatusRead;
-import io.airbyte.api.model.JobStatusReadStatus;
+import io.airbyte.api.model.JobInfoRead;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.JobConfig;
+import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardCheckConnectionOutput;
@@ -293,10 +294,14 @@ class SchedulerHandlerTest {
     when(jobCreator.createSyncJob(source, destination, standardSync, SOURCE_DOCKER_IMAGE, DESTINATION_DOCKER_IMAGE))
         .thenReturn(JOB_ID);
     when(jobPersistence.getJob(JOB_ID)).thenReturn(inProgressJob).thenReturn(completedJob);
+    when(completedJob.getScope()).thenReturn("cat:12");
+    final JobConfig jobConfig = mock(JobConfig.class);
+    when(completedJob.getConfig()).thenReturn(jobConfig);
+    when(jobConfig.getConfigType()).thenReturn(ConfigType.SYNC);
 
-    final JobStatusRead jobStatusRead = schedulerHandler.syncConnection(request);
+    final JobInfoRead jobStatusRead = schedulerHandler.syncConnection(request);
 
-    assertEquals(JobStatusReadStatus.SUCCEEDED, jobStatusRead.getStatus());
+    assertEquals(io.airbyte.api.model.JobStatus.SUCCEEDED, jobStatusRead.getJob().getStatus());
     verify(configRepository).getStandardSync(standardSync.getConnectionId());
     verify(configRepository).getSourceConnection(standardSync.getSourceId());
     verify(configRepository).getDestinationConnection(standardSync.getDestinationId());
@@ -307,6 +312,7 @@ class SchedulerHandlerTest {
   @Test
   void testEnumConversion() {
     assertTrue(Enums.isCompatible(StandardCheckConnectionOutput.Status.class, CheckConnectionRead.StatusEnum.class));
+    assertTrue(Enums.isCompatible(JobStatus.class, io.airbyte.api.model.JobStatus.class));
   }
 
 }
