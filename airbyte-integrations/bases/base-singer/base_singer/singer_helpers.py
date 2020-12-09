@@ -97,6 +97,7 @@ def override_sync_modes_from_metadata(airbyte_stream: AirbyteStream, metadatas: 
             # TODO if there are multiple replication keys, allow configuring which one is used. For now we deterministically take the first
             airbyte_stream.default_cursor_field = [sorted(replication_keys)[0]]
 
+
 @staticmethod
 def override_sync_modes_from_overrides(airbyte_stream: AirbyteStream, overrides: SyncModeInfo):
     airbyte_stream.source_defined_cursor = overrides.source_defined_cursor or False
@@ -105,8 +106,8 @@ def override_sync_modes_from_overrides(airbyte_stream: AirbyteStream, overrides:
     if overrides.default_cursor_field:
         airbyte_stream.default_cursor_field = overrides.default_cursor_field
 
-class SingerHelper:
 
+class SingerHelper:
     @staticmethod
     def _transform_types(stream_properties: DefaultDict):
         for field_name in stream_properties:

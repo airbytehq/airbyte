@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
 from typing import Dict
 
 import requests
@@ -62,8 +63,7 @@ class SourceStripeSinger(SingerSource):
             "balance_transactions",
             "payouts",
             "payout_transactions",
-            "products"
-            "transfers",
+            "products" "transfers",
         ]
         #  All streams are incremental only
         return {stream: SyncModeInfo(supported_sync_modes=[SyncMode.incremental]) for stream in streams}
