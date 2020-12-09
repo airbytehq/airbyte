@@ -24,13 +24,14 @@
 
 package io.airbyte.integrations.standardtest.source;
 
+import static io.airbyte.protocol.models.SyncMode.FULL_REFRESH;
+import static io.airbyte.protocol.models.SyncMode.INCREMENTAL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.StandardCheckConnectionInput;
@@ -64,7 +65,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterEach;
@@ -265,10 +265,10 @@ public abstract class TestSource {
       return;
     }
 
-    final ConfiguredAirbyteCatalog configuredAirbyteCatalog = withSourceDefinedCursors(getConfiguredCatalog());
-    final List<AirbyteMessage> airbyteMessages = runRead(configuredAirbyteCatalog, getState());
-    final List<AirbyteRecordMessage> recordMessages = filterRecords(airbyteMessages);
-    final List<AirbyteStateMessage> stateMessages = airbyteMessages
+    ConfiguredAirbyteCatalog configuredAirbyteCatalog = withSourceDefinedCursors(getConfiguredCatalog());
+    List<AirbyteMessage> airbyteMessages = runRead(configuredAirbyteCatalog, getState());
+    List<AirbyteRecordMessage> recordMessages = filterRecords(airbyteMessages);
+    List<AirbyteStateMessage> stateMessages = airbyteMessages
         .stream()
         .filter(m -> m.getType() == Type.STATE)
         .map(AirbyteMessage::getState)
@@ -314,18 +314,10 @@ public abstract class TestSource {
   private ConfiguredAirbyteCatalog withSourceDefinedCursors(ConfiguredAirbyteCatalog catalog) {
     ConfiguredAirbyteCatalog clone = Jsons.clone(catalog);
     for (ConfiguredAirbyteStream configuredStream : clone.getStreams()) {
-      if (configuredStream.getStream().getSupportedSyncModes().contains(io.airbyte.protocol.models.SyncMode.INCREMENTAL)) {
-        configuredStream.setSyncMode(io.airbyte.protocol.models.SyncMode.INCREMENTAL);
-        if (Optional.ofNullable(configuredStream.getStream().getSourceDefinedCursor()).orElse(false)) {
-          configuredStream.setCursorField(configuredStream.getStream().getDefaultCursorField());
-        } else {
-          // todo (cgardens) - this is really too terrible. there are some column types that aren't supported
-          // so you just need to order your columns such that we pick a valid one. too much guessing here. got
-          // to fix.
-          // see cursor field to an arbitrary field in the stream.
-          configuredStream
-              .setCursorField(Lists.newArrayList(new ArrayList<>(Jsons.keys(configuredStream.getStream().getJsonSchema().get("properties"))).get(0)));
-        }
+      if (configuredStream.getSyncMode() == INCREMENTAL
+          && configuredStream.getStream().getSourceDefinedCursor() != null
+          && configuredStream.getStream().getSourceDefinedCursor()) {
+        configuredStream.setCursorField(configuredStream.getStream().getDefaultCursorField());
       }
     }
     return clone;
@@ -334,8 +326,8 @@ public abstract class TestSource {
   private ConfiguredAirbyteCatalog withFullRefreshSyncModes(ConfiguredAirbyteCatalog catalog) {
     ConfiguredAirbyteCatalog clone = Jsons.clone(catalog);
     for (ConfiguredAirbyteStream configuredStream : clone.getStreams()) {
-      if (configuredStream.getStream().getSupportedSyncModes().contains(io.airbyte.protocol.models.SyncMode.FULL_REFRESH)) {
-        configuredStream.setSyncMode(io.airbyte.protocol.models.SyncMode.FULL_REFRESH);
+      if (configuredStream.getStream().getSupportedSyncModes().contains(FULL_REFRESH)) {
+        configuredStream.setSyncMode(FULL_REFRESH);
       }
     }
     return clone;
@@ -344,7 +336,7 @@ public abstract class TestSource {
   private boolean sourceSupportsIncremental() throws Exception {
     ConfiguredAirbyteCatalog catalog = getConfiguredCatalog();
     for (ConfiguredAirbyteStream stream : catalog.getStreams()) {
-      if (stream.getStream().getSupportedSyncModes().contains(io.airbyte.protocol.models.SyncMode.INCREMENTAL)) {
+      if (stream.getStream().getSupportedSyncModes().contains(INCREMENTAL)) {
         return true;
       }
     }

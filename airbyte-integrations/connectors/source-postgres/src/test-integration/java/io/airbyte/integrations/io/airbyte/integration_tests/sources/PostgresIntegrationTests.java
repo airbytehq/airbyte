@@ -108,6 +108,7 @@ public class PostgresIntegrationTests extends TestSource {
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
     final ConfiguredAirbyteStream configuredAirbyteStream = new ConfiguredAirbyteStream()
         .withSyncMode(SyncMode.INCREMENTAL)
+        .withCursorField(Lists.newArrayList("id"))
         .withStream(CatalogHelpers.createAirbyteStream(
             STREAM_NAME,
             Field.of("id", JsonSchemaPrimitive.NUMBER),
