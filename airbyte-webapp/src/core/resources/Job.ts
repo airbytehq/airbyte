@@ -23,17 +23,16 @@ export interface Attempt {
   endedAt: number;
   bytesSynced: number;
   recordsSynced: number;
-  logs?: Logs;
 }
 
 export interface Job {
   job: JobItem;
+  logsByAttempt: { [key: string]: Logs };
   attempts: Attempt[];
 }
 
 // TODO: fix shape ! ! !
 export default class JobResource extends BaseResource implements Job {
-  readonly id: number = 0; // TODO: delete ? ? ?
   readonly job: JobItem = {
     id: 0,
     configType: "",
@@ -44,9 +43,10 @@ export default class JobResource extends BaseResource implements Job {
     status: ""
   };
   readonly attempts: Attempt[] = [];
+  readonly logsByAttempt: { [key: string]: Logs } = {};
 
   pk() {
-    return this.id?.toString();
+    return this.job?.id?.toString();
   }
 
   static urlRoot = "jobs";
@@ -70,10 +70,7 @@ export default class JobResource extends BaseResource implements Job {
         );
 
         return {
-          jobs: jobsResult.jobs.map((item: any) => ({
-            ...item,
-            id: item.job.id
-          }))
+          jobs: jobsResult.jobs
         };
       },
       schema: { jobs: [this.asSchema()] }
@@ -92,15 +89,19 @@ export default class JobResource extends BaseResource implements Job {
           params
         );
 
-        const attemptsValue = jobResult.attempts.map((attemptItem: any) => ({
-          ...attemptItem.attempt,
-          logs: attemptItem.logs
-        }));
+        const attemptsValue = jobResult.attempts.map(
+          (attemptItem: any) => attemptItem.attempt
+        );
 
         return {
-          id: jobResult.job.id,
           job: jobResult.job,
-          attempts: attemptsValue
+          attempts: attemptsValue,
+          logsByAttempt: Object.fromEntries(
+            jobResult.attempts.map((attemptItem: any) => [
+              attemptItem.attempt.id,
+              attemptItem.logs
+            ])
+          )
         };
       },
       schema: this.asSchema()

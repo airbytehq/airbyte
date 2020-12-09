@@ -3,7 +3,7 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
-import { useFetcher, useResource } from "rest-hooks";
+import { useFetcher, useResource, useSubscription } from "rest-hooks";
 
 import ContentCard from "../../../../../components/ContentCard";
 import Button from "../../../../../components/Button";
@@ -53,11 +53,10 @@ const StatusView: React.FC<IProps> = ({ connection, frequencyText }) => {
     configId: connection.connectionId,
     configType: "sync"
   });
-  // TODO: return Subscription
-  // useSubscription(JobResource.listShape(), {
-  //   configId: connection.connectionId,
-  //   configType: "sync"
-  // });
+  useSubscription(JobResource.listShape(), {
+    configId: connection.connectionId,
+    configType: "sync"
+  });
 
   const SyncConnection = useFetcher(ConnectionResource.syncShape());
 

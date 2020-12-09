@@ -73,9 +73,8 @@ const JobLogs: React.FC<IProps> = ({ id, jobIsFailed }) => {
       ) : null}
 
       <Logs>
-        {job.attempts[attemptNumber]?.logs &&
-        job.attempts[attemptNumber]?.logs?.logLines?.length ? (
-          job.attempts[attemptNumber]?.logs?.logLines.map((item, key) => (
+        {job.logsByAttempt[attemptNumber]?.logLines?.length ? (
+          job.logsByAttempt[attemptNumber].logLines.map((item, key) => (
             <div key={`log-${id}-${key}`}>{item}</div>
           ))
         ) : (
