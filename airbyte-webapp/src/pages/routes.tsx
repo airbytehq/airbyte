@@ -138,9 +138,7 @@ export const Routing = () => {
 
   useEffect(() => {
     if (workspace) {
-      AnalyticsService.identify({
-        customerId: workspace.customerId
-      });
+      AnalyticsService.identify(workspace.customerId);
     }
   }, [workspace]);
 
