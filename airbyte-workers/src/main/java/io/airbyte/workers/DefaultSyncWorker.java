@@ -109,9 +109,9 @@ public class DefaultSyncWorker implements SyncWorker {
         throw new WorkerException("Normalization Failed.");
       }
     } catch (Exception e) {
-    LOGGER.error("Normalization Failed.", e);
-    return new OutputAndStatus<>(JobStatus.FAILED, null);
-  }
+      LOGGER.error("Normalization Failed.", e);
+      return new OutputAndStatus<>(JobStatus.FAILED, null);
+    }
 
     final StandardSyncSummary summary = new StandardSyncSummary()
         .withStatus(cancelled.get() ? Status.FAILED : Status.COMPLETED)
