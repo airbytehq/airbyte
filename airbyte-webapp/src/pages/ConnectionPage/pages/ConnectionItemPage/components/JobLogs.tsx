@@ -13,7 +13,7 @@ type IProps = {
 };
 
 const Logs = styled.div`
-  padding: 15px 42px 20px;
+  padding: 11px 42px 20px;
   font-size: 12px;
   line-height: 18px;
   color: ${({ theme }) => theme.darkPrimaryColor};
@@ -27,9 +27,12 @@ const Tabs = styled.div<{ isFailed?: boolean }>`
       isFailed ? theme.dangerTransparentColor : theme.greyColor20};
 `;
 
-const CenteredAttemptDetails = styled(AttemptDetails)`
+const CenteredDetails = styled.div`
   text-align: center;
   padding-top: 9px;
+  font-size: 12px;
+  line-height: 28px;
+  color: ${({ theme }) => theme.greyColor40};
 `;
 
 const JobLogs: React.FC<IProps> = ({ id, jobIsFailed }) => {
@@ -68,10 +71,14 @@ const JobLogs: React.FC<IProps> = ({ id, jobIsFailed }) => {
               data={data}
             />
           </Tabs>
-          <CenteredAttemptDetails attempt={job.attempts[attemptNumber]} />
         </>
       ) : null}
-
+      <CenteredDetails>
+        {job.attempts.length > 1 && (
+          <AttemptDetails attempt={job.attempts[attemptNumber]} />
+        )}
+        <div>{`/tmp/workspace/${id}/${job.attempts[attemptNumber].id}/logs.log.`}</div>
+      </CenteredDetails>
       <Logs>
         {job.logsByAttempt[attemptNumber]?.logLines?.length ? (
           job.logsByAttempt[attemptNumber].logLines.map((item, key) => (
