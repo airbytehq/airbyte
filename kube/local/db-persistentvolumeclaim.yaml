@@ -1,9 +1,6 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  creationTimestamp: null
-  labels:
-    io.kompose.service: db
   name: db
 spec:
   accessModes:
@@ -11,4 +8,3 @@ spec:
   resources:
     requests:
       storage: 100Mi
-status: {}

@@ -67,6 +67,7 @@ services:
     volumes:
       - workspace:${WORKSPACE_ROOT}
       - data:${CONFIG_ROOT}
+      - /tmp/jared_data:${CONFIG_ROOT}
   webapp:
     image: airbyte/webapp:${VERSION}
     container_name: airbyte-webapp

@@ -1,10 +1,6 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    kompose.cmd: kompose convert -f kube/docker-compose-resolved.yaml -o kube/local
-    kompose.version: 1.21.0 (HEAD)
-  creationTimestamp: null
   labels:
     io.kompose.service: seed
   name: seed
@@ -17,10 +13,6 @@ spec:
     type: Recreate
   template:
     metadata:
-      annotations:
-        kompose.cmd: kompose convert -f kube/docker-compose-resolved.yaml -o kube/local
-        kompose.version: 1.21.0 (HEAD)
-      creationTimestamp: null
       labels:
         io.kompose.service: seed
     spec:
@@ -38,4 +30,3 @@ spec:
       - name: data
         persistentVolumeClaim:
           claimName: data
-status: {}

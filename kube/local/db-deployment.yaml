@@ -1,12 +1,6 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    kompose.cmd: kompose convert -f kube/docker-compose-resolved.yaml -o kube/local
-    kompose.version: 1.21.0 (HEAD)
-  creationTimestamp: null
-  labels:
-    io.kompose.service: db
   name: db
 spec:
   replicas: 1
@@ -16,13 +10,6 @@ spec:
   strategy:
     type: Recreate
   template:
-    metadata:
-      annotations:
-        kompose.cmd: kompose convert -f kube/docker-compose-resolved.yaml -o kube/local
-        kompose.version: 1.21.0 (HEAD)
-      creationTimestamp: null
-      labels:
-        io.kompose.service: db
     spec:
       containers:
       - env:
