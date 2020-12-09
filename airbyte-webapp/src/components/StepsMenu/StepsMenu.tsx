@@ -8,6 +8,7 @@ type IProps = {
   data: Array<{
     id: string;
     name: string | React.ReactNode;
+    status?: string;
     onSelect?: () => void;
   }>;
   activeStep?: string;
@@ -18,6 +19,7 @@ const Content = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: center;
+  font-family: ${({ theme }) => theme.regularFont};
 `;
 
 const StepsMenu: React.FC<IProps> = ({
@@ -30,6 +32,7 @@ const StepsMenu: React.FC<IProps> = ({
     <Content>
       {data.map((item, key) => (
         <Step
+          status={item.status}
           lightMode={lightMode}
           key={item.id}
           num={key + 1}

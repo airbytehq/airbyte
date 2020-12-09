@@ -132,6 +132,8 @@
   "sources.second": "{second}s",
   "sources.noDestinations": "No destinations yet",
   "sources.addDestinationReplicateData": "Add destinations where to replicate data to.",
+  "sources.attemptNum": "Attempt {number}",
+  "sources.countAttempts": "{count} attempts",
 
   "destination.destinationSettings": "Destination Settings",
   "destination.newDestination": "+ new destination",

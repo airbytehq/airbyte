@@ -6,7 +6,6 @@ import {
   FormattedTimeParts
 } from "react-intl";
 import styled from "styled-components";
-import dayjs from "dayjs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
 
@@ -18,6 +17,7 @@ import { Row, Cell } from "../../../../../components/SimpleTableComponents";
 import StatusIcon from "../../../../../components/StatusIcon";
 import Spinner from "../../../../../components/Spinner";
 import JobLogs from "./JobLogs";
+import AttemptDetails from "./AttemptDetails";
 
 type IProps = {
   job: JobApiItem;
@@ -69,10 +69,10 @@ const LoadLogs = styled.div`
   min-height: 58px;
 `;
 
-const CompletedTime = styled.div`
+const AttemptCount = styled.div`
   font-size: 12px;
   line-height: 15px;
-  color: ${({ theme }) => theme.greyColor40};
+  color: ${({ theme }) => theme.dangerColor};
 `;
 
 const Arrow = styled.div<{
@@ -113,16 +113,9 @@ const itemConfig = {
 
 const ContentWrapper = pose.div(itemConfig);
 
-const JobItem: React.FC<IProps> = ({ job }) => {
+const JobItem: React.FC<IProps> = ({ job, attempts }) => {
   const [isOpen, setIsOpen] = useState(false);
   const onExpand = () => setIsOpen(!isOpen);
-
-  const date1 = dayjs(job.createdAt * 1000);
-  const date2 = dayjs(job.updatedAt * 1000);
-  const hours = Math.abs(date2.diff(date1, "hour"));
-  const minutes = Math.abs(date2.diff(date1, "minute")) - hours * 60;
-  const seconds =
-    Math.abs(date2.diff(date1, "second")) - minutes * 60 - hours * 3600;
 
   const isFailed = job.status === "failed";
   return (
@@ -132,6 +125,13 @@ const JobItem: React.FC<IProps> = ({ job }) => {
           <Title isFailed={isFailed}>
             {isFailed && <ErrorSign />}
             <FormattedMessage id={`sources.${job.status}`} />
+            <AttemptDetails
+              attempt={
+                attempts.length > 0
+                  ? attempts[attempts.length - 1]
+                  : attempts[0]
+              }
+            />
           </Title>
         </Cell>
         <Cell>
@@ -151,21 +151,14 @@ const JobItem: React.FC<IProps> = ({ job }) => {
           >
             {parts => <span>{`${parts[0].value}/${parts[2].value}`}</span>}
           </FormattedDateParts>
-          <CompletedTime>
-            {hours ? (
-              <FormattedMessage id="sources.hour" values={{ hour: hours }} />
-            ) : null}
-            {hours || minutes ? (
+          {attempts.length > 1 ? (
+            <AttemptCount>
               <FormattedMessage
-                id="sources.minute"
-                values={{ minute: minutes }}
+                id="sources.countAttempts"
+                values={{ count: attempts.length }}
               />
-            ) : null}
-            <FormattedMessage
-              id="sources.second"
-              values={{ second: seconds }}
-            />
-          </CompletedTime>
+            </AttemptCount>
+          ) : null}
           <Arrow isOpen={isOpen} isFailed={isFailed}>
             <FontAwesomeIcon icon={faAngleDown} />
           </Arrow>
@@ -180,7 +173,7 @@ const JobItem: React.FC<IProps> = ({ job }) => {
               </LoadLogs>
             }
           >
-            {isOpen && <JobLogs id={job.id} />}
+            {isOpen && <JobLogs id={job.id} jobIsFailed={isFailed} />}
           </Suspense>
         </div>
       </ContentWrapper>

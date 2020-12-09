@@ -11,7 +11,6 @@ type IProps = {
 const Content = styled.div``;
 
 const JobsList: React.FC<IProps> = ({ jobs }) => {
-  console.log(jobs);
   return (
     <Content>
       {jobs.map(item => (
