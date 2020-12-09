@@ -314,7 +314,9 @@ public abstract class TestSource {
   private ConfiguredAirbyteCatalog withSourceDefinedCursors(ConfiguredAirbyteCatalog catalog) {
     ConfiguredAirbyteCatalog clone = Jsons.clone(catalog);
     for (ConfiguredAirbyteStream configuredStream : clone.getStreams()) {
-      if (configuredStream.getSyncMode() == INCREMENTAL && configuredStream.getStream().getSourceDefinedCursor()) {
+      if (configuredStream.getSyncMode() == INCREMENTAL
+          && configuredStream.getStream().getSourceDefinedCursor() != null
+          && configuredStream.getStream().getSourceDefinedCursor()) {
         configuredStream.setCursorField(configuredStream.getStream().getDefaultCursorField());
       }
     }
