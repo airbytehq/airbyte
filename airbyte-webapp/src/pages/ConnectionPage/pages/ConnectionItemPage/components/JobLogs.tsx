@@ -5,6 +5,7 @@ import styled from "styled-components";
 
 import JobResource from "../../../../../core/resources/Job";
 import StepsMenu from "../../../../../components/StepsMenu";
+import AttemptDetails from "./AttemptDetails";
 
 type IProps = {
   id: number;
@@ -12,7 +13,7 @@ type IProps = {
 };
 
 const Logs = styled.div`
-  padding: 20px 42px;
+  padding: 15px 42px 20px;
   font-size: 12px;
   line-height: 18px;
   color: ${({ theme }) => theme.darkPrimaryColor};
@@ -24,6 +25,11 @@ const Tabs = styled.div<{ isFailed?: boolean }>`
   border-bottom: 1px solid
     ${({ theme, isFailed }) =>
       isFailed ? theme.dangerTransparentColor : theme.greyColor20};
+`;
+
+const CenteredAttemptDetails = styled(AttemptDetails)`
+  text-align: center;
+  padding-top: 9px;
 `;
 
 const JobLogs: React.FC<IProps> = ({ id, jobIsFailed }) => {
@@ -53,15 +59,19 @@ const JobLogs: React.FC<IProps> = ({ id, jobIsFailed }) => {
   return (
     <>
       {job.attempts.length > 1 ? (
-        <Tabs isFailed={jobIsFailed}>
-          <StepsMenu
-            lightMode
-            activeStep={attemptNumber}
-            onSelect={setAttemptNumber}
-            data={data}
-          />
-        </Tabs>
+        <>
+          <Tabs isFailed={jobIsFailed}>
+            <StepsMenu
+              lightMode
+              activeStep={attemptNumber}
+              onSelect={setAttemptNumber}
+              data={data}
+            />
+          </Tabs>
+          <CenteredAttemptDetails attempt={job.attempts[attemptNumber]} />
+        </>
       ) : null}
+
       <Logs>
         {job.attempts[attemptNumber]?.logs &&
         job.attempts[attemptNumber]?.logs?.logLines?.length ? (

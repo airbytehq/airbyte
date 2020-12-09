@@ -6,17 +6,38 @@ import dayjs from "dayjs";
 import { Attempt } from "../../../../../core/resources/Job";
 
 type IProps = {
+  className?: string;
   attempt: Attempt;
 };
 
-const CompletedTime = styled.div`
+const Details = styled.div`
   font-size: 12px;
   line-height: 15px;
   color: ${({ theme }) => theme.greyColor40};
 `;
 
-// TODO: add other data (size and records)
-const AttemptDetails: React.FC<IProps> = ({ attempt }) => {
+const AttemptDetails: React.FC<IProps> = ({ attempt, className }) => {
+  const formatBytes = (bytes: number) => {
+    if (bytes === 0) {
+      return (
+        <FormattedMessage id="sources.countBytes" values={{ count: bytes }} />
+      );
+    }
+
+    const k = 1024;
+    const dm = 2;
+    const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    const result = parseFloat((bytes / Math.pow(k, i)).toFixed(dm));
+
+    return (
+      <FormattedMessage
+        id={`sources.count${sizes[i]}`}
+        values={{ count: result }}
+      />
+    );
+  };
+
   const date1 = dayjs(attempt.createdAt * 1000);
   const date2 = dayjs(attempt.updatedAt * 1000);
   const hours = Math.abs(date2.diff(date1, "hour"));
@@ -25,15 +46,25 @@ const AttemptDetails: React.FC<IProps> = ({ attempt }) => {
     Math.abs(date2.diff(date1, "second")) - minutes * 60 - hours * 3600;
 
   return (
-    <CompletedTime>
-      {hours ? (
-        <FormattedMessage id="sources.hour" values={{ hour: hours }} />
-      ) : null}
-      {hours || minutes ? (
-        <FormattedMessage id="sources.minute" values={{ minute: minutes }} />
-      ) : null}
-      <FormattedMessage id="sources.second" values={{ second: seconds }} />
-    </CompletedTime>
+    <Details className={className}>
+      <span>{formatBytes(attempt.bytesSynced)} | </span>
+      <span>
+        <FormattedMessage
+          id="sources.countRecords"
+          values={{ count: attempt.recordsSynced }}
+        />{" "}
+        |{" "}
+      </span>
+      <span>
+        {hours ? (
+          <FormattedMessage id="sources.hour" values={{ hour: hours }} />
+        ) : null}
+        {hours || minutes ? (
+          <FormattedMessage id="sources.minute" values={{ minute: minutes }} />
+        ) : null}
+        <FormattedMessage id="sources.second" values={{ second: seconds }} />
+      </span>
+    </Details>
   );
 };
 
