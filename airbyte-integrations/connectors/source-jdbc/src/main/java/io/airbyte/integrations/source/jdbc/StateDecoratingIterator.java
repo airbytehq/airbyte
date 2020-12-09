@@ -88,7 +88,6 @@ class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> implement
       return new AirbyteMessage().withType(Type.STATE).withState(stateMessage);
     } else {
       return endOfData();
-
     }
   }
 
