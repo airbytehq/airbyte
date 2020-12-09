@@ -95,17 +95,21 @@ public class DefaultSyncWorker implements SyncWorker {
 
       destination.notifyEndOfStream();
 
-      try (normalizationRunner) {
-        LOGGER.info("Running normalization.");
-        normalizationRunner.start();
-        final Path normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"));
-        if (!normalizationRunner.normalize(normalizationRoot, syncInput.getDestinationConnection().getConfiguration(), syncInput.getCatalog())) {
-          throw new WorkerException("Normalization Failed.");
-        }
-      }
     } catch (Exception e) {
       LOGGER.error("Sync worker failed.", e);
 
+      return new OutputAndStatus<>(JobStatus.FAILED, null);
+    }
+
+    try (normalizationRunner) {
+      LOGGER.info("Running normalization.");
+      normalizationRunner.start();
+      final Path normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"));
+      if (!normalizationRunner.normalize(normalizationRoot, syncInput.getDestinationConnection().getConfiguration(), syncInput.getCatalog())) {
+        throw new WorkerException("Normalization Failed.");
+      }
+    } catch (Exception e) {
+      LOGGER.error("Normalization Failed.", e);
       return new OutputAndStatus<>(JobStatus.FAILED, null);
     }
 
