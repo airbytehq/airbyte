@@ -84,21 +84,21 @@ class SyncModeInfo:
     default_cursor_field: Optional[List[str]] = None
 
 
-@staticmethod
-def override_sync_modes_from_metadata(airbyte_stream: AirbyteStream, metadatas: List[Dict[str, any]]):
+def set_sync_modes_from_metadata(airbyte_stream: AirbyteStream, metadatas: List[Dict[str, any]]):
     stream_metadata = get_stream_level_metadata(metadatas)
     if stream_metadata:
-        # TODO unclear from the singer spec what behavior should be if there are no valid replication keys, but forced-replication-method is INCREMENTAL.
-        #  For now requiring replication keys for a stream to be considered incremental.
+        # A stream is incremental if it declares replication keys or if forced-replication-method is set to incremental
         replication_keys = stream_metadata.get("valid-replication-keys", [])
         if len(replication_keys) > 0:
             airbyte_stream.source_defined_cursor = True
-            airbyte_stream.supported_sync_modes = [SyncMode.full_refresh, SyncMode.incremental]
+            airbyte_stream.supported_sync_modes = [SyncMode.incremental]
             # TODO if there are multiple replication keys, allow configuring which one is used. For now we deterministically take the first
             airbyte_stream.default_cursor_field = [sorted(replication_keys)[0]]
+        elif stream_metadata.get("forced-replication-method", "").upper() == _INCREMENTAL:
+            airbyte_stream.source_defined_cursor = True
+            airbyte_stream.supported_sync_modes = [SyncMode.incremental]
 
 
-@staticmethod
 def override_sync_modes_from_overrides(airbyte_stream: AirbyteStream, overrides: SyncModeInfo):
     airbyte_stream.source_defined_cursor = overrides.source_defined_cursor or False
     if overrides.supported_sync_modes:
@@ -130,7 +130,7 @@ class SingerHelper:
             if name in sync_mode_overrides:
                 override_sync_modes_from_overrides(airbyte_stream, sync_mode_overrides[name])
             else:
-                override_sync_modes_from_metadata(airbyte_stream, stream.get("metadata", []))
+                set_sync_modes_from_metadata(airbyte_stream, stream.get("metadata", []))
 
             airbyte_streams += [airbyte_stream]
         return AirbyteCatalog(streams=airbyte_streams)

@@ -22,12 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Generator, Type, Dict
+from typing import Dict, Generator, Type
 
 from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status
 from base_python import AirbyteLogger, CatalogHelper, ConfigContainer, Source
 
-from .singer_helpers import SingerHelper, Catalogs, SyncModeInfo
+from .singer_helpers import Catalogs, SingerHelper, SyncModeInfo
 
 
 class SingerSource(Source):
