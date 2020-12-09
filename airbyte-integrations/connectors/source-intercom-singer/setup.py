@@ -22,9 +22,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from .test_iface import DefaultStandardSourceTest, StandardSourceTestIface
+from setuptools import find_packages, setup
 
-__all__ = [
-    "DefaultStandardSourceTest",
-    "StandardSourceTestIface",
-]
+setup(
+    name="source_intercom_singer",
+    description="Source implementation for Intercom, built on the Singer tap implementation.",
+    author="Airbyte",
+    author_email="contact@airbyte.io",
+    packages=find_packages(),
+    install_requires=["airbyte-protocol", "base-python", "tap-intercom==1.1.1"],
+    package_data={"": ["*.json"]},
+    setup_requires=["pytest-runner"],
+    tests_require=["pytest"],
+    extras_require={
+        "main": ["base-singer"],
+        "tests": ["airbyte_python_test", "pytest"],
+    },
+)

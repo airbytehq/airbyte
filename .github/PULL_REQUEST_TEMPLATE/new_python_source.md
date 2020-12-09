@@ -6,8 +6,8 @@ Thanks for contributing to Airbyte! Please complete the following items in order
 ## Reviewer Pre-merge Checklist 
 - [ ] Finished iterating with the PR author on the code*
 - [ ] Created a branch off master to merge this PR into*
+- [ ] Inject the credentials in CI via `./tools/integrations/ci_credentials.sh` and `.github/workflows/test-command.yml`*
 - [ ] Added the credentials for this integration to Github secrets 
-- [ ] Inject the credentials in CI via `./tools/integrations/ci_credentials.sh` and `.github/workflows/test-command.yml`
 - [ ] Run standard tests on this branch by commenting `/test connector=<name>`*
 - [ ] Add entry in `airbyte-config/init/src/main/resources/seed/source_definitions.yaml` to use the new source in Airbyte core
 - [ ] Deployed the connector to Dockerhub via `./tools/integrations/manage.sh publish airbyte-integrations/connectors/source-<name>`

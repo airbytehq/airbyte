@@ -5,10 +5,9 @@
 ## How
 *Describe the solution*
 
-## Checklist
-- [ ] *Create config API model*
-- [ ] *Implement config persistence*
-- [ ] *Add persistence tests*
+## Pre-merge Checklist
+- [ ] *Run integration tests*
+- [ ] *Publish Docker images*
 
 ## Recommended reading order
 1. `test.java`
