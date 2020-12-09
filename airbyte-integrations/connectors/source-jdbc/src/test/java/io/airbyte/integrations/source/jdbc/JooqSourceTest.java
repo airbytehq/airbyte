@@ -26,6 +26,7 @@ package io.airbyte.integrations.source.jdbc;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.spy;
 
@@ -57,6 +58,7 @@ import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -66,11 +68,12 @@ import org.testcontainers.containers.PostgreSQLContainer;
 class JooqSourceTest {
 
   private static final String STREAM_NAME = "public.id_and_name";
-  private static final AirbyteCatalog CATALOG = CatalogHelpers.createAirbyteCatalog(
+  private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(Lists.newArrayList(CatalogHelpers.createAirbyteStream(
       STREAM_NAME,
       Field.of("id", JsonSchemaPrimitive.NUMBER),
       Field.of("name", JsonSchemaPrimitive.STRING),
-      Field.of("updated_at", JsonSchemaPrimitive.STRING));
+      Field.of("updated_at", JsonSchemaPrimitive.STRING))
+      .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))));
   private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
   private static final List<AirbyteMessage> MESSAGES = Lists.newArrayList(
       new AirbyteMessage().withType(Type.RECORD)
@@ -284,6 +287,130 @@ class JooqSourceTest {
         "data",
         "vash",
         Lists.newArrayList(MESSAGES));
+  }
+
+  @Test
+  void testReadOneTableIncrementallyTwice() throws Exception {
+    final ConfiguredAirbyteCatalog configuredCatalog = getConfiguredCatalog();
+    configuredCatalog.getStreams().forEach(airbyteStream -> {
+      airbyteStream.setSyncMode(SyncMode.INCREMENTAL);
+      airbyteStream.setCursorField(Lists.newArrayList("id"));
+    });
+
+    final JdbcState state = new JdbcState().withStreams(Lists.newArrayList(new JdbcStreamState().withStreamName(STREAM_NAME)));
+    final List<AirbyteMessage> actualMessagesFirstSync = source.read(config, configuredCatalog, Jsons.jsonNode(state)).collect(Collectors.toList());
+
+    final Optional<AirbyteMessage> stateAfterFirstSyncOptional = actualMessagesFirstSync.stream().filter(r -> r.getType() == Type.STATE).findFirst();
+    assertTrue(stateAfterFirstSyncOptional.isPresent());
+
+    database.query(ctx -> {
+      ctx.fetch(
+          "INSERT INTO id_and_name (id, name, updated_at) VALUES (4,'riker', '2006-10-19T10:23:54-07:00'),  (5, 'data', '2006-10-19T10:23:54-07:00');");
+      return null;
+    });
+
+    final List<AirbyteMessage> actualMessagesSecondSync = source
+        .read(config, configuredCatalog, stateAfterFirstSyncOptional.get().getState().getData())
+        .collect(Collectors.toList());
+
+    assertEquals(2, (int) actualMessagesSecondSync.stream().filter(r -> r.getType() == Type.RECORD).count());
+    final List<AirbyteMessage> expectedMessages = new ArrayList<>();
+    expectedMessages.add(new AirbyteMessage().withType(Type.RECORD)
+        .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME)
+            .withData(Jsons.jsonNode(ImmutableMap.of("id", 4, "name", "riker", "updated_at", "2006-10-19T10:23:54-07:00")))));
+    expectedMessages.add(new AirbyteMessage().withType(Type.RECORD)
+        .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME)
+            .withData(Jsons.jsonNode(ImmutableMap.of("id", 5, "name", "data", "updated_at", "2006-10-19T10:23:54-07:00")))));
+    expectedMessages.add(new AirbyteMessage()
+        .withType(Type.STATE)
+        .withState(new AirbyteStateMessage()
+            .withData(Jsons.jsonNode(new JdbcState()
+                .withStreams(Lists.newArrayList(new JdbcStreamState()
+                    .withStreamName(STREAM_NAME)
+                    .withCursorField(ImmutableList.of("id"))
+                    .withCursor("5")))))));
+
+    actualMessagesSecondSync.forEach(r -> {
+      if (r.getRecord() != null) {
+        r.getRecord().setEmittedAt(null);
+      }
+    });
+
+    assertEquals(expectedMessages, actualMessagesSecondSync);
+  }
+
+  @Test
+  void testReadMultipleTablesIncrementally() throws Exception {
+    final String streamName2 = STREAM_NAME + 2;
+    database.query(ctx -> {
+      ctx.fetch("CREATE TABLE id_and_name2(id INTEGER, name VARCHAR(200));");
+      ctx.fetch("INSERT INTO id_and_name2 (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
+      return null;
+    });
+
+    final ConfiguredAirbyteCatalog configuredCatalog = getConfiguredCatalog();
+    configuredCatalog.getStreams().add(CatalogHelpers.createConfiguredAirbyteStream(
+        streamName2,
+        Field.of("id", JsonSchemaPrimitive.NUMBER),
+        Field.of("name", JsonSchemaPrimitive.STRING)));
+    configuredCatalog.getStreams().forEach(airbyteStream -> {
+      airbyteStream.setSyncMode(SyncMode.INCREMENTAL);
+      airbyteStream.setCursorField(Lists.newArrayList("id"));
+    });
+
+    final JdbcState state = new JdbcState().withStreams(Lists.newArrayList(new JdbcStreamState().withStreamName(STREAM_NAME)));
+    final List<AirbyteMessage> actualMessagesFirstSync = source.read(config, configuredCatalog, Jsons.jsonNode(state)).collect(Collectors.toList());
+
+    // get last state message.
+    final Optional<AirbyteMessage> stateAfterFirstSyncOptional = actualMessagesFirstSync.stream()
+        .filter(r -> r.getType() == Type.STATE)
+        .reduce((first, second) -> second);
+    assertTrue(stateAfterFirstSyncOptional.isPresent());
+
+    // we know the second streams messages are the same as the first minus the updated at column. so we
+    // cheat and generate the expected messages off of the first expected messages.
+    final List<AirbyteMessage> secondStreamExpectedMessages = MESSAGES
+        .stream()
+        .map(Jsons::clone)
+        .peek(m -> {
+          m.getRecord().setStream(streamName2);
+          ((ObjectNode) m.getRecord().getData()).remove("updated_at");
+        })
+        .collect(Collectors.toList());
+    final List<AirbyteMessage> expectedMessagesFirstSync = new ArrayList<>(MESSAGES);
+    expectedMessagesFirstSync.add(new AirbyteMessage()
+        .withType(Type.STATE)
+        .withState(new AirbyteStateMessage()
+            .withData(Jsons.jsonNode(new JdbcState()
+                .withStreams(Lists.newArrayList(
+                    new JdbcStreamState()
+                        .withStreamName(STREAM_NAME)
+                        .withCursorField(ImmutableList.of("id"))
+                        .withCursor("3"),
+                    new JdbcStreamState()
+                        .withStreamName(streamName2)
+                        .withCursorField(ImmutableList.of("id"))))))));
+    expectedMessagesFirstSync.addAll(secondStreamExpectedMessages);
+    expectedMessagesFirstSync.add(new AirbyteMessage()
+        .withType(Type.STATE)
+        .withState(new AirbyteStateMessage()
+            .withData(Jsons.jsonNode(new JdbcState()
+                .withStreams(Lists.newArrayList(
+                    new JdbcStreamState()
+                        .withStreamName(STREAM_NAME)
+                        .withCursorField(ImmutableList.of("id"))
+                        .withCursor("3"),
+                    new JdbcStreamState()
+                        .withStreamName(streamName2)
+                        .withCursorField(ImmutableList.of("id"))
+                        .withCursor("3")))))));
+    actualMessagesFirstSync.forEach(r -> {
+      if (r.getRecord() != null) {
+        r.getRecord().setEmittedAt(null);
+      }
+    });
+
+    assertEquals(expectedMessagesFirstSync, actualMessagesFirstSync);
   }
 
   // when initial and final cursor fields are the same.

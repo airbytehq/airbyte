@@ -35,8 +35,10 @@ import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -164,10 +166,11 @@ public class JdbcStateManager {
   private AirbyteStateMessage toState() {
     final JdbcState jdbcState = new JdbcState()
         .withStreams(streamNameToCursorInfo.entrySet().stream()
+            .sorted(Entry.comparingByKey()) // sort by stream name for sanity.
             .map(e -> new JdbcStreamState()
                 .withStreamName(e.getKey())
-                .withCursorField(Lists.newArrayList(e.getValue().getCursorField()))
-                .withCursor(e.getValue().cursor))
+                .withCursorField(e.getValue().getCursorField() == null ? Collections.emptyList() : Lists.newArrayList(e.getValue().getCursorField()))
+                .withCursor(e.getValue().getCursor()))
             .collect(Collectors.toList()));
 
     return new AirbyteStateMessage().withData(Jsons.jsonNode(jdbcState));

@@ -27,6 +27,7 @@ package io.airbyte.integrations.source.jdbc;
 import static org.jooq.impl.DSL.currentSchema;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
@@ -121,7 +122,8 @@ public abstract class AbstractJooqSource implements Source {
       return new AirbyteCatalog()
           .withStreams(getTables(database)
               .stream()
-              .map(t -> CatalogHelpers.createAirbyteStream(t.getName(), t.getFields()))
+              .map(t -> CatalogHelpers.createAirbyteStream(t.getName(), t.getFields())
+                  .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))
               .collect(Collectors.toList()));
     }
   }
@@ -154,6 +156,7 @@ public abstract class AbstractJooqSource implements Source {
 
   @Override
   public Stream<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception {
+    final JdbcStateManager stateManager = new JdbcStateManager(state == null ? new JdbcState() : Jsons.object(state, JdbcState.class), catalog);
     final Instant now = Instant.now();
 
     final Database database = createDatabase(config);
@@ -184,7 +187,6 @@ public abstract class AbstractJooqSource implements Source {
 
       final Stream<AirbyteMessage> stream;
       if (airbyteStream.getSyncMode() == SyncMode.INCREMENTAL) {
-        final JdbcStateManager stateManager = new JdbcStateManager(state == null ? new JdbcState() : Jsons.object(state, JdbcState.class), catalog);
         final String cursorField = IncrementalUtils.getCursorField(airbyteStream);
         final JsonSchemaPrimitive cursorType = IncrementalUtils.getCursorType(airbyteStream, cursorField);
         final Optional<String> cursorOptional = stateManager.getCursor(streamName);

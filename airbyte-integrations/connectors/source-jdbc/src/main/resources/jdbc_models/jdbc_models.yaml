@@ -24,8 +24,6 @@ definitions:
     additionalProperties: false
     required:
       - stream_name
-      - cursor_field
-      - cursor
     properties:
       stream_name:
         description: name of the stream

@@ -34,6 +34,7 @@ import io.airbyte.db.Databases;
 import io.airbyte.integrations.standardtest.source.TestSource;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
@@ -105,15 +106,15 @@ public class PostgresIntegrationTests extends TestSource {
 
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
-    final ConfiguredAirbyteCatalog configuredAirbyteCatalog = CatalogHelpers.createConfiguredAirbyteCatalog(
-        STREAM_NAME,
-        Field.of("id", JsonSchemaPrimitive.NUMBER),
-        Field.of("name", JsonSchemaPrimitive.STRING));
+    final ConfiguredAirbyteStream configuredAirbyteStream = new ConfiguredAirbyteStream()
+        .withSyncMode(SyncMode.INCREMENTAL)
+        .withStream(CatalogHelpers.createAirbyteStream(
+            STREAM_NAME,
+            Field.of("id", JsonSchemaPrimitive.NUMBER),
+            Field.of("name", JsonSchemaPrimitive.STRING))
+            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)));
 
-    configuredAirbyteCatalog.getStreams().forEach(
-        configuredStream -> configuredStream.getStream().withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)));
-
-    return configuredAirbyteCatalog;
+    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(configuredAirbyteStream));
   }
 
   @Override
