@@ -31,8 +31,8 @@ import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.DestinationDefinitionSpecificationRead;
 import io.airbyte.api.model.DestinationIdRequestBody;
-import io.airbyte.api.model.JobStatusRead;
-import io.airbyte.api.model.JobStatusReadStatus;
+import io.airbyte.api.model.JobInfoRead;
+import io.airbyte.api.model.JobRead;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
 import io.airbyte.api.model.SourceDefinitionSpecificationRead;
 import io.airbyte.api.model.SourceDiscoverSchemaRead;
@@ -56,6 +56,7 @@ import io.airbyte.scheduler.JobStatus;
 import io.airbyte.scheduler.persistence.JobCreator;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.cache.SpecCache;
+import io.airbyte.server.converters.JobConverter;
 import io.airbyte.server.converters.SchemaConverter;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -204,7 +205,7 @@ public class SchedulerHandler {
         .destinationDefinitionId(destinationId);
   }
 
-  public JobStatusRead syncConnection(final ConnectionIdRequestBody connectionIdRequestBody)
+  public JobInfoRead syncConnection(final ConnectionIdRequestBody connectionIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final UUID connectionId = connectionIdRequestBody.getConnectionId();
     final StandardSync standardSync = configRepository.getStandardSync(connectionId);
@@ -240,14 +241,13 @@ public class SchedulerHandler {
         .put("job_id", jobId)
         .build());
 
-    return new JobStatusRead()
-        .status(job.getStatus().equals(JobStatus.SUCCEEDED) ? JobStatusReadStatus.SUCCEEDED : JobStatusReadStatus.FAILED);
+    return JobConverter.getJobInfoRead(job);
   }
 
   // todo (cgardens) - can be a no op while UI is being developed. need to figure out the
   // implementation here.
-  public JobStatusRead resetConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
-    return new JobStatusRead().status(JobStatusReadStatus.SUCCEEDED);
+  public JobInfoRead resetConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
+    return new JobInfoRead().job(new JobRead().status(io.airbyte.api.model.JobStatus.SUCCEEDED));
   }
 
   private Job waitUntilJobIsTerminalOrTimeout(final long jobId) throws IOException {
