@@ -31,7 +31,6 @@ export interface Job {
   attempts: Attempt[];
 }
 
-// TODO: fix shape ! ! !
 export default class JobResource extends BaseResource implements Job {
   readonly job: JobItem = {
     id: 0,

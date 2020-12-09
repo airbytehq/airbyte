@@ -18,7 +18,7 @@ const Details = styled.div`
 
 const AttemptDetails: React.FC<IProps> = ({ attempt, className }) => {
   const formatBytes = (bytes: number) => {
-    if (bytes === 0) {
+    if (!bytes) {
       return (
         <FormattedMessage id="sources.countBytes" values={{ count: bytes }} />
       );
