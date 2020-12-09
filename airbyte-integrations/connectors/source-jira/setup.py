@@ -33,7 +33,6 @@ setup(
     install_requires=[
         "airbyte-protocol",
         "base-python",
-        "six==1.15.0",
         "requests",
     ],
     package_data={"": ["*.json", "schemas/*.json"]},

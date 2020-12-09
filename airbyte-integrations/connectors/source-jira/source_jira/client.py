@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import json
 from functools import partial
 from json.decoder import JSONDecodeError
 from typing import Mapping, Tuple
@@ -43,7 +42,7 @@ class Client(BaseClient):
         "issues": {"url": "/search", "func": lambda v: v["issues"], "params": PARAMS},
         "issue_comments": {"url": "/search", "func": lambda v: v["issues"], "params": {**PARAMS, **{"fields": ["comment"]}}},
         "users": {"url": "/users/search", "func": lambda v: v, "params": PARAMS},
-        "resolutions": None,
+        "resolutions": {"url": "/resolution", "func": lambda v: v, "params": {}},
     }
 
     def __init__(self, api_token, domain, email):
@@ -55,47 +54,31 @@ class Client(BaseClient):
         while True:
             response = requests.get(f"{self.base_api_url}{kwargs['url']}", params=kwargs["params"], auth=self.auth)
             data = kwargs["func"](response.json())
-            for obj in data:
-                if name == "issue_comments":
-                    for comment in obj["fields"]["comment"]["comments"]:
-                        yield comment
-                else:
-                    yield obj
-            kwargs["params"]["startAt"] += self.DEFAULT_ITEMS_PER_PAGE
-            if len(data) < self.DEFAULT_ITEMS_PER_PAGE:
+            if name == "issue_comments":
+                for obj in data:
+                    yield from obj["fields"]["comment"]["comments"]
+            else:
+                yield from data
+            if name == "resolutions" or len(data) < self.DEFAULT_ITEMS_PER_PAGE:
                 break
+            kwargs["params"]["startAt"] += self.DEFAULT_ITEMS_PER_PAGE
 
     def _enumerate_methods(self) -> Mapping[str, callable]:
-        return {
-            entity: getattr(self, f"get_{entity}", None) or partial(self.lists, name=entity, **value)
-            for entity, value in self.ENTITIES_MAP.items()
-        }
+        return {entity: partial(self.lists, name=entity, **value) for entity, value in self.ENTITIES_MAP.items()}
 
     def health_check(self) -> Tuple[bool, str]:
         alive = True
         error_msg = None
 
         try:
-            response = requests.get(f"{self.base_api_url}/users/search", params={"maxResults": 1, "startAt": 0}, auth=self.auth)
-
-            if response.status_code == 200:
-                try:
-                    json.loads(response.text)
-                except JSONDecodeError:
-                    alive, error_msg = (
-                        False,
-                        "Unable to connect to the Jira API with the provided credentials. Please make sure the input credentials and environment are correct.",
-                    )
-            else:
-                alive, error_msg = False, str(response.text)
+            next(self.lists(name="resolutions", **self.ENTITIES_MAP["resolutions"]))
 
         except ConnectionError as error:
             alive, error_msg = False, str(error)
+        except JSONDecodeError:
+            alive, error_msg = (
+                False,
+                "Unable to connect to the Jira API with the provided credentials. Please make sure the input credentials and environment are correct.",
+            )
 
         return alive, error_msg
-
-    def get_resolutions(self):
-        response = requests.get(f"{self.base_api_url}/resolution", auth=self.auth)
-
-        for res in response.json():
-            yield res
