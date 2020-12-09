@@ -12,7 +12,7 @@ import SchemaView from "./components/SchemaView";
 import { IDataItem } from "../DropDown/components/ListItem";
 import EditControls from "../ServiceForm/components/EditControls";
 import { SyncMode, SyncSchema } from "../../core/resources/Schema";
-import SaveModal from "./components/SaveModal";
+import ResetDataModal from "../ResetDataModal";
 import { equal } from "../../utils/objects";
 
 type IProps = {
@@ -158,7 +158,7 @@ const FrequencyForm: React.FC<IProps> = ({
                 errorMessage={errorMessage}
               />
               {modalIsOpen && (
-                <SaveModal
+                <ResetDataModal
                   onClose={() => setResetModalIsOpen(false)}
                   onSubmit={async () => {
                     await onReset?.();

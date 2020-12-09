@@ -2,8 +2,8 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import Modal from "../../Modal";
-import Button from "../../Button";
+import Modal from "../Modal";
+import Button from "../Button";
 
 export type IProps = {
   onClose: () => void;
@@ -24,7 +24,7 @@ const ButtonWithMargin = styled(Button)`
   margin-right: 9px;
 `;
 
-const SaveModal: React.FC<IProps> = ({ onClose, onSubmit }) => {
+const ResetDataModal: React.FC<IProps> = ({ onClose, onSubmit }) => {
   return (
     <Modal onClose={onClose} title={<FormattedMessage id="form.resetData" />}>
       <Content>
@@ -42,4 +42,4 @@ const SaveModal: React.FC<IProps> = ({ onClose, onSubmit }) => {
   );
 };
 
-export default SaveModal;
+export default ResetDataModal;

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -16,6 +16,8 @@ import JobsList from "./JobsList";
 import { AnalyticsService } from "../../../../../core/analytics/AnalyticsService";
 import config from "../../../../../config";
 import EmptyResource from "../../../../../components/EmptyResourceBlock";
+import ResetDataModal from "../../../../../components/ResetDataModal";
+import useConnection from "../../../../../components/hooks/services/useConnectionHook";
 
 type IProps = {
   connection: Connection;
@@ -45,10 +47,11 @@ const TryArrow = styled(FontAwesomeIcon)`
 
 const SyncButton = styled(Button)`
   padding: 5px 8px;
-  margin: -5px 0;
+  margin: -5px 0 -5px 9px;
 `;
 
 const StatusView: React.FC<IProps> = ({ connection, frequencyText }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { jobs } = useResource(JobResource.listShape(), {
     configId: connection.connectionId,
     configType: "sync"
@@ -59,6 +62,8 @@ const StatusView: React.FC<IProps> = ({ connection, frequencyText }) => {
   });
 
   const SyncConnection = useFetcher(ConnectionResource.syncShape());
+
+  const { resetConnection } = useConnection();
 
   const onSync = () => {
     AnalyticsService.track("Source - Action", {
@@ -76,6 +81,11 @@ const StatusView: React.FC<IProps> = ({ connection, frequencyText }) => {
     });
   };
 
+  const onReset = useCallback(() => resetConnection(connection.connectionId), [
+    resetConnection,
+    connection.connectionId
+  ]);
+
   return (
     <Content>
       <StatusMainInfo connection={connection} frequencyText={frequencyText} />
@@ -83,10 +93,15 @@ const StatusView: React.FC<IProps> = ({ connection, frequencyText }) => {
         title={
           <Title>
             <FormattedMessage id={"sources.syncHistory"} />
-            <SyncButton onClick={onSync}>
-              <TryArrow icon={faRedoAlt} />
-              <FormattedMessage id={"sources.syncNow"} />
-            </SyncButton>
+            <div>
+              <Button onClick={() => setIsModalOpen(true)}>
+                <FormattedMessage id={"connection.resetData"} />
+              </Button>
+              <SyncButton onClick={onSync}>
+                <TryArrow icon={faRedoAlt} />
+                <FormattedMessage id={"sources.syncNow"} />
+              </SyncButton>
+            </div>
           </Title>
         }
       >
@@ -96,6 +111,15 @@ const StatusView: React.FC<IProps> = ({ connection, frequencyText }) => {
           <EmptyResource text={<FormattedMessage id="sources.noSync" />} />
         )}
       </StyledContentCard>
+      {isModalOpen ? (
+        <ResetDataModal
+          onClose={() => setIsModalOpen(false)}
+          onSubmit={async () => {
+            await onReset();
+            setIsModalOpen(false);
+          }}
+        />
+      ) : null}
     </Content>
   );
 };

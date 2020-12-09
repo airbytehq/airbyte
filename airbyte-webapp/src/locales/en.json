@@ -148,6 +148,7 @@
   "connection.sourceCheckSettings": "Check source settings",
   "connection.destinationTestAgain": "Test again destination connection",
   "connection.sourceTestAgain": "Test again source connection",
+  "connection.resetData": "Reset your data",
 
   "tables.sourceIsValidating": "Validating the source",
   "tables.sourceIsValidatingBefore": "before you add a new destination",
