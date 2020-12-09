@@ -41,6 +41,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -302,6 +303,7 @@ public class DefaultJobPersistence implements JobPersistence {
                       .map(value -> getEpoch(attemptRecord, "attempt_ended_at"))
                       .orElse(null));
             })
+                .sorted(Comparator.comparingLong(Attempt::getId))
                 .collect(Collectors.toList());
           }
           final JobConfig jobConfig = Jsons.deserialize(jobEntry.get("config", String.class), JobConfig.class);
@@ -314,7 +316,8 @@ public class DefaultJobPersistence implements JobPersistence {
               Optional.ofNullable(jobEntry.get("job_started_at")).map(value -> getEpoch(jobEntry, "started_at")).orElse(null),
               getEpoch(jobEntry, "job_created_at"),
               getEpoch(jobEntry, "job_updated_at"));
-        }).collect(Collectors.toList());
+        })
+        .collect(Collectors.toList());
   }
 
   public static Optional<Job> getJobFromResult(Result<Record> result) {
