@@ -25,7 +25,6 @@ SOFTWARE.
 import sys
 
 from base_python.entrypoint import launch
-
 from source_mixpanel_singer import SourceMixpanelSinger
 
 if __name__ == "__main__":
