@@ -22,6 +22,7 @@
     * [Greenhouse](integrations/sources/greenhouse.md)
     * [Hubspot](integrations/sources/hubspot.md)
     * [HTTP Request](integrations/sources/http-request.md)
+    * [Jira](integrations/sources/jira.md)
     * [Mailchimp](integrations/sources/mailchimp.md)
     * [Marketo](integrations/sources/marketo.md)
     * [MySQL](integrations/sources/mysql.md)
