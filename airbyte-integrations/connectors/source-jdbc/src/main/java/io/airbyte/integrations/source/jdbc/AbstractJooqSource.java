@@ -88,6 +88,12 @@ public abstract class AbstractJooqSource implements Source {
 
   public abstract JsonNode toJdbcConfig(JsonNode config);
 
+  protected List<String> getExcludedInternalSchemas() {
+    return List.of();
+  }
+
+  public abstract String setTimezoneToUTCQuery();
+
   @Override
   public ConnectorSpecification spec() throws IOException {
     // return a JsonSchema representation of the spec for the integration.
@@ -112,7 +118,7 @@ public abstract class AbstractJooqSource implements Source {
     }
   }
 
-  protected String getCurrentDatabaseName(DSLContext ctx) {
+  private String getCurrentDatabaseName(DSLContext ctx) {
     return ctx.select(currentSchema()).fetch().get(0).getValue(0, String.class);
   }
 
@@ -126,10 +132,6 @@ public abstract class AbstractJooqSource implements Source {
                   .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))
               .collect(Collectors.toList()));
     }
-  }
-
-  protected List<String> getExcludedInternalSchemas() {
-    return List.of();
   }
 
   protected List<TableInfo> getTables(final Database database) throws Exception {
@@ -230,24 +232,30 @@ public abstract class AbstractJooqSource implements Source {
     return resultStream.onClose(() -> Exceptions.toRuntime(database::close));
   }
 
-  private static Stream<Record> executeFullRefreshQuery(Database database, List<org.jooq.Field<?>> jooqFields, Table<?> table) throws SQLException {
-    return database.query(ctx -> ctx.select(jooqFields)
-        .from(table)
-        .fetchStream());
+  private Stream<Record> executeFullRefreshQuery(Database database, List<org.jooq.Field<?>> jooqFields, Table<?> table) throws SQLException {
+    return database.query(ctx -> {
+      ctx.execute(setTimezoneToUTCQuery());
+      return ctx.select(jooqFields)
+          .from(table)
+          .fetchStream();
+    });
   }
 
-  private static <T> Stream<Record> executeIncrementalQuery(
-                                                            Database database,
-                                                            List<org.jooq.Field<?>> fields,
-                                                            Table<?> table,
-                                                            org.jooq.Field<T> cursorField,
-                                                            String cursor)
+  private <T> Stream<Record> executeIncrementalQuery(
+                                                     Database database,
+                                                     List<org.jooq.Field<?>> fields,
+                                                     Table<?> table,
+                                                     org.jooq.Field<T> cursorField,
+                                                     String cursor)
       throws SQLException {
 
-    return database.query(ctx -> ctx.select(fields)
-        .from(table)
-        .where(cursorField.greaterThan(toField(cursorField.getDataType(), cursor)))
-        .fetchStream());
+    return database.query(ctx -> {
+      ctx.execute(setTimezoneToUTCQuery());
+      return ctx.select(fields)
+          .from(table)
+          .where(cursorField.greaterThan(toField(cursorField.getDataType(), cursor)))
+          .fetchStream();
+    });
   }
 
   private static Stream<AirbyteMessage> getMessageStream(Stream<Record> recordStream, String streamName, long time) {

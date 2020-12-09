@@ -46,6 +46,11 @@ public class PostgresJooqTestSource extends AbstractJooqSource implements Source
     return config;
   }
 
+  @Override
+  public String setTimezoneToUTCQuery() {
+    return "set time zone UTC;";
+  }
+
   public static void main(String[] args) throws Exception {
     final Source source = new PostgresJooqTestSource();
     LOGGER.info("starting source: {}", PostgresJooqTestSource.class);

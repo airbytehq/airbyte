@@ -58,6 +58,11 @@ public class PostgresSource extends AbstractJooqSource implements Source {
     return Jsons.jsonNode(configBuilder.build());
   }
 
+  @Override
+  public String setTimezoneToUTCQuery() {
+    return "set time zone UTC;";
+  }
+
   public static void main(String[] args) throws Exception {
     final Source source = new PostgresSource();
     LOGGER.info("starting source: {}", PostgresSource.class);
