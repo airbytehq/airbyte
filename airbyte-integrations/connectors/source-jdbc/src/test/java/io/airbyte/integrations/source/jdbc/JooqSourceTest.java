@@ -78,13 +78,13 @@ class JooqSourceTest {
   private static final List<AirbyteMessage> MESSAGES = Lists.newArrayList(
       new AirbyteMessage().withType(Type.RECORD)
           .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME)
-              .withData(Jsons.jsonNode(ImmutableMap.of("id", 1, "name", "picard", "updated_at", "2004-10-19T10:23:54-07:00")))),
+              .withData(Jsons.jsonNode(ImmutableMap.of("id", 1, "name", "picard", "updated_at", "2004-10-19T10:23:54Z")))),
       new AirbyteMessage().withType(Type.RECORD)
           .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME)
-              .withData(Jsons.jsonNode(ImmutableMap.of("id", 2, "name", "crusher", "updated_at", "2005-10-19T10:23:54-07:00")))),
+              .withData(Jsons.jsonNode(ImmutableMap.of("id", 2, "name", "crusher", "updated_at", "2005-10-19T10:23:54Z")))),
       new AirbyteMessage().withType(Type.RECORD)
           .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME)
-              .withData(Jsons.jsonNode(ImmutableMap.of("id", 3, "name", "vash", "updated_at", "2006-10-19T10:23:54-07:00")))));
+              .withData(Jsons.jsonNode(ImmutableMap.of("id", 3, "name", "vash", "updated_at", "2006-10-19T10:23:54Z")))));
 
   private JsonNode config;
 
@@ -115,7 +115,7 @@ class JooqSourceTest {
     database.query(ctx -> {
       ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), updated_at TIMESTAMP WITH TIME ZONE);");
       ctx.fetch(
-          "INSERT INTO id_and_name (id, name, updated_at) VALUES (1,'picard', '2004-10-19T10:23:54-07:00'),  (2, 'crusher', '2005-10-19T10:23:54-07:00'), (3, 'vash', '2006-10-19T10:23:54-07:00');");
+          "INSERT INTO id_and_name (id, name, updated_at) VALUES (1,'picard', '2004-10-19T10:23:54Z'),  (2, 'crusher', '2005-10-19T10:23:54Z'), (3, 'vash', '2006-10-19T10:23:54Z');");
       return null;
     });
   }
@@ -271,8 +271,8 @@ class JooqSourceTest {
   void testIncrementalTimestampCheckCursor() throws Exception {
     incrementalCursorCheck(
         "updated_at",
-        "2005-10-19T9:23:54-07:00",
-        "2006-10-19T10:23:54-07:00",
+        "2005-10-19T9:23:54Z",
+        "2006-10-19T10:23:54Z",
         Lists.newArrayList(MESSAGES.get(1), MESSAGES.get(2)));
   }
 
@@ -305,7 +305,7 @@ class JooqSourceTest {
 
     database.query(ctx -> {
       ctx.fetch(
-          "INSERT INTO id_and_name (id, name, updated_at) VALUES (4,'riker', '2006-10-19T10:23:54-07:00'),  (5, 'data', '2006-10-19T10:23:54-07:00');");
+          "INSERT INTO id_and_name (id, name, updated_at) VALUES (4,'riker', '2006-10-19T10:23:54Z'),  (5, 'data', '2006-10-19T10:23:54Z');");
       return null;
     });
 
@@ -317,10 +317,10 @@ class JooqSourceTest {
     final List<AirbyteMessage> expectedMessages = new ArrayList<>();
     expectedMessages.add(new AirbyteMessage().withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME)
-            .withData(Jsons.jsonNode(ImmutableMap.of("id", 4, "name", "riker", "updated_at", "2006-10-19T10:23:54-07:00")))));
+            .withData(Jsons.jsonNode(ImmutableMap.of("id", 4, "name", "riker", "updated_at", "2006-10-19T10:23:54Z")))));
     expectedMessages.add(new AirbyteMessage().withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME)
-            .withData(Jsons.jsonNode(ImmutableMap.of("id", 5, "name", "data", "updated_at", "2006-10-19T10:23:54-07:00")))));
+            .withData(Jsons.jsonNode(ImmutableMap.of("id", 5, "name", "data", "updated_at", "2006-10-19T10:23:54Z")))));
     expectedMessages.add(new AirbyteMessage()
         .withType(Type.STATE)
         .withState(new AirbyteStateMessage()
