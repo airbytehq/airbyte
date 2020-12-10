@@ -50,7 +50,7 @@ class SourceGithubSinger(SingerSource):
         return f"tap-github --config {config_path} --discover"
 
     def get_sync_mode_overrides(self) -> Dict[str, SyncModeInfo]:
-        incrementals = [
+        incremental_streams = [
             "team_memberships",
             "events",
             "comments",
@@ -72,12 +72,12 @@ class SourceGithubSinger(SingerSource):
             "pr_commits",
         ]
 
-        full_refreshes = ["assignees", "collaborators", "pull_requests", "reviews", "releases"]
+        full_refresh_streams = ["assignees", "collaborators", "pull_requests", "reviews", "releases"]
         overrides = {}
-        for incremental in incrementals:
-            overrides[incremental] = SyncModeInfo(supported_sync_modes=[SyncMode.incremental])
-        for fr in full_refreshes:
-            overrides[fr] = SyncModeInfo(supported_sync_modes=[SyncMode.full_refresh])
+        for stream_name in incremental_streams:
+            overrides[stream_name] = SyncModeInfo(supported_sync_modes=[SyncMode.incremental])
+        for stream_name in full_refresh_streams:
+            overrides[stream_name] = SyncModeInfo(supported_sync_modes=[SyncMode.full_refresh])
         return overrides
 
     def read_cmd(self, logger, config_path, catalog_path, state_path=None) -> str:
