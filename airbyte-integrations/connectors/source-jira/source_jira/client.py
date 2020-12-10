@@ -22,7 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from functools import partial
+import operator
+from functools import partial, reduce
 from json.decoder import JSONDecodeError
 from typing import Mapping, Tuple
 
@@ -33,6 +34,10 @@ from requests.exceptions import ConnectionError
 
 
 class Client(BaseClient):
+    """
+    Jira API Reference: https://developer.atlassian.com/cloud/jira/platform/rest/v3/intro/
+    """
+
     API_VERSION = 3
     DEFAULT_ITEMS_PER_PAGE = 100
 
@@ -40,7 +45,11 @@ class Client(BaseClient):
     ENTITIES_MAP = {
         "projects": {"url": "/project/search", "func": lambda v: v["values"], "params": PARAMS},
         "issues": {"url": "/search", "func": lambda v: v["issues"], "params": PARAMS},
-        "issue_comments": {"url": "/search", "func": lambda v: v["issues"], "params": {**PARAMS, **{"fields": ["comment"]}}},
+        "issue_comments": {
+            "url": "/search",
+            "func": lambda v: reduce(operator.iadd, [obj["fields"]["comment"]["comments"] for obj in v["issues"]], []),
+            "params": {**PARAMS, **{"fields": ["comment"]}},
+        },
         "users": {"url": "/users/search", "func": lambda v: v, "params": PARAMS},
         "resolutions": {"url": "/resolution", "func": lambda v: v, "params": {}},
     }
@@ -50,18 +59,14 @@ class Client(BaseClient):
         self.base_api_url = f"https://{domain}/rest/api/{self.API_VERSION}"
         super().__init__()
 
-    def lists(self, name, **kwargs):
+    def lists(self, name, url, params, func, **kwargs):
         while True:
-            response = requests.get(f"{self.base_api_url}{kwargs['url']}", params=kwargs["params"], auth=self.auth)
-            data = kwargs["func"](response.json())
-            if name == "issue_comments":
-                for obj in data:
-                    yield from obj["fields"]["comment"]["comments"]
-            else:
-                yield from data
+            response = requests.get(f"{self.base_api_url}{url}", params=params, auth=self.auth)
+            data = func(response.json())
+            yield from data
             if name == "resolutions" or len(data) < self.DEFAULT_ITEMS_PER_PAGE:
                 break
-            kwargs["params"]["startAt"] += self.DEFAULT_ITEMS_PER_PAGE
+            params["startAt"] += self.DEFAULT_ITEMS_PER_PAGE
 
     def _enumerate_methods(self) -> Mapping[str, callable]:
         return {entity: partial(self.lists, name=entity, **value) for entity, value in self.ENTITIES_MAP.items()}
