@@ -50,9 +50,16 @@ public interface Configs {
 
   TrackingStrategy getTrackingStrategy();
 
+  JobEnvironment getJobEnvironment();
+
   enum TrackingStrategy {
     SEGMENT,
     LOGGING
+  }
+
+  enum JobEnvironment {
+    DOCKER,
+    KUBERNETES
   }
 
 }

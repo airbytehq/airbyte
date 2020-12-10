@@ -35,6 +35,7 @@ public class EnvConfigs implements Configs {
   private static final Logger LOGGER = LoggerFactory.getLogger(EnvConfigs.class);
 
   public static final String AIRBYTE_VERSION = "AIRBYTE_VERSION";
+  public static final String JOB_ENVIRONMENT = "JOB_ENVIRONMENT";
   public static final String WORKSPACE_ROOT = "WORKSPACE_ROOT";
   public static final String WORKSPACE_DOCKER_MOUNT = "WORKSPACE_DOCKER_MOUNT";
   public static final String LOCAL_ROOT = "LOCAL_ROOT";
@@ -140,6 +141,17 @@ public class EnvConfigs implements Configs {
       LOGGER.info(trackingStrategy + " not recognized, defaulting to " + TrackingStrategy.LOGGING);
       return TrackingStrategy.LOGGING;
     }
+  }
+
+  @Override
+  public JobEnvironment getJobEnvironment() {
+    final String jobEnvironment = getEnv.apply(JOB_ENVIRONMENT);
+    if (jobEnvironment != null) {
+      return JobEnvironment.valueOf(jobEnvironment.toUpperCase());
+    }
+
+    LOGGER.info(JOB_ENVIRONMENT + " not found, defaulting to " + JobEnvironment.DOCKER);
+    return JobEnvironment.DOCKER;
   }
 
   private String getEnsureEnv(final String name) {
