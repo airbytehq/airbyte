@@ -285,7 +285,7 @@ public abstract class TestSource {
     // when we run incremental sync again there should be no new records. Run a sync with the latest
     // state message and assert no records were emitted.
     JsonNode latestState = stateMessages.get(stateMessages.size() - 1).getData();
-    List<AirbyteRecordMessage> secondSyncRecords = filterRecords(runRead(configuredAirbyteCatalog, latestState));
+    List<AirbyteRecordMessage> secondSyncRecords = filterRecords(runRead(configuredCatalog, latestState));
     assertTrue(
         secondSyncRecords.isEmpty(),
         "Expected the second incremental sync to produce no records when given the first sync's output state.");

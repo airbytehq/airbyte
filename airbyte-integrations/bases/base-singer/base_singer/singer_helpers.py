@@ -211,7 +211,8 @@ class SingerHelper:
                             configured_stream = stream_name_to_configured_stream[stream_name]
                             if configured_for_incremental(configured_stream):
                                 replication_method = _INCREMENTAL
-                                new_metadata["metadata"]["replication-key"] = configured_stream.cursor_field[0]
+                                if configured_stream.cursor_field:
+                                    new_metadata["metadata"]["replication-key"] = configured_stream.cursor_field[0]
                             else:
                                 replication_method = _FULL_TABLE
                             new_metadata["metadata"]["forced-replication-method"] = replication_method

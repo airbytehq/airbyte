@@ -48,7 +48,7 @@ class SingerSource(Source):
 
     def _discover_internal(self, logger: AirbyteLogger, config_container: ConfigContainer) -> Catalogs:
         cmd = self.discover_cmd(logger, config_container.rendered_config_path)
-        catalogs = SingerHelper.get_catalogs(logger, cmd, self.sync_mode_overrides)
+        catalogs = SingerHelper.get_catalogs(logger, cmd, self.get_sync_mode_overrides())
 
         return catalogs
 
@@ -71,8 +71,7 @@ class SingerSource(Source):
         read_cmd = self.read_cmd(logger, config_container.rendered_config_path, selected_singer_catalog_path, state_path)
         return SingerHelper.read(logger, read_cmd)
 
-    @property
-    def sync_mode_overrides(self) -> Dict[str, SyncModeInfo]:
+    def get_sync_mode_overrides(self) -> Dict[str, SyncModeInfo]:
         """
         :return: A dict from stream name to the sync modes that should be applied to this stream.
         """

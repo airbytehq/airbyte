@@ -49,7 +49,7 @@ class SourceGithubSinger(SingerSource):
     def discover_cmd(self, logger, config_path) -> str:
         return f"tap-github --config {config_path} --discover"
 
-    def sync_mode_overrides(self) -> Dict[str, SyncModeInfo]:
+    def get_sync_mode_overrides(self) -> Dict[str, SyncModeInfo]:
         incrementals = [
             "team_memberships",
             "events",
