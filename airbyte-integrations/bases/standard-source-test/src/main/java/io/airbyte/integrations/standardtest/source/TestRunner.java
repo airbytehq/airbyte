@@ -46,7 +46,6 @@ public class TestRunner {
 
     // Register a listener of your choice
     final SummaryGeneratingListener listener = new SummaryGeneratingListener();
-    launcher.registerTestExecutionListeners(listener);
 
     launcher.execute(plan, listener);
 

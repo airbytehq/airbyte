@@ -16,7 +16,7 @@
 - sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
   name: Github
   dockerRepository: airbyte/source-github-singer
-  dockerImageTag: 0.1.3
+  dockerImageTag: 0.1.4
   documentationUrl: https://hub.docker.com/r/airbyte/source-github-singer
 - sourceDefinitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
   name: Microsoft SQL Server (MSSQL)
@@ -86,7 +86,7 @@
 - sourceDefinitionId: b1892b11-788d-44bd-b9ec-3a436f7b54ce
   name: Shopify
   dockerRepository: airbyte/source-shopify-singer
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.6
   documentationUrl: https://hub.docker.com/r/airbyte/source-shopify-singer
 - sourceDefinitionId: 9845d17a-45f1-4070-8a60-50914b1c8e2b
   name: HTTP Request
@@ -138,3 +138,8 @@
   dockerRepository: airbyte/source-jira
   dockerImageTag: 0.1.0
   documentationUrl: https://hub.docker.com/r/airbyte/source-jira
+- sourceDefinitionId: 859e501d-2b67-471f-91bb-1c801414d28f
+  name: Mixpanel
+  dockerRepository: airbyte/source-mixpanel-singer
+  dockerImageTag: 0.1.0
+  documentationUrl: https://hub.docker.com/r/airbyte/source-mixpanel-singer

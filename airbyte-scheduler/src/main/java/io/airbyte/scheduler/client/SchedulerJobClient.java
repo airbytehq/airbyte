@@ -22,34 +22,33 @@
  * SOFTWARE.
  */
 
-package io.airbyte.server.cache;
+package io.airbyte.scheduler.client;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import io.airbyte.protocol.models.ConnectorSpecification;
-import java.util.Optional;
+import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.SourceConnection;
+import io.airbyte.config.StandardSync;
+import io.airbyte.scheduler.Job;
+import java.io.IOException;
 
-public class DefaultSpecCache implements SpecCache {
+/**
+ * This client submits a job to the scheduler and then waits for it to complete. It returns the full
+ * job object after it has reached a terminal status.
+ */
+public interface SchedulerJobClient {
 
-  private final Cache<String, ConnectorSpecification> cache;
+  Job createSourceCheckConnectionJob(SourceConnection source, String dockerImage) throws IOException;
 
-  public DefaultSpecCache() {
-    cache = CacheBuilder.newBuilder().build();
-  }
+  Job createDestinationCheckConnectionJob(DestinationConnection destination, String dockerImage) throws IOException;
 
-  @Override
-  public Optional<ConnectorSpecification> get(String imageName) {
-    return Optional.ofNullable(cache.getIfPresent(imageName));
-  }
+  Job createDiscoverSchemaJob(SourceConnection source, String dockerImage) throws IOException;
 
-  @Override
-  public void put(String imageName, ConnectorSpecification spec) {
-    cache.put(imageName, spec);
-  }
+  Job createGetSpecJob(String dockerImage) throws IOException;
 
-  @Override
-  public void evict(String imageName) {
-    cache.invalidate(imageName);
-  }
+  Job createSyncJob(SourceConnection source,
+                    DestinationConnection destination,
+                    StandardSync standardSync,
+                    String sourceDockerImage,
+                    String destinationDockerImage)
+      throws IOException;
 
 }

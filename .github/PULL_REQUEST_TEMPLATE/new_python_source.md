@@ -1,11 +1,6 @@
----
-name: New Python Source Connector
-about: Use this when submitting a new source to Airbyte
---- 
-
 ## Contributor Checklist
 Thanks for contributing to Airbyte! Please complete the following items in order so we can review your PR.
-- [ ] Followed all the instructions in the locally generated source checklist and your connector is functional & ready for review
+- [ ] Followed all the instructions in the locally generated checklist and your connector is functional & ready for review
 - [ ] Ran the standard test suite locally via `./gradlew :airbyte-integrations:connectors:source-<your_source_name>:standardSourceTestPython` and pasted the summarized output as a comment in this PR
 
 ## Reviewer Pre-merge Checklist 
