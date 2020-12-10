@@ -82,7 +82,7 @@ class SingerSource(Source):
         This method provides a way of doing that: the dict of stream names to SyncModeInfo returned from this method will be used to override each
         stream's sync mode information in the Airbyte Catalog output from the discover method. Only set fields provided in the SyncModeInfo are used.
         If a SyncModeInfo field is not set, it will not be overridden in the output catalog.
-    
+
         :return: A dict from stream name to the sync modes that should be applied to this stream.
         """
         return {}
