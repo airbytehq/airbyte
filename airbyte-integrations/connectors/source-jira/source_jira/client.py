@@ -80,6 +80,7 @@ class Client(BaseClient):
 
         except ConnectionError as error:
             alive, error_msg = False, str(error)
+        # If the input domain is incorrect or doesn't exist, then the response would be empty, resulting in a JSONDecodeError
         except JSONDecodeError:
             alive, error_msg = (
                 False,
