@@ -86,7 +86,7 @@ public class JobScheduler implements Runnable {
 
   private void scheduleSyncJobs() throws IOException {
     for (StandardSync connection : getAllActiveConnections()) {
-      Optional<Job> previousJobOptional = jobPersistence.getLastSyncJob(connection.getConnectionId());
+      final Optional<Job> previousJobOptional = jobPersistence.getLastSyncJob(connection.getConnectionId());
       final StandardSyncSchedule standardSyncSchedule = getStandardSyncSchedule(connection);
 
       if (scheduleJobPredicate.test(previousJobOptional, standardSyncSchedule)) {
