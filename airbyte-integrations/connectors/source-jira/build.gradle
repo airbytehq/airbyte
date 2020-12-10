@@ -1,0 +1,14 @@
+plugins {
+    id 'airbyte-python'
+    id 'airbyte-docker'
+    id 'airbyte-source-test'
+    id 'airbyte-integration-test-java'
+}
+
+airbytePython {
+    moduleDirectory 'source_jira'
+}
+
+dependencies {
+    implementation files(project(':airbyte-integrations:bases:base-python').airbyteDocker.outputs)
+}
