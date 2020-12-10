@@ -59,6 +59,7 @@ import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import io.airbyte.workers.protocols.airbyte.AirbyteSource;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteSource;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -67,6 +68,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -265,8 +267,13 @@ public abstract class TestSource {
       return;
     }
 
-    ConfiguredAirbyteCatalog configuredAirbyteCatalog = withSourceDefinedCursors(getConfiguredCatalog());
-    List<AirbyteMessage> airbyteMessages = runRead(configuredAirbyteCatalog, getState());
+    ConfiguredAirbyteCatalog configuredCatalog = withSourceDefinedCursors(getConfiguredCatalog());
+    // only sync incremental streams
+    configuredCatalog.setStreams(
+        configuredCatalog.getStreams().stream().filter(s -> s.getSyncMode() == INCREMENTAL).collect(Collectors.toList())
+    );
+    
+    List<AirbyteMessage> airbyteMessages = runRead(configuredCatalog, getState());
     List<AirbyteRecordMessage> recordMessages = filterRecords(airbyteMessages);
     List<AirbyteStateMessage> stateMessages = airbyteMessages
         .stream()
@@ -281,7 +288,7 @@ public abstract class TestSource {
     // when we run incremental sync again there should be no new records. Run a sync with the latest
     // state message and assert no records were emitted.
     JsonNode latestState = stateMessages.get(stateMessages.size() - 1).getData();
-    List<AirbyteRecordMessage> secondSyncRecords = filterRecords(runRead(configuredAirbyteCatalog, latestState));
+    List<AirbyteRecordMessage> secondSyncRecords = filterRecords(runRead(configuredCatalog, latestState));
     assertTrue(
         secondSyncRecords.isEmpty(),
         "Expected the second incremental sync to produce no records when given the first sync's output state.");
