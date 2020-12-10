@@ -12,3 +12,8 @@ todo: how to read data from workspace or local volumes
 todo: how to connect to the db and read from it
 todo: move db secrets to kube secrets?
 todo: either make a port forwarding thing that works for pod restarts or document the timing out behavior
+todo: working local kube with job launching
+todo: testing for kube
+todo: kube on gke
+todo: easy way of running dev versions/change other env variables
+todo: use non-mounted space for buffers so it’s faster?
