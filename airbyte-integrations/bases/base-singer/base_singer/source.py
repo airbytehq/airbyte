@@ -88,7 +88,7 @@ class BaseSingerSource(SingerSource):
             json_config = config_container.rendered_config
             self.try_connect(logger, json_config)
         except self.api_error as err:
-            logger.error("Exception while connecting to the %s: %s", self.tap_name, str(err))
+            logger.error(f"Exception while connecting to the {self.tap_name}: {err}")
             # this should be in UI
             error_msg = f"Unable to connect to {self.tap_name} with the provided credentials. Error: {err}"
             return AirbyteConnectionStatus(status=Status.FAILED, message=error_msg)

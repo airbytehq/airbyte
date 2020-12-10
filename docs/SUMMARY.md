@@ -37,6 +37,7 @@
     * [Stripe](integrations/sources/stripe.md)
     * [Twilio](integrations/sources/twilio.md)
     * [Zendesk](integrations/sources/zendesk.md)
+    * [Zoom](integrations/sources/zoom.md)
   * [Destinations](integrations/destinations/README.md)
     * [BigQuery](integrations/destinations/bigquery.md)
     * [Local CSV](integrations/destinations/local-csv.md)
