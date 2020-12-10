@@ -32,7 +32,7 @@ import io.airbyte.api.model.SourceDefinitionUpdate;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.server.cache.SpecCache;
+import io.airbyte.scheduler.client.CachingSchedulerJobClient;
 import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -52,24 +52,24 @@ public class SourceDefinitionsHandler {
   private final DockerImageValidator imageValidator;
   private final ConfigRepository configRepository;
   private final Supplier<UUID> uuidSupplier;
-  private final SpecCache specCache;
+  private final CachingSchedulerJobClient schedulerJobClient;
 
   public SourceDefinitionsHandler(
                                   final ConfigRepository configRepository,
                                   final DockerImageValidator imageValidator,
-                                  final SpecCache specCache) {
-    this(configRepository, imageValidator, UUID::randomUUID, specCache);
+                                  final CachingSchedulerJobClient schedulerJobClient) {
+    this(configRepository, imageValidator, UUID::randomUUID, schedulerJobClient);
   }
 
   public SourceDefinitionsHandler(
                                   final ConfigRepository configRepository,
                                   final DockerImageValidator imageValidator,
                                   final Supplier<UUID> uuidSupplier,
-                                  final SpecCache specCache) {
+                                  final CachingSchedulerJobClient schedulerJobClient) {
     this.configRepository = configRepository;
     this.uuidSupplier = uuidSupplier;
     this.imageValidator = imageValidator;
-    this.specCache = specCache;
+    this.schedulerJobClient = schedulerJobClient;
   }
 
   public SourceDefinitionReadList listSourceDefinitions() throws ConfigNotFoundException, IOException, JsonValidationException {
@@ -116,7 +116,7 @@ public class SourceDefinitionsHandler {
 
     configRepository.writeStandardSource(newSource);
     // we want to re-fetch the spec for updated definitions.
-    specCache.evict(currentSourceDefinition.getDockerRepository() + ":" + sourceDefinitionUpdate.getDockerImageTag());
+    schedulerJobClient.resetCache();
     return buildSourceDefinitionRead(newSource);
   }
 
