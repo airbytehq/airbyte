@@ -11,3 +11,4 @@ todo: how to bump local or workspace volume size if running out of space
 todo: how to read data from workspace or local volumes
 todo: how to connect to the db and read from it
 todo: move db secrets to kube secrets?
+todo: either make a port forwarding thing that works for pod restarts or document the timing out behavior
