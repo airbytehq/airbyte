@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
 from datetime import datetime, timedelta
 
 from base_python import AirbyteLogger
@@ -40,7 +41,7 @@ class SourceMixpanelSinger(BaseSingerSource):
     @property
     def default_start_date(self):
         one_year_ago = datetime.now() - timedelta(days=365)
-        return one_year_ago.replace(microsecond=0).isoformat() + 'Z'
+        return one_year_ago.replace(microsecond=0).isoformat() + "Z"
 
     def transform_config(self, raw_config):
         airbyte_config = {
