@@ -27,6 +27,7 @@ package io.airbyte.scheduler.client;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import io.airbyte.scheduler.Job;
+import io.airbyte.scheduler.persistence.JobCreator;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import java.io.IOException;
 import java.util.Optional;
@@ -44,8 +45,8 @@ public class SpecCachingSchedulerJobClient extends DefaultSchedulerJobClient imp
 
   private final Cache<String, Job> specCache;
 
-  public SpecCachingSchedulerJobClient(JobPersistence jobPersistence) {
-    super(jobPersistence);
+  public SpecCachingSchedulerJobClient(JobPersistence jobPersistence, JobCreator jobCreator) {
+    super(jobPersistence, jobCreator);
     specCache = CacheBuilder.newBuilder().build();
   }
 

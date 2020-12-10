@@ -24,12 +24,13 @@
 
 package io.airbyte.scheduler.client;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.JobStatus;
-import io.airbyte.scheduler.persistence.DefaultJobCreator;
+import io.airbyte.scheduler.persistence.JobCreator;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import java.io.IOException;
 import org.slf4j.Logger;
@@ -40,11 +41,11 @@ public class DefaultSchedulerJobClient implements SchedulerJobClient {
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSchedulerJobClient.class);
 
   private final JobPersistence jobPersistence;
-  private final DefaultJobCreator jobCreator;
+  private final JobCreator jobCreator;
 
-  public DefaultSchedulerJobClient(JobPersistence jobPersistence) {
+  public DefaultSchedulerJobClient(JobPersistence jobPersistence, JobCreator jobCreator) {
     this.jobPersistence = jobPersistence;
-    this.jobCreator = new DefaultJobCreator(jobPersistence);
+    this.jobCreator = jobCreator;
   }
 
   @Override
@@ -88,7 +89,8 @@ public class DefaultSchedulerJobClient implements SchedulerJobClient {
     return waitUntilJobIsTerminalOrTimeout(jobId);
   }
 
-  private Job waitUntilJobIsTerminalOrTimeout(final long jobId) throws IOException {
+  @VisibleForTesting
+  Job waitUntilJobIsTerminalOrTimeout(final long jobId) throws IOException {
     LOGGER.info("Waiting for job id: " + jobId);
     for (int i = 0; i < 120; i++) {
       final Job job = jobPersistence.getJob(jobId);

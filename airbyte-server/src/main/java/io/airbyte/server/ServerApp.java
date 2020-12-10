@@ -35,6 +35,7 @@ import io.airbyte.config.persistence.DefaultConfigPersistence;
 import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.db.Databases;
 import io.airbyte.scheduler.client.SpecCachingSchedulerJobClient;
+import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.apis.ConfigurationApi;
@@ -80,7 +81,7 @@ public class ServerApp {
 
     ServletContextHandler handler = new ServletContextHandler();
 
-    ConfigurationApiFactory.setSpecCache(new SpecCachingSchedulerJobClient(jobPersistence));
+    ConfigurationApiFactory.setSpecCache(new SpecCachingSchedulerJobClient(jobPersistence, new DefaultJobCreator(jobPersistence)));
     ConfigurationApiFactory.setConfigRepository(configRepository);
     ConfigurationApiFactory.setJobPersistence(jobPersistence);
 
