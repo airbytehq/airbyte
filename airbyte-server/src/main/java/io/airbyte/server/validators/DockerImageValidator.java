@@ -30,7 +30,7 @@ import io.airbyte.server.handlers.SchedulerHandler;
 
 public class DockerImageValidator {
 
-  private SchedulerHandler schedulerHandler;
+  private final SchedulerHandler schedulerHandler;
 
   public DockerImageValidator(SchedulerHandler schedulerHandler) {
     this.schedulerHandler = schedulerHandler;
