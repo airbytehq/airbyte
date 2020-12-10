@@ -28,6 +28,8 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobOutput;
+import io.airbyte.config.StandardSyncOutput;
+import io.airbyte.config.State;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.scheduler.Attempt;
@@ -271,6 +273,17 @@ public class DefaultJobPersistence implements JobPersistence {
         .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE scope = ? AND CAST(jobs.status AS VARCHAR) <> ? ORDER BY jobs.created_at DESC LIMIT 1",
             ScopeHelper.createScope(JobConfig.ConfigType.SYNC, connectionId.toString()),
             JobStatus.CANCELLED.toString().toLowerCase())));
+  }
+
+  @Override
+  public Optional<State> getCurrentState(UUID connectionId) throws IOException {
+    return database.query(ctx -> getJobFromResult(ctx
+        .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE scope = ? AND CAST(jobs.status AS VARCHAR) = ? ORDER BY attempts.created_at DESC LIMIT 1",
+            ScopeHelper.createScope(JobConfig.ConfigType.SYNC, connectionId.toString()),
+            JobStatus.SUCCEEDED.toString().toLowerCase())))
+        .flatMap(Job::getSuccessOutput)
+        .map(JobOutput::getSync)
+        .map(StandardSyncOutput::getState);
   }
 
   @Override

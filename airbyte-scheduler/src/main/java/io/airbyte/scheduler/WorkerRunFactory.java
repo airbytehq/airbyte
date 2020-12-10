@@ -25,7 +25,6 @@
 package io.airbyte.scheduler;
 
 import com.google.common.base.Preconditions;
-import io.airbyte.config.AirbyteProtocolConverters;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
@@ -116,7 +115,7 @@ public class WorkerRunFactory {
   private WorkerRun createDiscoverCatalogWorker(JobDiscoverCatalogConfig config, Path jobRoot) {
     final StandardDiscoverCatalogInput discoverSchemaInput = getDiscoverCatalogInput(config);
 
-    IntegrationLauncher launcher = createLauncher(config.getDockerImage());
+    final IntegrationLauncher launcher = createLauncher(config.getDockerImage());
 
     return creator.create(
         jobRoot,
@@ -127,8 +126,8 @@ public class WorkerRunFactory {
   private WorkerRun createSyncWorker(JobSyncConfig config, Path jobRoot) {
     final StandardSyncInput syncInput = getSyncInput(config);
 
-    IntegrationLauncher sourceLauncher = createLauncher(config.getSourceDockerImage());
-    IntegrationLauncher destinationLauncher = createLauncher(config.getDestinationDockerImage());
+    final IntegrationLauncher sourceLauncher = createLauncher(config.getSourceDockerImage());
+    final IntegrationLauncher destinationLauncher = createLauncher(config.getDestinationDockerImage());
 
     Preconditions.checkArgument(sourceLauncher.getClass().equals(destinationLauncher.getClass()),
         "Source and Destination must be using the same protocol");
@@ -144,7 +143,7 @@ public class WorkerRunFactory {
                 NormalizationRunnerFactory.create(
                     config.getDestinationDockerImage(),
                     pbf,
-                    syncInput.getDestinationConnection().getConfiguration()))));
+                    syncInput.getDestinationConfiguration()))));
   }
 
   private IntegrationLauncher createLauncher(final String image) {
@@ -161,11 +160,9 @@ public class WorkerRunFactory {
 
   private static StandardSyncInput getSyncInput(JobSyncConfig config) {
     return new StandardSyncInput()
-        .withSourceConnection(config.getSourceConnection())
-        .withDestinationConnection(config.getDestinationConnection())
-        .withConnectionId(config.getStandardSync().getConnectionId())
-        .withCatalog(AirbyteProtocolConverters.toConfiguredCatalog(config.getStandardSync().getSchema()))
-        .withSyncMode(config.getStandardSync().getSyncMode())
+        .withSourceConfiguration(config.getSourceConfiguration())
+        .withDestinationConfiguration(config.getDestinationConfiguration())
+        .withCatalog(config.getConfiguredAirbyteCatalog())
         .withState(config.getState());
   }
 

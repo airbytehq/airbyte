@@ -5,13 +5,9 @@ title: State
 description: information output by the connection.
 type: object
 required:
-  - connectionId
   - state
 additionalProperties: false
 properties:
-  connectionId:
-    type: string
-    format: uuid
   state:
     description: Integration specific blob. Must be a valid JSON string.
     type: object

@@ -32,6 +32,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.AirbyteProtocolConverters;
 import io.airbyte.config.DataType;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.Field;
@@ -192,11 +193,11 @@ public class DefaultJobCreatorTest {
   @Test
   void testCreateSyncJob() throws IOException {
     final JobSyncConfig jobSyncConfig = new JobSyncConfig()
-        .withSourceConnection(SOURCE_CONNECTION)
+        .withSourceConfiguration(SOURCE_CONNECTION.getConfiguration())
         .withSourceDockerImage(SOURCE_IMAGE_NAME)
-        .withDestinationConnection(DESTINATION_CONNECTION)
+        .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
-        .withStandardSync(STANDARD_SYNC);
+        .withConfiguredAirbyteCatalog(AirbyteProtocolConverters.toConfiguredCatalog(STANDARD_SYNC.getSchema()));
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(JobConfig.ConfigType.SYNC)
