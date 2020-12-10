@@ -23,10 +23,10 @@ SOFTWARE.
 """
 
 import os
+from typing import Dict
 
-from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, Status
-from base_python import AirbyteLogger, CatalogHelper, ConfigContainer
-from base_singer import SingerSource
+from airbyte_protocol import AirbyteConnectionStatus, Status, SyncMode
+from base_singer import SingerSource, SyncModeInfo
 
 
 class SourceGoogleAdwordsSinger(SingerSource):
@@ -48,15 +48,38 @@ class SourceGoogleAdwordsSinger(SingerSource):
     def discover_cmd(self, logger, config_path) -> str:
         return f"tap-adwords --config {config_path} --discover"
 
-    def discover(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteCatalog:
-        catalog = super().discover(logger, config_container)
-        return CatalogHelper.coerce_catalog_as_full_refresh(catalog)
+    def get_sync_mode_overrides(self) -> Dict[str, SyncModeInfo]:
+        incrementals = ["KEYWORDS_PERFORMANCE_REPORT",
+                        "AD_PERFORMANCE_REPORT",
+                        "ADGROUP_PERFORMANCE_REPORT",
+                        "CAMPAIGN_PERFORMANCE_REPORT",
+                        "ACCOUNT_PERFORMANCE_REPORT",
+                        "GEO_PERFORMANCE_REPORT",
+                        "SEARCH_QUERY_PERFORMANCE_REPORT",
+                        "CALL_METRICS_CALL_DETAILS_REPORT",
+                        "KEYWORDLESS_QUERY_REPORT",
+                        "CRITERIA_PERFORMANCE_REPORT",
+                        "CLICK_PERFORMANCE_REPORT",
+                        "DISPLAY_KEYWORD_PERFORMANCE_REPORT",
+                        "PLACEHOLDER_FEED_ITEM_REPORT",
+                        "PLACEMENT_PERFORMANCE_REPORT",
+                        "GENDER_PERFORMANCE_REPORT",
+                        "AGE_RANGE_PERFORMANCE_REPORT",
+                        "AUDIENCE_PERFORMANCE_REPORT",
+                        "DISPLAY_TOPICS_PERFORMANCE_REPORT",
+                        "SHOPPING_PERFORMANCE_REPORT",
+                        "PLACEHOLDER_REPORT",
+                        "FINAL_URL_REPORT",
+                        "VIDEO_PERFORMANCE_REPORT"]
+        return {stream: SyncModeInfo(supported_sync_modes=[SyncMode.incremental], source_defined_cursor=True, default_cursor_field=[]) for stream in
+                incrementals}
 
     def read_cmd(self, logger, config_path, catalog_path, state_path=None) -> str:
         config_option = f"--config {config_path}"
         properties_option = f"--properties {catalog_path}"
-        # We don't pass the state because this tap does not respect the replication-method catalog key
-        return f"tap-adwords {config_option} {properties_option}"
+        state_option = f"--state {state_path}" if state_path else ""
+
+        return f"tap-adwords {config_option} {properties_option} {state_option}"
 
     def transform_config(self, raw_config):
         # required property in the singer tap, but seems like an implementation detail of stitch
