@@ -7,48 +7,29 @@
           "properties": {
             "date": {
               "format": "date",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "datetime": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "count": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "paid_count": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "amount": {
               "multipleOf": 1e-20,
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             }
           },
           "type": "object",
           "additionalProperties": false
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "datetime"
-        ]
+        "default_cursor_field": ["datetime"]
       }
     },
     {
@@ -58,28 +39,16 @@
           "properties": {
             "date": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "project_id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "description": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             }
           },
           "type": "object",

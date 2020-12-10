@@ -1,8 +1,8 @@
 {
-    "api_key": "YOUR_API_SECRET",
-    "date_window_size": "30",
-    "attribution_window": "5",
-    "project_timezone": "US/Pacific",
-    "select_properties_by_default": "true",
-    "start_date": "2019-01-01T00:00:00Z"
+  "api_key": "YOUR_API_SECRET",
+  "date_window_size": "30",
+  "attribution_window": "5",
+  "project_timezone": "US/Pacific",
+  "select_properties_by_default": "true",
+  "start_date": "2019-01-01T00:00:00Z"
 }
