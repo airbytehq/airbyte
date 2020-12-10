@@ -31,7 +31,7 @@ spec:
             - name: AIRBYTE_VERSION
               value: 0.6.2-alpha
             - name: API_URL
-              value: http://airbyte-server-svc:8001/
+              value: http://localhost:8001/ # TODO: figure out what to document for ingresses
             - name: TRACKING_STRATEGY
               value: segment
           resources:

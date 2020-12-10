@@ -1,0 +1,30 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: airbyte-bootstrapping
+spec:
+  template:
+    spec:
+      containers:
+        - name: airbyte-init
+          image: airbyte/init:0.6.2-alpha
+          command: ["/bin/sh"]
+          args: ["-c", "./scripts/create_mount_directories.sh /local_parent /tmp /tmp/airbyte_local"]
+          env:
+            - name: HACK_LOCAL_ROOT_PARENT
+              value: /tmp
+            - name: LOCAL_ROOT
+              value: /tmp/airbyte_local
+        - name: airbyte-seed
+          image: airbyte/seed:0.6.2-alpha
+          command: ["/bin/sh"]
+          args: ["-c", "mkdir -p /data/config && cp -r /app/seed/config /data/config"]
+      volumes:
+        - name: airbyte-volume-workspace
+          hostPath:
+            path: /tmp/workspace
+        - name: airbyte-volume-data
+          hostPath:
+            path: /data
+      restartPolicy: OnFailure
+  backoffLimit: 4
