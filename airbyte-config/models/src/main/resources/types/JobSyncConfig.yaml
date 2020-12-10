@@ -6,18 +6,24 @@ description: job sync config
 type: object
 additionalProperties: false
 required:
-  - sourceConnection
-  - destinationConnection
-  - standardSync
+  - sourceConfiguration
+  - destinationConfiguration
+  - configuredAirbyteCatalog
   - sourceDockerImage
   - destinationDockerImage
 properties:
-  sourceConnection:
-    "$ref": SourceConnection.yaml
-  destinationConnection:
-    "$ref": DestinationConnection.yaml
-  standardSync:
-    "$ref": StandardSync.yaml
+  sourceConfiguration:
+    description: Integration specific blob. Must be a valid JSON string.
+    type: object
+    existingJavaType: com.fasterxml.jackson.databind.JsonNode
+  destinationConfiguration:
+    description: Integration specific blob. Must be a valid JSON string.
+    type: object
+    existingJavaType: com.fasterxml.jackson.databind.JsonNode
+  configuredAirbyteCatalog:
+    description: the configured airbyte catalog
+    type: object
+    existingJavaType: io.airbyte.protocol.models.ConfiguredAirbyteCatalog
   sourceDockerImage:
     type: string
   destinationDockerImage:

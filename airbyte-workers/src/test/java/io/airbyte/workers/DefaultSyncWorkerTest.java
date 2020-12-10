@@ -129,9 +129,7 @@ class DefaultSyncWorkerTest {
             .withRecordsSynced(12L)
             .withBytesSynced(100L)
             .withStatus(Status.COMPLETED))
-        .withState(new State()
-            .withConnectionId(syncInput.getConnectionId())
-            .withState(expectedState));
+        .withState(new State().withState(expectedState));
     final OutputAndStatus<StandardSyncOutput> expected = new OutputAndStatus<>(JobStatus.SUCCEEDED, expectedSyncOutput);
 
     // good enough to verify that times are present.
