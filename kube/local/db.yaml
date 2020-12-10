@@ -40,7 +40,10 @@ spec:
               value: docker
           ports:
             - containerPort: 5432
+          volumeMounts:
+            - name: airbyte-volume-db
+              mountPath: /var/lib/postgresql/data
       volumes:
         - name: airbyte-volume-db
-          hostPath:
-            path: /var/lib/postgresql/data
+          persistentVolumeClaim:
+            claimName: airbyte-volume-db

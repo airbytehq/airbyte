@@ -6,25 +6,36 @@ spec:
   template:
     spec:
       containers:
-        - name: airbyte-init
-          image: airbyte/init:0.6.2-alpha
-          command: ["/bin/sh"]
-          args: ["-c", "./scripts/create_mount_directories.sh /local_parent /tmp /tmp/airbyte_local"]
-          env:
-            - name: HACK_LOCAL_ROOT_PARENT
-              value: /tmp
-            - name: LOCAL_ROOT
-              value: /tmp/airbyte_local
+# todo: introduce a fourth volume: airbyte-local
+#        - name: airbyte-init
+#          image: airbyte/init:0.6.2-alpha
+#          command: ["/bin/sh"]
+#          args: ["-c", "./scripts/create_mount_directories.sh /local_parent /tmp /tmp/airbyte_local"]
+#          env:
+#            - name: HACK_LOCAL_ROOT_PARENT
+#              value: /tmp
+#            - name: LOCAL_ROOT
+#              value: /tmp/airbyte_local
+#          volumeMounts:
+#            - name: airbyte-volume-data
+#              mountPath: /data
+#            - name: airbyte-volume-workspace
+#              mountPath: /tmp/workspace
         - name: airbyte-seed
           image: airbyte/seed:0.6.2-alpha
           command: ["/bin/sh"]
-          args: ["-c", "mkdir -p /data/config && cp -r /app/seed/config /data/config"]
+          args: ["-c", "mkdir -p /data/config && cp -r /app/seed/config /data"]
+          volumeMounts:
+            - name: airbyte-volume-data
+              mountPath: /data
+            - name: airbyte-volume-workspace
+              mountPath: /tmp/workspace
       volumes:
         - name: airbyte-volume-workspace
-          hostPath:
-            path: /tmp/workspace
+          persistentVolumeClaim:
+            claimName: airbyte-volume-workspace
         - name: airbyte-volume-data
-          hostPath:
-            path: /data
+          persistentVolumeClaim:
+            claimName: airbyte-volume-data
       restartPolicy: OnFailure
   backoffLimit: 4

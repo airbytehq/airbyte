@@ -52,10 +52,15 @@ spec:
               cpu: "500m"
           ports:
             - containerPort: 8001
+          volumeMounts:
+            - name: airbyte-volume-data
+              mountPath: /data
+            - name: airbyte-volume-workspace
+              mountPath: /tmp/workspace
       volumes:
-        - name: airbyte-volume-data
-          hostPath:
-            path: /data
         - name: airbyte-volume-workspace
-          hostPath:
-            path: /tmp/workspace
+          persistentVolumeClaim:
+            claimName: airbyte-volume-workspace
+        - name: airbyte-volume-data
+          persistentVolumeClaim:
+            claimName: airbyte-volume-data
