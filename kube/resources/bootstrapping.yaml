@@ -22,7 +22,7 @@ spec:
 #            - name: airbyte-volume-workspace
 #              mountPath: /tmp/workspace
         - name: airbyte-seed
-          image: airbyte/seed:0.6.2-alpha
+          image: airbyte/seed
           command: ["/bin/sh"]
           args: ["-c", "mkdir -p /data/config && cp -r /app/seed/config /data"]
           volumeMounts:

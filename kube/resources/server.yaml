@@ -26,10 +26,10 @@ spec:
     spec:
       containers:
         - name: airbyte-server-container
-          image: airbyte/server:0.6.2-alpha
+          image: airbyte/server
           env:
             - name: AIRBYTE_VERSION
-              value: 0.6.2-alpha
+              value: 0.6.2-alpha # todo
             - name: CONFIG_ROOT
               value: /data
             - name: DATABASE_PASSWORD
