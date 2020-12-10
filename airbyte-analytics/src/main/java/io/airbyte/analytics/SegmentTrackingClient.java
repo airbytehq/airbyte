@@ -29,12 +29,11 @@ import com.google.common.collect.ImmutableMap;
 import com.segment.analytics.Analytics;
 import com.segment.analytics.messages.IdentifyMessage;
 import com.segment.analytics.messages.TrackMessage;
-import org.apache.logging.log4j.util.Strings;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
+import org.apache.logging.log4j.util.Strings;
 
 public class SegmentTrackingClient implements TrackingClient {
 
@@ -47,9 +46,10 @@ public class SegmentTrackingClient implements TrackingClient {
   private final Supplier<TrackingIdentity> identitySupplier;
   private final Supplier<String> roleSupplier;
 
-  @VisibleForTesting SegmentTrackingClient(final Supplier<TrackingIdentity> identitySupplier,
-                                           final Analytics analytics,
-                                           final Supplier<String> roleSupplier) {
+  @VisibleForTesting
+  SegmentTrackingClient(final Supplier<TrackingIdentity> identitySupplier,
+                        final Analytics analytics,
+                        final Supplier<String> roleSupplier) {
     this.identitySupplier = identitySupplier;
     this.analytics = analytics;
     this.roleSupplier = roleSupplier;
