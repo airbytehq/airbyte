@@ -26,13 +26,9 @@ package io.airbyte.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.api.model.CheckConnectionRead;
@@ -52,18 +48,19 @@ import io.airbyte.config.JobOutput;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDestinationDefinition;
+import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.config.StandardGetSpecOutput;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.JobStatus;
-import io.airbyte.scheduler.persistence.JobCreator;
-import io.airbyte.scheduler.persistence.JobPersistence;
-import io.airbyte.server.cache.SpecCache;
-import io.airbyte.server.cache.SpecCache.AlwaysMissCache;
+import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.server.helpers.ConnectionHelpers;
 import io.airbyte.server.helpers.DestinationHelpers;
 import io.airbyte.server.helpers.SourceHelpers;
@@ -79,8 +76,6 @@ import org.junit.jupiter.api.Test;
 
 class SchedulerHandlerTest {
 
-  private static final long JOB_ID = 15L;
-
   private static final String SOURCE_DOCKER_REPO = "srcimage";
   private static final String SOURCE_DOCKER_TAG = "tag";
   private static final String SOURCE_DOCKER_IMAGE = DockerUtils.getTaggedImageName(SOURCE_DOCKER_REPO, SOURCE_DOCKER_TAG);
@@ -91,24 +86,17 @@ class SchedulerHandlerTest {
 
   private SchedulerHandler schedulerHandler;
   private ConfigRepository configRepository;
-  private JobPersistence jobPersistence;
-  private JobCreator jobCreator;
-  private Job inProgressJob;
   private Job completedJob;
-  private SpecCache specCache;
+  private SchedulerJobClient schedulerJobClient;
 
   @BeforeEach
   void setup() {
-    inProgressJob = mock(Job.class);
-    when(inProgressJob.getStatus()).thenReturn(JobStatus.RUNNING);
     completedJob = mock(Job.class);
     when(completedJob.getStatus()).thenReturn(JobStatus.SUCCEEDED);
-    specCache = spy(new AlwaysMissCache());
+    schedulerJobClient = spy(SchedulerJobClient.class);
 
     configRepository = mock(ConfigRepository.class);
-    jobPersistence = mock(JobPersistence.class);
-    jobCreator = mock(JobCreator.class);
-    schedulerHandler = new SchedulerHandler(configRepository, jobPersistence, jobCreator, specCache);
+    schedulerHandler = new SchedulerHandler(configRepository, schedulerJobClient);
   }
 
   @Test
@@ -122,14 +110,12 @@ class SchedulerHandlerTest {
             .withDockerImageTag(SOURCE_DOCKER_TAG)
             .withSourceDefinitionId(source.getSourceDefinitionId()));
     when(configRepository.getSourceConnection(source.getSourceId())).thenReturn(source);
-    when(jobCreator.createSourceCheckConnectionJob(source, SOURCE_DOCKER_IMAGE)).thenReturn(JOB_ID);
-    when(jobPersistence.getJob(JOB_ID)).thenReturn(inProgressJob).thenReturn(completedJob);
+    when(schedulerJobClient.createSourceCheckConnectionJob(source, SOURCE_DOCKER_IMAGE)).thenReturn(completedJob);
 
     schedulerHandler.checkSourceConnection(request);
 
     verify(configRepository).getSourceConnection(source.getSourceId());
-    verify(jobCreator).createSourceCheckConnectionJob(source, SOURCE_DOCKER_IMAGE);
-    verify(jobPersistence, times(2)).getJob(JOB_ID);
+    verify(schedulerJobClient).createSourceCheckConnectionJob(source, SOURCE_DOCKER_IMAGE);
   }
 
   @Test
@@ -141,8 +127,7 @@ class SchedulerHandlerTest {
             .withDockerRepository(SOURCE_DOCKER_REPO)
             .withDockerImageTag(SOURCE_DOCKER_TAG)
             .withSourceDefinitionId(sourceDefinitionIdRequestBody.getSourceDefinitionId()));
-    when(jobCreator.createGetSpecJob(SOURCE_DOCKER_IMAGE)).thenReturn(JOB_ID);
-    when(jobPersistence.getJob(JOB_ID)).thenReturn(inProgressJob).thenReturn(completedJob);
+    when(schedulerJobClient.createGetSpecJob(SOURCE_DOCKER_IMAGE)).thenReturn(completedJob);
 
     final StandardGetSpecOutput specOutput = new StandardGetSpecOutput().withSpecification(
         new ConnectorSpecification()
@@ -157,8 +142,7 @@ class SchedulerHandlerTest {
     schedulerHandler.getSourceDefinitionSpecification(sourceDefinitionIdRequestBody);
 
     verify(configRepository).getStandardSourceDefinition(sourceDefinitionIdRequestBody.getSourceDefinitionId());
-    verify(jobCreator).createGetSpecJob(SOURCE_DOCKER_IMAGE);
-    verify(jobPersistence, atLeast(2)).getJob(JOB_ID);
+    verify(schedulerJobClient).createGetSpecJob(SOURCE_DOCKER_IMAGE);
   }
 
   @Test
@@ -172,8 +156,7 @@ class SchedulerHandlerTest {
             .withDockerRepository(DESTINATION_DOCKER_REPO)
             .withDockerImageTag(DESTINATION_DOCKER_TAG)
             .withDestinationDefinitionId(destinationDefinitionIdRequestBody.getDestinationDefinitionId()));
-    when(jobCreator.createGetSpecJob(DESTINATION_DOCKER_IMAGE)).thenReturn(JOB_ID);
-    when(jobPersistence.getJob(JOB_ID)).thenReturn(inProgressJob).thenReturn(completedJob);
+    when(schedulerJobClient.createGetSpecJob(DESTINATION_DOCKER_IMAGE)).thenReturn(completedJob);
 
     final StandardGetSpecOutput specOutput = new StandardGetSpecOutput().withSpecification(
         new ConnectorSpecification()
@@ -187,14 +170,12 @@ class SchedulerHandlerTest {
     schedulerHandler.getDestinationSpecification(destinationDefinitionIdRequestBody);
 
     verify(configRepository).getStandardDestinationDefinition(destinationDefinitionIdRequestBody.getDestinationDefinitionId());
-    verify(jobCreator).createGetSpecJob(DESTINATION_DOCKER_IMAGE);
-    verify(jobPersistence, atLeast(2)).getJob(JOB_ID);
+    verify(schedulerJobClient).createGetSpecJob(DESTINATION_DOCKER_IMAGE);
   }
 
   @Test
   public void testGetConnectorSpec() throws IOException, URISyntaxException {
-    when(jobCreator.createGetSpecJob(SOURCE_DOCKER_IMAGE)).thenReturn(JOB_ID);
-    when(jobPersistence.getJob(JOB_ID)).thenReturn(inProgressJob).thenReturn(completedJob);
+    when(schedulerJobClient.createGetSpecJob(SOURCE_DOCKER_IMAGE)).thenReturn(completedJob);
     final StandardGetSpecOutput specOutput = new StandardGetSpecOutput().withSpecification(
         new ConnectorSpecification()
             .withDocumentationUrl(new URI("https://google.com"))
@@ -206,26 +187,7 @@ class SchedulerHandlerTest {
 
     assertEquals(specOutput.getSpecification(), schedulerHandler.getConnectorSpecification(SOURCE_DOCKER_IMAGE));
 
-    verify(jobCreator).createGetSpecJob(SOURCE_DOCKER_IMAGE);
-    verify(jobPersistence, atLeast(2)).getJob(JOB_ID);
-    verify(specCache).get(SOURCE_DOCKER_IMAGE);
-    verify(specCache).put(SOURCE_DOCKER_IMAGE, specOutput.getSpecification());
-  }
-
-  @Test
-  public void testGetConnectorSpecCached() throws IOException, URISyntaxException {
-    final ConnectorSpecification spec = new ConnectorSpecification()
-        .withDocumentationUrl(new URI("https://google.com"))
-        .withChangelogUrl(new URI("https://google.com"))
-        .withConnectionSpecification(Jsons.jsonNode(new HashMap<>()));
-    when(specCache.get(SOURCE_DOCKER_IMAGE)).thenReturn(Optional.of(spec));
-
-    assertEquals(spec, schedulerHandler.getConnectorSpecification(SOURCE_DOCKER_IMAGE));
-
-    // whole point of caching is to not need to schedule a job.
-    verifyNoInteractions(jobPersistence);
-    verify(specCache).get(SOURCE_DOCKER_IMAGE);
-    verifyNoMoreInteractions(specCache);
+    verify(schedulerJobClient).createGetSpecJob(SOURCE_DOCKER_IMAGE);
   }
 
   @Test
@@ -239,14 +201,12 @@ class SchedulerHandlerTest {
             .withDockerImageTag(DESTINATION_DOCKER_TAG)
             .withDestinationDefinitionId(destination.getDestinationDefinitionId()));
     when(configRepository.getDestinationConnection(destination.getDestinationId())).thenReturn(destination);
-    when(jobCreator.createDestinationCheckConnectionJob(destination, DESTINATION_DOCKER_IMAGE)).thenReturn(JOB_ID);
-    when(jobPersistence.getJob(JOB_ID)).thenReturn(inProgressJob).thenReturn(completedJob);
+    when(schedulerJobClient.createDestinationCheckConnectionJob(destination, DESTINATION_DOCKER_IMAGE)).thenReturn(completedJob);
 
     schedulerHandler.checkDestinationConnection(request);
 
     verify(configRepository).getDestinationConnection(destination.getDestinationId());
-    verify(jobCreator).createDestinationCheckConnectionJob(destination, DESTINATION_DOCKER_IMAGE);
-    verify(jobPersistence, times(2)).getJob(JOB_ID);
+    verify(schedulerJobClient).createDestinationCheckConnectionJob(destination, DESTINATION_DOCKER_IMAGE);
   }
 
   @Test
@@ -260,14 +220,16 @@ class SchedulerHandlerTest {
             .withDockerImageTag(SOURCE_DOCKER_TAG)
             .withSourceDefinitionId(source.getSourceDefinitionId()));
     when(configRepository.getSourceConnection(source.getSourceId())).thenReturn(source);
-    when(jobCreator.createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE)).thenReturn(JOB_ID);
-    when(jobPersistence.getJob(JOB_ID)).thenReturn(inProgressJob).thenReturn(completedJob);
+    when(schedulerJobClient.createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE)).thenReturn(completedJob);
+    final JobOutput jobOutput = new JobOutput()
+        .withDiscoverCatalog(new StandardDiscoverCatalogOutput()
+            .withCatalog(CatalogHelpers.createAirbyteCatalog("shoes", Field.of("sku", JsonSchemaPrimitive.STRING))));
+    when(completedJob.getSuccessOutput()).thenReturn(Optional.of(jobOutput));
 
     schedulerHandler.discoverSchemaForSource(request);
 
     verify(configRepository).getSourceConnection(source.getSourceId());
-    verify(jobCreator).createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE);
-    verify(jobPersistence, times(2)).getJob(JOB_ID);
+    verify(schedulerJobClient).createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE);
   }
 
   @Test
@@ -291,9 +253,7 @@ class SchedulerHandlerTest {
     when(configRepository.getStandardSync(standardSync.getConnectionId())).thenReturn(standardSync);
     when(configRepository.getSourceConnection(source.getSourceId())).thenReturn(source);
     when(configRepository.getDestinationConnection(destination.getDestinationId())).thenReturn(destination);
-    when(jobCreator.createSyncJob(source, destination, standardSync, SOURCE_DOCKER_IMAGE, DESTINATION_DOCKER_IMAGE))
-        .thenReturn(JOB_ID);
-    when(jobPersistence.getJob(JOB_ID)).thenReturn(inProgressJob).thenReturn(completedJob);
+    when(schedulerJobClient.createSyncJob(source, destination, standardSync, SOURCE_DOCKER_IMAGE, DESTINATION_DOCKER_IMAGE)).thenReturn(completedJob);
     when(completedJob.getScope()).thenReturn("cat:12");
     final JobConfig jobConfig = mock(JobConfig.class);
     when(completedJob.getConfig()).thenReturn(jobConfig);
@@ -305,8 +265,7 @@ class SchedulerHandlerTest {
     verify(configRepository).getStandardSync(standardSync.getConnectionId());
     verify(configRepository).getSourceConnection(standardSync.getSourceId());
     verify(configRepository).getDestinationConnection(standardSync.getDestinationId());
-    verify(jobCreator).createSyncJob(source, destination, standardSync, SOURCE_DOCKER_IMAGE, DESTINATION_DOCKER_IMAGE);
-    verify(jobPersistence, times(2)).getJob(JOB_ID);
+    verify(schedulerJobClient).createSyncJob(source, destination, standardSync, SOURCE_DOCKER_IMAGE, DESTINATION_DOCKER_IMAGE);
   }
 
   @Test
