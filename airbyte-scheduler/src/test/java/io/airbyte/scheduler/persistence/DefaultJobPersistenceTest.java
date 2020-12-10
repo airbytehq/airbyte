@@ -37,7 +37,6 @@ import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.JobSyncConfig;
-import io.airbyte.config.StandardSync;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.scheduler.Attempt;
@@ -73,8 +72,7 @@ class DefaultJobPersistenceTest {
   private static final Instant NOW = Instant.now();
   private static final UUID CONNECTION_ID = UUID.randomUUID();
   private static final String SCOPE = ScopeHelper.createScope(ConfigType.SYNC, CONNECTION_ID.toString());
-  private static final JobConfig JOB_CONFIG =
-      new JobConfig().withSync(new JobSyncConfig().withStandardSync(new StandardSync().withConnectionId(CONNECTION_ID)));
+  private static final JobConfig JOB_CONFIG = new JobConfig().withSync(new JobSyncConfig());
   private static final Path LOG_PATH = Path.of("/tmp/logs/all/the/way/down");
 
   private JobPersistence jobPersistence;

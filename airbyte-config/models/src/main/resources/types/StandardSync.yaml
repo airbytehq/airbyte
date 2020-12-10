@@ -23,6 +23,8 @@ properties:
     format: uuid
   name:
     type: string
+  # todo (cgardens) - this is deprecated. we should remove it.
+  # https://github.com/airbytehq/airbyte/issues/1224
   syncMode:
     "$ref": SyncMode.yaml
   schema:
