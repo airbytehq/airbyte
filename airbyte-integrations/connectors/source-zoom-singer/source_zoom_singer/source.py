@@ -38,5 +38,5 @@ class SourceZoomSinger(BaseSingerSource):
         client = ZoomClient(config=config, config_path="")
         try:
             client.get(path="users")
-        except HTTPError:
-            raise HTTPError("No data. Please check your permissions.")
+        except HTTPError as error:
+            raise HTTPError(error)

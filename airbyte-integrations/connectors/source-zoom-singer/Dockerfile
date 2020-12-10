@@ -1,6 +1,6 @@
 FROM airbyte/integration-base-singer:dev
 
-# Bash is installed for more convenient debugging.
+# Bash is installed for more convenient debugging. GCC is required by tap-zoom to compile ciso8601.
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
     && apt-get install -y bash \
