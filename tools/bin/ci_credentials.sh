@@ -36,6 +36,7 @@ write_standard_creds source-google-sheets "$GSHEETS_INTEGRATION_TESTS_CREDS" "cr
 write_standard_creds source-greenhouse "$GREENHOUSE_TEST_CREDS"
 write_standard_creds source-hubspot-singer "$HUBSPOT_INTEGRATION_TESTS_CREDS"
 write_standard_creds source-intercom-singer "$INTERCOM_INTEGRATION_TEST_CREDS"
+write_standard_creds source-jira "$JIRA_INTEGRATION_TEST_CREDS"
 write_standard_creds source-mailchimp "$MAILCHIMP_TEST_CREDS"
 write_standard_creds source-marketo-singer "$SOURCE_MARKETO_SINGER_INTEGRATION_TEST_CONFIG"
 write_standard_creds source-mixpanel-singer "$MIXPANEL_INTEGRATION_TEST_CREDS"
