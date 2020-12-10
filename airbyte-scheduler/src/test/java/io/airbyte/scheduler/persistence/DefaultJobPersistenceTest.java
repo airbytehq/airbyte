@@ -31,12 +31,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.JobSyncConfig;
+import io.airbyte.config.StandardSyncOutput;
+import io.airbyte.config.State;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.scheduler.Attempt;
@@ -368,6 +372,72 @@ class DefaultJobPersistenceTest {
     final Optional<Job> actual = jobPersistence.getLastSyncJob(CONNECTION_ID);
 
     assertTrue(actual.isEmpty());
+  }
+
+  @Test
+  public void testGetCurrentStateForConnectionIdNoState() throws IOException {
+    // no state when the connection has never had a job.
+    checkCurrentState(null, jobPersistence);
+
+    final long jobId = jobPersistence.createJob(SCOPE, JOB_CONFIG);
+    final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
+
+    // no state when connection has a job but it has not completed that has not completed
+    checkCurrentState(null, jobPersistence);
+
+    jobPersistence.failJob(jobId);
+
+    // no state when connection has a job but it is failed.
+    checkCurrentState(null, jobPersistence);
+
+    jobPersistence.cancelJob(jobId);
+
+    // no state when connection has a job but it is cancelled.
+    checkCurrentState(null, jobPersistence);
+
+    final JobOutput jobOutput1 = new JobOutput()
+        .withSync(new StandardSyncOutput().withState(new State().withState(Jsons.jsonNode(ImmutableMap.of("checkpoint", "1")))));
+    jobPersistence.writeOutput(jobId, attemptNumber, jobOutput1);
+    jobPersistence.succeedAttempt(jobId, attemptNumber);
+
+    // job 1 state, after first success.
+    checkCurrentState(jobOutput1.getSync().getState(), jobPersistence);
+
+    when(timeSupplier.get()).thenReturn(NOW.plusSeconds(1000));
+    final long jobId2 = jobPersistence.createJob(SCOPE, JOB_CONFIG);
+    final int attemptNumber2 = jobPersistence.createAttempt(jobId2, LOG_PATH);
+
+    // job 1 state, second job created.
+    checkCurrentState(jobOutput1.getSync().getState(), jobPersistence);
+
+    jobPersistence.failJob(jobId2);
+
+    // job 1 state, second job failed.
+    checkCurrentState(jobOutput1.getSync().getState(), jobPersistence);
+
+    jobPersistence.cancelJob(jobId2);
+
+    // job 1 state, second job cancelled
+    checkCurrentState(jobOutput1.getSync().getState(), jobPersistence);
+
+    final JobOutput jobOutput2 = new JobOutput()
+        .withSync(new StandardSyncOutput().withState(new State().withState(Jsons.jsonNode(ImmutableMap.of("checkpoint", "2")))));
+    jobPersistence.writeOutput(jobId2, attemptNumber2, jobOutput2);
+    jobPersistence.succeedAttempt(jobId2, attemptNumber2);
+
+    // job 2 state, after second job success.
+    checkCurrentState(jobOutput2.getSync().getState(), jobPersistence);
+  }
+
+  private static void checkCurrentState(State expectedState, JobPersistence jobPersistence) throws IOException {
+    final Optional<State> currentState = jobPersistence.getCurrentState(CONNECTION_ID);
+
+    if (expectedState != null) {
+      assertTrue(currentState.isPresent());
+      assertEquals(expectedState, currentState.get());
+    } else {
+      assertTrue(currentState.isEmpty());
+    }
   }
 
   @Test

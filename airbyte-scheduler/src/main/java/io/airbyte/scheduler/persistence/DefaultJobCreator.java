@@ -25,28 +25,18 @@
 package io.airbyte.scheduler.persistence;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.Lists;
 import io.airbyte.config.AirbyteProtocolConverters;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
-import io.airbyte.config.JobOutput;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
-import io.airbyte.config.StandardSyncOutput;
-import io.airbyte.config.State;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.scheduler.Attempt;
-import io.airbyte.scheduler.AttemptStatus;
-import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.ScopeHelper;
 import java.io.IOException;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 public class DefaultJobCreator implements JobCreator {
@@ -158,21 +148,7 @@ public class DefaultJobCreator implements JobCreator {
         .withConfiguredAirbyteCatalog(configuredAirbyteCatalog)
         .withState(null);
 
-    final Optional<State> previousJobOptional = jobPersistence.getCurrentState(connectionId);
-
-    final Optional<State> stateOptional = previousJobOptional.flatMap(j -> {
-      final List<Attempt> attempts = j.getAttempts() != null ? j.getAttempts() : Lists.newArrayList();
-      // find oldest attempt that is either succeeded or contains state.
-      return attempts.stream()
-          .filter(
-              a -> a.getStatus() == AttemptStatus.SUCCEEDED || a.getOutput().map(JobOutput::getSync).map(StandardSyncOutput::getState).isPresent())
-          .max(Comparator.comparingLong(Attempt::getCreatedAtInSecond))
-          .map(Attempt::getOutput)
-          .map(Optional::get)
-          .map(JobOutput::getSync)
-          .map(StandardSyncOutput::getState);
-    });
-    stateOptional.ifPresent(jobSyncConfig::withState);
+    jobPersistence.getCurrentState(connectionId).ifPresent(jobSyncConfig::withState);
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(JobConfig.ConfigType.SYNC)

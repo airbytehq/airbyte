@@ -65,7 +65,6 @@ public interface JobPersistence {
    * Set job status from current status to CANCELLED. If already in a terminal status, no op.
    *
    * @param jobId job to cancel
-   * @param cancellationReason rest that the job is being cancelled.
    * @throws IOException exception due to interaction with persistence
    */
   void cancelJob(long jobId) throws IOException;
@@ -131,6 +130,17 @@ public interface JobPersistence {
 
   Optional<Job> getLastSyncJob(UUID connectionId) throws IOException;
 
+  /**
+   * if a job does not succeed, we assume that it synced nothing. that is the most conservative
+   * assumption we can make. as long as all destinations write the final data output in a
+   * transactional way, this will be true. if this changes, then we may end up writing duplicate data
+   * with our incremental append only. this is preferable to failing to send data at all. our
+   * incremental append only most closely resembles a deliver at least once strategy anyway.
+   *
+   * @param connectionId - id of the connection whose state we want to fetch.
+   * @return the current state, if any of, the connection
+   * @throws IOException exception due to interaction with persistence
+   */
   Optional<State> getCurrentState(UUID connectionId) throws IOException;
 
   Optional<Job> getOldestPendingJob() throws IOException;
