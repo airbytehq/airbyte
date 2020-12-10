@@ -19,13 +19,12 @@ The local files will be written to the directory `/tmp/airbyte_local`.
 
 The postgres database that we are going to spin up below will be running locally with the following configuration where data will be written:
 
-```text
-Host: localhost
-Port: 3000
-User: postgres
-Password: password
-DB Name: postgres
-```
+    - Host: localhost
+    - Port: 3000
+    - User: postgres
+    - Password: password
+    - DB Name: postgres
+
 
 
 ```bash
@@ -49,8 +48,6 @@ echo "Docker Containers currently running:"
 docker ps
 ```
 
-Output:
-
     File Content in the local destination (may not exist yet):
     find: /tmp/airbyte_local: No such file or directory
     
@@ -65,6 +62,7 @@ Output:
 ## Starting Airbyte Server
 
 As we've seen in the previous tutorial, we can spin up Airbyte instance after installing it:
+
 
 
 ```bash
@@ -82,8 +80,6 @@ echo -e "\n"
 echo "Docker Containers currently running:"
 docker ps
 ```
-
-Output:
 
     WARNING: The API_URL variable is not set. Defaulting to a blank string.
     Creating network "airbyte_default" with the default driver
@@ -113,7 +109,7 @@ Otherwise, please complete the different steps until you reach the Airbyte Dashb
 
 After a few seconds, the UI should be ready to go at http://localhost:8000/.
 
-## Notes about running this tutorial on Mac OS
+## Notes about running this tutorial on Mac OS vs Linux
 
 Note that the commands in this tutorial will vary greatly depending on if you are running a Mac OS or Linux Operation System.
 
@@ -128,11 +124,18 @@ From these discussions, we will be using on Mac OS either:
 1. any docker container/image to browse the virtual filesystem by mounting the volume in order to access them, for example with [busybox](https://hub.docker.com/_/busybox)
 2. or extract files from the volume by copying them onto the host with [Docker cp](https://docs.docker.com/engine/reference/commandline/cp/)
 
-Therefore, below commands will provide both versions for Mac OS and Linux, you can run the appropriate ones depending on your machine!
+Therefore, below commands will provide versions that should work for both Mac OS and Linux.
+
+On Linux, accessing to named Docker Volume can be easier since you simply need to:
+    
+    docker volume inspect <volume_name>
+    
+Then look at the "Mountpoint" value, this is where the volume is actually stored and you can directly retrieve files directly from that folder.
 
 ## Export Initial Setup
 
 Now let's first make a backup of the configuration state of your Airbyte instance by running the following commands.
+
 
 
 ```bash
@@ -161,45 +164,36 @@ and a local file destination:
 
 ![airbyte_config_persistence_ui_logs](./airbyte_config_persistence_3.png)
 
-
 ## Exploring Logs folders
 
 We can read from the lines reported in the logs the working directory that is being used to run the synchronization process from.
 
 As an example in the previous run, it is being ran in `/tmp/workspace/4/0` and we notice the different docker commands being used internally are starting with:
-```bash
-docker run --rm -i -v airbyte_workspace:/data -v /tmp/airbyte_local:/local -w /data/4/0 --network host ...
-```
+
+    docker run --rm -i -v airbyte_workspace:/data -v /tmp/airbyte_local:/local -w /data/4/0 --network host ...
 
 From there, we can observe that Airbyte is using a docker named volume called `airbyte_workspace` that is mounted in the container at the location `/data`.
 
 Following [Docker Volume documentation](https://docs.docker.com/storage/volumes/), we can inspect and manipulate persisted configuration data in these volumes.
 For example, we can run any docker container/image to browse the content of this named volume by mounting it in a similar way, let's use the [busybox](https://hub.docker.com/_/busybox) image.
 
-```bash
-docker run -it --rm --volume airbyte_workspace:/data busybox
-```
+    docker run -it --rm --volume airbyte_workspace:/data busybox
 
 This will drop you into an `sh` shell to allow you to do what you want inside a BusyBox system from which we can browse the filesystem and accessing to logs files:
 
-```bash
-ls /data/4/0/
-``` 
+    ls /data/4/0/
 
 Which should output:
 
-```
-catalog.json                  normalize                     tap_config.json
-logs.log                      singer_rendered_catalog.json  target_config.json
-```
+    catalog.json                  normalize                     tap_config.json
+    logs.log                      singer_rendered_catalog.json  target_config.json
 
 Or you can simply run:
+
 
 ```bash
 docker run -it --rm --volume airbyte_workspace:/data busybox ls /data/4/0
 ```
-
-Output:
 
     [0;0mcatalog.json[m                  [0;0msinger_rendered_catalog.json[m
     [0;0mlogs.log[m                      [0;0mtap_config.json[m
@@ -211,13 +205,12 @@ Output:
 docker run -it --rm --volume airbyte_workspace:/data busybox cat /data/4/0/catalog.json 
 ```
 
-Output:
-
     {"streams":[{"stream":{"name":"exchange_rate","json_schema":{"type":"object","properties":{"CHF":{"type":"number"},"HRK":{"type":"number"},"date":{"type":"string"},"MXN":{"type":"number"},"ZAR":{"type":"number"},"INR":{"type":"number"},"CNY":{"type":"number"},"THB":{"type":"number"},"AUD":{"type":"number"},"ILS":{"type":"number"},"KRW":{"type":"number"},"JPY":{"type":"number"},"PLN":{"type":"number"},"GBP":{"type":"number"},"IDR":{"type":"number"},"HUF":{"type":"number"},"PHP":{"type":"number"},"TRY":{"type":"number"},"RUB":{"type":"number"},"HKD":{"type":"number"},"ISK":{"type":"number"},"EUR":{"type":"number"},"DKK":{"type":"number"},"CAD":{"type":"number"},"MYR":{"type":"number"},"USD":{"type":"number"},"BGN":{"type":"number"},"NOK":{"type":"number"},"RON":{"type":"number"},"SGD":{"type":"number"},"CZK":{"type":"number"},"SEK":{"type":"number"},"NZD":{"type":"number"},"BRL":{"type":"number"}}},"supported_sync_modes":["full_refresh"],"default_cursor_field":[]},"sync_mode":"full_refresh","cursor_field":[]}]}
 
 ## Check local data folder
 
 Since the job completed successfully, a new file should be available in the special `/local/` directory in the container which is mounted from `/tmp/airbyte_local` on the host machine.
+
 
 
 ```bash
@@ -230,8 +223,6 @@ echo "On the host:"
 
 find /tmp/airbyte_local
 ```
-
-Output:
 
     In the container:
     /local
@@ -247,6 +238,7 @@ Output:
 ## Backup Exchange Rate Source and Destination configurations
 
 In the following steps, we will play with persistence of configurations so let's make a backup of our newly added connectors for now:
+
 
 
 ```bash
@@ -292,12 +284,11 @@ However it will get rid of the named volume workspace so all logs and generated 
 We can then run:
 
 
+
 ```bash
 docker-compose down -v
 docker-compose up -d
 ```
-
-Output:
 
     WARNING: The API_URL variable is not set. Defaulting to a blank string.
     Stopping airbyte-webapp    ... 
@@ -338,6 +329,7 @@ Let's ignore that step, close the page and go back to the notebook to import con
 We can play and restore files in the named docker volume `data` and thus retrieve files that were created from earlier:
 
 
+
 ```bash
 docker cp $TUTORIAL_DIR/my-setup/data/config airbyte-server:data
 ```
@@ -372,6 +364,7 @@ The normalization option adds a last `T` transformation step that takes care of 
 To do so, Airbyte is currently using [DBT](https://docs.getdbt.com/) to handle such tasks which can be manually triggered in the normalization container like this:
 
 
+
 ```bash
 NORMALIZE_WORKSPACE=`docker run --rm -i -v airbyte_workspace:/data  busybox find /data -path "*normalize/models*" | sed -E "s;/data/([0-9]+/[0-9]+/)normalize/.*;\1;g" | sort | 
 uniq | tail -n 1`
@@ -379,8 +372,6 @@ uniq | tail -n 1`
 docker run --rm -i -v airbyte_workspace:/data -w /data/$NORMALIZE_WORKSPACE/normalize --network host --entrypoint /usr/local/bin/dbt airbyte/normalization debug --profiles-dir=. --project-dir=.
 docker run --rm -i -v airbyte_workspace:/data -w /data/$NORMALIZE_WORKSPACE/normalize --network host --entrypoint /usr/local/bin/dbt airbyte/normalization run --profiles-dir=. --project-dir=.
 ```
-
-Output:
 
     Running with dbt=0.18.1
     dbt version: 0.18.1
@@ -428,6 +419,7 @@ As seen earlier, it is possible to browse the workspace folders and examine furt
 In particular, we can also take a look at the DBT models generated by Airbyte and export them to the local host filesystem:
 
 
+
 ```bash
 rm -rf $TUTORIAL_DIR/normalization-files
 mkdir -p $TUTORIAL_DIR/normalization-files
@@ -438,8 +430,6 @@ NORMALIZE_DIR=$TUTORIAL_DIR/normalization-files/normalize
 cd $NORMALIZE_DIR
 cat $NORMALIZE_DIR/models/generated/*.sql
 ```
-
-Output:
 
     with 
     covid_data__gouv_fr_node as (
@@ -474,14 +464,14 @@ Output:
 If you have [dbt cli](https://docs.getdbt.com/dbt-cli/cli-overview/) installed on your machine, you can then view, edit, customize and run the dbt models in your project if you want to bypass the normalization steps generated by Airbyte!
 
 
+
 ```bash
 dbt debug --profiles-dir=$NORMALIZE_DIR --project-dir=$NORMALIZE_DIR 
 dbt deps --profiles-dir=$NORMALIZE_DIR --project-dir=$NORMALIZE_DIR
 dbt run --profiles-dir=$NORMALIZE_DIR --project-dir=$NORMALIZE_DIR --full-refresh
 ```
 
-Output:
-
+    /Users/chris/.pyenv/versions/venv/bin/dbt
     Running with dbt=0.18.1
     dbt version: 0.18.1
     python version: 3.7.9
