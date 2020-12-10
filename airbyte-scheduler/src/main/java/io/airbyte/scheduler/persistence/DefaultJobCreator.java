@@ -26,7 +26,6 @@ package io.airbyte.scheduler.persistence;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AirbyteProtocolConverters;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobCheckConnectionConfig;
