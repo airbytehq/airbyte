@@ -36,7 +36,4 @@ class SourceZoomSinger(BaseSingerSource):
 
     def try_connect(self, logger: AirbyteLogger, config: dict):
         client = ZoomClient(config=config, config_path="")
-        try:
-            client.get(path="users")
-        except HTTPError as error:
-            raise HTTPError(error)
+        client.get(path="users")
