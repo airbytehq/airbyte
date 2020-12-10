@@ -268,8 +268,7 @@ public abstract class TestSource {
     ConfiguredAirbyteCatalog configuredCatalog = withSourceDefinedCursors(getConfiguredCatalog());
     // only sync incremental streams
     configuredCatalog.setStreams(
-        configuredCatalog.getStreams().stream().filter(s -> s.getSyncMode() == INCREMENTAL).collect(Collectors.toList())
-    );
+        configuredCatalog.getStreams().stream().filter(s -> s.getSyncMode() == INCREMENTAL).collect(Collectors.toList()));
     List<AirbyteMessage> airbyteMessages = runRead(configuredCatalog, getState());
     List<AirbyteRecordMessage> recordMessages = filterRecords(airbyteMessages);
     List<AirbyteStateMessage> stateMessages = airbyteMessages
