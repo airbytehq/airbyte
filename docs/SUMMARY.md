@@ -25,6 +25,7 @@
     * [HTTP Request](integrations/sources/http-request.md)
     * [Mailchimp](integrations/sources/mailchimp.md)
     * [Marketo](integrations/sources/marketo.md)
+    * [Mixpanel](integrations/sources/mixpanel.md)
     * [MySQL](integrations/sources/mysql.md)
     * [Microsoft SQL Server \(MSSQL\)](integrations/sources/mssql.md)
     * [Postgres](integrations/sources/postgres.md)
