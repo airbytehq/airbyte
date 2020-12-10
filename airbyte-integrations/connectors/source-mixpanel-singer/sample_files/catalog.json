@@ -6,41 +6,26 @@
         "properties": {
           "date": {
             "format": "date",
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "datetime": {
             "format": "date-time",
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "count": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "paid_count": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "amount": {
             "multipleOf": 1e-20,
-            "type": [
-              "null",
-              "number"
-            ]
+            "type": ["null", "number"]
           }
         },
         "type": "object",
         "additionalProperties": false
-      },
+      }
     },
     {
       "name": "annotations",
@@ -48,28 +33,16 @@
         "properties": {
           "date": {
             "format": "date-time",
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "project_id": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "description": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         },
         "type": "object",
