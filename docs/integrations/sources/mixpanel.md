@@ -2,8 +2,7 @@
 
 ## Overview
 
-The Mixpanel source supports Full Refresh syncs. That is, every time a sync is run, 
-Airbyte will copy all rows in the tables and columns you set up for replication into the destination in a new table.
+The Mixpanel source supports Full Refresh syncs. That is, every time a sync is run, Airbyte will copy all rows in the tables and columns you set up for replication into the destination in a new table.
 
 This Hubspot source wraps the [Singer Mixpanel Tap](https://github.com/singer-io/tap-mixpanel).
 
@@ -19,8 +18,7 @@ Several output streams are available from this source:
 * [Cohorts](https://developer.mixpanel.com/docs/cohorts#section-list-cohorts)
 * [Cohort Members](https://developer.mixpanel.com/docs/data-export-api#section-engage)
 
-If there are more endpoints you'd like Airbyte to support, please 
-[create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
+If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
 ### Features
 
@@ -33,9 +31,7 @@ If there are more endpoints you'd like Airbyte to support, please
 
 ### Performance considerations
 
-The Mixpanel connector should not run into Mixpanel API limitations under normal usage. 
-Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate 
-limit issues that are not automatically retried successfully.
+The Mixpanel connector should not run into Mixpanel API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ## Getting started
 
@@ -46,3 +42,4 @@ limit issues that are not automatically retried successfully.
 ### Setup guide
 
 Please read [Find API Secret](https://help.mixpanel.com/hc/en-us/articles/115004502806-Find-Project-Token-).
+

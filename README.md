@@ -50,7 +50,9 @@ We love contributions to Airbyte, big or small.
 
 See our [Contributing guide](docs/contributing-to-airbyte/) on how to get started. Not sure where to start? We’ve listed some [good first issues](https://github.com/airbytehq/airbyte/labels/good%20first%20issue) to start with. You can also [book a free, no-pressure pairing session](https://drift.me/micheltricot/meeting) with one of our core contributors.
 
-**Note that you are able to create connectors using the language you want, as Airbyte connections run as Docker containers.**
+**Note that you are able to create connectors using the language you want, as Airbyte connections run as Docker containers.** 
+
+**Also, we will never ask you to maintain your connector. The goal is that the Airbyte team and the community helps maintain it, let's call it crowdsourced maintenance!**
 
 ## Community support
 
