@@ -87,7 +87,8 @@ public abstract class TestSource {
   private ProcessBuilderFactory pbf;
 
   private Set<String> SECOND_READ_INELIGIBLE_IMAGES = Sets.newHashSet(
-      "airbyte/source-intercom-singer"
+      "airbyte/source-intercom-singer",
+      "airbyte/source-hubspot-singer"
   );
 
   /**
