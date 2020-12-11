@@ -3,6 +3,7 @@ kind: Job
 metadata:
   name: airbyte-worker-JOBID-ATTEMPTID
 spec:
+  backoffLimit: 1
   template:
     spec:
       restartPolicy: Never
