@@ -14,7 +14,7 @@ const JobsList: React.FC<IProps> = ({ jobs }) => {
   return (
     <Content>
       {jobs.map(item => (
-        <JobItem key={item.id} job={item} />
+        <JobItem key={item.job.id} job={item.job} attempts={item.attempts} />
       ))}
     </Content>
   );

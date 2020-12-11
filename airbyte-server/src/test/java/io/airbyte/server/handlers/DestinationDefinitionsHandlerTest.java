@@ -40,7 +40,7 @@ import io.airbyte.api.model.DestinationDefinitionUpdate;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.server.cache.SpecCache.AlwaysMissCache;
+import io.airbyte.scheduler.client.CachingSchedulerJobClient;
 import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -58,7 +58,7 @@ class DestinationDefinitionsHandlerTest {
   private StandardDestinationDefinition destination;
   private DestinationDefinitionsHandler destinationHandler;
   private Supplier<UUID> uuidSupplier;
-  private AlwaysMissCache specCache;
+  private CachingSchedulerJobClient schedulerJobClient;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -67,8 +67,8 @@ class DestinationDefinitionsHandlerTest {
     uuidSupplier = mock(Supplier.class);
     dockerImageValidator = mock(DockerImageValidator.class);
     destination = generateDestination();
-    specCache = spy(new AlwaysMissCache());
-    destinationHandler = new DestinationDefinitionsHandler(configRepository, dockerImageValidator, uuidSupplier, specCache);
+    schedulerJobClient = spy(CachingSchedulerJobClient.class);
+    destinationHandler = new DestinationDefinitionsHandler(configRepository, dockerImageValidator, uuidSupplier, schedulerJobClient);
   }
 
   private StandardDestinationDefinition generateDestination() {
@@ -86,14 +86,14 @@ class DestinationDefinitionsHandlerTest {
 
     when(configRepository.listStandardDestinationDefinitions()).thenReturn(Lists.newArrayList(destination, destination2));
 
-    DestinationDefinitionRead expectedDestinationDefinitionRead1 = new DestinationDefinitionRead()
+    final DestinationDefinitionRead expectedDestinationDefinitionRead1 = new DestinationDefinitionRead()
         .destinationDefinitionId(destination.getDestinationDefinitionId())
         .name(destination.getName())
         .dockerRepository(destination.getDockerRepository())
         .dockerImageTag(destination.getDockerImageTag())
         .documentationUrl(new URI(destination.getDocumentationUrl()));
 
-    DestinationDefinitionRead expectedDestinationDefinitionRead2 = new DestinationDefinitionRead()
+    final DestinationDefinitionRead expectedDestinationDefinitionRead2 = new DestinationDefinitionRead()
         .destinationDefinitionId(destination2.getDestinationDefinitionId())
         .name(destination2.getName())
         .dockerRepository(destination2.getDockerRepository())
@@ -112,7 +112,7 @@ class DestinationDefinitionsHandlerTest {
     when(configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId()))
         .thenReturn(destination);
 
-    DestinationDefinitionRead expectedDestinationDefinitionRead = new DestinationDefinitionRead()
+    final DestinationDefinitionRead expectedDestinationDefinitionRead = new DestinationDefinitionRead()
         .destinationDefinitionId(destination.getDestinationDefinitionId())
         .name(destination.getName())
         .dockerRepository(destination.getDockerRepository())
@@ -165,7 +165,7 @@ class DestinationDefinitionsHandlerTest {
 
     assertEquals(newDockerImageTag, sourceRead.getDockerImageTag());
     verify(dockerImageValidator).assertValidIntegrationImage(dockerRepository, newDockerImageTag);
-    verify(specCache).evict(dockerRepository + ":" + newDockerImageTag);
+    verify(schedulerJobClient).resetCache();
 
   }
 

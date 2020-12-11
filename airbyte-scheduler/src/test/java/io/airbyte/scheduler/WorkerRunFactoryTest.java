@@ -32,7 +32,6 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.AirbyteProtocolConverters;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobOutput;
@@ -71,6 +70,7 @@ class WorkerRunFactoryTest {
     job = mock(Job.class, RETURNS_DEEP_STUBS);
     when(job.getId()).thenReturn(1L);
     when(job.getAttemptsCount()).thenReturn(2);
+    when(job.getConfig().getSync().getSourceDockerImage()).thenReturn("airbyte/source-earth:0.1.0");
     when(job.getConfig().getSync().getDestinationDockerImage()).thenReturn("airbyte/destination-moon:0.1.0");
 
     creator = mock(WorkerRunFactory.Creator.class);
@@ -89,8 +89,8 @@ class WorkerRunFactoryTest {
 
     factory.create(job);
 
-    StandardCheckConnectionInput expectedInput = new StandardCheckConnectionInput().withConnectionConfiguration(CONFIG);
-    ArgumentCaptor<Worker<StandardCheckConnectionInput, JobOutput>> argument = ArgumentCaptor.forClass(Worker.class);
+    final StandardCheckConnectionInput expectedInput = new StandardCheckConnectionInput().withConnectionConfiguration(CONFIG);
+    final ArgumentCaptor<Worker<StandardCheckConnectionInput, JobOutput>> argument = ArgumentCaptor.forClass(Worker.class);
     verify(creator).create(eq(rootPath.resolve("1").resolve("2")), eq(expectedInput), argument.capture());
     Assertions.assertTrue(argument.getValue() instanceof JobOutputCheckConnectionWorker);
   }
@@ -103,8 +103,8 @@ class WorkerRunFactoryTest {
 
     factory.create(job);
 
-    StandardDiscoverCatalogInput expectedInput = new StandardDiscoverCatalogInput().withConnectionConfiguration(CONFIG);
-    ArgumentCaptor<Worker<StandardDiscoverCatalogInput, JobOutput>> argument = ArgumentCaptor.forClass(Worker.class);
+    final StandardDiscoverCatalogInput expectedInput = new StandardDiscoverCatalogInput().withConnectionConfiguration(CONFIG);
+    final ArgumentCaptor<Worker<StandardDiscoverCatalogInput, JobOutput>> argument = ArgumentCaptor.forClass(Worker.class);
     verify(creator).create(eq(rootPath.resolve("1").resolve("2")), eq(expectedInput), argument.capture());
     Assertions.assertTrue(argument.getValue() instanceof JobOutputDiscoverSchemaWorker);
   }
@@ -116,15 +116,13 @@ class WorkerRunFactoryTest {
 
     factory.create(job);
 
-    StandardSyncInput expectedInput = new StandardSyncInput()
-        .withSourceConnection(job.getConfig().getSync().getSourceConnection())
-        .withDestinationConnection(job.getConfig().getSync().getDestinationConnection())
-        .withCatalog(AirbyteProtocolConverters.toConfiguredCatalog(job.getConfig().getSync().getStandardSync().getSchema()))
-        .withConnectionId(job.getConfig().getSync().getStandardSync().getConnectionId())
-        .withSyncMode(job.getConfig().getSync().getStandardSync().getSyncMode())
+    final StandardSyncInput expectedInput = new StandardSyncInput()
+        .withSourceConfiguration(job.getConfig().getSync().getSourceConfiguration())
+        .withDestinationConfiguration(job.getConfig().getSync().getDestinationConfiguration())
+        .withCatalog(job.getConfig().getSync().getConfiguredAirbyteCatalog())
         .withState(job.getConfig().getSync().getState());
 
-    ArgumentCaptor<Worker<StandardSyncInput, JobOutput>> argument = ArgumentCaptor.forClass(Worker.class);
+    final ArgumentCaptor<Worker<StandardSyncInput, JobOutput>> argument = ArgumentCaptor.forClass(Worker.class);
     verify(creator).create(eq(rootPath.resolve("1").resolve("2")), eq(expectedInput), argument.capture());
     Assertions.assertTrue(argument.getValue() instanceof JobOutputSyncWorker);
   }
@@ -133,12 +131,12 @@ class WorkerRunFactoryTest {
   @Test
   void testGetSpec() {
     when(job.getConfig().getConfigType()).thenReturn(JobConfig.ConfigType.GET_SPEC);
-    JobGetSpecConfig expectedConfig = new JobGetSpecConfig().withDockerImage("notarealimage");
+    final JobGetSpecConfig expectedConfig = new JobGetSpecConfig().withDockerImage("notarealimage");
     when(job.getConfig().getGetSpec()).thenReturn(expectedConfig);
 
     factory.create(job);
 
-    ArgumentCaptor<Worker<JobGetSpecConfig, JobOutput>> argument = ArgumentCaptor.forClass(Worker.class);
+    final ArgumentCaptor<Worker<JobGetSpecConfig, JobOutput>> argument = ArgumentCaptor.forClass(Worker.class);
     verify(creator).create(eq(rootPath.resolve("1").resolve("2")), eq(expectedConfig), argument.capture());
     Assertions.assertTrue(argument.getValue() instanceof JobOutputGetSpecWorker);
   }
