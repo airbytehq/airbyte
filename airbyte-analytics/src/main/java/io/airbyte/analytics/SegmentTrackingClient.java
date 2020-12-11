@@ -25,6 +25,7 @@
 package io.airbyte.analytics;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.segment.analytics.Analytics;
 import com.segment.analytics.messages.IdentifyMessage;
@@ -38,20 +39,24 @@ public class SegmentTrackingClient implements TrackingClient {
 
   private static final String SEGMENT_WRITE_KEY = "7UDdp5K55CyiGgsauOr2pNNujGvmhaeu";
   private static final String AIRBYTE_VERSION_KEY = "airbyte_version";
+  private static final String AIRBYTE_ROLE = "airbyte_role";
 
   // Analytics is threadsafe.
   private final Analytics analytics;
   private final Supplier<TrackingIdentity> identitySupplier;
+  private final String airbyteRole;
 
   @VisibleForTesting
-  SegmentTrackingClient(Supplier<TrackingIdentity> identitySupplier, Analytics analytics) {
+  SegmentTrackingClient(final Supplier<TrackingIdentity> identitySupplier,
+                        final String airbyteRole,
+                        final Analytics analytics) {
     this.identitySupplier = identitySupplier;
     this.analytics = analytics;
+    this.airbyteRole = airbyteRole;
   }
 
-  public SegmentTrackingClient(Supplier<TrackingIdentity> identitySupplier) {
-    this.analytics = Analytics.builder(SEGMENT_WRITE_KEY).build();
-    this.identitySupplier = identitySupplier;
+  public SegmentTrackingClient(final Supplier<TrackingIdentity> identitySupplier, final String airbyteRole) {
+    this(identitySupplier, airbyteRole, Analytics.builder(SEGMENT_WRITE_KEY).build());
   }
 
   @Override
@@ -62,6 +67,11 @@ public class SegmentTrackingClient implements TrackingClient {
         .put("anonymized", trackingIdentity.isAnonymousDataCollection())
         .put("subscribed_newsletter", trackingIdentity.isNews())
         .put("subscribed_security", trackingIdentity.isSecurityUpdates());
+
+    if (!Strings.isNullOrEmpty(airbyteRole)) {
+      identityMetadataBuilder.put(AIRBYTE_ROLE, airbyteRole);
+    }
+
     trackingIdentity.getEmail().ifPresent(email -> identityMetadataBuilder.put("email", email));
 
     analytics.enqueue(IdentifyMessage.builder()
