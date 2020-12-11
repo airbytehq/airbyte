@@ -165,7 +165,11 @@ public class ServerApp {
     // tracking we can associate all action with the correct anonymous id.
     setCustomerIdIfNotSet(configRepository);
 
-    TrackingClientSingleton.initialize(configs.getTrackingStrategy(), configs.getAirbyteVersion(), configRepository);
+    TrackingClientSingleton.initialize(
+        configs.getTrackingStrategy(),
+        configs.getAirbyteRole(),
+        configs.getAirbyteVersion(),
+        configRepository);
 
     LOGGER.info("Creating Scheduler persistence...");
     final JobPersistence jobPersistence = new DefaultJobPersistence(Databases.createPostgresDatabase(
