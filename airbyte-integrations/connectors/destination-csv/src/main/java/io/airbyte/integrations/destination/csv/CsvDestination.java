@@ -41,16 +41,11 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.SyncMode;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.nio.file.StandardOpenOption;
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -108,18 +103,22 @@ public class CsvDestination implements Destination {
 
     FileUtils.forceMkdir(destinationDir.toFile());
 
-    final long now = Instant.now().toEpochMilli();
     final Map<String, WriteConfig> writeConfigs = new HashMap<>();
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getStream().getName();
       final String tableName = getNamingResolver().getRawTableName(streamName);
       final String tmpTableName = getNamingResolver().getTmpTableName(streamName);
-      final SyncMode syncMode = stream.getSyncMode();
       final Path tmpPath = destinationDir.resolve(tmpTableName + ".csv");
       final Path finalPath = destinationDir.resolve(tableName + ".csv");
-      final FileWriter fileWriter = new FileWriter(tmpPath.toFile());
-      final CSVPrinter printer = new CSVPrinter(fileWriter, CSVFormat.DEFAULT.withHeader(COLUMN_AB_ID, COLUMN_EMITTED_AT, COLUMN_DATA));
-      writeConfigs.put(stream.getStream().getName(), new WriteConfig(printer, tmpPath, finalPath, syncMode));
+      CSVFormat csvFormat = CSVFormat.DEFAULT.withHeader(COLUMN_AB_ID, COLUMN_EMITTED_AT, COLUMN_DATA);
+      final boolean isIncremental = stream.getSyncMode() == SyncMode.INCREMENTAL;
+      if (isIncremental && finalPath.toFile().exists()) {
+        Files.copy(finalPath, tmpPath, StandardCopyOption.REPLACE_EXISTING);
+        csvFormat = csvFormat.withSkipHeaderRecord();
+      }
+      final FileWriter fileWriter = new FileWriter(tmpPath.toFile(), isIncremental);
+      final CSVPrinter printer = new CSVPrinter(fileWriter, csvFormat);
+      writeConfigs.put(stream.getStream().getName(), new WriteConfig(printer, tmpPath, finalPath));
     }
 
     return new CsvConsumer(writeConfigs, catalog);
@@ -189,12 +188,7 @@ public class CsvDestination implements Destination {
       // do not persist the data, if there are any failures.
       if (!hasFailed) {
         for (final WriteConfig writeConfig : writeConfigs.values()) {
-          final boolean fileAlreadyExists = writeConfig.getFinalPath().toFile().exists();
-          if (writeConfig.getSyncMode() == SyncMode.FULL_REFRESH || !fileAlreadyExists) {
             Files.move(writeConfig.getTmpPath(), writeConfig.getFinalPath(), StandardCopyOption.REPLACE_EXISTING);
-          } else if (writeConfig.getSyncMode() == SyncMode.INCREMENTAL) {
-            insertCsvFile(writeConfig.getTmpPath(), writeConfig.getFinalPath());
-          }
         }
       }
       // clean up tmp files.
@@ -202,30 +196,6 @@ public class CsvDestination implements Destination {
         Files.deleteIfExists(writeConfig.getTmpPath());
       }
     }
-
-    /**
-     * Copy and append Csv file to another
-     *
-     * @param srcFilePath CSV file to append data from
-     * @param dstFilePath CSV file to append data to
-     * @throws IOException
-     */
-    private static void insertCsvFile(Path srcFilePath, Path dstFilePath) throws IOException {
-      try (
-          final BufferedReader reader = Files.newBufferedReader(srcFilePath);
-          final BufferedWriter writer = Files.newBufferedWriter(dstFilePath, StandardCharsets.UTF_8, StandardOpenOption.CREATE,
-              StandardOpenOption.APPEND)) {
-        // Skip header line
-        reader.readLine();
-        String line;
-        while ((line = reader.readLine()) != null) {
-          writer.write(line);
-          writer.newLine();
-        }
-        writer.flush();
-      }
-    }
-
   }
 
   private static class WriteConfig {
@@ -233,13 +203,11 @@ public class CsvDestination implements Destination {
     private final CSVPrinter writer;
     private final Path tmpPath;
     private final Path finalPath;
-    private final SyncMode syncMode;
 
-    public WriteConfig(CSVPrinter writer, Path tmpPath, Path finalPath, SyncMode syncMode) {
+    public WriteConfig(CSVPrinter writer, Path tmpPath, Path finalPath) {
       this.writer = writer;
       this.tmpPath = tmpPath;
       this.finalPath = finalPath;
-      this.syncMode = syncMode;
     }
 
     public CSVPrinter getWriter() {
@@ -253,11 +221,6 @@ public class CsvDestination implements Destination {
     public Path getFinalPath() {
       return finalPath;
     }
-
-    public SyncMode getSyncMode() {
-      return syncMode;
-    }
-
   }
 
   public static void main(String[] args) throws Exception {
