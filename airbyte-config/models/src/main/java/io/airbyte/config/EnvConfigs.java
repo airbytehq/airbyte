@@ -34,6 +34,7 @@ public class EnvConfigs implements Configs {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EnvConfigs.class);
 
+  public static final String AIRBYTE_ROLE = "AIRBYTE_ROLE";
   public static final String AIRBYTE_VERSION = "AIRBYTE_VERSION";
   public static final String WORKSPACE_ROOT = "WORKSPACE_ROOT";
   public static final String WORKSPACE_DOCKER_MOUNT = "WORKSPACE_DOCKER_MOUNT";
@@ -56,6 +57,11 @@ public class EnvConfigs implements Configs {
 
   EnvConfigs(final Function<String, String> getEnv) {
     this.getEnv = getEnv;
+  }
+
+  @Override
+  public String getAirbyteRole() {
+    return getEnv(AIRBYTE_ROLE);
   }
 
   @Override
@@ -142,8 +148,12 @@ public class EnvConfigs implements Configs {
     }
   }
 
+  private String getEnv(final String name) {
+    return getEnv.apply(name);
+  }
+
   private String getEnsureEnv(final String name) {
-    final String value = getEnv.apply(name);
+    final String value = getEnv(name);
     Preconditions.checkArgument(value != null, "'%s' environment variable cannot be null", name);
 
     return value;
