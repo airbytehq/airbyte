@@ -176,9 +176,9 @@ and a local file destination:
 
 We can read from the lines reported in the logs the working directory that is being used to run the synchronization process from.
 
-As an example in the previous run, it is being ran in `/tmp/workspace/4/0` and we notice the different docker commands being used internally are starting with:
+As an example in the previous run, it is being ran in `/tmp/workspace/5/0` and we notice the different docker commands being used internally are starting with:
 
-    docker run --rm -i -v airbyte_workspace:/data -v /tmp/airbyte_local:/local -w /data/4/0 --network host ...
+    docker run --rm -i -v airbyte_workspace:/data -v /tmp/airbyte_local:/local -w /data/5/0 --network host ...
 
 From there, we can observe that Airbyte is using a docker named volume called `airbyte_workspace` that is mounted in the container at the location `/data`.
 
@@ -189,7 +189,7 @@ For example, we can run any docker container/image to browse the content of this
 
 This will drop you into an `sh` shell to allow you to do what you want inside a BusyBox system from which we can browse the filesystem and accessing to logs files:
 
-    ls /data/4/0/
+    ls /data/5/0/
 
 Example Output:
 
@@ -213,7 +213,7 @@ Example Output:
 
 
 ```bash
-docker run -it --rm --volume airbyte_workspace:/data busybox cat /data/4/0/catalog.json 
+docker run -it --rm --volume airbyte_workspace:/data busybox cat /data/5/0/catalog.json
 ```
 
 Example Output:
