@@ -1,0 +1,25 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: airbyte-worker-JOBID-ATTEMPTID
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: worker-container
+          image: TAGGED_IMAGE
+          workingDir: WORKDIR
+          args: ARGS
+          volumeMounts:
+            - name: airbyte-volume-data
+              mountPath: /data
+            - name: airbyte-volume-workspace
+              mountPath: /tmp/workspace
+      volumes:
+        - name: airbyte-volume-workspace
+          persistentVolumeClaim:
+            claimName: airbyte-volume-workspace
+        - name: airbyte-volume-data
+          persistentVolumeClaim:
+            claimName: airbyte-volume-data

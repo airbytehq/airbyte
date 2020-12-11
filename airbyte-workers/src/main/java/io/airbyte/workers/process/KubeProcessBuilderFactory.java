@@ -29,14 +29,25 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerException;
+
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.openapi.Configuration;
+import io.kubernetes.client.openapi.apis.CoreV1Api;
+import io.kubernetes.client.openapi.models.V1Pod;
+import io.kubernetes.client.openapi.models.V1PodBuilder;
+import io.kubernetes.client.util.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,33 +94,42 @@ public class KubeProcessBuilderFactory implements ProcessBuilderFactory {
             throw new WorkerException("Could not find image: " + imageName);
         }
 
-        final List<String> cmd =
-                Lists.newArrayList(
-                        "docker",
-                        "run",
-                        "--rm",
-                        "-i",
-                        "-v",
-                        String.format("%s:%s", workspaceMountSource, DATA_MOUNT_DESTINATION),
-                        "-v",
-                        String.format("%s:%s", localMountSource, LOCAL_MOUNT_DESTINATION),
-                        "-w",
-                        rebasePath(jobRoot).toString(),
-                        "--network",
-                        networkName,
-                        imageName);
-        cmd.addAll(Arrays.asList(args));
+        try {
+            final String[] split = jobRoot.toString().split("/");
+            final String jobId = split[split.length - 2];
+            final String attemptId = split[split.length - 1];
 
-        LOGGER.debug("Preparing command: {}", Joiner.on(" ").join(cmd));
+            final String template = MoreResources.readResource("kube_runner_template.yaml");
 
-        return new ProcessBuilder(cmd);
+            final String rendered = template.replace("JOBID", jobId)
+                    .replace("ATTEMPTID", attemptId)
+                    .replace("TAGGED_IMAGE", imageName)
+                    .replace("WORKDIR", rebasePath(jobRoot).toString())
+                    .replace("ARGS", Jsons.serialize(Arrays.asList(args)));
+
+            final String yamlPath = jobRoot.resolve("job.yaml").toString();
+
+            try(FileWriter writer = new FileWriter(yamlPath)) {
+                writer.write(rendered);
+            }
+
+            final List<String> cmd = Lists.newArrayList("kube_runner.sh", yamlPath);
+
+            LOGGER.debug("Preparing command: {}", Joiner.on(" ").join(cmd));
+
+            return new ProcessBuilder(cmd);
+        } catch (Exception e) {
+            throw new WorkerException(e.getMessage());
+        }
     }
 
+    // todo: re-use between different process builder factories
     private Path rebasePath(final Path jobRoot) {
         final Path relativePath = workspaceRoot.relativize(jobRoot);
         return DATA_MOUNT_DESTINATION.resolve(relativePath);
     }
 
+    // todo: re-use between different process builder factories
     @VisibleForTesting
     boolean checkImageExists(String imageName) {
         try {
