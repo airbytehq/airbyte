@@ -29,6 +29,10 @@ from tap_zoom.client import ZoomClient
 
 
 class SourceZoomSinger(BaseSingerSource):
+    """
+    Zoom API Reference: https://marketplace.zoom.us/docs/api-reference/zoom-api
+    """
+
     tap_cmd = "tap-zoom"
     tap_name = "Zoom API"
     api_error = HTTPError
