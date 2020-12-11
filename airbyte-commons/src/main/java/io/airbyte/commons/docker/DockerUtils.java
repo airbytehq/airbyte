@@ -29,5 +29,4 @@ public class DockerUtils {
   public static String getTaggedImageName(String dockerRepository, String tag) {
     return String.join(":", dockerRepository, tag);
   }
-
 }
