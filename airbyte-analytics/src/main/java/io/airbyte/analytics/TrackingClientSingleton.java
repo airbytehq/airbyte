@@ -55,8 +55,11 @@ public class TrackingClientSingleton {
     }
   }
 
-  public static void initialize(Configs.TrackingStrategy trackingStrategy, String airbyteVersion, ConfigRepository configRepository) {
-    initialize(createTrackingClient(trackingStrategy, () -> getTrackingIdentity(configRepository, airbyteVersion)));
+  public static void initialize(final Configs.TrackingStrategy trackingStrategy,
+                                final String airbyteRole,
+                                final String airbyteVersion,
+                                final ConfigRepository configRepository) {
+    initialize(createTrackingClient(trackingStrategy, airbyteRole, () -> getTrackingIdentity(configRepository, airbyteVersion)));
   }
 
   // fallback on a logging client with an empty identity.
@@ -90,15 +93,18 @@ public class TrackingClientSingleton {
    * Creates a tracking client that uses the appropriate strategy from an identity supplier.
    *
    * @param trackingStrategy - what type of tracker we want to use.
+   * @param airbyteRole
    * @param trackingIdentitySupplier - how we get the identity of the user. we have a supplier,
    *        because we if the identity updates over time (which happens during initial setup), we
    *        always want the most recent info.
    * @return tracking client
    */
   @VisibleForTesting
-  static TrackingClient createTrackingClient(Configs.TrackingStrategy trackingStrategy, Supplier<TrackingIdentity> trackingIdentitySupplier) {
+  static TrackingClient createTrackingClient(final Configs.TrackingStrategy trackingStrategy,
+                                             final String airbyteRole,
+                                             final Supplier<TrackingIdentity> trackingIdentitySupplier) {
     return switch (trackingStrategy) {
-      case SEGMENT -> new SegmentTrackingClient(trackingIdentitySupplier);
+      case SEGMENT -> new SegmentTrackingClient(trackingIdentitySupplier, airbyteRole);
       case LOGGING -> new LoggingTrackingClient(trackingIdentitySupplier);
       default -> throw new IllegalStateException("unrecognized tracking strategy");
     };

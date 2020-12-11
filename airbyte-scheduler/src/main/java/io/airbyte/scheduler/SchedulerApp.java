@@ -126,7 +126,11 @@ public class SchedulerApp {
     final ConfigPersistence configPersistence = new DefaultConfigPersistence(configRoot);
     final ConfigRepository configRepository = new ConfigRepository(configPersistence);
 
-    TrackingClientSingleton.initialize(configs.getTrackingStrategy(), configs.getAirbyteVersion(), configRepository);
+    TrackingClientSingleton.initialize(
+        configs.getTrackingStrategy(),
+        configs.getAirbyteRole(),
+        configs.getAirbyteVersion(),
+        configRepository);
 
     LOGGER.info("Launching scheduler...");
     new SchedulerApp(workspaceRoot, pbf, jobPersistence, configRepository).start();

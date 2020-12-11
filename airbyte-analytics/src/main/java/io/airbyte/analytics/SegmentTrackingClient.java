@@ -44,19 +44,19 @@ public class SegmentTrackingClient implements TrackingClient {
   // Analytics is threadsafe.
   private final Analytics analytics;
   private final Supplier<TrackingIdentity> identitySupplier;
-  private final Supplier<String> roleSupplier;
+  private final String airbyteRole;
 
   @VisibleForTesting
   SegmentTrackingClient(final Supplier<TrackingIdentity> identitySupplier,
-                        final Analytics analytics,
-                        final Supplier<String> roleSupplier) {
+                        final String airbyteRole,
+                        final Analytics analytics) {
     this.identitySupplier = identitySupplier;
     this.analytics = analytics;
-    this.roleSupplier = roleSupplier;
+    this.airbyteRole = airbyteRole;
   }
 
-  public SegmentTrackingClient(Supplier<TrackingIdentity> identitySupplier) {
-    this(identitySupplier, Analytics.builder(SEGMENT_WRITE_KEY).build(), () -> System.getenv(AIRBYTE_ROLE.toUpperCase()));
+  public SegmentTrackingClient(final Supplier<TrackingIdentity> identitySupplier, final String airbyteRole) {
+    this(identitySupplier, airbyteRole, Analytics.builder(SEGMENT_WRITE_KEY).build());
   }
 
   @Override
@@ -68,7 +68,6 @@ public class SegmentTrackingClient implements TrackingClient {
         .put("subscribed_newsletter", trackingIdentity.isNews())
         .put("subscribed_security", trackingIdentity.isSecurityUpdates());
 
-    final String airbyteRole = roleSupplier.get();
     if (!Strings.isEmpty(airbyteRole)) {
       identityMetadataBuilder.put(AIRBYTE_ROLE, airbyteRole);
     }

@@ -54,7 +54,7 @@ class SegmentTrackingClientTest {
   void setup() {
     analytics = mock(Analytics.class);
     roleSupplier = mock(Supplier.class);
-    segmentTrackingClient = new SegmentTrackingClient(() -> identity, analytics, roleSupplier);
+    segmentTrackingClient = new SegmentTrackingClient(() -> identity, "role", analytics);
   }
 
   @SuppressWarnings("OptionalGetWithoutIsPresent")

@@ -51,6 +51,15 @@ class EnvConfigsTest {
   }
 
   @Test
+  void testAirbyteRole() {
+    when(function.apply(EnvConfigs.AIRBYTE_ROLE)).thenReturn(null);
+    Assertions.assertNull(config.getAirbyteRole());
+
+    when(function.apply(EnvConfigs.AIRBYTE_ROLE)).thenReturn("dev");
+    Assertions.assertEquals("dev", config.getAirbyteRole());
+  }
+
+  @Test
   void testAirbyteVersion() {
     when(function.apply(EnvConfigs.AIRBYTE_VERSION)).thenReturn(null);
     Assertions.assertThrows(IllegalArgumentException.class, () -> config.getAirbyteVersion());
