@@ -58,7 +58,7 @@ class Client:
             streams.append(AirbyteStream.parse_obj(raw_schema))
         return streams
 
-    def lists(self, state: DefaultDict[str, any] = None) -> Generator[AirbyteMessage, None, None]:
+    def lists(self, state: DefaultDict[str, any]) -> Generator[AirbyteMessage, None, None]:
         cursor_field = "date_created"
         stream_name = self._LISTS
         date_created = self._get_cursor_or_none(state, stream_name, cursor_field)
