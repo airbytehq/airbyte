@@ -6,71 +6,41 @@
         "json_schema": {
           "properties": {
             "auth_token": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "date_created": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "date_updated": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "friendly_name": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "owner_account_sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "status": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "subresource_uris": {
               "anyOf": [
                 {
                   "type": "array",
                   "items": {
-                    "type": [
-                      "null",
-                      "object"
-                    ],
+                    "type": ["null", "object"],
                     "additionalProperties": false,
                     "properties": {
                       "subresource": {
-                        "type": [
-                          "null",
-                          "string"
-                        ]
+                        "type": ["null", "string"]
                       },
                       "uri": {
-                        "type": [
-                          "null",
-                          "string"
-                        ]
+                        "type": ["null", "string"]
                       }
                     }
                   }
@@ -79,163 +49,88 @@
                   "type": "null"
                 },
                 {
-                  "type": [
-                    "null",
-                    "object"
-                  ],
+                  "type": ["null", "object"],
                   "additionalProperties": false,
                   "properties": {
                     "addresses": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "conferences": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "signing_keys": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "transcriptions": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "connect_apps": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "sip": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "authorized_connect_apps": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "usage": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "keys": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "applications": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "recordings": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "short_codes": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "calls": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "notifications": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "incoming_phone_numbers": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "queues": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "messages": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "outgoing_caller_ids": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "available_phone_numbers": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "balance": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     }
                   }
                 }
               ]
             },
             "type": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "uri": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             }
           },
           "type": "object",
           "additionalProperties": false
         },
-        "supported_sync_modes": [
-          "incremental"
-        ],
+        "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "date_updated"
-        ]
+        "default_cursor_field": ["date_updated"]
       },
-      "cursor_field": [
-        "date_updated"
-      ],
+      "cursor_field": ["date_updated"],
       "sync_mode": "incremental"
     },
     {
@@ -244,112 +139,61 @@
         "json_schema": {
           "properties": {
             "account_sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "city": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "customer_name": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "date_created": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "date_updated": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "emergency_enabled": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "friendly_name": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "iso_country": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "postal_code": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "region": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "street": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "validated": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "verified": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "uri": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             }
           },
           "type": "object",
           "additionalProperties": false
         },
-        "supported_sync_modes": [
-          "incremental"
-        ],
+        "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "date_updated"
-        ]
+        "default_cursor_field": ["date_updated"]
       },
-      "cursor_field": [
-        "date_updated"
-      ],
+      "cursor_field": ["date_updated"],
       "sync_mode": "incremental"
     },
     {
@@ -358,189 +202,99 @@
         "json_schema": {
           "properties": {
             "sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "account_sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "friendly_name": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "phone_number": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "voice_url": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "voice_method": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "voice_fallback_url": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "voice_fallback_method": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "voice_caller_id_lookup": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "date_created": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "date_updated": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sms_url": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sms_method": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sms_fallback_url": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sms_fallback_method": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "address_requirements": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "capabilities": {
               "properties": {
                 "voice": {
-                  "type": [
-                    "null",
-                    "boolean"
-                  ]
+                  "type": ["null", "boolean"]
                 },
                 "sms": {
-                  "type": [
-                    "null",
-                    "boolean"
-                  ]
+                  "type": ["null", "boolean"]
                 },
                 "mms": {
-                  "type": [
-                    "null",
-                    "boolean"
-                  ]
+                  "type": ["null", "boolean"]
                 },
                 "fax": {
-                  "type": [
-                    "null",
-                    "boolean"
-                  ]
+                  "type": ["null", "boolean"]
                 }
               },
-              "type": [
-                "null",
-                "object"
-              ],
+              "type": ["null", "object"],
               "additionalProperties": false
             },
             "status_callback": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "status_callback_method": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "api_version": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "voice_application_sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sms_application_sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "trunk_sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "emergency_status": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "emergency_address_sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "uri": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             }
           },
           "type": "object",
@@ -554,142 +308,76 @@
         "json_schema": {
           "properties": {
             "account_sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "api_version": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "date_created": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "date_updated": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "friendly_name": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "message_status_callback": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sms_fallback_method": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sms_fallback_url": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sms_method": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sms_status_callback": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sms_url": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "status_callback": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "status_callback_method": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "uri": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "voice_callback_id_lookup": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "voice_fallback_method": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "voice_fallback_url": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "voice_method": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "voice_url": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             }
           },
           "type": "object",
           "additionalProperties": false
         },
-        "supported_sync_modes": [
-          "incremental"
-        ],
+        "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "date_updated"
-        ]
+        "default_cursor_field": ["date_updated"]
       },
-      "cursor_field": [
-        "date_updated"
-      ],
+      "cursor_field": ["date_updated"],
       "sync_mode": "incremental"
     },
     {
@@ -698,51 +386,30 @@
         "json_schema": {
           "properties": {
             "country_code": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "country": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "uri": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "beta": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "subresource_uris": {
               "anyOf": [
                 {
                   "type": "array",
                   "items": {
-                    "type": [
-                      "null",
-                      "object"
-                    ],
+                    "type": ["null", "object"],
                     "additionalProperties": false,
                     "properties": {
                       "subresource": {
-                        "type": [
-                          "null",
-                          "string"
-                        ]
+                        "type": ["null", "string"]
                       },
                       "uri": {
-                        "type": [
-                          "null",
-                          "string"
-                        ]
+                        "type": ["null", "string"]
                       }
                     }
                   }
@@ -751,29 +418,17 @@
                   "type": "null"
                 },
                 {
-                  "type": [
-                    "null",
-                    "object"
-                  ],
+                  "type": ["null", "object"],
                   "additionalProperties": false,
                   "properties": {
                     "local": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "mobile": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "toll_free": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     }
                   }
                 }
@@ -791,28 +446,16 @@
         "json_schema": {
           "properties": {
             "friendly_name": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "phone_number": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "lata": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "rate_center": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "latitude": {
               "anyOf": [
@@ -821,7 +464,7 @@
                 },
                 {
                   "type": "number",
-                  "multipleOf": 1e-06
+                  "multipleOf": 1e-6
                 },
                 {
                   "type": "string"
@@ -835,7 +478,7 @@
                 },
                 {
                   "type": "number",
-                  "multipleOf": 1e-06
+                  "multipleOf": 1e-6
                 },
                 {
                   "type": "string"
@@ -843,72 +486,39 @@
               ]
             },
             "locality": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "region": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "postal_code": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "iso_country": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "address_requirements": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "beta": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "capabilities": {
               "properties": {
                 "voice": {
-                  "type": [
-                    "null",
-                    "boolean"
-                  ]
+                  "type": ["null", "boolean"]
                 },
                 "SMS": {
-                  "type": [
-                    "null",
-                    "boolean"
-                  ]
+                  "type": ["null", "boolean"]
                 },
                 "MMS": {
-                  "type": [
-                    "null",
-                    "boolean"
-                  ]
+                  "type": ["null", "boolean"]
                 },
                 "fax": {
-                  "type": [
-                    "null",
-                    "boolean"
-                  ]
+                  "type": ["null", "boolean"]
                 }
               },
-              "type": [
-                "null",
-                "object"
-              ],
+              "type": ["null", "object"],
               "additionalProperties": false
             }
           },
@@ -923,28 +533,16 @@
         "json_schema": {
           "properties": {
             "friendly_name": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "phone_number": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "lata": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "rate_center": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "latitude": {
               "anyOf": [
@@ -953,7 +551,7 @@
                 },
                 {
                   "type": "number",
-                  "multipleOf": 1e-06
+                  "multipleOf": 1e-6
                 },
                 {
                   "type": "string"
@@ -967,7 +565,7 @@
                 },
                 {
                   "type": "number",
-                  "multipleOf": 1e-06
+                  "multipleOf": 1e-6
                 },
                 {
                   "type": "string"
@@ -975,72 +573,39 @@
               ]
             },
             "locality": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "region": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "postal_code": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "iso_country": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "address_requirements": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "beta": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "capabilities": {
               "properties": {
                 "voice": {
-                  "type": [
-                    "null",
-                    "boolean"
-                  ]
+                  "type": ["null", "boolean"]
                 },
                 "SMS": {
-                  "type": [
-                    "null",
-                    "boolean"
-                  ]
+                  "type": ["null", "boolean"]
                 },
                 "MMS": {
-                  "type": [
-                    "null",
-                    "boolean"
-                  ]
+                  "type": ["null", "boolean"]
                 },
                 "fax": {
-                  "type": [
-                    "null",
-                    "boolean"
-                  ]
+                  "type": ["null", "boolean"]
                 }
               },
-              "type": [
-                "null",
-                "object"
-              ],
+              "type": ["null", "object"],
               "additionalProperties": false
             }
           },
@@ -1055,28 +620,16 @@
         "json_schema": {
           "properties": {
             "friendly_name": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "phone_number": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "lata": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "rate_center": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "latitude": {
               "anyOf": [
@@ -1085,7 +638,7 @@
                 },
                 {
                   "type": "number",
-                  "multipleOf": 1e-06
+                  "multipleOf": 1e-6
                 },
                 {
                   "type": "string"
@@ -1099,7 +652,7 @@
                 },
                 {
                   "type": "number",
-                  "multipleOf": 1e-06
+                  "multipleOf": 1e-6
                 },
                 {
                   "type": "string"
@@ -1107,72 +660,39 @@
               ]
             },
             "locality": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "region": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "postal_code": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "iso_country": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "address_requirements": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "beta": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "capabilities": {
               "properties": {
                 "voice": {
-                  "type": [
-                    "null",
-                    "boolean"
-                  ]
+                  "type": ["null", "boolean"]
                 },
                 "SMS": {
-                  "type": [
-                    "null",
-                    "boolean"
-                  ]
+                  "type": ["null", "boolean"]
                 },
                 "MMS": {
-                  "type": [
-                    "null",
-                    "boolean"
-                  ]
+                  "type": ["null", "boolean"]
                 },
                 "fax": {
-                  "type": [
-                    "null",
-                    "boolean"
-                  ]
+                  "type": ["null", "boolean"]
                 }
               },
-              "type": [
-                "null",
-                "object"
-              ],
+              "type": ["null", "object"],
               "additionalProperties": false
             }
           },
@@ -1187,247 +707,130 @@
         "json_schema": {
           "properties": {
             "sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "account_sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "friendly_name": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "phone_number": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "voice_url": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "voice_method": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "voice_fallback_url": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "voice_fallback_method": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "voice_caller_id_lookup": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "date_created": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "date_updated": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sms_url": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sms_method": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sms_fallback_url": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sms_fallback_method": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "address_requirements": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "beta": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "capabilities": {
               "properties": {
                 "voice": {
-                  "type": [
-                    "null",
-                    "boolean"
-                  ]
+                  "type": ["null", "boolean"]
                 },
                 "sms": {
-                  "type": [
-                    "null",
-                    "boolean"
-                  ]
+                  "type": ["null", "boolean"]
                 },
                 "mms": {
-                  "type": [
-                    "null",
-                    "boolean"
-                  ]
+                  "type": ["null", "boolean"]
                 },
                 "fax": {
-                  "type": [
-                    "null",
-                    "boolean"
-                  ]
+                  "type": ["null", "boolean"]
                 }
               },
-              "type": [
-                "null",
-                "object"
-              ],
+              "type": ["null", "object"],
               "additionalProperties": false
             },
             "voice_receive_mode": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "status_callback": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "status_callback_method": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "api_version": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "voice_application_sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sms_application_sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "origin": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "trunk_sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "emergency_status": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "emergency_address_sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "address_sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "identity_sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "bundle_sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "uri": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "status": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             }
           },
           "type": "object",
           "additionalProperties": false
         },
-        "supported_sync_modes": [
-          "incremental"
-        ],
+        "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "date_updated"
-        ]
+        "default_cursor_field": ["date_updated"]
       },
-      "cursor_field": [
-        "date_updated"
-      ],
+      "cursor_field": ["date_updated"],
       "sync_mode": "incremental"
     },
     {
@@ -1436,52 +839,31 @@
         "json_schema": {
           "properties": {
             "account_sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "date_created": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "date_updated": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "friendly_name": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             }
           },
           "type": "object",
           "additionalProperties": false
         },
-        "supported_sync_modes": [
-          "incremental"
-        ],
+        "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "date_updated"
-        ]
+        "default_cursor_field": ["date_updated"]
       },
-      "cursor_field": [
-        "date_updated"
-      ],
+      "cursor_field": ["date_updated"],
       "sync_mode": "incremental"
     },
     {
@@ -1490,188 +872,101 @@
         "json_schema": {
           "properties": {
             "sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "date_created": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "date_updated": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "parent_call_sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "account_sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "to": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "to_formatted": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "from": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "from_formatted": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "phone_number_sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "status": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "start_time": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "end_time": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "duration": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "price": {
-              "multipleOf": 1e-08,
-              "type": [
-                "null",
-                "number"
-              ]
+              "multipleOf": 1e-8,
+              "type": ["null", "number"]
             },
             "price_unit": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "direction": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "answered_by": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "annotation": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "api_version": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "forwarded_from": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "group_sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "caller_name": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "queue_time": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "trunk_sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "uri": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "subresource_uris": {
               "anyOf": [
                 {
                   "type": "array",
                   "items": {
-                    "type": [
-                      "null",
-                      "object"
-                    ],
+                    "type": ["null", "object"],
                     "additionalProperties": false,
                     "properties": {
                       "subresource": {
-                        "type": [
-                          "null",
-                          "string"
-                        ]
+                        "type": ["null", "string"]
                       },
                       "uri": {
-                        "type": [
-                          "null",
-                          "string"
-                        ]
+                        "type": ["null", "string"]
                       }
                     }
                   }
@@ -1680,23 +975,14 @@
                   "type": "null"
                 },
                 {
-                  "type": [
-                    "null",
-                    "object"
-                  ],
+                  "type": ["null", "object"],
                   "additionalProperties": false,
                   "properties": {
                     "recordings": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "notifications": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     }
                   }
                 }
@@ -1706,17 +992,11 @@
           "type": "object",
           "additionalProperties": false
         },
-        "supported_sync_modes": [
-          "incremental"
-        ],
+        "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "end_time"
-        ]
+        "default_cursor_field": ["end_time"]
       },
-      "cursor_field": [
-        "end_time"
-      ],
+      "cursor_field": ["end_time"],
       "sync_mode": "incremental"
     },
     {
@@ -1725,83 +1005,47 @@
         "json_schema": {
           "properties": {
             "account_sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "api_version": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "date_created": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "date_updated": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "friendly_name": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "region": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "status": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "uri": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "subresource_uris": {
               "anyOf": [
                 {
                   "type": "array",
                   "items": {
-                    "type": [
-                      "null",
-                      "object"
-                    ],
+                    "type": ["null", "object"],
                     "additionalProperties": false,
                     "properties": {
                       "subresource": {
-                        "type": [
-                          "null",
-                          "string"
-                        ]
+                        "type": ["null", "string"]
                       },
                       "uri": {
-                        "type": [
-                          "null",
-                          "string"
-                        ]
+                        "type": ["null", "string"]
                       }
                     }
                   }
@@ -1815,17 +1059,11 @@
           "type": "object",
           "additionalProperties": false
         },
-        "supported_sync_modes": [
-          "incremental"
-        ],
+        "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "date_updated"
-        ]
+        "default_cursor_field": ["date_updated"]
       },
-      "cursor_field": [
-        "date_updated"
-      ],
+      "cursor_field": ["date_updated"],
       "sync_mode": "incremental"
     },
     {
@@ -1834,84 +1072,45 @@
         "json_schema": {
           "properties": {
             "account_sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "call_sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "conference_sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "date_created": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "date_updated": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "end_conference_on_exit": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "muted": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "hold": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "status": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "start_conference_on_enter": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "coaching": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "call_sid_to_coach": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "uri": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             }
           },
           "type": "object",
@@ -1925,64 +1124,37 @@
         "json_schema": {
           "properties": {
             "account_sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "date_created": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "date_updated": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "friendly_name": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "phone_number": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "uri": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             }
           },
           "type": "object",
           "additionalProperties": false
         },
-        "supported_sync_modes": [
-          "incremental"
-        ],
+        "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "date_updated"
-        ]
+        "default_cursor_field": ["date_updated"]
       },
-      "cursor_field": [
-        "date_updated"
-      ],
+      "cursor_field": ["date_updated"],
       "sync_mode": "incremental"
     },
     {
@@ -1991,136 +1163,73 @@
         "json_schema": {
           "properties": {
             "account_sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "api_version": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "call_sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "conference_sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "date_created": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "date_updated": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "start_time": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "duration": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "price": {
-              "multipleOf": 1e-08,
-              "type": [
-                "null",
-                "number"
-              ]
+              "multipleOf": 1e-8,
+              "type": ["null", "number"]
             },
             "price_unit": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "status": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "channels": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "error_code": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "uri": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "encryption_details": {
               "properties": {
                 "type": {
-                  "type": [
-                    "null",
-                    "string"
-                  ]
+                  "type": ["null", "string"]
                 },
                 "encryption_public_key_sid": {
-                  "type": [
-                    "null",
-                    "string"
-                  ]
+                  "type": ["null", "string"]
                 },
                 "encryption_cek": {
-                  "type": [
-                    "null",
-                    "string"
-                  ]
+                  "type": ["null", "string"]
                 },
                 "iv": {
-                  "type": [
-                    "null",
-                    "string"
-                  ]
+                  "type": ["null", "string"]
                 }
               },
-              "type": [
-                "null",
-                "object"
-              ],
+              "type": ["null", "object"],
               "additionalProperties": false
             },
             "subresource_uris": {
@@ -2128,23 +1237,14 @@
                 {
                   "type": "array",
                   "items": {
-                    "type": [
-                      "null",
-                      "object"
-                    ],
+                    "type": ["null", "object"],
                     "additionalProperties": false,
                     "properties": {
                       "subresource": {
-                        "type": [
-                          "null",
-                          "string"
-                        ]
+                        "type": ["null", "string"]
                       },
                       "uri": {
-                        "type": [
-                          "null",
-                          "string"
-                        ]
+                        "type": ["null", "string"]
                       }
                     }
                   }
@@ -2153,23 +1253,14 @@
                   "type": "null"
                 },
                 {
-                  "type": [
-                    "null",
-                    "object"
-                  ],
+                  "type": ["null", "object"],
                   "additionalProperties": false,
                   "properties": {
                     "transcriptions": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "add_on_results": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     }
                   }
                 }
@@ -2179,17 +1270,11 @@
           "type": "object",
           "additionalProperties": false
         },
-        "supported_sync_modes": [
-          "incremental"
-        ],
+        "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "date_created"
-        ]
+        "default_cursor_field": ["date_created"]
       },
-      "cursor_field": [
-        "date_created"
-      ],
+      "cursor_field": ["date_created"],
       "sync_mode": "incremental"
     },
     {
@@ -2198,101 +1283,56 @@
         "json_schema": {
           "properties": {
             "account_sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "api_version": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "date_created": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "date_updated": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "duration": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "price": {
-              "multipleOf": 1e-08,
-              "type": [
-                "null",
-                "number"
-              ]
+              "multipleOf": 1e-8,
+              "type": ["null", "number"]
             },
             "price_unit": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "recording_sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "status": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "transcription_text": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "type": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "uri": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             }
           },
           "type": "object",
           "additionalProperties": false
         },
-        "supported_sync_modes": [
-          "incremental"
-        ],
+        "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "date_updated"
-        ]
+        "default_cursor_field": ["date_updated"]
       },
-      "cursor_field": [
-        "date_updated"
-      ],
+      "cursor_field": ["date_updated"],
       "sync_mode": "incremental"
     },
     {
@@ -2301,83 +1341,47 @@
         "json_schema": {
           "properties": {
             "account_sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "average_wait_time": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "current_size": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "date_created": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "date_updated": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "friendly_name": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "max_size": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "uri": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "subresource_uris": {
               "anyOf": [
                 {
                   "type": "array",
                   "items": {
-                    "type": [
-                      "null",
-                      "object"
-                    ],
+                    "type": ["null", "object"],
                     "additionalProperties": false,
                     "properties": {
                       "subresource": {
-                        "type": [
-                          "null",
-                          "string"
-                        ]
+                        "type": ["null", "string"]
                       },
                       "uri": {
-                        "type": [
-                          "null",
-                          "string"
-                        ]
+                        "type": ["null", "string"]
                       }
                     }
                   }
@@ -2391,17 +1395,11 @@
           "type": "object",
           "additionalProperties": false
         },
-        "supported_sync_modes": [
-          "incremental"
-        ],
+        "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "date_updated"
-        ]
+        "default_cursor_field": ["date_updated"]
       },
-      "cursor_field": [
-        "date_updated"
-      ],
+      "cursor_field": ["date_updated"],
       "sync_mode": "incremental"
     },
     {
@@ -2410,127 +1408,70 @@
         "json_schema": {
           "properties": {
             "account_sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "api_version": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "body": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "date_created": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "date_sent": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "date_updated": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "direction": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "error_code": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "error_message": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "from": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "messaging_service_sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "num_media": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "num_segments": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "price": {
-              "multipleOf": 1e-08,
-              "type": [
-                "null",
-                "number"
-              ]
+              "multipleOf": 1e-8,
+              "type": ["null", "number"]
             },
             "sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "status": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "subresource_uris": {
               "anyOf": [
                 {
                   "type": "array",
                   "items": {
-                    "type": [
-                      "null",
-                      "object"
-                    ],
+                    "type": ["null", "object"],
                     "additionalProperties": false,
                     "properties": {
                       "subresource": {
-                        "type": [
-                          "null",
-                          "string"
-                        ]
+                        "type": ["null", "string"]
                       },
                       "uri": {
-                        "type": [
-                          "null",
-                          "string"
-                        ]
+                        "type": ["null", "string"]
                       }
                     }
                   }
@@ -2539,51 +1480,32 @@
                   "type": "null"
                 },
                 {
-                  "type": [
-                    "null",
-                    "object"
-                  ],
+                  "type": ["null", "object"],
                   "additionalProperties": false,
                   "properties": {
                     "feedback": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "media": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     }
                   }
                 }
               ]
             },
             "to": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "uri": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             }
           },
           "type": "object",
           "additionalProperties": false
         },
-        "supported_sync_modes": [
-          "incremental"
-        ],
+        "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "date_sent"
-        ]
+        "default_cursor_field": ["date_sent"]
       }
     },
     {
@@ -2592,48 +1514,27 @@
         "json_schema": {
           "properties": {
             "sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "account_sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "parent_sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "content_type": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "date_created": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "date_updated": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "uri": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             }
           },
           "type": "object",
@@ -2647,10 +1548,7 @@
         "json_schema": {
           "properties": {
             "category": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "count": {
               "anyOf": [
@@ -2666,33 +1564,21 @@
               ]
             },
             "price_unit": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "subresource_uris": {
               "anyOf": [
                 {
                   "type": "array",
                   "items": {
-                    "type": [
-                      "null",
-                      "object"
-                    ],
+                    "type": ["null", "object"],
                     "additionalProperties": false,
                     "properties": {
                       "subresource": {
-                        "type": [
-                          "null",
-                          "string"
-                        ]
+                        "type": ["null", "string"]
                       },
                       "uri": {
-                        "type": [
-                          "null",
-                          "string"
-                        ]
+                        "type": ["null", "string"]
                       }
                     }
                   }
@@ -2701,89 +1587,50 @@
                   "type": "null"
                 },
                 {
-                  "type": [
-                    "null",
-                    "object"
-                  ],
+                  "type": ["null", "object"],
                   "additionalProperties": false,
                   "properties": {
                     "yesterday": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "all_time": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "today": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "yearly": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "this_month": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "monthly": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "daily": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "last_month": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     }
                   }
                 }
               ]
             },
             "description": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "end_date": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "as_of": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "usage_unit": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "price": {
               "anyOf": [
@@ -2792,21 +1639,15 @@
                 },
                 {
                   "type": "number",
-                  "multipleOf": 1e-06
+                  "multipleOf": 1e-6
                 }
               ]
             },
             "uri": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "account_sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "usage": {
               "anyOf": [
@@ -2815,7 +1656,7 @@
                 },
                 {
                   "type": "number",
-                  "multipleOf": 1e-08
+                  "multipleOf": 1e-8
                 },
                 {
                   "type": "string"
@@ -2824,38 +1665,23 @@
             },
             "start_date": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "count_unit": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "api_version": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             }
           },
           "type": "object",
           "additionalProperties": false
         },
-        "supported_sync_modes": [
-          "incremental"
-        ],
+        "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "end_date"
-        ]
+        "default_cursor_field": ["end_date"]
       },
-      "cursor_field": [
-        "end_date"
-      ],
+      "cursor_field": ["end_date"],
       "sync_mode": "incremental"
     },
     {
@@ -2864,120 +1690,66 @@
         "json_schema": {
           "properties": {
             "usage_record_uri": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "date_updated": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "date_fired": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "friendly_name": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "uri": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "account_sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "callback_method": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "trigger_by": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "current_value": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "date_created": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "callback_url": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "recurring": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "usage_category": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "trigger_value": {
-              "multipleOf": 1e-08,
-              "type": [
-                "null",
-                "number"
-              ]
+              "multipleOf": 1e-8,
+              "type": ["null", "number"]
             },
             "api_version": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             }
           },
           "type": "object",
           "additionalProperties": false
         },
-        "supported_sync_modes": [
-          "incremental"
-        ],
+        "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "date_updated"
-        ]
+        "default_cursor_field": ["date_updated"]
       },
-      "cursor_field": [
-        "date_updated"
-      ],
+      "cursor_field": ["date_updated"],
       "sync_mode": "incremental"
     },
     {
@@ -2986,113 +1758,62 @@
         "json_schema": {
           "properties": {
             "log_level": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "resource_sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "date_updated": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "account_sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "url": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "request_method": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "date_generated": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "alert_text": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "date_created": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "request_url": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "service_sid": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "error_code": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "api_version": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "more_info": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             }
           },
           "type": "object",
           "additionalProperties": false
         },
-        "supported_sync_modes": [
-          "incremental"
-        ],
+        "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "date_updated"
-        ]
+        "default_cursor_field": ["date_updated"]
       },
-      "cursor_field": [
-        "date_updated"
-      ],
+      "cursor_field": ["date_updated"],
       "sync_mode": "incremental"
     }
   ]

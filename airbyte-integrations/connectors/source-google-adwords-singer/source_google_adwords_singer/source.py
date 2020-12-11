@@ -49,30 +49,34 @@ class SourceGoogleAdwordsSinger(SingerSource):
         return f"tap-adwords --config {config_path} --discover"
 
     def get_sync_mode_overrides(self) -> Dict[str, SyncModeInfo]:
-        incrementals = ["KEYWORDS_PERFORMANCE_REPORT",
-                        "AD_PERFORMANCE_REPORT",
-                        "ADGROUP_PERFORMANCE_REPORT",
-                        "CAMPAIGN_PERFORMANCE_REPORT",
-                        "ACCOUNT_PERFORMANCE_REPORT",
-                        "GEO_PERFORMANCE_REPORT",
-                        "SEARCH_QUERY_PERFORMANCE_REPORT",
-                        "CALL_METRICS_CALL_DETAILS_REPORT",
-                        "KEYWORDLESS_QUERY_REPORT",
-                        "CRITERIA_PERFORMANCE_REPORT",
-                        "CLICK_PERFORMANCE_REPORT",
-                        "DISPLAY_KEYWORD_PERFORMANCE_REPORT",
-                        "PLACEHOLDER_FEED_ITEM_REPORT",
-                        "PLACEMENT_PERFORMANCE_REPORT",
-                        "GENDER_PERFORMANCE_REPORT",
-                        "AGE_RANGE_PERFORMANCE_REPORT",
-                        "AUDIENCE_PERFORMANCE_REPORT",
-                        "DISPLAY_TOPICS_PERFORMANCE_REPORT",
-                        "SHOPPING_PERFORMANCE_REPORT",
-                        "PLACEHOLDER_REPORT",
-                        "FINAL_URL_REPORT",
-                        "VIDEO_PERFORMANCE_REPORT"]
-        return {stream: SyncModeInfo(supported_sync_modes=[SyncMode.incremental], source_defined_cursor=True, default_cursor_field=[]) for stream in
-                incrementals}
+        incrementals = [
+            "KEYWORDS_PERFORMANCE_REPORT",
+            "AD_PERFORMANCE_REPORT",
+            "ADGROUP_PERFORMANCE_REPORT",
+            "CAMPAIGN_PERFORMANCE_REPORT",
+            "ACCOUNT_PERFORMANCE_REPORT",
+            "GEO_PERFORMANCE_REPORT",
+            "SEARCH_QUERY_PERFORMANCE_REPORT",
+            "CALL_METRICS_CALL_DETAILS_REPORT",
+            "KEYWORDLESS_QUERY_REPORT",
+            "CRITERIA_PERFORMANCE_REPORT",
+            "CLICK_PERFORMANCE_REPORT",
+            "DISPLAY_KEYWORD_PERFORMANCE_REPORT",
+            "PLACEHOLDER_FEED_ITEM_REPORT",
+            "PLACEMENT_PERFORMANCE_REPORT",
+            "GENDER_PERFORMANCE_REPORT",
+            "AGE_RANGE_PERFORMANCE_REPORT",
+            "AUDIENCE_PERFORMANCE_REPORT",
+            "DISPLAY_TOPICS_PERFORMANCE_REPORT",
+            "SHOPPING_PERFORMANCE_REPORT",
+            "PLACEHOLDER_REPORT",
+            "FINAL_URL_REPORT",
+            "VIDEO_PERFORMANCE_REPORT",
+        ]
+        return {
+            stream: SyncModeInfo(supported_sync_modes=[SyncMode.incremental], source_defined_cursor=True, default_cursor_field=[])
+            for stream in incrementals
+        }
 
     def read_cmd(self, logger, config_path, catalog_path, state_path=None) -> str:
         config_option = f"--config {config_path}"
