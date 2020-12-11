@@ -98,6 +98,16 @@ task generateApiDocs(type: GenerateTask) {
             generatePom  : "false",
             interfaceOnly: "true"
     ]
+
+    doLast {
+        delete rootProject.file("docs/api/*")
+        copy {
+            from outputDir
+            include "**/*.html"
+            includeEmptyDirs = false
+            into rootProject.file("docs/api")
+        }
+    }
 }
 compileJava.dependsOn tasks.generateApiDocs
 
