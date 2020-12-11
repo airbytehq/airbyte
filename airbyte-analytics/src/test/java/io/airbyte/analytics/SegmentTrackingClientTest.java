@@ -54,7 +54,7 @@ class SegmentTrackingClientTest {
   void setup() {
     analytics = mock(Analytics.class);
     roleSupplier = mock(Supplier.class);
-    segmentTrackingClient = new SegmentTrackingClient(() -> identity, "role", analytics);
+    segmentTrackingClient = new SegmentTrackingClient(() -> identity, null, analytics);
   }
 
   @SuppressWarnings("OptionalGetWithoutIsPresent")
@@ -81,6 +81,7 @@ class SegmentTrackingClientTest {
 
   @Test
   void testIdentifyWithRole() {
+    segmentTrackingClient = new SegmentTrackingClient(() -> identity, "role", analytics);
     // equals is not defined on MessageBuilder, so we need to use ArgumentCaptor to inspect each field
     // manually.
     ArgumentCaptor<IdentifyMessage.Builder> mockBuilder = ArgumentCaptor.forClass(IdentifyMessage.Builder.class);
