@@ -205,6 +205,7 @@ public class CsvDestination implements Destination {
 
     /**
      * Copy and append Csv file to another
+     *
      * @param srcFilePath CSV file to append data from
      * @param dstFilePath CSV file to append data to
      * @throws IOException
