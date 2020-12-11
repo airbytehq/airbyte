@@ -188,14 +188,16 @@ public class CsvDestination implements Destination {
       // do not persist the data, if there are any failures.
       if (!hasFailed) {
         for (final WriteConfig writeConfig : writeConfigs.values()) {
-            Files.move(writeConfig.getTmpPath(), writeConfig.getFinalPath(), StandardCopyOption.REPLACE_EXISTING);
+          Files.move(writeConfig.getTmpPath(), writeConfig.getFinalPath(), StandardCopyOption.REPLACE_EXISTING);
         }
       }
       // clean up tmp files.
       for (final WriteConfig writeConfig : writeConfigs.values()) {
         Files.deleteIfExists(writeConfig.getTmpPath());
       }
+
     }
+
   }
 
   private static class WriteConfig {
@@ -221,6 +223,7 @@ public class CsvDestination implements Destination {
     public Path getFinalPath() {
       return finalPath;
     }
+
   }
 
   public static void main(String[] args) throws Exception {
