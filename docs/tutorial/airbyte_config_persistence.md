@@ -75,13 +75,6 @@ As we've seen in the previous tutorial, we can spin up Airbyte instance after in
 ```bash
 #!/usr/bin/env bash
 
-# Check if airbyte is installed
-docker-compose config &> /dev/null
-if [ $? -ne 0 ]; then
-    git clone https://github.com/airbytehq/airbyte.git
-    cd airbyte
-fi 
-
 docker-compose up -d
 
 echo -e "\n"
@@ -121,8 +114,8 @@ After a few seconds, the UI should be ready to go at http://localhost:8000/
 
 ## Notes about running this tutorial on Mac OS vs Linux
 
-Note that Docker for Mac is not a real Docker host, now it actually runs a virtual machine behind the scenes and hides it from you to make things simpler. 
-Simpler, unless you want to dig deeper... just like our current use case where we want to inspect the content of internal Docker volumes...
+Note that Docker for Mac is not a real Docker host, now it actually runs a virtual machine behind the scenes and hides it from you to make things simpler.
+Here's the simpler version, unless you want to dig deeper... just like our current use case where we want to inspect the content of internal Docker volumes...
 
 Here are some related links as references on accessing Docker Volumes:
 - on Mac OS [Using Docker containers in 2019](https://stackoverflow.com/a/55648186)
@@ -152,7 +145,7 @@ mkdir -p $TUTORIAL_DIR/my-setup
 docker cp airbyte-server:/data $TUTORIAL_DIR/my-setup
 ```
 
-## Configure some Exchange Rate source and File destination
+## Configure Exchange Rate source and File destination
 
 Head back to http://localhost:8000/ and add more connectors. 
 Here is an example of configuration from an API source:
