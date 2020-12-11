@@ -55,6 +55,7 @@ public class SingerExchangeRatesApiSourceTest {
 
   private static final String CATALOG = "catalog.json";
   private static final String CONFIG = "config.json";
+  private static final String STATE = "state.json";
 
   protected Path jobRoot;
   protected Path workspaceRoot;
@@ -165,7 +166,7 @@ public class SingerExchangeRatesApiSourceTest {
   }
 
   private Process createSyncProcess(Path syncOutputPath) throws IOException, WorkerException {
-    return launcher.read(jobRoot, CONFIG, "catalog.json")
+    return launcher.read(jobRoot, CONFIG, "catalog.json", STATE)
         .redirectOutput(syncOutputPath.toFile())
         .redirectError(ProcessBuilder.Redirect.INHERIT)
         .start();

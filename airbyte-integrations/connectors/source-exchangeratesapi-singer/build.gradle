@@ -3,7 +3,7 @@ plugins {
     id 'airbyte-python'
     id 'airbyte-docker'
     id 'airbyte-integration-test-java'
-    // todo: implement source test
+    id 'airbyte-source-test'
 }
 
 airbytePython {
@@ -11,6 +11,8 @@ airbytePython {
 }
 
 dependencies {
+    implementation files(project(':airbyte-integrations:bases:base-singer').airbyteDocker.outputs)
+
     integrationTestJavaImplementation project(':airbyte-workers')
     integrationTestJavaImplementation project(':airbyte-config:models')
     integrationTestJavaImplementation project(':airbyte-protocol:models')

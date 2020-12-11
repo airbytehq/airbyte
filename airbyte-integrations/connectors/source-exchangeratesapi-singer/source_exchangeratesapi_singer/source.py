@@ -25,8 +25,7 @@ SOFTWARE.
 import urllib.request
 from typing import Dict
 
-from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, Status, SyncMode
-from base_python import AirbyteLogger, CatalogHelper, ConfigContainer
+from airbyte_protocol import AirbyteConnectionStatus, Status, SyncMode
 from base_singer import SingerSource, SyncModeInfo
 
 
@@ -47,7 +46,9 @@ class SourceExchangeRatesApiSinger(SingerSource):
 
     def get_sync_mode_overrides(self) -> Dict[str, SyncModeInfo]:
         return {
-            "exchange_rate": SyncModeInfo(supported_sync_modes=[SyncMode.incremental], source_defined_cursor=True, default_cursor_field=["date"])
+            "exchange_rate": SyncModeInfo(
+                supported_sync_modes=[SyncMode.incremental], source_defined_cursor=True, default_cursor_field=["date"]
+            )
         }
 
     def read_cmd(self, logger, config_path, catalog_path, state_path=None) -> str:
