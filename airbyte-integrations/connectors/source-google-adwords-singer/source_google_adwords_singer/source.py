@@ -23,10 +23,10 @@ SOFTWARE.
 """
 
 import os
-from typing import Dict
 
-from airbyte_protocol import AirbyteConnectionStatus, Status, SyncMode
-from base_singer import SingerSource, SyncModeInfo
+from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, Status
+from base_python import AirbyteLogger, CatalogHelper, ConfigContainer
+from base_singer import SingerSource
 
 
 class SourceGoogleAdwordsSinger(SingerSource):
