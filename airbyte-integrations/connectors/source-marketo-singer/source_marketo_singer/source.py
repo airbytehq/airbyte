@@ -24,8 +24,8 @@ SOFTWARE.
 
 from typing import Dict
 
-from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, Status, SyncMode
-from base_python import AirbyteLogger, CatalogHelper, ConfigContainer
+from airbyte_protocol import AirbyteConnectionStatus, Status, SyncMode
+from base_python import AirbyteLogger, ConfigContainer
 from base_singer import SingerSource, SyncModeInfo
 
 TAP_CMD = "tap-marketo"
