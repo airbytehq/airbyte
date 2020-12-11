@@ -46,5 +46,5 @@ class SourceZendeskSinger(SingerSource):
         return f"{TAP_CMD} -c {config_path} --discover"
 
     def read_cmd(self, logger: AirbyteLogger, config_path: str, catalog_path: str, state_path: str = None) -> str:
-        # We don't pass state because this source does not respect replication-key so temporarily we're forcing it to be full refresh
-        return f"{TAP_CMD} --config {config_path} --catalog {catalog_path}"
+        state_opt = f"--state {state_path}" if state_path else ""
+        return f"{TAP_CMD} --config {config_path} --catalog {catalog_path} {state_opt}"
