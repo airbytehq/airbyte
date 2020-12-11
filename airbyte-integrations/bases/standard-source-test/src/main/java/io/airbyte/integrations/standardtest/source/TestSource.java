@@ -263,8 +263,12 @@ public abstract class TestSource {
       return;
     }
 
-    final ConfiguredAirbyteCatalog configuredAirbyteCatalog = withSourceDefinedCursors(getConfiguredCatalog());
-    final List<AirbyteMessage> airbyteMessages = runRead(configuredAirbyteCatalog, getState());
+    final ConfiguredAirbyteCatalog configuredCatalog = withSourceDefinedCursors(getConfiguredCatalog());
+    // only sync incremental streams
+    configuredCatalog.setStreams(
+        configuredCatalog.getStreams().stream().filter(s -> s.getSyncMode() == INCREMENTAL).collect(Collectors.toList()));
+
+    final List<AirbyteMessage> airbyteMessages = runRead(configuredCatalog, getState());
     final List<AirbyteRecordMessage> recordMessages = filterRecords(airbyteMessages);
     final List<AirbyteStateMessage> stateMessages = airbyteMessages
         .stream()
@@ -279,7 +283,7 @@ public abstract class TestSource {
     // when we run incremental sync again there should be no new records. Run a sync with the latest
     // state message and assert no records were emitted.
     final JsonNode latestState = stateMessages.get(stateMessages.size() - 1).getData();
-    final List<AirbyteRecordMessage> secondSyncRecords = filterRecords(runRead(configuredAirbyteCatalog, latestState));
+    final List<AirbyteRecordMessage> secondSyncRecords = filterRecords(runRead(configuredCatalog, latestState));
     assertTrue(
         secondSyncRecords.isEmpty(),
         "Expected the second incremental sync to produce no records when given the first sync's output state.");

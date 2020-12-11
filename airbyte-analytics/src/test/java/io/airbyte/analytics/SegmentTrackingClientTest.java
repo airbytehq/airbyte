@@ -27,6 +27,7 @@ package io.airbyte.analytics;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
 import com.segment.analytics.Analytics;
@@ -34,6 +35,7 @@ import com.segment.analytics.messages.IdentifyMessage;
 import com.segment.analytics.messages.TrackMessage;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -45,11 +47,14 @@ class SegmentTrackingClientTest {
 
   private Analytics analytics;
   private SegmentTrackingClient segmentTrackingClient;
+  private Supplier<String> roleSupplier;
 
   @BeforeEach
+  @SuppressWarnings("unchecked")
   void setup() {
     analytics = mock(Analytics.class);
-    segmentTrackingClient = new SegmentTrackingClient(() -> identity, analytics);
+    roleSupplier = mock(Supplier.class);
+    segmentTrackingClient = new SegmentTrackingClient(() -> identity, null, analytics);
   }
 
   @SuppressWarnings("OptionalGetWithoutIsPresent")
@@ -69,6 +74,30 @@ class SegmentTrackingClientTest {
         .put("anonymized", identity.isAnonymousDataCollection())
         .put("subscribed_newsletter", identity.isNews())
         .put("subscribed_security", identity.isSecurityUpdates())
+        .build();
+    assertEquals(identity.getCustomerId().toString(), actual.userId());
+    assertEquals(expectedTraits, actual.traits());
+  }
+
+  @Test
+  void testIdentifyWithRole() {
+    segmentTrackingClient = new SegmentTrackingClient(() -> identity, "role", analytics);
+    // equals is not defined on MessageBuilder, so we need to use ArgumentCaptor to inspect each field
+    // manually.
+    ArgumentCaptor<IdentifyMessage.Builder> mockBuilder = ArgumentCaptor.forClass(IdentifyMessage.Builder.class);
+    when(roleSupplier.get()).thenReturn("role");
+
+    segmentTrackingClient.identify();
+
+    verify(analytics).enqueue(mockBuilder.capture());
+    final IdentifyMessage actual = mockBuilder.getValue().build();
+    final Map<String, Object> expectedTraits = ImmutableMap.<String, Object>builder()
+        .put("airbyte_version", AIRBYTE_VERSION)
+        .put("email", identity.getEmail().get())
+        .put("anonymized", identity.isAnonymousDataCollection())
+        .put("subscribed_newsletter", identity.isNews())
+        .put("subscribed_security", identity.isSecurityUpdates())
+        .put("airbyte_role", "role")
         .build();
     assertEquals(identity.getCustomerId().toString(), actual.userId());
     assertEquals(expectedTraits, actual.traits());
