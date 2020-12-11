@@ -103,7 +103,7 @@ def override_sync_modes(airbyte_stream: AirbyteStream, overrides: SyncModeInfo):
     airbyte_stream.source_defined_cursor = overrides.source_defined_cursor or False
     if overrides.supported_sync_modes:
         airbyte_stream.supported_sync_modes = overrides.supported_sync_modes
-    if overrides.default_cursor_field:
+    if overrides.default_cursor_field or overrides.default_cursor_field == []:
         airbyte_stream.default_cursor_field = overrides.default_cursor_field
 
 
