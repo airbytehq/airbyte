@@ -22,8 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, Status
-from base_python import AirbyteLogger, CatalogHelper, ConfigContainer
+from airbyte_protocol import AirbyteConnectionStatus, Status
+from base_python import AirbyteLogger, ConfigContainer
 from base_singer import SingerSource
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
