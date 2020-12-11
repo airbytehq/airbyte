@@ -30,7 +30,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
-import io.airbyte.integrations.standardtest.source.TestSource;
+import io.airbyte.integrations.standardtest.source.StandardSourceTest;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
@@ -42,7 +42,7 @@ import java.util.HashMap;
 import java.util.List;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-public class JdbcIntegrationTest extends TestSource {
+public class JdbcIntegrationTest extends StandardSourceTest {
 
   private static final String STREAM_NAME = "public.id_and_name";
   private PostgreSQLContainer<?> container;

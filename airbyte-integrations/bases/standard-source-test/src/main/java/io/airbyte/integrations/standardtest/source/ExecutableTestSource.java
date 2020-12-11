@@ -37,7 +37,7 @@ import java.util.List;
  * Extends TestSource such that it can be called using resources pulled from the file system. Will
  * also add the ability to execute arbitrary scripts in the next version.
  */
-public class ExecutableTestSource extends TestSource {
+public class ExecutableTestSource extends StandardSourceTest {
 
   public static class TestConfig {
 

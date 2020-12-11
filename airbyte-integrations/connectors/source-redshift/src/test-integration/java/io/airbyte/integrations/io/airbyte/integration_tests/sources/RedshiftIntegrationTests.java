@@ -30,7 +30,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
-import io.airbyte.integrations.standardtest.source.TestSource;
+import io.airbyte.integrations.standardtest.source.StandardSourceTest;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
@@ -41,7 +41,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-public class RedshiftIntegrationTests extends TestSource {
+public class RedshiftIntegrationTests extends StandardSourceTest {
 
   // This test case expects an active redshift cluster that is useable from outside of vpc
   private static final String SCHEMA_NAME = "integration_test";
