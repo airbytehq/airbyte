@@ -13,7 +13,7 @@ import { Connection } from "../../../../../core/resources/Connection";
 
 const Content = styled.div`
   width: 100%;
-  max-width: 638px;
+  max-width: 813px;
   margin: 19px auto;
 `;
 

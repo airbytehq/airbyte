@@ -1,17 +1,33 @@
 import { Resource } from "rest-hooks";
 import BaseResource from "./BaseResource";
 
+export enum SyncMode {
+  Incremental = "incremental",
+  FullRefresh = "full_refresh"
+}
+
 export type SyncSchemaField = {
   name: string;
+  cleanedName: string;
   selected: boolean;
   type: string;
+  dataType: string;
+};
+
+export type SyncSchemaStream = {
+  name: string;
+  cleanedName: string;
+  fields: SyncSchemaField[];
+  supportedSyncModes: SyncMode[];
+  sourceDefinedCursor: boolean | null;
+  defaultCursorField: string[];
+  selected: boolean | null;
+  syncMode: string | null;
+  cursorField: string[];
 };
 
 export type SyncSchema = {
-  streams: {
-    name: string;
-    fields: SyncSchemaField[];
-  }[];
+  streams: SyncSchemaStream[];
 };
 
 export interface Schema {

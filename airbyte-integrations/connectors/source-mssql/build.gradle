@@ -1,8 +1,7 @@
 plugins {
     id 'application'
     id 'airbyte-docker'
-    // todo (cgardens) - bring back when we figure out ci build issue.
-    // id 'airbyte-integration-test-java'
+    id 'airbyte-integration-test-java'
 }
 
 application {
@@ -29,8 +28,8 @@ dependencies {
 
     testImplementation project(':airbyte-test-utils')
 
-    // integrationTestImplementation project(':airbyte-integrations:bases:standard-source-test')
+    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
 
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
-    // integrationTestImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+    integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 }

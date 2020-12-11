@@ -7,6 +7,7 @@ import { AnalyticsService } from "../../../../../core/analytics/AnalyticsService
 import config from "../../../../../config";
 import useRouter from "../../../../../components/hooks/useRouterHook";
 import { useSourceDefinitionSpecificationLoad } from "../../../../../components/hooks/services/useSourceHook";
+import { IDataItem } from "../../../../../components/DropDown/components/ListItem";
 
 type IProps = {
   onSubmit: (values: {
@@ -15,7 +16,7 @@ type IProps = {
     sourceDefinitionId?: string;
     connectionConfiguration?: any;
   }) => void;
-  dropDownData: Array<{ text: string; value: string; img?: string }>;
+  dropDownData: IDataItem[];
   hasSuccess?: boolean;
   errorStatus?: number;
 };

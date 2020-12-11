@@ -29,12 +29,12 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
-import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.integrations.source.jdbc.AbstractJooqSource;
 import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PostgresSource extends AbstractJdbcSource implements Source {
+public class PostgresSource extends AbstractJooqSource implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSource.class);
 

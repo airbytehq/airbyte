@@ -11,10 +11,11 @@ import config from "../../../config";
 import usePrepareDropdownLists from "./usePrepareDropdownLists";
 import { Destination } from "../../../core/resources/Destination";
 import { useDestinationDefinitionSpecificationLoad } from "../../../components/hooks/services/useDestinationHook";
+import { IDataItem } from "../../../components/DropDown/components/ListItem";
 
 type IProps = {
   destination?: Destination;
-  dropDownData: Array<{ text: string; value: string; img?: string }>;
+  dropDownData: IDataItem[];
   hasSuccess?: boolean;
   onSubmit: (values: {
     name: string;

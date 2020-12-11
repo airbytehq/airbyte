@@ -740,7 +740,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JobStatusRead"
+                $ref: "#/components/schemas/JobInfoRead"
         "404":
           description: Connection not found
         "422":
@@ -763,7 +763,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JobStatusRead"
+                $ref: "#/components/schemas/JobInfoRead"
         "404":
           description: Connection not found
         "422":
@@ -1521,18 +1521,6 @@ components:
             - days
             - weeks
             - months
-    JobStatusRead:
-      type: object
-      required:
-        - status
-      properties:
-        status:
-          $ref: "#/components/schemas/JobStatusReadStatus"
-    JobStatusReadStatus:
-      type: string
-      enum:
-        - succeeded
-        - failed
     # SCHEMA
     SourceSchema:
       description: describes the available schema.
@@ -1651,22 +1639,64 @@ components:
         createdAt:
           type: integer
           format: int64
-        startedAt:
-          type: integer
-          format: int64
         updatedAt:
           type: integer
           format: int64
         status:
           $ref: "#/components/schemas/JobStatus"
+    JobWithAttemptsRead:
+      type: object
+      properties:
+        job:
+          $ref: "#/components/schemas/JobRead"
+        attempts:
+          type: array
+          items:
+            $ref: "#/components/schemas/AttemptRead"
+
     JobStatus:
       type: string
       enum:
         - pending
         - running
+        - incomplete
         - failed
-        - completed
+        - succeeded
         - cancelled
+    AttemptRead:
+      type: object
+      required:
+        - id
+        - status
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: integer
+          format: int64
+        status:
+          $ref: "#/components/schemas/AttemptStatus"
+        createdAt:
+          type: integer
+          format: int64
+        updatedAt:
+          type: integer
+          format: int64
+        endedAt:
+          type: integer
+          format: int64
+        bytesSynced:
+          type: integer
+          format: int64
+        recordsSynced:
+          type: integer
+          format: int64
+    AttemptStatus:
+      type: string
+      enum:
+        - running
+        - failed
+        - succeeded
     JobReadList:
       type: object
       required:
@@ -1675,24 +1705,29 @@ components:
         jobs:
           type: array
           items:
-            $ref: "#/components/schemas/JobRead"
+            $ref: "#/components/schemas/JobWithAttemptsRead"
     JobInfoRead:
       type: object
       required:
         - job
-        - logs
+        - attempts
       properties:
         job:
           $ref: "#/components/schemas/JobRead"
-        logs:
-          $ref: "#/components/schemas/LogRead"
-    DebugRead:
+        attempts:
+          type: array
+          items:
+            $ref: "#/components/schemas/AttemptInfoRead"
+    AttemptInfoRead:
       type: object
       required:
-        - info
+        - attempt
+        - logs
       properties:
-        info:
-          type: object
+        attempt:
+          $ref: "#/components/schemas/AttemptRead"
+        logs:
+          $ref: "#/components/schemas/LogRead"
     LogRead:
       type: object
       required:
@@ -1710,6 +1745,13 @@ components:
       properties:
         db:
           type: boolean
+    DebugRead:
+      type: object
+      required:
+        - info
+      properties:
+        info:
+          type: object
     # General
     CheckConnectionRead:
       type: object

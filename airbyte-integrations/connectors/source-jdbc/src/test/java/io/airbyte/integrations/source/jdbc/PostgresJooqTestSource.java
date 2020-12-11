@@ -22,34 +22,35 @@
  * SOFTWARE.
  */
 
-package io.airbyte.server.cache;
+package io.airbyte.integrations.source.jdbc;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import io.airbyte.protocol.models.ConnectorSpecification;
-import java.util.Optional;
+import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.integrations.base.IntegrationRunner;
+import io.airbyte.integrations.base.Source;
+import org.jooq.SQLDialect;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class DefaultSpecCache implements SpecCache {
+// for ease of testing testing purposes only
+public class PostgresJooqTestSource extends AbstractJooqSource implements Source {
 
-  private final Cache<String, ConnectorSpecification> cache;
+  private static final Logger LOGGER = LoggerFactory.getLogger(PostgresJooqTestSource.class);
 
-  public DefaultSpecCache() {
-    cache = CacheBuilder.newBuilder().build();
+  public PostgresJooqTestSource() {
+    super("org.postgresql.Driver", SQLDialect.POSTGRES);
   }
 
+  // no-op for JooqSource since the config it receives is designed to be use for JDBC.
   @Override
-  public Optional<ConnectorSpecification> get(String imageName) {
-    return Optional.ofNullable(cache.getIfPresent(imageName));
+  public JsonNode toJdbcConfig(JsonNode config) {
+    return config;
   }
 
-  @Override
-  public void put(String imageName, ConnectorSpecification spec) {
-    cache.put(imageName, spec);
-  }
-
-  @Override
-  public void evict(String imageName) {
-    cache.invalidate(imageName);
+  public static void main(String[] args) throws Exception {
+    final Source source = new PostgresJooqTestSource();
+    LOGGER.info("starting source: {}", PostgresJooqTestSource.class);
+    new IntegrationRunner(source).run(args);
+    LOGGER.info("completed source: {}", PostgresJooqTestSource.class);
   }
 
 }

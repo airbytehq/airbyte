@@ -8,9 +8,9 @@ description: 'Here''s what''s coming in the next few days, weeks, months, and ye
 
 Check out our [GitHub project](https://github.com/airbytehq/airbyte/projects/1) to see the features we're currently working on or about to. You may also give us insights, by adding your own issues and voting for specific features / integrations.
 
-## Coming within a few weeks
+## Coming within a few weeks / months
 
-Here is a highlight of the main features we are planning on releasing:
+We understand that we're not "production-ready" for a lot of companies yet. In the end, we just got started in July 2020, so we're at the beginning of the journey. Here is a highlight of the main features we are planning on releasing in the next few months:
 
 * Incremental syncs \([\#247](https://github.com/airbytehq/airbyte/issues/247)\)
 * Kubernetes support \([\#835](https://github.com/airbytehq/airbyte/issues/835)\)
@@ -21,7 +21,9 @@ Here is a highlight of the main features we are planning on releasing:
 * Upgrade strategy
 * [DBT](https://www.getdbt.com/) Integration
 
-## Coming within a few months / years
+Our goal is to become "production-ready" for any company whatever their data stack. **If you see anything missing in this list that you would need before deploying us in prod, please talk to us via** [**Slack**](https://slack.airbyte.io) **or** [**email**](mailto:contact@airbyte.io)**!**
+
+## Coming within a few quarters / years
 
 We also wanted to share with you how we think about the high-level roadmap over the next few months and years. We foresee several high-level phases that we will try to share here.
 

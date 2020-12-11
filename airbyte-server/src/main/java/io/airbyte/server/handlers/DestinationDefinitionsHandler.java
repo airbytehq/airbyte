@@ -32,7 +32,7 @@ import io.airbyte.api.model.DestinationDefinitionUpdate;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.server.cache.SpecCache;
+import io.airbyte.scheduler.client.CachingSchedulerJobClient;
 import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -48,20 +48,22 @@ public class DestinationDefinitionsHandler {
   private final DockerImageValidator imageValidator;
   private final ConfigRepository configRepository;
   private final Supplier<UUID> uuidSupplier;
-  private final SpecCache specCache;
+  private final CachingSchedulerJobClient schedulerJobClient;
 
-  public DestinationDefinitionsHandler(final ConfigRepository configRepository, DockerImageValidator imageValidator, SpecCache specCache) {
-    this(configRepository, imageValidator, UUID::randomUUID, specCache);
+  public DestinationDefinitionsHandler(final ConfigRepository configRepository,
+                                       DockerImageValidator imageValidator,
+                                       CachingSchedulerJobClient schedulerJobClient) {
+    this(configRepository, imageValidator, UUID::randomUUID, schedulerJobClient);
   }
 
   public DestinationDefinitionsHandler(final ConfigRepository configRepository,
                                        DockerImageValidator imageValidator,
                                        final Supplier<UUID> uuidSupplier,
-                                       SpecCache specCache) {
+                                       CachingSchedulerJobClient schedulerJobClient) {
     this.configRepository = configRepository;
     this.imageValidator = imageValidator;
     this.uuidSupplier = uuidSupplier;
-    this.specCache = specCache;
+    this.schedulerJobClient = schedulerJobClient;
   }
 
   public DestinationDefinitionReadList listDestinationDefinitions() throws ConfigNotFoundException, IOException, JsonValidationException {
@@ -111,7 +113,7 @@ public class DestinationDefinitionsHandler {
 
     configRepository.writeStandardDestinationDefinition(newDestination);
     // we want to re-fetch the spec for updated definitions.
-    specCache.evict(currentDestination.getDockerRepository() + ":" + destinationDefinitionUpdate.getDockerImageTag());
+    schedulerJobClient.resetCache();
     return buildDestinationDefinitionRead(newDestination);
   }
 
