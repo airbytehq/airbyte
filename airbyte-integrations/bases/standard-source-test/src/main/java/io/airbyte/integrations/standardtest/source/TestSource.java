@@ -95,6 +95,7 @@ public abstract class TestSource {
   private Set<String> IMAGES_TO_SKIP_SECOND_INCREMENTAL_READ = Sets.newHashSet(
       "airbyte/source-intercom-singer",
       "airbyte/source-hubspot-singer",
+      "airbyte/source-marketo-singer",
       "airbyte/source-twilio-singer");
 
   /**
