@@ -25,6 +25,7 @@
 package io.airbyte.analytics;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.segment.analytics.Analytics;
 import com.segment.analytics.messages.IdentifyMessage;
@@ -33,7 +34,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
-import org.apache.logging.log4j.util.Strings;
 
 public class SegmentTrackingClient implements TrackingClient {
 
@@ -68,7 +68,7 @@ public class SegmentTrackingClient implements TrackingClient {
         .put("subscribed_newsletter", trackingIdentity.isNews())
         .put("subscribed_security", trackingIdentity.isSecurityUpdates());
 
-    if (!Strings.isEmpty(airbyteRole)) {
+    if (!Strings.isNullOrEmpty(airbyteRole)) {
       identityMetadataBuilder.put(AIRBYTE_ROLE, airbyteRole);
     }
 
