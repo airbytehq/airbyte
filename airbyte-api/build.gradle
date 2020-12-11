@@ -100,12 +100,14 @@ task generateApiDocs(type: GenerateTask) {
     ]
 
     doLast {
-        delete rootProject.file("docs/api/*")
+        def target = file(rootProject.file("docs/api"))
+        delete target
+        mkdir target
         copy {
             from outputDir
             include "**/*.html"
             includeEmptyDirs = false
-            into rootProject.file("docs/api")
+            into target
         }
     }
 }
