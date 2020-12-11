@@ -28,6 +28,8 @@ import java.nio.file.Path;
 
 public interface Configs {
 
+  String getAirbyteRole();
+
   String getAirbyteVersion();
 
   Path getConfigRoot();

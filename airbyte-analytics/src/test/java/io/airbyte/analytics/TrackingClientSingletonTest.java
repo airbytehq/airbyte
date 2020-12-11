@@ -56,13 +56,19 @@ class TrackingClientSingletonTest {
   @Test
   void testCreateTrackingClientLogging() {
     assertTrue(
-        TrackingClientSingleton.createTrackingClient(Configs.TrackingStrategy.LOGGING, TrackingIdentity::empty) instanceof LoggingTrackingClient);
+        TrackingClientSingleton.createTrackingClient(
+            Configs.TrackingStrategy.LOGGING,
+            "role",
+            TrackingIdentity::empty) instanceof LoggingTrackingClient);
   }
 
   @Test
   void testCreateTrackingClientSegment() {
     assertTrue(
-        TrackingClientSingleton.createTrackingClient(Configs.TrackingStrategy.SEGMENT, TrackingIdentity::empty) instanceof SegmentTrackingClient);
+        TrackingClientSingleton.createTrackingClient(
+            Configs.TrackingStrategy.SEGMENT,
+            "role",
+            TrackingIdentity::empty) instanceof SegmentTrackingClient);
   }
 
   @Test
