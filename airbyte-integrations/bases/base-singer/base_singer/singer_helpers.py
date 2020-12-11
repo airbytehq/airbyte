@@ -99,7 +99,7 @@ def set_sync_modes_from_metadata(airbyte_stream: AirbyteStream, metadatas: List[
             airbyte_stream.supported_sync_modes = [SyncMode.incremental]
 
 
-def override_sync_modes_from_overrides(airbyte_stream: AirbyteStream, overrides: SyncModeInfo):
+def override_sync_modes(airbyte_stream: AirbyteStream, overrides: SyncModeInfo):
     airbyte_stream.source_defined_cursor = overrides.source_defined_cursor or False
     if overrides.supported_sync_modes:
         airbyte_stream.supported_sync_modes = overrides.supported_sync_modes
@@ -128,7 +128,8 @@ class SingerHelper:
             schema = stream.get("schema")
             airbyte_stream = AirbyteStream(name=name, json_schema=schema)
             if name in sync_mode_overrides:
-                override_sync_modes_from_overrides(airbyte_stream, sync_mode_overrides[name])
+                override_sync_modes(airbyte_stream, sync_mode_overrides[name])
+
             else:
                 set_sync_modes_from_metadata(airbyte_stream, stream.get("metadata", []))
 

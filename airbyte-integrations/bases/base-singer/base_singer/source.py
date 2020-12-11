@@ -73,6 +73,16 @@ class SingerSource(Source):
 
     def get_sync_mode_overrides(self) -> Dict[str, SyncModeInfo]:
         """
+        The Singer Spec outlines a way for taps to declare in their catalog that their streams support incremental sync (valid-replication-keys,
+        forced-replication-method, and others). However, many taps which are incremental don't actually declare that via the catalog, and just
+        use their input state to perform an incremental sync without giving any hints to the user. An Airbyte Connector built on top of such a
+        Singer Tap cannot automatically detect which streams are full refresh or incremental or what their cursors are. In those cases the developer
+        needs to manually specify information about the sync modes.
+
+        This method provides a way of doing that: the dict of stream names to SyncModeInfo returned from this method will be used to override each
+        stream's sync mode information in the Airbyte Catalog output from the discover method. Only set fields provided in the SyncModeInfo are used.
+        If a SyncModeInfo field is not set, it will not be overridden in the output catalog.
+
         :return: A dict from stream name to the sync modes that should be applied to this stream.
         """
         return {}
@@ -96,7 +106,7 @@ class BaseSingerSource(SingerSource):
             json_config = config_container.rendered_config
             self.try_connect(logger, json_config)
         except self.api_error as err:
-            logger.error("Exception while connecting to the %s: %s", self.tap_name, str(err))
+            logger.error(f"Exception while connecting to {self.tap_name}: {err}")
             # this should be in UI
             error_msg = f"Unable to connect to {self.tap_name} with the provided credentials. Error: {err}"
             return AirbyteConnectionStatus(status=Status.FAILED, message=error_msg)

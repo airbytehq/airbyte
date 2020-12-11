@@ -14,5 +14,5 @@ RUN pip install pip==20.3
 RUN pip install tap-shopify==1.2.6
 RUN pip install ".[main]"
 
-LABEL io.airbyte.version=0.1.5
+LABEL io.airbyte.version=0.1.6
 LABEL io.airbyte.name=airbyte/source-shopify-singer
