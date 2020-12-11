@@ -33,4 +33,5 @@ todo: document how to resize airbyte-volume-local and how to put files onto it f
 todo: how to bump local or workspace volume size if running out of space
 todo: how to read data from workspace or local volumes
 todo: how to connect to the db and read from it
-todo: show how to iterate with `./gradlew composeBuild && kubectl delete -k kube/overlays/dev && kubectl apply -k kube/overlays/dev` or with a way that doesn't clobber configs
+todo: show how to iterate with `./gradlew composeBuild && (kubectl delete --grace-period=0 --force -k kube/overlays/dev || true) && kubectl apply -k kube/overlays/dev` or with a way that doesn't clobber configs
+todo: show how to delete everything: `kubectl delete "$(kubectl api-resources --namespaced=true --verbs=delete -o name | tr "\n" "," | sed -e 's/,$//')" --all`

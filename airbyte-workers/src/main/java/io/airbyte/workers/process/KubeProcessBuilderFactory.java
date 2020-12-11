@@ -90,9 +90,10 @@ public class KubeProcessBuilderFactory implements ProcessBuilderFactory {
     @Override
     public ProcessBuilder create(final Path jobRoot, final String imageName, final String... args) throws WorkerException {
 
-        if (!checkImageExists(imageName)) {
-            throw new WorkerException("Could not find image: " + imageName);
-        }
+            // todo: this check needs to exist in the script instead - it needs to be pullable by kube
+//        if (!checkImageExists(imageName)) {
+//            throw new WorkerException("Could not find image: " + imageName);
+//        }
 
         try {
             final String[] split = jobRoot.toString().split("/");
@@ -107,7 +108,7 @@ public class KubeProcessBuilderFactory implements ProcessBuilderFactory {
                     .replace("WORKDIR", rebasePath(jobRoot).toString())
                     .replace("ARGS", Jsons.serialize(Arrays.asList(args)));
 
-            final String yamlPath = jobRoot.resolve("job.yaml").toString();
+            final String yamlPath = jobRoot.resolve("job.yaml").toAbsolutePath().toString();
 
             try(FileWriter writer = new FileWriter(yamlPath)) {
                 writer.write(rendered);
@@ -130,20 +131,20 @@ public class KubeProcessBuilderFactory implements ProcessBuilderFactory {
     }
 
     // todo: re-use between different process builder factories
-    @VisibleForTesting
-    boolean checkImageExists(String imageName) {
-        try {
-            final Process process = new ProcessBuilder(imageExistsScriptPath.toString(), imageName).start();
-            LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
-            LineGobbler.gobble(process.getInputStream(), LOGGER::info);
-
-            process.waitFor(1, TimeUnit.MINUTES);
-
-            return process.exitValue() == 0;
-
-        } catch (IOException | InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-    }
+//    @VisibleForTesting
+//    boolean checkImageExists(String imageName) {
+//        try {
+//            final Process process = new ProcessBuilder(imageExistsScriptPath.toString(), imageName).start();
+//            LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
+//            LineGobbler.gobble(process.getInputStream(), LOGGER::info);
+//
+//            process.waitFor(1, TimeUnit.MINUTES);
+//
+//            return process.exitValue() == 0;
+//
+//        } catch (IOException | InterruptedException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
 
 }

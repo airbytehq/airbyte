@@ -3,10 +3,15 @@
 set -e
 
 JOB_YAML_PATH=$1
-POD_NAME=$(cat "$JOB_YAML_PATH" | grep airbyte-worker- | cut -d " " -f4)
-
 kubectl apply -f "$JOB_YAML_PATH"
-kubectl logs pod/"$POD_NAME" --follow --pod-running-timeout=10m
+
+JOB_NAME=$(grep airbyte-worker- < "$JOB_YAML_PATH" | cut -d " " -f4)
+echo "JOB_NAME = $JOB_NAME"
+JOB_UUID=$(kubectl get job "$JOB_NAME" -o "jsonpath={.metadata.labels.controller-uid}")
+echo "JOB_UUID = $JOB_UUID"
+POD_NAME=$(kubectl get po -l controller-uid="$JOB_UUID" -o name)
+echo "POD_NAME = $POD_NAME"
+kubectl logs "$POD_NAME" --follow --pod-running-timeout=1000m
 
 # TODO: do we need to terminate on job closure with:
 # kubectl wait --for=condition=complete job/"$POD_NAME" --timeout=-1
