@@ -6,111 +6,64 @@
         "json_schema": {
           "properties": {
             "id": {
-              "type": [
-                "string"
-              ]
+              "type": ["string"]
             },
             "first_name": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "last_name": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "email": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "type": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "status": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "pmi": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "timezone": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "dept": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "created_at": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "last_login_time": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "last_client_version": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "group_ids": {
               "items": {
-                "type": [
-                  "string"
-                ]
+                "type": ["string"]
               },
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "im_group_ids": {
               "items": {
-                "type": [
-                  "string"
-                ]
+                "type": ["string"]
               },
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "verified": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           },
           "type": "object",
           "additionalProperties": false
         },
         "supported_sync_modes": ["full_refresh"]
-      }}
+      }
+    }
   ]
 }
