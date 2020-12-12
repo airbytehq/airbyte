@@ -15,10 +15,11 @@ All commands should be run from the root Airbyte source directory.
 1. Go to http://localhost:8000/
 
 Coding todos:
-todo: make a kube process builder factory
-todo: test the kube process builder factory independently
-todo: manually test end to end sync
 todo: provide local volume handling for csv input and output
+todo: use subPath for mounting
+todo: pass return code properly from kube runner
+todo: manually test end to end sync
+todo: test the kube process builder factory independently
 todo: repeatable testing for kube
 todo: standardize volume handling for dev and stable
 todo: allow env templating in general
@@ -29,7 +30,7 @@ todo: use non-mounted space for buffers so it’s faster?
 todo: decide on a nesting strategy
 
 Documentation todos:
-todo: document how to resize airbyte-volume-local and how to put files onto it for local file testing
+todo: document how to resize airbyte-volume-local and how to put files onto it for local file testing with `kubectl cp`
 todo: how to bump local or workspace volume size if running out of space
 todo: how to read data from workspace or local volumes
 todo: how to connect to the db and read from it
