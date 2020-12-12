@@ -50,6 +50,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.SyncMode;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -177,10 +178,11 @@ class MySqlSourceTest {
   }
 
   private AirbyteCatalog generateExpectedCatalog() {
-    return CatalogHelpers.createAirbyteCatalog(
+    return new AirbyteCatalog().withStreams(Lists.newArrayList(CatalogHelpers.createAirbyteStream(
         getStreamName(),
         Field.of("id", JsonSchemaPrimitive.NUMBER),
-        Field.of("name", JsonSchemaPrimitive.STRING));
+        Field.of("name", JsonSchemaPrimitive.STRING))
+        .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))));
   }
 
   private ConfiguredAirbyteCatalog generateConfiguredCatalog() {
