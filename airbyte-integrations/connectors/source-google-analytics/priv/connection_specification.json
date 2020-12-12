@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/bases/base-elixir/priv/connection_specification.json",
+  "title": "Airbyte.Source.GoogleAnalytics.ConnectionSpecification",
+  "type": "object",
+  "description": "Connection specification for Google Analytics source",
+  "additionalProperties": false,
+  "properties": {
+    "serviceAccountKeyPath": {
+      "description": "Path for a service account key (json)",
+      "type": "string"
+    }
+  }
+}
