@@ -15,11 +15,11 @@ echo "JOB_UUID = $JOB_UUID"
 POD_NAME=$(kubectl get po -l controller-uid="$JOB_UUID" -o name)
 echo "POD_NAME = $POD_NAME"
 
-echo "Waiting for pod to start..."
-kubectl wait --for=condition=Ready --timeout=10m "$POD_NAME"
-
-echo "Emitting pod logs..."
-kubectl logs "$POD_NAME" --follow --pod-running-timeout=1000m
+echo "Waiting for pod to start and emitting logs..."
+while ! (kubectl logs "$POD_NAME" --follow --pod-running-timeout=1000m)
+do
+  echo "Retrying..."
+done
 
 # TODO: do we need to terminate on job closure with:
 # kubectl wait --for=condition=complete job/"$POD_NAME" --timeout=-1

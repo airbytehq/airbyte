@@ -105,7 +105,7 @@ public class KubeProcessBuilderFactory implements ProcessBuilderFactory {
             final String rendered = template.replace("JOBID", jobId)
                     .replace("ATTEMPTID", attemptId)
                     .replace("TAGGED_IMAGE", imageName)
-                    .replace("WORKDIR", rebasePath(jobRoot).toString())
+                    .replace("WORKDIR", jobRoot.toString())
                     .replace("ARGS", Jsons.serialize(Arrays.asList(args)));
 
             final String yamlPath = jobRoot.resolve("job.yaml").toAbsolutePath().toString();
