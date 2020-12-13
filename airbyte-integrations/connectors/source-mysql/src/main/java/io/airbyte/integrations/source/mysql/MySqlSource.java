@@ -29,18 +29,19 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
-import io.airbyte.integrations.source.jdbc.AbstractJooqSource;
-import java.util.List;
-import org.jooq.SQLDialect;
+import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MySqlSource extends AbstractJooqSource implements Source {
+public class MySqlSource extends AbstractJdbcSource implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlSource.class);
 
+  static final String DRIVER_CLASS = "com.mysql.cj.jdbc.Driver";
+
   public MySqlSource() {
-    super("com.mysql.cj.jdbc.Driver", SQLDialect.MYSQL);
+    super(DRIVER_CLASS);
   }
 
   @Override
@@ -60,13 +61,31 @@ public class MySqlSource extends AbstractJooqSource implements Source {
   }
 
   @Override
-  protected List<String> getExcludedInternalSchemas() {
-    return List.of(
+  public Set<String> getExcludedInternalSchemas() {
+    return Set.of(
         "information_schema",
         "mysql",
         "performance_schema",
         "sys");
   }
+
+  // todo no schema namespacing.
+  // @Override
+  // public ResultSet queryTable(Connection connection, List<String> columnNames, String schemaName,
+  // String tableName) throws SQLException {
+  // System.out.println("blah");
+  // return connection.createStatement().executeQuery(String.format("SELECT %s FROM %s",
+  // Strings.join(columnNames, ","), tableName));
+  // }
+  //
+  // @Override
+  // public ResultSet queryIncrementalTable(Connection connection, List<String> columnNames, String
+  // schemaName, String tableName, String cursorField,
+  // String cursor) throws SQLException {
+  //
+  // return connection.createStatement().executeQuery(String.format("SELECT %s FROM %s WHERE %s >
+  // '%s'", Strings.join(columnNames, ","), tableName, cursorField, cursor));
+  // }
 
   public static void main(String[] args) throws Exception {
     final Source source = new MySqlSource();
