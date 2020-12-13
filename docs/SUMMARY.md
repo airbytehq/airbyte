@@ -79,5 +79,3 @@
   * [Founding Developer Evangelist](career-and-open-positions/founding-developer-evangelist.md)
 * [License](license.md)
 
-## Tutorials
-
