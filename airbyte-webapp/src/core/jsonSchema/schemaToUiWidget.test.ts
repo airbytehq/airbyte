@@ -18,9 +18,10 @@ test("should reformat jsonSchema to internal widget representation", () => {
       },
       dbname: { type: "string", description: "Name of the database." },
       password: {
+        airbyte_secret: true,
         type: "string",
         description: "Password associated with the username."
-      }
+      } as any // Because airbyte_secret is not part of json_schema
     }
   };
 
@@ -70,6 +71,7 @@ test("should reformat jsonSchema to internal widget representation", () => {
         fieldName: "key.password",
         fieldKey: "password",
         isRequired: false,
+        isSecret: true,
         type: "string"
       }
     ]

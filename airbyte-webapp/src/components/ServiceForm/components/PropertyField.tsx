@@ -94,6 +94,11 @@ const PropertyField: React.FC<IProps> = ({ property }) => {
       />
     );
   } else {
+    const inputType = property.isSecret
+      ? "password"
+      : property.type === "integer"
+      ? "number"
+      : "text";
     return (
       <LabeledInput
         {...field}
@@ -102,7 +107,7 @@ const PropertyField: React.FC<IProps> = ({ property }) => {
         label={label}
         message={constructMessage}
         placeholder={placeholder}
-        type={property.type === "integer" ? "number" : "text"}
+        type={inputType}
         value={field.value || property.default || ""}
       />
     );
