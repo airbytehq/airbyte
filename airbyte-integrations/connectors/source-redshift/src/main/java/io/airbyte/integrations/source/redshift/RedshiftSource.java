@@ -30,7 +30,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import java.util.List;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +41,7 @@ public class RedshiftSource extends AbstractJdbcSource implements Source {
   // todo (cgardens) - clean up passing the dialect as null versus explicitly adding the case to the
   // constructor.
   public RedshiftSource() {
-    super("com.amazon.redshift.jdbc.Driver", null);
+    super("com.amazon.redshift.jdbc.Driver");
   }
 
   @Override
@@ -57,8 +57,8 @@ public class RedshiftSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  protected List<String> getExcludedInternalSchemas() {
-    return List.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");
+  public Set<String> getExcludedInternalSchemas() {
+    return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");
   }
 
   public static void main(String[] args) throws Exception {

@@ -24,15 +24,21 @@
 
 package io.airbyte.integrations.source.jdbc;
 
-import static org.jooq.impl.DSL.currentSchema;
-
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.db.Database;
+import io.airbyte.commons.stream.MoreStreams;
+import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Databases;
+import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.Source;
+import io.airbyte.integrations.source.jdbc.models.JdbcState;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
@@ -45,22 +51,20 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.SyncMode;
 import java.io.IOException;
+import java.sql.JDBCType;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.time.Instant;
-import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.jooq.DSLContext;
-import org.jooq.DataType;
-import org.jooq.JSONFormat;
-import org.jooq.JSONFormat.RecordFormat;
-import org.jooq.SQLDialect;
-import org.jooq.Schema;
-import org.jooq.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,17 +72,30 @@ public abstract class AbstractJdbcSource implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcSource.class);
 
-  private static final JSONFormat DB_JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
-
   private final String driverClass;
-  private final SQLDialect dialect;
+  private final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration;
 
-  public AbstractJdbcSource(final String driverClass, final SQLDialect dialect) {
+  public AbstractJdbcSource(final String driverClass, final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration) {
     this.driverClass = driverClass;
-    this.dialect = dialect;
+    this.jdbcStreamingQueryConfiguration = jdbcStreamingQueryConfiguration;
   }
 
+  /**
+   * Map a database implementation-specific configuration to json object that adheres to the
+   * AbstractJdbcSource config spec. See resources/spec.json.
+   *
+   * @param config database implementation-specific configuration.
+   * @return jdbc spec.
+   */
   public abstract JsonNode toJdbcConfig(JsonNode config);
+
+  /**
+   * Set of schemas that are internal to the database (e.g. system schemas) and should not be included
+   * in the catalog.
+   *
+   * @return set of schemas to be ignored.
+   */
+  public abstract Set<String> getExcludedInternalSchemas();
 
   @Override
   public ConnectorSpecification spec() throws IOException {
@@ -89,11 +106,9 @@ public abstract class AbstractJdbcSource implements Source {
 
   @Override
   public AirbyteConnectionStatus check(JsonNode config) {
-    try (final Database database = createDatabase(config)) {
-      // attempt to get current schema. this is a cheap query to sanity check that we can connect to the
-      // database. `currentSchema()` is a jooq method that will run the appropriate query based on which
-      // database it is connected to.
-      database.query(this::getCurrentDatabaseName);
+    try (final JdbcDatabase database = createDatabase(config)) {
+      // attempt to get metadata from the database as a cheap way of seeing if we can connect.
+      database.bufferedQuery(conn -> conn.getMetaData().getCatalogs(), JdbcUtils::getJsonForRow);
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (Exception e) {
@@ -104,101 +119,259 @@ public abstract class AbstractJdbcSource implements Source {
     }
   }
 
-  protected String getCurrentDatabaseName(DSLContext ctx) {
-    return ctx.select(currentSchema()).fetch().get(0).getValue(0, String.class);
-  }
-
   @Override
   public AirbyteCatalog discover(JsonNode config) throws Exception {
-    try (final Database database = createDatabase(config)) {
+    try (final JdbcDatabase database = createDatabase(config)) {
       return new AirbyteCatalog()
-          .withStreams(getTables(database)
-              .stream()
-              .map(t -> CatalogHelpers.createAirbyteStream(t.getName(), t.getFields()))
-              .collect(Collectors.toList()));
+          .withStreams(getTables(
+              database,
+              Optional.ofNullable(config.get("database")).map(JsonNode::asText),
+              Optional.ofNullable(config.get("schema")).map(JsonNode::asText))
+                  .stream()
+                  .map(t -> CatalogHelpers.createAirbyteStream(t.getName(), t.getFields())
+                      .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))
+                  .collect(Collectors.toList()));
     }
-  }
-
-  protected List<String> getExcludedInternalSchemas() {
-    return List.of();
-  }
-
-  protected List<TableInfo> getTables(final Database database) throws Exception {
-    return discoverInternal(database).stream()
-        .map(t -> {
-          final List<Field> fields = Arrays.stream(t.fields())
-              .map(f -> Field.of(f.getName(), jooqDataTypeToJsonSchemaType(f.getDataType())))
-              .collect(Collectors.toList());
-
-          return new TableInfo(String.format("%s.%s", t.getSchema().getName(), t.getName()), fields);
-        })
-        .collect(Collectors.toList());
-  }
-
-  private List<Table<?>> discoverInternal(final Database database) throws Exception {
-    return database.query(context -> {
-      final List<Schema> schemas = context.meta().getSchemas();
-      final List<Table<?>> tables = schemas.stream()
-          .filter(schema -> !getExcludedInternalSchemas().contains(schema.getName()))
-          .flatMap(schema -> context.meta(schema).getTables().stream())
-          .collect(Collectors.toList());
-      return tables;
-    });
   }
 
   @Override
   public Stream<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception {
+    final JdbcStateManager stateManager =
+        new JdbcStateManager(state == null ? JdbcStateManager.emptyState() : Jsons.object(state, JdbcState.class), catalog);
     final Instant now = Instant.now();
 
-    final Database database = createDatabase(config);
+    final JdbcDatabase database = createDatabase(config);
 
-    final Map<String, TableInfo> tableNameToTable = getTables(database).stream()
-        .collect(Collectors.toMap(TableInfo::getName, Function.identity()));
+    final Map<String, TableInfoInternal> tableNameToTable = discoverInternal(
+        database,
+        Optional.ofNullable(config.get("database")).map(JsonNode::asText),
+        Optional.ofNullable(config.get("schema")).map(JsonNode::asText))
+            .stream()
+            .collect(Collectors.toMap(t -> String.format("%s.%s", t.getSchemaName(), t.getName()), Function.identity()));
 
     Stream<AirbyteMessage> resultStream = Stream.empty();
 
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
-      if (!tableNameToTable.containsKey(airbyteStream.getStream().getName())) {
+      final String streamName = airbyteStream.getStream().getName();
+      if (!tableNameToTable.containsKey(streamName)) {
+        LOGGER.info("Skipping stream {} because it is not in the source", streamName);
         continue;
       }
 
-      final Set<String> selectedFields = CatalogHelpers.getTopLevelFieldNames(airbyteStream);
-
-      final TableInfo table = tableNameToTable.get(airbyteStream.getStream().getName());
-      final List<Field> selectedDatabaseFields = table.getFields()
-          .stream()
-          .filter(field -> selectedFields.contains(field.getName()))
-          .collect(Collectors.toList());
-
-      if (selectedDatabaseFields.isEmpty()) {
-        continue;
-      }
-
-      final String fieldNames = selectedDatabaseFields.stream().map(Field::getName).collect(Collectors.joining(", "));
-      final Stream<AirbyteMessage> stream = database.query(
-          ctx -> ctx.fetchStream(String.format("SELECT %s FROM %s", fieldNames, table.getName()))
-              .map(r -> new AirbyteMessage()
-                  .withType(Type.RECORD)
-                  .withRecord(new AirbyteRecordMessage()
-                      .withStream(airbyteStream.getStream().getName())
-                      .withEmittedAt(now.toEpochMilli())
-                      .withData(Jsons.deserialize(r.formatJSON(DB_JSON_FORMAT))))));
-
+      final TableInfoInternal table = tableNameToTable.get(streamName);
+      final Stream<AirbyteMessage> stream = createReadStream(
+          database,
+          airbyteStream,
+          table,
+          stateManager,
+          now);
       resultStream = Stream.concat(resultStream, stream);
     }
-
     return resultStream.onClose(() -> Exceptions.toRuntime(database::close));
   }
 
-  private Database createDatabase(JsonNode config) {
+  // get the read stream for an airbyte stream. the naming is accurate if unfortunate.
+  private Stream<AirbyteMessage> createReadStream(JdbcDatabase database,
+                                                  ConfiguredAirbyteStream airbyteStream,
+                                                  TableInfoInternal table,
+                                                  JdbcStateManager stateManager,
+                                                  Instant now)
+      throws SQLException {
+    final String streamName = airbyteStream.getStream().getName();
+    final Set<String> selectedFieldsInCatalog = CatalogHelpers.getTopLevelFieldNames(airbyteStream);
+    final List<String> selectedDatabaseFields = table.getFields()
+        .stream()
+        .map(ColumnInfo::getColumnName)
+        .filter(selectedFieldsInCatalog::contains)
+        .collect(Collectors.toList());
+
+    final Stream<AirbyteMessage> stream;
+    if (airbyteStream.getSyncMode() == SyncMode.INCREMENTAL) {
+      final String cursorField = IncrementalUtils.getCursorField(airbyteStream);
+      final Optional<String> cursorOptional = stateManager.getCursor(streamName);
+
+      final Stream<AirbyteMessage> internalMessageStream;
+      if (cursorOptional.isPresent()) {
+        internalMessageStream = getIncrementalStream(database, airbyteStream, selectedDatabaseFields, table, cursorOptional.get(), now);
+      } else {
+        // if no cursor is present then this is the first read for is the same as doing a full refresh read.
+        internalMessageStream = getFullRefreshStream(database, streamName, selectedDatabaseFields, table, now);
+      }
+
+      final JsonSchemaPrimitive cursorType = IncrementalUtils.getCursorType(airbyteStream, cursorField);
+      final StateDecoratingIterator stateDecoratingIterator = new StateDecoratingIterator(
+          internalMessageStream,
+          stateManager,
+          streamName,
+          cursorField,
+          cursorOptional.orElse(null),
+          cursorType);
+
+      stream = MoreStreams.toStream(stateDecoratingIterator);
+    } else if (airbyteStream.getSyncMode() == SyncMode.FULL_REFRESH || airbyteStream.getSyncMode() == null) {
+      stream = getFullRefreshStream(database, streamName, selectedDatabaseFields, table, now);
+    } else {
+      throw new IllegalArgumentException(String.format("%s does not support sync mode: %s.", airbyteStream.getSyncMode(), AbstractJdbcSource.class));
+    }
+
+    return stream;
+  }
+
+  private static Stream<AirbyteMessage> getIncrementalStream(JdbcDatabase database,
+                                                             ConfiguredAirbyteStream airbyteStream,
+                                                             List<String> selectedDatabaseFields,
+                                                             TableInfoInternal table,
+                                                             String cursor,
+                                                             Instant now)
+      throws SQLException {
+    final String streamName = airbyteStream.getStream().getName();
+    final String cursorField = IncrementalUtils.getCursorField(airbyteStream);
+    final JDBCType cursorJdbcType = table.getFields().stream()
+        .filter(info -> info.getColumnName().equals(cursorField))
+        .map(ColumnInfo::getColumnType)
+        .findFirst()
+        .orElseThrow();
+
+    Preconditions.checkState(table.getFields().stream().anyMatch(f -> f.getColumnName().equals(cursorField)),
+        String.format("Could not find cursor field %s in table %s", cursorField, table.getName()));
+
+    final Stream<JsonNode> queryStream = queryTableIncremental(
+        database,
+        selectedDatabaseFields,
+        table.getSchemaName(),
+        table.getName(),
+        cursorField,
+        cursorJdbcType, cursor);
+
+    return getMessageStream(queryStream, streamName, now.toEpochMilli());
+  }
+
+  private static Stream<AirbyteMessage> getFullRefreshStream(JdbcDatabase database,
+                                                             String streamName,
+                                                             List<String> selectedDatabaseFields,
+                                                             TableInfoInternal table,
+                                                             Instant now)
+      throws SQLException {
+    final Stream<JsonNode> queryStream = queryTableFullRefresh(database, selectedDatabaseFields, table.getSchemaName(), table.getName());
+    return getMessageStream(queryStream, streamName, now.toEpochMilli());
+  }
+
+  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+  private List<TableInfo> getTables(final JdbcDatabase database,
+                                    final Optional<String> databaseOptional,
+                                    final Optional<String> schemaOptional)
+      throws Exception {
+    return discoverInternal(database, databaseOptional, schemaOptional).stream()
+        .map(t -> {
+          final List<Field> fields = t.getFields()
+              .stream()
+              .map(f -> Field.of(f.getColumnName(), JdbcUtils.getType(f.getColumnType())))
+              .collect(Collectors.toList());
+
+          return new TableInfo(getFullyQualifiedTableName(t.getSchemaName(), t.getName()), fields);
+        })
+        .collect(Collectors.toList());
+  }
+
+  private static String getFullyQualifiedTableName(String schemaName, String tableName) {
+    return schemaName != null ? schemaName + "." + tableName : tableName;
+  }
+
+  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+  private List<TableInfoInternal> discoverInternal(final JdbcDatabase database,
+                                                   final Optional<String> databaseOptional,
+                                                   final Optional<String> schemaOptional)
+      throws Exception {
+    final Set<String> internalSchemas = new HashSet<>(getExcludedInternalSchemas());
+    return database.bufferedQuery(
+        conn -> conn.getMetaData().getColumns(databaseOptional.orElse(null), schemaOptional.orElse(null), null, null),
+        resultSet -> Jsons.jsonNode(ImmutableMap.<String, Object>builder()
+            // we always want a namespace, if we cannot get a schema, use db name.
+            .put("schemaName", resultSet.getObject("TABLE_SCHEM") != null ? resultSet.getString("TABLE_SCHEM") : resultSet.getObject("TABLE_CAT"))
+            .put("tableName", resultSet.getString("TABLE_NAME"))
+            .put("columnName", resultSet.getString("COLUMN_NAME"))
+            .put("columnType", resultSet.getString("DATA_TYPE"))
+            .build()))
+        .stream()
+        .filter(t -> !internalSchemas.contains(t.get("schemaName").asText()))
+        .collect(Collectors.groupingBy(t -> t.get("tableName").asText()))
+        .entrySet()
+        .stream()
+        .map(e -> {
+          final String tableName = e.getKey();
+          final List<JsonNode> fields = e.getValue();
+          return new TableInfoInternal(
+              fields.get(0).get("schemaName").asText(),
+              tableName,
+              fields.stream()
+                  .map(f -> {
+                    JDBCType jdbcType;
+                    try {
+                      jdbcType = JDBCType.valueOf(f.get("columnType").asInt());
+                    } catch (IllegalArgumentException ex) {
+                      LOGGER.warn(String.format("Could not convert column: %s from table: %s.%s with type: %s",
+                          f.get("columnName"),
+                          f.get("schemaName"),
+                          f.get("tableName"),
+                          f.get("columnType")), ex);
+                      jdbcType = JDBCType.VARCHAR;
+                    }
+                    return new ColumnInfo(f.get("columnName").asText(), jdbcType);
+                  })
+                  .collect(Collectors.toList()));
+        })
+        .collect(Collectors.toList());
+  }
+
+  private static Stream<AirbyteMessage> getMessageStream(Stream<JsonNode> recordStream, String streamName, long time) {
+    return recordStream.map(r -> new AirbyteMessage()
+        .withType(Type.RECORD)
+        .withRecord(new AirbyteRecordMessage()
+            .withStream(streamName)
+            .withEmittedAt(time)
+            .withData(r)));
+  }
+
+  public static Stream<JsonNode> queryTableFullRefresh(JdbcDatabase database, List<String> columnNames, String schemaName, String tableName)
+      throws SQLException {
+    return database.query(
+        connection -> {
+          final String sql = String.format("SELECT %s FROM %s", Strings.join(columnNames, ","), getFullyQualifiedTableName(schemaName, tableName));
+          return connection.prepareStatement(sql);
+        },
+        JdbcUtils::getJsonForRow);
+  }
+
+  public static Stream<JsonNode> queryTableIncremental(JdbcDatabase database,
+                                                       List<String> columnNames,
+                                                       String schemaName,
+                                                       String tableName,
+                                                       String cursorField,
+                                                       JDBCType cursorFieldType,
+                                                       String cursor)
+      throws SQLException {
+    final String sql = String.format("SELECT %s FROM %s WHERE %s > ?",
+        Strings.join(columnNames, ","),
+        getFullyQualifiedTableName(schemaName, tableName), cursorField);
+
+    return database.query(
+        connection -> {
+          final PreparedStatement preparedStatement = connection.prepareStatement(sql);
+          JdbcUtils.setFieldWithType(preparedStatement, 1, cursorFieldType, cursor);
+          return preparedStatement;
+        },
+        JdbcUtils::getJsonForRow);
+  }
+
+  private JdbcDatabase createDatabase(JsonNode config) {
     final JsonNode jdbcConfig = toJdbcConfig(config);
 
-    return Databases.createDatabase(
+    return Databases.createStreamingJdbcDatabase(
         jdbcConfig.get("username").asText(),
         jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
         jdbcConfig.get("jdbc_url").asText(),
         driverClass,
-        dialect);
+        jdbcStreamingQueryConfiguration);
   }
 
   protected static class TableInfo {
@@ -221,44 +394,50 @@ public abstract class AbstractJdbcSource implements Source {
 
   }
 
-  /**
-   * Mapping of jooq data types to airbyte data types. When in doubt, fall back on string.
-   *
-   * @param jooqDataType - data type that can be encountered in jooq
-   * @return airbyte data type
-   */
-  private static JsonSchemaPrimitive jooqDataTypeToJsonSchemaType(DataType<?> jooqDataType) {
-    if (jooqDataType.isArray()) {
-      return JsonSchemaPrimitive.ARRAY;
-    } else if (jooqDataType.isBinary()) {
-      return JsonSchemaPrimitive.STRING;
-    } else if (jooqDataType.isDate()) {
-      return JsonSchemaPrimitive.STRING;
-    } else if (jooqDataType.isDateTime()) {
-      return JsonSchemaPrimitive.STRING;
-    } else if (jooqDataType.isEnum()) {
-      return JsonSchemaPrimitive.STRING;
-    } else if (jooqDataType.isInterval()) {
-      // todo (cgardens) - not entirely sure if we prefer this or int.
-      return JsonSchemaPrimitive.STRING;
-    } else if (jooqDataType.isLob()) {
-      return JsonSchemaPrimitive.STRING;
-      // superset of isInteger
-    } else if (jooqDataType.isNumeric()) {
-      return JsonSchemaPrimitive.NUMBER;
-    } else if (jooqDataType.isString()) {
-      return JsonSchemaPrimitive.STRING;
-    } else if (jooqDataType.isTemporal()) {
-      return JsonSchemaPrimitive.STRING;
-    } else if (jooqDataType.isTime()) {
-      return JsonSchemaPrimitive.STRING;
-    } else if (jooqDataType.isTimestamp()) {
-      return JsonSchemaPrimitive.STRING;
-    } else if (jooqDataType.isUDT()) {
-      return JsonSchemaPrimitive.STRING;
-    } else {
-      return JsonSchemaPrimitive.STRING;
+  protected static class TableInfoInternal {
+
+    private final String schemaName;
+    private final String name;
+    private final List<ColumnInfo> fields;
+
+    public TableInfoInternal(String schemaName, String tableName, List<ColumnInfo> fields) {
+      this.schemaName = schemaName;
+      this.name = tableName;
+      this.fields = fields;
     }
+
+    public String getSchemaName() {
+      return schemaName;
+    }
+
+    public String getName() {
+      return name;
+    }
+
+    public List<ColumnInfo> getFields() {
+      return fields;
+    }
+
+  }
+
+  protected static class ColumnInfo {
+
+    private final String columnName;
+    private final JDBCType columnType;
+
+    public ColumnInfo(String columnName, JDBCType columnType) {
+      this.columnName = columnName;
+      this.columnType = columnType;
+    }
+
+    public String getColumnName() {
+      return columnName;
+    }
+
+    public JDBCType getColumnType() {
+      return columnType;
+    }
+
   }
 
 }

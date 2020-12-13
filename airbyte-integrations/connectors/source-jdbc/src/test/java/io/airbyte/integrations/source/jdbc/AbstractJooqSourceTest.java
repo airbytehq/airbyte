@@ -39,6 +39,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
+import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.models.JdbcState;
 import io.airbyte.integrations.source.jdbc.models.JdbcStreamState;
@@ -60,12 +61,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-class JooqSourceTest {
+// todo (cgardens) - either remove AbstractJooqSource or have this test extend
+// JdbcSourceStandardTest so that we can ensure the behavior is the same.
+class AbstractJooqSourceTest {
 
   private static final String STREAM_NAME = "public.id_and_name";
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(Lists.newArrayList(CatalogHelpers.createAirbyteStream(
@@ -469,6 +475,29 @@ class JooqSourceTest {
   // get catalog and perform a defensive copy.
   private static ConfiguredAirbyteCatalog getConfiguredCatalog() {
     return Jsons.clone(CONFIGURED_CATALOG);
+  }
+
+  private static class PostgresJooqTestSource extends AbstractJooqSource implements Source {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(PostgresJooqTestSource.class);
+
+    public PostgresJooqTestSource() {
+      super("org.postgresql.Driver", SQLDialect.POSTGRES);
+    }
+
+    // no-op for JooqSource since the config it receives is designed to be use for JDBC.
+    @Override
+    public JsonNode toJdbcConfig(JsonNode config) {
+      return config;
+    }
+
+    public static void main(String[] args) throws Exception {
+      final Source source = new PostgresJooqTestSource();
+      LOGGER.info("starting source: {}", PostgresJooqTestSource.class);
+      new IntegrationRunner(source).run(args);
+      LOGGER.info("completed source: {}", PostgresJooqTestSource.class);
+    }
+
   }
 
 }
