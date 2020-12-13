@@ -1,0 +1,125 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "accounts",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "ownerId": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "domain": {
+              "type": "string"
+            },
+            "accountId": {
+              "type": "string"
+            },
+            "customProperties": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "value": {},
+                  "type": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "deleted": {
+              "type": "boolean"
+            },
+            "createDateTime": {
+              "type": "integer"
+            },
+            "updateDateTime": {
+              "type": "integer"
+            },
+            "targeted": {
+              "type": "boolean"
+            }
+          }
+        },
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      }
+    },
+    {
+      "stream": {
+        "name": "conversations",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "participants": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "open",
+                "closed",
+                "pending",
+                "bulk_sent"
+              ]
+            },
+            "contactId": {
+              "type": "integer"
+            },
+            "inboxId": {
+              "type": "integer"
+            },
+            "createdAt": {
+              "type": "integer"
+            },
+            "updatedAt": {
+              "type": "integer"
+            },
+            "relatedPlaybookId": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "conversationTags": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "color": {
+                    "type": "string",
+                    "description": "HEX value"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      }
+    }
+  ]
+}
