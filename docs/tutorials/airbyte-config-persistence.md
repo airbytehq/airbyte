@@ -112,16 +112,16 @@ Otherwise, please complete the different steps until you reach the Airbyte Dashb
 
 After a few seconds, the UI should be ready to go at [http://localhost:8000/](http://localhost:8000/)
 
-## Notes about running this tutorial on Mac OS vs Linux
+## Notes about running this tutorial on macOS vs Linux
 
 Note that Docker for Mac is not a real Docker host, now it actually runs a virtual machine behind the scenes and hides it from you to make things simpler. Here's the simpler version, unless you want to dig deeper... just like our current use case where we want to inspect the content of internal Docker volumes...
 
 Here are some related links as references on accessing Docker Volumes:
 
-* on Mac OS [Using Docker containers in 2019](https://stackoverflow.com/a/55648186)
+* on macOS [Using Docker containers in 2019](https://stackoverflow.com/a/55648186)
 * official doc [Use Volume](https://docs.docker.com/storage/volumes/#backup-restore-or-migrate-data-volumes)
 
-From these discussions, we will be using on Mac OS either: 
+From these discussions, we will be using on macOS either: 
 
 1. any docker container/image to browse the virtual filesystem by mounting the volume in order to access them, for example with [busybox](https://hub.docker.com/_/busybox)
 2. or extract files from the volume by copying them onto the host with [Docker cp](https://docs.docker.com/engine/reference/commandline/cp/)
@@ -134,7 +134,7 @@ docker volume inspect <volume_name>
 
 Then look at the `Mountpoint` value, this is where the volume is actually stored in the host filesystem and you can directly retrieve files directly from that folder.
 
-Back to this tutorial, commands shown below should work for both Mac OS and Linux !
+Back to this tutorial, commands shown below should work for both macOS and Linux !
 
 ## Export Initial Setup
 
