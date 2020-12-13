@@ -74,7 +74,7 @@ Once you've created the Service Account, you need to explicitly give it access t
 
 Finally, you'll need the ID of the Spreadsheet you'd like to sync. To get it, navigate to the spreadsheet in your browser, then copy the portion of the URL which comes after "/d" and before "/edit" or "/view". This is the highlighted portion of the screenshot below:
 
-![](../../.gitbook/assets/screen-shot-2020-10-30-at-2.44.55-pm.png)
+![](https://github.com/airbytehq/airbyte/tree/e14dd29f7d8c7fc9256b33446c5c15e2c7791870/docs/.gitbook/assets/screen-shot-2020-10-30-at-2.44.55-pm.png)
 
 ### Setting up in the Airbyte UI
 

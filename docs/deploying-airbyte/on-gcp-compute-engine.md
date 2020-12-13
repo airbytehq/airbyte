@@ -8,13 +8,13 @@ The instructions have been tested on `Debian GNU/Linux 10 (buster)`
 
 * Launch a new instance
 
-![](../.gitbook/assets/gcp_ce_launch.png)
+![](https://github.com/airbytehq/airbyte/tree/e14dd29f7d8c7fc9256b33446c5c15e2c7791870/docs/.gitbook/assets/gcp_ce_launch.png)
 
 * Configure new instance
   * For testing out Airbyte, an `e2.medium` instance is likely sufficient.
   * For long-running Airbyte installations, we recommend a `n1-standard-2` instance.
 
-![](../.gitbook/assets/gcp_ce_configure.png)
+![](https://github.com/airbytehq/airbyte/tree/e14dd29f7d8c7fc9256b33446c5c15e2c7791870/docs/.gitbook/assets/gcp_ce_configure.png)
 
 * `Create`
 

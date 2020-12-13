@@ -370,7 +370,7 @@ And a local Postgres Database:
 
 After setting up the connectors, we can trigger the sync and study the logs:
 
-![airbyte\_config\_persistence\_ui\_logs](../.gitbook/assets/airbyte_config_persistence_6.png)
+![airbyte\_config\_persistence\_ui\_logs](../.gitbook/assets/airbyte_config_persistence_.png)
 
 Since we wiped the workspace volume and restarted the Airbyte Server, notice that the process ran in the `/tmp/workspace/5/0` as well but the logs for ExchangeRate are gone...
 
