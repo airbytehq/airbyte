@@ -26,28 +26,10 @@ from functools import partial
 from typing import Mapping, Tuple
 
 from base_python import BaseClient
-from grnhse import Harvest as BaseHarvest
+from grnhse import Harvest
 from grnhse.exceptions import HTTPError
 
 DEFAULT_ITEMS_PER_PAGE = 100
-
-
-class Harvest(BaseHarvest):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        # FIXME: remove when the following PR will be merged
-        # (https://github.com/alecraso/grnhse-api/pull/7)
-        # patch missing endpoint
-        self._uris["direct"]["custom_fields"] = {"list": "custom_fields", "retrieve": "custom_field/{id}"}
-
-    def __getattr__(self, key):
-        # FIXME: remove when the following fix will be released
-        # (https://github.com/alecraso/grnhse-api/pull/5)
-        # patch auth object to avoid bug with serialization of None
-        endpoint = super(Harvest, self).__getattr__(key)
-        endpoint._session.auth = (endpoint._session.auth[0], "")
-        return endpoint
 
 
 def paginator(request, **params):

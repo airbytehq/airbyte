@@ -34,7 +34,7 @@ setup(
         "airbyte-protocol",
         "base-python",
         "six==1.15.0",
-        "grnhse-api==0.1.0",
+        "grnhse-api==0.1.1",
     ],
     package_data={"": ["*.json", "schemas/*.json"]},
     setup_requires=["pytest-runner"],
