@@ -4,7 +4,7 @@ Once you manage to spin up a local instance of Airbyte, following steps in the [
 
 As we continue to improve the User experience around those aspects to make it simpler in the UI, this tutorial will go over how to manually import and export Airbyte configurations of connectors.
 
-This may be useful if you need for example to version control, make a backup, share with your team or if you just want to debug and learn more about Airbyte internals.
+This may be useful if you need, for example, to version control, make a backup, share with your team, or if you just want to debug and learn more about Airbyte internals.
 
 Here are the goals for this tutorial: 
 
