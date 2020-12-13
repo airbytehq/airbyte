@@ -150,11 +150,11 @@ docker cp airbyte-server:/data $TUTORIAL_DIR/my-setup
 Head back to http://localhost:8000/ and add more connectors. 
 Here is an example of configuration from an API source:
 
-![airbyte_config_persistence_api_source](./airbyte_config_persistence_1.png)
+![airbyte_config_persistence_api_source](../.gitbook/assets/airbyte_config_persistence_1.png)
 
 and a local file destination:
 
-![airbyte_config_persistence_local_file](./airbyte_config_persistence_2.png)
+![airbyte_config_persistence_local_file](../.gitbook/assets/airbyte_config_persistence_2.png)
 
 ## Run a Sync job
 
@@ -163,7 +163,7 @@ and a local file destination:
 - then run the "Sync Now" button
 - finally inspect logs in the UI
 
-![airbyte_config_persistence_ui_logs](./airbyte_config_persistence_3.png)
+![airbyte_config_persistence_ui_logs](../.gitbook/assets/airbyte_config_persistence_3.png)
 
 ## Exploring Logs folders
 
@@ -355,15 +355,15 @@ Let's re-iterate the source and destination creation, this time, with a file acc
     Here are some examples of public API CSV:
     https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv
 
-![airbyte_config_persistence_ui_logs](./airbyte_config_persistence_4.png)
+![airbyte_config_persistence_ui_logs](../.gitbook/assets/airbyte_config_persistence_4.png)
 
 And a local Postgres Database:
 
-![airbyte_config_persistence_ui_logs](./airbyte_config_persistence_5.png)
+![airbyte_config_persistence_ui_logs](../.gitbook/assets/airbyte_config_persistence_5.png)
 
 After setting up the connectors, we can trigger the sync and study the logs:
 
-![airbyte_config_persistence_ui_logs](./airbyte_config_persistence_6.png)
+![airbyte_config_persistence_ui_logs](../.gitbook/assets/airbyte_config_persistence_6.png)
 
 Since we wiped the workspace volume and restarted the Airbyte Server, notice that the process ran in the `/tmp/workspace/5/0` as well but the logs for ExchangeRate are gone...
 
@@ -514,4 +514,3 @@ Example Output:
     Completed successfully
     
     Done. PASS=1 WARN=0 ERROR=0 SKIP=0 TOTAL=1
-    
