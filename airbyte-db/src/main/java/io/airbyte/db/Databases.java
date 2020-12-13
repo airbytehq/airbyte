@@ -38,13 +38,30 @@ public class Databases {
                                         final String jdbcConnectionString,
                                         final String driverClassName,
                                         final SQLDialect dialect) {
+    final BasicDataSource connectionPool = createBasicDataSource(username, password, jdbcConnectionString, driverClassName);
+
+    return new Database(connectionPool, dialect);
+  }
+
+  public static JdbcDatabase createJdbcDatabase(final String username,
+                                                final String password,
+                                                final String jdbcConnectionString,
+                                                final String driverClassName) {
+    final BasicDataSource connectionPool = createBasicDataSource(username, password, jdbcConnectionString, driverClassName);
+
+    return new JdbcDatabase(connectionPool);
+  }
+
+  private static BasicDataSource createBasicDataSource(final String username,
+                                                       final String password,
+                                                       final String jdbcConnectionString,
+                                                       final String driverClassName) {
     final BasicDataSource connectionPool = new BasicDataSource();
     connectionPool.setDriverClassName(driverClassName);
     connectionPool.setUsername(username);
     connectionPool.setPassword(password);
     connectionPool.setUrl(jdbcConnectionString);
-
-    return new Database(connectionPool, dialect);
+    return connectionPool;
   }
 
 }
