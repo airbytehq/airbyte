@@ -8,5 +8,5 @@ dependencies {
     api 'org.jooq:jooq:3.13.4'
     api 'org.postgresql:postgresql:42.2.18'
 
-    testImplementation "org.testcontainers:postgresql:1.15.0-rc2"
+    testImplementation "org.testcontainers:postgresql:1.15.1"
 }
