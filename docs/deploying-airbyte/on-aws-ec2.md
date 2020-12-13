@@ -8,17 +8,17 @@ The instructions have been tested on `Amazon Linux 2 AMI (HVM)`
 
 * Launch a new instance
 
-![](https://github.com/airbytehq/airbyte/tree/e14dd29f7d8c7fc9256b33446c5c15e2c7791870/docs/.gitbook/assets/aws_ec2_launch.png)
+![](../.gitbook/assets/aws_ec2_launch.png)
 
 * Select instance AMI
 
-![](https://github.com/airbytehq/airbyte/tree/e14dd29f7d8c7fc9256b33446c5c15e2c7791870/docs/.gitbook/assets/aws_ec2_ami.png)
+![](../.gitbook/assets/aws_ec2_ami.png)
 
 * Select instance type
   * For testing out Airbyte, a `t2.medium` instance is likely sufficient.
   * For long-running Airbyte installations, we recommend a `t2.large` instance.
 
-![](https://github.com/airbytehq/airbyte/tree/e14dd29f7d8c7fc9256b33446c5c15e2c7791870/docs/.gitbook/assets/aws_ec2_instance_type.png)
+![](../.gitbook/assets/aws_ec2_instance_type.png)
 
 * `Next: Configure Instance Details` 
   * You can tune parameters or keep the defaults
@@ -29,18 +29,18 @@ The instructions have been tested on `Amazon Linux 2 AMI (HVM)`
 * `Next: Configure Security Groups`
   * We are going to allow network for `ssh` 
 
-![](https://github.com/airbytehq/airbyte/tree/e14dd29f7d8c7fc9256b33446c5c15e2c7791870/docs/.gitbook/assets/aws_ec2_security_group.png)
+![](../.gitbook/assets/aws_ec2_security_group.png)
 
 * `Review and Launch`
 * `Launch`
 * Create a ssh key so you can connect to the instance
   * Download the key \(and don't lose it or you won't be able to connect to the instance\)
 
-![](https://github.com/airbytehq/airbyte/tree/e14dd29f7d8c7fc9256b33446c5c15e2c7791870/docs/.gitbook/assets/aws_ec2_ssh_key.png)
+![](../.gitbook/assets/aws_ec2_ssh_key.png)
 
 * `Launch Instances`
 
-![](https://github.com/airbytehq/airbyte/tree/e14dd29f7d8c7fc9256b33446c5c15e2c7791870/docs/.gitbook/assets/aws_ec2_instance_view.png)
+![](../.gitbook/assets/aws_ec2_instance_view.png)
 
 * Wait for the instance to become `Running`
 
