@@ -75,6 +75,7 @@
   "form.reset": "Reset",
   "form.resetData": "Reset your data",
   "form.changedColumns": "You have changed which column is used to detect new records for a stream. You may want to reset the data in your stream.",
+  "form.dockerError": "Could not find docker image",
 
   "preferences.title": "Specify your preferences",
   "preferences.anonymizeUsage": "Anonymize usage data collection",
