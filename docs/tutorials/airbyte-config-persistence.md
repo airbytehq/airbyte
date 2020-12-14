@@ -6,7 +6,7 @@ As we continue to improve the User experience around those aspects to make it si
 
 This may be useful if you need, for example, to version control, make a backup, share with your team, or if you just want to debug and learn more about Airbyte internals.
 
-Here are the goals for this tutorial: 
+Here are the goals for this tutorial:
 
 1. Access replication logs files
 2. Export & Import Airbyte Configurations
@@ -121,7 +121,7 @@ Here are some related links as references on accessing Docker Volumes:
 * on macOS [Using Docker containers in 2019](https://stackoverflow.com/a/55648186)
 * official doc [Use Volume](https://docs.docker.com/storage/volumes/#backup-restore-or-migrate-data-volumes)
 
-From these discussions, we will be using on macOS either: 
+From these discussions, we will be using on macOS either:
 
 1. any docker container/image to browse the virtual filesystem by mounting the volume in order to access them, for example with [busybox](https://hub.docker.com/_/busybox)
 2. or extract files from the volume by copying them onto the host with [Docker cp](https://docs.docker.com/engine/reference/commandline/cp/)
@@ -151,11 +151,7 @@ docker cp airbyte-server:/data $TUTORIAL_DIR/my-setup
 
 Head back to [http://localhost:8000/](http://localhost:8000/) and add more connectors. Here is an example of configuration from an API source:
 
-![airbyte\_config\_persistence\_api\_source](../.gitbook/assets/airbyte_config_persistence_1.png)
-
 and a local file destination:
-
-![airbyte\_config\_persistence\_local\_file](../.gitbook/assets/airbyte_config_persistence_2.png)
 
 ## Run a Sync job
 
@@ -163,8 +159,6 @@ and a local file destination:
 * the catalog and frequency can be configured
 * then run the "Sync Now" button
 * finally inspect logs in the UI
-
-![airbyte\_config\_persistence\_ui\_logs](../.gitbook/assets/airbyte_config_persistence_3.png)
 
 ## Exploring Logs folders
 
@@ -362,15 +356,9 @@ Here are some examples of public API CSV:
 https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv
 ```
 
-![airbyte\_config\_persistence\_ui\_logs](../.gitbook/assets/airbyte_config_persistence_4.png)
-
 And a local Postgres Database:
 
-![airbyte\_config\_persistence\_ui\_logs](../.gitbook/assets/airbyte_config_persistence_5.png)
-
 After setting up the connectors, we can trigger the sync and study the logs:
-
-![airbyte\_config\_persistence\_ui\_logs](../.gitbook/assets/airbyte_config_persistence_.png)
 
 Since we wiped the workspace volume and restarted the Airbyte Server, notice that the process ran in the `/tmp/workspace/5/0` as well but the logs for ExchangeRate are gone...
 
