@@ -60,3 +60,15 @@ kubectl apply -k kube/overlays/dev # applies manifests
 ```
 
 Then restart the port-forwarding commands.
+
+### Listing Files
+
+```
+kubectl exec -it airbyte-scheduler-6b5747df5c-bj4fx ls /tmp/workspace/8
+```
+
+### Reading Files
+
+```
+kubectl exec -it airbyte-scheduler-6b5747df5c-bj4fx cat /tmp/workspace/8/0/logs.log
+```
