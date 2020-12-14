@@ -1,8 +1,8 @@
-# Zendesk
+# Zendesk Support
 
 ## Sync overview
 
-This source can sync data for the [Zendesk API](https://developer.zendesk.com/rest_api).
+This source can sync data for the [Zendesk Support API](https://developer.zendesk.com/rest_api/docs/support).
 
 This Source Connector is based on a [Singer Tap](https://github.com/singer-io/tap-zendesk).
 

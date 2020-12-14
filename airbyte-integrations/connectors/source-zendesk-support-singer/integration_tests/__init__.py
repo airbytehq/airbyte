@@ -22,11 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import sys
+from .standard_source_test import SourceZendeskSupportSingerStandardTest
 
-from base_python.entrypoint import launch
-from source_zendesk_singer import SourceZendeskSinger
-
-if __name__ == "__main__":
-    source = SourceZendeskSinger()
-    launch(source, sys.argv[1:])
+__all__ = ["SourceZendeskSupportSingerStandardTest"]
