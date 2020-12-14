@@ -75,7 +75,7 @@ Visit the [Facebook Developers App hub](https://developers.facebook.com/apps/) a
 
 From the App's Dashboard screen \(seen in the screenshot below\) enable the Marketing API for your app if it is not already setup.
 
-![](../../.gitbook/assets/facebook_marketing_api-.png)
+![](../../.gitbook/assets/facebook_marketing_api.png)
 
 ### API Access Token
 

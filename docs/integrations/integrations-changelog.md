@@ -19,7 +19,7 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 
 ## 12/07/2020
 
-**New sources:** [Slack](sources/slack.md), [Braintree](sources/braintree.md), [Zendesk Support](sources/zendesk.md)
+**New sources:** [Slack](sources/slack.md), [Braintree](sources/braintree.md), [Zendesk Support]()
 
 ## 12/04/2020
 
