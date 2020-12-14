@@ -96,6 +96,7 @@ def exception_from_code(code: int, message: str) -> Exception:
     """ Map response code to exception class"""
     mapping = {
         400: ValidationError,
+        401: AuthError,
         403: AuthError,
         404: NotFoundError,
         500: ServerError,
