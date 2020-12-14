@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/zendesk",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/zendesk-support",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Source Zendesk Singer Spec",
@@ -9,7 +9,7 @@
     "properties": {
       "start_date": {
         "type": "string",
-        "description": "The date from which you'd like to replicate data for Zendesk API, in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated.",
+        "description": "The date from which you'd like to replicate data for Zendesk Support API, in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated.",
         "examples": ["2020-10-15T00:00:00Z"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
       },
@@ -19,7 +19,7 @@
       },
       "api_token": {
         "type": "string",
-        "description": "The value of the API token generated. See the <a href=\"https://support.zendesk.com/hc/en-us/articles/226022787-Generating-a-new-API-token\">docs</a> for more information",
+        "description": "The value of the API token generated. See the <a href=\"https://docs.airbyte.io/integrations/sources/zendesk-support\">docs</a> for more information",
         "airbyte_secret": true
       },
       "subdomain": {

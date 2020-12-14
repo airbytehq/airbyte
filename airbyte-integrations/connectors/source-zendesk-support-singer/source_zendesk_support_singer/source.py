@@ -29,16 +29,16 @@ from base_singer import SingerSource
 TAP_CMD = "tap-zendesk"
 
 
-class SourceZendeskSinger(SingerSource):
+class SourceZendeskSupportSinger(SingerSource):
     def check(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
         try:
             self.discover(logger, config_container)
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception:
-            logger.error("Exception while connecting to the Zendesk API")
+            logger.error("Exception while connecting to the Zendesk Support API")
             return AirbyteConnectionStatus(
                 status=Status.FAILED,
-                message="Unable to connect to the Zendesk API with the provided credentials.  Please make sure the "
+                message="Unable to connect to the Zendesk Support API with the provided credentials.  Please make sure the "
                 "input credentials and environment are correct. ",
             )
 

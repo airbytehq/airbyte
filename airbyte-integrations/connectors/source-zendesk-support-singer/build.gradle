@@ -5,7 +5,7 @@ plugins {
 }
 
 airbytePython {
-    moduleDirectory 'source_zendesk_singer'
+    moduleDirectory 'source_zendesk_support_singer'
 }
 
 dependencies {
