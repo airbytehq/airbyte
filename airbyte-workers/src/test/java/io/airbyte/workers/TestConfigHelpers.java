@@ -95,7 +95,7 @@ public class TestConfigHelpers {
 
     final Schema schema = new Schema().withStreams(Collections.singletonList(stream));
 
-    StandardSync standardSync = new StandardSync()
+    final StandardSync standardSync = new StandardSync()
         .withConnectionId(connectionId)
         .withDestinationId(destinationId)
         .withSourceId(sourceId)
@@ -106,16 +106,12 @@ public class TestConfigHelpers {
 
     final String stateValue = Jsons.serialize(Map.of("lastSync", String.valueOf(LAST_SYNC_TIME)));
 
-    State state = new State()
-        .withConnectionId(connectionId)
-        .withState(Jsons.jsonNode(stateValue));
+    final State state = new State().withState(Jsons.jsonNode(stateValue));
 
-    StandardSyncInput syncInput = new StandardSyncInput()
-        .withDestinationConnection(destinationConnectionConfig)
-        .withSyncMode(standardSync.getSyncMode())
+    final StandardSyncInput syncInput = new StandardSyncInput()
+        .withDestinationConfiguration(destinationConnectionConfig.getConfiguration())
         .withCatalog(AirbyteProtocolConverters.toConfiguredCatalog(standardSync.getSchema()))
-        .withConnectionId(standardSync.getConnectionId())
-        .withSourceConnection(sourceConnectionConfig)
+        .withSourceConfiguration(sourceConnectionConfig.getConfiguration())
         .withState(state);
 
     return new ImmutablePair<>(standardSync, syncInput);

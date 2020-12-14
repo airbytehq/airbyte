@@ -40,7 +40,7 @@ import io.airbyte.api.model.SourceDefinitionUpdate;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.server.cache.SpecCache.AlwaysMissCache;
+import io.airbyte.scheduler.client.CachingSchedulerJobClient;
 import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -58,7 +58,7 @@ class SourceDefinitionsHandlerTest {
   private StandardSourceDefinition source;
   private SourceDefinitionsHandler sourceHandler;
   private Supplier<UUID> uuidSupplier;
-  private AlwaysMissCache specCache;
+  private CachingSchedulerJobClient schedulerJobClient;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -66,10 +66,10 @@ class SourceDefinitionsHandlerTest {
     configRepository = mock(ConfigRepository.class);
     uuidSupplier = mock(Supplier.class);
     dockerImageValidator = mock(DockerImageValidator.class);
-    specCache = spy(new AlwaysMissCache());
+    schedulerJobClient = spy(CachingSchedulerJobClient.class);
 
     source = generateSource();
-    sourceHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, uuidSupplier, specCache);
+    sourceHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, uuidSupplier, schedulerJobClient);
   }
 
   private StandardSourceDefinition generateSource() {
@@ -167,7 +167,7 @@ class SourceDefinitionsHandlerTest {
 
     assertEquals(newDockerImageTag, sourceDefinitionRead.getDockerImageTag());
     verify(dockerImageValidator).assertValidIntegrationImage(dockerRepository, newDockerImageTag);
-    verify(specCache).evict(dockerRepository + ":" + newDockerImageTag);
+    verify(schedulerJobClient).resetCache();
   }
 
 }

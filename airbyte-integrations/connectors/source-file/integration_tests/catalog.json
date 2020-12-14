@@ -1,31 +1,33 @@
 {
   "streams": [
     {
-      "name": "my_own_data_sample/my_file.csv",
-      "json_schema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "type": "object",
-        "properties": {
-          "date": {
-            "type": "string"
-          },
-          "key": {
-            "type": "string"
-          },
-          "total_confirmed": {
-            "type": "number"
-          },
-          "total_healed": {
-            "type": "number"
-          },
-          "total_deceased": {
-            "type": "number"
-          },
-          "total_recovered": {
-            "type": "number"
-          },
-          "total_tested": {
-            "type": "number"
+      "stream": {
+        "name": "my_own_data_sample/my_file.csv",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "date": {
+              "type": "string"
+            },
+            "key": {
+              "type": "string"
+            },
+            "total_confirmed": {
+              "type": "number"
+            },
+            "total_healed": {
+              "type": "number"
+            },
+            "total_deceased": {
+              "type": "number"
+            },
+            "total_recovered": {
+              "type": "number"
+            },
+            "total_tested": {
+              "type": "number"
+            }
           }
         }
       }

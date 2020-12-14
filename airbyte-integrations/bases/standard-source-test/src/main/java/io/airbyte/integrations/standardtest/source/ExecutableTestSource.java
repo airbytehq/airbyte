@@ -27,7 +27,7 @@ package io.airbyte.integrations.standardtest.source;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -37,7 +37,7 @@ import java.util.List;
  * Extends TestSource such that it can be called using resources pulled from the file system. Will
  * also add the ability to execute arbitrary scripts in the next version.
  */
-public class ExecutableTestSource extends TestSource {
+public class ExecutableTestSource extends StandardSourceTest {
 
   public static class TestConfig {
 
@@ -45,12 +45,14 @@ public class ExecutableTestSource extends TestSource {
     private final Path specPath;
     private final Path configPath;
     private final Path catalogPath;
+    private final Path statePath;
 
-    public TestConfig(String imageName, Path specPath, Path configPath, Path catalogPath) {
+    public TestConfig(String imageName, Path specPath, Path configPath, Path catalogPath, Path statePath) {
       this.imageName = imageName;
       this.specPath = specPath;
       this.configPath = configPath;
       this.catalogPath = catalogPath;
+      this.statePath = statePath;
     }
 
     public String getImageName() {
@@ -67,6 +69,10 @@ public class ExecutableTestSource extends TestSource {
 
     public Path getCatalogPath() {
       return catalogPath;
+    }
+
+    public Path getStatePath() {
+      return statePath;
     }
 
   }
@@ -89,8 +95,13 @@ public class ExecutableTestSource extends TestSource {
   }
 
   @Override
-  protected AirbyteCatalog getCatalog() {
-    return Jsons.deserialize(IOs.readFile(TEST_CONFIG.getCatalogPath()), AirbyteCatalog.class);
+  protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
+    return Jsons.deserialize(IOs.readFile(TEST_CONFIG.getCatalogPath()), ConfiguredAirbyteCatalog.class);
+  }
+
+  @Override
+  protected JsonNode getState() {
+    return Jsons.deserialize(IOs.readFile(TEST_CONFIG.getStatePath()));
   }
 
   @Override

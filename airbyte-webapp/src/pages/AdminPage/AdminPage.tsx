@@ -54,9 +54,7 @@ const AdminPage: React.FC = () => {
               activeStep={currentStep}
             />
           }
-          endComponent={
-            currentStep === StepsTypes.SOURCES && <CreateConnector />
-          }
+          endComponent={<CreateConnector type={currentStep} />}
         />
       }
     >

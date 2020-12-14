@@ -12,7 +12,7 @@ import DeleteBlock from "../../../../../components/DeleteBlock";
 import { Connection } from "../../../../../core/resources/Connection";
 
 const Content = styled.div`
-  max-width: 639px;
+  max-width: 813px;
   margin: 18px auto;
 `;
 

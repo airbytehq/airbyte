@@ -96,10 +96,8 @@ public class WorkerUtils {
    */
   public static StandardTapConfig syncToTapConfig(StandardSyncInput sync) {
     return new StandardTapConfig()
-        .withConnectionId(sync.getConnectionId())
-        .withSourceConnectionConfiguration(sync.getSourceConnection().getConfiguration())
+        .withSourceConnectionConfiguration(sync.getSourceConfiguration())
         .withCatalog(sync.getCatalog())
-        .withSyncMode(sync.getSyncMode())
         .withState(sync.getState());
   }
 
@@ -109,9 +107,8 @@ public class WorkerUtils {
    */
   public static StandardTargetConfig syncToTargetConfig(StandardSyncInput sync) {
     return new StandardTargetConfig()
-        .withDestinationConnectionConfiguration(sync.getDestinationConnection().getConfiguration())
+        .withDestinationConnectionConfiguration(sync.getDestinationConfiguration())
         .withCatalog(sync.getCatalog())
-        .withSyncMode(sync.getSyncMode())
         .withState(sync.getState());
   }
 

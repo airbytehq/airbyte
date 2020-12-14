@@ -11,6 +11,7 @@ import { useSourceDefinitionSpecificationLoad } from "../../../components/hooks/
 import usePrepareDropdownLists from "./usePrepareDropdownLists";
 
 import config from "../../../config";
+import { IDataItem } from "../../../components/DropDown/components/ListItem";
 
 type IProps = {
   source?: Source;
@@ -20,7 +21,7 @@ type IProps = {
     sourceDefinitionId?: string;
     connectionConfiguration?: any;
   }) => void;
-  dropDownData: Array<{ text: string; value: string; img?: string }>;
+  dropDownData: IDataItem[];
   hasSuccess?: boolean;
   errorStatus?: number;
 };

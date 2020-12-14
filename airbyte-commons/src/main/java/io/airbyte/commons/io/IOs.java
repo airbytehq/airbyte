@@ -67,12 +67,12 @@ public class IOs {
     }
   }
 
-  public static List<String> getTail(int numLines, String path) throws IOException {
+  public static List<String> getTail(int numLines, Path path) throws IOException {
     if (path == null) {
       return Collections.emptyList();
     }
 
-    File file = new File(path);
+    File file = path.toFile();
     if (!file.exists()) {
       return Collections.emptyList();
     }

@@ -30,17 +30,18 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
-import io.airbyte.integrations.standardtest.source.TestSource;
-import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.integrations.standardtest.source.StandardSourceTest;
 import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
-public class RedshiftIntegrationTests extends TestSource {
+public class RedshiftIntegrationTests extends StandardSourceTest {
 
   // This test case expects an active redshift cluster that is useable from outside of vpc
   private static final String SCHEMA_NAME = "integration_test";
@@ -85,8 +86,8 @@ public class RedshiftIntegrationTests extends TestSource {
   }
 
   @Override
-  protected AirbyteCatalog getCatalog() {
-    return CatalogHelpers.createAirbyteCatalog(
+  protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
+    return CatalogHelpers.createConfiguredAirbyteCatalog(
         STREAM_NAME,
         Field.of("c_custkey", Field.JsonSchemaPrimitive.NUMBER),
         Field.of("c_name", Field.JsonSchemaPrimitive.STRING),
@@ -107,6 +108,11 @@ public class RedshiftIntegrationTests extends TestSource {
             config.get("port").asText(),
             config.get("database").asText()),
         "com.amazon.redshift.jdbc.Driver", null);
+  }
+
+  @Override
+  protected JsonNode getState() {
+    return Jsons.jsonNode(new HashMap<>());
   }
 
 }

@@ -31,6 +31,7 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -62,6 +63,28 @@ public class CatalogHelpers {
 
   public static ConfiguredAirbyteStream createConfiguredAirbyteStream(String streamName, List<Field> fields) {
     return new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName(streamName).withJsonSchema(fieldsToJsonSchema(fields)));
+  }
+
+  public static ConfiguredAirbyteStream createIncrementalConfiguredAirbyteStream(
+                                                                                 String streamName,
+                                                                                 SyncMode syncMode,
+                                                                                 String cursorFieldName,
+                                                                                 Field... fields) {
+    return createIncrementalConfiguredAirbyteStream(streamName, syncMode, cursorFieldName, Arrays.asList(fields));
+  }
+
+  public static ConfiguredAirbyteStream createIncrementalConfiguredAirbyteStream(
+                                                                                 String streamName,
+                                                                                 SyncMode syncMode,
+                                                                                 String cursorFieldName,
+                                                                                 List<Field> fields) {
+    return new ConfiguredAirbyteStream()
+        .withStream(new AirbyteStream()
+            .withName(streamName)
+            .withSupportedSyncModes(Collections.singletonList(syncMode))
+            .withJsonSchema(fieldsToJsonSchema(fields)))
+        .withSyncMode(syncMode)
+        .withCursorField(Collections.singletonList(cursorFieldName));
   }
 
   /**

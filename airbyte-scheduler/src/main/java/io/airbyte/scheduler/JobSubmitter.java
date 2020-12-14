@@ -36,7 +36,7 @@ import io.airbyte.config.StandardSyncSchedule;
 import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.scheduler.persistence.SchedulerPersistence;
+import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.OutputAndStatus;
 import io.airbyte.workers.WorkerConstants;
@@ -56,12 +56,12 @@ public class JobSubmitter implements Runnable {
   private static final Logger LOGGER = LoggerFactory.getLogger(JobSubmitter.class);
 
   private final ExecutorService threadPool;
-  private final SchedulerPersistence persistence;
+  private final JobPersistence persistence;
   private final ConfigRepository configRepository;
   private final WorkerRunFactory workerRunFactory;
 
   public JobSubmitter(final ExecutorService threadPool,
-                      final SchedulerPersistence persistence,
+                      final JobPersistence persistence,
                       final ConfigRepository configRepository,
                       final WorkerRunFactory workerRunFactory) {
     this.threadPool = threadPool;
@@ -75,7 +75,7 @@ public class JobSubmitter implements Runnable {
     try {
       LOGGER.info("Running job-submitter...");
 
-      Optional<Job> oldestPendingJob = persistence.getOldestPendingJob();
+      final Optional<Job> oldestPendingJob = persistence.getOldestPendingJob();
 
       oldestPendingJob.ifPresent(job -> {
         trackSubmission(job);
@@ -91,29 +91,46 @@ public class JobSubmitter implements Runnable {
   @VisibleForTesting
   void submitJob(Job job) {
     final WorkerRun workerRun = workerRunFactory.create(job);
+    // we need to know the attempt number before we begin the job lifecycle. thus we state what the
+    // attempt number should be. if it is not, that the lifecycle will fail. this should not happen as
+    // long as job submission for a single job is single threaded. this is a compromise to allow the job
+    // persistence to control what the attempt number should be while still allowing us to declare it
+    // before the lifecycle begins.
+    final int attemptNumber = job.getAttempts().size();
     threadPool.submit(new LifecycledCallable.Builder<>(workerRun)
         .setOnStart(() -> {
-          persistence.updateStatus(job.getId(), JobStatus.RUNNING);
           final Path logFilePath = workerRun.getJobRoot().resolve(WorkerConstants.LOG_FILENAME);
-          persistence.updateLogPath(job.getId(), logFilePath);
-          persistence.incrementAttempts(job.getId());
+          final long persistedAttemptId = persistence.createAttempt(job.getId(), logFilePath);
+          assertSameIds(attemptNumber, persistedAttemptId);
+
           MDC.put("job_id", String.valueOf(job.getId()));
           MDC.put("job_root", logFilePath.getParent().toString());
           MDC.put("job_log_filename", logFilePath.getFileName().toString());
         })
         .setOnSuccess(output -> {
           if (output.getOutput().isPresent()) {
-            persistence.writeOutput(job.getId(), output.getOutput().get());
+            persistence.writeOutput(job.getId(), attemptNumber, output.getOutput().get());
           }
-          persistence.updateStatus(job.getId(), getStatus(output));
+
+          if (output.getStatus() == io.airbyte.workers.JobStatus.SUCCEEDED) {
+            persistence.succeedAttempt(job.getId(), attemptNumber);
+          } else {
+            persistence.failAttempt(job.getId(), attemptNumber);
+          }
           trackCompletion(job, output.getStatus());
         })
         .setOnException(noop -> {
-          persistence.updateStatus(job.getId(), JobStatus.FAILED);
+          persistence.failAttempt(job.getId(), attemptNumber);
           trackCompletion(job, io.airbyte.workers.JobStatus.FAILED);
         })
         .setOnFinish(MDC::clear)
         .build());
+  }
+
+  private void assertSameIds(long expectedAttemptId, long actualAttemptId) {
+    if (expectedAttemptId != actualAttemptId) {
+      throw new IllegalStateException("Created attempt was not the expected attempt");
+    }
   }
 
   @VisibleForTesting
@@ -123,7 +140,7 @@ public class JobSubmitter implements Runnable {
       metadataBuilder.put("attempt_stage", "STARTED");
       track(metadataBuilder.build());
     } catch (Exception e) {
-      LOGGER.error("failed while reporting usage.");
+      LOGGER.error("failed while reporting usage.", e);
     }
   }
 
@@ -135,7 +152,7 @@ public class JobSubmitter implements Runnable {
       metadataBuilder.put("attempt_completion_status", status);
       track(metadataBuilder.build());
     } catch (Exception e) {
-      LOGGER.error("failed while reporting usage.");
+      LOGGER.error("failed while reporting usage.", e);
     }
   }
 
@@ -207,7 +224,7 @@ public class JobSubmitter implements Runnable {
 
   private static JobStatus getStatus(OutputAndStatus<?> output) {
     return switch (output.getStatus()) {
-      case SUCCEEDED -> JobStatus.COMPLETED;
+      case SUCCEEDED -> JobStatus.SUCCEEDED;
       case FAILED -> JobStatus.FAILED;
       default -> throw new IllegalStateException("Unknown state " + output.getStatus());
     };

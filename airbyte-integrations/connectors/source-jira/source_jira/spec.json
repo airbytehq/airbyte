@@ -1,0 +1,27 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/jira",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Jira Spec",
+    "type": "object",
+    "required": ["api_token", "domain", "email"],
+    "additionalProperties": false,
+    "properties": {
+      "api_token": {
+        "type": "string",
+        "description": "Jira API Token. See the <a href=\"https://docs.airbyte.io/integrations/sources/jira\">docs</a> for more information on how to generate this key.",
+        "airbyte_secret": true
+      },
+      "domain": {
+        "type": "string",
+        "examples": ["domainname.atlassian.net"],
+        "pattern": ["^[a-zA-Z0-9._-]*\\.atlassian\\.net$"],
+        "description": "Domain for your Jira account, e.g. airbyteio.atlassian.net"
+      },
+      "email": {
+        "type": "string",
+        "description": "The user email for your Jira account"
+      }
+    }
+  }
+}

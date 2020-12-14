@@ -13,6 +13,7 @@ import { Source } from "../../../core/resources/Source";
 import { Routes } from "../../../pages/routes";
 import useRouter from "../useRouterHook";
 import { Destination } from "../../../core/resources/Destination";
+import { useCallback } from "react";
 
 type ValuesProps = {
   frequency: string;
@@ -43,6 +44,7 @@ const useConnection = () => {
     ConnectionResource.updateStateShape()
   );
   const deleteConnectionResource = useFetcher(ConnectionResource.deleteShape());
+  const resetConnectionResource = useFetcher(ConnectionResource.reset());
 
   const createConnection = async ({
     values,
@@ -187,10 +189,18 @@ const useConnection = () => {
     history.length > 2 ? history.goBack() : push(Routes.Source);
   };
 
+  const resetConnection = useCallback(
+    async (connectionId: string) => {
+      await resetConnectionResource({ connectionId });
+    },
+    [resetConnectionResource]
+  );
+
   return {
     createConnection,
     updateConnection,
     updateStateConnection,
+    resetConnection,
     deleteConnection
   };
 };

@@ -1,0 +1,99 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "active": {
+      "type": "boolean"
+    },
+    "live": {
+      "type": "boolean"
+    },
+    "first_published_at": {
+      "type": ["null", "string"]
+    },
+    "title": {
+      "type": "string"
+    },
+    "location": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "office_id": {
+          "type": ["null", "integer"]
+        },
+        "job_post_location_type": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "internal": {
+      "type": "boolean"
+    },
+    "external": {
+      "type": "boolean"
+    },
+    "job_id": {
+      "type": "integer"
+    },
+    "content": {
+      "type": "string"
+    },
+    "internal_content": {
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "demographic_question_set_id": {
+      "type": ["null", "integer"]
+    },
+    "questions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "required": {
+            "type": ["boolean", "null"]
+          },
+          "private": {
+            "type": "boolean"
+          },
+          "label": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "values": {
+            "type": "array"
+          },
+          "description": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    }
+  }
+}

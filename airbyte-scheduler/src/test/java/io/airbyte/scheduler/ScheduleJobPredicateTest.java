@@ -76,7 +76,7 @@ class ScheduleJobPredicateTest {
 
   @Test
   public void testScheduleNotReady() {
-    when(job.getStatus()).thenReturn(JobStatus.COMPLETED);
+    when(job.getStatus()).thenReturn(JobStatus.SUCCEEDED);
     when(job.getUpdatedAtInSecond()).thenReturn(now.minus(Duration.ofDays(1)).getEpochSecond());
 
     assertFalse(scheduleJobPredicate.test(Optional.of(job), SCHEDULE));
@@ -84,7 +84,7 @@ class ScheduleJobPredicateTest {
 
   @ParameterizedTest
   @EnumSource(value = JobStatus.class,
-              names = {"COMPLETED", "CANCELLED"})
+              names = {"SUCCEEDED", "CANCELLED"})
   public void testShouldScheduleBasedOnPreviousJobStatus(JobStatus status) {
     when(job.getStatus()).thenReturn(status);
     when(job.getUpdatedAtInSecond()).thenReturn(now.minus(Duration.ofDays(2)).getEpochSecond());

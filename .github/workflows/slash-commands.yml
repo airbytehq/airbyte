@@ -6,13 +6,25 @@ jobs:
   slashCommandDispatch:
     runs-on: ubuntu-latest
     steps:
+      - name: Get PR Ref
+        id: getref
+        run: |
+          echo "::set-output name=ref::$(curl ${{ github.event.issue.pull_request.url }} | jq -r '.head.ref')"
       - name: Slash Command Dispatch
+        id: scd
         uses: peter-evans/slash-command-dispatch@v2
         with:
           token: ${{ secrets.SLASH_COMMAND_PAT }}
           commands: |
-            integration-test
+            test
           static-args: |
-            ref=${{ github.event.pull_request.head.sha }}
+            ref=${{ steps.getref.outputs.ref }}
+            comment-id=${{ github.event.comment.id }}
           dispatch-type: workflow
-          event-type-suffix: "" # used to map this command to integration-test.yml
+      - name: Edit comment with error message
+        if: steps.scd.outputs.error-message
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.comment.id }}
+          body: |
+            > Error: ${{ steps.scd.outputs.error-message }}

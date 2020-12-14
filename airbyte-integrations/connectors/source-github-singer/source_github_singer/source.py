@@ -22,9 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from typing import Dict
+
 import requests
-from airbyte_protocol import AirbyteConnectionStatus, Status
-from base_singer import SingerSource
+from airbyte_protocol import AirbyteConnectionStatus, Status, SyncMode
+from base_singer import SingerSource, SyncModeInfo
 
 
 class SourceGithubSinger(SingerSource):
@@ -46,6 +48,37 @@ class SourceGithubSinger(SingerSource):
 
     def discover_cmd(self, logger, config_path) -> str:
         return f"tap-github --config {config_path} --discover"
+
+    def get_sync_mode_overrides(self) -> Dict[str, SyncModeInfo]:
+        incremental_streams = [
+            "team_memberships",
+            "events",
+            "comments",
+            "commit_comments",
+            "project_cards",
+            "issue_milestones",
+            "commits",
+            "collaborators",
+            "stargazers",
+            "teams",
+            "review_comments",
+            "projects",
+            "issue_labels",
+            "issues",
+            "issue_events",
+            "project_columns",
+            "team_members",
+            "pull_request_reviews",
+            "pr_commits",
+        ]
+
+        full_refresh_streams = ["assignees", "collaborators", "pull_requests", "reviews", "releases"]
+        overrides = {}
+        for stream_name in incremental_streams:
+            overrides[stream_name] = SyncModeInfo(supported_sync_modes=[SyncMode.incremental])
+        for stream_name in full_refresh_streams:
+            overrides[stream_name] = SyncModeInfo(supported_sync_modes=[SyncMode.full_refresh])
+        return overrides
 
     def read_cmd(self, logger, config_path, catalog_path, state_path=None) -> str:
         config_option = f"--config {config_path}"

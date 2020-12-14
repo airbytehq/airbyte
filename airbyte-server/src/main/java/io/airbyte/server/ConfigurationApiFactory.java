@@ -25,35 +25,35 @@
 package io.airbyte.server;
 
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.scheduler.persistence.SchedulerPersistence;
+import io.airbyte.scheduler.client.CachingSchedulerJobClient;
+import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.apis.ConfigurationApi;
-import io.airbyte.server.cache.SpecCache;
 import org.glassfish.hk2.api.Factory;
 
 public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
 
   private static ConfigRepository configRepository;
-  private static SchedulerPersistence schedulerPersistence;
-  private static SpecCache specCache;
+  private static JobPersistence jobPersistence;
+  private static CachingSchedulerJobClient schedulerJobClient;
 
   public static void setConfigRepository(final ConfigRepository configRepository) {
     ConfigurationApiFactory.configRepository = configRepository;
   }
 
-  public static void setSchedulerPersistence(final SchedulerPersistence schedulerPersistence) {
-    ConfigurationApiFactory.schedulerPersistence = schedulerPersistence;
+  public static void setJobPersistence(final JobPersistence jobPersistence) {
+    ConfigurationApiFactory.jobPersistence = jobPersistence;
   }
 
-  public static void setSpecCache(final SpecCache specCache) {
-    ConfigurationApiFactory.specCache = specCache;
+  public static void setSpecCache(final CachingSchedulerJobClient schedulerJobClient) {
+    ConfigurationApiFactory.schedulerJobClient = schedulerJobClient;
   }
 
   @Override
   public ConfigurationApi provide() {
     return new ConfigurationApi(
         ConfigurationApiFactory.configRepository,
-        ConfigurationApiFactory.schedulerPersistence,
-        ConfigurationApiFactory.specCache);
+        ConfigurationApiFactory.jobPersistence,
+        ConfigurationApiFactory.schedulerJobClient);
   }
 
   @Override

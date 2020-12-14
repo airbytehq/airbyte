@@ -31,19 +31,20 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
-import io.airbyte.integrations.standardtest.source.TestSource;
-import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.integrations.standardtest.source.StandardSourceTest;
 import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import java.sql.SQLException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.testcontainers.containers.MSSQLServerContainer;
 
-public class MssqlIntegrationTest extends TestSource {
+public class MssqlIntegrationTest extends StandardSourceTest {
 
   private static final String STREAM_NAME = "id_and_name";
   private static MSSQLServerContainer<?> db;
@@ -97,11 +98,16 @@ public class MssqlIntegrationTest extends TestSource {
   }
 
   @Override
-  protected AirbyteCatalog getCatalog() {
-    return CatalogHelpers.createAirbyteCatalog(
+  protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
+    return CatalogHelpers.createConfiguredAirbyteCatalog(
         STREAM_NAME,
         Field.of("id", JsonSchemaPrimitive.NUMBER),
         Field.of("name", JsonSchemaPrimitive.STRING));
+  }
+
+  @Override
+  protected JsonNode getState() {
+    return Jsons.jsonNode(new HashMap<>());
   }
 
   @Override

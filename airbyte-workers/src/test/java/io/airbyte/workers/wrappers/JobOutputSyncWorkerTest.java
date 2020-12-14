@@ -29,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
@@ -37,23 +38,23 @@ import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
 import io.airbyte.workers.SyncWorker;
 import java.nio.file.Path;
-import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 public class JobOutputSyncWorkerTest {
 
   @Test
   public void test() {
-    StandardSyncInput input = mock(StandardSyncInput.class);
-    Path jobRoot = Path.of("fakeroot");
-    SyncWorker syncWorker = mock(SyncWorker.class);
+    final StandardSyncInput input = mock(StandardSyncInput.class);
+    final Path jobRoot = Path.of("fakeroot");
+    final SyncWorker syncWorker = mock(SyncWorker.class);
 
-    StandardSyncOutput output = new StandardSyncOutput().withState(new State().withConnectionId(UUID.randomUUID()));
+    final StandardSyncOutput output = new StandardSyncOutput().withState(new State().withState(Jsons.jsonNode(ImmutableMap.of("checkpoint", "10"))));
 
     when(syncWorker.run(input, jobRoot)).thenReturn(new OutputAndStatus<>(JobStatus.SUCCEEDED, output));
-    OutputAndStatus<JobOutput> run = new JobOutputSyncWorker(syncWorker).run(input, jobRoot);
+    final OutputAndStatus<JobOutput> run = new JobOutputSyncWorker(syncWorker).run(input, jobRoot);
 
-    JobOutput expected = new JobOutput().withOutputType(JobOutput.OutputType.SYNC).withSync(output);
+    final JobOutput expected = new JobOutput().withOutputType(JobOutput.OutputType.SYNC).withSync(output);
     assertEquals(JobStatus.SUCCEEDED, run.getStatus());
     assertTrue(run.getOutput().isPresent());
     assertEquals(expected, run.getOutput().get());

@@ -196,3 +196,6 @@ definitions:
         description: ConnectorDefinition specific blob. Must be a valid JSON string.
         type: object
         existingJavaType: com.fasterxml.jackson.databind.JsonNode
+      supportsIncremental:
+        description: If the connector supports incremental mode or not.
+        type: boolean

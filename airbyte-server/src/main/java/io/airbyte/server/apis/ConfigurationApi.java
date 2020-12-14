@@ -48,7 +48,6 @@ import io.airbyte.api.model.JobIdRequestBody;
 import io.airbyte.api.model.JobInfoRead;
 import io.airbyte.api.model.JobListRequestBody;
 import io.airbyte.api.model.JobReadList;
-import io.airbyte.api.model.JobStatusRead;
 import io.airbyte.api.model.SlugRequestBody;
 import io.airbyte.api.model.SourceCreate;
 import io.airbyte.api.model.SourceDefinitionCreate;
@@ -70,8 +69,8 @@ import io.airbyte.api.model.WorkspaceRead;
 import io.airbyte.api.model.WorkspaceUpdate;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.scheduler.persistence.SchedulerPersistence;
-import io.airbyte.server.cache.SpecCache;
+import io.airbyte.scheduler.client.CachingSchedulerJobClient;
+import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.errors.KnownException;
 import io.airbyte.server.handlers.ConnectionsHandler;
 import io.airbyte.server.handlers.DebugInfoHandler;
@@ -110,17 +109,19 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   private final WebBackendDestinationHandler webBackendDestinationHandler;
   private final HealthCheckHandler healthCheckHandler;
 
-  public ConfigurationApi(final ConfigRepository configRepository, final SchedulerPersistence schedulerPersistence, final SpecCache specCache) {
+  public ConfigurationApi(final ConfigRepository configRepository,
+                          final JobPersistence jobPersistence,
+                          final CachingSchedulerJobClient schedulerJobClient) {
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
-    schedulerHandler = new SchedulerHandler(configRepository, schedulerPersistence, specCache);
+    schedulerHandler = new SchedulerHandler(configRepository, schedulerJobClient);
     workspacesHandler = new WorkspacesHandler(configRepository);
     final DockerImageValidator dockerImageValidator = new DockerImageValidator(schedulerHandler);
-    sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, specCache);
+    sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, schedulerJobClient);
     connectionsHandler = new ConnectionsHandler(configRepository);
-    destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, dockerImageValidator, specCache);
+    destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, dockerImageValidator, schedulerJobClient);
     destinationHandler = new DestinationHandler(configRepository, schemaValidator, schedulerHandler, connectionsHandler);
     sourceHandler = new SourceHandler(configRepository, schemaValidator, schedulerHandler, connectionsHandler);
-    jobHistoryHandler = new JobHistoryHandler(schedulerPersistence);
+    jobHistoryHandler = new JobHistoryHandler(jobPersistence);
     webBackendConnectionsHandler = new WebBackendConnectionsHandler(connectionsHandler, sourceHandler, destinationHandler, jobHistoryHandler);
     webBackendSourceHandler = new WebBackendSourceHandler(sourceHandler, schedulerHandler);
     webBackendDestinationHandler = new WebBackendDestinationHandler(destinationHandler, schedulerHandler);
@@ -319,12 +320,12 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public JobStatusRead syncConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
+  public JobInfoRead syncConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
     return execute(() -> schedulerHandler.syncConnection(connectionIdRequestBody));
   }
 
   @Override
-  public JobStatusRead resetConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
+  public JobInfoRead resetConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
     return execute(() -> schedulerHandler.resetConnection(connectionIdRequestBody));
   }
 

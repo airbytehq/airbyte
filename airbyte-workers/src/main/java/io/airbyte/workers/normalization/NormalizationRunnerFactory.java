@@ -38,6 +38,7 @@ public class NormalizationRunnerFactory {
       ImmutableMap.<String, DefaultNormalizationRunner.DestinationType>builder()
           .put("airbyte/destination-bigquery", DefaultNormalizationRunner.DestinationType.BIGQUERY)
           .put("airbyte/destination-postgres", DefaultNormalizationRunner.DestinationType.POSTGRES)
+          .put("airbyte/destination-redshift", DefaultNormalizationRunner.DestinationType.REDSHIFT)
           .put("airbyte/destination-snowflake", DefaultNormalizationRunner.DestinationType.SNOWFLAKE)
           .build();
 
