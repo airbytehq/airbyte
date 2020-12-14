@@ -84,3 +84,4 @@ In the App Dashboard screen, click Marketing API --&gt; Tools on the left sideba
 ![](../../.gitbook/assets/screen-shot-2020-11-03-at-9.35.40-pm.png)
 
 With the Ad Account ID and API access token, you should be ready to start pulling data from the Facebook Marketing API. Head to the Airbyte UI to setup your source connector!
+
