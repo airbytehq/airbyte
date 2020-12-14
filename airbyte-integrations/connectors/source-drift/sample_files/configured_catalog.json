@@ -51,9 +51,7 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       }
     },
     {
@@ -74,12 +72,7 @@
             },
             "status": {
               "type": "string",
-              "enum": [
-                "open",
-                "closed",
-                "pending",
-                "bulk_sent"
-              ]
+              "enum": ["open", "closed", "pending", "bulk_sent"]
             },
             "contactId": {
               "type": "integer"
@@ -94,10 +87,7 @@
               "type": "integer"
             },
             "relatedPlaybookId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "conversationTags": {
               "type": "array",
@@ -116,9 +106,7 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       }
     }
   ]

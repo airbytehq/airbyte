@@ -16,10 +16,7 @@
       "properties": {
         "type": {
           "type": "string",
-          "enum": [
-            "contact",
-            "user"
-          ]
+          "enum": ["contact", "user"]
         },
         "id": {
           "type": "integer"

@@ -13,12 +13,7 @@
     },
     "status": {
       "type": "string",
-      "enum": [
-        "open",
-        "closed",
-        "pending",
-        "bulk_sent"
-      ]
+      "enum": ["open", "closed", "pending", "bulk_sent"]
     },
     "contactId": {
       "type": "integer"
@@ -33,10 +28,7 @@
       "type": "integer"
     },
     "relatedPlaybookId": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "conversationTags": {
       "type": "array",

@@ -8,7 +8,8 @@
     "name": {
       "type": "string"
     },
-    "attributes": {"type": "object",
+    "attributes": {
+      "type": "object",
       "properties": {
         "name": {
           "type": "string"
@@ -25,12 +26,8 @@
             "type": "string"
           }
         },
-        "events": {
-
-        },
-        "socialProfiles": {
-
-        }
+        "events": {},
+        "socialProfiles": {}
       }
     },
     "createdAt": {
