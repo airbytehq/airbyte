@@ -8,5 +8,6 @@ resources:
   - server.yaml
   - volume-data.yaml
   - volume-db.yaml
+  - volume-local.yaml
   - volume-workspace.yaml
   - webapp.yaml
