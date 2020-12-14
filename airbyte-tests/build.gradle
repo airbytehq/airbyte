@@ -25,6 +25,7 @@ configurations {
 
 dependencies {
     acceptanceTestsImplementation project(':airbyte-api')
+    acceptanceTestsImplementation project(':airbyte-commons')
     acceptanceTestsImplementation project(':airbyte-config:persistence')
     acceptanceTestsImplementation project(':airbyte-db')
     acceptanceTestsImplementation project(':airbyte-test-utils')
@@ -45,5 +46,7 @@ task acceptanceTests(type: Test) {
         exceptionFormat "full"
     }
     mustRunAfter test
-}
 
+    dependsOn ':airbyte-integrations:connectors:source-postgres:airbyteDocker'
+    dependsOn ':airbyte-integrations:connectors:destination-csv:airbyteDocker'
+}
