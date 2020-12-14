@@ -21,27 +21,30 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+import json
+import pkgutil
 
 import msal
 import requests
 
 from typing import Dict, Tuple
+from msal.exceptions import MsalServiceError
 
-from base_python import ConfigContainer
+from airbyte_protocol import AirbyteStream
 
 
 class Client:
     MICROSOFT_GRAPH_BASE_API_URL = "https://graph.microsoft.com/"
     MICROSOFT_GRAPH_API_VERSION = "v1.0"
 
-    def __init__(self, config_container: ConfigContainer):
+    def __init__(self, config: Dict):
         self.ENTITY_MAP = {
             "users": self.users,
         }
-        self.configs = config_container.rendered_config
+        self.configs = config
 
     def _get_api_url(self, endpoint: str) -> str:
-        api_url = f"{self.MICROSOFT_GRAPH_BASE_API_URL}{self.MICROSOFT_GRAPH_API_VERSION}/{endpoint}/"
+        api_url = f'{self.MICROSOFT_GRAPH_BASE_API_URL}{self.MICROSOFT_GRAPH_API_VERSION}/{endpoint}/'
         return api_url
 
     def _get_access_token(self) -> Dict[str, str]:
@@ -54,17 +57,33 @@ class Client:
         if not result:
             result = app.acquire_token_for_client(scopes=scope)
         if 'access_token' in result:
-            response = {'status': 'success', 'result': {'access_token': result['access_token'], 'errors': []}}
+            return result['access_token']
         else:
-            response = {'status': 'error', 'access_token': '', 'error': result.get('error_description')}
-        return response
+            raise MsalServiceError(error=result.get('error'), error_description=result.get("error_description"))
+
+    def _make_request(self, endpoint: str) -> Dict:
+        api_url = self._get_api_url(endpoint)
+        access_token = self._get_access_token()
+        headers = {
+            'Authorization': f'Bearer {access_token}'
+        }
+        response = requests.get(api_url, headers=headers)
+        return response.json()['value']
 
     def health_check(self) -> Tuple[bool, object]:
-        get_token_result = self._get_access_token()
-        if get_token_result['status'] == 'success':
+        try:
+            self._get_access_token()
             return True, None
-        else:
-            return False, get_token_result['error']
+        except MsalServiceError as err:
+            return False, err.args[0]
+
+    def get_streams(self):
+        streams = []
+        for schema, method in self.ENTITY_MAP.items():
+            raw_schema = json.loads(pkgutil.get_data(self.__class__.__module__.split('.')[0], f'schemas/{schema}.json'))
+            streams.append(AirbyteStream(name=schema, json_schema=raw_schema))
+        return streams
 
     def users(self):
-        pass
+        users = self._make_request('users')
+        return users
