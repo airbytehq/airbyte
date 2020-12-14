@@ -32,6 +32,7 @@ from .common import APIError
 
 class Client(BaseClient):
     def __init__(self, access_token: str):
+        super().__init__()
         self._client = APIClient(access_token)
 
     def stream_accounts(self) -> Iterator[dict]:
