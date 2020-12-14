@@ -33,16 +33,16 @@ from .common import _parsed_response, cursor_paginator, next_url_paginator
 
 
 class APIClient:
-    USER_AGENT = 'Airbyte contact@airbyte.io'
+    USER_AGENT = "Airbyte contact@airbyte.io"
     BASE_URL = "https://driftapi.com"
 
     def __init__(self, access_token: str):
         self._token = access_token
         self._headers = {
-            'Authorization': f'Bearer {self._token}',
-            'User-Agent': self.USER_AGENT,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
+            "Authorization": f"Bearer {self._token}",
+            "User-Agent": self.USER_AGENT,
+            "Content-Type": "application/json",
+            "Accept": "application/json",
         }
 
         self.accounts = Account(client=self)
@@ -71,7 +71,7 @@ class APIClient:
         return f"{self.BASE_URL}/{url}"
 
     def check_token(self, token: str):
-        return self.post('app/token_info', data={'accessToken': token})
+        return self.post("app/token_info", data={"accessToken": token})
 
 
 class User:
@@ -79,15 +79,14 @@ class User:
         self.client = client
 
     def get(self, pk) -> dict:
-        return self.client.get(f"users/{pk}")['data']
+        return self.client.get(f"users/{pk}")["data"]
 
     def list(self) -> Iterator[dict]:
-        """ Doesn't support pagination and return all users at once
-        """
-        yield from self.client.get("users/list")['data']
+        """Doesn't support pagination and return all users at once"""
+        yield from self.client.get("users/list")["data"]
 
     def update(self, pk, **attributes) -> dict:
-        params = {'userId': pk}
+        params = {"userId": pk}
         return self.client.patch("users/update", data=attributes, params=params)
 
 
@@ -106,10 +105,9 @@ class Conversation:
         return self.client.get(f"conversations/{pk}")
 
     def list(self, statuses: List[Status] = None) -> Iterator[dict]:
-        """ Conversations returned will be ordered by their updatedAt time with the most recently updated at the top of the list.
-        """
+        """Conversations returned will be ordered by their updatedAt time with the most recently updated at the top of the list."""
         statuses = list(map(int, statuses or []))
-        params = {'statusId': statuses}
+        params = {"statusId": statuses}
         request = partial(self.client.get, url="conversations/list")
         return self.pagination(request, params=params)
 
@@ -117,7 +115,7 @@ class Conversation:
         return self.client.post("conversations/new", data=attributes)
 
     def update(self, pk: int, **attributes) -> dict:
-        params = {'userId': pk}
+        params = {"userId": pk}
         return self.client.patch("conversations/update", data=attributes, params=params)
 
 
@@ -128,14 +126,13 @@ class Message:
         self.client = client
 
     def list(self, conversation_id: int) -> Iterator[dict]:
-        """ You have to provide conversation ID to get list of messages
-        """
+        """You have to provide conversation ID to get list of messages"""
         request = partial(self.client.get, url=f"conversations/{conversation_id}/messages")
         for data in self.pagination(request):
-            yield from data.get('messages', [])
+            yield from data.get("messages", [])
 
     def create(self, conversation_id: int, **attributes) -> dict:
-        return self.client.post(f"conversations/{conversation_id}/messages", data=attributes).get('data')
+        return self.client.post(f"conversations/{conversation_id}/messages", data=attributes).get("data")
 
 
 class Account:
@@ -153,10 +150,10 @@ class Account:
             yield from data.get("accounts", [])
 
     def create(self, **attributes) -> dict:
-        return self.client.post("accounts/create", data=attributes).get('data')
+        return self.client.post("accounts/create", data=attributes).get("data")
 
     def update(self, pk: int, **attributes) -> dict:
-        params = {'userId': pk}
+        params = {"userId": pk}
         return self.client.patch("accounts/update", data=attributes, params=params)
 
 
@@ -165,16 +162,15 @@ class Contact:
         self.client = client
 
     def get(self, pk: int) -> dict:
-        return self.client.get(f"contacts/{pk}")['data']
+        return self.client.get(f"contacts/{pk}")["data"]
 
     def list(self, email: str) -> Iterator[dict]:
-        """ List contacts only possible with exact email filter
-        """
-        yield from self.client.get("contacts", params={'email': email})['data']
+        """List contacts only possible with exact email filter"""
+        yield from self.client.get("contacts", params={"email": email})["data"]
 
     def create(self, **attributes) -> dict:
-        return self.client.post("contacts", data=attributes).get('data')
+        return self.client.post("contacts", data=attributes).get("data")
 
     def update(self, pk: int, **attributes) -> dict:
-        params = {'userId': pk}
+        params = {"userId": pk}
         return self.client.patch("contacts/update", data=attributes, params=params)

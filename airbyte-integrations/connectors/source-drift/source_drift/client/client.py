@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
 from typing import Tuple, Iterator
 
 from base_python import BaseClient
@@ -48,7 +49,7 @@ class Client(BaseClient):
 
         try:
             # we don't care about response, just checking authorisation
-            self._client.check_token('definitely_not_a_token')
+            self._client.check_token("definitely_not_a_token")
         except APIError as error:
             alive = False
             error_msg = str(error)

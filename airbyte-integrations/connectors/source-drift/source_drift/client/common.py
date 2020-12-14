@@ -35,7 +35,7 @@ class ServerError(Exception):
 
 
 class APIError(Exception):
-    """Base class for API errors"""""
+    """Base class for API errors""" ""
 
 
 class ValidationError(APIError):
@@ -60,11 +60,11 @@ def cursor_paginator(request, start_index: int = None, per_page: int = 100, para
     index = start_index
     while True:
         result = request(params={**params, "next": index, "limit": per_page})
-        if isinstance(result['data'], collections.abc.Sequence):
-            yield from result['data']
+        if isinstance(result["data"], collections.abc.Sequence):
+            yield from result["data"]
         else:
-            yield result['data']
-        index = result.get('pagination', {}).get('next')
+            yield result["data"]
+        index = result.get("pagination", {}).get("next")
         if not index:
             break
 
@@ -76,20 +76,20 @@ def next_url_paginator(request, start_index: int = None, per_page: int = 100, pa
     index = start_index
     while True:
         result = request(params={**params, "index": index, "size": size})
-        if isinstance(result['data'], collections.abc.Sequence):
-            yield from result['data']
+        if isinstance(result["data"], collections.abc.Sequence):
+            yield from result["data"]
         else:
-            yield result['data']
+            yield result["data"]
 
-        next_url = result['data'].get('next')
+        next_url = result["data"].get("next")
         if not next_url:
             break
 
         # parse url to unify request command
         next_url = urlparse(next_url)
         next_params = parse_qs(next_url.query)
-        index = next_params.get('index', [None])[0]
-        size = next_params.get('size', [None])[0]
+        index = next_params.get("index", [None])[0]
+        size = next_params.get("size", [None])[0]
 
 
 def exception_from_code(code: int, message: str) -> Exception:
@@ -102,7 +102,7 @@ def exception_from_code(code: int, message: str) -> Exception:
         502: ServerError,
         503: ServerError,
         504: ServerError,
-        429: RateLimitError
+        429: RateLimitError,
     }
 
     return mapping.get(code, APIError)(code, message)
@@ -110,6 +110,7 @@ def exception_from_code(code: int, message: str) -> Exception:
 
 def _parsed_response(func):
     """ Decorator to check response status and parse its body"""
+
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         try:
@@ -117,14 +118,14 @@ def _parsed_response(func):
             result = response.json() if response.text else {}
             if not response.ok:
                 msg = result  # fallback to the whole response
-                if 'error' in result:
-                    msg = result['error'].get('message', result)
+                if "error" in result:
+                    msg = result["error"].get("message", result)
                 # multiple errors? grab all of them
-                elif 'errors' in result:
-                    msg = result['errors']
+                elif "errors" in result:
+                    msg = result["errors"]
                 raise exception_from_code(response.status_code, msg)
         except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as err:
-            raise ServerError(err.request.status_code, 'Connection Error') from err
+            raise ServerError(err.request.status_code, "Connection Error") from err
 
         return result
 
