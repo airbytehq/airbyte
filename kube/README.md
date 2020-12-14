@@ -16,7 +16,6 @@ All commands should be run from the root Airbyte source directory.
 
 Coding todos:
 todo: better version handling
-todo: pass return code properly from kube runner
 todo: manually test end to end sync
 todo: repeatable testing for kube using k3s in CI
 todo: merge master

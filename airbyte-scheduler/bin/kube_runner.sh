@@ -21,6 +21,11 @@ do
   echo "Retrying..."
 done
 
-# TODO: do we need to terminate on job closure with:
-# kubectl wait --for=condition=complete job/"$POD_NAME" --timeout=-1
-# TODO: propagate exit code
+PHASE=$(kubectl get "$POD_NAME" --output="jsonpath={.status.phase}")
+echo "Phase of pod: $PHASE"
+
+if [[ "$PHASE" == "Succeeded" ]]; then
+  exit 0
+else
+  exit 1
+fi
