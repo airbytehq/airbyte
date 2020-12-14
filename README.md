@@ -2,10 +2,14 @@
 
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/airbytehq/airbyte/Airbyte%20CI) ![License](https://img.shields.io/github/license/airbytehq/airbyte)
 
+![](docs/.gitbook/assets/airbyte_horizontal_color_white-background.svg)
+
 **Data integration made simple, secure and extensible.**  
 The new open-source standard to sync data from applications, APIs & databases to warehouses.
 
-[](docs/deploying-airbyte/on-your-workstation.md) [](docs/deploying-airbyte/on-aws-ec2.md) [](docs/deploying-airbyte/on-gcp-compute-engine.md)
+[![](docs/.gitbook/assets/deploy-locally.svg)](docs/deploying-airbyte/on-your-workstation.md) [![](docs/.gitbook/assets/deploy-on-aws.svg)](docs/deploying-airbyte/on-aws-ec2.md) [![](docs/.gitbook/assets/deploy-on-gcp.svg)](docs/deploying-airbyte/on-gcp-compute-engine.md)
+
+![](docs/.gitbook/assets/airbyte-ui-for-your-integration-pipelines.png)
 
 Airbyte is on a mission to make data integration pipelines a commodity.
 
@@ -26,7 +30,7 @@ docker-compose up
 
 Now visit [http://localhost:8000](http://localhost:8000)
 
-Here is a [step-by-step guide]() showing you how to load data from a sample Postgres database into another database using Airbyte, all on your computer.
+Here is a [step-by-step guide](docs/tutorials/getting-started.md) showing you how to load data from a sample Postgres database into another database using Airbyte, all on your computer.
 
 ## Features
 
