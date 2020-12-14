@@ -35,13 +35,13 @@ class Client(BaseClient):
         super().__init__()
         self._client = APIClient(access_token)
 
-    def stream_accounts(self) -> Iterator[dict]:
+    def stream__accounts(self) -> Iterator[dict]:
         yield from self._client.accounts.list()
 
-    def stream_users(self) -> Iterator[dict]:
+    def stream__users(self) -> Iterator[dict]:
         yield from self._client.users.list()
 
-    def stream_conversations(self) -> Iterator[dict]:
+    def stream__conversations(self) -> Iterator[dict]:
         yield from self._client.conversations.list()
 
     def health_check(self) -> Tuple[bool, str]:
