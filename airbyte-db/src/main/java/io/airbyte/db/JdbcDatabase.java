@@ -24,8 +24,14 @@
 
 package io.airbyte.db;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import java.io.Closeable;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.function.Function;
+import java.util.stream.Stream;
 import javax.sql.DataSource;
 
 /**

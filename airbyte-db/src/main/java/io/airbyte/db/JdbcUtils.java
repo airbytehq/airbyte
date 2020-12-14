@@ -27,6 +27,7 @@ package io.airbyte.db;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.AbstractIterator;
+import com.google.common.collect.Streams;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.stream.MoreStreams;
@@ -47,6 +48,7 @@ import java.util.List;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -88,39 +90,35 @@ public class JdbcUtils {
    * @throws SQLException exceptions throws when parsing the ResultSet.
    */
   public static List<JsonNode> resultSetToJson(ResultSet resultSet) throws SQLException {
-    final List<JsonNode> jsons = new ArrayList<>();
-    final int columnCount = resultSet.getMetaData().getColumnCount();
-
-    while (resultSet.next()) {
-      final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
-
-      for (int i = 1; i <= columnCount; i++) {
-        // attempt to access the column. this allows us to know if it is null before we do type-specific
-        // parsing. if it is null, we can move on. while awkward, this seems to be the agreed upon way of
-        // checking for null values with jdbc.
-        resultSet.getObject(i);
-        if (resultSet.wasNull()) {
-          continue;
-        }
-
-        // convert to java types that will convert into reasonable json.
-        jdbcToJson(jsonNode, resultSet, i);
-      }
-      jsons.add(jsonNode);
-    }
-
-    return jsons;
+    return mapResultSet(resultSet, JdbcUtils::getJsonForRow).collect(Collectors.toList());
   }
 
   /**
-   * Stream the each record of a ResultSet as JsonNode.
+   * Stream the each record of a ResultSet lazily.
    *
-   * @param resultSet the result set
+   * @param preparedStatement that needs to be executed lazily.
    * @return Stream of JsonNode.
    * @throws SQLException exceptions throws when parsing the ResultSet.
    */
-  public static Stream<JsonNode> resultSetToJsonStream(ResultSet resultSet) throws SQLException {
-    return MoreStreams.toStream(resultSetToJsonIterator(resultSet));
+  public static <T> Stream<T> fetchStream(PreparedStatement preparedStatement, CheckedFunction<ResultSet, T, SQLException> mapper) throws SQLException {
+    return Stream.of(1).flatMap(i -> {
+      try {
+        return mapResultSet(preparedStatement.executeQuery(), mapper);
+      } catch (SQLException e) {
+        throw new RuntimeException(e);
+      }
+    });
+  }
+
+  /**
+   * Stream the each record of a ResultSet as JsonNode lazily.
+   *
+   * @param preparedStatement that needs to be executed lazily.
+   * @return Stream of JsonNode.
+   * @throws SQLException exceptions throws when parsing the ResultSet.
+   */
+  public static Stream<JsonNode> fetchStreamAsJson(PreparedStatement preparedStatement) throws SQLException {
+    return fetchStream(preparedStatement, JdbcUtils::getJsonForRow);
   }
 
   /**
@@ -131,44 +129,15 @@ public class JdbcUtils {
    * @throws SQLException exceptions throws when parsing the ResultSet.
    */
   public static Iterator<JsonNode> resultSetToJsonIterator(ResultSet resultSet) throws SQLException {
-    final int columnCount = resultSet.getMetaData().getColumnCount();
-    return new JsonIterator(resultSet, columnCount);
+    return mapResultSet(resultSet, JdbcUtils::getJsonForRow).iterator();
   }
 
-  private static class JsonIterator extends AbstractIterator<JsonNode> implements Iterator<JsonNode> {
-
-    private final ResultSet resultSet;
-    private final int columnCount;
-
-    public JsonIterator(ResultSet resultSet, int columnCount) {
-
-      this.resultSet = resultSet;
-      this.columnCount = columnCount;
-    }
-
-    @Override
-    protected JsonNode computeNext() {
-      try {
-        if (resultSet.next()) {
-          return getJsonForRow(columnCount, resultSet);
-        } else {
-          return endOfData();
-        }
-      } catch (SQLException e) {
-        throw new RuntimeException(e);
-      }
-    }
-
-  }
-
-  private static JsonNode getJsonForRow(int columnCount, ResultSet r) throws SQLException {
+  private static JsonNode getJsonForRow(ResultSet r) throws SQLException {
+    // the first call communicates with the database. after that the result is cached.
+    final int columnCount = r.getMetaData().getColumnCount();
     final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
 
     for (int i = 1; i <= columnCount; i++) {
-      final String columnName = r.getMetaData().getColumnName(i);
-      final int columnType = r.getMetaData().getColumnType(i);
-      final JDBCType jdbcType = JDBCType.valueOf(columnType);
-
       // attempt to access the column. this allows us to know if it is null before we do type-specific
       // parsing. if it is null, we can move on. while awkward, this seems to be the agreed upon way of
       // checking for null values with jdbc.
@@ -184,7 +153,7 @@ public class JdbcUtils {
     return jsonNode;
   }
 
-  private static void jdbcToJson(ObjectNode o, ResultSet r, int i) throws SQLException {
+  public static void jdbcToJson(ObjectNode o, ResultSet r, int i) throws SQLException {
     final int columnTypeInt = r.getMetaData().getColumnType(i);
     final String columnName = r.getMetaData().getColumnName(i);
     final JDBCType columnType = JDBCType.valueOf(columnTypeInt);
