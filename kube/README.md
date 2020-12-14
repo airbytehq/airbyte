@@ -19,6 +19,7 @@ todo: better version handling
 todo: manually test end to end sync
 todo: repeatable testing for kube using k3s in CI
 todo: merge master
+todo: add segment tracking of identity type
 
 Documentation todos:
 todo: document how to resize airbyte-volume-local and how to put files onto it for local file testing with `kubectl cp`
