@@ -2,13 +2,13 @@ FROM airbyte/base-python-test:dev
 
 RUN apt-get update && rm -rf /var/lib/apt/lists/*
 
-ENV MODULE_NAME="source_zendesk_singer"
+ENV MODULE_NAME="source_zendesk_support_singer"
 ENV CODE_PATH="integration_tests"
 ENV AIRBYTE_TEST_MODULE="integration_tests"
-ENV AIRBYTE_TEST_PATH="SourceZendeskSingerStandardTest"
+ENV AIRBYTE_TEST_PATH="SourceZendeskSupportSingerStandardTest"
 
 LABEL io.airbyte.version=0.1.0
-LABEL io.airbyte.name=airbyte/source-zendesk-singer-standard-test
+LABEL io.airbyte.name=airbyte/source-zendesk-support-singer-support-standard-test
 
 WORKDIR /airbyte/integration_code
 COPY $MODULE_NAME $MODULE_NAME

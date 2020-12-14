@@ -22,17 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from setuptools import find_packages, setup
+import sys
 
-setup(
-    name="source_zendesk_singer",
-    description="Source implementation for Zendesk Api, built on the Singer tap implementation.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    install_requires=["airbyte-protocol"],
-    package_data={"": ["*.json"]},
-    setup_requires=["pytest-runner"],
-    tests_require=["pytest"],
-    extras_require={"main": ["base-singer", "base-python", "tap-zendesk==1.5.3"], "standardtest": ["airbyte_python_test"]},
-)
+from base_python.entrypoint import launch
+from source_zendesk_support_singer import SourceZendeskSupportSinger
+
+if __name__ == "__main__":
+    source = SourceZendeskSupportSinger()
+    launch(source, sys.argv[1:])
