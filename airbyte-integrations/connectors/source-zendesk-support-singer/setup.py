@@ -22,27 +22,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import json
-import pkgutil
+from setuptools import find_packages, setup
 
-from airbyte_protocol import ConfiguredAirbyteCatalog, ConnectorSpecification
-from base_python_test import StandardSourceTestIface
-
-
-class SourceZendeskSingerStandardTest(StandardSourceTestIface):
-    def get_spec(self) -> ConnectorSpecification:
-        raw_spec = pkgutil.get_data(self.__class__.__module__.split(".")[0], "spec.json")
-        return ConnectorSpecification.parse_obj(json.loads(raw_spec))
-
-    def get_config(self) -> object:
-        return json.loads(pkgutil.get_data(self.__class__.__module__.split(".")[0], "config.json"))
-
-    def get_catalog(self) -> ConfiguredAirbyteCatalog:
-        raw_catalog = pkgutil.get_data(self.__class__.__module__.split(".")[0], "catalog_subset.json")
-        return ConfiguredAirbyteCatalog.parse_obj(json.loads(raw_catalog))
-
-    def setup(self) -> None:
-        pass
-
-    def teardown(self) -> None:
-        pass
+setup(
+    name="source_zendesk_support_singer",
+    description="Source implementation for Zendesk Support Api, built on the Singer tap implementation.",
+    author="Airbyte",
+    author_email="contact@airbyte.io",
+    packages=find_packages(),
+    install_requires=["airbyte-protocol"],
+    package_data={"": ["*.json"]},
+    setup_requires=["pytest-runner"],
+    tests_require=["pytest"],
+    extras_require={"main": ["base-singer", "base-python", "tap-zendesk==1.5.3"], "standardtest": ["airbyte_python_test"]},
+)
