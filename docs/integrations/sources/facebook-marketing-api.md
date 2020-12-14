@@ -75,13 +75,13 @@ Visit the [Facebook Developers App hub](https://developers.facebook.com/apps/) a
 
 From the App's Dashboard screen \(seen in the screenshot below\) enable the Marketing API for your app if it is not already setup.
 
-![](https://github.com/airbytehq/airbyte/tree/d22a5f073637ff9ec77f3a3b7da7ba5c7d0d21ae/docs/integrations/.gitbook/assets/screen-shot-2020-11-03-at-9.25.21-pm.png)
+![](../../.gitbook/assets/screen-shot-2020-11-03-at-9.25.21-pm%20%284%29%20%284%29.png)
 
 ### API Access Token
 
 In the App Dashboard screen, click Marketing API --&gt; Tools on the left sidebar. Then highlight all the available token permissions \(`ads_management`, `ads_read`, `read_insights`\) and click "Get token". A long string of characters should appear in front of you; **this is the access token.** Copy this string for use in the Airbyte UI later.
 
-![](https://github.com/airbytehq/airbyte/tree/d22a5f073637ff9ec77f3a3b7da7ba5c7d0d21ae/docs/integrations/.gitbook/assets/screen-shot-2020-11-03-at-9.35.40-pm.png)
+![](../../.gitbook/assets/screen-shot-2020-11-03-at-9.35.40-pm%20%284%29%20%284%29.png)
 
 With the Ad Account ID and API access token, you should be ready to start pulling data from the Facebook Marketing API. Head to the Airbyte UI to setup your source connector!
 

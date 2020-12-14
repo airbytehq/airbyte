@@ -8,14 +8,29 @@ This is the changelog for Airbyte core. For our connector changelog, please visi
 
 If you're interested in our progress on the Airbyte platform, please read below!
 
-## 0.5.0 - expected around 11/11/2020
+## 0.8.0 - expected around 12/21/2020
 
 Here is what we have in mind:
 
+* **Incremental syncing v1** as append-only
+* **New sources:** Intercom, Mixpanel, Jira Cloud, Zoom, Drift, Microsoft Teams, and more
+
+## 0.7.0 - delivered on 12/07/2020
+
+* **New destination:** our own **Redshift** warehouse connector. You can also use this connector for Panoply.
+* **New sources**: 8 additional source connectors including Recurly, Twilio, Freshdesk. Greenhouse, Redshift \(source\), Braintree, Slack, Zendesk Support
+* Bug fixes
+
+## 0.6.0 - delivered on 11/23/2020
+
 * Support **multiple destinations** 
-* **New destination:** our own **Redshift** warehouse connector 
-* **New sources:** 10 additional sources connectors, including Files \(CSV, HTML, JSON...\), Shopify, MSSQL, Mailchimp, Intercom
-* As a bonus if we can, update the onboarding experience with pre-filled demo data for the users who just want to see how Airbyte works with the least effort.
+* **New source:** Sendgrid
+* Support **basic normalization**
+* Bug fixes
+
+## 0.5.0 - delivered on 11/18/2020
+
+* **New sources:** 10 additional source connectors, including Files \(CSV, HTML, JSON...\), Shopify, MSSQL, Mailchimp
 
 ## 0.4.0 - delivered on 11/04/2020
 

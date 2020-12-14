@@ -2,14 +2,14 @@
 
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/airbytehq/airbyte/Airbyte%20CI) ![License](https://img.shields.io/github/license/airbytehq/airbyte)
 
-![](docs/.gitbook/assets/airbyte_horizontal_color_white-background.svg)
+![](docs/.gitbook/assets/airbyte_horizontal_color_white-background%20%281%29%20%281%29.svg)
 
 **Data integration made simple, secure and extensible.**  
 The new open-source standard to sync data from applications, APIs & databases to warehouses.
 
-[![](docs/.gitbook/assets/deploy-locally%20%2821%29.svg)](docs/deploying-airbyte/on-your-workstation.md) [![](docs/.gitbook/assets/deploy-on-aws%20%2813%29.svg)](docs/deploying-airbyte/on-aws-ec2.md) [![](docs/.gitbook/assets/deploy-on-gcp%20%2810%29.svg)](docs/deploying-airbyte/on-gcp-compute-engine.md)
+[![](docs/.gitbook/assets/deploy-locally%20%287%29%20%2821%29.svg)](docs/deploying-airbyte/on-your-workstation.md) [![](docs/.gitbook/assets/deploy-on-aws%20%2811%29%20%283%29.svg)](docs/deploying-airbyte/on-aws-ec2.md) [![](docs/.gitbook/assets/deploy-on-gcp%20%285%29%20%285%29.svg)](docs/deploying-airbyte/on-gcp-compute-engine.md)
 
-![](docs/.gitbook/assets/airbyte-ui-for-your-integration-pipelines.png)
+![](docs/.gitbook/assets/airbyte-ui-for-your-integration-pipelines%20%289%29%20%284%29.png)
 
 Airbyte is on a mission to make data integration pipelines a commodity.
 
@@ -30,7 +30,7 @@ docker-compose up
 
 Now visit [http://localhost:8000](http://localhost:8000)
 
-Here is a [step-by-step guide](docs/tutorials/getting-started.md) showing you how to load data from a sample Postgres database into another database using Airbyte, all on your computer.
+Here is a [step-by-step guide](docs/getting-started-tutorial.md) showing you how to load data from a sample Postgres database into another database using Airbyte, all on your computer.
 
 ## Features
 
