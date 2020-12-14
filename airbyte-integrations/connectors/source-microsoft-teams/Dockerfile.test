@@ -1,0 +1,21 @@
+FROM airbyte/base-python-test:dev
+
+RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
+
+ENV CODE_PATH="integration_tests"
+ENV AIRBYTE_TEST_MODULE="integration_tests"
+ENV AIRBYTE_TEST_PATH="SourceMicrosoftTeamsStandardTest"
+
+LABEL io.airbyte.version=0.1.0
+LABEL io.airbyte.name=airbyte/source-microsoft-teams-standard-test
+
+WORKDIR /airbyte/integration_code
+COPY source_microsoft_teams source_microsoft_teams
+COPY $CODE_PATH $CODE_PATH
+COPY secrets/* $CODE_PATH/
+COPY source_microsoft_teams/*.json $CODE_PATH/
+COPY setup.py ./
+
+RUN pip install ".[tests]"
+
+WORKDIR /airbyte
