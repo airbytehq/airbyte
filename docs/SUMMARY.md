@@ -2,7 +2,7 @@
 
 * [Overview](../README.md)
 * [Tutorials](tutorials/README.md)
-  * [Getting Started](tutorials/getting-started-tutorial.md)
+  * [Getting Started](tutorials/getting-started.md)
   * [Config & Persistence](tutorials/airbyte-config-persistence.md)
 * [Changelog](changelog.md)
 * [Roadmap](roadmap.md)
