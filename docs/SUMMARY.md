@@ -1,7 +1,9 @@
 # Table of contents
 
 * [Overview](../README.md)
-* [Getting Started](getting-started-tutorial.md)
+* [Tutorials](tutorials/README.md)
+  * [Getting Started](tutorials/getting-started-tutorial.md)
+  * [Config & Persistence](tutorials/airbyte-config-persistence.md)
 * [Changelog](changelog.md)
 * [Roadmap](roadmap.md)
 * [Connectors](integrations/README.md)
@@ -67,8 +69,6 @@
   * [Updating Documentation](contributing-to-airbyte/updating-documentation.md)
   * [Templates](contributing-to-airbyte/templates/README.md)
     * [Connector Doc Template](contributing-to-airbyte/templates/integration-documentation-template.md)
-* [Tutorials](tutorials/README.md)
-  * [Config & Persistence](tutorials/airbyte-config-persistence.md)
 * [Company Handbook](company-handbook/README.md)
   * [Story](company-handbook/future-milestones.md)
   * [Culture and Values](company-handbook/culture-and-values.md)
