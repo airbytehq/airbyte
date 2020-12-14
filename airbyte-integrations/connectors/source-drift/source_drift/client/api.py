@@ -145,7 +145,7 @@ class Account:
         return self.client.get(f"accounts/{pk}")
 
     def list(self) -> Iterator[dict]:
-        request = partial(self.client.get, url=f"accounts")
+        request = partial(self.client.get, url="accounts")
         for data in self.pagination(request):
             yield from data.get("accounts", [])
 
