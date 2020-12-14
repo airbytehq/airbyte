@@ -22,12 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Tuple, Iterator
+from typing import Iterator, Tuple
 
 from base_python import BaseClient
 
 from .api import APIClient
-from .common import APIError, AuthError, ValidationError
+from .common import AuthError, ValidationError
 
 
 class Client(BaseClient):

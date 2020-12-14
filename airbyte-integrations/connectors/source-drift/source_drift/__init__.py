@@ -22,8 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from .source import SourceDrift
 from .client import Client
-
+from .source import SourceDrift
 
 __all__ = ["SourceDrift", "Client"]

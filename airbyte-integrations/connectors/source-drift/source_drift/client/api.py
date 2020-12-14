@@ -24,8 +24,8 @@ SOFTWARE.
 
 import json
 from enum import IntEnum
-from typing import Iterator, List
 from functools import partial
+from typing import Iterator, List
 
 import requests
 

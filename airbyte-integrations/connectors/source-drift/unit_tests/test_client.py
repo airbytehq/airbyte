@@ -23,7 +23,7 @@ SOFTWARE.
 """
 
 import pytest
-from source_drift.client import Client, AuthError
+from source_drift.client import AuthError, Client
 
 
 def test__heal_check_with_wrong_token():
