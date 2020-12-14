@@ -15,19 +15,11 @@ All commands should be run from the root Airbyte source directory.
 1. Go to http://localhost:8000/
 
 Coding todos:
-todo: provide local volume handling for csv input and output
-todo: use subPath for mounting
+todo: better version handling
 todo: pass return code properly from kube runner
 todo: manually test end to end sync
-todo: test the kube process builder factory independently
-todo: repeatable testing for kube
-todo: standardize volume handling for dev and stable
-todo: allow env templating in general
-todo: try kube on gke
-todo: move db secrets to kube secrets?
-todo: either make a port forwarding thing that works for pod restarts or document the timing out behavior
-todo: use non-mounted space for buffers so it’s faster?
-todo: decide on a nesting strategy
+todo: repeatable testing for kube using k3s in CI
+todo: merge master
 
 Documentation todos:
 todo: document how to resize airbyte-volume-local and how to put files onto it for local file testing with `kubectl cp`

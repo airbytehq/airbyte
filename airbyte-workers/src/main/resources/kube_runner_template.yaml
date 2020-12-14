@@ -13,14 +13,14 @@ spec:
           workingDir: WORKDIR
           args: ARGS
           volumeMounts:
-            - name: airbyte-volume-data
-              mountPath: /data
             - name: airbyte-volume-workspace
-              mountPath: /tmp/workspace
+              mountPath: /data
+            - name: airbyte-volume-local
+              mountPath: /local
       volumes:
         - name: airbyte-volume-workspace
           persistentVolumeClaim:
             claimName: airbyte-volume-workspace
-        - name: airbyte-volume-data
+        - name: airbyte-volume-local
           persistentVolumeClaim:
-            claimName: airbyte-volume-data
+            claimName: airbyte-volume-local

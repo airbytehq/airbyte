@@ -53,6 +53,8 @@ spec:
               mountPath: /data
             - name: airbyte-volume-workspace
               mountPath: /tmp/workspace
+            - name: airbyte-volume-local
+              mountPath: /tmp/airbyte_local
       volumes:
         - name: airbyte-volume-workspace
           persistentVolumeClaim:
@@ -60,3 +62,6 @@ spec:
         - name: airbyte-volume-data
           persistentVolumeClaim:
             claimName: airbyte-volume-data
+        - name: airbyte-volume-local
+          persistentVolumeClaim:
+            claimName: airbyte-volume-local
