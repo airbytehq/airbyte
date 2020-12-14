@@ -44,6 +44,7 @@ services:
       - CONFIG_ROOT=${CONFIG_ROOT}
       - TRACKING_STRATEGY=${TRACKING_STRATEGY}
       - AIRBYTE_VERSION=${VERSION}
+      - AIRBYTE_ROLE=${AIRBYTE_ROLE:-}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - workspace:${WORKSPACE_ROOT}
@@ -62,6 +63,7 @@ services:
       - CONFIG_ROOT=${CONFIG_ROOT}
       - TRACKING_STRATEGY=${TRACKING_STRATEGY}
       - AIRBYTE_VERSION=${VERSION}
+      - AIRBYTE_ROLE=${AIRBYTE_ROLE:-}
     ports:
       - 8001:8001
     volumes:
@@ -76,10 +78,13 @@ services:
     environment:
       - TRACKING_STRATEGY=${TRACKING_STRATEGY}
       - AIRBYTE_VERSION=${VERSION}
+      - AIRBYTE_ROLE=${AIRBYTE_ROLE:-}
       - API_URL=${API_URL}
 
 volumes:
   workspace:
     name: ${WORKSPACE_DOCKER_MOUNT}
   data:
+    name: ${DATA_DOCKER_MOUNT}
   db:
+    name: ${DB_DOCKER_MOUNT}

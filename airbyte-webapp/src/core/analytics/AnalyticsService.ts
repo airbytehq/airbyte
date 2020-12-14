@@ -26,8 +26,8 @@ export class AnalyticsService {
       airbyte_version: config.version
     });
 
-  static identify = (traits: any = {}, userId?: string) =>
-    AnalyticsService.getAnalytics()?.identify?.(traits, userId);
+  static identify = (userId: string, traits: any = {}) =>
+    AnalyticsService.getAnalytics()?.identify?.(userId, traits);
 
   static group = (organisationId: string, traits: any = {}) =>
     AnalyticsService.getAnalytics()?.group?.(organisationId, traits);

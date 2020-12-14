@@ -6,12 +6,12 @@ bases:
 
 images:
   - name: airbyte/seed
-    newTag: 0.6.2-alpha
+    newTag: 0.7.2-alpha
   - name: airbyte/db
-    newTag: 0.6.2-alpha
+    newTag: 0.7.2-alpha
   - name: airbyte/scheduler
-    newTag: 0.6.2-alpha
+    newTag: 0.7.2-alpha
   - name: airbyte/server
-    newTag: 0.6.2-alpha
+    newTag: 0.7.2-alpha
   - name: airbyte/webapp
-    newTag: 0.6.2-alpha
+    newTag: 0.7.2-alpha

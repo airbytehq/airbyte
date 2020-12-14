@@ -1,18 +1,13 @@
----
-name: New Python Source Connector
-about: Use this when submitting a new source to Airbyte
---- 
-
 ## Contributor Checklist
 Thanks for contributing to Airbyte! Please complete the following items in order so we can review your PR.
-- [ ] Followed all the instructions in the locally generated source checklist and your connector is functional & ready for review
+- [ ] Followed all the instructions in the locally generated checklist and your connector is functional & ready for review
 - [ ] Ran the standard test suite locally via `./gradlew :airbyte-integrations:connectors:source-<your_source_name>:standardSourceTestPython` and pasted the summarized output as a comment in this PR
 
 ## Reviewer Pre-merge Checklist 
 - [ ] Finished iterating with the PR author on the code*
 - [ ] Created a branch off master to merge this PR into*
+- [ ] Inject the credentials in CI via `./tools/integrations/ci_credentials.sh` and `.github/workflows/test-command.yml`*
 - [ ] Added the credentials for this integration to Github secrets 
-- [ ] Inject the credentials in CI via `./tools/integrations/ci_credentials.sh` and `.github/workflows/test-command.yml`
 - [ ] Run standard tests on this branch by commenting `/test connector=<name>`*
 - [ ] Add entry in `airbyte-config/init/src/main/resources/seed/source_definitions.yaml` to use the new source in Airbyte core
 - [ ] Deployed the connector to Dockerhub via `./tools/integrations/manage.sh publish airbyte-integrations/connectors/source-<name>`

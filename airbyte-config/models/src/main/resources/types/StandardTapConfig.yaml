@@ -8,8 +8,6 @@ additionalProperties: false
 required:
   - sourceConnectionConfiguration
   - catalog
-  - syncMode
-  - connectionId
 properties:
   sourceConnectionConfiguration:
     description: Integration specific blob. Must be a valid JSON string.
@@ -18,10 +16,5 @@ properties:
   catalog:
     type: object
     existingJavaType: io.airbyte.protocol.models.ConfiguredAirbyteCatalog
-  syncMode:
-    "$ref": SyncMode.yaml
-  connectionId:
-    type: string
-    format: uuid
   state:
     "$ref": State.yaml

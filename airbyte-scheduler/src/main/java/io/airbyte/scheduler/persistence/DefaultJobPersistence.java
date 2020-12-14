@@ -28,6 +28,8 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobOutput;
+import io.airbyte.config.StandardSyncOutput;
+import io.airbyte.config.State;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.scheduler.Attempt;
@@ -41,6 +43,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -273,13 +276,22 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
+  public Optional<State> getCurrentState(UUID connectionId) throws IOException {
+    return database.query(ctx -> getJobFromResult(ctx
+        .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE scope = ? AND CAST(jobs.status AS VARCHAR) = ? ORDER BY attempts.created_at DESC LIMIT 1",
+            ScopeHelper.createScope(JobConfig.ConfigType.SYNC, connectionId.toString()),
+            JobStatus.SUCCEEDED.toString().toLowerCase())))
+        .flatMap(Job::getSuccessOutput)
+        .map(JobOutput::getSync)
+        .map(StandardSyncOutput::getState);
+  }
+
+  @Override
   public Optional<Job> getOldestPendingJob() throws IOException {
     return database.query(ctx -> getJobFromResult(ctx
         .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE CAST(jobs.status AS VARCHAR) = 'pending' ORDER BY jobs.created_at ASC LIMIT 1")));
   }
 
-  // record) interactions are confined to this class. would like to keep it that way for now, but
-  // once we have other classes that interact with the db, this can be moved out.
   private static List<Job> getJobsFromResult(Result<Record> result) {
     final Map<Long, List<Record>> jobIdToAttempts = result.stream().collect(Collectors.groupingBy(r -> r.getValue("job_id", Long.class)));
 
@@ -290,20 +302,21 @@ public class DefaultJobPersistence implements JobPersistence {
           List<Attempt> attempts = Collections.emptyList();
           if (jobEntry.get("attempt_number") != null) {
             attempts = records.stream().map(attemptRecord -> {
-              final String outputDb = jobEntry.get("attempt_output", String.class);
+              final String outputDb = attemptRecord.get("attempt_output", String.class);
               final JobOutput output = outputDb == null ? null : Jsons.deserialize(outputDb, JobOutput.class);
               return new Attempt(
                   attemptRecord.get("attempt_number", Long.class),
                   attemptRecord.get("job_id", Long.class),
-                  Path.of(jobEntry.get("log_path", String.class)),
+                  Path.of(attemptRecord.get("log_path", String.class)),
                   output,
-                  AttemptStatus.valueOf(jobEntry.get("attempt_status", String.class).toUpperCase()),
-                  getEpoch(jobEntry, "attempt_created_at"),
-                  getEpoch(jobEntry, "attempt_updated_at"),
-                  Optional.ofNullable(jobEntry.get("attempt_ended_at"))
-                      .map(value -> getEpoch(jobEntry, "attempt_ended_at"))
+                  AttemptStatus.valueOf(attemptRecord.get("attempt_status", String.class).toUpperCase()),
+                  getEpoch(attemptRecord, "attempt_created_at"),
+                  getEpoch(attemptRecord, "attempt_updated_at"),
+                  Optional.ofNullable(attemptRecord.get("attempt_ended_at"))
+                      .map(value -> getEpoch(attemptRecord, "attempt_ended_at"))
                       .orElse(null));
             })
+                .sorted(Comparator.comparingLong(Attempt::getId))
                 .collect(Collectors.toList());
           }
           final JobConfig jobConfig = Jsons.deserialize(jobEntry.get("config", String.class), JobConfig.class);
@@ -316,7 +329,8 @@ public class DefaultJobPersistence implements JobPersistence {
               Optional.ofNullable(jobEntry.get("job_started_at")).map(value -> getEpoch(jobEntry, "started_at")).orElse(null),
               getEpoch(jobEntry, "job_created_at"),
               getEpoch(jobEntry, "job_updated_at"));
-        }).collect(Collectors.toList());
+        })
+        .collect(Collectors.toList());
   }
 
   public static Optional<Job> getJobFromResult(Result<Record> result) {

@@ -24,26 +24,19 @@
 
 package io.airbyte.scheduler.persistence;
 
-import com.google.common.collect.Lists;
+import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.config.AirbyteProtocolConverters;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
-import io.airbyte.config.JobOutput;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
-import io.airbyte.config.StandardSyncOutput;
-import io.airbyte.config.State;
-import io.airbyte.scheduler.Attempt;
-import io.airbyte.scheduler.AttemptStatus;
-import io.airbyte.scheduler.Job;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.scheduler.ScopeHelper;
 import java.io.IOException;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 public class DefaultJobCreator implements JobCreator {
@@ -127,35 +120,35 @@ public class DefaultJobCreator implements JobCreator {
                             String sourceDockerImageName,
                             String destinationDockerImageName)
       throws IOException {
-    final UUID connectionId = standardSync.getConnectionId();
+    return createSyncJobInternal(
+        standardSync.getConnectionId(),
+        source.getConfiguration(),
+        destination.getConfiguration(),
+        AirbyteProtocolConverters.toConfiguredCatalog(standardSync.getSchema()),
+        sourceDockerImageName,
+        destinationDockerImageName);
+  }
 
+  private long createSyncJobInternal(
+                                     UUID connectionId,
+                                     JsonNode sourceConfiguration,
+                                     JsonNode destinationConfiguration,
+                                     ConfiguredAirbyteCatalog configuredAirbyteCatalog,
+                                     String sourceDockerImageName,
+                                     String destinationDockerImageName)
+      throws IOException {
     final String scope = ScopeHelper.createScope(JobConfig.ConfigType.SYNC, connectionId.toString());
 
+    // reusing this isn't going to quite work.
     final JobSyncConfig jobSyncConfig = new JobSyncConfig()
-        .withSourceConnection(source)
         .withSourceDockerImage(sourceDockerImageName)
-        .withDestinationConnection(destination)
+        .withSourceConfiguration(sourceConfiguration)
         .withDestinationDockerImage(destinationDockerImageName)
-        .withStandardSync(standardSync);
+        .withDestinationConfiguration(destinationConfiguration)
+        .withConfiguredAirbyteCatalog(configuredAirbyteCatalog)
+        .withState(null);
 
-    // todo (cgardens) - this will not have the intended behavior if the last job failed. then the next
-    // job will assume there is no state and re-sync everything! this is already wrong, so i'm not going
-    // to increase the scope of the current project.
-    final Optional<Job> previousJobOptional = jobPersistence.getLastSyncJob(connectionId);
-
-    final Optional<State> stateOptional = previousJobOptional.flatMap(j -> {
-      final List<Attempt> attempts = j.getAttempts() != null ? j.getAttempts() : Lists.newArrayList();
-      // find oldest attempt that is either succeeded or contains state.
-      return attempts.stream()
-          .filter(
-              a -> a.getStatus() == AttemptStatus.SUCCEEDED || a.getOutput().map(JobOutput::getSync).map(StandardSyncOutput::getState).isPresent())
-          .max(Comparator.comparingLong(Attempt::getCreatedAtInSecond))
-          .map(Attempt::getOutput)
-          .map(Optional::get)
-          .map(JobOutput::getSync)
-          .map(StandardSyncOutput::getState);
-    });
-    stateOptional.ifPresent(jobSyncConfig::withState);
+    jobPersistence.getCurrentState(connectionId).ifPresent(jobSyncConfig::withState);
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(JobConfig.ConfigType.SYNC)

@@ -2,14 +2,14 @@
 
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/airbytehq/airbyte/Airbyte%20CI) ![License](https://img.shields.io/github/license/airbytehq/airbyte)
 
-![](docs/.gitbook/assets/airbyte_horizontal_color_white-background%20%281%29.svg)
+![](docs/.gitbook/assets/airbyte_horizontal_color_white-background.svg)
 
 **Data integration made simple, secure and extensible.**  
 The new open-source standard to sync data from applications, APIs & databases to warehouses.
 
-[![](docs/.gitbook/assets/deploy-locally%20%281%29%20%281%29%20%281%29%20%281%29%20%282%29%20%281%29%20%281%29%20%281%29%20%282%29%20%281%29%20%282%29%20%282%29%20%283%29%20%281%29%20%286%29.svg)](docs/deploying-airbyte/on-your-workstation.md) [![](docs/.gitbook/assets/deploy-on-aws%20%281%29%20%281%29%20%281%29%20%281%29%20%282%29%20%281%29%20%281%29%20%281%29%20%282%29%20%281%29%20%282%29%20%282%29%20%2815%29%20%288%29.svg)](docs/deploying-airbyte/on-aws-ec2.md) [![](docs/.gitbook/assets/deploy-on-gcp%20%281%29%20%281%29%20%281%29%20%281%29%20%282%29%20%281%29%20%281%29%20%281%29%20%282%29%20%281%29%20%282%29%20%282%29%20%2811%29.svg)](docs/deploying-airbyte/on-gcp-compute-engine.md)
+[![](docs/.gitbook/assets/deploy-locally.svg)](docs/deploying-airbyte/on-your-workstation.md) [![](docs/.gitbook/assets/deploy-on-aws.svg)](docs/deploying-airbyte/on-aws-ec2.md) [![](docs/.gitbook/assets/deploy-on-gcp.svg)](docs/deploying-airbyte/on-gcp-compute-engine.md)
 
-![](docs/.gitbook/assets/airbyte-ui-for-your-integration-pipelines%20%281%29%20%281%29%20%282%29%20%282%29%20%289%29%20%289%29%20%287%29.png)
+![](docs/.gitbook/assets/airbyte-ui-for-your-integration-pipelines.png)
 
 Airbyte is on a mission to make data integration pipelines a commodity.
 
@@ -30,7 +30,7 @@ docker-compose up
 
 Now visit [http://localhost:8000](http://localhost:8000)
 
-Here is a [step-by-step guide](docs/getting-started-tutorial.md) showing you how to load data from a sample Postgres database into another database using Airbyte, all on your computer.
+Here is a [step-by-step guide](docs/tutorials/getting-started.md) showing you how to load data from a sample Postgres database into another database using Airbyte, all on your computer.
 
 ## Features
 
@@ -51,6 +51,8 @@ We love contributions to Airbyte, big or small.
 See our [Contributing guide](docs/contributing-to-airbyte/) on how to get started. Not sure where to start? We’ve listed some [good first issues](https://github.com/airbytehq/airbyte/labels/good%20first%20issue) to start with. You can also [book a free, no-pressure pairing session](https://drift.me/micheltricot/meeting) with one of our core contributors.
 
 **Note that you are able to create connectors using the language you want, as Airbyte connections run as Docker containers.**
+
+**Also, we will never ask you to maintain your connector. The goal is that the Airbyte team and the community helps maintain it, let's call it crowdsourced maintenance!**
 
 ## Community support
 

@@ -11,8 +11,11 @@ export type IProps = {
 export type IDataItem = {
   text: string;
   value: string;
+  groupValue?: string;
+  groupValueText?: string;
   img?: string;
   primary?: boolean;
+  secondary?: boolean;
 };
 
 const ItemView = styled.div`
@@ -25,7 +28,9 @@ const ItemView = styled.div`
 const ListItem: React.FC<IProps> = ({ item }) => {
   return (
     <ItemView>
-      <Text primary={item.primary}>{item.text}</Text>
+      <Text primary={item.primary} secondary={item.secondary}>
+        {item.text}
+      </Text>
       {item.img ? <ImageBlock img={item.img} /> : null}
     </ItemView>
   );

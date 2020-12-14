@@ -29,7 +29,7 @@ spec:
           image: airbyte/server
           env:
             - name: AIRBYTE_VERSION
-              value: 0.6.2-alpha # todo
+              value: 0.7.2-alpha # todo
             - name: CONFIG_ROOT
               value: /data
             - name: DATABASE_PASSWORD
