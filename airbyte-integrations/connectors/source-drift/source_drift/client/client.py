@@ -27,7 +27,7 @@ from typing import Tuple, Iterator
 from base_python import BaseClient
 
 from .api import APIClient
-from .common import APIError
+from .common import APIError, AuthError, ValidationError
 
 
 class Client(BaseClient):
@@ -51,7 +51,9 @@ class Client(BaseClient):
         try:
             # we don't care about response, just checking authorisation
             self._client.check_token("definitely_not_a_token")
-        except APIError as error:
+        except ValidationError:  # this is ok because `definitely_not_a_token`
+            pass
+        except AuthError as error:
             alive = False
             error_msg = str(error)
 
