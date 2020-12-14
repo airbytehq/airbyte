@@ -62,3 +62,12 @@ docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-drift/secrets:/
 
 ## Dependency Management
 All of your dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect internal Airbyte dependencies in the monorepo for local development.
+
+## Populating account with the data
+
+The following will create 120 accounts and conversations
+```bash
+export DRIFT_TOKEN=<PUT_YOUR_TOKEN_HERE>
+cd airbyte-integrations/connectors/source-drift/source_drift/
+python -m client.fixture
+```

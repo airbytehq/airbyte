@@ -62,8 +62,8 @@ def main():
 
     # create 120 accounts and 120 conversation with 120 new contacts
     for i in range(120):
-        client.accounts.create(**FakeDataFactory.account(i))
-        conversation = client.contacts.create(**FakeDataFactory.conversation(i))
+        client.accounts.create(**FakeDataFactory.account(i+1))
+        conversation = client.conversations.create(**FakeDataFactory.conversation(i))
         # in each conversation create +3 additional messages
         for k in range(3):
             client.messages.create(conversation_id=conversation["id"], **FakeDataFactory.message(k))
