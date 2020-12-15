@@ -22,8 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import json
+from base_python_test import DefaultStandardSourceTest
 
 
-def test_example_method():
-    assert {"hello": "world"} == json.loads('{"hello":"world"}')
+class ExchangeratesApiStandardSourceTest(DefaultStandardSourceTest):
+    pass
