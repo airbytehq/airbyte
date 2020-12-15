@@ -26,6 +26,7 @@ WORKDIR /app
 
 RUN apk add --no-cache ca-certificates
 
+
 COPY --from=builder /app/airbyte_source_google_analytics .
 
 ENTRYPOINT ["/app/airbyte_source_google_analytics"]

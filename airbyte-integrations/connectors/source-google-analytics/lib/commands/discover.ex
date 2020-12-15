@@ -15,11 +15,13 @@ defmodule Airbyte.Source.GoogleAnalytics.Commands.Discover do
   alias GoogleApi.Analytics.V3.Model.{AccountSummary, WebPropertySummary, Column, Columns}
 
   def run(%ConnectionSpecification{} = spec) do
-    # {:ok, conn} = Client.connection(spec)
+    {:ok, conn} = Client.connection(spec)
 
     # Management.analytics_management_account_summaries_list(conn)
     # |> IO.inspect()
     # get_custom_fields(conn)
+
+    get_standard_fields(conn)
 
     streams = [
       Streams.Accounts.stream(),
@@ -40,27 +42,23 @@ defmodule Airbyte.Source.GoogleAnalytics.Commands.Discover do
 
   defp get_standard_fields(conn) do
     {:ok, columns} = Metadata.analytics_metadata_columns_list(conn, "ga")
-    columns.items |> Enum.filter(&filter_unsupported_fields/1)
+
+    columns.items
+    |> Stream.reject(&reject_unsupported_fields/1)
+    |> Stream.reject(&reject_deprecated_fields/1)
+    |> Enum.to_list()
   end
 
-  defp filter_unsupported_fields(%Column{id: id}) do
-    Enum.member?(@unsupported_fields, id)
-  end
+  defp reject_unsupported_fields(%Column{id: id}), do: Enum.member?(@unsupported_fields, id)
+  defp reject_deprecated_fields(%Column{} = col), do: col.attributes["status"] == "DEPRECATED"
 
-  defp get_custom_fields(conn) do
-    get_custom_dimensions(conn) ++ get_custom_metrics(conn)
-  end
+  defp get_custom_fields(conn), do: get_custom_dimensions(conn) ++ get_custom_metrics(conn)
 
-  defp get_custom_dimensions(conn) do
-    conn
-    |> accounts()
-    |> Enum.map(&get_account_custom_dimensions(conn, &1))
-    |> List.flatten()
-  end
+  defp get_custom_dimensions(conn),
+    do: conn |> accounts() |> Enum.map(&get_account_custom_dimensions(conn, &1)) |> List.flatten()
 
-  defp get_account_custom_dimensions(conn, %AccountSummary{} = account) do
-    account.webProperties |> Enum.map(&get_web_property_custom_dimensions(conn, account, &1))
-  end
+  defp get_account_custom_dimensions(conn, %AccountSummary{} = account),
+    do: account.webProperties |> Enum.map(&get_web_property_custom_dimensions(conn, account, &1))
 
   defp get_web_property_custom_dimensions(
          conn,
