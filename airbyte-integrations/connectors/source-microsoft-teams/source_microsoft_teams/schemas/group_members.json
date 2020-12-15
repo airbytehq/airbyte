@@ -6,9 +6,6 @@
         "id": {
             "type": ["null", "string"]
         },
-        "display_name": {
-            "type": ["null", "string"]
-        },
         "business_phones": {
             "anyOf": [
                 {
@@ -21,6 +18,9 @@
                   "type": "null"
                 }
               ]
+        },
+        "display_name": {
+            "type": ["null", "string"]
         },
         "given_name": {
             "type": ["null", "string"]

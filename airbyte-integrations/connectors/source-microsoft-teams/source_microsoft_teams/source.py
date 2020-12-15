@@ -67,6 +67,8 @@ class SourceMicrosoftTeams(Source):
         logger.info(f"Starting syncing {self.__class__.__name__}")
         for configured_stream in catalog.streams:
             stream = configured_stream.stream
+            if stream.name not in client.ENTITY_MAP.keys():
+                continue
             for record in self._read_record(client=client, stream=stream.name):
                 yield AirbyteMessage(type=Type.RECORD, record=record)
         logger.info(f"Finished syncing {self.__class__.__name__}")
