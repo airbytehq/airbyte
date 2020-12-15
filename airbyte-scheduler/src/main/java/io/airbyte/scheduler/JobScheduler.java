@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiPredicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,14 +79,17 @@ public class JobScheduler implements Runnable {
 
       scheduleSyncJobs();
 
-      LOGGER.info("Completed job-scheduler...");
+      LOGGER.info("Completed Job-Scheduler...");
     } catch (Throwable e) {
       LOGGER.error("Job Scheduler Error", e);
     }
   }
 
   private void scheduleSyncJobs() throws IOException {
-    for (StandardSync connection : getAllActiveConnections()) {
+    final AtomicInteger jobsScheduled = new AtomicInteger();
+    final List<StandardSync> activeConnections = getAllActiveConnections();
+
+    for (StandardSync connection : activeConnections) {
       final Optional<Job> previousJobOptional = jobPersistence.getLastSyncJob(connection.getConnectionId());
       final StandardSyncSchedule standardSyncSchedule = getStandardSyncSchedule(connection);
 
@@ -93,6 +97,7 @@ public class JobScheduler implements Runnable {
         jobFactory.create(connection.getConnectionId());
       }
     }
+    LOGGER.info("Job-Scheduler Summary. Active connections: {}, Jobs scheduler: {}", activeConnections.size(), jobsScheduled.get());
   }
 
   private StandardSyncSchedule getStandardSyncSchedule(StandardSync connection) {

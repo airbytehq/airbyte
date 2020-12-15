@@ -29,6 +29,7 @@ import io.airbyte.scheduler.persistence.JobPersistence;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
@@ -52,22 +53,32 @@ public class JobRetrier implements Runnable {
   public void run() {
     LOGGER.info("Running job-retrier...");
 
-    listFailedJobs()
-        .forEach(job -> {
+    final AtomicInteger failedJobs = new AtomicInteger();
+    final AtomicInteger retriedJobs = new AtomicInteger();
+
+    final long incompleteJobsCount = incompleteJobs()
+        .peek(job -> {
           if (hasReachedMaxAttempt(job)) {
             failJob(job);
+            failedJobs.incrementAndGet();
             return;
           }
 
           if (shouldRetry(job)) {
+            retriedJobs.incrementAndGet();
             resetJob(job);
           }
-        });
+        })
+        .count();
 
-    LOGGER.info("Completed job-retrier...");
+    LOGGER.info("Completed Job-Retrier...");
+    LOGGER.info("Job-Retrier Summary. Incomplete jobs: {}, Job set to retry: {}, Jobs set to failed: {}",
+        incompleteJobsCount,
+        failedJobs.get(),
+        retriedJobs.get());
   }
 
-  private Stream<Job> listFailedJobs() {
+  private Stream<Job> incompleteJobs() {
     try {
       return persistence.listJobsWithStatus(JobConfig.ConfigType.SYNC, JobStatus.INCOMPLETE).stream();
     } catch (IOException e) {

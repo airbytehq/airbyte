@@ -80,9 +80,10 @@ public class JobSubmitter implements Runnable {
       oldestPendingJob.ifPresent(job -> {
         trackSubmission(job);
         submitJob(job);
+        LOGGER.info("Job-Submitter Summary. Submitted job with scope {}", job.getScope());
       });
 
-      LOGGER.info("Completed job-submitter...");
+      LOGGER.info("Completed Job-Submitter...");
     } catch (Throwable e) {
       LOGGER.error("Job Submitter Error", e);
     }
