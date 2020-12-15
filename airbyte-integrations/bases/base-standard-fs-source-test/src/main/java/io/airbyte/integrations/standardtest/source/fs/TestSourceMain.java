@@ -79,8 +79,14 @@ public class TestSourceMain {
     final String configFile = ns.getString("config");
     final String catalogFile = ns.getString("catalog");
     final String stateFile = ns.getString("state");
-    ExecutableTestSource.TEST_CONFIG =
-        new ExecutableTestSource.TestConfig(imageName, Path.of(specFile), Path.of(configFile), Path.of(catalogFile), Path.of(stateFile));
+
+    ExecutableTestSource.TEST_CONFIG = new ExecutableTestSource.TestConfig(
+        imageName,
+        Path.of(specFile),
+        Path.of(configFile),
+        Path.of(catalogFile),
+        stateFile != null ? Path.of(stateFile) : null
+    );
 
     TestRunner.runTestClass(ExecutableTestSource.class);
   }
