@@ -2,20 +2,27 @@ import React, { useEffect } from "react";
 import ChatWidget from "@papercups-io/chat-widget";
 import { Storytime } from "@papercups-io/storytime";
 
-type IProps = {
+type PapercupsConfig = {
   accountId: string;
   baseUrl: string;
+  enableStorytime: boolean;
+};
+
+type IProps = {
+  papercupsConfig: PapercupsConfig;
   customerId: string;
 };
 
-const SupportChat: React.FC<IProps> = ({ accountId, baseUrl, customerId }) => {
+const SupportChat: React.FC<IProps> = ({ papercupsConfig, customerId }) => {
   useEffect(() => {
-    Storytime.init({
-      accountId: accountId,
-      baseUrl: baseUrl,
-      customer: { external_id: customerId }
-    });
-  }, [accountId, customerId, baseUrl]);
+    if (papercupsConfig.enableStorytime) {
+      Storytime.init({
+        accountId: papercupsConfig.accountId,
+        baseUrl: papercupsConfig.baseUrl,
+        customer: { external_id: customerId }
+      });
+    }
+  }, [customerId, papercupsConfig]);
 
   return (
     <ChatWidget
@@ -25,8 +32,8 @@ const SupportChat: React.FC<IProps> = ({ accountId, baseUrl, customerId }) => {
       greeting="Hello!!!"
       newMessagePlaceholder="Start typing..."
       customer={{ external_id: customerId }}
-      accountId={accountId}
-      baseUrl={baseUrl}
+      accountId={papercupsConfig.accountId}
+      baseUrl={papercupsConfig.baseUrl}
     />
   );
 };

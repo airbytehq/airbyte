@@ -1,6 +1,7 @@
 declare global {
   interface Window {
     TRACKING_STRATEGY?: string;
+    PAPERCUPS_STORYTIME?: string;
     AIRBYTE_VERSION?: string;
     API_URL?: string;
   }
@@ -17,6 +18,7 @@ const config: {
   papercups: {
     accountId: string;
     baseUrl: string;
+    enableStorytime: boolean;
   };
   apiUrl: string;
   version?: string;
@@ -37,7 +39,8 @@ const config: {
   },
   papercups: {
     accountId: "74560291-451e-4ceb-a802-56706ece528b",
-    baseUrl: "https://app.papercups.io"
+    baseUrl: "https://app.papercups.io",
+    enableStorytime: window.PAPERCUPS_STORYTIME !== "disabled"
   },
   version: window.AIRBYTE_VERSION,
   apiUrl:

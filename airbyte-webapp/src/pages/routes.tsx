@@ -154,8 +154,7 @@ export const Routing = () => {
           <MainViewRoutes />
         )}
         <SupportChat
-          accountId={config.papercups.accountId}
-          baseUrl={config.papercups.baseUrl}
+          papercupsConfig={config.papercups}
           customerId={workspace.customerId}
         />
       </Suspense>
