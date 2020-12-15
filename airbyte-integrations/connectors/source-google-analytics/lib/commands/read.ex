@@ -9,7 +9,7 @@ defmodule Airbyte.Source.GoogleAnalytics.Commands.Read do
 
   alias Airbyte.Source.GoogleAnalytics.{
     ConnectionSpecification,
-    GoogleAnalytics,
+    Client,
     Streams
   }
 
@@ -56,27 +56,31 @@ defmodule Airbyte.Source.GoogleAnalytics.Commands.Read do
   end
 
   defp static_streams(%ConnectionSpecification{} = spec) do
-    with {:ok, conn} <- GoogleAnalytics.connection(spec),
+    with {:ok, conn} <- Client.connection(spec),
          {:ok, summary} <- Management.analytics_management_account_summaries_list(conn) do
       summary.items |> Enum.map(&process_account/1) |> List.flatten()
     end
   end
 
-  defp process_account(account) do
+  defp process_account(%AccountSummary{} = account) do
     record = Streams.Accounts.new(account) |> Streams.Accounts.record()
     properties = Enum.map(account.webProperties, &process_web_property(account, &1))
 
     [record] ++ properties
   end
 
-  defp process_web_property(account, property) do
+  defp process_web_property(%AccountSummary{} = account, %WebPropertySummary{} = property) do
     record = Streams.WebProperties.new(account, property) |> Streams.WebProperties.record()
     profiles = Enum.map(property.profiles, &process_profile(account, property, &1))
 
     [record] ++ profiles
   end
 
-  defp process_profile(account, property, profile) do
+  defp process_profile(
+         %AccountSummary{} = account,
+         %WebPropertySummary{} = property,
+         %ProfileSummary{} = profile
+       ) do
     Streams.Profiles.new(account, property, profile) |> Streams.Profiles.record()
   end
 end

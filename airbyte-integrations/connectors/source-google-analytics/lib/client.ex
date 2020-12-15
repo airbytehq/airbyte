@@ -1,4 +1,4 @@
-defmodule Airbyte.Source.GoogleAnalytics.GoogleAnalytics do
+defmodule Airbyte.Source.GoogleAnalytics.Client do
   alias Airbyte.Source.GoogleAnalytics.ConnectionSpecification
   alias GoogleApi.Analytics.V3.Connection
 

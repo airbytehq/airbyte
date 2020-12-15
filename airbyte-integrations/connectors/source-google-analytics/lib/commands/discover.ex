@@ -6,7 +6,7 @@ defmodule Airbyte.Source.GoogleAnalytics.Commands.Discover do
 
   alias Airbyte.Source.GoogleAnalytics.{
     ConnectionSpecification,
-    GoogleAnalytics,
+    Client,
     Streams
   }
 
@@ -15,7 +15,7 @@ defmodule Airbyte.Source.GoogleAnalytics.Commands.Discover do
   alias GoogleApi.Analytics.V3.Model.{AccountSummary, WebPropertySummary, Column, Columns}
 
   def run(%ConnectionSpecification{} = spec) do
-    # {:ok, conn} = GoogleAnalytics.connection(spec)
+    # {:ok, conn} = Client.connection(spec)
 
     # Management.analytics_management_account_summaries_list(conn)
     # |> IO.inspect()

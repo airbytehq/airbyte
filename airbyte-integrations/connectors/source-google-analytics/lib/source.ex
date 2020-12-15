@@ -6,7 +6,7 @@ defmodule Airbyte.Source.GoogleAnalytics.Source do
     ConnectorSpecification
   }
 
-  alias Airbyte.Source.GoogleAnalytics.{GoogleAnalytics, ConnectionSpecification}
+  alias Airbyte.Source.GoogleAnalytics.{Client, ConnectionSpecification}
   alias Airbyte.Source.GoogleAnalytics.Commands.{Discover, Read}
 
   alias GoogleApi.Analytics.V3.Api.Management
@@ -19,12 +19,12 @@ defmodule Airbyte.Source.GoogleAnalytics.Source do
 
   @impl Airbyte.Source
   def check(%ConnectionSpecification{} = spec) do
-    with {:ok, conn} <- GoogleAnalytics.connection(spec),
+    with {:ok, conn} <- Client.connection(spec),
          {:ok, %AccountSummaries{username: user}} <-
            Management.analytics_management_account_summaries_list(conn, "max-results": 1) do
       {:ok, AirbyteConnectionStatus.succeeded("Authenticated as #{user}")}
     else
-      error -> {:error, error |> GoogleAnalytics.get_error_message()}
+      error -> {:error, error |> Client.get_error_message()}
     end
   end
 
