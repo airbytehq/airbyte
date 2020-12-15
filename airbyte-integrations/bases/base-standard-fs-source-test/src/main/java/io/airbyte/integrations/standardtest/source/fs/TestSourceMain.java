@@ -21,11 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package io.airbyte.integrations.standardtest.source.fs;
 
-import java.nio.file.Path;
-
 import io.airbyte.integrations.standardtest.source.TestRunner;
+import java.nio.file.Path;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
@@ -85,8 +85,7 @@ public class TestSourceMain {
         Path.of(specFile),
         Path.of(configFile),
         Path.of(catalogFile),
-        stateFile != null ? Path.of(stateFile) : null
-    );
+        stateFile != null ? Path.of(stateFile) : null);
 
     TestRunner.runTestClass(ExecutableTestSource.class);
   }
