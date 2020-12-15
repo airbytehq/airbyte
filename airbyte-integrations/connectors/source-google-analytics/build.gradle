@@ -1,0 +1,18 @@
+plugins {
+    id 'airbyte-docker'
+    id 'airbyte-standard-fs-source-test'
+}
+
+airbyteDocker {
+    followSymlinks = true
+}
+
+airbyteStandardFsSourceTest {
+    configPath = "secrets/config.json"
+    configuredCatalogPath = "priv/standard_source_tests/catalog.json"
+    specPath = "priv/connection_specification.json"
+}
+
+dependencies {
+    implementation files(project(':airbyte-integrations:bases:base-standard-fs-source-test').airbyteDocker.outputs)
+}

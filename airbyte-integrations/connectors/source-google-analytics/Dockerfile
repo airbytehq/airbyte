@@ -29,3 +29,6 @@ RUN apk add --no-cache ca-certificates
 COPY --from=builder /app/airbyte_source_google_analytics .
 
 ENTRYPOINT ["/app/airbyte_source_google_analytics"]
+
+LABEL io.airbyte.version=0.1.0
+LABEL io.airbyte.name=airbyte/source-google-analytics

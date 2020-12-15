@@ -22,13 +22,17 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.standardtest.source;
+package io.airbyte.integrations.standardtest.source.fs;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.Maps;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.standardtest.source.StandardSourceTest;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
+
+import javax.annotation.Nullable;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +49,7 @@ public class ExecutableTestSource extends StandardSourceTest {
     private final Path specPath;
     private final Path configPath;
     private final Path catalogPath;
+
     private final Path statePath;
 
     public TestConfig(String imageName, Path specPath, Path configPath, Path catalogPath, Path statePath) {
@@ -71,6 +76,7 @@ public class ExecutableTestSource extends StandardSourceTest {
       return catalogPath;
     }
 
+    @Nullable
     public Path getStatePath() {
       return statePath;
     }
@@ -101,7 +107,12 @@ public class ExecutableTestSource extends StandardSourceTest {
 
   @Override
   protected JsonNode getState() {
-    return Jsons.deserialize(IOs.readFile(TEST_CONFIG.getStatePath()));
+    if (TEST_CONFIG.getStatePath() != null) {
+      return Jsons.deserialize(IOs.readFile(TEST_CONFIG.getStatePath()));
+    } else {
+      return Jsons.deserialize("{}}");
+    }
+
   }
 
   @Override

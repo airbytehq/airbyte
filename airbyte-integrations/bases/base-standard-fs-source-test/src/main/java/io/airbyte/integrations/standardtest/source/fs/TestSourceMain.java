@@ -21,11 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package io.airbyte.integrations.standardtest.source.fs;
 
-package io.airbyte.integrations.standardtest.source;
-
-import io.airbyte.integrations.standardtest.source.ExecutableTestSource.TestConfig;
 import java.nio.file.Path;
+
+import io.airbyte.integrations.standardtest.source.TestRunner;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
@@ -47,18 +47,23 @@ public class TestSourceMain {
         .description("Run standard source tests");
 
     parser.addArgument("--imageName")
-        .help("Name of the integration image");
+        .required(true)
+        .help("Name of the source connector image e.g: airbyte/source-mailchimp");
 
     parser.addArgument("--spec")
+        .required(true)
         .help("Path to file that contains spec json");
 
     parser.addArgument("--config")
+        .required(true)
         .help("Path to file that contains config json");
 
     parser.addArgument("--catalog")
+        .required(true)
         .help("Path to file that contains catalog json");
 
     parser.addArgument("--state")
+        .required(false)
         .help("Path to the file containing state");
 
     Namespace ns = null;
@@ -74,7 +79,8 @@ public class TestSourceMain {
     final String configFile = ns.getString("config");
     final String catalogFile = ns.getString("catalog");
     final String stateFile = ns.getString("state");
-    ExecutableTestSource.TEST_CONFIG = new TestConfig(imageName, Path.of(specFile), Path.of(configFile), Path.of(catalogFile), Path.of(stateFile));
+    ExecutableTestSource.TEST_CONFIG =
+        new ExecutableTestSource.TestConfig(imageName, Path.of(specFile), Path.of(configFile), Path.of(catalogFile), Path.of(stateFile));
 
     TestRunner.runTestClass(ExecutableTestSource.class);
   }
