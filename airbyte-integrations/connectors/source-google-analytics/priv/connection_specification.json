@@ -6,7 +6,7 @@
   "description": "Connection specification for Google Analytics source",
   "additionalProperties": false,
   "properties": {
-    "serviceAccountKeyPath": {
+    "service_account_key": {
       "description": "Path for a service account key (json)",
       "type": "string"
     }
