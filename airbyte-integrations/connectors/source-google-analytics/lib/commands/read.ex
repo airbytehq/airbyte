@@ -10,13 +10,15 @@ defmodule Airbyte.Source.GoogleAnalytics.Commands.Read do
   alias Airbyte.Source.GoogleAnalytics.{
     ConnectionSpecification,
     Client,
+    DataRequest,
     Streams
   }
 
-  alias GoogleApi.Analytics.V3.Api.{Management, Metadata}
+  alias GoogleApi.Analytics.V3.Api.{Data, Management, Metadata}
 
   alias GoogleApi.Analytics.V3.Model.{
     AccountSummary,
+    GaData,
     WebPropertySummary,
     ProfileSummary
   }
@@ -35,9 +37,50 @@ defmodule Airbyte.Source.GoogleAnalytics.Commands.Read do
 
     # stream = catalog.streams |> Stream.map(&process_stream(spec, &1, state))
 
-    stream = static_streams(spec)
+    {:ok, conn} = Client.connection(spec)
 
-    # |> Stream.map(&Function.identity/1)
+    metrics = [
+      "ga:users",
+      "ga:newUsers",
+      "ga:sessions",
+      "ga:sessionsPerUser",
+      "ga:pageviews",
+      "ga:pageviewsPerSession",
+      "ga:avgSessionDuration",
+      "ga:bounceRate"
+    ]
+
+    # {:ok, d} =
+    #   get_data(
+    #     conn,
+    #     "93282827",
+    #     "2015-01-01",
+    #     "2020-12-01",
+    #     metrics,
+    #     ["ga:date"]
+    #   )
+
+    ["1"]
+    |> Stream.cycle()
+    |> Stream.map(fn _ ->
+      IO.write(".")
+
+      request = %DataRequest{
+        profile_id: "93282827",
+        start_date: "2015-01-01",
+        end_date: "2020-12-01",
+        metrics: metrics,
+        dimensions: ["ga:date"]
+      }
+
+      conn |> DataRequest.query(request)
+    end)
+    |> Stream.run()
+
+    stream = static_streams(spec)
+    # stream =
+    #   [AirbyteRecordMessage.new("test", %{hello: true})]
+    #   |> Stream.map(&Function.identity/1)
 
     {:ok, stream}
   end
