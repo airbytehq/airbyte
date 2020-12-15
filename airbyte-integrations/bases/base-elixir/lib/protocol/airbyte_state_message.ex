@@ -12,4 +12,8 @@ defmodule Airbyte.Protocol.AirbyteStateMessage do
 
     field(:data, any(), enforce: true)
   end
+
+  def from_file(path) do
+    Helpers.json_to_struct(path, __MODULE__)
+  end
 end

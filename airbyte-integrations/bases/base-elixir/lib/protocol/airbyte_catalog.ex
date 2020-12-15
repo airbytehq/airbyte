@@ -13,4 +13,8 @@ defmodule Airbyte.Protocol.AirbyteCatalog do
     @typedoc "Airbyte stream schema catalog"
     field(:streams, list(AirbyteStream.t()), enforce: true)
   end
+
+  def create(streams) do
+    %__MODULE__{streams: streams}
+  end
 end

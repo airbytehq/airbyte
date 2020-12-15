@@ -13,6 +13,7 @@ defmodule Airbyte.Cli do
         AirbyteConnectionStatus,
         AirbyteLogMessage,
         AirbyteMessage,
+        AirbyteStateMessage,
         ConfiguredAirbyteCatalog,
         ConnectorSpecification
       }
@@ -40,8 +41,8 @@ defmodule Airbyte.Cli do
       end
 
       defp run(:discover, args) do
-        with {:ok, spec} <- source().discover(args) do
-          spec |> AirbyteMessage.dispatch()
+        with {:ok, catalog} <- source().discover(args) do
+          catalog |> AirbyteMessage.dispatch()
         else
           {:error, message} ->
             message |> AirbyteLogMessage.fatal() |> AirbyteMessage.dispatch()
@@ -72,7 +73,15 @@ defmodule Airbyte.Cli do
 
       defp parse(:check, args), do: parse_config(args)
       defp parse(:discover, args), do: parse_config(args)
-      defp parse(:read, args), do: [config: parse_config(args), catalog: parse_catalog(args)]
+
+      defp parse(:read, args) do
+        [
+          config: parse_config(args),
+          catalog: parse_catalog(args),
+          state: parse_state(args)
+        ]
+      end
+
       defp parse(_, _), do: nil
 
       defp parse_config(args) do
@@ -87,6 +96,13 @@ defmodule Airbyte.Cli do
       defp parse_catalog(args) do
         [catalog: catalog] = parse_options(args, catalog: :string)
         catalog |> ConfiguredAirbyteCatalog.from_file()
+      end
+
+      defp parse_state(args) do
+        case parse_options(args, state: :string) do
+          [state: state] -> state |> AirbyteStateMessage.from_file()
+          _ -> nil
+        end
       end
 
       defp parse_options(args, options) do

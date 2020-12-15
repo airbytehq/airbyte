@@ -51,13 +51,5 @@ defmodule Airbyte.Protocol.AirbyteMessage do
   defp new(%ConnectorSpecification{} = spec),
     do: %__MODULE__{type: "SPEC", spec: spec}
 
-  defp print(%__MODULE__{} = message), do: message |> serialize |> IO.puts()
-
-  defp serialize(%__MODULE__{} = message) do
-    message
-    |> Map.from_struct()
-    |> Enum.filter(fn {_, value} -> value end)
-    |> Enum.into(%{})
-    |> Jason.encode!()
-  end
+  defp print(%__MODULE__{} = message), do: message |> Jason.encode!() |> IO.puts()
 end
