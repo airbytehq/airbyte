@@ -21,12 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package io.airbyte.integrations.standardtest.source.fs;
 
-import io.airbyte.integrations.standardtest.source.TestRunner;
-
 import java.nio.file.Path;
+
+import io.airbyte.integrations.standardtest.source.TestRunner;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
@@ -49,7 +48,7 @@ public class TestSourceMain {
 
     parser.addArgument("--imageName")
         .required(true)
-        .help("Name of the integration image");
+        .help("Name of the source connector image e.g: airbyte/source-mailchimp");
 
     parser.addArgument("--spec")
         .required(true)
@@ -61,7 +60,7 @@ public class TestSourceMain {
 
     parser.addArgument("--catalog")
         .required(true)
-        .help("Path to file that contains the configured catalog json");
+        .help("Path to file that contains catalog json");
 
     parser.addArgument("--state")
         .required(false)
