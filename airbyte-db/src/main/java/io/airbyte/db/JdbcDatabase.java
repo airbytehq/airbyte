@@ -47,19 +47,46 @@ public class JdbcDatabase implements AutoCloseable {
     this.ds = ds;
   }
 
-  public void execute(CheckedConsumer<Connection, SQLException> transform) throws SQLException {
-    try (final Connection connection = ds.getConnection()){
-      transform.accept(connection);
+  /**
+   * Execute a database query immediately.
+   *
+   * @param query the query to execute against the database.
+   * @throws SQLException SQL related exceptions.
+   */
+  public void execute(CheckedConsumer<Connection, SQLException> query) throws SQLException {
+    try (final Connection connection = ds.getConnection()) {
+      query.accept(connection);
     }
   }
 
+  /**
+   * Execute a database query immediately and collect it into a list.
+   *
+   * @param query execute a query using a connection to get a JDBC ResultSet.
+   * @param recordTransform transform each record of that result set into the desired type. do NOT
+   *        just pass the ResultSet through. it is a stateful object will not be accessible if
+   *        returned from recordTransform.
+   * @param <T> type that each record will be mapped to.
+   * @return List with the mapped records.
+   * @throws SQLException SQL related exceptions.
+   */
   public <T> List<T> query(CheckedFunction<Connection, ResultSet, SQLException> query, CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
-    try (final Connection connection = ds.getConnection()){
+    try (final Connection connection = ds.getConnection()) {
       return JdbcUtils.mapResultSet(query.apply(connection), recordTransform).collect(Collectors.toList());
     }
   }
 
+  /**
+   * Use a connection to create a JDBC PreparedStatement and then execute it lazily.
+   *
+   * @param statementCreator create a JDBC PreparedStatement from a Connection.
+   * @param recordTransform transform each record of that result set into the desired type. do NOT
+   *        just pass the ResultSet through. it is a stateful object will not be accessible if
+   *        returned from recordTransform.
+   * @param <T> type that each record will be mapped to.
+   * @return Stream of records.
+   */
   public <T> Stream<T> queryLazy(CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
                                  CheckedFunction<ResultSet, T, SQLException> recordTransform) {
     return Stream.of(1).flatMap(i -> {
