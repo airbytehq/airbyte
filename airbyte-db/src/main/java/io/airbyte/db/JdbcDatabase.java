@@ -48,12 +48,16 @@ public class JdbcDatabase implements AutoCloseable {
   }
 
   public void execute(CheckedConsumer<Connection, SQLException> transform) throws SQLException {
-    transform.accept(ds.getConnection());
+    try (final Connection connection = ds.getConnection()){
+      transform.accept(connection);
+    }
   }
 
   public <T> List<T> query(CheckedFunction<Connection, ResultSet, SQLException> query, CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
-    return JdbcUtils.mapResultSet(query.apply(ds.getConnection()), recordTransform).collect(Collectors.toList());
+    try (final Connection connection = ds.getConnection()){
+      return JdbcUtils.mapResultSet(query.apply(connection), recordTransform).collect(Collectors.toList());
+    }
   }
 
   public <T> Stream<T> queryLazy(CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
