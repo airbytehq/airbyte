@@ -22,10 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import json
+
 import shopify
 from airbyte_protocol import AirbyteConnectionStatus, Status
 from base_python import AirbyteLogger
-from base_singer import ConfigContainer, SingerSource
+from base_singer import SingerSource
 
 TAP_CMD = "tap-shopify"
 
@@ -39,9 +41,8 @@ class SourceShopifySinger(SingerSource):
             "date_window_size": 7,
         }
 
-    def check(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
+    def check_config(self, logger: AirbyteLogger, config_path: str, config: json) -> AirbyteConnectionStatus:
         try:
-            config = config_container.config
             session = shopify.Session(f"{config['shop']}.myshopify.com", "2020-10", config["api_key"])
             shopify.ShopifyResource.activate_session(session)
             # try to read the name of the shop, which should be available with any level of permissions

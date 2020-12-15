@@ -22,16 +22,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import json
+
 import requests
 from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, Status
 from base_python import AirbyteLogger, CatalogHelper
-from base_singer import ConfigContainer, SingerSource
+from base_singer import SingerSource
 
 
 class SourceSalesforceSinger(SingerSource):
-    def check(self, logger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
+    def check_config(self, logger: AirbyteLogger, config_path: str, config: json) -> AirbyteConnectionStatus:
         try:
-            json_config = config_container.config
+            json_config = config
 
             # pulled from tap-salesforce singer impl
             # https://github.com/singer-io/tap-salesforce/blob/master/tap_salesforce/salesforce/__init__.py#L295-L327

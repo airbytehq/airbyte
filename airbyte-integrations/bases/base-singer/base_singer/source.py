@@ -64,6 +64,9 @@ class SingerSource(Source):
     def read_state(self, state_path: str) -> str:
         return state_path
 
+    def check_config(self, logger: AirbyteLogger, config_path: str, config: json) -> AirbyteConnectionStatus:
+        raise NotImplementedError
+
     def discover_cmd(self, logger: AirbyteLogger, config_path: str) -> str:
         """
         Returns the command used to run discovery in the singer tap. For example, if the bash command used to invoke the singer tap is `tap-postgres`,
@@ -83,6 +86,12 @@ class SingerSource(Source):
         cmd = self.discover_cmd(logger, config_path)
         catalogs = SingerHelper.get_catalogs(logger, cmd, self.get_sync_mode_overrides())
         return catalogs
+
+    def check(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
+        """
+        Tests if the input configuration can be used to successfully connect to the integration
+        """
+        return self.check_config(logger, config_container.config_path, config_container.config)
 
     def discover(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteCatalog:
         """
@@ -123,7 +132,7 @@ class SingerSource(Source):
 class BaseSingerSource(SingerSource):
     force_full_refresh = False
 
-    def check_cmd(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
+    def check_config(self, logger: AirbyteLogger, config_path: str, config: json) -> AirbyteConnectionStatus:
         try:
             self.try_connect(logger, config)
         except self.api_error as err:
@@ -142,9 +151,6 @@ class BaseSingerSource(SingerSource):
         cmd = " ".join([f"{k} {v}" for k, v in args.items() if v is not None])
 
         return f"{self.tap_cmd} {cmd}"
-
-    def check(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
-        return self.check_cmd(logger, config_container.config)
 
     def discover(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteCatalog:
         catalog = super().discover(logger, config_container)

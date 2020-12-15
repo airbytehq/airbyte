@@ -22,17 +22,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import json
+
 import requests
 
 from airbyte_protocol import AirbyteConnectionStatus, Status
-from base_singer import ConfigContainer, SingerSource
+from base_singer import SingerSource, AirbyteLogger
 
 
 class SourceStripeSinger(SingerSource):
-    def check(self, logger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
+    def check_config(self, logger: AirbyteLogger, config_path: str, config: json) -> AirbyteConnectionStatus:
         try:
-            json_config = config_container.config
-            r = requests.get("https://api.stripe.com/v1/customers", auth=(json_config["client_secret"], ""))
+            r = requests.get("https://api.stripe.com/v1/customers", auth=(config["client_secret"], ""))
             if r.status_code == 200:
                 return AirbyteConnectionStatus(status=Status.SUCCEEDED)
             else:

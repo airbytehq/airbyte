@@ -22,18 +22,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import json
 from typing import Dict
 
 import requests
 from airbyte_protocol import AirbyteConnectionStatus, Status, SyncMode
-from base_singer import ConfigContainer, SingerSource, SyncModeInfo
+from base_singer import SingerSource, SyncModeInfo
 
 
 class SourceGithubSinger(SingerSource):
-    def check(self, logger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
+    def check_config(self, logger, config_path: str, config: json) -> AirbyteConnectionStatus:
         try:
-            json_config = config_container.config
-            r = requests.get("https://api.github.com/repos/airbytehq/airbyte/commits", auth=(json_config["access_token"], ""))
+            r = requests.get("https://api.github.com/repos/airbytehq/airbyte/commits", auth=(config["access_token"], ""))
             if r.status_code == 200:
                 return AirbyteConnectionStatus(status=Status.SUCCEEDED)
             else:

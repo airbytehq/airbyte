@@ -21,9 +21,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+import json
 
 from airbyte_protocol import AirbyteConnectionStatus, Status
-from base_singer import ConfigContainer, SingerSource
+from base_singer import SingerSource, AirbyteLogger
+
 from twilio.base.exceptions import TwilioException
 from twilio.rest import Client
 
@@ -32,10 +34,9 @@ TAP_CMD = "tap-twilio"
 
 class SourceTwilioSinger(SingerSource):
 
-    def check(self, logger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
+    def check_config(self, logger: AirbyteLogger, config_path: str, config: json) -> AirbyteConnectionStatus:
         try:
-            json_config = config_container.config
-            client = Client(json_config["account_sid"], json_config["auth_token"])
+            client = Client(config["account_sid"], config["auth_token"])
             client.api.accounts.list()
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except TwilioException as error:

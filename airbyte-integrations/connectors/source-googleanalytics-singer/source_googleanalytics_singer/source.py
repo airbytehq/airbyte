@@ -27,19 +27,19 @@ import os
 import tempfile
 
 from airbyte_protocol import AirbyteConnectionStatus, Status
-from base_singer import ConfigContainer, SingerSource
+from base_singer import AirbyteLogger, SingerSource
 from tap_google_analytics import GAClient
 
 CREDENTIALS_FILE = os.path.join(tempfile.gettempdir(), "credentials.json")
 
 
 class GoogleAnalyticsSingerSource(SingerSource):
-    def check(self, logger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
+    def check_config(self, logger: AirbyteLogger, config_path: str, config: json) -> AirbyteConnectionStatus:
         try:
             # this config is the one specific to GAClient, which does not match the root Singer config
-            client_secrets = json.loads(config_container.config["credentials_json"])
+            client_secrets = json.loads(config["credentials_json"])
             additional_fields = {"end_date": "2050-10-01T00:00:00Z", "client_secrets": client_secrets}
-            augmented_config = dict(additional_fields, **config_container.config)
+            augmented_config = dict(additional_fields, **config)
             client = GAClient(augmented_config)
             client.fetch_metadata()
         except Exception as e:
