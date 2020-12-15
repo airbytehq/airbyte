@@ -89,24 +89,28 @@ public class JdbcDatabase implements AutoCloseable {
    */
   public <T> Stream<T> queryLazy(CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
                                  CheckedFunction<ResultSet, T, SQLException> recordTransform) {
-    return Stream.of(1).flatMap(i -> {
-      try {
-        // we don't open the connection until we need it.
-        final Connection connection = ds.getConnection();
-        return JdbcUtils.fetchStream(statementCreator.apply(connection), recordTransform)
-            // because this stream is inside the flatMap of another stream, we have a guarantee that the close
-            // of this stream will be closed if the outer stream is fully consumed.
-            .onClose(() -> {
-              try {
-                connection.close();
-              } catch (SQLException e) {
-                throw new RuntimeException(e);
-              }
-            });
-      } catch (SQLException e) {
-        throw new RuntimeException(e);
-      }
-    });
+    // wrapped in flatMap to:
+    // 1. enforce getting the connection lazily.
+    // 2. guarantee that Stream#close is called on the stream returned by getQueryStream, even if the
+    // caller fails to close the outer stream.
+    return Stream.of(1).flatMap(i -> createQueryStream(statementCreator, recordTransform));
+  }
+
+  private <T> Stream<T> createQueryStream(CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
+                                          CheckedFunction<ResultSet, T, SQLException> recordTransform) {
+    try {
+      final Connection connection = ds.getConnection();
+      return JdbcUtils.fetchStream(statementCreator.apply(connection), recordTransform)
+          .onClose(() -> {
+            try {
+              connection.close();
+            } catch (SQLException e) {
+              throw new RuntimeException(e);
+            }
+          });
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
