@@ -6,6 +6,8 @@ import {
   Switch
 } from "react-router-dom";
 import { useResource } from "rest-hooks";
+import ChatWidget from "@papercups-io/chat-widget";
+import { Storytime } from "@papercups-io/storytime";
 
 import SourcesPage from "./SourcesPage";
 import DestinationPage from "./DestinationPage";
@@ -142,6 +144,15 @@ export const Routing = () => {
     }
   }, [workspace]);
 
+  const customer = {
+    external_id: workspace.customerId
+  };
+  Storytime.init({
+    accountId: "74560291-451e-4ceb-a802-56706ece528b",
+    customer,
+    baseUrl: "https://app.papercups.io"
+  });
+
   return (
     <Router>
       <Suspense fallback={<LoadingPage />}>
@@ -152,6 +163,16 @@ export const Routing = () => {
         ) : (
           <MainViewRoutes />
         )}
+        <ChatWidget
+          title="Welcome to Airbyte"
+          subtitle="Ask us anything in the chat window below 😊"
+          primaryColor="#625eff"
+          greeting="Hello!!!"
+          newMessagePlaceholder="Start typing..."
+          customer={customer}
+          accountId="74560291-451e-4ceb-a802-56706ece528b"
+          baseUrl="https://app.papercups.io"
+        />
       </Suspense>
     </Router>
   );
