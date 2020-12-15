@@ -330,6 +330,7 @@ public class DefaultJobPersistence implements JobPersistence {
               getEpoch(jobEntry, "job_created_at"),
               getEpoch(jobEntry, "job_updated_at"));
         })
+        .sorted(Comparator.comparingLong(Job::getCreatedAtInSecond).reversed())
         .collect(Collectors.toList());
   }
 
