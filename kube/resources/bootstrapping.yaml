@@ -6,21 +6,6 @@ spec:
   template:
     spec:
       containers:
-        # todo: introduce a fourth volume: airbyte-local
-        #        - name: airbyte-init
-        #          image: airbyte/init:0.6.2-alpha
-        #          command: ["/bin/sh"]
-        #          args: ["-c", "./scripts/create_mount_directories.sh /local_parent /tmp /tmp/airbyte_local"]
-        #          env:
-        #            - name: HACK_LOCAL_ROOT_PARENT
-        #              value: /tmp
-        #            - name: LOCAL_ROOT
-        #              value: /tmp/airbyte_local
-        #          volumeMounts:
-        #            - name: airbyte-volume-data
-        #              mountPath: /data
-        #            - name: airbyte-volume-workspace
-        #              mountPath: /tmp/workspace
         - name: airbyte-seed
           image: airbyte/seed
           command: ["/bin/sh"]
