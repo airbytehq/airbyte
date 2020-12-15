@@ -23,17 +23,15 @@ SOFTWARE.
 """
 
 import requests
+
 from airbyte_protocol import AirbyteConnectionStatus, Status
-from base_singer import SingerSource
+from base_singer import ConfigContainer, SingerSource
 
 
 class SourceStripeSinger(SingerSource):
-    def __init__(self):
-        pass
-
-    def check(self, logger, config_container) -> AirbyteConnectionStatus:
+    def check(self, logger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
         try:
-            json_config = config_container.rendered_config
+            json_config = config_container.config
             r = requests.get("https://api.stripe.com/v1/customers", auth=(json_config["client_secret"], ""))
             if r.status_code == 200:
                 return AirbyteConnectionStatus(status=Status.SUCCEEDED)

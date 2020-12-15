@@ -23,14 +23,14 @@ SOFTWARE.
 """
 
 from airbyte_protocol import AirbyteConnectionStatus, Status
-from base_python import AirbyteLogger, ConfigContainer
+from base_python import AirbyteLogger
 from base_singer import SingerSource
 
 TAP_CMD = "tap-zendesk"
 
 
 class SourceZendeskSupportSinger(SingerSource):
-    def check(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
+    def check(self, logger: AirbyteLogger, config_container) -> AirbyteConnectionStatus:
         try:
             self.discover(logger, config_container)
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)

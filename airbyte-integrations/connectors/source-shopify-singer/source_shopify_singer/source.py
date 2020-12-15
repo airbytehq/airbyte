@@ -24,16 +24,13 @@ SOFTWARE.
 
 import shopify
 from airbyte_protocol import AirbyteConnectionStatus, Status
-from base_python import AirbyteLogger, ConfigContainer
-from base_singer import SingerSource
+from base_python import AirbyteLogger
+from base_singer import ConfigContainer, SingerSource
 
 TAP_CMD = "tap-shopify"
 
 
 class SourceShopifySinger(SingerSource):
-    def __init__(self):
-        super().__init__()
-
     def transform_config(self, raw_config):
         return {
             "start_date": raw_config["start_date"],
@@ -44,7 +41,7 @@ class SourceShopifySinger(SingerSource):
 
     def check(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
         try:
-            config = config_container.rendered_config
+            config = config_container.config
             session = shopify.Session(f"{config['shop']}.myshopify.com", "2020-10", config["api_key"])
             shopify.ShopifyResource.activate_session(session)
             # try to read the name of the shop, which should be available with any level of permissions

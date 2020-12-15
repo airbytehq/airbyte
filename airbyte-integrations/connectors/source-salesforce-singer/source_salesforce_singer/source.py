@@ -24,17 +24,14 @@ SOFTWARE.
 
 import requests
 from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, Status
-from base_python import AirbyteLogger, CatalogHelper, ConfigContainer
-from base_singer import SingerSource
+from base_python import AirbyteLogger, CatalogHelper
+from base_singer import ConfigContainer, SingerSource
 
 
 class SourceSalesforceSinger(SingerSource):
-    def __init__(self):
-        pass
-
-    def check(self, logger, config_container) -> AirbyteConnectionStatus:
+    def check(self, logger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
         try:
-            json_config = config_container.rendered_config
+            json_config = config_container.config
 
             # pulled from tap-salesforce singer impl
             # https://github.com/singer-io/tap-salesforce/blob/master/tap_salesforce/salesforce/__init__.py#L295-L327
@@ -77,7 +74,7 @@ class SourceSalesforceSinger(SingerSource):
     def discover_cmd(self, logger, config_path) -> str:
         return f"tap-salesforce --config {config_path} --discover"
 
-    def discover(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteCatalog:
+    def discover(self, logger: AirbyteLogger, config_container) -> AirbyteCatalog:
         catalog = super().discover(logger, config_container)
         return CatalogHelper.coerce_catalog_as_full_refresh(catalog)
 

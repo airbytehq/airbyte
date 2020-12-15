@@ -25,16 +25,13 @@ SOFTWARE.
 from typing import Dict
 
 from airbyte_protocol import AirbyteConnectionStatus, Status, SyncMode
-from base_python import AirbyteLogger, ConfigContainer
-from base_singer import SingerSource, SyncModeInfo
+from base_python import AirbyteLogger
+from base_singer import ConfigContainer, SingerSource, SyncModeInfo
 
 TAP_CMD = "tap-marketo"
 
 
 class SourceMarketoSinger(SingerSource):
-    def __init__(self):
-        super().__init__()
-
     def transform_config(self, raw_config):
         return {
             "endpoint": raw_config["endpoint_url"],
@@ -44,7 +41,7 @@ class SourceMarketoSinger(SingerSource):
             "start_date": raw_config["start_date"],
         }
 
-    def check(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
+    def check(self, logger: AirbyteLogger, config_container) -> AirbyteConnectionStatus:
         try:
             self.discover(logger, config_container)
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)

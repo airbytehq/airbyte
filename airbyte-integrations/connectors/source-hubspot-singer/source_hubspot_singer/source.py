@@ -24,16 +24,13 @@ SOFTWARE.
 
 import requests
 from airbyte_protocol import AirbyteConnectionStatus, Status
-from base_singer import SingerSource
+from base_singer import ConfigContainer, SingerSource
 
 
 class SourceHubspotSinger(SingerSource):
-    def __init__(self):
-        pass
-
-    def check(self, logger, config_container) -> AirbyteConnectionStatus:
+    def check(self, logger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
         try:
-            json_config = config_container.rendered_config
+            json_config = config_container.config
             api_key = json_config.get("hapikey", None)
             if api_key:
                 logger.info("checking with api key")

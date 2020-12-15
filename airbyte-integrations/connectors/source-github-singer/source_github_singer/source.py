@@ -26,17 +26,13 @@ from typing import Dict
 
 import requests
 from airbyte_protocol import AirbyteConnectionStatus, Status, SyncMode
-from base_singer import SingerSource, SyncModeInfo
+from base_singer import ConfigContainer, SingerSource, SyncModeInfo
 
 
 class SourceGithubSinger(SingerSource):
-    def __init__(self):
-        pass
-
-    def check(self, logger, config_container) -> AirbyteConnectionStatus:
+    def check(self, logger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
         try:
-
-            json_config = config_container.rendered_config
+            json_config = config_container.config
             r = requests.get("https://api.github.com/repos/airbytehq/airbyte/commits", auth=(json_config["access_token"], ""))
             if r.status_code == 200:
                 return AirbyteConnectionStatus(status=Status.SUCCEEDED)
