@@ -143,9 +143,9 @@ export const Routing = () => {
       AnalyticsService.identify(workspace.customerId);
 
       Storytime.init({
-        accountId: "74560291-451e-4ceb-a802-56706ece528b",
+        accountId: config.papercups.accountId,
         customer: { external_id: workspace.customerId },
-        baseUrl: "https://app.papercups.io"
+        baseUrl: config.papercups.baseUrl
       });
     }
   }, [workspace]);
@@ -168,8 +168,8 @@ export const Routing = () => {
             greeting="Hello!!!"
             newMessagePlaceholder="Start typing..."
             customer={{ external_id: workspace.customerId }}
-            accountId="74560291-451e-4ceb-a802-56706ece528b"
-            baseUrl="https://app.papercups.io"
+            accountId={config.papercups.accountId}
+            baseUrl={config.papercups.baseUrl}
           />
         )}
       </Suspense>
