@@ -15,7 +15,7 @@ RUN add-apt-repository \
        stable"
 RUN apt-get update && apt-get install -y docker-ce-cli jq
 
-ENV APPLICATION base-standard-source-test-fs
+ENV APPLICATION base-standard-source-test-file
 
 WORKDIR /app
 
@@ -27,4 +27,4 @@ RUN tar xf ${APPLICATION}.tar --strip-components=1
 ENTRYPOINT ["/app/entrypoint.sh"]
 
 LABEL io.airbyte.version=0.1.0
-LABEL io.airbyte.name=airbyte/base-standard-fs-source-test
+LABEL io.airbyte.name=airbyte/base-standard-source-test-file
