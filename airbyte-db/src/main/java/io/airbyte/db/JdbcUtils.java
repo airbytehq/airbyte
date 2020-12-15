@@ -26,11 +26,8 @@ package io.airbyte.db;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.AbstractIterator;
-import com.google.common.collect.Streams;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.stream.MoreStreams;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import java.math.BigDecimal;
 import java.sql.JDBCType;
@@ -41,7 +38,6 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -100,7 +96,8 @@ public class JdbcUtils {
    * @return Stream of JsonNode.
    * @throws SQLException exceptions throws when parsing the ResultSet.
    */
-  public static <T> Stream<T> fetchStream(PreparedStatement preparedStatement, CheckedFunction<ResultSet, T, SQLException> mapper) throws SQLException {
+  public static <T> Stream<T> fetchStream(PreparedStatement preparedStatement, CheckedFunction<ResultSet, T, SQLException> mapper)
+      throws SQLException {
     return Stream.of(1).flatMap(i -> {
       try {
         return mapResultSet(preparedStatement.executeQuery(), mapper);
@@ -132,7 +129,7 @@ public class JdbcUtils {
     return mapResultSet(resultSet, JdbcUtils::getJsonForRow).iterator();
   }
 
-  private static JsonNode getJsonForRow(ResultSet r) throws SQLException {
+  public static JsonNode getJsonForRow(ResultSet r) throws SQLException {
     // the first call communicates with the database. after that the result is cached.
     final int columnCount = r.getMetaData().getColumnCount();
     final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());

@@ -24,13 +24,15 @@
 
 package io.airbyte.db;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.functional.CheckedConsumer;
+import io.airbyte.commons.functional.CheckedFunction;
 import java.io.Closeable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.function.Function;
+import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.sql.DataSource;
 
@@ -45,8 +47,35 @@ public class JdbcDatabase implements AutoCloseable {
     this.ds = ds;
   }
 
-  public <T> T query(JdbcQueryFunction<T> transform) throws SQLException {
-    return transform.query(ds.getConnection());
+  public void execute(CheckedConsumer<Connection, SQLException> transform) throws SQLException {
+    transform.accept(ds.getConnection());
+  }
+
+  public <T> List<T> query(CheckedFunction<Connection, ResultSet, SQLException> query, CheckedFunction<ResultSet, T, SQLException> recordTransform)
+      throws SQLException {
+    return JdbcUtils.mapResultSet(query.apply(ds.getConnection()), recordTransform).collect(Collectors.toList());
+  }
+
+  public <T> Stream<T> queryLazy(CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
+                                 CheckedFunction<ResultSet, T, SQLException> recordTransform) {
+    return Stream.of(1).flatMap(i -> {
+      try {
+        // we don't open the connection until we need it.
+        final Connection connection = ds.getConnection();
+        return JdbcUtils.fetchStream(statementCreator.apply(connection), recordTransform)
+            // because this stream is inside the flatMap of another stream, we have a guarantee that the close
+            // of this stream will be closed if the outer stream is fully consumed.
+            .onClose(() -> {
+              try {
+                connection.close();
+              } catch (SQLException e) {
+                throw new RuntimeException(e);
+              }
+            });
+      } catch (SQLException e) {
+        throw new RuntimeException(e);
+      }
+    });
   }
 
   @Override
