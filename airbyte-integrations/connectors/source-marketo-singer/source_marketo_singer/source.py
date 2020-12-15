@@ -110,6 +110,5 @@ class SourceMarketoSinger(SingerSource):
         return {s: SyncModeInfo([SyncMode.incremental], True, []) for s in incremental_streams}
 
     def read_cmd(self, logger: AirbyteLogger, config_path: str, catalog_path: str, state_path: str = None) -> str:
-        # We don't pass in state to force the tap to run in full refresh since this tap does not respect the replication-method flag.
         state_opt = f"--state {state_path}" if state_path else ""
         return f"{TAP_CMD} -c {config_path} -p {catalog_path} {state_opt}"
