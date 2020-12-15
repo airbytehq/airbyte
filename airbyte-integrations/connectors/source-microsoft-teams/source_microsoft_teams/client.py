@@ -53,6 +53,7 @@ class Client:
             # 'team_device_usage_report': self.get_team_device_usage_report,
         }
         self.configs = config
+        self._group_ids = None
 
     def _get_api_url(self, endpoint: str) -> str:
         api_url = f'{self.MICROSOFT_GRAPH_BASE_API_URL}{self.MICROSOFT_GRAPH_API_VERSION}/{endpoint}/'
@@ -99,87 +100,78 @@ class Client:
 
     def get_users(self):
         users = self._make_request('users')
-        return users
+        yield users
 
     def get_groups(self):
         groups = filter(lambda item: 'Team' in item['resourceProvisioningOptions'], self._make_request('groups'))
-        return groups
+        yield groups
+
+    def _get_group_ids(self):
+        if not self._group_ids:
+            params = {
+                '$select': 'id,resourceProvisioningOptions'
+            }
+            self._group_ids = [item["id"] for item in self._make_request('groups', params=params) if
+                               'Team' in item['resourceProvisioningOptions']]
+        return self._group_ids
 
     def get_group_members(self):
-        members = []
-        groups = self.get_groups()
-        for group in groups:
-            members.extend(self._make_request(f'groups/{group["id"]}/members'))
-        return members
+        for group_id in self._get_group_ids():
+            members = self._make_request(f'groups/{group_id}/members')
+            yield members
 
     def get_group_owners(self):
-        owners = []
-        groups = self.get_groups()
-        for group in groups:
-            owners.extend(self._make_request(f'groups/{group["id"]}/owners'))
-        return owners
+        for group_id in self._get_group_ids():
+            owners = self._make_request(f'groups/{group_id}/owners')
+            yield owners
 
     def get_channels(self):
-        channels = []
-        groups = self.get_groups()
-        for group in groups:
-            channels.extend(self._make_request(f'teams/{group["id"]}/channels'))
-        return channels
+        for group_id in self._get_group_ids():
+            channels = self._make_request(f'teams/{group_id}/channels')
+            yield channels
 
     def get_channel_members(self):
-        members = []
-        groups = self.get_groups()
-        for group in groups:
-            channels = self._make_request(f'teams/{group["id"]}/channels')
+        for group_id in self._get_group_ids():
+            channels = self._make_request(f'teams/{group_id}/channels')
             for channel in channels:
-                members.extend(self._make_request(f'teams/{group["id"]}/channels/{channel["id"]}/members'))
-        return members
+                members = self._make_request(f'teams/{group_id}/channels/{channel["id"]}/members')
+                yield members
 
     def get_channel_tabs(self):
-        tabs = []
-        groups = self.get_groups()
-        for group in groups:
-            channels = self._make_request(f'teams/{group["id"]}/channels')
+        for group_id in self._get_group_ids():
+            channels = self._make_request(f'teams/{group_id}/channels')
             for channel in channels:
-                tabs.extend(self._make_request(f'teams/{group["id"]}/channels/{channel["id"]}/tabs'))
-        return tabs
+                tabs = self._make_request(f'teams/{group_id}/channels/{channel["id"]}/tabs')
+                yield tabs
 
     def get_conversations(self):
-        conversations = []
-        groups = self.get_groups()
-        for group in groups:
-            conversations.extend(self._make_request(f'groups/{group["id"]}/conversations'))
-        return conversations
+        for group_id in self._get_group_ids():
+            conversations = self._make_request(f'groups/{group_id}/conversations')
+            yield conversations
 
     def get_conversation_threads(self):
-        threads = []
-        groups = self.get_groups()
-        for group in groups:
-            conversations = self._make_request(f'groups/{group["id"]}/conversations')
+        for group_id in self._get_group_ids():
+            conversations = self._make_request(f'groups/{group_id}/conversations')
             for conversation in conversations:
-                threads.extend(self._make_request(f'groups/{group["id"]}/conversations/{conversation["id"]}/threads'))
-        return threads
+                threads = self._make_request(f'groups/{group_id}/conversations/{conversation["id"]}/threads')
+                yield threads
 
     def get_conversation_posts(self):
-        posts = []
-        groups = self.get_groups()
-        for group in groups:
-            conversations = self._make_request(f'groups/{group["id"]}/conversations')
+        for group_id in self._get_group_ids():
+            conversations = self._make_request(f'groups/{group_id}/conversations')
             for conversation in conversations:
-                threads = self._make_request(f'groups/{group["id"]}/conversations/{conversation["id"]}/threads')
+                threads = self._make_request(f'groups/{group_id}/conversations/{conversation["id"]}/threads')
                 for thread in threads:
-                    posts.extend(self._make_request(
-                        f'groups/{group["id"]}/conversations/{conversation["id"]}/threads/{thread["id"]}/posts'))
-        return posts
+                    posts = self._make_request(
+                        f'groups/{group_id}/conversations/{conversation["id"]}/threads/{thread["id"]}/posts')
+                    yield posts
 
     def get_team_drives(self):
-        drives = []
-        groups = self.get_groups()
-        for group in groups:
-            drives.extend(self._make_request(f'groups/{group["id"]}/drives'))
-        return drives
+        for group_id in self._get_group_ids():
+            drives = self._make_request(f'groups/{group_id}/drives')
+            yield drives
 
     def get_team_device_usage_report(self):
-        start_date = self.configs['start_date']
+        # start_date = self.configs['start_date']
         report = self._make_request('reports/getTeamsDeviceUsageUserDetail(period="D7")')
         return report

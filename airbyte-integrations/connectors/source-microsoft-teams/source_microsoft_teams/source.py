@@ -75,5 +75,6 @@ class SourceMicrosoftTeams(Source):
 
     def _read_record(self, client: Client, stream: str):
         for record in client.ENTITY_MAP[stream]():
-            now = int(datetime.now().timestamp()) * 1000
-            yield AirbyteRecordMessage(stream=stream, data=record, emitted_at=now)
+            for item in record:
+                now = int(datetime.now().timestamp()) * 1000
+                yield AirbyteRecordMessage(stream=stream, data=item, emitted_at=now)
