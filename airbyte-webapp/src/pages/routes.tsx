@@ -141,17 +141,14 @@ export const Routing = () => {
   useEffect(() => {
     if (workspace) {
       AnalyticsService.identify(workspace.customerId);
+
+      Storytime.init({
+        accountId: "74560291-451e-4ceb-a802-56706ece528b",
+        customer: { external_id: workspace.customerId },
+        baseUrl: "https://app.papercups.io"
+      });
     }
   }, [workspace]);
-
-  const customer = {
-    external_id: workspace.customerId
-  };
-  Storytime.init({
-    accountId: "74560291-451e-4ceb-a802-56706ece528b",
-    customer,
-    baseUrl: "https://app.papercups.io"
-  });
 
   return (
     <Router>
@@ -163,16 +160,18 @@ export const Routing = () => {
         ) : (
           <MainViewRoutes />
         )}
-        <ChatWidget
-          title="Welcome to Airbyte"
-          subtitle="Ask us anything in the chat window below 😊"
-          primaryColor="#625eff"
-          greeting="Hello!!!"
-          newMessagePlaceholder="Start typing..."
-          customer={customer}
-          accountId="74560291-451e-4ceb-a802-56706ece528b"
-          baseUrl="https://app.papercups.io"
-        />
+        {workspace && (
+          <ChatWidget
+            title="Welcome to Airbyte"
+            subtitle="Ask us anything in the chat window below 😊"
+            primaryColor="#625eff"
+            greeting="Hello!!!"
+            newMessagePlaceholder="Start typing..."
+            customer={{ external_id: workspace.customerId }}
+            accountId="74560291-451e-4ceb-a802-56706ece528b"
+            baseUrl="https://app.papercups.io"
+          />
+        )}
       </Suspense>
     </Router>
   );
