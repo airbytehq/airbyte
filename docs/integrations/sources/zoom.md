@@ -1,4 +1,4 @@
-# Intercom
+# Zoom
 
 ## Overview
 

@@ -59,7 +59,7 @@ const CreateConnector: React.FC<IProps> = ({ type }) => {
         state: { sourceDefinitionId: result.sourceDefinitionId }
       });
     } catch (e) {
-      setErrorMessage("form.validationError");
+      setErrorMessage("form.dockerError");
     }
   };
 
