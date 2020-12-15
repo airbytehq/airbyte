@@ -108,7 +108,7 @@ public class ExecutableTestSource extends StandardSourceTest {
     if (TEST_CONFIG.getStatePath() != null) {
       return Jsons.deserialize(IOs.readFile(TEST_CONFIG.getStatePath()));
     } else {
-      return Jsons.deserialize("{}}");
+      return Jsons.deserialize("{}");
     }
 
   }
