@@ -30,6 +30,9 @@ abstract class AirbyteDockerTask extends DefaultTask {
     @Input
     String dockerfileName
 
+    @Input
+    boolean followSymlinks = false
+
     @OutputFile
     abstract File idFileOutput
 
@@ -38,7 +41,7 @@ abstract class AirbyteDockerTask extends DefaultTask {
             def tag = DockerHelpers.getDevTaggedImage(projectDir, dockerfileName)
 
             project.exec {
-                commandLine scriptPath, rootDir.absolutePath, projectDir.absolutePath, dockerfileName, tag, idFileOutput.absolutePath
+                commandLine scriptPath, rootDir.absolutePath, projectDir.absolutePath, dockerfileName, tag, idFileOutput.absolutePath, followSymlinks
             }
         }
     }
@@ -138,6 +141,7 @@ class AirbyteDockerPlugin implements Plugin<Project> {
             def filteredProjectFiles = project.fileTree(project.projectDir).filter {
                 file -> !file.toString().contains(".venv")
             }
+
             project.task(taskName, type: AirbyteDockerTask) {
                 def dockerPath = Paths.get(project.projectDir.absolutePath, dockerFile)
                 def hash = MessageDigest.getInstance("MD5").digest(dockerPath.getBytes()).encodeHex().toString()
