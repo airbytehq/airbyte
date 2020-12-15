@@ -22,9 +22,10 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.standardtest.source;
+package io.airbyte.integrations.standardtest.source.fs;
 
-import io.airbyte.integrations.standardtest.source.ExecutableTestSource.TestConfig;
+import io.airbyte.integrations.standardtest.source.TestRunner;
+
 import java.nio.file.Path;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
@@ -47,18 +48,23 @@ public class TestSourceMain {
         .description("Run standard source tests");
 
     parser.addArgument("--imageName")
+        .required(true)
         .help("Name of the integration image");
 
     parser.addArgument("--spec")
+        .required(true)
         .help("Path to file that contains spec json");
 
     parser.addArgument("--config")
+        .required(true)
         .help("Path to file that contains config json");
 
     parser.addArgument("--catalog")
-        .help("Path to file that contains catalog json");
+        .required(true)
+        .help("Path to file that contains the configured catalog json");
 
     parser.addArgument("--state")
+        .required(false)
         .help("Path to the file containing state");
 
     Namespace ns = null;
@@ -74,7 +80,14 @@ public class TestSourceMain {
     final String configFile = ns.getString("config");
     final String catalogFile = ns.getString("catalog");
     final String stateFile = ns.getString("state");
-    ExecutableTestSource.TEST_CONFIG = new TestConfig(imageName, Path.of(specFile), Path.of(configFile), Path.of(catalogFile), Path.of(stateFile));
+
+    ExecutableTestSource.TEST_CONFIG = new ExecutableTestSource.TestConfig(
+        imageName,
+        Path.of(specFile),
+        Path.of(configFile),
+        Path.of(catalogFile),
+        stateFile != null ? Path.of(stateFile) : null
+    );
 
     TestRunner.runTestClass(ExecutableTestSource.class);
   }
