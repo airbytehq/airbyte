@@ -19,6 +19,7 @@ Each stream will be output into its own file. Each file will contain 3 columns:
 | Feature | Supported |
 | :--- | :--- |
 | Full Refresh Sync | Yes |
+| Incremental - Append Sync | Yes |  |
 
 #### Performance considerations
 

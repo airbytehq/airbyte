@@ -25,6 +25,7 @@ Each stream will be output into its own table in BigQuery. Each table will conta
 | Feature | Supported?\(Yes/No\) | Notes |
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
+| Incremental - Append Sync | Yes |  |
 
 ## Getting started
 
