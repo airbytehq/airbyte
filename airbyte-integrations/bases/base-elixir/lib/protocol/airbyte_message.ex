@@ -9,6 +9,8 @@ defmodule Airbyte.Protocol.AirbyteMessage do
     AirbyteCatalog,
     AirbyteConnectionStatus,
     AirbyteLogMessage,
+    AirbyteRecordMessage,
+    AirbyteStateMessage,
     ConnectorSpecification
   }
 
@@ -40,9 +42,22 @@ defmodule Airbyte.Protocol.AirbyteMessage do
   defp new(%AirbyteLogMessage{} = log),
     do: %__MODULE__{type: "LOG", log: log}
 
+  defp new(%AirbyteRecordMessage{} = spec),
+    do: %__MODULE__{type: "RECORD", record: spec}
+
+  defp new(%AirbyteStateMessage{} = spec),
+    do: %__MODULE__{type: "STATE", state: spec}
+
   defp new(%ConnectorSpecification{} = spec),
     do: %__MODULE__{type: "SPEC", spec: spec}
 
   defp print(%__MODULE__{} = message), do: message |> serialize |> IO.puts()
-  defp serialize(%__MODULE__{} = message), do: Jason.encode!(message)
+
+  defp serialize(%__MODULE__{} = message) do
+    message
+    |> Map.from_struct()
+    |> Enum.filter(fn {_, value} -> value end)
+    |> Enum.into(%{})
+    |> Jason.encode!()
+  end
 end

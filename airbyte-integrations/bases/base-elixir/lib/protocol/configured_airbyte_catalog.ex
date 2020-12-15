@@ -6,7 +6,7 @@ defmodule Airbyte.Protocol.ConfiguredAirbyteCatalog do
   use TypedStruct
 
   alias Airbyte.Protocol.{ConfiguredAirbyteCatalog, ConfiguredAirbyteStream}
-  alias Airbyte.Source.GoogleAnalytics.Helpers
+  alias Airbyte.Helpers
 
   @derive Jason.Encoder
 

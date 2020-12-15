@@ -5,8 +5,6 @@ defmodule Airbyte.Protocol.AirbyteStream do
   """
   use TypedStruct
 
-  alias Airbyte.Protocol.AirbyteStream
-
   @derive Jason.Encoder
 
   typedstruct do

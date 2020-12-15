@@ -5,7 +5,7 @@ defmodule Airbyte.Protocol.ConnectorSpecification do
   """
   use TypedStruct
 
-  alias Airbyte.Source.GoogleAnalytics.Helpers
+  alias Airbyte.Helpers
 
   @derive Jason.Encoder
 
@@ -18,7 +18,9 @@ defmodule Airbyte.Protocol.ConnectorSpecification do
     field(:supportsIncremental, boolean())
   end
 
-  def from_file(path) do
-    Helpers.json_to_struct(path, __MODULE__)
+  def from_file(path, conn_spec_module \\ %{}) do
+    spec = Helpers.json_to_struct(path, __MODULE__)
+    conn_spec = struct(conn_spec_module, spec.connectionSpecification)
+    %__MODULE__{spec | connectionSpecification: conn_spec}
   end
 end
