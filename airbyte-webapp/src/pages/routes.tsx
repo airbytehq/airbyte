@@ -6,8 +6,6 @@ import {
   Switch
 } from "react-router-dom";
 import { useResource } from "rest-hooks";
-import ChatWidget from "@papercups-io/chat-widget";
-import { Storytime } from "@papercups-io/storytime";
 
 import SourcesPage from "./SourcesPage";
 import DestinationPage from "./DestinationPage";
@@ -21,6 +19,7 @@ import WorkspaceResource from "../core/resources/Workspace";
 import useSegment from "../components/hooks/useSegment";
 import { AnalyticsService } from "../core/analytics/AnalyticsService";
 import useRouter from "../components/hooks/useRouterHook";
+import SupportChat from "../components/SupportChat";
 
 export enum Routes {
   Preferences = "/preferences",
@@ -141,12 +140,6 @@ export const Routing = () => {
   useEffect(() => {
     if (workspace) {
       AnalyticsService.identify(workspace.customerId);
-
-      Storytime.init({
-        accountId: config.papercups.accountId,
-        customer: { external_id: workspace.customerId },
-        baseUrl: config.papercups.baseUrl
-      });
     }
   }, [workspace]);
 
@@ -160,18 +153,11 @@ export const Routing = () => {
         ) : (
           <MainViewRoutes />
         )}
-        {workspace && (
-          <ChatWidget
-            title="Welcome to Airbyte"
-            subtitle="Ask us anything in the chat window below 😊"
-            primaryColor="#625eff"
-            greeting="Hello!!!"
-            newMessagePlaceholder="Start typing..."
-            customer={{ external_id: workspace.customerId }}
-            accountId={config.papercups.accountId}
-            baseUrl={config.papercups.baseUrl}
-          />
-        )}
+        <SupportChat
+          accountId={config.papercups.accountId}
+          baseUrl={config.papercups.baseUrl}
+          customerId={workspace.customerId}
+        />
       </Suspense>
     </Router>
   );
