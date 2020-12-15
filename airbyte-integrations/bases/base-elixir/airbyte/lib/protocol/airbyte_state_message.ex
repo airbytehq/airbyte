@@ -5,6 +5,8 @@ defmodule Airbyte.Protocol.AirbyteStateMessage do
   """
   use TypedStruct
 
+  alias Airbyte.Helpers
+
   @derive Jason.Encoder
 
   typedstruct do
