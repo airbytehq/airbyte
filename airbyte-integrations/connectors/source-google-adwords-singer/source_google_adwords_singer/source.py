@@ -55,7 +55,6 @@ class SourceGoogleAdwordsSinger(SingerSource):
     def read_cmd(self, logger, config_path, catalog_path, state_path=None) -> str:
         config_option = f"--config {config_path}"
         properties_option = f"--properties {catalog_path}"
-        # We don't pass the state because this tap does not respect the replication-method catalog key
         return f"tap-adwords {config_option} {properties_option}"
 
     def transform_config(self, raw_config):
