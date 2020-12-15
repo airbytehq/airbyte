@@ -1,13 +1,13 @@
 plugins {
     id 'airbyte-docker'
-    id 'airbyte-standard-fs-source-test'
+    id 'airbyte-standard-source-test-file'
 }
 
 airbyteDocker {
     followSymlinks = true
 }
 
-airbyteStandardFsSourceTest {
+airbyteStandardSourceTestFile {
     configPath = "secrets/config.json"
     configuredCatalogPath = "priv/standard_source_tests/catalog.json"
     specPath = "priv/connection_specification.json"
