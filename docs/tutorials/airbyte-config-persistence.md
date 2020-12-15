@@ -141,7 +141,7 @@ Back to this tutorial, commands shown below should work for both macOS and Linux
 Now let's first make a backup of the configuration state of your Airbyte instance by running the following commands.
 
 ```bash
-TUTORIAL_DIR=$(pwd)/build/persitence-tutorial
+TUTORIAL_DIR=$(pwd)/build/persistence-tutorial
 mkdir -p $TUTORIAL_DIR/my-setup
 
 docker cp airbyte-server:/data $TUTORIAL_DIR/my-setup
