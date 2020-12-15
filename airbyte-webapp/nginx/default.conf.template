@@ -13,6 +13,7 @@ server {
         sub_filter </head>
                 '</head><script language="javascript"\>
                 window.TRACKING_STRATEGY = "$TRACKING_STRATEGY";
+                window.PAPERCUPS_STORYTIME = "$PAPERCUPS_STORYTIME";
                 window.AIRBYTE_VERSION = "$AIRBYTE_VERSION";
                 window.API_URL = "$API_URL";
                 </script>';
