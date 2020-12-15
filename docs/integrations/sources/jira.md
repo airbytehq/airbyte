@@ -40,3 +40,4 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 ### Setup guide
 
 Please follow the [Jira confluence for generating an API token](https://confluence.atlassian.com/cloud/api-tokens-938839638.html).
+
