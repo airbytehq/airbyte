@@ -9,7 +9,6 @@ This Source Connector is based on a [Singer Tap](https://github.com/transferwise
 ### Output schema
 
 This Source is capable of syncing the following core Streams:
-_
 * [Accounts](https://www.twilio.com/docs/usage/api/account#read-multiple-account-resources)
 * [Addresses](https://www.twilio.com/docs/usage/api/address#read-multiple-address-resources)
 * [Dependent phone numbers](https://www.twilio.com/docs/usage/api/address?code-sample=code-list-dependent-pns-subresources&code-language=curl&code-sdk-version=json#instance-subresources)
