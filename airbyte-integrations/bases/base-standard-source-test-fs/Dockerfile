@@ -15,7 +15,7 @@ RUN add-apt-repository \
        stable"
 RUN apt-get update && apt-get install -y docker-ce-cli jq
 
-ENV APPLICATION base-standard-fs-source-test
+ENV APPLICATION base-standard-source-test-fs
 
 WORKDIR /app
 
