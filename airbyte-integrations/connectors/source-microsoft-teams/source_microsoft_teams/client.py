@@ -39,18 +39,18 @@ class Client:
 
     def __init__(self, config: Dict):
         self.ENTITY_MAP = {
-            # 'users': self.get_users,
-            # 'groups': self.get_groups,
-            # 'group_members': self.get_group_members,
-            # 'group_owners': self.get_group_owners,
-            # 'channels': self.get_channels,
-            # 'channel_members': self.get_channel_members,
-            # 'channel_tabs': self.get_channel_tabs,
-            # 'conversations': self.get_conversations,
-            # 'conversation_threads': self.get_conversation_threads,
-            # 'conversation_posts': self.get_conversation_posts,
-            # 'team_drives': self.get_team_drives,
-            'team_device_usage_report': self.get_team_device_usage_report,
+            'users': self.get_users,
+            'groups': self.get_groups,
+            'group_members': self.get_group_members,
+            'group_owners': self.get_group_owners,
+            'channels': self.get_channels,
+            'channel_members': self.get_channel_members,
+            'channel_tabs': self.get_channel_tabs,
+            'conversations': self.get_conversations,
+            'conversation_threads': self.get_conversation_threads,
+            'conversation_posts': self.get_conversation_posts,
+            'team_drives': self.get_team_drives,
+            # 'team_device_usage_report': self.get_team_device_usage_report,
         }
         self.configs = config
 
@@ -180,4 +180,6 @@ class Client:
         return drives
 
     def get_team_device_usage_report(self):
-        pass
+        start_date = self.configs['start_date']
+        report = self._make_request('reports/getTeamsDeviceUsageUserDetail(period="D7")')
+        return report
