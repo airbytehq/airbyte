@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: airbyte-worker-JOBID-ATTEMPTID
+  name: airbyte-worker-JOBID-ATTEMPTID-SUFFIX
 spec:
   backoffLimit: 1
   template:

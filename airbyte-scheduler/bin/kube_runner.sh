@@ -24,8 +24,13 @@ done
 PHASE=$(kubectl get "$POD_NAME" --output="jsonpath={.status.phase}")
 echo "Phase of pod: $PHASE"
 
-if [[ "$PHASE" == "Succeeded" ]]; then
-  exit 0
-else
+if [[ "$PHASE" == "Failed" ]]; then
+  echo "Failed: Exiting with code 1"
   exit 1
+elif [[ "$PHASE" == "Unknown" ]]; then
+  echo "Unknown: Exiting with code 1"
+  exit 1
+else
+  echo "Success: Exiting code 0"
+  exit 0
 fi

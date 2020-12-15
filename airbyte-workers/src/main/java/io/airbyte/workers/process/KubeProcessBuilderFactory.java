@@ -36,6 +36,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
+
+import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,44 +47,16 @@ public class KubeProcessBuilderFactory implements ProcessBuilderFactory {
   private static final Logger LOGGER = LoggerFactory.getLogger(KubeProcessBuilderFactory.class);
 
   private static final Path DATA_MOUNT_DESTINATION = Path.of("/data");
-  private static final Path LOCAL_MOUNT_DESTINATION = Path.of("/local");
   private static final String IMAGE_EXISTS_SCRIPT = "image_exists.sh";
 
-  private final String workspaceMountSource;
   private final Path workspaceRoot;
-  private final String localMountSource;
-  private final String networkName;
-  private final Path imageExistsScriptPath;
 
-  public KubeProcessBuilderFactory(Path workspaceRoot, String workspaceMountSource, String localMountSource, String networkName) {
+  public KubeProcessBuilderFactory(Path workspaceRoot) {
     this.workspaceRoot = workspaceRoot;
-    this.workspaceMountSource = workspaceMountSource;
-    this.localMountSource = localMountSource;
-    this.networkName = networkName;
-    this.imageExistsScriptPath = prepareImageExistsScript();
-  }
-
-  private static Path prepareImageExistsScript() {
-    try {
-      final Path basePath = Files.createTempDirectory("scripts");
-      final String scriptContents = MoreResources.readResource(IMAGE_EXISTS_SCRIPT);
-      final Path scriptPath = IOs.writeFile(basePath, IMAGE_EXISTS_SCRIPT, scriptContents);
-      if (!scriptPath.toFile().setExecutable(true)) {
-        throw new RuntimeException(String.format("Could not set %s to executable", scriptPath));
-      }
-      return scriptPath;
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
   }
 
   @Override
   public ProcessBuilder create(final Path jobRoot, final String imageName, final String... args) throws WorkerException {
-
-    // todo: this check needs to exist in the script instead - it needs to be pullable by kube
-    // if (!checkImageExists(imageName)) {
-    // throw new WorkerException("Could not find image: " + imageName);
-    // }
 
     try {
       final String[] split = jobRoot.toString().split("/");
@@ -90,13 +65,17 @@ public class KubeProcessBuilderFactory implements ProcessBuilderFactory {
 
       final String template = MoreResources.readResource("kube_runner_template.yaml");
 
+      // used to differentiate source and destination processes with the same id and attempt
+      final String suffix = RandomStringUtils.randomAlphabetic(5).toLowerCase();
+
       final String rendered = template.replace("JOBID", jobId)
           .replace("ATTEMPTID", attemptId)
+          .replace("SUFFIX", suffix)
           .replace("TAGGED_IMAGE", imageName)
           .replace("WORKDIR", rebasePath(jobRoot).toString())
           .replace("ARGS", Jsons.serialize(Arrays.asList(args)));
 
-      final String yamlPath = jobRoot.resolve("job.yaml").toAbsolutePath().toString();
+      final String yamlPath = jobRoot.resolve(String.format("job-%s.yaml", suffix)).toAbsolutePath().toString();
 
       try (FileWriter writer = new FileWriter(yamlPath)) {
         writer.write(rendered);
@@ -112,27 +91,9 @@ public class KubeProcessBuilderFactory implements ProcessBuilderFactory {
     }
   }
 
-  // todo: re-use between different process builder factories
   private Path rebasePath(final Path jobRoot) {
     final Path relativePath = workspaceRoot.relativize(jobRoot);
     return DATA_MOUNT_DESTINATION.resolve(relativePath);
   }
-
-  // todo: re-use between different process builder factories
-  // @VisibleForTesting
-  // boolean checkImageExists(String imageName) {
-  // try {
-  // final Process process = new ProcessBuilder(imageExistsScriptPath.toString(), imageName).start();
-  // LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
-  // LineGobbler.gobble(process.getInputStream(), LOGGER::info);
-  //
-  // process.waitFor(1, TimeUnit.MINUTES);
-  //
-  // return process.exitValue() == 0;
-  //
-  // } catch (IOException | InterruptedException e) {
-  // throw new RuntimeException(e);
-  // }
-  // }
 
 }
