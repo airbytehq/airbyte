@@ -8,7 +8,10 @@ defmodule AirbyteSourceGoogleAnalytics.MixProject do
       elixir: "~> 1.11",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      escript: [main_module: Airbyte.Source.GoogleAnalytics.Cli]
+      escript: [
+        main_module: Airbyte.Source.GoogleAnalytics.Cli,
+        name: "airbyte_source"
+      ]
     ]
   end
 
