@@ -30,7 +30,7 @@ import tempfile
 
 from airbyte_protocol import AirbyteMessage, Status, Type
 
-from .integration import ConfigContainer, Source
+from .integration import Source
 from .logger import AirbyteLogger
 
 logger = AirbyteLogger()
@@ -87,22 +87,12 @@ class AirbyteEntrypoint(object):
                 print(message.json(exclude_unset=True))
                 sys.exit(0)
 
-            raw_config = self.source.read_config(parsed_args.config)
-
-            rendered_config_path = os.path.join(temp_dir, "config.json")
-            rendered_config = self.source.transform_config(raw_config)
-            self.source.write_config(rendered_config, rendered_config_path)
-
-            config_container = ConfigContainer(
-                raw_config=raw_config,
-                rendered_config=rendered_config,
-                raw_config_path=parsed_args.config,
-                rendered_config_path=rendered_config_path,
-            )
+            config = self.source.read_config(parsed_args.config)
+            config_path = os.path.join(temp_dir, "config.json")
+            config = self.source.write_config(config, config_path)
 
             if cmd == "check":
-                check_result = self.source.check(logger, config_container)
-
+                check_result = self.source.check(logger, config)
                 if check_result.status == Status.SUCCEEDED:
                     logger.info("Check succeeded")
                 else:
@@ -112,11 +102,13 @@ class AirbyteEntrypoint(object):
                 print(output_message)
                 sys.exit(0)
             elif cmd == "discover":
-                catalog = self.source.discover(logger, config_container)
+                catalog = self.source.discover(logger, config)
                 print(AirbyteMessage(type=Type.CATALOG, catalog=catalog).json(exclude_unset=True))
                 sys.exit(0)
             elif cmd == "read":
-                generator = self.source.read(logger, config_container, parsed_args.catalog, parsed_args.state)
+                catalog = self.source.read_catalog(parsed_args.catalog)
+                state = self.source.read_state(parsed_args.state)
+                generator = self.source.read(logger, config, catalog, state)
                 for message in generator:
                     print(message.json(exclude_unset=True))
                 sys.exit(0)

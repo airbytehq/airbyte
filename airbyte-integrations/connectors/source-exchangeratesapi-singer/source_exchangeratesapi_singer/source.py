@@ -30,8 +30,6 @@ from base_singer import SingerSource, SyncModeInfo
 
 
 class SourceExchangeRatesApiSinger(SingerSource):
-    def __init__(self):
-        pass
 
     def check(self, logger, config_path) -> AirbyteConnectionStatus:
         try:
