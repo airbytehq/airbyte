@@ -24,9 +24,6 @@ defmodule AirbyteSourceGoogleAnalytics.MixProject do
     [
       {:jason, "~> 1.2.2"},
       {:google_api_analytics, "~> 0.13"},
-      {:google_api_analytics_admin, "~> 0.2"},
-      {:google_api_analytics_data, "~> 0.7"},
-      {:google_api_analytics_reporting, "~> 0.15"},
       {:goth, "~> 1.2.0"},
       {:airbyte, path: "../../bases/base-elixir"},
       # keep this until hackney 1.17
