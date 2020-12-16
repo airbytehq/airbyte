@@ -18,9 +18,7 @@ dependencies {
 
     implementation 'com.microsoft.sqlserver:mssql-jdbc:8.4.1.jre14'
 
-    // on rc version due to docker pull bug in current stable version.
-    // issue: https://github.com/airbytehq/airbyte/issues/493
-    testImplementation "org.testcontainers:mssqlserver:1.15.0-rc2"
+    testImplementation "org.testcontainers:mssqlserver:1.15.1"
 
     testImplementation 'org.apache.commons:commons-text:1.9'
     testImplementation 'org.apache.commons:commons-lang3:3.11'

@@ -26,6 +26,7 @@ package io.airbyte.scheduler;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.StandardSyncSchedule;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -40,6 +41,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiPredicate;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -110,7 +112,10 @@ public class JobScheduler implements Runnable {
 
   private List<StandardSync> getAllActiveConnections() {
     try {
-      return configRepository.listStandardSyncs();
+      return configRepository.listStandardSyncs()
+          .stream()
+          .filter(sync -> sync.getStatus() == Status.ACTIVE)
+          .collect(Collectors.toList());
     } catch (JsonValidationException | IOException | ConfigNotFoundException e) {
       throw new RuntimeException(e.getMessage(), e);
     }

@@ -3,5 +3,5 @@ plugins {
 }
 
 dependencies {
-    implementation 'org.testcontainers:postgresql:1.15.0-rc2'
+    implementation 'org.testcontainers:postgresql:1.15.1'
 }
