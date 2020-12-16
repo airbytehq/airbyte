@@ -109,6 +109,17 @@ class DefaultSchedulerJobClientTest {
   }
 
   @Test
+  void testCreateResetConnectionJob() throws IOException {
+    final DestinationConnection destination = mock(DestinationConnection.class);
+    final StandardSync standardSync = mock(StandardSync.class);
+    final String destinationDockerImage = "airbyte/spaceport";
+    when(jobCreator.createResetConnectionJob(destination, standardSync, destinationDockerImage)).thenReturn(JOB_ID);
+    doReturn(job).when(client).waitUntilJobIsTerminalOrTimeout(JOB_ID);
+
+    assertEquals(job, client.createResetConnectionJob(destination, standardSync, destinationDockerImage));
+  }
+
+  @Test
   void testWaitUntilJobIsTerminalOrTimeout() throws IOException {
     when(jobPersistence.getJob(JOB_ID)).thenReturn(job);
     when(job.getStatus())

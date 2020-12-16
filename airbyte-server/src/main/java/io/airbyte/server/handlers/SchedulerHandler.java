@@ -30,7 +30,6 @@ import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.DestinationDefinitionSpecificationRead;
 import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.JobInfoRead;
-import io.airbyte.api.model.JobRead;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
 import io.airbyte.api.model.SourceDefinitionSpecificationRead;
 import io.airbyte.api.model.SourceDiscoverSchemaRead;
@@ -158,10 +157,19 @@ public class SchedulerHandler {
     return JobConverter.getJobInfoRead(job);
   }
 
-  // todo (cgardens) - can be a no op while UI is being developed. need to figure out the
-  // implementation here.
-  public JobInfoRead resetConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
-    return new JobInfoRead().job(new JobRead().status(io.airbyte.api.model.JobStatus.SUCCEEDED));
+  public JobInfoRead resetConnection(final ConnectionIdRequestBody connectionIdRequestBody)
+      throws IOException, JsonValidationException, ConfigNotFoundException {
+    final UUID connectionId = connectionIdRequestBody.getConnectionId();
+    final StandardSync standardSync = configRepository.getStandardSync(connectionId);
+
+    final DestinationConnection destination = configRepository.getDestinationConnection(standardSync.getDestinationId());
+
+    final StandardDestinationDefinition destinationDef = configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId());
+    final String destinationImageName = DockerUtils.getTaggedImageName(destinationDef.getDockerRepository(), destinationDef.getDockerImageTag());
+
+    final Job job = schedulerJobClient.createResetConnectionJob(destination, standardSync, destinationImageName);
+
+    return JobConverter.getJobInfoRead(job);
   }
 
   private CheckConnectionRead reportConnectionStatus(final Job job) {

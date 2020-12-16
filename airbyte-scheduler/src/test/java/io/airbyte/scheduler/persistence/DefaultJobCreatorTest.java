@@ -41,12 +41,14 @@ import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
+import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.Schema;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.SyncMode;
 import io.airbyte.config.Stream;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.scheduler.ScopeHelper;
 import java.io.IOException;
 import java.util.UUID;
@@ -211,6 +213,31 @@ public class DefaultJobCreatorTest {
         DESTINATION_CONNECTION,
         STANDARD_SYNC,
         SOURCE_IMAGE_NAME,
+        DESTINATION_IMAGE_NAME);
+    assertEquals(JOB_ID, jobId);
+  }
+
+  @Test
+  void testCreateResetConnectionJob() throws IOException {
+    final ConfiguredAirbyteCatalog expectedCatalog = AirbyteProtocolConverters.toConfiguredCatalog(STANDARD_SYNC.getSchema());
+    expectedCatalog.getStreams()
+        .forEach(configuredAirbyteStream -> configuredAirbyteStream.setSyncMode(io.airbyte.protocol.models.SyncMode.FULL_REFRESH));
+
+    final JobResetConnectionConfig JobResetConnectionConfig = new JobResetConnectionConfig()
+        .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
+        .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
+        .withConfiguredAirbyteCatalog(expectedCatalog);
+
+    final JobConfig jobConfig = new JobConfig()
+        .withConfigType(ConfigType.RESET_CONNECTION)
+        .withResetConnection(JobResetConnectionConfig);
+
+    final String expectedScope = ScopeHelper.createScope(ConfigType.SYNC, STANDARD_SYNC.getConnectionId().toString());
+    when(jobPersistence.createJob(expectedScope, jobConfig)).thenReturn(JOB_ID);
+
+    final long jobId = jobCreator.createResetConnectionJob(
+        DESTINATION_CONNECTION,
+        STANDARD_SYNC,
         DESTINATION_IMAGE_NAME);
     assertEquals(JOB_ID, jobId);
   }
