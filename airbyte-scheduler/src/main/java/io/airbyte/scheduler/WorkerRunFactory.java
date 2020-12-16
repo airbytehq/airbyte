@@ -124,16 +124,30 @@ public class WorkerRunFactory {
         new JobOutputDiscoverSchemaWorker(new DefaultDiscoverCatalogWorker(launcher)));
   }
 
-  private WorkerRun createSyncWorker(JobSyncConfig config, Path jobRoot) {
-    final StandardSyncInput syncInput = getSyncInput(config);
+  private WorkerRun createSyncWorker2(JobSyncConfig config, Path jobRoot) {
+    return createSyncWorker(
+        config.getSourceDockerImage(),
+        config.getDestinationDockerImage(),
+        getSyncInput(config),
+        jobRoot);
+  }
 
-    final IntegrationLauncher sourceLauncher = createLauncher(config.getSourceDockerImage());
-    final IntegrationLauncher destinationLauncher = createLauncher(config.getDestinationDockerImage());
+  private WorkerRun createSyncWorker(JobSyncConfig config, Path jobRoot) {
+    return createSyncWorker(
+        config.getSourceDockerImage(),
+        config.getDestinationDockerImage(),
+        getSyncInput(config),
+        jobRoot);
+  }
+
+  private WorkerRun createSyncWorker(String sourceDockerImage, String destinationDockerImage, StandardSyncInput syncInput, Path jobRoot) {
+    final IntegrationLauncher sourceLauncher = createLauncher(sourceDockerImage);
+    final IntegrationLauncher destinationLauncher = createLauncher(destinationDockerImage);
 
     // Switch to using the empty source when the placeholder is found. This is used for resetting the
     // data in the destination.
     final AirbyteSource airbyteSource =
-        config.getSourceDockerImage().equals(SchedulerConstants.RESET_SOURCE_IMAGE_PLACEHOLDER) ? new EmptyAirbyteSource()
+        sourceDockerImage.equals(SchedulerConstants.RESET_SOURCE_IMAGE_PLACEHOLDER) ? new EmptyAirbyteSource()
             : new DefaultAirbyteSource(sourceLauncher);
 
     return creator.create(
@@ -145,7 +159,7 @@ public class WorkerRunFactory {
                 new DefaultAirbyteDestination(destinationLauncher),
                 new AirbyteMessageTracker(),
                 NormalizationRunnerFactory.create(
-                    config.getDestinationDockerImage(),
+                    destinationDockerImage,
                     pbf,
                     syncInput.getDestinationConfiguration()))));
   }

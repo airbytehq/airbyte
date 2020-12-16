@@ -24,3 +24,5 @@ properties:
     "$ref": JobGetSpecConfig.yaml
   sync:
     "$ref": JobSyncConfig.yaml
+  resetDestination:
+    "$ref": JobResetDestinationConfig.yaml

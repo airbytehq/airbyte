@@ -167,7 +167,7 @@ public class SchedulerHandler {
     final StandardDestinationDefinition destinationDef = configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId());
     final String destinationImageName = DockerUtils.getTaggedImageName(destinationDef.getDockerRepository(), destinationDef.getDockerImageTag());
 
-    final Job job = schedulerJobClient.createResetConnectionJob(destination, standardSync, destinationImageName);
+    final Job job = schedulerJobClient.createResetConnectionJob(destination, standardSync.getSchema(), destinationImageName);
 
     return JobConverter.getJobInfoRead(job);
   }

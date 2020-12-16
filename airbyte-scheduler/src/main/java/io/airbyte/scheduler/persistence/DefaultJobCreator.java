@@ -24,23 +24,20 @@
 
 package io.airbyte.scheduler.persistence;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AirbyteProtocolConverters;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
+import io.airbyte.config.JobResetDestinationConfig;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.SyncMode;
-import io.airbyte.scheduler.SchedulerConstants;
 import io.airbyte.scheduler.ScopeHelper;
 import java.io.IOException;
-import java.util.UUID;
 
 public class DefaultJobCreator implements JobCreator {
 
@@ -123,13 +120,23 @@ public class DefaultJobCreator implements JobCreator {
                             String sourceDockerImageName,
                             String destinationDockerImageName)
       throws IOException {
-    return createSyncJobInternal(
-        standardSync.getConnectionId(),
-        source.getConfiguration(),
-        destination.getConfiguration(),
-        AirbyteProtocolConverters.toConfiguredCatalog(standardSync.getSchema()),
-        sourceDockerImageName,
-        destinationDockerImageName);
+    final String scope = ScopeHelper.createScope(JobConfig.ConfigType.SYNC, standardSync.getConnectionId().toString());
+
+    // reusing this isn't going to quite work.
+    final JobSyncConfig jobSyncConfig = new JobSyncConfig()
+        .withSourceDockerImage(sourceDockerImageName)
+        .withSourceConfiguration(source.getConfiguration())
+        .withDestinationDockerImage(destinationDockerImageName)
+        .withDestinationConfiguration(destination.getConfiguration())
+        .withConfiguredAirbyteCatalog(AirbyteProtocolConverters.toConfiguredCatalog(standardSync.getSchema()))
+        .withState(null);
+
+    jobPersistence.getCurrentState(standardSync.getConnectionId()).ifPresent(jobSyncConfig::withState);
+
+    final JobConfig jobConfig = new JobConfig()
+        .withConfigType(JobConfig.ConfigType.SYNC)
+        .withSync(jobSyncConfig);
+    return jobPersistence.createJob(scope, jobConfig);
   }
 
   // Strategy:
@@ -142,42 +149,20 @@ public class DefaultJobCreator implements JobCreator {
   @Override
   public long createResetConnectionJob(DestinationConnection destination, StandardSync standardSync, String destinationDockerImage)
       throws IOException {
+    final String scope = ScopeHelper.createScope(JobConfig.ConfigType.SYNC, standardSync.getConnectionId().toString());
+
     final ConfiguredAirbyteCatalog configuredAirbyteCatalog = AirbyteProtocolConverters.toConfiguredCatalog(standardSync.getSchema());
     configuredAirbyteCatalog.getStreams().forEach(configuredAirbyteStream -> configuredAirbyteStream.setSyncMode(SyncMode.FULL_REFRESH));
 
-    return createSyncJobInternal(
-        standardSync.getConnectionId(),
-        Jsons.emptyObject(),
-        destination.getConfiguration(),
-        configuredAirbyteCatalog,
-        SchedulerConstants.RESET_SOURCE_IMAGE_PLACEHOLDER,
-        destinationDockerImage);
-  }
-
-  private long createSyncJobInternal(
-                                     UUID connectionId,
-                                     JsonNode sourceConfiguration,
-                                     JsonNode destinationConfiguration,
-                                     ConfiguredAirbyteCatalog configuredAirbyteCatalog,
-                                     String sourceDockerImageName,
-                                     String destinationDockerImageName)
-      throws IOException {
-    final String scope = ScopeHelper.createScope(JobConfig.ConfigType.SYNC, connectionId.toString());
-
     // reusing this isn't going to quite work.
-    final JobSyncConfig jobSyncConfig = new JobSyncConfig()
-        .withSourceDockerImage(sourceDockerImageName)
-        .withSourceConfiguration(sourceConfiguration)
-        .withDestinationDockerImage(destinationDockerImageName)
-        .withDestinationConfiguration(destinationConfiguration)
-        .withConfiguredAirbyteCatalog(configuredAirbyteCatalog)
-        .withState(null);
-
-    jobPersistence.getCurrentState(connectionId).ifPresent(jobSyncConfig::withState);
+    final JobResetDestinationConfig resetDestinationConfig = new JobResetDestinationConfig()
+        .withDestinationDockerImage(destinationDockerImage)
+        .withDestinationConfiguration(destination.getConfiguration())
+        .withConfiguredAirbyteCatalog(configuredAirbyteCatalog);
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(JobConfig.ConfigType.SYNC)
-        .withSync(jobSyncConfig);
+        .withResetDestination(resetDestinationConfig);
     return jobPersistence.createJob(scope, jobConfig);
   }
 
