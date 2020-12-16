@@ -22,18 +22,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import requests
 from datetime import datetime
 from typing import Generator
-from msal.exceptions import MsalServiceError
 
 from .client import Client
 
 from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, \
     AirbyteMessage, Status, ConfiguredAirbyteCatalog, Type, AirbyteRecordMessage
-from base_python import AirbyteLogger, ConfigContainer, Source
+from base_python import AirbyteLogger, ConfigContainer, BaseSource
 
 
-class SourceMicrosoftTeams(Source):
+class SourceMicrosoftTeams(BaseSource):
     client_class = Client
 
     def __init__(self):
@@ -44,13 +44,6 @@ class SourceMicrosoftTeams(Source):
         config = config_container.rendered_config
         client = self.client_class(config=config)
         return client
-
-    def check(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
-        client = self._get_client(config_container)
-        alive, error = client.health_check()
-        if not alive:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f'{error}')
-        return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
     def discover(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteCatalog:
         client = self._get_client(config_container)
@@ -64,14 +57,17 @@ class SourceMicrosoftTeams(Source):
 
         client = self._get_client(config_container)
 
-        logger.info(f"Starting syncing {self.__class__.__name__}")
+        logger.info(f'Starting syncing {self.__class__.__name__}')
         for configured_stream in catalog.streams:
             stream = configured_stream.stream
             if stream.name not in client.ENTITY_MAP.keys():
                 continue
-            for record in self._read_record(client=client, stream=stream.name):
-                yield AirbyteMessage(type=Type.RECORD, record=record)
-        logger.info(f"Finished syncing {self.__class__.__name__}")
+            try:
+                for record in self._read_record(client=client, stream=stream.name):
+                    yield AirbyteMessage(type=Type.RECORD, record=record)
+            except requests.exceptions.RequestException:
+                logger.error(f'Get {stream.name} error')
+        logger.info(f'Finished syncing {self.__class__.__name__}')
 
     def _read_record(self, client: Client, stream: str):
         for record in client.ENTITY_MAP[stream]():
