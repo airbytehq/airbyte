@@ -19,6 +19,8 @@ Each stream will be output into its own table in Snowflake. Each table will cont
 | Feature | Supported?\(Yes/No\) | Notes |
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
+| Incremental - Append Sync | Yes |  |
+
 
 ## Getting started
 

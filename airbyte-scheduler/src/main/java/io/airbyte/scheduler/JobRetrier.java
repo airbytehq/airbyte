@@ -28,9 +28,10 @@ import io.airbyte.config.JobConfig;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import java.io.IOException;
 import java.time.Instant;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,24 +53,35 @@ public class JobRetrier implements Runnable {
   public void run() {
     LOGGER.info("Running job-retrier...");
 
-    listFailedJobs()
+    final AtomicInteger failedJobs = new AtomicInteger();
+    final AtomicInteger retriedJobs = new AtomicInteger();
+    final List<Job> incompleteJobs = incompleteJobs();
+
+    incompleteJobs
         .forEach(job -> {
+          LOGGER.info("weeee");
           if (hasReachedMaxAttempt(job)) {
             failJob(job);
+            failedJobs.incrementAndGet();
             return;
           }
 
           if (shouldRetry(job)) {
+            retriedJobs.incrementAndGet();
             resetJob(job);
           }
         });
 
-    LOGGER.info("Completed job-retrier...");
+    LOGGER.info("Completed Job-Retrier...");
+    LOGGER.info("Job-Retrier Summary. Incomplete jobs: {}, Job set to retry: {}, Jobs set to failed: {}",
+        incompleteJobs.size(),
+        failedJobs.get(),
+        retriedJobs.get());
   }
 
-  private Stream<Job> listFailedJobs() {
+  private List<Job> incompleteJobs() {
     try {
-      return persistence.listJobsWithStatus(JobConfig.ConfigType.SYNC, JobStatus.INCOMPLETE).stream();
+      return persistence.listJobsWithStatus(JobConfig.ConfigType.SYNC, JobStatus.INCOMPLETE);
     } catch (IOException e) {
       throw new RuntimeException("failed to fetch failed jobs", e);
     }
