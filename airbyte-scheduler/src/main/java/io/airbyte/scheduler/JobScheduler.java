@@ -107,7 +107,10 @@ public class JobScheduler implements Runnable {
 
   private List<StandardSync> getAllActiveConnections() {
     try {
-      return configRepository.listStandardSyncs().stream().filter(sync -> sync.getStatus() == Status.ACTIVE).collect(Collectors.toList());
+      return configRepository.listStandardSyncs()
+          .stream()
+          .filter(sync -> sync.getStatus() == Status.ACTIVE)
+          .collect(Collectors.toList());
     } catch (JsonValidationException | IOException | ConfigNotFoundException e) {
       throw new RuntimeException(e.getMessage(), e);
     }
