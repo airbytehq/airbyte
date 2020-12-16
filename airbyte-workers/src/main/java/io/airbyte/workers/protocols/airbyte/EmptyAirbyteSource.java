@@ -22,30 +22,38 @@
  * SOFTWARE.
  */
 
-package io.airbyte.scheduler.persistence;
+package io.airbyte.workers.protocols.airbyte;
 
-import io.airbyte.config.DestinationConnection;
-import io.airbyte.config.SourceConnection;
-import io.airbyte.config.StandardSync;
-import java.io.IOException;
+import io.airbyte.config.StandardTapConfig;
+import io.airbyte.protocol.models.AirbyteMessage;
+import java.nio.file.Path;
+import java.util.Optional;
 
-public interface JobCreator {
+/**
+ * This source will never emit any messages. It can be used in cases where that is helpful (hint:
+ * reset connection jobs).
+ */
+public class EmptyAirbyteSource implements AirbyteSource {
 
-  long createSourceCheckConnectionJob(SourceConnection source, String dockerImage) throws IOException;
+  @Override
+  public void start(StandardTapConfig input, Path jobRoot) throws Exception {
+    // no op.
+  }
 
-  long createDestinationCheckConnectionJob(DestinationConnection destination, String dockerImage) throws IOException;
+  // always finished. it has no data to send.
+  @Override
+  public boolean isFinished() {
+    return true;
+  }
 
-  long createDiscoverSchemaJob(SourceConnection source, String dockerImage) throws IOException;
+  @Override
+  public Optional<AirbyteMessage> attemptRead() {
+    return Optional.empty();
+  }
 
-  long createGetSpecJob(String integrationImage) throws IOException;
-
-  long createSyncJob(SourceConnection source,
-                     DestinationConnection destination,
-                     StandardSync standardSync,
-                     String sourceDockerImage,
-                     String destinationDockerImage)
-      throws IOException;
-
-  long createResetConnectionJob(DestinationConnection destination, StandardSync standardSync, String destinationDockerImage) throws IOException;
+  @Override
+  public void close() throws Exception {
+    // no op.
+  }
 
 }
