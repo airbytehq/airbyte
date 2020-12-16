@@ -41,7 +41,11 @@ class GoogleAnalyticsSingerSource(SingerSource):
         return super().configure(raw_config, temp_dir)
 
     def transform_config(self, raw_config: json):
-        return {"key_file_location": raw_config["key_file_location"], "view_id": raw_config["view_id"], "start_date": raw_config["start_date"]}
+        return {
+            "key_file_location": raw_config["key_file_location"],
+            "view_id": raw_config["view_id"],
+            "start_date": raw_config["start_date"],
+        }
 
     def check_config(self, logger: AirbyteLogger, config_path: str, config: json) -> AirbyteConnectionStatus:
         try:
