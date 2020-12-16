@@ -6,6 +6,7 @@ plugins {
 }
 
 airbyteStandardSourceTestFile {
+    // All these input paths must live inside this connector's directory (or subdirectories)
     configPath = "<path to config file to be used in standard tests>" // TODO
     configuredCatalogPath = "<path to configured catalog to be used in tests>" // TODO
     specPath = "<path to spec for use in tests>" // TODO
