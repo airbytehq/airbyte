@@ -1,6 +1,7 @@
 declare global {
   interface Window {
     TRACKING_STRATEGY?: string;
+    PAPERCUPS_STORYTIME?: string;
     AIRBYTE_VERSION?: string;
     API_URL?: string;
   }
@@ -14,6 +15,11 @@ const config: {
     tutorialLink: string;
   };
   segment: { token: string };
+  papercups: {
+    accountId: string;
+    baseUrl: string;
+    enableStorytime: boolean;
+  };
   apiUrl: string;
   version?: string;
 } = {
@@ -30,6 +36,11 @@ const config: {
         ? process.env.REACT_APP_SEGMENT_TOKEN ||
           "6cxNSmQyGSKcATLdJ2pL6WsawkzEMDAN"
         : ""
+  },
+  papercups: {
+    accountId: "74560291-451e-4ceb-a802-56706ece528b",
+    baseUrl: "https://app.papercups.io",
+    enableStorytime: window.PAPERCUPS_STORYTIME !== "disabled"
   },
   version: window.AIRBYTE_VERSION,
   apiUrl:

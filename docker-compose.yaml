@@ -87,6 +87,7 @@ services:
       - server
     environment:
       - TRACKING_STRATEGY=${TRACKING_STRATEGY}
+      - PAPERCUPS_STORYTIME=${PAPERCUPS_STORYTIME:-}
       - AIRBYTE_VERSION=${VERSION}
       - AIRBYTE_ROLE=${AIRBYTE_ROLE:-}
       - API_URL=${API_URL}

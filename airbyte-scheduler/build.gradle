@@ -11,7 +11,7 @@ dependencies {
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-workers')
 
-    testImplementation "org.testcontainers:postgresql:1.15.0-rc2"
+    testImplementation "org.testcontainers:postgresql:1.15.1"
 }
 
 application {
