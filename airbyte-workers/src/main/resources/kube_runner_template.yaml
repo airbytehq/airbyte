@@ -14,13 +14,8 @@ spec:
           args: ARGS
           volumeMounts:
             - name: airbyte-volume-workspace
-              mountPath: /data
-            - name: airbyte-volume-local
-              mountPath: /local
+              mountPath: /workspace
       volumes:
         - name: airbyte-volume-workspace
           persistentVolumeClaim:
             claimName: airbyte-volume-workspace
-        - name: airbyte-volume-local
-          persistentVolumeClaim:
-            claimName: airbyte-volume-local

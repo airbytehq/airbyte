@@ -41,7 +41,7 @@ public class KubeProcessBuilderFactory implements ProcessBuilderFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KubeProcessBuilderFactory.class);
 
-  private static final Path DATA_MOUNT_DESTINATION = Path.of("/data");
+  private static final Path WORKSPACE_MOUNT_DESTINATION = Path.of("/workspace");
 
   private final Path workspaceRoot;
 
@@ -83,7 +83,7 @@ public class KubeProcessBuilderFactory implements ProcessBuilderFactory {
 
   private Path rebasePath(final Path jobRoot) {
     final Path relativePath = workspaceRoot.relativize(jobRoot);
-    return DATA_MOUNT_DESTINATION.resolve(relativePath);
+    return WORKSPACE_MOUNT_DESTINATION.resolve(relativePath);
   }
 
 }

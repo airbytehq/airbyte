@@ -36,7 +36,7 @@ public class EnvConfigs implements Configs {
 
   public static final String AIRBYTE_ROLE = "AIRBYTE_ROLE";
   public static final String AIRBYTE_VERSION = "AIRBYTE_VERSION";
-  public static final String JOB_ENVIRONMENT = "JOB_ENVIRONMENT";
+  public static final String WORKER_ENVIRONMENT = "WORKER_ENVIRONMENT";
   public static final String WORKSPACE_ROOT = "WORKSPACE_ROOT";
   public static final String WORKSPACE_DOCKER_MOUNT = "WORKSPACE_DOCKER_MOUNT";
   public static final String LOCAL_ROOT = "LOCAL_ROOT";
@@ -151,12 +151,12 @@ public class EnvConfigs implements Configs {
 
   @Override
   public WorkerEnvironment getWorkerEnvironment() {
-    final String jobEnvironment = getEnv.apply(JOB_ENVIRONMENT);
-    if (jobEnvironment != null) {
-      return WorkerEnvironment.valueOf(jobEnvironment.toUpperCase());
+    final String workerEnvironment = getEnv.apply(WORKER_ENVIRONMENT);
+    if (workerEnvironment != null) {
+      return WorkerEnvironment.valueOf(workerEnvironment.toUpperCase());
     }
 
-    LOGGER.info(JOB_ENVIRONMENT + " not found, defaulting to " + WorkerEnvironment.DOCKER);
+    LOGGER.info(WORKER_ENVIRONMENT + " not found, defaulting to " + WorkerEnvironment.DOCKER);
     return WorkerEnvironment.DOCKER;
   }
 
