@@ -10,7 +10,7 @@ To build a new connector in Java or Python, we provide templates so you don't ne
 
 Before building a new connector, review [Airbyte's data protocol specification](../../architecture/airbyte-specification.md).
 
-## Adding a new connector 
+## Adding a new connector
 
 ### Requirements
 To add a new connector you need to: 
