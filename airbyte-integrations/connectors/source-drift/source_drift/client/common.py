@@ -103,7 +103,6 @@ def exception_from_code(code: int, message: str) -> Exception:
         502: ServerError,
         503: ServerError,
         504: ServerError,
-        429: RateLimitError,
     }
 
     return mapping.get(code, APIError)(code, message)
