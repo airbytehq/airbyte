@@ -22,9 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, Status
-from base_python import AirbyteLogger, CatalogHelper, ConfigContainer
-from base_singer import SingerSource
+import json
+
+from airbyte_protocol import AirbyteConnectionStatus, Status
+from base_singer import AirbyteLogger, SingerSource
 from twilio.base.exceptions import TwilioException
 from twilio.rest import Client
 
@@ -32,10 +33,9 @@ TAP_CMD = "tap-twilio"
 
 
 class SourceTwilioSinger(SingerSource):
-    def check(self, logger, config_container) -> AirbyteConnectionStatus:
+    def check_config(self, logger: AirbyteLogger, config_path: str, config: json) -> AirbyteConnectionStatus:
         try:
-            json_config = config_container.rendered_config
-            client = Client(json_config["account_sid"], json_config["auth_token"])
+            client = Client(config["account_sid"], config["auth_token"])
             client.api.accounts.list()
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except TwilioException as error:
@@ -45,12 +45,8 @@ class SourceTwilioSinger(SingerSource):
     def discover_cmd(self, logger, config_path) -> str:
         return f"{TAP_CMD} --config {config_path} --discover"
 
-    def discover(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteCatalog:
-        catalog = super().discover(logger, config_container)
-        return CatalogHelper.coerce_catalog_as_full_refresh(catalog)
-
     def read_cmd(self, logger, config_path, catalog_path, state_path=None) -> str:
         config_option = f"--config {config_path}"
         properties_option = f"--catalog {catalog_path}"
-        # Force full refresh because the tap does not respect replication_method
-        return f"{TAP_CMD} {config_option} {properties_option}"
+        state_opt = f"--state {state_path}" if state_path else ""
+        return f"{TAP_CMD} {config_option} {properties_option} {state_opt}"

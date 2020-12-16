@@ -22,22 +22,22 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Generator
+import json
 
-from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage
-from base_python import AirbyteLogger, Source, ConfigContainer
+from typing import Dict, Generator
+
+from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog
+from base_python import AirbyteLogger, Source
 
 
 class Source{{properCase name}}(Source):
-    def __init__(self):
-        super().__init__()
 
-    def check(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
+    def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
         raise Exception("unimplemented")
 
-    def discover(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteCatalog:
+    def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
         # discover the schema with the provided config
         raise Exception("unimplemented")
 
-    def read(self, logger: AirbyteLogger, config_container: ConfigContainer, catalog_path: str, state: str = None) -> Generator[AirbyteMessage, None, None]:
+    def read(self, logger: AirbyteLogger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any]) -> Generator[AirbyteMessage, None, None]:
         raise Exception("unimplemented")

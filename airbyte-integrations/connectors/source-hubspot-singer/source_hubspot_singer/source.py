@@ -22,20 +22,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import json
+
 import requests
-from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, Status
-from base_python import AirbyteLogger, CatalogHelper, ConfigContainer
-from base_singer import SingerSource
+from airbyte_protocol import AirbyteConnectionStatus, Status
+from base_singer import AirbyteLogger, SingerSource
 
 
 class SourceHubspotSinger(SingerSource):
-    def __init__(self):
-        pass
-
-    def check(self, logger, config_container) -> AirbyteConnectionStatus:
+    def check_config(self, logger: AirbyteLogger, config_path: str, config: json) -> AirbyteConnectionStatus:
         try:
-            json_config = config_container.rendered_config
-            api_key = json_config.get("hapikey", None)
+            api_key = config.get("hapikey", None)
             if api_key:
                 logger.info("checking with api key")
                 r = requests.get(f"https://api.hubapi.com/contacts/v1/lists/all/contacts/all?hapikey={api_key}")
@@ -45,10 +42,10 @@ class SourceHubspotSinger(SingerSource):
                 # https://github.com/singer-io/tap-hubspot/blob/master/tap_hubspot/__init__.py#L208-L229
                 payload = {
                     "grant_type": "refresh_token",
-                    "redirect_uri": json_config["redirect_uri"],
-                    "refresh_token": json_config["refresh_token"],
-                    "client_id": json_config["client_id"],
-                    "client_secret": json_config["client_secret"],
+                    "redirect_uri": config["redirect_uri"],
+                    "refresh_token": config["refresh_token"],
+                    "client_id": config["client_id"],
+                    "client_secret": config["client_secret"],
                 }
                 resp = requests.post("https://api.hubapi.com/oauth/v1/token", data=payload)
 
@@ -75,17 +72,11 @@ class SourceHubspotSinger(SingerSource):
     def discover_cmd(self, logger, config_path) -> str:
         return f"tap-hubspot --config {config_path} --discover"
 
-    def discover(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteCatalog:
-        catalog = super().discover(logger, config_container)
-        return CatalogHelper.coerce_catalog_as_full_refresh(catalog)
-
     def read_cmd(self, logger, config_path, catalog_path, state_path=None) -> str:
         config_option = f"--config {config_path}"
         properties_option = f"--properties {catalog_path}"
-        # state_option = f"--state {state_path}" if state_path else ""
-
-        # TODO we don't pass in state to coerce this source to behave in a fullrefresh manner. See #1178 for context.
-        return f"tap-hubspot {config_option} {properties_option} "
+        state_option = f"--state {state_path}" if state_path else ""
+        return f"tap-hubspot {config_option} {properties_option} {state_option}"
 
     def transform_config(self, raw_config):
         rendered_config = dict(raw_config)

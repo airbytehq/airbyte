@@ -9,7 +9,11 @@ spec:
         - name: airbyte-seed
           image: airbyte/seed
           command: ["/bin/sh"]
-          args: ["-c", "mkdir -p /configs/config && cp -r /app/seed/config /configs"]
+          args:
+            [
+              "-c",
+              "mkdir -p /configs/config && cp -r /app/seed/config /configs",
+            ]
           volumeMounts:
             - name: airbyte-volume-configs
               mountPath: /configs

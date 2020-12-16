@@ -118,6 +118,7 @@ const StyledDropdownList = styled(DropdownList)<{
   }
 
   & > .rw-popup-container {
+    min-width: 260px;
     & .rw-select {
       display: none;
     }

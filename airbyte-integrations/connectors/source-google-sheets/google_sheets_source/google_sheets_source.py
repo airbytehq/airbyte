@@ -23,7 +23,7 @@ SOFTWARE.
 """
 
 import json
-from typing import Generator
+from typing import Dict, Generator
 
 from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, Type
 from apiclient import errors
@@ -44,9 +44,8 @@ class GoogleSheetsSource(Source):
     def __init__(self):
         super().__init__()
 
-    def check(self, logger: AirbyteLogger, config_container) -> AirbyteConnectionStatus:
+    def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
         # Check involves verifying that the specified spreadsheet is reachable with our credentials.
-        config = config_container.rendered_config
         client = Helpers.get_authenticated_sheets_client(json.loads(config["credentials_json"]))
         spreadsheet_id = config["spreadsheet_id"]
         try:
@@ -57,14 +56,12 @@ class GoogleSheetsSource(Source):
             # Give a clearer message if it's a common error like 404.
             if err.resp.status == 404:
                 reason = "Requested spreadsheet was not found."
-
-            print(f"Formatted error: {reason}")
+            logger.error(f"Formatted error: {reason}")
             return AirbyteConnectionStatus(status=Status.FAILED, message=str(reason))
 
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
-    def discover(self, logger: AirbyteLogger, config_container) -> AirbyteCatalog:
-        config = config_container.rendered_config
+    def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
         client = Helpers.get_authenticated_sheets_client(json.loads(config["credentials_json"]))
         spreadsheet_id = config["spreadsheet_id"]
         try:
@@ -84,11 +81,10 @@ class GoogleSheetsSource(Source):
                 reason = "Requested spreadsheet was not found."
             raise Exception(f"Could not run discovery: {reason}")
 
-    def read(self, logger: AirbyteLogger, config_container, catalog_path, state=None) -> Generator[AirbyteMessage, None, None]:
-        config = config_container.rendered_config
+    def read(
+        self, logger: AirbyteLogger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any]
+    ) -> Generator[AirbyteMessage, None, None]:
         client = Helpers.get_authenticated_sheets_client(json.loads(config["credentials_json"]))
-
-        catalog = ConfiguredAirbyteCatalog.parse_obj(self.read_config(catalog_path))
 
         sheet_to_column_name = Helpers.parse_sheet_and_column_names_from_catalog(catalog)
         spreadsheet_id = config["spreadsheet_id"]
