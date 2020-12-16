@@ -442,15 +442,96 @@ class DefaultJobPersistenceTest {
 
   @Test
   public void testGetOldestPendingJob() throws IOException {
-    final long jobId = jobPersistence.createJob(SCOPE, JOB_CONFIG);
-    final Instant afterNow = NOW.plusSeconds(1000);
-    when(timeSupplier.get()).thenReturn(afterNow);
-    jobPersistence.createJob(SCOPE, JOB_CONFIG);
+    final long jobId = createJobAt(NOW);
+    createJobAt(NOW.plusSeconds(1000));
 
-    final Optional<Job> actual = jobPersistence.getOldestPendingJob();
+    final Optional<Job> actual = jobPersistence.getNextJob();
 
     assertTrue(actual.isPresent());
     assertEquals(getExpectedJobNoAttempts(jobId, JobStatus.PENDING), actual.get());
+  }
+
+  @Test
+  public void testGetOldestPendingJobWithOtherJobWithSameScopeRunning() throws IOException {
+    // create a job and set it to running.
+    final long jobId = createJobAt(NOW.minusSeconds(1000));
+    jobPersistence.createAttempt(jobId, LOG_PATH);
+
+    // create a pending job.
+    createJobAt(NOW);
+
+    final Optional<Job> actual = jobPersistence.getNextJob();
+
+    assertTrue(actual.isEmpty());
+  }
+
+  @Test
+  public void testGetOldestPendingJobWithOtherJobWithSameScopeIncomplete() throws IOException {
+    // create a job and set it to incomplete.
+    final long jobId = createJobAt(NOW.minusSeconds(1000));
+    final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
+    jobPersistence.failAttempt(jobId, attemptNumber);
+
+    // create a pending job.
+    final Instant afterNow = NOW.plusSeconds(1000);
+    when(timeSupplier.get()).thenReturn(afterNow);
+    createJobAt(NOW);
+
+    final Optional<Job> actual = jobPersistence.getNextJob();
+
+    assertTrue(actual.isEmpty());
+  }
+
+  @Test
+  public void testGetOldestPendingJobWithOtherJobWithSameScopeFailed() throws IOException {
+    // create a job and set it to incomplete.
+    final long jobId = createJobAt(NOW.minusSeconds(1000));
+    jobPersistence.createAttempt(jobId, LOG_PATH);
+    jobPersistence.failJob(jobId);
+
+    // create a pending job.
+    final long jobId2 = createJobAt(NOW);
+
+    final Optional<Job> actual = jobPersistence.getNextJob();
+
+    assertTrue(actual.isPresent());
+    assertEquals(getExpectedJobNoAttempts(jobId2, JobStatus.PENDING), actual.get());
+  }
+
+  @Test
+  public void testGetOldestPendingJobWithOtherJobWithSameScopeCancelled() throws IOException {
+    // create a job and set it to incomplete.
+    final long jobId = createJobAt(NOW.minusSeconds(1000));
+    jobPersistence.cancelJob(jobId);
+
+    // create a pending job.
+    final long jobId2 = createJobAt(NOW);
+
+    final Optional<Job> actual = jobPersistence.getNextJob();
+
+    assertTrue(actual.isPresent());
+    assertEquals(getExpectedJobNoAttempts(jobId2, JobStatus.PENDING), actual.get());
+  }
+
+  @Test
+  public void testGetOldestPendingJobWithOtherJobWithSameScopeSucceeded() throws IOException {
+    // create a job and set it to incomplete.
+    final long jobId = createJobAt(NOW.minusSeconds(1000));
+    final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
+    jobPersistence.succeedAttempt(jobId, attemptNumber);
+
+    // create a pending job.
+    final long jobId2 = createJobAt(NOW);
+
+    final Optional<Job> actual = jobPersistence.getNextJob();
+
+    assertTrue(actual.isPresent());
+    assertEquals(getExpectedJobNoAttempts(jobId2, JobStatus.PENDING), actual.get());
+  }
+
+  private long createJobAt(Instant created_at) throws IOException {
+    when(timeSupplier.get()).thenReturn(created_at);
+    return jobPersistence.createJob(SCOPE, JOB_CONFIG);
   }
 
   @Test
@@ -458,7 +539,7 @@ class DefaultJobPersistenceTest {
     final long jobId = jobPersistence.createJob(SCOPE, JOB_CONFIG);
     jobPersistence.cancelJob(jobId);
 
-    final Optional<Job> actual = jobPersistence.getOldestPendingJob();
+    final Optional<Job> actual = jobPersistence.getNextJob();
 
     assertTrue(actual.isEmpty());
   }

@@ -143,6 +143,6 @@ public interface JobPersistence {
    */
   Optional<State> getCurrentState(UUID connectionId) throws IOException;
 
-  Optional<Job> getOldestPendingJob() throws IOException;
+  Optional<Job> getNextJob() throws IOException;
 
 }

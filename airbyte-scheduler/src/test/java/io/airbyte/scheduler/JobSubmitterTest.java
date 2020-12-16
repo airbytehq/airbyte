@@ -92,7 +92,7 @@ public class JobSubmitterTest {
 
     persistence = mock(JobPersistence.class);
     this.logPath = jobRoot.resolve(WorkerConstants.LOG_FILENAME);
-    when(persistence.getOldestPendingJob()).thenReturn(Optional.of(job));
+    when(persistence.getNextJob()).thenReturn(Optional.of(job));
     when(persistence.createAttempt(JOB_ID, logPath)).thenReturn(ATTEMPT_NUMBER);
 
     jobSubmitter = spy(new JobSubmitter(
@@ -118,7 +118,7 @@ public class JobSubmitterTest {
 
   @Test
   public void testPersistenceNoJob() throws Exception {
-    doReturn(Optional.empty()).when(persistence).getOldestPendingJob();
+    doReturn(Optional.empty()).when(persistence).getNextJob();
 
     jobSubmitter.run();
 
