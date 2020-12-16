@@ -29,7 +29,7 @@ import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobOutput;
-import io.airbyte.config.JobResetDestinationConfig;
+import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
@@ -93,7 +93,7 @@ public class WorkerRunFactory {
       case CHECK_CONNECTION_SOURCE, CHECK_CONNECTION_DESTINATION -> createConnectionCheckWorker(job.getConfig().getCheckConnection(), jobRoot);
       case DISCOVER_SCHEMA -> createDiscoverCatalogWorker(job.getConfig().getDiscoverCatalog(), jobRoot);
       case SYNC -> createSyncWorkerFromSyncConfig(job.getConfig().getSync(), jobRoot);
-      case RESET_DESTINATION -> createSyncWorkerFromResetConfig(job.getConfig().getResetDestination(), jobRoot);
+      case RESET_CONNECTION -> createSyncWorkerFromResetConfig(job.getConfig().getResetConnection(), jobRoot);
     };
   }
 
@@ -127,7 +127,7 @@ public class WorkerRunFactory {
         new JobOutputDiscoverSchemaWorker(new DefaultDiscoverCatalogWorker(launcher)));
   }
 
-  private WorkerRun createSyncWorkerFromResetConfig(JobResetDestinationConfig config, Path jobRoot) {
+  private WorkerRun createSyncWorkerFromResetConfig(JobResetConnectionConfig config, Path jobRoot) {
     return createSyncWorker(
         new EmptyAirbyteSource(),
         config.getDestinationDockerImage(),
@@ -181,7 +181,7 @@ public class WorkerRunFactory {
         .withState(config.getState());
   }
 
-  private static StandardSyncInput getSyncInputFromResetConfig(JobResetDestinationConfig config) {
+  private static StandardSyncInput getSyncInputFromResetConfig(JobResetConnectionConfig config) {
     return new StandardSyncInput()
         .withSourceConfiguration(Jsons.emptyObject())
         .withDestinationConfiguration(config.getDestinationConfiguration())

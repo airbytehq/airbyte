@@ -31,7 +31,7 @@ import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
-import io.airbyte.config.JobResetDestinationConfig;
+import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
@@ -155,15 +155,14 @@ public class DefaultJobCreator implements JobCreator {
     final ConfiguredAirbyteCatalog configuredAirbyteCatalog = AirbyteProtocolConverters.toConfiguredCatalog(standardSync.getSchema());
     configuredAirbyteCatalog.getStreams().forEach(configuredAirbyteStream -> configuredAirbyteStream.setSyncMode(SyncMode.FULL_REFRESH));
 
-    // reusing this isn't going to quite work.
-    final JobResetDestinationConfig resetDestinationConfig = new JobResetDestinationConfig()
+    final JobResetConnectionConfig resetConnectionConfig = new JobResetConnectionConfig()
         .withDestinationDockerImage(destinationDockerImage)
         .withDestinationConfiguration(destination.getConfiguration())
         .withConfiguredAirbyteCatalog(configuredAirbyteCatalog);
 
     final JobConfig jobConfig = new JobConfig()
-        .withConfigType(ConfigType.RESET_DESTINATION)
-        .withResetDestination(resetDestinationConfig);
+        .withConfigType(ConfigType.RESET_CONNECTION)
+        .withResetConnection(resetConnectionConfig);
     return jobPersistence.createJob(scope, jobConfig);
   }
 
