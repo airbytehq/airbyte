@@ -1,0 +1,30 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: airbyte-bootstrapping
+spec:
+  template:
+    spec:
+      containers:
+        - name: airbyte-seed
+          image: airbyte/seed
+          command: ["/bin/sh"]
+          args:
+            [
+              "-c",
+              "mkdir -p /configs/config && cp -r /app/seed/config /configs",
+            ]
+          volumeMounts:
+            - name: airbyte-volume-configs
+              mountPath: /configs
+            - name: airbyte-volume-workspace
+              mountPath: /workspace
+      volumes:
+        - name: airbyte-volume-workspace
+          persistentVolumeClaim:
+            claimName: airbyte-volume-workspace
+        - name: airbyte-volume-configs
+          persistentVolumeClaim:
+            claimName: airbyte-volume-configs
+      restartPolicy: OnFailure
+  backoffLimit: 4
