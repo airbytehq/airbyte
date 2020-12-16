@@ -23,6 +23,7 @@ SOFTWARE.
 """
 
 import json
+import os
 from dataclasses import dataclass
 from typing import Dict, Generator, Type
 
@@ -40,31 +41,43 @@ class ConfigContainer:
 
 class SingerSource(Source):
 
-    # Overriding to change an input config
-    def read_config(self, config_path: str) -> json:
-        with open(config_path, "r") as file:
-            contents = file.read()
-        return self.transform_config(json.loads(contents))
+    # can be overridden to change an input config
+    def configure(self, raw_config: json, temp_dir: str) -> json:
+        """
+        Persist raw_config in temporary directory to run the Source job
+        This can be overridden if extra temporary files need to be persisted in the temp dir
+        """
+        config = self.transform_config(raw_config)
+        config_path = os.path.join(temp_dir, "config.json")
+        self.write_config(config, config_path)
+        return ConfigContainer(config, config_path)
 
     # Can be overridden to change an input config
     def transform_config(self, config: json) -> json:
+        """
+        Singer source may need to adapt the Config object for the singer tap specifics
+        """
         return config
-
-    # Overriding to change the config object
-    def write_config(self, config: json, config_path: str) -> ConfigContainer:
-        with open(config_path, "w") as fh:
-            fh.write(json.dumps(config))
-        return ConfigContainer(config, config_path)
 
     # Overriding to change an input catalog as path instead
     def read_catalog(self, catalog_path: str) -> str:
+        """
+        Since singer source don't need actual catalog object, we override this to return path only
+        """
         return catalog_path
 
     # Overriding to change an input state as path instead
     def read_state(self, state_path: str) -> str:
+        """
+        Since singer source don't need actual state object, we override this to return path only
+        """
         return state_path
 
     def check_config(self, logger: AirbyteLogger, config_path: str, config: json) -> AirbyteConnectionStatus:
+        """
+        Some Singer source may perform check using config_path or config to
+        tests if the input configuration can be used to successfully connect to the integration
+        """
         raise NotImplementedError
 
     def discover_cmd(self, logger: AirbyteLogger, config_path: str) -> str:
@@ -109,9 +122,7 @@ class SingerSource(Source):
         Implements the parent class read method.
         """
         catalogs = self._discover_internal(logger, config_container.config_path)
-        with open(catalog_path, "r") as file:
-            contents = file.read()
-        masked_airbyte_catalog = ConfiguredAirbyteCatalog.parse_obj(json.loads(contents))
+        masked_airbyte_catalog = ConfiguredAirbyteCatalog.parse_obj(self.read_config(catalog_path))
         selected_singer_catalog_path = SingerHelper.create_singer_catalog_with_selection(masked_airbyte_catalog, catalogs.singer_catalog)
 
         read_cmd = self.read_cmd(logger, config_container.config_path, selected_singer_catalog_path, state_path)

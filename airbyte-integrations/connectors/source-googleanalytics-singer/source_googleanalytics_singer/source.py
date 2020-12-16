@@ -24,20 +24,31 @@ SOFTWARE.
 
 import json
 import os
-import tempfile
 
 from airbyte_protocol import AirbyteConnectionStatus, Status
 from base_singer import AirbyteLogger, SingerSource
 from tap_google_analytics import GAClient
 
-CREDENTIALS_FILE = os.path.join(tempfile.gettempdir(), "credentials.json")
-
 
 class GoogleAnalyticsSingerSource(SingerSource):
+
+    # can be overridden to change an input config
+    def configure(self, raw_config: json, temp_dir: str) -> json:
+        credentials = os.path.join(temp_dir, "credentials.json")
+        with open(credentials, "w") as fh:
+            fh.write(raw_config["credentials_json"])
+        raw_config["key_file_location"] = credentials
+        return super().configure(raw_config, temp_dir)
+
+    def transform_config(self, raw_config: json):
+        return {"key_file_location": raw_config["key_file_location"], "view_id": raw_config["view_id"], "start_date": raw_config["start_date"]}
+
     def check_config(self, logger: AirbyteLogger, config_path: str, config: json) -> AirbyteConnectionStatus:
         try:
             # this config is the one specific to GAClient, which does not match the root Singer config
-            client_secrets = json.loads(config["credentials_json"])
+            with open(config["key_file_location"], "r") as file:
+                contents = file.read()
+            client_secrets = json.loads(contents)
             additional_fields = {"end_date": "2050-10-01T00:00:00Z", "client_secrets": client_secrets}
             augmented_config = dict(additional_fields, **config)
             client = GAClient(augmented_config)
@@ -47,11 +58,6 @@ class GoogleAnalyticsSingerSource(SingerSource):
             return AirbyteConnectionStatus(status=Status.FAILED)
         else:
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
-
-    def transform_config(self, raw_config):
-        with open(CREDENTIALS_FILE, "w") as fh:
-            fh.write(raw_config["credentials_json"])
-        return {"key_file_location": CREDENTIALS_FILE, "view_id": raw_config["view_id"], "start_date": raw_config["start_date"]}
 
     def discover_cmd(self, logger, config_path) -> str:
         return f"tap-google-analytics --discover --config {config_path}"

@@ -37,7 +37,7 @@ logger = AirbyteLogger()
 
 
 class AirbyteEntrypoint(object):
-    def __init__(self, source):
+    def __init__(self, source: Source):
         self.source = source
 
     def start(self, args):
@@ -87,9 +87,8 @@ class AirbyteEntrypoint(object):
                 print(message.json(exclude_unset=True))
                 sys.exit(0)
 
-            config = self.source.read_config(parsed_args.config)
-            config_path = os.path.join(temp_dir, "config.json")
-            config = self.source.write_config(config, config_path)
+            raw_config = self.source.read_config(parsed_args.config)
+            config = self.source.configure(raw_config, temp_dir)
 
             if cmd == "check":
                 check_result = self.source.check(logger, config)

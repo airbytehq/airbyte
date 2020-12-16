@@ -23,6 +23,7 @@ SOFTWARE.
 """
 
 import json
+import os
 import pkgutil
 from collections import defaultdict
 from typing import Dict, Generator
@@ -44,25 +45,26 @@ class AirbyteSpec(object):
 
 
 class Integration(object):
-    def spec(self, logger: AirbyteLogger) -> ConnectorSpecification:
-        """
-        Returns the spec for this integration. The spec is a JSON-Schema object describing the required configurations (e.g: username and password)
-        required to run this integration.
-        """
-        raw_spec = pkgutil.get_data(self.__class__.__module__.split(".")[0], "spec.json")
-        return ConnectorSpecification.parse_obj(json.loads(raw_spec))
 
     # can be overridden to change an input config
-    def read_config(self, config_path: str) -> json:
+    def configure(self, config: json, temp_dir: str) -> json:
+        """
+        Persist config in temporary directory to run the Source job
+        """
+        config_path = os.path.join(temp_dir, "config.json")
+        self.write_config(config, config_path)
+        return config
+
+    @staticmethod
+    def read_config(config_path: str) -> json:
         with open(config_path, "r") as file:
             contents = file.read()
         return json.loads(contents)
 
-    # can be overridden to change the config object
-    def write_config(self, config: json, config_path: str) -> json:
+    @staticmethod
+    def write_config(config: json, config_path: str):
         with open(config_path, "w") as fh:
             fh.write(json.dumps(config))
-        return config
 
     # can be overridden to change an input catalog
     def read_catalog(self, catalog_path: str) -> ConfiguredAirbyteCatalog:
@@ -76,6 +78,14 @@ class Integration(object):
             state_obj = {}
         state = defaultdict(dict, state_obj)
         return state
+
+    def spec(self, logger: AirbyteLogger) -> ConnectorSpecification:
+        """
+        Returns the spec for this integration. The spec is a JSON-Schema object describing the required configurations (e.g: username and password)
+        required to run this integration.
+        """
+        raw_spec = pkgutil.get_data(self.__class__.__module__.split(".")[0], "spec.json")
+        return ConnectorSpecification.parse_obj(json.loads(raw_spec))
 
     def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
         """
