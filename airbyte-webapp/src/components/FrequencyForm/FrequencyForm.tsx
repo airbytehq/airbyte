@@ -159,6 +159,7 @@ const FrequencyForm: React.FC<IProps> = ({
               />
               {modalIsOpen && (
                 <ResetDataModal
+                  message={<FormattedMessage id="form.changedColumns" />}
                   onClose={() => setResetModalIsOpen(false)}
                   onSubmit={async () => {
                     await onReset?.();
