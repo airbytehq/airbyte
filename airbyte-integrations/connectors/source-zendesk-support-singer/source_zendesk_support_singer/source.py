@@ -22,17 +22,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import json
+
 from airbyte_protocol import AirbyteConnectionStatus, Status
-from base_python import AirbyteLogger, ConfigContainer
+from base_python import AirbyteLogger
 from base_singer import SingerSource
 
 TAP_CMD = "tap-zendesk"
 
 
 class SourceZendeskSupportSinger(SingerSource):
-    def check(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
+    def check_config(self, logger: AirbyteLogger, config_path: str, config: json) -> AirbyteConnectionStatus:
         try:
-            self.discover(logger, config_container)
+            self.discover(logger, config_path)
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception:
             logger.error("Exception while connecting to the Zendesk Support API")

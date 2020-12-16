@@ -22,8 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import json
+
 from airbyte_protocol import AirbyteConnectionStatus, Status
-from base_python import AirbyteLogger, ConfigContainer
+from base_python import AirbyteLogger
 from base_singer import SingerSource
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
@@ -42,10 +44,9 @@ class SourceSlackSinger(SingerSource):
             "date_window_size": "7",
         }
 
-    def check(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
+    def check_config(self, logger: AirbyteLogger, config_path: str, config: json) -> AirbyteConnectionStatus:
         try:
-            json_config = config_container.rendered_config
-            client = WebClient(token=json_config["token"])
+            client = WebClient(token=config["token"])
             client.conversations_list()
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except SlackApiError as e:

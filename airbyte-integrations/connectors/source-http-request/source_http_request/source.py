@@ -24,27 +24,33 @@ SOFTWARE.
 
 import json
 from datetime import datetime
-from typing import Generator
+from typing import Dict, Generator
 
 import requests
-from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, AirbyteRecordMessage, AirbyteStream, Status, Type
+from airbyte_protocol import (
+    AirbyteCatalog,
+    AirbyteConnectionStatus,
+    AirbyteMessage,
+    AirbyteRecordMessage,
+    AirbyteStream,
+    ConfiguredAirbyteCatalog,
+    Status,
+    Type,
+)
 from base_python import AirbyteLogger, Source
 
 
 class SourceHttpRequest(Source):
     STREAM_NAME = "data"
 
-    def __init__(self):
-        super().__init__()
-
-    def check(self, logger: AirbyteLogger, config_container) -> AirbyteConnectionStatus:
-        r = self._make_request(config_container.rendered_config)
+    def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
+        r = self._make_request(config)
         if r.status_code == 200:
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         else:
             return AirbyteConnectionStatus(status=Status.FAILED, message=r.text)
 
-    def discover(self, logger: AirbyteLogger, config_container) -> AirbyteCatalog:
+    def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
         json_schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "additionalProperties": True,
@@ -57,8 +63,10 @@ class SourceHttpRequest(Source):
         # json body will be returned as the "data" stream". we can't know its schema ahead of time, so we assume it's object (i.e. valid json).
         return AirbyteCatalog(streams=[AirbyteStream(name=SourceHttpRequest.STREAM_NAME, json_schema=json_schema)])
 
-    def read(self, logger: AirbyteLogger, config_container, catalog_path, state=None) -> Generator[AirbyteMessage, None, None]:
-        r = self._make_request(config_container.rendered_config)
+    def read(
+        self, logger: AirbyteLogger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any]
+    ) -> Generator[AirbyteMessage, None, None]:
+        r = self._make_request(config)
         if r.status_code != 200:
             raise Exception(f"Request failed. {r.text}")
 
