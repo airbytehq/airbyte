@@ -83,6 +83,9 @@ import org.slf4j.LoggerFactory;
 
 public abstract class TestDestination {
 
+  private static final long JOB_ID = 0L;
+  private static final int JOB_ATTEMPT = 0;
+
   private static final Logger LOGGER = LoggerFactory.getLogger(TestDestination.class);
 
   private TestDestinationEnv testEnv;
@@ -358,12 +361,12 @@ public abstract class TestDestination {
   }
 
   private OutputAndStatus<StandardGetSpecOutput> runSpec() {
-    return new DefaultGetSpecWorker(new AirbyteIntegrationLauncher(getImageName(), pbf))
+    return new DefaultGetSpecWorker(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), pbf))
         .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot);
   }
 
   private OutputAndStatus<StandardCheckConnectionOutput> runCheck(JsonNode config) {
-    return new DefaultCheckConnectionWorker(new AirbyteIntegrationLauncher(getImageName(), pbf))
+    return new DefaultCheckConnectionWorker(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), pbf))
         .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot);
   }
 
@@ -374,7 +377,7 @@ public abstract class TestDestination {
         .withCatalog(catalog)
         .withDestinationConnectionConfiguration(config);
 
-    final AirbyteDestination target = new DefaultAirbyteDestination(new AirbyteIntegrationLauncher(getImageName(), pbf));
+    final AirbyteDestination target = new DefaultAirbyteDestination(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), pbf));
 
     target.start(targetConfig, jobRoot);
     messages.forEach(message -> Exceptions.toRuntime(() -> target.accept(message)));
@@ -391,7 +394,7 @@ public abstract class TestDestination {
         pbf, targetConfig.getDestinationConnectionConfiguration());
     runner.start();
     final Path normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"));
-    if (!runner.normalize(normalizationRoot, targetConfig.getDestinationConnectionConfiguration(), targetConfig.getCatalog())) {
+    if (!runner.normalize(JOB_ID, JOB_ATTEMPT, normalizationRoot, targetConfig.getDestinationConnectionConfiguration(), targetConfig.getCatalog())) {
       throw new WorkerException("Normalization Failed.");
     }
     runner.close();

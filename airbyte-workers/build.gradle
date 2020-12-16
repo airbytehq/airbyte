@@ -7,7 +7,10 @@ configurations {
 }
 
 dependencies {
-    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.11'
+    implementation 'org.apache.commons:commons-lang3:3.11'
+    implementation 'io.kubernetes:client-java-api:10.0.0'
+    implementation 'io.kubernetes:client-java:10.0.0'
+    implementation 'io.kubernetes:client-java-extended:10.0.0'
 
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-db')
