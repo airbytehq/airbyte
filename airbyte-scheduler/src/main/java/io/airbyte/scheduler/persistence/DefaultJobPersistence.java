@@ -287,9 +287,14 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public Optional<Job> getOldestPendingJob() throws IOException {
+  public Optional<Job> getNextJob() throws IOException {
+    // rules:
+    // 1. get oldest, pending job
+    // 2. job is excluded if another job of the same scope is already running
+    // 3. job is excluded if another job of the same scope is already incomplete
     return database.query(ctx -> getJobFromResult(ctx
-        .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE CAST(jobs.status AS VARCHAR) = 'pending' ORDER BY jobs.created_at ASC LIMIT 1")));
+        .fetch(BASE_JOB_SELECT_AND_JOIN
+            + "WHERE CAST(jobs.status AS VARCHAR) = 'pending' AND jobs.scope NOT IN ( SELECT scope FROM jobs WHERE status = 'running' OR status = 'incomplete' ) ORDER BY jobs.created_at ASC LIMIT 1")));
   }
 
   private static List<Job> getJobsFromResult(Result<Record> result) {
