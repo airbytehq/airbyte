@@ -39,19 +39,19 @@ class Client:
     MICROSOFT_GRAPH_API_VERSION = 'v1.0'
     PAGINATION_COUNT = 20
 
-    def __init__(self, config: Dict):
+    def __init__(self, config: object):
         self.ENTITY_MAP = {
-            # 'users': self.get_users,
-            # 'groups': self.get_groups,
-            # 'group_members': self.get_group_members,
-            # 'group_owners': self.get_group_owners,
-            # 'channels': self.get_channels,
-            # 'channel_members': self.get_channel_members,
-            # 'channel_tabs': self.get_channel_tabs,
-            # 'conversations': self.get_conversations,
-            # 'conversation_threads': self.get_conversation_threads,
-            # 'conversation_posts': self.get_conversation_posts,
-            # 'team_drives': self.get_team_drives,
+            'users': self.get_users,
+            'groups': self.get_groups,
+            'group_members': self.get_group_members,
+            'group_owners': self.get_group_owners,
+            'channels': self.get_channels,
+            'channel_members': self.get_channel_members,
+            'channel_tabs': self.get_channel_tabs,
+            'conversations': self.get_conversations,
+            'conversation_threads': self.get_conversation_threads,
+            'conversation_posts': self.get_conversation_posts,
+            'team_drives': self.get_team_drives,
             'team_device_usage_report': self.get_team_device_usage_report,
         }
         self.configs = config
@@ -81,6 +81,8 @@ class Client:
             'Authorization': f'Bearer {access_token}'
         }
         response = requests.get(api_url, headers=headers, params=params)
+        if response.status_code != 200:
+            raise requests.exceptions.RequestException(response.text)
         if response.headers['Content-Type'] == 'application/octet-stream':
             raw_response = response.content
         else:
@@ -89,6 +91,8 @@ class Client:
 
     @staticmethod
     def _post_process_request(raw_response: Dict):
+        if 'value' not in raw_response:
+            raise requests.exceptions.RequestException()
         value = raw_response['value']
         return value
 
@@ -156,7 +160,7 @@ class Client:
 
     def get_channels(self):
         for group_id in self._get_group_ids():
-            for channels in self._fetch_data(f'teams/{group_id}/channels', pagination=False):
+            for channels in self._fetch_data(f'teams/{group_id}/channels', pagination=True):
                 yield channels
 
     def _get_channel_ids(self, group_id: str):
@@ -225,7 +229,6 @@ class Client:
                 yield drives
 
     def get_team_device_usage_report(self):
-        print(self.configs)
         period = self.configs['period']
         api_url = self._get_api_url(f"reports/getTeamsDeviceUsageUserDetail(period='{period}')")
         csv_response = io.BytesIO(self._make_request(api_url))
