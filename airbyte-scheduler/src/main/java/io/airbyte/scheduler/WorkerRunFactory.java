@@ -24,10 +24,12 @@
 
 package io.airbyte.scheduler;
 
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobOutput;
+import io.airbyte.config.JobResetDestinationConfig;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
@@ -90,7 +92,8 @@ public class WorkerRunFactory {
       case GET_SPEC -> createGetSpecWorker(job.getConfig().getGetSpec(), jobRoot);
       case CHECK_CONNECTION_SOURCE, CHECK_CONNECTION_DESTINATION -> createConnectionCheckWorker(job.getConfig().getCheckConnection(), jobRoot);
       case DISCOVER_SCHEMA -> createDiscoverCatalogWorker(job.getConfig().getDiscoverCatalog(), jobRoot);
-      case SYNC -> createSyncWorker(job.getConfig().getSync(), jobRoot);
+      case SYNC -> createSyncWorkerFromSyncConfig(job.getConfig().getSync(), jobRoot);
+      case RESET_DESTINATION -> createSyncWorkerFromResetConfig(job.getConfig().getResetDestination(), jobRoot);
     };
   }
 
@@ -124,31 +127,25 @@ public class WorkerRunFactory {
         new JobOutputDiscoverSchemaWorker(new DefaultDiscoverCatalogWorker(launcher)));
   }
 
-  private WorkerRun createSyncWorker2(JobSyncConfig config, Path jobRoot) {
+  private WorkerRun createSyncWorkerFromResetConfig(JobResetDestinationConfig config, Path jobRoot) {
     return createSyncWorker(
-        config.getSourceDockerImage(),
+        new EmptyAirbyteSource(),
         config.getDestinationDockerImage(),
-        getSyncInput(config),
+        getSyncInputFromResetConfig(config),
         jobRoot);
   }
 
-  private WorkerRun createSyncWorker(JobSyncConfig config, Path jobRoot) {
+  private WorkerRun createSyncWorkerFromSyncConfig(JobSyncConfig config, Path jobRoot) {
+    final DefaultAirbyteSource airbyteSource = new DefaultAirbyteSource(createLauncher(config.getSourceDockerImage()));
     return createSyncWorker(
-        config.getSourceDockerImage(),
+        airbyteSource,
         config.getDestinationDockerImage(),
-        getSyncInput(config),
+        getSyncInputSyncConfig(config),
         jobRoot);
   }
 
-  private WorkerRun createSyncWorker(String sourceDockerImage, String destinationDockerImage, StandardSyncInput syncInput, Path jobRoot) {
-    final IntegrationLauncher sourceLauncher = createLauncher(sourceDockerImage);
+  private WorkerRun createSyncWorker(AirbyteSource airbyteSource, String destinationDockerImage, StandardSyncInput syncInput, Path jobRoot) {
     final IntegrationLauncher destinationLauncher = createLauncher(destinationDockerImage);
-
-    // Switch to using the empty source when the placeholder is found. This is used for resetting the
-    // data in the destination.
-    final AirbyteSource airbyteSource =
-        sourceDockerImage.equals(SchedulerConstants.RESET_SOURCE_IMAGE_PLACEHOLDER) ? new EmptyAirbyteSource()
-            : new DefaultAirbyteSource(sourceLauncher);
 
     return creator.create(
         jobRoot,
@@ -176,12 +173,19 @@ public class WorkerRunFactory {
     return new StandardDiscoverCatalogInput().withConnectionConfiguration(config.getConnectionConfiguration());
   }
 
-  private static StandardSyncInput getSyncInput(JobSyncConfig config) {
+  private static StandardSyncInput getSyncInputSyncConfig(JobSyncConfig config) {
     return new StandardSyncInput()
         .withSourceConfiguration(config.getSourceConfiguration())
         .withDestinationConfiguration(config.getDestinationConfiguration())
         .withCatalog(config.getConfiguredAirbyteCatalog())
         .withState(config.getState());
+  }
+
+  private static StandardSyncInput getSyncInputFromResetConfig(JobResetDestinationConfig config) {
+    return new StandardSyncInput()
+        .withSourceConfiguration(Jsons.emptyObject())
+        .withDestinationConfiguration(config.getDestinationConfiguration())
+        .withCatalog(config.getConfiguredAirbyteCatalog());
   }
 
   /*

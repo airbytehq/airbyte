@@ -28,6 +28,7 @@ import io.airbyte.config.AirbyteProtocolConverters;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobConfig;
+import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobResetDestinationConfig;
@@ -161,7 +162,7 @@ public class DefaultJobCreator implements JobCreator {
         .withConfiguredAirbyteCatalog(configuredAirbyteCatalog);
 
     final JobConfig jobConfig = new JobConfig()
-        .withConfigType(JobConfig.ConfigType.SYNC)
+        .withConfigType(ConfigType.RESET_DESTINATION)
         .withResetDestination(resetDestinationConfig);
     return jobPersistence.createJob(scope, jobConfig);
   }

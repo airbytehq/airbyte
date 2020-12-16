@@ -1603,6 +1603,7 @@ components:
         - discover_schema
         - get_spec
         - sync
+        - reset_destination
     JobListRequestBody:
       type: object
       required:
