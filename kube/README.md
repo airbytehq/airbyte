@@ -33,7 +33,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 bases:
-  - https://airbytehq/airbyte.git//kube/overlays/stable?ref=master
+  - https://github.com/airbytehq/airbyte.git/kube/overlays/stable?ref=master
 ```
 
 This would allow you to define custom resources or extend existing resources, even within your own VCS.
