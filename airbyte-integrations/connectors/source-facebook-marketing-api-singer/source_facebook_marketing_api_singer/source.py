@@ -22,18 +22,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import json
+
 from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, Status
-from base_python import AirbyteLogger, CatalogHelper, ConfigContainer
+from base_python import AirbyteLogger, CatalogHelper
 from base_singer import SingerSource
 
 TAP_CMD = "tap-facebook"
 
 
 class SourceFacebookMarketingApiSinger(SingerSource):
-    def __init__(self):
-        super().__init__()
-
-    def transform_config(self, raw_config):
+    def transform_config(self, raw_config: json) -> json:
         # todo (cgardens) - this is supposed to be handled in the ui and the api but neither of them are able to handle it right now. issue: https://github.com/airbytehq/airbyte/issues/892
         return {
             "start_date": raw_config["start_date"],
@@ -43,9 +42,9 @@ class SourceFacebookMarketingApiSinger(SingerSource):
             "include_deleted": str(raw_config.get("include_deleted", True)),
         }
 
-    def check(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
+    def check_config(self, logger: AirbyteLogger, config_path: str, config: json) -> AirbyteConnectionStatus:
         try:
-            self.discover(logger, config_container)
+            self.discover(logger, config_path)
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             # TODO parse the exception message for a human readable error
@@ -58,7 +57,7 @@ class SourceFacebookMarketingApiSinger(SingerSource):
     def discover_cmd(self, logger: AirbyteLogger, config_path: str) -> str:
         return f"{TAP_CMD} -c {config_path} --discover"
 
-    def discover(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteCatalog:
+    def discover(self, logger: AirbyteLogger, config_container) -> AirbyteCatalog:
         catalog = super().discover(logger, config_container)
         return CatalogHelper.coerce_catalog_as_full_refresh(catalog)
 

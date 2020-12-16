@@ -23,68 +23,48 @@ SOFTWARE.
 """
 
 import json
-import os
-import tempfile
 from datetime import datetime
 
 import braintree
-from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, Status
-from base_python import AirbyteLogger, CatalogHelper, ConfigContainer
-from base_singer import SingerSource
+from base_python import AirbyteLogger
+from base_singer import BaseSingerSource
 from braintree.exceptions.authentication_error import AuthenticationError
 from dateutil import parser
 from dateutil.relativedelta import relativedelta
 
-TAP_CMD = "tap-braintree"
 
-DISCOVER_CONFIG_FILE = os.path.join(tempfile.gettempdir(), "discover_configs.json")
+class SourceBraintreeSinger(BaseSingerSource):
+    tap_cmd = "tap-braintree"
+    tap_name = "BrainTree API"
+    api_error = AuthenticationError
+    force_full_refresh = True
 
+    def transform_config(self, raw_config: json) -> json:
+        config = raw_config
+        if "start_date" in raw_config:
+            config["start_date"] = (parser.parse(raw_config["start_date"]) + relativedelta(months=+1)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        else:
+            config["start_date"] = (datetime.now() + relativedelta(months=+1)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        return config
 
-class SourceBraintreeSinger(SingerSource):
-    def transform_config(self, raw_config):
-        # The tap-braintree singer moves the start_date 1 month earlier, this line fixes this.
-        raw_config["start_date"] = (parser.parse(raw_config["start_date"]) + relativedelta(months=+1)).strftime("%Y-%m-%dT%H:%M:%SZ")
-        return raw_config
-
-    def check(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
-        try:
-            json_config = config_container.rendered_config
-            client = braintree.BraintreeGateway(
-                braintree.Configuration(
-                    environment=getattr(braintree.Environment, json_config["environment"]),
-                    merchant_id=json_config["merchant_id"],
-                    public_key=json_config["public_key"],
-                    private_key=json_config["private_key"],
-                )
+    def try_connect(self, logger: AirbyteLogger, config: json):
+        """Test provided credentials, raises self.api_error if something goes wrong"""
+        client = braintree.BraintreeGateway(
+            braintree.Configuration(
+                environment=getattr(braintree.Environment, config["environment"]),
+                merchant_id=config["merchant_id"],
+                public_key=config["public_key"],
+                private_key=config["private_key"],
             )
-            client.transaction.search(
-                braintree.TransactionSearch.created_at.between(datetime.now() + relativedelta(days=-1), datetime.now())
-            )
-            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
-        except AuthenticationError:
-            logger.error("Exception while connecting to the Braintree API")
-            return AirbyteConnectionStatus(
-                status=Status.FAILED,
-                message="Unable to connect to the Braintree API with the provided credentials. Please make sure the input credentials and environment are correct.",
-            )
+        )
+        client.transaction.search(braintree.TransactionSearch.created_at.between(datetime.now() + relativedelta(days=-1), datetime.now()))
 
     def discover_cmd(self, logger: AirbyteLogger, config_path: str) -> str:
-        with open(config_path) as config:
-            config_data = json.loads(config.read())
-
-        config_data["start_date"] = (datetime.now() + relativedelta(months=+1)).strftime("%Y-%m-%dT%H:%M:%SZ")
-        with open(DISCOVER_CONFIG_FILE, "w") as fh:
-            fh.write(json.dumps(config_data))
-
         return (
-            f"{TAP_CMD} -c {DISCOVER_CONFIG_FILE} --discover"
+            f"{self.tap_cmd} -c {config_path} --discover"
             + ' | grep "\\"type\\": \\"SCHEMA\\"" | head -1'
             + '| jq -c "{\\"streams\\":[{\\"stream\\": .stream, \\"schema\\": .schema}]}"'
         )
 
-    def discover(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteCatalog:
-        catalog = super().discover(logger, config_container)
-        return CatalogHelper.coerce_catalog_as_full_refresh(catalog)
-
     def read_cmd(self, logger: AirbyteLogger, config_path: str, catalog_path: str, state_path: str = None) -> str:
-        return f"{TAP_CMD} -c {config_path} -p {catalog_path}"
+        return f"{self.tap_cmd} -c {config_path} -p {catalog_path}"
