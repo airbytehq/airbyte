@@ -22,7 +22,7 @@ class AirbyteStandardSourceTestFilePlugin implements Plugin<Project> {
     }
 
     void apply(Project project) {
-        def config = project.extensions.create('airbyteStandardFileSourceTest', AirbyteStandardSourceTestFileConfiguration)
+        def config = project.extensions.create('airbyteStandardSourceTestFile', AirbyteStandardSourceTestFileConfiguration)
 
         project.task('standardFsSourceTest') {
             doFirst {
