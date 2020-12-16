@@ -150,14 +150,14 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public JobEnvironment getWorkerEnvironment() {
+  public WorkerEnvironment getWorkerEnvironment() {
     final String jobEnvironment = getEnv.apply(JOB_ENVIRONMENT);
     if (jobEnvironment != null) {
-      return JobEnvironment.valueOf(jobEnvironment.toUpperCase());
+      return WorkerEnvironment.valueOf(jobEnvironment.toUpperCase());
     }
 
-    LOGGER.info(JOB_ENVIRONMENT + " not found, defaulting to " + JobEnvironment.DOCKER);
-    return JobEnvironment.DOCKER;
+    LOGGER.info(JOB_ENVIRONMENT + " not found, defaulting to " + WorkerEnvironment.DOCKER);
+    return WorkerEnvironment.DOCKER;
   }
 
   private String getEnv(final String name) {

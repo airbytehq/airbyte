@@ -52,14 +52,14 @@ public interface Configs {
 
   TrackingStrategy getTrackingStrategy();
 
-  JobEnvironment getWorkerEnvironment();
+  WorkerEnvironment getWorkerEnvironment();
 
   enum TrackingStrategy {
     SEGMENT,
     LOGGING
   }
 
-  enum JobEnvironment {
+  enum WorkerEnvironment {
     DOCKER,
     KUBERNETES
   }
