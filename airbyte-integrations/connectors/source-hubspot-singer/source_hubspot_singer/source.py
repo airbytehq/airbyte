@@ -22,19 +22,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import json
+
 import requests
 from airbyte_protocol import AirbyteConnectionStatus, Status
-from base_singer import SingerSource
+from base_singer import AirbyteLogger, SingerSource
 
 
 class SourceHubspotSinger(SingerSource):
-    def __init__(self):
-        pass
-
-    def check(self, logger, config_container) -> AirbyteConnectionStatus:
+    def check_config(self, logger: AirbyteLogger, config_path: str, config: json) -> AirbyteConnectionStatus:
         try:
-            json_config = config_container.rendered_config
-            api_key = json_config.get("hapikey", None)
+            api_key = config.get("hapikey", None)
             if api_key:
                 logger.info("checking with api key")
                 r = requests.get(f"https://api.hubapi.com/contacts/v1/lists/all/contacts/all?hapikey={api_key}")
@@ -44,10 +42,10 @@ class SourceHubspotSinger(SingerSource):
                 # https://github.com/singer-io/tap-hubspot/blob/master/tap_hubspot/__init__.py#L208-L229
                 payload = {
                     "grant_type": "refresh_token",
-                    "redirect_uri": json_config["redirect_uri"],
-                    "refresh_token": json_config["refresh_token"],
-                    "client_id": json_config["client_id"],
-                    "client_secret": json_config["client_secret"],
+                    "redirect_uri": config["redirect_uri"],
+                    "refresh_token": config["refresh_token"],
+                    "client_id": config["client_id"],
+                    "client_secret": config["client_secret"],
                 }
                 resp = requests.post("https://api.hubapi.com/oauth/v1/token", data=payload)
 

@@ -22,8 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import json
 from datetime import datetime
-from typing import Generator
+from typing import Dict, Generator
 
 from airbyte_protocol import (
     AirbyteCatalog,
@@ -34,7 +35,7 @@ from airbyte_protocol import (
     Status,
     Type,
 )
-from base_python import AirbyteLogger, ConfigContainer, Source
+from base_python import AirbyteLogger, Source
 
 from .client import Client
 
@@ -47,26 +48,23 @@ class SourceRecurly(Source):
     def __init__(self):
         super().__init__()
 
-    def check(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
-        client = self._client(config_container)
+    def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
+        client = self._client(config)
         alive, error = client.health_check()
         if not alive:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"{error}")
 
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
-    def discover(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteCatalog:
-        client = self._client(config_container)
+    def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
+        client = self._client(config)
 
         return AirbyteCatalog(streams=client.get_streams())
 
     def read(
-        self, logger: AirbyteLogger, config_container: ConfigContainer, catalog_path, state=None
+        self, logger: AirbyteLogger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any]
     ) -> Generator[AirbyteMessage, None, None]:
-        client = self._client(config_container)
-
-        config = self.read_config(catalog_path)
-        catalog = ConfiguredAirbyteCatalog.parse_obj(config)
+        client = self._client(config)
 
         logger.info("Starting syncing recurly")
         for configured_stream in catalog.streams:
@@ -80,13 +78,13 @@ class SourceRecurly(Source):
 
         logger.info("Finished syncing recurly")
 
-    def _client(self, config_container: ConfigContainer):
-        config = config_container.rendered_config
+    def _client(self, config: json):
         client = Client(api_key=config["api_key"])
 
         return client
 
-    def _read_record(self, client: Client, stream: str):
+    @staticmethod
+    def _read_record(client: Client, stream: str):
         for record in client.get_entities(stream):
             now = int(datetime.now().timestamp()) * 1000
             yield AirbyteRecordMessage(stream=stream, data=record, emitted_at=now)
