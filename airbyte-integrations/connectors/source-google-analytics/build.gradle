@@ -14,5 +14,5 @@ airbyteStandardSourceTestFile {
 }
 
 dependencies {
-    implementation files(project(':airbyte-integrations:bases:base-standard-fs-source-test').airbyteDocker.outputs)
+    implementation files(project(':airbyte-integrations:bases:base-standard-source-test-file').airbyteDocker.outputs)
 }
