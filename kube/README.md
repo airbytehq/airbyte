@@ -55,11 +55,17 @@ See the documentation for [`kubectl cp`](https://kubernetes.io/docs/reference/ge
 If you're developing using a local context and are not using your local Kubernetes instance for anything else, you can iterate with the following series of commands. 
 ```
 ./gradlew composeBuild # build dev images
-kubectl delete "$(kubectl api-resources --namespaced=true --verbs=delete -o name | tr "\n" "," | sed -e 's/,$//')" --all # DELETES ALL RESOURCES. DO NOT USE ON CLUSTERS RUNNING MORE THAN AIRBYTE!
+kubectl delete -k kube/overlays/dev # optional, if you want to try recreating resources
 kubectl apply -k kube/overlays/dev # applies manifests
 ```
 
 Then restart the port-forwarding commands.
+
+If you are in a dev environment on a local cluster only running Airbyte and want to start completely from scratch, you can use the following command to destroy everything on the cluster:
+```
+# BE CAREFUL, THIS COMMAND DELETES ALL RESOURCES, EVEN NON-AIRBYTE ONES!
+kubectl delete "$(kubectl api-resources --namespaced=true --verbs=delete -o name | tr "\n" "," | sed -e 's/,$//')" --all
+```
 
 ### Listing Files
 
