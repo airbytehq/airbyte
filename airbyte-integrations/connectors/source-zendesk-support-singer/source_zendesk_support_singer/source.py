@@ -34,7 +34,7 @@ TAP_CMD = "tap-zendesk"
 class SourceZendeskSupportSinger(SingerSource):
     def check_config(self, logger: AirbyteLogger, config_path: str, config: json) -> AirbyteConnectionStatus:
         try:
-            self._discover_internal(logger, config)
+            self.discover(logger, config_path)
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception:
             logger.error("Exception while connecting to the Zendesk Support API")

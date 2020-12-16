@@ -93,11 +93,14 @@ class SingerSource(Source):
         """
         return self.check_config(logger, config_container.config_path, config_container.config)
 
-    def discover(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteCatalog:
+    def discover(self, logger: AirbyteLogger, config_container) -> AirbyteCatalog:
         """
         Implements the parent class discover method.
         """
-        return self._discover_internal(logger, config_container.config_path).airbyte_catalog
+        if isinstance(config_container, ConfigContainer):
+            return self._discover_internal(logger, config_container.config_path).airbyte_catalog
+        else:
+            return self._discover_internal(logger, config_container).airbyte_catalog
 
     def read(
         self, logger: AirbyteLogger, config_container: ConfigContainer, catalog_path: str, state_path: str = None
