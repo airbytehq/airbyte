@@ -56,8 +56,7 @@ class GoogleSheetsSource(Source):
             # Give a clearer message if it's a common error like 404.
             if err.resp.status == 404:
                 reason = "Requested spreadsheet was not found."
-
-            print(f"Formatted error: {reason}")
+            logger.error(f"Formatted error: {reason}")
             return AirbyteConnectionStatus(status=Status.FAILED, message=str(reason))
 
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)

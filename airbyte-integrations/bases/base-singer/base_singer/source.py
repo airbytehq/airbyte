@@ -109,7 +109,9 @@ class SingerSource(Source):
         Implements the parent class read method.
         """
         catalogs = self._discover_internal(logger, config_container.config_path)
-        masked_airbyte_catalog = ConfiguredAirbyteCatalog.parse_obj(self.read_config(catalog_path))
+        with open(catalog_path, "r") as file:
+            contents = file.read()
+        masked_airbyte_catalog = ConfiguredAirbyteCatalog.parse_obj(json.loads(contents))
         selected_singer_catalog_path = SingerHelper.create_singer_catalog_with_selection(masked_airbyte_catalog, catalogs.singer_catalog)
 
         read_cmd = self.read_cmd(logger, config_container.config_path, selected_singer_catalog_path, state_path)
