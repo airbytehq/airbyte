@@ -30,10 +30,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DataType;
 import io.airbyte.config.Field;
 import io.airbyte.config.Schema;
 import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.StandardSync.SyncMode;
 import io.airbyte.config.StandardSyncSchedule;
 import io.airbyte.config.Stream;
@@ -151,6 +153,21 @@ class JobSchedulerTest {
     verify(scheduleJobPredicate).test(Optional.of(previousJob), STANDARD_SYNC_SCHEDULE);
     verify(jobPersistence).getLastSyncJob(STANDARD_SYNC.getConnectionId());
     verify(jobFactory, never()).create(STANDARD_SYNC.getConnectionId());
+  }
+
+  @Test
+  public void testDoesNotScheduleNonActiveConnections() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final StandardSync standardSync = Jsons.clone(STANDARD_SYNC);
+    standardSync.setStatus(Status.INACTIVE);
+    when(configRepository.listStandardSyncs()).thenReturn(Collections.singletonList(standardSync));
+
+    scheduler.run();
+
+    verify(configRepository).listStandardSyncs();
+    verify(configRepository, never()).getStandardSyncSchedule(STANDARD_SYNC.getConnectionId());
+    verify(scheduleJobPredicate, never()).test(Optional.of(previousJob), STANDARD_SYNC_SCHEDULE);
+    verify(jobPersistence, never()).getLastSyncJob(standardSync.getConnectionId());
+    verify(jobFactory, never()).create(standardSync.getConnectionId());
   }
 
   // sets all mocks that are related to fetching configs. these are the same for all tests in this
