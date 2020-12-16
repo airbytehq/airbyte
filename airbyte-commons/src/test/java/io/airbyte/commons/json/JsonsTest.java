@@ -140,6 +140,11 @@ class JsonsTest {
   }
 
   @Test
+  void testEmptyObject() {
+    assertEquals(Jsons.deserialize("{}"), Jsons.emptyObject());
+  }
+
+  @Test
   void testToObject() {
     final ToClass expected = new ToClass("abc", 999, 888L);
     assertEquals(
