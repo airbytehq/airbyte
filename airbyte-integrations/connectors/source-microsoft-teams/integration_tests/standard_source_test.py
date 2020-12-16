@@ -21,30 +21,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-
 from base_python_test import StandardSourceTestIface
 
 
 class SourceMicrosoftTeamsStandardTest(StandardSourceTestIface):
-    def __init__(self):
-        pass
-
-    # # fixme - return a ConnectorSpecification. the default implementation should suffice as long as the spec.json is in source_microsoft_teams.
-    # def get_spec(self) -> ConnectorSpecification:
-    #     raw_spec = pkgutil.get_data(self.__class__.__module__.split(".")[0], "spec.json")
-    #     return ConnectorSpecification.parse_obj(json.loads(raw_spec))
-    #
-    # # fixme - return a config object for the connector. if it contains secrets, then place that object in a file called config.json in the secrets directory. if this is the case, then the default implementation below does not need to be changed.
-    # # e.g. return an object that like this {"username": "airbyte", "password": "my_password" } that matches the schema described in the spec.json.
-    # def get_config(self) -> object:
-    #     raw_spec = pkgutil.get_data(self.__class__.__module__.split(".")[0], "config.json")
-    #
-    # # fixme - return a ConfiguredAirbyteCatalog that can be used for running a read operation given the config that was provided in the previous method.
-    # # if this catalog exists in integration_tests/configured_catalog.json, then the default implementation below need not be changed.
-    # def get_catalog(self) -> ConfiguredAirbyteCatalog:
-    #     raw_catalog = pkgutil.get_data(self.__class__.__module__.split(".")[0], "configured_catalog.json")
-    #     return ConfiguredAirbyteCatalog.parse_obj(json.loads(raw_catalog))
-
     def setup(self) -> None:
         pass
 
