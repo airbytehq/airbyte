@@ -1,6 +1,6 @@
 # Building New Connectors
 
-Airbyte supports 2 types of connectors: Sources and Destinations. A connector takes the form of a Docker image which follows the [Airbyte specification](../../architecture/airbyte-specification.md).
+Airbyte supports two types of connectors: Sources and Destinations. A connector takes the form of a Docker image which follows the [Airbyte specification](../../architecture/airbyte-specification.md).
 
 To build a new connector in Java or Python, we provide templates so you don't need to start everything from scratch. 
 
@@ -10,7 +10,7 @@ To build a new connector in Java or Python, we provide templates so you don't ne
 
 Before building a new connector, review [Airbyte's data protocol specification](../../architecture/airbyte-specification.md).
 
-## Adding a new connector 
+## Adding a new connector
 
 ### Requirements
 To add a new connector you need to: 
@@ -43,13 +43,13 @@ npm run generate
 
 and choose the relevant template. This will generate a new connector in the `airbyte-integrations/connectors/<your-connector>` directory.
 
-Follow the instructions generated in the `NEW_SOURCE_CHECKLIST.md` file to bootstrap the connector.
+Follow the instructions generated in the `NEW_SOURCE_CHECKLIST.md` file to complete the connector.
 
 ### 2. Integration tests
 At a minimum, your connector must implement the standard tests described in [Testing Connectors](./testing-connectors.md)
 
 ### 3. Integrating with Gradle
-All generated templates should provide this automatically, but generally speaking to integrate with Gradle your connector needs the following: 
+Generated templates provide the following Gradle tasks: 
 1. `:airbyte-integrations:connectors:source-<name>:build` should run unit tests and build the integration's Docker image 
 2. `:airbyte-integrations:connectors:source-<name>:integrationTest` should run integration tests including Airbyte's Standard test suite. 
 
@@ -75,4 +75,3 @@ Once you've finished iterating on the changes to a connector as specified in its
    ```
 
 6. The new version of the connector is now available for everyone who uses it. Thank you!
-
