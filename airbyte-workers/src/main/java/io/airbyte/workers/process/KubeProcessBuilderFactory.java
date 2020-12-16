@@ -42,7 +42,6 @@ public class KubeProcessBuilderFactory implements ProcessBuilderFactory {
   private static final Logger LOGGER = LoggerFactory.getLogger(KubeProcessBuilderFactory.class);
 
   private static final Path DATA_MOUNT_DESTINATION = Path.of("/data");
-  private static final String IMAGE_EXISTS_SCRIPT = "image_exists.sh";
 
   private final Path workspaceRoot;
 
@@ -51,20 +50,16 @@ public class KubeProcessBuilderFactory implements ProcessBuilderFactory {
   }
 
   @Override
-  public ProcessBuilder create(final Path jobRoot, final String imageName, final String... args) throws WorkerException {
+  public ProcessBuilder create(long jobId, int attempt, final Path jobRoot, final String imageName, final String... args) throws WorkerException {
 
     try {
-      final String[] split = jobRoot.toString().split("/");
-      final String jobId = split[split.length - 2];
-      final String attemptId = split[split.length - 1];
-
       final String template = MoreResources.readResource("kube_runner_template.yaml");
 
       // used to differentiate source and destination processes with the same id and attempt
       final String suffix = RandomStringUtils.randomAlphabetic(5).toLowerCase();
 
-      final String rendered = template.replace("JOBID", jobId)
-          .replace("ATTEMPTID", attemptId)
+      final String rendered = template.replace("JOBID", String.valueOf(jobId))
+          .replace("ATTEMPTID", String.valueOf(attempt))
           .replace("SUFFIX", suffix)
           .replace("TAGGED_IMAGE", imageName)
           .replace("WORKDIR", rebasePath(jobRoot).toString())

@@ -52,7 +52,7 @@ public interface Configs {
 
   TrackingStrategy getTrackingStrategy();
 
-  JobEnvironment getJobEnvironment();
+  JobEnvironment getWorkerEnvironment();
 
   enum TrackingStrategy {
     SEGMENT,

@@ -86,15 +86,16 @@ public class WorkerRunFactory {
     LOGGER.info("job root: {}", jobRoot);
 
     return switch (job.getConfig().getConfigType()) {
-      case GET_SPEC -> createGetSpecWorker(job.getConfig().getGetSpec(), jobRoot);
-      case CHECK_CONNECTION_SOURCE, CHECK_CONNECTION_DESTINATION -> createConnectionCheckWorker(job.getConfig().getCheckConnection(), jobRoot);
-      case DISCOVER_SCHEMA -> createDiscoverCatalogWorker(job.getConfig().getDiscoverCatalog(), jobRoot);
-      case SYNC -> createSyncWorker(job.getConfig().getSync(), jobRoot);
+      case GET_SPEC -> createGetSpecWorker(job.getId(), currentAttempt, job.getConfig().getGetSpec(), jobRoot);
+      case CHECK_CONNECTION_SOURCE, CHECK_CONNECTION_DESTINATION -> createConnectionCheckWorker(job.getId(), currentAttempt,
+          job.getConfig().getCheckConnection(), jobRoot);
+      case DISCOVER_SCHEMA -> createDiscoverCatalogWorker(job.getId(), currentAttempt, job.getConfig().getDiscoverCatalog(), jobRoot);
+      case SYNC -> createSyncWorker(job.getId(), currentAttempt, job.getConfig().getSync(), jobRoot);
     };
   }
 
-  private WorkerRun createGetSpecWorker(JobGetSpecConfig config, Path jobRoot) {
-    final IntegrationLauncher launcher = createLauncher(config.getDockerImage());
+  private WorkerRun createGetSpecWorker(long jobId, int attempt, JobGetSpecConfig config, Path jobRoot) {
+    final IntegrationLauncher launcher = createLauncher(jobId, attempt, config.getDockerImage());
 
     return creator.create(
         jobRoot,
@@ -102,20 +103,20 @@ public class WorkerRunFactory {
         new JobOutputGetSpecWorker(new DefaultGetSpecWorker(launcher)));
   }
 
-  private WorkerRun createConnectionCheckWorker(JobCheckConnectionConfig config, Path jobRoot) {
+  private WorkerRun createConnectionCheckWorker(long jobId, int attempt, JobCheckConnectionConfig config, Path jobRoot) {
     final StandardCheckConnectionInput checkConnectionInput = getCheckConnectionInput(config);
 
-    final IntegrationLauncher launcher = createLauncher(config.getDockerImage());
+    final IntegrationLauncher launcher = createLauncher(jobId, attempt, config.getDockerImage());
     return creator.create(
         jobRoot,
         checkConnectionInput,
         new JobOutputCheckConnectionWorker(new DefaultCheckConnectionWorker(launcher)));
   }
 
-  private WorkerRun createDiscoverCatalogWorker(JobDiscoverCatalogConfig config, Path jobRoot) {
+  private WorkerRun createDiscoverCatalogWorker(long jobId, int attempt, JobDiscoverCatalogConfig config, Path jobRoot) {
     final StandardDiscoverCatalogInput discoverSchemaInput = getDiscoverCatalogInput(config);
 
-    final IntegrationLauncher launcher = createLauncher(config.getDockerImage());
+    final IntegrationLauncher launcher = createLauncher(jobId, attempt, config.getDockerImage());
 
     return creator.create(
         jobRoot,
@@ -123,11 +124,11 @@ public class WorkerRunFactory {
         new JobOutputDiscoverSchemaWorker(new DefaultDiscoverCatalogWorker(launcher)));
   }
 
-  private WorkerRun createSyncWorker(JobSyncConfig config, Path jobRoot) {
+  private WorkerRun createSyncWorker(long jobId, int attempt, JobSyncConfig config, Path jobRoot) {
     final StandardSyncInput syncInput = getSyncInput(config);
 
-    final IntegrationLauncher sourceLauncher = createLauncher(config.getSourceDockerImage());
-    final IntegrationLauncher destinationLauncher = createLauncher(config.getDestinationDockerImage());
+    final IntegrationLauncher sourceLauncher = createLauncher(jobId, attempt, config.getSourceDockerImage());
+    final IntegrationLauncher destinationLauncher = createLauncher(jobId, attempt, config.getDestinationDockerImage());
 
     Preconditions.checkArgument(sourceLauncher.getClass().equals(destinationLauncher.getClass()),
         "Source and Destination must be using the same protocol");
@@ -137,6 +138,8 @@ public class WorkerRunFactory {
         syncInput,
         new JobOutputSyncWorker(
             new DefaultSyncWorker(
+                jobId,
+                attempt,
                 new DefaultAirbyteSource(sourceLauncher),
                 new DefaultAirbyteDestination(destinationLauncher),
                 new AirbyteMessageTracker(),
@@ -146,8 +149,8 @@ public class WorkerRunFactory {
                     syncInput.getDestinationConfiguration()))));
   }
 
-  private IntegrationLauncher createLauncher(final String image) {
-    return new AirbyteIntegrationLauncher(image, pbf);
+  private IntegrationLauncher createLauncher(long jobId, int attempt, final String image) {
+    return new AirbyteIntegrationLauncher(jobId, attempt, image, pbf);
   }
 
   private static StandardCheckConnectionInput getCheckConnectionInput(JobCheckConnectionConfig config) {

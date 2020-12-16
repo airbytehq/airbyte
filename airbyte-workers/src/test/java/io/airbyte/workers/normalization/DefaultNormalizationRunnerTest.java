@@ -45,6 +45,9 @@ import org.junit.jupiter.api.Test;
 
 class DefaultNormalizationRunnerTest {
 
+  private static final long JOB_ID = 0L;
+  private static final int JOB_ATTEMPT = 0;
+
   private Path jobRoot;
   private ProcessBuilderFactory pbf;
   private Process process;
@@ -61,7 +64,7 @@ class DefaultNormalizationRunnerTest {
     config = mock(JsonNode.class);
     catalog = mock(ConfiguredAirbyteCatalog.class);
 
-    when(pbf.create(jobRoot, DefaultNormalizationRunner.NORMALIZATION_IMAGE_NAME, "run",
+    when(pbf.create(JOB_ID, JOB_ATTEMPT, jobRoot, DefaultNormalizationRunner.NORMALIZATION_IMAGE_NAME, "run",
         "--integration-type", "bigquery",
         "--config", WorkerConstants.TARGET_CONFIG_JSON_FILENAME,
         "--catalog", WorkerConstants.CATALOG_JSON_FILENAME))
@@ -77,7 +80,7 @@ class DefaultNormalizationRunnerTest {
 
     when(process.exitValue()).thenReturn(0);
 
-    assertTrue(runner.normalize(jobRoot, config, catalog));
+    assertTrue(runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog));
   }
 
   @Test
@@ -85,7 +88,7 @@ class DefaultNormalizationRunnerTest {
     when(process.isAlive()).thenReturn(true).thenReturn(false);
 
     final NormalizationRunner runner = new DefaultNormalizationRunner(DestinationType.BIGQUERY, pbf);
-    runner.normalize(jobRoot, config, catalog);
+    runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog);
     runner.close();
 
     verify(process).destroy();
@@ -96,7 +99,7 @@ class DefaultNormalizationRunnerTest {
     doThrow(new RuntimeException()).when(process).exitValue();
 
     final NormalizationRunner runner = new DefaultNormalizationRunner(DestinationType.BIGQUERY, pbf);
-    assertThrows(RuntimeException.class, () -> runner.normalize(jobRoot, config, catalog));
+    assertThrows(RuntimeException.class, () -> runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog));
 
     verify(process).destroy();
   }

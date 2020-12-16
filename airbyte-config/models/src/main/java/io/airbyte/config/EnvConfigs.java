@@ -150,7 +150,7 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public JobEnvironment getJobEnvironment() {
+  public JobEnvironment getWorkerEnvironment() {
     final String jobEnvironment = getEnv.apply(JOB_ENVIRONMENT);
     if (jobEnvironment != null) {
       return JobEnvironment.valueOf(jobEnvironment.toUpperCase());
