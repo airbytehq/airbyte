@@ -14,13 +14,13 @@ Before building a new connector, review [Airbyte's data protocol specification](
 
 ### Requirements
 To add a new connector you need to: 
-1. Package your connector in an Airbyte Protocol compliant Docker image
-2. Add integration tests for your connector. At a minimum, all connectors must pass Airbyte's standard test suite, but you can also add your own tests.
+1. Implement & Package your connector in an Airbyte Protocol compliant Docker image
+2. Add integration tests for your connector. At a minimum, all connectors must pass [Airbyte's standard test suite](./testing-connectors.md), but you can also add your own tests.
 3. Add the appropriate Gradle tasks to build the image within the Airbyte monorepo and CI
 
 Each requirement has a subsection below. 
 
-### Creating & packaging the connector
+### 1. Implement & package the connector
 From the project root directory, build Airbyte locally: 
 
 ```text
@@ -34,7 +34,7 @@ If you are building a connector in any of the following languages/frameworks, th
 
 If your language/framework is not listed above, we have a minimal generic template option to get you started.     
 
-### Creating a connector from a template
+#### Creating a connector from a template
 From the `airbyte-integrations/connector-templates/generator` directory, run the interactive generator:
 
 ```text
@@ -45,7 +45,10 @@ and choose the relevant template. This will generate a new connector in the `air
 
 Follow the instructions generated in the `NEW_SOURCE_CHECKLIST.md` file to bootstrap the connector.
 
-### Integrating with Gradle
+### 2. Integration tests
+At a minimum, your connector must implement the standard tests described in [Testing Connectors](./testing-connectors.md)
+
+### 3. Integrating with Gradle
 All generated templates should provide this automatically, but generally speaking to integrate with Gradle your connector needs the following: 
 1. `:airbyte-integrations:connectors:source-<name>:build` should run unit tests and build the integration's Docker image 
 2. `:airbyte-integrations:connectors:source-<name>:integrationTest` should run integration tests including Airbyte's Standard test suite. 
