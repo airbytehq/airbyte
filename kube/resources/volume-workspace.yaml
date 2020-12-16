@@ -3,7 +3,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: airbyte-volume-workspace
   labels:
-    airbyte: volume-local
+    airbyte: volume-workspace
 spec:
   accessModes:
     - ReadWriteMany

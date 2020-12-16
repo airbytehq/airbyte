@@ -31,7 +31,7 @@ spec:
             - name: AIRBYTE_VERSION
               value: 0.7.2-alpha # todo
             - name: CONFIG_ROOT
-              value: /data
+              value: /configs
             - name: DATABASE_PASSWORD
               value: docker
             - name: DATABASE_URL
@@ -53,14 +53,14 @@ spec:
           ports:
             - containerPort: 8001
           volumeMounts:
-            - name: airbyte-volume-data
-              mountPath: /data
+            - name: airbyte-volume-configs
+              mountPath: /configs
             - name: airbyte-volume-workspace
               mountPath: /tmp/workspace
       volumes:
         - name: airbyte-volume-workspace
           persistentVolumeClaim:
             claimName: airbyte-volume-workspace
-        - name: airbyte-volume-data
+        - name: airbyte-volume-configs
           persistentVolumeClaim:
-            claimName: airbyte-volume-data
+            claimName: airbyte-volume-configs

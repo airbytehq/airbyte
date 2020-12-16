@@ -6,8 +6,7 @@ resources:
   - db.yaml
   - scheduler.yaml
   - server.yaml
-  - volume-data.yaml
+  - volume-configs.yaml
   - volume-db.yaml
-  - volume-local.yaml
   - volume-workspace.yaml
   - webapp.yaml

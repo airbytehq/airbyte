@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: airbyte-volume-data
+  name: airbyte-volume-configs
   labels:
-    airbyte: volume-data
+    airbyte: volume-configs
 spec:
   accessModes:
     - ReadWriteMany

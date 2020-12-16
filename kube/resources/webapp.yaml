@@ -31,7 +31,7 @@ spec:
             - name: AIRBYTE_VERSION
               value: 0.7.2-alpha # todo
             - name: API_URL
-              value: http://localhost:8001/api/v1/ # TODO: figure out what to document for ingresses
+              value: http://localhost:8001/api/v1/
             - name: TRACKING_STRATEGY
               value: segment
           resources:
