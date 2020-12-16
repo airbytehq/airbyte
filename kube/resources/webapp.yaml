@@ -29,11 +29,20 @@ spec:
           image: airbyte/webapp
           env:
             - name: AIRBYTE_VERSION
-              value: 0.7.2-alpha # todo
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: AIRBYTE_VERSION
             - name: API_URL
-              value: http://localhost:8001/api/v1/
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: API_URL
             - name: TRACKING_STRATEGY
-              value: segment
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: TRACKING_STRATEGY
           resources:
             limits:
               memory: "128Mi"

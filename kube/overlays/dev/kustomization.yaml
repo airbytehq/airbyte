@@ -15,3 +15,7 @@ images:
     newTag: dev
   - name: airbyte/webapp
     newTag: dev
+
+configMapGenerator:
+  - name: airbyte-env
+    env: .env

@@ -17,19 +17,35 @@ spec:
           image: airbyte/scheduler
           env:
             - name: AIRBYTE_VERSION
-              value: 0.6.2-alpha # todo
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: AIRBYTE_VERSION
             - name: CONFIG_ROOT
-              value: /configs
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: CONFIG_ROOT
             - name: DATABASE_PASSWORD
-              value: docker
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: DATABASE_PASSWORD
             - name: DATABASE_URL
-              value: jdbc:postgresql://airbyte-db-svc:5432/airbyte
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: DATABASE_URL
             - name: DATABASE_USER
-              value: docker
-            - name: LOCAL_DOCKER_MOUNT
-              value: /tmp/airbyte_local
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: DATABASE_USER
             - name: TRACKING_STRATEGY
-              value: segment
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: TRACKING_STRATEGY
             - name: WAIT_BEFORE_HOSTS
               value: "5"
             - name: WAIT_HOSTS
@@ -39,9 +55,20 @@ spec:
             - name: WORKSPACE_DOCKER_MOUNT
               value: workspace
             - name: WORKSPACE_ROOT
-              value: /tmp/workspace
-            - name: JOB_ENVIRONMENT
-              value: kubernetes
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: WORKSPACE_ROOT
+            - name: WORKER_ENVIRONMENT
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: WORKER_ENVIRONMENT
+            - name: LOCAL_ROOT
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: LOCAL_ROOT
           resources:
             limits:
               memory: "256Mi"
@@ -52,7 +79,7 @@ spec:
             - name: airbyte-volume-configs
               mountPath: /configs
             - name: airbyte-volume-workspace
-              mountPath: /tmp/workspace
+              mountPath: /workspace
       volumes:
         - name: airbyte-volume-workspace
           persistentVolumeClaim:

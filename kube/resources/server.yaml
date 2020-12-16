@@ -29,17 +29,35 @@ spec:
           image: airbyte/server
           env:
             - name: AIRBYTE_VERSION
-              value: 0.7.2-alpha # todo
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: AIRBYTE_VERSION
             - name: CONFIG_ROOT
-              value: /configs
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: CONFIG_ROOT
             - name: DATABASE_PASSWORD
-              value: docker
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: DATABASE_PASSWORD
             - name: DATABASE_URL
-              value: jdbc:postgresql://airbyte-db-svc:5432/airbyte
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: DATABASE_URL
             - name: DATABASE_USER
-              value: docker
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: DATABASE_USER
             - name: TRACKING_STRATEGY
-              value: segment
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: TRACKING_STRATEGY
             - name: WAIT_BEFORE_HOSTS
               value: "5"
             - name: WAIT_HOSTS
@@ -56,7 +74,7 @@ spec:
             - name: airbyte-volume-configs
               mountPath: /configs
             - name: airbyte-volume-workspace
-              mountPath: /tmp/workspace
+              mountPath: /workspace
       volumes:
         - name: airbyte-volume-workspace
           persistentVolumeClaim:

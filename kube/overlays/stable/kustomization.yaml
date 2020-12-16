@@ -15,3 +15,7 @@ images:
     newTag: 0.7.2-alpha
   - name: airbyte/webapp
     newTag: 0.7.2-alpha
+
+configMapGenerator:
+  - name: airbyte-env
+    env: .env
