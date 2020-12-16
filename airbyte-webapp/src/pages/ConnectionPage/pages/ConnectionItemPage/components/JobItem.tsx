@@ -125,9 +125,9 @@ const JobItem: React.FC<IProps> = ({ job, attempts }) => {
           <Title isFailed={isFailed}>
             {isFailed && <ErrorSign />}
             <FormattedMessage id={`sources.${job.status}`} />
-            {attempts.length && (
+            {attempts.length ? (
               <AttemptDetails attempt={attempts[attempts.length - 1]} />
-            )}
+            ) : null}
           </Title>
         </Cell>
         <Cell>
