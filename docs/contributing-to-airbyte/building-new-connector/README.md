@@ -46,7 +46,7 @@ and choose the relevant template. This will generate a new connector in the `air
 Follow the instructions generated in the `NEW_SOURCE_CHECKLIST.md` file to complete the connector.
 
 ### Integrating with Gradle
-All generated templates should provide this automatically, but generally speaking to integrate with Gradle your connector needs the following: 
+Generated templates provide the following Gradle tasks: 
 1. `:airbyte-integrations:connectors:source-<name>:build` should run unit tests and build the integration's Docker image 
 2. `:airbyte-integrations:connectors:source-<name>:integrationTest` should run integration tests including Airbyte's Standard test suite. 
 
