@@ -75,7 +75,7 @@ public class JobSubmitter implements Runnable {
     try {
       LOGGER.info("Running job-submitter...");
 
-      final Optional<Job> oldestPendingJob = persistence.getOldestPendingJob();
+      final Optional<Job> oldestPendingJob = persistence.getNextJob();
 
       oldestPendingJob.ifPresent(job -> {
         trackSubmission(job);
