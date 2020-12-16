@@ -6,6 +6,7 @@ import styled from "styled-components";
 import JobResource from "../../../../../core/resources/Job";
 import StepsMenu from "../../../../../components/StepsMenu";
 import AttemptDetails from "./AttemptDetails";
+import DownloadButton from "./DownloadButton";
 
 type IProps = {
   id: number;
@@ -33,6 +34,7 @@ const CenteredDetails = styled.div`
   font-size: 12px;
   line-height: 28px;
   color: ${({ theme }) => theme.greyColor40};
+  position: relative;
 `;
 
 const JobLogs: React.FC<IProps> = ({ id, jobIsFailed }) => {
@@ -59,6 +61,7 @@ const JobLogs: React.FC<IProps> = ({ id, jobIsFailed }) => {
     )
   }));
 
+  const hasLogs = !!job.logsByAttempt[attemptNumber]?.logLines?.length;
   return (
     <>
       {job.attempts.length > 1 ? (
@@ -78,9 +81,15 @@ const JobLogs: React.FC<IProps> = ({ id, jobIsFailed }) => {
           <AttemptDetails attempt={job.attempts[attemptNumber]} />
         )}
         <div>{`/tmp/workspace/${id}/${job.attempts[attemptNumber].id}/logs.log.`}</div>
+        {hasLogs ? (
+          <DownloadButton
+            logs={job.logsByAttempt[attemptNumber].logLines}
+            fileName={`logs-${id}-${job.attempts[attemptNumber].id}`}
+          />
+        ) : null}
       </CenteredDetails>
       <Logs>
-        {job.logsByAttempt[attemptNumber]?.logLines?.length ? (
+        {hasLogs ? (
           job.logsByAttempt[attemptNumber].logLines.map((item, key) => (
             <div key={`log-${id}-${key}`}>{item}</div>
           ))
