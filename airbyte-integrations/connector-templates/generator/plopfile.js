@@ -6,12 +6,14 @@ module.exports = function (plop) {
   const javaDestinationInputRoot = '../java-destination';
   const pythonSourceInputRoot = '../source-python';
   const singerSourceInputRoot = '../source-singer';
+  const genericSourceInputRoot = '../source-generic';
 
   const basesDir = '../../bases';
   const outputDir = '../../connectors';
-  const javaDestinationOutputRoot = `${outputDir}/destination-{{dashCase name}}`
-  const pythonSourceOutputRoot = `${outputDir}/source-{{dashCase name}}`
-  const singerSourceOutputRoot = `${outputDir}/source-{{dashCase name}}-singer`
+  const javaDestinationOutputRoot = `${outputDir}/destination-{{dashCase name}}`;
+  const pythonSourceOutputRoot = `${outputDir}/source-{{dashCase name}}`;
+  const singerSourceOutputRoot = `${outputDir}/source-{{dashCase name}}-singer`;
+  const genericSourceOutputRoot = `${outputDir}/source-{{dashCase name}}`;
 
   plop.setGenerator('Java Destination', {
     description: 'Generate an Airbyte destination written in Java',
@@ -130,4 +132,26 @@ module.exports = function (plop) {
       'Your new Singer-based source connector has been created. Follow the instructions and TODOs in the newly created package for next steps. Happy coding! 🐍🐍',
     ]
   });
+
+  plop.setGenerator('Generic Source', {
+      description: 'Use if none of the other templates apply to your use case.',
+      prompts: [{type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "google-analytics"'}],
+      actions: [
+        {
+          abortOnFail: true,
+          type:'addMany',
+          destination: genericSourceOutputRoot,
+          base: genericSourceInputRoot,
+          templateFiles: `${genericSourceInputRoot}/**/**`,
+          globOptions: {ignore:'.secrets'}
+        },
+        {
+          type:'add',
+          abortOnFail: true,
+          templateFile: `${genericSourceInputRoot}/.gitignore.hbs`,
+          path: `${genericSourceOutputRoot}/.gitignore`
+        },
+        'Your new connector package has been created. Follow the instructions and TODOs in the newly created package for next steps. Happy coding! 🚀',
+      ]
+    });
 };
