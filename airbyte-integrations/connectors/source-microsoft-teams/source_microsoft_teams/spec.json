@@ -22,11 +22,10 @@
         "description": "Client secret",
         "airbyte_secret": true
       },
-      "start_date": {
+      "period": {
         "type": "string",
-        "description": "The date from which you'd like to get details about Microsoft Teams device usage by users, in the format YYYY-MM-DDT00:00:00Z.",
-        "examples": ["2020-12-01T00:00:00Z"],
-        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+        "description": "Specifies the length of time over which the report is aggregated. The supported values for {period_value} are: D7, D30, D90, and D180.",
+        "examples": ["D7"]
       }
     }
   }

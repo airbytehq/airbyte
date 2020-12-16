@@ -21,10 +21,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+import csv
+import io
 import json
-import pkgutil
-
 import msal
+import pkgutil
 import requests
 
 from typing import Dict, Optional, Tuple
@@ -74,13 +75,16 @@ class Client:
         else:
             raise MsalServiceError(error=result.get('error'), error_description=result.get("error_description"))
 
-    def _make_request(self, api_url: str, params: Optional[Dict] = None) -> Dict:
+    def _make_request(self, api_url: str, params: Optional[Dict] = None):
         access_token = self._get_access_token()
         headers = {
             'Authorization': f'Bearer {access_token}'
         }
         response = requests.get(api_url, headers=headers, params=params)
-        raw_response = response.json()
+        if response.headers['Content-Type'] == 'application/octet-stream':
+            raw_response = response.content
+        else:
+            raw_response = response.json()
         return raw_response
 
     @staticmethod
@@ -221,6 +225,15 @@ class Client:
                 yield drives
 
     def get_team_device_usage_report(self):
-        # start_date = self.configs['start_date']
-        report = self._make_request('reports/getTeamsDeviceUsageUserDetail(period="D7")')
-        return report
+        print(self.configs)
+        period = self.configs['period']
+        api_url = self._get_api_url(f"reports/getTeamsDeviceUsageUserDetail(period='{period}')")
+        csv_response = io.BytesIO(self._make_request(api_url))
+        csv_response.readline()
+        with io.TextIOWrapper(csv_response, encoding='utf-8-sig') as text_file:
+            field_names = ['report_refresh_date', 'user_principal_name', 'last_activity_date', 'is_deleted',
+                           'deleted_date', 'used_web', 'used_windows_phone', 'used_i_os', 'used_mac',
+                           'used_android_phone', 'used_windows', 'report_period']
+            reader = csv.DictReader(text_file, fieldnames=field_names)
+            for row in reader:
+                yield [row, ]
