@@ -98,6 +98,7 @@ def exception_from_code(code: int, message: str) -> Exception:
         400: ValidationError,
         401: AuthError,
         403: AuthError,
+        429: RateLimitError,
         404: NotFoundError,
         500: ServerError,
         502: ServerError,
