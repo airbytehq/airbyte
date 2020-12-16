@@ -26,7 +26,7 @@ import json
 
 import requests
 from airbyte_protocol import AirbyteConnectionStatus, Status
-from base_singer import SingerSource, AirbyteLogger
+from base_singer import AirbyteLogger, SingerSource
 
 
 class SourceHubspotSinger(SingerSource):

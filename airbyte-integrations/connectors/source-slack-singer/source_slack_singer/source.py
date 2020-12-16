@@ -21,12 +21,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
 import json
 
 from airbyte_protocol import AirbyteConnectionStatus, Status
 from base_python import AirbyteLogger
 from base_singer import SingerSource
-
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 

@@ -21,11 +21,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
 import json
 
 from airbyte_protocol import AirbyteConnectionStatus, Status
-from base_singer import SingerSource, AirbyteLogger
-
+from base_singer import AirbyteLogger, SingerSource
 from twilio.base.exceptions import TwilioException
 from twilio.rest import Client
 
@@ -33,7 +33,6 @@ TAP_CMD = "tap-twilio"
 
 
 class SourceTwilioSinger(SingerSource):
-
     def check_config(self, logger: AirbyteLogger, config_path: str, config: json) -> AirbyteConnectionStatus:
         try:
             client = Client(config["account_sid"], config["auth_token"])

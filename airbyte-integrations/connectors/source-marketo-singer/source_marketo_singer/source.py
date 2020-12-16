@@ -22,11 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import json
 from typing import Dict
 
 from airbyte_protocol import AirbyteConnectionStatus, Status, SyncMode
 from base_python import AirbyteLogger
-from base_singer import ConfigContainer, SingerSource, SyncModeInfo
+from base_singer import SingerSource, SyncModeInfo
 
 TAP_CMD = "tap-marketo"
 
@@ -41,9 +42,9 @@ class SourceMarketoSinger(SingerSource):
             "start_date": raw_config["start_date"],
         }
 
-    def check(self, logger: AirbyteLogger, config_container) -> AirbyteConnectionStatus:
+    def check_config(self, logger: AirbyteLogger, config_path: str, config: json) -> AirbyteConnectionStatus:
         try:
-            self.discover(logger, config_container)
+            self._discover_internal(logger, config)
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             logger.error("Exception while connecting to the Marketo API")

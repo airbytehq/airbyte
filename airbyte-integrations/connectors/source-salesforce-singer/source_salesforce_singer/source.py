@@ -33,20 +33,18 @@ from base_singer import SingerSource
 class SourceSalesforceSinger(SingerSource):
     def check_config(self, logger: AirbyteLogger, config_path: str, config: json) -> AirbyteConnectionStatus:
         try:
-            json_config = config
-
             # pulled from tap-salesforce singer impl
             # https://github.com/singer-io/tap-salesforce/blob/master/tap_salesforce/salesforce/__init__.py#L295-L327
-            if json_config["is_sandbox"]:
+            if config["is_sandbox"]:
                 login_url = "https://test.salesforce.com/services/oauth2/token"
             else:
                 login_url = "https://login.salesforce.com/services/oauth2/token"
 
             login_body = {
                 "grant_type": "refresh_token",
-                "client_id": json_config["client_id"],
-                "client_secret": json_config["client_secret"],
-                "refresh_token": json_config["refresh_token"],
+                "client_id": config["client_id"],
+                "client_secret": config["client_secret"],
+                "refresh_token": config["refresh_token"],
             }
 
             logger.info("Attempting login via OAuth2")

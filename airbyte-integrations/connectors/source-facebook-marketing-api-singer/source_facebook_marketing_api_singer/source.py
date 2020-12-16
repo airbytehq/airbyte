@@ -42,9 +42,9 @@ class SourceFacebookMarketingApiSinger(SingerSource):
             "include_deleted": str(raw_config.get("include_deleted", True)),
         }
 
-    def check(self, logger: AirbyteLogger, config_container) -> AirbyteConnectionStatus:
+    def check_config(self, logger: AirbyteLogger, config_path: str, config: json) -> AirbyteConnectionStatus:
         try:
-            self.discover(logger, config_container)
+            self._discover_internal(logger, config)
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             # TODO parse the exception message for a human readable error
