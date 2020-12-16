@@ -43,7 +43,7 @@ npm run generate
 
 and choose the relevant template. This will generate a new connector in the `airbyte-integrations/connectors/<your-connector>` directory.
 
-Follow the instructions generated in the `NEW_SOURCE_CHECKLIST.md` file to bootstrap the connector.
+Follow the instructions generated in the `NEW_SOURCE_CHECKLIST.md` file to complete the connector.
 
 ### Integrating with Gradle
 All generated templates should provide this automatically, but generally speaking to integrate with Gradle your connector needs the following: 
