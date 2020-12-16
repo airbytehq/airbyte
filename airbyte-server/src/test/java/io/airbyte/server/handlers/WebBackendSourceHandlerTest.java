@@ -86,7 +86,7 @@ public class WebBackendSourceHandlerTest {
     CheckConnectionRead checkConnectionRead = new CheckConnectionRead();
     checkConnectionRead.setStatus(StatusEnum.SUCCEEDED);
 
-    when(schedulerHandler.checkSourceConnection(sourceIdRequestBody)).thenReturn(checkConnectionRead);
+    when(schedulerHandler.checkSourceConnectionFromSourceId(sourceIdRequestBody)).thenReturn(checkConnectionRead);
 
     SourceRead returnedSource = wbSourceHandler.webBackendCreateSourceAndCheck(sourceCreate);
 
@@ -107,7 +107,7 @@ public class WebBackendSourceHandlerTest {
 
     SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody();
     sourceIdRequestBody.setSourceId(sourceRead.getSourceId());
-    when(schedulerHandler.checkSourceConnection(sourceIdRequestBody)).thenReturn(checkConnectionRead);
+    when(schedulerHandler.checkSourceConnectionFromSourceId(sourceIdRequestBody)).thenReturn(checkConnectionRead);
 
     Assertions.assertThrows(KnownException.class,
         () -> wbSourceHandler.webBackendCreateSourceAndCheck(sourceCreate));
@@ -134,7 +134,7 @@ public class WebBackendSourceHandlerTest {
     CheckConnectionRead checkConnectionRead = new CheckConnectionRead();
     checkConnectionRead.setStatus(StatusEnum.SUCCEEDED);
 
-    when(schedulerHandler.checkSourceConnection(newSourceId)).thenReturn(checkConnectionRead);
+    when(schedulerHandler.checkSourceConnectionFromSourceId(newSourceId)).thenReturn(checkConnectionRead);
 
     SourceRecreate sourceRecreate = new SourceRecreate();
     sourceRecreate.setName(sourceRead.getName());
@@ -172,7 +172,7 @@ public class WebBackendSourceHandlerTest {
     CheckConnectionRead checkConnectionRead = new CheckConnectionRead();
     checkConnectionRead.setStatus(StatusEnum.FAILED);
 
-    when(schedulerHandler.checkSourceConnection(newSourceId)).thenReturn(checkConnectionRead);
+    when(schedulerHandler.checkSourceConnectionFromSourceId(newSourceId)).thenReturn(checkConnectionRead);
 
     SourceRecreate sourceRecreate = new SourceRecreate();
     sourceRecreate.setName(sourceRead.getName());

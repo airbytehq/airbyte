@@ -217,13 +217,14 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   @Override
   public CheckConnectionRead checkConnectionToSource(@Valid SourceIdRequestBody sourceIdRequestBody) {
-    return execute(() -> schedulerHandler.checkSourceConnection(sourceIdRequestBody));
+    return execute(() -> schedulerHandler.checkSourceConnectionFromSourceId(sourceIdRequestBody));
   }
 
   @Override
   public SourceDiscoverSchemaRead discoverSchemaForSource(@Valid SourceIdRequestBody sourceIdRequestBody) {
-    return execute(() -> schedulerHandler.discoverSchemaForSource(sourceIdRequestBody));
+    return execute(() -> schedulerHandler.discoverSchemaForSourceFromSourceId(sourceIdRequestBody));
   }
+
   // DESTINATION
 
   @Override
@@ -285,7 +286,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   @Override
   public CheckConnectionRead checkConnectionToDestination(@Valid DestinationIdRequestBody destinationIdRequestBody) {
-    return execute(() -> schedulerHandler.checkDestinationConnection(destinationIdRequestBody));
+    return execute(() -> schedulerHandler.checkDestinationConnectionFromDestinationId(destinationIdRequestBody));
   }
 
   // CONNECTION
@@ -327,6 +328,22 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public JobInfoRead resetConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
     return execute(() -> schedulerHandler.resetConnection(connectionIdRequestBody));
+  }
+
+  // SCHEDULER
+  @Override
+  public CheckConnectionRead executeSourceCheckConnection(@Valid SourceCreate sourceCreate) {
+    return execute(() -> schedulerHandler.checkSourceConnectionFromSourceCreate(sourceCreate));
+  }
+
+  @Override
+  public CheckConnectionRead executeDestinationCheckConnection(@Valid DestinationCreate destinationCreate) {
+    return execute(() -> schedulerHandler.checkDestinationConnectionFromDestinationCreate(destinationCreate));
+  }
+
+  @Override
+  public SourceDiscoverSchemaRead executeSourceDiscoverSchema(@Valid SourceCreate sourceCreate) {
+    return execute(() -> schedulerHandler.discoverSchemaForSourceFromSourceCreate(sourceCreate));
   }
 
   // JOB HISTORY

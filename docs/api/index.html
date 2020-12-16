@@ -261,6 +261,12 @@ font-style: italic;
   <li><a href="#getJobInfo"><code><span class="http-method">post</span> /v1/jobs/get</code></a></li>
   <li><a href="#listJobsFor"><code><span class="http-method">post</span> /v1/jobs/list</code></a></li>
   </ul>
+  <h4><a href="#Scheduler">Scheduler</a></h4>
+  <ul>
+  <li><a href="#executeDestinationCheckConnection"><code><span class="http-method">post</span> /v1/scheduler/destinations/check_connection</code></a></li>
+  <li><a href="#executeSourceCheckConnection"><code><span class="http-method">post</span> /v1/scheduler/sources/check_connection</code></a></li>
+  <li><a href="#executeSourceDiscoverSchema"><code><span class="http-method">post</span> /v1/scheduler/sources/discover_schema</code></a></li>
+  </ul>
   <h4><a href="#Source">Source</a></h4>
   <ul>
   <li><a href="#checkConnectionToSource"><code><span class="http-method">post</span> /v1/sources/check_connection</code></a></li>
@@ -1048,6 +1054,39 @@ font-style: italic;
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
+  "job_info" : {
+    "job" : {
+      "createdAt" : 6,
+      "configId" : "configId",
+      "id" : 0,
+      "updatedAt" : 1
+    },
+    "attempts" : [ {
+      "attempt" : {
+        "createdAt" : 5,
+        "bytesSynced" : 9,
+        "endedAt" : 7,
+        "id" : 5,
+        "recordsSynced" : 3,
+        "updatedAt" : 2
+      },
+      "logs" : {
+        "logLines" : [ "logLines", "logLines" ]
+      }
+    }, {
+      "attempt" : {
+        "createdAt" : 5,
+        "bytesSynced" : 9,
+        "endedAt" : 7,
+        "id" : 5,
+        "recordsSynced" : 3,
+        "updatedAt" : 2
+      },
+      "logs" : {
+        "logLines" : [ "logLines", "logLines" ]
+      }
+    } ]
+  },
   "message" : "message",
   "status" : "succeeded"
 }</code></pre>
@@ -1914,6 +1953,309 @@ font-style: italic;
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
+  <h1><a name="Scheduler">Scheduler</a></h1>
+  <div class="method"><a name="executeDestinationCheckConnection"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/scheduler/destinations/check_connection</code></pre></div>
+    <div class="method-summary">Run check connection for a given destination configuration (<span class="nickname">executeDestinationCheckConnection</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">DestinationCreate <a href="#DestinationCreate">DestinationCreate</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#CheckConnectionRead">CheckConnectionRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "job_info" : {
+    "job" : {
+      "createdAt" : 6,
+      "configId" : "configId",
+      "id" : 0,
+      "updatedAt" : 1
+    },
+    "attempts" : [ {
+      "attempt" : {
+        "createdAt" : 5,
+        "bytesSynced" : 9,
+        "endedAt" : 7,
+        "id" : 5,
+        "recordsSynced" : 3,
+        "updatedAt" : 2
+      },
+      "logs" : {
+        "logLines" : [ "logLines", "logLines" ]
+      }
+    }, {
+      "attempt" : {
+        "createdAt" : 5,
+        "bytesSynced" : 9,
+        "endedAt" : 7,
+        "id" : 5,
+        "recordsSynced" : 3,
+        "updatedAt" : 2
+      },
+      "logs" : {
+        "logLines" : [ "logLines", "logLines" ]
+      }
+    } ]
+  },
+  "message" : "message",
+  "status" : "succeeded"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#CheckConnectionRead">CheckConnectionRead</a>
+    <h4 class="field-label">422</h4>
+    Invalid Input
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="executeSourceCheckConnection"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/scheduler/sources/check_connection</code></pre></div>
+    <div class="method-summary">Run check connection for a given source configuration (<span class="nickname">executeSourceCheckConnection</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">SourceCreate <a href="#SourceCreate">SourceCreate</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#CheckConnectionRead">CheckConnectionRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "job_info" : {
+    "job" : {
+      "createdAt" : 6,
+      "configId" : "configId",
+      "id" : 0,
+      "updatedAt" : 1
+    },
+    "attempts" : [ {
+      "attempt" : {
+        "createdAt" : 5,
+        "bytesSynced" : 9,
+        "endedAt" : 7,
+        "id" : 5,
+        "recordsSynced" : 3,
+        "updatedAt" : 2
+      },
+      "logs" : {
+        "logLines" : [ "logLines", "logLines" ]
+      }
+    }, {
+      "attempt" : {
+        "createdAt" : 5,
+        "bytesSynced" : 9,
+        "endedAt" : 7,
+        "id" : 5,
+        "recordsSynced" : 3,
+        "updatedAt" : 2
+      },
+      "logs" : {
+        "logLines" : [ "logLines", "logLines" ]
+      }
+    } ]
+  },
+  "message" : "message",
+  "status" : "succeeded"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#CheckConnectionRead">CheckConnectionRead</a>
+    <h4 class="field-label">422</h4>
+    Invalid Input
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="executeSourceDiscoverSchema"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/scheduler/sources/discover_schema</code></pre></div>
+    <div class="method-summary">Run discover schema for a given source a source configuration (<span class="nickname">executeSourceDiscoverSchema</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">SourceCreate <a href="#SourceCreate">SourceCreate</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#SourceDiscoverSchemaRead">SourceDiscoverSchemaRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "schema" : {
+    "streams" : [ {
+      "supportedSyncModes" : [ null, null ],
+      "sourceDefinedCursor" : true,
+      "name" : "name",
+      "cleanedName" : "cleanedName",
+      "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ],
+      "fields" : [ {
+        "name" : "name",
+        "cleanedName" : "cleanedName",
+        "selected" : true
+      }, {
+        "name" : "name",
+        "cleanedName" : "cleanedName",
+        "selected" : true
+      } ],
+      "selected" : true,
+      "cursorField" : [ "cursorField", "cursorField" ]
+    }, {
+      "supportedSyncModes" : [ null, null ],
+      "sourceDefinedCursor" : true,
+      "name" : "name",
+      "cleanedName" : "cleanedName",
+      "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ],
+      "fields" : [ {
+        "name" : "name",
+        "cleanedName" : "cleanedName",
+        "selected" : true
+      }, {
+        "name" : "name",
+        "cleanedName" : "cleanedName",
+        "selected" : true
+      } ],
+      "selected" : true,
+      "cursorField" : [ "cursorField", "cursorField" ]
+    } ]
+  },
+  "job_info" : {
+    "job" : {
+      "createdAt" : 6,
+      "configId" : "configId",
+      "id" : 0,
+      "updatedAt" : 1
+    },
+    "attempts" : [ {
+      "attempt" : {
+        "createdAt" : 5,
+        "bytesSynced" : 9,
+        "endedAt" : 7,
+        "id" : 5,
+        "recordsSynced" : 3,
+        "updatedAt" : 2
+      },
+      "logs" : {
+        "logLines" : [ "logLines", "logLines" ]
+      }
+    }, {
+      "attempt" : {
+        "createdAt" : 5,
+        "bytesSynced" : 9,
+        "endedAt" : 7,
+        "id" : 5,
+        "recordsSynced" : 3,
+        "updatedAt" : 2
+      },
+      "logs" : {
+        "logLines" : [ "logLines", "logLines" ]
+      }
+    } ]
+  }
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#SourceDiscoverSchemaRead">SourceDiscoverSchemaRead</a>
+    <h4 class="field-label">422</h4>
+    Invalid Input
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
   <h1><a name="Source">Source</a></h1>
   <div class="method"><a name="checkConnectionToSource"/>
     <div class="method-path">
@@ -1951,6 +2293,39 @@ font-style: italic;
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
+  "job_info" : {
+    "job" : {
+      "createdAt" : 6,
+      "configId" : "configId",
+      "id" : 0,
+      "updatedAt" : 1
+    },
+    "attempts" : [ {
+      "attempt" : {
+        "createdAt" : 5,
+        "bytesSynced" : 9,
+        "endedAt" : 7,
+        "id" : 5,
+        "recordsSynced" : 3,
+        "updatedAt" : 2
+      },
+      "logs" : {
+        "logLines" : [ "logLines", "logLines" ]
+      }
+    }, {
+      "attempt" : {
+        "createdAt" : 5,
+        "bytesSynced" : 9,
+        "endedAt" : 7,
+        "id" : 5,
+        "recordsSynced" : 3,
+        "updatedAt" : 2
+      },
+      "logs" : {
+        "logLines" : [ "logLines", "logLines" ]
+      }
+    } ]
+  },
   "message" : "message",
   "status" : "succeeded"
 }</code></pre>
@@ -2149,6 +2524,39 @@ font-style: italic;
       } ],
       "selected" : true,
       "cursorField" : [ "cursorField", "cursorField" ]
+    } ]
+  },
+  "job_info" : {
+    "job" : {
+      "createdAt" : 6,
+      "configId" : "configId",
+      "id" : 0,
+      "updatedAt" : 1
+    },
+    "attempts" : [ {
+      "attempt" : {
+        "createdAt" : 5,
+        "bytesSynced" : 9,
+        "endedAt" : 7,
+        "id" : 5,
+        "recordsSynced" : 3,
+        "updatedAt" : 2
+      },
+      "logs" : {
+        "logLines" : [ "logLines", "logLines" ]
+      }
+    }, {
+      "attempt" : {
+        "createdAt" : 5,
+        "bytesSynced" : 9,
+        "endedAt" : 7,
+        "id" : 5,
+        "recordsSynced" : 3,
+        "updatedAt" : 2
+      },
+      "logs" : {
+        "logLines" : [ "logLines", "logLines" ]
+      }
     } ]
   }
 }</code></pre>
@@ -3537,6 +3945,7 @@ font-style: italic;
         <div class="param-enum-header">Enum:</div>
         <div class="param-enum">succeeded</div><div class="param-enum">failed</div>
 <div class="param">message (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">job_info (optional)</div><div class="param-desc"><span class="param-type"><a href="#JobInfoRead">JobInfoRead</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -3877,6 +4286,7 @@ font-style: italic;
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">schema </div><div class="param-desc"><span class="param-type"><a href="#SourceSchema">SourceSchema</a></span>  </div>
+<div class="param">job_info </div><div class="param-desc"><span class="param-type"><a href="#JobInfoRead">JobInfoRead</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">

@@ -24,12 +24,15 @@
 
 package io.airbyte.server.handlers;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.api.model.CheckConnectionRead;
 import io.airbyte.api.model.ConnectionIdRequestBody;
+import io.airbyte.api.model.DestinationCreate;
 import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.DestinationDefinitionSpecificationRead;
 import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.JobInfoRead;
+import io.airbyte.api.model.SourceCreate;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
 import io.airbyte.api.model.SourceDefinitionSpecificationRead;
 import io.airbyte.api.model.SourceDiscoverSchemaRead;
@@ -58,18 +61,26 @@ import io.airbyte.server.converters.SchemaConverter;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 public class SchedulerHandler {
 
   private final ConfigRepository configRepository;
   private final SchedulerJobClient schedulerJobClient;
+  private final Supplier<UUID> uuidSupplier;
 
-  public SchedulerHandler(final ConfigRepository configRepository, SchedulerJobClient schedulerJobClient) {
+  @VisibleForTesting
+  SchedulerHandler(final ConfigRepository configRepository, SchedulerJobClient schedulerJobClient, Supplier<UUID> uuidSupplier) {
     this.configRepository = configRepository;
     this.schedulerJobClient = schedulerJobClient;
+    this.uuidSupplier = uuidSupplier;
   }
 
-  public CheckConnectionRead checkSourceConnection(SourceIdRequestBody sourceIdRequestBody)
+  public SchedulerHandler(final ConfigRepository configRepository, SchedulerJobClient schedulerJobClient) {
+    this(configRepository, schedulerJobClient, UUID::randomUUID);
+  }
+
+  public CheckConnectionRead checkSourceConnectionFromSourceId(SourceIdRequestBody sourceIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final SourceConnection source = configRepository.getSourceConnection(sourceIdRequestBody.getSourceId());
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(source.getSourceDefinitionId());
@@ -78,27 +89,82 @@ public class SchedulerHandler {
     return reportConnectionStatus(schedulerJobClient.createSourceCheckConnectionJob(source, imageName));
   }
 
-  public CheckConnectionRead checkDestinationConnection(DestinationIdRequestBody destinationIdRequestBody)
+  public CheckConnectionRead checkSourceConnectionFromSourceCreate(SourceCreate sourceCreate)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceCreate.getSourceDefinitionId());
+    final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
+    final SourceConnection source = new SourceConnection()
+        .withName(sourceCreate.getName())
+        .withSourceDefinitionId(sourceCreate.getSourceDefinitionId())
+        .withWorkspaceId(sourceCreate.getWorkspaceId()) // not strictly necessary.
+        .withTombstone(false)
+        // todo (cgardens) - used to create the scope so we need a value, but we are happy to have it be
+        // random.
+        .withSourceId(uuidSupplier.get())
+        .withConfiguration(sourceCreate.getConnectionConfiguration());
+
+    return reportConnectionStatus(schedulerJobClient.createSourceCheckConnectionJob(source, imageName));
+  }
+
+  public CheckConnectionRead checkDestinationConnectionFromDestinationId(DestinationIdRequestBody destinationIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final DestinationConnection destination = configRepository.getDestinationConnection(destinationIdRequestBody.getDestinationId());
     final StandardDestinationDefinition destinationDef = configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(destinationDef.getDockerRepository(), destinationDef.getDockerImageTag());
-
     return reportConnectionStatus(schedulerJobClient.createDestinationCheckConnectionJob(destination, imageName));
   }
 
-  public SourceDiscoverSchemaRead discoverSchemaForSource(SourceIdRequestBody sourceIdRequestBody)
+  public CheckConnectionRead checkDestinationConnectionFromDestinationCreate(DestinationCreate destinationCreate)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    final StandardDestinationDefinition destDef = configRepository.getStandardDestinationDefinition(destinationCreate.getDestinationDefinitionId());
+    final String imageName = DockerUtils.getTaggedImageName(destDef.getDockerRepository(), destDef.getDockerImageTag());
+    final DestinationConnection destination = new DestinationConnection()
+        .withName(destinationCreate.getName())
+        .withDestinationDefinitionId(destinationCreate.getDestinationDefinitionId())
+        .withWorkspaceId(destinationCreate.getWorkspaceId()) // not strictly necessary.
+        .withTombstone(false)
+        // todo (cgardens) - used to create the scope so we need a value, but we are happy to have it be
+        // random.
+        .withDestinationId(uuidSupplier.get())
+        .withConfiguration(destinationCreate.getConnectionConfiguration());
+    return reportConnectionStatus(schedulerJobClient.createDestinationCheckConnectionJob(destination, imageName));
+  }
+
+  public SourceDiscoverSchemaRead discoverSchemaForSourceFromSourceId(SourceIdRequestBody sourceIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final SourceConnection source = configRepository.getSourceConnection(sourceIdRequestBody.getSourceId());
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(source.getSourceDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
-    final StandardDiscoverCatalogOutput discoverOutput = schedulerJobClient.createDiscoverSchemaJob(source, imageName)
-        .getSuccessOutput()
+    final Job job = schedulerJobClient.createDiscoverSchemaJob(source, imageName);
+    return discoverJobToOutput(job);
+  }
+
+  public SourceDiscoverSchemaRead discoverSchemaForSourceFromSourceCreate(SourceCreate sourceCreate)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceCreate.getSourceDefinitionId());
+    final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
+    final SourceConnection source = new SourceConnection()
+        .withName(sourceCreate.getName())
+        .withSourceDefinitionId(sourceCreate.getSourceDefinitionId())
+        .withWorkspaceId(sourceCreate.getWorkspaceId()) // not strictly necessary.
+        .withTombstone(false)
+        // todo (cgardens) - used to create the scope so we need a value, but we are happy to have it be
+        // random.
+        .withSourceId(uuidSupplier.get())
+        .withConfiguration(sourceCreate.getConnectionConfiguration());
+    final Job job = schedulerJobClient.createDiscoverSchemaJob(source, imageName);
+    return discoverJobToOutput(job);
+  }
+
+  private static SourceDiscoverSchemaRead discoverJobToOutput(Job job) {
+    StandardDiscoverCatalogOutput discoverOutput = job.getSuccessOutput()
         .map(JobOutput::getDiscoverCatalog)
         .orElseThrow(() -> new IllegalStateException("no discover output found"));
     final Schema schema = AirbyteProtocolConverters.toSchema(discoverOutput.getCatalog());
 
-    return new SourceDiscoverSchemaRead().schema(SchemaConverter.toApiSchema(schema));
+    return new SourceDiscoverSchemaRead()
+        .schema(SchemaConverter.toApiSchema(schema))
+        .jobInfo(JobConverter.getJobInfoRead(job));
   }
 
   public SourceDefinitionSpecificationRead getSourceDefinitionSpecification(SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody)
@@ -179,7 +245,8 @@ public class SchedulerHandler {
 
     return new CheckConnectionRead()
         .status(Enums.convertTo(checkConnectionOutput.getStatus(), CheckConnectionRead.StatusEnum.class))
-        .message(checkConnectionOutput.getMessage());
+        .message(checkConnectionOutput.getMessage())
+        .jobInfo(JobConverter.getJobInfoRead(job));
   }
 
 }
