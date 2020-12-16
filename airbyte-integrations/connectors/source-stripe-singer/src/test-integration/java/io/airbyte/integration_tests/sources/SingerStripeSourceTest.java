@@ -70,6 +70,9 @@ import org.junit.jupiter.api.Test;
 
 public class SingerStripeSourceTest {
 
+  private static final long JOB_ID = 0L;
+  private static final int JOB_ATTEMPT = 0;
+
   private static final Path TESTS_PATH = Path.of("/tmp/airbyte_integration_tests");
   private static final String IMAGE_NAME = "airbyte/source-stripe-singer:dev";
 
@@ -97,6 +100,8 @@ public class SingerStripeSourceTest {
     writeConfigFilesToJobRoot();
 
     launcher = new AirbyteIntegrationLauncher(
+        JOB_ID,
+        JOB_ATTEMPT,
         IMAGE_NAME,
         new DockerProcessBuilderFactory(workspaceRoot, workspaceRoot.toString(), "", "host"));
   }

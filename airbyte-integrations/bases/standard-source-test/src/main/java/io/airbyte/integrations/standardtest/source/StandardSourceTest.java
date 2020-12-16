@@ -75,6 +75,9 @@ import org.slf4j.LoggerFactory;
 
 public abstract class StandardSourceTest {
 
+  private static final long JOB_ID = 0L;
+  private static final int JOB_ATTEMPT = 0;
+
   private static final Logger LOGGER = LoggerFactory.getLogger(StandardSourceTest.class);
 
   private TestDestinationEnv testEnv;
@@ -368,17 +371,17 @@ public abstract class StandardSourceTest {
   }
 
   private OutputAndStatus<StandardGetSpecOutput> runSpec() {
-    return new DefaultGetSpecWorker(new AirbyteIntegrationLauncher(getImageName(), pbf))
+    return new DefaultGetSpecWorker(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), pbf))
         .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot);
   }
 
   private OutputAndStatus<StandardCheckConnectionOutput> runCheck() throws Exception {
-    return new DefaultCheckConnectionWorker(new AirbyteIntegrationLauncher(getImageName(), pbf))
+    return new DefaultCheckConnectionWorker(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), pbf))
         .run(new StandardCheckConnectionInput().withConnectionConfiguration(getConfig()), jobRoot);
   }
 
   private OutputAndStatus<StandardDiscoverCatalogOutput> runDiscover() throws Exception {
-    return new DefaultDiscoverCatalogWorker(new AirbyteIntegrationLauncher(getImageName(), pbf))
+    return new DefaultDiscoverCatalogWorker(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), pbf))
         .run(new StandardDiscoverCatalogInput().withConnectionConfiguration(getConfig()), jobRoot);
   }
 
@@ -393,7 +396,7 @@ public abstract class StandardSourceTest {
         .withState(state == null ? null : new State().withState(state))
         .withCatalog(catalog);
 
-    final AirbyteSource source = new DefaultAirbyteSource(new AirbyteIntegrationLauncher(getImageName(), pbf));
+    final AirbyteSource source = new DefaultAirbyteSource(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), pbf));
     final List<AirbyteMessage> messages = new ArrayList<>();
 
     source.start(tapConfig, jobRoot);
