@@ -157,7 +157,7 @@ class Client:
 
     def get_channels(self):
         for group_id in self._get_group_ids():
-            for channels in self._fetch_data(f"teams/{group_id}/channels", pagination=True):
+            for channels in self._fetch_data(f"teams/{group_id}/channels", pagination=False):
                 yield channels
 
     def _get_channel_ids(self, group_id: str):
