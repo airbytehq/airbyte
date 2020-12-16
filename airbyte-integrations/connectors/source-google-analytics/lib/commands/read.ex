@@ -28,15 +28,6 @@ defmodule Airbyte.Source.GoogleAnalytics.Commands.Read do
         catalog: %ConfiguredAirbyteCatalog{} = catalog,
         state: state
       ) do
-    # stream =
-    #   Stream.concat(
-    #     static_streams(spec)
-    #     catalog.streams |> process_stream(spec, &1, state)
-    #   )
-    #   |> Stream.filter()
-
-    # stream = catalog.streams |> Stream.map(&process_stream(spec, &1, state))
-
     {:ok, conn} = Client.connection(spec)
 
     metrics = [
@@ -47,35 +38,23 @@ defmodule Airbyte.Source.GoogleAnalytics.Commands.Read do
       "ga:pageviews",
       "ga:pageviewsPerSession",
       "ga:avgSessionDuration",
-      "ga:bounceRate"
+      "ga:bounceRate",
+      "ga:adCost"
     ]
 
-    # {:ok, d} =
-    #   get_data(
-    #     conn,
-    #     "93282827",
-    #     "2015-01-01",
-    #     "2020-12-01",
-    #     metrics,
-    #     ["ga:date"]
-    #   )
+    request = %DataRequest{
+      profile_id: "93282827",
+      start_date: "2020-01-01",
+      end_date: "2020-12-01",
+      metrics: metrics,
+      dimensions: ["ga:date"]
+    }
 
-    ["1"]
-    |> Stream.cycle()
-    |> Stream.map(fn _ ->
-      IO.write(".")
+    conn
+    |> DataRequest.query(request)
+    |> IO.inspect()
 
-      request = %DataRequest{
-        profile_id: "93282827",
-        start_date: "2015-01-01",
-        end_date: "2020-12-01",
-        metrics: metrics,
-        dimensions: ["ga:date"]
-      }
-
-      conn |> DataRequest.query(request)
-    end)
-    |> Stream.run()
+    # |> IO.inspect()
 
     stream = static_streams(spec)
     # stream =

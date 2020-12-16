@@ -22,6 +22,8 @@ defmodule Airbyte.Source.GoogleAnalytics.Commands.Discover do
     # get_custom_fields(conn)
 
     get_standard_fields(conn)
+    |> Enum.filter(fn col -> col.attributes["dataType"] == "CURRENCY" end)
+    |> IO.inspect()
 
     streams = [
       Streams.Accounts.stream(),
@@ -41,12 +43,12 @@ defmodule Airbyte.Source.GoogleAnalytics.Commands.Discover do
   ]
 
   defp get_standard_fields(conn) do
-    {:ok, columns} = Metadata.analytics_metadata_columns_list(conn, "ga")
-
-    columns.items
-    |> Stream.reject(&reject_unsupported_fields/1)
-    |> Stream.reject(&reject_deprecated_fields/1)
-    |> Enum.to_list()
+    with {:ok, columns} <- Metadata.analytics_metadata_columns_list(conn, "ga") do
+      columns.items
+      |> Stream.reject(&reject_unsupported_fields/1)
+      |> Stream.reject(&reject_deprecated_fields/1)
+      |> Enum.to_list()
+    end
   end
 
   defp reject_unsupported_fields(%Column{id: id}), do: Enum.member?(@unsupported_fields, id)
