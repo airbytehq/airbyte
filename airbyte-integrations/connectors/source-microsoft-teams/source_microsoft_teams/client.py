@@ -26,7 +26,7 @@ import csv
 import io
 import json
 import pkgutil
-from typing import Dict, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 
 import msal
 import requests
@@ -66,7 +66,7 @@ class Client:
         api_url = f"{self.MICROSOFT_GRAPH_BASE_API_URL}{self.MICROSOFT_GRAPH_API_VERSION}/{endpoint}/"
         return api_url
 
-    def _get_access_token(self) -> Dict[str, str]:
+    def _get_access_token(self) -> str:
         scope = ["https://graph.microsoft.com/.default"]
         result = self.msal_app.acquire_token_silent(scope, account=None)
         if not result:
@@ -76,7 +76,7 @@ class Client:
         else:
             raise MsalServiceError(error=result.get("error"), error_description=result.get("error_description"))
 
-    def _make_request(self, api_url: str, params: Optional[Dict] = None):
+    def _make_request(self, api_url: str, params: Optional[Dict] = None) -> Union[Dict, object]:
         access_token = self._get_access_token()
         headers = {"Authorization": f"Bearer {access_token}"}
         response = requests.get(api_url, headers=headers, params=params)
@@ -89,7 +89,7 @@ class Client:
         return raw_response
 
     @staticmethod
-    def _get_response_value_unsafe(raw_response: Dict):
+    def _get_response_value_unsafe(raw_response: Dict) -> List:
         if "value" not in raw_response:
             raise requests.exceptions.RequestException()
         value = raw_response["value"]
