@@ -10,7 +10,7 @@ If you're interested in our progress on the Airbyte platform, please read below!
 
 ## 0.8.0 - delivered on 12/17/2020
 
-* **Incremental v1 named "Append"**
+* **Incremental - Append"**
   * We now allow sources to replicate only new or modified data. This enables to avoid re-fetching data that you have already replicated from a source. 
   * The delta from a sync will be _appended_ to the existing data in the data warehouse.
   * Here are [all the details of this feature](architecture/incremental.md).
@@ -77,4 +77,3 @@ This is our very first release after 2 months of work.
 * **New blog:** we published a few articles on our startup journey, but also about our vision to making data integrations a commodity. 
 
 Stay tuned, we will have new sources and destinations very soon! Don't hesitate to subscribe to our [newsletter](https://airbyte.io/#subscribe-newsletter) to receive our product updates and community news.
-
