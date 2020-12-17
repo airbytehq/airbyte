@@ -49,6 +49,8 @@ Some APIs aren't supported in v1.0, e.g. channel messages and channel messages r
 
 ### Performance considerations
 
+The connector is restricted by normal Microsoft Graph [requests limitation](https://docs.microsoft.com/en-us/graph/throttling).
+
 ## Getting started
 
 ### Requirements

@@ -26,6 +26,7 @@ import csv
 import io
 import json
 import pkgutil
+import time
 from typing import Dict, List, Optional, Tuple, Union
 
 import msal
@@ -85,6 +86,11 @@ class Client:
         access_token = self._get_access_token()
         headers = {"Authorization": f"Bearer {access_token}"}
         response = requests.get(api_url, headers=headers, params=params)
+        if response.status_code == 429:
+            if 'Retry-After' in response.headers:
+                pause_time = float(response.headers['Retry-After'])
+                time.sleep(pause_time)
+                response = requests.get(api_url, headers=headers, params=params)
         if response.status_code != 200:
             raise requests.exceptions.RequestException(response.text)
         if response.headers["Content-Type"] == "application/octet-stream":
