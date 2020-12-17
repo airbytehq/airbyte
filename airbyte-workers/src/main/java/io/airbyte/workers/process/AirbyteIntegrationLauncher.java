@@ -35,10 +35,14 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
 
   private final static Logger LOGGER = LoggerFactory.getLogger(AirbyteIntegrationLauncher.class);
 
+  private final long jobId;
+  private final int attempt;
   private final String imageName;
   private final ProcessBuilderFactory pbf;
 
-  public AirbyteIntegrationLauncher(final String imageName, final ProcessBuilderFactory pbf) {
+  public AirbyteIntegrationLauncher(long jobId, int attempt, final String imageName, final ProcessBuilderFactory pbf) {
+    this.jobId = jobId;
+    this.attempt = attempt;
     this.imageName = imageName;
     this.pbf = pbf;
   }
@@ -46,6 +50,8 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   @Override
   public ProcessBuilder spec(final Path jobRoot) throws WorkerException {
     return pbf.create(
+        jobId,
+        attempt,
         jobRoot,
         imageName,
         "spec");
@@ -54,6 +60,8 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   @Override
   public ProcessBuilder check(final Path jobRoot, final String configFilename) throws WorkerException {
     return pbf.create(
+        jobId,
+        attempt,
         jobRoot,
         imageName,
         "check",
@@ -63,6 +71,8 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   @Override
   public ProcessBuilder discover(final Path jobRoot, final String configFilename) throws WorkerException {
     return pbf.create(
+        jobId,
+        attempt,
         jobRoot,
         imageName,
         "discover",
@@ -85,12 +95,21 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
       arguments.add(stateFilename);
     }
 
-    return pbf.create(jobRoot, imageName, arguments);
+    return pbf.create(
+        jobId,
+        attempt,
+        jobRoot,
+        imageName,
+        arguments);
   }
 
   @Override
   public ProcessBuilder write(Path jobRoot, String configFilename, String catalogFilename) throws WorkerException {
-    return pbf.create(jobRoot, imageName,
+    return pbf.create(
+        jobId,
+        attempt,
+        jobRoot,
+        imageName,
         "write",
         "--config", configFilename,
         "--catalog", catalogFilename);

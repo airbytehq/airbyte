@@ -21,6 +21,7 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 | Feature | Supported?\(Yes/No\) | Notes |
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
+| Incremental - Append Sync | Yes |  |
 
 #### Target Database
 

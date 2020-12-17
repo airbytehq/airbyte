@@ -1,41 +1,36 @@
 # Testing Connectors
 
-
 ## Airbyte's Standard Tests
-To ensure a minimum quality bar, Airbyte runs all connectors against the same set of integration tests (sources & destinations 
-have two different test suites). Those tests ensure that each connector adheres to the 
-[Airbyte Specification](../../architecture/airbyte-specification.md) and responds correctly to Airbyte commands when provided valid 
-(or invalid) inputs. 
+
+To ensure a minimum quality bar, Airbyte runs all connectors against the same set of integration tests \(sources & destinations have two different test suites\). Those tests ensure that each connector adheres to the [Airbyte Specification](../../architecture/airbyte-specification.md) and responds correctly to Airbyte commands when provided valid \(or invalid\) inputs.
 
 ### Architecture of standard tests
+
 ![Standard test sequence diagram](../../.gitbook/assets/standard_tests_sequence1.png)
-_Sequence diagram of a Standard Test Suite run_. 
 
 The Standard Test Suite runs its tests against the connector's Docker image. It takes as input the following:
+
 * **The Connector's Docker image name**, so it can run tests against that image
 * **A config file** containing necessary credentials/information to connect to the underlying data source/destination
 * **A configured catalog** that will be used when running read/write operations against the connector
-* **(Optional) A state file** for use in incremental sync test scenarios
+* **\(Optional\) A state file** for use in incremental sync test scenarios
 
-The test suite then runs its test cases, which include: 
+The test suite then runs its test cases, which include:
+
 * Using the input config file, running the `check` operation should succeed. 
 * Using a made up/fake config file, running the `check` operation should fail. 
 * Running a `read` operation should produce at least one record. 
 * Running two consecutive full refresh reads should produce identical records. 
-etc...
 
 See all the test cases and their description in [Standard Source Tests](./standard-source-tests.md). 
 
 ### Setting up standard tests for your connector
-Standard tests are typically run from a docker container. The default standard test runner is the File-based Standard Test suite, which
-gets its name because its inputs are passed as files via Docker volume mounts. This is the simplest way to run the standard test
-suite: the only requirements are that you place its input files inside your connector's directory, and to pass the paths to those input
-files as arguments to the Gradle plugin required to invoke it. This is setup by default inside the `build.gradle` file on all
-connectors generated from templates. 
-  
-For reference,to configure the file-based standard test suite the only requirement is to add the following block in your connectors 
-`build.gradle` file:
-```
+
+Standard tests are typically run from a docker container. The default standard test runner is the File-based Standard Test suite, which gets its name because its inputs are passed as files via Docker volume mounts. This is the simplest way to run the standard test suite: the only requirements are that you place its input files inside your connector's directory, and to pass the paths to those input files as arguments to the Gradle plugin required to invoke it. This is setup by default inside the `build.gradle` file on all connectors generated from templates.
+
+For reference, to configure the file-based standard test suite the only requirement is to add the following block in your connectors `build.gradle` file:
+
+```text
 apply plugin: 'airbyte-standard-source-test-file'
 airbyteStandardSourceTestFile { 
   // all these paths must be inside your connector's directory
@@ -45,20 +40,18 @@ airbyteStandardSourceTestFile {
 }
 ```
 
-These inputs are all described in the [Airbyte Specification](../../architecture/airbyte-specification.md) and will be used as follows: 
+These inputs are all described in the [Airbyte Specification](../../architecture/airbyte-specification.md) and will be used as follows:
+
 * **Spec file** will be compared to the spec file output by the connector when the `spec` command is called. 
 * **Config file** is expected to be a valid config file. It's expected that calling `check` with this config will succeed. 
-* **Configured Catalog** read operations will be performed on all the streams found in this catalog. All sync modes supported for each stream will be tested. If any stream requires a user-defined cursor, this should be defined in this catalog file. (If this sounds like gibberish, make sure to read about incremental sync). 
+* **Configured Catalog** read operations will be performed on all the streams found in this catalog. All sync modes supported for each stream will be tested. If any stream requires a user-defined cursor, this should be defined in this catalog file. \(If this sounds like gibberish, make sure to read about incremental sync\). 
 
-### Dynamically managing inputs & resources used in standard tests  
-Since the inputs to standard tests are often static, the file-based runner is sufficient for most connectors. However, in some 
-cases, you may need to run pre or post hooks to dynamically create or destroy resources for use in standard tests. 
-For example, if we need to spin up a Redshift cluster to use in the test then tear it down afterwards, we need the ability to run 
-code before and after the tests, as well as customize the Redshift cluster URL we pass to the standard tests. If you have need for 
-this use case, please reach out to us via [Github](https://github.com/airbytehq/airbyte) or [Slack](https://slack.airbyte.io). We 
-currently support it for Java & Python, and other languages can be made available upon request. 
+### Dynamically managing inputs & resources used in standard tests
+
+Since the inputs to standard tests are often static, the file-based runner is sufficient for most connectors. However, in some cases, you may need to run pre or post hooks to dynamically create or destroy resources for use in standard tests. For example, if we need to spin up a Redshift cluster to use in the test then tear it down afterwards, we need the ability to run code before and after the tests, as well as customize the Redshift cluster URL we pass to the standard tests. If you have need for this use case, please reach out to us via [Github](https://github.com/airbytehq/airbyte) or [Slack](https://slack.airbyte.io). We currently support it for Java & Python, and other languages can be made available upon request.
 
 ## Running Integration tests
+
 The GitHub `master` and branch builds will build the core Airbyte infrastructure \(scheduler, ui, etc\) as well as the images for all connectors. Integration tests \(tests that run a connector's image against an external resource\) can be run one of three ways.
 
 ### 1. Local iteration
@@ -69,11 +62,7 @@ First, you can run the image locally. Connectors should have instructions in the
 
 If you don't want to handle secrets, you're making a relatively minor change, or you want to ensure the connector's integration test will run remotely, you should request builds on GitHub. You can request an integration test run by creating a comment with a slash command.
 
-Here are some example commands: 
-1. `/test connector=all` - Runs integration tests for all connectors in a single GitHub workflow. Some of our integration tests interact with rate-limited resources, so please use this judiciously. 
-2. `/test connector=source-sendgrid` - Runs integration tests for a single connector on the latest PR commit. 
-3. `/test connector=source-sendgrid ref=master` - Runs integration tests for a single connector on a different branch. 
-4. `/test connector=source-sendgrid ref=d5c53102` - Runs integration tests for a single connector on a specific commit.
+Here are some example commands: 1. `/test connector=all` - Runs integration tests for all connectors in a single GitHub workflow. Some of our integration tests interact with rate-limited resources, so please use this judiciously. 2. `/test connector=source-sendgrid` - Runs integration tests for a single connector on the latest PR commit. 3. `/test connector=source-sendgrid ref=master` - Runs integration tests for a single connector on a different branch. 4. `/test connector=source-sendgrid ref=d5c53102` - Runs integration tests for a single connector on a specific commit.
 
 A command dispatcher GitHub workflow will launch on comment submission. This dispatcher will add an :eyes: reaction to the comment when it starts processing. If there is an error dispatching your request, an error will be appended to your comment. If it launches the test run successfully, a :rocket: reaction will appear on your comment.
 

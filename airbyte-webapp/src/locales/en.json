@@ -75,6 +75,7 @@
   "form.reset": "Reset",
   "form.resetData": "Reset your data",
   "form.changedColumns": "You have changed which column is used to detect new records for a stream. You may want to reset the data in your stream.",
+  "form.resetDataText": "Resetting your data will delete all the data for this connection in your destination and start syncs from scratch. Are you sure you want to do this?",
   "form.dockerError": "Could not find docker image",
 
   "preferences.title": "Specify your preferences",
@@ -142,6 +143,7 @@
   "sources.countMB": "{count} MB",
   "sources.countGB": "{count} GB",
   "sources.countTB": "{count} TB",
+  "sources.downloadLogs": "Download logs",
 
   "destination.destinationSettings": "Destination Settings",
   "destination.newDestination": "+ new destination",
