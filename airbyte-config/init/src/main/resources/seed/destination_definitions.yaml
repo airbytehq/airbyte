@@ -1,7 +1,7 @@
 - destinationDefinitionId: 8be1cf83-fde1-477f-a4ad-318d23c9f3c6
   name: Local CSV
   dockerRepository: airbyte/destination-csv
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.5
   documentationUrl: https://hub.docker.com/r/airbyte/integration-singer-csv-destination
 - destinationDefinitionId: 25c5221d-dce2-4163-ade9-739ef790f503
   name: Postgres
@@ -11,7 +11,7 @@
 - destinationDefinitionId: 22f6c74f-5699-40ff-833c-4a879ea40133
   name: BigQuery
   dockerRepository: airbyte/destination-bigquery
-  dockerImageTag: 0.1.10
+  dockerImageTag: 0.1.11
   documentationUrl: https://hub.docker.com/r/airbyte/integration-singer-bigquery-destination
 - destinationDefinitionId: 424892c4-daac-4491-b35d-c6688ba547ba
   name: Snowflake

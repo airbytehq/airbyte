@@ -22,22 +22,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import json
 import os
 
 from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, Status
-from base_python import AirbyteLogger, CatalogHelper, ConfigContainer
-from base_singer import SingerSource
+from base_python import AirbyteLogger, CatalogHelper
+from base_singer import SingerHelper, SingerSource
 
 
 class SourceGoogleAdwordsSinger(SingerSource):
-    def __init__(self):
-        pass
-
-    def check(self, logger, config_container) -> AirbyteConnectionStatus:
+    def check_config(self, logger: AirbyteLogger, config_path: str, config: json) -> AirbyteConnectionStatus:
         try:
             # singer catalog that attempts to pull a stream ("accounts") that should always exists, though it may be empty.
             singer_check_catalog_path = os.path.abspath(os.path.dirname(__file__)) + "/singer_check_catalog.json"
-            if self.read(logger, config_container, singer_check_catalog_path, None) is not None:
+            read_cmd = self.read_cmd(logger, config_path, singer_check_catalog_path)
+            if SingerHelper.read(logger, read_cmd) is not None:
                 return AirbyteConnectionStatus(status=Status.SUCCEEDED)
             else:
                 return AirbyteConnectionStatus(status=Status.FAILED)
@@ -48,19 +47,17 @@ class SourceGoogleAdwordsSinger(SingerSource):
     def discover_cmd(self, logger, config_path) -> str:
         return f"tap-adwords --config {config_path} --discover"
 
-    def discover(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteCatalog:
+    def discover(self, logger: AirbyteLogger, config_container) -> AirbyteCatalog:
         catalog = super().discover(logger, config_container)
         return CatalogHelper.coerce_catalog_as_full_refresh(catalog)
 
     def read_cmd(self, logger, config_path, catalog_path, state_path=None) -> str:
         config_option = f"--config {config_path}"
         properties_option = f"--properties {catalog_path}"
-        # We don't pass the state because this tap does not respect the replication-method catalog key
         return f"tap-adwords {config_option} {properties_option}"
 
     def transform_config(self, raw_config):
         # required property in the singer tap, but seems like an implementation detail of stitch
         # https://github.com/singer-io/tap-adwords/blob/cf0c1ff7dae8503f97173a15cf8d78bf975069f8/tap_adwords/__init__.py#L963-L969
         raw_config["user_agent"] = "unknown"
-
         return raw_config

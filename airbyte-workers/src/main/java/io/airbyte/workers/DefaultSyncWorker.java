@@ -49,6 +49,8 @@ public class DefaultSyncWorker implements SyncWorker {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSyncWorker.class);
 
+  private final long jobId;
+  private final int attempt;
   private final Source<AirbyteMessage> source;
   private final Destination<AirbyteMessage> destination;
   private final MessageTracker<AirbyteMessage> messageTracker;
@@ -56,10 +58,15 @@ public class DefaultSyncWorker implements SyncWorker {
 
   private final AtomicBoolean cancelled;
 
-  public DefaultSyncWorker(final Source<AirbyteMessage> source,
+  public DefaultSyncWorker(
+                           final long jobId,
+                           final int attempt,
+                           final Source<AirbyteMessage> source,
                            final Destination<AirbyteMessage> destination,
                            final MessageTracker<AirbyteMessage> messageTracker,
                            final NormalizationRunner normalizationRunner) {
+    this.jobId = jobId;
+    this.attempt = attempt;
     this.source = source;
     this.destination = destination;
     this.messageTracker = messageTracker;
@@ -95,17 +102,21 @@ public class DefaultSyncWorker implements SyncWorker {
 
       destination.notifyEndOfStream();
 
-      try (normalizationRunner) {
-        LOGGER.info("Running normalization.");
-        normalizationRunner.start();
-        final Path normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"));
-        if (!normalizationRunner.normalize(normalizationRoot, syncInput.getDestinationConnection().getConfiguration(), syncInput.getCatalog())) {
-          throw new WorkerException("Normalization Failed.");
-        }
-      }
     } catch (Exception e) {
       LOGGER.error("Sync worker failed.", e);
 
+      return new OutputAndStatus<>(JobStatus.FAILED, null);
+    }
+
+    try (normalizationRunner) {
+      LOGGER.info("Running normalization.");
+      normalizationRunner.start();
+      final Path normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"));
+      if (!normalizationRunner.normalize(jobId, attempt, normalizationRoot, syncInput.getDestinationConfiguration(), syncInput.getCatalog())) {
+        throw new WorkerException("Normalization Failed.");
+      }
+    } catch (Exception e) {
+      LOGGER.error("Normalization Failed.", e);
       return new OutputAndStatus<>(JobStatus.FAILED, null);
     }
 
@@ -121,7 +132,6 @@ public class DefaultSyncWorker implements SyncWorker {
     final StandardSyncOutput output = new StandardSyncOutput().withStandardSyncSummary(summary);
     messageTracker.getOutputState().ifPresent(capturedState -> {
       final State state = new State()
-          .withConnectionId(tapConfig.getConnectionId())
           .withState(capturedState);
       output.withState(state);
     });

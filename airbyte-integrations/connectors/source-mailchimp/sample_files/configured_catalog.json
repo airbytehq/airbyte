@@ -791,7 +791,9 @@
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["create_time"]
-      }
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["create_time"]
     },
     {
       "stream": {
@@ -1155,7 +1157,9 @@
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["date_created"]
-      }
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["date_created"]
     }
   ]
 }

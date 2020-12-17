@@ -7,6 +7,7 @@ import { useIntl } from "react-intl";
 import ListItem, { IDataItem } from "./components/ListItem";
 import ValueInput from "./components/ValueInput";
 import WithButtonItem from "./components/WithButtonItem";
+import GroupHeader from "./components/GroupHeader";
 
 export type IProps = {
   disabled?: boolean;
@@ -17,10 +18,17 @@ export type IProps = {
   data: Array<IDataItem>;
   onSelect?: (item: IDataItem) => void;
   withButton?: boolean;
+  withBorder?: boolean;
   textButton?: string;
+  className?: string;
+  groupBy?: string;
 };
 
-const StyledDropdownList = styled(DropdownList)<{ disabled?: boolean }>`
+const StyledDropdownList = styled(DropdownList)<{
+  disabled?: boolean;
+  withBorder?: boolean;
+}>`
+  text-align: left;
   &.rw-state-disabled {
     pointer-events: none;
     cursor: auto;
@@ -35,9 +43,11 @@ const StyledDropdownList = styled(DropdownList)<{ disabled?: boolean }>`
   }
 
   & > .rw-widget-container {
-    height: 36px;
+    height: ${({ withBorder }) => (withBorder ? 31 : 36)}px;
     box-shadow: none;
-    border: 1px solid ${({ theme }) => theme.greyColor0};
+    border: 1px solid
+      ${({ theme, withBorder }) =>
+        withBorder ? theme.greyColor30 : theme.greyColor0};
     background: ${({ theme }) => theme.greyColor0};
     border-radius: 4px;
 
@@ -57,6 +67,7 @@ const StyledDropdownList = styled(DropdownList)<{ disabled?: boolean }>`
     border-radius: 0;
     border-bottom: 1px solid ${({ theme }) => theme.greyColor20};
     padding: 10px 16px;
+    width: 100%;
   }
 
   & .rw-placeholder {
@@ -91,6 +102,7 @@ const StyledDropdownList = styled(DropdownList)<{ disabled?: boolean }>`
   & .rw-list-option.rw-state-selected {
     background: ${({ theme }) => theme.primaryColor12};
     color: ${({ theme }) => theme.primaryColor};
+    pointer-events: none;
   }
 
   &.rw-state-focus {
@@ -102,6 +114,19 @@ const StyledDropdownList = styled(DropdownList)<{ disabled?: boolean }>`
 
     & .rw-btn {
       color: ${({ theme }) => theme.primaryColor};
+    }
+  }
+
+  & > .rw-popup-container {
+    min-width: 260px;
+    & .rw-select {
+      display: none;
+    }
+
+    & .rw-list-optgroup {
+      width: 100%;
+      padding: 0;
+      border: none;
     }
   }
 
@@ -147,9 +172,14 @@ const StyledDropdownList = styled(DropdownList)<{ disabled?: boolean }>`
 const DropDown: React.FC<IProps> = props => {
   const formatMessage = useIntl().formatMessage;
 
+  const className = `${props.className} ${
+    props.withButton ? "withButton" : ""
+  }`;
+
   return (
     <StyledDropdownList
-      containerClassName={props.withButton ? "withButton" : ""}
+      withBorder={props.withBorder}
+      containerClassName={className}
       filter={props.hasFilter ? "contains" : false}
       placeholder={
         props.withButton ? props.textButton : props.placeholder || "..."
@@ -164,6 +194,8 @@ const DropDown: React.FC<IProps> = props => {
       textField="text"
       valueField="value"
       value={props.value}
+      groupBy={props.groupBy || undefined}
+      groupComponent={GroupHeader}
       disabled={props.disabled}
       valueComponent={({ item }: { item: IDataItem }) =>
         props.withButton ? (

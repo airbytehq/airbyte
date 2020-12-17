@@ -27,6 +27,7 @@ package io.airbyte.test.acceptance;
 import static io.airbyte.api.client.model.ConnectionSchedule.TimeUnitEnum.MINUTES;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -47,8 +48,8 @@ import io.airbyte.api.client.model.DataType;
 import io.airbyte.api.client.model.DestinationCreate;
 import io.airbyte.api.client.model.DestinationIdRequestBody;
 import io.airbyte.api.client.model.DestinationRead;
-import io.airbyte.api.client.model.JobStatusRead;
-import io.airbyte.api.client.model.JobStatusReadStatus;
+import io.airbyte.api.client.model.JobInfoRead;
+import io.airbyte.api.client.model.JobStatus;
 import io.airbyte.api.client.model.SourceCreate;
 import io.airbyte.api.client.model.SourceIdRequestBody;
 import io.airbyte.api.client.model.SourceRead;
@@ -252,7 +253,7 @@ public class AcceptanceTests {
                     .cleanedName(COLUMN_NAME)
                     .dataType(DataType.STRING)
                     .selected(true)))
-            .supportedSyncModes(Collections.emptyList())
+            .supportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .defaultCursorField(Collections.emptyList())
             .cursorField(Collections.emptyList())));
 
@@ -291,9 +292,8 @@ public class AcceptanceTests {
 
     final UUID connectionId = createConnection(connectionName, sourceId, destinationId, schema, null, syncMode).getConnectionId();
 
-    final JobStatusRead connectionSyncRead = apiClient.getConnectionApi()
-        .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    assertEquals(JobStatusReadStatus.SUCCEEDED, connectionSyncRead.getStatus());
+    final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    assertEquals(JobStatus.SUCCEEDED, connectionSyncRead.getJob().getStatus());
     assertSourceAndTargetDbInSync(sourcePsql);
   }
 
@@ -305,12 +305,11 @@ public class AcceptanceTests {
     final UUID destinationId = createCsvDestination().getDestinationId();
     final SourceSchema schema = discoverSourceSchema(sourceId);
 
-    // todo (cgardens) - comment in when pg source supports incremental.
-    // assertEquals(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
-    // schema.getStreams().get(0).getSupportedSyncModes());
-    // assertEquals(false, schema.getStreams().get(0).getSourceDefinedCursor()); // instead of
-    // assertFalse to avoid NPE from unboxed.
-    // assertNull(schema.getStreams().get(0).getDefaultCursorField());
+    assertEquals(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
+        schema.getStreams().get(0).getSupportedSyncModes());
+    // instead of assertFalse to avoid NPE from unboxed.
+    assertNull(schema.getStreams().get(0).getSourceDefinedCursor());
+    assertTrue(schema.getStreams().get(0).getDefaultCursorField().isEmpty());
 
     // update schema to use incremental
     schema.getStreams().get(0)
@@ -318,14 +317,13 @@ public class AcceptanceTests {
         .cursorField(Lists.newArrayList("id"));
 
     schema.getStreams().forEach(table -> table.getFields().forEach(c -> c.setSelected(true))); // select all fields
-    // todo (cgardens) - this enum as part of the enum is deprecated.
     final SyncMode syncMode = SyncMode.INCREMENTAL;
 
     final UUID connectionId = createConnection(connectionName, sourceId, destinationId, schema, null, syncMode).getConnectionId();
 
-    final JobStatusRead connectionSyncRead1 = apiClient.getConnectionApi()
+    final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    assertEquals(JobStatusReadStatus.SUCCEEDED, connectionSyncRead1.getStatus());
+    assertEquals(JobStatus.SUCCEEDED, connectionSyncRead1.getJob().getStatus());
     assertSourceAndTargetDbInSync(sourcePsql);
 
     // add new records and run again.
@@ -335,18 +333,25 @@ public class AcceptanceTests {
     expectedRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, "geralt").build()));
     // add a new record
     database.query(ctx -> ctx.execute("INSERT INTO id_and_name(id, name) VALUES(6, 'geralt')"));
-    // todo (cgardens) - comment this in when both the source and destination here actually support
-    // incremental.
     // mutate a record that was already synced with out updating its cursor value. if we are actually
     // full refreshing, this record will appear in the output and cause the test to fail. if we are,
     // correctly, doing incremental, we will not find this value in the destination.
-    // database.query(ctx -> ctx.execute("UPDATE id_and_name SET name='yennefer' WHERE id=2"));
+    database.query(ctx -> ctx.execute("UPDATE id_and_name SET name='yennefer' WHERE id=2"));
     database.close();
 
-    final JobStatusRead connectionSyncRead2 = apiClient.getConnectionApi()
+    final JobInfoRead connectionSyncRead2 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    assertEquals(JobStatusReadStatus.SUCCEEDED, connectionSyncRead2.getStatus());
+    assertEquals(JobStatus.SUCCEEDED, connectionSyncRead2.getJob().getStatus());
     assertDestinationContains(expectedRecords, TABLE_NAME);
+
+    // reset back to no data.
+    apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    assertDestinationContains(Collections.emptyList(), TABLE_NAME);
+
+    // sync one more time. verify it is the equivalent of a full refresh.
+    final JobInfoRead connectionSyncRead3 = apiClient.getConnectionApi()
+        .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    assertEquals(JobStatus.SUCCEEDED, connectionSyncRead3.getJob().getStatus());
     assertSourceAndTargetDbInSync(sourcePsql);
   }
 

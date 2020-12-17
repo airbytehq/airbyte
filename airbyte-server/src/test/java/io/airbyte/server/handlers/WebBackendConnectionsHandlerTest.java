@@ -28,6 +28,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.Lists;
+import io.airbyte.api.model.AttemptRead;
+import io.airbyte.api.model.AttemptStatus;
 import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.ConnectionReadList;
@@ -38,6 +41,7 @@ import io.airbyte.api.model.JobListRequestBody;
 import io.airbyte.api.model.JobRead;
 import io.airbyte.api.model.JobReadList;
 import io.airbyte.api.model.JobStatus;
+import io.airbyte.api.model.JobWithAttemptsRead;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.WbConnectionRead;
@@ -100,13 +104,22 @@ class WebBackendConnectionsHandlerTest {
     when(destinationHandler.getDestination(destinationIdRequestBody)).thenReturn(destinationRead);
 
     final Instant now = Instant.now();
-    final JobRead jobRead = new JobRead();
-    jobRead.setConfigId(connectionRead.getConnectionId().toString());
-    jobRead.setConfigType(JobConfigType.SYNC);
-    jobRead.setId(10L);
-    jobRead.setStatus(JobStatus.COMPLETED);
-    jobRead.setCreatedAt(now.getEpochSecond());
-    jobRead.setUpdatedAt(now.getEpochSecond());
+    final JobWithAttemptsRead jobRead = new JobWithAttemptsRead()
+        .job(new JobRead()
+            .configId(connectionRead.getConnectionId().toString())
+            .configType(JobConfigType.SYNC)
+            .id(10L)
+            .status(JobStatus.SUCCEEDED)
+            .createdAt(now.getEpochSecond())
+            .updatedAt(now.getEpochSecond()))
+        .attempts(Lists.newArrayList(new AttemptRead()
+            .id(12L)
+            .status(AttemptStatus.SUCCEEDED)
+            .bytesSynced(100L)
+            .recordsSynced(15L)
+            .createdAt(now.getEpochSecond())
+            .updatedAt(now.getEpochSecond())
+            .endedAt(now.getEpochSecond())));
 
     final JobReadList jobReadList = new JobReadList();
     jobReadList.setJobs(Collections.singletonList(jobRead));

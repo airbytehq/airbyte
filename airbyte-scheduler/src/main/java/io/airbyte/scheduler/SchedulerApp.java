@@ -37,6 +37,7 @@ import io.airbyte.db.Databases;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
+import io.airbyte.workers.process.KubeProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -101,6 +102,18 @@ public class SchedulerApp {
     Runtime.getRuntime().addShutdownHook(new GracefulShutdownHandler(Duration.ofSeconds(GRACEFUL_SHUTDOWN_SECONDS), workerThreadPool, scheduledPool));
   }
 
+  private static ProcessBuilderFactory getProcessBuilderFactory(Configs configs) {
+    if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
+      return new KubeProcessBuilderFactory(configs.getWorkspaceRoot());
+    } else {
+      return new DockerProcessBuilderFactory(
+          configs.getWorkspaceRoot(),
+          configs.getWorkspaceDockerMount(),
+          configs.getLocalDockerMount(),
+          configs.getDockerNetwork());
+    }
+  }
+
   public static void main(String[] args) {
     final Configs configs = new EnvConfigs();
 
@@ -116,17 +129,17 @@ public class SchedulerApp {
         configs.getDatabasePassword(),
         configs.getDatabaseUrl());
 
-    final ProcessBuilderFactory pbf = new DockerProcessBuilderFactory(
-        workspaceRoot,
-        configs.getWorkspaceDockerMount(),
-        configs.getLocalDockerMount(),
-        configs.getDockerNetwork());
+    final ProcessBuilderFactory pbf = getProcessBuilderFactory(configs);
 
     final JobPersistence jobPersistence = new DefaultJobPersistence(database);
     final ConfigPersistence configPersistence = new DefaultConfigPersistence(configRoot);
     final ConfigRepository configRepository = new ConfigRepository(configPersistence);
 
-    TrackingClientSingleton.initialize(configs.getTrackingStrategy(), configs.getAirbyteVersion(), configRepository);
+    TrackingClientSingleton.initialize(
+        configs.getTrackingStrategy(),
+        configs.getAirbyteRole(),
+        configs.getAirbyteVersion(),
+        configRepository);
 
     LOGGER.info("Launching scheduler...");
     new SchedulerApp(workspaceRoot, pbf, jobPersistence, configRepository).start();

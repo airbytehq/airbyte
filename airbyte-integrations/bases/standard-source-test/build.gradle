@@ -3,10 +3,6 @@ plugins {
     id 'airbyte-docker'
 }
 
-application {
-    mainClass = 'io.airbyte.integrations.base.TestPythonSourceMain'
-}
-
 dependencies {
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-protocol:models')

@@ -31,14 +31,18 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.AirbyteProtocolConverters;
 import io.airbyte.config.JobConfig;
+import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.StandardSyncInput;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import io.airbyte.workers.wrappers.JobOutputCheckConnectionWorker;
@@ -58,6 +62,9 @@ import org.mockito.ArgumentCaptor;
 class WorkerRunFactoryTest {
 
   private static final JsonNode CONFIG = Jsons.jsonNode(1);
+  private static final JsonNode CONFIG2 = Jsons.jsonNode(2);
+  private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = new ConfiguredAirbyteCatalog()
+      .withStreams(Lists.newArrayList(new ConfiguredAirbyteStream().withSyncMode(SyncMode.FULL_REFRESH)));
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
 
   private Job job;
@@ -71,7 +78,6 @@ class WorkerRunFactoryTest {
     job = mock(Job.class, RETURNS_DEEP_STUBS);
     when(job.getId()).thenReturn(1L);
     when(job.getAttemptsCount()).thenReturn(2);
-    when(job.getConfig().getSync().getDestinationDockerImage()).thenReturn("airbyte/destination-moon:0.1.0");
 
     creator = mock(WorkerRunFactory.Creator.class);
     rootPath = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "test");
@@ -89,8 +95,8 @@ class WorkerRunFactoryTest {
 
     factory.create(job);
 
-    StandardCheckConnectionInput expectedInput = new StandardCheckConnectionInput().withConnectionConfiguration(CONFIG);
-    ArgumentCaptor<Worker<StandardCheckConnectionInput, JobOutput>> argument = ArgumentCaptor.forClass(Worker.class);
+    final StandardCheckConnectionInput expectedInput = new StandardCheckConnectionInput().withConnectionConfiguration(CONFIG);
+    final ArgumentCaptor<Worker<StandardCheckConnectionInput, JobOutput>> argument = ArgumentCaptor.forClass(Worker.class);
     verify(creator).create(eq(rootPath.resolve("1").resolve("2")), eq(expectedInput), argument.capture());
     Assertions.assertTrue(argument.getValue() instanceof JobOutputCheckConnectionWorker);
   }
@@ -103,8 +109,8 @@ class WorkerRunFactoryTest {
 
     factory.create(job);
 
-    StandardDiscoverCatalogInput expectedInput = new StandardDiscoverCatalogInput().withConnectionConfiguration(CONFIG);
-    ArgumentCaptor<Worker<StandardDiscoverCatalogInput, JobOutput>> argument = ArgumentCaptor.forClass(Worker.class);
+    final StandardDiscoverCatalogInput expectedInput = new StandardDiscoverCatalogInput().withConnectionConfiguration(CONFIG);
+    final ArgumentCaptor<Worker<StandardDiscoverCatalogInput, JobOutput>> argument = ArgumentCaptor.forClass(Worker.class);
     verify(creator).create(eq(rootPath.resolve("1").resolve("2")), eq(expectedInput), argument.capture());
     Assertions.assertTrue(argument.getValue() instanceof JobOutputDiscoverSchemaWorker);
   }
@@ -113,18 +119,40 @@ class WorkerRunFactoryTest {
   @Test
   void testSync() {
     when(job.getConfig().getConfigType()).thenReturn(JobConfig.ConfigType.SYNC);
+    when(job.getConfig().getSync().getSourceDockerImage()).thenReturn("airbyte/source-earth:0.1.0");
+    when(job.getConfig().getSync().getDestinationDockerImage()).thenReturn("airbyte/destination-moon:0.1.0");
+    when(job.getConfig().getSync().getSourceConfiguration()).thenReturn(CONFIG);
+    when(job.getConfig().getSync().getDestinationConfiguration()).thenReturn(CONFIG2);
+    when(job.getConfig().getResetConnection().getConfiguredAirbyteCatalog()).thenReturn(CONFIGURED_CATALOG);
 
     factory.create(job);
 
-    StandardSyncInput expectedInput = new StandardSyncInput()
-        .withSourceConnection(job.getConfig().getSync().getSourceConnection())
-        .withDestinationConnection(job.getConfig().getSync().getDestinationConnection())
-        .withCatalog(AirbyteProtocolConverters.toConfiguredCatalog(job.getConfig().getSync().getStandardSync().getSchema()))
-        .withConnectionId(job.getConfig().getSync().getStandardSync().getConnectionId())
-        .withSyncMode(job.getConfig().getSync().getStandardSync().getSyncMode())
+    final StandardSyncInput expectedInput = new StandardSyncInput()
+        .withSourceConfiguration(job.getConfig().getSync().getSourceConfiguration())
+        .withDestinationConfiguration(job.getConfig().getSync().getDestinationConfiguration())
+        .withCatalog(job.getConfig().getSync().getConfiguredAirbyteCatalog())
         .withState(job.getConfig().getSync().getState());
 
-    ArgumentCaptor<Worker<StandardSyncInput, JobOutput>> argument = ArgumentCaptor.forClass(Worker.class);
+    final ArgumentCaptor<Worker<StandardSyncInput, JobOutput>> argument = ArgumentCaptor.forClass(Worker.class);
+    verify(creator).create(eq(rootPath.resolve("1").resolve("2")), eq(expectedInput), argument.capture());
+    Assertions.assertTrue(argument.getValue() instanceof JobOutputSyncWorker);
+  }
+
+  @Test
+  void testResetConnection() {
+    when(job.getConfig().getConfigType()).thenReturn(ConfigType.RESET_CONNECTION);
+    when(job.getConfig().getResetConnection().getDestinationDockerImage()).thenReturn("airbyte/source-earth:0.1.0");
+    when(job.getConfig().getResetConnection().getDestinationConfiguration()).thenReturn(CONFIG);
+    when(job.getConfig().getResetConnection().getConfiguredAirbyteCatalog()).thenReturn(CONFIGURED_CATALOG);
+
+    factory.create(job);
+
+    final StandardSyncInput expectedInput = new StandardSyncInput()
+        .withSourceConfiguration(Jsons.emptyObject())
+        .withDestinationConfiguration(job.getConfig().getResetConnection().getDestinationConfiguration())
+        .withCatalog(job.getConfig().getResetConnection().getConfiguredAirbyteCatalog());
+
+    final ArgumentCaptor<Worker<StandardSyncInput, JobOutput>> argument = ArgumentCaptor.forClass(Worker.class);
     verify(creator).create(eq(rootPath.resolve("1").resolve("2")), eq(expectedInput), argument.capture());
     Assertions.assertTrue(argument.getValue() instanceof JobOutputSyncWorker);
   }
@@ -133,12 +161,12 @@ class WorkerRunFactoryTest {
   @Test
   void testGetSpec() {
     when(job.getConfig().getConfigType()).thenReturn(JobConfig.ConfigType.GET_SPEC);
-    JobGetSpecConfig expectedConfig = new JobGetSpecConfig().withDockerImage("notarealimage");
+    final JobGetSpecConfig expectedConfig = new JobGetSpecConfig().withDockerImage("notarealimage");
     when(job.getConfig().getGetSpec()).thenReturn(expectedConfig);
 
     factory.create(job);
 
-    ArgumentCaptor<Worker<JobGetSpecConfig, JobOutput>> argument = ArgumentCaptor.forClass(Worker.class);
+    final ArgumentCaptor<Worker<JobGetSpecConfig, JobOutput>> argument = ArgumentCaptor.forClass(Worker.class);
     verify(creator).create(eq(rootPath.resolve("1").resolve("2")), eq(expectedConfig), argument.capture());
     Assertions.assertTrue(argument.getValue() instanceof JobOutputGetSpecWorker);
   }

@@ -19,6 +19,7 @@ import WorkspaceResource from "../core/resources/Workspace";
 import useSegment from "../components/hooks/useSegment";
 import { AnalyticsService } from "../core/analytics/AnalyticsService";
 import useRouter from "../components/hooks/useRouterHook";
+import SupportChat from "../components/SupportChat";
 
 export enum Routes {
   Preferences = "/preferences",
@@ -138,9 +139,7 @@ export const Routing = () => {
 
   useEffect(() => {
     if (workspace) {
-      AnalyticsService.identify({
-        customerId: workspace.customerId
-      });
+      AnalyticsService.identify(workspace.customerId);
     }
   }, [workspace]);
 
@@ -154,6 +153,10 @@ export const Routing = () => {
         ) : (
           <MainViewRoutes />
         )}
+        <SupportChat
+          papercupsConfig={config.papercups}
+          customerId={workspace.customerId}
+        />
       </Suspense>
     </Router>
   );

@@ -22,8 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, Status
-from base_python import AirbyteLogger, CatalogHelper, ConfigContainer
+import json
+
+from airbyte_protocol import AirbyteConnectionStatus, Status
+from base_python import AirbyteLogger
 from base_singer import SingerSource
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
@@ -42,10 +44,9 @@ class SourceSlackSinger(SingerSource):
             "date_window_size": "7",
         }
 
-    def check(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
+    def check_config(self, logger: AirbyteLogger, config_path: str, config: json) -> AirbyteConnectionStatus:
         try:
-            json_config = config_container.rendered_config
-            client = WebClient(token=json_config["token"])
+            client = WebClient(token=config["token"])
             client.conversations_list()
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except SlackApiError as e:
@@ -55,9 +56,6 @@ class SourceSlackSinger(SingerSource):
     def discover_cmd(self, logger: AirbyteLogger, config_path: str) -> str:
         return f"{TAP_CMD} --config {config_path} --discover"
 
-    def discover(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteCatalog:
-        catalog = super().discover(logger, config_container)
-        return CatalogHelper.coerce_catalog_as_full_refresh(catalog)
-
     def read_cmd(self, logger: AirbyteLogger, config_path: str, catalog_path: str, state_path: str = None) -> str:
-        return f"{TAP_CMD} --config {config_path} --catalog {catalog_path}"
+        state_opt = f"--state {state_path}" if state_path else ""
+        return f"{TAP_CMD} --config {config_path} --catalog {catalog_path} {state_opt}"

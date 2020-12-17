@@ -7,7 +7,10 @@ configurations {
 }
 
 dependencies {
-    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.11'
+    implementation 'org.apache.commons:commons-lang3:3.11'
+    implementation 'io.kubernetes:client-java-api:10.0.0'
+    implementation 'io.kubernetes:client-java:10.0.0'
+    implementation 'io.kubernetes:client-java-extended:10.0.0'
 
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-db')
@@ -16,6 +19,6 @@ dependencies {
 
     testImplementation 'org.mockito:mockito-inline:2.13.0'
     testImplementation 'org.testcontainers:testcontainers:1.14.3'
-    testImplementation 'org.testcontainers:postgresql:1.15.0-rc2'
+    testImplementation 'org.testcontainers:postgresql:1.15.1'
     testImplementation 'org.postgresql:postgresql:42.2.18'
 }

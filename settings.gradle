@@ -30,6 +30,7 @@ include ':airbyte-integrations:bases:base-normalization'
 include ':airbyte-integrations:bases:base-python'
 include ':airbyte-integrations:bases:base-python-test'
 include ':airbyte-integrations:bases:base-singer'
+include ':airbyte-integrations:bases:base-standard-source-test-file'
 include ':airbyte-integrations:bases:standard-destination-test'
 include ':airbyte-integrations:bases:standard-source-test'
 include ':airbyte-integrations:connector-templates:generator'
@@ -54,3 +55,4 @@ integrationsPath.eachDir { dir ->
         include ":airbyte-integrations:connectors:${dir.getFileName()}"
     }
 }
+

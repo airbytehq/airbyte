@@ -46,4 +46,6 @@ public interface JobCreator {
                      String destinationDockerImage)
       throws IOException;
 
+  long createResetConnectionJob(DestinationConnection destination, StandardSync standardSync, String destinationDockerImage) throws IOException;
+
 }

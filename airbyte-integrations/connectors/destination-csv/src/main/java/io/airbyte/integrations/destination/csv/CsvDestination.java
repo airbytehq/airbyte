@@ -40,12 +40,12 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.SyncMode;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -103,7 +103,6 @@ public class CsvDestination implements Destination {
 
     FileUtils.forceMkdir(destinationDir.toFile());
 
-    final long now = Instant.now().toEpochMilli();
     final Map<String, WriteConfig> writeConfigs = new HashMap<>();
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getStream().getName();
@@ -111,8 +110,14 @@ public class CsvDestination implements Destination {
       final String tmpTableName = getNamingResolver().getTmpTableName(streamName);
       final Path tmpPath = destinationDir.resolve(tmpTableName + ".csv");
       final Path finalPath = destinationDir.resolve(tableName + ".csv");
-      final FileWriter fileWriter = new FileWriter(tmpPath.toFile());
-      final CSVPrinter printer = new CSVPrinter(fileWriter, CSVFormat.DEFAULT.withHeader(COLUMN_AB_ID, COLUMN_EMITTED_AT, COLUMN_DATA));
+      CSVFormat csvFormat = CSVFormat.DEFAULT.withHeader(COLUMN_AB_ID, COLUMN_EMITTED_AT, COLUMN_DATA);
+      final boolean isIncremental = stream.getSyncMode() == SyncMode.INCREMENTAL;
+      if (isIncremental && finalPath.toFile().exists()) {
+        Files.copy(finalPath, tmpPath, StandardCopyOption.REPLACE_EXISTING);
+        csvFormat = csvFormat.withSkipHeaderRecord();
+      }
+      final FileWriter fileWriter = new FileWriter(tmpPath.toFile(), isIncremental);
+      final CSVPrinter printer = new CSVPrinter(fileWriter, csvFormat);
       writeConfigs.put(stream.getStream().getName(), new WriteConfig(printer, tmpPath, finalPath));
     }
 

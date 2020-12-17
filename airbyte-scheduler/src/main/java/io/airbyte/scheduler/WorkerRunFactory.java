@@ -24,12 +24,12 @@
 
 package io.airbyte.scheduler;
 
-import com.google.common.base.Preconditions;
-import io.airbyte.config.AirbyteProtocolConverters;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobOutput;
+import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
@@ -44,8 +44,10 @@ import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import io.airbyte.workers.protocols.airbyte.AirbyteMessageTracker;
+import io.airbyte.workers.protocols.airbyte.AirbyteSource;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteDestination;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteSource;
+import io.airbyte.workers.protocols.airbyte.EmptyAirbyteSource;
 import io.airbyte.workers.wrappers.JobOutputCheckConnectionWorker;
 import io.airbyte.workers.wrappers.JobOutputDiscoverSchemaWorker;
 import io.airbyte.workers.wrappers.JobOutputGetSpecWorker;
@@ -87,15 +89,17 @@ public class WorkerRunFactory {
     LOGGER.info("job root: {}", jobRoot);
 
     return switch (job.getConfig().getConfigType()) {
-      case GET_SPEC -> createGetSpecWorker(job.getConfig().getGetSpec(), jobRoot);
-      case CHECK_CONNECTION_SOURCE, CHECK_CONNECTION_DESTINATION -> createConnectionCheckWorker(job.getConfig().getCheckConnection(), jobRoot);
-      case DISCOVER_SCHEMA -> createDiscoverCatalogWorker(job.getConfig().getDiscoverCatalog(), jobRoot);
-      case SYNC -> createSyncWorker(job.getConfig().getSync(), jobRoot);
+      case GET_SPEC -> createGetSpecWorker(job.getId(), currentAttempt, job.getConfig().getGetSpec(), jobRoot);
+      case CHECK_CONNECTION_SOURCE, CHECK_CONNECTION_DESTINATION -> createConnectionCheckWorker(job.getId(), currentAttempt,
+          job.getConfig().getCheckConnection(), jobRoot);
+      case DISCOVER_SCHEMA -> createDiscoverCatalogWorker(job.getId(), currentAttempt, job.getConfig().getDiscoverCatalog(), jobRoot);
+      case SYNC -> createSyncWorkerFromSyncConfig(job.getId(), currentAttempt, job.getConfig().getSync(), jobRoot);
+      case RESET_CONNECTION -> createSyncWorkerFromResetConfig(job.getId(), currentAttempt, job.getConfig().getResetConnection(), jobRoot);
     };
   }
 
-  private WorkerRun createGetSpecWorker(JobGetSpecConfig config, Path jobRoot) {
-    final IntegrationLauncher launcher = createLauncher(config.getDockerImage());
+  private WorkerRun createGetSpecWorker(long jobId, int attempt, JobGetSpecConfig config, Path jobRoot) {
+    final IntegrationLauncher launcher = createLauncher(jobId, attempt, config.getDockerImage());
 
     return creator.create(
         jobRoot,
@@ -103,20 +107,20 @@ public class WorkerRunFactory {
         new JobOutputGetSpecWorker(new DefaultGetSpecWorker(launcher)));
   }
 
-  private WorkerRun createConnectionCheckWorker(JobCheckConnectionConfig config, Path jobRoot) {
+  private WorkerRun createConnectionCheckWorker(long jobId, int attempt, JobCheckConnectionConfig config, Path jobRoot) {
     final StandardCheckConnectionInput checkConnectionInput = getCheckConnectionInput(config);
 
-    final IntegrationLauncher launcher = createLauncher(config.getDockerImage());
+    final IntegrationLauncher launcher = createLauncher(jobId, attempt, config.getDockerImage());
     return creator.create(
         jobRoot,
         checkConnectionInput,
         new JobOutputCheckConnectionWorker(new DefaultCheckConnectionWorker(launcher)));
   }
 
-  private WorkerRun createDiscoverCatalogWorker(JobDiscoverCatalogConfig config, Path jobRoot) {
+  private WorkerRun createDiscoverCatalogWorker(long jobId, int attempt, JobDiscoverCatalogConfig config, Path jobRoot) {
     final StandardDiscoverCatalogInput discoverSchemaInput = getDiscoverCatalogInput(config);
 
-    IntegrationLauncher launcher = createLauncher(config.getDockerImage());
+    final IntegrationLauncher launcher = createLauncher(jobId, attempt, config.getDockerImage());
 
     return creator.create(
         jobRoot,
@@ -124,31 +128,53 @@ public class WorkerRunFactory {
         new JobOutputDiscoverSchemaWorker(new DefaultDiscoverCatalogWorker(launcher)));
   }
 
-  private WorkerRun createSyncWorker(JobSyncConfig config, Path jobRoot) {
-    final StandardSyncInput syncInput = getSyncInput(config);
+  private WorkerRun createSyncWorkerFromResetConfig(long jobId, int attempt, JobResetConnectionConfig config, Path jobRoot) {
+    return createSyncWorker(
+        jobId,
+        attempt,
+        new EmptyAirbyteSource(),
+        config.getDestinationDockerImage(),
+        getSyncInputFromResetConfig(config),
+        jobRoot);
+  }
 
-    IntegrationLauncher sourceLauncher = createLauncher(config.getSourceDockerImage());
-    IntegrationLauncher destinationLauncher = createLauncher(config.getDestinationDockerImage());
+  private WorkerRun createSyncWorkerFromSyncConfig(long jobId, int attempt, JobSyncConfig config, Path jobRoot) {
+    final DefaultAirbyteSource airbyteSource = new DefaultAirbyteSource(createLauncher(jobId, attempt, config.getSourceDockerImage()));
+    return createSyncWorker(
+        jobId,
+        attempt,
+        airbyteSource,
+        config.getDestinationDockerImage(),
+        getSyncInputSyncConfig(config),
+        jobRoot);
+  }
 
-    Preconditions.checkArgument(sourceLauncher.getClass().equals(destinationLauncher.getClass()),
-        "Source and Destination must be using the same protocol");
+  private WorkerRun createSyncWorker(long jobId,
+                                     int attempt,
+                                     AirbyteSource airbyteSource,
+                                     String destinationDockerImage,
+                                     StandardSyncInput syncInput,
+                                     Path jobRoot) {
+    final IntegrationLauncher destinationLauncher = createLauncher(jobId, attempt, destinationDockerImage);
 
     return creator.create(
         jobRoot,
         syncInput,
         new JobOutputSyncWorker(
             new DefaultSyncWorker(
-                new DefaultAirbyteSource(sourceLauncher),
+                jobId,
+                attempt,
+                airbyteSource,
                 new DefaultAirbyteDestination(destinationLauncher),
                 new AirbyteMessageTracker(),
                 NormalizationRunnerFactory.create(
-                    config.getDestinationDockerImage(),
+                    destinationDockerImage,
                     pbf,
-                    syncInput.getDestinationConnection().getConfiguration()))));
+                    syncInput.getDestinationConfiguration()))));
   }
 
-  private IntegrationLauncher createLauncher(final String image) {
-    return new AirbyteIntegrationLauncher(image, pbf);
+  private IntegrationLauncher createLauncher(long jobId, int attempt, final String image) {
+    return new AirbyteIntegrationLauncher(jobId, attempt, image, pbf);
   }
 
   private static StandardCheckConnectionInput getCheckConnectionInput(JobCheckConnectionConfig config) {
@@ -159,14 +185,19 @@ public class WorkerRunFactory {
     return new StandardDiscoverCatalogInput().withConnectionConfiguration(config.getConnectionConfiguration());
   }
 
-  private static StandardSyncInput getSyncInput(JobSyncConfig config) {
+  private static StandardSyncInput getSyncInputSyncConfig(JobSyncConfig config) {
     return new StandardSyncInput()
-        .withSourceConnection(config.getSourceConnection())
-        .withDestinationConnection(config.getDestinationConnection())
-        .withConnectionId(config.getStandardSync().getConnectionId())
-        .withCatalog(AirbyteProtocolConverters.toConfiguredCatalog(config.getStandardSync().getSchema()))
-        .withSyncMode(config.getStandardSync().getSyncMode())
+        .withSourceConfiguration(config.getSourceConfiguration())
+        .withDestinationConfiguration(config.getDestinationConfiguration())
+        .withCatalog(config.getConfiguredAirbyteCatalog())
         .withState(config.getState());
+  }
+
+  private static StandardSyncInput getSyncInputFromResetConfig(JobResetConnectionConfig config) {
+    return new StandardSyncInput()
+        .withSourceConfiguration(Jsons.emptyObject())
+        .withDestinationConfiguration(config.getDestinationConfiguration())
+        .withCatalog(config.getConfiguredAirbyteCatalog());
   }
 
   /*

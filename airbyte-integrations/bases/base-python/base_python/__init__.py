@@ -24,7 +24,7 @@ SOFTWARE.
 
 from .catalog_helpers import CatalogHelper
 from .client import BaseClient
-from .integration import AirbyteSpec, ConfigContainer, Destination, Integration, Source
+from .integration import AirbyteSpec, Destination, Integration, Source
 from .logger import AirbyteLogger
 from .source import BaseSource
 
@@ -38,7 +38,6 @@ __all__ = [
     "BaseClient",
     "BaseSource",
     "CatalogHelper",
-    "ConfigContainer",
     "Destination",
     "Integration",
     "Source",

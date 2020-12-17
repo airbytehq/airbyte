@@ -16,11 +16,32 @@ const ItemView = styled.div`
   align-items: center;
 `;
 
+const GroupTitle = styled(Text)`
+  text-transform: capitalize;
+  font-size: 14px;
+  line-height: 13px;
+`;
+
+const GroupText = styled.div`
+  color: ${({ theme }) => theme.greyColor40};
+  font-size: 12px;
+  line-height: 11px;
+`;
+
 const Icon = styled(ImageBlock)`
   margin-right: 6px;
 `;
 
 const ValueInput: React.FC<IProps> = ({ item }) => {
+  if (item.groupValue || item.groupValueText) {
+    return (
+      <div>
+        <GroupTitle>{item.groupValue || item.groupValueText}</GroupTitle>
+        <GroupText>{item.text}</GroupText>
+      </div>
+    );
+  }
+
   return (
     <ItemView>
       {item.img ? <Icon img={item.img} /> : null}

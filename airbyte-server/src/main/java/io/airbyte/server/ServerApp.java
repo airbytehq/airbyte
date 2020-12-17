@@ -34,10 +34,11 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DefaultConfigPersistence;
 import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.db.Databases;
+import io.airbyte.scheduler.client.SpecCachingSchedulerJobClient;
+import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.apis.ConfigurationApi;
-import io.airbyte.server.cache.DefaultSpecCache;
 import io.airbyte.server.errors.InvalidInputExceptionMapper;
 import io.airbyte.server.errors.InvalidJsonExceptionMapper;
 import io.airbyte.server.errors.InvalidJsonInputExceptionMapper;
@@ -80,7 +81,7 @@ public class ServerApp {
 
     ServletContextHandler handler = new ServletContextHandler();
 
-    ConfigurationApiFactory.setSpecCache(new DefaultSpecCache());
+    ConfigurationApiFactory.setSpecCache(new SpecCachingSchedulerJobClient(jobPersistence, new DefaultJobCreator(jobPersistence)));
     ConfigurationApiFactory.setConfigRepository(configRepository);
     ConfigurationApiFactory.setJobPersistence(jobPersistence);
 
@@ -164,7 +165,11 @@ public class ServerApp {
     // tracking we can associate all action with the correct anonymous id.
     setCustomerIdIfNotSet(configRepository);
 
-    TrackingClientSingleton.initialize(configs.getTrackingStrategy(), configs.getAirbyteVersion(), configRepository);
+    TrackingClientSingleton.initialize(
+        configs.getTrackingStrategy(),
+        configs.getAirbyteRole(),
+        configs.getAirbyteVersion(),
+        configRepository);
 
     LOGGER.info("Creating Scheduler persistence...");
     final JobPersistence jobPersistence = new DefaultJobPersistence(Databases.createPostgresDatabase(

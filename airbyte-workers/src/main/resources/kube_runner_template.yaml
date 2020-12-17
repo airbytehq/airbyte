@@ -1,0 +1,21 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: airbyte-worker-JOBID-ATTEMPTID-SUFFIX
+spec:
+  backoffLimit: 1
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: worker-container
+          image: TAGGED_IMAGE
+          workingDir: WORKDIR
+          args: ARGS
+          volumeMounts:
+            - name: airbyte-volume-workspace
+              mountPath: /workspace
+      volumes:
+        - name: airbyte-volume-workspace
+          persistentVolumeClaim:
+            claimName: airbyte-volume-workspace

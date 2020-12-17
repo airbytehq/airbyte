@@ -23,11 +23,18 @@ SOFTWARE.
 """
 
 import json
-from collections import defaultdict
-from typing import DefaultDict, Generator
+from typing import DefaultDict, Dict, Generator
 
-from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status
-from base_python import AirbyteLogger, ConfigContainer, Source
+from airbyte_protocol import (
+    AirbyteCatalog,
+    AirbyteConnectionStatus,
+    AirbyteMessage,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    Status,
+    SyncMode,
+)
+from base_python import AirbyteLogger, Source
 
 from .client import Client
 
@@ -37,56 +44,48 @@ class SourceMailchimp(Source):
     Mailchimp API Reference: https://mailchimp.com/developer/api/
     """
 
-    def __init__(self):
-        super().__init__()
-
-    def check(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
-        client = self._client(config_container)
+    def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
+        client = self._client(config)
         alive, error = client.health_check()
         if not alive:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"{error.title}: {error.detail}")
 
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
-    def discover(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteCatalog:
-        client = self._client(config_container)
+    def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
+        client = self._client(config)
 
         return AirbyteCatalog(streams=client.get_streams())
 
     def read(
-        self, logger: AirbyteLogger, config_container: ConfigContainer, catalog_path, state_path: str = None
+        self, logger: AirbyteLogger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any]
     ) -> Generator[AirbyteMessage, None, None]:
-        client = self._client(config_container)
-
-        if state_path:
-            logger.info("Starting sync with provided state file")
-            state_obj = json.loads(open(state_path, "r").read())
-        else:
-            logger.info("No state provided, starting fresh sync")
-            state_obj = {}
-
-        state = defaultdict(dict, state_obj)
-        catalog = ConfiguredAirbyteCatalog.parse_obj(self.read_config(catalog_path))
+        client = self._client(config)
 
         logger.info("Starting syncing mailchimp")
         for configured_stream in catalog.streams:
-            stream = configured_stream.stream
-            for record in self._read_record(client=client, stream=stream.name, state=state):
-                yield record
+            yield from self._read_record(client=client, configured_stream=configured_stream, state=state)
 
         logger.info("Finished syncing mailchimp")
 
-    def _client(self, config_container: ConfigContainer):
-        config = config_container.rendered_config
+    def _client(self, config: json):
         client = Client(username=config["username"], apikey=config["apikey"])
 
         return client
 
-    def _read_record(self, client: Client, stream: str, state: DefaultDict[str, any] = None) -> Generator[AirbyteMessage, None, None]:
+    @staticmethod
+    def _read_record(
+        client: Client, configured_stream: ConfiguredAirbyteStream, state: DefaultDict[str, any]
+    ) -> Generator[AirbyteMessage, None, None]:
         entity_map = {
             "Lists": client.lists,
             "Campaigns": client.campaigns,
         }
 
-        for record in entity_map[stream](state=state):
+        stream_name = configured_stream.stream.name
+
+        if configured_stream.sync_mode == SyncMode.full_refresh:
+            state.pop(stream_name, None)
+
+        for record in entity_map[stream_name](state=state):
             yield record

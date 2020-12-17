@@ -28,6 +28,8 @@ import java.nio.file.Path;
 
 public interface Configs {
 
+  String getAirbyteRole();
+
   String getAirbyteVersion();
 
   Path getConfigRoot();
@@ -50,9 +52,16 @@ public interface Configs {
 
   TrackingStrategy getTrackingStrategy();
 
+  WorkerEnvironment getWorkerEnvironment();
+
   enum TrackingStrategy {
     SEGMENT,
     LOGGING
+  }
+
+  enum WorkerEnvironment {
+    DOCKER,
+    KUBERNETES
   }
 
 }

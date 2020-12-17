@@ -58,6 +58,8 @@ import org.junit.jupiter.api.Test;
 
 class DefaultSyncWorkerTest {
 
+  private static final long JOB_ID = 0L;
+  private static final int JOB_ATTEMPT = 0;
   private static final Path WORKSPACE_ROOT = Path.of("workspaces/10");
   private static final String STREAM_NAME = "user_preferences";
   private static final String FIELD_NAME = "favorite_color";
@@ -91,13 +93,15 @@ class DefaultSyncWorkerTest {
 
     when(tap.isFinished()).thenReturn(false, false, false, true);
     when(tap.attemptRead()).thenReturn(Optional.of(RECORD_MESSAGE1), Optional.empty(), Optional.of(RECORD_MESSAGE2));
-    when(normalizationRunner.normalize(normalizationRoot, targetConfig.getDestinationConnectionConfiguration(), targetConfig.getCatalog()))
-        .thenReturn(true);
+    when(normalizationRunner.normalize(JOB_ID, JOB_ATTEMPT, normalizationRoot, targetConfig.getDestinationConnectionConfiguration(),
+        targetConfig.getCatalog()))
+            .thenReturn(true);
   }
 
   @Test
   void test() throws Exception {
-    final DefaultSyncWorker defaultSyncWorker = new DefaultSyncWorker(tap, target, new AirbyteMessageTracker(), normalizationRunner);
+    final DefaultSyncWorker defaultSyncWorker =
+        new DefaultSyncWorker(JOB_ID, JOB_ATTEMPT, tap, target, new AirbyteMessageTracker(), normalizationRunner);
     final OutputAndStatus<StandardSyncOutput> run = defaultSyncWorker.run(syncInput, jobRoot);
 
     assertEquals(JobStatus.SUCCEEDED, run.getStatus());
@@ -107,7 +111,8 @@ class DefaultSyncWorkerTest {
     verify(target).accept(RECORD_MESSAGE1);
     verify(target).accept(RECORD_MESSAGE2);
     verify(normalizationRunner).start();
-    verify(normalizationRunner).normalize(normalizationRoot, targetConfig.getDestinationConnectionConfiguration(), targetConfig.getCatalog());
+    verify(normalizationRunner).normalize(JOB_ID, JOB_ATTEMPT, normalizationRoot, targetConfig.getDestinationConnectionConfiguration(),
+        targetConfig.getCatalog());
     verify(normalizationRunner).close();
     verify(tap).close();
     verify(target).close();
@@ -122,16 +127,14 @@ class DefaultSyncWorkerTest {
     when(messageTracker.getBytesCount()).thenReturn(100L);
     when(messageTracker.getOutputState()).thenReturn(Optional.of(expectedState));
 
-    final DefaultSyncWorker defaultSyncWorker = new DefaultSyncWorker(tap, target, messageTracker, normalizationRunner);
+    final DefaultSyncWorker defaultSyncWorker = new DefaultSyncWorker(JOB_ID, JOB_ATTEMPT, tap, target, messageTracker, normalizationRunner);
     final OutputAndStatus<StandardSyncOutput> actual = defaultSyncWorker.run(syncInput, jobRoot);
     final StandardSyncOutput expectedSyncOutput = new StandardSyncOutput()
         .withStandardSyncSummary(new StandardSyncSummary()
             .withRecordsSynced(12L)
             .withBytesSynced(100L)
             .withStatus(Status.COMPLETED))
-        .withState(new State()
-            .withConnectionId(syncInput.getConnectionId())
-            .withState(expectedState));
+        .withState(new State().withState(expectedState));
     final OutputAndStatus<StandardSyncOutput> expected = new OutputAndStatus<>(JobStatus.SUCCEEDED, expectedSyncOutput);
 
     // good enough to verify that times are present.

@@ -24,31 +24,25 @@
 
 package io.airbyte.scheduler.persistence;
 
-import com.google.common.collect.Lists;
+import io.airbyte.config.AirbyteProtocolConverters;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobConfig;
+import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
-import io.airbyte.config.JobOutput;
+import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
-import io.airbyte.config.StandardSyncOutput;
-import io.airbyte.config.State;
-import io.airbyte.scheduler.Attempt;
-import io.airbyte.scheduler.AttemptStatus;
-import io.airbyte.scheduler.Job;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.scheduler.ScopeHelper;
 import java.io.IOException;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
 public class DefaultJobCreator implements JobCreator {
 
-  private JobPersistence jobPersistence;
+  private final JobPersistence jobPersistence;
 
   public DefaultJobCreator(JobPersistence jobPersistence) {
     this.jobPersistence = jobPersistence;
@@ -127,39 +121,48 @@ public class DefaultJobCreator implements JobCreator {
                             String sourceDockerImageName,
                             String destinationDockerImageName)
       throws IOException {
-    final UUID connectionId = standardSync.getConnectionId();
+    final String scope = ScopeHelper.createScope(JobConfig.ConfigType.SYNC, standardSync.getConnectionId().toString());
 
-    final String scope = ScopeHelper.createScope(JobConfig.ConfigType.SYNC, connectionId.toString());
-
+    // reusing this isn't going to quite work.
     final JobSyncConfig jobSyncConfig = new JobSyncConfig()
-        .withSourceConnection(source)
         .withSourceDockerImage(sourceDockerImageName)
-        .withDestinationConnection(destination)
+        .withSourceConfiguration(source.getConfiguration())
         .withDestinationDockerImage(destinationDockerImageName)
-        .withStandardSync(standardSync);
+        .withDestinationConfiguration(destination.getConfiguration())
+        .withConfiguredAirbyteCatalog(AirbyteProtocolConverters.toConfiguredCatalog(standardSync.getSchema()))
+        .withState(null);
 
-    // todo (cgardens) - this will not have the intended behavior if the last job failed. then the next
-    // job will assume there is no state and re-sync everything! this is already wrong, so i'm not going
-    // to increase the scope of the current project.
-    final Optional<Job> previousJobOptional = jobPersistence.getLastSyncJob(connectionId);
-
-    final Optional<State> stateOptional = previousJobOptional.flatMap(j -> {
-      final List<Attempt> attempts = j.getAttempts() != null ? j.getAttempts() : Lists.newArrayList();
-      // find oldest attempt that is either succeeded or contains state.
-      return attempts.stream()
-          .filter(
-              a -> a.getStatus() == AttemptStatus.SUCCEEDED || a.getOutput().map(JobOutput::getSync).map(StandardSyncOutput::getState).isPresent())
-          .max(Comparator.comparingLong(Attempt::getCreatedAtInSecond))
-          .map(Attempt::getOutput)
-          .map(Optional::get)
-          .map(JobOutput::getSync)
-          .map(StandardSyncOutput::getState);
-    });
-    stateOptional.ifPresent(jobSyncConfig::withState);
+    jobPersistence.getCurrentState(standardSync.getConnectionId()).ifPresent(jobSyncConfig::withState);
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(JobConfig.ConfigType.SYNC)
         .withSync(jobSyncConfig);
+    return jobPersistence.createJob(scope, jobConfig);
+  }
+
+  // Strategy:
+  // 1. Set all streams to full refresh.
+  // 2. Create a job where the source emits no records.
+  // 3. Run a sync from the empty source to the destination. This will overwrite all data for each
+  // stream in the destination.
+  // 4. The Empty source emits no state message, so state will start at null (i.e. start from the
+  // beginning on the next sync).
+  @Override
+  public long createResetConnectionJob(DestinationConnection destination, StandardSync standardSync, String destinationDockerImage)
+      throws IOException {
+    final String scope = ScopeHelper.createScope(JobConfig.ConfigType.SYNC, standardSync.getConnectionId().toString());
+
+    final ConfiguredAirbyteCatalog configuredAirbyteCatalog = AirbyteProtocolConverters.toConfiguredCatalog(standardSync.getSchema());
+    configuredAirbyteCatalog.getStreams().forEach(configuredAirbyteStream -> configuredAirbyteStream.setSyncMode(SyncMode.FULL_REFRESH));
+
+    final JobResetConnectionConfig resetConnectionConfig = new JobResetConnectionConfig()
+        .withDestinationDockerImage(destinationDockerImage)
+        .withDestinationConfiguration(destination.getConfiguration())
+        .withConfiguredAirbyteCatalog(configuredAirbyteCatalog);
+
+    final JobConfig jobConfig = new JobConfig()
+        .withConfigType(ConfigType.RESET_CONNECTION)
+        .withResetConnection(resetConnectionConfig);
     return jobPersistence.createJob(scope, jobConfig);
   }
 
