@@ -10,5 +10,8 @@ dependencies {
 
     implementation project(':airbyte-protocol:models')
 
+    testImplementation project(':airbyte-test-utils')
+
+    testImplementation 'org.apache.commons:commons-lang3:3.11'
     testImplementation "org.testcontainers:postgresql:1.15.1"
 }
