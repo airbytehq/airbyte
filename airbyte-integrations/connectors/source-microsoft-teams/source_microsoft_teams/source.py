@@ -22,12 +22,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import json
 from datetime import datetime
-from typing import Generator
+from typing import Dict, Generator
 
 import requests
 from airbyte_protocol import AirbyteCatalog, AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteCatalog, Type
-from base_python import AirbyteLogger, BaseSource, ConfigContainer
+from base_python import AirbyteLogger, BaseSource
 
 from .client import Client
 
@@ -38,23 +39,19 @@ class SourceMicrosoftTeams(BaseSource):
     def __init__(self):
         super().__init__()
 
-    def _get_client(self, config_container: ConfigContainer):
+    def _get_client(self, config: json):
         """Construct client"""
-        config = config_container.rendered_config
         client = self.client_class(config=config)
         return client
 
-    def discover(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteCatalog:
-        client = self._get_client(config_container)
+    def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
+        client = self._get_client(config)
         return AirbyteCatalog(streams=client.get_streams())
 
     def read(
-        self, logger: AirbyteLogger, config_container: ConfigContainer, catalog_path: str, state: str = None
+        self, logger: AirbyteLogger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any]
     ) -> Generator[AirbyteMessage, None, None]:
-        config = self.read_config(catalog_path)
-        catalog = ConfiguredAirbyteCatalog.parse_obj(config)
-
-        client = self._get_client(config_container)
+        client = self._get_client(config)
 
         logger.info(f"Starting syncing {self.__class__.__name__}")
         for configured_stream in catalog.streams:

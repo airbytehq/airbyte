@@ -42,7 +42,7 @@ class Client:
     MICROSOFT_GRAPH_API_VERSION = "v1.0"
     PAGINATION_COUNT = 20
 
-    def __init__(self, config: object):
+    def __init__(self, config: json):
         self.ENTITY_MAP = {
             "users": self.get_users,
             "groups": self.get_groups,
@@ -108,15 +108,14 @@ class Client:
     def _fetch_data(self, endpoint: str, params: Optional[Dict] = None, pagination: bool = True):
         api_url = self._get_api_url(endpoint)
         params = self._get_request_params(params, pagination)
-        raw_response = self._make_request(api_url, params)
-        while "@odata.nextLink" in raw_response:
+        while True:
+            raw_response = self._make_request(api_url, params)
+            value = self._get_response_value_unsafe(raw_response)
+            yield value
+            if "@odata.nextLink" not in raw_response:
+                break
+            params = None
             api_url = raw_response["@odata.nextLink"]
-            raw_response = self._make_request(api_url)
-            value = self._get_response_value_unsafe(raw_response)
-            yield value
-        else:
-            value = self._get_response_value_unsafe(raw_response)
-            yield value
 
     def health_check(self) -> Tuple[bool, object]:
         try:
