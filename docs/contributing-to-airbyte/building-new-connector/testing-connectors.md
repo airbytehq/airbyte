@@ -24,7 +24,6 @@ The test suite then runs its test cases, which include:
 * Running two consecutive full refresh reads should produce identical records. 
 etc...
 
-
 See all the test cases and their description in [Standard Source Tests](./standard-source-tests.md). 
 
 ### Setting up standard tests for your connector

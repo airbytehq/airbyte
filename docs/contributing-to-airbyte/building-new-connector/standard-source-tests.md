@@ -1,35 +1,5 @@
 # Standard Source Test Suite
 Test methods start with `test`. Other methods are internal helpers in the java class implementing the test suite.
-### getImageName
-Name of the docker image that the tests will run against.
-
-### getSpec
-Specification for integration. Will be passed to integration where appropriate in each test. Should be valid.
-
-### getConfig
-Configuration specific to the integration. Will be passed to integration where appropriate in each test. Should be valid.
-
-### getConfiguredCatalog
-The catalog to use to validate the output of read operations. This will be used as follows: Full Refresh syncs will be tested on all the input streams which support it Incremental syncs: - if the stream declares a source-defined cursor, it will be tested with an incremental sync using the default cursor. - if the stream requires a user-defined cursor, it will be tested with the input cursor in both cases, the input getState() will be used as the input state.
-
-### getState
-No method description was provided
-
-### getRegexTests
-List of regular expressions that should match the output of the test sync.
-
-### setup
-Function that performs any setup of external resources required for the test. e.g. instantiate a postgres database. This function will be called before EACH test.
-
-### tearDown
-Function that performs any clean up of external resources required for the test. e.g. delete a postgres database. This function will be called after EACH test. It MUST remove all data in the destination so that there is no contamination across tests.
-
-### setUpInternal
-No method description was provided
-
-### tearDownInternal
-No method description was provided
-
 ### testGetSpec
 Verify that a spec operation issued to the connector returns a valid spec.
 

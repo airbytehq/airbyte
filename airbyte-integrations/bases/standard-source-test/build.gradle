@@ -48,6 +48,10 @@ task generateSourceTestDocs(type: Javadoc) {
         def methodList = Jsoup.parse(stdSrcTest).body().select("section.methodDetails>ul>li>section")
         def md = ""
         for (methodInfo in methodList){
+            def annotations = methodInfo.select(".memberSignature>.annotations").text()
+            if (!annotations.contains("@Test")){
+                continue
+            }
             def methodName = methodInfo.selectFirst("div>span.memberName").text()
             def methodDocstring = methodInfo.selectFirst("div.block")
 
