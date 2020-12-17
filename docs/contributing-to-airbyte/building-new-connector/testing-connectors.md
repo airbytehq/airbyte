@@ -22,9 +22,7 @@ The test suite then runs its test cases, which include:
 * Running a `read` operation should produce at least one record. 
 * Running two consecutive full refresh reads should produce identical records. 
 
-  etc...
-
-See all the test cases and their description in [Standard Source Tests](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/bases/standard-source-test/src/main/java/io/airbyte/integrations/standardtest/source/StandardSourceTest.java). All test cases are annotated with the `@Test` annotation.
+See all the test cases and their description in [Standard Source Tests](./standard-source-tests.md). 
 
 ### Setting up standard tests for your connector
 
