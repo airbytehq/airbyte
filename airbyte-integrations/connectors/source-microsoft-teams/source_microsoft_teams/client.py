@@ -71,7 +71,9 @@ class Client:
 
     def _get_access_token(self) -> str:
         scope = ["https://graph.microsoft.com/.default"]
+        # First, the code looks up a token from the cache.
         result = self.msal_app.acquire_token_silent(scope, account=None)
+        # If no suitable token exists in cache. Let's get a new one from AAD.
         if not result:
             result = self.msal_app.acquire_token_for_client(scopes=scope)
         if "access_token" in result:
