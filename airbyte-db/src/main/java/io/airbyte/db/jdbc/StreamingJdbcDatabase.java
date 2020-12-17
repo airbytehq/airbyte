@@ -30,7 +30,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.stream.Stream;
 import javax.sql.DataSource;
 
@@ -43,12 +42,12 @@ public class StreamingJdbcDatabase implements JdbcDatabase {
 
   private final DataSource dataSource;
   private final DefaultJdbcDatabase defaultDatabase;
-  private final JdbcStreamingQueryConfiguration jdbcStreamingQuery;
+  private final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration;
 
-  public StreamingJdbcDatabase(DataSource dataSource, JdbcStreamingQueryConfiguration jdbcStreamingQuery) {
+  public StreamingJdbcDatabase(DataSource dataSource, JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration) {
     this.dataSource = dataSource;
     this.defaultDatabase = new DefaultJdbcDatabase(dataSource);
-    this.jdbcStreamingQuery = jdbcStreamingQuery;
+    this.jdbcStreamingQueryConfiguration = jdbcStreamingQueryConfiguration;
   }
 
   @Override
@@ -57,10 +56,10 @@ public class StreamingJdbcDatabase implements JdbcDatabase {
   }
 
   @Override
-  public <T> List<T> bufferedQuery(CheckedFunction<Connection, ResultSet, SQLException> query,
-                                   CheckedFunction<ResultSet, T, SQLException> recordTransform)
+  public <T> Stream<T> resultSetQuery(CheckedFunction<Connection, ResultSet, SQLException> query,
+                                      CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
-    return defaultDatabase.bufferedQuery(query, recordTransform);
+    return defaultDatabase.resultSetQuery(query, recordTransform);
   }
 
   /**
@@ -90,7 +89,7 @@ public class StreamingJdbcDatabase implements JdbcDatabase {
       final Connection connection = dataSource.getConnection();
       final PreparedStatement ps = statementCreator.apply(connection);
       // allow configuration of connection and prepared statement to make streaming possible.
-      jdbcStreamingQuery.accept(connection, ps);
+      jdbcStreamingQueryConfiguration.accept(connection, ps);
       return JdbcUtils.toStream(ps.executeQuery(), recordTransform)
           // because this stream is inside the flatMap of another stream, we have a guarantee that the close
           // of this stream will be closed if the outer stream is fully consumed.

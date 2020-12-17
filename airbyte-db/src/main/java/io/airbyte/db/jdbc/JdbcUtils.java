@@ -39,11 +39,9 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
-import java.util.List;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -81,14 +79,14 @@ public class JdbcUtils {
    * Collect each record of a ResultSet into a list of JsonNode.
    *
    * @param resultSet the result set
-   * @return List of JsonNode.
+   * @return Stream of JsonNode.
    * @throws SQLException exceptions throws when parsing the ResultSet.
    */
-  public static List<JsonNode> resultSetToJson(ResultSet resultSet) throws SQLException {
-    return toStream(resultSet, JdbcUtils::getJsonForRow).collect(Collectors.toList());
+  public static Stream<JsonNode> toJsonStream(ResultSet resultSet) throws SQLException {
+    return toStream(resultSet, JdbcUtils::rowToJson);
   }
 
-  public static JsonNode getJsonForRow(ResultSet r) throws SQLException {
+  public static JsonNode rowToJson(ResultSet r) throws SQLException {
     // the first call communicates with the database. after that the result is cached.
     final int columnCount = r.getMetaData().getColumnCount();
     final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
@@ -103,13 +101,13 @@ public class JdbcUtils {
       }
 
       // convert to java types that will convert into reasonable json.
-      jdbcToJson(jsonNode, r, i);
+      setJsonField(r, i, jsonNode);
     }
 
     return jsonNode;
   }
 
-  private static void jdbcToJson(ObjectNode o, ResultSet r, int i) throws SQLException {
+  private static void setJsonField(ResultSet r, int i, ObjectNode o) throws SQLException {
     final int columnTypeInt = r.getMetaData().getColumnType(i);
     final String columnName = r.getMetaData().getColumnName(i);
     final JDBCType columnType = JDBCType.valueOf(columnTypeInt);
@@ -141,27 +139,27 @@ public class JdbcUtils {
     return DATE_FORMAT.format(date);
   }
 
-  public static void setFieldWithType(PreparedStatement preparedStatement,
+  public static void setStatementField(PreparedStatement preparedStatement,
                                       int parameterIndex,
                                       JDBCType cursorFieldType,
-                                      String cursor)
+                                      String value)
       throws SQLException {
     switch (cursorFieldType) {
       // parse date, time, and timestamp the same way. this seems to not cause an problems and allows us
       // to treat them all as ISO8601. if this causes any problems down the line, we can adjust.
       case DATE, TIME, TIMESTAMP -> {
         try {
-          preparedStatement.setTimestamp(1, Timestamp.from(DATE_FORMAT.parse(cursor).toInstant()));
+          preparedStatement.setTimestamp(1, Timestamp.from(DATE_FORMAT.parse(value).toInstant()));
         } catch (ParseException e) {
           throw new RuntimeException(e);
         }
       }
-      case TINYINT, SMALLINT -> preparedStatement.setShort(parameterIndex, Short.parseShort(cursor));
-      case INTEGER -> preparedStatement.setInt(parameterIndex, Integer.parseInt(cursor));
-      case BIGINT -> preparedStatement.setLong(parameterIndex, Long.parseLong(cursor));
-      case FLOAT, DOUBLE, REAL -> preparedStatement.setDouble(parameterIndex, Double.parseDouble(cursor));
-      case NUMERIC, DECIMAL -> preparedStatement.setBigDecimal(parameterIndex, new BigDecimal(cursor));
-      case CHAR, VARCHAR, LONGVARCHAR -> preparedStatement.setString(parameterIndex, cursor);
+      case TINYINT, SMALLINT -> preparedStatement.setShort(parameterIndex, Short.parseShort(value));
+      case INTEGER -> preparedStatement.setInt(parameterIndex, Integer.parseInt(value));
+      case BIGINT -> preparedStatement.setLong(parameterIndex, Long.parseLong(value));
+      case FLOAT, DOUBLE, REAL -> preparedStatement.setDouble(parameterIndex, Double.parseDouble(value));
+      case NUMERIC, DECIMAL -> preparedStatement.setBigDecimal(parameterIndex, new BigDecimal(value));
+      case CHAR, VARCHAR, LONGVARCHAR -> preparedStatement.setString(parameterIndex, value);
       default -> throw new IllegalArgumentException(String.format("%s is not supported for incremental.", cursorFieldType));
     }
   }

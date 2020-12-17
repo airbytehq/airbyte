@@ -22,14 +22,11 @@
  * SOFTWARE.
  */
 
-package io.airbyte.db;
-
-import java.sql.Connection;
-import java.sql.SQLException;
+package io.airbyte.commons.functional;
 
 @FunctionalInterface
-public interface JdbcQueryFunction<T> {
+public interface CheckedBiConsumer<T, R, E extends Throwable> {
 
-  T query(Connection connection) throws SQLException;
+  void accept(T t, R r) throws E;
 
 }

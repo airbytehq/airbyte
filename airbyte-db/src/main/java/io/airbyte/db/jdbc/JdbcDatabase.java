@@ -30,7 +30,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.stream.Stream;
 
 /**
@@ -47,8 +46,10 @@ public interface JdbcDatabase extends AutoCloseable {
   void execute(CheckedConsumer<Connection, SQLException> query) throws SQLException;
 
   /**
-   * Use a connection to create a {@link ResultSet} and map it into a list. Note: You the full result
-   * of your query will be buffered in memory before you can access any records.
+   * Use a connection to create a {@link ResultSet} and map it into a stream. You CANNOT * assume that
+   * data will be returned from this method before the entire {@link ResultSet} is * buffered in
+   * memory. Review the implementation of the database's JDBC driver or use the * StreamingJdbcDriver
+   * if you need this guarantee.
    *
    * @param query execute a query using a {@link Connection} to get a {@link ResultSet}.
    * @param recordTransform transform each record of that result set into the desired type. do NOT
@@ -58,8 +59,8 @@ public interface JdbcDatabase extends AutoCloseable {
    * @return Result of the query mapped to a list.
    * @throws SQLException SQL related exceptions.
    */
-  <T> List<T> bufferedQuery(CheckedFunction<Connection, ResultSet, SQLException> query,
-                            CheckedFunction<ResultSet, T, SQLException> recordTransform)
+  <T> Stream<T> resultSetQuery(CheckedFunction<Connection, ResultSet, SQLException> query,
+                               CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException;
 
   /**

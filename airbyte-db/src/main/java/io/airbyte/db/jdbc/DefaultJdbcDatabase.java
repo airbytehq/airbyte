@@ -31,8 +31,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.sql.DataSource;
 
@@ -55,11 +53,11 @@ public class DefaultJdbcDatabase implements JdbcDatabase {
   }
 
   @Override
-  public <T> List<T> bufferedQuery(CheckedFunction<Connection, ResultSet, SQLException> query,
-                                   CheckedFunction<ResultSet, T, SQLException> recordTransform)
+  public <T> Stream<T> resultSetQuery(CheckedFunction<Connection, ResultSet, SQLException> query,
+                                      CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
     try (final Connection connection = ds.getConnection()) {
-      return JdbcUtils.toStream(query.apply(connection), recordTransform).collect(Collectors.toList());
+      return JdbcUtils.toStream(query.apply(connection), recordTransform);
     }
   }
 

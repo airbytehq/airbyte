@@ -111,7 +111,8 @@ public class SnowflakeIntegrationTest extends TestDestination {
         false,
         rs -> {
           try {
-            return JdbcUtils.resultSetToJson(rs);
+            return JdbcUtils.toJsonStream(rs)
+                .collect(Collectors.toList());
           } catch (SQLException e) {
             throw new RuntimeException(e);
           }
