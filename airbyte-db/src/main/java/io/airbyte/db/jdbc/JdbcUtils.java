@@ -1,0 +1,190 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2020 Airbyte
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+package io.airbyte.db.jdbc;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.commons.functional.CheckedFunction;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+import java.math.BigDecimal;
+import java.sql.JDBCType;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Collections;
+import java.util.List;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
+public class JdbcUtils {
+
+  private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"); // Quoted "Z" to indicate UTC, no timezone offset
+
+  /**
+   * Map records returned in a result set.
+   *
+   * @param resultSet the result set
+   * @param mapper function to make each record of the result set
+   * @param <T> type that each record will be mapped to
+   * @return stream of records that the result set is mapped to.
+   */
+  public static <T> Stream<T> toStream(ResultSet resultSet, CheckedFunction<ResultSet, T, SQLException> mapper) {
+    return StreamSupport.stream(new Spliterators.AbstractSpliterator<T>(Long.MAX_VALUE, Spliterator.ORDERED) {
+
+      @Override
+      public boolean tryAdvance(Consumer<? super T> action) {
+        try {
+          if (!resultSet.next())
+            return false;
+          action.accept(mapper.apply(resultSet));
+          return true;
+        } catch (SQLException e) {
+          throw new RuntimeException(e);
+        }
+      }
+
+    }, false);
+  }
+
+  /**
+   * Collect each record of a ResultSet into a list of JsonNode.
+   *
+   * @param resultSet the result set
+   * @return List of JsonNode.
+   * @throws SQLException exceptions throws when parsing the ResultSet.
+   */
+  public static List<JsonNode> resultSetToJson(ResultSet resultSet) throws SQLException {
+    return toStream(resultSet, JdbcUtils::getJsonForRow).collect(Collectors.toList());
+  }
+
+  public static JsonNode getJsonForRow(ResultSet r) throws SQLException {
+    // the first call communicates with the database. after that the result is cached.
+    final int columnCount = r.getMetaData().getColumnCount();
+    final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
+
+    for (int i = 1; i <= columnCount; i++) {
+      // attempt to access the column. this allows us to know if it is null before we do type-specific
+      // parsing. if it is null, we can move on. while awkward, this seems to be the agreed upon way of
+      // checking for null values with jdbc.
+      r.getObject(i);
+      if (r.wasNull()) {
+        continue;
+      }
+
+      // convert to java types that will convert into reasonable json.
+      jdbcToJson(jsonNode, r, i);
+    }
+
+    return jsonNode;
+  }
+
+  private static void jdbcToJson(ObjectNode o, ResultSet r, int i) throws SQLException {
+    final int columnTypeInt = r.getMetaData().getColumnType(i);
+    final String columnName = r.getMetaData().getColumnName(i);
+    final JDBCType columnType = JDBCType.valueOf(columnTypeInt);
+
+    // https://www.cis.upenn.edu/~bcpierce/courses/629/jdkdocs/guide/jdbc/getstart/mapping.doc.html
+    switch (columnType) {
+      case BIT, BOOLEAN -> o.put(columnName, r.getBoolean(i));
+      case TINYINT, SMALLINT -> o.put(columnName, r.getShort(i));
+      case INTEGER -> o.put(columnName, r.getInt(i));
+      case BIGINT -> o.put(columnName, r.getLong(i));
+      case FLOAT, DOUBLE -> o.put(columnName, r.getDouble(i));
+      case REAL -> o.put(columnName, r.getFloat(i));
+      case NUMERIC, DECIMAL -> o.put(columnName, r.getBigDecimal(i));
+      case CHAR, VARCHAR, LONGVARCHAR -> o.put(columnName, r.getString(i));
+      case DATE -> o.put(columnName, toISO8601String(r.getDate(i)));
+      case TIME -> o.put(columnName, toISO8601String(r.getTime(i)));
+      case TIMESTAMP -> {
+        // https://www.cis.upenn.edu/~bcpierce/courses/629/jdkdocs/guide/jdbc/getstart/mapping.doc.html
+        final Timestamp t = r.getTimestamp(i);
+        java.util.Date d = new java.util.Date(t.getTime() + (t.getNanos() / 1000000));
+        o.put(columnName, toISO8601String(d));
+      }
+      case BINARY, VARBINARY, LONGVARBINARY -> o.put(columnName, r.getBytes(i));
+      default -> o.put(columnName, r.getString(i));
+    }
+  }
+
+  private static String toISO8601String(java.util.Date date) {
+    return DATE_FORMAT.format(date);
+  }
+
+  public static void setFieldWithType(PreparedStatement preparedStatement,
+                                      int parameterIndex,
+                                      JDBCType cursorFieldType,
+                                      String cursor)
+      throws SQLException {
+    switch (cursorFieldType) {
+      // parse date, time, and timestamp the same way. this seems to not cause an problems and allows us
+      // to treat them all as ISO8601. if this causes any problems down the line, we can adjust.
+      case DATE, TIME, TIMESTAMP -> {
+        try {
+          preparedStatement.setTimestamp(1, Timestamp.from(DATE_FORMAT.parse(cursor).toInstant()));
+        } catch (ParseException e) {
+          throw new RuntimeException(e);
+        }
+      }
+      case TINYINT, SMALLINT -> preparedStatement.setShort(parameterIndex, Short.parseShort(cursor));
+      case INTEGER -> preparedStatement.setInt(parameterIndex, Integer.parseInt(cursor));
+      case BIGINT -> preparedStatement.setLong(parameterIndex, Long.parseLong(cursor));
+      case FLOAT, DOUBLE, REAL -> preparedStatement.setDouble(parameterIndex, Double.parseDouble(cursor));
+      case NUMERIC, DECIMAL -> preparedStatement.setBigDecimal(parameterIndex, new BigDecimal(cursor));
+      case CHAR, VARCHAR, LONGVARCHAR -> preparedStatement.setString(parameterIndex, cursor);
+      default -> throw new IllegalArgumentException(String.format("%s is not supported for incremental.", cursorFieldType));
+    }
+  }
+
+  // the switch statement intentionally has duplicates so that its structure matches the type switch
+  // statement above.
+  @SuppressWarnings("DuplicateBranchesInSwitch")
+  public static JsonSchemaPrimitive getType(JDBCType jdbcType) {
+    return switch (jdbcType) {
+      case BIT, BOOLEAN -> JsonSchemaPrimitive.BOOLEAN;
+      case TINYINT, SMALLINT -> JsonSchemaPrimitive.NUMBER;
+      case INTEGER -> JsonSchemaPrimitive.NUMBER;
+      case BIGINT -> JsonSchemaPrimitive.NUMBER;
+      case FLOAT, DOUBLE -> JsonSchemaPrimitive.NUMBER;
+      case REAL -> JsonSchemaPrimitive.NUMBER;
+      case NUMERIC, DECIMAL -> JsonSchemaPrimitive.NUMBER;
+      case CHAR, VARCHAR, LONGVARCHAR -> JsonSchemaPrimitive.STRING;
+      case DATE -> JsonSchemaPrimitive.STRING;
+      case TIME -> JsonSchemaPrimitive.STRING;
+      case TIMESTAMP -> JsonSchemaPrimitive.STRING;
+      case BINARY, VARBINARY, LONGVARBINARY -> JsonSchemaPrimitive.STRING;
+      default -> JsonSchemaPrimitive.STRING;
+    };
+  }
+
+}

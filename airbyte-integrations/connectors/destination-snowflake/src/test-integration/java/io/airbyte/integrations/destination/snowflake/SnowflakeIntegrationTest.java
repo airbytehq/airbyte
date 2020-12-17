@@ -28,7 +28,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.JdbcUtils;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.ExtendedSQLNaming;
 import io.airbyte.integrations.standardtest.destination.TestDestination;
 import java.nio.file.Path;

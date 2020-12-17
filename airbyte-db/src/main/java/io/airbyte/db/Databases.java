@@ -24,6 +24,10 @@
 
 package io.airbyte.db;
 
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
+import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
+import io.airbyte.db.jdbc.StreamingJdbcDatabase;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.SQLDialect;
 
@@ -49,7 +53,17 @@ public class Databases {
                                                 final String driverClassName) {
     final BasicDataSource connectionPool = createBasicDataSource(username, password, jdbcConnectionString, driverClassName);
 
-    return new JdbcDatabase(connectionPool);
+    return new DefaultJdbcDatabase(connectionPool);
+  }
+
+  public static JdbcDatabase createStreamingJdbcDatabase(final String username,
+                                                         final String password,
+                                                         final String jdbcConnectionString,
+                                                         final String driverClassName,
+                                                         final JdbcStreamingQueryConfiguration jdbcStreamingQuery) {
+    final BasicDataSource connectionPool = createBasicDataSource(username, password, jdbcConnectionString, driverClassName);
+
+    return new StreamingJdbcDatabase(connectionPool, jdbcStreamingQuery);
   }
 
   private static BasicDataSource createBasicDataSource(final String username,
