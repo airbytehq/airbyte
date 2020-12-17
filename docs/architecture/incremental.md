@@ -83,8 +83,3 @@ Some sources cannot define the cursor without user input. For example, in the [p
 ![](../.gitbook/assets/incremental_user_defined.png)
 
 (You can find a more technical details about the configuration data model [here](catalog.md)).
-
-### Schema Migration
-
-If the schema for the stream changes, Airbyte will _not_ allow an incremental sync to that stream. The user must first run a full refresh.
-
