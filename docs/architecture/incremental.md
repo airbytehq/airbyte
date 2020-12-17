@@ -4,13 +4,13 @@
 
 Sources syncing with **Incremental - Append** only replicate _new_ or _modified_ data. This prevents re-fetching data that you have already replicated from a source.
 
-In this flavor of incremental, records in the warehouse will never be deleted or mutated. A copy of each new or updated record is _appended_ to the data in the warehouse. This means you can find multiple copies of the same record in the destination warehouse. We provide an "at least once" guarantee of replicating each record that is present when the sync runs.
+In this flavor of incremental, records in the warehouse destination will never be deleted or mutated. A copy of each new or updated record is _appended_ to the data in the warehouse. This means you can find multiple copies of the same record in the destination warehouse. We provide an "at least once" guarantee of replicating each record that is present when the sync runs.
 
 ## Definitions
 
-We are going to use the word `cursor` to describe the value used to track whether a record should be replicated in an incremental sync. A common example of a `cursor` would be a timestamp from an `updated_at` column in a database table.
+A `cursor` is the value used to track whether a record should be replicated in an incremental sync. A common example of a `cursor` would be a timestamp from an `updated_at` column in a database table.
 
-While a `cursor` is the _value_ that is used to determine if a record should be replicated, a `cursor field` is the _field_ or _column_ in the data where that cursor can be found. Extending the above example, the `updated_at` column in the database would be the `cursor field`.
+A `cursor field` is the _field_ or _column_ in the data where that cursor can be found. Extending the above example, the `updated_at` column in the database would be the `cursor field`, while the `cursor` is the actual timestamp _value_ used to determine if a record should be replicated.
 
 We will refer to the set of records that the source identifies as being new or updated as a `delta`.
 
