@@ -89,7 +89,7 @@ class Client:
         return raw_response
 
     @staticmethod
-    def _post_process_request(raw_response: Dict):
+    def _get_response_value_unsafe(raw_response: Dict):
         if "value" not in raw_response:
             raise requests.exceptions.RequestException()
         value = raw_response["value"]
@@ -109,10 +109,10 @@ class Client:
         while "@odata.nextLink" in raw_response:
             api_url = raw_response["@odata.nextLink"]
             raw_response = self._make_request(api_url)
-            value = self._post_process_request(raw_response)
+            value = self._get_response_value_unsafe(raw_response)
             yield value
         else:
-            value = self._post_process_request(raw_response)
+            value = self._get_response_value_unsafe(raw_response)
             yield value
 
     def health_check(self) -> Tuple[bool, object]:
@@ -141,7 +141,7 @@ class Client:
         if not self._group_ids:
             api_url = self._get_api_url("groups")
             params = {"$select": "id,resourceProvisioningOptions"}
-            groups = self._post_process_request(self._make_request(api_url, params=params))
+            groups = self._get_response_value_unsafe(self._make_request(api_url, params=params))
             self._group_ids = [item["id"] for item in groups if "Team" in item["resourceProvisioningOptions"]]
         return self._group_ids
 
@@ -163,7 +163,7 @@ class Client:
     def _get_channel_ids(self, group_id: str):
         api_url = self._get_api_url(f"teams/{group_id}/channels")
         params = {"$select": "id"}
-        channels_ids = self._post_process_request(self._make_request(api_url, params=params))
+        channels_ids = self._get_response_value_unsafe(self._make_request(api_url, params=params))
         return channels_ids
 
     def get_channel_members(self):
@@ -188,7 +188,7 @@ class Client:
     def _get_conversation_ids(self, group_id: str):
         api_url = self._get_api_url(f"groups/{group_id}/conversations")
         params = {"$select": "id"}
-        conversation_ids = self._post_process_request(self._make_request(api_url, params=params))
+        conversation_ids = self._get_response_value_unsafe(self._make_request(api_url, params=params))
         return conversation_ids
 
     def get_conversation_threads(self):
@@ -201,7 +201,7 @@ class Client:
     def _get_thread_ids(self, group_id: str, conversation_id: str):
         api_url = self._get_api_url(f"groups/{group_id}/conversations/{conversation_id}/threads")
         params = {"$select": "id"}
-        thread_ids = self._post_process_request(self._make_request(api_url, params=params))
+        thread_ids = self._get_response_value_unsafe(self._make_request(api_url, params=params))
         return thread_ids
 
     def get_conversation_posts(self):
