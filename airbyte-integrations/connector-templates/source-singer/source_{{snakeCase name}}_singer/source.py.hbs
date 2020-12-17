@@ -38,6 +38,7 @@ class Source{{properCase name}}Singer(SingerSource):
             e.g: if a provided Stripe API token can be used to connect to the Stripe API.
 
         :param logger: Logging object to display debug/info/error to the logs
+            (logs will not be accessible via airbyte UI if they are not passed to this logger)
         :param config_path: Path to the file containing the configuration json config
         :param config: Json object containing the configuration of this source, content of this json is as specified in
         the properties of the spec.json file

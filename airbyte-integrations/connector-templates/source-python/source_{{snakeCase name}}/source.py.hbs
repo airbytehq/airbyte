@@ -46,6 +46,7 @@ class Source{{properCase name}}(Source):
             e.g: if a provided Stripe API token can be used to connect to the Stripe API.
 
         :param logger: Logging object to display debug/info/error to the logs
+            (logs will not be accessible via airbyte UI if they are not passed to this logger)
         :param config: Json object containing the configuration of this source, content of this json is as specified in
         the properties of the spec.json file
 
@@ -65,6 +66,7 @@ class Source{{properCase name}}(Source):
         returns an Airbyte catalog where each postgres table is a stream, and each table column is a field.
 
         :param logger: Logging object to display debug/info/error to the logs
+            (logs will not be accessible via airbyte UI if they are not passed to this logger)
         :param config: Json object containing the configuration of this source, content of this json is as specified in
         the properties of the spec.json file
 
@@ -96,6 +98,7 @@ class Source{{properCase name}}(Source):
         catalog, and state.
 
         :param logger: Logging object to display debug/info/error to the logs
+            (logs will not be accessible via airbyte UI if they are not passed to this logger)
         :param config: Json object containing the configuration of this source, content of this json is as specified in
             the properties of the spec.json file
         :param catalog: The input catalog is a ConfiguredAirbyteCatalog which is almost the same as AirbyteCatalog
