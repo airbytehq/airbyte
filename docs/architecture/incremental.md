@@ -2,19 +2,21 @@
 
 ## Overview
 
-Incremental - Append syncs in Airbyte allow sources to replicate only _new_ or _modified_ data. This prevents re-fetching data that you have already replicated from a source. Going forward, we will call this set of new or updated records the delta.
+Sources syncing with **Incremental - Append** only replicate _new_ or _modified_ data. This prevents re-fetching data that you have already replicated from a source.
 
-In this flavor of incremental, records in the warehouse will never be deleted or mutated. A copy of each new or updated records is appended to the data in the warehouse. This means you can find multiple copies of the same record twice in the warehouse and will need to de-duplicate them yourself. We provided an "at least once" guarantee of replicating each record that is present when the sync runs.
+In this flavor of incremental, records in the warehouse will never be deleted or mutated. A copy of each new or updated record is _appended_ to the data in the warehouse. This means you can find multiple copies of the same record in the destination warehouse. We provide an "at least once" guarantee of replicating each record that is present when the sync runs.
 
 ## Definitions
 
 We are going to use the word `cursor` to describe the value used to track whether a record should be replicated in an incremental sync. A common example of a `cursor` would be a timestamp from an `updated_at` column in a database table.
 
-While a `cursor` is the value that is used to determine if a record should be replicated, a `cursor field` is the field or column in the data where that cursor can be found. Extending the above example the `updated_at` column in the database would be the `cursor field`.
+While a `cursor` is the _value_ that is used to determine if a record should be replicated, a `cursor field` is the _field_ or _column_ in the data where that cursor can be found. Extending the above example, the `updated_at` column in the database would be the `cursor field`.
+
+We will refer to the set of records that the source identifies as being new or updated as a `delta`.
 
 ## Rules
 
-The delta from a sync will be _appended_ to the existing data in the data warehouse. Incremental will never delete or mutate existing records. Let's walk through a few examples.
+As mentioned above, the delta from a sync will be _appended_ to the existing data in the data warehouse. Incremental will never delete or mutate existing records. Let's walk through a few examples.
 
 ### Newly Created Record
 
@@ -27,13 +29,13 @@ Assume that `updated_at` is our `cursor_field`. Let's say the following data alr
 ]
 ```
 
-In the next sync the delta contains the following record:
+In the next sync, the delta contains the following record:
 
 ```javascript
     { "name": "Louis XVII", "deceased": false, "updated_at": 1785 }
 ```
 
-At the end of this incremental sync the data warehouse would now contain:
+At the end of this incremental sync, the data warehouse would now contain:
 
 ```javascript
 [
@@ -54,7 +56,7 @@ Let's assume that our warehouse contains all the data that it did at the end of 
 ]
 ```
 
-The output we expect to see in the warehouse is as follows.
+The output we expect to see in the warehouse is as follows:
 
 ```javascript
 [
@@ -68,13 +70,19 @@ The output we expect to see in the warehouse is as follows.
 
 ## Source-Defined Cursor
 
-Some sources are able to determine the cursor that the use without any user input. For example, in the exchange rates api source, the source determines that date field should be used to determine the last record that was synced. In these cases, the source will set the `source_defined_cursor` attribute in the `AirbyteStream` (You can find a more detailed description of the configuration data model [here](catalog.md)).
+Some sources are able to determine the cursor that they use without any user input. For example, in the [exchange rates source](../integrations/sources/exchangeratesapi-io.md), the source knows that date field should be used to determine the last record that was synced. In these cases, simply select the incremental option in the UI.
+
+![](../.gitbook/assets/incremental_source_defined.png)
+
+(You can find a more technical details about the configuration data model [here](catalog.md)).
 
 ## User-Defined Cursor
 
-Some sources cannot define the cursor without user input. For example, in the postgres source, the user needs to choose which column in a database table they want to user as the `cursor field`. The author of the source cannot predict this. In these cases the user sets the `cursor_field` in the `ConfiguredAirbyteStream`. (You can find a more detailed description of the configuration data model [here](catalog.md)).
+Some sources cannot define the cursor without user input. For example, in the [postgres source](../integrations/sources/postgres.md), the user needs to choose which column in a database table they want to use as the `cursor field`. In these cases, select the column in the sync settings dropdown that should be used as the `cursor field`.
 
-In some cases, the source may propose a `default_cursor_field` in the `AirbyteStream`. When it does, if the user does not specify a `cursor_field` in the `ConfiguredAirbyteStream`, Airbyte will fallback on the default provided by the source. The user is allowed to override the source's `default_cursor_field` by setting the `cursor_field` value in the `ConfiguredAirbyteStream`, but they CANNOT override the `cursor_field` specified in an `AirbyteStream`
+![](../.gitbook/assets/incremental_user_defined.png)
+
+(You can find a more technical details about the configuration data model [here](catalog.md)).
 
 ### Schema Migration
 
