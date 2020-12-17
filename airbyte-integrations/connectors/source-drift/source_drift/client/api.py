@@ -57,15 +57,12 @@ class APIClient:
 
     @_parsed_response
     def patch(self, url, data, **kwargs):
+        """Used in fixtures.py only"""
         return requests.patch(self.full_url(url), data=json.dumps(data), headers=self._headers, **kwargs)
 
     @_parsed_response
     def get(self, url, **kwargs):
         return requests.get(self.full_url(url), headers=self._headers, **kwargs)
-
-    @_parsed_response
-    def delete(self, url, **kwargs):
-        return requests.delete(self.full_url(url), headers=self._headers, **kwargs)
 
     def full_url(self, url):
         return f"{self.BASE_URL}/{url}"
