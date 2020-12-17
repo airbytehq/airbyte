@@ -62,39 +62,3 @@ docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-microsoft-teams
 
 ## Dependency Management
 All of your dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect internal Airbyte dependencies in the monorepo for local development.
-
-## App and Authentication
-
-The Microsoft Graph API uses OAuth for authentication. Follow these [instructions](https://docs.microsoft.com/en-us/graph/auth-v2-service?context=graph%2Fapi%2F1.0&view=graph-rest-1.0) for creating an app in the Azure portal. This process will produce the `client_id`, `client_secret`, and `tenant_id` needed for the tap configuration file.
-
-1. Login to [Azure Portal](https://portal.azure.com/#home)
-2. Click upper-left menu icon and select Azure Active Directory
-3. Select App Registrations
-4. Click New registration
-5. Register an application
-   1. Name: <you-application-name>
-   2. Supported account types: Accounts in this organizational directory only
-   3. Register (button)
-6. Record the client_id, tenant_id, and which will be used by the tap for authentication and API integration.
-7. Select Certificates & secrets
-10. Provide Description and Expires
-    1.  Description: tap-microsoft-teams client secret
-    2.  Expires: 1-year
-    3.  Add
-11. Copy the client secret value, this will be the client_secret
-12. Select API permissions
-    1.  Click Add a permission
-13. Select Microsoft Graph
-14. Select Application permissions
-15. Select the following permissions:
-    1.  Channel.ReadBasic.All
-    2.  ChannelMember.Read.All
-    3.  Device.Read.All
-    4.  Group.Read.All
-    5.  GroupMember.Read.All
-    6.  Reports.Read.All
-    7.  TeamMember.Read.All
-    8.  TeamsApp.Read.All
-    9.  TeamsTab.Read.All
-    10. User.Read.All
-16. Click Add permissions
