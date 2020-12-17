@@ -2,15 +2,15 @@
 
 ## Overview
 
-Incremental - Append syncs in Airbyte allow sources to replicate only _new_ or _modified_ data. This prevents re-fetching data that you have already replicated from a source. We will call this set of new or updated records the delta going forward.
+Incremental - Append syncs in Airbyte allow sources to replicate only _new_ or _modified_ data. This prevents re-fetching data that you have already replicated from a source. Going forward, we will call this set of new or updated records the delta.
 
-In this flavor of incremental records in the warehouse will never be deleted or mutated. A new copy of any new or updated records is appended to the data in the warehouse. This means you can find multiple copies of the same record twice in the warehouse and will need to de-duplicate them yourself. We provided an "at least once" guarantee of replicating each record that is present when the sync runs.
+In this flavor of incremental, records in the warehouse will never be deleted or mutated. A copy of each new or updated records is appended to the data in the warehouse. This means you can find multiple copies of the same record twice in the warehouse and will need to de-duplicate them yourself. We provided an "at least once" guarantee of replicating each record that is present when the sync runs.
 
 ## Definitions
 
-For a source to do incremental sync is must be able to keep track of new and updated records. This can take a couple different forms. Before we jump into them, we are going to use the word `cursor` to describe the value used to track whether a record should be replicated in an incremental sync. A common example of a `cursor` would be a timestamp from an `updated_at` column in a database table.
+We are going to use the word `cursor` to describe the value used to track whether a record should be replicated in an incremental sync. A common example of a `cursor` would be a timestamp from an `updated_at` column in a database table.
 
-While a `cursor` is the value that is used to determine if a record should be replicate, a `cursor field` is the field or column in the data where that cursor can be found. Extending the above example the `updated_at` column in the database would be the `cursor field`.
+While a `cursor` is the value that is used to determine if a record should be replicated, a `cursor field` is the field or column in the data where that cursor can be found. Extending the above example the `updated_at` column in the database would be the `cursor field`.
 
 ## Rules
 
@@ -45,7 +45,7 @@ At the end of this incremental sync the data warehouse would now contain:
 
 ### Updating a Record
 
-Let's assume that our warehouse contains all of the data that it did at the end of the previous section. Now unfortunately the king and queen lose their heads. Let's see that delta:
+Let's assume that our warehouse contains all the data that it did at the end of the previous section. Now unfortunately the king and queen lose their heads. Let's see that delta:
 
 ```javascript
 [
