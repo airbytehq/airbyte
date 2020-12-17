@@ -38,9 +38,9 @@ class Client:
     """
         Microsoft Teams API Reference: https://docs.microsoft.com/en-us/graph/api/resources/teams-api-overview?view=graph-rest-1.0
     """
-    MICROSOFT_GRAPH_BASE_API_URL = "https://graph.microsoft.com/"
-    MICROSOFT_GRAPH_API_VERSION = "v1.0"
-    PAGINATION_COUNT = 20
+    MICROSOFT_GRAPH_BASE_API_URL: str = "https://graph.microsoft.com/"
+    MICROSOFT_GRAPH_API_VERSION: str = "v1.0"
+    PAGINATION_COUNT: Optional[int] = 20
 
     def __init__(self, config: json):
         self.ENTITY_MAP = {
