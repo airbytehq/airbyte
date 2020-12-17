@@ -26,6 +26,7 @@ package io.airbyte.db.jdbc;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
@@ -44,6 +45,7 @@ import java.util.Spliterators;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import javax.xml.bind.DatatypeConverter;
 
 public class JdbcUtils {
 
@@ -135,7 +137,8 @@ public class JdbcUtils {
     }
   }
 
-  private static String toISO8601String(java.util.Date date) {
+  @VisibleForTesting
+  static String toISO8601String(java.util.Date date) {
     return DATE_FORMAT.format(date);
   }
 
@@ -149,18 +152,26 @@ public class JdbcUtils {
       // to treat them all as ISO8601. if this causes any problems down the line, we can adjust.
       case DATE, TIME, TIMESTAMP -> {
         try {
-          preparedStatement.setTimestamp(1, Timestamp.from(DATE_FORMAT.parse(value).toInstant()));
+          preparedStatement.setTimestamp(parameterIndex, Timestamp.from(DATE_FORMAT.parse(value).toInstant()));
         } catch (ParseException e) {
           throw new RuntimeException(e);
         }
       }
+      // todo (cgardens) - currently we do not support bit because it requires special handling in the
+      // prepared statement.
+      // see
+      // https://www.postgresql-archive.org/Problems-with-BIT-datatype-and-preparedStatment-td5733533.html.
+      // case BIT -> preparedStatement.setString(parameterIndex, value);
+      case BOOLEAN -> preparedStatement.setBoolean(parameterIndex, Boolean.parseBoolean(value));
       case TINYINT, SMALLINT -> preparedStatement.setShort(parameterIndex, Short.parseShort(value));
       case INTEGER -> preparedStatement.setInt(parameterIndex, Integer.parseInt(value));
       case BIGINT -> preparedStatement.setLong(parameterIndex, Long.parseLong(value));
-      case FLOAT, DOUBLE, REAL -> preparedStatement.setDouble(parameterIndex, Double.parseDouble(value));
+      case FLOAT, DOUBLE -> preparedStatement.setDouble(parameterIndex, Double.parseDouble(value));
+      case REAL -> preparedStatement.setFloat(parameterIndex, Float.parseFloat(value));
       case NUMERIC, DECIMAL -> preparedStatement.setBigDecimal(parameterIndex, new BigDecimal(value));
       case CHAR, VARCHAR, LONGVARCHAR -> preparedStatement.setString(parameterIndex, value);
-      default -> throw new IllegalArgumentException(String.format("%s is not supported for incremental.", cursorFieldType));
+      case BINARY -> preparedStatement.setBytes(parameterIndex, DatatypeConverter.parseHexBinary(value));
+      default -> throw new IllegalArgumentException(String.format("%s is not supported.", cursorFieldType));
     }
   }
 
