@@ -1,4 +1,4 @@
-# Incremental
+# Incremental Sync
 
 ## Overview
 
@@ -6,15 +6,15 @@ Incremental syncs in Airbyte allow sources to replicate only new or modified dat
 
 ## Configuration
 
-For a source to do incremental sync is must be able to keep track of new and updated records. This can take a couple different forms. Before we jump into them, we are going to use the word cursor or cursor field to describe the field or column in the data that Airbyte uses as a comparable to determine if any given record is new or has been updated since the last sync.
+For a source to do incremental sync is must be able to keep track of new and updated records. This can take a couple different forms. Before we jump into them, we are going to use the word cursor or cursor field to describe the field or column in the data that the Connector uses to determine if any given record is new or has been updated since the last sync. A commonly used cursor is the "updated_at" field in a database table. 
 
-## Source-Defined Cursor.
+## Source-Defined Cursor
 
-Some sources are able to determine the cursor that the use without any user input. For example, in the exchange rates api source, the source itself can determine that date field should be used to determine the last record that was synced. In these cases, the source will set the `cursor_field` attribute in the `AirbyteStream`.
+Some sources are able to determine the cursor that the use without any user input. For example, in the exchange rates api source, the source itself can determine that the `date` field should be used to determine the last record that was synced. In these cases, the source will set the `cursor_field` attribute in the `AirbyteStream`.
 
 ## User-Defined Cursor
 
-Some sources cannot define the cursor without user input. For example, in the postgres source, the user needs to choose for themselves which database tables they want to sync. The author of the source cannot predict this. In these cases the user sets the `cursor_field` in the `ConfiguredAirbyteStream`.
+Some sources cannot define the cursor without user input. For example, in the postgres source, the user needs to tell the connector which column (e.g: `updated_at`) in the selected tables should be used to find the delta. The author of the source cannot predict this. In these cases the user sets the `cursor_field` in the `ConfiguredAirbyteStream`.
 
 In some cases, the source may propose a `default_cursor_field` in the `AirbyteStream`. In this case, if the user does not specify a `cursor_field` in the `ConfiguredAirbyteStream`, Airbyte will fallback on the default provided by the source. The user is allowed to override the source's `default_cursor_field` by setting the `cursor_field` value in the `ConfiguredAirbyteStream`, but they CANNOT override the `cursor_field` specified in an `AirbyteStream`
 
