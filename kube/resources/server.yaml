@@ -24,6 +24,16 @@ spec:
       labels:
         airbyte: server
     spec:
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: airbyte
+                    operator: In
+                    values:
+                      - scheduler
+              topologyKey: kubernetes.io/hostname
       containers:
         - name: airbyte-server-container
           image: airbyte/server
@@ -67,7 +77,7 @@ spec:
           resources:
             limits:
               memory: "256Mi"
-              cpu: "500m"
+              cpu: "200m"
           ports:
             - containerPort: 8001
           volumeMounts:

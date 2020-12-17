@@ -72,9 +72,23 @@ spec:
           resources:
             limits:
               memory: "256Mi"
-              cpu: "500m"
+              cpu: "200m"
           ports:
             - containerPort: 8001
+          volumeMounts:
+            - name: airbyte-volume-configs
+              mountPath: /configs
+            - name: airbyte-volume-workspace
+              mountPath: /workspace
+      initContainers:
+        - name: airbyte-seed
+          image: airbyte/seed
+          command: [ "/bin/sh" ]
+          args:
+            [
+                "-c",
+                "mkdir -p /configs/config && cp -r /app/seed/config /configs",
+            ]
           volumeMounts:
             - name: airbyte-volume-configs
               mountPath: /configs

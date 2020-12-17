@@ -62,7 +62,7 @@ public class KubeProcessBuilderFactory implements ProcessBuilderFactory {
           .replace("ATTEMPTID", String.valueOf(attempt))
           .replace("SUFFIX", suffix)
           .replace("TAGGED_IMAGE", imageName)
-          .replace("WORKDIR", rebasePath(jobRoot).toString())
+          .replaceAll("WORKDIR", jobRoot.toString())
           .replace("ARGS", Jsons.serialize(Arrays.asList(args)));
 
       final String yamlPath = jobRoot.resolve(String.format("job-%s.yaml", suffix)).toAbsolutePath().toString();
@@ -71,7 +71,7 @@ public class KubeProcessBuilderFactory implements ProcessBuilderFactory {
         writer.write(rendered);
       }
 
-      final List<String> cmd = Lists.newArrayList("kube_runner.sh", yamlPath);
+      final List<String> cmd = Lists.newArrayList("kube_runner.sh", jobRoot.toString(), yamlPath);
 
       LOGGER.debug("Preparing command: {}", Joiner.on(" ").join(cmd));
 
@@ -79,11 +79,6 @@ public class KubeProcessBuilderFactory implements ProcessBuilderFactory {
     } catch (Exception e) {
       throw new WorkerException(e.getMessage());
     }
-  }
-
-  private Path rebasePath(final Path jobRoot) {
-    final Path relativePath = workspaceRoot.relativize(jobRoot);
-    return WORKSPACE_MOUNT_DESTINATION.resolve(relativePath);
   }
 
 }
