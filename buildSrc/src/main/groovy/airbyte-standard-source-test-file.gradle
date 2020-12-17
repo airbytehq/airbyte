@@ -24,7 +24,7 @@ class AirbyteStandardSourceTestFilePlugin implements Plugin<Project> {
     void apply(Project project) {
         def config = project.extensions.create('airbyteStandardSourceTestFile', AirbyteStandardSourceTestFileConfiguration)
 
-        project.task('standardFsSourceTest') {
+        project.task('standardSourceTestFile') {
             doFirst {
                 project.exec {
                     validateConfig(config)
@@ -58,16 +58,16 @@ class AirbyteStandardSourceTestFilePlugin implements Plugin<Project> {
             outputs.upToDateWhen { false }
         }
 
-        project.standardFsSourceTest.dependsOn(':airbyte-integrations:bases:base-standard-fs-source-test:airbyteDocker')
-        project.standardFsSourceTest.dependsOn(project.build)
-        project.standardFsSourceTest.dependsOn(project.airbyteDocker)
+        project.standardSourceTestFile.dependsOn(':airbyte-integrations:bases:base-standard-fs-source-test:airbyteDocker')
+        project.standardSourceTestFile.dependsOn(project.build)
+        project.standardSourceTestFile.dependsOn(project.airbyteDocker)
 
         // make sure we create the integrationTest task once in case a java integration test was already initialized
         if (!project.hasProperty('integrationTest')) {
             project.task('integrationTest')
         }
 
-        project.integrationTest.dependsOn(project.standardFsSourceTest)
+        project.integrationTest.dependsOn(project.standardSourceTestFile)
     }
 }
 
