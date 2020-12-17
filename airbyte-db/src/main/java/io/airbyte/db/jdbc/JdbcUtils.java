@@ -140,9 +140,9 @@ public class JdbcUtils {
   }
 
   public static void setStatementField(PreparedStatement preparedStatement,
-                                      int parameterIndex,
-                                      JDBCType cursorFieldType,
-                                      String value)
+                                       int parameterIndex,
+                                       JDBCType cursorFieldType,
+                                       String value)
       throws SQLException {
     switch (cursorFieldType) {
       // parse date, time, and timestamp the same way. this seems to not cause an problems and allows us

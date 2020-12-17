@@ -30,6 +30,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.stream.Stream;
 import javax.sql.DataSource;
 
@@ -41,38 +42,47 @@ import javax.sql.DataSource;
 public class StreamingJdbcDatabase implements JdbcDatabase {
 
   private final DataSource dataSource;
-  private final DefaultJdbcDatabase defaultDatabase;
+  private final JdbcDatabase database;
   private final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration;
 
-  public StreamingJdbcDatabase(DataSource dataSource, JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration) {
+  public StreamingJdbcDatabase(DataSource dataSource, JdbcDatabase database, JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration) {
     this.dataSource = dataSource;
-    this.defaultDatabase = new DefaultJdbcDatabase(dataSource);
+    this.database = database;
     this.jdbcStreamingQueryConfiguration = jdbcStreamingQueryConfiguration;
   }
 
   @Override
   public void execute(CheckedConsumer<Connection, SQLException> query) throws SQLException {
-    defaultDatabase.execute(query);
+    database.execute(query);
+  }
+
+  @Override
+  public <T> List<T> bufferedResultSetQuery(CheckedFunction<Connection, ResultSet, SQLException> query,
+                                            CheckedFunction<ResultSet, T, SQLException> recordTransform)
+      throws SQLException {
+    return database.bufferedResultSetQuery(query, recordTransform);
   }
 
   @Override
   public <T> Stream<T> resultSetQuery(CheckedFunction<Connection, ResultSet, SQLException> query,
                                       CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
-    return defaultDatabase.resultSetQuery(query, recordTransform);
+    return database.resultSetQuery(query, recordTransform);
   }
 
   /**
    * Assuming that the {@link JdbcStreamingQueryConfiguration} is configured correctly for the JDBC
    * driver being used, this method will return data in streaming / chunked fashion. Review the
-   * provided {@link JdbcStreamingQueryConfiguration} to understand the size of these chunks.
+   * provided {@link JdbcStreamingQueryConfiguration} to understand the size of these chunks. If the
+   * entire stream is consumed the database connection will be closed automatically and the caller
+   * need not call close on the returned stream.
    *
    * @param statementCreator create a {@link PreparedStatement} from a {@link Connection}.
    * @param recordTransform transform each record of that result set into the desired type. do NOT
    *        just pass the {@link ResultSet} through. it is a stateful object will not be accessible if
    *        returned from recordTransform.
    * @param <T> type that each record will be mapped to.
-   * @return Result of the query mapped to a list.
+   * @return Result of the query mapped to a stream.
    * @throws SQLException SQL related exceptions.
    */
   @Override
@@ -108,7 +118,7 @@ public class StreamingJdbcDatabase implements JdbcDatabase {
 
   @Override
   public void close() throws Exception {
-    defaultDatabase.close();
+    database.close();
   }
 
 }
