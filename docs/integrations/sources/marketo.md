@@ -33,7 +33,7 @@ Feature
 | Supported?\(Yes/No\) | Notes |  |
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
-| Incremental Sync | No |  |
+| Incremental - Append SyncY | Yes |  |
 
 ### Performance considerations
 
