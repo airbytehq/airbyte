@@ -9,6 +9,7 @@
 * [Connectors](integrations/README.md)
   * [Sources](integrations/sources/README.md)
     * [Braintree](integrations/sources/braintree.md)
+    * [Drift](integrations/sources/drift.md)
     * [exchangeratesapi.io](integrations/sources/exchangeratesapi-io.md)
     * [Facebook Marketing API](integrations/sources/facebook-marketing-api.md)
     * [Files](integrations/sources/file.md)

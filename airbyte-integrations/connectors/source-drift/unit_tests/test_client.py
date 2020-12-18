@@ -22,24 +22,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from setuptools import find_packages, setup
+import pytest
+from source_drift.client import AuthError, Client
 
-setup(
-    name="source_greenhouse",
-    description="Source implementation for Greenhouse.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    install_requires=[
-        "airbyte-protocol",
-        "base-python",
-        "six==1.15.0",
-        "grnhse-api==0.1.1",
-    ],
-    package_data={"": ["*.json", "schemas/*.json"]},
-    setup_requires=["pytest-runner"],
-    tests_require=["pytest"],
-    extras_require={
-        "tests": ["airbyte_python_test", "pytest"],
-    },
-)
+
+def test__heal_check_with_wrong_token():
+    client = Client(access_token="wrong_key")
+    alive, error = client.health_check()
+
+    assert not alive
+    assert error == "(401, 'The access token is invalid or has expired')"
+
+
+def test__users_with_wrong_token():
+    client = Client(access_token="wrong_key")
+    with pytest.raises(AuthError, match="(401, 'The access token is invalid or has expired')"):
+        next(client.stream__users())

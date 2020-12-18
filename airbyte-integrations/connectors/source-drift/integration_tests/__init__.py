@@ -22,24 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from setuptools import find_packages, setup
+from .standard_source_test import SourceDriftStandardTest
 
-setup(
-    name="source_greenhouse",
-    description="Source implementation for Greenhouse.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    install_requires=[
-        "airbyte-protocol",
-        "base-python",
-        "six==1.15.0",
-        "grnhse-api==0.1.1",
-    ],
-    package_data={"": ["*.json", "schemas/*.json"]},
-    setup_requires=["pytest-runner"],
-    tests_require=["pytest"],
-    extras_require={
-        "tests": ["airbyte_python_test", "pytest"],
-    },
-)
+__all__ = ["SourceDriftStandardTest"]
