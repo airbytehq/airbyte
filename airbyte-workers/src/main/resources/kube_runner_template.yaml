@@ -18,7 +18,12 @@ spec:
       initContainers:
         - name: worker-init
           image: library/busybox:1.31
-          command: [ 'sh', '-c', "until [ -f WORKDIR/ready ]; do echo waiting...; sleep 1; done" ]
+          command:
+            [
+              "sh",
+              "-c",
+              "until [ -f WORKDIR/ready ]; do echo waiting...; sleep 1; done",
+            ]
           volumeMounts:
             - name: workdir
               mountPath: WORKDIR

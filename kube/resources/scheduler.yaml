@@ -81,11 +81,11 @@ spec:
       initContainers:
         - name: airbyte-seed
           image: airbyte/seed
-          command: [ "/bin/sh" ]
+          command: ["/bin/sh"]
           args:
             [
-                "-c",
-                "mkdir -p /configs/config && cp -r /app/seed/config /configs",
+              "-c",
+              "mkdir -p /configs/config && cp -r /app/seed/config /configs",
             ]
           volumeMounts:
             - name: airbyte-volume-configs
