@@ -2,7 +2,7 @@
 
 ## Sync overview
 
-The Marketo source connector syncs data from your Marketo instance.
+The Marketo source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
 This connector is based on the [Singer Marketo Tap](https://github.com/singer-io/tap-marketo).
 
@@ -33,7 +33,7 @@ Feature
 | Supported?\(Yes/No\) | Notes |  |
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
-| Incremental - Append SyncY | Yes |  |
+| Incremental - Append Sync | Yes |  |
 
 ### Performance considerations
 

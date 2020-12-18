@@ -2,6 +2,8 @@
 
 ## Sync overview
 
+The Shopify source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
+
 This source can sync data for the [Shopify API](https://help.shopify.com/en/api/reference).
 
 This Source Connector is based on a [Singer Tap](https://github.com/singer-io/tap-shopify).
