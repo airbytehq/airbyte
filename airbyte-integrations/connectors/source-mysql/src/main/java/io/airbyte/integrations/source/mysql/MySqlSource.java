@@ -38,10 +38,8 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlSource.class);
 
-  static final String DRIVER_CLASS = "com.mysql.cj.jdbc.Driver";
-
   public MySqlSource() {
-    super(DRIVER_CLASS);
+    super("com.mysql.cj.jdbc.Driver", new MySqlJdbcStreamingQueryConfiguration());
   }
 
   @Override
@@ -68,24 +66,6 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
         "performance_schema",
         "sys");
   }
-
-  // todo no schema namespacing.
-  // @Override
-  // public ResultSet queryTable(Connection connection, List<String> columnNames, String schemaName,
-  // String tableName) throws SQLException {
-  // System.out.println("blah");
-  // return connection.createStatement().executeQuery(String.format("SELECT %s FROM %s",
-  // Strings.join(columnNames, ","), tableName));
-  // }
-  //
-  // @Override
-  // public ResultSet queryIncrementalTable(Connection connection, List<String> columnNames, String
-  // schemaName, String tableName, String cursorField,
-  // String cursor) throws SQLException {
-  //
-  // return connection.createStatement().executeQuery(String.format("SELECT %s FROM %s WHERE %s >
-  // '%s'", Strings.join(columnNames, ","), tableName, cursorField, cursor));
-  // }
 
   public static void main(String[] args) throws Exception {
     final Source source = new MySqlSource();

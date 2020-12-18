@@ -15,6 +15,7 @@ dependencies {
     implementation project(':airbyte-integrations:connectors:source-jdbc')
 
     implementation 'mysql:mysql-connector-java:8.0.22'
+    implementation 'org.apache.commons:commons-lang3:3.11'
 
     testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
 
