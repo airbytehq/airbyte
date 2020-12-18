@@ -18,7 +18,7 @@ MSSQL data types are mapped to the following data types when synchronizing data:
 | :--- | :--- | :--- |
 | `bigint` | number |  |
 | `numeric` | number |  |
-| `bit` | number |  |
+| `bit` | boolean |  |
 | `smallint` | number |  |
 | `decimal` | number |  |
 | `int` | number |  |
