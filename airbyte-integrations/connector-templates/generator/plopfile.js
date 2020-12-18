@@ -2,6 +2,24 @@
 const fs = require('fs');
 const path = require('path');
 
+const getSuccessMessage = function(connectorName, outputPath){
+    return `
+🚀 🚀 🚀 🚀 🚀 🚀
+
+Success! 
+
+Your ${connectorName} connector has been created at ${path.resolve(outputPath)}.
+
+Follow instructions in NEW_SOURCE_CHECKLIST.md to finish your connector.
+
+Questions, comments or concerns? Let us know at:
+Slack: https://slack.airbyte.io
+Github: https://github.com/airbytehq/airbyte
+
+We're committed to providing you any necessary support :)
+`
+}
+
 module.exports = function (plop) {
   const javaDestinationInputRoot = '../java-destination';
   const pythonSourceInputRoot = '../source-python';
@@ -14,6 +32,10 @@ module.exports = function (plop) {
   const pythonSourceOutputRoot = `${outputDir}/source-{{dashCase name}}`;
   const singerSourceOutputRoot = `${outputDir}/source-{{dashCase name}}-singer`;
   const genericSourceOutputRoot = `${outputDir}/source-{{dashCase name}}`;
+
+  plop.setActionType('emitSuccess', function(answers, config, plopApi){
+      console.log(getSuccessMessage(answers.name, plopApi.renderString(config.outputPath, answers)));
+  });
 
   plop.setGenerator('Java Destination', {
     description: 'Generate an Airbyte destination written in Java',
@@ -50,7 +72,7 @@ module.exports = function (plop) {
         path: `${javaDestinationOutputRoot}/spec.json`,
         templateFile: `${javaDestinationInputRoot}/spec.json.hbs`,
       },
-      'Your new connector has been created. Happy coding~~',
+        {type: 'emitSuccess', outputPath: javaDestinationOutputRoot}
     ],
   });
 
@@ -90,7 +112,7 @@ module.exports = function (plop) {
         fs.symlinkSync(`${basesDir}/base-python/base_python`, `${renderedOutputDir}/base_python`);
         fs.symlinkSync(`${basesDir}/airbyte-protocol/airbyte_protocol`, `${renderedOutputDir}/airbyte_protocol`);
       },
-      'Your new Python source connector has been created. Follow the instructions and TODOs in the newly created package for next steps. Happy coding! 🐍🐍',]
+      {type: 'emitSuccess', outputPath: pythonSourceOutputRoot}]
   });
 
   plop.setGenerator('Singer-based Python Source', {
@@ -129,7 +151,7 @@ module.exports = function (plop) {
         fs.symlinkSync(`${basesDir}/airbyte-protocol/airbyte_protocol`, `${renderedOutputDir}/airbyte_protocol`);
         fs.symlinkSync(`${basesDir}/base-singer/base_singer`, `${renderedOutputDir}/base_singer`);
       },
-      'Your new Singer-based source connector has been created. Follow the instructions and TODOs in the newly created package for next steps. Happy coding! 🐍🐍',
+        {type: 'emitSuccess', outputPath: singerSourceOutputRoot},
     ]
   });
 
@@ -151,7 +173,9 @@ module.exports = function (plop) {
           templateFile: `${genericSourceInputRoot}/.gitignore.hbs`,
           path: `${genericSourceOutputRoot}/.gitignore`
         },
-        'Your new connector package has been created. Follow the instructions and TODOs in the newly created package for next steps. Happy coding! 🚀',
+          {type: 'emitSuccess', outputPath: genericSourceOutputRoot}
       ]
     });
+
+
 };
