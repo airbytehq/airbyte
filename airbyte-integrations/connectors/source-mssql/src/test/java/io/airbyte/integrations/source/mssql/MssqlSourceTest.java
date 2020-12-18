@@ -53,7 +53,6 @@ import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import java.sql.SQLException;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javax.swing.*;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterAll;
