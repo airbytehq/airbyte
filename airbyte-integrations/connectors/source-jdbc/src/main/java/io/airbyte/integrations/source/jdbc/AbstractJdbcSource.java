@@ -60,6 +60,7 @@ import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -263,14 +264,35 @@ public abstract class AbstractJdbcSource implements Source {
       throws Exception {
     return discoverInternal(database, databaseOptional, schemaOptional).stream()
         .map(t -> {
+          // some databases return multiple copies of the same record for a column (e.g. redshift) because
+          // they have at least once delivery guarantees. we want to dedupe these, but first we check that the
+          // records are actually the same and provide a good error message if they are not.
+          assertColumnsWithSameNameAreSame(t.getName(), t.getFields());
           final List<Field> fields = t.getFields()
               .stream()
               .map(f -> Field.of(f.getColumnName(), JdbcUtils.getType(f.getColumnType())))
+              .distinct()
               .collect(Collectors.toList());
 
           return new TableInfo(getFullyQualifiedTableName(t.getSchemaName(), t.getName()), fields);
         })
         .collect(Collectors.toList());
+  }
+
+  private static void assertColumnsWithSameNameAreSame(String tableName, List<ColumnInfo> columns) {
+    columns.stream()
+        .collect(Collectors.groupingBy(ColumnInfo::getColumnName))
+        .values()
+        .forEach(columnsWithSameName -> {
+          final ColumnInfo comparisonColumn = columnsWithSameName.get(0);
+          columnsWithSameName.forEach(column -> {
+            if (!column.equals(comparisonColumn)) {
+              throw new RuntimeException(
+                  String.format("Found multiple columns with same name: %s in table: %s but the columns are not the same. columns: %s",
+                      comparisonColumn.getColumnName(), tableName, columns));
+            }
+          });
+        });
   }
 
   private static String getFullyQualifiedTableName(String schemaName, String tableName) {
@@ -436,6 +458,31 @@ public abstract class AbstractJdbcSource implements Source {
 
     public JDBCType getColumnType() {
       return columnType;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
+      ColumnInfo that = (ColumnInfo) o;
+      return Objects.equals(columnName, that.columnName) && columnType == that.columnType;
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(columnName, columnType);
+    }
+
+    @Override
+    public String toString() {
+      return "ColumnInfo{" +
+          "columnName='" + columnName + '\'' +
+          ", columnType=" + columnType +
+          '}';
     }
 
   }
