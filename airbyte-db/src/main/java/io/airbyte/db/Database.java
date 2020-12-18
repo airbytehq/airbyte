@@ -32,6 +32,9 @@ import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Database object for interacting with a Jooq connection.
+ */
 public class Database implements AutoCloseable {
 
   private final static Logger LOGGER = LoggerFactory.getLogger(Database.class);
