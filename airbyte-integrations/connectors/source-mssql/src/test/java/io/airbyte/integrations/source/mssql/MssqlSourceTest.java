@@ -53,6 +53,7 @@ import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import java.sql.SQLException;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.swing.*;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterAll;
@@ -60,8 +61,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MSSQLServerContainer;
-
-import javax.swing.*;
 
 class MssqlSourceTest {
 
@@ -74,11 +73,14 @@ class MssqlSourceTest {
   private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
   private static final Set<AirbyteMessage> MESSAGES = Sets.newHashSet(
       new AirbyteMessage().withType(Type.RECORD)
-          .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME).withData(Jsons.jsonNode(ImmutableMap.of("id", 1, "name", "picard", "has_hair", false)))),
+          .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME)
+              .withData(Jsons.jsonNode(ImmutableMap.of("id", 1, "name", "picard", "has_hair", false)))),
       new AirbyteMessage().withType(Type.RECORD)
-          .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME).withData(Jsons.jsonNode(ImmutableMap.of("id", 2, "name", "crusher", "has_hair", true)))),
+          .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME)
+              .withData(Jsons.jsonNode(ImmutableMap.of("id", 2, "name", "crusher", "has_hair", true)))),
       new AirbyteMessage().withType(Type.RECORD)
-          .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME).withData(Jsons.jsonNode(ImmutableMap.of("id", 3, "name", "vash", "has_hair", true)))));
+          .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME)
+              .withData(Jsons.jsonNode(ImmutableMap.of("id", 3, "name", "vash", "has_hair", true)))));
 
   private JsonNode configWithoutDbName;
   private JsonNode config;
