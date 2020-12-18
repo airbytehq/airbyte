@@ -67,15 +67,19 @@ class MssqlSourceTest {
   private static final AirbyteCatalog CATALOG = CatalogHelpers.createAirbyteCatalog(
       STREAM_NAME,
       Field.of("id", JsonSchemaPrimitive.NUMBER),
-      Field.of("name", JsonSchemaPrimitive.STRING));
+      Field.of("name", JsonSchemaPrimitive.STRING),
+      Field.of("has_hair", JsonSchemaPrimitive.BOOLEAN));
   private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
   private static final Set<AirbyteMessage> MESSAGES = Sets.newHashSet(
       new AirbyteMessage().withType(Type.RECORD)
-          .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME).withData(Jsons.jsonNode(ImmutableMap.of("id", 1, "name", "picard")))),
+          .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME)
+              .withData(Jsons.jsonNode(ImmutableMap.of("id", 1, "name", "picard", "has_hair", false)))),
       new AirbyteMessage().withType(Type.RECORD)
-          .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME).withData(Jsons.jsonNode(ImmutableMap.of("id", 2, "name", "crusher")))),
+          .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME)
+              .withData(Jsons.jsonNode(ImmutableMap.of("id", 2, "name", "crusher", "has_hair", true)))),
       new AirbyteMessage().withType(Type.RECORD)
-          .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME).withData(Jsons.jsonNode(ImmutableMap.of("id", 3, "name", "vash")))));
+          .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME)
+              .withData(Jsons.jsonNode(ImmutableMap.of("id", 3, "name", "vash", "has_hair", true)))));
 
   private JsonNode configWithoutDbName;
   private JsonNode config;
@@ -101,8 +105,8 @@ class MssqlSourceTest {
     database.query(ctx -> {
       ctx.fetch(String.format("CREATE DATABASE %s;", dbName));
       ctx.fetch(String.format("USE %s;", dbName));
-      ctx.fetch("CREATE TABLE id_and_name(id INTEGER NOT NULL, name VARCHAR(200));");
-      ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
+      ctx.fetch("CREATE TABLE id_and_name(id INTEGER NOT NULL, name VARCHAR(200), has_hair BIT);");
+      ctx.fetch("INSERT INTO id_and_name (id, name, has_hair) VALUES (1,'picard', 'FALSE'),  (2, 'crusher', '1'), (3, 'vash', 'TRUE');");
       return null;
     });
 
