@@ -88,7 +88,7 @@ public class WebBackendDestinationHandlerTest {
     CheckConnectionRead checkConnectionRead = new CheckConnectionRead();
     checkConnectionRead.setStatus(StatusEnum.SUCCEEDED);
 
-    when(schedulerHandler.checkDestinationConnection(destinationIdRequestBody)).thenReturn(checkConnectionRead);
+    when(schedulerHandler.checkDestinationConnectionFromDestinationId(destinationIdRequestBody)).thenReturn(checkConnectionRead);
 
     DestinationRead returnedDestination =
         wbDestinationHandler.webBackendCreateDestinationAndCheck(destinationCreate);
@@ -113,7 +113,7 @@ public class WebBackendDestinationHandlerTest {
 
     DestinationIdRequestBody destinationIdRequestBody = new DestinationIdRequestBody();
     destinationIdRequestBody.setDestinationId(destinationRead.getDestinationId());
-    when(schedulerHandler.checkDestinationConnection(destinationIdRequestBody)).thenReturn(checkConnectionRead);
+    when(schedulerHandler.checkDestinationConnectionFromDestinationId(destinationIdRequestBody)).thenReturn(checkConnectionRead);
 
     Assertions.assertThrows(KnownException.class,
         () -> wbDestinationHandler.webBackendCreateDestinationAndCheck(destinationCreate));
@@ -141,7 +141,7 @@ public class WebBackendDestinationHandlerTest {
     CheckConnectionRead checkConnectionRead = new CheckConnectionRead();
     checkConnectionRead.setStatus(StatusEnum.SUCCEEDED);
 
-    when(schedulerHandler.checkDestinationConnection(newDestinationId)).thenReturn(checkConnectionRead);
+    when(schedulerHandler.checkDestinationConnectionFromDestinationId(newDestinationId)).thenReturn(checkConnectionRead);
 
     DestinationRecreate destinationRecreate = new DestinationRecreate();
     destinationRecreate.setName(destinationRead.getName());
@@ -179,7 +179,7 @@ public class WebBackendDestinationHandlerTest {
     CheckConnectionRead checkConnectionRead = new CheckConnectionRead();
     checkConnectionRead.setStatus(StatusEnum.FAILED);
 
-    when(schedulerHandler.checkDestinationConnection(newDestinationId)).thenReturn(checkConnectionRead);
+    when(schedulerHandler.checkDestinationConnectionFromDestinationId(newDestinationId)).thenReturn(checkConnectionRead);
 
     DestinationRecreate destinationRecreate = new DestinationRecreate();
     destinationRecreate.setName(destinationRead.getName());

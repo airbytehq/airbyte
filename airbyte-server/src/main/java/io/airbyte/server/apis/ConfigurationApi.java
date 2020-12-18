@@ -31,6 +31,7 @@ import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.ConnectionReadList;
 import io.airbyte.api.model.ConnectionUpdate;
 import io.airbyte.api.model.DebugRead;
+import io.airbyte.api.model.DestinationCoreConfig;
 import io.airbyte.api.model.DestinationCreate;
 import io.airbyte.api.model.DestinationDefinitionCreate;
 import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
@@ -49,6 +50,7 @@ import io.airbyte.api.model.JobInfoRead;
 import io.airbyte.api.model.JobListRequestBody;
 import io.airbyte.api.model.JobReadList;
 import io.airbyte.api.model.SlugRequestBody;
+import io.airbyte.api.model.SourceCoreConfig;
 import io.airbyte.api.model.SourceCreate;
 import io.airbyte.api.model.SourceDefinitionCreate;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
@@ -217,13 +219,14 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   @Override
   public CheckConnectionRead checkConnectionToSource(@Valid SourceIdRequestBody sourceIdRequestBody) {
-    return execute(() -> schedulerHandler.checkSourceConnection(sourceIdRequestBody));
+    return execute(() -> schedulerHandler.checkSourceConnectionFromSourceId(sourceIdRequestBody));
   }
 
   @Override
   public SourceDiscoverSchemaRead discoverSchemaForSource(@Valid SourceIdRequestBody sourceIdRequestBody) {
-    return execute(() -> schedulerHandler.discoverSchemaForSource(sourceIdRequestBody));
+    return execute(() -> schedulerHandler.discoverSchemaForSourceFromSourceId(sourceIdRequestBody));
   }
+
   // DESTINATION
 
   @Override
@@ -285,7 +288,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   @Override
   public CheckConnectionRead checkConnectionToDestination(@Valid DestinationIdRequestBody destinationIdRequestBody) {
-    return execute(() -> schedulerHandler.checkDestinationConnection(destinationIdRequestBody));
+    return execute(() -> schedulerHandler.checkDestinationConnectionFromDestinationId(destinationIdRequestBody));
   }
 
   // CONNECTION
@@ -327,6 +330,22 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public JobInfoRead resetConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
     return execute(() -> schedulerHandler.resetConnection(connectionIdRequestBody));
+  }
+
+  // SCHEDULER
+  @Override
+  public CheckConnectionRead executeSourceCheckConnection(@Valid SourceCoreConfig sourceCreate) {
+    return execute(() -> schedulerHandler.checkSourceConnectionFromSourceCreate(sourceCreate));
+  }
+
+  @Override
+  public CheckConnectionRead executeDestinationCheckConnection(@Valid DestinationCoreConfig destinationCreate) {
+    return execute(() -> schedulerHandler.checkDestinationConnectionFromDestinationCreate(destinationCreate));
+  }
+
+  @Override
+  public SourceDiscoverSchemaRead executeSourceDiscoverSchema(@Valid SourceCoreConfig sourceCreate) {
+    return execute(() -> schedulerHandler.discoverSchemaForSourceFromSourceCreate(sourceCreate));
   }
 
   // JOB HISTORY
