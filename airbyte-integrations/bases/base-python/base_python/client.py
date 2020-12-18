@@ -76,7 +76,7 @@ class BaseClient(ABC):
         if not method:
             raise ValueError(f"Client does not know how to read stream `{stream.name}`")
 
-        for message in method():
+        for message in method(self):
             now = int(datetime.now().timestamp()) * 1000
             yield AirbyteRecordMessage(stream=stream.name, data=message, emitted_at=now)
 
