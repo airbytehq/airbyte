@@ -18,7 +18,7 @@ PART_TO_BUMP=$1
 # requires no git diffs to run
 # commits the bumped versions code to your branch
 pip install bumpversion
-VERSION=$(bumpversion "$PART_TO_BUMP" | grep new_version | sed -r s,"^.*=",,)
+bumpversion "$PART_TO_BUMP"
 
 GIT_REVISION=$(git rev-parse HEAD)
 [[ -z "$GIT_REVISION" ]] && echo "Couldn't get the git revision..." && exit 1
