@@ -26,6 +26,7 @@ package io.airbyte.protocol.models;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
@@ -42,6 +43,7 @@ import java.util.stream.Collectors;
 public class CatalogHelpers {
 
   public static AirbyteCatalog createAirbyteCatalog(String streamName, Field... fields) {
+    Preconditions.checkNotNull(streamName);
     return new AirbyteCatalog().withStreams(Lists.newArrayList(createAirbyteStream(streamName, fields)));
   }
 
@@ -50,10 +52,13 @@ public class CatalogHelpers {
   }
 
   public static AirbyteStream createAirbyteStream(String streamName, List<Field> fields) {
+    Preconditions.checkNotNull(streamName);
+    Preconditions.checkNotNull(fields);
     return new AirbyteStream().withName(streamName).withJsonSchema(fieldsToJsonSchema(fields));
   }
 
   public static ConfiguredAirbyteCatalog createConfiguredAirbyteCatalog(String streamName, Field... fields) {
+    Preconditions.checkNotNull(streamName);
     return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(createConfiguredAirbyteStream(streamName, fields)));
   }
 
@@ -62,6 +67,8 @@ public class CatalogHelpers {
   }
 
   public static ConfiguredAirbyteStream createConfiguredAirbyteStream(String streamName, List<Field> fields) {
+    Preconditions.checkNotNull(streamName);
+    Preconditions.checkNotNull(fields);
     return new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName(streamName).withJsonSchema(fieldsToJsonSchema(fields)));
   }
 
@@ -78,6 +85,8 @@ public class CatalogHelpers {
                                                                                  SyncMode syncMode,
                                                                                  String cursorFieldName,
                                                                                  List<Field> fields) {
+    Preconditions.checkNotNull(streamName);
+    Preconditions.checkNotNull(fields);
     return new ConfiguredAirbyteStream()
         .withStream(new AirbyteStream()
             .withName(streamName)
@@ -95,6 +104,7 @@ public class CatalogHelpers {
    * @return - ConfiguredCatalog based of off the input catalog.
    */
   public static ConfiguredAirbyteCatalog toDefaultConfiguredCatalog(AirbyteCatalog catalog) {
+    Preconditions.checkNotNull(catalog);
     return new ConfiguredAirbyteCatalog()
         .withStreams(catalog.getStreams()
             .stream()
@@ -103,6 +113,7 @@ public class CatalogHelpers {
   }
 
   public static ConfiguredAirbyteStream toDefaultConfiguredStream(AirbyteStream stream) {
+    Preconditions.checkNotNull(stream);
     return new ConfiguredAirbyteStream()
         .withStream(stream)
         .withSyncMode(SyncMode.FULL_REFRESH)
@@ -121,6 +132,7 @@ public class CatalogHelpers {
    * @return JsonSchema representation of the fields.
    */
   public static JsonNode fieldsToJsonSchema(List<Field> fields) {
+    Preconditions.checkNotNull(fields);
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("type", "object")
         .put("properties", fields

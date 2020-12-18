@@ -88,6 +88,8 @@ public abstract class AbstractJdbcSource implements Source {
   private final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration;
 
   public AbstractJdbcSource(final String driverClass, final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration) {
+    Preconditions.checkNotNull(driverClass);
+    Preconditions.checkNotNull(jdbcStreamingQueryConfiguration);
     this.driverClass = driverClass;
     this.jdbcStreamingQueryConfiguration = jdbcStreamingQueryConfiguration;
   }
@@ -118,6 +120,7 @@ public abstract class AbstractJdbcSource implements Source {
 
   @Override
   public AirbyteConnectionStatus check(JsonNode config) {
+    Preconditions.checkNotNull(config);
     try (final JdbcDatabase database = createDatabase(config)) {
       // attempt to get metadata from the database as a cheap way of seeing if we can connect.
       database.bufferedResultSetQuery(conn -> conn.getMetaData().getCatalogs(), JdbcUtils::rowToJson);
@@ -133,6 +136,7 @@ public abstract class AbstractJdbcSource implements Source {
 
   @Override
   public AirbyteCatalog discover(JsonNode config) throws Exception {
+    Preconditions.checkNotNull(config);
     try (final JdbcDatabase database = createDatabase(config)) {
       return new AirbyteCatalog()
           .withStreams(getTables(
@@ -148,6 +152,8 @@ public abstract class AbstractJdbcSource implements Source {
 
   @Override
   public Stream<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception {
+    Preconditions.checkNotNull(config);
+    Preconditions.checkNotNull(catalog);
     final JdbcStateManager stateManager =
         new JdbcStateManager(state == null ? JdbcStateManager.emptyState() : Jsons.object(state, JdbcState.class), catalog);
     final Instant emittedAt = Instant.now();
@@ -188,6 +194,11 @@ public abstract class AbstractJdbcSource implements Source {
                                                   JdbcStateManager stateManager,
                                                   Instant emittedAt)
       throws SQLException {
+    Preconditions.checkNotNull(database);
+    Preconditions.checkNotNull(airbyteStream);
+    Preconditions.checkNotNull(table);
+    Preconditions.checkNotNull(stateManager);
+    Preconditions.checkNotNull(emittedAt);
     final String streamName = airbyteStream.getStream().getName();
     final Set<String> selectedFieldsInCatalog = CatalogHelpers.getTopLevelFieldNames(airbyteStream);
     final List<String> selectedDatabaseFields = table.getFields()
@@ -235,6 +246,12 @@ public abstract class AbstractJdbcSource implements Source {
                                                              String cursor,
                                                              Instant emittedAt)
       throws SQLException {
+    Preconditions.checkNotNull(database);
+    Preconditions.checkNotNull(airbyteStream);
+    Preconditions.checkNotNull(selectedDatabaseFields);
+    Preconditions.checkNotNull(table);
+    Preconditions.checkNotNull(cursor);
+    Preconditions.checkNotNull(emittedAt);
     final String streamName = airbyteStream.getStream().getName();
     final String cursorField = IncrementalUtils.getCursorField(airbyteStream);
     final JDBCType cursorJdbcType = table.getFields().stream()
@@ -252,7 +269,8 @@ public abstract class AbstractJdbcSource implements Source {
         table.getSchemaName(),
         table.getName(),
         cursorField,
-        cursorJdbcType, cursor);
+        cursorJdbcType,
+        cursor);
 
     return getMessageStream(queryStream, streamName, emittedAt.toEpochMilli());
   }
@@ -263,6 +281,11 @@ public abstract class AbstractJdbcSource implements Source {
                                                              TableInfoInternal table,
                                                              Instant emittedAt)
       throws SQLException {
+    Preconditions.checkNotNull(database);
+    Preconditions.checkNotNull(streamName);
+    Preconditions.checkNotNull(selectedDatabaseFields);
+    Preconditions.checkNotNull(table);
+    Preconditions.checkNotNull(emittedAt);
     final Stream<JsonNode> queryStream = queryTableFullRefresh(database, selectedDatabaseFields, table.getSchemaName(), table.getName());
     return getMessageStream(queryStream, streamName, emittedAt.toEpochMilli());
   }
@@ -271,6 +294,8 @@ public abstract class AbstractJdbcSource implements Source {
                                     final String databaseName,
                                     final String schemaName)
       throws Exception {
+    Preconditions.checkNotNull(database);
+    Preconditions.checkNotNull(databaseName);
     return discoverInternal(database, databaseName, schemaName).stream()
         .map(t -> {
           // some databases return multiple copies of the same record for a column (e.g. redshift) because
@@ -289,6 +314,8 @@ public abstract class AbstractJdbcSource implements Source {
   }
 
   private static void assertColumnsWithSameNameAreSame(String tableName, List<ColumnInfo> columns) {
+    Preconditions.checkNotNull(tableName);
+    Preconditions.checkNotNull(columns);
     columns.stream()
         .collect(Collectors.groupingBy(ColumnInfo::getColumnName))
         .values()
@@ -305,6 +332,7 @@ public abstract class AbstractJdbcSource implements Source {
   }
 
   private static String getFullyQualifiedTableName(String schemaName, String tableName) {
+    Preconditions.checkNotNull(tableName);
     return schemaName != null ? schemaName + "." + tableName : tableName;
   }
 
@@ -312,8 +340,12 @@ public abstract class AbstractJdbcSource implements Source {
                                                    final String databaseName,
                                                    final String schemaName)
       throws Exception {
+    Preconditions.checkNotNull(database);
+    Preconditions.checkNotNull(databaseName);
     final Set<String> internalSchemas = new HashSet<>(getExcludedInternalSchemas());
     return database.bufferedResultSetQuery(
+        // databaseName and schemaName will filter out columns that are unrelated. if they are null, they
+        // filter nothing.
         conn -> conn.getMetaData().getColumns(databaseName, schemaName, null, null),
         resultSet -> Jsons.jsonNode(ImmutableMap.<String, Object>builder()
             // we always want a namespace, if we cannot get a schema, use db name.
@@ -356,6 +388,9 @@ public abstract class AbstractJdbcSource implements Source {
   }
 
   private static Stream<AirbyteMessage> getMessageStream(Stream<JsonNode> recordStream, String streamName, long emittedAt) {
+    Preconditions.checkNotNull(recordStream);
+    Preconditions.checkNotNull(streamName);
+    Preconditions.checkNotNull(emittedAt);
     return recordStream.map(r -> new AirbyteMessage()
         .withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage()
@@ -364,8 +399,12 @@ public abstract class AbstractJdbcSource implements Source {
             .withData(r)));
   }
 
-  public static Stream<JsonNode> queryTableFullRefresh(JdbcDatabase database, List<String> columnNames, String schemaName, String tableName)
+  private static Stream<JsonNode> queryTableFullRefresh(JdbcDatabase database, List<String> columnNames, String schemaName, String tableName)
       throws SQLException {
+    Preconditions.checkNotNull(database);
+    Preconditions.checkNotNull(columnNames);
+    Preconditions.checkNotNull(tableName);
+
     return database.query(
         connection -> {
           final String sql = String.format("SELECT %s FROM %s", Strings.join(columnNames, ","), getFullyQualifiedTableName(schemaName, tableName));
@@ -374,14 +413,21 @@ public abstract class AbstractJdbcSource implements Source {
         JdbcUtils::rowToJson);
   }
 
-  public static Stream<JsonNode> queryTableIncremental(JdbcDatabase database,
-                                                       List<String> columnNames,
-                                                       String schemaName,
-                                                       String tableName,
-                                                       String cursorField,
-                                                       JDBCType cursorFieldType,
-                                                       String cursor)
+  private static Stream<JsonNode> queryTableIncremental(JdbcDatabase database,
+                                                        List<String> columnNames,
+                                                        String schemaName,
+                                                        String tableName,
+                                                        String cursorField,
+                                                        JDBCType cursorFieldType,
+                                                        String cursor)
       throws SQLException {
+    Preconditions.checkNotNull(database);
+    Preconditions.checkNotNull(columnNames);
+    Preconditions.checkNotNull(tableName);
+    Preconditions.checkNotNull(cursorField);
+    Preconditions.checkNotNull(cursorFieldType);
+    Preconditions.checkNotNull(cursor);
+
     final String sql = String.format("SELECT %s FROM %s WHERE %s > ?",
         Strings.join(columnNames, ","),
         getFullyQualifiedTableName(schemaName, tableName), cursorField);
@@ -396,6 +442,8 @@ public abstract class AbstractJdbcSource implements Source {
   }
 
   private JdbcDatabase createDatabase(JsonNode config) {
+    Preconditions.checkNotNull(config);
+
     final JsonNode jdbcConfig = toJdbcConfig(config);
 
     return Databases.createStreamingJdbcDatabase(
@@ -433,6 +481,10 @@ public abstract class AbstractJdbcSource implements Source {
     private final List<ColumnInfo> fields;
 
     public TableInfoInternal(String schemaName, String tableName, List<ColumnInfo> fields) {
+      Preconditions.checkNotNull(schemaName);
+      Preconditions.checkNotNull(tableName);
+      Preconditions.checkNotNull(fields);
+
       this.schemaName = schemaName;
       this.name = tableName;
       this.fields = fields;
@@ -458,6 +510,9 @@ public abstract class AbstractJdbcSource implements Source {
     private final JDBCType columnType;
 
     public ColumnInfo(String columnName, JDBCType columnType) {
+      Preconditions.checkNotNull(columnName);
+      Preconditions.checkNotNull(columnType);
+
       this.columnName = columnName;
       this.columnType = columnType;
     }
