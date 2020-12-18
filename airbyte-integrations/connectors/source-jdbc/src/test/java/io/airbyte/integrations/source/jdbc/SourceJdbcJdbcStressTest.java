@@ -67,8 +67,6 @@ class SourceJdbcJdbcStressTest extends JdbcStressTest {
   public void setup() throws Exception {
     final String dbName = "db_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
 
-    config = Jsons.jsonNode(ImmutableMap.of("host", "localhost", "port", 5432, "database", "charles", "username", "postgres", "password", ""));
-
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", PSQL_DB.getHost())
         .put("port", PSQL_DB.getFirstMappedPort())

@@ -73,6 +73,17 @@ public abstract class AbstractJdbcSource implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcSource.class);
 
+  private static final String JDBC_COLUMN_DATABASE_NAME = "TABLE_CAT";
+  private static final String JDBC_COLUMN_SCHEMA_NAME = "TABLE_SCHEM";
+  private static final String JDBC_COLUMN_TABLE_NAME = "TABLE_NAME";
+  private static final String JDBC_COLUMN_COLUMN_NAME = "COLUMN_NAME";
+  private static final String JDBC_COLUMN_DATA_TYPE = "DATA_TYPE";
+
+  private static final String INTERNAL_SCHEMA_NAME = "schemaName";
+  private static final String INTERNAL_TABLE_NAME = "tableName";
+  private static final String INTERNAL_COLUMN_NAME = "columnName";
+  private static final String INTERNAL_COLUMN_TYPE = "columnType";
+
   private final String driverClass;
   private final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration;
 
@@ -139,7 +150,7 @@ public abstract class AbstractJdbcSource implements Source {
   public Stream<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception {
     final JdbcStateManager stateManager =
         new JdbcStateManager(state == null ? JdbcStateManager.emptyState() : Jsons.object(state, JdbcState.class), catalog);
-    final Instant now = Instant.now();
+    final Instant emittedAt = Instant.now();
 
     final JdbcDatabase database = createDatabase(config);
 
@@ -165,18 +176,17 @@ public abstract class AbstractJdbcSource implements Source {
           airbyteStream,
           table,
           stateManager,
-          now);
+          emittedAt);
       resultStream = Stream.concat(resultStream, stream);
     }
     return resultStream.onClose(() -> Exceptions.toRuntime(database::close));
   }
 
-  // get the read stream for an airbyte stream. the naming is accurate if unfortunate.
   private Stream<AirbyteMessage> createReadStream(JdbcDatabase database,
                                                   ConfiguredAirbyteStream airbyteStream,
                                                   TableInfoInternal table,
                                                   JdbcStateManager stateManager,
-                                                  Instant now)
+                                                  Instant emittedAt)
       throws SQLException {
     final String streamName = airbyteStream.getStream().getName();
     final Set<String> selectedFieldsInCatalog = CatalogHelpers.getTopLevelFieldNames(airbyteStream);
@@ -193,10 +203,10 @@ public abstract class AbstractJdbcSource implements Source {
 
       final Stream<AirbyteMessage> internalMessageStream;
       if (cursorOptional.isPresent()) {
-        internalMessageStream = getIncrementalStream(database, airbyteStream, selectedDatabaseFields, table, cursorOptional.get(), now);
+        internalMessageStream = getIncrementalStream(database, airbyteStream, selectedDatabaseFields, table, cursorOptional.get(), emittedAt);
       } else {
         // if no cursor is present then this is the first read for is the same as doing a full refresh read.
-        internalMessageStream = getFullRefreshStream(database, streamName, selectedDatabaseFields, table, now);
+        internalMessageStream = getFullRefreshStream(database, streamName, selectedDatabaseFields, table, emittedAt);
       }
 
       final JsonSchemaPrimitive cursorType = IncrementalUtils.getCursorType(airbyteStream, cursorField);
@@ -210,7 +220,7 @@ public abstract class AbstractJdbcSource implements Source {
 
       stream = MoreStreams.toStream(stateDecoratingIterator);
     } else if (airbyteStream.getSyncMode() == SyncMode.FULL_REFRESH || airbyteStream.getSyncMode() == null) {
-      stream = getFullRefreshStream(database, streamName, selectedDatabaseFields, table, now);
+      stream = getFullRefreshStream(database, streamName, selectedDatabaseFields, table, emittedAt);
     } else {
       throw new IllegalArgumentException(String.format("%s does not support sync mode: %s.", airbyteStream.getSyncMode(), AbstractJdbcSource.class));
     }
@@ -223,7 +233,7 @@ public abstract class AbstractJdbcSource implements Source {
                                                              List<String> selectedDatabaseFields,
                                                              TableInfoInternal table,
                                                              String cursor,
-                                                             Instant now)
+                                                             Instant emittedAt)
       throws SQLException {
     final String streamName = airbyteStream.getStream().getName();
     final String cursorField = IncrementalUtils.getCursorField(airbyteStream);
@@ -244,17 +254,17 @@ public abstract class AbstractJdbcSource implements Source {
         cursorField,
         cursorJdbcType, cursor);
 
-    return getMessageStream(queryStream, streamName, now.toEpochMilli());
+    return getMessageStream(queryStream, streamName, emittedAt.toEpochMilli());
   }
 
   private static Stream<AirbyteMessage> getFullRefreshStream(JdbcDatabase database,
                                                              String streamName,
                                                              List<String> selectedDatabaseFields,
                                                              TableInfoInternal table,
-                                                             Instant now)
+                                                             Instant emittedAt)
       throws SQLException {
     final Stream<JsonNode> queryStream = queryTableFullRefresh(database, selectedDatabaseFields, table.getSchemaName(), table.getName());
-    return getMessageStream(queryStream, streamName, now.toEpochMilli());
+    return getMessageStream(queryStream, streamName, emittedAt.toEpochMilli());
   }
 
   @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
@@ -309,48 +319,50 @@ public abstract class AbstractJdbcSource implements Source {
         conn -> conn.getMetaData().getColumns(databaseOptional.orElse(null), schemaOptional.orElse(null), null, null),
         resultSet -> Jsons.jsonNode(ImmutableMap.<String, Object>builder()
             // we always want a namespace, if we cannot get a schema, use db name.
-            .put("schemaName", resultSet.getObject("TABLE_SCHEM") != null ? resultSet.getString("TABLE_SCHEM") : resultSet.getObject("TABLE_CAT"))
-            .put("tableName", resultSet.getString("TABLE_NAME"))
-            .put("columnName", resultSet.getString("COLUMN_NAME"))
-            .put("columnType", resultSet.getString("DATA_TYPE"))
+            .put(INTERNAL_SCHEMA_NAME,
+                resultSet.getObject(JDBC_COLUMN_SCHEMA_NAME) != null ? resultSet.getString(JDBC_COLUMN_SCHEMA_NAME)
+                    : resultSet.getObject(JDBC_COLUMN_DATABASE_NAME))
+            .put(INTERNAL_TABLE_NAME, resultSet.getString(JDBC_COLUMN_TABLE_NAME))
+            .put(INTERNAL_COLUMN_NAME, resultSet.getString(JDBC_COLUMN_COLUMN_NAME))
+            .put(INTERNAL_COLUMN_TYPE, resultSet.getString(JDBC_COLUMN_DATA_TYPE))
             .build()))
         .stream()
-        .filter(t -> !internalSchemas.contains(t.get("schemaName").asText()))
-        .collect(Collectors.groupingBy(t -> t.get("tableName").asText()))
+        .filter(t -> !internalSchemas.contains(t.get(INTERNAL_SCHEMA_NAME).asText()))
+        .collect(Collectors.groupingBy(t -> t.get(INTERNAL_TABLE_NAME).asText()))
         .entrySet()
         .stream()
         .map(e -> {
           final String tableName = e.getKey();
           final List<JsonNode> fields = e.getValue();
           return new TableInfoInternal(
-              fields.get(0).get("schemaName").asText(),
+              fields.get(0).get(INTERNAL_SCHEMA_NAME).asText(),
               tableName,
               fields.stream()
                   .map(f -> {
                     JDBCType jdbcType;
                     try {
-                      jdbcType = JDBCType.valueOf(f.get("columnType").asInt());
+                      jdbcType = JDBCType.valueOf(f.get(INTERNAL_COLUMN_TYPE).asInt());
                     } catch (IllegalArgumentException ex) {
                       LOGGER.warn(String.format("Could not convert column: %s from table: %s.%s with type: %s",
-                          f.get("columnName"),
-                          f.get("schemaName"),
-                          f.get("tableName"),
-                          f.get("columnType")), ex);
+                          f.get(INTERNAL_COLUMN_NAME),
+                          f.get(INTERNAL_SCHEMA_NAME),
+                          f.get(INTERNAL_TABLE_NAME),
+                          f.get(INTERNAL_COLUMN_TYPE)), ex);
                       jdbcType = JDBCType.VARCHAR;
                     }
-                    return new ColumnInfo(f.get("columnName").asText(), jdbcType);
+                    return new ColumnInfo(f.get(INTERNAL_COLUMN_NAME).asText(), jdbcType);
                   })
                   .collect(Collectors.toList()));
         })
         .collect(Collectors.toList());
   }
 
-  private static Stream<AirbyteMessage> getMessageStream(Stream<JsonNode> recordStream, String streamName, long time) {
+  private static Stream<AirbyteMessage> getMessageStream(Stream<JsonNode> recordStream, String streamName, long emittedAt) {
     return recordStream.map(r -> new AirbyteMessage()
         .withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage()
             .withStream(streamName)
-            .withEmittedAt(time)
+            .withEmittedAt(emittedAt)
             .withData(r)));
   }
 
