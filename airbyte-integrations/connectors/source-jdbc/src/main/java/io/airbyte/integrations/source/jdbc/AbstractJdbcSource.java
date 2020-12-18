@@ -137,8 +137,8 @@ public abstract class AbstractJdbcSource implements Source {
       return new AirbyteCatalog()
           .withStreams(getTables(
               database,
-              Optional.ofNullable(config.get("database")).map(JsonNode::asText),
-              Optional.ofNullable(config.get("schema")).map(JsonNode::asText))
+              config.get("database") != null ? config.get("database").asText() : null,
+              config.get("schema") != null ? config.get("schema").asText() : null)
                   .stream()
                   .map(t -> CatalogHelpers.createAirbyteStream(t.getName(), t.getFields())
                       .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))
@@ -156,8 +156,8 @@ public abstract class AbstractJdbcSource implements Source {
 
     final Map<String, TableInfoInternal> tableNameToTable = discoverInternal(
         database,
-        Optional.ofNullable(config.get("database")).map(JsonNode::asText),
-        Optional.ofNullable(config.get("schema")).map(JsonNode::asText))
+        config.get("database") != null ? config.get("database").asText() : null,
+        config.get("schema") != null ? config.get("schema").asText() : null)
             .stream()
             .collect(Collectors.toMap(t -> String.format("%s.%s", t.getSchemaName(), t.getName()), Function.identity()));
 
@@ -267,12 +267,11 @@ public abstract class AbstractJdbcSource implements Source {
     return getMessageStream(queryStream, streamName, emittedAt.toEpochMilli());
   }
 
-  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
   private List<TableInfo> getTables(final JdbcDatabase database,
-                                    final Optional<String> databaseOptional,
-                                    final Optional<String> schemaOptional)
+                                    final String databaseName,
+                                    final String schemaName)
       throws Exception {
-    return discoverInternal(database, databaseOptional, schemaOptional).stream()
+    return discoverInternal(database, databaseName, schemaName).stream()
         .map(t -> {
           // some databases return multiple copies of the same record for a column (e.g. redshift) because
           // they have at least once delivery guarantees. we want to dedupe these, but first we check that the
@@ -309,14 +308,13 @@ public abstract class AbstractJdbcSource implements Source {
     return schemaName != null ? schemaName + "." + tableName : tableName;
   }
 
-  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
   private List<TableInfoInternal> discoverInternal(final JdbcDatabase database,
-                                                   final Optional<String> databaseOptional,
-                                                   final Optional<String> schemaOptional)
+                                                   final String databaseName,
+                                                   final String schemaName)
       throws Exception {
     final Set<String> internalSchemas = new HashSet<>(getExcludedInternalSchemas());
     return database.bufferedResultSetQuery(
-        conn -> conn.getMetaData().getColumns(databaseOptional.orElse(null), schemaOptional.orElse(null), null, null),
+        conn -> conn.getMetaData().getColumns(databaseName, schemaName, null, null),
         resultSet -> Jsons.jsonNode(ImmutableMap.<String, Object>builder()
             // we always want a namespace, if we cannot get a schema, use db name.
             .put(INTERNAL_SCHEMA_NAME,
