@@ -119,7 +119,8 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
     // mssql types:
     // https://docs.microsoft.com/en-us/sql/t-sql/data-types/data-types-transact-sql?view=sql-server-ver15
     return switch (mssqlType) {
-      case "bigint", "numeric", "bit", "smallint", "decimal", "int", "tinyint", "float" -> JsonSchemaPrimitive.NUMBER;
+      case "bigint", "numeric", "smallint", "decimal", "int", "tinyint", "float" -> JsonSchemaPrimitive.NUMBER;
+      case "bit" -> JsonSchemaPrimitive.BOOLEAN;
       default -> JsonSchemaPrimitive.STRING;
     };
   }
