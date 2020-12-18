@@ -25,16 +25,15 @@ SOFTWARE.
 from setuptools import find_packages, setup
 
 setup(
-    name="source_greenhouse",
-    description="Source implementation for Greenhouse.",
+    name="source_drift",
+    description="Source implementation for Drift.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
     install_requires=[
         "airbyte-protocol",
         "base-python",
-        "six==1.15.0",
-        "grnhse-api==0.1.1",
+        "requests~=2.22",
     ],
     package_data={"": ["*.json", "schemas/*.json"]},
     setup_requires=["pytest-runner"],

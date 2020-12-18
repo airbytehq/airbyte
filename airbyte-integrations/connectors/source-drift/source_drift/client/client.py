@@ -22,24 +22,39 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from setuptools import find_packages, setup
+from typing import Iterator, Tuple
 
-setup(
-    name="source_greenhouse",
-    description="Source implementation for Greenhouse.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    install_requires=[
-        "airbyte-protocol",
-        "base-python",
-        "six==1.15.0",
-        "grnhse-api==0.1.1",
-    ],
-    package_data={"": ["*.json", "schemas/*.json"]},
-    setup_requires=["pytest-runner"],
-    tests_require=["pytest"],
-    extras_require={
-        "tests": ["airbyte_python_test", "pytest"],
-    },
-)
+from base_python import BaseClient
+
+from .api import APIClient
+from .common import AuthError, ValidationError
+
+
+class Client(BaseClient):
+    def __init__(self, access_token: str):
+        super().__init__()
+        self._client = APIClient(access_token)
+
+    def stream__accounts(self) -> Iterator[dict]:
+        yield from self._client.accounts.list()
+
+    def stream__users(self) -> Iterator[dict]:
+        yield from self._client.users.list()
+
+    def stream__conversations(self) -> Iterator[dict]:
+        yield from self._client.conversations.list()
+
+    def health_check(self) -> Tuple[bool, str]:
+        alive = True
+        error_msg = None
+
+        try:
+            # we don't care about response, just checking authorisation
+            self._client.check_token("definitely_not_a_token")
+        except ValidationError:  # this is ok because `definitely_not_a_token`
+            pass
+        except AuthError as error:
+            alive = False
+            error_msg = str(error)
+
+        return alive, error_msg
