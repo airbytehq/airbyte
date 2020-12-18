@@ -29,17 +29,18 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
-import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import java.util.Set;
+import io.airbyte.integrations.source.jdbc.AbstractJooqSource;
+import java.util.List;
+import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MySqlSource extends AbstractJdbcSource implements Source {
+public class MySqlSource extends AbstractJooqSource implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlSource.class);
 
   public MySqlSource() {
-    super("com.mysql.cj.jdbc.Driver", new MySqlJdbcStreamingQueryConfiguration());
+    super("com.mysql.cj.jdbc.Driver", SQLDialect.MYSQL);
   }
 
   @Override
@@ -59,8 +60,8 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public Set<String> getExcludedInternalSchemas() {
-    return Set.of(
+  protected List<String> getExcludedInternalSchemas() {
+    return List.of(
         "information_schema",
         "mysql",
         "performance_schema",

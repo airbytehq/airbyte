@@ -20,8 +20,6 @@ dependencies {
 
     implementation 'org.apache.commons:commons-lang3:3.11'
 
-    testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
-
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     testImplementation 'org.testcontainers:mysql:1.15.1'
 
