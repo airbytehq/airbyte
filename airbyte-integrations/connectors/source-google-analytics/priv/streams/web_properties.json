@@ -4,6 +4,13 @@
   "title": "Google Analytics Web Property",
   "type": "object",
   "additionalProperties": false,
+  "required": [
+    "account_id",
+    "id",
+    "name",
+    "level",
+    "website_url"
+  ],
   "properties": {
     "account_id": {
       "description": "Account Id",

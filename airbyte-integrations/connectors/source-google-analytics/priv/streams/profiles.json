@@ -4,6 +4,13 @@
   "title": "Google Analytics Profiles",
   "type": "object",
   "additionalProperties": false,
+  "required": [
+    "account_id",
+    "web_property_id",
+    "id",
+    "name",
+    "type"
+  ],
   "properties": {
     "account_id": {
       "description": "Account Id",
