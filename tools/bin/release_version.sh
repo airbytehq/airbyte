@@ -31,4 +31,4 @@ GIT_REVISION=$(git rev-parse HEAD)
 
 echo "Pushing bumped version code..."
 git push
-echo "Completed. After you merge, remember to switch to master, "
+echo "Completed. After you merge, remember to switch to master and run ./tools/bin/tag_version.sh"
