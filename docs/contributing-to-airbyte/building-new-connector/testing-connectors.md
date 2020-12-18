@@ -60,17 +60,24 @@ First, you can run the image locally. Connectors should have instructions in the
 
 ### 2. Requesting GitHub PR Integration Test Runs
 
+{% hint style="warning" %}
+This option is not available to PRs from forks, so it is effectively limited to Airbyte employees.
+{% endhint %}
+
 If you don't want to handle secrets, you're making a relatively minor change, or you want to ensure the connector's integration test will run remotely, you should request builds on GitHub. You can request an integration test run by creating a comment with a slash command.
 
-Here are some example commands: 1. `/test connector=all` - Runs integration tests for all connectors in a single GitHub workflow. Some of our integration tests interact with rate-limited resources, so please use this judiciously. 2. `/test connector=source-sendgrid` - Runs integration tests for a single connector on the latest PR commit. 3. `/test connector=source-sendgrid ref=master` - Runs integration tests for a single connector on a different branch. 4. `/test connector=source-sendgrid ref=d5c53102` - Runs integration tests for a single connector on a specific commit.
+Here are some example commands: 
+
+1. `/test connector=all` - Runs integration tests for all connectors in a single GitHub workflow. Some of our integration tests interact with rate-limited resources, so please use this judiciously.
+2. `/test connector=source-sendgrid` - Runs integration tests for a single connector on the latest PR commit.
+3. `/test connector=source-sendgrid ref=master` - Runs integration tests for a single connector on a different branch. 
+4. `/test connector=source-sendgrid ref=d5c53102` - Runs integration tests for a single connector on a specific commit.
 
 A command dispatcher GitHub workflow will launch on comment submission. This dispatcher will add an :eyes: reaction to the comment when it starts processing. If there is an error dispatching your request, an error will be appended to your comment. If it launches the test run successfully, a :rocket: reaction will appear on your comment.
 
 Once the integration test workflow launches, it will append a link to the workflow at the end of the comment. A success or failure response will also be added upon workflow completion.
 
-Integration tests can also be manually requested from [https://github.com/airbytehq/airbyte/actions?query=workflow%3Aintegration-test](https://github.com/airbytehq/airbyte/actions?query=workflow%3Aintegration-test) by clicking "Run workflow" and specifying the connector and GitHub ref.
-
-This option is not available to PRs from forks, so it is effectively limited to Airbyte employees.
+Integration tests can also be manually requested by clicking "[Run workflow](https://github.com/airbytehq/airbyte/actions?query=workflow%3Aintegration-test)" and specifying the connector and GitHub ref.
 
 ### 3. Automatically Run From `master`
 
