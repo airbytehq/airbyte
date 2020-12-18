@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Tuple
+from typing import List, Tuple
 
 import requests
 from base_python import BaseClient
@@ -70,7 +70,7 @@ class Client(BaseClient):
             return False, self._connect_error
         return True, ""
 
-    def _request(self, url: str, method: str = "GET", data: dict = None):
+    def _request(self, url: str, method: str = "GET", data: dict = None) -> List[dict]:
         response = requests.request(method, url, headers=self._headers, json=data)
 
         if response.status_code == 200:
@@ -80,6 +80,21 @@ class Client(BaseClient):
             else:
                 return [response_data]
         return []
+
+    def _get_dashboard_ids(self) -> List[int]:
+        if not self._dashboard_ids:
+            self._dashboard_ids = [obj["id"] for obj in self._request(f"{self.BASE_URL}/dashboards") if isinstance(obj["id"], int)]
+        return self._dashboard_ids
+
+    def _get_project_ids(self) -> List[int]:
+        if not self._project_ids:
+            self._project_ids = [obj["id"] for obj in self._request(f"{self.BASE_URL}/projects")]
+        return self._project_ids
+
+    def _get_user_ids(self) -> List[int]:
+        if not self._user_ids:
+            self._user_ids = [obj["id"] for obj in self._request(f"{self.BASE_URL}/users")]
+        return self._user_ids
 
     def stream__color_collections(self):
         yield from self._request(f"{self.BASE_URL}/color_collections")
@@ -96,21 +111,15 @@ class Client(BaseClient):
         yield from dashboards_list
 
     def stream__dashboard_elements(self):
-        if not self._dashboard_ids:
-            self._dashboard_ids = [obj["id"] for obj in self._request(f"{self.BASE_URL}/dashboards") if isinstance(obj["id"], int)]
-        for dashboard_id in self._dashboard_ids:
+        for dashboard_id in self._get_dashboard_ids():
             yield from self._request(f"{self.BASE_URL}/dashboards/{dashboard_id}/dashboard_elements")
 
     def stream__dashboard_filters(self):
-        if not self._dashboard_ids:
-            self._dashboard_ids = [obj["id"] for obj in self._request(f"{self.BASE_URL}/dashboards") if isinstance(obj["id"], int)]
-        for dashboard_id in self._dashboard_ids:
+        for dashboard_id in self._get_dashboard_ids():
             yield from self._request(f"{self.BASE_URL}/dashboards/{dashboard_id}/dashboard_filters")
 
     def stream__dashboard_layouts(self):
-        if not self._dashboard_ids:
-            self._dashboard_ids = [obj["id"] for obj in self._request(f"{self.BASE_URL}/dashboards") if isinstance(obj["id"], int)]
-        for dashboard_id in self._dashboard_ids:
+        for dashboard_id in self._get_dashboard_ids():
             yield from self._request(f"{self.BASE_URL}/dashboards/{dashboard_id}/dashboard_layouts")
 
     def stream__datagroups(self):
@@ -137,7 +146,7 @@ class Client(BaseClient):
         yield from self._request(f"{self.BASE_URL}/integration_hubs")
 
     def stream__integrations(self):
-        yield from self._request(f"{self.BASE_URL}/integration_hubs")
+        yield from self._request(f"{self.BASE_URL}/integrations")
 
     def stream__lookml_dashboards(self):
         lookml_dashboards_list = [obj for obj in self._request(f"{self.BASE_URL}/dashboards") if isinstance(obj["id"], str)]
@@ -168,15 +177,11 @@ class Client(BaseClient):
         yield from projects_list
 
     def stream__project_files(self):
-        if not self._project_ids:
-            self._project_ids = [obj["id"] for obj in self._request(f"{self.BASE_URL}/projects")]
-        for project_id in self._project_ids:
+        for project_id in self._get_project_ids():
             yield from self._request(f"{self.BASE_URL}/projects/{project_id}/files")
 
     def stream__git_branches(self):
-        if not self._project_ids:
-            self._project_ids = [obj["id"] for obj in self._request(f"{self.BASE_URL}/projects")]
-        for project_id in self._project_ids:
+        for project_id in self._get_project_ids():
             yield from self._request(f"{self.BASE_URL}/projects/{project_id}/git_branches")
 
     def stream__roles(self):
@@ -220,15 +225,11 @@ class Client(BaseClient):
         yield from users_list
 
     def stream__user_attribute_values(self):
-        if not self._user_ids:
-            self._user_ids = [obj["id"] for obj in self._request(f"{self.BASE_URL}/users")]
-        for user_ids in self._user_ids:
+        for user_ids in self._get_user_ids():
             yield from self._request(f"{self.BASE_URL}/users/{user_ids}/attribute_values?all_values=true&include_unset=true")
 
     def stream__user_sessions(self):
-        if not self._user_ids:
-            self._user_ids = [obj["id"] for obj in self._request(f"{self.BASE_URL}/users")]
-        for user_ids in self._user_ids:
+        for user_ids in self._get_user_ids():
             yield from self._request(f"{self.BASE_URL}/users/{user_ids}/sessions")
 
     def stream__versions(self):
