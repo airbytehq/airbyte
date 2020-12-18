@@ -25,18 +25,12 @@
 package io.airbyte.integrations.destination.snowflake;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.json.Jsons;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.JDBCType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -152,55 +146,6 @@ public class SnowflakeDatabase {
         throw new RuntimeException(e);
       }
     };
-  }
-
-  // todo (cgardens) - this only handles results without nesting. the type conversion isn't very well
-  // tested and it makes some strong assumptions about how to handle nulls that may only make sense in
-  // testing scenarios. if you are using this for a non-testing use case, this method wil need a
-  // little more scrutiny. putting it here, because it is still a better base than nothing and if it's
-  // not here it will never be found.
-  public static List<JsonNode> resultSetToJson(ResultSet resultSet) throws SQLException {
-    final List<JsonNode> jsons = new ArrayList<>();
-    final int columnCount = resultSet.getMetaData().getColumnCount();
-
-    while (resultSet.next()) {
-      final Map<String, Object> json = new HashMap<>();
-
-      for (int i = 1; i < columnCount; i++) {
-        final String columnName = resultSet.getMetaData().getColumnName(i);
-        final int columnType = resultSet.getMetaData().getColumnType(i);
-        final JDBCType jdbcType = JDBCType.valueOf(columnType);
-
-        // attempt to access the column. this allows us to know if it is null before we do type-specific
-        // parsing. if it is null, we can move on. while awkward, this seems to be the agreed upon way of
-        // checking for null values with jdbc.
-        resultSet.getObject(i);
-        if (resultSet.wasNull())
-          continue;
-
-        // convert to java types that will convert into reasonable json.
-        switch (jdbcType) {
-          case INTEGER, BIGINT, SMALLINT, TINYINT, BIT -> {
-            json.put(columnName, resultSet.getLong(i));
-          }
-          case FLOAT, DOUBLE, NUMERIC, DECIMAL -> {
-            json.put(columnName, resultSet.getDouble(i));
-          }
-          case NULL -> {
-            // no op.
-          }
-          case BOOLEAN -> {
-            json.put(columnName, resultSet.getBoolean(i));
-          }
-          default -> {
-            json.put(columnName, resultSet.getString(i));
-          }
-        }
-      }
-      jsons.add(Jsons.jsonNode(json));
-    }
-
-    return jsons;
   }
 
 }
