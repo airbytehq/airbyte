@@ -1,4 +1,13 @@
-# Run Airbyte Locally from Kubernetes
+# Kubernetes
+
+## Support
+This is an early proof of concept for Kubernetes support. It has been tested on:
+* Local single-node Kube clusters (docker-desktop for Mac)
+* Google Kubernetes Engine (GKE)
+
+Please let us know on Slack or with a Github Issue if you're having trouble running it on these or other platforms. We'll be glad to help you get it running.
+
+## Launching
 
 All commands should be run from the root Airbyte source directory.
 
@@ -19,9 +28,16 @@ All commands should be run from the root Airbyte source directory.
     * If you redeploy `airbyte-webapp`, you will need to re-run this process.
 1. Go to http://localhost:8000/ and use Airbyte!
 
-## Operating Airbyte on Kubernetes
+## Known Limitations
 
-### Kustomize
+* Airbyte passes messages between the source and destination via the Kubernetes logging system which does not have great guarantees for data completeness. On multi-node clusters, this is done over the network, which will greatly limit throughput compared to single node Airbyte instances. This also puts a load on the Kubernetes logging system that is proportional to the volume of data you're transferring.
+* It isn't trivial to use a non-default namespace.
+* On GKE, latency for UI operations is very high.
+* We don't clean up completed worker job and pod histories. 
+* Please let us know on Slack if those issues are blocking your adoption of Airbyte.
+* Please let us know if you encounter any other issues or limitations of our Kube implementation on Slack or with a Github Issue.
+
+## Kustomize
 
 We use [Kustomize](https://kustomize.io/), which is built into `kubectl` to allow overrides for different environments.
 
@@ -38,19 +54,19 @@ bases:
 
 This would allow you to define custom resources or extend existing resources, even within your own VCS.
 
-### View Raw Manifests
+## View Raw Manifests
 
 For a specific overlay, you can run `kubectl kustomize kube/overlays/dev` to view the manifests that Kustomize will apply to your Kubernetes cluster. This is useful for debugging because it will show the exact resources you are defining.
 
-### Resizing Volumes
+## Resizing Volumes
 
 To resize a volume, change the `.spec.resources.requests.storage` value. After re-applying, the mount should be extended if that operation is supported for your type of mount. For a production instance, it's useful to track the usage of volumes to ensure they don't run out of space.
 
-### Copy Files To/From Volumes
+## Copy Files To/From Volumes
 
 See the documentation for [`kubectl cp`](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#cp).
 
-### Iterating
+## Iteration (on local Kubernetes clusters)
 
 If you're developing using a local context and are not using your local Kubernetes instance for anything else, you can iterate with the following series of commands. 
 ```
@@ -61,19 +77,21 @@ kubectl apply -k kube/overlays/dev # applies manifests
 
 Then restart the port-forwarding commands.
 
+Note: this does not remove jobs and pods created for Airbyte workers.
+
 If you are in a dev environment on a local cluster only running Airbyte and want to start completely from scratch, you can use the following command to destroy everything on the cluster:
 ```
 # BE CAREFUL, THIS COMMAND DELETES ALL RESOURCES, EVEN NON-AIRBYTE ONES!
 kubectl delete "$(kubectl api-resources --namespaced=true --verbs=delete -o name | tr "\n" "," | sed -e 's/,$//')" --all
 ```
 
-### Listing Files
+## Listing Files
 
 ```
 kubectl exec -it airbyte-scheduler-6b5747df5c-bj4fx ls /tmp/workspace/8
 ```
 
-### Reading Files
+## Reading Files
 
 ```
 kubectl exec -it airbyte-scheduler-6b5747df5c-bj4fx cat /tmp/workspace/8/0/logs.log
