@@ -12,9 +12,9 @@ If you don't want to handle secrets, you're making a relatively minor change, or
 
 Here are some example commands:
 1. `/test connector=all` - Runs integration tests for all connectors in a single GitHub workflow. Some of our integration tests interact with rate-limited resources, so please use this judiciously. 
-1. `/test connector=source-sendgrid` - Runs integration tests for a single connector on the latest PR commit. 
-1. `/test connector=source-sendgrid ref=master` - Runs integration tests for a single connector on a different branch.
-1. `/test connector=source-sendgrid ref=d5c53102` - Runs integration tests for a single connector on a specific commit.
+2. `/test connector=source-sendgrid` - Runs integration tests for a single connector on the latest PR commit. 
+3. `/test connector=source-sendgrid ref=master` - Runs integration tests for a single connector on a different branch.
+4. `/test connector=source-sendgrid ref=d5c53102` - Runs integration tests for a single connector on a specific commit.
 
 A command dispatcher GitHub workflow will launch on comment submission. This dispatcher will add an :eyes: reaction to the comment when it starts processing. If there is an error dispatching your request, an error will be appended to your comment. If it launches the test run successfully, a :rocket: reaction will appear on your comment.
 

@@ -22,17 +22,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import json
+
 from airbyte_protocol import AirbyteConnectionStatus, Status
-from base_python import AirbyteLogger, ConfigContainer
+from base_python import AirbyteLogger
 from base_singer import SingerSource
 
 TAP_CMD = "tap-zendesk"
 
 
 class SourceZendeskSupportSinger(SingerSource):
-    def check(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
+    def check_config(self, logger: AirbyteLogger, config_path: str, config: json) -> AirbyteConnectionStatus:
         try:
-            self.discover(logger, config_container)
+            self.discover(logger, config_path)
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception:
             logger.error("Exception while connecting to the Zendesk Support API")
@@ -46,5 +48,5 @@ class SourceZendeskSupportSinger(SingerSource):
         return f"{TAP_CMD} -c {config_path} --discover"
 
     def read_cmd(self, logger: AirbyteLogger, config_path: str, catalog_path: str, state_path: str = None) -> str:
-        # We don't pass state because this source does not respect replication-key so temporarily we're forcing it to be full refresh
-        return f"{TAP_CMD} --config {config_path} --catalog {catalog_path}"
+        state_opt = f"--state {state_path}" if state_path else ""
+        return f"{TAP_CMD} --config {config_path} --catalog {catalog_path} {state_opt}"

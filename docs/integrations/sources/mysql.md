@@ -2,15 +2,13 @@
 
 ## Overview
 
-The MySQL source supports Full Refresh syncs.
+The MySQL source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
-### Sync overview
-
-#### Resulting schema
+### Resulting schema
 
 The MySQL source does not alter the schema present in your database. Depending on the destination connected to this source, however, the schema may be altered. See the destination's documentation for more details.
 
-#### Data type mapping
+### Data type mapping
 
 MySQL data types are mapped to the following data types when synchronizing data:
 
@@ -33,7 +31,7 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 | Feature | Supported |
 | :--- | :--- |
 | Full Refresh Sync | Yes |
-| Incremental Sync | No |
+| Incremental - Append Sync | Yes |
 | Replicate Incremental Deletes | No |
 | Logical Replication \(WAL\) | No |
 | SSL Support | Yes |

@@ -24,6 +24,10 @@
 
 package io.airbyte.db;
 
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
+import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
+import io.airbyte.db.jdbc.StreamingJdbcDatabase;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.SQLDialect;
 
@@ -38,13 +42,41 @@ public class Databases {
                                         final String jdbcConnectionString,
                                         final String driverClassName,
                                         final SQLDialect dialect) {
+    final BasicDataSource connectionPool = createBasicDataSource(username, password, jdbcConnectionString, driverClassName);
+
+    return new Database(connectionPool, dialect);
+  }
+
+  public static JdbcDatabase createJdbcDatabase(final String username,
+                                                final String password,
+                                                final String jdbcConnectionString,
+                                                final String driverClassName) {
+    final BasicDataSource connectionPool = createBasicDataSource(username, password, jdbcConnectionString, driverClassName);
+
+    return new DefaultJdbcDatabase(connectionPool);
+  }
+
+  public static JdbcDatabase createStreamingJdbcDatabase(final String username,
+                                                         final String password,
+                                                         final String jdbcConnectionString,
+                                                         final String driverClassName,
+                                                         final JdbcStreamingQueryConfiguration jdbcStreamingQuery) {
+    final BasicDataSource connectionPool = createBasicDataSource(username, password, jdbcConnectionString, driverClassName);
+
+    final JdbcDatabase defaultJdbcDatabase = createJdbcDatabase(username, password, jdbcConnectionString, driverClassName);
+    return new StreamingJdbcDatabase(connectionPool, defaultJdbcDatabase, jdbcStreamingQuery);
+  }
+
+  private static BasicDataSource createBasicDataSource(final String username,
+                                                       final String password,
+                                                       final String jdbcConnectionString,
+                                                       final String driverClassName) {
     final BasicDataSource connectionPool = new BasicDataSource();
     connectionPool.setDriverClassName(driverClassName);
     connectionPool.setUsername(username);
     connectionPool.setPassword(password);
     connectionPool.setUrl(jdbcConnectionString);
-
-    return new Database(connectionPool, dialect);
+    return connectionPool;
   }
 
 }

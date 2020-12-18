@@ -54,8 +54,8 @@ docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-{{dashCase name
 ```
 
 ### Integration Tests
-1. From the airbyte project root, run `./gradlew :airbyte-integrations:connectors:source-{{dashCase name}}-singer:standardSourceTestPython` to run the standard integration test suite.
-1. To run additional integration tests, place your integration tests in the `integration_tests` directory and run them with `pytest integration_tests`.
+1. From the airbyte project root, run `./gradlew :airbyte-integrations:connectors:source-{{dashCase name}}-singer:integrationTest` to run the standard integration test suite.
+1. To run additional integration tests, create a directory `integration_tests` which contain your tests and run them with `pytest integration_tests`.
    Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
 
 ## Dependency Management

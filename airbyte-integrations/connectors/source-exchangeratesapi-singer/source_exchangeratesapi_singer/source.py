@@ -23,16 +23,13 @@ SOFTWARE.
 """
 
 import urllib.request
+from typing import Dict
 
-from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, Status
-from base_python import AirbyteLogger, CatalogHelper, ConfigContainer
-from base_singer import SingerSource
+from airbyte_protocol import AirbyteConnectionStatus, Status, SyncMode
+from base_singer import SingerSource, SyncModeInfo
 
 
 class SourceExchangeRatesApiSinger(SingerSource):
-    def __init__(self):
-        pass
-
     def check(self, logger, config_path) -> AirbyteConnectionStatus:
         try:
             code = urllib.request.urlopen("https://api.exchangeratesapi.io/").getcode()
@@ -44,10 +41,13 @@ class SourceExchangeRatesApiSinger(SingerSource):
     def discover_cmd(self, logger, config_path) -> str:
         return 'tap-exchangeratesapi | grep \'"type": "SCHEMA"\' | head -1 | jq -c \'{"streams":[{"stream": .stream, "schema": .schema}]}\''
 
-    def discover(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteCatalog:
-        catalog = super().discover(logger, config_container)
-        return CatalogHelper.coerce_catalog_as_full_refresh(catalog)
+    def get_sync_mode_overrides(self) -> Dict[str, SyncModeInfo]:
+        return {
+            "exchange_rate": SyncModeInfo(
+                supported_sync_modes=[SyncMode.incremental], source_defined_cursor=True, default_cursor_field=["date"]
+            )
+        }
 
     def read_cmd(self, logger, config_path, catalog_path, state_path=None) -> str:
-        # We don't pass state because this source does not respect replication-key so temporarily we're forcing it to be full refresh
-        return f"tap-exchangeratesapi --config {config_path}"
+        state_option = f"--state {state_path}" if state_path else ""
+        return f"tap-exchangeratesapi --config {config_path} {state_option}"

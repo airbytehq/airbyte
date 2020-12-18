@@ -60,7 +60,7 @@ public class WebBackendSourceHandler {
         .sourceId(source.getSourceId());
 
     try {
-      final CheckConnectionRead checkConnectionRead = schedulerHandler.checkSourceConnection(sourceIdRequestBody);
+      final CheckConnectionRead checkConnectionRead = schedulerHandler.checkSourceConnectionFromSourceId(sourceIdRequestBody);
       if (checkConnectionRead.getStatus() == CheckConnectionRead.StatusEnum.SUCCEEDED) {
         return source;
       }
@@ -86,7 +86,7 @@ public class WebBackendSourceHandler {
 
     try {
       final CheckConnectionRead checkConnectionRead = schedulerHandler
-          .checkSourceConnection(sourceIdRequestBody);
+          .checkSourceConnectionFromSourceId(sourceIdRequestBody);
       if (checkConnectionRead.getStatus() == SUCCEEDED) {
         final SourceIdRequestBody sourceIdRequestBody1 = new SourceIdRequestBody().sourceId(sourceRecreate.getSourceId());
         sourceHandler.deleteSource(sourceIdRequestBody1);

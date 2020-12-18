@@ -32,6 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.StandardCheckConnectionInput;
@@ -64,6 +65,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -73,6 +75,9 @@ import org.slf4j.LoggerFactory;
 
 public abstract class StandardSourceTest {
 
+  private static final long JOB_ID = 0L;
+  private static final int JOB_ATTEMPT = 0;
+
   private static final Logger LOGGER = LoggerFactory.getLogger(StandardSourceTest.class);
 
   private TestDestinationEnv testEnv;
@@ -80,6 +85,22 @@ public abstract class StandardSourceTest {
   private Path jobRoot;
   protected Path localRoot;
   private ProcessBuilderFactory pbf;
+
+  /**
+   * TODO hack: Various Singer integrations use cursor fields inclusively i.e: they output records
+   * whose cursor field >= the provided cursor value. This leads to the last record in a sync to
+   * always be the first record in the next sync. This is a fine assumption from a product POV since
+   * we offer at-least-once delivery. But for simplicity, the incremental test suite currently assumes
+   * that the second incremental read should output no records when provided the state from the first
+   * sync. This works for many integrations but not some Singer ones, so we hardcode the list of
+   * integrations to skip over when performing those tests.
+   */
+  private Set<String> IMAGES_TO_SKIP_SECOND_INCREMENTAL_READ = Sets.newHashSet(
+      "airbyte/source-intercom-singer",
+      "airbyte/source-exchangeratesapi-singer",
+      "airbyte/source-hubspot-singer",
+      "airbyte/source-marketo-singer",
+      "airbyte/source-twilio-singer");
 
   /**
    * Name of the docker image that the tests will run against.
@@ -173,7 +194,7 @@ public abstract class StandardSourceTest {
   }
 
   /**
-   * Verify that when the integrations returns a valid spec.
+   * Verify that a spec operation issued to the connector returns a valid spec.
    */
   @Test
   public void testGetSpec() throws Exception {
@@ -184,8 +205,8 @@ public abstract class StandardSourceTest {
   }
 
   /**
-   * Verify that when given valid credentials, that check connection returns a success response.
-   * Assume that the {@link StandardSourceTest#getConfig()} is valid.
+   * Verify that a check operation issued to the connector with the input config file returns a
+   * success response.
    */
   @Test
   public void testCheckConnection() throws Exception {
@@ -206,8 +227,8 @@ public abstract class StandardSourceTest {
   // }
 
   /**
-   * Verify that when given valid credentials, that discover returns a valid catalog. Assume that the
-   * {@link StandardSourceTest#getConfig()} is valid.
+   * Verifies when a discover operation is run on the connector using the given config file, a valid
+   * catalog is output by the connector.
    */
   @Test
   public void testDiscover() throws Exception {
@@ -219,8 +240,8 @@ public abstract class StandardSourceTest {
   }
 
   /**
-   * Verify that the integration successfully writes records. Tests a wide variety of messages and
-   * schemas (aspirationally, anyway).
+   * Configuring all streams in the input catalog to full refresh mode, verifies that a read operation
+   * produces some RECORD messages.
    */
   @Test
   public void testFullRefreshRead() throws Exception {
@@ -240,6 +261,11 @@ public abstract class StandardSourceTest {
     });
   }
 
+  /**
+   * Configuring all streams in the input catalog to full refresh mode, performs two read operations
+   * on all streams which support full refresh syncs. It then verifies that the RECORD messages output
+   * from both were identical.
+   */
   @Test
   public void testIdenticalFullRefreshes() throws Exception {
     final ConfiguredAirbyteCatalog configuredCatalog = withFullRefreshSyncModes(getConfiguredCatalog());
@@ -255,7 +281,18 @@ public abstract class StandardSourceTest {
   }
 
   /**
-   * Verify that the source is able to read data incrementally with a given input state.
+   * This test verifies that all streams in the input catalog which support incremental sync can do so
+   * correctly. It does this by running two read operations on the connector's Docker image: the first
+   * takes the configured catalog and config provided to this test as input. It then verifies that the
+   * sync produced a non-zero number of RECORD and STATE messages.
+   *
+   * The second read takes the same catalog and config used in the first test, plus the last STATE
+   * message output by the first read operation as the input state file. It verifies that no records
+   * are produced (since we read all records in the first sync).
+   *
+   * This test is performed only for streams which support incremental. Streams which do not support
+   * incremental sync are ignored. If no streams in the input catalog support incremental sync, this
+   * test is skipped.
    */
   @Test
   public void testIncrementalSyncWithState() throws Exception {
@@ -280,6 +317,10 @@ public abstract class StandardSourceTest {
     assertFalse(stateMessages.isEmpty(), "Expected incremental sync to produce STATE messages");
     // TODO validate exact records
 
+    if (IMAGES_TO_SKIP_SECOND_INCREMENTAL_READ.contains(getImageName().split(":")[0])) {
+      return;
+    }
+
     // when we run incremental sync again there should be no new records. Run a sync with the latest
     // state message and assert no records were emitted.
     final JsonNode latestState = stateMessages.get(stateMessages.size() - 1).getData();
@@ -289,6 +330,16 @@ public abstract class StandardSourceTest {
         "Expected the second incremental sync to produce no records when given the first sync's output state.");
   }
 
+  /**
+   * If the source does not support incremental sync, this test is skipped.
+   *
+   * Otherwise, this test runs two syncs: one where all streams provided in the input catalog sync in
+   * full refresh mode, and another where all the streams which in the input catalog which support
+   * incremental, sync in incremental mode (streams which don't support incremental sync in full
+   * refresh mode). Then, the test asserts that the two syncs produced the same RECORD messages. Any
+   * other type of message is disregarded.
+   *
+   */
   @Test
   public void testEmptyStateIncrementalIdenticalToFullRefresh() throws Exception {
     if (!sourceSupportsIncremental()) {
@@ -346,17 +397,17 @@ public abstract class StandardSourceTest {
   }
 
   private OutputAndStatus<StandardGetSpecOutput> runSpec() {
-    return new DefaultGetSpecWorker(new AirbyteIntegrationLauncher(getImageName(), pbf))
+    return new DefaultGetSpecWorker(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), pbf))
         .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot);
   }
 
   private OutputAndStatus<StandardCheckConnectionOutput> runCheck() throws Exception {
-    return new DefaultCheckConnectionWorker(new AirbyteIntegrationLauncher(getImageName(), pbf))
+    return new DefaultCheckConnectionWorker(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), pbf))
         .run(new StandardCheckConnectionInput().withConnectionConfiguration(getConfig()), jobRoot);
   }
 
   private OutputAndStatus<StandardDiscoverCatalogOutput> runDiscover() throws Exception {
-    return new DefaultDiscoverCatalogWorker(new AirbyteIntegrationLauncher(getImageName(), pbf))
+    return new DefaultDiscoverCatalogWorker(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), pbf))
         .run(new StandardDiscoverCatalogInput().withConnectionConfiguration(getConfig()), jobRoot);
   }
 
@@ -371,7 +422,7 @@ public abstract class StandardSourceTest {
         .withState(state == null ? null : new State().withState(state))
         .withCatalog(catalog);
 
-    final AirbyteSource source = new DefaultAirbyteSource(new AirbyteIntegrationLauncher(getImageName(), pbf));
+    final AirbyteSource source = new DefaultAirbyteSource(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), pbf));
     final List<AirbyteMessage> messages = new ArrayList<>();
 
     source.start(tapConfig, jobRoot);

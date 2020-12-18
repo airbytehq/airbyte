@@ -26,6 +26,7 @@ package io.airbyte.scheduler;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.StandardSyncSchedule;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -38,7 +39,9 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiPredicate;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,14 +81,17 @@ public class JobScheduler implements Runnable {
 
       scheduleSyncJobs();
 
-      LOGGER.info("Completed job-scheduler...");
+      LOGGER.info("Completed Job-Scheduler...");
     } catch (Throwable e) {
       LOGGER.error("Job Scheduler Error", e);
     }
   }
 
   private void scheduleSyncJobs() throws IOException {
-    for (StandardSync connection : getAllActiveConnections()) {
+    final AtomicInteger jobsScheduled = new AtomicInteger();
+    final List<StandardSync> activeConnections = getAllActiveConnections();
+
+    for (StandardSync connection : activeConnections) {
       final Optional<Job> previousJobOptional = jobPersistence.getLastSyncJob(connection.getConnectionId());
       final StandardSyncSchedule standardSyncSchedule = getStandardSyncSchedule(connection);
 
@@ -93,6 +99,7 @@ public class JobScheduler implements Runnable {
         jobFactory.create(connection.getConnectionId());
       }
     }
+    LOGGER.info("Job-Scheduler Summary. Active connections: {}, Jobs scheduler: {}", activeConnections.size(), jobsScheduled.get());
   }
 
   private StandardSyncSchedule getStandardSyncSchedule(StandardSync connection) {
@@ -105,7 +112,10 @@ public class JobScheduler implements Runnable {
 
   private List<StandardSync> getAllActiveConnections() {
     try {
-      return configRepository.listStandardSyncs();
+      return configRepository.listStandardSyncs()
+          .stream()
+          .filter(sync -> sync.getStatus() == Status.ACTIVE)
+          .collect(Collectors.toList());
     } catch (JsonValidationException | IOException | ConfigNotFoundException e) {
       throw new RuntimeException(e.getMessage(), e);
     }

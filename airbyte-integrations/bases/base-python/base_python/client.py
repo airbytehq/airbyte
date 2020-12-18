@@ -66,7 +66,7 @@ class BaseClient(ABC):
         methods = inspect.getmembers(self.__class__, predicate=inspect.isfunction)
         for name, method in methods:
             if name.startswith(prefix):
-                mapping[name[len(prefix) :]] = method
+                mapping[name[len(prefix) :]] = getattr(self, name)
 
         return mapping
 
