@@ -65,8 +65,9 @@ public class JdbcUtils {
       @Override
       public boolean tryAdvance(Consumer<? super T> action) {
         try {
-          if (!resultSet.next())
+          if (!resultSet.next()) {
             return false;
+          }
           action.accept(mapper.apply(resultSet));
           return true;
         } catch (SQLException e) {
