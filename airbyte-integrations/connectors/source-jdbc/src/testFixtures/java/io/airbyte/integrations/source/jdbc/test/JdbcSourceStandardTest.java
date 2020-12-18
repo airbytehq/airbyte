@@ -73,7 +73,7 @@ import org.junit.jupiter.api.Test;
 // 3. From the class that extends this one, implement a @AfterEach that cleans out the database
 // between each test.
 // 4. Then implement the abstract methods documented below.
-public abstract class DbSourceStandardTest {
+public abstract class JdbcSourceStandardTest {
 
   private static final String TABLE_NAME = "id_and_name";
 

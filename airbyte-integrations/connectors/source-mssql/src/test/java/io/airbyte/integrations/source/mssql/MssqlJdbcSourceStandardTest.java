@@ -31,7 +31,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.jdbc.test.DbSourceStandardTest;
+import io.airbyte.integrations.source.jdbc.test.JdbcSourceStandardTest;
 import java.util.Optional;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterAll;
@@ -39,7 +39,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.testcontainers.containers.MSSQLServerContainer;
 
-public class MssqlDbSourceStandardTest extends DbSourceStandardTest {
+public class MssqlJdbcSourceStandardTest extends JdbcSourceStandardTest {
 
   private static MSSQLServerContainer<?> dbContainer;
   private static JdbcDatabase database;

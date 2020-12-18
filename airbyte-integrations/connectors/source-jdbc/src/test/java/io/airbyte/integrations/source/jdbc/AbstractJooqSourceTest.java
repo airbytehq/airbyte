@@ -69,8 +69,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-// todo (cgardens) - either remove AbstractJooqSource or have this test extend
-// JdbcSourceStandardTest so that we can ensure the behavior is the same.
+// todo (cgardens) - we will remove this when we drop jooq source.
 class AbstractJooqSourceTest {
 
   private static final String STREAM_NAME = "public.id_and_name";

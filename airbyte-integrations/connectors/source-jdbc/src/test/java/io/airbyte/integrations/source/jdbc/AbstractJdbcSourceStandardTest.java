@@ -31,7 +31,7 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.jdbc.PostgresJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
-import io.airbyte.integrations.source.jdbc.test.DbSourceStandardTest;
+import io.airbyte.integrations.source.jdbc.test.JdbcSourceStandardTest;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.util.Optional;
 import java.util.Set;
@@ -49,7 +49,7 @@ import org.testcontainers.utility.MountableFile;
  * itself as a sanity check. The trade off here is that this class is duplicated from the one used
  * in source-postgres.
  */
-class AbstractJdbcSourceStandardTest extends DbSourceStandardTest {
+class AbstractJdbcSourceStandardTest extends JdbcSourceStandardTest {
 
   private static PostgreSQLContainer<?> PSQL_DB;
 
