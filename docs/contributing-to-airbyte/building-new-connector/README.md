@@ -56,7 +56,10 @@ At a minimum, your connector must implement the standard tests described in [Tes
 
 ### 3. Integrating with Gradle
 
-Generated templates provide the following Gradle tasks: 1. `:airbyte-integrations:connectors:source-<name>:build` should run unit tests and build the integration's Docker image 2. `:airbyte-integrations:connectors:source-<name>:integrationTest` should run integration tests including Airbyte's Standard test suite.
+Generated templates provide the following Gradle tasks:
+
+1. `:airbyte-integrations:connectors:source-<name>:build` should run unit tests and build the integration's Docker image
+2. `:airbyte-integrations:connectors:source-<name>:integrationTest` should run integration tests including Airbyte's Standard test suite.
 
 ## Updating a connector
 
