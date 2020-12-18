@@ -8,7 +8,7 @@ defmodule Airbyte.Source.GoogleAnalytics.Streams.WebProperties do
   @derive Jason.Encoder
 
   @name "web_properties"
-  @schema "priv/stream_web_properties.json"
+  @schema "priv/streams/web_properties.json"
           |> Path.absname()
           |> File.read!()
           |> Jason.decode!()

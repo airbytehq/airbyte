@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/bases/base-elixir/priv/stream_accounts.json",
+  "$id": "https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-google-analytics/priv/streams/accounts.json",
   "title": "Google Analytics Accounts",
   "type": "object",
   "additionalProperties": false,

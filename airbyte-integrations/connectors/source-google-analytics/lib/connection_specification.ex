@@ -10,5 +10,6 @@ defmodule Airbyte.Source.GoogleAnalytics.ConnectionSpecification do
     @typedoc "Airbyte Google Analytics Connection Specification"
 
     field(:service_account_key, String.t())
+    field(:reports, String.t())
   end
 end

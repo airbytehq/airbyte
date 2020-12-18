@@ -1,6 +1,6 @@
 defmodule Airbyte.Source.GoogleAnalytics.Client do
   alias Airbyte.Source.GoogleAnalytics.ConnectionSpecification
-  alias GoogleApi.Analytics.V3.Connection
+  alias GoogleApi.Analytics.V3.{Api, Connection, Model}
 
   def connection(%ConnectionSpecification{} = spec) do
     with {:ok, %Goth.Token{token: token}} <- spec |> get_token() do
@@ -14,6 +14,101 @@ defmodule Airbyte.Source.GoogleAnalytics.Client do
          :ok <- Goth.Config.add_config(json) do
       scope = "https://www.googleapis.com/auth/analytics.readonly"
       Goth.Token.for_scope({account, scope})
+    end
+  end
+
+  def get_fields_schema(conn) do
+    conn
+    |> get_all_fields()
+    |> Stream.map(&item_to_schema/1)
+    |> Enum.into(%{})
+  end
+
+  defp item_to_schema(%Model.Column{id: id, attributes: %{"dataType" => dataType, "type" => type}}),
+       do: {id, %{dataType: dataType, type: type}}
+
+  defp item_to_schema(%Model.CustomDimension{id: id}),
+    do: {id, %{dataType: "STRING", type: "DIMENSION"}}
+
+  defp item_to_schema(%Model.CustomMetric{id: id, type: dataType}),
+    do: {id, %{dataType: dataType, type: "METRIC"}}
+
+  @unsupported_fields [
+    # "ga:customVarValueXX",
+    # "ga:customVarNameXX",
+    # "ga:calcMetric_<NAME>"
+  ]
+
+  def get_all_fields(conn) do
+    [&get_standard_fields/1, &get_custom_dimensions/1, &get_custom_metrics/1]
+    |> Task.async_stream(&(conn |> &1.()))
+    |> Enum.reduce([], fn {:ok, list}, acc -> acc ++ list end)
+  end
+
+  defp get_standard_fields(conn) do
+    with {:ok, columns} <- Api.Metadata.analytics_metadata_columns_list(conn, "ga") do
+      columns.items
+      |> Stream.reject(&reject_unsupported_fields/1)
+      |> Stream.reject(&reject_deprecated_fields/1)
+      |> Enum.to_list()
+    end
+  end
+
+  defp reject_unsupported_fields(%Model.Column{id: id}), do: Enum.member?(@unsupported_fields, id)
+
+  defp reject_deprecated_fields(%Model.Column{} = col),
+    do: col.attributes["status"] == "DEPRECATED"
+
+  defp get_custom_dimensions(conn),
+    do: conn |> accounts() |> Enum.map(&get_account_custom_dimensions(conn, &1)) |> List.flatten()
+
+  defp get_account_custom_dimensions(conn, %Model.AccountSummary{} = account),
+    do: account.webProperties |> Enum.map(&get_web_property_custom_dimensions(conn, account, &1))
+
+  defp get_web_property_custom_dimensions(
+         conn,
+         %Model.AccountSummary{} = account,
+         %Model.WebPropertySummary{} = property
+       ) do
+    with {:ok, custom_dimensions} <-
+           Api.Management.analytics_management_custom_dimensions_list(
+             conn,
+             account.id,
+             property.id
+           ) do
+      custom_dimensions.items
+    end
+  end
+
+  defp get_custom_metrics(conn) do
+    conn
+    |> accounts()
+    |> Enum.map(&get_account_custom_metrics(conn, &1))
+    |> List.flatten()
+  end
+
+  defp get_account_custom_metrics(conn, %Model.AccountSummary{} = account) do
+    account.webProperties |> Enum.map(&get_web_property_custom_metrics(conn, account, &1))
+  end
+
+  defp get_web_property_custom_metrics(
+         conn,
+         %Model.AccountSummary{} = account,
+         %Model.WebPropertySummary{} = property
+       ) do
+    with {:ok, custom_metrics} <-
+           Api.Management.analytics_management_custom_metrics_list(
+             conn,
+             account.id,
+             property.id
+           ) do
+      custom_metrics.items
+    end
+  end
+
+  defp accounts(conn) do
+    with {:ok, summary} <- Api.Management.analytics_management_account_summaries_list(conn) do
+      summary.items
     end
   end
 

@@ -7,6 +7,7 @@ defmodule Airbyte.Source.GoogleAnalytics.DataRequest do
   require Logger
 
   alias GoogleApi.Analytics.V3.{Api, Connection, Model}
+  alias Airbyte.Source.GoogleAnalytics.Types
 
   @derive Jason.Encoder
 
@@ -26,13 +27,17 @@ defmodule Airbyte.Source.GoogleAnalytics.DataRequest do
 
   @spec query(Connection.t(), __MODULE__.t()) :: {:ok, GaData.t()} | {:error, String.t()}
   def query(conn, %__MODULE__{} = request) do
-    Logger.info("DataRequest.get_data(): #{inspect(request)}")
+    with {:ok, data} <- do_query(conn, request) do
+      {:ok, data |> format_data()}
+    end
+  end
 
+  defp do_query(conn, %__MODULE__{} = request) do
     with {:ok, %Model.GaData{} = data} <- get_data(conn, request),
          {:next_request, next_request} <- next_request?(request, data),
-         {:ok, %Model.GaData{} = data_next} <- query(conn, next_request) do
-      all_data = %Model.GaData{data_next | rows: data.rows ++ data_next.rows}
-      {:ok, all_data |> format_data()}
+         {:ok, %Model.GaData{} = data_next} <- do_query(conn, next_request),
+         all_data <- %Model.GaData{data_next | rows: data.rows ++ data_next.rows} do
+      {:ok, all_data}
     else
       {:ok, data} -> {:ok, data}
       {:error, %Tesla.Env{} = error} -> maybe_retry?(conn, request, error)
@@ -59,7 +64,7 @@ defmodule Airbyte.Source.GoogleAnalytics.DataRequest do
       case should_retry(%{status: error.status, body: body, retries: request.retries}) do
         true ->
           request |> backoff()
-          query(conn, %__MODULE__{request | retries: request.retries + 1})
+          do_query(conn, %__MODULE__{request | retries: request.retries + 1})
 
         false ->
           Logger.error("Not retrying anymore: #{inspect(body)}")
@@ -69,6 +74,8 @@ defmodule Airbyte.Source.GoogleAnalytics.DataRequest do
   end
 
   defp get_data(conn, %__MODULE__{} = request) do
+    Logger.info("Data.analytics_data_ga_get(): #{inspect(request)}")
+
     Api.Data.analytics_data_ga_get(
       conn,
       "ga:#{request.profile_id}",
@@ -81,8 +88,8 @@ defmodule Airbyte.Source.GoogleAnalytics.DataRequest do
   end
 
   defp format_data(%Model.GaData{columnHeaders: headers, rows: rows}) do
-    parsers = headers |> Enum.map(fn header -> {header.name, header_parser(header)} end)
-    rows |> Enum.map(&format_row(&1, parsers)) |> IO.inspect()
+    parsers = headers |> Enum.map(fn header -> {header.name, Types.parse(header)} end)
+    rows |> Enum.map(&format_row(&1, parsers))
   end
 
   defp format_row(row, parsers) do
@@ -91,18 +98,6 @@ defmodule Airbyte.Source.GoogleAnalytics.DataRequest do
     |> Stream.map(fn {value, {name, fun}} -> ["#{name}": fun.(value)] end)
     |> Stream.transform([], fn item, acc -> {item, acc ++ item} end)
     |> Enum.into(%{})
-  end
-
-  defp header_parser(%Model.GaDataColumnHeaders{dataType: "CURRENCY"}), do: &String.to_float/1
-  defp header_parser(%Model.GaDataColumnHeaders{dataType: "FLOAT"}), do: &String.to_float/1
-  defp header_parser(%Model.GaDataColumnHeaders{dataType: "INTEGER"}), do: &String.to_integer/1
-  defp header_parser(%Model.GaDataColumnHeaders{dataType: "PERCENT"}), do: &String.to_float/1
-  defp header_parser(%Model.GaDataColumnHeaders{dataType: "STRING"}), do: &Function.identity/1
-  defp header_parser(%Model.GaDataColumnHeaders{dataType: "TIME"}), do: &String.to_float/1
-
-  defp header_parser(%Model.GaDataColumnHeaders{dataType: type}) do
-    Logger.warn("Unrecognized type: #{type}")
-    &Function.identity/1
   end
 
   @retryable_errors ["userRateLimitExceeded", "rateLimitExceeded", "quotaExceeded"]

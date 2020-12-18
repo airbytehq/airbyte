@@ -2,15 +2,26 @@ defmodule Airbyte.Source.GoogleAnalytics.Source do
   @behaviour Airbyte.Source
 
   alias Airbyte.Protocol.{
+    AirbyteCatalog,
     AirbyteConnectionStatus,
     ConnectorSpecification
   }
 
-  alias Airbyte.Source.GoogleAnalytics.{Client, ConnectionSpecification}
-  alias Airbyte.Source.GoogleAnalytics.Commands.{Discover, Read}
+  alias Airbyte.Source.GoogleAnalytics.{Client, ConnectionSpecification, Streams}
+  alias Airbyte.Source.GoogleAnalytics.Commands.Read
 
   alias GoogleApi.Analytics.V3.Api.Management
   alias GoogleApi.Analytics.V3.Model.AccountSummaries
+
+  @streams [
+    Streams.Accounts.stream(),
+    Streams.Profiles.stream(),
+    Streams.WebProperties.stream()
+  ]
+
+  @reports [
+    "priv/reports/audience-overview.json" |> Streams.Reports.from_file()
+  ]
 
   @connection_spec "priv/connection_specification.json"
                    |> Path.absname()
@@ -30,7 +41,17 @@ defmodule Airbyte.Source.GoogleAnalytics.Source do
 
   @impl Airbyte.Source
   def discover(%ConnectionSpecification{} = spec) do
-    spec |> Discover.run()
+    with {:ok, conn} <- Client.connection(spec) do
+      fields = Client.get_fields_schema(conn)
+
+      streams = [
+        @streams,
+        @reports |> Enum.map(&Streams.Reports.stream(&1, fields)),
+        configured_reports(spec) |> Enum.map(&Streams.Reports.stream(&1, fields))
+      ]
+
+      {:ok, AirbyteCatalog.create(streams)}
+    end
   end
 
   @impl Airbyte.Source
@@ -53,4 +74,13 @@ defmodule Airbyte.Source.GoogleAnalytics.Source do
   def connection_specification() do
     Airbyte.Source.GoogleAnalytics.ConnectionSpecification
   end
+
+  defp configured_reports(spec) when is_binary(spec.reports) do
+    case Jason.decode(spec.reports) do
+      {:ok, reports} -> reports
+      _ -> []
+    end
+  end
+
+  defp configured_reports(_), do: []
 end

@@ -13,7 +13,7 @@ defmodule Airbyte.Source.GoogleAnalytics.Streams.Profiles do
   @derive Jason.Encoder
 
   @name "profiles"
-  @schema "priv/stream_profiles.json"
+  @schema "priv/streams/profiles.json"
           |> Path.absname()
           |> File.read!()
           |> Jason.decode!()
