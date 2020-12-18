@@ -778,7 +778,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SourceCreate"
+              $ref: "#/components/schemas/SourceCoreConfig"
         required: true
       responses:
         "200":
@@ -799,7 +799,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SourceCreate"
+              $ref: "#/components/schemas/SourceCoreConfig"
         required: true
       responses:
         "200":
@@ -820,7 +820,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/DestinationCreate"
+              $ref: "#/components/schemas/DestinationCoreConfig"
         required: true
       responses:
         "200":
@@ -1211,22 +1211,28 @@ components:
     SourceConfiguration:
       description: The values required to configure the source. The schema for this must match the schema return by source_definition_specifications/get for the source.
       example: { user: "charles" }
-    SourceCreate:
+    SourceCoreConfig:
       type: object
       required:
-        - workspaceId
         - sourceDefinitionId
         - connectionConfiguration
-        - name
       properties:
-        workspaceId:
-          $ref: "#/components/schemas/WorkspaceId"
         sourceDefinitionId:
           $ref: "#/components/schemas/SourceDefinitionId"
         connectionConfiguration:
           $ref: "#/components/schemas/SourceConfiguration"
-        name:
-          type: string
+    SourceCreate:
+      allOf:
+        - $ref: "#/components/schemas/SourceCoreConfig"
+        - type: object
+          required:
+            - workspaceId
+            - name
+          properties:
+            workspaceId:
+              $ref: "#/components/schemas/WorkspaceId"
+            name:
+              type: string
     SourceRecreate:
       type: object
       required:
@@ -1397,21 +1403,29 @@ components:
     DestinationConfiguration:
       description: The values required to configure the destination. The schema for this must match the schema return by destination_definition_specifications/get for the destinationDefinition.
       example: { user: "charles" }
-    DestinationCreate:
+    DestinationCoreConfig:
       type: object
       required:
         - workspaceId
         - destinationDefinitionId
         - connectionConfiguration
       properties:
-        workspaceId:
-          $ref: "#/components/schemas/WorkspaceId"
         destinationDefinitionId:
           $ref: "#/components/schemas/DestinationDefinitionId"
         connectionConfiguration:
           $ref: "#/components/schemas/DestinationConfiguration"
-        name:
-          type: string
+    DestinationCreate:
+      allOf:
+        - $ref: "#/components/schemas/DestinationCoreConfig"
+        - type: object
+          required:
+            - workspaceId
+            - name
+          properties:
+            workspaceId:
+              $ref: "#/components/schemas/WorkspaceId"
+            name:
+              type: string
     DestinationRecreate:
       type: object
       required:

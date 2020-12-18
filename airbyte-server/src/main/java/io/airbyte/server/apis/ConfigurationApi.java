@@ -31,6 +31,7 @@ import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.ConnectionReadList;
 import io.airbyte.api.model.ConnectionUpdate;
 import io.airbyte.api.model.DebugRead;
+import io.airbyte.api.model.DestinationCoreConfig;
 import io.airbyte.api.model.DestinationCreate;
 import io.airbyte.api.model.DestinationDefinitionCreate;
 import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
@@ -49,6 +50,7 @@ import io.airbyte.api.model.JobInfoRead;
 import io.airbyte.api.model.JobListRequestBody;
 import io.airbyte.api.model.JobReadList;
 import io.airbyte.api.model.SlugRequestBody;
+import io.airbyte.api.model.SourceCoreConfig;
 import io.airbyte.api.model.SourceCreate;
 import io.airbyte.api.model.SourceDefinitionCreate;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
@@ -332,17 +334,17 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   // SCHEDULER
   @Override
-  public CheckConnectionRead executeSourceCheckConnection(@Valid SourceCreate sourceCreate) {
+  public CheckConnectionRead executeSourceCheckConnection(@Valid SourceCoreConfig sourceCreate) {
     return execute(() -> schedulerHandler.checkSourceConnectionFromSourceCreate(sourceCreate));
   }
 
   @Override
-  public CheckConnectionRead executeDestinationCheckConnection(@Valid DestinationCreate destinationCreate) {
+  public CheckConnectionRead executeDestinationCheckConnection(@Valid DestinationCoreConfig destinationCreate) {
     return execute(() -> schedulerHandler.checkDestinationConnectionFromDestinationCreate(destinationCreate));
   }
 
   @Override
-  public SourceDiscoverSchemaRead executeSourceDiscoverSchema(@Valid SourceCreate sourceCreate) {
+  public SourceDiscoverSchemaRead executeSourceDiscoverSchema(@Valid SourceCoreConfig sourceCreate) {
     return execute(() -> schedulerHandler.discoverSchemaForSourceFromSourceCreate(sourceCreate));
   }
 
