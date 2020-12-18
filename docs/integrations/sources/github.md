@@ -15,7 +15,7 @@ Several output streams are available from this source \(commits, issues, pull\_r
 | Feature | Supported? |
 | :--- | :--- |
 | Full Refresh Sync | Yes |
-| Incremental Sync | No |
+| Incremental - Append Sync | yes |
 | Replicate Incremental Deletes | No |
 | SSL connection | Yes |
 

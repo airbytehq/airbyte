@@ -77,3 +77,4 @@ This is our very first release after 2 months of work.
 * **New blog:** we published a few articles on our startup journey, but also about our vision to making data integrations a commodity. 
 
 Stay tuned, we will have new sources and destinations very soon! Don't hesitate to subscribe to our [newsletter](https://airbyte.io/#subscribe-newsletter) to receive our product updates and community news.
+
