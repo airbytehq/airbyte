@@ -60,7 +60,7 @@ public class JdbcUtils {
    * @return stream of records that the result set is mapped to.
    */
   public static <T> Stream<T> toStream(ResultSet resultSet, CheckedFunction<ResultSet, T, SQLException> mapper) {
-    return StreamSupport.stream(new Spliterators.AbstractSpliterator<T>(Long.MAX_VALUE, Spliterator.ORDERED) {
+    return StreamSupport.stream(new Spliterators.AbstractSpliterator<>(Long.MAX_VALUE, Spliterator.ORDERED) {
 
       @Override
       public boolean tryAdvance(Consumer<? super T> action) {

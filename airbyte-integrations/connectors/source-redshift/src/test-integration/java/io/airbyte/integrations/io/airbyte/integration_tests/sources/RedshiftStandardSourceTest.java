@@ -28,8 +28,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
+import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.standardtest.source.StandardSourceTest;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -41,12 +41,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-public class RedshiftIntegrationTests extends StandardSourceTest {
+public class RedshiftStandardSourceTest extends StandardSourceTest {
 
   // This test case expects an active redshift cluster that is useable from outside of vpc
   private static final String SCHEMA_NAME = "integration_test";
   private static final String STREAM_NAME = SCHEMA_NAME + ".customer";
   private JsonNode config;
+  private JdbcDatabase database;
 
   private static JsonNode getStaticConfig() {
     return Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
@@ -56,18 +57,31 @@ public class RedshiftIntegrationTests extends StandardSourceTest {
   protected void setup(TestDestinationEnv testEnv) throws Exception {
     final String createSchemaQuery = String.format("CREATE SCHEMA %s", SCHEMA_NAME);
     config = getStaticConfig();
-    getDatabase().query(ctx -> ctx.execute(createSchemaQuery));
+
+    database = Databases.createJdbcDatabase(
+        config.get("username").asText(),
+        config.get("password").asText(),
+        String.format("jdbc:redshift://%s:%s/%s",
+            config.get("host").asText(),
+            config.get("port").asText(),
+            config.get("database").asText()),
+        "com.amazon.redshift.jdbc.Driver");
+
+    database.execute(connection -> connection.createStatement().execute(createSchemaQuery));
     String createTestTable =
         String.format("CREATE TABLE IF NOT EXISTS %s (c_custkey INTEGER, c_name VARCHAR(16), c_nation VARCHAR(16));\n", STREAM_NAME);
-    getDatabase().query(ctx -> ctx.execute(createTestTable));
+    database.execute(connection -> connection.createStatement().execute(createTestTable));
     String insertTestData = String.format("insert into %s values (1, 'Chris', 'France');\n", STREAM_NAME);
-    getDatabase().query(ctx -> ctx.execute(insertTestData));
+    database.execute(connection -> {
+      connection.createStatement().execute(insertTestData);
+      System.out.println("more to be done.");
+    });
   }
 
   @Override
   protected void tearDown(TestDestinationEnv testEnv) throws SQLException {
     final String dropSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s CASCADE", SCHEMA_NAME);
-    getDatabase().query(ctx -> ctx.execute(dropSchemaQuery));
+    database.execute(connection -> connection.createStatement().execute(dropSchemaQuery));
   }
 
   @Override
@@ -97,17 +111,6 @@ public class RedshiftIntegrationTests extends StandardSourceTest {
   @Override
   protected List<String> getRegexTests() {
     return Collections.emptyList();
-  }
-
-  private Database getDatabase() {
-    return Databases.createDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:redshift://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()),
-        "com.amazon.redshift.jdbc.Driver", null);
   }
 
   @Override
