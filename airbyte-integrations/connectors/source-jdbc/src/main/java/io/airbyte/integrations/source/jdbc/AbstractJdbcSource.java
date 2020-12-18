@@ -108,7 +108,7 @@ public abstract class AbstractJdbcSource implements Source {
   public AirbyteConnectionStatus check(JsonNode config) {
     try (final JdbcDatabase database = createDatabase(config)) {
       // attempt to get metadata from the database as a cheap way of seeing if we can connect.
-      database.bufferedQuery(conn -> conn.getMetaData().getCatalogs(), JdbcUtils::getJsonForRow);
+      database.bufferedResultSetQuery(conn -> conn.getMetaData().getCatalogs(), JdbcUtils::rowToJson);
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (Exception e) {
@@ -283,7 +283,7 @@ public abstract class AbstractJdbcSource implements Source {
                                                    final Optional<String> schemaOptional)
       throws Exception {
     final Set<String> internalSchemas = new HashSet<>(getExcludedInternalSchemas());
-    return database.bufferedQuery(
+    return database.bufferedResultSetQuery(
         conn -> conn.getMetaData().getColumns(databaseOptional.orElse(null), schemaOptional.orElse(null), null, null),
         resultSet -> Jsons.jsonNode(ImmutableMap.<String, Object>builder()
             // we always want a namespace, if we cannot get a schema, use db name.
@@ -339,7 +339,7 @@ public abstract class AbstractJdbcSource implements Source {
           final String sql = String.format("SELECT %s FROM %s", Strings.join(columnNames, ","), getFullyQualifiedTableName(schemaName, tableName));
           return connection.prepareStatement(sql);
         },
-        JdbcUtils::getJsonForRow);
+        JdbcUtils::rowToJson);
   }
 
   public static Stream<JsonNode> queryTableIncremental(JdbcDatabase database,
@@ -357,10 +357,10 @@ public abstract class AbstractJdbcSource implements Source {
     return database.query(
         connection -> {
           final PreparedStatement preparedStatement = connection.prepareStatement(sql);
-          JdbcUtils.setFieldWithType(preparedStatement, 1, cursorFieldType, cursor);
+          JdbcUtils.setStatementField(preparedStatement, 1, cursorFieldType, cursor);
           return preparedStatement;
         },
-        JdbcUtils::getJsonForRow);
+        JdbcUtils::rowToJson);
   }
 
   private JdbcDatabase createDatabase(JsonNode config) {
