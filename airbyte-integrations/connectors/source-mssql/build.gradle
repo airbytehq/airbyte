@@ -18,13 +18,10 @@ dependencies {
 
     implementation 'com.microsoft.sqlserver:mssql-jdbc:8.4.1.jre14'
 
-    testImplementation "org.testcontainers:mssqlserver:1.15.1"
+    testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
 
-    testImplementation 'org.apache.commons:commons-text:1.9'
     testImplementation 'org.apache.commons:commons-lang3:3.11'
-    testImplementation 'org.apache.commons:commons-dbcp2:2.7.0'
-
-    testImplementation project(':airbyte-test-utils')
+    testImplementation "org.testcontainers:mssqlserver:1.15.1"
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
 

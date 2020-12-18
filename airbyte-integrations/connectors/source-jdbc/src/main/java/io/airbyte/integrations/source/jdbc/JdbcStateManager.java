@@ -55,6 +55,10 @@ public class JdbcStateManager {
 
   private final Map<String, CursorInfo> streamNameToCursorInfo;
 
+  public static JdbcState emptyState() {
+    return new JdbcState();
+  }
+
   public JdbcStateManager(JdbcState serialized, ConfiguredAirbyteCatalog catalog) {
     streamNameToCursorInfo = new ImmutableMap.Builder<String, CursorInfo>().putAll(createCursorInfoMap(serialized, catalog)).build();
   }
