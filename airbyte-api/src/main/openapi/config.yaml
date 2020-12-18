@@ -768,6 +768,69 @@ paths:
           description: Connection not found
         "422":
           $ref: "#/components/responses/InvalidInput"
+  /v1/scheduler/sources/check_connection:
+    post:
+      tags:
+        - scheduler
+      summary: Run check connection for a given source configuration
+      operationId: executeSourceCheckConnection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceCoreConfig"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckConnectionRead"
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/scheduler/sources/discover_schema:
+    post:
+      tags:
+        - scheduler
+      summary: Run discover schema for a given source a source configuration
+      operationId: executeSourceDiscoverSchema
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceCoreConfig"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceDiscoverSchemaRead"
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/scheduler/destinations/check_connection:
+    post:
+      tags:
+        - scheduler
+      summary: Run check connection for a given destination configuration
+      operationId: executeDestinationCheckConnection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationCoreConfig"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckConnectionRead"
+        "422":
+          $ref: "#/components/responses/InvalidInput"
   /v1/web_backend/connections/list:
     post:
       tags:
@@ -1148,22 +1211,28 @@ components:
     SourceConfiguration:
       description: The values required to configure the source. The schema for this must match the schema return by source_definition_specifications/get for the source.
       example: { user: "charles" }
-    SourceCreate:
+    SourceCoreConfig:
       type: object
       required:
-        - workspaceId
         - sourceDefinitionId
         - connectionConfiguration
-        - name
       properties:
-        workspaceId:
-          $ref: "#/components/schemas/WorkspaceId"
         sourceDefinitionId:
           $ref: "#/components/schemas/SourceDefinitionId"
         connectionConfiguration:
           $ref: "#/components/schemas/SourceConfiguration"
-        name:
-          type: string
+    SourceCreate:
+      allOf:
+        - $ref: "#/components/schemas/SourceCoreConfig"
+        - type: object
+          required:
+            - workspaceId
+            - name
+          properties:
+            workspaceId:
+              $ref: "#/components/schemas/WorkspaceId"
+            name:
+              type: string
     SourceRecreate:
       type: object
       required:
@@ -1231,9 +1300,12 @@ components:
       type: object
       required:
         - schema
+        - job_info
       properties:
         schema:
           $ref: "#/components/schemas/SourceSchema"
+        job_info:
+          $ref: "#/components/schemas/JobInfoRead"
     # DESTINATION DEFINITION
     DestinationDefinitionId:
       type: string
@@ -1331,21 +1403,29 @@ components:
     DestinationConfiguration:
       description: The values required to configure the destination. The schema for this must match the schema return by destination_definition_specifications/get for the destinationDefinition.
       example: { user: "charles" }
-    DestinationCreate:
+    DestinationCoreConfig:
       type: object
       required:
         - workspaceId
         - destinationDefinitionId
         - connectionConfiguration
       properties:
-        workspaceId:
-          $ref: "#/components/schemas/WorkspaceId"
         destinationDefinitionId:
           $ref: "#/components/schemas/DestinationDefinitionId"
         connectionConfiguration:
           $ref: "#/components/schemas/DestinationConfiguration"
-        name:
-          type: string
+    DestinationCreate:
+      allOf:
+        - $ref: "#/components/schemas/DestinationCoreConfig"
+        - type: object
+          required:
+            - workspaceId
+            - name
+          properties:
+            workspaceId:
+              $ref: "#/components/schemas/WorkspaceId"
+            name:
+              type: string
     DestinationRecreate:
       type: object
       required:
@@ -1758,6 +1838,7 @@ components:
       type: object
       required:
         - status
+        - jobInfo
       properties:
         status:
           type: string
@@ -1766,6 +1847,8 @@ components:
             - failed
         message:
           type: string
+        job_info:
+          $ref: "#/components/schemas/JobInfoRead"
     # Web Backend
     WbConnectionRead:
       type: object
