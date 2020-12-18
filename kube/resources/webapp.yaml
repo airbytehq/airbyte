@@ -48,9 +48,5 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: PAPERCUPS_STORYTIME
-          resources:
-            limits:
-              memory: "128Mi"
-              cpu: "100m"
           ports:
             - containerPort: 80

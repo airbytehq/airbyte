@@ -6,15 +6,15 @@ bases:
 
 images:
   - name: airbyte/seed
-    newTag: dev
+    newTag: dev-kube
   - name: airbyte/db
-    newTag: dev
+    newTag: dev-kube
   - name: airbyte/scheduler
-    newTag: dev
+    newTag: dev-kube
   - name: airbyte/server
-    newTag: dev
+    newTag: dev-kube
   - name: airbyte/webapp
-    newTag: dev
+    newTag: dev-kube
 
 configMapGenerator:
   - name: airbyte-env

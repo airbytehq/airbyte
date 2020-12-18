@@ -74,10 +74,6 @@ spec:
               value: airbyte-db-svc:5432
             - name: WAIT_HOSTS_TIMEOUT
               value: "45"
-          resources:
-            limits:
-              memory: "256Mi"
-              cpu: "200m"
           ports:
             - containerPort: 8001
           volumeMounts:

@@ -12,6 +12,8 @@ spec:
       labels:
         airbyte: scheduler
     spec:
+      serviceAccountName: airbyte-admin
+      automountServiceAccountToken: true
       containers:
         - name: airbyte-scheduler-container
           image: airbyte/scheduler
@@ -69,10 +71,6 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: LOCAL_ROOT
-          resources:
-            limits:
-              memory: "256Mi"
-              cpu: "200m"
           ports:
             - containerPort: 8001
           volumeMounts:

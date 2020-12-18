@@ -27,10 +27,6 @@ spec:
       containers:
         - name: airbyte-db-container
           image: airbyte/db
-          resources:
-            limits:
-              memory: "256Mi"
-              cpu: "200m"
           env:
             - name: POSTGRES_DB
               value: db-airbyte
