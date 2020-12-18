@@ -29,6 +29,8 @@ GIT_REVISION=$GIT_REVISION docker-compose -f docker-compose.build.yaml -f docker
 GIT_REVISION=$GIT_REVISION docker-compose -f docker-compose.build.yaml -f docker-compose.yaml push
 echo "Completed building and publishing..."
 
-echo "Pushing bumped version code..."
-git push
-echo "Completed. After you merge, remember to switch to master and run ./tools/bin/tag_version.sh"
+echo "Final Steps:"
+echo "1. Push your changes"
+echo "2. Merge your PR"
+echo "3. Switch to master"
+echo "4. Run ./tools/bin/tag_version.sh"
