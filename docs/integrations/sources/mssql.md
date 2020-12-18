@@ -4,6 +4,8 @@
 
 The MSSQL source supports Full Refresh syncs.
 
+### Resulting schema
+
 The MSSQL source does not alter the schema present in your database. Depending on the destination connected to this source, however, the schema may be altered. See the destination's documentation for more details.
 
 ### Data type mapping
