@@ -128,6 +128,7 @@ public class TestJdbcUtils {
     }
   }
 
+  // test conversion of every JDBCType that we support to Json.
   @Test
   void testSetJsonField() throws SQLException {
     try (final Connection connection = dataSource.getConnection()) {
@@ -138,6 +139,7 @@ public class TestJdbcUtils {
     }
   }
 
+  // test setting on a PreparedStatement every JDBCType that we support.
   @Test
   void testSetStatementField() throws SQLException {
     try (final Connection connection = dataSource.getConnection()) {
