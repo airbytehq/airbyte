@@ -2,8 +2,10 @@ defmodule Airbyte.Source.GoogleAnalytics.Streams.Reports do
   @moduledoc "Accounts Stream"
   use TypedStruct
 
-  alias Airbyte.Protocol.{AirbyteStream}
-  alias Airbyte.Source.GoogleAnalytics.Types
+  require Logger
+
+  alias Airbyte.Protocol.{AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteStream}
+  alias Airbyte.Source.GoogleAnalytics.{Client, ConnectionSpecification, DataRequest, Types}
 
   @derive Jason.Encoder
 
@@ -27,6 +29,38 @@ defmodule Airbyte.Source.GoogleAnalytics.Streams.Reports do
       supported_sync_modes: ["full_refresh", "incremental"],
       default_cursor_field: default_cursor_field,
       source_defined_cursor: is_nil(default_cursor_field) == false
+    }
+  end
+
+  def record(%__MODULE__{} = report, data) do
+    AirbyteRecordMessage.new(report.name, data)
+  end
+
+  def read(%ConnectionSpecification{} = spec, %__MODULE__{} = report, state) do
+    with {:ok, conn} <- Client.connection(spec),
+         {:ok, profiles} <- Client.profiles(conn) do
+      profiles
+      |> Stream.map(&gen_data_request(report, &1))
+      |> Stream.map(&DataRequest.query(conn, &1))
+      |> Stream.flat_map(fn
+        {:ok, data} ->
+          data |> Stream.map(&record(report, &1))
+
+        {:error, error} ->
+          Logger.warn(error)
+          []
+      end)
+    end
+  end
+
+  def gen_data_request(report, profile) do
+    %DataRequest{
+      profile_id: profile.id,
+      start_date: "2020-12-16",
+      end_date: Date.utc_today() |> Date.add(-1) |> Date.to_iso8601(),
+      metrics: report.metrics,
+      dimensions: ["ga:date"]
+      # dimensions: report.dimensions
     }
   end
 

@@ -45,6 +45,19 @@ defmodule Airbyte.Source.GoogleAnalytics.Client do
     |> Enum.reduce([], fn {:ok, list}, acc -> acc ++ list end)
   end
 
+  def profiles(conn) do
+    with {:ok, summary} <- Api.Management.analytics_management_account_summaries_list(conn) do
+      profiles =
+        summary.items
+        |> Enum.map(fn account -> account.webProperties end)
+        |> List.flatten()
+        |> Enum.map(fn property -> property.profiles end)
+        |> List.flatten()
+
+      {:ok, profiles}
+    end
+  end
+
   defp get_standard_fields(conn) do
     with {:ok, columns} <- Api.Metadata.analytics_metadata_columns_list(conn, "ga") do
       columns.items

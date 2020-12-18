@@ -3,7 +3,8 @@ defmodule Airbyte.Source.GoogleAnalytics.Streams.Accounts do
   use TypedStruct
 
   alias Airbyte.Protocol.{AirbyteStream, AirbyteRecordMessage}
-  alias GoogleApi.Analytics.V3.Model.AccountSummary
+  alias Airbyte.Source.GoogleAnalytics.{Client, ConnectionSpecification}
+  alias GoogleApi.Analytics.V3.{Api, Model}
 
   @derive Jason.Encoder
 
@@ -27,11 +28,21 @@ defmodule Airbyte.Source.GoogleAnalytics.Streams.Accounts do
     }
   end
 
-  def new(%AccountSummary{id: id, name: name}) do
+  def new(%Model.AccountSummary{id: id, name: name}) do
     %__MODULE__{id: id, name: name}
   end
 
   def record(%__MODULE__{} = stream) do
     AirbyteRecordMessage.new(@name, Map.from_struct(stream))
+  end
+
+  def read(%ConnectionSpecification{} = spec) do
+    with {:ok, conn} <- Client.connection(spec),
+         {:ok, summary} <- Api.Management.analytics_management_account_summaries_list(conn) do
+      summary.items
+      |> Stream.map(&__MODULE__.new/1)
+      |> Stream.map(&__MODULE__.record/1)
+      |> Enum.to_list()
+    end
   end
 end

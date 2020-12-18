@@ -4,19 +4,18 @@ defmodule Airbyte.Source.GoogleAnalytics.Source do
   alias Airbyte.Protocol.{
     AirbyteCatalog,
     AirbyteConnectionStatus,
+    ConfiguredAirbyteCatalog,
     ConnectorSpecification
   }
 
   alias Airbyte.Source.GoogleAnalytics.{Client, ConnectionSpecification, Streams}
-  alias Airbyte.Source.GoogleAnalytics.Commands.Read
-
   alias GoogleApi.Analytics.V3.Api.Management
   alias GoogleApi.Analytics.V3.Model.AccountSummaries
 
   @streams [
-    Streams.Accounts.stream(),
-    Streams.Profiles.stream(),
-    Streams.WebProperties.stream()
+    Streams.Accounts,
+    Streams.Profiles,
+    Streams.WebProperties
   ]
 
   @reports [
@@ -45,7 +44,7 @@ defmodule Airbyte.Source.GoogleAnalytics.Source do
       fields = Client.get_fields_schema(conn)
 
       streams = [
-        @streams,
+        @streams |> Enum.map(& &1.stream()),
         @reports |> Enum.map(&Streams.Reports.stream(&1, fields)),
         configured_reports(spec) |> Enum.map(&Streams.Reports.stream(&1, fields))
       ]
@@ -55,7 +54,19 @@ defmodule Airbyte.Source.GoogleAnalytics.Source do
   end
 
   @impl Airbyte.Source
-  def read(options), do: options |> Read.run()
+  def read(
+        config: %ConnectionSpecification{} = spec,
+        catalog: %ConfiguredAirbyteCatalog{} = _catalog,
+        state: state
+      ) do
+    streams = [
+      @streams |> Stream.flat_map(& &1.read(spec)),
+      @reports |> Stream.flat_map(&Streams.Reports.read(spec, &1, state)),
+      configured_reports(spec) |> Stream.flat_map(&Streams.Reports.read(spec, &1, state))
+    ]
+
+    {:ok, Stream.flat_map(streams, &Function.identity/1)}
+  end
 
   @impl Airbyte.Source
   def spec() do

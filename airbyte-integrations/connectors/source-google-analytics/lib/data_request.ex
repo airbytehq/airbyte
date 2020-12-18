@@ -95,7 +95,7 @@ defmodule Airbyte.Source.GoogleAnalytics.DataRequest do
   defp format_row(row, parsers) do
     row
     |> Stream.zip(parsers)
-    |> Stream.map(fn {value, {name, fun}} -> ["#{name}": fun.(value)] end)
+    |> Stream.map(fn {value, {name, fun}} -> ["#{Types.to_camel_case(name)}": fun.(value)] end)
     |> Stream.transform([], fn item, acc -> {item, acc ++ item} end)
     |> Enum.into(%{})
   end

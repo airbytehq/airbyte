@@ -3,12 +3,8 @@ defmodule Airbyte.Source.GoogleAnalytics.Streams.Profiles do
   use TypedStruct
 
   alias Airbyte.Protocol.{AirbyteStream, AirbyteRecordMessage}
-
-  alias GoogleApi.Analytics.V3.Model.{
-    AccountSummary,
-    ProfileSummary,
-    WebPropertySummary
-  }
+  alias Airbyte.Source.GoogleAnalytics.{Client, ConnectionSpecification}
+  alias GoogleApi.Analytics.V3.{Api, Model}
 
   @derive Jason.Encoder
 
@@ -36,14 +32,14 @@ defmodule Airbyte.Source.GoogleAnalytics.Streams.Profiles do
   end
 
   def new(
-        %AccountSummary{id: account_id},
-        %WebPropertySummary{id: property_id} = property,
-        %ProfileSummary{} = summary
+        %Model.AccountSummary{id: account_id},
+        %Model.WebPropertySummary{id: property_id},
+        %Model.ProfileSummary{} = profile
       ) do
     %__MODULE__{
-      id: summary.id,
-      name: summary.name,
-      type: summary.type,
+      id: profile.id,
+      name: profile.name,
+      type: profile.type,
       account_id: account_id,
       web_property_id: property_id
     }
@@ -51,5 +47,28 @@ defmodule Airbyte.Source.GoogleAnalytics.Streams.Profiles do
 
   def record(%__MODULE__{} = stream) do
     AirbyteRecordMessage.new(@name, Map.from_struct(stream))
+  end
+
+  def read(%ConnectionSpecification{} = spec) do
+    with {:ok, conn} <- Client.connection(spec),
+         {:ok, summary} <- Api.Management.analytics_management_account_summaries_list(conn) do
+      summary.items
+      |> Enum.map(&process_account/1)
+      |> List.flatten()
+    end
+  end
+
+  defp process_account(%Model.AccountSummary{} = account) do
+    account.webProperties |> Enum.map(&process_web_property(account, &1))
+  end
+
+  defp process_web_property(
+         %Model.AccountSummary{} = account,
+         %Model.WebPropertySummary{} = web_property
+       ) do
+    web_property.profiles
+    |> Stream.map(&__MODULE__.new(account, web_property, &1))
+    |> Stream.map(&__MODULE__.record/1)
+    |> Enum.to_list()
   end
 end
