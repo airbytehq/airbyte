@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "orgId": {
+      "type": "integer"
+    },
+    "body": {
+      "type": "string"
+    },
+    "author": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["contact", "user"]
+        },
+        "id": {
+          "type": "integer"
+        },
+        "bot": {
+          "type": "boolean"
+        }
+      }
+    },
+    "type": {
+      "type": "string"
+    },
+    "conversationId": {
+      "type": "integer"
+    },
+    "createdAt": {
+      "type": "integer"
+    },
+    "buttons": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "style": {
+            "type": "string"
+          },
+          "reaction": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "context": {
+      "type": "object",
+      "properties": {
+        "ip": {
+          "type": "string"
+        },
+        "userAgent": {
+          "type": "string"
+        }
+      }
+    },
+    "attributes": {
+      "type": "object"
+    }
+  }
+}
