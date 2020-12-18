@@ -260,10 +260,7 @@ class Client(BaseClient):
         }
         history_list = self._request(f"{self.BASE_URL}/queries/run/json?limit=10000", method="POST", data=request_data)
         for history_data in history_list:
-            d = {}
-            for k, v in history_data.items():
-                d[k.replace(".", "_")] = v
-            yield d
+            yield {k.replace(".", "_"): v for k, v in history_data.items()}
 
     def stream__content_metadata(self):
         yield from self._metadata_processing(f"{self.BASE_URL}/content_metadata/")
