@@ -25,6 +25,7 @@
 package io.airbyte.db.jdbc;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -35,13 +36,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.functional.CheckedConsumer;
-import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -125,24 +124,20 @@ public class TestStreamingJdbcDatabase {
   @SuppressWarnings("unchecked")
   @Test
   void testBufferedResultQuery() throws SQLException {
-    final CheckedFunction<Connection, ResultSet, SQLException> query = mock(CheckedFunction.class);
-    final CheckedFunction<ResultSet, JsonNode, SQLException> recordTransform = mock(CheckedFunction.class);
-    doReturn(RECORDS_AS_JSON).when(defaultJdbcDatabase).bufferedResultSetQuery(query, recordTransform);
+    doReturn(RECORDS_AS_JSON).when(defaultJdbcDatabase).bufferedResultSetQuery(any(), any());
 
     final List<JsonNode> actual = streamingJdbcDatabase.bufferedResultSetQuery(
         connection -> connection.createStatement().executeQuery("SELECT * FROM id_and_name;"),
         JdbcUtils::rowToJson);
 
     assertEquals(RECORDS_AS_JSON, actual);
-    verify(defaultJdbcDatabase).resultSetQuery(query, recordTransform);
+    verify(defaultJdbcDatabase).bufferedResultSetQuery(any(), any());
   }
 
   @SuppressWarnings("unchecked")
   @Test
   void testResultSetQuery() throws SQLException {
-    final CheckedFunction<Connection, ResultSet, SQLException> query = mock(CheckedFunction.class);
-    final CheckedFunction<ResultSet, JsonNode, SQLException> recordTransform = mock(CheckedFunction.class);
-    doReturn(Stream.of(RECORDS_AS_JSON)).when(defaultJdbcDatabase).resultSetQuery(query, recordTransform);
+    doReturn(RECORDS_AS_JSON.stream()).when(defaultJdbcDatabase).resultSetQuery(any(), any());
 
     final Stream<JsonNode> actual = streamingJdbcDatabase.resultSetQuery(
         connection -> connection.createStatement().executeQuery("SELECT * FROM id_and_name;"),
@@ -151,7 +146,7 @@ public class TestStreamingJdbcDatabase {
     actual.close();
 
     assertEquals(RECORDS_AS_JSON, actualAsList);
-    verify(defaultJdbcDatabase).resultSetQuery(query, recordTransform);
+    verify(defaultJdbcDatabase).resultSetQuery(any(), any());
   }
 
   @Test
