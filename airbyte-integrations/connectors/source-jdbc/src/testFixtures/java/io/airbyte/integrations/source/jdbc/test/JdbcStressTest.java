@@ -54,6 +54,12 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Runs a "large" amount of data through a JdbcSource to ensure that it streams / chunks records.
+ */
+// todo (cgardens) - this needs more love and thought. we should be able to test this without having
+// to rewrite so much data. it is enough for now to sanity check that our JdbcSources can actually
+// handle more data than fits in memory.
 public abstract class JdbcStressTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcStressTest.class);
