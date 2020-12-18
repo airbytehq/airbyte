@@ -22,35 +22,19 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.source.jdbc;
+package io.airbyte.integrations.source.mssql;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.Source;
-import org.jooq.SQLDialect;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
-// for ease of testing testing purposes only
-public class PostgresJooqTestSource extends AbstractJooqSource implements Source {
+public class MssqlJdbcStreamingQueryConfiguration implements JdbcStreamingQueryConfiguration {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(PostgresJooqTestSource.class);
-
-  public PostgresJooqTestSource() {
-    super("org.postgresql.Driver", SQLDialect.POSTGRES);
-  }
-
-  // no-op for JooqSource since the config it receives is designed to be use for JDBC.
   @Override
-  public JsonNode toJdbcConfig(JsonNode config) {
-    return config;
-  }
-
-  public static void main(String[] args) throws Exception {
-    final Source source = new PostgresJooqTestSource();
-    LOGGER.info("starting source: {}", PostgresJooqTestSource.class);
-    new IntegrationRunner(source).run(args);
-    LOGGER.info("completed source: {}", PostgresJooqTestSource.class);
+  public void accept(Connection connection, PreparedStatement preparedStatement) throws SQLException {
+    connection.setAutoCommit(false);
+    preparedStatement.setFetchSize(1000);
   }
 
 }

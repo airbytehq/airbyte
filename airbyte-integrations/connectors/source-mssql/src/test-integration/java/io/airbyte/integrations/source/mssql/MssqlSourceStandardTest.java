@@ -44,9 +44,9 @@ import java.util.List;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.testcontainers.containers.MSSQLServerContainer;
 
-public class MssqlIntegrationTest extends StandardSourceTest {
+public class MssqlSourceStandardTest extends StandardSourceTest {
 
-  private static final String STREAM_NAME = "id_and_name";
+  private static final String STREAM_NAME = "dbo.id_and_name";
   private static MSSQLServerContainer<?> db;
   private JsonNode config;
 
