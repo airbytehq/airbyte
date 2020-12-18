@@ -29,8 +29,9 @@ defmodule Airbyte.Source.GoogleAnalytics.Streams.Profiles do
   def stream() do
     %AirbyteStream{
       name: @name,
-      json_schema: @schema,
-      supported_sync_modes: ["full_refresh"]
+      json_schema: Map.put_new(@schema, :description, __MODULE__),
+      supported_sync_modes: ["full_refresh"],
+      source_defined_cursor: false
     }
   end
 

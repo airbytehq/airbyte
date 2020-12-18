@@ -50,7 +50,7 @@ defmodule Airbyte.Source.GoogleAnalytics.Source do
         configured_reports(spec) |> Enum.map(&Streams.Reports.stream(&1, fields))
       ]
 
-      {:ok, AirbyteCatalog.create(streams)}
+      {:ok, AirbyteCatalog.create(streams |> List.flatten())}
     end
   end
 

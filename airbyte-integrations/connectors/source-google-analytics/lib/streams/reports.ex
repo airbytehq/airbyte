@@ -43,6 +43,7 @@ defmodule Airbyte.Source.GoogleAnalytics.Streams.Reports do
         "https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-google-analytics/priv/reports/#{
           report.name
         }.json",
+      description: __MODULE__,
       additionalProperties: false,
       title: report.name,
       type: "object",
