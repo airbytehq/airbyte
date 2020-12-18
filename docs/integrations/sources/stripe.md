@@ -19,7 +19,7 @@ The [Stripe API](https://stripe.com/docs/api) uses the same [JSONSchema](https:/
 | Feature | Supported? |
 | :--- | :--- |
 | Full Refresh Sync | Yes |
-| Incremental Sync | No |
+| Incremental - Append Sync | Yes |
 | Replicate Incremental Deletes | No |
 | SSL connection | Yes |
 

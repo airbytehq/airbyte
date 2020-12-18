@@ -22,7 +22,7 @@ The test suite then runs its test cases, which include:
 * Running a `read` operation should produce at least one record. 
 * Running two consecutive full refresh reads should produce identical records. 
 
-See all the test cases and their description in [Standard Source Tests](./standard-source-tests.md). 
+See all the test cases and their description in [Standard Source Tests](standard-source-tests.md).
 
 ### Setting up standard tests for your connector
 
