@@ -78,8 +78,8 @@ class MssqlSourceTest {
     database.query(ctx -> {
       ctx.fetch(String.format("CREATE DATABASE %s;", dbName));
       ctx.fetch(String.format("USE %s;", dbName));
-      ctx.fetch("CREATE TABLE id_and_name(id INTEGER NOT NULL, name VARCHAR(200), has_hair BIT);");
-      ctx.fetch("INSERT INTO id_and_name (id, name, has_hair) VALUES (1,'picard', 'FALSE'),  (2, 'crusher', '1'), (3, 'vash', 'TRUE');");
+      ctx.fetch("CREATE TABLE id_and_name(id INTEGER NOT NULL, name VARCHAR(200));");
+      ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
       return null;
     });
 
