@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "orgId": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string"
+    },
+    "alias": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "locale": {
+      "type": "string"
+    },
+    "availability": {
+      "type": "string"
+    },
+    "role": {
+      "type": "string"
+    },
+    "timeZone": {
+      "type": "string"
+    },
+    "avatarUrl": {
+      "type": "string"
+    },
+    "verified": {
+      "type": "boolean"
+    },
+    "bot": {
+      "type": "boolean"
+    },
+    "createdAt": {
+      "type": "integer"
+    },
+    "updatedAt": {
+      "type": "integer"
+    }
+  }
+}

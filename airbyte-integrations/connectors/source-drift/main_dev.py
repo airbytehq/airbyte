@@ -22,6 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from .standard_source_test import Source{{properCase name}}SingerStandardTest
+import sys
 
-__all__ = ["Source{{properCase name}}SingerStandardTest"]
+from base_python.entrypoint import launch
+from source_drift import SourceDrift
+
+if __name__ == "__main__":
+    source = SourceDrift()
+    launch(source, sys.argv[1:])

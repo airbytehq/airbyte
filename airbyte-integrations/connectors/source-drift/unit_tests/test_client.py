@@ -22,6 +22,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from .standard_source_test import Source{{properCase name}}StandardTest
+import pytest
+from source_drift.client import AuthError, Client
 
-__all__ = ["Source{{properCase name}}StandardTest"]
+
+def test__heal_check_with_wrong_token():
+    client = Client(access_token="wrong_key")
+    alive, error = client.health_check()
+
+    assert not alive
+    assert error == "(401, 'The access token is invalid or has expired')"
+
+
+def test__users_with_wrong_token():
+    client = Client(access_token="wrong_key")
+    with pytest.raises(AuthError, match="(401, 'The access token is invalid or has expired')"):
+        next(client.stream__users())

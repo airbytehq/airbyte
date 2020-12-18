@@ -194,7 +194,7 @@ public abstract class StandardSourceTest {
   }
 
   /**
-   * Verify that when the integrations returns a valid spec.
+   * Verify that a spec operation issued to the connector returns a valid spec.
    */
   @Test
   public void testGetSpec() throws Exception {
@@ -205,8 +205,8 @@ public abstract class StandardSourceTest {
   }
 
   /**
-   * Verify that when given valid credentials, that check connection returns a success response.
-   * Assume that the {@link StandardSourceTest#getConfig()} is valid.
+   * Verify that a check operation issued to the connector with the input config file returns a
+   * success response.
    */
   @Test
   public void testCheckConnection() throws Exception {
@@ -227,8 +227,8 @@ public abstract class StandardSourceTest {
   // }
 
   /**
-   * Verify that when given valid credentials, that discover returns a valid catalog. Assume that the
-   * {@link StandardSourceTest#getConfig()} is valid.
+   * Verifies when a discover operation is run on the connector using the given config file, a valid
+   * catalog is output by the connector.
    */
   @Test
   public void testDiscover() throws Exception {
@@ -240,8 +240,8 @@ public abstract class StandardSourceTest {
   }
 
   /**
-   * Verify that the integration successfully writes records. Tests a wide variety of messages and
-   * schemas (aspirationally, anyway).
+   * Configuring all streams in the input catalog to full refresh mode, verifies that a read operation
+   * produces some RECORD messages.
    */
   @Test
   public void testFullRefreshRead() throws Exception {
@@ -261,6 +261,11 @@ public abstract class StandardSourceTest {
     });
   }
 
+  /**
+   * Configuring all streams in the input catalog to full refresh mode, performs two read operations
+   * on all streams which support full refresh syncs. It then verifies that the RECORD messages output
+   * from both were identical.
+   */
   @Test
   public void testIdenticalFullRefreshes() throws Exception {
     final ConfiguredAirbyteCatalog configuredCatalog = withFullRefreshSyncModes(getConfiguredCatalog());
@@ -276,7 +281,18 @@ public abstract class StandardSourceTest {
   }
 
   /**
-   * Verify that the source is able to read data incrementally with a given input state.
+   * This test verifies that all streams in the input catalog which support incremental sync can do so
+   * correctly. It does this by running two read operations on the connector's Docker image: the first
+   * takes the configured catalog and config provided to this test as input. It then verifies that the
+   * sync produced a non-zero number of RECORD and STATE messages.
+   *
+   * The second read takes the same catalog and config used in the first test, plus the last STATE
+   * message output by the first read operation as the input state file. It verifies that no records
+   * are produced (since we read all records in the first sync).
+   *
+   * This test is performed only for streams which support incremental. Streams which do not support
+   * incremental sync are ignored. If no streams in the input catalog support incremental sync, this
+   * test is skipped.
    */
   @Test
   public void testIncrementalSyncWithState() throws Exception {
@@ -314,6 +330,16 @@ public abstract class StandardSourceTest {
         "Expected the second incremental sync to produce no records when given the first sync's output state.");
   }
 
+  /**
+   * If the source does not support incremental sync, this test is skipped.
+   *
+   * Otherwise, this test runs two syncs: one where all streams provided in the input catalog sync in
+   * full refresh mode, and another where all the streams which in the input catalog which support
+   * incremental, sync in incremental mode (streams which don't support incremental sync in full
+   * refresh mode). Then, the test asserts that the two syncs produced the same RECORD messages. Any
+   * other type of message is disregarded.
+   *
+   */
   @Test
   public void testEmptyStateIncrementalIdenticalToFullRefresh() throws Exception {
     if (!sourceSupportsIncremental()) {

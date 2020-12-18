@@ -6,7 +6,7 @@ In order to provide the best developer experience, here are some instructions on
 
 ## Python Connector Development
 
-Before working with connectors written in python, we recommend running `./gradlew build` from the root project directory. This will create a `virtualenv` for every connector and helper project and install dependencies locally.
+Before working with connectors written in Python, we recommend running `./gradlew build` from the root project directory. This will create a `virtualenv` for every connector and helper project and install dependencies locally.
 
 When iterating on a single connector, you will often iterate by running
 
@@ -25,6 +25,14 @@ This command will:
    4. [MyPy](https://pypi.org/project/mypy/) to check type usage
 
 At Airbyte, we use IntelliJ IDEA for development. Although it is possible to develop connectors with any IDE, we typically recommend IntelliJ IDEA or PyCharm, since we actively work towards compatibility.
+
+## Working on a Single Connector
+
+When iterating on a single connector, the easiest approach is to open PyCharm with the desired connector directory.
+
+You should then open the `Preferences > Project: <your connector> > Python Interpreter` to configure the Project Interpreter using the one that was installed with the requirements of the connector by the `gradle` command: `airbyte-integrations/connectors/your-connector-dir/.venv/bin/python`
+
+## Multi Modules Setup
 
 Our typical development flow is to have one Intellij project for `java` development with `gradle` and a separate Intellij project for python. The following setup steps are written for IntelliJ IDEA but should have similar equivalents for PyCharm:
 

@@ -8,6 +8,7 @@ import Button from "../Button";
 export type IProps = {
   onClose: () => void;
   onSubmit: (data: any) => void;
+  message?: React.ReactNode;
 };
 
 const Content = styled.div`
@@ -24,11 +25,11 @@ const ButtonWithMargin = styled(Button)`
   margin-right: 9px;
 `;
 
-const ResetDataModal: React.FC<IProps> = ({ onClose, onSubmit }) => {
+const ResetDataModal: React.FC<IProps> = ({ onClose, onSubmit, message }) => {
   return (
     <Modal onClose={onClose} title={<FormattedMessage id="form.resetData" />}>
       <Content>
-        <FormattedMessage id="form.changedColumns" />
+        {message || <FormattedMessage id="form.resetDataText" />}
         <ButtonContent>
           <ButtonWithMargin onClick={onClose} secondary>
             <FormattedMessage id="form.noNeed" />

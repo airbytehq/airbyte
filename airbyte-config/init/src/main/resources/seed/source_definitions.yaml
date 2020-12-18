@@ -6,7 +6,7 @@
 - sourceDefinitionId: 778daa7c-feaf-4db6-96f3-70fd645acc77
   name: File
   dockerRepository: airbyte/source-file
-  dockerImageTag: 0.1.6
+  dockerImageTag: 0.1.7
   documentationUrl: https://hub.docker.com/r/airbyte/source-file
 - sourceDefinitionId: fdc8b827-3257-4b33-83cc-106d234c34d4
   name: Google Adwords
@@ -21,7 +21,7 @@
 - sourceDefinitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
   name: Microsoft SQL Server (MSSQL)
   dockerRepository: airbyte/source-mssql
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.5
   documentationUrl: https://hub.docker.com/r/airbyte/source-mssql
 - sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   name: Postgres
@@ -66,17 +66,17 @@
 - sourceDefinitionId: b03a9f3e-22a5-11eb-adc1-0242ac120002
   name: Mailchimp
   dockerRepository: airbyte/source-mailchimp
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.6
   documentationUrl: https://hub.docker.com/r/airbyte/source-mailchimp
 - sourceDefinitionId: 39f092a6-8c87-4f6f-a8d9-5cef45b7dbe1
   name: Google Analytics
   dockerRepository: airbyte/source-googleanalytics-singer
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.5
   documentationUrl: https://hub.docker.com/r/airbyte/source-googleanalytics-singer
 - sourceDefinitionId: 74d47f79-8d01-44ac-9755-f5eb0d7caacb
   name: Facebook Marketing APIs
   dockerRepository: airbyte/source-facebook-marketing-api-singer
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.5
   documentationUrl: https://hub.docker.com/r/airbyte/source-facebook-marketing-api-singer
 - sourceDefinitionId: 57eb1576-8f52-463d-beb6-2e107cdf571d
   name: Hubspot
@@ -111,7 +111,7 @@
 - sourceDefinitionId: 396e4ca3-8a97-4b85-aa4e-c9d8c2d5f992
   name: Braintree
   dockerRepository: airbyte/source-braintree-singer
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://hub.docker.com/r/airbyte/source-braintree-singer
 - sourceDefinitionId: 41375467-61ae-4204-8e38-e2b8b7365f23
   name: Slack
@@ -148,3 +148,8 @@
   dockerRepository: airbyte/source-zoom-singer
   dockerImageTag: 0.1.0
   documentationUrl: https://hub.docker.com/r/airbyte/source-zoom-singer
+- sourceDefinitionId: 445831eb-78db-4b1f-8f1f-0d96ad8739e2
+  name: Drift
+  dockerRepository: airbyte/source-drift
+  dockerImageTag: 0.1.0
+  documentationUrl: https://hub.docker.com/r/airbyte/source-drift
