@@ -3,5 +3,5 @@
   "name": "BigQuery",
   "dockerRepository": "airbyte/destination-bigquery",
   "dockerImageTag": "0.1.11",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/integration-singer-bigquery-destination"
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/bigquery"
 }
