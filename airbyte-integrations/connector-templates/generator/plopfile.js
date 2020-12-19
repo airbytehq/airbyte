@@ -12,11 +12,11 @@ Your ${connectorName} connector has been created at ${path.resolve(outputPath)}.
 
 Follow instructions in NEW_SOURCE_CHECKLIST.md to finish your connector.
 
-Questions, comments or concerns? Let us know at:
+Questions, comments, or concerns? Let us know at:
 Slack: https://slack.airbyte.io
 Github: https://github.com/airbytehq/airbyte
 
-We're committed to providing you any necessary support :)
+We're always happy to provide you with any support :)
 `
 }
 

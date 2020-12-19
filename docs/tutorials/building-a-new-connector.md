@@ -20,7 +20,11 @@ to any language.
 
 Here's the outline of what we'll do to build our connector:
 1. Use the Airbyte connector template to bootstrap the connector package
-2. Implement the 4 methods required by the Airbyte Specification
+2. Implement the methods required by the Airbyte Specification for our connector:
+    1. `spec`: declares the user-provided credentials or configuration needed to run the connector
+    2. `check`: tests if the user-provided configuration is valid and can be used to run the connector
+    3. `discover`: declares the different streams of data that this connector can output
+    4. `read`: reads data from the underlying data source (The stock ticker API) 
 3. Package the connector in a Docker image
 4. Test the connector using Airbyte's Standard Test Suite
 5. Use the connector to run a sync from the Airbyte UI 
@@ -33,23 +37,41 @@ Once we've completed the above steps, we will have built a functioning connector
 We'll start the process from the Airbyte repository root: 
 
 ```
-
+➜  airbyte git:(master) pwd
+/Users/sherifnada/code/airbyte
 ```
-First, let's create a new branch 
 
-Airbyte provides a code generator which bootstraps the scaffolding for our connector. To use it, run the following from the repo :
+First, let's create a new branch:
+``` 
+➜  airbyte git:(master) git checkout -b $(whoami)/source-connector-tutorial
+Switched to a new branch 'sherifnada/source-connector-tutorial'
+```
+ 
+Airbyte provides a code generator which bootstraps the scaffolding for our connector. Let's use it by running:
 ```
 cd airbyte-integrations/connector-templates/generator
-# You'll need to have NPM installed. See https://www.npmjs.com/get-npm for more information
+# Install NPM from https://www.npmjs.com/get-npm if you don't have it
 npm install
 npm run generate
 ```
 
-We'll select the generic template and call the connector `stock-ticker`: 
-
-```
-
-```
+We'll select the generic template and call the connector `stock-ticker-api`: 
+![](../.gitbook/assets/newsourcetutorial_plop.gif)
 
 Note that if you were developing a "real" Python connector, you should use the Python generator to automatically get the Airbyte Python helpers.
+
+Head to the connector directory and we should see the following files have been generated: 
+```
+➜  generator git:(sherifnada/source-connector-tutorial) ✗ cd ../../connectors/source-stock-ticker-api
+➜  source-stock-ticker-api git:(sherifnada/source-connector-tutorial) ✗ ls
+Dockerfile              NEW_SOURCE_CHECKLIST.md              build.gradle
+```
+
+We'll use each of these files later. But first, let's write some code!
+
+### 2. Implement the connector in line with the Airbyte Specification
+In the connector package directory, create a single python file `source.py` that will hold our implementation:
+```
+➜  source-stock-ticker-api git:(sherifnada/source-connector-tutorial) ✗ touch source.py
+```                                                                                    
 
