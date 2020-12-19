@@ -8,10 +8,7 @@ on:
 
 jobs:
   launch_integration_tests:
-    strategy:
-      matrix:
-        runner: [ windows-latest, ubuntu-latest ]
-    runs-on: ${{ matrix.runner }}
+    runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master'
     steps:
       - name: Checkout Airbyte
@@ -21,7 +18,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.SLASH_COMMAND_PAT }}
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        runner: [ windows-latest, ubuntu-latest ]
+    runs-on: ${{ matrix.runner }}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
