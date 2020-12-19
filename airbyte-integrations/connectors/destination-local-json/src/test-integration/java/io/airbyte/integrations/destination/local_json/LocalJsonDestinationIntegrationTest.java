@@ -31,7 +31,6 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.StandardSQLNaming;
 import io.airbyte.integrations.standardtest.destination.TestDestination;
-
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -68,8 +67,7 @@ public class LocalJsonDestinationIntegrationTest extends TestDestination {
 
   // override test that this integration cannot pass.
   @Override
-  public void testCheckConnectionInvalidCredentials() {
-  }
+  public void testCheckConnectionInvalidCredentials() {}
 
   @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv, String streamName) throws Exception {

@@ -41,7 +41,6 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.SyncMode;
-
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
@@ -52,7 +51,6 @@ import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,7 +93,7 @@ public class LocalJsonDestination implements Destination {
   }
 
   /**
-   * @param config  - destination config.
+   * @param config - destination config.
    * @param catalog - schema of the incoming messages.
    * @return - a consumer to handle writing records to the filesystem.
    * @throws IOException - exception throw in manipulating the filesystem.
