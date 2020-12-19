@@ -30,7 +30,7 @@ docker-compose up
 
 Now visit [http://localhost:8000](http://localhost:8000)
 
-Here is a [step-by-step guide](docs/tutorials/getting-started.md) showing you how to load data from a sample Postgres database into another database using Airbyte, all on your computer.
+Here is a [step-by-step guide](docs/tutorials/postgres-replication.md) showing you how to load data from a sample Postgres database into another database using Airbyte, all on your computer.
 
 ## Features
 
