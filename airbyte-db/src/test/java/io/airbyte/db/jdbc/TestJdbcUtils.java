@@ -34,6 +34,7 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.stream.MoreStreams;
+import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -42,7 +43,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -125,6 +128,50 @@ public class TestJdbcUtils {
     }
   }
 
+  // test conversion of every JDBCType that we support to Json.
+  @Test
+  void testSetJsonField() throws SQLException {
+    try (final Connection connection = dataSource.getConnection()) {
+      createTableWithAllTypes(connection);
+      insertRecordOfEachType(connection);
+      assertExpectedOutputValues(connection);
+      assertExpectedOutputTypes(connection);
+    }
+  }
+
+  // test setting on a PreparedStatement every JDBCType that we support.
+  @Test
+  void testSetStatementField() throws SQLException {
+    try (final Connection connection = dataSource.getConnection()) {
+      createTableWithAllTypes(connection);
+
+      final PreparedStatement ps = connection.prepareStatement("INSERT INTO data VALUES(?::bit,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
+
+      // insert the bit here to stay consistent even though setStatementField does not support it yet.
+      ps.setString(1, "1");
+      JdbcUtils.setStatementField(ps, 2, JDBCType.BOOLEAN, "true");
+      JdbcUtils.setStatementField(ps, 3, JDBCType.SMALLINT, "1");
+      JdbcUtils.setStatementField(ps, 4, JDBCType.INTEGER, "1");
+      JdbcUtils.setStatementField(ps, 5, JDBCType.BIGINT, "1");
+      JdbcUtils.setStatementField(ps, 6, JDBCType.FLOAT, "1.0");
+      JdbcUtils.setStatementField(ps, 7, JDBCType.DOUBLE, "1.0");
+      JdbcUtils.setStatementField(ps, 8, JDBCType.REAL, "1.0");
+      JdbcUtils.setStatementField(ps, 9, JDBCType.NUMERIC, "1");
+      JdbcUtils.setStatementField(ps, 10, JDBCType.DECIMAL, "1");
+      JdbcUtils.setStatementField(ps, 11, JDBCType.CHAR, "a");
+      JdbcUtils.setStatementField(ps, 12, JDBCType.VARCHAR, "a");
+      JdbcUtils.setStatementField(ps, 13, JDBCType.DATE, "2020-11-01T00:00:00Z");
+      JdbcUtils.setStatementField(ps, 14, JDBCType.TIME, "1970-01-01T05:00:00Z");
+      JdbcUtils.setStatementField(ps, 15, JDBCType.TIMESTAMP, "2001-09-29T03:00:00Z");
+      JdbcUtils.setStatementField(ps, 16, JDBCType.BINARY, "61616161");
+
+      ps.execute();
+
+      assertExpectedOutputValues(connection);
+      assertExpectedOutputTypes(connection);
+    }
+  }
+
   private static void createTableWithAllTypes(Connection connection) throws SQLException {
     // jdbctype not included because they are not directly supported in postgres: TINYINT, LONGVARCHAR,
     // VARBINAR, LONGVARBINARY
@@ -147,6 +194,9 @@ public class TestJdbcUtils {
         + "binary1 bytea"
         + ");");
 
+  }
+
+  private static void insertRecordOfEachType(Connection connection) throws SQLException {
     connection.createStatement().execute("INSERT INTO data("
         + "bit,"
         + "boolean,"
@@ -184,17 +234,9 @@ public class TestJdbcUtils {
         + ");");
   }
 
-  @Test
-  void testSetJsonField() throws SQLException {
-    try (final Connection connection = dataSource.getConnection()) {
-      createTableWithAllTypes(connection);
-      verifyOutput(connection);
-    }
-  }
-
-  private static void verifyOutput(Connection connection) throws SQLException {
+  private static void assertExpectedOutputValues(Connection connection) throws SQLException {
     final ResultSet resultSet = connection.createStatement().executeQuery("SELECT * FROM data;");
-    //
+
     resultSet.next();
     final JsonNode actual = JdbcUtils.rowToJson(resultSet);
 
@@ -223,34 +265,36 @@ public class TestJdbcUtils {
     assertEquals(expected, actual);
   }
 
-  @Test
-  void testSetStatementField() throws SQLException {
-    try (final Connection connection = dataSource.getConnection()) {
-      createTableWithAllTypes(connection);
+  private static void assertExpectedOutputTypes(Connection connection) throws SQLException {
+    final ResultSet resultSet = connection.createStatement().executeQuery("SELECT * FROM data;");
 
-      final PreparedStatement ps = connection.prepareStatement("INSERT INTO data VALUES(?::bit,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
-
-      // insert the bit here to stay consistent even though setStatementField does not support it yet.
-      ps.setString(1, "1");
-      JdbcUtils.setStatementField(ps, 2, JDBCType.BOOLEAN, "true");
-      JdbcUtils.setStatementField(ps, 3, JDBCType.SMALLINT, "1");
-      JdbcUtils.setStatementField(ps, 4, JDBCType.INTEGER, "1");
-      JdbcUtils.setStatementField(ps, 5, JDBCType.BIGINT, "1");
-      JdbcUtils.setStatementField(ps, 6, JDBCType.FLOAT, "1.0");
-      JdbcUtils.setStatementField(ps, 7, JDBCType.DOUBLE, "1.0");
-      JdbcUtils.setStatementField(ps, 8, JDBCType.REAL, "1.0");
-      JdbcUtils.setStatementField(ps, 9, JDBCType.NUMERIC, "1");
-      JdbcUtils.setStatementField(ps, 10, JDBCType.DECIMAL, "1");
-      JdbcUtils.setStatementField(ps, 11, JDBCType.CHAR, "a");
-      JdbcUtils.setStatementField(ps, 12, JDBCType.VARCHAR, "a");
-      JdbcUtils.setStatementField(ps, 13, JDBCType.DATE, "2020-11-01T00:00:00Z");
-      JdbcUtils.setStatementField(ps, 14, JDBCType.TIME, "1970-01-01T05:00:00Z");
-      JdbcUtils.setStatementField(ps, 15, JDBCType.TIMESTAMP, "2001-09-29T03:00:00Z");
-      JdbcUtils.setStatementField(ps, 16, JDBCType.BINARY, "61616161");
-
-      ps.execute();
-      verifyOutput(connection);
+    resultSet.next();
+    final int columnCount = resultSet.getMetaData().getColumnCount();
+    final Map<String, JsonSchemaPrimitive> actual = new HashMap<>(columnCount);
+    for (int i = 1; i <= columnCount; i++) {
+      actual.put(resultSet.getMetaData().getColumnName(i), JdbcUtils.getType(JDBCType.valueOf(resultSet.getMetaData().getColumnType(i))));
     }
+
+    final Map<String, JsonSchemaPrimitive> expected = ImmutableMap.<String, JsonSchemaPrimitive>builder()
+        .put("bit", JsonSchemaPrimitive.BOOLEAN)
+        .put("boolean", JsonSchemaPrimitive.BOOLEAN)
+        .put("smallint", JsonSchemaPrimitive.NUMBER)
+        .put("int", JsonSchemaPrimitive.NUMBER)
+        .put("bigint", JsonSchemaPrimitive.NUMBER)
+        .put("float", JsonSchemaPrimitive.NUMBER)
+        .put("double", JsonSchemaPrimitive.NUMBER)
+        .put("real", JsonSchemaPrimitive.NUMBER)
+        .put("numeric", JsonSchemaPrimitive.NUMBER)
+        .put("decimal", JsonSchemaPrimitive.NUMBER)
+        .put("char", JsonSchemaPrimitive.STRING)
+        .put("varchar", JsonSchemaPrimitive.STRING)
+        .put("date", JsonSchemaPrimitive.STRING)
+        .put("time", JsonSchemaPrimitive.STRING)
+        .put("timestamp", JsonSchemaPrimitive.STRING)
+        .put("binary1", JsonSchemaPrimitive.STRING)
+        .build();
+
+    assertEquals(actual, expected);
   }
 
 }
