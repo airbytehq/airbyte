@@ -1,4 +1,4 @@
-# Exchange Rate API
+# Exchange Rates API
 
 ## Overview
 
