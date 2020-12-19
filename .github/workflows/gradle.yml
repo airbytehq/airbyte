@@ -1,5 +1,9 @@
 name: Airbyte CI
 
+strategy:
+  matrix:
+    runner: [windows-latest, ubuntu-latest]
+
 on:
   schedule:
     - cron: '0 */6 * * *'
@@ -7,7 +11,7 @@ on:
 
 jobs:
   launch_integration_tests:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
     if: github.ref == 'refs/heads/master'
     steps:
       - name: Checkout Airbyte
