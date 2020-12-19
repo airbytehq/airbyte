@@ -10,7 +10,7 @@
   * [Sources](integrations/sources/README.md)
     * [Braintree](integrations/sources/braintree.md)
     * [Drift](integrations/sources/drift.md)
-    * [exchangeratesapi.io](integrations/sources/exchangeratesapi-io.md)
+    * [Exchange Rate API](integrations/sources/exchangeratesapi-io.md)
     * [Facebook Marketing API](integrations/sources/facebook-marketing-api.md)
     * [Files](integrations/sources/file.md)
     * [Freshdesk](integrations/sources/freshdesk.md)
