@@ -1,8 +1,5 @@
 name: Airbyte CI
 
-strategy:
-  matrix:
-    runner: [windows-latest, ubuntu-latest]
 
 on:
   schedule:
@@ -11,6 +8,9 @@ on:
 
 jobs:
   launch_integration_tests:
+    strategy:
+      matrix:
+        runner: [ windows-latest, ubuntu-latest ]
     runs-on: ${{ matrix.runner }}
     if: github.ref == 'refs/heads/master'
     steps:
