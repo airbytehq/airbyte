@@ -51,6 +51,7 @@
   * [On Your Workstation](deploying-airbyte/on-your-workstation.md)
   * [On AWS \(EC2\)](deploying-airbyte/on-aws-ec2.md)
   * [On GCP \(Compute Engine\)](deploying-airbyte/on-gcp-compute-engine.md)
+  * [Releases](deploying-airbyte/releases.md)
 * [Architecture](architecture/README.md)
   * [High-level View](architecture/high-level-view.md)
   * [Airbyte Specification](architecture/airbyte-specification.md)
