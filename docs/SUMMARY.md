@@ -42,6 +42,7 @@
   * [Destinations](integrations/destinations/README.md)
     * [BigQuery](integrations/destinations/bigquery.md)
     * [Local CSV](integrations/destinations/local-csv.md)
+    * [Local JSON](integrations/destinations/local-json.md)
     * [Postgres](integrations/destinations/postgres.md)
     * [Redshift](integrations/destinations/redshift.md)
     * [Snowflake](integrations/destinations/snowflake.md)
