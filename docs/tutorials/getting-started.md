@@ -2,7 +2,7 @@
 
 ## Goal
 
-During this getting started tutorial we are going to replicate currencies closing price into a JSON file.
+During this getting started tutorial, we are going to replicate currencies closing price into a JSON file.
 
 ## Start Airbyte
 
@@ -58,9 +58,9 @@ To set it up, just follow the instructions on the screenshot below.
 
 ## Check the logs of your first sync
 
-After you've complete the onboarding, you will now see a list of sources with the source you just added. Click on it to find more information about it. You will now see all the destinations connected to that source. Click on it and you will see the sync history. 
+After you've completed the onboarding, you will be redirected to the source list and will see the source you just added. Click on it to find more information about it. You will now see all the destinations connected to that source. Click on it and you will see the sync history. 
 
-From there you can look at the logs, download them, force a sync and adjust the configuration of your connection.
+From there, you can look at the logs, download them, force a sync and adjust the configuration of your connection.
 
 ![](../.gitbook/assets/demo_history.png)
 
