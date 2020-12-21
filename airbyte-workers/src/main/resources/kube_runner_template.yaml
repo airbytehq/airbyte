@@ -19,6 +19,7 @@ spec:
       image: IMAGE
       workingDir: WORKDIR
       args: ARGS
+      stdin: true
       volumeMounts:
         - name: airbyte-volume-workspace
           mountPath: /workspace

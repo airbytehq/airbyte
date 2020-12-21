@@ -83,9 +83,10 @@ public class KubeProcessBuilderFactory implements ProcessBuilderFactory {
                       "--generator=run-pod/v1",
                       "--rm",
                       "-i",
+                      "--pod-running-timeout=24h",
                       "--image=" + imageName,
                       "--restart=Never",
-                      "--overrides='" + overrides + "'",
+                      "--overrides=" + overrides, // fails if you add quotes around the overrides string
                       podName);
 
       LOGGER.debug("Preparing command: {}", Joiner.on(" ").join(cmd));
@@ -95,5 +96,4 @@ public class KubeProcessBuilderFactory implements ProcessBuilderFactory {
       throw new WorkerException(e.getMessage());
     }
   }
-
 }

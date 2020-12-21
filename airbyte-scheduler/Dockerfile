@@ -30,9 +30,6 @@ RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.17.14/
 RUN chmod +x ./kubectl
 RUN mv ./kubectl /usr/local/bin
 
-# Move kube runner
-COPY bin/kube_runner.sh /usr/local/bin/kube_runner.sh
-
 # Move and run scheduler
 COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
 
