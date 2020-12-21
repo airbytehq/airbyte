@@ -22,30 +22,20 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.base;
+package io.airbyte.integrations.destination;
 
-import io.airbyte.commons.text.Names;
-import java.time.Instant;
+/**
+ * Necessary Operations to manipulate table creation and row insertions that may be required by some
+ * RecordConsumer to properly function.
+ */
+public interface InsertTableOperations {
 
-public class StandardSQLNaming implements SQLNamingResolvable {
+  void createDestinationTable(String schemaName, String tmpTableName) throws Exception;
 
-  @Override
-  public String getIdentifier(String name) {
-    return convertStreamName(name);
-  }
+  String truncateTableQuery(String schemaName, String tableName);
 
-  @Override
-  public String getRawTableName(String streamName) {
-    return convertStreamName(streamName + "_raw");
-  }
+  String insertIntoFromSelectQuery(String schemaName, String srcTableName, String dstTableName);
 
-  @Override
-  public String getTmpTableName(String streamName) {
-    return convertStreamName(streamName + "_" + Instant.now().toEpochMilli());
-  }
-
-  protected String convertStreamName(String input) {
-    return Names.toAlphanumericAndUnderscore(input);
-  }
+  void executeTransaction(String queries) throws Exception;
 
 }

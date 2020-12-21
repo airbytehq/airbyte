@@ -22,20 +22,15 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.base;
+package io.airbyte.integrations.destination.snowflake;
 
-/**
- * Necessary Operations to manipulate table creation and row insertions that may be required by some
- * RecordConsumer to properly function.
- */
-public interface InsertTableOperations {
+import io.airbyte.integrations.destination.ExtendedNameTransformer;
 
-  void createDestinationTable(String schemaName, String tmpTableName) throws Exception;
+public class SnowflakeSQLNameTransformer extends ExtendedNameTransformer {
 
-  String truncateTableQuery(String schemaName, String tableName);
-
-  String insertIntoFromSelectQuery(String schemaName, String srcTableName, String dstTableName);
-
-  void executeTransaction(String queries) throws Exception;
+  @Override
+  protected String applyDefaultCase(String input) {
+    return input.toUpperCase();
+  }
 
 }
