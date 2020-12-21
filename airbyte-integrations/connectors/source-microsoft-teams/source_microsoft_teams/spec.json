@@ -4,27 +4,28 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Microsoft Teams Spec",
     "type": "object",
-    "required": ["tenant_id", "client_id", "client_secret", "start_date"],
+    "required": ["tenant_id", "client_id", "client_secret", "period"],
     "additionalProperties": false,
     "properties": {
       "tenant_id": {
+        "title": "Directory (tenant) ID",
         "type": "string",
-        "description": "Application (client) ID",
-        "airbyte_secret": true
+        "description": "Directory (tenant) ID"
       },
       "client_id": {
+        "title": "Application (client) ID",
         "type": "string",
-        "description": "Directory (tenant) ID",
-        "airbyte_secret": true
+        "description": "Application (client) ID"
       },
       "client_secret": {
+        "title": "Client Secret",
         "type": "string",
         "description": "Client secret",
         "airbyte_secret": true
       },
       "period": {
         "type": "string",
-        "description": "Specifies the length of time over which the report is aggregated. The supported values for {period_value} are: D7, D30, D90, and D180.",
+        "description": "Specifies the length of time over which the Team Device Report stream is aggregated. The supported values are: D7, D30, D90, and D180.",
         "examples": ["D7"]
       }
     }

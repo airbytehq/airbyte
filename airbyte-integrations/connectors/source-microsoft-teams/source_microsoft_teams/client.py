@@ -37,8 +37,9 @@ from msal.exceptions import MsalServiceError
 
 class Client:
     """
-        Microsoft Teams API Reference: https://docs.microsoft.com/en-us/graph/api/resources/teams-api-overview?view=graph-rest-1.0
+    Microsoft Teams API Reference: https://docs.microsoft.com/en-us/graph/api/resources/teams-api-overview?view=graph-rest-1.0
     """
+
     MICROSOFT_GRAPH_BASE_API_URL: str = "https://graph.microsoft.com/"
     MICROSOFT_GRAPH_API_VERSION: str = "v1.0"
     PAGINATION_COUNT: Optional[int] = 20
@@ -87,8 +88,8 @@ class Client:
         headers = {"Authorization": f"Bearer {access_token}"}
         response = requests.get(api_url, headers=headers, params=params)
         if response.status_code == 429:
-            if 'Retry-After' in response.headers:
-                pause_time = float(response.headers['Retry-After'])
+            if "Retry-After" in response.headers:
+                pause_time = float(response.headers["Retry-After"])
                 time.sleep(pause_time)
                 response = requests.get(api_url, headers=headers, params=params)
         if response.status_code != 200:
