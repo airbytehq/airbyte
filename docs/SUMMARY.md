@@ -5,6 +5,7 @@
   * [Getting Started](tutorials/getting-started.md)
   * [Config & Persistence](tutorials/airbyte-config-persistence.md)
 * [Changelog](changelog.md)
+  * [Releases](deploying-airbyte/releases.md)
 * [Roadmap](roadmap.md)
 * [Connectors](integrations/README.md)
   * [Sources](integrations/sources/README.md)
