@@ -3,6 +3,16 @@ kind: Pod
 metadata:
   name: airbyte-worker-JOBID-ATTEMPTID-SUFFIX
 spec:
+  affinity:
+    podAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchExpressions:
+              - key: airbyte
+                operator: In
+                values:
+                  - scheduler
+          topologyKey: kubernetes.io/hostname
   restartPolicy: Never
   containers:
     - name: worker
