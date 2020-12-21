@@ -26,7 +26,7 @@ ADD https://github.com/ufoscout/docker-compose-wait/releases/download/${WAIT_VER
 RUN chmod +x wait
 
 # Install kubectl
-RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.20.0/bin/linux/amd64/kubectl
+RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.17.14/bin/linux/amd64/kubectl
 RUN chmod +x ./kubectl
 RUN mv ./kubectl /usr/local/bin
 
