@@ -83,7 +83,8 @@ class ScheduleJobPredicateTest {
     assertFalse(scheduleJobPredicate.test(Optional.of(job), SCHEDULE));
   }
 
-  // use Mode.EXCLUDE so that when new values are added to the enum, these tests will fail if that value has not also been added to the switch statement.
+  // use Mode.EXCLUDE so that when new values are added to the enum, these tests will fail if that
+  // value has not also been added to the switch statement.
   @ParameterizedTest
   @EnumSource(value = JobStatus.class,
               mode = Mode.EXCLUDE,
