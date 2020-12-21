@@ -5,7 +5,7 @@
 Airbyte Core is any non-connector code. This includes the scheduler, workers, api, webapp, and the airbyte protocol.
 
 ### Production v. Dev Releases
-The "production" version of Airbyte is the version of the app specified in `.env`. With each production release, we updated the version in the `.env` file. This version will always be available for download on DockerHub. It is the version of the app that runs when a user runs `docker-compose up`.
+The "production" version of Airbyte is the version of the app specified in `.env`. With each production release, we update the version in the `.env` file. This version will always be available for download on DockerHub. It is the version of the app that runs when a user runs `docker-compose up`.
 
 The "development" version of Airbyte is the head of master branch. It is the version of the app that runs when a user runs `docker-compose --env-file .env.dev -f docker-compose.yaml -f docker-compose.dev.yaml up`.
 
