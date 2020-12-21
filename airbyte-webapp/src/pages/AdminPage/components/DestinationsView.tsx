@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useFetcher, useResource } from "rest-hooks";
 
-import { Block, Title, FormContent, FormContentTitle } from "./PageComponents";
+import { Block, Title, FormContentTitle } from "./PageComponents";
 import Table from "../../../components/Table";
 import { CellProps } from "react-table";
 import ConnectorCell from "./ConnectorCell";
@@ -65,15 +65,9 @@ const DestinationsView: React.FC = () => {
         Cell: ({ cell }: CellProps<{}>) => (
           <ConnectorCell connectorName={cell.value} />
         )
-      }
-    ],
-    []
-  );
-  const columnsCurrentDestination = React.useMemo(
-    () => [
-      ...columns,
+      },
       {
-        Header: <FormattedMessage id="admin.codeSource" />,
+        Header: <FormattedMessage id="admin.image" />,
         accessor: "dockerRepository",
         customWidth: 36,
         Cell: ({ cell, row }: CellProps<{ documentationUrl: string }>) => (
@@ -104,31 +98,7 @@ const DestinationsView: React.FC = () => {
         )
       }
     ],
-    [columns, feedbackList, onUpdateVersion]
-  );
-
-  const columnsAllDestinations = React.useMemo(
-    () => [
-      ...columns,
-      {
-        Header: <FormattedMessage id="admin.image" />,
-        accessor: "dockerRepository",
-        customWidth: 36,
-        Cell: ({ cell, row }: CellProps<{ documentationUrl: string }>) => (
-          <ImageCell
-            imageName={cell.value}
-            link={row.original.documentationUrl}
-          />
-        )
-      },
-      {
-        Header: "",
-        accessor: "dockerImageTag",
-        collapse: true,
-        Cell: () => <FormContent />
-      }
-    ],
-    [columns]
+    [feedbackList, onUpdateVersion]
   );
 
   const usedDestination = useMemo(() => {
@@ -163,14 +133,14 @@ const DestinationsView: React.FC = () => {
         <Title bold>
           <FormattedMessage id="admin.manageDestination" />
         </Title>
-        <Table columns={columnsCurrentDestination} data={usedDestination} />
+        <Table columns={columns} data={usedDestination} />
       </Block>
 
       <Block>
         <Title bold>
           <FormattedMessage id="admin.availableDestinations" />
         </Title>
-        <Table columns={columnsAllDestinations} data={destinationDefinitions} />
+        <Table columns={columns} data={destinationDefinitions} />
       </Block>
     </>
   );
