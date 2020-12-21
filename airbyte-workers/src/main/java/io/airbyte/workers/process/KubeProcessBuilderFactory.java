@@ -24,12 +24,16 @@
 
 package io.airbyte.workers.process;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.workers.WorkerException;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
@@ -58,20 +62,31 @@ public class KubeProcessBuilderFactory implements ProcessBuilderFactory {
       // used to differentiate source and destination processes with the same id and attempt
       final String suffix = RandomStringUtils.randomAlphabetic(5).toLowerCase();
 
-      final String rendered = template.replace("JOBID", String.valueOf(jobId))
-          .replace("ATTEMPTID", String.valueOf(attempt))
-          .replace("SUFFIX", suffix)
-          .replace("TAGGED_IMAGE", imageName)
-          .replaceAll("WORKDIR", jobRoot.toString())
-          .replace("ARGS", Jsons.serialize(Arrays.asList(args)));
+      ObjectMapper yamlMapper =  new ObjectMapper(new YAMLFactory());
 
-      final String yamlPath = jobRoot.resolve(String.format("job-%s.yaml", suffix)).toAbsolutePath().toString();
+      final String rendered = template.replaceAll("JOBID", String.valueOf(jobId))
+          .replaceAll("ATTEMPTID", String.valueOf(attempt))
+          .replaceAll("IMAGE", imageName)
+          .replaceAll("SUFFIX", suffix)
+          .replaceAll("ARGS", Jsons.serialize(Arrays.asList(args)))
+          .replaceAll("WORKDIR", jobRoot.toString());
 
-      try (FileWriter writer = new FileWriter(yamlPath)) {
-        writer.write(rendered);
-      }
+      final JsonNode node = yamlMapper.readTree(rendered);
+      final String overrides = Jsons.serialize(node);
 
-      final List<String> cmd = Lists.newArrayList("kube_runner.sh", jobRoot.toString(), yamlPath);
+      final String podName = "airbyte-worker-" + jobId + "-" + attempt + "-" + suffix;
+
+      final List<String> cmd =
+              Lists.newArrayList(
+                      "kubectl",
+                      "run",
+                      "--generator=run-pod/v1",
+                      "--rm",
+                      "-i",
+                      "--image=" + imageName,
+                      "--restart=Never",
+                      "--overrides='" + overrides + "'",
+                      podName);
 
       LOGGER.debug("Preparing command: {}", Joiner.on(" ").join(cmd));
 

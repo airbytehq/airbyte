@@ -1,32 +1,18 @@
-apiVersion: batch/v1
-kind: Job
+apiVersion: v1
+kind: Pod
 metadata:
   name: airbyte-worker-JOBID-ATTEMPTID-SUFFIX
 spec:
-  backoffLimit: 1
-  template:
-    spec:
-      restartPolicy: Never
-      containers:
-        - name: worker-run
-          image: TAGGED_IMAGE
-          workingDir: WORKDIR
-          args: ARGS
-          volumeMounts:
-            - name: workdir
-              mountPath: WORKDIR
-      initContainers:
-        - name: worker-init
-          image: library/busybox:1.31
-          command:
-            [
-              "sh",
-              "-c",
-              "until [ -f WORKDIR/ready ]; do echo waiting...; sleep 1; done",
-            ]
-          volumeMounts:
-            - name: workdir
-              mountPath: WORKDIR
-      volumes:
-        - name: workdir
-          emptyDir: {}
+  restartPolicy: Never
+  containers:
+    - name: worker
+      image: IMAGE
+      workingDir: WORKDIR
+      args: ARGS
+      volumeMounts:
+        - name: airbyte-volume-workspace
+          mountPath: /workspace
+  volumes:
+    - name: airbyte-volume-workspace
+      persistentVolumeClaim:
+        claimName: airbyte-volume-workspace
