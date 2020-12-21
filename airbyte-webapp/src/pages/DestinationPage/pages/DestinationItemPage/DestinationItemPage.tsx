@@ -21,6 +21,7 @@ import {
 import DestinationSettings from "./components/DestinationSettings";
 import LoadingPage from "../../../../components/LoadingPage";
 import SourceResource from "../../../../core/resources/Source";
+import MainPageWithScroll from "../../../../components/MainPageWithScroll";
 
 const Content = styled(ContentCard)`
   margin: 0 32px 0 27px;
@@ -122,16 +123,19 @@ const DestinationItemPage: React.FC = () => {
   };
 
   return (
-    <>
-      <PageTitle
-        title={<Breadcrumbs data={breadcrumbsData} />}
-        withLine
-        middleComponent={
-          <ItemTabs currentStep={currentStep} setCurrentStep={onSelectStep} />
-        }
-      />
+    <MainPageWithScroll
+      title={
+        <PageTitle
+          title={<Breadcrumbs data={breadcrumbsData} />}
+          withLine
+          middleComponent={
+            <ItemTabs currentStep={currentStep} setCurrentStep={onSelectStep} />
+          }
+        />
+      }
+    >
       <Suspense fallback={<LoadingPage />}>{renderContent()}</Suspense>
-    </>
+    </MainPageWithScroll>
   );
 };
 

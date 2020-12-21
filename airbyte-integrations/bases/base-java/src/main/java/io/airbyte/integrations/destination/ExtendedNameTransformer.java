@@ -22,19 +22,38 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.base;
-
-import java.util.Map;
+package io.airbyte.integrations.destination;
 
 /**
- * Interface to move data from one temporary location to a final target destination
+ * When choosing identifiers names in destinations, extended Names can handle more special
+ * characters than standard Names by using the quoting characters: "..."
  *
- * Parameters per String are first set by the setContext methods before executing the actual move
+ * This class detects when such special characters are used and adds the appropriate quoting when
+ * necessary.
  */
-public interface TmpToFinalTable {
+public class ExtendedNameTransformer extends StandardNameTransformer {
 
-  void setContext(Map<String, DestinationCopyContext> configs);
+  @Override
+  protected String convertStreamName(String input) {
+    if (useExtendedIdentifiers(input)) {
+      return "\"" + input + "\"";
+    } else {
+      return applyDefaultCase(input);
+    }
+  }
 
-  void execute() throws Exception;
+  protected String applyDefaultCase(String input) {
+    return input;
+  }
+
+  protected boolean useExtendedIdentifiers(String input) {
+    boolean result = false;
+    if (input.matches("[^\\p{Alpha}_].*")) {
+      result = true;
+    } else if (input.matches(".*[^\\p{Alnum}_].*")) {
+      result = true;
+    }
+    return result;
+  }
 
 }

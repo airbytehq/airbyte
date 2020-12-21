@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.base;
+package io.airbyte.integrations.destination;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.text.Names;
@@ -39,9 +39,9 @@ import java.util.Map;
  */
 public class DestinationWriteContextFactory {
 
-  private final SQLNamingResolvable namingResolver;
+  private final NamingConventionTransformer namingResolver;
 
-  public DestinationWriteContextFactory(SQLNamingResolvable namingResolver) {
+  public DestinationWriteContextFactory(NamingConventionTransformer namingResolver) {
     this.namingResolver = namingResolver;
   }
 
@@ -67,7 +67,7 @@ public class DestinationWriteContextFactory {
     }
   }
 
-  public SQLNamingResolvable getNamingResolver() {
+  public NamingConventionTransformer getNamingResolver() {
     return namingResolver;
   }
 

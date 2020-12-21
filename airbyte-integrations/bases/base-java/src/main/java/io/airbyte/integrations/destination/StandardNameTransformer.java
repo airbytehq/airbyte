@@ -22,46 +22,30 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.base;
+package io.airbyte.integrations.destination;
 
-import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.commons.text.Names;
+import java.time.Instant;
 
-/**
- * This configuration is used by the RecordConsumers to adapt their behavior at runtime such as
- * where to apply their task and the kind of data operations
- */
-public class DestinationWriteContext {
+public class StandardNameTransformer implements NamingConventionTransformer {
 
-  private final String outputNamespaceName;
-  private final String outputTableName;
-  private final SyncMode syncMode;
-  private boolean transactionMode;
-
-  DestinationWriteContext(String outputNamespaceName, String outputTableName, SyncMode syncMode) {
-    this.outputNamespaceName = outputNamespaceName;
-    this.outputTableName = outputTableName;
-    this.syncMode = syncMode;
-    this.transactionMode = true;
+  @Override
+  public String getIdentifier(String name) {
+    return convertStreamName(name);
   }
 
-  public String getOutputNamespaceName() {
-    return outputNamespaceName;
+  @Override
+  public String getRawTableName(String streamName) {
+    return convertStreamName(streamName + "_raw");
   }
 
-  public String getOutputTableName() {
-    return outputTableName;
+  @Override
+  public String getTmpTableName(String streamName) {
+    return convertStreamName(streamName + "_" + Instant.now().toEpochMilli());
   }
 
-  public SyncMode getSyncMode() {
-    return syncMode;
-  }
-
-  public boolean getTransactionMode() {
-    return transactionMode;
-  }
-
-  public void setTransactionMode(boolean transactionMode) {
-    this.transactionMode = transactionMode;
+  protected String convertStreamName(String input) {
+    return Names.toAlphanumericAndUnderscore(input);
   }
 
 }

@@ -66,7 +66,7 @@ This option is not available to PRs from forks, so it is effectively limited to 
 
 If you don't want to handle secrets, you're making a relatively minor change, or you want to ensure the connector's integration test will run remotely, you should request builds on GitHub. You can request an integration test run by creating a comment with a slash command.
 
-Here are some example commands: 
+Here are some example commands:
 
 1. `/test connector=all` - Runs integration tests for all connectors in a single GitHub workflow. Some of our integration tests interact with rate-limited resources, so please use this judiciously.
 2. `/test connector=source-sendgrid` - Runs integration tests for a single connector on the latest PR commit.

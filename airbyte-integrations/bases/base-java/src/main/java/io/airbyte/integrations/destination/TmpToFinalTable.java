@@ -22,15 +22,19 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.postgres;
+package io.airbyte.integrations.destination;
 
-import io.airbyte.integrations.base.ExtendedSQLNaming;
+import java.util.Map;
 
-public class PostgresSQLNaming extends ExtendedSQLNaming {
+/**
+ * Interface to move data from one temporary location to a final target destination
+ *
+ * Parameters per String are first set by the setContext methods before executing the actual move
+ */
+public interface TmpToFinalTable {
 
-  @Override
-  protected String applyDefaultCase(String input) {
-    return input.toLowerCase();
-  }
+  void setContext(Map<String, DestinationCopyContext> configs);
+
+  void execute() throws Exception;
 
 }
