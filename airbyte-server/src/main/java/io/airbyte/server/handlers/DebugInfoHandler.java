@@ -29,6 +29,7 @@ import static java.util.stream.Collectors.toList;
 import com.google.common.collect.Lists;
 import io.airbyte.api.model.DebugRead;
 import io.airbyte.commons.docker.DockerUtils;
+import io.airbyte.commons.os.OsSupport;
 import io.airbyte.config.persistence.ConfigRepository;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -74,22 +75,24 @@ public class DebugInfoHandler {
           "inspect",
           "--format='{{.Image}} {{.Config.Image}}'");
 
-      inspectCommand.addAll(Lists.newArrayList(runningAirbyteContainers.split("\n")));
+      inspectCommand.addAll(Lists.newArrayList(runningAirbyteContainers.split(System.lineSeparator())));
 
       final String output = runAndGetOutput(inspectCommand).replaceAll("'", "");
 
-      final List<String> coreOutput = Lists.newArrayList(output.split("\n"));
+      final List<String> coreOutput = Lists.newArrayList(output.split(System.lineSeparator()));
 
-      return coreOutput.stream().map(entry -> {
-        final String[] elements = entry.split(" ");
-        final String shortHash = getShortHash(elements[0]);
-        final String taggedImage = elements[1];
+      return coreOutput.stream()
+          .filter(s -> !s.equals(""))
+          .map(entry -> {
+            final String[] elements = entry.split("");
+            final String shortHash = getShortHash(elements[0]);
+            final String taggedImage = elements[1];
 
-        final Map<String, String> result = new HashMap<>();
-        result.put("hash", shortHash);
-        result.put("image", taggedImage);
-        return result;
-      }).collect(toList());
+            final Map<String, String> result = new HashMap<>();
+            result.put("hash", shortHash);
+            result.put("image", taggedImage);
+            return result;
+          }).collect(toList());
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -122,7 +125,11 @@ public class DebugInfoHandler {
   }
 
   protected static String runAndGetOutput(List<String> cmd) throws IOException, InterruptedException {
-    final ProcessBuilder processBuilder = new ProcessBuilder(cmd);
+    return runAndGetOutput(cmd.toArray(new String[] {}));
+  }
+
+  protected static String runAndGetOutput(String... cmd) throws IOException, InterruptedException {
+    final ProcessBuilder processBuilder = new ProcessBuilder(OsSupport.formatCmd(cmd));
     final Process process = processBuilder.start();
     process.waitFor();
 

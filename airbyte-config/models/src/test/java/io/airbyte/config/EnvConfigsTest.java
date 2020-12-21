@@ -26,6 +26,7 @@ package io.airbyte.config;
 
 import static org.mockito.Mockito.when;
 
+import java.io.File;
 import java.nio.file.Paths;
 import java.util.function.Function;
 import org.junit.jupiter.api.Assertions;
@@ -126,7 +127,8 @@ class EnvConfigsTest {
   void testGetWorkspaceDockerMount() {
     when(function.apply(EnvConfigs.WORKSPACE_DOCKER_MOUNT)).thenReturn(null);
     when(function.apply(EnvConfigs.WORKSPACE_ROOT)).thenReturn("abc/def");
-    Assertions.assertEquals("abc/def", config.getWorkspaceDockerMount());
+
+    Assertions.assertEquals("abc" + File.separator + "def", config.getWorkspaceDockerMount());
 
     when(function.apply(EnvConfigs.WORKSPACE_DOCKER_MOUNT)).thenReturn("root");
     when(function.apply(EnvConfigs.WORKSPACE_ROOT)).thenReturn(null);
@@ -141,7 +143,7 @@ class EnvConfigsTest {
   void testGetLocalDockerMount() {
     when(function.apply(EnvConfigs.LOCAL_DOCKER_MOUNT)).thenReturn(null);
     when(function.apply(EnvConfigs.LOCAL_ROOT)).thenReturn("abc/def");
-    Assertions.assertEquals("abc/def", config.getLocalDockerMount());
+    Assertions.assertEquals("abc" + File.separator + "def", config.getLocalDockerMount());
 
     when(function.apply(EnvConfigs.LOCAL_DOCKER_MOUNT)).thenReturn("root");
     when(function.apply(EnvConfigs.LOCAL_ROOT)).thenReturn(null);

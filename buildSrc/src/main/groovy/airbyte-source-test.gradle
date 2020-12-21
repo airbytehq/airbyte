@@ -13,7 +13,8 @@ class AirbyteSourceTestPlugin implements Plugin<Project> {
                     logger.info("imageName: ${imageName}")
                     logger.info("pythonContainerName: ${pythonContainerName}")
                     workingDir project.rootDir
-                    commandLine 'docker', 'run', '--rm', '-i',
+                    commandLine CrossPlatformSupport.formatCmd(
+                            'docker', 'run', '--rm', '-i',
                             // so that it has access to docker
                             '-v', "/var/run/docker.sock:/var/run/docker.sock",
                             // when launching the container within a container, it mounts the directory from
@@ -25,6 +26,7 @@ class AirbyteSourceTestPlugin implements Plugin<Project> {
                             '--name', "std-test-${project.name}", 'airbyte/standard-source-test:dev',
                             '--imageName', imageName,
                             '--pythonContainerName', pythonContainerName
+                    )
                 }
             }
 

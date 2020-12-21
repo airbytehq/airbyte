@@ -36,8 +36,8 @@ class MoreResourcesTest {
 
   @Test
   void testResourceRead() throws IOException {
-    assertEquals("content1\n", MoreResources.readResource("resource_test"));
-    assertEquals("content2\n", MoreResources.readResource("subdir/resource_test_sub"));
+    assertEquals("content1" + System.lineSeparator(), MoreResources.readResource("resource_test"));
+    assertEquals("content2" + System.lineSeparator(), MoreResources.readResource("subdir/resource_test_sub"));
 
     assertThrows(IllegalArgumentException.class, () -> MoreResources.readResource("invalid"));
   }

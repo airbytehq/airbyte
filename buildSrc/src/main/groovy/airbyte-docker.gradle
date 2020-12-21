@@ -41,7 +41,9 @@ abstract class AirbyteDockerTask extends DefaultTask {
             def tag = DockerHelpers.getDevTaggedImage(projectDir, dockerfileName)
 
             project.exec {
-                commandLine scriptPath, rootDir.absolutePath, projectDir.absolutePath, dockerfileName, tag, idFileOutput.absolutePath, followSymlinks
+                commandLine CrossPlatformSupport.formatCmd(
+                        scriptPath, rootDir.absolutePath, projectDir.absolutePath, dockerfileName, tag, idFileOutput.absolutePath, followSymlinks
+                )
             }
         }
     }
@@ -87,7 +89,7 @@ class AirbyteDockerPlugin implements Plugin<Project> {
         def stdout = new ByteArrayOutputStream()
 
         project.exec {
-            commandLine "docker", "images", "--no-trunc", "-f", "dangling=false", "--format", "{{.ID}}", taggedImage
+            commandLine CrossPlatformSupport.formatCmd("docker", "images", "--no-trunc", "-f", "dangling=false", "--format", "{{.ID}}", taggedImage)
             standardOutput = stdout;
         }
 
@@ -171,7 +173,7 @@ class AirbyteDockerPlugin implements Plugin<Project> {
                 def imageToHash = [:]
                 def stdout = new ByteArrayOutputStream()
                 project.exec {
-                    commandLine "docker", "images", "--no-trunc", "-f", "dangling=false", "--format", "{{.Repository}}:{{.Tag}} {{.ID}}"
+                    commandLine CrossPlatformSupport.formatCmd("docker", "images", "--no-trunc", "-f", "dangling=false", "--format", "{{.Repository}}:{{.Tag}} {{.ID}}")
                     standardOutput = stdout;
                 }
 

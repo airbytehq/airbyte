@@ -22,20 +22,45 @@
  * SOFTWARE.
  */
 
-package io.airbyte.scheduler;
+package io.airbyte.commons.os;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import com.google.common.collect.Lists;
+import java.util.ArrayList;
+import java.util.List;
 
-import java.nio.file.Path;
-import org.junit.jupiter.api.Test;
+public class OsSupport {
 
-class JobLogsTest {
+  /**
+   * Formats the input command
+   *
+   * This helper is typically only necessary when calling external bash scripts.
+   *
+   * @param cmdParts
+   * @return
+   */
+  public static String[] formatCmd(String... cmdParts) {
+    return formatCmd(new OsUtils(), cmdParts);
+  }
 
-  @Test
-  public void testGetLogDirectory() {
-    final String actual = JobLogs.getLogDirectory("blah");
-    final String expected = Path.of("logs/jobs/blah").toString();
-    assertEquals(expected, actual);
+  public static String[] formatCmd(OsUtils osUtils, String... cmdParts) {
+    if (cmdParts.length == 0){
+      return cmdParts;
+    }
+
+    if (!cmdParts[0].endsWith(".sh")){
+      // We need to apply windows formatting only for shell scripts since Windows doesn't support .sh files by default
+      // Other commands like `docker` should work fine
+      return cmdParts;
+    }
+
+    List<String> formattedParts = new ArrayList<>();
+    if (osUtils.isWindows()) {
+      formattedParts.addAll(Lists.newArrayList("cmd", "/c"));
+    }
+
+    formattedParts.addAll(List.of(cmdParts));
+
+    return formattedParts.toArray(new String[] {});
   }
 
 }

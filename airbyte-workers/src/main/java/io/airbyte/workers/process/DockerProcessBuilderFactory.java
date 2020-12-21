@@ -29,6 +29,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
+import io.airbyte.commons.os.OsSupport;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.workers.WorkerException;
 import java.io.IOException;
@@ -113,7 +114,7 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
   @VisibleForTesting
   boolean checkImageExists(String imageName) {
     try {
-      final Process process = new ProcessBuilder(imageExistsScriptPath.toString(), imageName).start();
+      final Process process = new ProcessBuilder(OsSupport.formatCmd(imageExistsScriptPath.toString(), imageName)).start();
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
       LineGobbler.gobble(process.getInputStream(), LOGGER::info);
 
@@ -127,3 +128,5 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
   }
 
 }
+
+

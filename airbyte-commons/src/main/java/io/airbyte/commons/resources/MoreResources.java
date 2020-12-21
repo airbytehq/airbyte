@@ -75,12 +75,12 @@ public class MoreResources {
 
   @SuppressWarnings("UnstableApiUsage")
   public static void writeResource(String filename, String contents) {
-    final Path source = Paths.get(Resources.getResource("").getPath());
     try {
+      final Path source = Paths.get(Resources.getResource("").toURI());
       Files.deleteIfExists(source.resolve(filename));
       Files.createFile(source.resolve(filename));
-      IOs.writeFile(Path.of(Resources.getResource(filename).getPath()), contents);
-    } catch (IOException e) {
+      IOs.writeFile(Paths.get(Resources.getResource(filename).toURI()), contents);
+    } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }

@@ -56,8 +56,8 @@ class DebugInfoHandlerTest {
 
   @Test
   public void testRunAndGetOutput() throws IOException, InterruptedException {
-    final String expected = "hi";
-    final String actual = DebugInfoHandler.runAndGetOutput(Lists.newArrayList("echo", "-n", "hi"));
+    final String expected = "hi" + System.lineSeparator();
+    final String actual = DebugInfoHandler.runAndGetOutput("echo", "hi");
     assertEquals(expected, actual);
   }
 

@@ -22,20 +22,14 @@
  * SOFTWARE.
  */
 
-package io.airbyte.scheduler;
+package io.airbyte.commons.os;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.apache.commons.lang3.SystemUtils;
 
-import java.nio.file.Path;
-import org.junit.jupiter.api.Test;
+public class OsUtils {
 
-class JobLogsTest {
-
-  @Test
-  public void testGetLogDirectory() {
-    final String actual = JobLogs.getLogDirectory("blah");
-    final String expected = Path.of("logs/jobs/blah").toString();
-    assertEquals(expected, actual);
+  public boolean isWindows() {
+    return SystemUtils.IS_OS_WINDOWS;
   }
 
 }

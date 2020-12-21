@@ -234,8 +234,8 @@ class JsonsTest {
   void testToPrettyString() {
     final JsonNode jsonNode = Jsons.jsonNode(ImmutableMap.of("test", "abc"));
     final String expectedOutput = ""
-        + "{\n"
-        + "  \"test\": \"abc\"\n"
+        + "{" + System.lineSeparator()
+        + "  \"test\": \"abc\"" + System.lineSeparator()
         + "}\n";
     assertEquals(expectedOutput, Jsons.toPrettyString(jsonNode));
   }

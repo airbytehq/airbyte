@@ -1,5 +1,6 @@
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.nativeplatform.toolchain.internal.gcc.CPCHCompiler
 
 abstract class AirbyteStandardSourceTestFileConfiguration {
     String configPath
@@ -51,7 +52,7 @@ class AirbyteStandardSourceTestFilePlugin implements Plugin<Project> {
                         args.add("${targetMountDirectory}/${config.statePath}")
                     }
 
-                    commandLine args
+                    commandLine CrossPlatformSupport.formatCmd(args)
                 }
             }
 

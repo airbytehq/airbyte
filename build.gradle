@@ -1,7 +1,13 @@
+import org.apache.tools.ant.taskdefs.condition.Os
+
+import java.util.stream.Stream
+import java.util.stream.StreamSupport
+
 plugins {
     id 'base'
     id 'pmd'
     id 'com.diffplug.spotless' version '5.7.0'
+    id "com.github.jlouns.cpe" version "0.5.0"
 }
 
 repositories {
@@ -191,13 +197,9 @@ subprojects {
     }
 }
 
-task composeBuild {
-    doFirst {
-        exec {
-            workingDir rootDir
-            commandLine 'docker-compose', '-f', 'docker-compose.build.yaml', 'build', '--parallel', '--quiet'
-        }
-    }
+task composeBuild(type: CrossPlatformExec) {
+    workingDir rootDir
+    commandLine 'docker-compose', '-f', 'docker-compose.build.yaml', 'build', '--parallel', '--quiet'
 }
 build.dependsOn(composeBuild)
 
