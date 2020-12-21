@@ -11,7 +11,9 @@ import DestinationsView from "./components/DestinationsView";
 import CreateConnector from "./components/CreateConnector";
 
 const Content = styled.div`
-  margin: 4px 33px 0 27px;
+  padding-top: 4px;
+  margin: 0 33px 0 27px;
+  height: 100%;
 `;
 enum StepsTypes {
   SOURCES = "sources",
