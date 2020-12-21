@@ -57,18 +57,11 @@ public class ScheduleJobPredicate implements BiPredicate<Optional<Job>, Standard
     }
 
     final Job previousJob = previousJobOptional.get();
-    switch (previousJob.getStatus()) {
-      case CANCELLED:
-      case SUCCEEDED:
-      case FAILED:
-        return timeForJobNewJob;
-      case INCOMPLETE:
-      case PENDING:
-      case RUNNING:
-        return false;
-    }
-
-    return false;
+    return switch (previousJob.getStatus()) {
+      case CANCELLED, SUCCEEDED, FAILED -> timeForJobNewJob;
+      case INCOMPLETE, PENDING, RUNNING -> false;
+      default -> throw new IllegalArgumentException("Unrecognized status: " + previousJob.getStatus());
+    };
   }
 
   @SuppressWarnings("OptionalUsedAsFieldOrParameterType")

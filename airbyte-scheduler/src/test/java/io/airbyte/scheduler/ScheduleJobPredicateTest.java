@@ -39,6 +39,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.EnumSource.Mode;
 
 class ScheduleJobPredicateTest {
 
@@ -82,24 +83,27 @@ class ScheduleJobPredicateTest {
     assertFalse(scheduleJobPredicate.test(Optional.of(job), SCHEDULE));
   }
 
+  // use Mode.EXCLUDE so that when new values are added to the enum, these tests will fail if that value has not also been added to the switch statement.
   @ParameterizedTest
   @EnumSource(value = JobStatus.class,
-              names = {"SUCCEEDED", "CANCELLED"})
+              mode = Mode.EXCLUDE,
+              names = {"PENDING", "RUNNING", "INCOMPLETE"})
   public void testShouldScheduleBasedOnPreviousJobStatus(JobStatus status) {
     when(job.getStatus()).thenReturn(status);
     when(job.getUpdatedAtInSecond()).thenReturn(now.minus(Duration.ofDays(2)).getEpochSecond());
 
-    assertTrue(scheduleJobPredicate.test(Optional.of(job), SCHEDULE));
+    assertTrue(scheduleJobPredicate.test(Optional.of(job), SCHEDULE), "job status: " + status.toString());
   }
 
   @ParameterizedTest
   @EnumSource(value = JobStatus.class,
-              names = {"FAILED", "PENDING", "RUNNING"})
+              mode = Mode.EXCLUDE,
+              names = {"FAILED", "SUCCEEDED", "CANCELLED"})
   public void testScheduleShouldNotScheduleBasedOnPreviousJobStatus(JobStatus status) {
     when(job.getStatus()).thenReturn(status);
-    when(job.getUpdatedAtInSecond()).thenReturn(now.minus(Duration.ofDays(1)).getEpochSecond());
+    when(job.getUpdatedAtInSecond()).thenReturn(now.minus(Duration.ofDays(2)).getEpochSecond());
 
-    assertFalse(scheduleJobPredicate.test(Optional.of(job), SCHEDULE));
+    assertFalse(scheduleJobPredicate.test(Optional.of(job), SCHEDULE), "job status: " + status.toString());
   }
 
 }
