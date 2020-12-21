@@ -1,6 +1,7 @@
-import React, { useEffect } from "react";
+import React, { useContext, useEffect } from "react";
 import ChatWidget from "@papercups-io/chat-widget";
 import { Storytime } from "@papercups-io/storytime";
+import { ThemeContext } from "styled-components";
 
 type PapercupsConfig = {
   accountId: string;
@@ -24,11 +25,13 @@ const SupportChat: React.FC<IProps> = ({ papercupsConfig, customerId }) => {
     }
   }, [customerId, papercupsConfig]);
 
+  const theme = useContext(ThemeContext);
+
   return (
     <ChatWidget
       title="Welcome to Airbyte"
       subtitle="Ask us anything in the chat window below 😊"
-      primaryColor="#625eff"
+      primaryColor={theme.primaryColor}
       greeting="Hello!!!"
       newMessagePlaceholder="Start typing..."
       customer={{ external_id: customerId }}
