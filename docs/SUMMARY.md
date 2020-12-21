@@ -1,8 +1,8 @@
 # Table of contents
 
 * [Overview](../README.md)
+* [Getting Started](getting-started.md)
 * [Tutorials](tutorials/README.md)
-  * [Getting Started](tutorials/getting-started.md)
   * [Postgres Replication](tutorials/postgres-replication.md)
   * [Config & Persistence](tutorials/airbyte-config-persistence.md)
 * [Changelog](changelog.md)
