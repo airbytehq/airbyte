@@ -22,6 +22,25 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.base;
+package io.airbyte.integrations.destination;
 
-public interface SqlDestinationOperations extends BufferedWriteOperations, InsertTableOperations, TableCreationOperations {}
+import io.airbyte.protocol.models.SyncMode;
+
+/**
+ * This configuration is used by the TmpToFinalTable consumers to configure their behavior on where
+ * to apply their task and data operations
+ */
+public class DestinationCopyContext extends DestinationWriteContext {
+
+  private final String inputTableName;
+
+  DestinationCopyContext(String outputNamespaceName, String inputTableName, String outputTableName, SyncMode syncMode) {
+    super(outputNamespaceName, outputTableName, syncMode);
+    this.inputTableName = inputTableName;
+  }
+
+  public String getInputTableName() {
+    return inputTableName;
+  }
+
+}

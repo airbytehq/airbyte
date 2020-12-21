@@ -57,8 +57,8 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.SQLNamingResolvable;
-import io.airbyte.integrations.base.StandardSQLNaming;
+import io.airbyte.integrations.destination.NamingConventionTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -95,10 +95,10 @@ public class BigQueryDestination implements Destination {
       Field.of(COLUMN_DATA, StandardSQLTypeName.STRING),
       Field.of(COLUMN_EMITTED_AT, StandardSQLTypeName.TIMESTAMP));
 
-  private final SQLNamingResolvable namingResolver;
+  private final StandardNameTransformer namingResolver;
 
   public BigQueryDestination() {
-    namingResolver = new StandardSQLNaming();
+    namingResolver = new StandardNameTransformer();
   }
 
   @Override
@@ -184,7 +184,7 @@ public class BigQueryDestination implements Destination {
   }
 
   @Override
-  public SQLNamingResolvable getNamingResolver() {
+  public NamingConventionTransformer getNamingTransformer() {
     return namingResolver;
   }
 
@@ -220,9 +220,9 @@ public class BigQueryDestination implements Destination {
     // create tmp tables if not exist
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getStream().getName();
-      final String schemaName = getNamingResolver().getIdentifier(datasetId);
-      final String tableName = getNamingResolver().getRawTableName(streamName);
-      final String tmpTableName = getNamingResolver().getTmpTableName(streamName);
+      final String schemaName = getNamingTransformer().getIdentifier(datasetId);
+      final String tableName = getNamingTransformer().getRawTableName(streamName);
+      final String tmpTableName = getNamingTransformer().getTmpTableName(streamName);
       if (!schemaSet.contains(schemaName)) {
         createSchemaTable(bigquery, schemaName);
         schemaSet.add(schemaName);

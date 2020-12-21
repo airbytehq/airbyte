@@ -22,9 +22,10 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.base;
+package io.airbyte.integrations.destination;
 
 import io.airbyte.commons.text.Names;
+import io.airbyte.integrations.base.FailureTrackingConsumer;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.SyncMode;
 import java.time.Instant;

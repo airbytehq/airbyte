@@ -55,7 +55,7 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
   protected static final String COLUMN_NAME = AbstractJdbcDestination.COLUMN_NAME;
 
   public PostgresDestination() {
-    super("org.postgresql.Driver", SQLDialect.POSTGRES, new PostgresSQLNaming());
+    super("org.postgresql.Driver", SQLDialect.POSTGRES, new PostgresSQLNameTransformer());
   }
 
   @Override

@@ -22,25 +22,12 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.base;
+package io.airbyte.integrations.destination;
 
-import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.commons.lang.CloseableQueue;
 
-/**
- * This configuration is used by the TmpToFinalTable consumers to configure their behavior on where
- * to apply their task and data operations
- */
-public class DestinationCopyContext extends DestinationWriteContext {
+public interface BufferedWriteOperations {
 
-  private final String inputTableName;
-
-  DestinationCopyContext(String outputNamespaceName, String inputTableName, String outputTableName, SyncMode syncMode) {
-    super(outputNamespaceName, outputTableName, syncMode);
-    this.inputTableName = inputTableName;
-  }
-
-  public String getInputTableName() {
-    return inputTableName;
-  }
+  void insertBufferedRecords(int batchSize, CloseableQueue<byte[]> writeBuffer, String namespace, String streamName) throws Exception;
 
 }
