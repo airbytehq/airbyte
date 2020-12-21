@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.base;
+package io.airbyte.integrations.destination;
 
 /**
  * Necessary Operations to manipulate schema and table creation (or deletion) that may be required

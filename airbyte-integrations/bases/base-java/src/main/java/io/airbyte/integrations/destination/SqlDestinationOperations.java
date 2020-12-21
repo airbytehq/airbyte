@@ -22,15 +22,6 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.redshift;
+package io.airbyte.integrations.destination;
 
-import io.airbyte.integrations.base.ExtendedSQLNaming;
-
-public class RedshiftSQLNaming extends ExtendedSQLNaming {
-
-  @Override
-  protected String convertStreamName(String input) {
-    return super.convertStreamName(input).toLowerCase();
-  }
-
-}
+public interface SqlDestinationOperations extends BufferedWriteOperations, InsertTableOperations, TableCreationOperations {}

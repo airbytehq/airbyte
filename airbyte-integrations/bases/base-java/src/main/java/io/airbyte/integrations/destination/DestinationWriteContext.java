@@ -22,12 +22,46 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.base;
+package io.airbyte.integrations.destination;
 
-import io.airbyte.commons.lang.CloseableQueue;
+import io.airbyte.protocol.models.SyncMode;
 
-public interface BufferedWriteOperations {
+/**
+ * This configuration is used by the RecordConsumers to adapt their behavior at runtime such as
+ * where to apply their task and the kind of data operations
+ */
+public class DestinationWriteContext {
 
-  void insertBufferedRecords(int batchSize, CloseableQueue<byte[]> writeBuffer, String namespace, String streamName) throws Exception;
+  private final String outputNamespaceName;
+  private final String outputTableName;
+  private final SyncMode syncMode;
+  private boolean transactionMode;
+
+  DestinationWriteContext(String outputNamespaceName, String outputTableName, SyncMode syncMode) {
+    this.outputNamespaceName = outputNamespaceName;
+    this.outputTableName = outputTableName;
+    this.syncMode = syncMode;
+    this.transactionMode = true;
+  }
+
+  public String getOutputNamespaceName() {
+    return outputNamespaceName;
+  }
+
+  public String getOutputTableName() {
+    return outputTableName;
+  }
+
+  public SyncMode getSyncMode() {
+    return syncMode;
+  }
+
+  public boolean getTransactionMode() {
+    return transactionMode;
+  }
+
+  public void setTransactionMode(boolean transactionMode) {
+    this.transactionMode = transactionMode;
+  }
 
 }

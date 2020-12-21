@@ -22,8 +22,9 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.base;
+package io.airbyte.integrations.destination;
 
+import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.protocol.models.AirbyteMessage;
 import java.util.Map;
 
