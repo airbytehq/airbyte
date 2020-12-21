@@ -1,7 +1,7 @@
-import React, { useEffect } from "react";
+import React, { useContext, useEffect } from "react";
 import ChatWidget from "@papercups-io/chat-widget";
 import { Storytime } from "@papercups-io/storytime";
-import { theme } from "../../theme";
+import { ThemeContext } from "styled-components";
 
 type PapercupsConfig = {
   accountId: string;
@@ -24,6 +24,8 @@ const SupportChat: React.FC<IProps> = ({ papercupsConfig, customerId }) => {
       });
     }
   }, [customerId, papercupsConfig]);
+
+  const theme = useContext(ThemeContext);
 
   return (
     <ChatWidget
