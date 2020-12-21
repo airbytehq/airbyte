@@ -22,15 +22,15 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.postgres;
+package io.airbyte.integrations.destination.redshift;
 
-import io.airbyte.integrations.destination.ExtendedNaming;
+import io.airbyte.integrations.destination.ExtendedNameTransformer;
 
-public class PostgresSQLNaming extends ExtendedNaming {
+public class RedshiftSQLNameTransformer extends ExtendedNameTransformer {
 
   @Override
-  protected String applyDefaultCase(String input) {
-    return input.toLowerCase();
+  protected String convertStreamName(String input) {
+    return super.convertStreamName(input).toLowerCase();
   }
 
 }

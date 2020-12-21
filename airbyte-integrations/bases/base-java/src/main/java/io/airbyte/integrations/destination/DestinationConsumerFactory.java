@@ -69,7 +69,7 @@ public class DestinationConsumerFactory {
    * @throws Exception
    */
   public static DestinationConsumer<AirbyteMessage> build(SqlDestinationOperations destination,
-                                                          IdentifierNamingResolvable namingResolver,
+                                                          NamingConventionTransformer namingResolver,
                                                           JsonNode config,
                                                           ConfiguredAirbyteCatalog catalog)
       throws Exception {

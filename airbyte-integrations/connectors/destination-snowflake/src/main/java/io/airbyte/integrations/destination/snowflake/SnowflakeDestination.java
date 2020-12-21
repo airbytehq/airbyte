@@ -34,7 +34,7 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.DestinationConsumerFactory;
-import io.airbyte.integrations.destination.IdentifierNamingResolvable;
+import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.SqlDestinationOperations;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
@@ -60,10 +60,10 @@ public class SnowflakeDestination implements Destination {
 
   protected static final String COLUMN_NAME = "data";
 
-  private final IdentifierNamingResolvable namingResolver;
+  private final SnowflakeSQLNameTransformer namingResolver;
 
   public SnowflakeDestination() {
-    namingResolver = new SnowflakeSQLNaming();
+    namingResolver = new SnowflakeSQLNameTransformer();
   }
 
   @Override
@@ -84,14 +84,14 @@ public class SnowflakeDestination implements Destination {
   }
 
   @Override
-  public IdentifierNamingResolvable getNamingResolver() {
+  public NamingConventionTransformer getNamingTransformer() {
     return namingResolver;
   }
 
   @Override
   public DestinationConsumer<AirbyteMessage> write(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
     final DestinationImpl destination = new DestinationImpl(SnowflakeDatabase.getConnectionFactory(config));
-    return DestinationConsumerFactory.build(destination, getNamingResolver(), config, catalog);
+    return DestinationConsumerFactory.build(destination, getNamingTransformer(), config, catalog);
   }
 
   protected String createSchemaQuery(String schemaName) {

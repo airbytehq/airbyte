@@ -22,15 +22,30 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.snowflake;
+package io.airbyte.integrations.destination;
 
-import io.airbyte.integrations.destination.ExtendedNaming;
+import io.airbyte.commons.text.Names;
+import java.time.Instant;
 
-public class SnowflakeSQLNaming extends ExtendedNaming {
+public class StandardNameTransformer implements NamingConventionTransformer {
 
   @Override
-  protected String applyDefaultCase(String input) {
-    return input.toUpperCase();
+  public String getIdentifier(String name) {
+    return convertStreamName(name);
+  }
+
+  @Override
+  public String getRawTableName(String streamName) {
+    return convertStreamName(streamName + "_raw");
+  }
+
+  @Override
+  public String getTmpTableName(String streamName) {
+    return convertStreamName(streamName + "_" + Instant.now().toEpochMilli());
+  }
+
+  protected String convertStreamName(String input) {
+    return Names.toAlphanumericAndUnderscore(input);
   }
 
 }

@@ -35,7 +35,7 @@ import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.destination.DestinationConsumerFactory;
-import io.airbyte.integrations.destination.IdentifierNamingResolvable;
+import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.SqlDestinationOperations;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
@@ -56,9 +56,9 @@ public abstract class AbstractJdbcDestination implements Destination {
 
   private final String driverClass;
   private final SQLDialect dialect;
-  private final IdentifierNamingResolvable namingResolver;
+  private final NamingConventionTransformer namingResolver;
 
-  public AbstractJdbcDestination(final String driverClass, final SQLDialect dialect, final IdentifierNamingResolvable namingResolver) {
+  public AbstractJdbcDestination(final String driverClass, final SQLDialect dialect, final NamingConventionTransformer namingResolver) {
     this.driverClass = driverClass;
     this.dialect = dialect;
     this.namingResolver = namingResolver;
@@ -106,14 +106,14 @@ public abstract class AbstractJdbcDestination implements Destination {
   }
 
   @Override
-  public IdentifierNamingResolvable getNamingResolver() {
+  public NamingConventionTransformer getNamingTransformer() {
     return namingResolver;
   }
 
   @Override
   public DestinationConsumer<AirbyteMessage> write(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
     final DestinationImpl destination = new DestinationImpl(getDatabase(config));
-    return DestinationConsumerFactory.build(destination, getNamingResolver(), config, catalog);
+    return DestinationConsumerFactory.build(destination, getNamingTransformer(), config, catalog);
   }
 
   protected String getDefaultSchemaName(JsonNode config) {

@@ -22,15 +22,15 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.redshift;
+package io.airbyte.integrations.destination.snowflake;
 
-import io.airbyte.integrations.destination.ExtendedNaming;
+import io.airbyte.integrations.destination.ExtendedNameTransformer;
 
-public class RedshiftSQLNaming extends ExtendedNaming {
+public class SnowflakeSQLNameTransformer extends ExtendedNameTransformer {
 
   @Override
-  protected String convertStreamName(String input) {
-    return super.convertStreamName(input).toLowerCase();
+  protected String applyDefaultCase(String input) {
+    return input.toUpperCase();
   }
 
 }

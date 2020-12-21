@@ -39,9 +39,9 @@ import java.util.Map;
  */
 public class DestinationWriteContextFactory {
 
-  private final IdentifierNamingResolvable namingResolver;
+  private final NamingConventionTransformer namingResolver;
 
-  public DestinationWriteContextFactory(IdentifierNamingResolvable namingResolver) {
+  public DestinationWriteContextFactory(NamingConventionTransformer namingResolver) {
     this.namingResolver = namingResolver;
   }
 
@@ -67,7 +67,7 @@ public class DestinationWriteContextFactory {
     }
   }
 
-  public IdentifierNamingResolvable getNamingResolver() {
+  public NamingConventionTransformer getNamingResolver() {
     return namingResolver;
   }
 

@@ -32,8 +32,8 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.destination.IdentifierNamingResolvable;
-import io.airbyte.integrations.destination.StandardNaming;
+import io.airbyte.integrations.destination.NamingConventionTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -64,10 +64,10 @@ public class CsvDestination implements Destination {
   static final String COLUMN_EMITTED_AT = "emitted_at"; // we output all data as a blob to a single column.
   static final String DESTINATION_PATH_FIELD = "destination_path";
 
-  private final IdentifierNamingResolvable namingResolver;
+  private final StandardNameTransformer namingResolver;
 
   public CsvDestination() {
-    namingResolver = new StandardNaming();
+    namingResolver = new StandardNameTransformer();
   }
 
   @Override
@@ -87,7 +87,7 @@ public class CsvDestination implements Destination {
   }
 
   @Override
-  public IdentifierNamingResolvable getNamingResolver() {
+  public NamingConventionTransformer getNamingTransformer() {
     return namingResolver;
   }
 
@@ -106,8 +106,8 @@ public class CsvDestination implements Destination {
     final Map<String, WriteConfig> writeConfigs = new HashMap<>();
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getStream().getName();
-      final String tableName = getNamingResolver().getRawTableName(streamName);
-      final String tmpTableName = getNamingResolver().getTmpTableName(streamName);
+      final String tableName = getNamingTransformer().getRawTableName(streamName);
+      final String tmpTableName = getNamingTransformer().getTmpTableName(streamName);
       final Path tmpPath = destinationDir.resolve(tmpTableName + ".csv");
       final Path finalPath = destinationDir.resolve(tableName + ".csv");
       CSVFormat csvFormat = CSVFormat.DEFAULT.withHeader(COLUMN_AB_ID, COLUMN_EMITTED_AT, COLUMN_DATA);

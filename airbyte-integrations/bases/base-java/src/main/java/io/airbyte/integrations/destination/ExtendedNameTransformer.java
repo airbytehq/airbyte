@@ -24,28 +24,35 @@
 
 package io.airbyte.integrations.destination;
 
-import io.airbyte.commons.text.Names;
-import java.time.Instant;
-
-public class StandardNaming implements IdentifierNamingResolvable {
-
-  @Override
-  public String getIdentifier(String name) {
-    return convertStreamName(name);
-  }
+/**
+ * When choosing identifiers names in destinations, extended Names can handle more special characters than standard Names
+ * by using the quoting characters: "..."
+ *
+ * This class detects when such special characters are used and adds the appropriate quoting when necessary.
+ */
+public class ExtendedNameTransformer extends StandardNameTransformer {
 
   @Override
-  public String getRawTableName(String streamName) {
-    return convertStreamName(streamName + "_raw");
-  }
-
-  @Override
-  public String getTmpTableName(String streamName) {
-    return convertStreamName(streamName + "_" + Instant.now().toEpochMilli());
-  }
-
   protected String convertStreamName(String input) {
-    return Names.toAlphanumericAndUnderscore(input);
+    if (useExtendedIdentifiers(input)) {
+      return "\"" + input + "\"";
+    } else {
+      return applyDefaultCase(input);
+    }
+  }
+
+  protected String applyDefaultCase(String input) {
+    return input;
+  }
+
+  protected boolean useExtendedIdentifiers(String input) {
+    boolean result = false;
+    if (input.matches("[^\\p{Alpha}_].*")) {
+      result = true;
+    } else if (input.matches(".*[^\\p{Alnum}_].*")) {
+      result = true;
+    }
+    return result;
   }
 
 }
