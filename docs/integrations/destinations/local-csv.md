@@ -1,7 +1,7 @@
 # Local CSV
 
 {% hint style="danger" %}
-This destination is meant to be used on a local workstation and won't work on Kubertnetes
+This destination is meant to be used on a local workstation and won't work on Kubernetes
 {% endhint %}
 
 ## Overview
