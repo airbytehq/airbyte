@@ -35,7 +35,7 @@ public interface Destination extends Integration {
    * Return which Naming Conventions this destination is using in order to handle invalid characters
    * in identifiers.
    *
-   * @return SQLNamingResolvable conventions used when creating tables.
+   * @return Naming conventions used when creating tables.
    */
   NamingConventionTransformer getNamingTransformer();
 
