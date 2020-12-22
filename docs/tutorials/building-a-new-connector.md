@@ -84,7 +84,7 @@ To contact the stock ticker API, we need two things:
 1. Which stock ticker we're interested in
 2. The API key to use when contacting the API (you can obtain a free API key from [IEX Cloud](https://iexcloud.io/docs/api)'s free plan)
 
-Let's create a [JsonSchema](http://json-schema.org/) file `spec.json` encoding these two requirements: 
+Let's create a [JSONSchema](http://json-schema.org/) file `spec.json` encoding these two requirements: 
 
 ```json
 {
@@ -295,4 +295,550 @@ $ python source.py check --config secrets/invalid_config2.json
 Our connector is able to detect valid and invalid configs correctly. Two methods down, two more to go!
 
 #### Implementing Discover
-The `discover` command declares the Streams and Fields (Airbyte's equivalents of tables and columns) it outputs and the sync modes they support. At a high level 
+The `discover` command ouputs a Catalog, a struct which declares the Streams and Fields (Airbyte's equivalents of tables and columns) output by the connector and the sync modes they support. For more information on those concepts, see [Airbyte Specification](../architecture/airbyte-specification.md). For this tutorial, we'll assume familiarity with those concepts. 
+
+The data output by this connector will be structured in a very simple way. This connector outputs records belonging to exactly one Stream (table). Each record contains three Fields (columns): `date`, `price`, and `stock_ticker`, corresponding to the price of a stock on a given day.  
+
+To implement `discover`, we'll: 
+1. Add a method `discover` in `source.py` which outputs the Catalog
+2. Extend the arguments parser to use detect the `discover --config <config_path>` command and call the `discover` method. 
+
+Let's implement `discover` by adding the following in `source.py`: 
+
+```python
+def discover():
+    catalog = {
+        "streams": [{
+            "name": "stock_prices",
+            "supported_sync_modes": ["full_refresh"],
+            "json_schema": {
+                "properties": {
+                    "date": {
+                        "type": "string"
+                    },
+                    "price": {
+                        "type": "number"
+                    },
+                    "stock_ticker": {
+                        "type": "string"
+                    }
+                }
+            }
+        }]
+    }
+    airbyte_message = {"type": "CATALOG", "catalog": catalog}
+    print(json.dumps(airbyte_message))
+```
+
+Note that we describe the schema of the output stream using [JSONSchema](http://json-schema.org/). 
+
+Then we'll extend the arguments parser by adding the following blocks to the `run` method:
+
+```python
+# Accept the discover command
+discover_parser = subparsers.add_parser("discover", help="outputs a catalog describing the source's schema", parents=[parent_parser])
+required_discover_parser = discover_parser.add_argument_group("required named arguments")
+required_discover_parser.add_argument("--config", type=str, required=True, help="path to the json configuration file")
+```  
+
+and 
+
+```
+elif command == "discover": 
+    discover()
+```
+
+You may be wondering why `config` is a required input to `discover` if it's not used. This is done for consistency: the Airbyte Specification requires `--config` as an input to `discover` because many sources require it (e.g: to discover the tables available in a Postgres database, you must supply a password). So instead of guessing whether the flag is required depending on the connector, we always assume it is required, and the connector can choose whether to use it. 
+
+The full run method is now below: 
+```python
+def run(args):
+    parent_parser = argparse.ArgumentParser(add_help=False)
+    main_parser = argparse.ArgumentParser()
+    subparsers = main_parser.add_subparsers(title="commands", dest="command")
+
+    # Accept the spec command
+    subparsers.add_parser("spec", help="outputs the json configuration specification", parents=[parent_parser])
+
+    # Accept the check command
+    check_parser = subparsers.add_parser("check", help="checks the config used to connect", parents=[parent_parser])
+    required_check_parser = check_parser.add_argument_group("required named arguments")
+    required_check_parser.add_argument("--config", type=str, required=True, help="path to the json configuration file")
+
+    # Accept the discover command
+    discover_parser = subparsers.add_parser("discover", help="outputs a catalog describing the source's schema", parents=[parent_parser])
+    required_discover_parser = discover_parser.add_argument_group("required named arguments")
+    required_discover_parser.add_argument("--config", type=str, required=True, help="path to the json configuration file")
+
+    parsed_args = main_parser.parse_args(args)
+    command = parsed_args.command
+
+    if command == "spec":
+        spec()
+    elif command == "check":
+        config_file_path = parsed_args.config
+        config = read_json(config_file_path)
+        check(config)
+    elif command == "discover":
+        discover()
+    else:
+        # If we don't recognize the command log the problem and exit with an error code greater than 0 to indicate the process
+        # had a failure
+        log("Invalid command. Allowable commands: [spec]")
+        sys.exit(1)
+
+    # A zero exit code means the process successfully completed
+    sys.exit(0)
+```  
+
+Let's test our new command: 
+
+```shell script
+$ python source.py discover --config secrets/valid_config.json
+{"type": "CATALOG", "catalog": {"streams": [{"name": "stock_prices", "supported_sync_modes": ["full_refresh"], "json_schema": {"properties": {"date": {"type": "string"}, "price": {"type": "number"}, "stock_ticker": {"type": "string"}}}}]}}
+```
+
+With that, we're done implementing the `discover` command. 
+
+#### Implementing the read operation
+The above operations are all required, but a connector ultimately exists to read data! This is where the `read` command comes in. The format of the command is: 
+```shell script
+$ python source.py read --config <config_file_path> --catalog <configured_catalog.json> [--state <state_file_path>]
+```
+
+Each of these are described in the Airbyte Specification in detail, but we'll give a quick description of the two options we haven't seen so far: 
+* `--catalog` points to a Configured Catalog: a file telling the connector which streams to read and using which sync modes. While our connector is currently pretty simple (it only has 1 stream and only supports the full_refresh sync mode), the configured catalog is crucial when reading from sources which have many Streams or support many sync modes.
+* `--state` points to a state file. The state file is only relevant when some Streams are synced with the sync mode `incremental`. It is used by the connector to "bookmark" where it left off at the last sync (e.g: synced records whose `created_at` date was less than October 10th 2020). Then, when syncing a stream in incremental mode, this bookmark tells it which records to start reading (records whose `created_at` date is greater than October 10th 2020). See [the docs on Incremental Sync](../architecture/incremental.md) for more details.
+
+For our connector, the contents of those two files should be very unsurprising: the connector only supports on Stream, `stock_prices`, so we'd expect the input catalog to contain that stream configured to sync in full refresh. Since our connector doesn't support incremental sync (yet!) we'll ignore the state option for now. 
+
+To read data in our connector, we'll: 
+1. Create a configured catalog which tells our connector that we want to sync the `stock_prices` stream
+2. Implement a method `read` in `source.py`. For now we'll always read the last 7 days of a stock price's data. 
+3. Extend the arguments parser to recognize the `read` command and its arguments. 
+
+First, let's create a configured catalog `fullrefresh_configured_catalog.json` to use as test input for the read operation:
+```json
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "stock_prices",
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "json_schema": {
+          "properties": {
+            "date": {
+              "type": "string"
+            },
+            "price": {
+              "type": "number"
+            },
+            "stock_ticker": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "sync_mode": "full_refresh"
+    }
+  ]
+}
+```
+
+
+Then we'll define the `read` method in `source.py`: 
+```python
+import datetime
+
+
+def read(config, catalog):
+    # Assert required configuration was provided
+    if "api_key" not in config or "stock_ticker" not in config:
+        log("Input config must contain the properties 'api_key' and 'stock_ticker'")
+        sys.exit(1)
+
+    # Find the stock_prices stream if it is present in the input catalog
+    stock_prices_stream = None
+    for configured_stream in catalog["streams"]:
+        if configured_stream["stream"]["name"] == "stock_prices":
+            stock_prices_stream = configured_stream
+
+    if stock_prices_stream is None:
+        log("No streams selected")
+        return
+
+    # We only support full_refresh at the moment, so verify the user didn't ask for another sync mode
+    if stock_prices_stream["sync_mode"] != "full_refresh":
+        log("This connector only supports full refresh syncs! (for now)")
+        sys.exit(1)
+
+    # If we've made it this far, all the configuration is good and we can pull the last 7 days of market data
+    api_key = config["api_key"]
+    stock_ticker = config["stock_ticker"]
+    response = _call_api(f"/stock/{stock_ticker}/chart/7d", api_key)
+    if response.status_code != 200:
+        # In a real scenario we'd handle this error better :)
+        log("Failure occurred when calling IEX API")
+        sys.exit(1)
+    else:
+        # Sort the stock prices ascending by date then output them one by one as AirbyteMessages
+        prices = sorted(response.json(), key=lambda record: datetime.datetime.strptime(record["date"], '%Y-%m-%d'))
+        for price in prices:
+            data = {"date": price["date"], "stock_ticker": price["symbol"], "price": price["close"]}
+            # emitted_at is in milliseconds so we multiply by 1000
+            record = {"stream": "stock_prices", "data": data, "emitted_at": int(datetime.datetime.now().timestamp()) * 1000}
+            output_message = {"type": "RECORD", "record": record}
+            print(output_message)
+```
+ 
+After doing some input validation, the code above calls the API to obtain the last 7 days of prices for the input stock ticker, then outputs the prices in ascending order. As always, our output is formatted according to the Airbyte Specification. Let's update our args parser with the following blocks: 
+
+```python
+# Accept the read command
+read_parser = subparsers.add_parser("read", help="reads the source and outputs messages to STDOUT", parents=[parent_parser])
+read_parser.add_argument("--state", type=str, required=False, help="path to the json-encoded state file")
+required_read_parser = read_parser.add_argument_group("required named arguments")
+required_read_parser.add_argument("--config", type=str, required=True, help="path to the json configuration file")
+required_read_parser.add_argument(
+    "--catalog", type=str, required=True, help="path to the catalog used to determine which data to read"
+)
+```
+
+and: 
+```python
+elif command == "read":
+    config = read_json(parsed_args.config)
+    configured_catalog = read_json(parsed_args.catalog)
+    read(config, configured_catalog)
+```
+
+this yields the following `run` method: 
+```python
+def run(args):
+    parent_parser = argparse.ArgumentParser(add_help=False)
+    main_parser = argparse.ArgumentParser()
+    subparsers = main_parser.add_subparsers(title="commands", dest="command")
+
+    # Accept the spec command
+    subparsers.add_parser("spec", help="outputs the json configuration specification", parents=[parent_parser])
+
+    # Accept the check command
+    check_parser = subparsers.add_parser("check", help="checks the config used to connect", parents=[parent_parser])
+    required_check_parser = check_parser.add_argument_group("required named arguments")
+    required_check_parser.add_argument("--config", type=str, required=True, help="path to the json configuration file")
+
+    # Accept the discover command
+    discover_parser = subparsers.add_parser("discover", help="outputs a catalog describing the source's schema", parents=[parent_parser])
+    required_discover_parser = discover_parser.add_argument_group("required named arguments")
+    required_discover_parser.add_argument("--config", type=str, required=True, help="path to the json configuration file")
+
+    # Accept the read command
+    read_parser = subparsers.add_parser("read", help="reads the source and outputs messages to STDOUT", parents=[parent_parser])
+    read_parser.add_argument("--state", type=str, required=False, help="path to the json-encoded state file")
+    required_read_parser = read_parser.add_argument_group("required named arguments")
+    required_read_parser.add_argument("--config", type=str, required=True, help="path to the json configuration file")
+    required_read_parser.add_argument(
+        "--catalog", type=str, required=True, help="path to the catalog used to determine which data to read"
+    )
+
+    parsed_args = main_parser.parse_args(args)
+    command = parsed_args.command
+
+    if command == "spec":
+        spec()
+    elif command == "check":
+        config_file_path = parsed_args.config
+        config = read_json(config_file_path)
+        check(config)
+    elif command == "discover":
+        discover()
+    elif command == "read":
+        config = read_json(parsed_args.config)
+        configured_catalog = read_json(parsed_args.catalog)
+        read(config, configured_catalog)
+    else:
+        # If we don't recognize the command log the problem and exit with an error code greater than 0 to indicate the process
+        # had a failure
+        log("Invalid command. Allowable commands: [spec]")
+        sys.exit(1)
+
+    # A zero exit code means the process successfully completed
+    sys.exit(0)
+```
+
+Let's test out our new command: 
+```
+$ python source.py read --config secrets/valid_config.json --catalog fullrefresh_configured_catalog.json
+{'type': 'RECORD', 'record': {'stream': 'stock_prices', 'data': {'date': '2020-12-15', 'stock_ticker': 'TSLA', 'price': 633.25}, 'emitted_at': 1608626365000}}
+{'type': 'RECORD', 'record': {'stream': 'stock_prices', 'data': {'date': '2020-12-16', 'stock_ticker': 'TSLA', 'price': 622.77}, 'emitted_at': 1608626365000}}
+{'type': 'RECORD', 'record': {'stream': 'stock_prices', 'data': {'date': '2020-12-17', 'stock_ticker': 'TSLA', 'price': 655.9}, 'emitted_at': 1608626365000}}
+{'type': 'RECORD', 'record': {'stream': 'stock_prices', 'data': {'date': '2020-12-18', 'stock_ticker': 'TSLA', 'price': 695}, 'emitted_at': 1608626365000}}
+{'type': 'RECORD', 'record': {'stream': 'stock_prices', 'data': {'date': '2020-12-21', 'stock_ticker': 'TSLA', 'price': 649.86}, 'emitted_at': 1608626365000}}
+```
+
+With this method, we now have a fully functioning connector! Let's pat ourselves on the back for getting there. 
+
+For reference, the full `source.py` file now looks like this: 
+```python
+import argparse  # helps parse commandline arguments
+import json
+import sys
+import requests
+import datetime
+
+
+def read(config, catalog):
+    # Assert required configuration was provided
+    if "api_key" not in config or "stock_ticker" not in config:
+        log("Input config must contain the properties 'api_key' and 'stock_ticker'")
+        sys.exit(1)
+
+    # Find the stock_prices stream if it is present in the input catalog
+    stock_prices_stream = None
+    for configured_stream in catalog["streams"]:
+        if configured_stream["stream"]["name"] == "stock_prices":
+            stock_prices_stream = configured_stream
+
+    if stock_prices_stream is None:
+        log("No streams selected")
+        return
+
+    # We only support full_refresh at the moment, so verify the user didn't ask for another sync mode
+    if stock_prices_stream["sync_mode"] != "full_refresh":
+        log("This connector only supports full refresh syncs! (for now)")
+        sys.exit(1)
+
+    # If we've made it this far, all the configuration is good and we can pull the last 7 days of market data
+    api_key = config["api_key"]
+    stock_ticker = config["stock_ticker"]
+    response = _call_api(f"/stock/{stock_ticker}/chart/7d", api_key)
+    if response.status_code != 200:
+        # In a real scenario we'd handle this error better :)
+        log("Failure occurred when calling IEX API")
+        sys.exit(1)
+    else:
+        # Sort the stock prices ascending by date then output them one by one as AirbyteMessages
+        prices = sorted(response.json(), key=lambda record: datetime.datetime.strptime(record["date"], '%Y-%m-%d'))
+        for price in prices:
+            data = {"date": price["date"], "stock_ticker": price["symbol"], "price": price["close"]}
+            record = {"stream": "stock_prices", "data": data, "emitted_at": int(datetime.datetime.now().timestamp()) * 1000}
+            output_message = {"type": "RECORD", "record": record}
+            print(output_message)
+
+
+def read_json(filename):
+    with open(filename, "r") as f:
+        return json.loads(f.read())
+
+
+def _call_api(endpoint, token):
+    return requests.get("https://cloud.iexapis.com/v1/" + endpoint + "?token=" + token)
+
+
+def check(config):
+    # Assert required configuration was provided
+    if "api_key" not in config or "stock_ticker" not in config:
+        log("Input config must contain the properties 'api_key' and 'stock_ticker'")
+        sys.exit(1)
+    else:
+        # Validate input configuration by attempting to get the price of the input stock ticker for the previous day
+        response = _call_api(endpoint="stock/" + config["stock_ticker"] + "/previous", token=config["api_key"])
+        if response.status_code == 200:
+            result = {"status": "SUCCEEDED"}
+        elif response.status_code == 403:
+            # HTTP code 403 means authorization failed so the API key is incorrect
+            result = {"status": "FAILED", "message": "API Key is incorrect."}
+        else:
+            # Consider any other code a "generic" failure and tell the user to make sure their config is correct.
+            result = {"status": "FAILED", "message": "Input configuration is incorrect. Please verify the input stock ticker and API key."}
+
+        # Format the result of the check operation according to the Airbyte Specification
+        output_message = {"type": "connectionStatus", "connectionStatus": result}
+        print(output_message)
+
+
+def log(message):
+    log_json = {"type": "LOG", "log": message}
+    print(json.dumps(log_json))
+
+
+def discover():
+    catalog = {
+        "streams": [{
+            "name": "stock_prices",
+            "supported_sync_modes": ["full_refresh"],
+            "json_schema": {
+                "properties": {
+                    "date": {
+                        "type": "string"
+                    },
+                    "price": {
+                        "type": "number"
+                    },
+                    "stock_ticker": {
+                        "type": "string"
+                    }
+                }
+            }
+        }]
+    }
+    airbyte_message = {"type": "CATALOG", "catalog": catalog}
+    print(json.dumps(airbyte_message))
+
+
+def spec():
+    # Read the file named spec.json from the module directory as a JSON file
+    specification = read_json("spec.json")
+
+    # form an Airbyte Message containing the spec and print it to stdout
+    airbyte_message = {"type": "SPEC", "spec": specification}
+    # json.dumps converts the JSON (python dict) to a string
+    print(json.dumps(airbyte_message))
+
+
+def run(args):
+    parent_parser = argparse.ArgumentParser(add_help=False)
+    main_parser = argparse.ArgumentParser()
+    subparsers = main_parser.add_subparsers(title="commands", dest="command")
+
+    # Accept the spec command
+    subparsers.add_parser("spec", help="outputs the json configuration specification", parents=[parent_parser])
+
+    # Accept the check command
+    check_parser = subparsers.add_parser("check", help="checks the config used to connect", parents=[parent_parser])
+    required_check_parser = check_parser.add_argument_group("required named arguments")
+    required_check_parser.add_argument("--config", type=str, required=True, help="path to the json configuration file")
+
+    # Accept the discover command
+    discover_parser = subparsers.add_parser("discover", help="outputs a catalog describing the source's schema", parents=[parent_parser])
+    required_discover_parser = discover_parser.add_argument_group("required named arguments")
+    required_discover_parser.add_argument("--config", type=str, required=True, help="path to the json configuration file")
+
+    # Accept the read command
+    read_parser = subparsers.add_parser("read", help="reads the source and outputs messages to STDOUT", parents=[parent_parser])
+    read_parser.add_argument("--state", type=str, required=False, help="path to the json-encoded state file")
+    required_read_parser = read_parser.add_argument_group("required named arguments")
+    required_read_parser.add_argument("--config", type=str, required=True, help="path to the json configuration file")
+    required_read_parser.add_argument(
+        "--catalog", type=str, required=True, help="path to the catalog used to determine which data to read"
+    )
+
+    parsed_args = main_parser.parse_args(args)
+    command = parsed_args.command
+
+    if command == "spec":
+        spec()
+    elif command == "check":
+        config_file_path = parsed_args.config
+        config = read_json(config_file_path)
+        check(config)
+    elif command == "discover":
+        discover()
+    elif command == "read":
+        config = read_json(parsed_args.config)
+        configured_catalog = read_json(parsed_args.catalog)
+        read(config, configured_catalog)
+    else:
+        # If we don't recognize the command log the problem and exit with an error code greater than 0 to indicate the process
+        # had a failure
+        log("Invalid command. Allowable commands: [spec, check, discover, read]")
+        sys.exit(1)
+
+    # A zero exit code means the process successfully completed
+    sys.exit(0)
+
+
+def main():
+    arguments = sys.argv[1:]
+    run(arguments)
+
+
+if __name__ == "__main__":
+    main()
+``` 
+
+A full connector in ~170 lines of code. Not bad! We're now ready to package & test our connector then use it in the Airbyte UI.
+
+
+### 3. Package the connector in a Docker image
+Our connector is very lightweight, so the Dockerfile needed to run it is very light as well. We add the following `Dockerfile` to our module: 
+```dockerfile
+FROM python:3.7-slim
+
+# We change to a directory unique to us
+WORKDIR /airbyte/integration_code
+# Install any needed python dependencies
+RUN pip install requests
+# Copy source files
+COPY source.py .
+COPY spec.json .
+
+# When this container is invoked, append the input argemnts to `python source.py`
+ENTRYPOINT ["python", "source.py"]
+
+# Airbyte's build system uses these labels to know what to name and tag the docker images produced by this Dockerfile.
+LABEL io.airbyte.name=airbyte/source-stock-ticker-api
+LABEL io.airbyte.version=0.1.0
+```
+
+Once we save the `Dockerfile`, we can build the image by running: 
+```shell script
+$ docker build . -t airbyte/source-stock-ticker-api:dev
+```
+
+Then we can run the image using: 
+```shell script
+docker run airbyte/source-stock-ticker-api:dev
+```
+
+to run any of our commands, we'll need to mount all the inputs into the Docker container first, then refer to their _mounted_ paths when invoking the connector. For example, we'd run `check` or `read` as follows: 
+
+```shell script
+$ docker run airbyte/source-stock-ticker-api:dev spec
+{"type": "SPEC", "spec": {"documentationUrl": "https://iexcloud.io/docs/api", "connectionSpecification": {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "required": ["stock_ticker", "api_key"], "additionalProperties": false, "properties": {"stock_ticker": {"type": "string", "title": "Stock Ticker", "description": "The stock ticker to track", "examples": ["AAPL", "TSLA", "AMZN"]}, "api_key": {"type": "string", "description": "The IEX Cloud API key to use to hit the API.", "airbyte_secret": true}}}}}
+ 
+$ docker run -v $(pwd)/secrets/valid_config.json:/data/config.json airbyte/source-stock-ticker-api:dev check --config /data/config.json
+{'type': 'connectionStatus', 'connectionStatus': {'status': 'SUCCEEDED'}}
+
+$ docker run -v $(pwd)/secrets/valid_config.json:/data/config.json -v $(pwd)/fullrefresh_configured_catalog.json:/data/fullrefresh_configured_catalog.json airbyte/source-stock-ticker-api:dev read --config /data/config.json --catalog /data/fullrefresh_configured_catalog.json
+{'type': 'RECORD', 'record': {'stream': 'stock_prices', 'data': {'date': '2020-12-15', 'stock_ticker': 'TSLA', 'price': 633.25}, 'emitted_at': 1608628424000}}
+{'type': 'RECORD', 'record': {'stream': 'stock_prices', 'data': {'date': '2020-12-16', 'stock_ticker': 'TSLA', 'price': 622.77}, 'emitted_at': 1608628424000}}
+{'type': 'RECORD', 'record': {'stream': 'stock_prices', 'data': {'date': '2020-12-17', 'stock_ticker': 'TSLA', 'price': 655.9}, 'emitted_at': 1608628424000}}
+{'type': 'RECORD', 'record': {'stream': 'stock_prices', 'data': {'date': '2020-12-18', 'stock_ticker': 'TSLA', 'price': 695}, 'emitted_at': 1608628424000}}
+{'type': 'RECORD', 'record': {'stream': 'stock_prices', 'data': {'date': '2020-12-21', 'stock_ticker': 'TSLA', 'price': 649.86}, 'emitted_at': 1608628424000}}
+```
+
+and with that, we've packaged our connector in a functioning Docker image. The last requirement before calling this connector finished is to pass the [Airbyte Standard Test suite](../contributing-to-airbyte/building-new-connector/testing-connectors.md). 
+
+### 4. Test the connector
+The minimum requirement for testing our connector is to pass the Airbyte Standard Test suite. You're encouraged to add custom test cases for your connector where it makes sense to do so e.g: to test edge cases that are not covered by the standard suite. 
+
+To integrate with the standard test suite, modify the generated `build.gradle` file as follows: 
+
+```groovy
+plugins {
+    // Makes building the docker image a dependency of Gradle's "build" command. This way you could run your entire build inside a docker image
+    // via ./gradlew :airbyte-integrations:connectors:source-stock-ticker-api:build
+    id 'airbyte-docker'
+    id 'airbyte-standard-source-test-file'
+}
+
+airbyteStandardSourceTestFile {
+    // All these input paths must live inside this connector's directory (or subdirectories)
+    configPath = "secrets/valid_config.json"
+    configuredCatalogPath = "configured_catalog.json"
+    specPath = "spec.json"
+}
+
+dependencies {
+    implementation files(project(':airbyte-integrations:bases:base-standard-source-test-file').airbyteDocker.outputs)
+}
+```
+
+Then **from the Airbyte repository root**, run: 
+```
+$ ./gradlew :airbyte-integrations:connectors:source-stock-ticker-api:integrationTest
+```
+
