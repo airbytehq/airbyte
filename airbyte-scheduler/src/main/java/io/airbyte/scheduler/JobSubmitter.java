@@ -119,7 +119,8 @@ public class JobSubmitter implements Runnable {
           }
           trackCompletion(job, output.getStatus());
         })
-        .setOnException(noop -> {
+        .setOnException(e -> {
+          LOGGER.error("Exception thrown in Job Submission: ", e);
           persistence.failAttempt(job.getId(), attemptNumber);
           trackCompletion(job, io.airbyte.workers.JobStatus.FAILED);
         })
