@@ -22,6 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from .standard_source_test import SourceMicrosoftTeamsStandardTest
 
-def test_example_method():
-    assert True
+__all__ = ["SourceMicrosoftTeamsStandardTest"]

@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "report_refresh_date": {
+      "type": ["null", "string"]
+    },
+    "user_principal_name": {
+      "type": ["null", "string"]
+    },
+    "last_activity_date": {
+      "type": ["null", "string"]
+    },
+    "is_deleted": {
+      "type": ["null", "string"]
+    },
+    "deleted_date": {
+      "type": ["null", "string"]
+    },
+    "used_web": {
+      "type": ["null", "string"]
+    },
+    "used_windows_phone": {
+      "type": ["null", "string"]
+    },
+    "used_i_os": {
+      "type": ["null", "string"]
+    },
+    "used_mac": {
+      "type": ["null", "string"]
+    },
+    "used_android_phone": {
+      "type": ["null", "string"]
+    },
+    "used_windows": {
+      "type": ["null", "string"]
+    },
+    "report_period": {
+      "type": ["null", "string"]
+    }
+  }
+}
