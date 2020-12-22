@@ -14,7 +14,7 @@ Before building a new connector, review [Airbyte's data protocol specification](
 
 ### Requirements
 
-To add a new connector you need to: 
+To add a new connector you need to:
 
 1. Implement & Package your connector in an Airbyte Protocol compliant Docker image
 2. Add integration tests for your connector. At a minimum, all connectors must pass [Airbyte's standard test suite](testing-connectors.md), but you can also add your own tests. 
@@ -56,7 +56,10 @@ At a minimum, your connector must implement the standard tests described in [Tes
 
 ### 3. Integrating with Gradle
 
-Generated templates provide the following Gradle tasks: 1. `:airbyte-integrations:connectors:source-<name>:build` should run unit tests and build the integration's Docker image 2. `:airbyte-integrations:connectors:source-<name>:integrationTest` should run integration tests including Airbyte's Standard test suite.
+Generated templates provide the following Gradle tasks:
+
+1. `:airbyte-integrations:connectors:source-<name>:build` should run unit tests and build the integration's Docker image
+2. `:airbyte-integrations:connectors:source-<name>:integrationTest` should run integration tests including Airbyte's Standard test suite.
 
 ## Updating a connector
 

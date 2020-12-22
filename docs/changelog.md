@@ -8,12 +8,21 @@ This is the changelog for Airbyte core. For our connector changelog, please visi
 
 If you're interested in our progress on the Airbyte platform, please read below!
 
-## 0.8.0 - expected around 12/21/2020
+## 0.8.0 - delivered on 12/17/2020
 
-Here is what we have in mind:
-
-* **Incremental syncing v1** as append-only
-* **New sources:** Intercom, Mixpanel, Jira Cloud, Zoom, Drift, Microsoft Teams, and more
+* **Incremental - Append"**
+  * We now allow sources to replicate only new or modified data. This enables to avoid re-fetching data that you have already replicated from a source. 
+  * The delta from a sync will be _appended_ to the existing data in the data warehouse.
+  * Here are [all the details of this feature](architecture/incremental.md).
+  * It has been released for 15 connectors, including Postgres, MySQL, Intercom, Zendesk, Stripe, Twilio, Marketo, Shopify, GitHub, and all the destination connectors. We will expand it to all the connectors in the next couple of weeks.
+* **Other features:**
+  * Improve interface for writing python sources \(should make writing new python sources easier and clearer\).
+  * Add support for running Standard Source Tests with files \(making them easy to run for any language a source is written in\)
+  * Add ability to reset data for a connection.
+* **Bug fixes:**
+  * Update version of test containers we use to avoid pull issues while running tests.
+  * Fix issue where jobs were not sorted by created at in connection detail view.
+* **New sources:** Intercom, Mixpanel, Jira Cloud, Zoom, Drift, Microsoft Teams
 
 ## 0.7.0 - delivered on 12/07/2020
 

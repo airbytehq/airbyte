@@ -25,7 +25,7 @@ const Content = styled.label<{ additionLength?: number | string }>`
 
   & a {
     text-decoration: underline;
-    color: #625eff;
+    color: ${({ theme }) => theme.primaryColor};
   }
 `;
 

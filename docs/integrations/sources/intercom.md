@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Intercom source supports Full Refresh syncs. That is, every time a sync is run, Airbyte will copy all rows in the tables and columns you set up for replication into the destination in a new table.
+The Intercom source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
 This Intercom source wraps the [Singer Intercom Tap](https://github.com/singer-io/tap-intercom).
 

@@ -25,35 +25,20 @@
 package io.airbyte.integrations.source.mssql;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.spy;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.SyncMode;
 import java.sql.SQLException;
-import java.util.Set;
-import java.util.stream.Collectors;
-import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -63,25 +48,17 @@ import org.testcontainers.containers.MSSQLServerContainer;
 
 class MssqlSourceTest {
 
-  private static final String STREAM_NAME = "id_and_name";
-  private static final AirbyteCatalog CATALOG = CatalogHelpers.createAirbyteCatalog(
+  private static final String STREAM_NAME = "dbo.id_and_name";
+  private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(Lists.newArrayList(CatalogHelpers.createAirbyteStream(
       STREAM_NAME,
       Field.of("id", JsonSchemaPrimitive.NUMBER),
-      Field.of("name", JsonSchemaPrimitive.STRING));
-  private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
-  private static final Set<AirbyteMessage> MESSAGES = Sets.newHashSet(
-      new AirbyteMessage().withType(Type.RECORD)
-          .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME).withData(Jsons.jsonNode(ImmutableMap.of("id", 1, "name", "picard")))),
-      new AirbyteMessage().withType(Type.RECORD)
-          .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME).withData(Jsons.jsonNode(ImmutableMap.of("id", 2, "name", "crusher")))),
-      new AirbyteMessage().withType(Type.RECORD)
-          .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME).withData(Jsons.jsonNode(ImmutableMap.of("id", 3, "name", "vash")))));
+      Field.of("name", JsonSchemaPrimitive.STRING))
+      .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))));
 
   private JsonNode configWithoutDbName;
   private JsonNode config;
 
   private static MSSQLServerContainer<?> db;
-  private BasicDataSource connectionPool;
 
   @BeforeAll
   static void init() {
@@ -116,37 +93,6 @@ class MssqlSourceTest {
     db.close();
   }
 
-  @Test
-  void testSpec() throws Exception {
-    final ConnectorSpecification actual = new MssqlSource().spec();
-    final String resourceString = MoreResources.readResource("spec.json");
-    final ConnectorSpecification expected = Jsons.deserialize(resourceString, ConnectorSpecification.class);
-
-    assertEquals(expected, actual);
-  }
-
-  @Test
-  void testCheckSuccess() {
-    final AirbyteConnectionStatus actual = new MssqlSource().check(config);
-    final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
-    assertEquals(expected, actual);
-  }
-
-  @Test
-  void testCheckFailure() {
-    ((ObjectNode) config).put("password", "fake");
-    final AirbyteConnectionStatus actual = new MssqlSource().check(config);
-    final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.FAILED)
-        .withMessage("Can't connect with provided configuration.");
-    assertEquals(expected, actual);
-  }
-
-  @Test
-  void testDiscover() throws Exception {
-    final AirbyteCatalog actual = new MssqlSource().discover(config);
-    assertEquals(CATALOG, actual);
-  }
-
   // if a column in mssql is used as a primary key and in a separate index the discover query returns
   // the column twice. we now de-duplicate it (pr: https://github.com/airbytehq/airbyte/pull/983).
   // this tests that this de-duplication is successful.
@@ -162,31 +108,6 @@ class MssqlSourceTest {
 
     final AirbyteCatalog actual = new MssqlSource().discover(config);
     assertEquals(CATALOG, actual);
-  }
-
-  @Test
-  void testReadSuccess() throws Exception {
-    final Set<AirbyteMessage> actualMessages = new MssqlSource().read(config, CONFIGURED_CATALOG, null).collect(Collectors.toSet());
-
-    actualMessages.forEach(r -> {
-      if (r.getRecord() != null) {
-        r.getRecord().setEmittedAt(null);
-      }
-    });
-
-    assertEquals(MESSAGES, actualMessages);
-  }
-
-  @SuppressWarnings("ResultOfMethodCallIgnored")
-  @Test
-  void testReadFailure() {
-    final ConfiguredAirbyteStream spiedAbStream = spy(CONFIGURED_CATALOG.getStreams().get(0));
-    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(spiedAbStream));
-    doThrow(new IllegalStateException()).when(spiedAbStream).getStream();
-
-    final MssqlSource source = new MssqlSource();
-
-    assertThrows(IllegalStateException.class, () -> source.read(config, catalog, null));
   }
 
   private JsonNode getConfig(MSSQLServerContainer<?> db) {

@@ -1,4 +1,4 @@
-# exchangeratesapi.io
+# Exchange Rates API
 
 ## Overview
 
@@ -24,7 +24,7 @@ Currencies are `number` and the date is a `string`.
 | Feature | Supported? |
 | :--- | :--- |
 | Full Refresh Sync | Yes |
-| Incremental Sync | No |
+| Incremental - Append Sync | Yes |
 
 ### Getting started
 

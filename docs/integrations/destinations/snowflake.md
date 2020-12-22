@@ -21,7 +21,6 @@ Each stream will be output into its own table in Snowflake. Each table will cont
 | Full Refresh Sync | Yes |  |
 | Incremental - Append Sync | Yes |  |
 
-
 ## Getting started
 
 We recommend creating an Airbyte-specific warehouse, database, schema, user, and role for writing data into Snowflake so it is possible to track costs specifically related to Airbyte \(including the cost of running this warehouse\) and control permissions at a granular level. Since the Airbyte user creates, drops, and alters tables, `OWNERSHIP` permissions are required in Snowflake. If you are not following the recommended script below, please limit the `OWNERSHIP` permissions to only the necessary database and schema for the Airbyte user.

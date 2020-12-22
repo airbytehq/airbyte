@@ -59,7 +59,7 @@ public class WebBackendDestinationHandler {
         .destinationId(destination.getDestinationId());
 
     try {
-      final CheckConnectionRead checkConnectionRead = schedulerHandler.checkDestinationConnection(destinationIdRequestBody);
+      final CheckConnectionRead checkConnectionRead = schedulerHandler.checkDestinationConnectionFromDestinationId(destinationIdRequestBody);
       if (checkConnectionRead.getStatus() == SUCCEEDED) {
         return destination;
       }
@@ -86,7 +86,7 @@ public class WebBackendDestinationHandler {
 
     try {
       final CheckConnectionRead checkConnectionRead = schedulerHandler
-          .checkDestinationConnection(destinationIdRequestBody);
+          .checkDestinationConnectionFromDestinationId(destinationIdRequestBody);
       if (checkConnectionRead.getStatus() == SUCCEEDED) {
         final DestinationIdRequestBody destinationIdRequestBody1 = new DestinationIdRequestBody()
             .destinationId(destinationRecreate.getDestinationId());

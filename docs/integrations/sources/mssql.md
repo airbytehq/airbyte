@@ -4,13 +4,11 @@
 
 The MSSQL source supports Full Refresh syncs.
 
-### Sync overview
-
-#### Resulting schema
+### Resulting schema
 
 The MSSQL source does not alter the schema present in your database. Depending on the destination connected to this source, however, the schema may be altered. See the destination's documentation for more details.
 
-#### Data type mapping
+### Data type mapping
 
 MSSQL data types are mapped to the following data types when synchronizing data:
 
@@ -18,7 +16,7 @@ MSSQL data types are mapped to the following data types when synchronizing data:
 | :--- | :--- | :--- |
 | `bigint` | number |  |
 | `numeric` | number |  |
-| `bit` | number |  |
+| `bit` | boolean |  |
 | `smallint` | number |  |
 | `decimal` | number |  |
 | `int` | number |  |

@@ -1,6 +1,8 @@
 # Twilio
 
-## Sync overview
+## Overview
+
+The Twilio source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
 This source can sync data for the [Twilio API](https://www.twilio.com/docs/usage/api).
 
@@ -46,7 +48,7 @@ This Source is capable of syncing the following core Streams:
 | Feature | Supported?\(Yes/No\) | Notes |
 | :--- | :--- | :--- |
 | Full Refresh Sync | yes |  |
-| Incremental - Append Sync | Yes |
+| Incremental - Append Sync | Yes |  |
 
 ### Performance considerations
 

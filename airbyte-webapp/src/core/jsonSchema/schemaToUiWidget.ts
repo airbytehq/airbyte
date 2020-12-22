@@ -32,7 +32,8 @@ export const jsonSchemaToUiWidget = (
       fieldName: key,
       fieldKey: key,
       type: "null",
-      isRequired
+      isRequired,
+      isSecret: false
     };
   }
 
@@ -78,6 +79,7 @@ export const jsonSchemaToUiWidget = (
     fieldName: path || key,
     fieldKey: key,
     isRequired,
+    isSecret: (jsonSchema as { airbyte_secret: boolean }).airbyte_secret,
     type:
       (Array.isArray(jsonSchema.type) ? jsonSchema.type[0] : jsonSchema.type) ??
       "null"
