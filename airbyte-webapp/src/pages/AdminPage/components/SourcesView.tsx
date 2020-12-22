@@ -9,7 +9,7 @@ import ImageCell from "./ImageCell";
 import VersionCell from "./VersionCell";
 import ConnectionResource from "../../../core/resources/Connection";
 import config from "../../../config";
-import { Block, Title, FormContent, FormContentTitle } from "./PageComponents";
+import { Block, Title, FormContentTitle } from "./PageComponents";
 import SourceDefinitionResource from "../../../core/resources/SourceDefinition";
 
 const SourcesView: React.FC = () => {
@@ -76,13 +76,7 @@ const SourcesView: React.FC = () => {
             link={row.original.documentationUrl}
           />
         )
-      }
-    ],
-    []
-  );
-  const columnsCurrentSources = React.useMemo(
-    () => [
-      ...columns,
+      },
       {
         Header: (
           <FormContentTitle>
@@ -101,20 +95,7 @@ const SourcesView: React.FC = () => {
         )
       }
     ],
-    [columns, feedbackList, onUpdateVersion]
-  );
-
-  const columnsAllSources = React.useMemo(
-    () => [
-      ...columns,
-      {
-        Header: "",
-        accessor: "version",
-        collapse: true,
-        Cell: () => <FormContent />
-      }
-    ],
-    [columns]
+    [feedbackList, onUpdateVersion]
   );
 
   const usedSources = useMemo(() => {
@@ -147,7 +128,7 @@ const SourcesView: React.FC = () => {
           <Title bold>
             <FormattedMessage id="admin.manageSource" />
           </Title>
-          <Table columns={columnsCurrentSources} data={usedSources} />
+          <Table columns={columns} data={usedSources} />
         </Block>
       ) : null}
 
@@ -155,7 +136,7 @@ const SourcesView: React.FC = () => {
         <Title bold>
           <FormattedMessage id="admin.availableSource" />
         </Title>
-        <Table columns={columnsAllSources} data={sourceDefinitions} />
+        <Table columns={columns} data={sourceDefinitions} />
       </Block>
     </>
   );

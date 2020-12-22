@@ -1,10 +1,12 @@
 # Local CSV
 
+{% hint style="danger" %}
+This destination is meant to be used on a local workstation and won't work on Kubernetes
+{% endhint %}
+
 ## Overview
 
 This destination writes data to a directory on the _local_ filesystem on the host running Airbyte. By default, data is written to `/tmp/airbyte_local`. To change this location, modify the `LOCAL_ROOT` environment variable for Airbyte.
-
-NOTE: Kubernetes currently does not support the Local CSV destination. If you need this functionality, please create a Github issue.
 
 ### Sync Overview
 
@@ -18,10 +20,10 @@ Each stream will be output into its own file. Each file will contain 3 columns:
 
 #### Features
 
-| Feature | Supported |  |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental - Append Sync | Yes |  |
+| Feature | Supported |
+| :--- | :--- |
+| Full Refresh Sync | Yes |
+| Incremental - Append Sync | Yes |
 
 #### Performance considerations
 

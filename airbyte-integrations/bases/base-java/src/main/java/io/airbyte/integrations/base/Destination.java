@@ -25,6 +25,7 @@
 package io.airbyte.integrations.base;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 
@@ -34,9 +35,9 @@ public interface Destination extends Integration {
    * Return which Naming Conventions this destination is using in order to handle invalid characters
    * in identifiers.
    *
-   * @return SQLNamingResolvable conventions used when creating tables.
+   * @return Naming conventions used when creating tables.
    */
-  SQLNamingResolvable getNamingResolver();
+  NamingConventionTransformer getNamingTransformer();
 
   /**
    * Return a consumer that writes messages to the destination.
