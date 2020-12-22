@@ -8,7 +8,7 @@ plugins {
 airbyteStandardSourceTestFile {
     // All these input paths must live inside this connector's directory (or subdirectories)
     configPath = "secrets/valid_config.json"
-    configuredCatalogPath = "configured_catalog.json"
+    configuredCatalogPath = "fullrefresh_configured_catalog.json"
     specPath = "spec.json"
 }
 

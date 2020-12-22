@@ -4,7 +4,7 @@ description: Building a toy source connector to illustrate Airbyte's main concep
 
 # Build a new connector
 
-This tutorial walks you through building a very simple Airbyte source to demonstrate the following concepts in Action: 
+This tutorial walks you through building a simple Airbyte source to demonstrate the following concepts in Action: 
 * [The Airbyte Specification](../architecture/airbyte-specification.md) and the interface implemented by a source connector
 * [Packaging your connector](../contributing-to-airbyte/building-new-connector/README.md#1-implement--package-the-connector) 
 * [Testing your connector](../contributing-to-airbyte/building-new-connector/testing-connectors.md)
@@ -12,6 +12,8 @@ This tutorial walks you through building a very simple Airbyte source to demonst
 
 We intentionally don't use helper libraries provided by Airbyte so that this tutorial is self-contained. If you were building a "real" source, 
 you'll want to use the helper modules provided by Airbyte. We'll mention those at the very end. For now, let's get started.
+
+This tutorial can be done entirely on your local workstation. 
 
 ## Our connector: a stock ticker API
 Our connector will output the daily price of a stock since a given date. We'll leverage the free [IEX Cloud API](https://iexcloud.io/docs/api/) for this.
@@ -135,9 +137,9 @@ import json
 import sys
 
 
-def read_file(filename):
-    with open(filename, "r") as f:
-        return f.read()
+def read_json(filepath):
+    with open(filepath, "r") as f:
+        return json.loads(f.read())
 
 
 def log(message):
@@ -147,7 +149,8 @@ def log(message):
 
 def spec():
     # Read the file named spec.json from the module directory as a JSON file
-    specification = json.loads(read_file("spec.json"))
+    current_script_directory = os.path.dirname(os.path.realpath(__file__))
+    spec_path = os.path.join(current_script_directory, "spec.json")
 
     # form an Airbyte Message containing the spec and print it to stdout
     airbyte_message = {"type": "SPEC", "spec": specification}
@@ -239,11 +242,36 @@ def check(config):
         else:
             result = {"status": "FAILED", "message": "Input configuration is incorrect. Please verify the input stock ticker and API key."}
 
-        output_message = {"type": "connectionStatus", "connectionStatus": result}
-        print(output_message)
+        output_message = {"type": "CONNECTION_STATUS", "connectionStatus": result}
+        print(json.dumps(output_message))
 ```
 
-Lastly we'll extend the `run` method to accept the `check` command and call the `check` method: 
+Lastly we'll extend the `run` method to accept the `check` command and call the `check` method. First we'll add a helper method for reading input: 
+```python
+def get_input_file_path(path):
+    if os.path.isabs(path):
+        return path
+    else: 
+        return os.path.join(os.getcwd(), path)
+```
+In Airbyte, the contract for input files is that they will be available in the current working directory if they are not provided as an absolute path. This method helps us achieve that. 
+
+and the following blocks in the argument parser: 
+```python
+# Accept the check command
+    check_parser = subparsers.add_parser("check", help="checks the config used to connect", parents=[parent_parser])
+    required_check_parser = check_parser.add_argument_group("required named arguments")
+    required_check_parser.add_argument("--config", type=str, required=True, help="path to the json configuration file")
+```
+and
+```python
+elif command == "check":
+    config_file_path = get_input_file_path(parsed_args.config)
+    config = read_json(config_file_path)
+    check(config)
+```
+
+This results in the following `run`  method. 
 ```python
 def run(args):
     parent_parser = argparse.ArgumentParser(add_help=False)
@@ -253,28 +281,24 @@ def run(args):
     # Accept the spec command
     subparsers.add_parser("spec", help="outputs the json configuration specification", parents=[parent_parser])
 
-    # NEW CODE BEGIN
     # Accept the check command
     check_parser = subparsers.add_parser("check", help="checks the config used to connect", parents=[parent_parser])
     required_check_parser = check_parser.add_argument_group("required named arguments")
     required_check_parser.add_argument("--config", type=str, required=True, help="path to the json configuration file")
-    # NEW CODE END
  
     parsed_args = main_parser.parse_args(args)
     command = parsed_args.command
 
     if command == "spec":
         spec()
-    # NEW CODE BEGIN
     elif command == "check":
-        config_file_path = parsed_args.config
+        config_file_path = get_input_file_path(parsed_args.config)
         config = read_json(config_file_path)
         check(config)
-    # NEW CODE END
     else:
         # If we don't recognize the command log the problem and exit with an error code greater than 0 to indicate the process
         # had a failure
-        log("Invalid command. Allowable commands: [spec, discover]")
+        log("Invalid command. Allowable commands: [spec, check]")
         sys.exit(1)
 
     # A zero exit code means the process successfully completed
@@ -285,11 +309,11 @@ and that should be it. Let's test our new method method:
 
 ```shell script
 $ python source.py check --config secrets/valid_config.json
-{'type': 'connectionStatus', 'connectionStatus': {'status': 'SUCCEEDED'}}
+{'type': 'CONNECTION_STATUS', 'connectionStatus': {'status': 'SUCCEEDED'}}
 $ python source.py check --config secrets/invalid_config1.json
-{'type': 'connectionStatus', 'connectionStatus': {'status': 'FAILED', 'message': 'API Key is incorrect.'}}
+{'type': 'CONNECTION_STATUS', 'connectionStatus': {'status': 'FAILED', 'message': 'API Key is incorrect.'}}
 $ python source.py check --config secrets/invalid_config2.json
-{'type': 'connectionStatus', 'connectionStatus': {'status': 'FAILED', 'message': 'Input configuration is incorrect. Please verify the input stock ticker and API key.'}}
+{'type': 'CONNECTION_STATUS', 'connectionStatus': {'status': 'FAILED', 'message': 'Input configuration is incorrect. Please verify the input stock ticker and API key.'}}
 ```
 
 Our connector is able to detect valid and invalid configs correctly. Two methods down, two more to go!
@@ -343,7 +367,7 @@ required_discover_parser.add_argument("--config", type=str, required=True, help=
 
 and 
 
-```
+```python
 elif command == "discover": 
     discover()
 ```
@@ -376,7 +400,7 @@ def run(args):
     if command == "spec":
         spec()
     elif command == "check":
-        config_file_path = parsed_args.config
+        config_file_path = get_input_file_path(parsed_args.config)
         config = read_json(config_file_path)
         check(config)
     elif command == "discover":
@@ -384,7 +408,7 @@ def run(args):
     else:
         # If we don't recognize the command log the problem and exit with an error code greater than 0 to indicate the process
         # had a failure
-        log("Invalid command. Allowable commands: [spec]")
+        log("Invalid command. Allowable commands: [spec, check, discover]")
         sys.exit(1)
 
     # A zero exit code means the process successfully completed
@@ -490,7 +514,7 @@ def read(config, catalog):
             # emitted_at is in milliseconds so we multiply by 1000
             record = {"stream": "stock_prices", "data": data, "emitted_at": int(datetime.datetime.now().timestamp()) * 1000}
             output_message = {"type": "RECORD", "record": record}
-            print(output_message)
+            print(json.dumps(output_message))
 ```
  
 After doing some input validation, the code above calls the API to obtain the last 7 days of prices for the input stock ticker, then outputs the prices in ascending order. As always, our output is formatted according to the Airbyte Specification. Let's update our args parser with the following blocks: 
@@ -509,8 +533,8 @@ required_read_parser.add_argument(
 and: 
 ```python
 elif command == "read":
-    config = read_json(parsed_args.config)
-    configured_catalog = read_json(parsed_args.catalog)
+    config = read_json(get_input_file_path(parsed_args.config))
+    configured_catalog = read_json(get_input_file_path(parsed_args.catalog))
     read(config, configured_catalog)
 ```
 
@@ -549,19 +573,19 @@ def run(args):
     if command == "spec":
         spec()
     elif command == "check":
-        config_file_path = parsed_args.config
+        config_file_path = get_input_file_path(parsed_args.config)
         config = read_json(config_file_path)
         check(config)
     elif command == "discover":
         discover()
     elif command == "read":
-        config = read_json(parsed_args.config)
-        configured_catalog = read_json(parsed_args.catalog)
+        config = read_json(get_input_file_path(parsed_args.config))
+        configured_catalog = read_json(get_input_file_path(parsed_args.catalog))
         read(config, configured_catalog)
     else:
         # If we don't recognize the command log the problem and exit with an error code greater than 0 to indicate the process
         # had a failure
-        log("Invalid command. Allowable commands: [spec]")
+        log("Invalid command. Allowable commands: [spec, check, discover, read]")
         sys.exit(1)
 
     # A zero exit code means the process successfully completed
@@ -582,9 +606,11 @@ With this method, we now have a fully functioning connector! Let's pat ourselves
 
 For reference, the full `source.py` file now looks like this: 
 ```python
+# source.py
 import argparse  # helps parse commandline arguments
 import json
 import sys
+import os
 import requests
 import datetime
 
@@ -625,11 +651,11 @@ def read(config, catalog):
             data = {"date": price["date"], "stock_ticker": price["symbol"], "price": price["close"]}
             record = {"stream": "stock_prices", "data": data, "emitted_at": int(datetime.datetime.now().timestamp()) * 1000}
             output_message = {"type": "RECORD", "record": record}
-            print(output_message)
+            print(json.dumps(output_message))
 
 
-def read_json(filename):
-    with open(filename, "r") as f:
+def read_json(filepath):
+    with open(filepath, "r") as f:
         return json.loads(f.read())
 
 
@@ -655,8 +681,8 @@ def check(config):
             result = {"status": "FAILED", "message": "Input configuration is incorrect. Please verify the input stock ticker and API key."}
 
         # Format the result of the check operation according to the Airbyte Specification
-        output_message = {"type": "connectionStatus", "connectionStatus": result}
-        print(output_message)
+        output_message = {"type": "CONNECTION_STATUS", "connectionStatus": result}
+        print(json.dumps(output_message))
 
 
 def log(message):
@@ -688,9 +714,18 @@ def discover():
     print(json.dumps(airbyte_message))
 
 
+def get_input_file_path(path):
+    if os.path.isabs(path):
+        return path
+    else:
+        return os.path.join(os.getcwd(), path)
+
+
 def spec():
     # Read the file named spec.json from the module directory as a JSON file
-    specification = read_json("spec.json")
+    current_script_directory = os.path.dirname(os.path.realpath(__file__))
+    spec_path = os.path.join(current_script_directory, "spec.json")
+    specification = read_json(spec_path)
 
     # form an Airbyte Message containing the spec and print it to stdout
     airbyte_message = {"type": "SPEC", "spec": specification}
@@ -731,14 +766,14 @@ def run(args):
     if command == "spec":
         spec()
     elif command == "check":
-        config_file_path = parsed_args.config
+        config_file_path = get_input_file_path(parsed_args.config)
         config = read_json(config_file_path)
         check(config)
     elif command == "discover":
         discover()
     elif command == "read":
-        config = read_json(parsed_args.config)
-        configured_catalog = read_json(parsed_args.catalog)
+        config = read_json(get_input_file_path(parsed_args.config))
+        configured_catalog = read_json(get_input_file_path(parsed_args.catalog))
         read(config, configured_catalog)
     else:
         # If we don't recognize the command log the problem and exit with an error code greater than 0 to indicate the process
@@ -759,7 +794,7 @@ if __name__ == "__main__":
     main()
 ``` 
 
-A full connector in ~170 lines of code. Not bad! We're now ready to package & test our connector then use it in the Airbyte UI.
+A full connector in less than 200 lines of code. Not bad! We're now ready to package & test our connector then use it in the Airbyte UI.
 
 
 ### 3. Package the connector in a Docker image
@@ -800,7 +835,7 @@ $ docker run airbyte/source-stock-ticker-api:dev spec
 {"type": "SPEC", "spec": {"documentationUrl": "https://iexcloud.io/docs/api", "connectionSpecification": {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "required": ["stock_ticker", "api_key"], "additionalProperties": false, "properties": {"stock_ticker": {"type": "string", "title": "Stock Ticker", "description": "The stock ticker to track", "examples": ["AAPL", "TSLA", "AMZN"]}, "api_key": {"type": "string", "description": "The IEX Cloud API key to use to hit the API.", "airbyte_secret": true}}}}}
  
 $ docker run -v $(pwd)/secrets/valid_config.json:/data/config.json airbyte/source-stock-ticker-api:dev check --config /data/config.json
-{'type': 'connectionStatus', 'connectionStatus': {'status': 'SUCCEEDED'}}
+{'type': 'CONNECTION_STATUS', 'connectionStatus': {'status': 'SUCCEEDED'}}
 
 $ docker run -v $(pwd)/secrets/valid_config.json:/data/config.json -v $(pwd)/fullrefresh_configured_catalog.json:/data/fullrefresh_configured_catalog.json airbyte/source-stock-ticker-api:dev read --config /data/config.json --catalog /data/fullrefresh_configured_catalog.json
 {'type': 'RECORD', 'record': {'stream': 'stock_prices', 'data': {'date': '2020-12-15', 'stock_ticker': 'TSLA', 'price': 633.25}, 'emitted_at': 1608628424000}}
@@ -813,7 +848,7 @@ $ docker run -v $(pwd)/secrets/valid_config.json:/data/config.json -v $(pwd)/ful
 and with that, we've packaged our connector in a functioning Docker image. The last requirement before calling this connector finished is to pass the [Airbyte Standard Test suite](../contributing-to-airbyte/building-new-connector/testing-connectors.md). 
 
 ### 4. Test the connector
-The minimum requirement for testing our connector is to pass the Airbyte Standard Test suite. You're encouraged to add custom test cases for your connector where it makes sense to do so e.g: to test edge cases that are not covered by the standard suite. 
+The minimum requirement for testing our connector is to pass the Airbyte Standard Test suite. You're encouraged to add custom test cases for your connector where it makes sense to do so e.g: to test edge cases that are not covered by the standard suite. But at the very least, you must pass 
 
 To integrate with the standard test suite, modify the generated `build.gradle` file as follows: 
 
@@ -828,8 +863,8 @@ plugins {
 airbyteStandardSourceTestFile {
     // All these input paths must live inside this connector's directory (or subdirectories)
     configPath = "secrets/valid_config.json"
-    configuredCatalogPath = "configured_catalog.json"
-    specPath = "spec.json"
+    configuredCatalogPath = "fullrefresh_configured_catalog.json"
+    specPath = "spec.json"p
 }
 
 dependencies {
@@ -842,3 +877,124 @@ Then **from the Airbyte repository root**, run:
 $ ./gradlew :airbyte-integrations:connectors:source-stock-ticker-api:integrationTest
 ```
 
+After tests have run, you should see a test summary like: 
+
+```shell script
+Test run finished after 5049 ms
+[         2 containers found      ]
+[         0 containers skipped    ]
+[         2 containers started    ]
+[         0 containers aborted    ]
+[         2 containers successful ]
+[         0 containers failed     ]
+[         7 tests found           ]
+[         0 tests skipped         ]
+[         7 tests started         ]
+[         0 tests aborted         ]
+[         7 tests successful      ]
+[         0 tests failed          ]
+```
+
+That's it! We've created a fully functioning connector. Now let's get to the exciting part: using it from the Airbyte UI. 
+
+### Use the connector in the Airbyte UI
+Let's recap what we've achieved so far: 
+1. Implemented a connector
+2. Packaged it in a Docker image
+3. Integrated it with the Airbyte Standard Test suite
+
+To use it from the Airbyte UI, we need to: 
+1. Publish our connector's Docker image somewhere accessible by Airbyte Core (Airbyte's server, scheduler, workers, and webapp infrastructure).  
+2. Add the connector via the Airbyte UI and setup a connection from our new connector to a local CSV file for illustration purposes
+3. Run a sync and inspect the output
+
+#### 1. Publish the Docker image 
+Since we're running this tutorial locally, Airbyte will have access to any Docker images available to your local `docker` daemon. So all we need to do is build & tag our connector. If you want your connector to be available to everyone using Airbyte, you'll need to publish it to Dockerhub. [Open a PR](github.com/airbytehq/airbyte) or visit our [Slack](slack.airbyte.io) for help with this. 
+
+Airbyte's build system builds and tags your connector's image correctly by default as part of the connector's standard `build` process. **From the Airbyte repo root**, run: 
+```shell script
+$ ./gradlew :airbyte-integrations:connectors:source-stock-ticker-api:build
+```
+This is the equivalent of running `docker build . -t airbyte/source-stock-ticker-api:dev` from the connector root, where the tag `airbyte/source-stock-ticker-api` is extracted from the label `LABEL io.airbyte.name` inside your `Dockerfile`. 
+
+Verify the image was built by running: 
+```shell script
+$  docker images | head
+  REPOSITORY                                                    TAG                 IMAGE ID       CREATED          SIZE
+  airbyte/source-stock-ticker-api                               dev                 9494ea93b7d0   16 seconds ago   121MB
+  <none>                                                        <none>              8fe5b49f9ae5   3 hours ago      121MB
+  <none>                                                        <none>              4cb00a551b3c   3 hours ago      121MB
+  <none>                                                        <none>              1caf57c72afd   3 hours ago      121MB
+```
+
+`airbyte/source-stock-ticker-api` was built and tagged with the `dev` tag. Now let's head to the last step. 
+
+#### 2. Add the connector via the Airbyte UI
+If the Airbyte server isn't already running, start it by running **from the Airbyte repository root**:
+```shell script
+$ docker-compose up
+```
+Then visiting `locahost:8000` in your browser once Airbyte has started up (it can take 10-20 seconds for the server to start). 
+
+In the UI, click the "Admin" button in the left side bar: 
+
+![](../.gitbook/assets/newsourcetutorial_sidebar_admin.png)
+
+Then on the admin page, click "New Connector": 
+
+![](../.gitbook/assets/newsourcetutorial_admin_page.png)
+
+On the modal that pops up, enter the following information then click "Add"
+![](../.gitbook/assets/newsourcetutorial_new_connector_modal.png)
+
+Now from the "Sources" page (if not redirected, click "Sources" on the left panel) , click the "New source" button. You'll be taken to the detail page for adding a new source. Choose the "Stock Ticker API" source and add the following information, then click "Set up source": 
+![](../.gitbook/assets/newsourcetutorial_source_config.png)
+
+on the following page, click the "add destination" button then "add new destination": 
+![](../.gitbook/assets/newsourcetutorial_add_destination.png)
+ 
+Configure a local CSV destination as follows: 
+![](../.gitbook/assets/newsourcetutorial_destination_config.png)
+Note that we setup the output directory to `/local/tutorial_csv_test`. When we run syncs, we'll find the output on our local filesystem in `/tmp/airbyte_local/tutorial_csv_test`. 
+
+Finally, setup the connection configuration: 
+![](../.gitbook/assets/newsourcetutorial_schema_select.png)
+
+We'll choose the "manual" frequency, meaning we need to launch each sync by hand.
+
+We've setup our connection! Now let's move data.  
+#### 3. Run a sync from the UI
+To launch the sync, click the "sync now" button: 
+
+![](../.gitbook/assets/newsourcetutorial_launchsync.png)
+
+If you click on the connector row, you should be taken to the sync detail page. After a few seconds (refresh the page if the status doesn't change to "succeeded" in a few seconds), the status of the sync should change to `succeeded` as below: 
+
+![](../.gitbook/assets/newsourcetutorial_syncdetail.png)
+
+Let's verify the output. From your shell, run: 
+
+
+```shell script
+$ cat /tmp/airbyte_local/tutorial_csv_test/stock_prices_raw.csv
+ab_id,emitted_at,data
+5387a713-50ed-44ec-b5f4-3dc37a125bc6,1608675308000,"{""date"":""2020-12-15"",""stock_ticker"":""TSLA"",""price"":633.25}"
+185acb31-c655-4ec1-a76d-de6032c70aad,1608675308000,"{""date"":""2020-12-16"",""stock_ticker"":""TSLA"",""price"":622.77}"
+820b727e-7e61-4a16-be0d-b74bb6398386,1608675308000,"{""date"":""2020-12-17"",""stock_ticker"":""TSLA"",""price"":655.9}"
+f6722922-8efe-4580-987e-aedbaeed5062,1608675308000,"{""date"":""2020-12-18"",""stock_ticker"":""TSLA"",""price"":695}"
+91c00dbe-0fac-4499-8de0-4314a09ac339,1608675308000,"{""date"":""2020-12-21"",""stock_ticker"":""TSLA"",""price"":649.86}"
+```
+
+Congratulations! We've successfully written a fully functioning Airbyte connector. You're an Airbyte contributor now ;) 
+
+The sections below contain optional information on how to extend the functionality of the connector. Read on for more information. 
+
+## Optional additions  
+This section is not yet complete and will be completed in a couple of days. Please reach out to us on [Slack](slack.airbyte.io) or [Github](github.com/airbytehq/airbyte) if you need the information promised by these sections immediately.  
+
+### Incremental sync
+
+### Contributing the connector
+
+### Language specific helpers
+#### Python

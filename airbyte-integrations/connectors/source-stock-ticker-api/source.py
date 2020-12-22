@@ -43,11 +43,11 @@ def read(config, catalog):
             data = {"date": price["date"], "stock_ticker": price["symbol"], "price": price["close"]}
             record = {"stream": "stock_prices", "data": data, "emitted_at": int(datetime.datetime.now().timestamp()) * 1000}
             output_message = {"type": "RECORD", "record": record}
-            print(output_message)
+            print(json.dumps(output_message))
 
 
-def read_json(filename):
-    with open(filename, "r") as f:
+def read_json(filepath):
+    with open(filepath, "r") as f:
         return json.loads(f.read())
 
 
@@ -73,8 +73,8 @@ def check(config):
             result = {"status": "FAILED", "message": "Input configuration is incorrect. Please verify the input stock ticker and API key."}
 
         # Format the result of the check operation according to the Airbyte Specification
-        output_message = {"type": "connectionStatus", "connectionStatus": result}
-        print(output_message)
+        output_message = {"type": "CONNECTION_STATUS", "connectionStatus": result}
+        print(json.dumps(output_message))
 
 
 def log(message):
@@ -106,9 +106,18 @@ def discover():
     print(json.dumps(airbyte_message))
 
 
+def get_input_file_path(path):
+    if os.path.isabs(path):
+        return path
+    else:
+        return os.path.join(os.getcwd(), path)
+
+
 def spec():
     # Read the file named spec.json from the module directory as a JSON file
-    specification = read_json("spec.json")
+    current_script_directory = os.path.dirname(os.path.realpath(__file__))
+    spec_path = os.path.join(current_script_directory, "spec.json")
+    specification = read_json(spec_path)
 
     # form an Airbyte Message containing the spec and print it to stdout
     airbyte_message = {"type": "SPEC", "spec": specification}
@@ -149,14 +158,14 @@ def run(args):
     if command == "spec":
         spec()
     elif command == "check":
-        config_file_path = parsed_args.config
+        config_file_path = get_input_file_path(parsed_args.config)
         config = read_json(config_file_path)
         check(config)
     elif command == "discover":
         discover()
     elif command == "read":
-        config = read_json(parsed_args.config)
-        configured_catalog = read_json(parsed_args.catalog)
+        config = read_json(get_input_file_path(parsed_args.config))
+        configured_catalog = read_json(get_input_file_path(parsed_args.catalog))
         read(config, configured_catalog)
     else:
         # If we don't recognize the command log the problem and exit with an error code greater than 0 to indicate the process
