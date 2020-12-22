@@ -126,12 +126,88 @@ source.py
 spec.json
 ```
 
-Now, let's edit `source.py` to detect if the program was invoked with the `spec` argument and if so, output the connector specification 
+Now, let's edit `source.py` to detect if the program was invoked with the `spec` argument and if so, output the connector specification. 
 
 ```python
 # source.py
-import argparse # import a library to help us parse arguments 
+import argparse  # helps parse commandline arguments
+import json
+import sys
 
 
+def read_file(filename):
+    with open(filename, "r") as f:
+        return f.read()
+
+
+def log(message):
+    log_json = {"type": "LOG", "log": message}
+    print(json.dumps(log_json))
+
+
+def spec():
+    # Read the file named spec.json from the module directory as a JSON file
+    specification = json.loads(read_file("spec.json"))
+
+    # form an Airbyte Message containing the spec and print it to stdout
+    airbyte_message = {"type": "SPEC", "spec": specification}
+    # json.dumps converts the JSON (python dict) to a string
+    print(json.dumps(airbyte_message))
+
+
+def run(args):
+    parent_parser = argparse.ArgumentParser(add_help=False)
+    main_parser = argparse.ArgumentParser()
+    subparsers = main_parser.add_subparsers(title="commands", dest="command")
+
+    subparsers.add_parser("spec", help="outputs the json configuration specification", parents=[parent_parser])
+
+    parsed_args = main_parser.parse_args(args)
+    command = parsed_args.command
+
+    if command == "spec":
+        spec()
+    # If we don't recognize the command log the problem and exit with an error code greater than 0 to indicate the process
+    # had a failure
+    else:
+        log("Invalid command. Allowable commands: [spec]") 
+        sys.exit(1)
+
+    # A zero exit code means the process successfully completed    
+    sys.exit(0)
+
+
+def main():
+    arguments = sys.argv[1:]
+    run(arguments)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+Some notes on the above code: 
+1. Airbyte connectors are CLIs which communicate via stdout, so the output of the command is simply a JSON string formatted according to the Airbyte Specification. So to "return" a value we use `print` to output the return value to stdout.  
+2. All Airbyte commands can output log messages that take the form `{"type":"LOG", "log":"message"}`, so we create a helper method `log(message)` to allow logging.  
+
+Now if we run `python source.py spec` we should see the specification printed out: 
+
+```
+$ python source.py spec
+{"type": "SPEC", "spec": {"documentationUrl": "https://iexcloud.io/docs/api", "connectionSpecification": {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "required": ["stock_ticker", "api_key"], "additionalProperties": false, "properties": {"stock_ticker": {"type": "string", "title": "Stock Ticker", "description": "The stock ticker to track", "examples": ["AAPL", "TSLA", "AMZN"]}, "api_key": {"type": "string", "description": "The IEX Cloud API key to use to hit the API.", "airbyte_secret": true}}}}}
+```
+
+We've implemented the first command! Three more and we'll have a working connector. 
+
+#### Implementing check connection
+The second command to implement is `check --config <config_name>`, which tell the user whether a config file they gave us is correct. In our case, "correct" means they input a valid stock ticker and a correct API key like we declare via the `spec` operation. 
+
+To achieve this, we'll do two things: 
+1. Add a `check` method which calls the IEX Cloud API to verify if the provided token & stock ticker are correct
+2. Extend the argument parser to recognize the `check --config <config>` command and call the `check` method when the `check` command is invoked
+
+The below snippet includes the edited versions of the code: 
+
+```python
 
 ```
