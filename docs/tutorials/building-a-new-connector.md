@@ -160,6 +160,7 @@ def run(args):
     main_parser = argparse.ArgumentParser()
     subparsers = main_parser.add_subparsers(title="commands", dest="command")
 
+    # Accept the spec command
     subparsers.add_parser("spec", help="outputs the json configuration specification", parents=[parent_parser])
 
     parsed_args = main_parser.parse_args(args)
@@ -202,12 +203,96 @@ We've implemented the first command! Three more and we'll have a working connect
 #### Implementing check connection
 The second command to implement is `check --config <config_name>`, which tell the user whether a config file they gave us is correct. In our case, "correct" means they input a valid stock ticker and a correct API key like we declare via the `spec` operation. 
 
-To achieve this, we'll do two things: 
-1. Add a `check` method which calls the IEX Cloud API to verify if the provided token & stock ticker are correct
-2. Extend the argument parser to recognize the `check --config <config>` command and call the `check` method when the `check` command is invoked
+To achieve this, we'll: 
+1. Create valid and invalid configuration files to test the success and failure cases with our connector. We'll place config files in the `secrets/` directory which is gitignored everywhere in the Airbyte monorepo by default to avoid accidentally checking in API keys. 
+2. Add a `check` method which calls the IEX Cloud API to verify if the provided token & stock ticker are correct and output the correct airbyte message 
+3. Extend the argument parser to recognize the `check --config <config>` command and call the `check` method when the `check` command is invoked
 
-The below snippet includes the edited versions of the code: 
-
-```python
-
+Let's first add the configuration files: 
+```shell script
+$ mkdir secrets
+$ echo '{"api_key": "<put_your_key_here>", "stock_ticker": "TSLA"}' > secrets/valid_config.json
+$ echo '{"api_key": "not_a_real_key", "stock_ticker": "TSLA"}' > secrets/invalid_config1.json
+$ echo '{"api_key": "<put_your_key_here>", "stock_ticker": "not_a_real_ticker"}' > secrets/invalid_config2.json
 ```
+Make sure to add your actual API key instead of the placeholder value `<put_your_key_here>` when following the tutorial. 
+
+Then we'll add the `check_method`:
+```python
+def _call_api(endpoint, token):
+    return requests.get("https://cloud.iexapis.com/v1/" + endpoint + "?token=" + token)
+
+
+def check(config):
+    # Assert required configuration was provided
+    if "api_key" not in config or "stock_ticker" not in config:
+        log("Input config must contain the properties 'api_key' and 'stock_ticker'")
+        sys.exit(1)
+    else:
+        # Validate input configuration by attempting to get the price of the input stock ticker for the previous day
+        response = _call_api(endpoint="stock/" + config["stock_ticker"] + "/previous", token=config["api_key"])
+        if response.status_code == 200:
+            result = {"status": "SUCCEEDED"}
+        elif response.status_code == 403:
+            # HTTP code 403 means authorization failed so the API key is incorrect
+            result = {"status": "FAILED", "message": "API Key is incorrect."}
+        else:
+            result = {"status": "FAILED", "message": "Input configuration is incorrect. Please verify the input stock ticker and API key."}
+
+        output_message = {"type": "connectionStatus", "connectionStatus": result}
+        print(output_message)
+```
+
+Lastly we'll extend the `run` method to accept the `check` command and call the `check` method: 
+```python
+def run(args):
+    parent_parser = argparse.ArgumentParser(add_help=False)
+    main_parser = argparse.ArgumentParser()
+    subparsers = main_parser.add_subparsers(title="commands", dest="command")
+
+    # Accept the spec command
+    subparsers.add_parser("spec", help="outputs the json configuration specification", parents=[parent_parser])
+
+    # NEW CODE BEGIN
+    # Accept the check command
+    check_parser = subparsers.add_parser("check", help="checks the config used to connect", parents=[parent_parser])
+    required_check_parser = check_parser.add_argument_group("required named arguments")
+    required_check_parser.add_argument("--config", type=str, required=True, help="path to the json configuration file")
+    # NEW CODE END
+ 
+    parsed_args = main_parser.parse_args(args)
+    command = parsed_args.command
+
+    if command == "spec":
+        spec()
+    # NEW CODE BEGIN
+    elif command == "check":
+        config_file_path = parsed_args.config
+        config = read_json(config_file_path)
+        check(config)
+    # NEW CODE END
+    else:
+        # If we don't recognize the command log the problem and exit with an error code greater than 0 to indicate the process
+        # had a failure
+        log("Invalid command. Allowable commands: [spec, discover]")
+        sys.exit(1)
+
+    # A zero exit code means the process successfully completed
+    sys.exit(0)
+```
+
+and that should be it. Let's test our new method method: 
+
+```shell script
+$ python source.py check --config secrets/valid_config.json
+{'type': 'connectionStatus', 'connectionStatus': {'status': 'SUCCEEDED'}}
+$ python source.py check --config secrets/invalid_config1.json
+{'type': 'connectionStatus', 'connectionStatus': {'status': 'FAILED', 'message': 'API Key is incorrect.'}}
+$ python source.py check --config secrets/invalid_config2.json
+{'type': 'connectionStatus', 'connectionStatus': {'status': 'FAILED', 'message': 'Input configuration is incorrect. Please verify the input stock ticker and API key.'}}
+```
+
+Our connector is able to detect valid and invalid configs correctly. Two methods down, two more to go!
+
+#### Implementing Discover
+The `discover` command declares the Streams and Fields (Airbyte's equivalents of tables and columns) it outputs and the sync modes they support. At a high level 
