@@ -95,7 +95,7 @@ public class CsvDestination implements Destination {
    * @param config - csv destination config.
    * @param catalog - schema of the incoming messages.
    * @return - a consumer to handle writing records to the filesystem.
-   * @throws IOException - exception throw in manipulating the filesytem.
+   * @throws IOException - exception throw in manipulating the filesystem.
    */
   @Override
   public DestinationConsumer<AirbyteMessage> write(JsonNode config, ConfiguredAirbyteCatalog catalog) throws IOException {

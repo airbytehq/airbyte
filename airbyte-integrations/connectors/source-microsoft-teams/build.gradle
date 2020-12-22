@@ -1,0 +1,13 @@
+plugins {
+    id 'airbyte-python'
+    id 'airbyte-docker'
+    id 'airbyte-source-test'
+}
+
+airbytePython {
+    moduleDirectory 'source_microsoft_teams'
+}
+
+dependencies {
+    implementation files(project(':airbyte-integrations:bases:base-python').airbyteDocker.outputs)
+}

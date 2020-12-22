@@ -5,7 +5,7 @@ plugins {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.destination.{{snakeCase name}}.{{properCase name}}Destination'
+    mainClass = 'io.airbyte.integrations.destination.local_json.LocalJsonDestination'
 }
 
 dependencies {

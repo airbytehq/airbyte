@@ -1,5 +1,5 @@
 - sourceDefinitionId: 9fed261d-d107-47fd-8c8b-323023db6e20
-  name: exchangeratesapi.io
+  name: Exchange Rates Api
   dockerRepository: airbyte/source-exchangeratesapi-singer
   dockerImageTag: 0.1.8
   documentationUrl: https://hub.docker.com/r/airbyte/integration-singer-exchangeratesapi_io-source
@@ -148,6 +148,11 @@
   dockerRepository: airbyte/source-zoom-singer
   dockerImageTag: 0.1.0
   documentationUrl: https://hub.docker.com/r/airbyte/source-zoom-singer
+- sourceDefinitionId: eaf50f04-21dd-4620-913b-2a83f5635227
+  name: Microsoft teams
+  dockerRepository: airbyte/source-microsoft-teams
+  dockerImageTag: 0.1.0
+  documentationUrl: https://hub.docker.com/r/airbyte/source-microsoft-teams
 - sourceDefinitionId: 445831eb-78db-4b1f-8f1f-0d96ad8739e2
   name: Drift
   dockerRepository: airbyte/source-drift

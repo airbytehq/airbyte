@@ -1,14 +1,10 @@
----
-description: Start syncing data in minutes with Airbyte
----
-
 # Getting Started
 
-Let's see how you can spin up a local instance of Airbyte and syncing data from one Postgres database to another.
+## Goal
 
-Here's a 6-minute video showing you how you can do it.
+During this getting started tutorial, we are going to replicate currencies closing price into a JSON file.
 
-{% embed url="https://www.youtube.com/watch?v=Rcpt5SVsMpk" caption="" %}
+## Start Airbyte
 
 First of all, make sure you have Docker and Docker Compose installed. Then run the following commands:
 
@@ -20,87 +16,78 @@ docker-compose up
 
 Once you see an Airbyte banner, the UI is ready to go at [http://localhost:8000/](http://localhost:8000/).
 
-## 1. Set up your preferences
+## Set up your preferences
 
 You should see an onboarding page. Enter your email if you want updates about Airbyte and continue.
 
 ![](../.gitbook/assets/airbyte_get-started.png)
 
-## 2. Set up your first connection
+## Set up your first connection
 
-Now you will see a wizard that allows you choose the data you want to send through Airbyte.
+### Create a source
 
-![](../.gitbook/assets/02_set-up-sources.png)
+The source we are creating will pull data from an external API. It will replicate the closing price of currencies compared to USD since the specified start date.
 
-As of our alpha launch, we have one database source \(Postgres\) and two API sources \(an exchange rate API and the Stripe API\). We're currently building an integration framework that makes it easy to create sources and destinations, so you should expect many more soon. Please reach out to us if you need a specific connector or would like to help build one.
+To set it up, just follow the instructions on the screenshot below.
 
-For now, we will start out with a Postgres source and destination.
+{% hint style="info" %}
+You might have to wait ~30 seconds before the fields show up because it is the first time you're using Airbyte.
+{% endhint %}
 
-### In the case you don't have a readily available database to sync
+![](../.gitbook/assets/demo_source.png)
 
-Before we configure anything in the UI, we need databases and data. Run the following commands in a new terminal window to start backgrounded source and destination databases:
+### Create a destination
 
-```text
-docker run --rm --name airbyte-source -e POSTGRES_PASSWORD=password -p 2000:5432 -d postgres
-docker run --rm --name airbyte-destination -e POSTGRES_PASSWORD=password -p 3000:5432 -d postgres
+The destination we are creating is a simple JSON line file, meaning that it will contain one JSON object per line. Each objects will represent data extracted from the source. The resulting files will be located in `/tmp/json_data`
+
+To set it up, just follow the instructions on the screenshot below.
+
+{% hint style="info" %}
+You might have to wait ~30 seconds before the fields show up because it is the first time you're using Airbyte.
+{% endhint %}
+
+![](../.gitbook/assets/demo_destination.png)
+
+### Create connection
+
+When we create the connection, we can select which data stream we want to replicate. We can also select if we want an incremental replication. The replication will run at the specified sync frequency.
+
+To set it up, just follow the instructions on the screenshot below.
+
+![](../.gitbook/assets/demo_connection.png)
+
+## Check the logs of your first sync
+
+After you've completed the onboarding, you will be redirected to the source list and will see the source you just added. Click on it to find more information about it. You will now see all the destinations connected to that source. Click on it and you will see the sync history. 
+
+From there, you can look at the logs, download them, force a sync and adjust the configuration of your connection.
+
+![](../.gitbook/assets/demo_history.png)
+
+## Check the data of your first sync
+
+Now let's verify that this worked:
+
+```bash
+cat /tmp/airbyte_local/test_json/exchange_rate_raw.jsonl
 ```
 
-Add a table with a few rows to the source database:
+You should see one line for each day that was replicated.
 
-```text
-docker exec -it airbyte-source psql -U postgres -c "CREATE TABLE users(id SERIAL PRIMARY KEY, col1 VARCHAR(200));"
-docker exec -it airbyte-source psql -U postgres -c "INSERT INTO public.users(col1) VALUES('record1');"
-docker exec -it airbyte-source psql -U postgres -c "INSERT INTO public.users(col1) VALUES('record2');"
-docker exec -it airbyte-source psql -U postgres -c "INSERT INTO public.users(col1) VALUES('record3');"
+If you have [`jq`](https://stedolan.github.io/jq/)  installed, let's look at the evolution of `EUR`.
+
+```bash
+cat /tmp/airbyte_local/test_json/exchange_rate_raw.jsonl | 
+jq -c '.data | {date: .date, EUR: .EUR }'
 ```
 
-Return to the UI and configure a source Postgres database. Use the name `airbyte-source` for the name and `Postgres`as the type. Fill in the configuration fields as follows:
+And there you have it. You've pulled data from an API directly into a file and all of the actual configuration for this replication only took place in the UI.
 
-```text
-Host: localhost
-Port: 2000
-User: postgres
-Password: password
-DB Name: postgres
-```
+## That's it! 
 
-Click on `Set Up Source` and the wizard should move on to allow you to configure a destination. We currently support BigQuery, Postgres, and file output for debugging, but Redshift, Snowflake, and other destinations are coming soon. For now, configure the destination Postgres database:
+This is just the beginning of using Airbyte. We support a large collection of sources and destination. You can even contribute your own.
 
-```text
-Host: localhost
-Port: 3000
-User: postgres
-Password: password
-DB Name: postgres
-```
-
-After adding the destination, you can choose what tables and columns you want to sync.
-
-![](../.gitbook/assets/03_set-up-connection.png)
-
-For this demo, we recommend leaving the defaults and selecting "Every 5 Minutes" as the frequency. Click `Set Up Connection` to finish setting up the sync.
-
-## 3. Check the logs of your first sync
-
-You should now see a list of sources with the source you just added. Click on it to find more information about your connection. This is the page where you can update any settings about this source and how it syncs. There should be a `Completed` job under the history section. If you click on that run, it will show logs from that run.
-
-![](../.gitbook/assets/04_source-details.png)
-
-One of biggest problems we've seen in tools like Fivetran is the lack of visibility when debugging. In Airbyte, allowing full log access and the ability to debug and fix connector problems is one of our highest priorities. We'll be working hard to make these logs accessible and understandable.
-
-## 4. Check if the syncing actually worked
-
-Now let's verify that this worked. Let's output the contents of the destination db:
-
-```text
-docker exec airbyte-destination psql -U postgres -c "SELECT * FROM public.users;"
-```
-
-You should see the rows from the source database inside the destination database!
-
-And there you have it. You've taken data from one database and replicated it to another. All of the actual configuration for this replication only took place in the UI.
-
-That's it! This is just the beginning of Airbyte. If you have any questions at all, please reach out to us on [Slack](https://slack.airbyte.io/). We’re still in alpha, so if you see any rough edges or want to request a connector you need, please create an issue on our [Github](https://github.com/airbytehq/airbyte) or leave a thumbs up on an existing issue.
+If you have any questions at all, please reach out to us on [Slack](https://slack.airbyte.io/). We’re still in alpha, so if you see any rough edges or want to request a connector you need, please create an issue on our [Github](https://github.com/airbytehq/airbyte) or leave a thumbs up on an existing issue.
 
 Thank you and we hope you enjoy using Airbyte.
 
