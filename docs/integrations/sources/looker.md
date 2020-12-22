@@ -74,4 +74,4 @@ limit issues that are not automatically retried successfully.
 
 ### Setup guide
 
-Please read [information for users](https://docs.looker.com/admin-options/settings/users) for generate Client Id and Client Secret.
+Please read the "API3 Key" section in [Looker's information for users docs](https://docs.looker.com/admin-options/settings/users) for instructions on how to generate Client Id and Client Secret.
