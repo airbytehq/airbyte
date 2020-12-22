@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "group_id": {
+      "type": ["null", "string"]
+    },
+    "topic": {
+      "type": ["null", "string"]
+    },
+    "has_attachments": {
+      "type": ["null", "boolean"]
+    },
+    "last_delivered_date_time": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "unique_senders": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "preview": {
+      "type": ["null", "string"]
+    }
+  }
+}

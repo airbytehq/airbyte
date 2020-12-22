@@ -1,0 +1,8 @@
+*
+!Dockerfile
+!Dockerfile.test
+!source_microsoft_teams
+!setup.py
+!sample_files
+!integration_tests
+!secrets
