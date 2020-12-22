@@ -32,8 +32,7 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.SQLNamingResolvable;
-import io.airbyte.integrations.base.StandardSQLNaming;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -65,10 +64,10 @@ public class LocalJsonDestination implements Destination {
 
   static final String DESTINATION_PATH_FIELD = "destination_path";
 
-  private final SQLNamingResolvable namingResolver;
+  private final StandardNameTransformer namingResolver;
 
   public LocalJsonDestination() {
-    namingResolver = new StandardSQLNaming();
+    namingResolver = new StandardNameTransformer();
   }
 
   @Override
@@ -88,7 +87,7 @@ public class LocalJsonDestination implements Destination {
   }
 
   @Override
-  public SQLNamingResolvable getNamingResolver() {
+  public StandardNameTransformer getNamingTransformer() {
     return namingResolver;
   }
 
@@ -107,8 +106,8 @@ public class LocalJsonDestination implements Destination {
     final Map<String, WriteConfig> writeConfigs = new HashMap<>();
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getStream().getName();
-      final Path finalPath = destinationDir.resolve(getNamingResolver().getRawTableName(streamName) + ".jsonl");
-      final Path tmpPath = destinationDir.resolve(getNamingResolver().getTmpTableName(streamName) + ".jsonl");
+      final Path finalPath = destinationDir.resolve(getNamingTransformer().getRawTableName(streamName) + ".jsonl");
+      final Path tmpPath = destinationDir.resolve(getNamingTransformer().getTmpTableName(streamName) + ".jsonl");
 
       final boolean isIncremental = stream.getSyncMode() == SyncMode.INCREMENTAL;
       if (isIncremental && finalPath.toFile().exists()) {
