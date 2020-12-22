@@ -22,6 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import sys
 
-def test_example_method():
-    assert True
+from base_python.entrypoint import launch
+from source_microsoft_teams import SourceMicrosoftTeams
+
+if __name__ == "__main__":
+    source = SourceMicrosoftTeams()
+    launch(source, sys.argv[1:])
