@@ -38,7 +38,6 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.validation.json.JsonValidationException;
-import io.airbyte.workers.OutputAndStatus;
 import io.airbyte.workers.WorkerConstants;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -75,9 +74,9 @@ public class JobSubmitter implements Runnable {
     try {
       LOGGER.info("Running job-submitter...");
 
-      final Optional<Job> oldestPendingJob = persistence.getNextJob();
+      final Optional<Job> nextJob = persistence.getNextJob();
 
-      oldestPendingJob.ifPresent(job -> {
+      nextJob.ifPresent(job -> {
         trackSubmission(job);
         submitJob(job);
         LOGGER.info("Job-Submitter Summary. Submitted job with scope {}", job.getScope());
@@ -221,14 +220,6 @@ public class JobSubmitter implements Runnable {
       }
     }
     return metadata;
-  }
-
-  private static JobStatus getStatus(OutputAndStatus<?> output) {
-    return switch (output.getStatus()) {
-      case SUCCEEDED -> JobStatus.SUCCEEDED;
-      case FAILED -> JobStatus.FAILED;
-      default -> throw new IllegalStateException("Unknown state " + output.getStatus());
-    };
   }
 
 }
