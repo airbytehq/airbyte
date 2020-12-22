@@ -985,9 +985,12 @@ f6722922-8efe-4580-987e-aedbaeed5062,1608675308000,"{""date"":""2020-12-18"",""s
 91c00dbe-0fac-4499-8de0-4314a09ac339,1608675308000,"{""date"":""2020-12-21"",""stock_ticker"":""TSLA"",""price"":649.86}"
 ```
 
-Congratulations! We've successfully written a fully functioning Airbyte connector. You're an Airbyte contributor now ;) 
+Congratulations! We've successfully written a fully functioning Airbyte connector. You're an Airbyte contributor now ;)
 
-The sections below contain optional information on how to extend the functionality of the connector. Read on for more information. 
+Armed with the knowledge you gained in this guide, here are some places you can go from here:  
+1. Implement Incremental Sync for your connector (described in the sections below)
+2. Implement another connector using the language specific helpers listed below
+3. While not required, we love contributions! if you end up creating a new connector, we're here to help you make it available to everyone using Airybte. Remember that you're never expected to maintain a connector by yourself if you merge it to Airbyte -- we're committed to supporting connectors if you can't do it yourself.  
 
 ## Optional additions  
 This section is not yet complete and will be completed in a couple of days. Please reach out to us on [Slack](slack.airbyte.io) or [Github](github.com/airbytehq/airbyte) if you need the information promised by these sections immediately.  
