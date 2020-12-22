@@ -3,5 +3,5 @@
   "name": "Postgres",
   "dockerRepository": "airbyte/destination-postgres",
   "dockerImageTag": "0.1.9",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/integration-singer-postgres-destination"
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/postgres"
 }

@@ -3,5 +3,5 @@
   "name": "Local CSV",
   "dockerRepository": "airbyte/destination-csv",
   "dockerImageTag": "0.1.5",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/integration-singer-csv-destination"
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/local-csv"
 }

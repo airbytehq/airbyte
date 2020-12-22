@@ -1,8 +1,9 @@
 # Table of contents
 
 * [Overview](../README.md)
+* [Getting Started](getting-started.md)
 * [Tutorials](tutorials/README.md)
-  * [Getting Started](tutorials/getting-started.md)
+  * [Postgres Replication](tutorials/postgres-replication.md)
   * [Config & Persistence](tutorials/airbyte-config-persistence.md)
 * [Changelog](changelog.md)
   * [Releases](deploying-airbyte/releases.md)
@@ -11,7 +12,7 @@
   * [Sources](integrations/sources/README.md)
     * [Braintree](integrations/sources/braintree.md)
     * [Drift](integrations/sources/drift.md)
-    * [exchangeratesapi.io](integrations/sources/exchangeratesapi-io.md)
+    * [Exchange Rates API](integrations/sources/exchangeratesapi-io.md)
     * [Facebook Marketing API](integrations/sources/facebook-marketing-api.md)
     * [Files](integrations/sources/file.md)
     * [Freshdesk](integrations/sources/freshdesk.md)
@@ -43,6 +44,7 @@
   * [Destinations](integrations/destinations/README.md)
     * [BigQuery](integrations/destinations/bigquery.md)
     * [Local CSV](integrations/destinations/local-csv.md)
+    * [Local JSON](integrations/destinations/local-json.md)
     * [Postgres](integrations/destinations/postgres.md)
     * [Redshift](integrations/destinations/redshift.md)
     * [Snowflake](integrations/destinations/snowflake.md)

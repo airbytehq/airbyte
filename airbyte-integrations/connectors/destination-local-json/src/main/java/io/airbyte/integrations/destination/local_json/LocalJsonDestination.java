@@ -22,18 +22,18 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.csv;
+package io.airbyte.integrations.destination.local_json;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.destination.NamingConventionTransformer;
-import io.airbyte.integrations.destination.StandardNameTransformer;
+import io.airbyte.integrations.base.SQLNamingResolvable;
+import io.airbyte.integrations.base.StandardSQLNaming;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -43,31 +43,32 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.SyncMode;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CsvDestination implements Destination {
+public class LocalJsonDestination implements Destination {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(CsvDestination.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(LocalJsonDestination.class);
 
-  static final String COLUMN_DATA = "data"; // we output all data as a blob to a single column.
-  static final String COLUMN_AB_ID = "ab_id"; // we output all data as a blob to a single column.
-  static final String COLUMN_EMITTED_AT = "emitted_at"; // we output all data as a blob to a single column.
+  static final String FIELD_DATA = "data";
+  static final String FIELD_AB_ID = "ab_id";
+  static final String FIELD_EMITTED_AT = "emitted_at";
+
   static final String DESTINATION_PATH_FIELD = "destination_path";
 
-  private final StandardNameTransformer namingResolver;
+  private final SQLNamingResolvable namingResolver;
 
-  public CsvDestination() {
-    namingResolver = new StandardNameTransformer();
+  public LocalJsonDestination() {
+    namingResolver = new StandardSQLNaming();
   }
 
   @Override
@@ -87,12 +88,12 @@ public class CsvDestination implements Destination {
   }
 
   @Override
-  public NamingConventionTransformer getNamingTransformer() {
+  public SQLNamingResolvable getNamingResolver() {
     return namingResolver;
   }
 
   /**
-   * @param config - csv destination config.
+   * @param config - destination config.
    * @param catalog - schema of the incoming messages.
    * @return - a consumer to handle writing records to the filesystem.
    * @throws IOException - exception throw in manipulating the filesystem.
@@ -106,35 +107,34 @@ public class CsvDestination implements Destination {
     final Map<String, WriteConfig> writeConfigs = new HashMap<>();
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getStream().getName();
-      final String tableName = getNamingTransformer().getRawTableName(streamName);
-      final String tmpTableName = getNamingTransformer().getTmpTableName(streamName);
-      final Path tmpPath = destinationDir.resolve(tmpTableName + ".csv");
-      final Path finalPath = destinationDir.resolve(tableName + ".csv");
-      CSVFormat csvFormat = CSVFormat.DEFAULT.withHeader(COLUMN_AB_ID, COLUMN_EMITTED_AT, COLUMN_DATA);
+      final Path finalPath = destinationDir.resolve(getNamingResolver().getRawTableName(streamName) + ".jsonl");
+      final Path tmpPath = destinationDir.resolve(getNamingResolver().getTmpTableName(streamName) + ".jsonl");
+
       final boolean isIncremental = stream.getSyncMode() == SyncMode.INCREMENTAL;
       if (isIncremental && finalPath.toFile().exists()) {
         Files.copy(finalPath, tmpPath, StandardCopyOption.REPLACE_EXISTING);
-        csvFormat = csvFormat.withSkipHeaderRecord();
       }
-      final FileWriter fileWriter = new FileWriter(tmpPath.toFile(), isIncremental);
-      final CSVPrinter printer = new CSVPrinter(fileWriter, csvFormat);
-      writeConfigs.put(stream.getStream().getName(), new WriteConfig(printer, tmpPath, finalPath));
+
+      final Writer writer = new FileWriter(tmpPath.toFile(), isIncremental);
+      writeConfigs.put(stream.getStream().getName(), new WriteConfig(writer, tmpPath, finalPath));
     }
 
-    return new CsvConsumer(writeConfigs, catalog);
+    return new JsonConsumer(writeConfigs, catalog);
   }
 
   /**
-   * Extract provided relative path from csv config object and append to local mount path.
+   * Extract provided path.
    *
-   * @param config - csv config object
-   * @return absolute path with the relative path appended to the local volume mount.
+   * @param config - config object
+   * @return absolute path where to write files.
    */
   private Path getDestinationPath(JsonNode config) {
-    final String destinationRelativePath = config.get(DESTINATION_PATH_FIELD).asText();
-    Preconditions.checkNotNull(destinationRelativePath);
+    Path destinationPath = Paths.get(config.get(DESTINATION_PATH_FIELD).asText());
 
-    return Path.of(destinationRelativePath);
+    if (!destinationPath.startsWith("/local"))
+      destinationPath = Path.of("/local").resolve(destinationPath);
+
+    return destinationPath;
   }
 
   /**
@@ -142,15 +142,14 @@ public class CsvDestination implements Destination {
    * successfully, it moves the tmp files to files named by their respective stream. If there are any
    * failures, nothing is written.
    */
-  private static class CsvConsumer extends FailureTrackingConsumer<AirbyteMessage> {
+  private static class JsonConsumer extends FailureTrackingConsumer<AirbyteMessage> {
 
     private final Map<String, WriteConfig> writeConfigs;
     private final ConfiguredAirbyteCatalog catalog;
 
-    public CsvConsumer(Map<String, WriteConfig> writeConfigs, ConfiguredAirbyteCatalog catalog) {
-      this.catalog = catalog;
+    public JsonConsumer(Map<String, WriteConfig> writeConfigs, ConfiguredAirbyteCatalog catalog) {
       LOGGER.info("initializing consumer.");
-
+      this.catalog = catalog;
       this.writeConfigs = writeConfigs;
     }
 
@@ -165,10 +164,12 @@ public class CsvDestination implements Destination {
                   Jsons.serialize(catalog), Jsons.serialize(message)));
         }
 
-        writeConfigs.get(message.getRecord().getStream()).getWriter().printRecord(
-            UUID.randomUUID(),
-            message.getRecord().getEmittedAt(),
-            Jsons.serialize(message.getRecord().getData()));
+        final Writer writer = writeConfigs.get(message.getRecord().getStream()).getWriter();
+        writer.write(Jsons.serialize(ImmutableMap.of(
+            FIELD_AB_ID, UUID.randomUUID(),
+            FIELD_EMITTED_AT, message.getRecord().getEmittedAt(),
+            FIELD_DATA, message.getRecord().getData())));
+        writer.write(System.lineSeparator());
       }
     }
 
@@ -202,17 +203,17 @@ public class CsvDestination implements Destination {
 
   private static class WriteConfig {
 
-    private final CSVPrinter writer;
+    private final Writer writer;
     private final Path tmpPath;
     private final Path finalPath;
 
-    public WriteConfig(CSVPrinter writer, Path tmpPath, Path finalPath) {
+    public WriteConfig(Writer writer, Path tmpPath, Path finalPath) {
       this.writer = writer;
       this.tmpPath = tmpPath;
       this.finalPath = finalPath;
     }
 
-    public CSVPrinter getWriter() {
+    public Writer getWriter() {
       return writer;
     }
 
@@ -227,7 +228,7 @@ public class CsvDestination implements Destination {
   }
 
   public static void main(String[] args) throws Exception {
-    new IntegrationRunner(new CsvDestination()).run(args);
+    new IntegrationRunner(new LocalJsonDestination()).run(args);
   }
 
 }

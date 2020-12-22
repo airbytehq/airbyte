@@ -1,6 +1,6 @@
 # Config & Persistence
 
-Once you manage to spin up a local instance of Airbyte, following steps in the [Getting started Tutorial](getting-started.md), you may want to gain a better understanding of what configuration files are available in Airbyte and how to work with it.
+Once you manage to spin up a local instance of Airbyte, following steps in the [Getting started Tutorial](../getting-started.md), you may want to gain a better understanding of what configuration files are available in Airbyte and how to work with it.
 
 As we continue to improve the User experience around those aspects to make it simpler in the UI, this tutorial will go over how to manually import and export Airbyte configurations of connectors.
 
