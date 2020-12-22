@@ -47,7 +47,7 @@ def read(config, catalog):
 
 
 def read_json(filename):
-    with open(os.getcwd() + "/" + filename, "r") as f:
+    with open(filename, "r") as f:
         return json.loads(f.read())
 
 
