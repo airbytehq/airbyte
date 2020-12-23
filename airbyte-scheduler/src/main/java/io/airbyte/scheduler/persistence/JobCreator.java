@@ -28,6 +28,7 @@ import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
 import java.io.IOException;
+import java.util.Optional;
 
 public interface JobCreator {
 
@@ -39,13 +40,14 @@ public interface JobCreator {
 
   long createGetSpecJob(String integrationImage) throws IOException;
 
-  long createSyncJob(SourceConnection source,
-                     DestinationConnection destination,
-                     StandardSync standardSync,
-                     String sourceDockerImage,
-                     String destinationDockerImage)
+  Optional<Long> createSyncJob(SourceConnection source,
+                               DestinationConnection destination,
+                               StandardSync standardSync,
+                               String sourceDockerImage,
+                               String destinationDockerImage)
       throws IOException;
 
-  long createResetConnectionJob(DestinationConnection destination, StandardSync standardSync, String destinationDockerImage) throws IOException;
+  Optional<Long> createResetConnectionJob(DestinationConnection destination, StandardSync standardSync, String destinationDockerImage)
+      throws IOException;
 
 }

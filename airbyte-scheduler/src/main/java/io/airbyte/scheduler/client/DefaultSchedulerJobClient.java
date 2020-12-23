@@ -73,26 +73,27 @@ public class DefaultSchedulerJobClient implements SchedulerJobClient {
   }
 
   @Override
-  public Job createSyncJob(
-                           SourceConnection source,
+  public Job createSyncJob(SourceConnection source,
                            DestinationConnection destination,
                            StandardSync standardSync,
                            String sourceDockerImage,
                            String destinationDockerImage)
       throws IOException {
-    final long jobId = jobCreator.createSyncJob(
+    final Long jobId = jobCreator.createSyncJob(
         source,
         destination,
         standardSync,
         sourceDockerImage,
-        destinationDockerImage);
+        destinationDockerImage)
+        .orElseThrow(() -> new RuntimeException("There is already an active job"));
     return waitUntilJobIsTerminalOrTimeout(jobId);
   }
 
   @Override
   public Job createResetConnectionJob(DestinationConnection destination, StandardSync standardSync, String destinationDockerImage)
       throws IOException {
-    final long jobId = jobCreator.createResetConnectionJob(destination, standardSync, destinationDockerImage);
+    final long jobId = jobCreator.createResetConnectionJob(destination, standardSync, destinationDockerImage)
+        .orElseThrow(() -> new RuntimeException("There is already an active job"));
     return waitUntilJobIsTerminalOrTimeout(jobId);
   }
 

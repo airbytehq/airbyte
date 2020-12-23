@@ -25,6 +25,7 @@
 package io.airbyte.scheduler.client;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -40,6 +41,7 @@ import io.airbyte.scheduler.JobStatus;
 import io.airbyte.scheduler.persistence.JobCreator;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import java.io.IOException;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -102,10 +104,23 @@ class DefaultSchedulerJobClientTest {
     final DestinationConnection destination = mock(DestinationConnection.class);
     final StandardSync standardSync = mock(StandardSync.class);
     final String destinationDockerImage = "airbyte/spaceport";
-    when(jobCreator.createSyncJob(source, destination, standardSync, DOCKER_IMAGE, destinationDockerImage)).thenReturn(JOB_ID);
+    when(jobCreator.createSyncJob(source, destination, standardSync, DOCKER_IMAGE, destinationDockerImage)).thenReturn(Optional.of(JOB_ID));
     doReturn(job).when(client).waitUntilJobIsTerminalOrTimeout(JOB_ID);
 
     assertEquals(job, client.createSyncJob(source, destination, standardSync, DOCKER_IMAGE, destinationDockerImage));
+  }
+
+  @Test
+  void testCreateSyncJobAlreadyExist() throws IOException {
+    final SourceConnection source = mock(SourceConnection.class);
+    final DestinationConnection destination = mock(DestinationConnection.class);
+    final StandardSync standardSync = mock(StandardSync.class);
+    final String destinationDockerImage = "airbyte/spaceport";
+    when(jobCreator.createSyncJob(source, destination, standardSync, DOCKER_IMAGE, destinationDockerImage)).thenReturn(Optional.empty());
+
+    assertThrows(RuntimeException.class, () -> {
+      client.createSyncJob(source, destination, standardSync, DOCKER_IMAGE, destinationDockerImage);
+    });
   }
 
   @Test
@@ -113,10 +128,23 @@ class DefaultSchedulerJobClientTest {
     final DestinationConnection destination = mock(DestinationConnection.class);
     final StandardSync standardSync = mock(StandardSync.class);
     final String destinationDockerImage = "airbyte/spaceport";
-    when(jobCreator.createResetConnectionJob(destination, standardSync, destinationDockerImage)).thenReturn(JOB_ID);
+    when(jobCreator.createResetConnectionJob(destination, standardSync, destinationDockerImage)).thenReturn(Optional.of(JOB_ID));
     doReturn(job).when(client).waitUntilJobIsTerminalOrTimeout(JOB_ID);
 
     assertEquals(job, client.createResetConnectionJob(destination, standardSync, destinationDockerImage));
+  }
+
+  @Test
+  void testCreateResetConnectionJobAlreadyExist() throws IOException {
+    final DestinationConnection destination = mock(DestinationConnection.class);
+    final StandardSync standardSync = mock(StandardSync.class);
+    final String destinationDockerImage = "airbyte/spaceport";
+    when(jobCreator.createResetConnectionJob(destination, standardSync, destinationDockerImage)).thenReturn(Optional.empty());
+    doReturn(job).when(client).waitUntilJobIsTerminalOrTimeout(JOB_ID);
+
+    assertThrows(RuntimeException.class, () -> {
+      client.createResetConnectionJob(destination, standardSync, destinationDockerImage);
+    });
   }
 
   @Test
