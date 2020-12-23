@@ -7,7 +7,7 @@ defmodule Airbyte.Source.GoogleAnalytics.DataRequest do
   require Logger
 
   alias GoogleApi.Analytics.V3.{Api, Connection, Model}
-  alias Airbyte.Source.GoogleAnalytics.Types
+  alias Airbyte.Source.GoogleAnalytics.Schema
 
   @derive Jason.Encoder
 
@@ -22,8 +22,6 @@ defmodule Airbyte.Source.GoogleAnalytics.DataRequest do
     field(:start_index, Integer.t(), default: 1)
     field(:retries, Integer.t(), default: 0)
   end
-
-  def serialize(%__MODULE__{} = request), do: request |> Jason.encode!()
 
   @spec query(Connection.t(), __MODULE__.t()) :: {:ok, GaData.t()} | {:error, String.t()}
   def query(conn, %__MODULE__{} = request) do
@@ -88,14 +86,14 @@ defmodule Airbyte.Source.GoogleAnalytics.DataRequest do
   end
 
   defp format_data(%Model.GaData{columnHeaders: headers, rows: rows}) do
-    parsers = headers |> Enum.map(fn header -> {header.name, Types.parse(header)} end)
+    parsers = headers |> Enum.map(fn header -> {header.name, Schema.parse(header)} end)
     rows |> Enum.map(&format_row(&1, parsers))
   end
 
   defp format_row(row, parsers) do
     row
     |> Stream.zip(parsers)
-    |> Stream.map(fn {value, {name, fun}} -> ["#{Types.to_camel_case(name)}": fun.(value)] end)
+    |> Stream.map(fn {value, {name, fun}} -> ["#{Schema.to_field_name(name)}": fun.(value)] end)
     |> Stream.transform([], fn item, acc -> {item, acc ++ item} end)
     |> Enum.into(%{})
   end

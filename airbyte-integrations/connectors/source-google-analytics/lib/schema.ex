@@ -1,4 +1,4 @@
-defmodule Airbyte.Source.GoogleAnalytics.Types do
+defmodule Airbyte.Source.GoogleAnalytics.Schema do
   alias GoogleApi.Analytics.V3.Model
 
   require Logger
@@ -15,15 +15,15 @@ defmodule Airbyte.Source.GoogleAnalytics.Types do
     &Function.identity/1
   end
 
-  def to_jsonschema_type("CURRENCY"), do: "number"
-  def to_jsonschema_type("FLOAT"), do: "number"
-  def to_jsonschema_type("INTEGER"), do: "number"
-  def to_jsonschema_type("PERCENT"), do: "number"
-  def to_jsonschema_type("STRING"), do: "string"
-  def to_jsonschema_type("TIME"), do: "number"
-  def to_jsonschema_type(_), do: "string"
+  def to_type("CURRENCY"), do: "number"
+  def to_type("FLOAT"), do: "number"
+  def to_type("INTEGER"), do: "number"
+  def to_type("PERCENT"), do: "number"
+  def to_type("STRING"), do: "string"
+  def to_type("TIME"), do: "number"
+  def to_type(_), do: "string"
 
-  def to_camel_case(val) do
+  def to_field_name(val) do
     val
     |> String.replace(~r/^ga:/, "")
     |> Macro.underscore()

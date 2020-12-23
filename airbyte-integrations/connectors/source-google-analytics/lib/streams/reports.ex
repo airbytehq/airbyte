@@ -4,8 +4,17 @@ defmodule Airbyte.Source.GoogleAnalytics.Streams.Reports do
 
   require Logger
 
-  alias Airbyte.Protocol.{AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteStream}
-  alias Airbyte.Source.GoogleAnalytics.{Client, ConnectionSpecification, DataRequest, Types}
+  alias Airbyte.Protocol.{AirbyteRecordMessage, AirbyteStream}
+
+  alias Airbyte.Source.GoogleAnalytics.{
+    Client,
+    ConnectionSpecification,
+    DataRequest,
+    Schema,
+    State
+  }
+
+  alias GoogleApi.Analytics.V3.Model
 
   @derive Jason.Encoder
 
@@ -17,18 +26,12 @@ defmodule Airbyte.Source.GoogleAnalytics.Streams.Reports do
   end
 
   def stream(report, fields) do
-    default_cursor_field =
-      case report.cursor do
-        nil -> nil
-        cursor -> cursor
-      end
-
     %AirbyteStream{
       name: report.name,
       json_schema: schema(report, fields),
       supported_sync_modes: ["full_refresh", "incremental"],
-      default_cursor_field: default_cursor_field,
-      source_defined_cursor: is_nil(default_cursor_field) == false
+      default_cursor_field: default_cursor_field(report),
+      source_defined_cursor: is_nil(report.cursor) == false
     }
   end
 
@@ -36,11 +39,15 @@ defmodule Airbyte.Source.GoogleAnalytics.Streams.Reports do
     AirbyteRecordMessage.new(report.name, data)
   end
 
-  def read(%ConnectionSpecification{} = spec, %__MODULE__{} = report, state) do
+  def from_file(path) do
+    Airbyte.Helpers.json_to_struct(path, __MODULE__)
+  end
+
+  def read(%ConnectionSpecification{} = spec, %State{} = state, %__MODULE__{} = report) do
     with {:ok, conn} <- Client.connection(spec),
          {:ok, profiles} <- Client.profiles(conn) do
       profiles
-      |> Stream.map(&gen_data_request(report, &1))
+      |> Stream.map(&generate_request(state, report, &1))
       |> Stream.map(&DataRequest.query(conn, &1))
       |> Stream.flat_map(fn
         {:ok, data} ->
@@ -53,23 +60,32 @@ defmodule Airbyte.Source.GoogleAnalytics.Streams.Reports do
     end
   end
 
-  def gen_data_request(report, profile) do
+  defp default_cursor_field(%__MODULE__{} = report) do
+    case report.cursor do
+      nil -> nil
+      cursor -> cursor |> Schema.to_field_name()
+    end
+  end
+
+  defp generate_request(
+         %State{} = state,
+         %__MODULE__{} = report,
+         %Model.ProfileSummary{} = profile
+       ) do
     %DataRequest{
       profile_id: profile.id,
-      start_date: "2020-12-16",
-      end_date: Date.utc_today() |> Date.add(-1) |> Date.to_iso8601(),
+      start_date: state.start_date,
+      end_date: state.end_date,
       metrics: report.metrics,
-      dimensions: ["ga:date"]
-      # dimensions: report.dimensions
+      dimensions: report.dimensions
     }
   end
 
-  def from_file(path) do
-    Airbyte.Helpers.json_to_struct(path, __MODULE__)
-  end
-
   defp schema(%__MODULE__{} = report, fields) do
-    properties = report.metrics |> Enum.map(&to_property(&1, fields)) |> Enum.into(%{})
+    properties =
+      (report.metrics ++ report.dimensions)
+      |> Enum.map(&to_property(&1, fields))
+      |> Enum.into(%{})
 
     %{
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -86,10 +102,10 @@ defmodule Airbyte.Source.GoogleAnalytics.Streams.Reports do
   end
 
   defp to_property(name, fields) do
-    id = Types.to_camel_case(name)
+    id = Schema.to_field_name(name)
 
     fields = %{
-      "type" => fields[name].dataType |> Types.to_jsonschema_type(),
+      "type" => fields[name].dataType |> Schema.to_type(),
       "description" => name
     }
 

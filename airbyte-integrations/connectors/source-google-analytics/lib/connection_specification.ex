@@ -11,5 +11,6 @@ defmodule Airbyte.Source.GoogleAnalytics.ConnectionSpecification do
 
     field(:service_account_key, String.t())
     field(:reports, String.t())
+    field(:start_date, String.t(), enforce: true)
   end
 end

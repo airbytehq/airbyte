@@ -11,7 +11,11 @@
       "type": "string"
     },
     "reports": {
-      "description": "A JSON string with custom reports",
+      "description": "A JSON string with an array of custom reports",
+      "type": "string"
+    },
+    "start_date": {
+      "description": "A ISO 8601:2004 date format (YYYY-MM-DD)",
       "type": "string"
     }
   }
