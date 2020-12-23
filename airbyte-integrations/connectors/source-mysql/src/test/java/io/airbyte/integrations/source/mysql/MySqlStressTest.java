@@ -42,7 +42,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.MySQLContainer;
 
-@Disabled
+//@Disabled
 class MySqlStressTest extends JdbcStressTest {
 
   private static final String TEST_USER = "test";
@@ -78,7 +78,7 @@ class MySqlStressTest extends JdbcStressTest {
         String.format("jdbc:mysql://%s:%s",
             config.get("host").asText(),
             config.get("port").asText()),
-        "com.mysql.cj.jdbc.Driver",
+        MySqlSource.DRIVER_CLASS,
         SQLDialect.MYSQL);
 
     database.query(ctx -> {
@@ -113,7 +113,7 @@ class MySqlStressTest extends JdbcStressTest {
 
   @Override
   public String getDriverClass() {
-    return "com.mysql.cj.jdbc.Driver";
+    return MySqlSource.DRIVER_CLASS;
   }
 
   @Override

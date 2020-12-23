@@ -33,7 +33,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Databases;
-import io.airbyte.db.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.models.JdbcState;
 import io.airbyte.integrations.source.jdbc.models.JdbcStreamState;
@@ -98,11 +98,11 @@ public abstract class DbSourceDateTimeStandardTest {
 
     Preconditions.checkState(getDateTimes().size() == 3, "Must provided 3 date times.");
 
-    database.query(ctx -> {
+    database.execute(connection -> {
       try {
-        ctx.createStatement().execute(String.format("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), updated_at %s);", getDatetimeKeyword()));
+        connection.createStatement().execute(String.format("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), updated_at %s);", getDatetimeKeyword()));
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-        final PreparedStatement preparedStatement = ctx.prepareStatement("INSERT INTO id_and_name (id, name, updated_at) VALUES (?,?,?)");
+        final PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO id_and_name (id, name, updated_at) VALUES (?,?,?)");
         preparedStatement.setInt(1, 1);
         preparedStatement.setString(2, "picard");
         preparedStatement.setTimestamp(3, Timestamp.from(df.parse(getDateTimes().get(0).getLeft()).toInstant()));
@@ -125,7 +125,6 @@ public abstract class DbSourceDateTimeStandardTest {
       } catch (ParseException e) {
         throw new RuntimeException(e);
       }
-      return null;
     });
   }
 

@@ -31,7 +31,7 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.jdbc.test.DbSourceStandardTest;
+import io.airbyte.integrations.source.jdbc.test.JdbcSourceStandardTest;
 import java.util.Optional;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.SQLDialect;
@@ -41,7 +41,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.testcontainers.containers.MySQLContainer;
 
-class MySqlDbSourceStandardTest extends DbSourceStandardTest {
+class MySqlDbSourceStandardTest extends JdbcSourceStandardTest {
 
   private static final String TEST_USER = "test";
   private static final String TEST_PASSWORD = "test";

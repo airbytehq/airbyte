@@ -27,6 +27,7 @@ package io.airbyte.integrations.source.postgres;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.jdbc.PostgresJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
@@ -41,7 +42,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   static final String DRIVER_CLASS = "org.postgresql.Driver";
 
   public PostgresSource() {
-    super(DRIVER_CLASS);
+    super(DRIVER_CLASS, new PostgresJdbcStreamingQueryConfiguration());
   }
 
   @Override

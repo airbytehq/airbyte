@@ -28,18 +28,31 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.db.jdbc.PostgresJdbcStreamingQueryConfiguration;
+import io.airbyte.integrations.base.IntegrationRunner;
+import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.jdbc.test.JdbcSourceStandardTest;
+import io.airbyte.integrations.source.jdbc.test.JdbcStressTest;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.util.Optional;
+import java.util.Set;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
-class PostgresDbSourceStandardTest extends JdbcSourceStandardTest {
+/**
+ * Runs the stress tests in the source-jdbc test module. We want this module to run these tests
+ * itself as a sanity check. The trade off here is that this class is duplicated from the one used
+ * in source-postgres.
+ */
+@Disabled
+class PostgresJdbcJdbcStressTest extends JdbcStressTest {
 
   private static PostgreSQLContainer<?> PSQL_DB;
 
@@ -63,6 +76,8 @@ class PostgresDbSourceStandardTest extends JdbcSourceStandardTest {
         .put("password", PSQL_DB.getPassword())
         .build());
 
+    System.out.println("config = " + config);
+
     final String initScriptName = "init_" + dbName.concat(".sql");
     MoreResources.writeResource(initScriptName, "CREATE DATABASE " + dbName + ";");
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource(initScriptName), PSQL_DB);
@@ -77,7 +92,7 @@ class PostgresDbSourceStandardTest extends JdbcSourceStandardTest {
 
   @Override
   public AbstractJdbcSource getSource() {
-    return new PostgresSource();
+    return new PostgresTestSource();
   }
 
   @Override
@@ -87,12 +102,52 @@ class PostgresDbSourceStandardTest extends JdbcSourceStandardTest {
 
   @Override
   public String getDriverClass() {
-    return PostgresSource.DRIVER_CLASS;
+    return PostgresTestSource.DRIVER_CLASS;
   }
 
   @AfterAll
   static void cleanUp() {
     PSQL_DB.close();
+  }
+
+  private static class PostgresTestSource extends AbstractJdbcSource implements Source {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(PostgresTestSource.class);
+
+    static final String DRIVER_CLASS = "org.postgresql.Driver";
+
+    public PostgresTestSource() {
+      super(DRIVER_CLASS, new PostgresJdbcStreamingQueryConfiguration());
+    }
+
+    @Override
+    public JsonNode toJdbcConfig(JsonNode config) {
+      ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
+          .put("username", config.get("username").asText())
+          .put("jdbc_url", String.format("jdbc:postgresql://%s:%s/%s",
+              config.get("host").asText(),
+              config.get("port").asText(),
+              config.get("database").asText()));
+
+      if (config.has("password")) {
+        configBuilder.put("password", config.get("password").asText());
+      }
+
+      return Jsons.jsonNode(configBuilder.build());
+    }
+
+    @Override
+    public Set<String> getExcludedInternalSchemas() {
+      return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");
+    }
+
+    public static void main(String[] args) throws Exception {
+      final Source source = new PostgresTestSource();
+      LOGGER.info("starting source: {}", PostgresTestSource.class);
+      new IntegrationRunner(source).run(args);
+      LOGGER.info("completed source: {}", PostgresTestSource.class);
+    }
+
   }
 
 }

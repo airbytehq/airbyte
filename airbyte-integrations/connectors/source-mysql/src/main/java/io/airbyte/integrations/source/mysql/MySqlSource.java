@@ -38,8 +38,10 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlSource.class);
 
+  public static final String DRIVER_CLASS = "com.mysql.cj.jdbc.Driver";
+
   public MySqlSource() {
-    super("com.mysql.cj.jdbc.Driver", new MySqlJdbcStreamingQueryConfiguration());
+    super(DRIVER_CLASS, new MySqlJdbcStreamingQueryConfiguration());
   }
 
   @Override

@@ -27,13 +27,20 @@ package io.airbyte.integrations.source.mysql;
 import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class MySqlJdbcStreamingQueryConfiguration implements JdbcStreamingQueryConfiguration {
 
   @Override
   public void accept(Connection connection, PreparedStatement preparedStatement) throws SQLException {
+    connection.prepareStatement()
     connection.setAutoCommit(false);
+    connection.setClientInfo("useCursorFetch", "true");
+//    preparedStatement.
+//    connection.createStatement(1, 1)
+    preparedStatement.setFetchDirection(1000);
+//    preparedStatement.setFetchDirection();
     preparedStatement.setFetchSize(1); // todo (cgardens) - this fetches one record at a time. not acceptable.
   }
 
