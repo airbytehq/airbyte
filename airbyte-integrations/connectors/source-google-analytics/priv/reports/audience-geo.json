@@ -1,5 +1,5 @@
 {
-  "name": "audience_overview",
+  "name": "audience_geo",
   "metrics": [
     "ga:users",
     "ga:newUsers",
@@ -13,7 +13,10 @@
     "ga:bounceRate"
   ],
   "dimensions": [
-    "ga:date"
+    "ga:date",
+    "ga:language",
+    "ga:country",
+    "ga:city"
   ],
   "cursor": "ga:date"
 }

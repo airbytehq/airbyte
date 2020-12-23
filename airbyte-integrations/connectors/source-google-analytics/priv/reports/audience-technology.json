@@ -1,5 +1,5 @@
 {
-  "name": "audience_overview",
+  "name": "audience_technology",
   "metrics": [
     "ga:users",
     "ga:newUsers",
@@ -13,7 +13,10 @@
     "ga:bounceRate"
   ],
   "dimensions": [
-    "ga:date"
+    "ga:date",
+    "ga:browser",
+    "ga:operatingSystem",
+    "ga:screenResolution"
   ],
   "cursor": "ga:date"
 }
