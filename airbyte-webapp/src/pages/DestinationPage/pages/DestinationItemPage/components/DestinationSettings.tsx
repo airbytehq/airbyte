@@ -27,7 +27,9 @@ const DestinationsSettings: React.FC<IProps> = ({
   connectionsWithDestination
 }) => {
   const [saved, setSaved] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string | React.ReactNode>(
+    ""
+  );
 
   const destinationSpecification = useResource(
     DestinationDefinitionSpecificationResource.detailShape(),
@@ -44,15 +46,21 @@ const DestinationsSettings: React.FC<IProps> = ({
     connectionConfiguration?: any;
   }) => {
     setErrorMessage("");
-    const result = await updateDestination({
-      values,
-      destinationId: currentDestination.destinationId
-    });
+    try {
+      await updateDestination({
+        values,
+        destinationId: currentDestination.destinationId,
+        destinationDefinitionId: currentDestination.destinationDefinitionId
+      });
 
-    if (result.status === "failure") {
-      setErrorMessage(result.message);
-    } else {
       setSaved(true);
+    } catch (e) {
+      const errorStatus = e.status;
+      errorStatus === 0
+        ? setErrorMessage("")
+        : errorStatus === 400
+        ? setErrorMessage(<FormattedMessage id="form.validationError" />)
+        : setErrorMessage(<FormattedMessage id="form.someError" />);
     }
   };
 

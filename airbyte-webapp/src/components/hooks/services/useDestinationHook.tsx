@@ -89,7 +89,9 @@ const useDestination = () => {
     SchedulerResource.destinationCheckConnectionShape()
   );
 
-  const updatedestination = useFetcher(DestinationResource.updateShape());
+  const updatedestination = useFetcher(
+    DestinationResource.partialUpdateShape()
+  );
 
   const recreatedestination = useFetcher(DestinationResource.recreateShape());
 
@@ -172,14 +174,20 @@ const useDestination = () => {
     }
   };
 
-  // TODO: check it! updateSource with new sourceCheckConnectionShape ? ? ?
   const updateDestination = async ({
     values,
-    destinationId
+    destinationId,
+    destinationDefinitionId
   }: {
     values: ValuesProps;
     destinationId: string;
+    destinationDefinitionId: string;
   }) => {
+    await destinationCheckConnectionShape({
+      destinationDefinitionId,
+      connectionConfiguration: values.connectionConfiguration
+    });
+
     return await updatedestination(
       {
         destinationId

@@ -39,34 +39,6 @@ export default class DestinationResource extends BaseResource
     };
   }
 
-  static updateShape<T extends typeof Resource>(this: T) {
-    return {
-      ...super.partialUpdateShape(),
-      fetch: async (
-        params: { destinationId: string },
-        body: any
-      ): Promise<any> => {
-        const destinationResult = await this.fetch(
-          "post",
-          `${this.url(params)}/update`,
-          body
-        );
-
-        const checkConnectionResult = await this.fetch(
-          "post",
-          `${this.url(params)}/check_connection`,
-          params
-        );
-
-        return {
-          destination: destinationResult,
-          ...checkConnectionResult
-        };
-      },
-      schema: { destination: this.asSchema(), status: "", message: "" }
-    };
-  }
-
   static checkConnectionShape<T extends typeof Resource>(this: T) {
     return {
       ...super.detailShape(),

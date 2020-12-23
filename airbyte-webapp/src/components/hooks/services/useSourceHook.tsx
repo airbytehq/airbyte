@@ -84,7 +84,7 @@ const useSource = () => {
     SchedulerResource.sourceCheckConnectionShape()
   );
 
-  const updatesource = useFetcher(SourceResource.updateShape());
+  const updatesource = useFetcher(SourceResource.partialUpdateShape());
 
   const recreatesource = useFetcher(SourceResource.recreateShape());
 
@@ -154,14 +154,20 @@ const useSource = () => {
     }
   };
 
-  // TODO: check it! updateSource with new sourceCheckConnectionShape ? ? ?
   const updateSource = async ({
     values,
-    sourceId
+    sourceId,
+    sourceDefinitionId
   }: {
     values: ValuesProps;
     sourceId: string;
+    sourceDefinitionId: string;
   }) => {
+    await sourceCheckConnectionShape({
+      sourceDefinitionId,
+      connectionConfiguration: values.connectionConfiguration
+    });
+
     return await updatesource(
       {
         sourceId: sourceId
