@@ -122,7 +122,7 @@ class DefaultSchedulerJobClientTest {
 
     final Job currentJob = mock(Job.class);
     when(currentJob.getId()).thenReturn(42L);
-    when(jobPersistence.getLastSyncJob(connectionUuid)).thenReturn(Optional.of(currentJob));
+    when(jobPersistence.getLastSyncScope(connectionUuid)).thenReturn(Optional.of(currentJob));
 
     doReturn(currentJob).when(client).waitUntilJobIsTerminalOrTimeout(42L);
 
@@ -151,7 +151,7 @@ class DefaultSchedulerJobClientTest {
 
     final Job currentJob = mock(Job.class);
     when(currentJob.getId()).thenReturn(42L);
-    when(jobPersistence.getLastResetJob(connectionUuid)).thenReturn(Optional.of(currentJob));
+    when(jobPersistence.getLastSyncScope(connectionUuid)).thenReturn(Optional.of(currentJob));
 
     doReturn(currentJob).when(client).waitUntilJobIsTerminalOrTimeout(42L);
 

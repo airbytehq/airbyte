@@ -138,9 +138,7 @@ public interface JobPersistence {
 
   List<Job> listJobsWithStatus(JobConfig.ConfigType configType, JobStatus status) throws IOException;
 
-  Optional<Job> getLastSyncJob(UUID connectionId) throws IOException;
-
-  Optional<Job> getLastResetJob(UUID connectionId) throws IOException;
+  Optional<Job> getLastSyncScope(UUID connectionId) throws IOException;
 
   /**
    * if a job does not succeed, we assume that it synced nothing. that is the most conservative
