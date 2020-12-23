@@ -38,6 +38,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
+import io.airbyte.config.JobOutput.OutputType;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.State;
@@ -559,6 +560,50 @@ class DefaultJobPersistenceTest {
   }
 
   @Test
+  void testGetNextJobWithMultipleAttempts() throws IOException {
+    final long jobId = jobPersistence.createJob(SCOPE, JOB_CONFIG);
+    jobPersistence.failAttempt(jobId, jobPersistence.createAttempt(jobId, LOG_PATH));
+    jobPersistence.failAttempt(jobId, jobPersistence.createAttempt(jobId, LOG_PATH));
+    jobPersistence.resetJob(jobId);
+
+    final Optional<Job> actual = jobPersistence.getNextJob();
+    final Job expected = getExpectedJobTwoAttempts(jobId, JobStatus.PENDING, AttemptStatus.FAILED);
+
+    assertTrue(actual.isPresent());
+    assertEquals(expected, actual.get());
+  }
+
+  @Test
+  void testGetCurrentStateWithMultipleAttempts() throws IOException {
+    final State state = new State().withState(Jsons.jsonNode(ImmutableMap.of("checkpoint", 4)));
+    final JobOutput jobOutput = new JobOutput().withOutputType(OutputType.SYNC).withSync(new StandardSyncOutput().withState(state));
+
+    final long jobId = jobPersistence.createJob(SCOPE, JOB_CONFIG);
+    jobPersistence.failAttempt(jobId, jobPersistence.createAttempt(jobId, LOG_PATH));
+    final int attemptId = jobPersistence.createAttempt(jobId, LOG_PATH);
+    jobPersistence.writeOutput(jobId, attemptId, jobOutput);
+    jobPersistence.succeedAttempt(jobId, attemptId);
+
+    final Optional<State> actual = jobPersistence.getCurrentState(UUID.fromString(ScopeHelper.getConfigId(SCOPE)));
+
+    assertTrue(actual.isPresent());
+    assertEquals(state, actual.get());
+  }
+
+  @Test
+  void testGetLastSyncJobWithMultipleAttempts() throws IOException {
+    final long jobId = jobPersistence.createJob(SCOPE, JOB_CONFIG);
+    jobPersistence.failAttempt(jobId, jobPersistence.createAttempt(jobId, LOG_PATH));
+    jobPersistence.failAttempt(jobId, jobPersistence.createAttempt(jobId, LOG_PATH));
+
+    final Optional<Job> actual = jobPersistence.getLastSyncJob(UUID.fromString(ScopeHelper.getConfigId(SCOPE)));
+    final Job expected = getExpectedJobTwoAttempts(jobId, JobStatus.INCOMPLETE, AttemptStatus.FAILED);
+
+    assertTrue(actual.isPresent());
+    assertEquals(expected, actual.get());
+  }
+
+  @Test
   public void testGetJobFromRecord() throws IOException, SQLException {
     final long jobId = jobPersistence.enqueueJob(SCOPE, JOB_CONFIG);
 
@@ -571,6 +616,21 @@ class DefaultJobPersistenceTest {
 
   private Job getExpectedJobNoAttempts(long jobId, JobStatus jobStatus) {
     return getExpectedJob(jobId, jobStatus, Collections.emptyList());
+  }
+
+  private Job getExpectedJobTwoAttempts(long jobId, JobStatus jobStatus, AttemptStatus attemptStatus) {
+    final Job job = getExpectedJobOneAttempt(jobId, jobStatus, attemptStatus);
+    job.getAttempts().add(new Attempt(
+        1L,
+        jobId,
+        LOG_PATH,
+        null,
+        attemptStatus,
+        NOW.getEpochSecond(),
+        NOW.getEpochSecond(),
+        null));
+
+    return job;
   }
 
   private Job getExpectedJobOneAttempt(long jobId, JobStatus jobStatus, AttemptStatus attemptStatus) {
