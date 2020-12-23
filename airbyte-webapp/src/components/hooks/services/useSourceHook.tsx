@@ -1,4 +1,6 @@
+import { useCallback } from "react";
 import { useFetcher } from "rest-hooks";
+import { useStatefulResource } from "@rest-hooks/legacy";
 
 import config from "../../../config";
 import SourceResource, { Source } from "../../../core/resources/Source";
@@ -8,10 +10,7 @@ import useRouter from "../useRouterHook";
 import ConnectionResource, {
   Connection
 } from "../../../core/resources/Connection";
-import { useCallback, useEffect, useState } from "react";
-import SourceDefinitionSpecificationResource, {
-  SourceDefinitionSpecification
-} from "../../../core/resources/SourceDefinitionSpecification";
+import SourceDefinitionSpecificationResource from "../../../core/resources/SourceDefinitionSpecification";
 
 type ValuesProps = {
   name: string;
@@ -25,53 +24,20 @@ type ConnectorProps = { name: string; sourceDefinitionId: string };
 export const useSourceDefinitionSpecificationLoad = (
   sourceDefinitionId: string
 ) => {
-  const [
-    sourceDefinitionSpecification,
-    setSourceDefinitionSpecification
-  ] = useState<null | SourceDefinitionSpecification>(null);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const fetchSourceDefinitionSpecification = useFetcher(
+  const {
+    loading: isLoading,
+    error,
+    data: sourceDefinitionSpecification
+  } = useStatefulResource(
     SourceDefinitionSpecificationResource.detailShape(),
-    true
+    sourceDefinitionId
+      ? {
+          sourceDefinitionId
+        }
+      : undefined
   );
 
-  useEffect(() => {
-    (async () => {
-      if (sourceDefinitionId) {
-        setIsLoading(true);
-        setSourceDefinitionSpecification(
-          await fetchSourceDefinitionSpecification({ sourceDefinitionId })
-        );
-        setIsLoading(false);
-      }
-    })();
-  }, [fetchSourceDefinitionSpecification, sourceDefinitionId]);
-
-  return { sourceDefinitionSpecification, isLoading };
-};
-
-export const useSourceDetails = (sourceId?: string) => {
-  const [source, setSource] = useState<null | Source>(null);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const fetchSource = useFetcher(SourceResource.detailShape(), true);
-
-  useEffect(() => {
-    (async () => {
-      if (sourceId) {
-        setIsLoading(true);
-        setSource(
-          await fetchSource({
-            sourceId
-          })
-        );
-        setIsLoading(false);
-      }
-    })();
-  }, [sourceId, fetchSource]);
-
-  return { source, isLoading };
+  return { sourceDefinitionSpecification, error, isLoading };
 };
 
 const useSource = () => {
@@ -99,7 +65,6 @@ const useSource = () => {
     sourceConnector?: ConnectorProps;
   }) => {
     AnalyticsService.track("New Source - Action", {
-      user_id: config.ui.workspaceId,
       action: "Test a connector",
       connector_source: sourceConnector?.name,
       connector_source_id: sourceConnector?.sourceDefinitionId
@@ -125,7 +90,6 @@ const useSource = () => {
         ]
       );
       AnalyticsService.track("New Source - Action", {
-        user_id: config.ui.workspaceId,
         action: "Tested connector - success",
         connector_source: sourceConnector?.name,
         connector_source_id: sourceConnector?.sourceDefinitionId
@@ -134,7 +98,6 @@ const useSource = () => {
       return result;
     } catch (e) {
       AnalyticsService.track("New Source - Action", {
-        user_id: config.ui.workspaceId,
         action: "Tested connector - failure",
         connector_source: sourceConnector?.name,
         connector_source_id: sourceConnector?.sourceDefinitionId
@@ -215,7 +178,6 @@ const useSource = () => {
     });
 
     AnalyticsService.track("Source - Action", {
-      user_id: config.ui.workspaceId,
       action: "Delete source",
       connector_source: source.sourceName,
       connector_source_id: source.sourceDefinitionId
