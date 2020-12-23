@@ -13,6 +13,7 @@
         "examples": ["AAPL", "TSLA", "AMZN"]
       },
       "api_key": {
+        "title": "API Key",
         "type": "string",
         "description": "The IEX Cloud API key to use to hit the API.",
         "airbyte_secret": true

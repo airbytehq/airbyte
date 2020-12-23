@@ -65,7 +65,7 @@ Note that if you were developing a "real" Python connector, you should use the P
 Head to the connector directory and we should see the following files have been generated: 
 ```shell script
 $ cd ../../connectors/source-stock-ticker-api
-ls
+$ ls
 Dockerfile              NEW_SOURCE_CHECKLIST.md              build.gradle
 ```
 
@@ -84,7 +84,7 @@ At this stage in the tutorial, we just want to implement the `spec` operation. T
 
 To contact the stock ticker API, we need two things: 
 1. Which stock ticker we're interested in
-2. The API key to use when contacting the API (you can obtain a free API key from [IEX Cloud](https://iexcloud.io/docs/api)'s free plan)
+2. The API key to use when contacting the API (you can obtain a free API key from [IEX Cloud](https://iexcloud.io/docs/api) free plan)
 
 Let's create a [JSONSchema](http://json-schema.org/) file `spec.json` encoding these two requirements: 
 
@@ -104,6 +104,7 @@ Let's create a [JSONSchema](http://json-schema.org/) file `spec.json` encoding t
         "examples": ["AAPL", "TSLA", "AMZN"]
       },
       "api_key": {
+        "title": "API Key",
         "type": "string",
         "description": "The IEX Cloud API key to use to hit the API.",
         "airbyte_secret": true
@@ -135,6 +136,7 @@ Now, let's edit `source.py` to detect if the program was invoked with the `spec`
 import argparse  # helps parse commandline arguments
 import json
 import sys
+import os
 
 
 def read_json(filepath):
@@ -151,6 +153,7 @@ def spec():
     # Read the file named spec.json from the module directory as a JSON file
     current_script_directory = os.path.dirname(os.path.realpath(__file__))
     spec_path = os.path.join(current_script_directory, "spec.json")
+    specification = read_json(spec_path)
 
     # form an Airbyte Message containing the spec and print it to stdout
     airbyte_message = {"type": "SPEC", "spec": specification}
@@ -171,9 +174,9 @@ def run(args):
 
     if command == "spec":
         spec()
-    # If we don't recognize the command log the problem and exit with an error code greater than 0 to indicate the process
-    # had a failure
     else:
+        # If we don't recognize the command log the problem and exit with an error code greater than 0 to indicate the process
+        # had a failure
         log("Invalid command. Allowable commands: [spec]") 
         sys.exit(1)
 
@@ -258,7 +261,7 @@ In Airbyte, the contract for input files is that they will be available in the c
 
 and the following blocks in the argument parser: 
 ```python
-# Accept the check command
+    # Accept the check command
     check_parser = subparsers.add_parser("check", help="checks the config used to connect", parents=[parent_parser])
     required_check_parser = check_parser.add_argument_group("required named arguments")
     required_check_parser.add_argument("--config", type=str, required=True, help="path to the json configuration file")
@@ -432,7 +435,7 @@ $ python source.py read --config <config_file_path> --catalog <configured_catalo
 
 Each of these are described in the Airbyte Specification in detail, but we'll give a quick description of the two options we haven't seen so far: 
 * `--catalog` points to a Configured Catalog: a file telling the connector which streams to read and using which sync modes. While our connector is currently pretty simple (it only has 1 stream and only supports the full_refresh sync mode), the configured catalog is crucial when reading from sources which have many Streams or support many sync modes.
-* `--state` points to a state file. The state file is only relevant when some Streams are synced with the sync mode `incremental`. It is used by the connector to "bookmark" where it left off at the last sync (e.g: synced records whose `created_at` date was less than October 10th 2020). Then, when syncing a stream in incremental mode, this bookmark tells it which records to start reading (records whose `created_at` date is greater than October 10th 2020). See [the docs on Incremental Sync](../architecture/incremental.md) for more details.
+* `--state` points to a state file. The state file is only relevant when some Streams are synced with the sync mode `incremental`, so we'll cover the state file in more detail in the incremental section below.
 
 For our connector, the contents of those two files should be very unsurprising: the connector only supports on Stream, `stock_prices`, so we'd expect the input catalog to contain that stream configured to sync in full refresh. Since our connector doesn't support incremental sync (yet!) we'll ignore the state option for now. 
 
@@ -798,7 +801,7 @@ A full connector in less than 200 lines of code. Not bad! We're now ready to pac
 
 
 ### 3. Package the connector in a Docker image
-Our connector is very lightweight, so the Dockerfile needed to run it is very light as well. We add the following `Dockerfile` to our module: 
+Our connector is very lightweight, so the Dockerfile needed to run it is very light as well. We edit the autogenerated `Dockerfile` so that its contents are as followed: 
 ```dockerfile
 FROM python:3.7-slim
 
@@ -811,7 +814,7 @@ COPY source.py .
 COPY spec.json .
 
 # When this container is invoked, append the input argemnts to `python source.py`
-ENTRYPOINT ["python", "source.py"]
+ENTRYPOINT ["python", "/airbyte/integration_code/source.py"]
 
 # Airbyte's build system uses these labels to know what to name and tag the docker images produced by this Dockerfile.
 LABEL io.airbyte.name=airbyte/source-stock-ticker-api
@@ -848,7 +851,7 @@ $ docker run -v $(pwd)/secrets/valid_config.json:/data/config.json -v $(pwd)/ful
 and with that, we've packaged our connector in a functioning Docker image. The last requirement before calling this connector finished is to pass the [Airbyte Standard Test suite](../contributing-to-airbyte/building-new-connector/testing-connectors.md). 
 
 ### 4. Test the connector
-The minimum requirement for testing our connector is to pass the Airbyte Standard Test suite. You're encouraged to add custom test cases for your connector where it makes sense to do so e.g: to test edge cases that are not covered by the standard suite. But at the very least, you must pass 
+The minimum requirement for testing our connector is to pass the Airbyte Standard Test suite. You're encouraged to add custom test cases for your connector where it makes sense to do so e.g: to test edge cases that are not covered by the standard suite. But at the very least, you must pass Airbyte's Standard Test suite.  
 
 To integrate with the standard test suite, modify the generated `build.gradle` file as follows: 
 
@@ -864,7 +867,7 @@ airbyteStandardSourceTestFile {
     // All these input paths must live inside this connector's directory (or subdirectories)
     configPath = "secrets/valid_config.json"
     configuredCatalogPath = "fullrefresh_configured_catalog.json"
-    specPath = "spec.json"p
+    specPath = "spec.json"
 }
 
 dependencies {

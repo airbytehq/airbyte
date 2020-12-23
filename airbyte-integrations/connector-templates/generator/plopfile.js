@@ -34,7 +34,7 @@ module.exports = function (plop) {
   plop.setActionType('emitSuccess', function(answers, config, plopApi){
       console.log(getSuccessMessage(answers.name, plopApi.renderString(config.outputPath, answers)));
   });
-  
+
   plop.setGenerator('Python Source', {
     description: 'Generate an Airbyte Source written in Python',
     prompts: [{type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "google-analytics"'}],
