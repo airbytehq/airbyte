@@ -86,7 +86,7 @@ defmodule Airbyte.Cli do
 
       defp parse_config(args) do
         [config: config] = parse_options(args, config: :string)
-        spec = source().connection_specification()
+        spec = source().connection_specification_struct()
 
         config
         |> ConnectorSpecification.from_file(spec)
@@ -99,9 +99,13 @@ defmodule Airbyte.Cli do
       end
 
       defp parse_state(args) do
+        state = source().state_struct()
+
         case parse_options(args, state: :string) do
-          [state: state] -> state |> AirbyteStateMessage.from_file()
-          _ -> nil
+          [state: state] ->
+            state_message = state |> AirbyteStateMessage.from_file()
+            struct(state, state_message.data)
+          _ -> struct(state, %{})
         end
       end
 

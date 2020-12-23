@@ -12,10 +12,14 @@ defmodule Airbyte.Protocol.AirbyteStateMessage do
   typedstruct do
     @typedoc "Specification of an AirbyteStateMessage"
 
-    field(:data, any(), enforce: true)
+    field(:data, any() | nil, default: nil)
   end
 
   def from_file(path) do
     Helpers.json_to_struct(path, __MODULE__)
+  end
+
+  def from_data(data) do
+    %__MODULE__{data: data}
   end
 end
