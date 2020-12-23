@@ -100,7 +100,8 @@ public abstract class DbSourceDateTimeStandardTest {
 
     database.execute(connection -> {
       try {
-        connection.createStatement().execute(String.format("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), updated_at %s);", getDatetimeKeyword()));
+        connection.createStatement()
+            .execute(String.format("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), updated_at %s);", getDatetimeKeyword()));
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
         final PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO id_and_name (id, name, updated_at) VALUES (?,?,?)");
         preparedStatement.setInt(1, 1);

@@ -42,7 +42,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.MySQLContainer;
 
-//@Disabled
+@Disabled
 class MySqlStressTest extends JdbcStressTest {
 
   private static final String TEST_USER = "test";

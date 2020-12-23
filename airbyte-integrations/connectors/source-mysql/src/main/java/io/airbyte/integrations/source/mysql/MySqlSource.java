@@ -48,7 +48,7 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
   public JsonNode toJdbcConfig(JsonNode config) {
     ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put("username", config.get("username").asText())
-        .put("jdbc_url", String.format("jdbc:mysql://%s:%s/%s",
+        .put("jdbc_url", String.format("jdbc:mysql://%s:%s/%s?useCursorFetch=true",
             config.get("host").asText(),
             config.get("port").asText(),
             config.get("database").asText()));
