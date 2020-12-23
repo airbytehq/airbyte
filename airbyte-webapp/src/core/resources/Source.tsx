@@ -81,24 +81,6 @@ export default class SourceResource extends BaseResource implements Source {
     };
   }
 
-  static createShape<T extends typeof Resource>(this: T) {
-    return {
-      ...super.createShape(),
-      fetch: async (
-        _: Readonly<Record<string, string | number>>,
-        body: Readonly<object>
-      ): Promise<any> => {
-        const response = await this.fetch(
-          "post",
-          `${super.rootUrl()}web_backend/sources/create`,
-          body
-        );
-        return response;
-      },
-      schema: this.asSchema()
-    };
-  }
-
   static recreateShape<T extends typeof Resource>(this: T) {
     return {
       ...super.detailShape(),

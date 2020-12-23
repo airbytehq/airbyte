@@ -12,6 +12,8 @@ import { useCallback, useEffect, useState } from "react";
 import SourceDefinitionSpecificationResource, {
   SourceDefinitionSpecification
 } from "../../../core/resources/SourceDefinitionSpecification";
+import SchedulerResource from "../../../core/resources/Scheduler";
+import { NetworkError } from "../../../core/resources/BaseResource";
 
 type ValuesProps = {
   name: string;
@@ -79,6 +81,10 @@ const useSource = () => {
 
   const createSourcesImplementation = useFetcher(SourceResource.createShape());
 
+  const sourceCheckConnectionShape = useFetcher(
+    SchedulerResource.sourceCheckConnectionShape()
+  );
+
   const updatesource = useFetcher(SourceResource.updateShape());
 
   const recreatesource = useFetcher(SourceResource.recreateShape());
@@ -106,6 +112,22 @@ const useSource = () => {
     });
 
     try {
+      const checkConnectionResult = await sourceCheckConnectionShape({
+        sourceDefinitionId: sourceConnector?.sourceDefinitionId,
+        connectionConfiguration: values.connectionConfiguration
+      });
+
+      // If check connection for source has status 'failed'
+      if (checkConnectionResult.status === "failed") {
+        const e = new NetworkError(checkConnectionResult);
+        // Generate error with failed status and received logs
+        e.status = 400;
+        e.response = checkConnectionResult.job_info;
+        throw e;
+      }
+
+      // If check connection for source has status 'succeeded'
+      // Try to crete source
       const result = await createSourcesImplementation(
         {},
         {
@@ -143,6 +165,7 @@ const useSource = () => {
     }
   };
 
+  // TODO: check it! updateSource with new sourceCheckConnectionShape ? ? ?
   const updateSource = async ({
     values,
     sourceId
@@ -162,6 +185,7 @@ const useSource = () => {
     );
   };
 
+  // TODO: check it! use new sourceCheckConnectionShape ? ? ?
   const checkSourceConnection = useCallback(
     async ({ sourceId }: { sourceId: string }) => {
       return await sourceConnection({
