@@ -25,8 +25,9 @@ SOFTWARE.
 import json
 from typing import Dict, Generator
 
+import backoff
 from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, Type
-from apiclient import errors
+from apiclient import discovery, errors
 from base_python import AirbyteLogger, Source
 
 from .helpers import Helpers
@@ -101,9 +102,7 @@ class GoogleSheetsSource(Source):
             while not encountered_blank_row:
                 range = f"{sheet}!{row_cursor}:{row_cursor + ROW_BATCH_SIZE}"
                 logger.info(f"Fetching range {range}")
-                row_batch = SpreadsheetValues.parse_obj(
-                    client.values().batchGet(spreadsheetId=spreadsheet_id, ranges=range, majorDimension="ROWS").execute()
-                )
+                row_batch = self._parse_rows_data(client=client, spreadsheet_id=spreadsheet_id, range=range, major_dimension="ROWS")
                 row_cursor += ROW_BATCH_SIZE + 1
                 # there should always be one range since we requested only one
                 value_ranges = row_batch.valueRanges[0]
@@ -122,3 +121,9 @@ class GoogleSheetsSource(Source):
                     elif Helpers.row_contains_relevant_data(row, column_index_to_name.keys()):
                         yield AirbyteMessage(type=Type.RECORD, record=Helpers.row_data_to_record_message(sheet, row, column_index_to_name))
         logger.info(f"Finished syncing spreadsheet {spreadsheet_id}")
+
+    @backoff.on_exception(backoff.expo, errors.HttpError, max_time=60)
+    def _parse_rows_data(self, client: discovery.Resource, spreadsheet_id: str, range: str, major_dimension: str) -> SpreadsheetValues:
+        return SpreadsheetValues.parse_obj(
+            client.values().batchGet(spreadsheetId=spreadsheet_id, ranges=range, majorDimension=major_dimension).execute()
+        )

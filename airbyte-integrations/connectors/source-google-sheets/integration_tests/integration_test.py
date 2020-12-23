@@ -26,15 +26,14 @@ import json
 import pkgutil
 import shutil
 from pathlib import Path
-from time import sleep
-from typing import Dict, Tuple
+from typing import Dict
 
+import backoff
 from airbyte_protocol import ConfiguredAirbyteCatalog, ConnectorSpecification
-from apiclient import discovery
+from apiclient import discovery, errors
 from base_python_test import StandardSourceTestIface
 from google_sheets_source.helpers import Helpers
 from google_sheets_source.models.spreadsheet import Spreadsheet
-from googleapiclient.errors import HttpError
 
 # Override default permission scopes to allow creating and editing spreadsheets
 SCOPES = [
@@ -42,9 +41,6 @@ SCOPES = [
     "https://www.googleapis.com/auth/drive",
     "https://www.googleapis.com/auth/drive.file",
 ]
-
-# Specifies the time to delay when the limit of the request to create a test Google Sheet is exceeded (in seconds)
-DELAY_TIME = 30
 
 
 class GoogleSheetsSourceStandardTest(StandardSourceTestIface):
@@ -67,15 +63,8 @@ class GoogleSheetsSourceStandardTest(StandardSourceTestIface):
         Path(self._get_tmp_dir()).mkdir(parents=True, exist_ok=True)
 
         sheets_client = Helpers.get_authenticated_sheets_client(self._get_creds(), SCOPES)
-
-        while True:
-            status, spreadsheet_id = GoogleSheetsSourceStandardTest._create_spreadsheet(sheets_client)
-            if status:
-                break
-            if spreadsheet_id:
-                drive_client = Helpers.get_authenticated_drive_client(self._get_creds(), SCOPES)
-                drive_client.files().delete(fileId=spreadsheet_id).execute()
-            sleep(DELAY_TIME)
+        spreadsheet_id = self._create_spreadsheet(sheets_client)
+        self._set_spreadsheet_data(sheets_client, spreadsheet_id)
         self._write_spreadsheet_id(spreadsheet_id)
 
     def teardown(self) -> None:
@@ -102,8 +91,8 @@ class GoogleSheetsSourceStandardTest(StandardSourceTestIface):
     def _get_tmp_dir():
         return "/test_root/gsheet_test"
 
-    @staticmethod
-    def _create_spreadsheet(sheets_client: discovery.Resource) -> Tuple[bool, str]:
+    @backoff.on_exception(backoff.expo, errors.HttpError, max_time=60)
+    def _create_spreadsheet(self, sheets_client: discovery.Resource) -> str:
         """
         :return: spreadsheetId
         """
@@ -112,12 +101,12 @@ class GoogleSheetsSourceStandardTest(StandardSourceTestIface):
             "sheets": [{"properties": {"title": "sheet1"}}, {"properties": {"title": "sheet2"}}],
         }
 
-        try:
-            spreadsheet = Spreadsheet.parse_obj(sheets_client.create(body=request).execute())
-            spreadsheet_id = spreadsheet.spreadsheetId
-        except HttpError:
-            return False, None
+        spreadsheet = Spreadsheet.parse_obj(sheets_client.create(body=request).execute())
+        spreadsheet_id = spreadsheet.spreadsheetId
+        return spreadsheet_id
 
+    @backoff.on_exception(backoff.expo, errors.HttpError, max_time=60)
+    def _set_spreadsheet_data(self, sheets_client: discovery.Resource, spreadsheet_id: str):
         rows = [["header1", "irrelevant", "header3", "", "ignored"]]
         rows.extend([f"a{i}", "dontmindme", i] for i in range(300))
         rows.append(["lonely_left_value", "", ""])
@@ -125,16 +114,11 @@ class GoogleSheetsSourceStandardTest(StandardSourceTestIface):
         rows.append(["", "", ""])
         rows.append(["orphan1", "orphan2", "orphan3"])
 
-        try:
-            sheets_client.values().batchUpdate(
-                spreadsheetId=spreadsheet_id,
-                body={"data": {"majorDimension": "ROWS", "values": rows, "range": "sheet1"}, "valueInputOption": "RAW"},
-            ).execute()
-            sheets_client.values().batchUpdate(
-                spreadsheetId=spreadsheet_id,
-                body={"data": {"majorDimension": "ROWS", "values": rows, "range": "sheet2"}, "valueInputOption": "RAW"},
-            ).execute()
-        except HttpError:
-            return False, spreadsheet_id
-
-        return True, spreadsheet_id
+        sheets_client.values().batchUpdate(
+            spreadsheetId=spreadsheet_id,
+            body={"data": {"majorDimension": "ROWS", "values": rows, "range": "sheet1"}, "valueInputOption": "RAW"},
+        ).execute()
+        sheets_client.values().batchUpdate(
+            spreadsheetId=spreadsheet_id,
+            body={"data": {"majorDimension": "ROWS", "values": rows, "range": "sheet2"}, "valueInputOption": "RAW"},
+        ).execute()
