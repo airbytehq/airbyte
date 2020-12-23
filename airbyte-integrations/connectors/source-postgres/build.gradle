@@ -16,11 +16,11 @@ dependencies {
 
     implementation "org.postgresql:postgresql:42.2.18"
 
-    testImplementation project(':airbyte-test-utils')
     testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
+    testImplementation project(':airbyte-test-utils')
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'
-    testImplementation 'org.testcontainers:postgresql:1.15.0-rc2'
+    testImplementation 'org.testcontainers:postgresql:1.15.1'
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
 
