@@ -60,7 +60,7 @@ public interface JobPersistence {
    * @return job id
    * @throws IOException exception due to interaction with persistence
    */
-  Optional<Long> enqueueSingleNonTerminalJob(String scope, JobConfig jobConfig) throws IOException;
+  Optional<Long> enqueueSingletonJob(String scope, JobConfig jobConfig) throws IOException;
 
   /**
    * Set job status from current status to PENDING. Throws {@link IllegalStateException} if the job is
@@ -139,6 +139,8 @@ public interface JobPersistence {
   List<Job> listJobsWithStatus(JobConfig.ConfigType configType, JobStatus status) throws IOException;
 
   Optional<Job> getLastSyncJob(UUID connectionId) throws IOException;
+
+  Optional<Job> getLastResetJob(UUID connectionId) throws IOException;
 
   /**
    * if a job does not succeed, we assume that it synced nothing. that is the most conservative

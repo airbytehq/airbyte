@@ -33,6 +33,7 @@ import io.airbyte.scheduler.JobStatus;
 import io.airbyte.scheduler.persistence.JobCreator;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import java.io.IOException;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,27 +74,37 @@ public class DefaultSchedulerJobClient implements SchedulerJobClient {
   }
 
   @Override
-  public Job createSyncJob(SourceConnection source,
-                           DestinationConnection destination,
-                           StandardSync standardSync,
-                           String sourceDockerImage,
-                           String destinationDockerImage)
+  public Job createSyncJobOrGetCurrent(SourceConnection source,
+                                       DestinationConnection destination,
+                                       StandardSync standardSync,
+                                       String sourceDockerImage,
+                                       String destinationDockerImage)
       throws IOException {
-    final Long jobId = jobCreator.createSyncJob(
+    final Optional<Long> maybeJobId = jobCreator.createSyncJob(
         source,
         destination,
         standardSync,
         sourceDockerImage,
-        destinationDockerImage)
-        .orElseThrow(() -> new RuntimeException("There is already an active job"));
+        destinationDockerImage);
+
+    long jobId = maybeJobId.isEmpty()
+        ? jobPersistence.getLastSyncJob(standardSync.getConnectionId()).orElseThrow(() -> new RuntimeException("No job available")).getId()
+        : maybeJobId.get();
+
     return waitUntilJobIsTerminalOrTimeout(jobId);
   }
 
   @Override
-  public Job createResetConnectionJob(DestinationConnection destination, StandardSync standardSync, String destinationDockerImage)
+  public Job createResetConnectionJobOrGetCurrent(DestinationConnection destination,
+                                                  StandardSync standardSync,
+                                                  String destinationDockerImage)
       throws IOException {
-    final long jobId = jobCreator.createResetConnectionJob(destination, standardSync, destinationDockerImage)
-        .orElseThrow(() -> new RuntimeException("There is already an active job"));
+    final Optional<Long> maybeJobId = jobCreator.createResetConnectionJob(destination, standardSync, destinationDockerImage);
+
+    long jobId = maybeJobId.isEmpty()
+        ? jobPersistence.getLastResetJob(standardSync.getConnectionId()).orElseThrow(() -> new RuntimeException("No job available")).getId()
+        : maybeJobId.get();
+
     return waitUntilJobIsTerminalOrTimeout(jobId);
   }
 

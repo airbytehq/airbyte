@@ -208,7 +208,7 @@ public class DefaultJobCreatorTest {
         .withSync(jobSyncConfig);
 
     final String expectedScope = ScopeHelper.createScope(ConfigType.SYNC, STANDARD_SYNC.getConnectionId().toString());
-    when(jobPersistence.enqueueSingleNonTerminalJob(expectedScope, jobConfig)).thenReturn(Optional.of(JOB_ID));
+    when(jobPersistence.enqueueSingletonJob(expectedScope, jobConfig)).thenReturn(Optional.of(JOB_ID));
 
     final long jobId = jobCreator.createSyncJob(
         SOURCE_CONNECTION,
@@ -233,7 +233,7 @@ public class DefaultJobCreatorTest {
         .withSync(jobSyncConfig);
 
     final String expectedScope = ScopeHelper.createScope(ConfigType.SYNC, STANDARD_SYNC.getConnectionId().toString());
-    when(jobPersistence.enqueueSingleNonTerminalJob(expectedScope, jobConfig)).thenReturn(Optional.empty());
+    when(jobPersistence.enqueueSingletonJob(expectedScope, jobConfig)).thenReturn(Optional.empty());
 
     assertTrue(jobCreator.createSyncJob(
         SOURCE_CONNECTION,
@@ -259,7 +259,7 @@ public class DefaultJobCreatorTest {
         .withResetConnection(JobResetConnectionConfig);
 
     final String expectedScope = ScopeHelper.createScope(ConfigType.SYNC, STANDARD_SYNC.getConnectionId().toString());
-    when(jobPersistence.enqueueSingleNonTerminalJob(expectedScope, jobConfig)).thenReturn(Optional.of(JOB_ID));
+    when(jobPersistence.enqueueSingletonJob(expectedScope, jobConfig)).thenReturn(Optional.of(JOB_ID));
 
     final long jobId = jobCreator.createResetConnectionJob(
         DESTINATION_CONNECTION,
@@ -284,7 +284,7 @@ public class DefaultJobCreatorTest {
         .withResetConnection(JobResetConnectionConfig);
 
     final String expectedScope = ScopeHelper.createScope(ConfigType.SYNC, STANDARD_SYNC.getConnectionId().toString());
-    when(jobPersistence.enqueueSingleNonTerminalJob(expectedScope, jobConfig)).thenReturn(Optional.empty());
+    when(jobPersistence.enqueueSingletonJob(expectedScope, jobConfig)).thenReturn(Optional.empty());
 
     assertTrue(jobCreator.createResetConnectionJob(
         DESTINATION_CONNECTION,

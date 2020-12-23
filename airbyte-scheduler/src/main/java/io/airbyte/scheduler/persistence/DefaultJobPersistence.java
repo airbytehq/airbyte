@@ -98,7 +98,7 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public Optional<Long> enqueueSingleNonTerminalJob(String scope, JobConfig jobConfig) throws IOException {
+  public Optional<Long> enqueueSingletonJob(String scope, JobConfig jobConfig) throws IOException {
     LOGGER.info("attempt creating pending job for scope: " + scope);
     return internalCreateJob(scope, jobConfig, false);
   }
@@ -288,6 +288,14 @@ public class DefaultJobPersistence implements JobPersistence {
     return database.query(ctx -> getJobFromResult(ctx
         .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE scope = ? AND CAST(jobs.status AS VARCHAR) <> ? ORDER BY jobs.created_at DESC LIMIT 1",
             ScopeHelper.createScope(JobConfig.ConfigType.SYNC, connectionId.toString()),
+            JobStatus.CANCELLED.toString().toLowerCase())));
+  }
+
+  @Override
+  public Optional<Job> getLastResetJob(UUID connectionId) throws IOException {
+    return database.query(ctx -> getJobFromResult(ctx
+        .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE scope = ? AND CAST(jobs.status AS VARCHAR) <> ? ORDER BY jobs.created_at DESC LIMIT 1",
+            ScopeHelper.createScope(JobConfig.ConfigType.RESET_CONNECTION, connectionId.toString()),
             JobStatus.CANCELLED.toString().toLowerCase())));
   }
 

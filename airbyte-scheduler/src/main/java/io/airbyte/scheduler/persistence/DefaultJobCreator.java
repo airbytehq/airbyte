@@ -138,7 +138,7 @@ public class DefaultJobCreator implements JobCreator {
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(JobConfig.ConfigType.SYNC)
         .withSync(jobSyncConfig);
-    return jobPersistence.enqueueSingleNonTerminalJob(scope, jobConfig);
+    return jobPersistence.enqueueSingletonJob(scope, jobConfig);
   }
 
   // Strategy:
@@ -151,7 +151,7 @@ public class DefaultJobCreator implements JobCreator {
   @Override
   public Optional<Long> createResetConnectionJob(DestinationConnection destination, StandardSync standardSync, String destinationDockerImage)
       throws IOException {
-    final String scope = ScopeHelper.createScope(JobConfig.ConfigType.SYNC, standardSync.getConnectionId().toString());
+    final String scope = ScopeHelper.createScope(ConfigType.SYNC, standardSync.getConnectionId().toString());
 
     final ConfiguredAirbyteCatalog configuredAirbyteCatalog = AirbyteProtocolConverters.toConfiguredCatalog(standardSync.getSchema());
     configuredAirbyteCatalog.getStreams().forEach(configuredAirbyteStream -> configuredAirbyteStream.setSyncMode(SyncMode.FULL_REFRESH));
@@ -164,7 +164,7 @@ public class DefaultJobCreator implements JobCreator {
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(ConfigType.RESET_CONNECTION)
         .withResetConnection(resetConnectionConfig);
-    return jobPersistence.enqueueSingleNonTerminalJob(scope, jobConfig);
+    return jobPersistence.enqueueSingletonJob(scope, jobConfig);
   }
 
 }
