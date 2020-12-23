@@ -561,7 +561,7 @@ class DefaultJobPersistenceTest {
 
   @Test
   void testGetNextJobWithMultipleAttempts() throws IOException {
-    final long jobId = jobPersistence.createJob(SCOPE, JOB_CONFIG);
+    final long jobId = jobPersistence.enqueueJob(SCOPE, JOB_CONFIG);
     jobPersistence.failAttempt(jobId, jobPersistence.createAttempt(jobId, LOG_PATH));
     jobPersistence.failAttempt(jobId, jobPersistence.createAttempt(jobId, LOG_PATH));
     jobPersistence.resetJob(jobId);
@@ -578,7 +578,7 @@ class DefaultJobPersistenceTest {
     final State state = new State().withState(Jsons.jsonNode(ImmutableMap.of("checkpoint", 4)));
     final JobOutput jobOutput = new JobOutput().withOutputType(OutputType.SYNC).withSync(new StandardSyncOutput().withState(state));
 
-    final long jobId = jobPersistence.createJob(SCOPE, JOB_CONFIG);
+    final long jobId = jobPersistence.enqueueJob(SCOPE, JOB_CONFIG);
     jobPersistence.failAttempt(jobId, jobPersistence.createAttempt(jobId, LOG_PATH));
     final int attemptId = jobPersistence.createAttempt(jobId, LOG_PATH);
     jobPersistence.writeOutput(jobId, attemptId, jobOutput);
@@ -592,11 +592,11 @@ class DefaultJobPersistenceTest {
 
   @Test
   void testGetLastSyncJobWithMultipleAttempts() throws IOException {
-    final long jobId = jobPersistence.createJob(SCOPE, JOB_CONFIG);
+    final long jobId = jobPersistence.enqueueJob(SCOPE, JOB_CONFIG);
     jobPersistence.failAttempt(jobId, jobPersistence.createAttempt(jobId, LOG_PATH));
     jobPersistence.failAttempt(jobId, jobPersistence.createAttempt(jobId, LOG_PATH));
 
-    final Optional<Job> actual = jobPersistence.getLastSyncJob(UUID.fromString(ScopeHelper.getConfigId(SCOPE)));
+    final Optional<Job> actual = jobPersistence.getLastSyncScope(UUID.fromString(ScopeHelper.getConfigId(SCOPE)));
     final Job expected = getExpectedJobTwoAttempts(jobId, JobStatus.INCOMPLETE, AttemptStatus.FAILED);
 
     assertTrue(actual.isPresent());
