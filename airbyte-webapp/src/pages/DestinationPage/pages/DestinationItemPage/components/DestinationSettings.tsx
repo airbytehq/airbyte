@@ -83,7 +83,7 @@ const DestinationsSettings: React.FC<IProps> = ({
           dropDownData={[
             {
               value: currentDestination.destinationDefinitionId,
-              text: currentDestination.name,
+              text: currentDestination.destinationName,
               img: "/default-logo-catalog.svg"
             }
           ]}
