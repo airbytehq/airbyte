@@ -107,9 +107,11 @@ public class DefaultJobPersistence implements JobPersistence {
     LOGGER.info("creating pending job for scope: " + scope);
     final LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
 
-    String queueingRequest = !allowQueueing ? String.format("WHERE NOT EXISTS (SELECT 1 FROM jobs WHERE scope = '%s' and status NOT IN (%s)) ",
-        scope,
-        String.join(", ", getSQLTerminalStates())) : "";
+    String queueingRequest = !allowQueueing
+        ? String.format("WHERE NOT EXISTS (SELECT 1 FROM jobs WHERE scope = '%s' and status NOT IN (%s)) ",
+            scope,
+            String.join(", ", getSQLTerminalStates()))
+        : "";
 
     return database.query(
         ctx -> ctx.fetch(
