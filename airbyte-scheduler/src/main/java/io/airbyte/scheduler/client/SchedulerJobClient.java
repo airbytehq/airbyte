@@ -44,16 +44,16 @@ public interface SchedulerJobClient {
 
   Job createGetSpecJob(String dockerImage) throws IOException;
 
-  Job createSyncJobOrGetCurrent(SourceConnection source,
-                                DestinationConnection destination,
-                                StandardSync standardSync,
-                                String sourceDockerImage,
-                                String destinationDockerImage)
+  Job createOrGetActiveSyncJob(SourceConnection source,
+                               DestinationConnection destination,
+                               StandardSync standardSync,
+                               String sourceDockerImage,
+                               String destinationDockerImage)
       throws IOException;
 
-  Job createResetConnectionJobOrGetCurrent(DestinationConnection destination,
-                                           StandardSync standardSync,
-                                           String destinationDockerImage)
+  Job createOrGetActiveResetConnectionJob(DestinationConnection destination,
+                                          StandardSync standardSync,
+                                          String destinationDockerImage)
       throws IOException;
 
 }

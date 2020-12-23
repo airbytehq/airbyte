@@ -355,7 +355,7 @@ class SchedulerHandlerTest {
     when(configRepository.getStandardSync(standardSync.getConnectionId())).thenReturn(standardSync);
     when(configRepository.getSourceConnection(source.getSourceId())).thenReturn(source);
     when(configRepository.getDestinationConnection(destination.getDestinationId())).thenReturn(destination);
-    when(schedulerJobClient.createSyncJobOrGetCurrent(source, destination, standardSync, SOURCE_DOCKER_IMAGE, DESTINATION_DOCKER_IMAGE))
+    when(schedulerJobClient.createOrGetActiveSyncJob(source, destination, standardSync, SOURCE_DOCKER_IMAGE, DESTINATION_DOCKER_IMAGE))
         .thenReturn(completedJob);
     when(completedJob.getScope()).thenReturn("cat:12");
     final JobConfig jobConfig = mock(JobConfig.class);
@@ -368,7 +368,7 @@ class SchedulerHandlerTest {
     verify(configRepository).getStandardSync(standardSync.getConnectionId());
     verify(configRepository).getSourceConnection(standardSync.getSourceId());
     verify(configRepository).getDestinationConnection(standardSync.getDestinationId());
-    verify(schedulerJobClient).createSyncJobOrGetCurrent(source, destination, standardSync, SOURCE_DOCKER_IMAGE, DESTINATION_DOCKER_IMAGE);
+    verify(schedulerJobClient).createOrGetActiveSyncJob(source, destination, standardSync, SOURCE_DOCKER_IMAGE, DESTINATION_DOCKER_IMAGE);
   }
 
   @Test
@@ -392,7 +392,7 @@ class SchedulerHandlerTest {
     when(configRepository.getStandardSync(standardSync.getConnectionId())).thenReturn(standardSync);
     when(configRepository.getSourceConnection(source.getSourceId())).thenReturn(source);
     when(configRepository.getDestinationConnection(destination.getDestinationId())).thenReturn(destination);
-    when(schedulerJobClient.createResetConnectionJobOrGetCurrent(destination, standardSync, DESTINATION_DOCKER_IMAGE)).thenReturn(completedJob);
+    when(schedulerJobClient.createOrGetActiveResetConnectionJob(destination, standardSync, DESTINATION_DOCKER_IMAGE)).thenReturn(completedJob);
     when(completedJob.getScope()).thenReturn("cat:12");
     final JobConfig jobConfig = mock(JobConfig.class);
     when(completedJob.getConfig()).thenReturn(jobConfig);
@@ -403,7 +403,7 @@ class SchedulerHandlerTest {
     assertEquals(io.airbyte.api.model.JobStatus.SUCCEEDED, jobStatusRead.getJob().getStatus());
     verify(configRepository).getStandardSync(standardSync.getConnectionId());
     verify(configRepository).getDestinationConnection(standardSync.getDestinationId());
-    verify(schedulerJobClient).createResetConnectionJobOrGetCurrent(destination, standardSync, DESTINATION_DOCKER_IMAGE);
+    verify(schedulerJobClient).createOrGetActiveResetConnectionJob(destination, standardSync, DESTINATION_DOCKER_IMAGE);
   }
 
   @Test

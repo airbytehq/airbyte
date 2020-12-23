@@ -74,11 +74,11 @@ public class DefaultSchedulerJobClient implements SchedulerJobClient {
   }
 
   @Override
-  public Job createSyncJobOrGetCurrent(SourceConnection source,
-                                       DestinationConnection destination,
-                                       StandardSync standardSync,
-                                       String sourceDockerImage,
-                                       String destinationDockerImage)
+  public Job createOrGetActiveSyncJob(SourceConnection source,
+                                      DestinationConnection destination,
+                                      StandardSync standardSync,
+                                      String sourceDockerImage,
+                                      String destinationDockerImage)
       throws IOException {
     final Optional<Long> maybeJobId = jobCreator.createSyncJob(
         source,
@@ -95,9 +95,9 @@ public class DefaultSchedulerJobClient implements SchedulerJobClient {
   }
 
   @Override
-  public Job createResetConnectionJobOrGetCurrent(DestinationConnection destination,
-                                                  StandardSync standardSync,
-                                                  String destinationDockerImage)
+  public Job createOrGetActiveResetConnectionJob(DestinationConnection destination,
+                                                 StandardSync standardSync,
+                                                 String destinationDockerImage)
       throws IOException {
     final Optional<Long> maybeJobId = jobCreator.createResetConnectionJob(destination, standardSync, destinationDockerImage);
 
