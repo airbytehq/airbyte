@@ -67,24 +67,6 @@ export default class DestinationResource extends BaseResource
     };
   }
 
-  static createShape<T extends typeof Resource>(this: T) {
-    return {
-      ...super.createShape(),
-      fetch: async (
-        _: Readonly<Record<string, string | number>>,
-        body: Readonly<object>
-      ): Promise<any> => {
-        const response = await this.fetch(
-          "post",
-          `${super.rootUrl()}web_backend/destinations/create`,
-          body
-        );
-        return response;
-      },
-      schema: this.asSchema()
-    };
-  }
-
   static checkConnectionShape<T extends typeof Resource>(this: T) {
     return {
       ...super.detailShape(),

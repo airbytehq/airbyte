@@ -14,6 +14,7 @@ import { useCallback, useEffect, useState } from "react";
 import DestinationDefinitionSpecificationResource, {
   DestinationDefinitionSpecification
 } from "../../../core/resources/DestinationDefinitionSpecification";
+import SchedulerResource from "../../../core/resources/Scheduler";
 
 type ValuesProps = {
   name: string;
@@ -84,6 +85,10 @@ const useDestination = () => {
     DestinationResource.createShape()
   );
 
+  const destinationCheckConnectionShape = useFetcher(
+    SchedulerResource.destinationCheckConnectionShape()
+  );
+
   const updatedestination = useFetcher(DestinationResource.updateShape());
 
   const recreatedestination = useFetcher(DestinationResource.recreateShape());
@@ -114,6 +119,12 @@ const useDestination = () => {
     });
 
     try {
+      await destinationCheckConnectionShape({
+        destinationDefinitionId: destinationConnector?.destinationDefinitionId,
+        connectionConfiguration: values.connectionConfiguration
+      });
+
+      // Try to crete destination
       const result = await createDestinationsImplementation(
         {},
         {
@@ -131,7 +142,7 @@ const useDestination = () => {
               newdestinationId: string,
               destinationIds: { destinations: string[] }
             ) => ({
-              destinationDefinitions: [
+              destinations: [
                 ...(destinationIds?.destinations || []),
                 newdestinationId
               ]
@@ -161,6 +172,7 @@ const useDestination = () => {
     }
   };
 
+  // TODO: check it! updateSource with new sourceCheckConnectionShape ? ? ?
   const updateDestination = async ({
     values,
     destinationId
@@ -212,6 +224,7 @@ const useDestination = () => {
     );
   };
 
+  // TODO: check it! use new sourceCheckConnectionShape ? ? ?
   const checkDestinationConnection = useCallback(
     async ({ destinationId }: { destinationId: string }) => {
       return await destinationConnection({
