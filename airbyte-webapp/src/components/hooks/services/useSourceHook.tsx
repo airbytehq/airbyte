@@ -90,8 +90,6 @@ const useSource = () => {
 
   const sourceDelete = useFetcher(SourceResource.deleteShape());
 
-  const sourceConnection = useFetcher(SourceResource.checkConnectionShape());
-
   const updateConnectionsStore = useFetcher(
     ConnectionResource.updateStoreAfterDeleteShape()
   );
@@ -180,14 +178,13 @@ const useSource = () => {
     );
   };
 
-  // TODO: check it! use new sourceCheckConnectionShape ? ? ?
   const checkSourceConnection = useCallback(
     async ({ sourceId }: { sourceId: string }) => {
-      return await sourceConnection({
-        sourceId: sourceId
+      return await sourceCheckConnectionShape({
+        sourceId
       });
     },
-    [sourceConnection]
+    [sourceCheckConnectionShape]
   );
 
   const recreateSource = async ({

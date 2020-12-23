@@ -35,13 +35,14 @@ export default class SchedulerResource extends BaseResource
       getFetchKey: (params: {
         sourceDefinitionId: string;
         connectionConfiguration: propertiesType;
-      }) => `POST /scheduler/sources/check_connection` + JSON.stringify(params),
+      }) => `POST /sources/check_connection` + JSON.stringify(params),
       fetch: async (params: any): Promise<any> => {
-        const result = await this.fetch(
-          "post",
-          `${this.url(params)}/sources/check_connection`,
-          params
-        );
+        const url = !params.sourceId
+          ? `${this.url(params)}/sources/check_connection`
+          : `${super.rootUrl()}sources/check_connection`;
+        console.log(params.sourceId, url);
+
+        const result = await this.fetch("post", url, params);
 
         // If check connection for source has status 'failed'
         if (result.status === "failed") {
@@ -64,15 +65,13 @@ export default class SchedulerResource extends BaseResource
       getFetchKey: (params: {
         destinationDefinitionId: string;
         connectionConfiguration: propertiesType;
-      }) =>
-        `POST /scheduler/destinations/check_connection` +
-        JSON.stringify(params),
+      }) => `POST /destinations/check_connection` + JSON.stringify(params),
       fetch: async (params: any): Promise<any> => {
-        const result = await this.fetch(
-          "post",
-          `${this.url(params)}/destinations/check_connection`,
-          params
-        );
+        const url = !params.destinationId
+          ? `${this.url(params)}/destinations/check_connection`
+          : `${super.rootUrl()}destinations/check_connection`;
+
+        const result = await this.fetch("post", url, params);
 
         // If check connection for destination has status 'failed'
         if (result.status === "failed") {
