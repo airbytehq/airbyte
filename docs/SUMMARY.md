@@ -14,6 +14,7 @@
     * [Drift](integrations/sources/drift.md)
     * [Exchange Rates API](integrations/sources/exchangeratesapi-io.md)
     * [Facebook Marketing API](integrations/sources/facebook-marketing-api.md)
+    * [Facebook Marketing](integrations/sources/facebook-marketing.md)
     * [Files](integrations/sources/file.md)
     * [Freshdesk](integrations/sources/freshdesk.md)
     * [Intercom](integrations/sources/intercom.md)
