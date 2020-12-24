@@ -25,11 +25,12 @@ SOFTWARE.
 import json
 from typing import Dict, Generator
 
-import backoff
 from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, Type
-from apiclient import discovery, errors
+from apiclient import errors
 from base_python import AirbyteLogger, Source
+from requests.status_codes import codes as status_codes
 
+from .client import GoogleSheetsClient
 from .helpers import Helpers
 from .models.spreadsheet import Spreadsheet
 from .models.spreadsheet_values import SpreadsheetValues
@@ -51,11 +52,11 @@ class GoogleSheetsSource(Source):
         spreadsheet_id = config["spreadsheet_id"]
         try:
             # Attempt to get first row of sheet
-            client.get(spreadsheetId=spreadsheet_id, includeGridData=False, ranges="1:1").execute()
+            GoogleSheetsClient.get(client, spreadsheetId=spreadsheet_id, includeGridData=False, ranges="1:1")
         except errors.HttpError as err:
             reason = str(err)
             # Give a clearer message if it's a common error like 404.
-            if err.resp.status == 404:
+            if err.resp.status == status_codes.NOT_FOUND:
                 reason = "Requested spreadsheet was not found."
             logger.error(f"Formatted error: {reason}")
             return AirbyteConnectionStatus(status=Status.FAILED, message=str(reason))
@@ -67,7 +68,9 @@ class GoogleSheetsSource(Source):
         spreadsheet_id = config["spreadsheet_id"]
         try:
             logger.info(f"Running discovery on sheet {spreadsheet_id}")
-            spreadsheet_metadata = Spreadsheet.parse_obj(client.get(spreadsheetId=spreadsheet_id, includeGridData=False).execute())
+            spreadsheet_metadata = Spreadsheet.parse_obj(
+                GoogleSheetsClient.get(client, spreadsheetId=spreadsheet_id, includeGridData=False)
+            )
             sheet_names = [sheet.properties.title for sheet in spreadsheet_metadata.sheets]
             streams = []
             for sheet_name in sheet_names:
@@ -78,7 +81,7 @@ class GoogleSheetsSource(Source):
 
         except errors.HttpError as err:
             reason = str(err)
-            if err.resp.status == 404:
+            if err.resp.status == status_codes.NOT_FOUND:
                 reason = "Requested spreadsheet was not found."
             raise Exception(f"Could not run discovery: {reason}")
 
@@ -102,7 +105,9 @@ class GoogleSheetsSource(Source):
             while not encountered_blank_row:
                 range = f"{sheet}!{row_cursor}:{row_cursor + ROW_BATCH_SIZE}"
                 logger.info(f"Fetching range {range}")
-                row_batch = self._parse_rows_data(client=client, spreadsheet_id=spreadsheet_id, range=range, major_dimension="ROWS")
+                row_batch = SpreadsheetValues.parse_obj(
+                    GoogleSheetsClient.get_values(client, spreadsheetId=spreadsheet_id, ranges=range, majorDimension="ROWS")
+                )
                 row_cursor += ROW_BATCH_SIZE + 1
                 # there should always be one range since we requested only one
                 value_ranges = row_batch.valueRanges[0]
@@ -121,9 +126,3 @@ class GoogleSheetsSource(Source):
                     elif Helpers.row_contains_relevant_data(row, column_index_to_name.keys()):
                         yield AirbyteMessage(type=Type.RECORD, record=Helpers.row_data_to_record_message(sheet, row, column_index_to_name))
         logger.info(f"Finished syncing spreadsheet {spreadsheet_id}")
-
-    @backoff.on_exception(backoff.expo, errors.HttpError, max_time=60)
-    def _parse_rows_data(self, client: discovery.Resource, spreadsheet_id: str, range: str, major_dimension: str) -> SpreadsheetValues:
-        return SpreadsheetValues.parse_obj(
-            client.values().batchGet(spreadsheetId=spreadsheet_id, ranges=range, majorDimension=major_dimension).execute()
-        )

@@ -30,6 +30,7 @@ from airbyte_protocol import AirbyteRecordMessage, AirbyteStream, ConfiguredAirb
 from apiclient import discovery
 from google.oauth2 import service_account
 
+from .client import GoogleSheetsClient
 from .models.spreadsheet import RowData, Spreadsheet
 
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly", "https://www.googleapis.com/auth/drive.readonly"]
@@ -88,7 +89,7 @@ class Helpers(object):
     @staticmethod
     def get_first_row(client: discovery.Resource, spreadsheet_id: str, sheet_name: str) -> List[str]:
         spreadsheet = Spreadsheet.parse_obj(
-            client.get(spreadsheetId=spreadsheet_id, includeGridData=True, ranges=f"{sheet_name}!1:1").execute()
+            GoogleSheetsClient.get(client, spreadsheetId=spreadsheet_id, includeGridData=True, ranges=f"{sheet_name}!1:1")
         )
 
         # There is only one sheet since we are specifying the sheet in the requested ranges.
@@ -151,7 +152,7 @@ class Helpers(object):
 
     @staticmethod
     def get_sheets_in_spreadsheet(client: discovery.Resource, spreadsheet_id: str):
-        spreadsheet_metadata = Spreadsheet.parse_obj(client.get(spreadsheetId=spreadsheet_id, includeGridData=False).execute())
+        spreadsheet_metadata = Spreadsheet.parse_obj(GoogleSheetsClient.get(client, spreadsheetId=spreadsheet_id, includeGridData=False))
         return [sheet.properties.title for sheet in spreadsheet_metadata.sheets]
 
     @staticmethod

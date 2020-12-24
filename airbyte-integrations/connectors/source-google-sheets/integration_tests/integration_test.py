@@ -28,10 +28,10 @@ import shutil
 from pathlib import Path
 from typing import Dict
 
-import backoff
 from airbyte_protocol import ConfiguredAirbyteCatalog, ConnectorSpecification
-from apiclient import discovery, errors
+from apiclient import discovery
 from base_python_test import StandardSourceTestIface
+from google_sheets_source.client import GoogleSheetsClient
 from google_sheets_source.helpers import Helpers
 from google_sheets_source.models.spreadsheet import Spreadsheet
 
@@ -64,7 +64,6 @@ class GoogleSheetsSourceStandardTest(StandardSourceTestIface):
 
         sheets_client = Helpers.get_authenticated_sheets_client(self._get_creds(), SCOPES)
         spreadsheet_id = self._create_spreadsheet(sheets_client)
-        self._set_spreadsheet_data(sheets_client, spreadsheet_id)
         self._write_spreadsheet_id(spreadsheet_id)
 
     def teardown(self) -> None:
@@ -91,7 +90,6 @@ class GoogleSheetsSourceStandardTest(StandardSourceTestIface):
     def _get_tmp_dir():
         return "/test_root/gsheet_test"
 
-    @backoff.on_exception(backoff.expo, errors.HttpError, max_time=60)
     def _create_spreadsheet(self, sheets_client: discovery.Resource) -> str:
         """
         :return: spreadsheetId
@@ -101,12 +99,9 @@ class GoogleSheetsSourceStandardTest(StandardSourceTestIface):
             "sheets": [{"properties": {"title": "sheet1"}}, {"properties": {"title": "sheet2"}}],
         }
 
-        spreadsheet = Spreadsheet.parse_obj(sheets_client.create(body=request).execute())
+        spreadsheet = Spreadsheet.parse_obj(GoogleSheetsClient.create(sheets_client, body=request))
         spreadsheet_id = spreadsheet.spreadsheetId
-        return spreadsheet_id
 
-    @backoff.on_exception(backoff.expo, errors.HttpError, max_time=60)
-    def _set_spreadsheet_data(self, sheets_client: discovery.Resource, spreadsheet_id: str):
         rows = [["header1", "irrelevant", "header3", "", "ignored"]]
         rows.extend([f"a{i}", "dontmindme", i] for i in range(300))
         rows.append(["lonely_left_value", "", ""])
@@ -114,11 +109,15 @@ class GoogleSheetsSourceStandardTest(StandardSourceTestIface):
         rows.append(["", "", ""])
         rows.append(["orphan1", "orphan2", "orphan3"])
 
-        sheets_client.values().batchUpdate(
+        GoogleSheetsClient.update_values(
+            sheets_client,
             spreadsheetId=spreadsheet_id,
             body={"data": {"majorDimension": "ROWS", "values": rows, "range": "sheet1"}, "valueInputOption": "RAW"},
-        ).execute()
-        sheets_client.values().batchUpdate(
+        )
+        GoogleSheetsClient.update_values(
+            sheets_client,
             spreadsheetId=spreadsheet_id,
             body={"data": {"majorDimension": "ROWS", "values": rows, "range": "sheet2"}, "valueInputOption": "RAW"},
-        ).execute()
+        )
+
+        return spreadsheet_id
