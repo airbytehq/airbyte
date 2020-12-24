@@ -129,6 +129,7 @@
   "sources.running": "Running",
   "sources.cancelled": "Cancelled",
   "sources.incomplete": "Incomplete",
+  "sources.additionLogs": " Logs",
   "sources.emptyLogs": "Empty data",
   "sources.hour": "{hour}h ",
   "sources.minute": "{minute}m ",

@@ -10,11 +10,15 @@ import config from "../../../../config";
 import SourceDefinitionResource from "../../../../core/resources/SourceDefinition";
 import useSource from "../../../../components/hooks/services/useSourceHook";
 import { FormPageContent } from "../../../../components/SourceAndDestinationsBlocks";
+import { JobInfo } from "../../../../core/resources/Scheduler";
 
 const CreateSourcePage: React.FC = () => {
   const { push } = useRouter();
   const [successRequest, setSuccessRequest] = useState(false);
-  const [errorStatusRequest, setErrorStatusRequest] = useState<number>(0);
+  const [errorStatusRequest, setErrorStatusRequest] = useState<{
+    status: number;
+    response: JobInfo;
+  } | null>(null);
 
   const { sourceDefinitions } = useResource(
     SourceDefinitionResource.listShape(),
@@ -42,7 +46,7 @@ const CreateSourcePage: React.FC = () => {
     const connector = sourceDefinitions.find(
       item => item.sourceDefinitionId === values.serviceType
     );
-    setErrorStatusRequest(0);
+    setErrorStatusRequest(null);
     try {
       const result = await createSource({ values, sourceConnector: connector });
       setSuccessRequest(true);
@@ -51,10 +55,10 @@ const CreateSourcePage: React.FC = () => {
         push(`${Routes.Source}/${result.sourceId}`);
       }, 2000);
     } catch (e) {
-      setErrorStatusRequest(e.status);
+      setErrorStatusRequest(e);
     }
   };
-
+  console.log(errorStatusRequest?.status, errorStatusRequest);
   return (
     <>
       <PageTitle
@@ -63,10 +67,12 @@ const CreateSourcePage: React.FC = () => {
       />
       <FormPageContent>
         <SourceForm
+          afterSelectConnector={() => setErrorStatusRequest(null)}
           onSubmit={onSubmitSourceStep}
           dropDownData={sourcesDropDownData}
           hasSuccess={successRequest}
-          errorStatus={errorStatusRequest}
+          errorStatus={errorStatusRequest?.status}
+          jobInfo={errorStatusRequest?.response}
         />
       </FormPageContent>
     </>

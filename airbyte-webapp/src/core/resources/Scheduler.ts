@@ -3,7 +3,7 @@ import BaseResource, { NetworkError } from "./BaseResource";
 import { propertiesType } from "./SourceDefinitionSpecification";
 import { Attempt, JobItem } from "./Job";
 
-type JobInfo = {
+export type JobInfo = {
   job: JobItem;
   attempts: {
     attempt: Attempt;
@@ -40,16 +40,21 @@ export default class SchedulerResource extends BaseResource
         const url = !params.sourceId
           ? `${this.url(params)}/sources/check_connection`
           : `${super.rootUrl()}sources/check_connection`;
-        console.log(params.sourceId, url);
 
         const result = await this.fetch("post", url, params);
 
         // If check connection for source has status 'failed'
         if (result.status === "failed") {
+          // TODO: will delete jobInfo object if status comes right
+          const jobInfo = {
+            ...result.job_info,
+            job: { ...result.job_info.job, status: result.status }
+          };
+
           const e = new NetworkError(result);
           // Generate error with failed status and received logs
           e.status = 400;
-          e.response = result.job_info;
+          e.response = jobInfo;
           throw e;
         }
 
