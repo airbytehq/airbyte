@@ -11,7 +11,11 @@ import Label from "../Label";
 import SchemaView from "./components/SchemaView";
 import { IDataItem } from "../DropDown/components/ListItem";
 import EditControls from "../ServiceForm/components/EditControls";
-import { SyncMode, SyncSchema } from "../../core/resources/Schema";
+import {
+  SyncMode,
+  SyncSchema,
+  SyncSchemaStream
+} from "../../core/resources/Schema";
 import ResetDataModal from "../ResetDataModal";
 import { equal } from "../../utils/objects";
 
@@ -54,23 +58,60 @@ const FrequencyForm: React.FC<IProps> = ({
   isEditMode,
   successMessage
 }) => {
+  // get cursorField if it is empty and syncMode is INCREMENTAL
+  const getDefaultCursorField = (stream: SyncSchemaStream) => {
+    if (stream.defaultCursorField.length) {
+      return stream.defaultCursorField;
+    }
+    if (stream.fields?.length) {
+      return [stream.fields[0].cleanedName];
+    }
+
+    return stream.cursorField;
+  };
+
   const initialSchema = React.useMemo(
     () => ({
       streams: schema.streams.map(item => {
-        // If syncMode is null, FULL_REFRESH should be selected by default.
-        const itemWithSyncMode = !item.syncMode
-          ? {
-              ...item,
-              syncMode: SyncMode.FullRefresh
-            }
-          : item;
-
         // If the value in supportedSyncModes is empty assume the only supported sync mode is FULL_REFRESH.
         // Otherwise it supports whatever sync modes are present.
-        return !itemWithSyncMode.supportedSyncModes ||
-          !itemWithSyncMode.supportedSyncModes.length
-          ? { ...itemWithSyncMode, supportedSyncModes: [SyncMode.FullRefresh] }
-          : itemWithSyncMode;
+        const itemWithSupportedSyncModes =
+          !item.supportedSyncModes || !item.supportedSyncModes.length
+            ? { ...item, supportedSyncModes: [SyncMode.FullRefresh] }
+            : item;
+
+        // If syncMode isn't null - don't change item
+        if (!!itemWithSupportedSyncModes.syncMode) {
+          return itemWithSupportedSyncModes;
+        }
+
+        const hasFullRefreshOption = itemWithSupportedSyncModes.supportedSyncModes.includes(
+          SyncMode.FullRefresh
+        );
+
+        const hasIncrementalOption = !!itemWithSupportedSyncModes.supportedSyncModes.includes(
+          SyncMode.Incremental
+        );
+
+        // If syncMode is null, FULL_REFRESH should be selected by default (if it support FULL_REFRESH).
+        return hasFullRefreshOption
+          ? {
+              ...itemWithSupportedSyncModes,
+              syncMode: SyncMode.FullRefresh
+            }
+          : hasIncrementalOption // If source support INCREMENTAL and not FULL_REFRESH. Set INCREMENTAL
+          ? {
+              ...itemWithSupportedSyncModes,
+              cursorField: itemWithSupportedSyncModes.cursorField.length
+                ? itemWithSupportedSyncModes.cursorField
+                : getDefaultCursorField(itemWithSupportedSyncModes),
+              syncMode: SyncMode.Incremental
+            }
+          : // If source don't support INCREMENTAL and FULL_REFRESH - set first value from supportedSyncModes list
+            {
+              ...itemWithSupportedSyncModes,
+              syncMode: itemWithSupportedSyncModes.supportedSyncModes[0]
+            };
       })
     }),
     [schema.streams]

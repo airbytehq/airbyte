@@ -53,7 +53,7 @@ public class RedshiftDestination extends AbstractJdbcDestination implements Dest
   protected static final String COLUMN_NAME = AbstractJdbcDestination.COLUMN_NAME;
 
   public RedshiftDestination() {
-    super("com.amazon.redshift.jdbc.Driver", null, new RedshiftSQLNaming());
+    super("com.amazon.redshift.jdbc.Driver", null, new RedshiftSQLNameTransformer());
   }
 
   @Override

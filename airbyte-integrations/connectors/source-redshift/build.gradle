@@ -26,9 +26,8 @@ dependencies {
     testImplementation 'org.apache.commons:commons-lang3:3.11'
     testImplementation 'org.apache.commons:commons-dbcp2:2.7.0'
 
-    testImplementation project(':airbyte-test-utils')
-
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
+    integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-redshift')
 
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 }

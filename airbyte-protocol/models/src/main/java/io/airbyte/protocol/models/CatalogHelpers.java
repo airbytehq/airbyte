@@ -113,6 +113,13 @@ public class CatalogHelpers {
     return fieldsToJsonSchema(Arrays.asList(fields));
   }
 
+  /**
+   * Maps a list of fields into a JsonSchema object with names and types. This method will throw if it
+   * receives multiple fields with the same name.
+   *
+   * @param fields fields to map to JsonSchema
+   * @return JsonSchema representation of the fields.
+   */
   public static JsonNode fieldsToJsonSchema(List<Field> fields) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("type", "object")

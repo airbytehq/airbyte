@@ -1,5 +1,5 @@
 - sourceDefinitionId: 9fed261d-d107-47fd-8c8b-323023db6e20
-  name: exchangeratesapi.io
+  name: Exchange Rates Api
   dockerRepository: airbyte/source-exchangeratesapi-singer
   dockerImageTag: 0.1.8
   documentationUrl: https://hub.docker.com/r/airbyte/integration-singer-exchangeratesapi_io-source
@@ -21,7 +21,7 @@
 - sourceDefinitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
   name: Microsoft SQL Server (MSSQL)
   dockerRepository: airbyte/source-mssql
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.6
   documentationUrl: https://hub.docker.com/r/airbyte/source-mssql
 - sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   name: Postgres
@@ -96,7 +96,7 @@
 - sourceDefinitionId: e87ffa8e-a3b5-f69c-9076-6011339de1f6
   name: Redshift
   dockerRepository: airbyte/source-redshift
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://hub.docker.com/repository/docker/airbyte/source-redshift
 - sourceDefinitionId: 932e6363-d006-4464-a9f5-102b82e07c06
   name: Twilio
@@ -148,6 +148,11 @@
   dockerRepository: airbyte/source-zoom-singer
   dockerImageTag: 0.1.0
   documentationUrl: https://hub.docker.com/r/airbyte/source-zoom-singer
+- sourceDefinitionId: eaf50f04-21dd-4620-913b-2a83f5635227
+  name: Microsoft teams
+  dockerRepository: airbyte/source-microsoft-teams
+  dockerImageTag: 0.1.0
+  documentationUrl: https://hub.docker.com/r/airbyte/source-microsoft-teams
 - sourceDefinitionId: 445831eb-78db-4b1f-8f1f-0d96ad8739e2
   name: Drift
   dockerRepository: airbyte/source-drift
