@@ -26,6 +26,7 @@ import pytest
 from source_facebook_marketing.client import Client
 
 
+# FIXME
 def test__heal_check_with_wrong_token():
     client = Client(access_token="wrong_key")
     alive, error = client.health_check()

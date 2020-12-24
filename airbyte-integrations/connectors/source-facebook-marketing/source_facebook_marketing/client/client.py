@@ -22,8 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 from datetime import datetime
-from typing import Generator, Sequence, Tuple
+from typing import Generator, Sequence, Tuple, List
 
+from airbyte_protocol import AirbyteStream, AirbyteRecordMessage
 from dateutil.parser import isoparse
 from base_python import BaseClient
 
@@ -288,5 +289,24 @@ class Client(BaseClient):
 
         raise FacebookAPIException("Couldn't find account with id {}".format(account_id))
 
+    # FIXME: implement
     def health_check(self) -> Tuple[bool, str]:
         return True, "Error"
+
+    # FIXME: filter fields
+    @staticmethod
+    def _get_fields_from_stream(stream: AirbyteStream) -> List[str]:
+        print(stream.json_schema)
+        return []
+
+    def read_stream(self, stream: AirbyteStream) -> Generator[AirbyteRecordMessage, None, None]:
+        """Yield records from stream"""
+        method = self._stream_methods.get(stream.name)
+        if not method:
+            raise ValueError(f"Client does not know how to read stream `{stream.name}`")
+
+        fields = self._get_fields_from_stream(stream)
+
+        for message in method(fields=fields):
+            now = int(datetime.now().timestamp()) * 1000
+            yield AirbyteRecordMessage(stream=stream.name, data=message, emitted_at=now)

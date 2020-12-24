@@ -21,28 +21,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-from typing import Generator
-
-import airbyte_protocol
-from airbyte_protocol import AirbyteMessage, ConfiguredAirbyteCatalog
-from base_python import BaseSource, AirbyteLogger, ConfigContainer
+from base_python import BaseSource
 
 from .client import Client
 
 
 class SourceFacebookMarketing(BaseSource):
     client_class = Client
-
-    def read(
-            self, logger: AirbyteLogger, config_container: ConfigContainer, catalog_path, state=None
-    ) -> Generator[AirbyteMessage, None, None]:
-        client = self._get_client(config_container)
-
-        config = self.read_config(catalog_path)
-        catalog = ConfiguredAirbyteCatalog.parse_obj(config)
-
-        logger.info(f"Starting syncing {self.__class__.__name__}")
-        for configured_stream in catalog.streams:
-            for record in client.read_stream(configured_stream.stream):
-                yield AirbyteMessage(type=airbyte_protocol.Type.RECORD, record=record)
-        logger.info(f"Finished syncing {self.__class__.__name__}")
