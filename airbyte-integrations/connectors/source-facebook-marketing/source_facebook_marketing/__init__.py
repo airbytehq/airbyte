@@ -23,6 +23,6 @@ SOFTWARE.
 """
 
 from .client import Client
-from .source import SourceDrift
+from .source import SourceFacebookMarketing
 
-__all__ = ["SourceDrift", "Client"]
+__all__ = ["SourceFacebookMarketing", "Client"]
