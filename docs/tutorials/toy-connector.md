@@ -2,13 +2,12 @@
 description: Building a toy source connector to illustrate Airbyte's main concepts  
 ---
 
-# Build a new connector
+# Understand Airbyte by building a toy connector
 
 This tutorial walks you through building a simple Airbyte source to demonstrate the following concepts in Action: 
 * [The Airbyte Specification](../architecture/airbyte-specification.md) and the interface implemented by a source connector
 * [Packaging your connector](../contributing-to-airbyte/building-new-connector/README.md#1-implement--package-the-connector) 
 * [Testing your connector](../contributing-to-airbyte/building-new-connector/testing-connectors.md)
-* [Adding incremental sync to your connector](../architecture/incremental.md)
 
 We intentionally don't use helper libraries provided by Airbyte so that this tutorial is self-contained. If you were building a "real" source, 
 you'll want to use the helper modules provided by Airbyte. We'll mention those at the very end. For now, let's get started.
@@ -971,9 +970,9 @@ Now from the "Sources" page (if not redirected, click "Sources" on the left pane
 on the following page, click the "add destination" button then "add new destination": 
 ![](../.gitbook/assets/newsourcetutorial_add_destination.png)
  
-Configure a local CSV destination as follows: 
+Configure a local JSON destination as follows: 
 ![](../.gitbook/assets/newsourcetutorial_destination_config.png)
-Note that we setup the output directory to `/local/tutorial_csv_test`. When we run syncs, we'll find the output on our local filesystem in `/tmp/airbyte_local/tutorial_csv_test`. 
+Note that we setup the output directory to `/local/tutorial_json`. When we run syncs, we'll find the output on our local filesystem in `/tmp/airbyte_local/tutorial_json`. 
 
 Finally, setup the connection configuration: 
 ![](../.gitbook/assets/newsourcetutorial_schema_select.png)
@@ -994,13 +993,12 @@ Let's verify the output. From your shell, run:
 
 
 ```shell script
-$ cat /tmp/airbyte_local/tutorial_csv_test/stock_prices_raw.csv
-ab_id,emitted_at,data
-5387a713-50ed-44ec-b5f4-3dc37a125bc6,1608675308000,"{""date"":""2020-12-15"",""stock_ticker"":""TSLA"",""price"":633.25}"
-185acb31-c655-4ec1-a76d-de6032c70aad,1608675308000,"{""date"":""2020-12-16"",""stock_ticker"":""TSLA"",""price"":622.77}"
-820b727e-7e61-4a16-be0d-b74bb6398386,1608675308000,"{""date"":""2020-12-17"",""stock_ticker"":""TSLA"",""price"":655.9}"
-f6722922-8efe-4580-987e-aedbaeed5062,1608675308000,"{""date"":""2020-12-18"",""stock_ticker"":""TSLA"",""price"":695}"
-91c00dbe-0fac-4499-8de0-4314a09ac339,1608675308000,"{""date"":""2020-12-21"",""stock_ticker"":""TSLA"",""price"":649.86}"
+$ airbyte_local cat /tmp/airbyte_local/tutorial_json/stock_prices_raw.jsonl
+  {"ab_id":"5fd36107-6a79-4d64-ab36-900184b3848c","emitted_at":1608877192000,"data":{"date":"2020-12-18","stock_ticker":"TSLA","price":695}}
+  {"ab_id":"8109396a-e3b9-4ada-b527-2f539c9e016e","emitted_at":1608877192000,"data":{"date":"2020-12-21","stock_ticker":"TSLA","price":649.86}}
+  {"ab_id":"203f5d55-260a-44c7-9b70-d4fb79b55aa5","emitted_at":1608877192000,"data":{"date":"2020-12-22","stock_ticker":"TSLA","price":640.34}}
+  {"ab_id":"4ee525c6-ee96-4b0c-889d-555ee23298e0","emitted_at":1608877192000,"data":{"date":"2020-12-23","stock_ticker":"TSLA","price":645.98}}
+  {"ab_id":"240157c9-b226-438e-8ffd-5039c91ff882","emitted_at":1608877192000,"data":{"date":"2020-12-24","stock_ticker":"TSLA","price":661.77}}
 ```
 
 Congratulations! We've successfully written a fully functioning Airbyte connector. You're an Airbyte contributor now ;)
