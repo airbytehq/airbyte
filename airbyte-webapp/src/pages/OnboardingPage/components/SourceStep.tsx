@@ -12,6 +12,9 @@ import usePrepareDropdownLists from "./usePrepareDropdownLists";
 
 import config from "../../../config";
 import { IDataItem } from "../../../components/DropDown/components/ListItem";
+import { createFormErrorMessage } from "../../../utils/errorStatusMessage";
+import { JobInfo } from "../../../core/resources/Scheduler";
+import { JobsLogItem } from "../../../components/JobItem";
 
 type IProps = {
   source?: Source;
@@ -24,6 +27,8 @@ type IProps = {
   dropDownData: IDataItem[];
   hasSuccess?: boolean;
   errorStatus?: number;
+  jobInfo?: JobInfo;
+  afterSelectConnector?: () => void;
 };
 
 const SourceStep: React.FC<IProps> = ({
@@ -31,7 +36,9 @@ const SourceStep: React.FC<IProps> = ({
   dropDownData,
   hasSuccess,
   errorStatus,
-  source
+  source,
+  jobInfo,
+  afterSelectConnector
 }) => {
   const [sourceId, setSourceId] = useState("");
   const {
@@ -50,6 +57,10 @@ const SourceStep: React.FC<IProps> = ({
       connector_source_id: sourceDefinition?.sourceDefinitionId
     });
 
+    if (afterSelectConnector) {
+      afterSelectConnector();
+    }
+
     setSourceId(sourceId);
   };
   const onSubmitForm = async (values: { name: string; serviceType: string }) =>
@@ -58,12 +69,7 @@ const SourceStep: React.FC<IProps> = ({
       sourceDefinitionId: sourceDefinitionSpecification?.sourceDefinitionId
     });
 
-  const errorMessage =
-    errorStatus === 0 ? null : errorStatus === 400 ? (
-      <FormattedMessage id="form.validationError" />
-    ) : (
-      <FormattedMessage id="form.someError" />
-    );
+  const errorMessage = createFormErrorMessage(errorStatus);
 
   useEffect(() => setSourceId(source?.sourceDefinitionId || ""), [source]);
 
@@ -82,6 +88,7 @@ const SourceStep: React.FC<IProps> = ({
         isLoading={isLoading}
         formValues={source}
       />
+      <JobsLogItem jobInfo={jobInfo} />
     </ContentCard>
   );
 };
