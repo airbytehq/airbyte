@@ -36,7 +36,6 @@ import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.commons.stream.MoreStreams;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
@@ -65,6 +64,7 @@ import io.airbyte.workers.protocols.airbyte.DefaultAirbyteDestination;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -437,12 +437,12 @@ public abstract class TestDestination {
         .filter(message -> message.getType() == AirbyteMessage.Type.RECORD)
         .map(AirbyteMessage::getRecord)
         .peek(recordMessage -> recordMessage.setEmittedAt(null))
-        .map(recordMessage -> pruneAirbyteInternalFields ? this.safePrune(recordMessage) : recordMessage)
+        .map(recordMessage -> pruneAirbyteInternalFields ? safePrune(recordMessage) : recordMessage)
         .map(recordMessage -> recordMessage.getData())
         .collect(Collectors.toList());
 
     final List<JsonNode> actualProcessed = actual.stream()
-        .map(recordMessage -> pruneAirbyteInternalFields ? this.safePrune(recordMessage) : recordMessage)
+        .map(recordMessage -> pruneAirbyteInternalFields ? safePrune(recordMessage) : recordMessage)
         .map(recordMessage -> recordMessage.getData())
         .collect(Collectors.toList());
 
@@ -458,15 +458,10 @@ public abstract class TestDestination {
     while (expectedIterator.hasNext() && actualIterator.hasNext()) {
       final JsonNode expectedData = expectedIterator.next();
       final JsonNode actualData = actualIterator.next();
-      // todo (cgardens) - hack filter out hash id fields, so that the comparison is the same. this is a
-      // hack to get tests to pass since a chance in normalization started to handle nesting.
-      final List<Entry<String, JsonNode>> expectedDataFiltered = MoreStreams.toStream(expectedData.fields())
-          .filter(e -> !e.getKey().toLowerCase().contains("hashid"))
-          .collect(Collectors.toList());
-      final Iterator<Entry<String, JsonNode>> expectedDataIterator = expectedDataFiltered.iterator();
+      final Iterator<Entry<String, JsonNode>> expectedDataIterator = expectedData.fields();
       LOGGER.info("Expected row {}", expectedData);
       LOGGER.info("Actual row   {}", actualData);
-      assertEquals(expectedData.size(), expectedDataFiltered.size());
+      assertEquals(expectedData.size(), actualData.size());
       while (expectedDataIterator.hasNext()) {
         final Entry<String, JsonNode> expectedEntry = expectedDataIterator.next();
         final JsonNode expectedValue = expectedEntry.getValue();
@@ -521,8 +516,15 @@ public abstract class TestDestination {
       // likely did not exist in the original message. the most consistent thing to do is always remove
       // the null fields (this choice does decrease our ability to check that normalization creates
       // columns even if all the values in that column are null)
-      if (Sets.newHashSet("emitted_at", "ab_id", "normalized_at", "EMITTED_AT", "AB_ID", "NORMALIZED_AT").contains(key) || key.matches("^_.*_hashid$")
-          || json.get(key).isNull()) {
+      final HashSet<String> airbyteInternalFields = Sets.newHashSet(
+          "emitted_at",
+          "ab_id",
+          "normalized_at",
+          "EMITTED_AT",
+          "AB_ID",
+          "NORMALIZED_AT",
+          "hashid");
+      if (airbyteInternalFields.stream().anyMatch(key::contains) || json.get(key).isNull()) {
         ((ObjectNode) json).remove(key);
       }
     }
