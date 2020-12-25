@@ -524,7 +524,8 @@ public abstract class TestDestination {
           "AB_ID",
           "NORMALIZED_AT",
           "HASHID");
-      if (airbyteInternalFields.stream().anyMatch(key::contains) || json.get(key).isNull()) {
+      if (airbyteInternalFields.stream().anyMatch(internalField -> key.toLowerCase().contains(internalField.toLowerCase()))
+          || json.get(key).isNull()) {
         ((ObjectNode) json).remove(key);
       }
     }
