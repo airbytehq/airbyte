@@ -128,7 +128,7 @@
   "sources.pending": "Pending",
   "sources.running": "Running",
   "sources.cancelled": "Cancelled",
-  "sources.incomplete": "Incomplete",
+  "sources.incomplete": "Retrying",
   "sources.additionLogs": " Logs",
   "sources.emptyLogs": "Empty data",
   "sources.hour": "{hour}h ",
