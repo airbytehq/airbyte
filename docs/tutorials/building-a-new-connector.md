@@ -15,6 +15,19 @@ you'll want to use the helper modules provided by Airbyte. We'll mention those a
 
 This tutorial can be done entirely on your local workstation. 
 
+### Requirements
+To run this tutorial, you'll need:
+ * Docker, Python, and Java with the versions listed in the [tech stack section](../architecture/tech-stack.md).
+ * The `requests` Python package installed via `pip install requests` (or `pip3` if `pip` is linked to a Python2 installation on your system)
+
+**A note on running Python**: all the commands below assume that `python` points to a version of python 3. Verify this by running 
+```shell script
+$ python --version
+Python 3.7.9
+```
+
+On some systems, `python` points to a Python2 installation and `python3` points to Python3. If this is the case on your machine, substitute all `python` commands in this guide with `python3` . Otherwise, make sre to install Python 3 before beginning. 
+
 ## Our connector: a stock ticker API
 Our connector will output the daily price of a stock since a given date. We'll leverage the free [IEX Cloud API](https://iexcloud.io/docs/api/) for this.
 We'll use Python to implement the connector because its syntax is accessible to most programmers, but the process described here can be applied 
@@ -78,13 +91,15 @@ $ touch source.py
 ```                                                                                    
 
 #### Implement the spec operation
-At this stage in the tutorial, we just want to implement the `spec` operation. This involves a couple of steps: 
+At this stage in the tutorial, we just want to implement the `spec` operation as described in the [Airbyte Protocol](https://docs.airbyte.io/architecture/airbyte-specification#spec). This involves a couple of steps: 
 1. Decide which inputs we need from the user in order to connect to the stock ticker API i.e: the connector's specification, and encode it as a JSON file. 
 2. Identify when the connector has been invoked with the `spec` operation and return the specification as an `AirbyteMessage` 
 
 To contact the stock ticker API, we need two things: 
 1. Which stock ticker we're interested in
-2. The API key to use when contacting the API (you can obtain a free API key from [IEX Cloud](https://iexcloud.io/docs/api) free plan)
+2. The API key to use when contacting the API (you can obtain a free API token from the [IEX Cloud](https://iexcloud.io/) free plan)
+
+For reference, the API docs we'll be using [can be found here](https://iexcloud.io/docs/api/).
 
 Let's create a [JSONSchema](http://json-schema.org/) file `spec.json` encoding these two requirements: 
 
@@ -194,7 +209,7 @@ if __name__ == "__main__":
 ```
 
 Some notes on the above code: 
-1. Airbyte connectors are CLIs which communicate via stdout, so the output of the command is simply a JSON string formatted according to the Airbyte Specification. So to "return" a value we use `print` to output the return value to stdout.  
+1. As described in the [specification](https://docs.airbyte.io/architecture/airbyte-specification#key-takeaways), Airbyte connectors are CLIs which communicate via stdout, so the output of the command is simply a JSON string formatted according to the Airbyte Specification. So to "return" a value we use `print` to output the return value to stdout.  
 2. All Airbyte commands can output log messages that take the form `{"type":"LOG", "log":"message"}`, so we create a helper method `log(message)` to allow logging.  
 
 Now if we run `python source.py spec` we should see the specification printed out: 
@@ -207,7 +222,7 @@ $ python source.py spec
 We've implemented the first command! Three more and we'll have a working connector. 
 
 #### Implementing check connection
-The second command to implement is `check --config <config_name>`, which tell the user whether a config file they gave us is correct. In our case, "correct" means they input a valid stock ticker and a correct API key like we declare via the `spec` operation. 
+The second command to implement is the [check operation](https://docs.airbyte.io/architecture/airbyte-specification#key-takeaways) `check --config <config_name>`, which tells the user whether a config file they gave us is correct. In our case, "correct" means they input a valid stock ticker and a correct API key like we declare via the `spec` operation. 
 
 To achieve this, we'll: 
 1. Create valid and invalid configuration files to test the success and failure cases with our connector. We'll place config files in the `secrets/` directory which is gitignored everywhere in the Airbyte monorepo by default to avoid accidentally checking in API keys. 
@@ -218,8 +233,7 @@ Let's first add the configuration files:
 ```shell script
 $ mkdir secrets
 $ echo '{"api_key": "<put_your_key_here>", "stock_ticker": "TSLA"}' > secrets/valid_config.json
-$ echo '{"api_key": "not_a_real_key", "stock_ticker": "TSLA"}' > secrets/invalid_config1.json
-$ echo '{"api_key": "<put_your_key_here>", "stock_ticker": "not_a_real_ticker"}' > secrets/invalid_config2.json
+$ echo '{"api_key": "not_a_real_key", "stock_ticker": "TSLA"}' > secrets/invalid_config.json
 ```
 Make sure to add your actual API key instead of the placeholder value `<put_your_key_here>` when following the tutorial. 
 
@@ -313,16 +327,14 @@ and that should be it. Let's test our new method method:
 ```shell script
 $ python source.py check --config secrets/valid_config.json
 {'type': 'CONNECTION_STATUS', 'connectionStatus': {'status': 'SUCCEEDED'}}
-$ python source.py check --config secrets/invalid_config1.json
+$ python source.py check --config secrets/invalid_config.json
 {'type': 'CONNECTION_STATUS', 'connectionStatus': {'status': 'FAILED', 'message': 'API Key is incorrect.'}}
-$ python source.py check --config secrets/invalid_config2.json
-{'type': 'CONNECTION_STATUS', 'connectionStatus': {'status': 'FAILED', 'message': 'Input configuration is incorrect. Please verify the input stock ticker and API key.'}}
 ```
 
 Our connector is able to detect valid and invalid configs correctly. Two methods down, two more to go!
 
 #### Implementing Discover
-The `discover` command ouputs a Catalog, a struct which declares the Streams and Fields (Airbyte's equivalents of tables and columns) output by the connector and the sync modes they support. For more information on those concepts, see [Airbyte Specification](../architecture/airbyte-specification.md). For this tutorial, we'll assume familiarity with those concepts. 
+The `discover` command, described in the [Airbyte Specification](https://docs.airbyte.io/architecture/airbyte-specification#discover), ouputs a Catalog, a struct which declares the Streams and Fields (Airbyte's equivalents of tables and columns) output by the connector and the sync modes they support. For more information on those concepts, see [Airbyte Specification](../architecture/airbyte-specification.md). For this tutorial, we'll assume familiarity with those concepts. 
 
 The data output by this connector will be structured in a very simple way. This connector outputs records belonging to exactly one Stream (table). Each record contains three Fields (columns): `date`, `price`, and `stock_ticker`, corresponding to the price of a stock on a given day.  
 
@@ -428,7 +440,7 @@ $ python source.py discover --config secrets/valid_config.json
 With that, we're done implementing the `discover` command. 
 
 #### Implementing the read operation
-The above operations are all required, but a connector ultimately exists to read data! This is where the `read` command comes in. The format of the command is: 
+We've done a lot so far, but a connector ultimately exists to read data! This is where the [`read` command](https://docs.airbyte.io/architecture/airbyte-specification#read) comes in. The format of the command is: 
 ```shell script
 $ python source.py read --config <config_file_path> --catalog <configured_catalog.json> [--state <state_file_path>]
 ```
@@ -840,6 +852,9 @@ $ docker run airbyte/source-stock-ticker-api:dev spec
 $ docker run -v $(pwd)/secrets/valid_config.json:/data/config.json airbyte/source-stock-ticker-api:dev check --config /data/config.json
 {'type': 'CONNECTION_STATUS', 'connectionStatus': {'status': 'SUCCEEDED'}}
 
+$ docker run -v $(pwd)/secrets/valid_config.json:/data/config.json airbyte/source-stock-ticker-api:dev discover --config /data/config.json
+{"type": "CATALOG", "catalog": {"streams": [{"name": "stock_prices", "supported_sync_modes": ["full_refresh"], "json_schema": {"properties": {"date": {"type": "string"}, "price": {"type": "number"}, "stock_ticker": {"type": "string"}}}}]}}
+
 $ docker run -v $(pwd)/secrets/valid_config.json:/data/config.json -v $(pwd)/fullrefresh_configured_catalog.json:/data/fullrefresh_configured_catalog.json airbyte/source-stock-ticker-api:dev read --config /data/config.json --catalog /data/fullrefresh_configured_catalog.json
 {'type': 'RECORD', 'record': {'stream': 'stock_prices', 'data': {'date': '2020-12-15', 'stock_ticker': 'TSLA', 'price': 633.25}, 'emitted_at': 1608628424000}}
 {'type': 'RECORD', 'record': {'stream': 'stock_prices', 'data': {'date': '2020-12-16', 'stock_ticker': 'TSLA', 'price': 622.77}, 'emitted_at': 1608628424000}}
@@ -996,7 +1011,7 @@ Armed with the knowledge you gained in this guide, here are some places you can 
 3. While not required, we love contributions! if you end up creating a new connector, we're here to help you make it available to everyone using Airybte. Remember that you're never expected to maintain a connector by yourself if you merge it to Airbyte -- we're committed to supporting connectors if you can't do it yourself.  
 
 ## Optional additions  
-This section is not yet complete and will be completed in a couple of days. Please reach out to us on [Slack](slack.airbyte.io) or [Github](github.com/airbytehq/airbyte) if you need the information promised by these sections immediately.  
+This section is not yet complete and will be completed soon. Please reach out to us on [Slack](slack.airbyte.io) or [Github](github.com/airbytehq/airbyte) if you need the information promised by these sections immediately.  
 
 ### Incremental sync
 
