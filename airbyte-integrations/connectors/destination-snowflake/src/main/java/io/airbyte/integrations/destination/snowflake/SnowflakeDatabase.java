@@ -56,6 +56,8 @@ public class SnowflakeDatabase {
 
     properties.put("networkTimeout", Math.toIntExact(NETWORK_TIMEOUT.toSeconds()));
     properties.put("queryTimeout", Math.toIntExact(QUERY_TIMEOUT.toSeconds()));
+    // allows queries to contain any number of statements.
+    properties.put("MULTI_STATEMENT_COUNT", 0);
 
     return DriverManager.getConnection(connectUrl, properties);
   }
