@@ -25,6 +25,7 @@
     * [Hubspot](integrations/sources/hubspot.md)
     * [HTTP Request](integrations/sources/http-request.md)
     * [Jira](integrations/sources/jira.md)
+    * [Looker](integrations/sources/looker.md)
     * [Mailchimp](integrations/sources/mailchimp.md)
     * [Marketo](integrations/sources/marketo.md)
     * [Mixpanel](integrations/sources/mixpanel.md)
