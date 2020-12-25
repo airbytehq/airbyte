@@ -523,7 +523,7 @@ public abstract class TestDestination {
           "EMITTED_AT",
           "AB_ID",
           "NORMALIZED_AT",
-          "hashid");
+          "HASHID");
       if (airbyteInternalFields.stream().anyMatch(key::contains) || json.get(key).isNull()) {
         ((ObjectNode) json).remove(key);
       }
