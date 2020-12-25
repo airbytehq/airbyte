@@ -153,6 +153,11 @@ public class LocalJsonDestination implements Destination {
     }
 
     @Override
+    protected void startTracked() {
+
+    }
+
+    @Override
     protected void acceptTracked(AirbyteMessage message) throws Exception {
 
       // ignore other message types.

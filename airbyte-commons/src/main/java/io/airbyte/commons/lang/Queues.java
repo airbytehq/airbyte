@@ -22,6 +22,30 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination;
+package io.airbyte.commons.lang;
 
-public interface SqlDestinationOperations extends BufferedWriteOperations, InsertTableOperations, TableCreationOperations {}
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
+public class Queues {
+
+  public static <T> Stream<T> toStream(CloseableQueue<T> queue) {
+    return StreamSupport.stream(new Spliterators.AbstractSpliterator<>(Long.MAX_VALUE, Spliterator.ORDERED) {
+
+      @Override
+      public boolean tryAdvance(Consumer<? super T> action) {
+        final T record = queue.poll();
+        if (record == null) {
+          return false;
+        }
+        action.accept(record);
+        return true;
+      }
+
+    }, false);
+  }
+
+}

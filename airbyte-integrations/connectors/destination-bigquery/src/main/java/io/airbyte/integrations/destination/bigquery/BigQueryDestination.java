@@ -305,6 +305,11 @@ public class BigQueryDestination implements Destination {
     }
 
     @Override
+    protected void startTracked() {
+      // no op
+    }
+
+    @Override
     public void acceptTracked(AirbyteMessage message) {
       // ignore other message types.
       if (message.getType() == AirbyteMessage.Type.RECORD) {

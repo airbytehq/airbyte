@@ -34,4 +34,8 @@ public class JavaBaseConstants {
   public static String ARGS_CATALOG_DESC = "input path for the catalog";
   public static String ARGS_PATH_DESC = "path to the json-encoded state file";
 
+  public static String COLUMN_NAME_AB_ID = "ab_id";
+  public static String COLUMN_NAME_EMITTED_AT = "emitted_at";
+  public static String COLUMN_NAME_DATA = "data";
+
 }
