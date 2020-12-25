@@ -105,9 +105,12 @@ public class SnowflakeIntegrationTest extends TestDestination {
   }
 
   private List<JsonNode> retrieveRecordsFromTable(String tableName) throws SQLException, InterruptedException {
+    // todo (cgardens) - see https://github.com/airbytehq/airbyte/pull/1446.
+    final String emittedAtColumn =
+        tableName.toLowerCase().endsWith("raw") || tableName.toLowerCase().endsWith("raw\"") ? "emitted_at" : "_airbyte_emitted_at";
     return SnowflakeDatabase.executeSync(
         SnowflakeDatabase.getConnectionFactory(getConfig()),
-        String.format("SELECT * FROM %s ORDER BY emitted_at ASC;", tableName),
+        String.format("SELECT * FROM %s ORDER BY %s ASC;", tableName, emittedAtColumn),
         false,
         rs -> {
           try {

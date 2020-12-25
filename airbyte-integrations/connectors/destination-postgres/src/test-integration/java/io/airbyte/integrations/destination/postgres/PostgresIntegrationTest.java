@@ -113,10 +113,13 @@ public class PostgresIntegrationTest extends TestDestination {
   }
 
   private List<JsonNode> retrieveRecordsFromTable(String tableName) throws SQLException {
+    // todo (cgardens) - see https://github.com/airbytehq/airbyte/pull/1446.
+    final String emittedAtColumn =
+        tableName.toLowerCase().endsWith("raw") || tableName.toLowerCase().endsWith("raw\"") ? "emitted_at" : "_airbyte_emitted_at";
     return Databases.createPostgresDatabase(db.getUsername(), db.getPassword(),
         db.getJdbcUrl()).query(
             ctx -> ctx
-                .fetch(String.format("SELECT * FROM %s ORDER BY emitted_at ASC;", tableName))
+                .fetch(String.format("SELECT * FROM %s ORDER BY %s ASC;", tableName, emittedAtColumn))
                 .stream()
                 .map(r -> r.formatJSON(JSON_FORMAT))
                 .map(Jsons::deserialize)

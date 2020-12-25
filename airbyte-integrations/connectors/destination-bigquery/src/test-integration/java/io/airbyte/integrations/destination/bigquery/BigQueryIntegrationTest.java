@@ -120,10 +120,13 @@ public class BigQueryIntegrationTest extends TestDestination {
   }
 
   private List<JsonNode> retrieveRecordsFromTable(TestDestinationEnv env, String tableName) throws InterruptedException {
+    // todo (cgardens) - see https://github.com/airbytehq/airbyte/pull/1446.
+    final String emittedAtColumn =
+        tableName.toLowerCase().endsWith("raw") || tableName.toLowerCase().endsWith("raw\"") ? "emitted_at" : "_airbyte_emitted_at";
     final QueryJobConfiguration queryConfig =
         QueryJobConfiguration
             .newBuilder(
-                String.format("SELECT * FROM `%s`.`%s` order by emitted_at asc;", dataset.getDatasetId().getDataset(), tableName))
+                String.format("SELECT * FROM `%s`.`%s` order by %s asc;", dataset.getDatasetId().getDataset(), tableName, emittedAtColumn))
             .setUseLegacySql(false).build();
 
     TableResult queryResults = executeQuery(bigquery, queryConfig).getLeft().getQueryResults();

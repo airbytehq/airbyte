@@ -110,13 +110,15 @@ public class RedshiftIntegrationTest extends TestDestination {
 
   private List<JsonNode> retrieveRecordsFromTable(String tableName) throws SQLException {
     final String schemaName = config.get("schema").asText();
-    return getDatabase().query(
-        ctx -> ctx
-            .fetch(String.format("SELECT * FROM %s.%s ORDER BY emitted_at ASC;", schemaName, tableName))
-            .stream()
-            .map(r -> r.formatJSON(JSON_FORMAT))
-            .map(Jsons::deserialize)
-            .collect(Collectors.toList()));
+    // todo (cgardens) - see https://github.com/airbytehq/airbyte/pull/1446.
+    final String emittedAtColumn =
+        tableName.toLowerCase().endsWith("raw") || tableName.toLowerCase().endsWith("raw\"") ? "emitted_at" : "_airbyte_emitted_at";
+    return getDatabase().query(ctx -> ctx
+        .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, emittedAtColumn))
+        .stream()
+        .map(r -> r.formatJSON(JSON_FORMAT))
+        .map(Jsons::deserialize)
+        .collect(Collectors.toList()));
   }
 
   // for each test we create a new schema in the database. run the test in there and then remove it.
