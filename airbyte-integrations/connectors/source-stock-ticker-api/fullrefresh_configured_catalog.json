@@ -3,9 +3,7 @@
     {
       "stream": {
         "name": "stock_prices",
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "json_schema": {
           "properties": {
             "date": {
