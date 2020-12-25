@@ -10,6 +10,8 @@ import DestinationDefinitionSpecificationResource from "../../../../../core/reso
 import useDestination from "../../../../../components/hooks/services/useDestinationHook";
 import DeleteBlock from "../../../../../components/DeleteBlock";
 import { Connection } from "../../../../../core/resources/Connection";
+import { JobInfo } from "../../../../../core/resources/Scheduler";
+import { JobsLogItem } from "../../../../../components/JobItem";
 
 const Content = styled.div`
   width: 100%;
@@ -27,9 +29,10 @@ const DestinationsSettings: React.FC<IProps> = ({
   connectionsWithDestination
 }) => {
   const [saved, setSaved] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | React.ReactNode>(
-    ""
-  );
+  const [errorStatusRequest, setErrorStatusRequest] = useState<{
+    statusMessage: string | React.ReactNode;
+    response: JobInfo;
+  } | null>(null);
 
   const destinationSpecification = useResource(
     DestinationDefinitionSpecificationResource.detailShape(),
@@ -45,7 +48,7 @@ const DestinationsSettings: React.FC<IProps> = ({
     serviceType: string;
     connectionConfiguration?: any;
   }) => {
-    setErrorMessage("");
+    setErrorStatusRequest(null);
     try {
       await updateDestination({
         values,
@@ -55,12 +58,16 @@ const DestinationsSettings: React.FC<IProps> = ({
 
       setSaved(true);
     } catch (e) {
-      const errorStatus = e.status;
-      errorStatus === 0
-        ? setErrorMessage("")
-        : errorStatus === 400
-        ? setErrorMessage(<FormattedMessage id="form.validationError" />)
-        : setErrorMessage(<FormattedMessage id="form.someError" />);
+      const errorStatusMessage =
+        e.status === 0 ? (
+          ""
+        ) : e.status === 400 ? (
+          <FormattedMessage id="form.validationError" />
+        ) : (
+          <FormattedMessage id="form.someError" />
+        );
+
+      setErrorStatusRequest({ ...e, statusMessage: errorStatusMessage });
     }
   };
 
@@ -93,8 +100,9 @@ const DestinationsSettings: React.FC<IProps> = ({
           }}
           specifications={destinationSpecification.connectionSpecification}
           successMessage={saved && <FormattedMessage id="form.changesSaved" />}
-          errorMessage={errorMessage}
+          errorMessage={errorStatusRequest?.statusMessage}
         />
+        <JobsLogItem jobInfo={errorStatusRequest?.response} />
       </ContentCard>
       <DeleteBlock type="destination" onDelete={onDelete} />
     </Content>

@@ -10,6 +10,8 @@ import useSource from "../../../../../components/hooks/services/useSourceHook";
 import SourceDefinitionSpecificationResource from "../../../../../core/resources/SourceDefinitionSpecification";
 import DeleteBlock from "../../../../../components/DeleteBlock";
 import { Connection } from "../../../../../core/resources/Connection";
+import { JobInfo } from "../../../../../core/resources/Scheduler";
+import { JobsLogItem } from "../../../../../components/JobItem";
 
 const Content = styled.div`
   max-width: 813px;
@@ -26,9 +28,10 @@ const SourceSettings: React.FC<IProps> = ({
   connectionsWithSource
 }) => {
   const [saved, setSaved] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | React.ReactNode>(
-    ""
-  );
+  const [errorStatusRequest, setErrorStatusRequest] = useState<{
+    statusMessage: string | React.ReactNode;
+    response: JobInfo;
+  } | null>(null);
 
   const { updateSource, deleteSource } = useSource();
 
@@ -44,7 +47,7 @@ const SourceSettings: React.FC<IProps> = ({
     serviceType: string;
     connectionConfiguration?: any;
   }) => {
-    setErrorMessage("");
+    setErrorStatusRequest(null);
     try {
       await updateSource({
         values,
@@ -54,12 +57,16 @@ const SourceSettings: React.FC<IProps> = ({
 
       setSaved(true);
     } catch (e) {
-      const errorStatus = e.status;
-      errorStatus === 0
-        ? setErrorMessage("")
-        : errorStatus === 400
-        ? setErrorMessage(<FormattedMessage id="form.validationError" />)
-        : setErrorMessage(<FormattedMessage id="form.someError" />);
+      const errorStatusMessage =
+        e.status === 0 ? (
+          ""
+        ) : e.status === 400 ? (
+          <FormattedMessage id="form.validationError" />
+        ) : (
+          <FormattedMessage id="form.someError" />
+        );
+
+      setErrorStatusRequest({ ...e, statusMessage: errorStatusMessage });
     }
   };
 
@@ -82,7 +89,7 @@ const SourceSettings: React.FC<IProps> = ({
             }
           ]}
           successMessage={saved && <FormattedMessage id="form.changesSaved" />}
-          errorMessage={errorMessage}
+          errorMessage={errorStatusRequest?.statusMessage}
           formValues={{
             ...currentSource,
             serviceType: currentSource.sourceDefinitionId
@@ -91,6 +98,7 @@ const SourceSettings: React.FC<IProps> = ({
             sourceDefinitionSpecification?.connectionSpecification
           }
         />
+        <JobsLogItem jobInfo={errorStatusRequest?.response} />
       </ContentCard>
       <DeleteBlock type="source" onDelete={onDelete} />
     </Content>

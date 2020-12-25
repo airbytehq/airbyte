@@ -80,10 +80,16 @@ export default class SchedulerResource extends BaseResource
 
         // If check connection for destination has status 'failed'
         if (result.status === "failed") {
+          // TODO: will delete jobInfo object if status comes right
+          const jobInfo = {
+            ...result.job_info,
+            job: { ...result.job_info.job, status: result.status }
+          };
+
           const e = new NetworkError(result);
           // Generate error with failed status and received logs
           e.status = 400;
-          e.response = result.job_info;
+          e.response = jobInfo;
           throw e;
         }
 

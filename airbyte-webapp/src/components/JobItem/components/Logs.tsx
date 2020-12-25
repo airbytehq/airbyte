@@ -6,6 +6,7 @@ const Logs = styled.div`
   line-height: 18px;
   color: ${({ theme }) => theme.darkPrimaryColor};
   font-family: ${({ theme }) => theme.codeFont};
+  word-wrap: break-word;
 `;
 
 export default Logs;
