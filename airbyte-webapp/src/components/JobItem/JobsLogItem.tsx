@@ -24,7 +24,7 @@ const Item = styled.div<{ isFailed: boolean }>`
 const JobItem: React.FC<IProps> = ({ jobInfo }) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  if (!jobInfo || !jobInfo?.attempts.length) {
+  if (!jobInfo || !jobInfo?.attempts?.length) {
     return null;
   }
 

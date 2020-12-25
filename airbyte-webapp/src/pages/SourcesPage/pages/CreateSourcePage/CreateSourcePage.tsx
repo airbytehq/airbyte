@@ -58,7 +58,7 @@ const CreateSourcePage: React.FC = () => {
       setErrorStatusRequest(e);
     }
   };
-  console.log(errorStatusRequest?.status, errorStatusRequest);
+
   return (
     <>
       <PageTitle
