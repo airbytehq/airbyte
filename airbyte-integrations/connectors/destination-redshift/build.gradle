@@ -11,7 +11,7 @@ application {
 
 repositories {
     maven {
-        url "https://repository.mulesoft.org/nexus/content/repositories/public/"
+        url "https://s3.amazonaws.com/redshift-maven-repository/release"
     }
 }
 
@@ -21,7 +21,7 @@ dependencies {
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-integrations:connectors:destination-jdbc')
 
-    implementation 'com.amazon.redshift:redshift-jdbc42:1.2.43.1067'
+    implementation 'com.amazon.redshift:redshift-jdbc42:1.2.43.1067 '
 
     testImplementation 'org.apache.commons:commons-text:1.9'
     testImplementation 'org.apache.commons:commons-lang3:3.11'
