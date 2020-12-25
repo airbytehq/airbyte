@@ -10,6 +10,7 @@ import { useSourceDefinitionSpecificationLoad } from "../../../../../components/
 import { IDataItem } from "../../../../../components/DropDown/components/ListItem";
 import { JobInfo } from "../../../../../core/resources/Scheduler";
 import { JobsLogItem } from "../../../../../components/JobItem";
+import { createFormErrorMessage } from "../../../../../utils/errorStatusMessage";
 
 type IProps = {
   onSubmit: (values: {
@@ -70,12 +71,7 @@ const SourceForm: React.FC<IProps> = ({
     });
   };
 
-  const errorMessage =
-    !errorStatus || errorStatus === 0 ? null : errorStatus === 400 ? (
-      <FormattedMessage id="form.validationError" />
-    ) : (
-      <FormattedMessage id="form.someError" />
-    );
+  const errorMessage = createFormErrorMessage(errorStatus);
 
   return (
     <ContentCard title={<FormattedMessage id="onboarding.sourceSetUp" />}>

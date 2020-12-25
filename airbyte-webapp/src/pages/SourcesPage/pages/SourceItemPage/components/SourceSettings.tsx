@@ -12,6 +12,7 @@ import DeleteBlock from "../../../../../components/DeleteBlock";
 import { Connection } from "../../../../../core/resources/Connection";
 import { JobInfo } from "../../../../../core/resources/Scheduler";
 import { JobsLogItem } from "../../../../../components/JobItem";
+import { createFormErrorMessage } from "../../../../../utils/errorStatusMessage";
 
 const Content = styled.div`
   max-width: 813px;
@@ -57,14 +58,7 @@ const SourceSettings: React.FC<IProps> = ({
 
       setSaved(true);
     } catch (e) {
-      const errorStatusMessage =
-        e.status === 0 ? (
-          ""
-        ) : e.status === 400 ? (
-          <FormattedMessage id="form.validationError" />
-        ) : (
-          <FormattedMessage id="form.someError" />
-        );
+      const errorStatusMessage = createFormErrorMessage(e.status);
 
       setErrorStatusRequest({ ...e, statusMessage: errorStatusMessage });
     }
