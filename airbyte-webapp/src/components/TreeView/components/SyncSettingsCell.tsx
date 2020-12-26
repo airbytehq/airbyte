@@ -110,6 +110,7 @@ const SyncSettingsCell: React.FC<IProps> = ({ item, onSelect }) => {
     <Cell>
       <DropDownContainer>
         <StyledDropDown
+          fullText
           hasFilter
           withBorder
           value={currentValue}
