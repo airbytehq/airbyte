@@ -1,6 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import StatusIcon from "../../StatusIcon";
+import Status from "../../../core/statuses";
 
 type IProps = {
   id: string;
@@ -79,7 +80,7 @@ const Step: React.FC<IProps> = ({
       lightMode={lightMode}
     >
       {lightMode ? null : <Num isActive={isActive}>{num}</Num>}
-      {status ? <StatusIcon success={status !== "failed"} /> : null}
+      {status ? <StatusIcon success={status !== Status.FAILED} /> : null}
       {name}
     </StepView>
   );

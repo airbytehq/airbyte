@@ -2,6 +2,7 @@ import { Resource } from "rest-hooks";
 import BaseResource, { NetworkError } from "./BaseResource";
 import { propertiesType } from "./SourceDefinitionSpecification";
 import { Attempt, JobItem } from "./Job";
+import Status from "../statuses";
 
 export type JobInfo = {
   job: JobItem;
@@ -44,7 +45,7 @@ export default class SchedulerResource extends BaseResource
         const result = await this.fetch("post", url, params);
 
         // If check connection for source has status 'failed'
-        if (result.status === "failed") {
+        if (result.status === Status.FAILED) {
           const jobInfo = {
             ...result.job_info,
             job: { ...result.job_info.job, status: result.status }
@@ -78,7 +79,7 @@ export default class SchedulerResource extends BaseResource
         const result = await this.fetch("post", url, params);
 
         // If check connection for destination has status 'failed'
-        if (result.status === "failed") {
+        if (result.status === Status.FAILED) {
           const jobInfo = {
             ...result.job_info,
             job: { ...result.job_info.job, status: result.status }

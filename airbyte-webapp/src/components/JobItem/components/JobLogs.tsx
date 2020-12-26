@@ -8,6 +8,7 @@ import DownloadButton from "./DownloadButton";
 import Logs from "./Logs";
 import Tabs from "./Tabs";
 import CenteredDetails from "./CenteredDetails";
+import Status from "../../../core/statuses";
 
 type IProps = {
   id: number;
@@ -33,7 +34,7 @@ const JobLogs: React.FC<IProps> = ({ id, jobIsFailed }) => {
   const data = job.attempts.map((item, key: any) => ({
     id: key,
     status:
-      item.status === "failed" || item.status === "succeeded"
+      item.status === Status.FAILED || item.status === Status.SUCCEEDED
         ? item.status
         : undefined,
     name: (
