@@ -65,6 +65,7 @@
   * [Full Refresh](architecture/full-refresh.md)
   * [Incremental](architecture/incremental.md)
   * [Basic Normalization](architecture/basic-normalization.md)
+  * [Job State Machine](architecture/job-state-machine.md)
 * [Contributing to Airbyte](contributing-to-airbyte/README.md)
   * [Code of Conduct](contributing-to-airbyte/code-of-conduct.md)
   * [Developing Locally](contributing-to-airbyte/developing-locally.md)
