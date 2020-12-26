@@ -6,7 +6,6 @@ import StepsMenu from "../../StepsMenu";
 type IProps = {
   isFailed?: boolean;
   activeStep?: string;
-  setAttemptNumber?: (id: string) => void;
   onSelect?: (id: string) => void;
   data: {
     id: string;
@@ -23,18 +22,13 @@ const TabsContent = styled.div<{ isFailed?: boolean }>`
       isFailed ? theme.dangerTransparentColor : theme.greyColor20};
 `;
 
-const Tabs: React.FC<IProps> = ({
-  isFailed,
-  activeStep,
-  setAttemptNumber,
-  data
-}) => {
+const Tabs: React.FC<IProps> = ({ isFailed, activeStep, onSelect, data }) => {
   return (
     <TabsContent isFailed={isFailed}>
       <StepsMenu
         lightMode
         activeStep={activeStep}
-        onSelect={setAttemptNumber}
+        onSelect={onSelect}
         data={data}
       />
     </TabsContent>

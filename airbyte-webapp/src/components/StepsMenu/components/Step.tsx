@@ -34,6 +34,10 @@ const StepView = styled.div<{
   font-size: 14px;
   line-height: 15px;
   transition: 0.3s;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
 `;
 
 const Num = styled.div<{ isActive?: boolean }>`

@@ -32,7 +32,10 @@ const JobLogs: React.FC<IProps> = ({ id, jobIsFailed }) => {
 
   const data = job.attempts.map((item, key: any) => ({
     id: key,
-    status: item.status,
+    status:
+      item.status === "failed" || item.status === "succeeded"
+        ? item.status
+        : undefined,
     name: (
       <FormattedMessage id="sources.attemptNum" values={{ number: key + 1 }} />
     )
