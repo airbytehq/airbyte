@@ -45,7 +45,6 @@ export default class SchedulerResource extends BaseResource
 
         // If check connection for source has status 'failed'
         if (result.status === "failed") {
-          // TODO: will delete jobInfo object if status comes right
           const jobInfo = {
             ...result.job_info,
             job: { ...result.job_info.job, status: result.status }
@@ -80,7 +79,6 @@ export default class SchedulerResource extends BaseResource
 
         // If check connection for destination has status 'failed'
         if (result.status === "failed") {
-          // TODO: will delete jobInfo object if status comes right
           const jobInfo = {
             ...result.job_info,
             job: { ...result.job_info.job, status: result.status }

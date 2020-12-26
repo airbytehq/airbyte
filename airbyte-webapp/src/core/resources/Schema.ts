@@ -62,17 +62,11 @@ export default class SchemaResource extends BaseResource implements Schema {
           params
         );
 
-        if (result.status === "failed" || !result.schema) {
-          // TODO: will delete jobInfo object if status comes right
-          const jobInfo = {
-            ...result.job_info,
-            job: { ...result.job_info.job, status: "failed" }
-          };
-
+        if (result.job_info.job.status === "failed" || !result.schema) {
           const e = new NetworkError(result);
           // Generate error with failed status and received logs
           e.status = 400;
-          e.response = jobInfo;
+          e.response = result.job_info;
           throw e;
         }
 
