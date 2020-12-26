@@ -103,7 +103,9 @@ const SyncSettingsCell: React.FC<IProps> = ({ item, onSelect }) => {
   }, [item.supportedSyncModes, item.fields]);
 
   const currentValue = item.cursorField?.length
-    ? item.cursorField[0]
+    ? item.sourceDefinedCursor
+      ? SyncMode.Incremental
+      : item.cursorField[0]
     : item.syncMode || "";
 
   return (
