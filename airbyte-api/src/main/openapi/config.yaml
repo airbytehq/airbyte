@@ -877,27 +877,6 @@ paths:
           description: Connection not found
         "422":
           $ref: "#/components/responses/InvalidInput"
-  /v1/web_backend/sources/create:
-    post:
-      tags:
-        - web_backend
-      summary: Create a source
-      operationId: webBackendCreateSource
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/SourceCreate"
-        required: true
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SourceRead"
-        "422":
-          $ref: "#/components/responses/InvalidInput"
   /v1/web_backend/sources/recreate:
     post:
       tags:
@@ -930,27 +909,6 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/DestinationRecreate"
-        required: true
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/DestinationRead"
-        "422":
-          $ref: "#/components/responses/InvalidInput"
-  /v1/web_backend/destinations/create:
-    post:
-      tags:
-        - web_backend
-      summary: Create a destination
-      operationId: webBackendCreateDestination
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/DestinationCreate"
         required: true
       responses:
         "200":

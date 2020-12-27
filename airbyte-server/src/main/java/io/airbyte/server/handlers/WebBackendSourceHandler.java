@@ -51,27 +51,6 @@ public class WebBackendSourceHandler {
     this.schedulerHandler = schedulerHandler;
   }
 
-  public SourceRead webBackendCreateSourceAndCheck(SourceCreate sourceCreate)
-      throws ConfigNotFoundException, IOException, JsonValidationException {
-    final SourceRead source = sourceHandler
-        .createSource(sourceCreate);
-
-    final SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody()
-        .sourceId(source.getSourceId());
-
-    try {
-      final CheckConnectionRead checkConnectionRead = schedulerHandler.checkSourceConnectionFromSourceId(sourceIdRequestBody);
-      if (checkConnectionRead.getStatus() == CheckConnectionRead.StatusEnum.SUCCEEDED) {
-        return source;
-      }
-    } catch (Exception e) {
-      LOGGER.error("Error while checking connection", e);
-    }
-
-    sourceHandler.deleteSource(sourceIdRequestBody);
-    throw new KnownException(400, "Unable to connect to source");
-  }
-
   public SourceRead webBackendRecreateSourceAndCheck(SourceRecreate sourceRecreate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final SourceCreate sourceCreate = new SourceCreate();

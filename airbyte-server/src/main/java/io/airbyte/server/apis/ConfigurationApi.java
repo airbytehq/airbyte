@@ -148,17 +148,6 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     return execute(() -> workspacesHandler.updateWorkspace(workspaceUpdate));
   }
 
-  @Override
-  public DestinationRead webBackendCreateDestination(@Valid DestinationCreate destinationCreate) {
-    return execute(
-        () -> webBackendDestinationHandler.webBackendCreateDestinationAndCheck(destinationCreate));
-  }
-
-  @Override
-  public SourceRead webBackendCreateSource(@Valid SourceCreate sourceCreate) {
-    return execute(() -> webBackendSourceHandler.webBackendCreateSourceAndCheck(sourceCreate));
-  }
-
   // SOURCE
 
   @Override

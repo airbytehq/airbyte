@@ -51,26 +51,6 @@ public class WebBackendDestinationHandler {
     this.schedulerHandler = schedulerHandler;
   }
 
-  public DestinationRead webBackendCreateDestinationAndCheck(DestinationCreate destinationCreate)
-      throws ConfigNotFoundException, IOException, JsonValidationException {
-    final DestinationRead destination = destinationHandler.createDestination(destinationCreate);
-
-    final DestinationIdRequestBody destinationIdRequestBody = new DestinationIdRequestBody()
-        .destinationId(destination.getDestinationId());
-
-    try {
-      final CheckConnectionRead checkConnectionRead = schedulerHandler.checkDestinationConnectionFromDestinationId(destinationIdRequestBody);
-      if (checkConnectionRead.getStatus() == SUCCEEDED) {
-        return destination;
-      }
-    } catch (Exception e) {
-      LOGGER.error("Error while checking connection", e);
-    }
-
-    destinationHandler.deleteDestination(destinationIdRequestBody);
-    throw new KnownException(400, "Unable to connect to destination");
-  }
-
   public DestinationRead webBackendRecreateDestinationAndCheck(DestinationRecreate destinationRecreate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final DestinationCreate destinationCreate = new DestinationCreate();
