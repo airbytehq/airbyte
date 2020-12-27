@@ -25,7 +25,7 @@ $ python --version
 Python 3.7.9
 ```
 
-On some systems, `python` points to a Python2 installation and `python3` points to Python3. If this is the case on your machine, substitute all `python` commands in this guide with `python3` . Otherwise, make sre to install Python 3 before beginning. 
+On some systems, `python` points to a Python2 installation and `python3` points to Python3. If this is the case on your machine, substitute all `python` commands in this guide with `python3` . Otherwise, make sure to install Python 3 before beginning. 
 
 ## Our connector: a stock ticker API
 Our connector will output the daily price of a stock since a given date. We'll leverage the free [IEX Cloud API](https://iexcloud.io/docs/api/) for this.
@@ -926,7 +926,7 @@ To use it from the Airbyte UI, we need to:
 3. Run a sync and inspect the output
 
 #### 1. Publish the Docker image 
-Since we're running this tutorial locally, Airbyte will have access to any Docker images available to your local `docker` daemon. So all we need to do is build & tag our connector. If you want your connector to be available to everyone using Airbyte, you'll need to publish it to Dockerhub. [Open a PR](github.com/airbytehq/airbyte) or visit our [Slack](slack.airbyte.io) for help with this. 
+Since we're running this tutorial locally, Airbyte will have access to any Docker images available to your local `docker` daemon. So all we need to do is build & tag our connector. If you want your connector to be available to everyone using Airbyte, you'll need to publish it to Dockerhub. [Open a PR](https://github.com/airbytehq/airbyte) or visit our [Slack](https://slack.airbyte.io) for help with this. 
 
 Airbyte's build system builds and tags your connector's image correctly by default as part of the connector's standard `build` process. **From the Airbyte repo root**, run: 
 ```shell script
@@ -1009,7 +1009,7 @@ Armed with the knowledge you gained in this guide, here are some places you can 
 3. While not required, we love contributions! if you end up creating a new connector, we're here to help you make it available to everyone using Airybte. Remember that you're never expected to maintain a connector by yourself if you merge it to Airbyte -- we're committed to supporting connectors if you can't do it yourself.  
 
 ## Optional additions  
-This section is not yet complete and will be completed soon. Please reach out to us on [Slack](slack.airbyte.io) or [Github](github.com/airbytehq/airbyte) if you need the information promised by these sections immediately.  
+This section is not yet complete and will be completed soon. Please reach out to us on [Slack](https://slack.airbyte.io) or [Github](https://github.com/airbytehq/airbyte) if you need the information promised by these sections immediately.  
 
 ### Incremental sync
 
