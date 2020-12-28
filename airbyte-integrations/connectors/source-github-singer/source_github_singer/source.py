@@ -33,11 +33,18 @@ from base_singer import SingerSource, SyncModeInfo
 class SourceGithubSinger(SingerSource):
     def check_config(self, logger, config_path: str, config: json) -> AirbyteConnectionStatus:
         try:
-            r = requests.get("https://api.github.com/repos/airbytehq/airbyte/commits", auth=(config["access_token"], ""))
-            if r.status_code == 200:
-                return AirbyteConnectionStatus(status=Status.SUCCEEDED)
-            else:
-                return AirbyteConnectionStatus(status=Status.FAILED, message=r.text)
+            repository = config["repository"]
+            org = repository.split('/')[0]
+            check_urls = [
+                "https://api.github.com/repos/airbytehq/airbyte/commits",
+                f"https://api.github.com/repos/{repository}/collaborators",
+                f"https://api.github.com/orgs/{org}/teams?sort=created_at&direction=desc"
+            ]
+            for url in check_urls:
+                response = requests.get(url, auth=(config["access_token"], ""))
+                if response.status_code != 200:
+                    return AirbyteConnectionStatus(status=Status.FAILED, message=response.text)
+            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             logger.error(e)
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"{str(e)}")
