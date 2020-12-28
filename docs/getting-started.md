@@ -38,7 +38,7 @@ You might have to wait ~30 seconds before the fields show up because it is the f
 
 ### Create a destination
 
-The destination we are creating is a simple JSON line file, meaning that it will contain one JSON object per line. Each objects will represent data extracted from the source. 
+The destination we are creating is a simple JSON line file, meaning that it will contain one JSON object per line. Each objects will represent data extracted from the source.
 
 The resulting files will be located in `/tmp/airbyte_local/json_data`
 
@@ -60,7 +60,7 @@ To set it up, just follow the instructions on the screenshot below.
 
 ## Check the logs of your first sync
 
-After you've completed the onboarding, you will be redirected to the source list and will see the source you just added. Click on it to find more information about it. You will now see all the destinations connected to that source. Click on it and you will see the sync history. 
+After you've completed the onboarding, you will be redirected to the source list and will see the source you just added. Click on it to find more information about it. You will now see all the destinations connected to that source. Click on it and you will see the sync history.
 
 From there, you can look at the logs, download them, force a sync and adjust the configuration of your connection.
 
@@ -76,7 +76,7 @@ cat /tmp/airbyte_local/test_json/exchange_rate_raw.jsonl
 
 You should see one line for each day that was replicated.
 
-If you have [`jq`](https://stedolan.github.io/jq/)  installed, let's look at the evolution of `EUR`.
+If you have [`jq`](https://stedolan.github.io/jq/) installed, let's look at the evolution of `EUR`.
 
 ```bash
 cat /tmp/airbyte_local/test_json/exchange_rate_raw.jsonl | 
@@ -85,7 +85,7 @@ jq -c '.data | {date: .date, EUR: .EUR }'
 
 And there you have it. You've pulled data from an API directly into a file and all of the actual configuration for this replication only took place in the UI.
 
-## That's it! 
+## That's it!
 
 This is just the beginning of using Airbyte. We support a large collection of sources and destination. You can even contribute your own.
 
