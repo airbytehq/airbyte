@@ -14,6 +14,7 @@ import { useCallback, useEffect, useState } from "react";
 import DestinationDefinitionSpecificationResource, {
   DestinationDefinitionSpecification
 } from "../../../core/resources/DestinationDefinitionSpecification";
+import SchedulerResource from "../../../core/resources/Scheduler";
 
 type ValuesProps = {
   name: string;
@@ -84,15 +85,17 @@ const useDestination = () => {
     DestinationResource.createShape()
   );
 
-  const updatedestination = useFetcher(DestinationResource.updateShape());
+  const destinationCheckConnectionShape = useFetcher(
+    SchedulerResource.destinationCheckConnectionShape()
+  );
+
+  const updatedestination = useFetcher(
+    DestinationResource.partialUpdateShape()
+  );
 
   const recreatedestination = useFetcher(DestinationResource.recreateShape());
 
   const destinationDelete = useFetcher(DestinationResource.deleteShape());
-
-  const destinationConnection = useFetcher(
-    DestinationResource.checkConnectionShape()
-  );
 
   const updateConnectionsStore = useFetcher(
     ConnectionResource.updateStoreAfterDeleteShape()
@@ -114,6 +117,12 @@ const useDestination = () => {
     });
 
     try {
+      await destinationCheckConnectionShape({
+        destinationDefinitionId: destinationConnector?.destinationDefinitionId,
+        connectionConfiguration: values.connectionConfiguration
+      });
+
+      // Try to crete destination
       const result = await createDestinationsImplementation(
         {},
         {
@@ -131,7 +140,7 @@ const useDestination = () => {
               newdestinationId: string,
               destinationIds: { destinations: string[] }
             ) => ({
-              destinationDefinitions: [
+              destinations: [
                 ...(destinationIds?.destinations || []),
                 newdestinationId
               ]
@@ -163,11 +172,18 @@ const useDestination = () => {
 
   const updateDestination = async ({
     values,
-    destinationId
+    destinationId,
+    destinationDefinitionId
   }: {
     values: ValuesProps;
     destinationId: string;
+    destinationDefinitionId: string;
   }) => {
+    await destinationCheckConnectionShape({
+      destinationDefinitionId,
+      connectionConfiguration: values.connectionConfiguration
+    });
+
     return await updatedestination(
       {
         destinationId
@@ -214,11 +230,11 @@ const useDestination = () => {
 
   const checkDestinationConnection = useCallback(
     async ({ destinationId }: { destinationId: string }) => {
-      return await destinationConnection({
+      return await destinationCheckConnectionShape({
         destinationId: destinationId
       });
     },
-    [destinationConnection]
+    [destinationCheckConnectionShape]
   );
 
   const deleteDestination = async ({

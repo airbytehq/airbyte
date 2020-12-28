@@ -11,6 +11,7 @@ import ConnectionResource, {
   Connection
 } from "../../../core/resources/Connection";
 import SourceDefinitionSpecificationResource from "../../../core/resources/SourceDefinitionSpecification";
+import SchedulerResource from "../../../core/resources/Scheduler";
 
 type ValuesProps = {
   name: string;
@@ -45,13 +46,15 @@ const useSource = () => {
 
   const createSourcesImplementation = useFetcher(SourceResource.createShape());
 
-  const updatesource = useFetcher(SourceResource.updateShape());
+  const sourceCheckConnectionShape = useFetcher(
+    SchedulerResource.sourceCheckConnectionShape()
+  );
+
+  const updatesource = useFetcher(SourceResource.partialUpdateShape());
 
   const recreatesource = useFetcher(SourceResource.recreateShape());
 
   const sourceDelete = useFetcher(SourceResource.deleteShape());
-
-  const sourceConnection = useFetcher(SourceResource.checkConnectionShape());
 
   const updateConnectionsStore = useFetcher(
     ConnectionResource.updateStoreAfterDeleteShape()
@@ -71,6 +74,12 @@ const useSource = () => {
     });
 
     try {
+      await sourceCheckConnectionShape({
+        sourceDefinitionId: sourceConnector?.sourceDefinitionId,
+        connectionConfiguration: values.connectionConfiguration
+      });
+
+      // Try to crete source
       const result = await createSourcesImplementation(
         {},
         {
@@ -108,11 +117,18 @@ const useSource = () => {
 
   const updateSource = async ({
     values,
-    sourceId
+    sourceId,
+    sourceDefinitionId
   }: {
     values: ValuesProps;
     sourceId: string;
+    sourceDefinitionId: string;
   }) => {
+    await sourceCheckConnectionShape({
+      sourceDefinitionId,
+      connectionConfiguration: values.connectionConfiguration
+    });
+
     return await updatesource(
       {
         sourceId: sourceId
@@ -127,11 +143,11 @@ const useSource = () => {
 
   const checkSourceConnection = useCallback(
     async ({ sourceId }: { sourceId: string }) => {
-      return await sourceConnection({
-        sourceId: sourceId
+      return await sourceCheckConnectionShape({
+        sourceId
       });
     },
-    [sourceConnection]
+    [sourceCheckConnectionShape]
   );
 
   const recreateSource = async ({

@@ -1,5 +1,6 @@
 import { Resource } from "rest-hooks";
-import BaseResource from "./BaseResource";
+import BaseResource, { NetworkError } from "./BaseResource";
+import { JobInfo } from "./Scheduler";
 
 export enum SyncMode {
   Incremental = "incremental",
@@ -33,11 +34,13 @@ export type SyncSchema = {
 export interface Schema {
   id: string;
   schema: SyncSchema;
+  job_info?: JobInfo;
 }
 
 export default class SchemaResource extends BaseResource implements Schema {
   readonly schema: SyncSchema = { streams: [] };
   readonly id: string = "";
+  readonly job_info: JobInfo | undefined = undefined;
 
   pk() {
     return this.id?.toString();
@@ -58,8 +61,18 @@ export default class SchemaResource extends BaseResource implements Schema {
           `${this.url(params)}/discover_schema`,
           params
         );
+
+        if (result.job_info.job.status === "failed" || !result.schema) {
+          const e = new NetworkError(result);
+          // Generate error with failed status and received logs
+          e.status = 400;
+          e.response = result.job_info;
+          throw e;
+        }
+
         return {
-          schema: result?.schema,
+          schema: result.schema,
+          job_info: result.job_info,
           id: params.sourceId
         };
       },
