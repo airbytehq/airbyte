@@ -66,7 +66,7 @@ async function read(config, catalog) {
                 };
                 return {"type": "RECORD", "record": record};
             })
-            .forEach(record => console.log(record));
+            .forEach(record => console.log(JSON.stringify(record)));
     }
 }
 
@@ -150,7 +150,7 @@ function getInputFilePath(path1) {
 
 function spec() {
     // Read the file named spec.json from the module directory as a JSON file
-    const specPath = path.join(process.cwd(), "spec.json");
+    const specPath = path.join(path.dirname(__filename), "spec.json");
     const specification = readJson(specPath);
 
     // form an Airbyte Message containing the spec and print it to stdout
