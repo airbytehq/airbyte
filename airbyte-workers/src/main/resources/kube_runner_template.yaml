@@ -1,21 +1,30 @@
-apiVersion: batch/v1
-kind: Job
+apiVersion: v1
+kind: Pod
 metadata:
   name: airbyte-worker-JOBID-ATTEMPTID-SUFFIX
 spec:
-  backoffLimit: 1
-  template:
-    spec:
-      restartPolicy: Never
-      containers:
-        - name: worker-container
-          image: TAGGED_IMAGE
-          workingDir: WORKDIR
-          args: ARGS
-          volumeMounts:
-            - name: airbyte-volume-workspace
-              mountPath: /workspace
-      volumes:
+  affinity:
+    podAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchExpressions:
+              - key: airbyte
+                operator: In
+                values:
+                  - scheduler
+          topologyKey: kubernetes.io/hostname
+  restartPolicy: Never
+  containers:
+    - name: worker
+      image: IMAGE
+      workingDir: WORKDIR
+      args: ARGS
+      stdin: true
+      stdinOnce: true
+      volumeMounts:
         - name: airbyte-volume-workspace
-          persistentVolumeClaim:
-            claimName: airbyte-volume-workspace
+          mountPath: /workspace
+  volumes:
+    - name: airbyte-volume-workspace
+      persistentVolumeClaim:
+        claimName: airbyte-volume-workspace
