@@ -39,29 +39,32 @@ const UseGetStepsConfig = (
     () => [
       {
         id: StepsTypes.CREATE_SOURCE,
-        name: <FormattedMessage id="onboarding.createSource" />,
-        onSelect: hasSources
-          ? () => updateStep(StepsTypes.CREATE_SOURCE)
-          : undefined
+        name: <FormattedMessage id="onboarding.createSource" />
+        // don't navigate by steps for now
+        // onSelect: hasSources
+        //   ? () => updateStep(StepsTypes.CREATE_SOURCE)
+        //   : undefined
       },
       {
         id: StepsTypes.CREATE_DESTINATION,
-        name: <FormattedMessage id="onboarding.createDestination" />,
-        onSelect:
-          hasSources || hasDestinations
-            ? () => updateStep(StepsTypes.CREATE_DESTINATION)
-            : undefined
+        name: <FormattedMessage id="onboarding.createDestination" />
+        // don't navigate by steps for now
+        // onSelect:
+        //   hasSources || hasDestinations
+        //     ? () => updateStep(StepsTypes.CREATE_DESTINATION)
+        //     : undefined
       },
       {
         id: StepsTypes.SET_UP_CONNECTION,
-        name: <FormattedMessage id="onboarding.setUpConnection" />,
-        onSelect:
-          hasSources && hasDestinations
-            ? () => updateStep(StepsTypes.SET_UP_CONNECTION)
-            : undefined
+        name: <FormattedMessage id="onboarding.setUpConnection" />
+        // don't navigate by steps for now
+        // onSelect:
+        //   hasSources && hasDestinations
+        //     ? () => updateStep(StepsTypes.SET_UP_CONNECTION)
+        //     : undefined
       }
     ],
-    [updateStep, hasSources, hasDestinations]
+    []
   );
 
   return {

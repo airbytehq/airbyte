@@ -8,6 +8,9 @@ import config from "../../../../../config";
 import useRouter from "../../../../../components/hooks/useRouterHook";
 import { useSourceDefinitionSpecificationLoad } from "../../../../../components/hooks/services/useSourceHook";
 import { IDataItem } from "../../../../../components/DropDown/components/ListItem";
+import { JobInfo } from "../../../../../core/resources/Scheduler";
+import { JobsLogItem } from "../../../../../components/JobItem";
+import { createFormErrorMessage } from "../../../../../utils/errorStatusMessage";
 
 type IProps = {
   onSubmit: (values: {
@@ -16,16 +19,20 @@ type IProps = {
     sourceDefinitionId?: string;
     connectionConfiguration?: any;
   }) => void;
+  afterSelectConnector?: () => void;
   dropDownData: IDataItem[];
   hasSuccess?: boolean;
   errorStatus?: number;
+  jobInfo?: JobInfo;
 };
 
 const SourceForm: React.FC<IProps> = ({
   onSubmit,
   dropDownData,
   errorStatus,
-  hasSuccess
+  hasSuccess,
+  jobInfo,
+  afterSelectConnector
 }) => {
   const { location }: any = useRouter();
 
@@ -41,6 +48,10 @@ const SourceForm: React.FC<IProps> = ({
     const connector = dropDownData.find(
       item => item.value === sourceDefinitionId
     );
+
+    if (afterSelectConnector) {
+      afterSelectConnector();
+    }
 
     AnalyticsService.track("New Source - Action", {
       user_id: config.ui.workspaceId,
@@ -60,36 +71,28 @@ const SourceForm: React.FC<IProps> = ({
     });
   };
 
-  const errorMessage =
-    errorStatus === 0 ? null : errorStatus === 400 ? (
-      <FormattedMessage id="form.validationError" />
-    ) : (
-      <FormattedMessage id="form.someError" />
-    );
+  const errorMessage = createFormErrorMessage(errorStatus);
 
   return (
-    <>
-      <ContentCard title={<FormattedMessage id="onboarding.sourceSetUp" />}>
-        <ServiceForm
-          onDropDownSelect={onDropDownSelect}
-          onSubmit={onSubmitForm}
-          formType="source"
-          dropDownData={dropDownData}
-          specifications={
-            sourceDefinitionSpecification?.connectionSpecification
-          }
-          hasSuccess={hasSuccess}
-          errorMessage={errorMessage}
-          isLoading={isLoading}
-          formValues={
-            sourceDefinitionId
-              ? { serviceType: sourceDefinitionId, name: "" }
-              : undefined
-          }
-          allowChangeConnector
-        />
-      </ContentCard>
-    </>
+    <ContentCard title={<FormattedMessage id="onboarding.sourceSetUp" />}>
+      <ServiceForm
+        onDropDownSelect={onDropDownSelect}
+        onSubmit={onSubmitForm}
+        formType="source"
+        dropDownData={dropDownData}
+        specifications={sourceDefinitionSpecification?.connectionSpecification}
+        hasSuccess={hasSuccess}
+        errorMessage={errorMessage}
+        isLoading={isLoading}
+        formValues={
+          sourceDefinitionId
+            ? { serviceType: sourceDefinitionId, name: "" }
+            : undefined
+        }
+        allowChangeConnector
+      />
+      <JobsLogItem jobInfo={jobInfo} />
+    </ContentCard>
   );
 };
 
