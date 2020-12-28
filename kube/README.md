@@ -12,30 +12,30 @@ Please let us know on Slack or with a Github Issue if you're having trouble runn
 All commands should be run from the root Airbyte source directory.
 
 1. Make sure you are using the correct Kubernetes context with `kubectl config current-context`
-1. Apply the manifests for one of:
+2. Apply the manifests for one of:
     * Latest stable version
         1. Apply with `kubectl apply -k kube/overlays/stable`
-    * If you want to use the latest development version:
-        1. Build the `dev` version of images with `./gradlew composeBuild`
-        1. Apply with `kubectl apply -k kube/overlays/dev`
-1. Wait for pods to be "Running" on `kubectl get pods | grep airbyte`
-1. Run `kubectl port-forward svc/airbyte-server-svc 8001:8001` in a new terminal window.
+3. Wait for pods to be "Running" on `kubectl get pods | grep airbyte`
+4. Run `kubectl port-forward svc/airbyte-server-svc 8001:8001` in a new terminal window.
     * This exposes `airbyte-server`, the Airbyte api server.
     * If you redeploy `airbyte-server`, you will need to re-run this process.
-1. Run `kubectl port-forward svc/airbyte-webapp-svc 8000:80` in a new terminal window.
+5. Run `kubectl port-forward svc/airbyte-webapp-svc 8000:80` in a new terminal window.
     * This exposes `airbyte-webapp`, the server for the static web app.
     * These static assets will make calls to the Airbyte api server, which is why both services needed to be port forwarded.
     * If you redeploy `airbyte-webapp`, you will need to re-run this process.
-1. Go to http://localhost:8000/ and use Airbyte!
+6. Go to http://localhost:8000/ and use Airbyte!
 
-## Known Limitations
+## Current Limitations
 
-* Airbyte passes messages between the source and destination via the Kubernetes logging system which does not have great guarantees for data completeness. On multi-node clusters, this is done over the network, which will greatly limit throughput compared to single node Airbyte instances. This also puts a load on the Kubernetes logging system that is proportional to the volume of data you're transferring.
-* It isn't trivial to use a non-default namespace.
-* On GKE, latency for UI operations is very high.
-* We don't clean up completed worker job and pod histories. 
-* Please let us know on Slack if those issues are blocking your adoption of Airbyte.
-* Please let us know if you encounter any other issues or limitations of our Kube implementation on Slack or with a Github Issue.
+* The server, scheduler, and workers must all run on the same node in the Kubernetes cluster.
+* Airbyte passes messages inefficiently between pods by `kubectl attach`-ing to pods using `kubectl run`.
+* The provided manifests do not easily allow configuring a non-default namespace.
+* Latency for UI operations is high.
+* We don't clean up completed worker job and pod histories. They require manual deletion.
+* Please let us know on Slack:
+    * if those issues are blocking your adoption of Airbyte.
+    * if you encounter any other issues or limitations of our Kube implementation.
+    * if you'd like to make contributions to fix some of these issues!
 
 ## Kustomize
 
@@ -66,7 +66,7 @@ To resize a volume, change the `.spec.resources.requests.storage` value. After r
 
 See the documentation for [`kubectl cp`](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#cp).
 
-## Iteration (on local Kubernetes clusters)
+## Dev Iteration (on local Kubernetes clusters)
 
 If you're developing using a local context and are not using your local Kubernetes instance for anything else, you can iterate with the following series of commands. 
 ```
@@ -84,6 +84,12 @@ If you are in a dev environment on a local cluster only running Airbyte and want
 # BE CAREFUL, THIS COMMAND DELETES ALL RESOURCES, EVEN NON-AIRBYTE ONES!
 kubectl delete "$(kubectl api-resources --namespaced=true --verbs=delete -o name | tr "\n" "," | sed -e 's/,$//')" --all
 ```
+
+## Dev Iteration (on GKE)
+
+The process is similar to developing on a local cluster, except you will need to build the local version and push it to 
+your own container registry with names such as `your-registry/scheduler`. Then you will need to configure an overlay to override
+the name of images and apply your overlay with `kubectl apply -k <path to your overlay`.
 
 ## Listing Files
 
