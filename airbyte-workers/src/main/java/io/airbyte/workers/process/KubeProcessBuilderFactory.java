@@ -32,8 +32,6 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.workers.WorkerException;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
@@ -62,7 +60,7 @@ public class KubeProcessBuilderFactory implements ProcessBuilderFactory {
       // used to differentiate source and destination processes with the same id and attempt
       final String suffix = RandomStringUtils.randomAlphabetic(5).toLowerCase();
 
-      ObjectMapper yamlMapper =  new ObjectMapper(new YAMLFactory());
+      ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
 
       final String rendered = template.replaceAll("JOBID", String.valueOf(jobId))
           .replaceAll("ATTEMPTID", String.valueOf(attempt))
@@ -77,17 +75,17 @@ public class KubeProcessBuilderFactory implements ProcessBuilderFactory {
       final String podName = "airbyte-worker-" + jobId + "-" + attempt + "-" + suffix;
 
       final List<String> cmd =
-              Lists.newArrayList(
-                      "kubectl",
-                      "run",
-                      "--generator=run-pod/v1",
-                      "--rm",
-                      "-i",
-                      "--pod-running-timeout=24h",
-                      "--image=" + imageName,
-                      "--restart=Never",
-                      "--overrides=" + overrides, // fails if you add quotes around the overrides string
-                      podName);
+          Lists.newArrayList(
+              "kubectl",
+              "run",
+              "--generator=run-pod/v1",
+              "--rm",
+              "-i",
+              "--pod-running-timeout=24h",
+              "--image=" + imageName,
+              "--restart=Never",
+              "--overrides=" + overrides, // fails if you add quotes around the overrides string
+              podName);
 
       LOGGER.debug("Preparing command: {}", Joiner.on(" ").join(cmd));
 
@@ -96,4 +94,5 @@ public class KubeProcessBuilderFactory implements ProcessBuilderFactory {
       throw new WorkerException(e.getMessage());
     }
   }
+
 }
