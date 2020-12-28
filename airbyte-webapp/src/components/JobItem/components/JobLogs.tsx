@@ -1,41 +1,18 @@
 import React, { useState } from "react";
 import { useResource, useSubscription } from "rest-hooks";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 
-import JobResource from "../../../../../core/resources/Job";
-import StepsMenu from "../../../../../components/StepsMenu";
+import JobResource from "../../../core/resources/Job";
 import AttemptDetails from "./AttemptDetails";
 import DownloadButton from "./DownloadButton";
+import Logs from "./Logs";
+import Tabs from "./Tabs";
+import CenteredDetails from "./CenteredDetails";
 
 type IProps = {
   id: number;
   jobIsFailed?: boolean;
 };
-
-const Logs = styled.div`
-  padding: 11px 42px 20px;
-  font-size: 12px;
-  line-height: 18px;
-  color: ${({ theme }) => theme.darkPrimaryColor};
-  font-family: ${({ theme }) => theme.codeFont};
-`;
-
-const Tabs = styled.div<{ isFailed?: boolean }>`
-  padding: 6px 0;
-  border-bottom: 1px solid
-    ${({ theme, isFailed }) =>
-      isFailed ? theme.dangerTransparentColor : theme.greyColor20};
-`;
-
-const CenteredDetails = styled.div`
-  text-align: center;
-  padding-top: 9px;
-  font-size: 12px;
-  line-height: 28px;
-  color: ${({ theme }) => theme.greyColor40};
-  position: relative;
-`;
 
 const JobLogs: React.FC<IProps> = ({ id, jobIsFailed }) => {
   const job = useResource(JobResource.detailShape(), { id });
@@ -65,16 +42,12 @@ const JobLogs: React.FC<IProps> = ({ id, jobIsFailed }) => {
   return (
     <>
       {job.attempts.length > 1 ? (
-        <>
-          <Tabs isFailed={jobIsFailed}>
-            <StepsMenu
-              lightMode
-              activeStep={attemptNumber}
-              onSelect={setAttemptNumber}
-              data={data}
-            />
-          </Tabs>
-        </>
+        <Tabs
+          activeStep={attemptNumber}
+          onSelect={setAttemptNumber}
+          data={data}
+          isFailed={jobIsFailed}
+        />
       ) : null}
       <CenteredDetails>
         {job.attempts.length > 1 && (
