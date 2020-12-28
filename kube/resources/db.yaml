@@ -27,10 +27,6 @@ spec:
       containers:
         - name: airbyte-db-container
           image: airbyte/db
-          resources:
-            limits:
-              memory: "256Mi"
-              cpu: "500m"
           env:
             - name: POSTGRES_DB
               value: db-airbyte
@@ -42,7 +38,7 @@ spec:
             - containerPort: 5432
           volumeMounts:
             - name: airbyte-volume-db
-              mountPath: /var/lib/postgresql/data
+              mountPath: /var/lib/postgresql
       volumes:
         - name: airbyte-volume-db
           persistentVolumeClaim:
