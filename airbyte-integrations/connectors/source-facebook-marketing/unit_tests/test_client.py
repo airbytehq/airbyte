@@ -23,19 +23,19 @@ SOFTWARE.
 """
 
 import pytest
-from source_facebook_marketing.client import Client
+from airbyte_protocol import AirbyteStream
+from source_facebook_marketing.client import Client, FacebookAPIException
 
 
-# FIXME
 def test__heal_check_with_wrong_token():
-    client = Client(access_token="wrong_key")
+    client = Client(account_id='wrong_account', access_token="wrong_key", start_date='2019-03-03T10:00')
     alive, error = client.health_check()
 
     assert not alive
-    assert error == "(401, 'The access token is invalid or has expired')"
+    assert error == "Error: 190, Invalid OAuth access token."
 
 
-def test__users_with_wrong_token():
-    client = Client(access_token="wrong_key")
-    with pytest.raises(AuthError, match="(401, 'The access token is invalid or has expired')"):
-        next(client.stream__users())
+def test__campaigns_with_wrong_token():
+    client = Client(account_id='wrong_account', access_token="wrong_key", start_date='2019-03-03T10:00')
+    with pytest.raises(FacebookAPIException, match="Error: 190, Invalid OAuth access token"):
+        next(client.read_stream(AirbyteStream(name='campaigns', json_schema={})))

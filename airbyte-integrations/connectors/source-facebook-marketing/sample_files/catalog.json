@@ -1,109 +1,344 @@
 {
   "streams": [
     {
-      "name": "accounts",
+      "name": "campaigns",
       "json_schema": {
         "$schema": "http://json-schema.org/draft-07/schema#",
-        "type": "object",
         "properties": {
-          "ownerId": {
-            "type": "integer"
-          },
           "name": {
-            "type": "string"
+            "type": [
+              "null",
+              "string"
+            ]
           },
-          "domain": {
-            "type": "string"
+          "objective": {
+            "type": [
+              "null",
+              "string"
+            ]
           },
-          "accountId": {
-            "type": "string"
+          "id": {
+            "type": [
+              "null",
+              "string"
+            ]
           },
-          "customProperties": {
-            "type": "array",
+          "account_id": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "effective_status": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "buying_type": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "spend_cap": {
+            "type": [
+              "null",
+              "number"
+            ]
+          },
+          "start_time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ads": {
+            "properties": {
+              "data": {
+                "items": {
+                  "properties": {
+                    "id": {
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    }
+                  },
+                  "type": [
+                    "null",
+                    "object"
+                  ]
+                },
+                "type": [
+                  "null",
+                  "array"
+                ]
+              }
+            },
+            "type": [
+              "null",
+              "object"
+            ]
+          },
+          "adlabels": {
+            "type": [
+              "null",
+              "array"
+            ],
             "items": {
               "type": "object",
               "properties": {
-                "label": {
+                "id": {
                   "type": "string"
                 },
                 "name": {
                   "type": "string"
                 },
-                "value": {},
-                "type": {
-                  "type": "string"
+                "created_time": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "updated_time": {
+                  "type": "string",
+                  "format": "date-time"
                 }
               }
             }
-          },
-          "deleted": {
-            "type": "boolean"
-          },
-          "createDateTime": {
-            "type": "integer"
-          },
-          "updateDateTime": {
-            "type": "integer"
-          },
-          "targeted": {
-            "type": "boolean"
           }
-        }
+        },
+        "type": [
+          "null",
+          "object"
+        ]
       },
-      "supported_sync_modes": ["full_refresh"]
+      "supported_sync_modes": [
+        "full_refresh"
+      ]
     },
     {
-      "name": "conversations",
+      "name": "adsets",
       "json_schema": {
         "$schema": "http://json-schema.org/draft-07/schema#",
-        "type": "object",
+        "type": [
+          "null",
+          "object"
+        ],
         "properties": {
-          "id": {
-            "type": "integer"
+          "name": {
+            "type": [
+              "null",
+              "string"
+            ]
           },
-          "participants": {
-            "type": "array",
-            "items": {
-              "type": "integer"
+          "end_time": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "promoted_object": {
+            "type": [
+              "null",
+              "object"
+            ],
+            "properties": {
+              "custom_event_type": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "pixel_id": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "pixel_rule": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "page_id": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "object_store_url": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "application_id": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "product_set_id": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "offer_id": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              }
             }
           },
-          "status": {
-            "type": "string",
-            "enum": ["open", "closed", "pending", "bulk_sent"]
+          "id": {
+            "type": [
+              "null",
+              "string"
+            ]
           },
-          "contactId": {
-            "type": "integer"
+          "account_id": {
+            "type": [
+              "null",
+              "string"
+            ]
           },
-          "inboxId": {
-            "type": "integer"
+          "updated_time": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
           },
-          "createdAt": {
-            "type": "integer"
+          "daily_budget": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "maximum": 100000000000000000000000000000000,
+            "minimum": -100000000000000000000000000000000,
+            "multipleOf": 0.000001,
+            "exclusiveMaximum": true,
+            "exclusiveMinimum": true
           },
-          "updatedAt": {
-            "type": "integer"
+          "budget_remaining": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "maximum": 100000000000000000000000000000000,
+            "minimum": -100000000000000000000000000000000,
+            "multipleOf": 0.000001,
+            "exclusiveMaximum": true,
+            "exclusiveMinimum": true
           },
-          "relatedPlaybookId": {
-            "type": ["null", "string"]
+          "effective_status": {
+            "type": [
+              "null",
+              "string"
+            ]
           },
-          "conversationTags": {
-            "type": "array",
+          "campaign_id": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "created_time": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "start_time": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "lifetime_budget": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "maximum": 100000000000000000000000000000000,
+            "minimum": -100000000000000000000000000000000,
+            "multipleOf": 0.000001,
+            "exclusiveMaximum": true,
+            "exclusiveMinimum": true
+          },
+          "targeting": {
+            "$ref": "targeting.json"
+          },
+          "bid_info": {
+            "type": [
+              "null",
+              "object"
+            ],
+            "properties": {
+              "CLICKS": {
+                "type": [
+                  "null",
+                  "integer"
+                ]
+              },
+              "ACTIONS": {
+                "type": [
+                  "null",
+                  "integer"
+                ]
+              },
+              "IMPRESSIONS": {
+                "type": [
+                  "null",
+                  "integer"
+                ]
+              },
+              "REACH": {
+                "type": [
+                  "null",
+                  "integer"
+                ]
+              }
+            }
+          },
+          "adlabels": {
+            "type": [
+              "null",
+              "array"
+            ],
             "items": {
               "type": "object",
               "properties": {
-                "color": {
-                  "type": "string",
-                  "description": "HEX value"
+                "id": {
+                  "type": "string"
                 },
                 "name": {
                   "type": "string"
+                },
+                "created_time": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "updated_time": {
+                  "type": "string",
+                  "format": "date-time"
                 }
               }
             }
           }
         }
       },
-      "supported_sync_modes": ["full_refresh"]
+      "supported_sync_modes": [
+        "full_refresh"
+      ]
     }
   ]
 }

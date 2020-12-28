@@ -22,6 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from .client import Client
+from .client import Client, FacebookAPIException
 
-__all__ = ["Client"]
+__all__ = ["Client", "FacebookAPIException"]

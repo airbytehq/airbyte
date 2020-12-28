@@ -22,7 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 from datetime import datetime
-from typing import Generator, Sequence, Tuple, List
+from functools import cached_property
+from typing import Sequence, Tuple, List, Iterator
 
 from airbyte_protocol import AirbyteStream, AirbyteRecordMessage
 from dateutil.parser import isoparse
@@ -43,7 +44,7 @@ class StreamAPI:
     def __init__(self, api):
         self._api = api
 
-    def list(self, fields: Sequence[str] = None) -> Generator[dict]:
+    def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         raise NotImplementedError
 
 
@@ -53,7 +54,7 @@ class AdCreativeAPI(StreamAPI):
     """
     BATCH_SIZE = 50
 
-    def list(self, fields: Sequence[str] = None) -> Generator[dict]:
+    def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         ad_creative = self._get_creatives()
 
         # Create the initial batch
@@ -94,7 +95,7 @@ class AdsAPI(StreamAPI):
     doc: https://developers.facebook.com/docs/marketing-api/reference/adgroup
     """
 
-    def list(self, fields: Sequence[str] = None) -> Generator[dict]:
+    def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         ads = self._get_ads({'limit': self.result_return_limit})
         for recordset in ads:
             for record in recordset:
@@ -116,12 +117,11 @@ class AdsAPI(StreamAPI):
 class AdSetsAPI(StreamAPI):
     """ doc: https://developers.facebook.com/docs/marketing-api/reference/ad-campaign """
 
-    def list(self, fields: Sequence[str] = None) -> Generator[dict]:
+    def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         adsets = self._get_ad_sets({'limit': self.result_return_limit})
 
-        for recordset in adsets:
-            for record in recordset:
-                yield self._extend_record(record, fields=fields)
+        for adset in adsets:
+            yield self._extend_record(adset, fields=fields)
 
     @retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
     def _get_ad_sets(self, params):
@@ -137,20 +137,20 @@ class AdSetsAPI(StreamAPI):
 
 
 class CampaignAPI(StreamAPI):
-    def list(self, fields: Sequence[str] = None) -> Generator[dict]:
+    def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """ Read available campaigns
         """
         pull_ads = 'ads' in fields
         fields = [k for k in fields if k != 'ads']
         campaigns = self._get_campaigns({'limit': self.result_return_limit})
-        for recordset in campaigns:
-            for record in recordset:
-                yield self._extend_record(record, fields=fields, pull_ads=pull_ads)
+        for campaign in campaigns:
+            yield self._extend_record(campaign, fields=fields, pull_ads=pull_ads)
 
     @retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
     def _extend_record(self, campaign, fields, pull_ads):
         """ Request additional attributes for campaign
         """
+        print('CAMPAIGN', campaign)
         campaign_out = campaign.api_get(fields=fields).export_all_data()
         if pull_ads:
             campaign_out['ads'] = {'data': []}
@@ -200,13 +200,13 @@ class AdsInsightAPI(StreamAPI):
         self.start_date = start_date
         self.breakdowns = breakdowns
 
-    def list(self, fields: Sequence[str] = None) -> Generator[dict]:
+    def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         for params in self._params():
             for obj in self._get_insights(params):
                 rec = obj.export_all_data()
                 yield rec
 
-    def _params(self, fields: Sequence[str] = None) -> Generator[dict]:
+    def _params(self, fields: Sequence[str] = None) -> Iterator[dict]:
         buffered_start_date = self.start_date.subtract(days=self.buffer_days)
         end_date = datetime.now()
 
@@ -236,13 +236,17 @@ class Client(BaseClient):
     def __init__(self, account_id: str, access_token: str, start_date: str):
         super().__init__()
         self._api = FacebookAdsApi.init(access_token=access_token)
-        self._account = self._find_account(account_id)
+        self._account_id = account_id
         self._start_date = isoparse(start_date)
 
-    def stream__campaigns(self, fields):
+    @cached_property
+    def account(self):
+        return self._find_account(self._account_id)
+
+    def stream__campaigns(self, fields=None):
         yield from CampaignAPI(self).list(fields)
 
-    def stream__ad_sets(self, fields):
+    def stream__adsets(self, fields):
         yield from AdSetsAPI(self).list(fields)
 
     def stream__ads(self, fields):
@@ -251,55 +255,55 @@ class Client(BaseClient):
     def stream__adcreatives(self, fields):
         yield from AdCreativeAPI(self).list(fields)
 
-    def stream__ads_insight(self, fields):
-        client = AdsInsightAPI(self, start_date=self._start_date)
+    def stream__ads_insight(self, fields, **kwargs):
+        client = AdsInsightAPI(self, start_date=self._start_date, **kwargs)
         yield from client.list(fields)
 
     def stream__ads_insight_age_and_gender(self, fields):
-        breakdowns = ['age', 'gender']
-        client = AdsInsightAPI(self, start_date=self._start_date, breakdowns=breakdowns)
-        yield from client.list(fields)
+        yield from self.stream__ads_insight(fields=fields, breakdowns=['age', 'gender'])
 
     def stream__ads_insight_country(self, fields):
-        breakdowns = ['country']
-        client = AdsInsightAPI(self, start_date=self._start_date, breakdowns=breakdowns)
-        yield from client.list(fields)
+        yield from self.stream__ads_insight(fields=fields, breakdowns=['country'])
 
     def stream__ads_insight_platform_and_device(self, fields):
-        breakdowns = ['publisher_platform', 'platform_position', 'impression_device']
-        client = AdsInsightAPI(self, start_date=self._start_date, breakdowns=breakdowns)
-        yield from client.list(fields)
+        yield from self.stream__ads_insight(fields=fields, breakdowns=['publisher_platform', 'platform_position', 'impression_device'])
 
     def stream__ads_insight_region(self, fields):
-        breakdowns = ['region']
-        client = AdsInsightAPI(self, start_date=self._start_date, breakdowns=breakdowns)
-        yield from client.list(fields)
+        yield from self.stream__ads_insight(fields=fields, breakdowns=['region'])
 
     def stream__ads_insight_dma(self, fields):
-        breakdowns = ['dma']
-        client = AdsInsightAPI(self, start_date=self._start_date, breakdowns=breakdowns)
-        yield from client.list(fields)
+        yield from self.stream__ads_insight(fields=fields, breakdowns=['dma'])
 
     @staticmethod
     def _find_account(account_id: str):
-        accounts = fb_user.User(fbid='me').get_ad_accounts()
-        for account in accounts:
-            if account['account_id'] == account_id:
-                return account
+        try:
+            accounts = fb_user.User(fbid='me').get_ad_accounts()
+            for account in accounts:
+                if account['account_id'] == account_id:
+                    return account
+        except FacebookRequestError as exc:
+            raise FacebookAPIException(f'Error: {exc.api_error_code()}, {exc.api_error_message()}') from exc
 
         raise FacebookAPIException("Couldn't find account with id {}".format(account_id))
 
-    # FIXME: implement
     def health_check(self) -> Tuple[bool, str]:
-        return True, "Error"
+        alive = True
+        error_message = None
+        try:
+            _account = self.account
+        except FacebookAPIException as exc:
+            # logger.exception(exc)
+            alive = False
+            error_message = str(exc)
+
+        return alive, error_message
 
     # FIXME: filter fields
     @staticmethod
     def _get_fields_from_stream(stream: AirbyteStream) -> List[str]:
-        print(stream.json_schema)
-        return []
+        return list(stream.json_schema['properties'].keys())
 
-    def read_stream(self, stream: AirbyteStream) -> Generator[AirbyteRecordMessage, None, None]:
+    def read_stream(self, stream: AirbyteStream) -> Iterator[AirbyteRecordMessage]:
         """Yield records from stream"""
         method = self._stream_methods.get(stream.name)
         if not method:

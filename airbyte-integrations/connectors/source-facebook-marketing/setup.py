@@ -25,8 +25,8 @@ SOFTWARE.
 from setuptools import find_packages, setup
 
 setup(
-    name="source_drift",
-    description="Source implementation for Drift.",
+    name="source_facebook_marketing",
+    description="Source implementation for Facebook Marketing.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
@@ -34,7 +34,8 @@ setup(
         "airbyte-protocol",
         "base-python",
         "facebook_business",
-        "dateutil",
+        "backoff",
+        "python-dateutil",
     ],
     package_data={"": ["*.json", "schemas/*.json"]},
     setup_requires=["pytest-runner"],
