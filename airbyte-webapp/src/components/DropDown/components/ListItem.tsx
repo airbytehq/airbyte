@@ -6,6 +6,7 @@ import ImageBlock from "../../ImageBlock";
 
 export type IProps = {
   item: IDataItem;
+  fullText?: boolean;
 };
 
 export type IDataItem = {
@@ -25,10 +26,14 @@ const ItemView = styled.div`
   align-items: center;
 `;
 
-const ListItem: React.FC<IProps> = ({ item }) => {
+const ListItem: React.FC<IProps> = ({ item, fullText }) => {
   return (
     <ItemView>
-      <Text primary={item.primary} secondary={item.secondary}>
+      <Text
+        primary={item.primary}
+        secondary={item.secondary}
+        fullText={fullText}
+      >
         {item.text}
       </Text>
       {item.img ? <ImageBlock img={item.img} /> : null}

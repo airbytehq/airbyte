@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import ContentCard from "../../../components/ContentCard";
@@ -10,7 +10,6 @@ import { useSourceDefinitionSpecificationLoad } from "../../../components/hooks/
 
 import usePrepareDropdownLists from "./usePrepareDropdownLists";
 
-import config from "../../../config";
 import { IDataItem } from "../../../components/DropDown/components/ListItem";
 import { createFormErrorMessage } from "../../../utils/errorStatusMessage";
 import { JobInfo } from "../../../core/resources/Scheduler";
@@ -40,18 +39,20 @@ const SourceStep: React.FC<IProps> = ({
   jobInfo,
   afterSelectConnector
 }) => {
-  const [sourceId, setSourceId] = useState("");
+  const [sourceDefinitionId, setSourceDefinitionId] = useState(
+    source?.sourceDefinitionId || ""
+  );
   const {
     sourceDefinitionSpecification,
     isLoading
-  } = useSourceDefinitionSpecificationLoad(sourceId);
+  } = useSourceDefinitionSpecificationLoad(sourceDefinitionId);
+
   const { getSourceDefinitionById } = usePrepareDropdownLists();
 
   const onDropDownSelect = (sourceId: string) => {
     const sourceDefinition = getSourceDefinitionById(sourceId);
 
     AnalyticsService.track("New Source - Action", {
-      user_id: config.ui.workspaceId,
       action: "Select a connector",
       connector_source: sourceDefinition?.name,
       connector_source_id: sourceDefinition?.sourceDefinitionId
@@ -61,8 +62,9 @@ const SourceStep: React.FC<IProps> = ({
       afterSelectConnector();
     }
 
-    setSourceId(sourceId);
+    setSourceDefinitionId(sourceId);
   };
+
   const onSubmitForm = async (values: { name: string; serviceType: string }) =>
     onSubmit({
       ...values,
@@ -70,8 +72,6 @@ const SourceStep: React.FC<IProps> = ({
     });
 
   const errorMessage = createFormErrorMessage(errorStatus);
-
-  useEffect(() => setSourceId(source?.sourceDefinitionId || ""), [source]);
 
   return (
     <ContentCard title={<FormattedMessage id="onboarding.sourceSetUp" />}>
