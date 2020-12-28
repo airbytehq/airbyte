@@ -1,0 +1,6 @@
+*
+!Dockerfile
+!Dockerfile.test
+!source_javascript_template
+!setup.py
+!secrets
