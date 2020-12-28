@@ -26,6 +26,17 @@ CREATE
         'succeeded'
     );
 
+CREATE
+    TYPE JOB_TYPE AS ENUM(
+        'checkConnectionSource',
+        'checkConnectionDestination',
+        'discoverSchema',
+        'getSpec',
+        'sync',
+        'resetConnection';
+    );
+
+
 -- tables
  CREATE
     TABLE
@@ -38,7 +49,8 @@ CREATE
     TABLE
         JOBS(
             id BIGSERIAL PRIMARY KEY,
-            SCOPE VARCHAR(255),
+            type JOB_TYPE,
+            scope VARCHAR(255),
             config JSONB,
             status JOB_STATUS,
             started_at TIMESTAMPTZ,
@@ -68,7 +80,7 @@ CREATE
     );
 
 -- entries
- INSERT
+INSERT
     INTO
         AIRBYTE_METADATA
     VALUES(
@@ -77,5 +89,5 @@ CREATE
     );
 
 -- grants
- GRANT ALL ON
+GRANT ALL ON
 DATABASE airbyte TO docker;
