@@ -42,7 +42,7 @@ class SourceGithubSinger(SingerSource):
             ]
             for url in check_urls:
                 response = requests.get(url, auth=(config["access_token"], ""))
-                if response.status_code != 200:
+                if response.status_code != requests.codes.ok:
                     return AirbyteConnectionStatus(status=Status.FAILED, message=response.text)
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
