@@ -4,6 +4,7 @@
 This is an early preview of Kubernetes support. It has been tested on:
 * Local single-node Kube clusters (docker-desktop for Mac)
 * Google Kubernetes Engine (GKE)
+* Amazon Elastic Kubernetes Service (EKS)
 
 Please let us know on [Slack](https://slack.airbyte.io) or with a Github Issue if you're having trouble running it on these or other platforms. We'll be glad to help you get it running.
 
@@ -28,14 +29,42 @@ All commands should be run from the root Airbyte source directory.
 ## Current Limitations
 
 * The server, scheduler, and workers must all run on the same node in the Kubernetes cluster.
-* Airbyte passes messages inefficiently between pods by `kubectl attach`-ing to pods using `kubectl run`.
+* Airbyte passes records inefficiently between pods by `kubectl attach`-ing to pods using `kubectl run`.
 * The provided manifests do not easily allow configuring a non-default namespace.
 * Latency for UI operations is high.
-* We don't clean up completed worker job and pod histories. They require manual deletion.
+* We don't clean up completed worker job and pod histories. 
+    * All records replicated are also logged to the Kubernetes logging service. 
+    * Logs, events, and job/pod histories require manual deletion.
 * Please let us know on [Slack](https://slack.airbyte.io):
     * if those issues are blocking your adoption of Airbyte.
     * if you encounter any other issues or limitations of our Kube implementation.
     * if you'd like to make contributions to fix some of these issues!
+    
+## Creating Testing Clusters
+
+* Local (Mac)
+    * Install [Docker for Mac](https://docs.docker.com/docker-for-mac/install/)
+    * Under `Preferences` enable Kubernetes.
+    * Use `kubectl config get-contexts` to show the contexts available.
+    * Use the Docker UI or `kubectl use-context <docker desktop context>` to access the cluster with `kubectl`.
+* Local (Linux)
+    * Consider using a tool like [Minikube](https://minikube.sigs.k8s.io/docs/start/) to start a local cluster.
+* GKE
+    * Configure `gcloud` with `gcloud auth login`.
+    * [Create a cluster with the command line or the Cloud Console UI](https://cloud.google.com/kubernetes-engine/docs/how-to/creating-a-zonal-cluster)
+    * If you created the cluster on the command line, the context will be written automatically.
+    * If you used the UI, you can copy and paste the command used to connect from the cluster page.
+    * Use `kubectl config get-contexts` to show the contexts available.
+    * Run `kubectl use-context <gke context>` to access the cluster with `kubectl`.
+* EKS
+    * [Configure your AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html) to connect to your project.
+    * Install [eksctl](https://eksctl.io/introduction/)
+    * Run `eksctl create cluster` to create an EKS cluster/VPC/subnets/etc.
+        * This should take 10-15 minutes.
+        * The default settings should be able to support running Airbyte.
+    * Run `eksctl utils write-kubeconfig --cluster=<CLUSTER NAME>` to make the context available to `kubectl`
+    * Use `kubectl config get-contexts` to show the contexts available.
+    * Run `kubectl use-context <eks context>` to access the cluster with `kubectl`.
 
 ## Kustomize
 
