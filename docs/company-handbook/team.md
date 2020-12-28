@@ -25,3 +25,8 @@ Before joining Airbyte, Jared built massive data pipelines at LiveRamp for five 
 Charles was a senior backend engineer at rideOS. Previous to that, he was a senior backend engineer and tech lead at LiveRamp.  
 [**LinkedIn**](https://www.linkedin.com/in/cgardens/) **\|** [**Twitter**](https://twitter.com/charlesgardens)
 
+## **Chris Duong**
+
+Chris is a data veteran with experience in the Silicon Valley, Spain, Germany and France. He was the head of data of Comet and responsible for growing their data team in addition to building their infrastructure.   
+[**LinkedIn**](https://www.linkedin.com/in/christopheduong/) **\|** [**Twitter**](https://twitter.com/ChristopheDuong)
+

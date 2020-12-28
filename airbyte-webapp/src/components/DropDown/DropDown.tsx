@@ -12,6 +12,7 @@ import GroupHeader from "./components/GroupHeader";
 export type IProps = {
   disabled?: boolean;
   hasFilter?: boolean;
+  fullText?: boolean;
   placeholder?: string;
   filterPlaceholder?: string;
   value?: string;
@@ -204,7 +205,7 @@ const DropDown: React.FC<IProps> = props => {
           <ValueInput item={item} />
         )
       }
-      itemComponent={ListItem}
+      itemComponent={item => <ListItem item={item} fullText={props.fullText} />}
       onSelect={props.onSelect}
       // @ts-ignore
       searchIcon=""
