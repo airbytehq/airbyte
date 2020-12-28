@@ -1,6 +1,6 @@
 # Javascript Template Source 
 
-This is the repository for the Javascript Template source connector, written in Python. 
+This is the repository for the JavaScript Template source connector, written in JavaScript.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/javascript-template).
 
 ## Local development
@@ -33,16 +33,17 @@ and place them into `secrets/config.json`.
 
 ### Locally running the connector
 ```
-python main_dev.py spec
-python main_dev.py check --config secrets/config.json
-python main_dev.py discover --config secrets/config.json
-python main_dev.py read --config secrets/config.json --catalog sample_files/configured_catalog.json
+npm install
+node source.js spec
+node source.js check --config secrets/config.json
+node source.js discover --config secrets/config.json
+node source.js read --config secrets/config.json --catalog sample_files/configured_catalog.json
 ```
 
-### Unit Tests
+### Unit Tests (wip)
 To run unit tests locally, from the connector directory run:
 ```
-pytest unit_tests
+npm test
 ```
 
 ### Locally running the connector docker image
@@ -56,9 +57,8 @@ docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-javascript-temp
 ```
 
 ### Integration Tests
-1. From the airbyte project root, run `./gradlew :airbyte-integrations:connectors:source-javascript-template:standardSourceTestPython` to run the standard integration test suite.
-1. To run additional integration tests, place your integration tests in a new directory `integration_tests` and run them with `pytest integration_tests`.
-   Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
+1. From the airbyte project root, run `./gradlew :airbyte-integrations:connectors:source-javascript-template:integrationTest` to run the standard integration test suite.
+1. To run additional integration tests, place your integration tests in a new directory `integration_tests` and run them with `node test (wip)`.
 
 ## Dependency Management
-All of your dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect internal Airbyte dependencies in the monorepo for local development.
+All of your dependencies should go in `package.json`.
