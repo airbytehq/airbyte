@@ -20,6 +20,7 @@ spec:
       workingDir: WORKDIR
       args: ARGS
       stdin: true
+      stdinOnce: true
       volumeMounts:
         - name: airbyte-volume-workspace
           mountPath: /workspace
