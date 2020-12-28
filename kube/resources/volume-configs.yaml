@@ -6,7 +6,7 @@ metadata:
     airbyte: volume-configs
 spec:
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   resources:
     requests:
       storage: 500Mi

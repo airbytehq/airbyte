@@ -2,42 +2,42 @@ version: "3.7"
 
 services:
   db:
-    image: airbyte/db:dev
+    image: airbyte/db:${BUILD_TAG}
     build:
       dockerfile: Dockerfile
       context: airbyte-db
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
   init:
-    image: airbyte/init:dev
+    image: airbyte/init:${BUILD_TAG}
     build:
       dockerfile: Dockerfile
       context: airbyte-config/init
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
   seed:
-    image: airbyte/seed:dev
+    image: airbyte/seed:${BUILD_TAG}
     build:
       dockerfile: Dockerfile
       context: airbyte-config/init
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
   scheduler:
-    image: airbyte/scheduler:dev
+    image: airbyte/scheduler:${BUILD_TAG}
     build:
       dockerfile: Dockerfile
       context: airbyte-scheduler
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
   server:
-    image: airbyte/server:dev
+    image: airbyte/server:${BUILD_TAG}
     build:
       dockerfile: Dockerfile
       context: airbyte-server
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
   webapp:
-    image: airbyte/webapp:dev
+    image: airbyte/webapp:${BUILD_TAG}
     build:
       dockerfile: Dockerfile
       context: airbyte-webapp
