@@ -60,6 +60,7 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 public class ServerApp {
 
@@ -154,6 +155,8 @@ public class ServerApp {
 
   public static void main(String[] args) throws Exception {
     final Configs configs = new EnvConfigs();
+
+    MDC.put("workspace_app_root", configs.getWorkspaceRoot().resolve("server/logs").toString());
 
     final Path configRoot = configs.getConfigRoot();
     LOGGER.info("configRoot = " + configRoot);

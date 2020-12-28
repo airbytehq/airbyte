@@ -49,6 +49,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 /**
  * The SchedulerApp is responsible for finding new scheduled jobs that need to be run and to launch
@@ -115,10 +116,13 @@ public class SchedulerApp {
   }
 
   public static void main(String[] args) {
+
     final Configs configs = new EnvConfigs();
 
     final Path configRoot = configs.getConfigRoot();
     LOGGER.info("configRoot = " + configRoot);
+
+    MDC.put("workspace_app_root", configs.getWorkspaceRoot().resolve("scheduler/logs").toString());
 
     final Path workspaceRoot = configs.getWorkspaceRoot();
     LOGGER.info("workspaceRoot = " + workspaceRoot);
