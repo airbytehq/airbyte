@@ -22,6 +22,7 @@ export class AnalyticsService {
 
   static track = (name: string, properties: any) =>
     AnalyticsService.getAnalytics()?.track?.(name, {
+      user_id: config.ui.workspaceId,
       ...properties,
       airbyte_version: config.version
     });
