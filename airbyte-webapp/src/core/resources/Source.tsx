@@ -38,67 +38,6 @@ export default class SourceResource extends BaseResource implements Source {
     };
   }
 
-  static updateShape<T extends typeof Resource>(this: T) {
-    return {
-      ...super.partialUpdateShape(),
-      fetch: async (params: { sourceId: string }, body: any): Promise<any> => {
-        const sourceResult = await this.fetch(
-          "post",
-          `${this.url(params)}/update`,
-          body
-        );
-
-        const checkConnectionResult = await this.fetch(
-          "post",
-          `${this.url(params)}/check_connection`,
-          params
-        );
-
-        return {
-          source: sourceResult,
-          ...checkConnectionResult
-        };
-      },
-      schema: { source: this.asSchema(), status: "", message: "" }
-    };
-  }
-
-  static checkConnectionShape<T extends typeof Resource>(this: T) {
-    return {
-      ...super.detailShape(),
-      getFetchKey: (params: { connectionId: string }) =>
-        "POST /v1/sources/check_connection" + JSON.stringify(params),
-      fetch: async (params: { sourceId: string }): Promise<any> => {
-        const checkConnectionResult = await this.fetch(
-          "post",
-          `${this.url(params)}/check_connection`,
-          params
-        );
-
-        return checkConnectionResult;
-      },
-      schema: { status: "", message: "" }
-    };
-  }
-
-  static createShape<T extends typeof Resource>(this: T) {
-    return {
-      ...super.createShape(),
-      fetch: async (
-        _: Readonly<Record<string, string | number>>,
-        body: Readonly<object>
-      ): Promise<any> => {
-        const response = await this.fetch(
-          "post",
-          `${super.rootUrl()}web_backend/sources/create`,
-          body
-        );
-        return response;
-      },
-      schema: this.asSchema()
-    };
-  }
-
   static recreateShape<T extends typeof Resource>(this: T) {
     return {
       ...super.detailShape(),

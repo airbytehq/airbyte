@@ -8,7 +8,16 @@ This Github source wraps the [Singer Github Tap](https://github.com/singer-io/ta
 
 ### Output schema
 
-Several output streams are available from this source \(commits, issues, pull\_requests, etc.\) For a comprehensive output schema [look at the Singer tap schema files](https://github.com/singer-io/tap-github/tree/master/tap_github/schemas).
+This connector outputs the following streams: 
+  * [Assignees](https://developer.github.com/v3/issues/assignees/#list-assignees)
+  * [Collaborators](https://developer.github.com/v3/repos/collaborators/#list-collaborators)
+  * [Commits](https://developer.github.com/v3/repos/commits/#list-commits-on-a-repository)
+  * [Issues](https://developer.github.com/v3/issues/#list-issues-for-a-repository)
+  * [Pull Requests](https://developer.github.com/v3/pulls/#list-pull-requests)
+  * [Comments](https://developer.github.com/v3/issues/comments/#list-comments-in-a-repository)
+  * [Reviews](https://developer.github.com/v3/pulls/reviews/#list-reviews-on-a-pull-request)
+  * [Review Comments](https://developer.github.com/v3/pulls/comments)
+  * [Stargazers](https://developer.github.com/v3/activity/starring/#list-stargazers)
 
 ### Features
 

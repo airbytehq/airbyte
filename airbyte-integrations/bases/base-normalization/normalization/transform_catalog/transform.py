@@ -167,10 +167,6 @@ def is_object(property_type) -> bool:
     return property_type == "object" or "object" in property_type
 
 
-def is_airbyte_column(name: str) -> bool:
-    return name.startswith("_airbyte_")
-
-
 def find_combining_schema(properties: dict) -> set:
     return set(properties).intersection({"anyOf", "oneOf", "allOf"})
 
@@ -283,7 +279,7 @@ def extract_node_properties(path: List[str], json_col: str, properties: dict, in
             sql_field = json_extract_base_property(
                 path=path, json_col=json_col, name=field, definition=properties[field], integration_type=integration_type
             )
-            if sql_field and not is_airbyte_column(field):
+            if sql_field:
                 result[field] = sql_field
     return result
 
@@ -374,9 +370,9 @@ def process_node(
     node_columns = ",\n    ".join([sql for sql in node_properties.values()])
     hash_node_columns = ",\n        ".join([quote(column, integration_type, in_jinja=True) for column in node_properties.keys()])
     hash_node_columns = jinja_call(f"dbt_utils.surrogate_key([\n        {hash_node_columns}\n    ])")
-    hash_id = quote(f"_airbyte_{name}_hashid", integration_type)
-    foreign_hash_id = quote(f"_airbyte_{name}_foreign_hashid", integration_type)
-    emitted_col = "emitted_at as _airbyte_emitted_at,\n    {} as _airbyte_normalized_at".format(
+    hash_id = quote(f"_{name}_hashid", integration_type)
+    foreign_hash_id = quote(f"_{name}_foreign_hashid", integration_type)
+    emitted_col = "emitted_at,\n    {} as normalized_at".format(
         jinja_call("dbt_utils.current_timestamp_in_utc()"),
     )
     node_sql = f"""{prefix}

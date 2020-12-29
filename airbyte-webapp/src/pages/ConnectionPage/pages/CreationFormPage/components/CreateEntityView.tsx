@@ -6,6 +6,8 @@ import CheckConnection from "./CheckConnection";
 import useSource from "../../../../../components/hooks/services/useSourceHook";
 import { Routes } from "../../../../routes";
 import useDestination from "../../../../../components/hooks/services/useDestinationHook";
+import { JobsLogItem } from "../../../../../components/JobItem";
+import { JobInfo } from "../../../../../core/resources/Scheduler";
 
 type IProps = {
   type: "source" | "destination";
@@ -15,14 +17,17 @@ type IProps = {
 const CreateEntityView: React.FC<IProps> = ({ type, afterSuccess }) => {
   const { location }: { location: any } = useRouter();
   const [successRequest, setSuccessRequest] = useState(false);
-  const [errorStatusRequest, setErrorStatusRequest] = useState<number>(0);
+  const [errorStatusRequest, setErrorStatusRequest] = useState<{
+    status: number;
+    response: JobInfo;
+  } | null>(null);
 
   const { checkSourceConnection } = useSource();
   const { checkDestinationConnection } = useDestination();
 
   const checkConnectionRequest = useCallback(async () => {
     try {
-      setErrorStatusRequest(0);
+      setErrorStatusRequest(null);
       setSuccessRequest(false);
 
       if (type === "source") {
@@ -41,7 +46,7 @@ const CreateEntityView: React.FC<IProps> = ({ type, afterSuccess }) => {
         afterSuccess();
       }, 2000);
     } catch (e) {
-      setErrorStatusRequest(e.status);
+      setErrorStatusRequest(e);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [type]);
@@ -65,10 +70,11 @@ const CreateEntityView: React.FC<IProps> = ({ type, afterSuccess }) => {
         <CheckConnection
           success={false}
           type={type}
-          error={errorStatusRequest}
+          error={errorStatusRequest?.status}
           retry={checkConnectionRequest}
           linkToSettings={link}
         />
+        <JobsLogItem jobInfo={errorStatusRequest?.response} />
       </ContentCard>
     );
   }

@@ -59,7 +59,6 @@ public class JobRetrier implements Runnable {
 
     incompleteJobs
         .forEach(job -> {
-          LOGGER.info("weeee");
           if (hasReachedMaxAttempt(job)) {
             failJob(job);
             failedJobs.incrementAndGet();
