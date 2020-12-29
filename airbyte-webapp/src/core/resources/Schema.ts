@@ -1,6 +1,7 @@
 import { Resource } from "rest-hooks";
 import BaseResource, { NetworkError } from "./BaseResource";
 import { JobInfo } from "./Scheduler";
+import Status from "../statuses";
 
 export enum SyncMode {
   Incremental = "incremental",
@@ -62,7 +63,7 @@ export default class SchemaResource extends BaseResource implements Schema {
           params
         );
 
-        if (result.job_info.job.status === "failed" || !result.schema) {
+        if (result.job_info.job.status === Status.FAILED || !result.schema) {
           const e = new NetworkError(result);
           // Generate error with failed status and received logs
           e.status = 400;
