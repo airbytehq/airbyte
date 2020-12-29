@@ -23,11 +23,10 @@ SOFTWARE.
 """
 
 from datetime import datetime
-from typing import Iterator, List, Sequence, Tuple
+from typing import Iterator, Sequence, Tuple
 
 import backoff
 from cached_property import cached_property
-from airbyte_protocol import AirbyteRecordMessage, AirbyteStream
 from base_python import BaseClient
 from dateutil.parser import isoparse
 from facebook_business import FacebookAdsApi
