@@ -26,8 +26,9 @@ import sys
 
 import backoff
 from facebook_business.exceptions import FacebookRequestError
+from base_python.entrypoint import logger  # FIXME (Eugene K): register logger as standard python logger
 
-logger = None  # FIXME: get logger from airbyte
+
 FACEBOOK_UNKNOWN_ERROR_CODE = 99
 
 

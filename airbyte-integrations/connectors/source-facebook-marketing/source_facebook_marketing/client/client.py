@@ -28,6 +28,7 @@ from typing import Iterator, Sequence, Tuple
 import backoff
 from cached_property import cached_property
 from base_python import BaseClient
+from base_python.entrypoint import logger  # FIXME (Eugene K): register logger as standard python logger
 from dateutil.parser import isoparse
 from facebook_business import FacebookAdsApi
 from facebook_business.adobjects import user as fb_user
@@ -291,7 +292,7 @@ class Client(BaseClient):
         try:
             self._find_account(self._account_id)
         except FacebookAPIException as exc:
-            # logger.exception(exc)  # we might need some extra details, so log original exception here
+            logger.exception(exc)  # we might need some extra details, so log original exception here
             alive = False
             error_message = str(exc)
 
