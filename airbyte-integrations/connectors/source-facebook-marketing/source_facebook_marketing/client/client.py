@@ -255,24 +255,24 @@ class Client(BaseClient):
     def stream__adcreatives(self, fields):
         yield from AdCreativeAPI(self).list(fields)
 
-    def stream__ads_insight(self, fields, **kwargs):
+    def stream__ads_insights(self, fields, **kwargs):
         client = AdsInsightAPI(self, start_date=self._start_date, **kwargs)
         yield from client.list(fields)
 
-    def stream__ads_insight_age_and_gender(self, fields):
-        yield from self.stream__ads_insight(fields=fields, breakdowns=['age', 'gender'])
+    def stream__ads_insights_age_and_gender(self, fields):
+        yield from self.stream__ads_insights(fields=fields, breakdowns=['age', 'gender'])
 
-    def stream__ads_insight_country(self, fields):
-        yield from self.stream__ads_insight(fields=fields, breakdowns=['country'])
+    def stream__ads_insights_country(self, fields):
+        yield from self.stream__ads_insights(fields=fields, breakdowns=['country'])
 
-    def stream__ads_insight_platform_and_device(self, fields):
-        yield from self.stream__ads_insight(fields=fields, breakdowns=['publisher_platform', 'platform_position', 'impression_device'])
+    def stream__ads_insights_platform_and_device(self, fields):
+        yield from self.stream__ads_insights(fields=fields, breakdowns=['publisher_platform', 'platform_position', 'impression_device'])
 
-    def stream__ads_insight_region(self, fields):
-        yield from self.stream__ads_insight(fields=fields, breakdowns=['region'])
+    def stream__ads_insights_region(self, fields):
+        yield from self.stream__ads_insights(fields=fields, breakdowns=['region'])
 
-    def stream__ads_insight_dma(self, fields):
-        yield from self.stream__ads_insight(fields=fields, breakdowns=['dma'])
+    def stream__ads_insights_dma(self, fields):
+        yield from self.stream__ads_insights(fields=fields, breakdowns=['dma'])
 
     @staticmethod
     def _find_account(account_id: str):
