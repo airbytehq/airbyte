@@ -78,6 +78,7 @@
   * [Updating Documentation](contributing-to-airbyte/updating-documentation.md)
   * [Templates](contributing-to-airbyte/templates/README.md)
     * [Connector Doc Template](contributing-to-airbyte/templates/integration-documentation-template.md)
+* [Technical Support](technical-support/README.md)
 * [Company Handbook](company-handbook/README.md)
   * [Story](company-handbook/future-milestones.md)
   * [Culture and Values](company-handbook/culture-and-values.md)
