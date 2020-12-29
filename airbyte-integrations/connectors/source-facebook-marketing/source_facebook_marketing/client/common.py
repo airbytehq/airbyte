@@ -28,6 +28,7 @@ import backoff
 from facebook_business.exceptions import FacebookRequestError
 
 logger = None  # FIXME: get logger from airbyte
+FACEBOOK_UNKNOWN_ERROR_CODE = 99
 
 
 class FacebookAPIException(Exception):
@@ -42,7 +43,7 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
 
     def should_retry_api_error(exc):
         if isinstance(exc, FacebookRequestError):
-            return exc.api_transient_error() or exc.api_error_subcode() == 99
+            return exc.api_transient_error() or exc.api_error_subcode() == FACEBOOK_UNKNOWN_ERROR_CODE
         return False
 
     return backoff.on_exception(
