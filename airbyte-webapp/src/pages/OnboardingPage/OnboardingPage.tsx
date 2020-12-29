@@ -19,6 +19,7 @@ import { AnalyticsService } from "../../core/analytics/AnalyticsService";
 import useSource from "../../components/hooks/services/useSourceHook";
 import useDestination from "../../components/hooks/services/useDestinationHook";
 import Link from "../../components/Link";
+import { JobInfo } from "../../core/resources/Scheduler";
 
 const Content = styled.div`
   width: 100%;
@@ -79,11 +80,14 @@ const OnboardingPage: React.FC = () => {
   });
 
   const [successRequest, setSuccessRequest] = useState(false);
-  const [errorStatusRequest, setErrorStatusRequest] = useState<number>(0);
+  const [errorStatusRequest, setErrorStatusRequest] = useState<{
+    status: number;
+    response: JobInfo;
+  } | null>(null);
 
   const afterUpdateStep = () => {
     setSuccessRequest(false);
-    setErrorStatusRequest(0);
+    setErrorStatusRequest(null);
   };
 
   const { currentStep, steps, setCurrentStep } = UseGetStepsConfig(
@@ -105,7 +109,7 @@ const OnboardingPage: React.FC = () => {
     sourceId?: string;
     connectionConfiguration?: any;
   }) => {
-    setErrorStatusRequest(0);
+    setErrorStatusRequest(null);
     const sourceConnector = getSourceDefinitionById(values.serviceType);
 
     try {
@@ -124,7 +128,7 @@ const OnboardingPage: React.FC = () => {
         setCurrentStep(StepsTypes.CREATE_DESTINATION);
       }, 2000);
     } catch (e) {
-      setErrorStatusRequest(e.status);
+      setErrorStatusRequest(e);
     }
   };
 
@@ -134,7 +138,7 @@ const OnboardingPage: React.FC = () => {
     destinationDefinitionId?: string;
     connectionConfiguration?: any;
   }) => {
-    setErrorStatusRequest(0);
+    setErrorStatusRequest(null);
     const destinationConnector = getDestinationDefinitionById(
       values.serviceType
     );
@@ -158,7 +162,7 @@ const OnboardingPage: React.FC = () => {
         setCurrentStep(StepsTypes.SET_UP_CONNECTION);
       }, 2000);
     } catch (e) {
-      setErrorStatusRequest(e.status);
+      setErrorStatusRequest(e);
     }
   };
 
@@ -166,10 +170,12 @@ const OnboardingPage: React.FC = () => {
     if (currentStep === StepsTypes.CREATE_SOURCE) {
       return (
         <SourceStep
+          afterSelectConnector={() => setErrorStatusRequest(null)}
+          jobInfo={errorStatusRequest?.response}
           onSubmit={onSubmitSourceStep}
           dropDownData={sourcesDropDownData}
           hasSuccess={successRequest}
-          errorStatus={errorStatusRequest}
+          errorStatus={errorStatusRequest?.status}
           source={sources.length && !successRequest ? sources[0] : undefined}
         />
       );
@@ -177,10 +183,12 @@ const OnboardingPage: React.FC = () => {
     if (currentStep === StepsTypes.CREATE_DESTINATION) {
       return (
         <DestinationStep
+          afterSelectConnector={() => setErrorStatusRequest(null)}
+          jobInfo={errorStatusRequest?.response}
           onSubmit={onSubmitDestinationStep}
           dropDownData={destinationsDropDownData}
           hasSuccess={successRequest}
-          errorStatus={errorStatusRequest}
+          errorStatus={errorStatusRequest?.status}
           currentSourceDefinitionId={sources[0].sourceDefinitionId}
           destination={
             destinations.length && !successRequest ? destinations[0] : undefined
@@ -191,7 +199,7 @@ const OnboardingPage: React.FC = () => {
 
     return (
       <ConnectionStep
-        errorStatus={errorStatusRequest}
+        errorStatus={errorStatusRequest?.status}
         source={sources.length ? sources[0] : undefined}
         destination={destinations.length ? destinations[0] : undefined}
       />

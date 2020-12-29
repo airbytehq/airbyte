@@ -90,7 +90,7 @@ read(Config, AirbyteCatalog, State) -> Stream<AirbyteMessage>
 * Output:
   1. `catalog` - an [AirbyteCatalog](https://github.com/airbytehq/airbyte/blob/master/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_protocol.yaml#L108-L118) wrapped in an `AirbyteMessage` of type `catalog`.
 * This command detects the _structure_ of the data in the data source.
-* An `AirbyteCatalog` describes the structure of data in a data source. It has a single field called `streams` that contains a list of `AirbyteStream`s. Each of these contain a `name` and `json_schema` field. The `json_schema` field accepts any valid JsonSchema and describes the structure of a stream. This data model is intentionally flexible. That can make it a little hard at first to mentally map onto your own data, so we provide some example below:
+* An `AirbyteCatalog` describes the structure of data in a data source. It has a single field called `streams` that contains a list of `AirbyteStream`s. Each of these contain a `name` and `json_schema` field. The `json_schema` field accepts any valid JsonSchema and describes the structure of a stream. This data model is intentionally flexible. That can make it a little hard at first to mentally map onto your own data, so we provide some examples below:
   * If we are using a data source that is a traditional relational database, each table in that database would map to an `AirbyteStream`. Each column in the table would be a key in the `properties` field of the `json_schema` field.
     * e.g. If we have a table called `users` which had the columns `name` and `age` \(the age column is optional\) the `AirbyteCatalog` would look like this:
 

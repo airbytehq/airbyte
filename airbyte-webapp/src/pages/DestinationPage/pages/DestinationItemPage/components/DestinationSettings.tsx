@@ -10,6 +10,9 @@ import DestinationDefinitionSpecificationResource from "../../../../../core/reso
 import useDestination from "../../../../../components/hooks/services/useDestinationHook";
 import DeleteBlock from "../../../../../components/DeleteBlock";
 import { Connection } from "../../../../../core/resources/Connection";
+import { JobInfo } from "../../../../../core/resources/Scheduler";
+import { JobsLogItem } from "../../../../../components/JobItem";
+import { createFormErrorMessage } from "../../../../../utils/errorStatusMessage";
 
 const Content = styled.div`
   width: 100%;
@@ -27,7 +30,10 @@ const DestinationsSettings: React.FC<IProps> = ({
   connectionsWithDestination
 }) => {
   const [saved, setSaved] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [errorStatusRequest, setErrorStatusRequest] = useState<{
+    statusMessage: string | React.ReactNode;
+    response: JobInfo;
+  } | null>(null);
 
   const destinationSpecification = useResource(
     DestinationDefinitionSpecificationResource.detailShape(),
@@ -43,16 +49,19 @@ const DestinationsSettings: React.FC<IProps> = ({
     serviceType: string;
     connectionConfiguration?: any;
   }) => {
-    setErrorMessage("");
-    const result = await updateDestination({
-      values,
-      destinationId: currentDestination.destinationId
-    });
+    setErrorStatusRequest(null);
+    try {
+      await updateDestination({
+        values,
+        destinationId: currentDestination.destinationId,
+        destinationDefinitionId: currentDestination.destinationDefinitionId
+      });
 
-    if (result.status === "failure") {
-      setErrorMessage(result.message);
-    } else {
       setSaved(true);
+    } catch (e) {
+      const errorStatusMessage = createFormErrorMessage(e.status);
+
+      setErrorStatusRequest({ ...e, statusMessage: errorStatusMessage });
     }
   };
 
@@ -75,7 +84,7 @@ const DestinationsSettings: React.FC<IProps> = ({
           dropDownData={[
             {
               value: currentDestination.destinationDefinitionId,
-              text: currentDestination.name,
+              text: currentDestination.destinationName,
               img: "/default-logo-catalog.svg"
             }
           ]}
@@ -85,8 +94,9 @@ const DestinationsSettings: React.FC<IProps> = ({
           }}
           specifications={destinationSpecification.connectionSpecification}
           successMessage={saved && <FormattedMessage id="form.changesSaved" />}
-          errorMessage={errorMessage}
+          errorMessage={errorStatusRequest?.statusMessage}
         />
+        <JobsLogItem jobInfo={errorStatusRequest?.response} />
       </ContentCard>
       <DeleteBlock type="destination" onDelete={onDelete} />
     </Content>

@@ -12,6 +12,9 @@ import usePrepareDropdownLists from "./usePrepareDropdownLists";
 import { Destination } from "../../../core/resources/Destination";
 import { useDestinationDefinitionSpecificationLoad } from "../../../components/hooks/services/useDestinationHook";
 import { IDataItem } from "../../../components/DropDown/components/ListItem";
+import { createFormErrorMessage } from "../../../utils/errorStatusMessage";
+import { JobInfo } from "../../../core/resources/Scheduler";
+import { JobsLogItem } from "../../../components/JobItem";
 
 type IProps = {
   destination?: Destination;
@@ -25,6 +28,8 @@ type IProps = {
   }) => void;
   errorStatus?: number;
   currentSourceDefinitionId: string;
+  jobInfo?: JobInfo;
+  afterSelectConnector?: () => void;
 };
 
 const DestinationStep: React.FC<IProps> = ({
@@ -33,7 +38,9 @@ const DestinationStep: React.FC<IProps> = ({
   hasSuccess,
   errorStatus,
   currentSourceDefinitionId,
-  destination
+  destination,
+  jobInfo,
+  afterSelectConnector
 }) => {
   const [destinationId, setDestinationId] = useState("");
   const {
@@ -54,6 +61,11 @@ const DestinationStep: React.FC<IProps> = ({
       connector_destination_definition_id:
         destinationConnector?.destinationDefinitionId
     });
+
+    if (afterSelectConnector) {
+      afterSelectConnector();
+    }
+
     setDestinationId(sourceId);
   };
   const onSubmitForm = async (values: {
@@ -67,12 +79,7 @@ const DestinationStep: React.FC<IProps> = ({
     });
   };
 
-  const errorMessage =
-    errorStatus === 0 ? null : errorStatus === 400 ? (
-      <FormattedMessage id="form.validationError" />
-    ) : (
-      <FormattedMessage id="form.someError" />
-    );
+  const errorMessage = createFormErrorMessage(errorStatus);
 
   useEffect(
     () => setDestinationId(destination?.destinationDefinitionId || ""),
@@ -110,6 +117,7 @@ const DestinationStep: React.FC<IProps> = ({
               : null
           }
         />
+        <JobsLogItem jobInfo={jobInfo} />
       </ContentCard>
     </>
   );

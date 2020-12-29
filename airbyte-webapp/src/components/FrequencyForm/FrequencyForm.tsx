@@ -89,7 +89,7 @@ const FrequencyForm: React.FC<IProps> = ({
           SyncMode.FullRefresh
         );
 
-        const hasIncrementalOption = !!itemWithSupportedSyncModes.supportedSyncModes.includes(
+        const hasIncrementalOption = itemWithSupportedSyncModes.supportedSyncModes.includes(
           SyncMode.Incremental
         );
 
