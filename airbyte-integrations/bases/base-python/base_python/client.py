@@ -46,7 +46,6 @@ class JsonSchemaResolver:
 
     def __init__(self, shared_schemas_path: str):
         self._shared_refs = self._load_shared_schema_refs(shared_schemas_path)
-        print(self._shared_refs.keys())
 
     @staticmethod
     def _load_shared_schema_refs(path: str):
