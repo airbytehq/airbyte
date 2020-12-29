@@ -25,8 +25,12 @@
 package io.airbyte.commons.enums;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+
 import java.util.Arrays;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class Enums {
@@ -45,9 +49,30 @@ public class Enums {
     Preconditions.checkArgument(c2.isEnum());
     return c1.getEnumConstants().length == c2.getEnumConstants().length
         && Sets.difference(
-            Arrays.stream(c1.getEnumConstants()).map(Enum::name).collect(Collectors.toSet()),
-            Arrays.stream(c2.getEnumConstants()).map(Enum::name).collect(Collectors.toSet()))
-            .isEmpty();
+        Arrays.stream(c1.getEnumConstants()).map(Enum::name).collect(Collectors.toSet()),
+        Arrays.stream(c2.getEnumConstants()).map(Enum::name).collect(Collectors.toSet()))
+        .isEmpty();
   }
 
+  private static final Map<Class<?>, Map<String, ?>> NORMALIZED_ENUMS = Maps.newConcurrentMap();
+
+  @SuppressWarnings("unchecked")
+  public static <T extends Enum<T>> Optional<T> toEnum(final String value, Class<T> enumClass) {
+    Preconditions.checkArgument(enumClass.isEnum());
+
+    if (!NORMALIZED_ENUMS.containsKey(enumClass)) {
+      T[] values = enumClass.getEnumConstants();
+      final Map<String, T> mappings = Maps.newHashMapWithExpectedSize(values.length);
+      for (T t : values) {
+        mappings.put(normalizeName(t.name()), t);
+      }
+      NORMALIZED_ENUMS.put(enumClass, mappings);
+    }
+
+    return Optional.ofNullable((T)NORMALIZED_ENUMS.get(enumClass).get(normalizeName(value)));
+  }
+
+  private static String normalizeName(final String name) {
+    return name.toLowerCase().replaceAll("\\W", "");
+  }
 }

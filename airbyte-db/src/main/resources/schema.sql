@@ -27,13 +27,13 @@ CREATE
     );
 
 CREATE
-    TYPE JOB_TYPE AS ENUM(
-        'checkConnectionSource',
-        'checkConnectionDestination',
-        'discoverSchema',
-        'getSpec',
+    TYPE JOB_CONFIG_TYPE AS ENUM(
+        'check_connection_source',
+        'check_connection_destination',
+        'discover_schema',
+        'get_spec',
         'sync',
-        'resetConnection';
+        'reset_connection'
     );
 
 
@@ -41,7 +41,7 @@ CREATE
  CREATE
     TABLE
         AIRBYTE_METADATA(
-            KEY VARCHAR(255) PRIMARY KEY,
+            key VARCHAR(255) PRIMARY KEY,
             value VARCHAR(255)
         );
 
@@ -49,7 +49,7 @@ CREATE
     TABLE
         JOBS(
             id BIGSERIAL PRIMARY KEY,
-            type JOB_TYPE,
+            config_type JOB_CONFIG_TYPE,
             scope VARCHAR(255),
             config JSONB,
             status JOB_STATUS,
@@ -65,7 +65,7 @@ CREATE
             job_id BIGSERIAL,
             attempt_number INTEGER,
             log_path VARCHAR(255),
-            OUTPUT JSONB,
+            output JSONB,
             status ATTEMPT_STATUS,
             created_at TIMESTAMPTZ,
             updated_at TIMESTAMPTZ,

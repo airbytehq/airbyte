@@ -26,9 +26,12 @@ package io.airbyte.commons.enums;
 
 import static io.airbyte.commons.enums.Enums.convertTo;
 import static io.airbyte.commons.enums.Enums.isCompatible;
+import static io.airbyte.commons.enums.Enums.toEnum;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.util.Optional;
 
 class EnumsTest {
 
@@ -86,4 +89,8 @@ class EnumsTest {
     Assertions.assertFalse(isCompatible(E4.class, E1.class));
   }
 
+  @Test
+  void testToEnum() {
+    Assertions.assertEquals(Optional.of(E1.TEST), toEnum("test", E1.class));
+  }
 }

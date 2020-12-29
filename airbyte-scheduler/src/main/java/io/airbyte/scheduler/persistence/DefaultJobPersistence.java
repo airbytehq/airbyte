@@ -64,6 +64,7 @@ public class DefaultJobPersistence implements JobPersistence {
   static final String BASE_JOB_SELECT_AND_JOIN =
       "SELECT\n"
           + "jobs.id AS job_id,\n"
+          + "jobs.config_type AS config_type,\n"
           + "jobs.scope AS scope,\n"
           + "jobs.config AS config,\n"
           + "jobs.status AS job_status,\n"
@@ -116,10 +117,11 @@ public class DefaultJobPersistence implements JobPersistence {
 
     return database.query(
         ctx -> ctx.fetch(
-            "INSERT INTO jobs(scope, created_at, updated_at, status, config) " +
-                "SELECT ?, ?, ?, CAST(? AS JOB_STATUS), CAST(? as JSONB) " +
+            "INSERT INTO jobs(config_type, scope, created_at, updated_at, status, config) " +
+                "SELECT ?, ?, ?, ?, CAST(? AS JOB_STATUS), CAST(? as JSONB) " +
                 queueingRequest +
                 "RETURNING id ",
+            jobConfig.getConfigType().toString().toLowerCase(),
             scope,
             now,
             now,
