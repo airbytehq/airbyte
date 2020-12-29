@@ -23,10 +23,10 @@ SOFTWARE.
 """
 
 from datetime import datetime
-from functools import cached_property
 from typing import Iterator, List, Sequence, Tuple
 
 import backoff
+from cached_property import cached_property
 from airbyte_protocol import AirbyteRecordMessage, AirbyteStream
 from base_python import BaseClient
 from dateutil.parser import isoparse
@@ -145,7 +145,6 @@ class CampaignAPI(StreamAPI):
     @retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
     def _extend_record(self, campaign, fields, pull_ads):
         """Request additional attributes for campaign"""
-        print("CAMPAIGN", campaign)
         campaign_out = campaign.api_get(fields=fields).export_all_data()
         if pull_ads:
             campaign_out["ads"] = {"data": []}

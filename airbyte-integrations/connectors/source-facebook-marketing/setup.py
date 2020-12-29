@@ -36,8 +36,9 @@ setup(
         "facebook_business",
         "backoff",
         "python-dateutil",
+        "cached_property",
     ],
-    package_data={"": ["*.json", "schemas/*.json"]},
+    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
     setup_requires=["pytest-runner"],
     tests_require=["pytest"],
     extras_require={

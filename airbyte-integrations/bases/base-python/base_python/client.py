@@ -110,9 +110,9 @@ class ResourceSchemaLoader:
     def get_schema(self, name: str) -> dict:
         raw_schema = json.loads(pkgutil.get_data(self.package_name, f"schemas/{name}.json"))
         shared_schemas_folder = pkg_resources.resource_filename(self.package_name, "schemas/shared/")
-        print(shared_schemas_folder)
-
-        return JsonSchemaResolver(shared_schemas_folder).resolve(raw_schema)
+        if os.path.exists(shared_schemas_folder):
+            return JsonSchemaResolver(shared_schemas_folder).resolve(raw_schema)
+        return raw_schema
 
 
 class BaseClient(ABC):
