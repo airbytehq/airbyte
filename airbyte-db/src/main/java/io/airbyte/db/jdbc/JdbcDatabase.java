@@ -46,6 +46,10 @@ public interface JdbcDatabase extends AutoCloseable {
    */
   void execute(CheckedConsumer<Connection, SQLException> query) throws SQLException;
 
+  default void execute(String sql) throws SQLException {
+    execute(connection -> connection.createStatement().execute(sql));
+  }
+
   /**
    * Use a connection to create a {@link ResultSet} and map it into a list. The entire
    * {@link ResultSet} will be buffered in memory before the list is returned. The caller does not
