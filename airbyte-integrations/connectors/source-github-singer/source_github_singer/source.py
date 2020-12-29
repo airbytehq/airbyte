@@ -36,6 +36,14 @@ class SourceGithubSinger(SingerSource):
             repositories = config["repository"].split(' ')
             for repository in repositories:
                 org = repository.split('/')[0]
+                # several request for checking user permissions
+                # first is default request
+                # second is for checking if user has access to Collaborators API
+                # if user is not one of the collaborators, request will return 403 error
+                # third is for checking access and permission to Teams API
+                # Teams API is only available to authenticated members of the team's organization,
+                # in another case it will return 404 error
+                # if user doesn't have permission, it will return 401 error
                 check_urls = [
                     "https://api.github.com/repos/airbytehq/airbyte/commits",
                     f"https://api.github.com/repos/{repository}/collaborators",
