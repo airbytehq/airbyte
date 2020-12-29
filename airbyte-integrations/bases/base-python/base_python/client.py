@@ -28,7 +28,7 @@ import os
 import pkgutil
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Dict, Generator, Tuple
+from typing import Dict, Generator, Tuple, List
 
 import pkg_resources
 from airbyte_protocol import AirbyteRecordMessage, AirbyteStream
@@ -135,13 +135,19 @@ class BaseClient(ABC):
 
         return mapping
 
+    @staticmethod
+    def _get_fields_from_stream(stream: AirbyteStream) -> List[str]:
+        return list(stream.json_schema.get("properties", {}).keys())
+
     def read_stream(self, stream: AirbyteStream) -> Generator[AirbyteRecordMessage, None, None]:
         """Yield records from stream"""
         method = self._stream_methods.get(stream.name)
         if not method:
             raise ValueError(f"Client does not know how to read stream `{stream.name}`")
 
-        for message in method():
+        fields = self._get_fields_from_stream(stream)
+
+        for message in method(fields=fields):
             now = int(datetime.now().timestamp()) * 1000
             yield AirbyteRecordMessage(stream=stream.name, data=message, emitted_at=now)
 

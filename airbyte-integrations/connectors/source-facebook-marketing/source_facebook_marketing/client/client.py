@@ -243,35 +243,35 @@ class Client(BaseClient):
     def account(self):
         return self._find_account(self._account_id)
 
-    def stream__campaigns(self, fields=None):
+    def stream__campaigns(self, fields=None, **kwargs):
         yield from CampaignAPI(self).list(fields)
 
-    def stream__adsets(self, fields):
+    def stream__adsets(self, fields=None, **kwargs):
         yield from AdSetsAPI(self).list(fields)
 
-    def stream__ads(self, fields):
+    def stream__ads(self, fields=None, **kwargs):
         yield from AdsAPI(self).list(fields)
 
-    def stream__adcreatives(self, fields):
+    def stream__adcreatives(self, fields=None, **kwargs):
         yield from AdCreativeAPI(self).list(fields)
 
-    def stream__ads_insights(self, fields, **kwargs):
+    def stream__ads_insights(self, fields=None, **kwargs):
         client = AdsInsightAPI(self, start_date=self._start_date, **kwargs)
         yield from client.list(fields)
 
-    def stream__ads_insights_age_and_gender(self, fields):
+    def stream__ads_insights_age_and_gender(self, fields=None, **kwargs):
         yield from self.stream__ads_insights(fields=fields, breakdowns=["age", "gender"])
 
-    def stream__ads_insights_country(self, fields):
+    def stream__ads_insights_country(self, fields=None, **kwargs):
         yield from self.stream__ads_insights(fields=fields, breakdowns=["country"])
 
-    def stream__ads_insights_platform_and_device(self, fields):
+    def stream__ads_insights_platform_and_device(self, fields=None, **kwargs):
         yield from self.stream__ads_insights(fields=fields, breakdowns=["publisher_platform", "platform_position", "impression_device"])
 
-    def stream__ads_insights_region(self, fields):
+    def stream__ads_insights_region(self, fields=None, **kwargs):
         yield from self.stream__ads_insights(fields=fields, breakdowns=["region"])
 
-    def stream__ads_insights_dma(self, fields):
+    def stream__ads_insights_dma(self, fields=None, **kwargs):
         yield from self.stream__ads_insights(fields=fields, breakdowns=["dma"])
 
     @staticmethod
@@ -297,20 +297,3 @@ class Client(BaseClient):
             error_message = str(exc)
 
         return alive, error_message
-
-    # FIXME: filter fields
-    @staticmethod
-    def _get_fields_from_stream(stream: AirbyteStream) -> List[str]:
-        return list(stream.json_schema.get("properties", {}).keys())
-
-    def read_stream(self, stream: AirbyteStream) -> Iterator[AirbyteRecordMessage]:
-        """Yield records from stream"""
-        method = self._stream_methods.get(stream.name)
-        if not method:
-            raise ValueError(f"Client does not know how to read stream `{stream.name}`")
-
-        fields = self._get_fields_from_stream(stream)
-
-        for message in method(fields=fields):
-            now = int(datetime.now().timestamp()) * 1000
-            yield AirbyteRecordMessage(stream=stream.name, data=message, emitted_at=now)
