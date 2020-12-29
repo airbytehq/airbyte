@@ -290,9 +290,9 @@ class Client(BaseClient):
         alive = True
         error_message = None
         try:
-            _account = self.account
+            self._find_account(self._account_id)
         except FacebookAPIException as exc:
-            # logger.exception(exc)
+            # logger.exception(exc)  # we might need some extra details, so log original exception here
             alive = False
             error_message = str(exc)
 
@@ -301,7 +301,7 @@ class Client(BaseClient):
     # FIXME: filter fields
     @staticmethod
     def _get_fields_from_stream(stream: AirbyteStream) -> List[str]:
-        return list(stream.json_schema['properties'].keys())
+        return list(stream.json_schema.get('properties', {}).keys())
 
     def read_stream(self, stream: AirbyteStream) -> Iterator[AirbyteRecordMessage]:
         """Yield records from stream"""
