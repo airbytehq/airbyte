@@ -21,21 +21,20 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
 from datetime import datetime
 from functools import cached_property
-from typing import Sequence, Tuple, List, Iterator
-
-from airbyte_protocol import AirbyteStream, AirbyteRecordMessage
-from dateutil.parser import isoparse
-from base_python import BaseClient
+from typing import Iterator, List, Sequence, Tuple
 
 import backoff
-
+from airbyte_protocol import AirbyteRecordMessage, AirbyteStream
+from base_python import BaseClient
+from dateutil.parser import isoparse
 from facebook_business import FacebookAdsApi
 from facebook_business.adobjects import user as fb_user
 from facebook_business.exceptions import FacebookRequestError
 
-from .common import retry_pattern, FacebookAPIException
+from .common import FacebookAPIException, retry_pattern
 
 
 class StreamAPI:
@@ -49,9 +48,10 @@ class StreamAPI:
 
 
 class AdCreativeAPI(StreamAPI):
-    """ AdCreative is not an iterable stream as it uses the batch endpoint
-        doc: https://developers.facebook.com/docs/marketing-api/reference/adgroup/adcreatives/
+    """AdCreative is not an iterable stream as it uses the batch endpoint
+    doc: https://developers.facebook.com/docs/marketing-api/reference/adgroup/adcreatives/
     """
+
     BATCH_SIZE = 50
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
@@ -77,17 +77,14 @@ class AdCreativeAPI(StreamAPI):
                 records[:] = []
 
             # Add a call to the batch with the full object
-            creative.api_get(fields=fields,
-                             batch=api_batch,
-                             success=success,
-                             failure=failure)
+            creative.api_get(fields=fields, batch=api_batch, success=success, failure=failure)
 
         # Ensure the final batch is executed
         api_batch.execute()
 
     @retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
     def _get_creatives(self):
-        return self._api.account.get_ad_creatives(params={'limit': self.result_return_limit})
+        return self._api.account.get_ad_creatives(params={"limit": self.result_return_limit})
 
 
 class AdsAPI(StreamAPI):
@@ -96,7 +93,7 @@ class AdsAPI(StreamAPI):
     """
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
-        ads = self._get_ads({'limit': self.result_return_limit})
+        ads = self._get_ads({"limit": self.result_return_limit})
         for recordset in ads:
             for record in recordset:
                 yield self._extend_record(record, fields=fields)
@@ -118,7 +115,7 @@ class AdSetsAPI(StreamAPI):
     """ doc: https://developers.facebook.com/docs/marketing-api/reference/ad-campaign """
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
-        adsets = self._get_ad_sets({'limit': self.result_return_limit})
+        adsets = self._get_ad_sets({"limit": self.result_return_limit})
 
         for adset in adsets:
             yield self._extend_record(adset, fields=fields)
@@ -138,30 +135,28 @@ class AdSetsAPI(StreamAPI):
 
 class CampaignAPI(StreamAPI):
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
-        """ Read available campaigns
-        """
-        pull_ads = 'ads' in fields
-        fields = [k for k in fields if k != 'ads']
-        campaigns = self._get_campaigns({'limit': self.result_return_limit})
+        """Read available campaigns"""
+        pull_ads = "ads" in fields
+        fields = [k for k in fields if k != "ads"]
+        campaigns = self._get_campaigns({"limit": self.result_return_limit})
         for campaign in campaigns:
             yield self._extend_record(campaign, fields=fields, pull_ads=pull_ads)
 
     @retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
     def _extend_record(self, campaign, fields, pull_ads):
-        """ Request additional attributes for campaign
-        """
-        print('CAMPAIGN', campaign)
+        """Request additional attributes for campaign"""
+        print("CAMPAIGN", campaign)
         campaign_out = campaign.api_get(fields=fields).export_all_data()
         if pull_ads:
-            campaign_out['ads'] = {'data': []}
-            ids = [ad['id'] for ad in campaign.get_ads()]
+            campaign_out["ads"] = {"data": []}
+            ids = [ad["id"] for ad in campaign.get_ads()]
             for ad_id in ids:
-                campaign_out['ads']['data'].append({'id': ad_id})
+                campaign_out["ads"]["data"].append({"id": ad_id})
         return campaign_out
 
     @retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
     def _get_campaigns(self, params):
-        """ Separate method to request list of campaigns
+        """Separate method to request list of campaigns
         This is necessary because the functions that call this endpoint return
         a generator, whose calls need decorated with a backoff.
         """
@@ -170,27 +165,34 @@ class CampaignAPI(StreamAPI):
 
 class AdsInsightAPI(StreamAPI):
     ALL_ACTION_ATTRIBUTION_WINDOWS = [
-        '1d_click',
-        '7d_click',
-        '28d_click',
-        '1d_view',
-        '7d_view',
-        '28d_view',
+        "1d_click",
+        "7d_click",
+        "28d_click",
+        "1d_view",
+        "7d_view",
+        "28d_view",
     ]
 
     ALL_ACTION_BREAKDOWNS = [
-        'action_type',
-        'action_target_id',
-        'action_destination',
+        "action_type",
+        "action_target_id",
+        "action_destination",
     ]
 
     INVALID_INSIGHT_FIELDS = [
-        'impression_device', 'publisher_platform', 'platform_position',
-        'age', 'gender', 'country', 'placement', 'region', 'dma'
+        "impression_device",
+        "publisher_platform",
+        "platform_position",
+        "age",
+        "gender",
+        "country",
+        "placement",
+        "region",
+        "dma",
     ]
 
     action_breakdowns = ALL_ACTION_BREAKDOWNS
-    level = 'ad'
+    level = "ad"
     action_attribution_windows = ALL_ACTION_ATTRIBUTION_WINDOWS
     time_increment = 1
     buffer_days = 28
@@ -215,15 +217,14 @@ class AdsInsightAPI(StreamAPI):
         # Some automatic fields (primary-keys) cannot be used as 'fields' query params.
         while buffered_start_date <= end_date:
             yield {
-                'level': self.level,
-                'action_breakdowns': self.action_breakdowns,
-                'breakdowns': self.breakdowns,
-                'limit': self.result_return_limit,
-                'fields': fields,
-                'time_increment': self.time_increment,
-                'action_attribution_windows': self.action_attribution_windows,
-                'time_ranges': [{'since': buffered_start_date.to_date_string(),
-                                 'until': buffered_start_date.to_date_string()}]
+                "level": self.level,
+                "action_breakdowns": self.action_breakdowns,
+                "breakdowns": self.breakdowns,
+                "limit": self.result_return_limit,
+                "fields": fields,
+                "time_increment": self.time_increment,
+                "action_attribution_windows": self.action_attribution_windows,
+                "time_ranges": [{"since": buffered_start_date.to_date_string(), "until": buffered_start_date.to_date_string()}],
             }
             buffered_start_date = buffered_start_date.add(days=1)
 
@@ -260,29 +261,29 @@ class Client(BaseClient):
         yield from client.list(fields)
 
     def stream__ads_insights_age_and_gender(self, fields):
-        yield from self.stream__ads_insights(fields=fields, breakdowns=['age', 'gender'])
+        yield from self.stream__ads_insights(fields=fields, breakdowns=["age", "gender"])
 
     def stream__ads_insights_country(self, fields):
-        yield from self.stream__ads_insights(fields=fields, breakdowns=['country'])
+        yield from self.stream__ads_insights(fields=fields, breakdowns=["country"])
 
     def stream__ads_insights_platform_and_device(self, fields):
-        yield from self.stream__ads_insights(fields=fields, breakdowns=['publisher_platform', 'platform_position', 'impression_device'])
+        yield from self.stream__ads_insights(fields=fields, breakdowns=["publisher_platform", "platform_position", "impression_device"])
 
     def stream__ads_insights_region(self, fields):
-        yield from self.stream__ads_insights(fields=fields, breakdowns=['region'])
+        yield from self.stream__ads_insights(fields=fields, breakdowns=["region"])
 
     def stream__ads_insights_dma(self, fields):
-        yield from self.stream__ads_insights(fields=fields, breakdowns=['dma'])
+        yield from self.stream__ads_insights(fields=fields, breakdowns=["dma"])
 
     @staticmethod
     def _find_account(account_id: str):
         try:
-            accounts = fb_user.User(fbid='me').get_ad_accounts()
+            accounts = fb_user.User(fbid="me").get_ad_accounts()
             for account in accounts:
-                if account['account_id'] == account_id:
+                if account["account_id"] == account_id:
                     return account
         except FacebookRequestError as exc:
-            raise FacebookAPIException(f'Error: {exc.api_error_code()}, {exc.api_error_message()}') from exc
+            raise FacebookAPIException(f"Error: {exc.api_error_code()}, {exc.api_error_message()}") from exc
 
         raise FacebookAPIException("Couldn't find account with id {}".format(account_id))
 
@@ -301,7 +302,7 @@ class Client(BaseClient):
     # FIXME: filter fields
     @staticmethod
     def _get_fields_from_stream(stream: AirbyteStream) -> List[str]:
-        return list(stream.json_schema.get('properties', {}).keys())
+        return list(stream.json_schema.get("properties", {}).keys())
 
     def read_stream(self, stream: AirbyteStream) -> Iterator[AirbyteRecordMessage]:
         """Yield records from stream"""

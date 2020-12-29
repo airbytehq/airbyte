@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
 import sys
 
 import backoff
@@ -37,9 +38,7 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
     def log_retry_attempt(details):
         _, exc, _ = sys.exc_info()
         logger.info(exc)
-        logger.info('Caught retryable error after %s tries. Waiting %s more seconds then retrying...',
-                    details["tries"],
-                    details["wait"])
+        logger.info("Caught retryable error after %s tries. Waiting %s more seconds then retrying...", details["tries"], details["wait"])
 
     def should_retry_api_error(exc):
         if isinstance(exc, FacebookRequestError):

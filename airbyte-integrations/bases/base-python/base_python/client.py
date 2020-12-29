@@ -26,11 +26,11 @@ import inspect
 import json
 import os
 import pkgutil
-import pkg_resources
 from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Dict, Generator, Tuple
 
+import pkg_resources
 from airbyte_protocol import AirbyteRecordMessage, AirbyteStream
 from jsonschema import RefResolver
 
@@ -43,14 +43,14 @@ def package_name_from_class(cls: object) -> str:
 
 class JsonSchemaResolver:
     """Helper class to expand $ref items in json schema"""
+
     def __init__(self, shared_schemas_path: str):
         self._shared_refs = self._load_shared_schema_refs(shared_schemas_path)
         print(self._shared_refs.keys())
 
     @staticmethod
     def _load_shared_schema_refs(path: str):
-        shared_file_names = [f for f in os.listdir(path)
-                             if os.path.isfile(os.path.join(path, f))]
+        shared_file_names = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
 
         shared_schema_refs = {}
         for shared_file in shared_file_names:
@@ -84,7 +84,7 @@ class JsonSchemaResolver:
         return schema
 
     def resolve(self, schema: dict, refs: Dict[str, dict] = None) -> dict:
-        """ Resolves and replaces json-schema $refs with the appropriate dict.
+        """Resolves and replaces json-schema $refs with the appropriate dict.
         Recursively walks the given schema dict, converting every instance
         of $ref in a 'properties' structure with a resolved dict.
         This modifies the input schema and also returns it.
@@ -132,7 +132,7 @@ class BaseClient(ABC):
         methods = inspect.getmembers(self.__class__, predicate=inspect.isfunction)
         for name, method in methods:
             if name.startswith(prefix):
-                mapping[name[len(prefix):]] = getattr(self, name)
+                mapping[name[len(prefix) :]] = getattr(self, name)
 
         return mapping
 
