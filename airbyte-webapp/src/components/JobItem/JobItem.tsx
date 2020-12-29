@@ -6,6 +6,7 @@ import Spinner from "../Spinner";
 import JobLogs from "./components/JobLogs";
 import ContentWrapper from "./components/ContentWrapper";
 import MainInfo from "./components/MainInfo";
+import Status from "../../core/statuses";
 
 type IProps = {
   job: JobApiItem;
@@ -33,7 +34,7 @@ const LoadLogs = styled.div`
 const JobItem: React.FC<IProps> = ({ job, attempts }) => {
   const [isOpen, setIsOpen] = useState(false);
   const onExpand = () => setIsOpen(!isOpen);
-  const isFailed = job.status === "failed";
+  const isFailed = job.status === Status.FAILED;
 
   return (
     <Item isFailed={isFailed}>
