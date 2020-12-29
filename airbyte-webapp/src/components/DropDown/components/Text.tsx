@@ -3,6 +3,7 @@ import styled from "styled-components";
 type IProps = {
   primary?: boolean;
   secondary?: boolean;
+  fullText?: boolean;
 };
 
 const setColor = (props: IProps & { theme: any }) => {
@@ -17,9 +18,9 @@ const setColor = (props: IProps & { theme: any }) => {
 };
 
 const Text = styled.div<IProps>`
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: ${({ fullText }) => (fullText ? "normal" : "nowrap")};
+  overflow: ${({ fullText }) => (fullText ? "inherit" : "hidden")};
+  text-overflow: ${({ fullText }) => (fullText ? "inherit" : "ellipsis")};
   font-size: 14px;
   line-height: 20px;
   font-family: ${({ theme }) => theme.regularFont};

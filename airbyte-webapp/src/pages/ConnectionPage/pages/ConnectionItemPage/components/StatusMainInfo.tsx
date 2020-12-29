@@ -99,7 +99,7 @@ const StatusMainInfo: React.FC<IProps> = ({ connection, frequencyText }) => {
         </SourceCell>
         <SourceCell flex={2}>
           <Img />
-          {connection.destination?.name}
+          {connection.destination?.destinationName}
         </SourceCell>
         <Cell>{frequencyText}</Cell>
         <EnabledCell flex={1.1}>

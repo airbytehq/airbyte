@@ -53,7 +53,7 @@ export const buildYupFormForJsonSchema = (
 
   switch (jsonSchema.type) {
     case "string":
-      schema = yup.string();
+      schema = yup.string().trim();
 
       if (jsonSchema?.pattern !== undefined) {
         schema = schema.matches(

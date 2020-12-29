@@ -14,6 +14,7 @@ import useConnection from "../hooks/services/useConnectionHook";
 import { useDiscoverSchema } from "../hooks/services/useSchemaHook";
 
 import config from "../../config";
+import { JobsLogItem } from "../JobItem";
 
 type IProps = {
   source?: Source;
@@ -87,6 +88,7 @@ const CreateConnectionContent: React.FC<IProps> = ({
     return (
       <ContentCard title={<FormattedMessage id="onboarding.setConnection" />}>
         <TryAfterErrorBlock onClick={onDiscoverSchema} />
+        <JobsLogItem jobInfo={schemaErrorStatus?.response} />
       </ContentCard>
     );
   }

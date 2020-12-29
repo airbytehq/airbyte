@@ -9,9 +9,7 @@ application {
 }
 
 repositories {
-    maven {
-        url "https://repository.mulesoft.org/nexus/content/repositories/public/"
-    }
+    maven { url "https://s3.amazonaws.com/redshift-maven-repository/release" }
 }
 
 dependencies {

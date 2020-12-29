@@ -100,8 +100,6 @@ public class DefaultSyncWorker implements SyncWorker {
         }
       }
 
-      destination.notifyEndOfStream();
-
     } catch (Exception e) {
       LOGGER.error("Sync worker failed.", e);
 

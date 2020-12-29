@@ -7,6 +7,7 @@ import { H4 } from "../../../../../components/Titles";
 import StatusIcon from "../../../../../components/StatusIcon";
 import Button from "../../../../../components/Button";
 import Link from "../../../../../components/Link";
+import { createFormErrorMessage } from "../../../../../utils/errorStatusMessage";
 
 type IProps = {
   isLoading?: boolean;
@@ -51,12 +52,7 @@ const CheckConnection: React.FC<IProps> = ({
   linkToSettings
 }) => {
   if (error) {
-    const errorMessage =
-      error === 0 ? null : error === 400 ? (
-        <FormattedMessage id="form.validationError" />
-      ) : (
-        <FormattedMessage id="form.someError" />
-      );
+    const errorMessage = createFormErrorMessage(error);
 
     return (
       <Content>
