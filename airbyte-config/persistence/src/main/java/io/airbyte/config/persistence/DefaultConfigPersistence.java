@@ -36,6 +36,7 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 // we force all interaction with disk storage to be effectively single threaded.
 public class DefaultConfigPersistence implements ConfigPersistence {
@@ -109,17 +110,19 @@ public class DefaultConfigPersistence implements ConfigPersistence {
       return Collections.emptyList();
     }
 
-    List<String> ids = Files.list(configTypePath)
-        .filter(p -> !p.endsWith(".json"))
-        .map(p -> p.getFileName().toString().replace(".json", ""))
-        .collect(Collectors.toList());
+    try (Stream<Path> files = Files.list(configTypePath)) {
+      List<String> ids = files
+          .filter(p -> !p.endsWith(".json"))
+          .map(p -> p.getFileName().toString().replace(".json", ""))
+          .collect(Collectors.toList());
 
-    final List<T> configs = Lists.newArrayList();
-    for (String id : ids) {
-      configs.add(getConfig(configType, id, clazz));
+      final List<T> configs = Lists.newArrayList();
+      for (String id : ids) {
+        configs.add(getConfig(configType, id, clazz));
+      }
+
+      return configs;
     }
-
-    return configs;
   }
 
   private <T> void writeConfigInternal(ConfigSchema configType,
