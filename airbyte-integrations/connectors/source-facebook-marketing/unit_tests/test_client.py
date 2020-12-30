@@ -27,7 +27,7 @@ from airbyte_protocol import AirbyteStream
 from source_facebook_marketing.client import Client, FacebookAPIException
 
 
-def test__heal_check_with_wrong_token():
+def test__health_check_with_wrong_token():
     client = Client(account_id="wrong_account", access_token="wrong_key", start_date="2019-03-03T10:00")
     alive, error = client.health_check()
 
