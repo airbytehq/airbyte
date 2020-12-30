@@ -36,12 +36,11 @@ CREATE
         'reset_connection'
     );
 
-
 -- tables
  CREATE
     TABLE
         AIRBYTE_METADATA(
-            key VARCHAR(255) PRIMARY KEY,
+            KEY VARCHAR(255) PRIMARY KEY,
             value VARCHAR(255)
         );
 
@@ -50,7 +49,7 @@ CREATE
         JOBS(
             id BIGSERIAL PRIMARY KEY,
             config_type JOB_CONFIG_TYPE,
-            scope VARCHAR(255),
+            SCOPE VARCHAR(255),
             config JSONB,
             status JOB_STATUS,
             started_at TIMESTAMPTZ,
@@ -65,7 +64,7 @@ CREATE
             job_id BIGSERIAL,
             attempt_number INTEGER,
             log_path VARCHAR(255),
-            output JSONB,
+            OUTPUT JSONB,
             status ATTEMPT_STATUS,
             created_at TIMESTAMPTZ,
             updated_at TIMESTAMPTZ,
@@ -80,7 +79,7 @@ CREATE
     );
 
 -- entries
-INSERT
+ INSERT
     INTO
         AIRBYTE_METADATA
     VALUES(
@@ -89,5 +88,5 @@ INSERT
     );
 
 -- grants
-GRANT ALL ON
+ GRANT ALL ON
 DATABASE airbyte TO docker;

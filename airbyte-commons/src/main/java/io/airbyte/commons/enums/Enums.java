@@ -27,7 +27,6 @@ package io.airbyte.commons.enums;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
@@ -49,9 +48,9 @@ public class Enums {
     Preconditions.checkArgument(c2.isEnum());
     return c1.getEnumConstants().length == c2.getEnumConstants().length
         && Sets.difference(
-        Arrays.stream(c1.getEnumConstants()).map(Enum::name).collect(Collectors.toSet()),
-        Arrays.stream(c2.getEnumConstants()).map(Enum::name).collect(Collectors.toSet()))
-        .isEmpty();
+            Arrays.stream(c1.getEnumConstants()).map(Enum::name).collect(Collectors.toSet()),
+            Arrays.stream(c2.getEnumConstants()).map(Enum::name).collect(Collectors.toSet()))
+            .isEmpty();
   }
 
   private static final Map<Class<?>, Map<String, ?>> NORMALIZED_ENUMS = Maps.newConcurrentMap();
@@ -69,10 +68,15 @@ public class Enums {
       NORMALIZED_ENUMS.put(enumClass, mappings);
     }
 
-    return Optional.ofNullable((T)NORMALIZED_ENUMS.get(enumClass).get(normalizeName(value)));
+    return Optional.ofNullable((T) NORMALIZED_ENUMS.get(enumClass).get(normalizeName(value)));
+  }
+
+  public static <T extends Enum<T>> String toSqlName(final T value) {
+    return value.name().toLowerCase();
   }
 
   private static String normalizeName(final String name) {
-    return name.toLowerCase().replaceAll("\\W", "");
+    return name.toLowerCase().replaceAll("[^a-zA-Z0-9]", "");
   }
+
 }
