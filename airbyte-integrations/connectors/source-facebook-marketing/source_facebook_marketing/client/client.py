@@ -178,6 +178,7 @@ class AdsInsightAPI(StreamAPI):
         "action_destination",
     ]
 
+    # Some automatic fields (primary-keys) cannot be used as 'fields' query params.
     INVALID_INSIGHT_FIELDS = [
         "impression_device",
         "publisher_platform",
@@ -213,7 +214,6 @@ class AdsInsightAPI(StreamAPI):
 
         fields = list(set(fields) - set(self.INVALID_INSIGHT_FIELDS))
 
-        # Some automatic fields (primary-keys) cannot be used as 'fields' query params.
         while buffered_start_date <= end_date:
             yield {
                 "level": self.level,
