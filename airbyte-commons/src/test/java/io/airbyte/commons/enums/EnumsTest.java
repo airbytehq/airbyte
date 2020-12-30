@@ -27,6 +27,7 @@ package io.airbyte.commons.enums;
 import static io.airbyte.commons.enums.Enums.convertTo;
 import static io.airbyte.commons.enums.Enums.isCompatible;
 import static io.airbyte.commons.enums.Enums.toEnum;
+import static io.airbyte.commons.enums.Enums.toSqlName;
 
 import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
@@ -110,4 +111,10 @@ class EnumsTest {
     Assertions.assertEquals(Optional.empty(), toEnum("VALUE_5", E5.class));
   }
 
+  @Test
+  void testToSqlName() {
+    Assertions.assertEquals("value_1", toSqlName(E5.VALUE_1));
+    Assertions.assertEquals("value_two", toSqlName(E5.VALUE_TWO));
+    Assertions.assertEquals("value_three", toSqlName(E5.value_three));
+  }
 }
