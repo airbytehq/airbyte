@@ -117,4 +117,5 @@ class EnumsTest {
     Assertions.assertEquals("value_two", toSqlName(E5.VALUE_TWO));
     Assertions.assertEquals("value_three", toSqlName(E5.value_three));
   }
+
 }
