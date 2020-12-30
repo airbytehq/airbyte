@@ -22,9 +22,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from typing import Dict, List
+
 import backoff
-from apiclient import discovery, errors
-from requests.status_codes import codes as status_codes
+from googleapiclient import errors
+from requests import codes as status_codes
+
+from .helpers import SCOPES, Helpers
 
 
 def error_handler(error):
@@ -32,22 +36,21 @@ def error_handler(error):
 
 
 class GoogleSheetsClient:
-    @staticmethod
-    @backoff.on_exception(backoff.expo, errors.HttpError, max_time=60, giveup=error_handler)
-    def get(client: discovery.Resource, **kwargs):
-        return client.get(**kwargs).execute()
+    def __init__(self, credentials: Dict[str, str], scopes: List[str] = SCOPES):
+        self.client = Helpers.get_authenticated_sheets_client(credentials, scopes)
 
-    @staticmethod
     @backoff.on_exception(backoff.expo, errors.HttpError, max_time=60, giveup=error_handler)
-    def create(client: discovery.Resource, **kwargs):
-        return client.create(**kwargs).execute()
+    def get(self, **kwargs):
+        return self.client.get(**kwargs).execute()
 
-    @staticmethod
     @backoff.on_exception(backoff.expo, errors.HttpError, max_time=60, giveup=error_handler)
-    def get_values(client: discovery.Resource, **kwargs):
-        return client.values().batchGet(**kwargs).execute()
+    def create(self, **kwargs):
+        return self.client.create(**kwargs).execute()
 
-    @staticmethod
     @backoff.on_exception(backoff.expo, errors.HttpError, max_time=60, giveup=error_handler)
-    def update_values(client: discovery.Resource, **kwargs):
-        return client.values().batchUpdate(**kwargs).execute()
+    def get_values(self, **kwargs):
+        return self.client.values().batchGet(**kwargs).execute()
+
+    @backoff.on_exception(backoff.expo, errors.HttpError, max_time=60, giveup=error_handler)
+    def update_values(self, **kwargs):
+        return self.client.values().batchUpdate(**kwargs).execute()

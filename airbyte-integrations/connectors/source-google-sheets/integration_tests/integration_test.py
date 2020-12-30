@@ -29,7 +29,6 @@ from pathlib import Path
 from typing import Dict
 
 from airbyte_protocol import ConfiguredAirbyteCatalog, ConnectorSpecification
-from apiclient import discovery
 from base_python_test import StandardSourceTestIface
 from google_sheets_source.client import GoogleSheetsClient
 from google_sheets_source.helpers import Helpers
@@ -62,7 +61,7 @@ class GoogleSheetsSourceStandardTest(StandardSourceTestIface):
     def setup(self) -> None:
         Path(self._get_tmp_dir()).mkdir(parents=True, exist_ok=True)
 
-        sheets_client = Helpers.get_authenticated_sheets_client(self._get_creds(), SCOPES)
+        sheets_client = GoogleSheetsClient(self._get_creds(), SCOPES)
         spreadsheet_id = self._create_spreadsheet(sheets_client)
         self._write_spreadsheet_id(spreadsheet_id)
 
@@ -90,7 +89,7 @@ class GoogleSheetsSourceStandardTest(StandardSourceTestIface):
     def _get_tmp_dir():
         return "/test_root/gsheet_test"
 
-    def _create_spreadsheet(self, sheets_client: discovery.Resource) -> str:
+    def _create_spreadsheet(self, sheets_client: GoogleSheetsClient) -> str:
         """
         :return: spreadsheetId
         """
@@ -99,7 +98,7 @@ class GoogleSheetsSourceStandardTest(StandardSourceTestIface):
             "sheets": [{"properties": {"title": "sheet1"}}, {"properties": {"title": "sheet2"}}],
         }
 
-        spreadsheet = Spreadsheet.parse_obj(GoogleSheetsClient.create(sheets_client, body=request))
+        spreadsheet = Spreadsheet.parse_obj(sheets_client.create(body=request))
         spreadsheet_id = spreadsheet.spreadsheetId
 
         rows = [["header1", "irrelevant", "header3", "", "ignored"]]
@@ -109,13 +108,11 @@ class GoogleSheetsSourceStandardTest(StandardSourceTestIface):
         rows.append(["", "", ""])
         rows.append(["orphan1", "orphan2", "orphan3"])
 
-        GoogleSheetsClient.update_values(
-            sheets_client,
+        sheets_client.update_values(
             spreadsheetId=spreadsheet_id,
             body={"data": {"majorDimension": "ROWS", "values": rows, "range": "sheet1"}, "valueInputOption": "RAW"},
         )
-        GoogleSheetsClient.update_values(
-            sheets_client,
+        sheets_client.update_values(
             spreadsheetId=spreadsheet_id,
             body={"data": {"majorDimension": "ROWS", "values": rows, "range": "sheet2"}, "valueInputOption": "RAW"},
         )
