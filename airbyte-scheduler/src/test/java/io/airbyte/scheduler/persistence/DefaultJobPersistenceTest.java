@@ -421,7 +421,7 @@ class DefaultJobPersistenceTest {
     when(timeSupplier.get()).thenReturn(afterNow);
     final long jobId2 = jobPersistence.enqueueJob(SCOPE, JOB_SINGLETON_CONFIG).orElseThrow();
 
-    final Optional<Job> actual = jobPersistence.getLastSync(CONNECTION_ID);
+    final Optional<Job> actual = jobPersistence.getLastReplicationJob(CONNECTION_ID);
     Job expected = createJob(jobId2, JOB_SINGLETON_CONFIG, JobStatus.PENDING, Collections.emptyList(), afterNow.getEpochSecond());
 
     assertEquals(Optional.of(expected), actual);
@@ -429,7 +429,7 @@ class DefaultJobPersistenceTest {
 
   @Test
   public void testGetLastSyncJobForConnectionIdEmpty() throws IOException {
-    final Optional<Job> actual = jobPersistence.getLastSync(CONNECTION_ID);
+    final Optional<Job> actual = jobPersistence.getLastReplicationJob(CONNECTION_ID);
 
     assertTrue(actual.isEmpty());
   }
@@ -636,7 +636,7 @@ class DefaultJobPersistenceTest {
     jobPersistence.failAttempt(jobId, jobPersistence.createAttempt(jobId, LOG_PATH));
     jobPersistence.failAttempt(jobId, jobPersistence.createAttempt(jobId, LOG_PATH));
 
-    final Optional<Job> actual = jobPersistence.getLastSync(UUID.fromString(SCOPE));
+    final Optional<Job> actual = jobPersistence.getLastReplicationJob(UUID.fromString(SCOPE));
 
     final Job expected = createJob(
         jobId,

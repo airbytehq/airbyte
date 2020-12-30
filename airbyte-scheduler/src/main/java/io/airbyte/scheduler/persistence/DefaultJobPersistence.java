@@ -289,7 +289,7 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public Optional<Job> getLastSync(UUID connectionId) throws IOException {
+  public Optional<Job> getLastReplicationJob(UUID connectionId) throws IOException {
     return database.query(ctx -> ctx
         .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE " +
             "CAST(jobs.config_type AS VARCHAR) in " + Sqls.toSqlInFragment(Job.REPLICATION_TYPES) + " AND " +
