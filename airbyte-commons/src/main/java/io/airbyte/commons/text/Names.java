@@ -24,6 +24,7 @@
 
 package io.airbyte.commons.text;
 
+import com.google.common.base.Preconditions;
 import java.text.Normalizer;
 
 public class Names {
@@ -55,6 +56,29 @@ public class Names {
       return name.substring(0, name.length() - 1) + suffix + "\"";
     } else {
       return name + suffix;
+    }
+  }
+
+  public static String doubleQuote(String value) {
+    return internalQuote(value, '"');
+  }
+
+  public static String singleQuote(String value) {
+    return internalQuote(value, '\'');
+  }
+
+  private static String internalQuote(final String value, final char quoteChar) {
+    Preconditions.checkNotNull(value);
+
+    boolean startsWithChar = value.charAt(0) == quoteChar;
+    boolean endsWithChar = value.charAt(value.length() - 1) == quoteChar;
+
+    Preconditions.checkState(startsWithChar == endsWithChar, "Invalid value: %s", value);
+
+    if (startsWithChar) {
+      return value;
+    } else {
+      return String.format("%c%s%c", quoteChar, value, quoteChar);
     }
   }
 

@@ -138,7 +138,7 @@ public class DefaultJobCreatorTest {
         .withCheckConnection(jobCheckConnectionConfig);
 
     final String expectedScope = ScopeHelper.createScope(ConfigType.CHECK_CONNECTION_SOURCE, SOURCE_CONNECTION.getSourceId().toString());
-    when(jobPersistence.enqueueJob(expectedScope, jobConfig)).thenReturn(JOB_ID);
+    when(jobPersistence.enqueueJob(expectedScope, jobConfig)).thenReturn(Optional.of(JOB_ID));
 
     final long jobId = jobCreator.createSourceCheckConnectionJob(SOURCE_CONNECTION, SOURCE_IMAGE_NAME);
     assertEquals(JOB_ID, jobId);
@@ -156,7 +156,7 @@ public class DefaultJobCreatorTest {
 
     final String expectedScope =
         ScopeHelper.createScope(ConfigType.CHECK_CONNECTION_DESTINATION, DESTINATION_CONNECTION.getDestinationId().toString());
-    when(jobPersistence.enqueueJob(expectedScope, jobConfig)).thenReturn(JOB_ID);
+    when(jobPersistence.enqueueJob(expectedScope, jobConfig)).thenReturn(Optional.of(JOB_ID));
 
     final long jobId = jobCreator.createDestinationCheckConnectionJob(DESTINATION_CONNECTION, DESTINATION_IMAGE_NAME);
     assertEquals(JOB_ID, jobId);
@@ -173,7 +173,7 @@ public class DefaultJobCreatorTest {
         .withDiscoverCatalog(jobDiscoverCatalogConfig);
 
     final String expectedScope = ScopeHelper.createScope(ConfigType.DISCOVER_SCHEMA, SOURCE_CONNECTION.getSourceId().toString());
-    when(jobPersistence.enqueueJob(expectedScope, jobConfig)).thenReturn(JOB_ID);
+    when(jobPersistence.enqueueJob(expectedScope, jobConfig)).thenReturn(Optional.of(JOB_ID));
 
     final long jobId = jobCreator.createDiscoverSchemaJob(SOURCE_CONNECTION, SOURCE_IMAGE_NAME);
     assertEquals(JOB_ID, jobId);
@@ -188,7 +188,7 @@ public class DefaultJobCreatorTest {
         .withGetSpec(new JobGetSpecConfig().withDockerImage(integrationImage));
 
     final String expectedScope = ScopeHelper.createScope(ConfigType.GET_SPEC, integrationImage);
-    when(jobPersistence.enqueueJob(expectedScope, jobConfig)).thenReturn(JOB_ID);
+    when(jobPersistence.enqueueJob(expectedScope, jobConfig)).thenReturn(Optional.of(JOB_ID));
 
     final long jobId = jobCreator.createGetSpecJob(integrationImage);
     assertEquals(JOB_ID, jobId);
@@ -208,7 +208,7 @@ public class DefaultJobCreatorTest {
         .withSync(jobSyncConfig);
 
     final String expectedScope = ScopeHelper.createScope(ConfigType.SYNC, STANDARD_SYNC.getConnectionId().toString());
-    when(jobPersistence.enqueueSingletonJob(expectedScope, jobConfig)).thenReturn(Optional.of(JOB_ID));
+    when(jobPersistence.enqueueJob(expectedScope, jobConfig)).thenReturn(Optional.of(JOB_ID));
 
     final long jobId = jobCreator.createSyncJob(
         SOURCE_CONNECTION,
@@ -233,7 +233,7 @@ public class DefaultJobCreatorTest {
         .withSync(jobSyncConfig);
 
     final String expectedScope = ScopeHelper.createScope(ConfigType.SYNC, STANDARD_SYNC.getConnectionId().toString());
-    when(jobPersistence.enqueueSingletonJob(expectedScope, jobConfig)).thenReturn(Optional.empty());
+    when(jobPersistence.enqueueJob(expectedScope, jobConfig)).thenReturn(Optional.empty());
 
     assertTrue(jobCreator.createSyncJob(
         SOURCE_CONNECTION,
@@ -258,8 +258,8 @@ public class DefaultJobCreatorTest {
         .withConfigType(ConfigType.RESET_CONNECTION)
         .withResetConnection(JobResetConnectionConfig);
 
-    final String expectedScope = ScopeHelper.createScope(ConfigType.SYNC, STANDARD_SYNC.getConnectionId().toString());
-    when(jobPersistence.enqueueSingletonJob(expectedScope, jobConfig)).thenReturn(Optional.of(JOB_ID));
+    final String expectedScope = ScopeHelper.createScope(ConfigType.RESET_CONNECTION, STANDARD_SYNC.getConnectionId().toString());
+    when(jobPersistence.enqueueJob(expectedScope, jobConfig)).thenReturn(Optional.of(JOB_ID));
 
     final long jobId = jobCreator.createResetConnectionJob(
         DESTINATION_CONNECTION,
@@ -284,7 +284,7 @@ public class DefaultJobCreatorTest {
         .withResetConnection(JobResetConnectionConfig);
 
     final String expectedScope = ScopeHelper.createScope(ConfigType.SYNC, STANDARD_SYNC.getConnectionId().toString());
-    when(jobPersistence.enqueueSingletonJob(expectedScope, jobConfig)).thenReturn(Optional.empty());
+    when(jobPersistence.enqueueJob(expectedScope, jobConfig)).thenReturn(Optional.empty());
 
     assertTrue(jobCreator.createResetConnectionJob(
         DESTINATION_CONNECTION,

@@ -50,17 +50,7 @@ public interface JobPersistence {
    * @return job id
    * @throws IOException exception due to interaction with persistence
    */
-  long enqueueJob(String scope, JobConfig jobConfig) throws IOException;
-
-  /**
-   * Attempt to enqueue a new active job. If there is already one present, we don't create it.
-   *
-   * @param scope key that will be used to determine if two jobs should not be run at the same time.
-   * @param jobConfig configuration for the job
-   * @return job id
-   * @throws IOException exception due to interaction with persistence
-   */
-  Optional<Long> enqueueSingletonJob(String scope, JobConfig jobConfig) throws IOException;
+  Optional<Long> enqueueJob(String scope, JobConfig jobConfig) throws IOException;
 
   /**
    * Set job status from current status to PENDING. Throws {@link IllegalStateException} if the job is

@@ -27,6 +27,7 @@ package io.airbyte.scheduler.persistence;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.text.Names;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
@@ -95,25 +96,15 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public long enqueueJob(String scope, JobConfig jobConfig) throws IOException {
-    LOGGER.info("enqueuing pending job for scope: " + scope);
-    return internalCreateJob(scope, jobConfig, true).orElseThrow(() -> new RuntimeException("This should not happen"));
-  }
-
-  @Override
-  public Optional<Long> enqueueSingletonJob(String scope, JobConfig jobConfig) throws IOException {
-    LOGGER.info("attempt creating pending job for scope: " + scope);
-    return internalCreateJob(scope, jobConfig, false);
-  }
-
-  private Optional<Long> internalCreateJob(String scope, JobConfig jobConfig, boolean allowQueueing) throws IOException {
-    LOGGER.info("creating pending job for scope: " + scope);
+  public Optional<Long> enqueueJob(String scope, JobConfig jobConfig) throws IOException {
+    LOGGER.info("enqueuing pending job for scope: {}", scope);
     final LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
 
-    String queueingRequest = !allowQueueing
-        ? String.format("WHERE NOT EXISTS (SELECT 1 FROM jobs WHERE scope = '%s' and status NOT IN (%s)) ",
+    String queueingRequest = Job.SINGLETON_TYPES.contains(jobConfig.getConfigType())
+        ? String.format("WHERE NOT EXISTS (SELECT 1 FROM jobs WHERE config_type IN (%s) AND scope = '%s' AND status NOT IN (%s)) ",
+            Job.SINGLETON_TYPES.stream().map(Enums::toSqlName).map(Names::singleQuote).collect(Collectors.joining(",")),
             scope,
-            String.join(", ", getSQLTerminalStates()))
+            JobStatus.TERMINAL_STATUSES.stream().map(Enums::toSqlName).map(Names::singleQuote).collect(Collectors.joining(",")))
         : "";
 
     return database.query(
@@ -276,13 +267,13 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public List<Job> listJobs(JobConfig.ConfigType configType, String configId) throws IOException {
+  public List<Job> listJobs(ConfigType configType, String configId) throws IOException {
     final String scope = ScopeHelper.createScope(configType, configId);
     return database.query(ctx -> getJobsFromResult(ctx.fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE scope = ? ORDER BY jobs.created_at DESC", scope)));
   }
 
   @Override
-  public List<Job> listJobsWithStatus(JobConfig.ConfigType configType, JobStatus status) throws IOException {
+  public List<Job> listJobsWithStatus(ConfigType configType, JobStatus status) throws IOException {
     // todo (cgardens) - jooq does not let you use bindings to do LIKE queries. you have to construct
     // the string yourself or use their DSL.
     final String likeStatement = "'" + ScopeHelper.getScopePrefix(configType) + "%'";
@@ -361,7 +352,7 @@ public class DefaultJobPersistence implements JobPersistence {
           final JobConfig jobConfig = Jsons.deserialize(jobEntry.get("config", String.class), JobConfig.class);
           return new Job(
               jobEntry.get("job_id", Long.class),
-              Enums.toEnum(jobEntry.get("config_type", String.class), JobConfig.ConfigType.class).orElseThrow(),
+              Enums.toEnum(jobEntry.get("config_type", String.class), ConfigType.class).orElseThrow(),
               jobEntry.get("scope", String.class),
               jobConfig,
               attempts,
@@ -380,14 +371,6 @@ public class DefaultJobPersistence implements JobPersistence {
 
   private static long getEpoch(Record record, String fieldName) {
     return record.get(fieldName, LocalDateTime.class).toEpochSecond(ZoneOffset.UTC);
-  }
-
-  private static List<String> getSQLTerminalStates() {
-    return JobStatus.TERMINAL_STATUSES.stream()
-        .map(JobStatus::toString)
-        .map(String::toLowerCase)
-        .map(s -> String.format("'%s'", s))
-        .collect(Collectors.toList());
   }
 
 }

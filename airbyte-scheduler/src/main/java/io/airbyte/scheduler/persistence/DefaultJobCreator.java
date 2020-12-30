@@ -53,7 +53,7 @@ public class DefaultJobCreator implements JobCreator {
   public long createSourceCheckConnectionJob(SourceConnection source, String dockerImageName) throws IOException {
     final String scope =
         ScopeHelper.createScope(
-            JobConfig.ConfigType.CHECK_CONNECTION_SOURCE,
+            ConfigType.CHECK_CONNECTION_SOURCE,
             source.getSourceId().toString());
 
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
@@ -61,17 +61,17 @@ public class DefaultJobCreator implements JobCreator {
         .withDockerImage(dockerImageName);
 
     final JobConfig jobConfig = new JobConfig()
-        .withConfigType(JobConfig.ConfigType.CHECK_CONNECTION_SOURCE)
+        .withConfigType(ConfigType.CHECK_CONNECTION_SOURCE)
         .withCheckConnection(jobCheckConnectionConfig);
 
-    return jobPersistence.enqueueJob(scope, jobConfig);
+    return jobPersistence.enqueueJob(scope, jobConfig).orElseThrow();
   }
 
   @Override
   public long createDestinationCheckConnectionJob(DestinationConnection destination, String dockerImageName) throws IOException {
     final String scope =
         ScopeHelper.createScope(
-            JobConfig.ConfigType.CHECK_CONNECTION_DESTINATION,
+            ConfigType.CHECK_CONNECTION_DESTINATION,
             destination.getDestinationId().toString());
 
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
@@ -79,16 +79,16 @@ public class DefaultJobCreator implements JobCreator {
         .withDockerImage(dockerImageName);
 
     final JobConfig jobConfig = new JobConfig()
-        .withConfigType(JobConfig.ConfigType.CHECK_CONNECTION_DESTINATION)
+        .withConfigType(ConfigType.CHECK_CONNECTION_DESTINATION)
         .withCheckConnection(jobCheckConnectionConfig);
 
-    return jobPersistence.enqueueJob(scope, jobConfig);
+    return jobPersistence.enqueueJob(scope, jobConfig).orElseThrow();
   }
 
   @Override
   public long createDiscoverSchemaJob(SourceConnection source, String dockerImageName) throws IOException {
     final String scope = ScopeHelper.createScope(
-        JobConfig.ConfigType.DISCOVER_SCHEMA,
+        ConfigType.DISCOVER_SCHEMA,
         source.getSourceId().toString());
 
     final JobDiscoverCatalogConfig jobDiscoverCatalogConfig = new JobDiscoverCatalogConfig()
@@ -96,23 +96,23 @@ public class DefaultJobCreator implements JobCreator {
         .withDockerImage(dockerImageName);
 
     final JobConfig jobConfig = new JobConfig()
-        .withConfigType(JobConfig.ConfigType.DISCOVER_SCHEMA)
+        .withConfigType(ConfigType.DISCOVER_SCHEMA)
         .withDiscoverCatalog(jobDiscoverCatalogConfig);
 
-    return jobPersistence.enqueueJob(scope, jobConfig);
+    return jobPersistence.enqueueJob(scope, jobConfig).orElseThrow();
   }
 
   @Override
   public long createGetSpecJob(String integrationImage) throws IOException {
     final String scope = ScopeHelper.createScope(
-        JobConfig.ConfigType.GET_SPEC,
+        ConfigType.GET_SPEC,
         integrationImage);
 
     final JobConfig jobConfig = new JobConfig()
-        .withConfigType(JobConfig.ConfigType.GET_SPEC)
+        .withConfigType(ConfigType.GET_SPEC)
         .withGetSpec(new JobGetSpecConfig().withDockerImage(integrationImage));
 
-    return jobPersistence.enqueueJob(scope, jobConfig);
+    return jobPersistence.enqueueJob(scope, jobConfig).orElseThrow();
   }
 
   @Override
@@ -122,7 +122,7 @@ public class DefaultJobCreator implements JobCreator {
                                       String sourceDockerImageName,
                                       String destinationDockerImageName)
       throws IOException {
-    final String scope = ScopeHelper.createScope(JobConfig.ConfigType.SYNC, standardSync.getConnectionId().toString());
+    final String scope = ScopeHelper.createScope(ConfigType.SYNC, standardSync.getConnectionId().toString());
 
     // reusing this isn't going to quite work.
     final JobSyncConfig jobSyncConfig = new JobSyncConfig()
@@ -136,9 +136,9 @@ public class DefaultJobCreator implements JobCreator {
     jobPersistence.getCurrentState(standardSync.getConnectionId()).ifPresent(jobSyncConfig::withState);
 
     final JobConfig jobConfig = new JobConfig()
-        .withConfigType(JobConfig.ConfigType.SYNC)
+        .withConfigType(ConfigType.SYNC)
         .withSync(jobSyncConfig);
-    return jobPersistence.enqueueSingletonJob(scope, jobConfig);
+    return jobPersistence.enqueueJob(scope, jobConfig);
   }
 
   // Strategy:
@@ -151,7 +151,7 @@ public class DefaultJobCreator implements JobCreator {
   @Override
   public Optional<Long> createResetConnectionJob(DestinationConnection destination, StandardSync standardSync, String destinationDockerImage)
       throws IOException {
-    final String scope = ScopeHelper.createScope(ConfigType.SYNC, standardSync.getConnectionId().toString());
+    final String scope = ScopeHelper.createScope(ConfigType.RESET_CONNECTION, standardSync.getConnectionId().toString());
 
     final ConfiguredAirbyteCatalog configuredAirbyteCatalog = AirbyteProtocolConverters.toConfiguredCatalog(standardSync.getSchema());
     configuredAirbyteCatalog.getStreams().forEach(configuredAirbyteStream -> configuredAirbyteStream.setSyncMode(SyncMode.FULL_REFRESH));
@@ -164,7 +164,7 @@ public class DefaultJobCreator implements JobCreator {
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(ConfigType.RESET_CONNECTION)
         .withResetConnection(resetConnectionConfig);
-    return jobPersistence.enqueueSingletonJob(scope, jobConfig);
+    return jobPersistence.enqueueJob(scope, jobConfig);
   }
 
 }
