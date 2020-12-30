@@ -30,6 +30,7 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.CloseableQueue;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
@@ -43,14 +44,12 @@ import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.io.IOException;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,8 +74,8 @@ public class SnowflakeDestination implements Destination {
   @Override
   public AirbyteConnectionStatus check(JsonNode config) {
     try {
-      final Supplier<Connection> connectionFactory = SnowflakeDatabase.getConnectionFactory(config);
-      SnowflakeDatabase.executeSync(connectionFactory, "SELECT 1;");
+      final JdbcDatabase database = SnowflakeDatabase.getDatabase(config);
+      database.execute("SELECT 1;");
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (Exception e) {
       return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(e.getMessage());
@@ -90,7 +89,7 @@ public class SnowflakeDestination implements Destination {
 
   @Override
   public DestinationConsumer<AirbyteMessage> write(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
-    final DestinationImpl destination = new DestinationImpl(SnowflakeDatabase.getConnectionFactory(config));
+    final DestinationImpl destination = new DestinationImpl(SnowflakeDatabase.getDatabase(config));
     return DestinationConsumerFactory.build(destination, getNamingTransformer(), config, catalog);
   }
 
@@ -121,20 +120,20 @@ public class SnowflakeDestination implements Destination {
 
   private class DestinationImpl implements SqlDestinationOperations {
 
-    private final Supplier<Connection> connectionFactory;
+    private final JdbcDatabase database;
 
-    public DestinationImpl(Supplier<Connection> connectionFactory) {
-      this.connectionFactory = connectionFactory;
+    public DestinationImpl(JdbcDatabase database) {
+      this.database = database;
     }
 
     @Override
     public void createSchema(String schemaName) throws SQLException, InterruptedException {
-      SnowflakeDatabase.executeSync(connectionFactory, createSchemaQuery(schemaName));
+      database.execute(createSchemaQuery(schemaName));
     }
 
     @Override
     public void createDestinationTable(String schemaName, String tableName) throws SQLException, InterruptedException {
-      SnowflakeDatabase.executeSync(connectionFactory, createDestinationTableQuery(schemaName, tableName));
+      database.execute(createDestinationTableQuery(schemaName, tableName));
     }
 
     @Override
@@ -150,16 +149,16 @@ public class SnowflakeDestination implements Destination {
     @Override
     public void executeTransaction(String queries) throws Exception {
       String renameQuery = "BEGIN;\n" + queries + "COMMIT;";
-      SnowflakeDatabase.executeSync(connectionFactory, renameQuery, true, rs -> null);
+      database.execute(renameQuery);
     }
 
     @Override
     public void dropDestinationTable(String schemaName, String tableName) throws SQLException, InterruptedException {
-      SnowflakeDatabase.executeSync(connectionFactory, dropDestinationTableQuery(schemaName, tableName));
+      database.execute(dropDestinationTableQuery(schemaName, tableName));
     }
 
     @Override
-    public void insertBufferedRecords(int batchSize, CloseableQueue<byte[]> writeBuffer, String schemaName, String tmpTableName) {
+    public void insertBufferedRecords(int batchSize, CloseableQueue<byte[]> writeBuffer, String schemaName, String tmpTableName) throws SQLException {
       final List<AirbyteRecordMessage> records = accumulateRecordsFromBuffer(writeBuffer, batchSize);
 
       LOGGER.info("max size of batch: {}", batchSize);
@@ -169,7 +168,8 @@ public class SnowflakeDestination implements Destination {
         return;
       }
 
-      try (final Connection conn = connectionFactory.get()) {
+      database.execute(connection -> {
+
         // Strategy: We want to use PreparedStatement because it handles binding values to the SQL query
         // (e.g. handling formatting timestamps). A PreparedStatement statement is created by supplying the
         // full SQL string at creation time. Then subsequently specifying which values are bound to the
@@ -187,7 +187,7 @@ public class SnowflakeDestination implements Destination {
         final String s = sql.toString();
         final String s1 = s.substring(0, s.length() - 2) + ";";
 
-        try (final PreparedStatement statement = conn.prepareStatement(s1)) {
+        try (final PreparedStatement statement = connection.prepareStatement(s1)) {
           // second loop: bind values to the SQL string.
           int i = 1;
           for (final AirbyteRecordMessage message : records) {
@@ -200,9 +200,7 @@ public class SnowflakeDestination implements Destination {
 
           statement.execute();
         }
-      } catch (SQLException e) {
-        throw new RuntimeException(e);
-      }
+      });
     }
 
     /**

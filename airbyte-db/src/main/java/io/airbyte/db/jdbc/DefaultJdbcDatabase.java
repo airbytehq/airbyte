@@ -41,15 +41,19 @@ import javax.sql.DataSource;
  */
 public class DefaultJdbcDatabase implements JdbcDatabase {
 
-  private final DataSource ds;
+  private final CloseableConnectionSupplier connectionSupplier;
 
-  public DefaultJdbcDatabase(final DataSource ds) {
-    this.ds = ds;
+  public DefaultJdbcDatabase(final DataSource dataSource) {
+    this(new DataSourceConnectionSupplier(dataSource));
+  }
+
+  public DefaultJdbcDatabase(final CloseableConnectionSupplier connectionSupplier) {
+    this.connectionSupplier = connectionSupplier;
   }
 
   @Override
   public void execute(CheckedConsumer<Connection, SQLException> query) throws SQLException {
-    try (final Connection connection = ds.getConnection()) {
+    try (final Connection connection = connectionSupplier.getConnection()) {
       query.accept(connection);
     }
   }
@@ -58,7 +62,7 @@ public class DefaultJdbcDatabase implements JdbcDatabase {
   public <T> List<T> bufferedResultSetQuery(CheckedFunction<Connection, ResultSet, SQLException> query,
                                             CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
-    try (final Connection connection = ds.getConnection()) {
+    try (final Connection connection = connectionSupplier.getConnection()) {
       return JdbcUtils.toStream(query.apply(connection), recordTransform).collect(Collectors.toList());
     }
   }
@@ -67,7 +71,7 @@ public class DefaultJdbcDatabase implements JdbcDatabase {
   public <T> Stream<T> resultSetQuery(CheckedFunction<Connection, ResultSet, SQLException> query,
                                       CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
-    final Connection connection = ds.getConnection();
+    final Connection connection = connectionSupplier.getConnection();
     return JdbcUtils.toStream(query.apply(connection), recordTransform)
         .onClose(() -> {
           try {
@@ -96,7 +100,7 @@ public class DefaultJdbcDatabase implements JdbcDatabase {
   public <T> Stream<T> query(CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
                              CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
-    final Connection connection = ds.getConnection();
+    final Connection connection = connectionSupplier.getConnection();
     return JdbcUtils.toStream(statementCreator.apply(connection).executeQuery(), recordTransform)
         .onClose(() -> {
           try {
@@ -109,15 +113,41 @@ public class DefaultJdbcDatabase implements JdbcDatabase {
 
   @Override
   public void close() throws Exception {
-    // Just a safety in case we are using a datasource implementation that requires closing.
-    // BasicDataSource from apache does since it also provides a pooling mechanism to reuse connections.
+    connectionSupplier.close();
+  }
 
-    if (ds instanceof AutoCloseable) {
-      ((AutoCloseable) ds).close();
+  public interface CloseableConnectionSupplier extends AutoCloseable {
+
+    Connection getConnection() throws SQLException;
+
+  }
+
+  public static final class DataSourceConnectionSupplier implements CloseableConnectionSupplier {
+
+    private final DataSource dataSource;
+
+    public DataSourceConnectionSupplier(DataSource dataSource) {
+      this.dataSource = dataSource;
     }
-    if (ds instanceof Closeable) {
-      ((Closeable) ds).close();
+
+    @Override
+    public Connection getConnection() throws SQLException {
+      return dataSource.getConnection();
     }
+
+    @Override
+    public void close() throws Exception {
+      // Just a safety in case we are using a datasource implementation that requires closing.
+      // BasicDataSource from apache does since it also provides a pooling mechanism to reuse connections.
+
+      if (dataSource instanceof AutoCloseable) {
+        ((AutoCloseable) dataSource).close();
+      }
+      if (dataSource instanceof Closeable) {
+        ((Closeable) dataSource).close();
+      }
+    }
+
   }
 
 }
