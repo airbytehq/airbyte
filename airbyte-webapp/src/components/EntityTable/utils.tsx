@@ -57,7 +57,7 @@ export const getConnectionTableData = (
     connectionId: item.connectionId,
     entityName: item[connectType]?.name || "",
     // @ts-ignore
-    connectorName: item[type]?.[`${type}Name`] || "",
+    connectorName: item[connectType]?.[`${connectType}Name`] || "",
     lastSync: item.lastSync,
     enabled: item.status === "active",
     schedule: item.schedule,

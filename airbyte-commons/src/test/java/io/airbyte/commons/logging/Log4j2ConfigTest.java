@@ -121,4 +121,41 @@ public class Log4j2ConfigTest {
     assertFalse(Files.exists(root.resolve(filename)));
   }
 
+  @Test
+  void testAppDispatch() throws InterruptedException {
+    final Logger logger = LoggerFactory.getLogger("testAppDispatch");
+
+    final String filename = "logs.log";
+
+    ExecutorService executor = Executors.newFixedThreadPool(1);
+    executor.submit(() -> {
+      MDC.put("workspace_app_root", root.toString());
+      logger.error("random message testAppDispatch");
+      MDC.clear();
+    });
+
+    executor.shutdown();
+    executor.awaitTermination(10, TimeUnit.SECONDS);
+
+    assertTrue(IOs.readFile(root, filename).contains("random message testAppDispatch"));
+  }
+
+  @Test
+  void testLogNoAppRoot() throws InterruptedException {
+    final Logger logger = LoggerFactory.getLogger("testAppDispatch");
+
+    final String filename = "logs.log";
+
+    ExecutorService executor = Executors.newFixedThreadPool(1);
+    executor.submit(() -> {
+      logger.error("random message testLogNoAppRoot");
+      MDC.clear();
+    });
+
+    executor.shutdown();
+    executor.awaitTermination(10, TimeUnit.SECONDS);
+
+    assertFalse(Files.exists(root.resolve(filename)));
+  }
+
 }

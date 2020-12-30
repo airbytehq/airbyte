@@ -1,6 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import StatusIcon from "../../StatusIcon";
+import Status from "../../../core/statuses";
 
 type IProps = {
   id: string;
@@ -34,6 +35,10 @@ const StepView = styled.div<{
   font-size: 14px;
   line-height: 15px;
   transition: 0.3s;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
 `;
 
 const Num = styled.div<{ isActive?: boolean }>`
@@ -75,7 +80,7 @@ const Step: React.FC<IProps> = ({
       lightMode={lightMode}
     >
       {lightMode ? null : <Num isActive={isActive}>{num}</Num>}
-      {status ? <StatusIcon success={status !== "failed"} /> : null}
+      {status ? <StatusIcon success={status !== Status.FAILED} /> : null}
       {name}
     </StepView>
   );
