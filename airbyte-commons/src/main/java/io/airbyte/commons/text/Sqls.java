@@ -22,34 +22,20 @@
  * SOFTWARE.
  */
 
-package io.airbyte.scheduler;
+package io.airbyte.commons.text;
 
-import com.google.common.base.Preconditions;
-import io.airbyte.config.JobConfig;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
-public class ScopeHelper {
+public class Sqls {
 
-  private static final String SCOPE_DELIMITER = ":";
-
-  public static String getScopePrefix(JobConfig.ConfigType configType) {
-    return configType.value();
+  public static <T extends Enum<T>> String toSqlName(final T value) {
+    return value.name().toLowerCase();
   }
 
-  public static String createScope(JobConfig.ConfigType configType, String configId) {
-    Preconditions.checkNotNull(configType);
-    Preconditions.checkNotNull(configId);
-    return getScopePrefix(configType) + SCOPE_DELIMITER + configId;
-  }
-
-  public static String getConfigId(String scope) {
-    Preconditions.checkNotNull(scope);
-
-    final String[] split = scope.split(SCOPE_DELIMITER);
-    if (split.length <= 1) {
-      return "";
-    } else {
-      return split[1];
-    }
+  public static <T extends Enum<T>> String toSqlInFragment(final Iterable<T> values) {
+    return StreamSupport.stream(values.spliterator(), false).map(Sqls::toSqlName).map(Names::singleQuote)
+        .collect(Collectors.joining(",", "(", ")"));
   }
 
 }

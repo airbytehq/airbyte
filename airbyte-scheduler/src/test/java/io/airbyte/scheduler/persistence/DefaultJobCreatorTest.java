@@ -50,7 +50,6 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.SyncMode;
 import io.airbyte.config.Stream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.scheduler.ScopeHelper;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
@@ -137,7 +136,7 @@ public class DefaultJobCreatorTest {
         .withConfigType(JobConfig.ConfigType.CHECK_CONNECTION_SOURCE)
         .withCheckConnection(jobCheckConnectionConfig);
 
-    final String expectedScope = ScopeHelper.createScope(ConfigType.CHECK_CONNECTION_SOURCE, SOURCE_CONNECTION.getSourceId().toString());
+    final String expectedScope = SOURCE_CONNECTION.getSourceId().toString();
     when(jobPersistence.enqueueJob(expectedScope, jobConfig)).thenReturn(Optional.of(JOB_ID));
 
     final long jobId = jobCreator.createSourceCheckConnectionJob(SOURCE_CONNECTION, SOURCE_IMAGE_NAME);
@@ -154,8 +153,7 @@ public class DefaultJobCreatorTest {
         .withConfigType(JobConfig.ConfigType.CHECK_CONNECTION_DESTINATION)
         .withCheckConnection(jobCheckConnectionConfig);
 
-    final String expectedScope =
-        ScopeHelper.createScope(ConfigType.CHECK_CONNECTION_DESTINATION, DESTINATION_CONNECTION.getDestinationId().toString());
+    final String expectedScope = DESTINATION_CONNECTION.getDestinationId().toString();
     when(jobPersistence.enqueueJob(expectedScope, jobConfig)).thenReturn(Optional.of(JOB_ID));
 
     final long jobId = jobCreator.createDestinationCheckConnectionJob(DESTINATION_CONNECTION, DESTINATION_IMAGE_NAME);
@@ -172,7 +170,7 @@ public class DefaultJobCreatorTest {
         .withConfigType(JobConfig.ConfigType.DISCOVER_SCHEMA)
         .withDiscoverCatalog(jobDiscoverCatalogConfig);
 
-    final String expectedScope = ScopeHelper.createScope(ConfigType.DISCOVER_SCHEMA, SOURCE_CONNECTION.getSourceId().toString());
+    final String expectedScope = SOURCE_CONNECTION.getSourceId().toString();
     when(jobPersistence.enqueueJob(expectedScope, jobConfig)).thenReturn(Optional.of(JOB_ID));
 
     final long jobId = jobCreator.createDiscoverSchemaJob(SOURCE_CONNECTION, SOURCE_IMAGE_NAME);
@@ -187,7 +185,7 @@ public class DefaultJobCreatorTest {
         .withConfigType(JobConfig.ConfigType.GET_SPEC)
         .withGetSpec(new JobGetSpecConfig().withDockerImage(integrationImage));
 
-    final String expectedScope = ScopeHelper.createScope(ConfigType.GET_SPEC, integrationImage);
+    final String expectedScope = integrationImage;
     when(jobPersistence.enqueueJob(expectedScope, jobConfig)).thenReturn(Optional.of(JOB_ID));
 
     final long jobId = jobCreator.createGetSpecJob(integrationImage);
@@ -207,7 +205,7 @@ public class DefaultJobCreatorTest {
         .withConfigType(JobConfig.ConfigType.SYNC)
         .withSync(jobSyncConfig);
 
-    final String expectedScope = ScopeHelper.createScope(ConfigType.SYNC, STANDARD_SYNC.getConnectionId().toString());
+    final String expectedScope = STANDARD_SYNC.getConnectionId().toString();
     when(jobPersistence.enqueueJob(expectedScope, jobConfig)).thenReturn(Optional.of(JOB_ID));
 
     final long jobId = jobCreator.createSyncJob(
@@ -232,7 +230,7 @@ public class DefaultJobCreatorTest {
         .withConfigType(JobConfig.ConfigType.SYNC)
         .withSync(jobSyncConfig);
 
-    final String expectedScope = ScopeHelper.createScope(ConfigType.SYNC, STANDARD_SYNC.getConnectionId().toString());
+    final String expectedScope = STANDARD_SYNC.getConnectionId().toString();
     when(jobPersistence.enqueueJob(expectedScope, jobConfig)).thenReturn(Optional.empty());
 
     assertTrue(jobCreator.createSyncJob(
@@ -258,7 +256,7 @@ public class DefaultJobCreatorTest {
         .withConfigType(ConfigType.RESET_CONNECTION)
         .withResetConnection(JobResetConnectionConfig);
 
-    final String expectedScope = ScopeHelper.createScope(ConfigType.RESET_CONNECTION, STANDARD_SYNC.getConnectionId().toString());
+    final String expectedScope = STANDARD_SYNC.getConnectionId().toString();
     when(jobPersistence.enqueueJob(expectedScope, jobConfig)).thenReturn(Optional.of(JOB_ID));
 
     final long jobId = jobCreator.createResetConnectionJob(
@@ -283,7 +281,7 @@ public class DefaultJobCreatorTest {
         .withConfigType(ConfigType.RESET_CONNECTION)
         .withResetConnection(JobResetConnectionConfig);
 
-    final String expectedScope = ScopeHelper.createScope(ConfigType.SYNC, STANDARD_SYNC.getConnectionId().toString());
+    final String expectedScope = STANDARD_SYNC.getConnectionId().toString();
     when(jobPersistence.enqueueJob(expectedScope, jobConfig)).thenReturn(Optional.empty());
 
     assertTrue(jobCreator.createResetConnectionJob(

@@ -38,7 +38,7 @@ import javax.annotation.Nullable;
 
 public class Job {
 
-  public static final Set<ConfigType> SINGLETON_TYPES = EnumSet.of(ConfigType.SYNC, ConfigType.RESET_CONNECTION);
+  public static final Set<ConfigType> REPLICATION_TYPES = EnumSet.of(ConfigType.SYNC, ConfigType.RESET_CONNECTION);
 
   private final long id;
   private final ConfigType configType;

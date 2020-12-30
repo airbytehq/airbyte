@@ -71,10 +71,6 @@ public class Enums {
     return Optional.ofNullable((T) NORMALIZED_ENUMS.get(enumClass).get(normalizeName(value)));
   }
 
-  public static <T extends Enum<T>> String toSqlName(final T value) {
-    return value.name().toLowerCase();
-  }
-
   private static String normalizeName(final String name) {
     return name.toLowerCase().replaceAll("[^a-zA-Z0-9]", "");
   }

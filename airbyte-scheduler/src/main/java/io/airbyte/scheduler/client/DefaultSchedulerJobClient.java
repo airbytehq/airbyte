@@ -88,7 +88,7 @@ public class DefaultSchedulerJobClient implements SchedulerJobClient {
         destinationDockerImage);
 
     long jobId = maybeJobId.isEmpty()
-        ? jobPersistence.getLastSyncScope(standardSync.getConnectionId()).orElseThrow(() -> new RuntimeException("No job available")).getId()
+        ? jobPersistence.getLastSync(standardSync.getConnectionId()).orElseThrow(() -> new RuntimeException("No job available")).getId()
         : maybeJobId.get();
 
     return waitUntilJobIsTerminalOrTimeout(jobId);
@@ -102,7 +102,7 @@ public class DefaultSchedulerJobClient implements SchedulerJobClient {
     final Optional<Long> maybeJobId = jobCreator.createResetConnectionJob(destination, standardSync, destinationDockerImage);
 
     long jobId = maybeJobId.isEmpty()
-        ? jobPersistence.getLastSyncScope(standardSync.getConnectionId()).orElseThrow(() -> new RuntimeException("No job available")).getId()
+        ? jobPersistence.getLastSync(standardSync.getConnectionId()).orElseThrow(() -> new RuntimeException("No job available")).getId()
         : maybeJobId.get();
 
     return waitUntilJobIsTerminalOrTimeout(jobId);
