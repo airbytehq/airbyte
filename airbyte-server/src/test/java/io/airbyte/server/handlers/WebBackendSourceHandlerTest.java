@@ -71,51 +71,6 @@ public class WebBackendSourceHandlerTest {
   }
 
   @Test
-  public void testCreatesSourceWhenCheckConnectionSucceeds() throws JsonValidationException, IOException, ConfigNotFoundException {
-    SourceCreate sourceCreate = new SourceCreate();
-    sourceCreate.setName(sourceRead.getName());
-    sourceCreate.setConnectionConfiguration(sourceRead.getConnectionConfiguration());
-    sourceCreate.setSourceDefinitionId(sourceRead.getSourceDefinitionId());
-    sourceCreate.setWorkspaceId(sourceRead.getWorkspaceId());
-
-    when(sourceHandler.createSource(sourceCreate)).thenReturn(sourceRead);
-
-    SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody();
-    sourceIdRequestBody.setSourceId(sourceRead.getSourceId());
-
-    CheckConnectionRead checkConnectionRead = new CheckConnectionRead();
-    checkConnectionRead.setStatus(StatusEnum.SUCCEEDED);
-
-    when(schedulerHandler.checkSourceConnectionFromSourceId(sourceIdRequestBody)).thenReturn(checkConnectionRead);
-
-    SourceRead returnedSource = wbSourceHandler.webBackendCreateSourceAndCheck(sourceCreate);
-
-    verify(sourceHandler, times(0)).deleteSource(Mockito.any());
-    assertEquals(sourceRead, returnedSource);
-  }
-
-  @Test
-  public void testDeletesSourceWhenCheckConnectionFails() throws JsonValidationException, IOException, ConfigNotFoundException {
-    SourceCreate sourceCreate = new SourceCreate();
-    sourceCreate.setName(sourceRead.getName());
-    sourceCreate.setConnectionConfiguration(sourceRead.getConnectionConfiguration());
-    sourceCreate.setWorkspaceId(sourceRead.getWorkspaceId());
-    when(sourceHandler.createSource(sourceCreate)).thenReturn(sourceRead);
-
-    CheckConnectionRead checkConnectionRead = new CheckConnectionRead();
-    checkConnectionRead.setStatus(StatusEnum.FAILED);
-
-    SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody();
-    sourceIdRequestBody.setSourceId(sourceRead.getSourceId());
-    when(schedulerHandler.checkSourceConnectionFromSourceId(sourceIdRequestBody)).thenReturn(checkConnectionRead);
-
-    Assertions.assertThrows(KnownException.class,
-        () -> wbSourceHandler.webBackendCreateSourceAndCheck(sourceCreate));
-
-    verify(sourceHandler).deleteSource(sourceIdRequestBody);
-  }
-
-  @Test
   public void testReCreatesSourceWhenCheckConnectionSucceeds() throws JsonValidationException, IOException, ConfigNotFoundException {
     SourceCreate sourceCreate = new SourceCreate();
     sourceCreate.setName(sourceRead.getName());

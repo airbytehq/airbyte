@@ -27,6 +27,7 @@ package io.airbyte.scheduler.persistence;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.JobConfig;
+import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.State;
@@ -116,7 +117,7 @@ public class DefaultJobPersistence implements JobPersistence {
     final LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
     database.query(ctx -> {
       updateJobStatusIfNotInTerminalState(ctx, jobId, JobStatus.PENDING, now,
-          new IllegalStateException(String.format("Attempt to reset a job that is in a terminate state. job id: %s", jobId)));
+          new IllegalStateException(String.format("Attempt to reset a job that is in a terminal state. job id: %s", jobId)));
       return null;
     });
   }
@@ -246,8 +247,11 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   private Job getJob(DSLContext ctx, long jobId) {
-    return getJobFromResult(ctx.fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE jobs.id = ?", jobId))
-        .orElseThrow(() -> new RuntimeException("Could not find job with id: " + jobId));
+    return getJobOptional(ctx, jobId).orElseThrow(() -> new RuntimeException("Could not find job with id: " + jobId));
+  }
+
+  private Optional<Job> getJobOptional(DSLContext ctx, long jobId) {
+    return getJobFromResult(ctx.fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE jobs.id = ?", jobId));
   }
 
   @Override
@@ -269,21 +273,27 @@ public class DefaultJobPersistence implements JobPersistence {
 
   @Override
   public Optional<Job> getLastSyncJob(UUID connectionId) throws IOException {
-    return database.query(ctx -> getJobFromResult(ctx
+    return database.query(ctx -> ctx
         .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE scope = ? AND CAST(jobs.status AS VARCHAR) <> ? ORDER BY jobs.created_at DESC LIMIT 1",
-            ScopeHelper.createScope(JobConfig.ConfigType.SYNC, connectionId.toString()),
-            JobStatus.CANCELLED.toString().toLowerCase())));
+            ScopeHelper.createScope(ConfigType.SYNC, connectionId.toString()),
+            JobStatus.CANCELLED.toString().toLowerCase())
+        .stream()
+        .findFirst()
+        .flatMap(r -> getJobOptional(ctx, r.get("job_id", Long.class))));
   }
 
   @Override
   public Optional<State> getCurrentState(UUID connectionId) throws IOException {
-    return database.query(ctx -> getJobFromResult(ctx
+    return database.query(ctx -> ctx
         .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE scope = ? AND CAST(jobs.status AS VARCHAR) = ? ORDER BY attempts.created_at DESC LIMIT 1",
-            ScopeHelper.createScope(JobConfig.ConfigType.SYNC, connectionId.toString()),
-            JobStatus.SUCCEEDED.toString().toLowerCase())))
+            ScopeHelper.createScope(ConfigType.SYNC, connectionId.toString()),
+            JobStatus.SUCCEEDED.toString().toLowerCase())
+        .stream()
+        .findFirst()
+        .flatMap(r -> getJobOptional(ctx, r.get("job_id", Long.class)))
         .flatMap(Job::getSuccessOutput)
         .map(JobOutput::getSync)
-        .map(StandardSyncOutput::getState);
+        .map(StandardSyncOutput::getState));
   }
 
   @Override
@@ -292,9 +302,12 @@ public class DefaultJobPersistence implements JobPersistence {
     // 1. get oldest, pending job
     // 2. job is excluded if another job of the same scope is already running
     // 3. job is excluded if another job of the same scope is already incomplete
-    return database.query(ctx -> getJobFromResult(ctx
+    return database.query(ctx -> ctx
         .fetch(BASE_JOB_SELECT_AND_JOIN
-            + "WHERE CAST(jobs.status AS VARCHAR) = 'pending' AND jobs.scope NOT IN ( SELECT scope FROM jobs WHERE status = 'running' OR status = 'incomplete' ) ORDER BY jobs.created_at ASC LIMIT 1")));
+            + "WHERE CAST(jobs.status AS VARCHAR) = 'pending' AND jobs.scope NOT IN ( SELECT scope FROM jobs WHERE status = 'running' OR status = 'incomplete' ) ORDER BY jobs.created_at ASC LIMIT 1")
+        .stream()
+        .findFirst()
+        .flatMap(r -> getJobOptional(ctx, r.get("job_id", Long.class))));
   }
 
   private static List<Job> getJobsFromResult(Result<Record> result) {

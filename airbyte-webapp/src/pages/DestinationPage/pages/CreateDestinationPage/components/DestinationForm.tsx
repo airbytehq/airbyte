@@ -8,6 +8,9 @@ import config from "../../../../../config";
 import useRouter from "../../../../../components/hooks/useRouterHook";
 import { useDestinationDefinitionSpecificationLoad } from "../../../../../components/hooks/services/useDestinationHook";
 import { IDataItem } from "../../../../../components/DropDown/components/ListItem";
+import { JobInfo } from "../../../../../core/resources/Scheduler";
+import { JobsLogItem } from "../../../../../components/JobItem";
+import { createFormErrorMessage } from "../../../../../utils/errorStatusMessage";
 
 type IProps = {
   onSubmit: (values: {
@@ -19,13 +22,17 @@ type IProps = {
   dropDownData: IDataItem[];
   hasSuccess?: boolean;
   errorStatus?: number;
+  jobInfo?: JobInfo;
+  afterSelectConnector?: () => void;
 };
 
 const DestinationForm: React.FC<IProps> = ({
   onSubmit,
   dropDownData,
   errorStatus,
-  hasSuccess
+  hasSuccess,
+  jobInfo,
+  afterSelectConnector
 }) => {
   const { location }: any = useRouter();
 
@@ -41,6 +48,10 @@ const DestinationForm: React.FC<IProps> = ({
     const connector = dropDownData.find(
       item => item.value === destinationDefinitionId
     );
+
+    if (afterSelectConnector) {
+      afterSelectConnector();
+    }
 
     AnalyticsService.track("New Destination - Action", {
       user_id: config.ui.workspaceId,
@@ -61,12 +72,7 @@ const DestinationForm: React.FC<IProps> = ({
     });
   };
 
-  const errorMessage =
-    errorStatus === 0 ? null : errorStatus === 400 ? (
-      <FormattedMessage id="form.validationError" />
-    ) : (
-      <FormattedMessage id="form.someError" />
-    );
+  const errorMessage = createFormErrorMessage(errorStatus);
 
   return (
     <ContentCard title={<FormattedMessage id="onboarding.destinationSetUp" />}>
@@ -88,6 +94,7 @@ const DestinationForm: React.FC<IProps> = ({
         }
         allowChangeConnector
       />
+      <JobsLogItem jobInfo={jobInfo} />
     </ContentCard>
   );
 };

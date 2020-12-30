@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import ContentCard from "../../../components/ContentCard";
@@ -10,8 +10,10 @@ import { useSourceDefinitionSpecificationLoad } from "../../../components/hooks/
 
 import usePrepareDropdownLists from "./usePrepareDropdownLists";
 
-import config from "../../../config";
 import { IDataItem } from "../../../components/DropDown/components/ListItem";
+import { createFormErrorMessage } from "../../../utils/errorStatusMessage";
+import { JobInfo } from "../../../core/resources/Scheduler";
+import { JobsLogItem } from "../../../components/JobItem";
 
 type IProps = {
   source?: Source;
@@ -24,6 +26,8 @@ type IProps = {
   dropDownData: IDataItem[];
   hasSuccess?: boolean;
   errorStatus?: number;
+  jobInfo?: JobInfo;
+  afterSelectConnector?: () => void;
 };
 
 const SourceStep: React.FC<IProps> = ({
@@ -31,41 +35,43 @@ const SourceStep: React.FC<IProps> = ({
   dropDownData,
   hasSuccess,
   errorStatus,
-  source
+  source,
+  jobInfo,
+  afterSelectConnector
 }) => {
-  const [sourceId, setSourceId] = useState("");
+  const [sourceDefinitionId, setSourceDefinitionId] = useState(
+    source?.sourceDefinitionId || ""
+  );
   const {
     sourceDefinitionSpecification,
     isLoading
-  } = useSourceDefinitionSpecificationLoad(sourceId);
+  } = useSourceDefinitionSpecificationLoad(sourceDefinitionId);
+
   const { getSourceDefinitionById } = usePrepareDropdownLists();
 
   const onDropDownSelect = (sourceId: string) => {
     const sourceDefinition = getSourceDefinitionById(sourceId);
 
     AnalyticsService.track("New Source - Action", {
-      user_id: config.ui.workspaceId,
       action: "Select a connector",
       connector_source: sourceDefinition?.name,
       connector_source_id: sourceDefinition?.sourceDefinitionId
     });
 
-    setSourceId(sourceId);
+    if (afterSelectConnector) {
+      afterSelectConnector();
+    }
+
+    setSourceDefinitionId(sourceId);
   };
+
   const onSubmitForm = async (values: { name: string; serviceType: string }) =>
     onSubmit({
       ...values,
       sourceDefinitionId: sourceDefinitionSpecification?.sourceDefinitionId
     });
 
-  const errorMessage =
-    errorStatus === 0 ? null : errorStatus === 400 ? (
-      <FormattedMessage id="form.validationError" />
-    ) : (
-      <FormattedMessage id="form.someError" />
-    );
-
-  useEffect(() => setSourceId(source?.sourceDefinitionId || ""), [source]);
+  const errorMessage = createFormErrorMessage(errorStatus);
 
   return (
     <ContentCard title={<FormattedMessage id="onboarding.sourceSetUp" />}>
@@ -82,6 +88,7 @@ const SourceStep: React.FC<IProps> = ({
         isLoading={isLoading}
         formValues={source}
       />
+      <JobsLogItem jobInfo={jobInfo} />
     </ContentCard>
   );
 };

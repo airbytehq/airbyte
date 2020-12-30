@@ -105,17 +105,9 @@ public class SnowflakeIntegrationTest extends TestDestination {
   }
 
   private List<JsonNode> retrieveRecordsFromTable(String tableName) throws SQLException, InterruptedException {
-    return SnowflakeDatabase.executeSync(
-        SnowflakeDatabase.getConnectionFactory(getConfig()),
-        String.format("SELECT * FROM %s ORDER BY emitted_at ASC;", tableName),
-        false,
-        rs -> {
-          try {
-            return JdbcUtils.toJsonStream(rs).collect(Collectors.toList());
-          } catch (SQLException e) {
-            throw new RuntimeException(e);
-          }
-        });
+    return SnowflakeDatabase.getDatabase(getConfig()).bufferedResultSetQuery(
+        connection -> connection.createStatement().executeQuery(String.format("SELECT * FROM %s ORDER BY emitted_at ASC;", tableName)),
+        JdbcUtils::rowToJson);
   }
 
   // for each test we create a new schema in the database. run the test in there and then remove it.
@@ -125,7 +117,7 @@ public class SnowflakeIntegrationTest extends TestDestination {
     final String createSchemaQuery = String.format("CREATE SCHEMA %s", schemaName);
 
     baseConfig = getStaticConfig();
-    SnowflakeDatabase.executeSync(SnowflakeDatabase.getConnectionFactory(baseConfig), createSchemaQuery, false);
+    SnowflakeDatabase.getDatabase(baseConfig).execute(createSchemaQuery);
 
     final JsonNode configForSchema = Jsons.clone(baseConfig);
     ((ObjectNode) configForSchema).put("schema", schemaName);
@@ -135,7 +127,7 @@ public class SnowflakeIntegrationTest extends TestDestination {
   @Override
   protected void tearDown(TestDestinationEnv testEnv) throws Exception {
     final String createSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s", config.get("schema").asText());
-    SnowflakeDatabase.executeSync(SnowflakeDatabase.getConnectionFactory(baseConfig), createSchemaQuery, false);
+    SnowflakeDatabase.getDatabase(baseConfig).execute(createSchemaQuery);
   }
 
 }

@@ -72,56 +72,6 @@ public class WebBackendDestinationHandlerTest {
   }
 
   @Test
-  public void testCreatesDestinationWhenCheckConnectionSucceeds() throws JsonValidationException, IOException, ConfigNotFoundException {
-    DestinationCreate destinationCreate = new DestinationCreate();
-    destinationCreate.setName(destinationRead.getName());
-    destinationCreate.setConnectionConfiguration(destinationRead.getConnectionConfiguration());
-    destinationCreate.setDestinationDefinitionId(destinationRead.getDestinationDefinitionId());
-    destinationCreate.setWorkspaceId(destinationRead.getWorkspaceId());
-
-    when(destinationHandler.createDestination(destinationCreate))
-        .thenReturn(destinationRead);
-
-    DestinationIdRequestBody destinationIdRequestBody = new DestinationIdRequestBody();
-    destinationIdRequestBody.setDestinationId(destinationRead.getDestinationId());
-
-    CheckConnectionRead checkConnectionRead = new CheckConnectionRead();
-    checkConnectionRead.setStatus(StatusEnum.SUCCEEDED);
-
-    when(schedulerHandler.checkDestinationConnectionFromDestinationId(destinationIdRequestBody)).thenReturn(checkConnectionRead);
-
-    DestinationRead returnedDestination =
-        wbDestinationHandler.webBackendCreateDestinationAndCheck(destinationCreate);
-
-    verify(destinationHandler, times(0)).deleteDestination(Mockito.any());
-    assertEquals(destinationRead, returnedDestination);
-  }
-
-  @Test
-  public void testDeletesDestinationWhenCheckConnectionFails() throws JsonValidationException, IOException, ConfigNotFoundException {
-    DestinationCreate destinationCreate = new DestinationCreate();
-    destinationCreate.setName(destinationRead.getName());
-    destinationCreate.setConnectionConfiguration(destinationRead.getConnectionConfiguration());
-    destinationCreate.setDestinationDefinitionId(destinationRead.getDestinationDefinitionId());
-    destinationCreate.setWorkspaceId(destinationRead.getWorkspaceId());
-
-    when(destinationHandler.createDestination(destinationCreate))
-        .thenReturn(destinationRead);
-
-    CheckConnectionRead checkConnectionRead = new CheckConnectionRead();
-    checkConnectionRead.setStatus(StatusEnum.FAILED);
-
-    DestinationIdRequestBody destinationIdRequestBody = new DestinationIdRequestBody();
-    destinationIdRequestBody.setDestinationId(destinationRead.getDestinationId());
-    when(schedulerHandler.checkDestinationConnectionFromDestinationId(destinationIdRequestBody)).thenReturn(checkConnectionRead);
-
-    Assertions.assertThrows(KnownException.class,
-        () -> wbDestinationHandler.webBackendCreateDestinationAndCheck(destinationCreate));
-
-    verify(destinationHandler).deleteDestination(destinationIdRequestBody);
-  }
-
-  @Test
   public void testReCreatesDestinationWhenCheckConnectionSucceeds() throws JsonValidationException, IOException, ConfigNotFoundException {
     DestinationCreate destinationCreate = new DestinationCreate();
     destinationCreate.setName(destinationRead.getName());

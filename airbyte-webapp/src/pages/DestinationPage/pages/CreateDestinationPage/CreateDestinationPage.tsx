@@ -10,11 +10,15 @@ import config from "../../../../config";
 import DestinationDefinitionResource from "../../../../core/resources/DestinationDefinition";
 import useDestination from "../../../../components/hooks/services/useDestinationHook";
 import { FormPageContent } from "../../../../components/SourceAndDestinationsBlocks";
+import { JobInfo } from "../../../../core/resources/Scheduler";
 
 const CreateDestinationPage: React.FC = () => {
   const { push } = useRouter();
   const [successRequest, setSuccessRequest] = useState(false);
-  const [errorStatusRequest, setErrorStatusRequest] = useState<number>(0);
+  const [errorStatusRequest, setErrorStatusRequest] = useState<{
+    status: number;
+    response: JobInfo;
+  } | null>(null);
 
   const { destinationDefinitions } = useResource(
     DestinationDefinitionResource.listShape(),
@@ -42,7 +46,7 @@ const CreateDestinationPage: React.FC = () => {
     const connector = destinationDefinitions.find(
       item => item.destinationDefinitionId === values.serviceType
     );
-    setErrorStatusRequest(0);
+    setErrorStatusRequest(null);
     try {
       const result = await createDestination({
         values,
@@ -54,7 +58,7 @@ const CreateDestinationPage: React.FC = () => {
         push(`${Routes.Destination}/${result.destinationId}`);
       }, 2000);
     } catch (e) {
-      setErrorStatusRequest(e.status);
+      setErrorStatusRequest(e);
     }
   };
 
@@ -66,10 +70,12 @@ const CreateDestinationPage: React.FC = () => {
       />
       <FormPageContent>
         <DestinationForm
+          afterSelectConnector={() => setErrorStatusRequest(null)}
           onSubmit={onSubmitDestinationForm}
           dropDownData={destinationsDropDownData}
           hasSuccess={successRequest}
-          errorStatus={errorStatusRequest}
+          errorStatus={errorStatusRequest?.status}
+          jobInfo={errorStatusRequest?.response}
         />
       </FormPageContent>
     </>

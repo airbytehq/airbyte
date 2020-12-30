@@ -23,12 +23,37 @@
             </Routes>
             <IdlePurgePolicy timeToLive="15" timeUnit="minutes"/>
         </Routing>
+        <Routing name="AppLogSplit">
+            <Routes pattern="$${ctx:workspace_app_root}">
+                <!-- Don't split logs if workspace_app_log_root isn't defined -->
+                <Route key="$${ctx:workspace_app_root}">
+                    <Null name="/dev/null"/>
+                </Route>
+                <Route>
+                    <RollingFile
+                            name="${ctx:workspace_app_root}"
+                            fileName="${ctx:workspace_app_root}/logs.log"
+                            filePattern="${ctx:workspace_app_root}/logs.%i.log.gz"
+                            ignoreExceptions="false">
+                        <PatternLayout>
+                            <Pattern>%d{yyyy-MM-dd HH:mm:ss} %-5p %m%n</Pattern>
+                        </PatternLayout>
+                        <Policies>
+                            <SizeBasedTriggeringPolicy size="100MB" />
+                        </Policies>
+                        <DefaultRolloverStrategy max="3" />
+                    </RollingFile>
+                </Route>
+            </Routes>
+            <IdlePurgePolicy timeToLive="15" timeUnit="minutes"/>
+        </Routing>
     </Appenders>
 
     <Loggers>
         <Root level="DEBUG">
             <AppenderRef ref="Default"/>
             <AppenderRef ref="LogSplit"/>
+            <AppenderRef ref="AppLogSplit"/>
         </Root>
 
         <Logger name="org.eclipse.jetty" level="INFO" />

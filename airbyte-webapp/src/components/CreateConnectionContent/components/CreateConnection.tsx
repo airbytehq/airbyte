@@ -1,9 +1,9 @@
 import React from "react";
-import { FormattedMessage } from "react-intl";
 
 import FrequencyForm from "../../FrequencyForm";
 import { SyncSchema } from "../../../core/resources/Schema";
 import { IDataItem } from "../../DropDown/components/ListItem";
+import { createFormErrorMessage } from "../../../utils/errorStatusMessage";
 
 type IProps = {
   onSubmit: (values: { frequency: string; syncSchema: SyncSchema }) => void;
@@ -28,12 +28,7 @@ const CreateConnection: React.FC<IProps> = ({
     });
   };
 
-  const errorMessage =
-    errorStatus === 0 ? null : errorStatus === 400 ? (
-      <FormattedMessage id="form.validationError" />
-    ) : (
-      <FormattedMessage id="form.someError" />
-    );
+  const errorMessage = createFormErrorMessage(errorStatus);
 
   return (
     <FrequencyForm
