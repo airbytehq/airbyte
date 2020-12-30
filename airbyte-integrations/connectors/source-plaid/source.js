@@ -146,11 +146,11 @@ function discover() {
   console.log(JSON.stringify(airbyte_message));
 }
 
-function getInputFilePath(path1) {
-  if (path.isAbsolute(path1)) {
-    return path1;
+function getInputFilePath(filePath) {
+  if (path.isAbsolute(filePath)) {
+    return filePath;
   } else {
-    return path.join(process.cwd(), path1);
+    return path.join(process.cwd(), filePath);
   }
 }
 
