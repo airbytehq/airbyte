@@ -31,8 +31,8 @@ assemble.dependsOn npm_run_build
 
 airbyteStandardSourceTestFile {
     // All these input paths must live inside this connector's directory (or subdirectories)
-    configPath = "secrets/valid_config.json"
-    configuredCatalogPath = "fullrefresh_configured_catalog.json"
+    configPath = "secrets/config.json"
+    configuredCatalogPath = "sample_files/fullrefresh_configured_catalog.json"
     specPath = "spec.json"
 }
 
