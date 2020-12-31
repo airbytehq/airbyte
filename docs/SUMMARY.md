@@ -33,6 +33,7 @@
     * [MySQL](integrations/sources/mysql.md)
     * [Microsoft SQL Server \(MSSQL\)](integrations/sources/mssql.md)
     * [Microsoft Teams](integrations/sources/microsoft-teams.md)
+    * [Plaid](integrations/sources/plaid.md)
     * [Postgres](integrations/sources/postgres.md)
     * [Recurly](integrations/sources/recurly.md)
     * [Redshift](integrations/sources/redshift.md)
