@@ -27,8 +27,8 @@ from datetime import datetime
 from typing import Dict, FrozenSet, Iterable, List
 
 from airbyte_protocol import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog
-from apiclient import discovery
 from google.oauth2 import service_account
+from googleapiclient import discovery
 
 from .models.spreadsheet import RowData, Spreadsheet
 
@@ -37,17 +37,17 @@ SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly", "https://www.
 
 class Helpers(object):
     @staticmethod
-    def get_authenticated_sheets_client(credentials: Dict[str, str], scopes=SCOPES) -> discovery.Resource:
+    def get_authenticated_sheets_client(credentials: Dict[str, str], scopes: List[str] = SCOPES) -> discovery.Resource:
         creds = Helpers.get_authenticated_google_credentials(credentials, scopes)
         return discovery.build("sheets", "v4", credentials=creds).spreadsheets()
 
     @staticmethod
-    def get_authenticated_drive_client(credentials: Dict[str, str], scopes=SCOPES) -> discovery.Resource:
+    def get_authenticated_drive_client(credentials: Dict[str, str], scopes: List[str] = SCOPES) -> discovery.Resource:
         creds = Helpers.get_authenticated_google_credentials(credentials, scopes)
         return discovery.build("drive", "v3", credentials=creds)
 
     @staticmethod
-    def get_authenticated_google_credentials(credentials: Dict[str, str], scopes=SCOPES):
+    def get_authenticated_google_credentials(credentials: Dict[str, str], scopes: List[str] = SCOPES):
         return service_account.Credentials.from_service_account_info(credentials, scopes=scopes)
 
     @staticmethod
@@ -86,10 +86,8 @@ class Helpers(object):
         return [value.formattedValue for value in row_data.values]
 
     @staticmethod
-    def get_first_row(client: discovery.Resource, spreadsheet_id: str, sheet_name: str) -> List[str]:
-        spreadsheet = Spreadsheet.parse_obj(
-            client.get(spreadsheetId=spreadsheet_id, includeGridData=True, ranges=f"{sheet_name}!1:1").execute()
-        )
+    def get_first_row(client, spreadsheet_id: str, sheet_name: str) -> List[str]:
+        spreadsheet = Spreadsheet.parse_obj(client.get(spreadsheetId=spreadsheet_id, includeGridData=True, ranges=f"{sheet_name}!1:1"))
 
         # There is only one sheet since we are specifying the sheet in the requested ranges.
         returned_sheets = spreadsheet.sheets
@@ -133,7 +131,7 @@ class Helpers(object):
 
     @staticmethod
     def get_available_sheets_to_column_index_to_name(
-        client: discovery.Resource, spreadsheet_id: str, requested_sheets_and_columns: Dict[str, FrozenSet[str]]
+        client, spreadsheet_id: str, requested_sheets_and_columns: Dict[str, FrozenSet[str]]
     ) -> Dict[str, Dict[int, str]]:
         available_sheets = Helpers.get_sheets_in_spreadsheet(client, spreadsheet_id)
 
@@ -150,8 +148,8 @@ class Helpers(object):
         return available_sheets_to_column_index_to_name
 
     @staticmethod
-    def get_sheets_in_spreadsheet(client: discovery.Resource, spreadsheet_id: str):
-        spreadsheet_metadata = Spreadsheet.parse_obj(client.get(spreadsheetId=spreadsheet_id, includeGridData=False).execute())
+    def get_sheets_in_spreadsheet(client, spreadsheet_id: str):
+        spreadsheet_metadata = Spreadsheet.parse_obj(client.get(spreadsheetId=spreadsheet_id, includeGridData=False))
         return [sheet.properties.title for sheet in spreadsheet_metadata.sheets]
 
     @staticmethod
