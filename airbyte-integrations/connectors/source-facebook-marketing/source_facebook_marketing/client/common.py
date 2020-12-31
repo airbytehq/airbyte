@@ -53,5 +53,5 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
         jitter=None,
         on_backoff=log_retry_attempt,
         giveup=lambda exc: not should_retry_api_error(exc),
-        **wait_gen_kwargs
+        **wait_gen_kwargs,
     )
