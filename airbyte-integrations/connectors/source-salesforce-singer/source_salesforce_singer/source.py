@@ -77,13 +77,16 @@ class SourceSalesforceSinger(SingerSource):
     def read_cmd(self, logger, config_path, catalog_path, state_path=None) -> str:
         config_option = f"--config {config_path}"
         properties_option = f"--properties {catalog_path}"
-        return f"tap-salesforce {config_option} {properties_option} "
+        state_option = f"--state {state_path}" if state_path else ""
+        return f"tap-salesforce {config_option} {properties_option} {state_option}"
 
     def transform_config(self, raw_config):
-        # the select_fields_by_default is opinionated about schema changes. we want to reserve the right for the Airbyte system to handle these changes, instead of the singer source.
+        # the select_fields_by_default is opinionated about schema changes. we want to reserve the right for the
+        # Airbyte system to handle these changes, instead of the singer source.
         rendered_config = dict(raw_config)
 
-        # todo (cgardens) - this is supposed to be handled in the ui and the api but neither of them are able to handle it right now. issue: https://github.com/airbytehq/airbyte/issues/892
+        # todo (cgardens) - this is supposed to be handled in the ui and the api but neither of them are able to
+        #  handle it right now. issue: https://github.com/airbytehq/airbyte/issues/892
         if "is_sandbox" not in raw_config:
             rendered_config["is_sandbox"] = False
 
