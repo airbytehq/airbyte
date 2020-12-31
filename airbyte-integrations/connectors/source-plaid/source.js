@@ -79,7 +79,7 @@ function getBaseUrl(plaidEnv) {
 }
 
 async function check(config) {
-  // Validate input configuration by attempting to get the price of the input stock ticker for the previous day
+  // Validate input configuration by hitting the balance endpoint.
   let result;
   const url = `${getBaseUrl(config.plaid_env)}/accounts/balance/get`;
   const response = await axios.post(
