@@ -10,7 +10,7 @@
     "video_p50_watched_actions": { "$ref": "ads_action_stats.json" },
     "video_p75_watched_actions": { "$ref": "ads_action_stats.json" },
     "video_p100_watched_actions": { "$ref": "ads_action_stats.json" },
-    "video_play_curve_actions": {"$ref": "ads_histogram_stats.json"},
+    "video_play_curve_actions": { "$ref": "ads_histogram_stats.json" },
     "clicks": {
       "type": ["null", "integer"]
     },

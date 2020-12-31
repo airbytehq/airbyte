@@ -6,46 +6,25 @@
         "$schema": "http://json-schema.org/draft-07/schema#",
         "properties": {
           "name": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "objective": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "account_id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "effective_status": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "buying_type": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "spend_cap": {
-            "type": [
-              "null",
-              "number"
-            ]
+            "type": ["null", "number"]
           },
           "start_time": {
             "type": "string",
@@ -61,33 +40,18 @@
                 "items": {
                   "properties": {
                     "id": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     }
                   },
-                  "type": [
-                    "null",
-                    "object"
-                  ]
+                  "type": ["null", "object"]
                 },
-                "type": [
-                  "null",
-                  "array"
-                ]
+                "type": ["null", "array"]
               }
             },
-            "type": [
-              "null",
-              "object"
-            ]
+            "type": ["null", "object"]
           },
           "adlabels": {
-            "type": [
-              "null",
-              "array"
-            ],
+            "type": ["null", "array"],
             "items": {
               "type": "object",
               "properties": {
@@ -109,117 +73,64 @@
             }
           }
         },
-        "type": [
-          "null",
-          "object"
-        ]
+        "type": ["null", "object"]
       },
-      "supported_sync_modes": [
-        "full_refresh"
-      ]
+      "supported_sync_modes": ["full_refresh"]
     },
     {
       "name": "adsets",
       "json_schema": {
         "$schema": "http://json-schema.org/draft-07/schema#",
-        "type": [
-          "null",
-          "object"
-        ],
+        "type": ["null", "object"],
         "properties": {
           "name": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "end_time": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": ["null", "string"],
             "format": "date-time"
           },
           "promoted_object": {
-            "type": [
-              "null",
-              "object"
-            ],
+            "type": ["null", "object"],
             "properties": {
               "custom_event_type": {
-                "type": [
-                  "null",
-                  "string"
-                ]
+                "type": ["null", "string"]
               },
               "pixel_id": {
-                "type": [
-                  "null",
-                  "string"
-                ]
+                "type": ["null", "string"]
               },
               "pixel_rule": {
-                "type": [
-                  "null",
-                  "string"
-                ]
+                "type": ["null", "string"]
               },
               "page_id": {
-                "type": [
-                  "null",
-                  "string"
-                ]
+                "type": ["null", "string"]
               },
               "object_store_url": {
-                "type": [
-                  "null",
-                  "string"
-                ]
+                "type": ["null", "string"]
               },
               "application_id": {
-                "type": [
-                  "null",
-                  "string"
-                ]
+                "type": ["null", "string"]
               },
               "product_set_id": {
-                "type": [
-                  "null",
-                  "string"
-                ]
+                "type": ["null", "string"]
               },
               "offer_id": {
-                "type": [
-                  "null",
-                  "string"
-                ]
+                "type": ["null", "string"]
               }
             }
           },
           "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "account_id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "updated_time": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": ["null", "string"],
             "format": "date-time"
           },
           "daily_budget": {
-            "type": [
-              "null",
-              "number"
-            ],
+            "type": ["null", "number"],
             "maximum": 100000000000000000000000000000000,
             "minimum": -100000000000000000000000000000000,
             "multipleOf": 0.000001,
@@ -227,10 +138,7 @@
             "exclusiveMinimum": true
           },
           "budget_remaining": {
-            "type": [
-              "null",
-              "number"
-            ],
+            "type": ["null", "number"],
             "maximum": 100000000000000000000000000000000,
             "minimum": -100000000000000000000000000000000,
             "multipleOf": 0.000001,
@@ -238,36 +146,21 @@
             "exclusiveMinimum": true
           },
           "effective_status": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "campaign_id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "created_time": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": ["null", "string"],
             "format": "date-time"
           },
           "start_time": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": ["null", "string"],
             "format": "date-time"
           },
           "lifetime_budget": {
-            "type": [
-              "null",
-              "number"
-            ],
+            "type": ["null", "number"],
             "maximum": 100000000000000000000000000000000,
             "minimum": -100000000000000000000000000000000,
             "multipleOf": 0.000001,
@@ -278,42 +171,24 @@
             "$ref": "targeting.json"
           },
           "bid_info": {
-            "type": [
-              "null",
-              "object"
-            ],
+            "type": ["null", "object"],
             "properties": {
               "CLICKS": {
-                "type": [
-                  "null",
-                  "integer"
-                ]
+                "type": ["null", "integer"]
               },
               "ACTIONS": {
-                "type": [
-                  "null",
-                  "integer"
-                ]
+                "type": ["null", "integer"]
               },
               "IMPRESSIONS": {
-                "type": [
-                  "null",
-                  "integer"
-                ]
+                "type": ["null", "integer"]
               },
               "REACH": {
-                "type": [
-                  "null",
-                  "integer"
-                ]
+                "type": ["null", "integer"]
               }
             }
           },
           "adlabels": {
-            "type": [
-              "null",
-              "array"
-            ],
+            "type": ["null", "array"],
             "items": {
               "type": "object",
               "properties": {
@@ -336,9 +211,7 @@
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh"
-      ]
+      "supported_sync_modes": ["full_refresh"]
     }
   ]
 }
