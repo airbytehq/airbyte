@@ -292,7 +292,7 @@ class Client(BaseClient):
         try:
             self._find_account(self._account_id)
         except FacebookAPIException as exc:
-            logger.error(exc)  # we might need some extra details, so log original exception here
+            logger.error(str(exc))  # we might need some extra details, so log original exception here
             alive = False
             error_message = str(exc)
 

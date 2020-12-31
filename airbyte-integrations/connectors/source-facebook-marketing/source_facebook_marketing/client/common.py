@@ -39,7 +39,7 @@ class FacebookAPIException(Exception):
 def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
     def log_retry_attempt(details):
         _, exc, _ = sys.exc_info()
-        logger.info(exc)
+        logger.info(str(exc))
         logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} more seconds then retrying...")
 
     def should_retry_api_error(exc):
