@@ -1,4 +1,4 @@
-# Javascript Template Source
+# Plaid Source
 
 This is the repository for the JavaScript Template source connector, written in JavaScript.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/javascript-template).
@@ -14,14 +14,14 @@ For information about how to use this connector within Airbyte, see [the documen
 First, build the module by running the following from the `airbyte` project root directory:
 
 ```
-./gradlew :airbyte-integrations:connectors:source-javascript-template:build
+./gradlew :airbyte-integrations:connectors:source-plaid:build
 ```
 
-This will generate a virtualenv for this module in `source-javascript-template/.venv`. Make sure this venv is active in your
+This will generate a virtualenv for this module in `source-plaid/.venv`. Make sure this venv is active in your
 development environment of choice. To activate the venv from the terminal, run:
 
 ```
-cd airbyte-integrations/connectors/source-javascript-template # cd into the connector directory
+cd airbyte-integrations/connectors/source-plaid # cd into the connector directory
 source .venv/bin/activate
 ```
 
@@ -33,7 +33,7 @@ If you are in an IDE, follow your IDE's instructions to activate the virtualenv.
 to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_javascript_template/spec.json` file.
 See `sample_files/sample_config.json` for a sample config file.
 
-**If you are an Airbyte core member**, copy the credentials in RPass under the secret name `source-javascript-template-integration-test-config`
+**If you are an Airbyte core member**, copy the credentials in RPass under the secret name `source-plaid-integration-test-config`
 and place them into `secrets/config.json`.
 
 ### Locally running the connector
@@ -58,16 +58,16 @@ npm test
 
 ```
 # in airbyte root directory
-./gradlew :airbyte-integrations:connectors:source-javascript-template:airbyteDocker
-docker run --rm airbyte/source-javascript-template:dev spec
-docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-javascript-template/secrets:/secrets airbyte/source-javascript-template:dev check --config /secrets/config.json
-docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-javascript-template/secrets:/secrets airbyte/source-javascript-template:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-javascript-template/secrets:/secrets -v $(pwd)/airbyte-integrations/connectors/source-javascript-template/sample_files:/sample_files airbyte/source-javascript-template:dev read --config /secrets/config.json --catalog /sample_files/configured_catalog.json
+./gradlew :airbyte-integrations:connectors:source-plaid:airbyteDocker
+docker run --rm airbyte/source-plaid:dev spec
+docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-plaid/secrets:/secrets airbyte/source-plaid:dev check --config /secrets/config.json
+docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-plaid/secrets:/secrets airbyte/source-plaid:dev discover --config /secrets/config.json
+docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-plaid/secrets:/secrets -v $(pwd)/airbyte-integrations/connectors/source-plaid/sample_files:/sample_files airbyte/source-plaid:dev read --config /secrets/config.json --catalog /sample_files/fullrefresh_configured_catalog.json
 ```
 
 ### Integration Tests
 
-1. From the airbyte project root, run `./gradlew :airbyte-integrations:connectors:source-javascript-template:integrationTest` to run the standard integration test suite.
+1. From the airbyte project root, run `./gradlew :airbyte-integrations:connectors:source-plaid:integrationTest` to run the standard integration test suite.
 1. To run additional integration tests, place your integration tests in a new directory `integration_tests` and run them with `node test (wip)`.
 
 ## Dependency Management
