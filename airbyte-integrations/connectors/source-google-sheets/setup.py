@@ -33,6 +33,7 @@ setup(
     install_requires=[
         "airbyte-protocol",
         "base-python",
+        "backoff",
         "requests",
         "google-auth-httplib2",
         "google-api-python-client",
