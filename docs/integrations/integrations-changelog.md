@@ -15,7 +15,7 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 
 ## 12/30/2020
 
-**New source:** [Plaid](sources/plaid.md)
+**New source:** [Plaid](sources/plaid.md) \(contributed by [tgiardina](https://github.com/tgiardina)\)
 
 ## 12/18/2020
 
