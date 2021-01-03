@@ -10,8 +10,16 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 
 ## Currently under construction
 
-**New sources:** Hive, MongoDB, Mailgun, Drift, Microsoft Teams  
+**New sources:** Hive, MongoDB, Mailgun  
 **New destinations:** Panoply, S3, MySQL, Kafka, MongoDB
+
+## 12/30/2020
+
+**New source:** [Plaid](sources/plaid.md)
+
+## 12/18/2020
+
+**New sources:** [Drift](sources/drift.md), [Microsoft Teams](sources/microsoft-teams.md)
 
 ## 12/10/2020
 
