@@ -95,7 +95,7 @@ Let's walk through what each field in a stream means.
 Now we understand _what_ data is available from this source. Next we will configure _how_ we want to replicate that data.
 
 ### ConfiguredAirbyteCatalog
-Let's say that we do not care about replicating the pilot data at all. We do want to replicate the airlines data as a `FULL_REFRESH`. Here's what our `ConfiguredaAirbyteCatalog` would look like.
+Let's say that we do not care about replicating the pilot data at all. We do want to replicate the airlines data as a `FULL_REFRESH`. Here's what our `ConfiguredAirbyteCatalog` would look like.
 
 ```json
 {
