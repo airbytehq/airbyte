@@ -24,7 +24,7 @@ To run this tutorial, you'll need:
 
 **A note on running Python**: all the commands below assume that `python` points to a version of python 3. Verify this by running
 
-```text
+```bash
 $ python --version
 Python 3.7.9
 ```
@@ -35,42 +35,57 @@ On some systems, `python` points to a Python2 installation and `python3` points 
 
 Our connector will output the daily price of a stock since a given date. We'll leverage the free [IEX Cloud API](https://iexcloud.io/docs/api/) for this. We'll use Python to implement the connector because its syntax is accessible to most programmers, but the process described here can be applied to any language.
 
-Here's the outline of what we'll do to build our connector: 1. Use the Airbyte connector template to bootstrap the connector package 2. Implement the methods required by the Airbyte Specification for our connector: 1. `spec`: declares the user-provided credentials or configuration needed to run the connector 2. `check`: tests if the user-provided configuration is valid and can be used to run the connector 3. `discover`: declares the different streams of data that this connector can output 4. `read`: reads data from the underlying data source \(The stock ticker API\) 3. Package the connector in a Docker image 4. Test the connector using Airbyte's Standard Test Suite 5. Use the connector to run a sync from the Airbyte UI
+Here's the outline of what we'll do to build our connector: 
 
-Once we've completed the above steps, we will have built a functioning connector. Then, we'll add some optional functionality: 6. Support [incremental sync](../architecture/incremental.md) 7. Add custom integration tests
+1. Use the Airbyte connector template to bootstrap the connector package
+2. Implement the methods required by the Airbyte Specification for our connector: 
+   1. `spec`: declares the user-provided credentials or configuration needed to run the connector
+   2. `check`: tests if the user-provided configuration is valid and can be used to run the connector
+   3. `discover`: declares the different streams of data that this connector can output
+   4. `read`: reads data from the underlying data source \(The stock ticker API\)
+3. Package the connector in a Docker image
+4. Test the connector using Airbyte's Standard Test Suite
+5. Use the connector to run a sync from the Airbyte UI
+
+Once we've completed the above steps, we will have built a functioning connector. Then, we'll add some optional functionality:
+
+* Support [incremental sync](../architecture/incremental.md)
+* Add custom integration tests
 
 ### 1. Bootstrap the connector package
 
 We'll start the process from the Airbyte repository root:
 
-```text
+```bash
 $ pwd
 /Users/sherifnada/code/airbyte
 ```
 
 First, let's create a new branch:
 
-```text
+```bash
 $ git checkout -b $(whoami)/source-connector-tutorial
 Switched to a new branch 'sherifnada/source-connector-tutorial'
 ```
 
 Airbyte provides a code generator which bootstraps the scaffolding for our connector. Let's use it by running:
 
-```text
+```bash
 $ cd airbyte-integrations/connector-templates/generator
 # Install NPM from https://www.npmjs.com/get-npm if you don't have it
 $ npm install
 $ npm run generate
 ```
 
-We'll select the generic template and call the connector `stock-ticker-api`: ![](../.gitbook/assets/newsourcetutorial_plop.gif)
+We'll select the generic template and call the connector `stock-ticker-api`: 
+
+![](../.gitbook/assets/newsourcetutorial_plop.gif)
 
 Note that if you were developing a "real" Python connector, you should use the Python generator to automatically get the Airbyte Python helpers.
 
 Head to the connector directory and we should see the following files have been generated:
 
-```text
+```bash
 $ cd ../../connectors/source-stock-ticker-api
 $ ls
 Dockerfile              NEW_SOURCE_CHECKLIST.md              build.gradle
@@ -82,15 +97,21 @@ We'll use each of these files later. But first, let's write some code!
 
 In the connector package directory, create a single python file `source.py` that will hold our implementation:
 
-```text
+```bash
 $ touch source.py
 ```
 
 #### Implement the spec operation
 
-At this stage in the tutorial, we just want to implement the `spec` operation as described in the [Airbyte Protocol](https://docs.airbyte.io/architecture/airbyte-specification#spec). This involves a couple of steps: 1. Decide which inputs we need from the user in order to connect to the stock ticker API i.e: the connector's specification, and encode it as a JSON file. 2. Identify when the connector has been invoked with the `spec` operation and return the specification as an `AirbyteMessage`
+At this stage in the tutorial, we just want to implement the `spec` operation as described in the [Airbyte Protocol](https://docs.airbyte.io/architecture/airbyte-specification#spec). This involves a couple of steps: 
 
-To contact the stock ticker API, we need two things: 1. Which stock ticker we're interested in 2. The API key to use when contacting the API \(you can obtain a free API token from the [IEX Cloud](https://iexcloud.io/) free plan\)
+1. Decide which inputs we need from the user in order to connect to the stock ticker API i.e: the connector's specification, and encode it as a JSON file.
+2. Identify when the connector has been invoked with the `spec` operation and return the specification as an `AirbyteMessage`
+
+To contact the stock ticker API, we need two things:
+
+1. Which stock ticker we're interested in
+2. The API key to use when contacting the API \(you can obtain a free API token from the [IEX Cloud](https://iexcloud.io/) free plan\)
 
 For reference, the API docs we'll be using [can be found here](https://iexcloud.io/docs/api/).
 
@@ -129,7 +150,7 @@ Let's create a [JSONSchema](http://json-schema.org/) file `spec.json` encoding t
 
 We'll save this file in the root directory of our connector. Now we have the following files:
 
-```text
+```bash
 $ ls -1
 Dockerfile
 NEW_SOURCE_CHECKLIST.md
@@ -202,12 +223,14 @@ if __name__ == "__main__":
     main()
 ```
 
-Some notes on the above code: 1. As described in the [specification](https://docs.airbyte.io/architecture/airbyte-specification#key-takeaways), Airbyte connectors are CLIs which communicate via stdout, so the output of the command is simply a JSON string formatted according to the Airbyte Specification. So to "return" a value we use `print` to output the return value to stdout.  
+Some notes on the above code: 
+
+1. As described in the [specification](https://docs.airbyte.io/architecture/airbyte-specification#key-takeaways), Airbyte connectors are CLIs which communicate via stdout, so the output of the command is simply a JSON string formatted according to the Airbyte Specification. So to "return" a value we use `print` to output the return value to stdout.
 2. All Airbyte commands can output log messages that take the form `{"type":"LOG", "log":"message"}`, so we create a helper method `log(message)` to allow logging.
 
 Now if we run `python source.py spec` we should see the specification printed out:
 
-```text
+```bash
 $ python source.py spec
 {"type": "SPEC", "spec": {"documentationUrl": "https://iexcloud.io/docs/api", "connectionSpecification": {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "required": ["stock_ticker", "api_key"], "additionalProperties": false, "properties": {"stock_ticker": {"type": "string", "title": "Stock Ticker", "description": "The stock ticker to track", "examples": ["AAPL", "TSLA", "AMZN"]}, "api_key": {"type": "string", "description": "The IEX Cloud API key to use to hit the API.", "airbyte_secret": true}}}}}
 ```
@@ -218,11 +241,15 @@ We've implemented the first command! Three more and we'll have a working connect
 
 The second command to implement is the [check operation](https://docs.airbyte.io/architecture/airbyte-specification#key-takeaways) `check --config <config_name>`, which tells the user whether a config file they gave us is correct. In our case, "correct" means they input a valid stock ticker and a correct API key like we declare via the `spec` operation.
 
-To achieve this, we'll: 1. Create valid and invalid configuration files to test the success and failure cases with our connector. We'll place config files in the `secrets/` directory which is gitignored everywhere in the Airbyte monorepo by default to avoid accidentally checking in API keys. 2. Add a `check` method which calls the IEX Cloud API to verify if the provided token & stock ticker are correct and output the correct airbyte message 3. Extend the argument parser to recognize the `check --config <config>` command and call the `check` method when the `check` command is invoked
+To achieve this, we'll: 
+
+1. Create valid and invalid configuration files to test the success and failure cases with our connector. We'll place config files in the `secrets/` directory which is gitignored everywhere in the Airbyte monorepo by default to avoid accidentally checking in API keys.
+2. Add a `check` method which calls the IEX Cloud API to verify if the provided token & stock ticker are correct and output the correct airbyte message.
+3. Extend the argument parser to recognize the `check --config <config>` command and call the `check` method when the `check` command is invoked.
 
 Let's first add the configuration files:
 
-```text
+```bash
 $ mkdir secrets
 $ echo '{"api_key": "<put_your_key_here>", "stock_ticker": "TSLA"}' > secrets/valid_config.json
 $ echo '{"api_key": "not_a_real_key", "stock_ticker": "TSLA"}' > secrets/invalid_config.json
@@ -324,7 +351,7 @@ def run(args):
 
 and that should be it. Let's test our new method:
 
-```text
+```bash
 $ python source.py check --config secrets/valid_config.json
 {'type': 'CONNECTION_STATUS', 'connectionStatus': {'status': 'SUCCEEDED'}}
 $ python source.py check --config secrets/invalid_config.json
@@ -339,7 +366,10 @@ The `discover` command, described in the [Airbyte Specification](https://docs.ai
 
 The data output by this connector will be structured in a very simple way. This connector outputs records belonging to exactly one Stream \(table\). Each record contains three Fields \(columns\): `date`, `price`, and `stock_ticker`, corresponding to the price of a stock on a given day.
 
-To implement `discover`, we'll: 1. Add a method `discover` in `source.py` which outputs the Catalog. To better understand what a catalog is, check out our [Beginner's Guide to the AirbyteCatalog](beginners-guide-to-catalog.md). 2. Extend the arguments parser to use detect the `discover --config <config_path>` command and call the `discover` method.
+To implement `discover`, we'll: 
+
+1. Add a method `discover` in `source.py` which outputs the Catalog. To better understand what a catalog is, check out our [Beginner's Guide to the AirbyteCatalog](beginners-guide-to-catalog.md).
+2. Extend the arguments parser to use detect the `discover --config <config_path>` command and call the `discover` method.
 
 Let's implement `discover` by adding the following in `source.py`:
 
@@ -443,7 +473,7 @@ With that, we're done implementing the `discover` command.
 
 We've done a lot so far, but a connector ultimately exists to read data! This is where the [`read` command](https://docs.airbyte.io/architecture/airbyte-specification#read) comes in. The format of the command is:
 
-```text
+```bash
 $ python source.py read --config <config_file_path> --catalog <configured_catalog.json> [--state <state_file_path>]
 ```
 
@@ -454,7 +484,11 @@ Each of these are described in the Airbyte Specification in detail, but we'll gi
 
 For our connector, the contents of those two files should be very unsurprising: the connector only supports on Stream, `stock_prices`, so we'd expect the input catalog to contain that stream configured to sync in full refresh. Since our connector doesn't support incremental sync \(yet!\) we'll ignore the state option for now.
 
-To read data in our connector, we'll: 1. Create a configured catalog which tells our connector that we want to sync the `stock_prices` stream 2. Implement a method `read` in `source.py`. For now we'll always read the last 7 days of a stock price's data. 3. Extend the arguments parser to recognize the `read` command and its arguments.
+To read data in our connector, we'll:
+
+1. Create a configured catalog which tells our connector that we want to sync the `stock_prices` stream.
+2. Implement a method `read` in `source.py`. For now we'll always read the last 7 days of a stock price's data.
+3. Extend the arguments parser to recognize the `read` command and its arguments.
 
 First, let's create a configured catalog `fullrefresh_configured_catalog.json` to use as test input for the read operation:
 
@@ -612,7 +646,7 @@ def run(args):
 
 Let's test out our new command:
 
-```text
+```bash
 $ python source.py read --config secrets/valid_config.json --catalog fullrefresh_configured_catalog.json
 {'type': 'RECORD', 'record': {'stream': 'stock_prices', 'data': {'date': '2020-12-15', 'stock_ticker': 'TSLA', 'price': 633.25}, 'emitted_at': 1608626365000}}
 {'type': 'RECORD', 'record': {'stream': 'stock_prices', 'data': {'date': '2020-12-16', 'stock_ticker': 'TSLA', 'price': 622.77}, 'emitted_at': 1608626365000}}
@@ -841,19 +875,19 @@ LABEL io.airbyte.version=0.1.0
 
 Once we save the `Dockerfile`, we can build the image by running:
 
-```text
+```bash
 $ docker build . -t airbyte/source-stock-ticker-api:dev
 ```
 
 Then we can run the image using:
 
-```text
+```bash
 docker run airbyte/source-stock-ticker-api:dev
 ```
 
 to run any of our commands, we'll need to mount all the inputs into the Docker container first, then refer to their _mounted_ paths when invoking the connector. For example, we'd run `check` or `read` as follows:
 
-```text
+```bash
 $ docker run airbyte/source-stock-ticker-api:dev spec
 {"type": "SPEC", "spec": {"documentationUrl": "https://iexcloud.io/docs/api", "connectionSpecification": {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "required": ["stock_ticker", "api_key"], "additionalProperties": false, "properties": {"stock_ticker": {"type": "string", "title": "Stock Ticker", "description": "The stock ticker to track", "examples": ["AAPL", "TSLA", "AMZN"]}, "api_key": {"type": "string", "description": "The IEX Cloud API key to use to hit the API.", "airbyte_secret": true}}}}}
 
@@ -901,7 +935,7 @@ dependencies {
 
 Then **from the Airbyte repository root**, run:
 
-```text
+```bash
 $ ./gradlew :airbyte-integrations:connectors:source-stock-ticker-api:integrationTest
 ```
 
@@ -927,18 +961,25 @@ That's it! We've created a fully functioning connector. Now let's get to the exc
 
 ### Use the connector in the Airbyte UI
 
-Let's recap what we've achieved so far: 1. Implemented a connector 2. Packaged it in a Docker image 3. Integrated it with the Airbyte Standard Test suite
+Let's recap what we've achieved so far: 
 
-To use it from the Airbyte UI, we need to: 1. Publish our connector's Docker image somewhere accessible by Airbyte Core \(Airbyte's server, scheduler, workers, and webapp infrastructure\).  
-2. Add the connector via the Airbyte UI and setup a connection from our new connector to a local CSV file for illustration purposes 3. Run a sync and inspect the output
+1. Implemented a connector
+2. Packaged it in a Docker image
+3. Integrated it with the Airbyte Standard Test suite
+
+To use it from the Airbyte UI, we need to:
+
+1. Publish our connector's Docker image somewhere accessible by Airbyte Core \(Airbyte's server, scheduler, workers, and webapp infrastructure\).
+2. Add the connector via the Airbyte UI and setup a connection from our new connector to a local CSV file for illustration purposes.
+3. Run a sync and inspect the output.
 
 #### 1. Publish the Docker image
 
-Since we're running this tutorial locally, Airbyte will have access to any Docker images available to your local `docker` daemon. So all we need to do is build & tag our connector. If you want your connector to be available to everyone using Airbyte, you'll need to publish it to Dockerhub. [Open a PR](https://github.com/airbytehq/airbyte) or visit our [Slack](https://slack.airbyte.io) for help with this.
+Since we're running this tutorial locally, Airbyte will have access to any Docker images available to your local `docker` daemon. So all we need to do is build & tag our connector. If you want your connector to be available to everyone using Airbyte, you'll need to publish it to `Dockerhub`. [Open a PR](https://github.com/airbytehq/airbyte) or visit our [Slack](https://slack.airbyte.io) for help with this.
 
 Airbyte's build system builds and tags your connector's image correctly by default as part of the connector's standard `build` process. **From the Airbyte repo root**, run:
 
-```text
+```bash
 $ ./gradlew :airbyte-integrations:connectors:source-stock-ticker-api:build
 ```
 
@@ -946,7 +987,7 @@ This is the equivalent of running `docker build . -t airbyte/source-stock-ticker
 
 Verify the image was built by running:
 
-```text
+```bash
 $  docker images | head
   REPOSITORY                                                    TAG                 IMAGE ID       CREATED          SIZE
   airbyte/source-stock-ticker-api                               dev                 9494ea93b7d0   16 seconds ago   121MB
@@ -965,7 +1006,7 @@ If the Airbyte server isn't already running, start it by running **from the Airb
 $ docker-compose up
 ```
 
-Then visiting `locahost:8000` in your browser once Airbyte has started up \(it can take 10-20 seconds for the server to start\).
+Then visiting [locahost:8000](http://localhost:8000) in your browser once Airbyte has started up \(it can take 10-20 seconds for the server to start\).
 
 In the UI, click the "Admin" button in the left side bar:
 
@@ -975,15 +1016,25 @@ Then on the admin page, click "New Connector":
 
 ![](../.gitbook/assets/newsourcetutorial_admin_page.png)
 
-On the modal that pops up, enter the following information then click "Add" ![](../.gitbook/assets/newsourcetutorial_new_connector_modal.png)
+On the modal that pops up, enter the following information then click "Add" 
 
-Now from the "Sources" page \(if not redirected, click "Sources" on the left panel\) , click the "New source" button. You'll be taken to the detail page for adding a new source. Choose the "Stock Ticker API" source and add the following information, then click "Set up source": ![](../.gitbook/assets/newsourcetutorial_source_config.png)
+![](../.gitbook/assets/newsourcetutorial_new_connector_modal.png)
 
-on the following page, click the "add destination" button then "add new destination": ![](../.gitbook/assets/newsourcetutorial_add_destination.png)
+Now from the "Sources" page \(if not redirected, click "Sources" on the left panel\) , click the "New source" button. You'll be taken to the detail page for adding a new source. Choose the "Stock Ticker API" source and add the following information, then click "Set up source": 
 
-Configure a local JSON destination as follows: ![](../.gitbook/assets/newsourcetutorial_destination_config.png) Note that we setup the output directory to `/local/tutorial_json`. When we run syncs, we'll find the output on our local filesystem in `/tmp/airbyte_local/tutorial_json`.
+![](../.gitbook/assets/newsourcetutorial_source_config.png)
 
-Finally, setup the connection configuration: ![](../.gitbook/assets/newsourcetutorial_schema_select.png)
+on the following page, click the "add destination" button then "add new destination": 
+
+![](../.gitbook/assets/newsourcetutorial_add_destination.png)
+
+Configure a local JSON destination as follows:  Note that we setup the output directory to `/local/tutorial_json`. When we run syncs, we'll find the output on our local filesystem in `/tmp/airbyte_local/tutorial_json`.
+
+![](../.gitbook/assets/newsourcetutorial_destination_config.png)
+
+Finally, setup the connection configuration: 
+
+![](../.gitbook/assets/newsourcetutorial_schema_select.png)
 
 We'll choose the "manual" frequency, meaning we need to launch each sync by hand.
 
@@ -1001,7 +1052,7 @@ If you click on the connector row, you should be taken to the sync detail page. 
 
 Let's verify the output. From your shell, run:
 
-```text
+```bash
 $ airbyte_local cat /tmp/airbyte_local/tutorial_json/stock_prices_raw.jsonl
   {"ab_id":"5fd36107-6a79-4d64-ab36-900184b3848c","emitted_at":1608877192000,"data":{"date":"2020-12-18","stock_ticker":"TSLA","price":695}}
   {"ab_id":"8109396a-e3b9-4ada-b527-2f539c9e016e","emitted_at":1608877192000,"data":{"date":"2020-12-21","stock_ticker":"TSLA","price":649.86}}
@@ -1012,8 +1063,11 @@ $ airbyte_local cat /tmp/airbyte_local/tutorial_json/stock_prices_raw.jsonl
 
 Congratulations! We've successfully written a fully functioning Airbyte connector. You're an Airbyte contributor now ;\)
 
-Armed with the knowledge you gained in this guide, here are some places you can go from here:  
-1. Implement Incremental Sync for your connector \(described in the sections below\) 2. Implement another connector using the language specific helpers listed below 3. While not required, we love contributions! if you end up creating a new connector, we're here to help you make it available to everyone using Airybte. Remember that you're never expected to maintain a connector by yourself if you merge it to Airbyte -- we're committed to supporting connectors if you can't do it yourself.
+Armed with the knowledge you gained in this guide, here are some places you can go from here:
+
+1. Implement Incremental Sync for your connector \(described in the sections below\)
+2. Implement another connector using the language specific helpers listed below
+3. While not required, we love contributions! if you end up creating a new connector, we're here to help you make it available to everyone using Airbyte. Remember that you're never expected to maintain a connector by yourself if you merge it to Airbyte -- we're committed to supporting connectors if you can't do it yourself.
 
 ## Optional additions
 
