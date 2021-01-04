@@ -39,7 +39,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
-class PostgresDbSourceStandardTest extends JdbcSourceStandardTest {
+class PostgresStandardSourceTest extends JdbcSourceStandardTest {
 
   private static PostgreSQLContainer<?> PSQL_DB;
 

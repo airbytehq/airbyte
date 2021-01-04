@@ -52,7 +52,7 @@ import org.testcontainers.utility.MountableFile;
  * in source-postgres.
  */
 @Disabled
-class PostgresJdbcJdbcStressTest extends JdbcStressTest {
+class PostgresJdbcStressTest extends JdbcStressTest {
 
   private static PostgreSQLContainer<?> PSQL_DB;
 
