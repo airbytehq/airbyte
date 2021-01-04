@@ -22,23 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from setuptools import find_packages, setup
+from base_python_test import DefaultStandardSourceTest
 
-setup(
-    name="source-salesforce-singer",
-    description="Source implementation for Salesforce.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    package_data={"": ["*.json"]},
-    install_requires=[
-        "tap-salesforce==1.4.34",
-        "requests",
-        "airbyte-protocol",
-        "base-python",
-        "base-singer",
-    ],
-    setup_requires=["pytest-runner"],
-    tests_require=["pytest"],
-    extras_require={"main": ["base-singer"], "tests": ["airbyte_python_test", "pytest"]},
-)
+
+class SalesforceStandardSourceTest(DefaultStandardSourceTest):
+    pass

@@ -1,0 +1,46 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "LoginIp",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "Id": {
+              "type": "string"
+            },
+            "UsersId": {
+              "type": ["null", "string"]
+            },
+            "SourceIp": {
+              "type": ["null", "string"]
+            },
+            "CreatedDate": {
+              "anyOf": [
+                {"type": "string", "format": "date-time"},
+                {"type": ["string", "null"]}
+              ]
+            },
+            "IsAuthenticated": {
+              "type": ["null", "boolean"]
+            },
+            "ChallengeSentDate": {
+              "anyOf": [
+                {"type": "string", "format": "date-time"},
+                {"type": ["string", "null"]}
+              ]
+            },
+            "ChallengeMethod": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["CreatedDate"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["CreatedDate"]
+    }
+  ]
+}
