@@ -63,6 +63,12 @@ class AirbytePythonPlugin implements Plugin<Project> {
             outputs.file('build/installedreqs.txt')
         }
 
+        project.task('compileWheel', type: PythonTask, dependsOn: project.installReqs) {
+            command = "setup.py bdist_wheel --dist-dir build/wheels"
+            inputs.file('setup.py')
+            outputs.dir('build/wheels')
+        }
+
         project.task('installTestReqs', type: PythonTask, dependsOn: project.installReqs) {
             module = "pip"
             command = "install .[tests]"
@@ -106,6 +112,7 @@ class AirbytePythonPlugin implements Plugin<Project> {
 
         project.assemble.dependsOn project.airbytePythonApply
         project.assemble.dependsOn project.airbytePythonTest
+        project.assemble.dependsOn project.compileWheel
         project.test.dependsOn project.airbytePythonTest
     }
 }
