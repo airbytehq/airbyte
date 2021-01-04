@@ -90,6 +90,13 @@ jobs:
       - name: Run End-to-End Acceptance Tests
         run: ./tools/bin/acceptance_test.sh
 
+      - uses: debianmaster/actions-k3s@master
+        name : Run Kubernetes End-to-End Acceptance Tests
+        with:
+          version: 'v1.18.2-k3s1'
+      - run: |
+          ./tools/bin/acceptance_test_kube.sh
+
       - name: Push Core Docker Images
         if: success() && github.ref == 'refs/heads/master'
         run: |
