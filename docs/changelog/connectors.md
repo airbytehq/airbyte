@@ -2,7 +2,7 @@
 description: Do not miss the new connectors we support!
 ---
 
-# Connector Changelog
+# Connectors
 
 **You can request new connectors directly** [**here**](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=area%2Fintegration%2C+new-integration&template=new-integration-request.md&title=)**.**
 
@@ -61,7 +61,7 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 
 ## 10/30/2020
 
-**New sources:** [Salesforce](../integrations/sources/salesforce.md), [Google Analytics](../integrations/sources/googleanalytics.md), [Hubspot](../integrations/sources/hubspot.md), [GitHub](../integrations/sources/github.md), [Google Sheets](../integrations/sources/google-sheets.md), [Rest APIs](), and [MySQL](../integrations/sources/mysql.md)
+**New sources:** [Salesforce](../integrations/sources/salesforce.md), [Google Analytics](../integrations/sources/googleanalytics.md), [Hubspot](../integrations/sources/hubspot.md), [GitHub](../integrations/sources/github.md), [Google Sheets](../integrations/sources/google-sheets.md), [Rest APIs](connectors.md), and [MySQL](../integrations/sources/mysql.md)
 
 ## 10/21/2020
 

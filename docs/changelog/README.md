@@ -1,4 +1,4 @@
-# Releases
+# Changelog
 
 ## Airbyte Core Releases
 
@@ -43,3 +43,4 @@ If there is ever a feature that is only on the development version, and you need
 Each connector is tracked with its own version. These versions are separate from the versions of Airbyte Core. We generally will bump the version of a connector anytime we make a change to it. We rely on a large suite of tests to make sure that these changes do not cause regressions in our connectors.
 
 When we updated the version of a connector, we usually update the connector's version in Airbyte Core as well. Keep in mind that you might not see the updated version of that connector in the production version of Airbyte Core until after a production release of Airbyte Core.
+
