@@ -6,6 +6,7 @@ description: Building a toy source connector to illustrate Airbyte's main concep
 
 This tutorial walks you through building a simple Airbyte source to demonstrate the following concepts in Action: 
 * [The Airbyte Specification](../architecture/airbyte-specification.md) and the interface implemented by a source connector
+* [The AirbyteCatalog](beginners-guide-to-catalog.md)
 * [Packaging your connector](../contributing-to-airbyte/building-new-connector/README.md#1-implement--package-the-connector) 
 * [Testing your connector](../contributing-to-airbyte/building-new-connector/testing-connectors.md)
 
@@ -321,7 +322,7 @@ def run(args):
     sys.exit(0)
 ```
 
-and that should be it. Let's test our new method method: 
+and that should be it. Let's test our new method:
 
 ```shell
 $ python source.py check --config secrets/valid_config.json
@@ -333,12 +334,12 @@ $ python source.py check --config secrets/invalid_config.json
 Our connector is able to detect valid and invalid configs correctly. Two methods down, two more to go!
 
 #### Implementing Discover
-The `discover` command, described in the [Airbyte Specification](https://docs.airbyte.io/architecture/airbyte-specification#discover), ouputs a Catalog, a struct which declares the Streams and Fields (Airbyte's equivalents of tables and columns) output by the connector and the sync modes they support. For more information on those concepts, see [Airbyte Specification](../architecture/airbyte-specification.md). For this tutorial, we'll assume familiarity with those concepts. 
+The `discover` command, described in the [Airbyte Specification](https://docs.airbyte.io/architecture/airbyte-specification#discover), outputs a Catalog, a struct which declares the Streams and Fields (Airbyte's equivalents of tables and columns) output by the connector and the sync modes they support. For more information on those concepts, see [Airbyte Specification](../architecture/airbyte-specification.md). For this tutorial, we'll assume familiarity with those concepts.
 
 The data output by this connector will be structured in a very simple way. This connector outputs records belonging to exactly one Stream (table). Each record contains three Fields (columns): `date`, `price`, and `stock_ticker`, corresponding to the price of a stock on a given day.  
 
 To implement `discover`, we'll: 
-1. Add a method `discover` in `source.py` which outputs the Catalog
+1. Add a method `discover` in `source.py` which outputs the Catalog. To better understand what a catalog is, check out our [Beginner's Guide to the AirbyteCatalog](beginners-guide-to-catalog.md).
 2. Extend the arguments parser to use detect the `discover --config <config_path>` command and call the `discover` method. 
 
 Let's implement `discover` by adding the following in `source.py`: 
