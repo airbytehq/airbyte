@@ -76,7 +76,7 @@ Our shared resources are in the `kube/resources` directory, and we define overla
 
 Example `kustomization.yaml` file:
 
-```text
+```yaml
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
@@ -102,7 +102,7 @@ See the documentation for [`kubectl cp`](https://kubernetes.io/docs/reference/ge
 
 If you're developing using a local context and are not using your local Kubernetes instance for anything else, you can iterate with the following series of commands.
 
-```text
+```bash
 ./gradlew composeBuild # build dev images
 kubectl delete -k kube/overlays/dev # optional, if you want to try recreating resources
 kubectl apply -k kube/overlays/dev # applies manifests
@@ -114,7 +114,7 @@ Note: this does not remove jobs and pods created for Airbyte workers.
 
 If you are in a dev environment on a local cluster only running Airbyte and want to start completely from scratch, you can use the following command to destroy everything on the cluster:
 
-```text
+```bash
 # BE CAREFUL, THIS COMMAND DELETES ALL RESOURCES, EVEN NON-AIRBYTE ONES!
 kubectl delete "$(kubectl api-resources --namespaced=true --verbs=delete -o name | tr "\n" "," | sed -e 's/,$//')" --all
 ```
@@ -125,13 +125,13 @@ The process is similar to developing on a local cluster, except you will need to
 
 ## Listing Files
 
-```text
+```bash
 kubectl exec -it airbyte-scheduler-6b5747df5c-bj4fx ls /tmp/workspace/8
 ```
 
 ## Reading Files
 
-```text
+```bash
 kubectl exec -it airbyte-scheduler-6b5747df5c-bj4fx cat /tmp/workspace/8/0/logs.log
 ```
 
