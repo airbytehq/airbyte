@@ -35,7 +35,7 @@ On some systems, `python` points to a Python2 installation and `python3` points 
 
 Our connector will output the daily price of a stock since a given date. We'll leverage the free [IEX Cloud API](https://iexcloud.io/docs/api/) for this. We'll use Python to implement the connector because its syntax is accessible to most programmers, but the process described here can be applied to any language.
 
-Here's the outline of what we'll do to build our connector: 
+Here's the outline of what we'll do to build our connector:
 
 1. Use the Airbyte connector template to bootstrap the connector package
 2. Implement the methods required by the Airbyte Specification for our connector: 
@@ -77,7 +77,7 @@ $ npm install
 $ npm run generate
 ```
 
-We'll select the generic template and call the connector `stock-ticker-api`: 
+We'll select the generic template and call the connector `stock-ticker-api`:
 
 ![](../.gitbook/assets/newsourcetutorial_plop.gif)
 
@@ -103,7 +103,7 @@ $ touch source.py
 
 #### Implement the spec operation
 
-At this stage in the tutorial, we just want to implement the `spec` operation as described in the [Airbyte Protocol](https://docs.airbyte.io/architecture/airbyte-specification#spec). This involves a couple of steps: 
+At this stage in the tutorial, we just want to implement the `spec` operation as described in the [Airbyte Protocol](https://docs.airbyte.io/architecture/airbyte-specification#spec). This involves a couple of steps:
 
 1. Decide which inputs we need from the user in order to connect to the stock ticker API i.e: the connector's specification, and encode it as a JSON file.
 2. Identify when the connector has been invoked with the `spec` operation and return the specification as an `AirbyteMessage`
@@ -223,7 +223,7 @@ if __name__ == "__main__":
     main()
 ```
 
-Some notes on the above code: 
+Some notes on the above code:
 
 1. As described in the [specification](https://docs.airbyte.io/architecture/airbyte-specification#key-takeaways), Airbyte connectors are CLIs which communicate via stdout, so the output of the command is simply a JSON string formatted according to the Airbyte Specification. So to "return" a value we use `print` to output the return value to stdout.
 2. All Airbyte commands can output log messages that take the form `{"type":"LOG", "log":"message"}`, so we create a helper method `log(message)` to allow logging.
@@ -241,7 +241,7 @@ We've implemented the first command! Three more and we'll have a working connect
 
 The second command to implement is the [check operation](https://docs.airbyte.io/architecture/airbyte-specification#key-takeaways) `check --config <config_name>`, which tells the user whether a config file they gave us is correct. In our case, "correct" means they input a valid stock ticker and a correct API key like we declare via the `spec` operation.
 
-To achieve this, we'll: 
+To achieve this, we'll:
 
 1. Create valid and invalid configuration files to test the success and failure cases with our connector. We'll place config files in the `secrets/` directory which is gitignored everywhere in the Airbyte monorepo by default to avoid accidentally checking in API keys.
 2. Add a `check` method which calls the IEX Cloud API to verify if the provided token & stock ticker are correct and output the correct airbyte message.
@@ -366,7 +366,7 @@ The `discover` command, described in the [Airbyte Specification](https://docs.ai
 
 The data output by this connector will be structured in a very simple way. This connector outputs records belonging to exactly one Stream \(table\). Each record contains three Fields \(columns\): `date`, `price`, and `stock_ticker`, corresponding to the price of a stock on a given day.
 
-To implement `discover`, we'll: 
+To implement `discover`, we'll:
 
 1. Add a method `discover` in `source.py` which outputs the Catalog. To better understand what a catalog is, check out our [Beginner's Guide to the AirbyteCatalog](beginners-guide-to-catalog.md).
 2. Extend the arguments parser to use detect the `discover --config <config_path>` command and call the `discover` method.
@@ -961,7 +961,7 @@ That's it! We've created a fully functioning connector. Now let's get to the exc
 
 ### Use the connector in the Airbyte UI
 
-Let's recap what we've achieved so far: 
+Let's recap what we've achieved so far:
 
 1. Implemented a connector
 2. Packaged it in a Docker image
@@ -1016,23 +1016,23 @@ Then on the admin page, click "New Connector":
 
 ![](../.gitbook/assets/newsourcetutorial_admin_page.png)
 
-On the modal that pops up, enter the following information then click "Add" 
+On the modal that pops up, enter the following information then click "Add"
 
 ![](../.gitbook/assets/newsourcetutorial_new_connector_modal.png)
 
-Now from the "Sources" page \(if not redirected, click "Sources" on the left panel\) , click the "New source" button. You'll be taken to the detail page for adding a new source. Choose the "Stock Ticker API" source and add the following information, then click "Set up source": 
+Now from the "Sources" page \(if not redirected, click "Sources" on the left panel\) , click the "New source" button. You'll be taken to the detail page for adding a new source. Choose the "Stock Ticker API" source and add the following information, then click "Set up source":
 
 ![](../.gitbook/assets/newsourcetutorial_source_config.png)
 
-on the following page, click the "add destination" button then "add new destination": 
+on the following page, click the "add destination" button then "add new destination":
 
 ![](../.gitbook/assets/newsourcetutorial_add_destination.png)
 
-Configure a local JSON destination as follows:  Note that we setup the output directory to `/local/tutorial_json`. When we run syncs, we'll find the output on our local filesystem in `/tmp/airbyte_local/tutorial_json`.
+Configure a local JSON destination as follows: Note that we setup the output directory to `/local/tutorial_json`. When we run syncs, we'll find the output on our local filesystem in `/tmp/airbyte_local/tutorial_json`.
 
 ![](../.gitbook/assets/newsourcetutorial_destination_config.png)
 
-Finally, setup the connection configuration: 
+Finally, setup the connection configuration:
 
 ![](../.gitbook/assets/newsourcetutorial_schema_select.png)
 
