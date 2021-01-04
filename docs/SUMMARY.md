@@ -6,6 +6,7 @@
   * [Postgres Replication](tutorials/postgres-replication.md)
   * [Config & Persistence](tutorials/airbyte-config-persistence.md)
   * [Building a toy connector](tutorials/toy-connector.md)
+  * [Beginner's Guide to the AirbyteCatalog](tutorials/beginners-guide-to-catalog.md)
 * [Changelog](changelog.md)
   * [Releases](deploying-airbyte/releases.md)
 * [Roadmap](roadmap.md)
