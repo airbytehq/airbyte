@@ -25,8 +25,8 @@ SOFTWARE.
 import json
 
 import requests
-from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, Status
-from base_python import AirbyteLogger, CatalogHelper
+from airbyte_protocol import AirbyteConnectionStatus, Status
+from base_python import AirbyteLogger
 from base_singer import SingerSource
 
 
