@@ -1,80 +1,46 @@
----
-description: Be sure to not miss out on new features and improvements!
----
-
 # Changelog
 
-This is the changelog for Airbyte core. For our connector changelog, please visit our [Connector Changelog](../integrations/integrations-changelog.md) page.
+## Airbyte Core Releases
 
-If you're interested in our progress on the Airbyte platform, please read below!
+Airbyte Core is any non-connector code. This includes the scheduler, workers, api, web app, and the Airbyte protocol.
 
-## 0.8.0 - delivered on 12/17/2020
+### Production v. Dev Releases
 
-* **Incremental - Append"**
-  * We now allow sources to replicate only new or modified data. This enables to avoid re-fetching data that you have already replicated from a source. 
-  * The delta from a sync will be _appended_ to the existing data in the data warehouse.
-  * Here are [all the details of this feature](../architecture/incremental.md).
-  * It has been released for 15 connectors, including Postgres, MySQL, Intercom, Zendesk, Stripe, Twilio, Marketo, Shopify, GitHub, and all the destination connectors. We will expand it to all the connectors in the next couple of weeks.
-* **Other features:**
-  * Improve interface for writing python sources \(should make writing new python sources easier and clearer\).
-  * Add support for running Standard Source Tests with files \(making them easy to run for any language a source is written in\)
-  * Add ability to reset data for a connection.
-* **Bug fixes:**
-  * Update version of test containers we use to avoid pull issues while running tests.
-  * Fix issue where jobs were not sorted by created at in connection detail view.
-* **New sources:** Intercom, Mixpanel, Jira Cloud, Zoom, Drift, Microsoft Teams
+The "production" version of Airbyte is the version of the app specified in `.env`. With each production release, we update the version in the `.env` file. This version will always be available for download on DockerHub. It is the version of the app that runs when a user runs `docker-compose up`.
 
-## 0.7.0 - delivered on 12/07/2020
+The "development" version of Airbyte is the head of master branch. It is the version of the app that runs when a user runs `docker-compose --env-file .env.dev -f docker-compose.yaml -f docker-compose.dev.yaml up`.
 
-* **New destination:** our own **Redshift** warehouse connector. You can also use this connector for Panoply.
-* **New sources**: 8 additional source connectors including Recurly, Twilio, Freshdesk. Greenhouse, Redshift \(source\), Braintree, Slack, Zendesk Support
-* Bug fixes
+### Production Release Schedule
 
-## 0.6.0 - delivered on 11/23/2020
+#### Scheduled Releases
 
-* Support **multiple destinations** 
-* **New source:** Sendgrid
-* Support **basic normalization**
-* Bug fixes
+Airbyte currently releases a new minor version of the application on a weekly basis. Generally this weekly release happens on Monday or Tuesday.
 
-## 0.5.0 - delivered on 11/18/2020
+#### Hotfixes
 
-* **New sources:** 10 additional source connectors, including Files \(CSV, HTML, JSON...\), Shopify, MSSQL, Mailchimp
+Airbyte releases a new version whenever it discovers and fixes a bug that blocks any mission critical functionality.
 
-## 0.4.0 - delivered on 11/04/2020
+**Mission Critical**
 
-Here is what we are working on right now:
+e.g. Non-ASCII characters break the Salesforce source.
 
-* **New destination**: our own **Snowflake** warehouse connector
-* **New sources:** Facebook Ads, Google Ads.
+**Non-Mission Critical**
 
-## 0.3.0 - delivered on 10/30/2020
+e.g. Buttons in the UI are offset.
 
-* **New sources:** Salesforce, GitHub, Google Sheets, Google Analytics, Hubspot, Rest APIs, and MySQL
-* Integration test suite for sources
-* Improve build speed
+#### Unscheduled Releases
 
-## 0.2.0 - delivered on 10/21/2020
+We will often release more frequently than the weekly cadence if we complete a feature that we know that a user is waiting on.
 
-* **a new Admin section** to enable users to add their own connectors, in addition to upgrading the ones they currently use 
-* improve the developer experience \(DX\) for **contributing new connectors** with additional documentation and a connector protocol 
-* our own **BigQuery** warehouse connector 
-* our own **Postgres** warehouse connector 
-* simplify the process of supporting new Singer taps, ideally make it a 1-day process
+### Development Release Schedule
 
-## 0.1.0 - delivered on 09/23/2020
+As soon as a feature is on master, it is part of the development version of Airbyte. We merge features as soon as they are ready to go \(have been code reviewed and tested\). We attempt to keep the development version of the app working all the time. We are iterating quickly, however, and there may be intermittent periods where the development version is broken.
 
-This is our very first release after 2 months of work.
+If there is ever a feature that is only on the development version, and you need it on the production version, please let us know. We are very happy to do ad-hoc production releases if it unblocks a specific need for one of our users.
 
-* **New sources:** Stripe, Postgres
-* **New destinations:** BigQuery, Postgres
-* **Only one destination**: we only support one destination in that 1st release, but you will soon be able to add as many as you need. 
-* **Logs & monitoring**: you can now see your detailed logs
-* **Scheduler:** you now have 10 different frequency options for your recurring syncs
-* **Deployment:** you can now deploy Airbyte via a simple Docker image, or directly on AWS and GCP
-* **New website**: this is the day we launch our website - airbyte.io. Let us know what you think
-* **New documentation:** this is the 1st day for our documentation too
-* **New blog:** we published a few articles on our startup journey, but also about our vision to making data integrations a commodity. 
+## Airbyte Connector Releases
 
-Stay tuned, we will have new sources and destinations very soon! Don't hesitate to subscribe to our [newsletter](https://airbyte.io/#subscribe-newsletter) to receive our product updates and community news.
+Each connector is tracked with its own version. These versions are separate from the versions of Airbyte Core. We generally will bump the version of a connector anytime we make a change to it. We rely on a large suite of tests to make sure that these changes do not cause regressions in our connectors.
+
+When we updated the version of a connector, we usually update the connector's version in Airbyte Core as well. Keep in mind that you might not see the updated version of that connector in the production version of Airbyte Core until after a production release of Airbyte Core.
 
