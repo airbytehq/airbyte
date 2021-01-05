@@ -15,11 +15,11 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 
 ## 12/30/2020
 
-**New source:** [Plaid](sources/plaid.md) \(contributed by [tgiardina](https://github.com/tgiardina)\)
+**New sources:** [Plaid](../integrations/sources/plaid.md) \(contributed by [tgiardina](https://github.com/tgiardina)\), [Looker](../integrations/sources/looker.md)
 
 ## 12/18/2020
 
-**New sources:** [Drift](sources/drift.md), [Microsoft Teams](sources/microsoft-teams.md)
+**New sources:** [Drift](../integrations/sources/drift.md), [Microsoft Teams](../integrations/sources/microsoft-teams.md)
 
 ## 12/10/2020
 
