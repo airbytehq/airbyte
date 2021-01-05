@@ -15,12 +15,27 @@ kubectl apply -k kube/overlays/dev
 
 sleep 2m
 
-kubectl get pods
-kubectl describe pods
-kubectl logs svc/airbyte-server-svc
 
 echo "Waiting for server to be ready..."
+echo "============"
+echo "============"
+echo "============"
+echo "============"
 kubectl wait --for=condition=Available deployment/airbyte-server --timeout=200s
+kubectl get pods
+kubectl describe pods
+echo "============"
+echo "============"
+echo "============"
+echo "============"
+kubectl wait --for=condition=Available deployment/airbyte-scheduler --timeout=200s
+
+kubectl get pods
+kubectl describe pods
+echo "============"
+echo "============"
+echo "============"
+echo "============"
 
 kubectl port-forward svc/airbyte-server-svc 8001:8001 &
 
