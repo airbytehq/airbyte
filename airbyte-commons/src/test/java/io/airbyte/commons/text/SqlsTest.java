@@ -22,34 +22,32 @@
  * SOFTWARE.
  */
 
-package io.airbyte.scheduler;
+package io.airbyte.commons.text;
 
-import com.google.common.base.Preconditions;
-import io.airbyte.config.JobConfig;
+import static io.airbyte.commons.text.Sqls.toSqlName;
 
-public class ScopeHelper {
+import com.google.common.collect.Lists;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-  private static final String SCOPE_DELIMITER = ":";
+class SqlsTest {
 
-  public static String getScopePrefix(JobConfig.ConfigType configType) {
-    return configType.value();
+  enum E1 {
+    VALUE_1,
+    VALUE_TWO,
+    value_three,
   }
 
-  public static String createScope(JobConfig.ConfigType configType, String configId) {
-    Preconditions.checkNotNull(configType);
-    Preconditions.checkNotNull(configId);
-    return getScopePrefix(configType) + SCOPE_DELIMITER + configId;
+  @Test
+  void testToSqlName() {
+    Assertions.assertEquals("value_1", toSqlName(E1.VALUE_1));
+    Assertions.assertEquals("value_two", toSqlName(E1.VALUE_TWO));
+    Assertions.assertEquals("value_three", toSqlName(E1.value_three));
   }
 
-  public static String getConfigId(String scope) {
-    Preconditions.checkNotNull(scope);
-
-    final String[] split = scope.split(SCOPE_DELIMITER);
-    if (split.length <= 1) {
-      return "";
-    } else {
-      return split[1];
-    }
+  @Test
+  void testInFragment() {
+    Assertions.assertEquals("('value_two','value_three')", Sqls.toSqlInFragment(Lists.newArrayList(E1.VALUE_TWO, E1.value_three)));
   }
 
 }
