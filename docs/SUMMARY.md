@@ -68,7 +68,6 @@
   * [Full Refresh](architecture/full-refresh.md)
   * [High-level View](architecture/high-level-view.md)
   * [Incremental](architecture/incremental.md)
-  * [Job Scheduling](architecture/job-scheduling.md)
   * [Workers & Jobs](architecture/jobs.md)
   * [Technical Stack](architecture/tech-stack.md)
 * [Contributing to Airbyte](contributing-to-airbyte/README.md)
