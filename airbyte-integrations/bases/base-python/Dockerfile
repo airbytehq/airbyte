@@ -3,7 +3,6 @@ COPY --from=airbyte/integration-base:dev /airbyte /airbyte
 
 WORKDIR /airbyte/base_python_code
 COPY base_python ./base_python
-COPY /build/wheels/* ./build/wheels/
 COPY setup.py ./
 RUN pip install .
 
