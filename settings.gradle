@@ -55,4 +55,3 @@ integrationsPath.eachDir { dir ->
         include ":airbyte-integrations:connectors:${dir.getFileName()}"
     }
 }
-

@@ -52,10 +52,8 @@ public class DefaultSyncJobFactory implements SyncJobFactory {
   public Long create(final UUID connectionId) {
     try {
       final StandardSync standardSync = configRepository.getStandardSync(connectionId);
-      final SourceConnection sourceConnection =
-          configRepository.getSourceConnection(standardSync.getSourceId());
-      final DestinationConnection destinationConnection =
-          configRepository.getDestinationConnection(standardSync.getDestinationId());
+      final SourceConnection sourceConnection = configRepository.getSourceConnection(standardSync.getSourceId());
+      final DestinationConnection destinationConnection = configRepository.getDestinationConnection(standardSync.getDestinationId());
 
       final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
       final StandardDestinationDefinition destinationDefinition =
@@ -70,7 +68,8 @@ public class DefaultSyncJobFactory implements SyncJobFactory {
           destinationConnection,
           standardSync,
           sourceImageName,
-          destinationImageName);
+          destinationImageName)
+          .orElseThrow(() -> new IllegalStateException("We shouldn't be trying to create a new sync job if there is one running already."));
 
     } catch (IOException | JsonValidationException | ConfigNotFoundException e) {
       throw new RuntimeException(e);

@@ -355,7 +355,8 @@ class SchedulerHandlerTest {
     when(configRepository.getStandardSync(standardSync.getConnectionId())).thenReturn(standardSync);
     when(configRepository.getSourceConnection(source.getSourceId())).thenReturn(source);
     when(configRepository.getDestinationConnection(destination.getDestinationId())).thenReturn(destination);
-    when(schedulerJobClient.createSyncJob(source, destination, standardSync, SOURCE_DOCKER_IMAGE, DESTINATION_DOCKER_IMAGE)).thenReturn(completedJob);
+    when(schedulerJobClient.createOrGetActiveSyncJob(source, destination, standardSync, SOURCE_DOCKER_IMAGE, DESTINATION_DOCKER_IMAGE))
+        .thenReturn(completedJob);
     when(completedJob.getScope()).thenReturn("cat:12");
     final JobConfig jobConfig = mock(JobConfig.class);
     when(completedJob.getConfig()).thenReturn(jobConfig);
@@ -367,7 +368,42 @@ class SchedulerHandlerTest {
     verify(configRepository).getStandardSync(standardSync.getConnectionId());
     verify(configRepository).getSourceConnection(standardSync.getSourceId());
     verify(configRepository).getDestinationConnection(standardSync.getDestinationId());
-    verify(schedulerJobClient).createSyncJob(source, destination, standardSync, SOURCE_DOCKER_IMAGE, DESTINATION_DOCKER_IMAGE);
+    verify(schedulerJobClient).createOrGetActiveSyncJob(source, destination, standardSync, SOURCE_DOCKER_IMAGE, DESTINATION_DOCKER_IMAGE);
+  }
+
+  @Test
+  void testResetConnection() throws JsonValidationException, IOException, ConfigNotFoundException {
+    final StandardSync standardSync = ConnectionHelpers.generateSyncWithSourceId(UUID.randomUUID());
+    final ConnectionIdRequestBody request = new ConnectionIdRequestBody().connectionId(standardSync.getConnectionId());
+    final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID()).withSourceId(standardSync.getSourceId());
+    final DestinationConnection destination = DestinationHelpers.generateDestination(UUID.randomUUID())
+        .withDestinationId(standardSync.getDestinationId());
+
+    when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
+        .thenReturn(new StandardSourceDefinition()
+            .withDockerRepository(SOURCE_DOCKER_REPO)
+            .withDockerImageTag(SOURCE_DOCKER_TAG)
+            .withSourceDefinitionId(source.getSourceDefinitionId()));
+    when(configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId()))
+        .thenReturn(new StandardDestinationDefinition()
+            .withDockerRepository(DESTINATION_DOCKER_REPO)
+            .withDockerImageTag(DESTINATION_DOCKER_TAG)
+            .withDestinationDefinitionId(destination.getDestinationDefinitionId()));
+    when(configRepository.getStandardSync(standardSync.getConnectionId())).thenReturn(standardSync);
+    when(configRepository.getSourceConnection(source.getSourceId())).thenReturn(source);
+    when(configRepository.getDestinationConnection(destination.getDestinationId())).thenReturn(destination);
+    when(schedulerJobClient.createOrGetActiveResetConnectionJob(destination, standardSync, DESTINATION_DOCKER_IMAGE)).thenReturn(completedJob);
+    when(completedJob.getScope()).thenReturn("cat:12");
+    final JobConfig jobConfig = mock(JobConfig.class);
+    when(completedJob.getConfig()).thenReturn(jobConfig);
+    when(jobConfig.getConfigType()).thenReturn(ConfigType.SYNC);
+
+    final JobInfoRead jobStatusRead = schedulerHandler.resetConnection(request);
+
+    assertEquals(io.airbyte.api.model.JobStatus.SUCCEEDED, jobStatusRead.getJob().getStatus());
+    verify(configRepository).getStandardSync(standardSync.getConnectionId());
+    verify(configRepository).getDestinationConnection(standardSync.getDestinationId());
+    verify(schedulerJobClient).createOrGetActiveResetConnectionJob(destination, standardSync, DESTINATION_DOCKER_IMAGE);
   }
 
   @Test
