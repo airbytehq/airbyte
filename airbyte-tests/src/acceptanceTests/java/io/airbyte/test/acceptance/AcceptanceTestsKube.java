@@ -53,20 +53,12 @@ import io.airbyte.api.client.model.SourceSchema;
 import io.airbyte.api.client.model.SyncMode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.persistence.PersistenceConstants;
-import java.io.FileReader;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.sql.SQLException;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVRecord;
+
 import org.junit.Before;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -74,6 +66,7 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.testcontainers.shaded.org.apache.commons.lang.RandomStringUtils;
 
 /**
  * These tests are a limited form of the tests in {@link AcceptanceTests}. They are only testing for
@@ -90,15 +83,7 @@ import org.junit.jupiter.api.TestMethodOrder;
 // e.g. We test that we can create a destination before we test whether we can sync data to it.
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AcceptanceTestsKube {
-
-  private static final String TABLE_NAME = "id_and_name";
-  private static final String STREAM_NAME = "public." + TABLE_NAME;
-  private static final String COLUMN_ID = "id";
-  private static final String COLUMN_NAME = "name";
-
-  private static final Path AIRBYTE_LOCAL_ROOT = Path.of("/tmp/airbyte_local");
-  private static final Path RELATIVE_PATH = Path.of("destination_csv/test");
-
+  private static final String OUTPUT_DIR = "/local/kube_test_output_" + RandomStringUtils.randomAlphabetic(5);
   private final AirbyteApiClient apiClient = new AirbyteApiClient(
       new ApiClient().setScheme("http")
           .setHost("localhost")
@@ -108,26 +93,19 @@ public class AcceptanceTestsKube {
   private List<UUID> sourceIds;
   private List<UUID> connectionIds;
   private List<UUID> destinationIds;
-  private Path outputDir;
-  private Path relativeDir;
 
   @Before
   public void before() {}
 
   @BeforeEach
-  public void setup() throws IOException {
+  public void setup() {
     sourceIds = Lists.newArrayList();
     connectionIds = Lists.newArrayList();
     destinationIds = Lists.newArrayList();
-
-    final Path outputRoot = Files.createTempDirectory(AIRBYTE_LOCAL_ROOT, "acceptance_test");
-    outputDir = outputRoot.resolve(RELATIVE_PATH);
-    // get the path that starts with acceptance_tests_<random string>/destination_csv/test.
-    relativeDir = outputRoot.getParent().relativize(outputDir);
   }
 
   @AfterEach
-  public void tearDown() throws ApiException, SQLException {
+  public void tearDown() throws ApiException {
     for (UUID sourceId : sourceIds) {
       deleteSource(sourceId);
     }
@@ -293,24 +271,7 @@ public class AcceptanceTestsKube {
   }
 
   private JsonNode getDestinationConfig() {
-    return Jsons.jsonNode(ImmutableMap.of("destination_path", Path.of("/local").resolve(relativeDir).toString()));
-  }
-
-  private List<JsonNode> retrieveCsvRecords(String streamName) throws Exception {
-    final Optional<Path> stream = Files.list(outputDir)
-        .filter(path -> path.getFileName().toString().toLowerCase().contains(adaptToCsvName(streamName)))
-        .findFirst();
-    assertTrue(stream.isPresent());
-
-    final FileReader in = new FileReader(stream.get().toFile());
-    final Iterable<CSVRecord> records = CSVFormat.DEFAULT
-        .withHeader("data")
-        .withFirstRecordAsHeader()
-        .parse(in);
-
-    return StreamSupport.stream(records.spliterator(), false)
-        .map(record -> Jsons.deserialize(record.toMap().get("data")))
-        .collect(Collectors.toList());
+    return Jsons.jsonNode(ImmutableMap.of("destination_path", OUTPUT_DIR));
   }
 
   private Map<Object, Object> getSourceConfig() {
