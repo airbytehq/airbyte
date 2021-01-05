@@ -45,7 +45,7 @@ class JobTest {
   }
 
   private static Job jobWithStatus(JobStatus jobStatus) {
-    return new Job(1L, null, null, null, jobStatus, 0L, 0L, 0L);
+    return new Job(1L, null, null, null, null, jobStatus, 0L, 0L, 0L);
   }
 
   @Test
@@ -61,7 +61,7 @@ class JobTest {
     final List<Attempt> attempts = Arrays.stream(attemptStatuses)
         .map(attemptStatus -> new Attempt(1L, 1L, null, null, attemptStatus, 0L, 0L, null))
         .collect(Collectors.toList());
-    return new Job(1L, null, null, attempts, null, 0L, 0L, 0L);
+    return new Job(1L, null, null, null, attempts, null, 0L, 0L, 0L);
   }
 
   @Test
