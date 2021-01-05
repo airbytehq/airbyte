@@ -36,6 +36,7 @@ import javax.annotation.Nullable;
 public class Job {
 
   private final long id;
+  private JobConfig.ConfigType configType;
   private final String scope;
   private final JobConfig config;
   private final JobStatus status;
@@ -45,6 +46,7 @@ public class Job {
   private final List<Attempt> attempts;
 
   public Job(final long id,
+             final JobConfig.ConfigType configType,
              final String scope,
              final JobConfig config,
              final List<Attempt> attempts,
@@ -53,6 +55,7 @@ public class Job {
              final long createdAtInSecond,
              final long updatedAtInSecond) {
     this.id = id;
+    this.configType = configType;
     this.scope = scope;
     this.config = config;
     this.attempts = attempts;
@@ -64,6 +67,10 @@ public class Job {
 
   public long getId() {
     return id;
+  }
+
+  public JobConfig.ConfigType getConfigType() {
+    return configType;
   }
 
   public String getScope() {
