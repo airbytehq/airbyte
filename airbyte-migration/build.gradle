@@ -22,6 +22,9 @@ dependencies {
 //    implementation project(":airbyte-json-validation")
 //    implementation project(':airbyte-protocol:models')
 //    implementation project(':airbyte-scheduler')
+
+    implementation project(':airbyte-json-validation')
+
     implementation 'net.sourceforge.argparse4j:argparse4j:0.8.1'
 }
 

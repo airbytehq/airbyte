@@ -25,6 +25,7 @@
 package io.airbyte.commons.io;
 
 import com.google.common.base.Charsets;
+import com.google.common.base.Preconditions;
 import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.File;
@@ -37,6 +38,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.commons.io.input.ReversedLinesFileReader;
 
 public class IOs {
@@ -62,6 +65,16 @@ public class IOs {
   public static String readFile(Path fullpath) {
     try {
       return Files.readString(fullpath, StandardCharsets.UTF_8);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static List<Path> listFiles(Path path) {
+    Preconditions.checkNotNull(path);
+
+    try (Stream<Path> files = Files.list(path)) {
+      return files.collect(Collectors.toList());
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

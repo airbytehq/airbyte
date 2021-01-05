@@ -1,26 +1,151 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2020 Airbyte
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package io.airbyte.migrate;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import io.airbyte.commons.io.IOs;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.lang.Exceptions;
+import io.airbyte.migrate.migrations.MigrationV0_11_0;
+import io.airbyte.migrate.migrations.MigrationV0_11_1;
+import io.airbyte.validation.json.JsonSchemaValidator;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.function.Consumer;
+import java.util.stream.BaseStream;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
 
 public class Migrate {
+  private static final String VERSION_FILE_NAME = "VERSION";
 
-  public void run(MigrateConfig migrateConfig) {
-    System.out.println("migrateConfig = " + migrateConfig);
+  private static final List<Migration> MIGRATIONS = ImmutableList.of(
+      new MigrationV0_11_0(),
+      new MigrationV0_11_1()
+  );
+
+  private final Path workspaceRoot;
+  private final JsonSchemaValidator jsonSchemaValidator;
+
+  public Migrate(Path workspaceRoot) {
+    this(workspaceRoot, new JsonSchemaValidator());
+  }
+
+  public Migrate(Path workspaceRoot, JsonSchemaValidator jsonSchemaValidator) {
+    this.workspaceRoot = workspaceRoot;
+    this.jsonSchemaValidator = jsonSchemaValidator;
+  }
+
+  public void run(MigrateConfig migrateConfig) throws IOException {
+    final Path initialInputPath = migrateConfig.getInputPath();
     // detect current version.
+    final String currentVersion = getCurrentVersion(initialInputPath);
     // detect desired version.
+    final String targetVersion = migrateConfig.getTargetVersion();
     // select migrations to run.
+    final int currentVersionIndex = MIGRATIONS.stream().map(Migration::getVersion).collect(Collectors.toList()).indexOf(currentVersion);
+    Preconditions.checkState(currentVersionIndex >= 0, "No migration found for current version: " + currentVersion);
+    final int targetVersionIndex = MIGRATIONS.stream().map(Migration::getVersion).collect(Collectors.toList()).indexOf(targetVersion);
+    Preconditions.checkState(targetVersionIndex >= 0, "No migration found for target version: " + targetVersion);
+    Preconditions.checkState(currentVersionIndex < targetVersionIndex, String
+        .format("Target version is not greater than the current version. current version: %s, target version: %s", currentVersion, targetVersion));
+
     // for each migration to run:
-    // run migration
-    // write output of each migration to disk.
+    Path inputPath = initialInputPath;
+    for (int i = currentVersionIndex + 1; i == targetVersionIndex; i++) {
+      // run migration
+      // write output of each migration to disk.
+      final Migration migration = MIGRATIONS.get(i);
+      final Path outputPath = runMigration(migration, inputPath);
+      IOs.writeFile(outputPath.resolve(VERSION_FILE_NAME), migration.getVersion());
+      inputPath = outputPath;
+    }
+
+    // write final output
+    Files.copy(inputPath, migrateConfig.getOutputPath());
+  }
+
+  @SuppressWarnings("UnstableApiUsage")
+  private Path runMigration(Migration migration, Path inputPath) throws IOException {
+    final Path outputDir = Files.createDirectory(workspaceRoot.resolve(migration.getVersion()));
+
+    final Map<String, Stream<JsonNode>> inputData = new HashMap<>();
+    final Map<String, RecordConsumer> outputData = new HashMap<>();
+
+    final List<Path> inputFilePaths = new ArrayList<>();
+    inputFilePaths.addAll(IOs.listFiles(inputPath.resolve("config")));
+//    inputFilePaths.addAll(IOs.listFiles(inputPath.resolve("jobs")));
+
+    for (final Path path : inputFilePaths) {
+      final String keyName = com.google.common.io.Files.getNameWithoutExtension(path.getFileName().toString());
+      if (!migration.getInputSchema().containsKey(keyName)) {
+        throw new IllegalArgumentException(String.format("Input data contains resource not declared in migration. resource: %s, declared resources: %s", keyName, migration.getInputSchema().keySet()));
+      }
+
+      final Stream<JsonNode> recordInputStream = Files.lines(path)
+          .map(Jsons::deserialize)
+          .peek(r -> Exceptions.toRuntime(() -> jsonSchemaValidator.ensure(r, migration.getInputSchema().get(keyName))));
+      inputData.put(keyName, recordInputStream);
+    }
+
+    for (Map.Entry<String, JsonNode> entry : migration.getOutputSchema().entrySet()) {
+      final String keyName = entry.getKey();
+      final Path outputFile = Files.createFile(outputDir.resolve(keyName + ".yaml"));
+      final BufferedWriter recordOutputWriter = new BufferedWriter(new FileWriter(outputFile.toFile()));
+      final RecordConsumer recordConsumer = new RecordConsumer(recordOutputWriter, jsonSchemaValidator, migration.getOutputSchema().get(keyName));
+      outputData.put(keyName, recordConsumer);
+    }
+
+    // make the java compiler happy.
+    final Map<String, Consumer<JsonNode>> outputDataWithGenericType = outputData.entrySet()
+            .stream()
+            .collect(Collectors.toMap(Entry::getKey, e -> (v) -> e.getValue().accept(v)));
+    migration.migrate(inputData, outputDataWithGenericType);
+
+    inputData.values().forEach(BaseStream::close);
+    outputData.values().forEach(v -> Exceptions.toRuntime(v::close));
+
+    return outputDir;
   }
 
   private static String getCurrentVersion(Path path) {
-    return IOs.readFile(path.resolve("version.txt"));
+    return IOs.readFile(path.resolve(VERSION_FILE_NAME)).trim();
   }
 
   private static MigrateConfig parse(String[] args) {
@@ -30,7 +155,11 @@ public class Migrate {
 
     parser.addArgument("--input")
         .required(true)
-        .help("Path to data.");
+        .help("Path to data to migrate.");
+
+    parser.addArgument("--output")
+        .required(true)
+        .help("Path to where to output migrated data.");
 
     parser.addArgument("--target-version")
         .required(true)
@@ -38,43 +167,45 @@ public class Migrate {
 
     try {
       final Namespace parsed = parser.parseArgs(args);
-      final Path dataPath = Path.of(parsed.getString("input"));
+      final Path inputPath = Path.of(parsed.getString("input"));
+      final Path outputPath = Path.of(parsed.getString("output"));
       final String targetVersion = parsed.getString("target_version");
-      return new MigrateConfig(dataPath, targetVersion);
+      return new MigrateConfig(inputPath, outputPath, targetVersion);
     } catch (ArgumentParserException e) {
       parser.handleError(e);
       throw new IllegalArgumentException(e);
     }
   }
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws IOException {
     final MigrateConfig migrateConfig = parse(args);
-    new Migrate().run(migrateConfig);
+    final Path workspaceRoot = Files.createTempDirectory(Path.of("/tmp"), "migrate");
+    new Migrate(workspaceRoot).run(migrateConfig);
   }
 
   private static class MigrateConfig {
-    private final Path data;
+
+    private final Path inputPath;
+    private final Path outputPath;
     private final String targetVersion;
 
-    public MigrateConfig(Path data, String targetVersion) {
-      this.data = data;
+    public MigrateConfig(Path inputPath, Path outputPath, String targetVersion) {
+      this.inputPath = inputPath;
+      this.outputPath = outputPath;
       this.targetVersion = targetVersion;
     }
 
-    public Path getData() {
-      return data;
+    public Path getInputPath() {
+      return inputPath;
+    }
+
+    public Path getOutputPath() {
+      return outputPath;
     }
 
     public String getTargetVersion() {
       return targetVersion;
     }
-
-    @Override
-    public String toString() {
-      return "MigrateConfig{" +
-          "data=" + data +
-          ", targetVersion='" + targetVersion + '\'' +
-          '}';
-    }
   }
+
 }
