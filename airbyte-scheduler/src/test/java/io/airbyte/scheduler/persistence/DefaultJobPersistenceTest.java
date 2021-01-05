@@ -125,7 +125,7 @@ class DefaultJobPersistenceTest {
   @Test
   public void testCreateJobAndGetWithoutAttemptJob() throws IOException {
     when(timeSupplier.get()).thenReturn(NOW);
-    final long jobId = jobPersistence.createJob(SCOPE, JOB_CONFIG);
+    final long jobId = jobPersistence.enqueueJob(SCOPE, JOB_CONFIG);
 
     final Job actual = jobPersistence.getJob(jobId);
     final Job expected = getExpectedJobNoAttempts(jobId, JobStatus.PENDING);
@@ -133,8 +133,22 @@ class DefaultJobPersistenceTest {
   }
 
   @Test
+  public void testCreateJobNoQueueing() throws IOException {
+    when(timeSupplier.get()).thenReturn(NOW);
+    final Optional<Long> jobId1 = jobPersistence.enqueueSingletonJob(SCOPE, JOB_CONFIG);
+    final Optional<Long> jobId2 = jobPersistence.enqueueSingletonJob(SCOPE, JOB_CONFIG);
+
+    assertTrue(jobId1.isPresent());
+    assertTrue(jobId2.isEmpty());
+
+    final Job actual = jobPersistence.getJob(jobId1.get());
+    final Job expected = getExpectedJobNoAttempts(jobId1.get(), JobStatus.PENDING);
+    assertEquals(expected, actual);
+  }
+
+  @Test
   void testResetJob() throws IOException {
-    final long jobId = jobPersistence.createJob(SCOPE, JOB_CONFIG);
+    final long jobId = jobPersistence.enqueueJob(SCOPE, JOB_CONFIG);
     final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
     final Job created = jobPersistence.getJob(jobId);
 
@@ -149,7 +163,7 @@ class DefaultJobPersistenceTest {
 
   @Test
   void testResetJobCancelled() throws IOException {
-    final long jobId = jobPersistence.createJob(SCOPE, JOB_CONFIG);
+    final long jobId = jobPersistence.enqueueJob(SCOPE, JOB_CONFIG);
 
     jobPersistence.cancelJob(jobId);
     assertThrows(IllegalStateException.class, () -> jobPersistence.resetJob(jobId));
@@ -160,7 +174,7 @@ class DefaultJobPersistenceTest {
 
   @Test
   void testCancelJob() throws IOException {
-    final long jobId = jobPersistence.createJob(SCOPE, JOB_CONFIG);
+    final long jobId = jobPersistence.enqueueJob(SCOPE, JOB_CONFIG);
     final Job created = jobPersistence.getJob(jobId);
 
     when(timeSupplier.get()).thenReturn(Instant.ofEpochMilli(4242));
@@ -173,7 +187,7 @@ class DefaultJobPersistenceTest {
 
   @Test
   void testCancelJobAlreadyTerminal() throws IOException {
-    final long jobId = jobPersistence.createJob(SCOPE, JOB_CONFIG);
+    final long jobId = jobPersistence.enqueueJob(SCOPE, JOB_CONFIG);
     final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
     jobPersistence.succeedAttempt(jobId, attemptNumber);
 
@@ -185,7 +199,7 @@ class DefaultJobPersistenceTest {
 
   @Test
   void failJob() throws IOException {
-    final long jobId = jobPersistence.createJob(SCOPE, JOB_CONFIG);
+    final long jobId = jobPersistence.enqueueJob(SCOPE, JOB_CONFIG);
     final Job created = jobPersistence.getJob(jobId);
 
     when(timeSupplier.get()).thenReturn(Instant.ofEpochMilli(4242));
@@ -198,7 +212,7 @@ class DefaultJobPersistenceTest {
 
   @Test
   void testFailJobAlreadyTerminal() throws IOException {
-    final long jobId = jobPersistence.createJob(SCOPE, JOB_CONFIG);
+    final long jobId = jobPersistence.enqueueJob(SCOPE, JOB_CONFIG);
     final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
     jobPersistence.succeedAttempt(jobId, attemptNumber);
 
@@ -210,7 +224,7 @@ class DefaultJobPersistenceTest {
 
   @Test
   void testCreateAttempt() throws IOException {
-    final long jobId = jobPersistence.createJob(SCOPE, JOB_CONFIG);
+    final long jobId = jobPersistence.enqueueJob(SCOPE, JOB_CONFIG);
     jobPersistence.createAttempt(jobId, LOG_PATH);
 
     final Job actual = jobPersistence.getJob(jobId);
@@ -220,7 +234,7 @@ class DefaultJobPersistenceTest {
 
   @Test
   void testCreateAttemptAttemptId() throws IOException {
-    final long jobId = jobPersistence.createJob(SCOPE, JOB_CONFIG);
+    final long jobId = jobPersistence.enqueueJob(SCOPE, JOB_CONFIG);
     final int attemptNumber1 = jobPersistence.createAttempt(jobId, LOG_PATH);
     jobPersistence.failAttempt(jobId, attemptNumber1);
 
@@ -236,7 +250,7 @@ class DefaultJobPersistenceTest {
 
   @Test
   void testCreateAttemptWhileAttemptAlreadyRunning() throws IOException {
-    final long jobId = jobPersistence.createJob(SCOPE, JOB_CONFIG);
+    final long jobId = jobPersistence.enqueueJob(SCOPE, JOB_CONFIG);
     final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
 
     assertThrows(IllegalStateException.class, () -> jobPersistence.createAttempt(jobId, LOG_PATH));
@@ -248,7 +262,7 @@ class DefaultJobPersistenceTest {
 
   @Test
   void testCreateAttemptTerminal() throws IOException {
-    final long jobId = jobPersistence.createJob(SCOPE, JOB_CONFIG);
+    final long jobId = jobPersistence.enqueueJob(SCOPE, JOB_CONFIG);
     final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
     jobPersistence.succeedAttempt(jobId, attemptNumber);
 
@@ -261,7 +275,7 @@ class DefaultJobPersistenceTest {
 
   @Test
   void testCompleteAttemptFailed() throws IOException {
-    final long jobId = jobPersistence.createJob(SCOPE, JOB_CONFIG);
+    final long jobId = jobPersistence.enqueueJob(SCOPE, JOB_CONFIG);
     final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
 
     jobPersistence.failAttempt(jobId, attemptNumber);
@@ -272,7 +286,7 @@ class DefaultJobPersistenceTest {
 
   @Test
   void testCompleteAttemptSuccess() throws IOException {
-    final long jobId = jobPersistence.createJob(SCOPE, JOB_CONFIG);
+    final long jobId = jobPersistence.enqueueJob(SCOPE, JOB_CONFIG);
     final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
 
     jobPersistence.succeedAttempt(jobId, attemptNumber);
@@ -283,7 +297,7 @@ class DefaultJobPersistenceTest {
 
   @Test
   void testWriteOutput() throws IOException {
-    final long jobId = jobPersistence.createJob(SCOPE, JOB_CONFIG);
+    final long jobId = jobPersistence.enqueueJob(SCOPE, JOB_CONFIG);
     final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
     final Job created = jobPersistence.getJob(jobId);
 
@@ -298,7 +312,7 @@ class DefaultJobPersistenceTest {
 
   @Test
   public void testListJobs() throws IOException {
-    final long jobId = jobPersistence.createJob(SCOPE, JOB_CONFIG);
+    final long jobId = jobPersistence.enqueueJob(SCOPE, JOB_CONFIG);
 
     final List<Job> actualList = jobPersistence.listJobs(JobConfig.ConfigType.SYNC, CONNECTION_ID.toString());
 
@@ -311,7 +325,7 @@ class DefaultJobPersistenceTest {
 
   @Test
   public void testListJobsWithMultipleAttempts() throws IOException {
-    final long jobId = jobPersistence.createJob(SCOPE, JOB_CONFIG);
+    final long jobId = jobPersistence.enqueueJob(SCOPE, JOB_CONFIG);
     final int attemptNumber0 = jobPersistence.createAttempt(jobId, LOG_PATH);
     jobPersistence.failAttempt(jobId, attemptNumber0);
     final Path secondAttemptLogPath = LOG_PATH.resolve("2");
@@ -340,9 +354,9 @@ class DefaultJobPersistenceTest {
   @Test
   public void testListJobsWithStatus() throws IOException {
     // not failed.
-    jobPersistence.createJob(SCOPE, JOB_CONFIG);
+    jobPersistence.enqueueJob(SCOPE, JOB_CONFIG);
     // failed
-    final long jobId = jobPersistence.createJob(SCOPE, JOB_CONFIG);
+    final long jobId = jobPersistence.enqueueJob(SCOPE, JOB_CONFIG);
     final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
     jobPersistence.failAttempt(jobId, attemptNumber);
 
@@ -357,12 +371,12 @@ class DefaultJobPersistenceTest {
 
   @Test
   public void testGetLastSyncJobForConnectionId() throws IOException {
-    jobPersistence.createJob(SCOPE, JOB_CONFIG);
+    jobPersistence.enqueueSingletonJob(SCOPE, JOB_CONFIG);
     final Instant afterNow = NOW.plusSeconds(1000);
     when(timeSupplier.get()).thenReturn(afterNow);
-    final long jobId = jobPersistence.createJob(SCOPE, JOB_CONFIG);
+    final long jobId = jobPersistence.enqueueJob(SCOPE, JOB_CONFIG);
 
-    final Optional<Job> actual = jobPersistence.getLastSyncJob(CONNECTION_ID);
+    final Optional<Job> actual = jobPersistence.getLastSyncScope(CONNECTION_ID);
 
     assertTrue(actual.isPresent());
     assertEquals(getExpectedJob(jobId, JobStatus.PENDING, Collections.emptyList(), afterNow.getEpochSecond()), actual.get());
@@ -370,7 +384,7 @@ class DefaultJobPersistenceTest {
 
   @Test
   public void testGetLastSyncJobForConnectionIdEmpty() throws IOException {
-    final Optional<Job> actual = jobPersistence.getLastSyncJob(CONNECTION_ID);
+    final Optional<Job> actual = jobPersistence.getLastSyncScope(CONNECTION_ID);
 
     assertTrue(actual.isEmpty());
   }
@@ -380,7 +394,7 @@ class DefaultJobPersistenceTest {
     // no state when the connection has never had a job.
     checkCurrentState(null, jobPersistence);
 
-    final long jobId = jobPersistence.createJob(SCOPE, JOB_CONFIG);
+    final long jobId = jobPersistence.enqueueJob(SCOPE, JOB_CONFIG);
     final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
 
     // no state when connection has a job but it has not completed that has not completed
@@ -405,7 +419,7 @@ class DefaultJobPersistenceTest {
     checkCurrentState(jobOutput1.getSync().getState(), jobPersistence);
 
     when(timeSupplier.get()).thenReturn(NOW.plusSeconds(1000));
-    final long jobId2 = jobPersistence.createJob(SCOPE, JOB_CONFIG);
+    final long jobId2 = jobPersistence.enqueueJob(SCOPE, JOB_CONFIG);
     final int attemptNumber2 = jobPersistence.createAttempt(jobId2, LOG_PATH);
 
     // job 1 state, second job created.
@@ -532,12 +546,12 @@ class DefaultJobPersistenceTest {
 
   private long createJobAt(Instant created_at) throws IOException {
     when(timeSupplier.get()).thenReturn(created_at);
-    return jobPersistence.createJob(SCOPE, JOB_CONFIG);
+    return jobPersistence.enqueueJob(SCOPE, JOB_CONFIG);
   }
 
   @Test
   public void testGetOldestPendingJobOnlyPendingJobs() throws IOException {
-    final long jobId = jobPersistence.createJob(SCOPE, JOB_CONFIG);
+    final long jobId = jobPersistence.enqueueJob(SCOPE, JOB_CONFIG);
     jobPersistence.cancelJob(jobId);
 
     final Optional<Job> actual = jobPersistence.getNextJob();
@@ -547,7 +561,7 @@ class DefaultJobPersistenceTest {
 
   @Test
   void testGetNextJobWithMultipleAttempts() throws IOException {
-    final long jobId = jobPersistence.createJob(SCOPE, JOB_CONFIG);
+    final long jobId = jobPersistence.enqueueJob(SCOPE, JOB_CONFIG);
     jobPersistence.failAttempt(jobId, jobPersistence.createAttempt(jobId, LOG_PATH));
     jobPersistence.failAttempt(jobId, jobPersistence.createAttempt(jobId, LOG_PATH));
     jobPersistence.resetJob(jobId);
@@ -564,7 +578,7 @@ class DefaultJobPersistenceTest {
     final State state = new State().withState(Jsons.jsonNode(ImmutableMap.of("checkpoint", 4)));
     final JobOutput jobOutput = new JobOutput().withOutputType(OutputType.SYNC).withSync(new StandardSyncOutput().withState(state));
 
-    final long jobId = jobPersistence.createJob(SCOPE, JOB_CONFIG);
+    final long jobId = jobPersistence.enqueueJob(SCOPE, JOB_CONFIG);
     jobPersistence.failAttempt(jobId, jobPersistence.createAttempt(jobId, LOG_PATH));
     final int attemptId = jobPersistence.createAttempt(jobId, LOG_PATH);
     jobPersistence.writeOutput(jobId, attemptId, jobOutput);
@@ -578,11 +592,11 @@ class DefaultJobPersistenceTest {
 
   @Test
   void testGetLastSyncJobWithMultipleAttempts() throws IOException {
-    final long jobId = jobPersistence.createJob(SCOPE, JOB_CONFIG);
+    final long jobId = jobPersistence.enqueueJob(SCOPE, JOB_CONFIG);
     jobPersistence.failAttempt(jobId, jobPersistence.createAttempt(jobId, LOG_PATH));
     jobPersistence.failAttempt(jobId, jobPersistence.createAttempt(jobId, LOG_PATH));
 
-    final Optional<Job> actual = jobPersistence.getLastSyncJob(UUID.fromString(ScopeHelper.getConfigId(SCOPE)));
+    final Optional<Job> actual = jobPersistence.getLastSyncScope(UUID.fromString(ScopeHelper.getConfigId(SCOPE)));
     final Job expected = getExpectedJobTwoAttempts(jobId, JobStatus.INCOMPLETE, AttemptStatus.FAILED);
 
     assertTrue(actual.isPresent());
@@ -591,7 +605,7 @@ class DefaultJobPersistenceTest {
 
   @Test
   public void testGetJobFromRecord() throws IOException, SQLException {
-    final long jobId = jobPersistence.createJob(SCOPE, JOB_CONFIG);
+    final long jobId = jobPersistence.enqueueJob(SCOPE, JOB_CONFIG);
 
     final Optional<Job> actual = DefaultJobPersistence.getJobFromResult(getJobRecord(jobId));
     final Job expected = getExpectedJobNoAttempts(jobId, JobStatus.PENDING);
