@@ -22,11 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import os
-
 import setuptools
-
-PKG_DIR = os.path.dirname(os.path.abspath(__file__))
 
 setuptools.setup(
     name="airbyte-python-test",
@@ -35,7 +31,7 @@ setuptools.setup(
     author_email="contact@airbyte.io",
     url="https://github.com/airbytehq/airbyte",
     packages=setuptools.find_packages(),
-    install_requires=[f"airbyte-protocol @ file://{PKG_DIR}/build/wheels/airbyte_protocol-0.0.0-py3-none-any.whl"],
+    install_requires=["airbyte-protocol"],
     entry_points={
         "console_scripts": ["airbyte-python-test=base_python_test.standard_test:main"],
     },
