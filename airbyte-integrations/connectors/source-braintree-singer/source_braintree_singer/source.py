@@ -24,10 +24,12 @@ SOFTWARE.
 
 import json
 from datetime import datetime
+from typing import Dict
 
 import braintree
+from airbyte_protocol import SyncMode
 from base_python import AirbyteLogger
-from base_singer import BaseSingerSource
+from base_singer import BaseSingerSource, SyncModeInfo
 from braintree.exceptions.authentication_error import AuthenticationError
 from dateutil import parser
 from dateutil.relativedelta import relativedelta
@@ -59,6 +61,9 @@ class SourceBraintreeSinger(BaseSingerSource):
         )
         client.transaction.search(braintree.TransactionSearch.created_at.between(datetime.now() + relativedelta(days=-1), datetime.now()))
 
+    def get_sync_mode_overrides(self) -> Dict[str, SyncModeInfo]:
+        return {"transactions": SyncModeInfo(supported_sync_modes=[SyncMode.incremental])}
+
     def discover_cmd(self, logger: AirbyteLogger, config_path: str) -> str:
         return (
             f"{self.tap_cmd} -c {config_path} --discover"
@@ -67,4 +72,5 @@ class SourceBraintreeSinger(BaseSingerSource):
         )
 
     def read_cmd(self, logger: AirbyteLogger, config_path: str, catalog_path: str, state_path: str = None) -> str:
-        return f"{self.tap_cmd} -c {config_path} -p {catalog_path}"
+        state_option = f"--state {state_path}" if state_path else ""
+        return f"{self.tap_cmd} -c {config_path} -p {catalog_path} {state_option}"
