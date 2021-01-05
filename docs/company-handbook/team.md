@@ -27,6 +27,6 @@ Charles was a senior backend engineer at rideOS. Previous to that, he was a seni
 
 ## **Chris Duong**
 
-Chris is a data veteran with experience in the Silicon Valley, Spain, Germany and France. He was the head of data of Comet and responsible for growing their data team in addition to building their infrastructure.   
+Chris is a data veteran with experience in the Silicon Valley, Spain, Germany and France. He was the head of data of Comet and responsible for growing their data team in addition to building their infrastructure.  
 [**LinkedIn**](https://www.linkedin.com/in/christopheduong/) **\|** [**Twitter**](https://twitter.com/ChristopheDuong)
 
