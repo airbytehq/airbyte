@@ -28,19 +28,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class encapsulate read and write operations of the various Configuration files deployed in the config docker volume.
- * It provides methods to convert them to and from archive files.
+ * This class encapsulate read and write operations of the various jobs data persisted in the
+ * internal Airbyte Database. It provides methods to convert them to and from archive files.
  */
-public class AirbyteConfigIO {
+public class AirbyteJobsIO {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteConfigIO.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteJobsIO.class);
 
   public void exportData(String archive) {
-    LOGGER.info(String.format("Exporting Configs Data to %s", archive));
+    LOGGER.info(String.format("Exporting Jobs Data to %s", archive));
   }
 
   public void importData(String archive) {
-    LOGGER.info(String.format("Importing Configs Data from %s", archive));
+    LOGGER.info(String.format("Importing Jobs Data from %s", archive));
   }
 
 }

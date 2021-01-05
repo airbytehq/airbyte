@@ -28,19 +28,28 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class encapsulate read and write operations of the various jobs data persisted in the internal Airbyte Database.
- * It provides methods to convert them to and from archive files.
+ * This class is the entrypoint Class to initiate import operations of the various data entities in
+ * Airbyte.
  */
-public class AirbyteJobsIO {
+public class AirbyteImport {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteJobsIO.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteImport.class);
 
-  public void exportData(String archive) {
-    LOGGER.info(String.format("Exporting Jobs Data to %s", archive));
-  }
+  // TODO: Convert to API endpoint instead
+  public static void main(String[] args) {
+    LOGGER.info("starting Import: {}", AirbyteImport.class);
 
-  public void importData(String archive) {
-    LOGGER.info(String.format("Importing Jobs Data from %s", archive));
+    // TODO: Parse from args instead
+
+    final String newConfigs = "/tmp/new_airbyte_config.yaml";
+    final AirbyteConfigIO configsImporter = new AirbyteConfigIO();
+    configsImporter.importData(newConfigs);
+
+    final String newJobs = "/tmp/new_airbyte_jobs.yaml";
+    final AirbyteJobsIO jobsImporter = new AirbyteJobsIO();
+    jobsImporter.importData(newJobs);
+
+    LOGGER.info("completed Import: {}", AirbyteImport.class);
   }
 
 }

@@ -27,17 +27,28 @@ package io.airbyte.config.migration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
- * This class Applies transformations to archived data related to Airbyte Configuration files.
- * It takes an archive path as input, transforms and output it to an outputArchive path
+ * This class is the entrypoint Class to initiate migration operations and manipulate the various
+ * data entities in Airbyte.
  */
-public class AirbyteConfigMigration {
+public class AirbyteMigration {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteConfigMigration.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteMigration.class);
 
-  public void transformData(String inputArchive, String outputArchive) {
-    LOGGER.info(String.format("Transforming Jobs data from %s to %s", inputArchive, outputArchive));
+  public static void main(String[] args) {
+    LOGGER.info("starting migration: {}", AirbyteMigration.class);
+    // TODO: Parse from args instead
+    final String previousConfigs = "/tmp/old_airbyte_config.yaml";
+    final String newConfigs = "/tmp/new_airbyte_config.yaml";
+    final AirbyteConfigMigration configMigration = new AirbyteConfigMigration();
+    configMigration.transformData(previousConfigs, newConfigs);
+
+    final String previousJobs = "/tmp/old_airbyte_jobs.yaml";
+    final String newJobs = "/tmp/new_airbyte_jobs.yaml";
+    final AirbyteJobsMigration jobsMigration = new AirbyteJobsMigration();
+    jobsMigration.transformData(previousJobs, newJobs);
+
+    LOGGER.info("completed migration: {}", AirbyteMigration.class);
   }
 
 }

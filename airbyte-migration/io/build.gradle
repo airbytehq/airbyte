@@ -1,0 +1,8 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    implementation project(':airbyte-db')
+    implementation project(':airbyte-api')
+}

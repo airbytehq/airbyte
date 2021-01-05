@@ -69,7 +69,7 @@ public class SeedRepository {
   }
 
   public void run(String idName, Path input, Path output) throws IOException {
-    final JsonNode seedList = Yamls.deserialize(IOs.readFile(input));;
+    final JsonNode seedList = Yamls.deserialize(IOs.readFile(input));
     final Iterator<JsonNode> elements = seedList.elements();
     final Set<String> names = new HashSet<>();
     final Set<UUID> ids = new HashSet<>();
