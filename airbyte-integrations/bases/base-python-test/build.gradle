@@ -3,12 +3,28 @@ plugins {
     id 'airbyte-python'
 }
 
+// todo (cgardens) - move into airbyte-python.
+task getDeps {
+    doLast {
+        copy {
+            from new File(project(':airbyte-integrations:bases:airbyte-protocol').buildDir, "wheels")
+            include "**/*.whl"
+            includeEmptyDirs = false
+            into new File(project.buildDir, "wheels/")
+        }
+    }
+}
+
 airbytePython {
     moduleDirectory 'base_python_test'
 }
+// todo (cgardens) - move into airbyte-python.
+installReqs.dependsOn getDeps
 
 dependencies {
     implementation files(project(':airbyte-integrations:bases:base-python').airbyteDocker.outputs)
 }
 
 installReqs.dependsOn(":airbyte-integrations:bases:airbyte-protocol:installReqs")
+// todo (cgardens) - move into airbyte-python.
+build.dependsOn(":airbyte-integrations:bases:airbyte-protocol:build")

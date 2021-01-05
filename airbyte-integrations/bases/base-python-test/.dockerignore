@@ -2,3 +2,4 @@
 !Dockerfile
 !base_python_test
 !setup.py
+!build/wheels

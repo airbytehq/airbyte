@@ -22,15 +22,28 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import os
+
 from setuptools import find_packages, setup
 
+PKG_DIR = os.path.dirname(os.path.abspath(__file__))
+print("killme")
+print(os.listdir(PKG_DIR))
+print(os.listdir(f"{PKG_DIR}/build/wheels"))
 setup(
     name="source_mailchimp",
     description="Source implementation for Mailchimp.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=["airbyte-protocol", "base-python", "pydantic==1.6.1", "mailchimp3==3.0.14", "python-dateutil==2.8.1"],
+    install_requires=[
+        # f"airbyte-protocol @ file://{PKG_DIR}/build/wheels/airbyte_protocol-0.0.0-py3-none-any.whl",
+        f"base-python @ file://{PKG_DIR}/build/wheels/base_python-0.0.0-py3-none-any.whl",
+        # "base-python",
+        "pydantic==1.6.1",
+        "mailchimp3==3.0.14",
+        "python-dateutil==2.8.1",
+    ],
     package_data={"": ["*.json", "schemas/*.json"]},
     setup_requires=["pytest-runner"],
     tests_require=["pytest"],
@@ -39,6 +52,6 @@ setup(
         # integration tests but not the main package go in integration_tests. Deps required by both should go in
         # install_requires.
         "main": [],
-        "tests": ["airbyte_python_test", "pytest"],
+        "tests": [f"airbyte-python-test @ file://{PKG_DIR}/build/wheels/airbyte_python_test-0.0.0-py3-none-any.whl", "pytest"],
     },
 )

@@ -4,10 +4,41 @@ plugins {
     id 'airbyte-source-test'
 }
 
+// todo (cgardens) - move into airbyte-python.
+task getDeps {
+    doLast {
+        copy {
+            from new File(project(':airbyte-integrations:bases:airbyte-protocol').buildDir, "wheels")
+            include "**/*.whl"
+            includeEmptyDirs = false
+            into new File(project.buildDir, "wheels/")
+        }
+        copy {
+            from new File(project(':airbyte-integrations:bases:base-python').buildDir, "wheels")
+            include "**/*.whl"
+            includeEmptyDirs = false
+            into new File(project.buildDir, "wheels/")
+        }
+        copy {
+            from new File(project(':airbyte-integrations:bases:base-python-test').buildDir, "wheels")
+            include "**/*.whl"
+            includeEmptyDirs = false
+            into new File(project.buildDir, "wheels/")
+        }
+    }
+}
+
 airbytePython {
     moduleDirectory 'source_mailchimp'
 }
+// todo (cgardens) - move into airbyte-python.
+installReqs.dependsOn getDeps
+
 
 dependencies {
     implementation files(project(':airbyte-integrations:bases:base-python').airbyteDocker.outputs)
 }
+// todo (cgardens) - move into airbyte-python.
+build.dependsOn(":airbyte-integrations:bases:airbyte-protocol:build")
+build.dependsOn(":airbyte-integrations:bases:base-python:build")
+build.dependsOn(":airbyte-integrations:bases:base-python-test:build")

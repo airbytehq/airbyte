@@ -9,6 +9,7 @@ ENV AIRBYTE_IMPL_PATH="SourceMailchimp"
 
 WORKDIR /airbyte/integration_code
 COPY $CODE_PATH ./$CODE_PATH
+COPY /build/wheels/* ./build/wheels/
 COPY setup.py ./
 RUN pip install ".[main]"
 

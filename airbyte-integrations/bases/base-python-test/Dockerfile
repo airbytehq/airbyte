@@ -2,6 +2,7 @@ FROM airbyte/integration-base-python:dev
 
 WORKDIR /airbyte/base_python_test_code
 COPY base_python_test ./base_python_test
+COPY /build/wheels/* ./build/wheels/
 COPY setup.py ./
 RUN pip install .
 

@@ -43,24 +43,24 @@ class AirbytePythonPlugin implements Plugin<Project> {
             command = ". --config ${project.rootProject.file('tools/python/.flake8').absolutePath}"
         }
 
-        // attempt to install anything in requirements.txt. by convention this should only be dependencies whose source is located in the project.
-        project.task('installLocalReqs', type: PythonTask) {
-            module = "pip"
-            command = "install -r requirements.txt"
-            inputs.file('requirements.txt')
-            outputs.file('build/installedlocalreqs.txt')
+//        // attempt to install anything in requirements.txt. by convention this should only be dependencies whose source is located in the project.
+//        project.task('installLocalReqs', type: PythonTask) {
+//            module = "pip"
+//            command = "install -r requirements.txt"
+//            inputs.file('requirements.txt')
+//            outputs.file('build/installedlocalreqs.txt')
+//
+//        }
 
+        project.task('installReqs', type: PythonTask) {
+            module = "pip"
+            command = "install .[main] -v"
+            inputs.file('setup.py')
+            outputs.file('build/installedreqs.txt')
             // HACK: makes all integrations depend on installing requirements for bases. long term we should resolve deps and install in order.
             if(project.getPath().startsWith(":airbyte-integrations:connectors")) {
                 dependsOn project.rootProject.getTasksByName("airbytePythonApply", true).findAll { it.project.getPath().startsWith(":airbyte-integrations:bases")}
             }
-        }
-
-        project.task('installReqs', type: PythonTask, dependsOn: project.installLocalReqs) {
-            module = "pip"
-            command = "install .[main]"
-            inputs.file('setup.py')
-            outputs.file('build/installedreqs.txt')
         }
 
         project.task('compileWheel', type: PythonTask, dependsOn: project.installReqs) {
@@ -71,7 +71,7 @@ class AirbytePythonPlugin implements Plugin<Project> {
 
         project.task('installTestReqs', type: PythonTask, dependsOn: project.installReqs) {
             module = "pip"
-            command = "install .[tests]"
+            command = "install .[tests] -v"
             inputs.file('setup.py')
             outputs.file('build/installedtestreqs.txt')
         }
