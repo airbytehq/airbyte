@@ -22,29 +22,28 @@
  * SOFTWARE.
  */
 
-package io.airbyte.scheduler;
+package io.airbyte.commons.text;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
-import io.airbyte.config.JobConfig;
-import java.util.UUID;
-import org.junit.jupiter.api.Test;
+public class Sqls {
 
-class ScopeHelperTest {
-
-  @Test
-  public void testCreateScope() {
-    final String configId = UUID.randomUUID().toString();
-    final String actual = ScopeHelper.createScope(JobConfig.ConfigType.SYNC, configId);
-    final String expected = "sync:" + configId;
-    assertEquals(expected, actual);
+  public static <T extends Enum<T>> String toSqlName(final T value) {
+    return value.name().toLowerCase();
   }
 
-  @Test
-  public void testGetConfig() {
-    final String configId = UUID.randomUUID().toString();
-    assertEquals("", ScopeHelper.getConfigId("sync:"));
-    assertEquals(configId, ScopeHelper.getConfigId("sync:" + configId));
+  /**
+   * Generate a string fragment that can be put in the IN clause of a SQL statement. eg. column IN
+   * (value1, value2)
+   *
+   * @param values to encode
+   * @param <T> enum type
+   * @return "'value1', 'value2', 'value3'"
+   */
+  public static <T extends Enum<T>> String toSqlInFragment(final Iterable<T> values) {
+    return StreamSupport.stream(values.spliterator(), false).map(Sqls::toSqlName).map(Names::singleQuote)
+        .collect(Collectors.joining(",", "(", ")"));
   }
 
 }

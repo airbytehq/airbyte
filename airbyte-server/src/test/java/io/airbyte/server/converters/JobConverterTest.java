@@ -44,7 +44,6 @@ import io.airbyte.scheduler.Attempt;
 import io.airbyte.scheduler.AttemptStatus;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.JobStatus;
-import io.airbyte.scheduler.ScopeHelper;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Optional;
@@ -56,8 +55,7 @@ class JobConverterTest {
 
   private static final long JOB_ID = 100L;
   private static final long ATTEMPT_ID = 1002L;
-  private static final String SCOPE = "sync:123";
-  private static final String JOB_CONFIG_ID = ScopeHelper.getConfigId(SCOPE);
+  private static final String JOB_CONFIG_ID = "123";
   private static final JobStatus JOB_STATUS = JobStatus.RUNNING;
   private static final AttemptStatus ATTEMPT_STATUS = AttemptStatus.RUNNING;
   private static final JobConfig.ConfigType CONFIG_TYPE = JobConfig.ConfigType.CHECK_CONNECTION_SOURCE;
@@ -96,7 +94,8 @@ class JobConverterTest {
     job = mock(Job.class);
     Attempt attempt = mock(Attempt.class);
     when(job.getId()).thenReturn(JOB_ID);
-    when(job.getScope()).thenReturn(SCOPE);
+    when(job.getConfigType()).thenReturn(JOB_CONFIG.getConfigType());
+    when(job.getScope()).thenReturn(JOB_CONFIG_ID);
     when(job.getConfig()).thenReturn(JOB_CONFIG);
     when(job.getStatus()).thenReturn(JOB_STATUS);
     when(job.getCreatedAtInSecond()).thenReturn(CREATED_AT);
