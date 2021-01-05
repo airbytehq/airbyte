@@ -25,6 +25,7 @@
 package io.airbyte.scheduler.persistence;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
@@ -64,6 +65,7 @@ public class DefaultJobPersistence implements JobPersistence {
   static final String BASE_JOB_SELECT_AND_JOIN =
       "SELECT\n"
           + "jobs.id AS job_id,\n"
+          + "jobs.config_type AS config_type,\n"
           + "jobs.scope AS scope,\n"
           + "jobs.config AS config,\n"
           + "jobs.status AS job_status,\n"
@@ -116,14 +118,15 @@ public class DefaultJobPersistence implements JobPersistence {
 
     return database.query(
         ctx -> ctx.fetch(
-            "INSERT INTO jobs(scope, created_at, updated_at, status, config) " +
-                "SELECT ?, ?, ?, CAST(? AS JOB_STATUS), CAST(? as JSONB) " +
+            "INSERT INTO jobs(config_type, scope, created_at, updated_at, status, config) " +
+                "SELECT CAST(? AS JOB_CONFIG_TYPE), ?, ?, ?, CAST(? AS JOB_STATUS), CAST(? as JSONB) " +
                 queueingRequest +
                 "RETURNING id ",
+            Enums.toSqlName(jobConfig.getConfigType()),
             scope,
             now,
             now,
-            JobStatus.PENDING.toString().toLowerCase(),
+            Enums.toSqlName(JobStatus.PENDING),
             Jsons.serialize(jobConfig)))
         .stream()
         .findFirst()
@@ -174,7 +177,7 @@ public class DefaultJobPersistence implements JobPersistence {
   private void updateJobStatus(DSLContext ctx, long jobId, JobStatus newStatus, LocalDateTime now) {
     ctx.execute(
         "UPDATE jobs SET status = CAST(? as JOB_STATUS), updated_at = ? WHERE id = ?",
-        newStatus.toString().toLowerCase(),
+        Enums.toSqlName(newStatus),
         now,
         jobId);
   }
@@ -201,7 +204,7 @@ public class DefaultJobPersistence implements JobPersistence {
           jobId,
           job.getAttemptsCount(),
           logPath.toString(),
-          AttemptStatus.RUNNING.toString().toLowerCase(),
+          Enums.toSqlName(AttemptStatus.RUNNING),
           now,
           now)
           .stream()
@@ -221,7 +224,7 @@ public class DefaultJobPersistence implements JobPersistence {
 
       ctx.execute(
           "UPDATE attempts SET status = CAST(? as ATTEMPT_STATUS), updated_at = ? WHERE job_id = ? AND attempt_number = ?",
-          AttemptStatus.FAILED.toString().toLowerCase(),
+          Enums.toSqlName(AttemptStatus.FAILED),
           now,
           jobId,
           attemptNumber);
@@ -238,7 +241,7 @@ public class DefaultJobPersistence implements JobPersistence {
 
       ctx.execute(
           "UPDATE attempts SET status = CAST(? as ATTEMPT_STATUS), updated_at = ? WHERE job_id = ? AND attempt_number = ?",
-          AttemptStatus.SUCCEEDED.toString().toLowerCase(),
+          Enums.toSqlName(AttemptStatus.SUCCEEDED),
           now,
           jobId,
           attemptNumber);
@@ -286,7 +289,7 @@ public class DefaultJobPersistence implements JobPersistence {
     return database.query(ctx -> getJobsFromResult(ctx
         .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE jobs.scope LIKE " + likeStatement
             + " AND CAST(jobs.status AS VARCHAR) = ? ORDER BY jobs.created_at DESC",
-            status.toString().toLowerCase())));
+            Enums.toSqlName(status))));
   }
 
   @Override
@@ -294,7 +297,7 @@ public class DefaultJobPersistence implements JobPersistence {
     return database.query(ctx -> ctx
         .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE scope = ? AND CAST(jobs.status AS VARCHAR) <> ? ORDER BY jobs.created_at DESC LIMIT 1",
             ScopeHelper.createScope(ConfigType.SYNC, connectionId.toString()),
-            JobStatus.CANCELLED.toString().toLowerCase())
+            Enums.toSqlName(JobStatus.CANCELLED))
         .stream()
         .findFirst()
         .flatMap(r -> getJobOptional(ctx, r.get("job_id", Long.class))));
@@ -305,7 +308,7 @@ public class DefaultJobPersistence implements JobPersistence {
     return database.query(ctx -> ctx
         .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE scope = ? AND CAST(jobs.status AS VARCHAR) = ? ORDER BY attempts.created_at DESC LIMIT 1",
             ScopeHelper.createScope(ConfigType.SYNC, connectionId.toString()),
-            JobStatus.SUCCEEDED.toString().toLowerCase())
+            Enums.toSqlName(JobStatus.SUCCEEDED))
         .stream()
         .findFirst()
         .flatMap(r -> getJobOptional(ctx, r.get("job_id", Long.class)))
@@ -345,7 +348,7 @@ public class DefaultJobPersistence implements JobPersistence {
                   attemptRecord.get("job_id", Long.class),
                   Path.of(attemptRecord.get("log_path", String.class)),
                   output,
-                  AttemptStatus.valueOf(attemptRecord.get("attempt_status", String.class).toUpperCase()),
+                  Enums.toEnum(attemptRecord.get("attempt_status", String.class), AttemptStatus.class).orElseThrow(),
                   getEpoch(attemptRecord, "attempt_created_at"),
                   getEpoch(attemptRecord, "attempt_updated_at"),
                   Optional.ofNullable(attemptRecord.get("attempt_ended_at"))
@@ -358,6 +361,7 @@ public class DefaultJobPersistence implements JobPersistence {
           final JobConfig jobConfig = Jsons.deserialize(jobEntry.get("config", String.class), JobConfig.class);
           return new Job(
               jobEntry.get("job_id", Long.class),
+              Enums.toEnum(jobEntry.get("config_type", String.class), JobConfig.ConfigType.class).orElseThrow(),
               jobEntry.get("scope", String.class),
               jobConfig,
               attempts,

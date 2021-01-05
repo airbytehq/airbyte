@@ -77,7 +77,9 @@ class DefaultJobPersistenceTest {
   private static final Instant NOW = Instant.now();
   private static final UUID CONNECTION_ID = UUID.randomUUID();
   private static final String SCOPE = ScopeHelper.createScope(ConfigType.SYNC, CONNECTION_ID.toString());
-  private static final JobConfig JOB_CONFIG = new JobConfig().withSync(new JobSyncConfig());
+  private static final JobConfig JOB_CONFIG = new JobConfig()
+      .withConfigType(ConfigType.SYNC)
+      .withSync(new JobSyncConfig());
   private static final Path LOG_PATH = Path.of("/tmp/logs/all/the/way/down");
 
   private JobPersistence jobPersistence;
@@ -654,6 +656,7 @@ class DefaultJobPersistenceTest {
   private Job getExpectedJob(long jobId, JobStatus jobStatus, List<Attempt> attempts, long time) {
     return new Job(
         jobId,
+        JOB_CONFIG.getConfigType(),
         SCOPE,
         JOB_CONFIG,
         attempts,
