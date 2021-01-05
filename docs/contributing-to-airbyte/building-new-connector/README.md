@@ -44,8 +44,7 @@ npm run generate
 
 and choose the relevant template. This will generate a new connector in the `airbyte-integrations/connectors/<your-connector>` directory.
 
-Follow the instructions generated in the `NEW_SOURCE_CHECKLIST.md` checklist to complete the connector. 
-The checklist contains helpful tips about how to implement your connector
+Follow the instructions generated in the `NEW_SOURCE_CHECKLIST.md` checklist to complete the connector. The checklist contains helpful tips about how to implement your connector
 
 ### 2. Integration tests
 

@@ -2,8 +2,7 @@
 
 ## Overview
 
-The Looker source supports Full Refresh syncs. That is, every time a sync is run, 
-Airbyte will copy all rows in the tables and columns you set up for replication into the destination in a new table.
+The Looker source supports Full Refresh syncs. That is, every time a sync is run, Airbyte will copy all rows in the tables and columns you set up for replication into the destination in a new table.
 
 ### Output schema
 
@@ -46,8 +45,7 @@ Several output streams are available from this source:
 * [Versions](https://docs.looker.com/reference/api-and-integration/api-reference/v3.1/config#get_apiversion) 
 * [Workspaces](https://docs.looker.com/reference/api-and-integration/api-reference/v3.1/workspace) 
 
-If there are more endpoints you'd like Airbyte to support, please 
-[create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
+If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
 ### Features
 
@@ -60,9 +58,7 @@ If there are more endpoints you'd like Airbyte to support, please
 
 ### Performance considerations
 
-The Looker connector should not run into Looker API limitations under normal usage. 
-Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate 
-limit issues that are not automatically retried successfully.
+The Looker connector should not run into Looker API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ## Getting started
 
@@ -75,3 +71,4 @@ limit issues that are not automatically retried successfully.
 ### Setup guide
 
 Please read the "API3 Key" section in [Looker's information for users docs](https://docs.looker.com/admin-options/settings/users) for instructions on how to generate Client Id and Client Secret.
+

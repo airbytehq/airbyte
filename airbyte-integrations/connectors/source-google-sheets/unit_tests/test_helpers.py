@@ -23,9 +23,10 @@ SOFTWARE.
 """
 
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 from airbyte_protocol import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
+from google_sheets_source.client import GoogleSheetsClient
 from google_sheets_source.helpers import Helpers
 from google_sheets_source.models import CellData, GridData, RowData, Sheet, SheetProperties, Spreadsheet
 
@@ -142,8 +143,10 @@ class TestHelpers(unittest.TestCase):
 
         client = Mock()
         client.get.return_value.execute.return_value = fake_response
-
-        actual = Helpers.get_first_row(client, spreadsheet_id, sheet)
+        with patch.object(GoogleSheetsClient, "__init__", lambda s, credentials, scopes: None):
+            sheet_client = GoogleSheetsClient({"fake": "credentials"}, ["auth_scopes"])
+            sheet_client.client = client
+        actual = Helpers.get_first_row(sheet_client, spreadsheet_id, sheet)
         self.assertEqual(expected_first_row, actual)
         client.get.assert_called_with(spreadsheetId=spreadsheet_id, includeGridData=True, ranges=f"{sheet}!1:1")
 
@@ -154,8 +157,10 @@ class TestHelpers(unittest.TestCase):
         client.get.return_value.execute.return_value = Spreadsheet(
             spreadsheetId=spreadsheet_id, sheets=[Sheet(properties=SheetProperties(title=t)) for t in expected_sheets]
         )
-
-        actual_sheets = Helpers.get_sheets_in_spreadsheet(client, spreadsheet_id)
+        with patch.object(GoogleSheetsClient, "__init__", lambda s, credentials, scopes: None):
+            sheet_client = GoogleSheetsClient({"fake": "credentials"}, ["auth_scopes"])
+            sheet_client.client = client
+        actual_sheets = Helpers.get_sheets_in_spreadsheet(sheet_client, spreadsheet_id)
 
         self.assertEqual(expected_sheets, actual_sheets)
         client.get.assert_called_with(spreadsheetId=spreadsheet_id, includeGridData=False)
@@ -186,9 +191,11 @@ class TestHelpers(unittest.TestCase):
 
         client = Mock()
         client.get.side_effect = mock_client_call
-
+        with patch.object(GoogleSheetsClient, "__init__", lambda s, credentials, scopes: None):
+            sheet_client = GoogleSheetsClient({"fake": "credentials"}, ["auth_scopes"])
+            sheet_client.client = client
         actual = Helpers.get_available_sheets_to_column_index_to_name(
-            client, spreadsheet_id, {sheet1: frozenset(sheet1_first_row), "doesnotexist": frozenset(["1", "2"])}
+            sheet_client, spreadsheet_id, {sheet1: frozenset(sheet1_first_row), "doesnotexist": frozenset(["1", "2"])}
         )
         expected = {sheet1: {0: "1", 1: "2", 2: "3", 3: "4"}}
 

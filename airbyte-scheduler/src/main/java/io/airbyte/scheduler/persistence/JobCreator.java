@@ -40,6 +40,16 @@ public interface JobCreator {
 
   long createGetSpecJob(String integrationImage) throws IOException;
 
+  /**
+   *
+   * @param source db model representing where data comes from
+   * @param destination db model representing where data goes
+   * @param standardSync sync options
+   * @param sourceDockerImage docker image to use for the source
+   * @param destinationDockerImage docker image to use for the destination
+   * @return the new job if no other conflicting job was running, otherwise empty
+   * @throws IOException if something wrong happens
+   */
   Optional<Long> createSyncJob(SourceConnection source,
                                DestinationConnection destination,
                                StandardSync standardSync,
@@ -47,6 +57,14 @@ public interface JobCreator {
                                String destinationDockerImage)
       throws IOException;
 
+  /**
+   *
+   * @param destination db model representing where data goes
+   * @param standardSync sync options
+   * @param destinationDockerImage docker image to use for the destination
+   * @return the new job if no other conflicting job was running, otherwise empty
+   * @throws IOException if something wrong happens
+   */
   Optional<Long> createResetConnectionJob(DestinationConnection destination, StandardSync standardSync, String destinationDockerImage)
       throws IOException;
 
