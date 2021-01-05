@@ -27,6 +27,10 @@ package io.airbyte.config.migration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * This class encapsulate read and write operations of the various jobs data persisted in the internal Airbyte Database.
+ * It provides methods to convert them to and from archive files.
+ */
 public class AirbyteJobsIO {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteJobsIO.class);

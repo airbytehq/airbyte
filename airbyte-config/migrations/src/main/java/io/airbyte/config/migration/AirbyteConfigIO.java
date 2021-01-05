@@ -27,6 +27,10 @@ package io.airbyte.config.migration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * This class encapsulate read and write operations of the various Configuration files deployed in the config docker volume.
+ * It provides methods to convert them to and from archive files.
+ */
 public class AirbyteConfigIO {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteConfigIO.class);

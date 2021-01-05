@@ -27,13 +27,16 @@ package io.airbyte.config.migration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * This class Applies transformations to archived data related to Airbyte Jobs Data.
+ * It takes an archive path as input, transforms and output it to an outputArchive path
+ */
 public class AirbyteJobsMigration {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteJobsMigration.class);
 
-  public String transformData(String archive) {
-    LOGGER.info(String.format("Transforming Jobs data %s", archive));
-    return archive;
+  public void transformData(String inputArchive, String outputArchive) {
+    LOGGER.info(String.format("Transforming Jobs data from %s to %s", inputArchive, outputArchive));
   }
 
 }

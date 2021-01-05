@@ -27,6 +27,10 @@ package io.airbyte.config.migration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * This class is the entrypoint Class to initiate export, import or transformation operations and manipulate
+ * the various data entities in Airbyte.
+ */
 public class AirbyteMigration {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteMigration.class);
@@ -35,26 +39,29 @@ public class AirbyteMigration {
     LOGGER.info("starting migration: {}", AirbyteMigration.class);
     AirbyteMigration migration = new AirbyteMigration();
     // TODO: Parse from args instead
-    final String previousConfigs = "/tmp/airbyte_config.yaml";
-    final String previousJobs = "/tmp/airbyte_jobs.yaml";
-    migration.migrateConfigs(previousConfigs);
-    migration.migrateJobs(previousJobs);
+    final String previousConfigs = "/tmp/old_airbyte_config.yaml";
+    final String newConfigs = "/tmp/new_airbyte_config.yaml";
+    final String previousJobs = "/tmp/old_airbyte_jobs.yaml";
+    final String newJobs = "/tmp/new_airbyte_jobs.yaml";
+    // TODO: Run export / import or transform operations depending on args instead
+    migration.testMigrateConfigs(previousConfigs, newConfigs);
+    migration.testMigrateJobs(previousJobs, newJobs);
     LOGGER.info("completed migration: {}", AirbyteMigration.class);
   }
 
-  private void migrateConfigs(String previousConfigs) {
+  private void testMigrateConfigs(String previousConfigs, String newConfigs) {
     final AirbyteConfigIO configs = new AirbyteConfigIO();
     final AirbyteConfigMigration configMigration = new AirbyteConfigMigration();
     configs.exportData(previousConfigs);
-    final String newConfigs = configMigration.transformData(previousConfigs);
+    configMigration.transformData(previousConfigs, newConfigs);
     configs.importData(newConfigs);
   }
 
-  private void migrateJobs(String previousJobs) {
+  private void testMigrateJobs(String previousJobs, String newJobs) {
     final AirbyteJobsIO jobs = new AirbyteJobsIO();
     final AirbyteJobsMigration jobsMigration = new AirbyteJobsMigration();
     jobs.exportData(previousJobs);
-    final String newJobs = jobsMigration.transformData(previousJobs);
+    jobsMigration.transformData(previousJobs, newJobs);
     jobs.importData(newJobs);
   }
 
