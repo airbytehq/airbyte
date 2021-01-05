@@ -92,15 +92,34 @@ public class DefaultJobPersistence implements JobPersistence {
     this(database, Instant::now);
   }
 
-  // configJson is a oneOf checkConnection, discoverSchema, sync
   @Override
-  public long createJob(String scope, JobConfig jobConfig) throws IOException {
+  public long enqueueJob(String scope, JobConfig jobConfig) throws IOException {
+    LOGGER.info("enqueuing pending job for scope: " + scope);
+    return internalCreateJob(scope, jobConfig, true).orElseThrow(() -> new RuntimeException("This should not happen"));
+  }
+
+  @Override
+  public Optional<Long> enqueueSingletonJob(String scope, JobConfig jobConfig) throws IOException {
+    LOGGER.info("attempt creating pending job for scope: " + scope);
+    return internalCreateJob(scope, jobConfig, false);
+  }
+
+  private Optional<Long> internalCreateJob(String scope, JobConfig jobConfig, boolean allowQueueing) throws IOException {
     LOGGER.info("creating pending job for scope: " + scope);
     final LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
 
-    final Record record = database.query(
+    String queueingRequest = !allowQueueing
+        ? String.format("WHERE NOT EXISTS (SELECT 1 FROM jobs WHERE scope = '%s' and status NOT IN (%s)) ",
+            scope,
+            String.join(", ", getSQLTerminalStates()))
+        : "";
+
+    return database.query(
         ctx -> ctx.fetch(
-            "INSERT INTO jobs(scope, created_at, updated_at, status, config) VALUES(?, ?, ?, CAST(? AS JOB_STATUS), CAST(? as JSONB)) RETURNING id",
+            "INSERT INTO jobs(scope, created_at, updated_at, status, config) " +
+                "SELECT ?, ?, ?, CAST(? AS JOB_STATUS), CAST(? as JSONB) " +
+                queueingRequest +
+                "RETURNING id ",
             scope,
             now,
             now,
@@ -108,8 +127,7 @@ public class DefaultJobPersistence implements JobPersistence {
             Jsons.serialize(jobConfig)))
         .stream()
         .findFirst()
-        .orElseThrow(() -> new RuntimeException("This should not happen"));
-    return record.getValue("id", Long.class);
+        .map(r -> r.getValue("id", Long.class));
   }
 
   @Override
@@ -272,7 +290,7 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public Optional<Job> getLastSyncJob(UUID connectionId) throws IOException {
+  public Optional<Job> getLastSyncScope(UUID connectionId) throws IOException {
     return database.query(ctx -> ctx
         .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE scope = ? AND CAST(jobs.status AS VARCHAR) <> ? ORDER BY jobs.created_at DESC LIMIT 1",
             ScopeHelper.createScope(ConfigType.SYNC, connectionId.toString()),
@@ -358,6 +376,14 @@ public class DefaultJobPersistence implements JobPersistence {
 
   private static long getEpoch(Record record, String fieldName) {
     return record.get(fieldName, LocalDateTime.class).toEpochSecond(ZoneOffset.UTC);
+  }
+
+  private static List<String> getSQLTerminalStates() {
+    return JobStatus.TERMINAL_STATUSES.stream()
+        .map(JobStatus::toString)
+        .map(String::toLowerCase)
+        .map(s -> String.format("'%s'", s))
+        .collect(Collectors.toList());
   }
 
 }
