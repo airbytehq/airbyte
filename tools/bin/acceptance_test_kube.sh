@@ -13,7 +13,7 @@ echo "Starting app..."
 echo "Applying dev manifests to kubernetes..."
 kubectl apply -k kube/overlays/dev
 
-sleep 30s
+sleep 2m
 
 kubectl get pods
 kubectl describe pods
@@ -21,8 +21,6 @@ kubectl logs svc/airbyte-server-svc
 
 echo "Waiting for server to be ready..."
 kubectl wait --for=condition=Available deployment/airbyte-server --timeout=200s
-
-sleep 30s
 
 kubectl port-forward svc/airbyte-server-svc 8001:8001 &
 
