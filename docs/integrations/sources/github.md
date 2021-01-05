@@ -70,8 +70,8 @@ Full list of available scopes is presented [here](https://docs.github.com/en/fre
 For syncing streams it are required at least public_repo and read:org scopes.
 
 Syncing of some streams has particulars:
-* For calling Collaborators API user has to be one of them. In another case API will return 403 error.
-* Teams API is only available to authenticated members of the team's [organization](https://docs.github.com/en/free-pro-team@latest/rest/reference/orgs), in another case it will return 404 error. If user doesn't have permission, it will return 401 error.
+* For calling Collaborators API user has to be one of them. In another case API will return 403 error. To become one of the collaborators, it is needed user to be invited by an owner. More about access permission you can read [here](https://docs.github.com/en/free-pro-team@latest/github/getting-started-with-github/access-permissions-on-github)
+* [Teams](https://docs.github.com/en/free-pro-team@latest/github/setting-up-and-managing-organizations-and-teams/about-teams) are groups of organization members, therefore Teams API is only available to authenticated members of the team's [organization](https://docs.github.com/en/free-pro-team@latest/rest/reference/orgs), in another case it will return 404 error. [Personal user accounts](https://docs.github.com/en/free-pro-team@latest/github/getting-started-with-github/types-of-github-accounts) don't have access to Teams features. If user doesn't have permission, it will return 401 error.
 * Project API returns a 404 Not Found status if projects are disabled in the repository. If user does not have sufficient privileges to perform this action, a 401 Unauthorized or 410 Gone status is returned.
 
 

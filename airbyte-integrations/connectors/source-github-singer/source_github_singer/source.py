@@ -23,36 +23,49 @@ SOFTWARE.
 """
 
 import json
-from typing import Dict
+import sys
+from typing import Dict, Generator
 
 import requests
-from airbyte_protocol import AirbyteConnectionStatus, Status, SyncMode
-from base_singer import SingerSource, SyncModeInfo
+from airbyte_protocol import AirbyteConnectionStatus, Status, SyncMode, AirbyteMessage, ConfiguredAirbyteCatalog
+from base_python import AirbyteLogger
+from base_singer import SingerSource, SyncModeInfo, ConfigContainer, SingerHelper
 
 
 class SourceGithubSinger(SingerSource):
+    @staticmethod
+    def _check_with_catalog(logger: AirbyteLogger, catalog: ConfiguredAirbyteCatalog,
+                            config_container: ConfigContainer):
+        config = config_container.config
+        repositories = config["repository"].split(' ')
+        for repository in repositories:
+            org = repository.split('/')[0]
+            # requests for checking streams permissions
+            # first is for checking if user has access to Collaborators API
+            # if user is not one of the collaborators, request will return 403 error
+            # third is for checking access and permission to Teams API
+            # Teams API is only available to authenticated members of the team's organization,
+            # in another case it will return 404 error
+            # if user doesn't have permission, it will return 401 error
+            check_streams = {
+                'collaborators': f"https://api.github.com/repos/{repository}/collaborators",
+                'teams': f"https://api.github.com/orgs/{org}/teams?sort=created_at&direction=desc"
+            }
+            for stream in catalog.streams:
+                if stream.stream.name in check_streams:
+                    response = requests.get(check_streams[stream.stream.name], auth=(config["access_token"], ""))
+                    if response.status_code != requests.codes.ok:
+                        logger.log_by_prefix(f'{repository} {response.text}', "ERROR")
+                        sys.exit(1)
+
     def check_config(self, logger, config_path: str, config: json) -> AirbyteConnectionStatus:
         try:
             repositories = config["repository"].split(' ')
             for repository in repositories:
-                org = repository.split('/')[0]
-                # several request for checking user permissions
-                # first is default request
-                # second is for checking if user has access to Collaborators API
-                # if user is not one of the collaborators, request will return 403 error
-                # third is for checking access and permission to Teams API
-                # Teams API is only available to authenticated members of the team's organization,
-                # in another case it will return 404 error
-                # if user doesn't have permission, it will return 401 error
-                check_urls = [
-                    "https://api.github.com/repos/airbytehq/airbyte/commits",
-                    f"https://api.github.com/repos/{repository}/collaborators",
-                    f"https://api.github.com/orgs/{org}/teams?sort=created_at&direction=desc"
-                ]
-                for url in check_urls:
-                    response = requests.get(url, auth=(config["access_token"], ""))
-                    if response.status_code != requests.codes.ok:
-                        return AirbyteConnectionStatus(status=Status.FAILED, message=f'{repository} {response.text}')
+                url = f"https://api.github.com/repos/{repository}/commits"
+                response = requests.get(url, auth=(config["access_token"], ""))
+                if response.status_code != requests.codes.ok:
+                    return AirbyteConnectionStatus(status=Status.FAILED, message=f'{repository} {response.text}')
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as err:
             logger.error(err)
@@ -98,3 +111,19 @@ class SourceGithubSinger(SingerSource):
         properties_option = f"--properties {catalog_path}"
         state_option = f"--state {state_path}" if state_path else ""
         return f"tap-github {config_option} {properties_option} {state_option}"
+
+    def read(
+        self, logger: AirbyteLogger, config_container: ConfigContainer, catalog_path: str, state_path: str = None
+    ) -> Generator[AirbyteMessage, None, None]:
+        """
+        Implements the parent class read method.
+        """
+        catalogs = self._discover_internal(logger, config_container.config_path)
+        masked_airbyte_catalog = ConfiguredAirbyteCatalog.parse_obj(self.read_config(catalog_path))
+        selected_singer_catalog_path = SingerHelper.create_singer_catalog_with_selection(masked_airbyte_catalog,
+                                                                                         catalogs.singer_catalog)
+
+        self._check_with_catalog(logger, masked_airbyte_catalog, config_container)
+
+        read_cmd = self.read_cmd(logger, config_container.config_path, selected_singer_catalog_path, state_path)
+        return SingerHelper.read(logger, read_cmd)
