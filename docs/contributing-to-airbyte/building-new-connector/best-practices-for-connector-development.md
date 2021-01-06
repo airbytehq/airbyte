@@ -27,7 +27,7 @@ When reviewing connectors, we'll use the following "checklist" to verify whether
 **As much as possible, prove functionality via testing**. This means slightly different things depending on the type of connector: 
 
 * **All connectors** must test all the sync modes they support during integration tests
-* **Database connectors** should test that they can replicate **all** supported 
+* **Database connectors** should test that they can replicate **all** supported data types
 * **API connectors** should validate records that every stream outputs data
   * If this causes rate limiting problems, there should be a periodic CI build which tests this on a less frequent cadence to avoid rate limiting
 
