@@ -64,7 +64,7 @@ Password: password
 DB Name: postgres
 ```
 
-Click on `Set Up Source` and the wizard should move on to allow you to configure a destination. We currently support BigQuery, Postgres, and file output for debugging, but Redshift, Snowflake, and other destinations are coming soon. For now, configure the destination Postgres database:
+Click on `Set Up Source` and the wizard should move on to allow you to configure a destination. We  support a growing list of data warehouses, lakes and databases. For now, configure the destination Postgres database:
 
 ```text
 Host: localhost

@@ -40,6 +40,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -74,9 +75,8 @@ class DefaultSyncJobFactoryTest {
     when(configRepository.getStandardSync(connectionId)).thenReturn(standardSync);
     when(configRepository.getSourceConnection(sourceId)).thenReturn(sourceConnection);
     when(configRepository.getDestinationConnection(destinationId)).thenReturn(destinationConnection);
-    when(jobCreator
-        .createSyncJob(sourceConnection, destinationConnection, standardSync, srcDockerImage, dstDockerImage))
-            .thenReturn(jobId);
+    when(jobCreator.createSyncJob(sourceConnection, destinationConnection, standardSync, srcDockerImage, dstDockerImage))
+        .thenReturn(Optional.of(jobId));
     when(configRepository.getStandardSourceDefinition(sourceDefinitionId))
         .thenReturn(new StandardSourceDefinition().withSourceDefinitionId(sourceDefinitionId).withDockerRepository(srcDockerRepo)
             .withDockerImageTag(srcDockerTag));

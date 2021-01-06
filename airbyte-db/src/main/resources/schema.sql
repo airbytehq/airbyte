@@ -26,6 +26,16 @@ CREATE
         'succeeded'
     );
 
+CREATE
+    TYPE JOB_CONFIG_TYPE AS ENUM(
+        'check_connection_source',
+        'check_connection_destination',
+        'discover_schema',
+        'get_spec',
+        'sync',
+        'reset_connection'
+    );
+
 -- tables
  CREATE
     TABLE
@@ -38,6 +48,7 @@ CREATE
     TABLE
         JOBS(
             id BIGSERIAL PRIMARY KEY,
+            config_type JOB_CONFIG_TYPE,
             SCOPE VARCHAR(255),
             config JSONB,
             status JOB_STATUS,
@@ -72,7 +83,7 @@ CREATE
     INTO
         AIRBYTE_METADATA
     VALUES(
-        'server-uuid',
+        'server_uuid',
         uuid_generate_v4()
     );
 

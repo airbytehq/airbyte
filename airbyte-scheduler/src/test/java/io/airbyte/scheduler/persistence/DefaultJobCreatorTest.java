@@ -25,6 +25,7 @@
 package io.airbyte.scheduler.persistence;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -49,8 +50,8 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.SyncMode;
 import io.airbyte.config.Stream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.scheduler.ScopeHelper;
 import java.io.IOException;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -135,8 +136,8 @@ public class DefaultJobCreatorTest {
         .withConfigType(JobConfig.ConfigType.CHECK_CONNECTION_SOURCE)
         .withCheckConnection(jobCheckConnectionConfig);
 
-    final String expectedScope = ScopeHelper.createScope(ConfigType.CHECK_CONNECTION_SOURCE, SOURCE_CONNECTION.getSourceId().toString());
-    when(jobPersistence.createJob(expectedScope, jobConfig)).thenReturn(JOB_ID);
+    final String expectedScope = SOURCE_CONNECTION.getSourceId().toString();
+    when(jobPersistence.enqueueJob(expectedScope, jobConfig)).thenReturn(Optional.of(JOB_ID));
 
     final long jobId = jobCreator.createSourceCheckConnectionJob(SOURCE_CONNECTION, SOURCE_IMAGE_NAME);
     assertEquals(JOB_ID, jobId);
@@ -152,9 +153,8 @@ public class DefaultJobCreatorTest {
         .withConfigType(JobConfig.ConfigType.CHECK_CONNECTION_DESTINATION)
         .withCheckConnection(jobCheckConnectionConfig);
 
-    final String expectedScope =
-        ScopeHelper.createScope(ConfigType.CHECK_CONNECTION_DESTINATION, DESTINATION_CONNECTION.getDestinationId().toString());
-    when(jobPersistence.createJob(expectedScope, jobConfig)).thenReturn(JOB_ID);
+    final String expectedScope = DESTINATION_CONNECTION.getDestinationId().toString();
+    when(jobPersistence.enqueueJob(expectedScope, jobConfig)).thenReturn(Optional.of(JOB_ID));
 
     final long jobId = jobCreator.createDestinationCheckConnectionJob(DESTINATION_CONNECTION, DESTINATION_IMAGE_NAME);
     assertEquals(JOB_ID, jobId);
@@ -170,8 +170,8 @@ public class DefaultJobCreatorTest {
         .withConfigType(JobConfig.ConfigType.DISCOVER_SCHEMA)
         .withDiscoverCatalog(jobDiscoverCatalogConfig);
 
-    final String expectedScope = ScopeHelper.createScope(ConfigType.DISCOVER_SCHEMA, SOURCE_CONNECTION.getSourceId().toString());
-    when(jobPersistence.createJob(expectedScope, jobConfig)).thenReturn(JOB_ID);
+    final String expectedScope = SOURCE_CONNECTION.getSourceId().toString();
+    when(jobPersistence.enqueueJob(expectedScope, jobConfig)).thenReturn(Optional.of(JOB_ID));
 
     final long jobId = jobCreator.createDiscoverSchemaJob(SOURCE_CONNECTION, SOURCE_IMAGE_NAME);
     assertEquals(JOB_ID, jobId);
@@ -185,8 +185,8 @@ public class DefaultJobCreatorTest {
         .withConfigType(JobConfig.ConfigType.GET_SPEC)
         .withGetSpec(new JobGetSpecConfig().withDockerImage(integrationImage));
 
-    final String expectedScope = ScopeHelper.createScope(ConfigType.GET_SPEC, integrationImage);
-    when(jobPersistence.createJob(expectedScope, jobConfig)).thenReturn(JOB_ID);
+    final String expectedScope = integrationImage;
+    when(jobPersistence.enqueueJob(expectedScope, jobConfig)).thenReturn(Optional.of(JOB_ID));
 
     final long jobId = jobCreator.createGetSpecJob(integrationImage);
     assertEquals(JOB_ID, jobId);
@@ -205,16 +205,40 @@ public class DefaultJobCreatorTest {
         .withConfigType(JobConfig.ConfigType.SYNC)
         .withSync(jobSyncConfig);
 
-    final String expectedScope = ScopeHelper.createScope(ConfigType.SYNC, STANDARD_SYNC.getConnectionId().toString());
-    when(jobPersistence.createJob(expectedScope, jobConfig)).thenReturn(JOB_ID);
+    final String expectedScope = STANDARD_SYNC.getConnectionId().toString();
+    when(jobPersistence.enqueueJob(expectedScope, jobConfig)).thenReturn(Optional.of(JOB_ID));
 
     final long jobId = jobCreator.createSyncJob(
         SOURCE_CONNECTION,
         DESTINATION_CONNECTION,
         STANDARD_SYNC,
         SOURCE_IMAGE_NAME,
-        DESTINATION_IMAGE_NAME);
+        DESTINATION_IMAGE_NAME).orElseThrow();
     assertEquals(JOB_ID, jobId);
+  }
+
+  @Test
+  void testCreateSyncJobEnsureNoQueuing() throws IOException {
+    final JobSyncConfig jobSyncConfig = new JobSyncConfig()
+        .withSourceConfiguration(SOURCE_CONNECTION.getConfiguration())
+        .withSourceDockerImage(SOURCE_IMAGE_NAME)
+        .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
+        .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
+        .withConfiguredAirbyteCatalog(AirbyteProtocolConverters.toConfiguredCatalog(STANDARD_SYNC.getSchema()));
+
+    final JobConfig jobConfig = new JobConfig()
+        .withConfigType(JobConfig.ConfigType.SYNC)
+        .withSync(jobSyncConfig);
+
+    final String expectedScope = STANDARD_SYNC.getConnectionId().toString();
+    when(jobPersistence.enqueueJob(expectedScope, jobConfig)).thenReturn(Optional.empty());
+
+    assertTrue(jobCreator.createSyncJob(
+        SOURCE_CONNECTION,
+        DESTINATION_CONNECTION,
+        STANDARD_SYNC,
+        SOURCE_IMAGE_NAME,
+        DESTINATION_IMAGE_NAME).isEmpty());
   }
 
   @Test
@@ -232,14 +256,38 @@ public class DefaultJobCreatorTest {
         .withConfigType(ConfigType.RESET_CONNECTION)
         .withResetConnection(JobResetConnectionConfig);
 
-    final String expectedScope = ScopeHelper.createScope(ConfigType.SYNC, STANDARD_SYNC.getConnectionId().toString());
-    when(jobPersistence.createJob(expectedScope, jobConfig)).thenReturn(JOB_ID);
+    final String expectedScope = STANDARD_SYNC.getConnectionId().toString();
+    when(jobPersistence.enqueueJob(expectedScope, jobConfig)).thenReturn(Optional.of(JOB_ID));
 
     final long jobId = jobCreator.createResetConnectionJob(
         DESTINATION_CONNECTION,
         STANDARD_SYNC,
-        DESTINATION_IMAGE_NAME);
+        DESTINATION_IMAGE_NAME).orElseThrow();
     assertEquals(JOB_ID, jobId);
+  }
+
+  @Test
+  void testCreateResetConnectionJobEnsureNoQueuing() throws IOException {
+    final ConfiguredAirbyteCatalog expectedCatalog = AirbyteProtocolConverters.toConfiguredCatalog(STANDARD_SYNC.getSchema());
+    expectedCatalog.getStreams()
+        .forEach(configuredAirbyteStream -> configuredAirbyteStream.setSyncMode(io.airbyte.protocol.models.SyncMode.FULL_REFRESH));
+
+    final JobResetConnectionConfig JobResetConnectionConfig = new JobResetConnectionConfig()
+        .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
+        .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
+        .withConfiguredAirbyteCatalog(expectedCatalog);
+
+    final JobConfig jobConfig = new JobConfig()
+        .withConfigType(ConfigType.RESET_CONNECTION)
+        .withResetConnection(JobResetConnectionConfig);
+
+    final String expectedScope = STANDARD_SYNC.getConnectionId().toString();
+    when(jobPersistence.enqueueJob(expectedScope, jobConfig)).thenReturn(Optional.empty());
+
+    assertTrue(jobCreator.createResetConnectionJob(
+        DESTINATION_CONNECTION,
+        STANDARD_SYNC,
+        DESTINATION_IMAGE_NAME).isEmpty());
   }
 
 }
