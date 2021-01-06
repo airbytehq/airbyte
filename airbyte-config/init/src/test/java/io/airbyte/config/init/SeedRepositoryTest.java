@@ -45,10 +45,20 @@ import org.junit.jupiter.api.Test;
 class SeedRepositoryTest {
 
   private static final String CONFIG_ID = "configId";
+  private static final UUID CONFIG_UUID = UUID.randomUUID();
   private static final JsonNode OBJECT = Jsons.jsonNode(ImmutableMap.builder()
-      .put(CONFIG_ID, UUID.randomUUID())
+      .put(CONFIG_ID, CONFIG_UUID.toString())
       .put("name", "barker")
       .put("description", "playwright")
+      .put("dockerImageTag", "1987")
+      .build());
+
+  private static final JsonNode OUTPUT_OBJECT = Jsons.jsonNode(ImmutableMap.builder()
+      .put(CONFIG_ID, CONFIG_UUID.toString())
+      .put("name", "barker")
+      .put("description", "playwright")
+      .put("dockerImageTag", "1987")
+      .put("latestDockerImageTag", "1987")
       .build());
 
   private Path input;
@@ -66,16 +76,16 @@ class SeedRepositoryTest {
   void testWrite() throws IOException {
     new SeedRepository().run(CONFIG_ID, input, output);
     final JsonNode actual = Jsons.deserialize(IOs.readFile(output, OBJECT.get(CONFIG_ID).asText() + ".json"));
-    assertEquals(OBJECT, actual);
+    assertEquals(OUTPUT_OBJECT, actual);
   }
 
   @Test
   void testOverwrites() throws IOException {
     new SeedRepository().run(CONFIG_ID, input, output);
     final JsonNode actual = Jsons.deserialize(IOs.readFile(output, OBJECT.get(CONFIG_ID).asText() + ".json"));
-    assertEquals(OBJECT, actual);
+    assertEquals(OUTPUT_OBJECT, actual);
 
-    final JsonNode clone = Jsons.clone(OBJECT);
+    final JsonNode clone = Jsons.clone(OUTPUT_OBJECT);
     ((ObjectNode) clone).put("description", "revolutionary");
     writeSeedList(clone);
 

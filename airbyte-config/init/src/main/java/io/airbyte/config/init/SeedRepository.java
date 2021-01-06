@@ -25,6 +25,7 @@
 package io.airbyte.config.init;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.yaml.Yamls;
@@ -84,6 +85,9 @@ public class SeedRepository {
       final JsonNode element = Jsons.clone(elements.next());
       final String name = element.get("name").asText();
       final UUID id = UUID.fromString(element.get(idName).asText());
+
+      // set latestDockerImageTag to be whatever tag is specified in the yaml.
+      ((ObjectNode) element).put("latestDockerImageTag", element.get("dockerImageTag").asText());
 
       // validate the name is unique.
       if (names.contains(name)) {

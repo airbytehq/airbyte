@@ -9,6 +9,7 @@ required:
   - name
   - dockerRepository
   - dockerImageTag
+  - latestDockerImageTag
   - documentationUrl
 additionalProperties: false
 properties:
@@ -20,6 +21,8 @@ properties:
   dockerRepository:
     type: string
   dockerImageTag:
+    type: string
+  latestDockerImageTag:
     type: string
   documentationUrl:
     type: string
