@@ -24,9 +24,10 @@ jobs:
         with:
           python-version: '3.7'
 
-      - name : Run Kubernetes End-to-End Acceptance Tests
-        uses: debianmaster/actions-k3s@master
+      - uses: debianmaster/actions-k3s@master
         with:
           version: 'v1.18.2-k3s1'
-      - run: |
+
+      - name: Run Kubernetes End-to-End Acceptance Tests
+        run: |
           ./tools/bin/acceptance_test_kube.sh
