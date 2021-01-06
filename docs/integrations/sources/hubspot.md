@@ -2,9 +2,7 @@
 
 ## Overview
 
-The Hubspot source supports Full Refresh syncs. That is, every time a sync is run, Airbyte will copy all rows in the tables and columns you set up for replication into the destination in a new table.
-
-This Hubspot source wraps the [Singer Hubspot Tap](https://github.com/singer-io/tap-hubspot).
+The Hubspot connector can be used to sync your Hubspot data. It supports full refresh and incremental sync. It is based on the [Singer Hubspot Tap](https://github.com/singer-io/tap-hubspot).
 
 ### Output schema
 
@@ -15,7 +13,7 @@ Several output streams are available from this source \(campaigns, contacts, dea
 | Feature | Supported? |
 | :--- | :--- |
 | Full Refresh Sync | Yes |
-| Incremental Sync | No |
+| Incremental Sync | Yes |
 | Replicate Incremental Deletes | No |
 | SSL connection | Yes |
 
