@@ -58,6 +58,7 @@ public class Migrate {
 
   private static final String VERSION_FILE_NAME = "VERSION";
 
+  // all migrations must be added to the list in the order that they should be applied.
   private static final List<Migration> MIGRATIONS = ImmutableList.of(
       new MigrationV0_11_0(),
       new MigrationV0_11_1());
