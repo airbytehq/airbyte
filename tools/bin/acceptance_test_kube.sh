@@ -6,7 +6,7 @@ set -e
 
 assert_root
 
-trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT
+trap 'trap - SIGTERM && kill 0 && kubectl logs svc/airbyte-server-svc' SIGINT SIGTERM EXIT
 
 echo "Starting app..."
 
