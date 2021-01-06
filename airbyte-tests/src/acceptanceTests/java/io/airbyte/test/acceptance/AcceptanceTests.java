@@ -27,6 +27,7 @@ package io.airbyte.test.acceptance;
 import static io.airbyte.api.client.model.ConnectionSchedule.TimeUnitEnum.MINUTES;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -46,11 +47,15 @@ import io.airbyte.api.client.model.ConnectionStatus;
 import io.airbyte.api.client.model.ConnectionUpdate;
 import io.airbyte.api.client.model.DataType;
 import io.airbyte.api.client.model.DestinationCreate;
+import io.airbyte.api.client.model.DestinationDefinitionIdRequestBody;
+import io.airbyte.api.client.model.DestinationDefinitionSpecificationRead;
 import io.airbyte.api.client.model.DestinationIdRequestBody;
 import io.airbyte.api.client.model.DestinationRead;
 import io.airbyte.api.client.model.JobInfoRead;
 import io.airbyte.api.client.model.JobStatus;
 import io.airbyte.api.client.model.SourceCreate;
+import io.airbyte.api.client.model.SourceDefinitionIdRequestBody;
+import io.airbyte.api.client.model.SourceDefinitionSpecificationRead;
 import io.airbyte.api.client.model.SourceIdRequestBody;
 import io.airbyte.api.client.model.SourceRead;
 import io.airbyte.api.client.model.SourceSchema;
@@ -167,9 +172,29 @@ public class AcceptanceTests {
   }
 
   @Test
+  @Order(-1)
+  public void testGetDestinationSpec() throws ApiException {
+    final UUID destinationDefinitionId = getCsvDestinationDefId();
+    DestinationDefinitionSpecificationRead spec = apiClient.getDestinationDefinitionSpecificationApi()
+        .getDestinationDefinitionSpecification(new DestinationDefinitionIdRequestBody().destinationDefinitionId(destinationDefinitionId));
+    assertEquals(destinationDefinitionId, spec.getDestinationDefinitionId());
+    assertNotNull(spec.getConnectionSpecification());
+  }
+
+  @Test
+  @Order(0)
+  public void testGetSourceSpec() throws ApiException {
+    final UUID sourceDefId = getPostgresSourceDefinitionId();
+    SourceDefinitionSpecificationRead spec = apiClient.getSourceDefinitionSpecificationApi()
+        .getSourceDefinitionSpecification(new SourceDefinitionIdRequestBody().sourceDefinitionId(sourceDefId));
+    assertEquals(sourceDefId, spec.getSourceDefinitionId());
+    assertNotNull(spec.getConnectionSpecification());
+  }
+
+  @Test
   @Order(1)
   public void testCreateDestination() throws ApiException {
-    final UUID destinationDefId = getDestinationDefId();
+    final UUID destinationDefId = getCsvDestinationDefId();
     final JsonNode destinationConfig = getDestinationConfig();
     final UUID workspaceId = PersistenceConstants.DEFAULT_WORKSPACE_ID;
     final String name = "AccTestDestinationDb-" + UUID.randomUUID().toString();
@@ -458,7 +483,7 @@ public class AcceptanceTests {
     return createDestination(
         "AccTestDestination-" + UUID.randomUUID().toString(),
         PersistenceConstants.DEFAULT_WORKSPACE_ID,
-        getDestinationDefId(),
+        getCsvDestinationDefId(),
         getDestinationConfig());
   }
 
@@ -473,7 +498,7 @@ public class AcceptanceTests {
     return destination;
   }
 
-  private UUID getDestinationDefId() throws ApiException {
+  private UUID getCsvDestinationDefId() throws ApiException {
     return apiClient.getDestinationDefinitionApi().listDestinationDefinitions().getDestinationDefinitions()
         .stream()
         .filter(dr -> dr.getName().toLowerCase().contains("csv"))
