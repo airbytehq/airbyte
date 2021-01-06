@@ -142,11 +142,14 @@ jobs:
           minikube version: 'v1.16.0'
           kubernetes version: 'v1.19.2'
 
-      - name: Build Core Docker Images
-        if: success() && github.ref == 'refs/heads/master'
-        run: ./gradlew --no-daemon composeBuild --scan
-        env:
-          GIT_REVISION: ${{ github.sha }}
+      - name: Install socat
+        run: sudo apt-get install socat
+
+#      - name: Build Core Docker Images
+#        if: success() && github.ref == 'refs/heads/master'
+#        run: ./gradlew --no-daemon composeBuild --scan
+#        env:
+#          GIT_REVISION: ${{ github.sha }}
 
       - name: Run Kubernetes End-to-End Acceptance Tests
         run: |
