@@ -136,7 +136,7 @@ public class SchedulerApp {
     final ProcessBuilderFactory pbf = getProcessBuilderFactory(configs);
 
     final JobPersistence jobPersistence = new DefaultJobPersistence(database);
-    final ConfigPersistence configPersistence = new DefaultConfigPersistence(configRoot);
+    final ConfigPersistence configPersistence = new DefaultConfigPersistence(configRoot, configs.getAirbyteVersion());
     final ConfigRepository configRepository = new ConfigRepository(configPersistence);
 
     TrackingClientSingleton.initialize(

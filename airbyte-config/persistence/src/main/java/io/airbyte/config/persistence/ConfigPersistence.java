@@ -31,6 +31,8 @@ import java.util.List;
 
 public interface ConfigPersistence {
 
+  String getAirbyteVersion();
+
   <T> T getConfig(ConfigSchema configType,
                   String configId,
                   Class<T> clazz)

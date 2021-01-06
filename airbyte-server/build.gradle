@@ -12,6 +12,8 @@ dependencies {
     implementation group: 'org.glassfish.jersey.media', name: 'jersey-media-json-jackson'
     implementation group: 'org.glassfish.jersey.ext', name: 'jersey-bean-validation'
 
+    implementation group: 'org.apache.commons', name: 'commons-compress', version: '1.20'
+
     implementation project(':airbyte-analytics')
     implementation project(':airbyte-api')
     implementation project(':airbyte-config:models')
