@@ -100,6 +100,7 @@ public abstract class StandardSourceTest {
       "airbyte/source-exchangeratesapi-singer",
       "airbyte/source-hubspot-singer",
       "airbyte/source-marketo-singer",
+      "airbyte/source-mixpanel-singer",
       "airbyte/source-twilio-singer",
       "airbyte/source-braintree-singer");
 

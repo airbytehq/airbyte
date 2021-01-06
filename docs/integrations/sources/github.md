@@ -8,17 +8,30 @@ This Github source wraps the [Singer Github Tap](https://github.com/singer-io/ta
 
 ### Output schema
 
-This connector outputs the following streams:
-
-* [Assignees](https://developer.github.com/v3/issues/assignees/#list-assignees)
-* [Collaborators](https://developer.github.com/v3/repos/collaborators/#list-collaborators)
-* [Commits](https://developer.github.com/v3/repos/commits/#list-commits-on-a-repository)
-* [Issues](https://developer.github.com/v3/issues/#list-issues-for-a-repository)
-* [Pull Requests](https://developer.github.com/v3/pulls/#list-pull-requests)
-* [Comments](https://developer.github.com/v3/issues/comments/#list-comments-in-a-repository)
-* [Reviews](https://developer.github.com/v3/pulls/reviews/#list-reviews-on-a-pull-request)
-* [Review Comments](https://developer.github.com/v3/pulls/comments)
-* [Stargazers](https://developer.github.com/v3/activity/starring/#list-stargazers)
+This connector outputs the following streams: 
+  * [Assignees](https://developer.github.com/v3/issues/assignees/#list-assignees)
+  * [Collaborators](https://developer.github.com/v3/repos/collaborators/#list-collaborators)
+  * [Comments](https://developer.github.com/v3/issues/comments/#list-comments-in-a-repository)
+  * [Commits](https://developer.github.com/v3/repos/commits/#list-commits-on-a-repository)
+  * [Commit comments](https://docs.github.com/en/free-pro-team@latest/rest/reference/repos#list-commit-comments-for-a-repository)
+  * [Events](https://docs.github.com/en/free-pro-team@latest/rest/reference/activity#list-repository-events)  
+  * [Issues](https://developer.github.com/v3/issues/#list-issues-for-a-repository)
+  * [Issue events](https://docs.github.com/en/free-pro-team@latest/rest/reference/issues#list-issue-events-for-a-repository) 
+  * [Issue labels](https://docs.github.com/en/free-pro-team@latest/rest/reference/issues#list-labels-for-a-repository)
+  * [Issue milestones](https://docs.github.com/en/free-pro-team@latest/rest/reference/issues#list-milestones)
+  * [Projects](https://docs.github.com/en/free-pro-team@latest/rest/reference/projects#list-repository-projects) 
+  * [Project cards](https://docs.github.com/en/free-pro-team@latest/rest/reference/projects#list-project-cards) 
+  * [Project columns](https://docs.github.com/en/free-pro-team@latest/rest/reference/projects#list-project-columns)
+  * [Pull requests](https://developer.github.com/v3/pulls/#list-pull-requests)
+  * [PR commits](https://docs.github.com/en/free-pro-team@latest/rest/reference/pulls#list-commits-on-a-pull-request)  
+  * [Pull request reviews](https://docs.github.com/en/free-pro-team@latest/rest/reference/pulls#reviews)
+  * [Releases](https://docs.github.com/en/free-pro-team@latest/rest/reference/repos#list-releases)  
+  * [Reviews](https://developer.github.com/v3/pulls/reviews/#list-reviews-on-a-pull-request)
+  * [Review comments](https://developer.github.com/v3/pulls/comments)
+  * [Stargazers](https://developer.github.com/v3/activity/starring/#list-stargazers)
+  * [Teams](https://docs.github.com/en/free-pro-team@latest/rest/reference/teams#list-teams)
+  * [Team members](https://docs.github.com/en/free-pro-team@latest/rest/reference/teams#list-team-members) 
+  * [Team memberships](https://docs.github.com/en/free-pro-team@latest/rest/reference/teams#get-team-membership-for-a-user)
 
 ### Features
 
@@ -38,11 +51,15 @@ The Github connector should not run into Github API limitations under normal usa
 ### Requirements
 
 * Github Account
-* Github Personal Access Token.
+* Github Personal Access Token wih the necessary permissions (described below)
 
 ### Setup guide
 
 Log into Github and then generate a [personal access token](https://github.com/settings/tokens).
 
-We recommend creating a restricted key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access.
+Your token should have at least the `repo` scope. Depending on which streams you want to sync, the user generating the token needs more permissions: 
+* For syncing Collaborators, the user which generates the personal access token must be a collaborator. To become a collaborator, they must be invited by an owner. Read more about access permissions [here](https://docs.github.com/en/free-pro-team@latest/github/getting-started-with-github/access-permissions-on-github).
+* Syncing [Teams](https://docs.github.com/en/free-pro-team@latest/github/setting-up-and-managing-organizations-and-teams/about-teams) is only available to authenticated members of a team's [organization](https://docs.github.com/en/free-pro-team@latest/rest/reference/orgs). [Personal user accounts](https://docs.github.com/en/free-pro-team@latest/github/getting-started-with-github/types-of-github-accounts) and repositories belonging to them don't have access to Teams features.
+* To sync the Projects stream, the repository must have the Projects feature enabled.
+
 

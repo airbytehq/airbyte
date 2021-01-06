@@ -26,16 +26,22 @@ package io.airbyte.scheduler;
 
 import com.google.common.base.Preconditions;
 import io.airbyte.config.JobConfig;
+import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 public class Job {
 
+  public static final Set<ConfigType> REPLICATION_TYPES = EnumSet.of(ConfigType.SYNC, ConfigType.RESET_CONNECTION);
+
   private final long id;
+  private final ConfigType configType;
   private final String scope;
   private final JobConfig config;
   private final JobStatus status;
@@ -45,6 +51,7 @@ public class Job {
   private final List<Attempt> attempts;
 
   public Job(final long id,
+             final ConfigType configType,
              final String scope,
              final JobConfig config,
              final List<Attempt> attempts,
@@ -53,6 +60,7 @@ public class Job {
              final long createdAtInSecond,
              final long updatedAtInSecond) {
     this.id = id;
+    this.configType = configType;
     this.scope = scope;
     this.config = config;
     this.attempts = attempts;
@@ -64,6 +72,10 @@ public class Job {
 
   public long getId() {
     return id;
+  }
+
+  public ConfigType getConfigType() {
+    return configType;
   }
 
   public String getScope() {
