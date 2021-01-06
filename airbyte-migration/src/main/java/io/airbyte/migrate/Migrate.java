@@ -38,11 +38,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.BaseStream;
 import java.util.stream.Collectors;
@@ -104,53 +105,78 @@ public class Migrate {
     IOs.copyDir(inputPath, migrateConfig.getOutputPath());
   }
 
-  private Path runMigration(Migration migration, Path inputPath) throws IOException {
-    final Path outputDir = Files.createDirectory(workspaceRoot.resolve(migration.getVersion()));
+  private Path runMigration(Migration migration, Path inputRoot) throws IOException {
+    final Path tmpOutputDir = Files.createDirectory(workspaceRoot.resolve(migration.getVersion()));
+
+    // gather all of input paths in the dataset.
+    final Set<Path> inputFilePaths = new HashSet<>();
+    inputFilePaths.addAll(IOs.listFiles(inputRoot.resolve("config")));
+    // inputFilePaths.addAll(IOs.listFiles(inputRoot.resolve("jobs")));
+
+    // create a map of each input resource path to the input stream.
+    final Map<Path, Stream<JsonNode>> inputData = createInputStreams(migration, inputFilePaths, inputRoot);
+    // create a map of each output resource path to the output stream.
+    final Map<Path, RecordConsumer> outputStreams = createOutputStreams(migration, tmpOutputDir);
+    // make the java compiler happy (it can't resolve that RecordConsumer is, in fact, a
+    // Consumer<JsonNode>).
+    final Map<Path, Consumer<JsonNode>> outputDataWithGenericType = mapRecordConsumerToConsumer(outputStreams);
+
+    // do the migration.
+    migration.migrate(inputData, outputDataWithGenericType);
+
+    // clean up.
+    inputData.values().forEach(BaseStream::close);
+    outputStreams.values().forEach(v -> Exceptions.toRuntime(v::close));
+
+    return tmpOutputDir;
+  }
+
+  private Map<Path, Stream<JsonNode>> createInputStreams(Migration migration, Set<Path> inputFilePaths, Path inputDir) throws IOException {
+    assertSamePaths(migration.getInputSchema().keySet(), inputFilePaths.stream().map(inputDir::relativize).collect(Collectors.toSet()));
 
     final Map<Path, Stream<JsonNode>> inputData = new HashMap<>();
-    final Map<Path, RecordConsumer> outputData = new HashMap<>();
-
-    final List<Path> inputFilePaths = new ArrayList<>();
-    inputFilePaths.addAll(IOs.listFiles(inputPath.resolve("config")));
-    // inputFilePaths.addAll(IOs.listFiles(inputPath.resolve("jobs")));
-
-    // todo use map instead.
     for (final Path absolutePath : inputFilePaths) {
-      final Path relativePath = inputPath.relativize(absolutePath);
-      // final String keyName =
-      // com.google.common.io.Files.getNameWithoutExtension(path.getFileName().toString());
-      if (!migration.getInputSchema().containsKey(relativePath)) {
-        throw new IllegalArgumentException(
-            String.format("Input data contains resource not declared in migration. resource: %s, declared resources: %s", relativePath,
-                migration.getInputSchema().keySet()));
-      }
-
+      final Path relativePath = inputDir.relativize(absolutePath);
       final Stream<JsonNode> recordInputStream = Files.lines(absolutePath)
           .map(Jsons::deserialize)
-          .peek(r -> Exceptions.toRuntime(() -> jsonSchemaValidator.ensure(r, migration.getInputSchema().get(relativePath))));
+          .peek(r -> Exceptions.toRuntime(() -> jsonSchemaValidator.ensure(migration.getInputSchema().get(relativePath), r)));
       inputData.put(relativePath, recordInputStream);
     }
+    return inputData;
+  }
+
+  private static void assertSamePaths(Set<Path> schemaPaths, Set<Path> inputFilePaths) {
+    final HashSet<Path> pathsInSchemaNotInData = new HashSet<>(schemaPaths);
+    pathsInSchemaNotInData.removeAll(inputFilePaths);
+    final HashSet<Path> pathsInDataNoInSchema = new HashSet<>(inputFilePaths);
+    pathsInDataNoInSchema.removeAll(schemaPaths);
+
+    Preconditions.checkState(schemaPaths.equals(inputFilePaths), String.format(
+        "Input Schema input resource paths are not the same as the paths in the data. Paths present in schema and not in data: %s. Paths present in data and not present in schema: %s",
+        pathsInSchemaNotInData, pathsInDataNoInSchema));
+  }
+
+  private Map<Path, RecordConsumer> createOutputStreams(Migration migration, Path outputDir) throws IOException {
+    final Map<Path, RecordConsumer> pathToOutputStream = new HashMap<>();
 
     for (Map.Entry<Path, JsonNode> entry : migration.getOutputSchema().entrySet()) {
       final Path path = entry.getKey();
+      final JsonNode schema = entry.getValue();
       final Path absolutePath = outputDir.resolve(entry.getKey());
       Files.createDirectories(absolutePath.getParent());
       Files.createFile(absolutePath);
       final BufferedWriter recordOutputWriter = new BufferedWriter(new FileWriter(absolutePath.toFile()));
-      final RecordConsumer recordConsumer = new RecordConsumer(recordOutputWriter, jsonSchemaValidator, migration.getOutputSchema().get(path));
-      outputData.put(path, recordConsumer);
+      final RecordConsumer recordConsumer = new RecordConsumer(recordOutputWriter, jsonSchemaValidator, schema);
+      pathToOutputStream.put(path, recordConsumer);
     }
 
-    // make the java compiler happy.
-    final Map<Path, Consumer<JsonNode>> outputDataWithGenericType = outputData.entrySet()
+    return pathToOutputStream;
+  }
+
+  private Map<Path, Consumer<JsonNode>> mapRecordConsumerToConsumer(Map<Path, RecordConsumer> recordConsumers) {
+    return recordConsumers.entrySet()
         .stream()
         .collect(Collectors.toMap(Entry::getKey, e -> (v) -> e.getValue().accept(v)));
-    migration.migrate(inputData, outputDataWithGenericType);
-
-    inputData.values().forEach(BaseStream::close);
-    outputData.values().forEach(v -> Exceptions.toRuntime(v::close));
-
-    return outputDir;
   }
 
   private static String getCurrentVersion(Path path) {

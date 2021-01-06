@@ -32,7 +32,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-public class MigrationV0_11_1 extends MigrationV0_11_0 implements Migration {
+public class MigrationV0_11_1 implements Migration {
 
   @Override
   public String getVersion() {
@@ -41,7 +41,7 @@ public class MigrationV0_11_1 extends MigrationV0_11_0 implements Migration {
 
   @Override
   public Map<Path, JsonNode> getInputSchema() {
-    return new MigrationV0_11_0().getInputSchema();
+    return new MigrationV0_11_0().getOutputSchema();
   }
 
   @Override
@@ -49,13 +49,12 @@ public class MigrationV0_11_1 extends MigrationV0_11_0 implements Migration {
     return getInputSchema();
   }
 
-  // no op migration.
   @Override
   public void migrate(Map<Path, Stream<JsonNode>> inputData, Map<Path, Consumer<JsonNode>> outputData) {
     for (Map.Entry<Path, Stream<JsonNode>> entry : inputData.entrySet()) {
       final Consumer<JsonNode> recordConsumer = outputData.get(entry.getKey());
       entry.getValue().forEach(r -> {
-        ((ObjectNode) r).put("test", "test");
+        ((ObjectNode) r).put("tombstone", "test");
         recordConsumer.accept(r);
       });
     }

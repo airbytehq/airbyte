@@ -32,12 +32,17 @@ import io.airbyte.commons.json.JsonSchemas;
 import io.airbyte.migrate.Migration;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+/**
+ * This migration is a bit of an outlier. As the first migration we just use it certify the schema
+ * we expect to be present at the start of history.
+ */
 public class MigrationV0_11_0 implements Migration {
 
   @Override
@@ -47,6 +52,11 @@ public class MigrationV0_11_0 implements Migration {
 
   @Override
   public Map<Path, JsonNode> getInputSchema() {
+    return Collections.emptyMap();
+  }
+
+  @Override
+  public Map<Path, JsonNode> getOutputSchema() {
     final Map<Path, JsonNode> schemas = new HashMap<>();
 
     // add config schemas.
@@ -71,11 +81,6 @@ public class MigrationV0_11_0 implements Migration {
     return schemas;
   }
 
-  @Override
-  public Map<Path, JsonNode> getOutputSchema() {
-    return getInputSchema();
-  }
-
   // no op migration.
   @Override
   public void migrate(Map<Path, Stream<JsonNode>> inputData, Map<Path, Consumer<JsonNode>> outputData) {
@@ -86,7 +91,6 @@ public class MigrationV0_11_0 implements Migration {
   }
 
   enum ConfigKeys {
-    // configs
     STANDARD_WORKSPACE,
     STANDARD_SOURCE_DEFINITION,
     STANDARD_DESTINATION_DEFINITION,

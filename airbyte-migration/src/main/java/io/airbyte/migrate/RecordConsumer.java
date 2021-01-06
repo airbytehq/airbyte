@@ -49,7 +49,7 @@ public class RecordConsumer implements CloseableConsumer<JsonNode> {
   public void accept(JsonNode jsonNode) {
     // todo validate.
     try {
-      jsonSchemaValidator.ensure(jsonNode, schema);
+      jsonSchemaValidator.ensure(schema, jsonNode);
       fileWriter.write(Jsons.serialize(jsonNode));
       fileWriter.newLine();
     } catch (IOException | JsonValidationException e) {
