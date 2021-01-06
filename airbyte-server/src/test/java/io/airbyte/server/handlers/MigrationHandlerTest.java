@@ -27,8 +27,16 @@ package io.airbyte.server.handlers;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.server.helpers.SourceDefinitionHelpers;
+import io.airbyte.validation.json.JsonValidationException;
+import java.io.IOException;
+import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -46,8 +54,25 @@ public class MigrationHandlerTest {
     migrationHandler = new MigrationHandler(configRepository, jobPersistence);
   }
 
+  private StandardWorkspace generateWorkspace() {
+    final UUID workspaceId = PersistenceConstants.DEFAULT_WORKSPACE_ID;
+
+    return new StandardWorkspace()
+        .withWorkspaceId(workspaceId)
+        .withCustomerId(UUID.randomUUID())
+        .withEmail("test@airbyte.io")
+        .withName("test workspace")
+        .withSlug("default")
+        .withInitialSetupComplete(false)
+        .withOnboardingComplete(true);
+  }
+
   @Test
-  void testMigration() {
+  void testMigration() throws ConfigNotFoundException, IOException, JsonValidationException {
+    when(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID))
+        .thenReturn(generateWorkspace());
+    when(configRepository.listStandardSources())
+        .thenReturn(List.of(SourceDefinitionHelpers.generateSource()));
     migrationHandler.importData(migrationHandler.exportData());
     // TODO check before/after
   }

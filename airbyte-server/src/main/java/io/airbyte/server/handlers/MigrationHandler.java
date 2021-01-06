@@ -24,15 +24,23 @@
 
 package io.airbyte.server.handlers;
 
+import io.airbyte.config.persistence.ConfigNotFoundException;
+import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.DefaultConfigPersistence;
+import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.validation.json.JsonValidationException;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.zip.GZIPOutputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
@@ -43,7 +51,7 @@ import org.slf4j.LoggerFactory;
 public class MigrationHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MigrationHandler.class);
-  private static final String ARCHIVE_FILE_NAME = "airbyte_config_data.tar.gz";
+  private static final String ARCHIVE_FILE_NAME = "airbyte_config_data";
   private static final String VERSION_FILE_NAME = "VERSION";
 
   private final ConfigRepository configRepository;
@@ -58,40 +66,125 @@ public class MigrationHandler {
     try {
       // Create temp folder where to export data
       final Path tempFolder = Files.createTempDirectory("airbyte_archive");
-      // TODO deleteOnExit?
-      final File archiveFile = tempFolder.resolve(ARCHIVE_FILE_NAME).toFile();
-      final TarArchiveOutputStream archive =
-          new TarArchiveOutputStream(new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(archiveFile))));
-      exportAirbyteConfig(tempFolder, archive);
-      exportAirbyteDatabase(tempFolder, archive);
-      exportVersionFile(tempFolder, archive);
-      archive.close();
-      return archiveFile.toPath();
+      FileUtils.forceDeleteOnExit(tempFolder.toFile());
+      exportAirbyteConfig(tempFolder);
+      exportAirbyteDatabase(tempFolder);
+      exportVersionFile(tempFolder);
+      final Path archive = createArchive(tempFolder);
+      FileUtils.deleteDirectory(tempFolder.toFile());
+      return archive;
     } catch (IOException e) {
       LOGGER.error("Export Data failed.");
       throw new RuntimeException(e);
     }
   }
 
-  private void exportAirbyteConfig(Path tempFolder, TarArchiveOutputStream archive) {
+  private void exportAirbyteConfig(Path tempFolder) {
+    LOGGER.info(String.format("Exporting Airbyte Configs to %s", tempFolder));
 
+    // TODO Change persistence to YAML persistence instead of Default
+    final ConfigPersistence persistence = new DefaultConfigPersistence(tempFolder, configRepository.getAirbyteVersion());
+    final ConfigRepository tmpConfigRepository = new ConfigRepository(persistence);
+
+    try {
+      tmpConfigRepository.writeStandardWorkspace(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID));
+      configRepository.listStandardSources()
+          .forEach(config -> {
+            try {
+              tmpConfigRepository.writeStandardSource(config);
+            } catch (IOException | JsonValidationException e) {
+              throw new RuntimeException(e);
+            }
+          });
+      configRepository.listStandardDestinationDefinitions()
+          .forEach(config -> {
+            try {
+              tmpConfigRepository.writeStandardDestinationDefinition(config);
+            } catch (IOException | JsonValidationException e) {
+              throw new RuntimeException(e);
+            }
+          });
+      configRepository.listSourceConnection()
+          .forEach(config -> {
+            try {
+              tmpConfigRepository.writeSourceConnection(config);
+            } catch (IOException | JsonValidationException e) {
+              throw new RuntimeException(e);
+            }
+          });
+      configRepository.listDestinationConnection()
+          .forEach(config -> {
+            try {
+              tmpConfigRepository.writeDestinationConnection(config);
+            } catch (IOException | JsonValidationException e) {
+              throw new RuntimeException(e);
+            }
+          });
+      configRepository.listStandardSyncs()
+          .forEach(config -> {
+            try {
+              tmpConfigRepository.writeStandardSync(config);
+              tmpConfigRepository.writeStandardSchedule(configRepository.getStandardSyncSchedule(config.getConnectionId()));
+            } catch (IOException | JsonValidationException | ConfigNotFoundException e) {
+              throw new RuntimeException(e);
+            }
+          });
+    } catch (IOException | JsonValidationException | ConfigNotFoundException e) {
+      throw new RuntimeException(e);
+    }
   }
 
-  private void exportAirbyteDatabase(Path tempFolder, TarArchiveOutputStream archive) {
+  private void exportAirbyteDatabase(Path tempFolder) {
+    LOGGER.info(String.format("Exporting Airbyte Database to %s", tempFolder));
     // TODO implement
   }
 
-  private void exportVersionFile(Path tempFolder, TarArchiveOutputStream archive) throws IOException {
+  private void exportVersionFile(Path tempFolder) throws IOException {
+    LOGGER.info(String.format("Exporting Airbyte Version to %s", tempFolder));
     final String currentVersion = configRepository.getAirbyteVersion();
     final File versionFile = Files.createFile(tempFolder.resolve(VERSION_FILE_NAME)).toFile();
     FileUtils.writeStringToFile(versionFile, currentVersion, Charset.defaultCharset());
-    compressFile(versionFile, VERSION_FILE_NAME, archive);
   }
 
-  static private void compressFile(final File file, final String filename, final TarArchiveOutputStream archive) throws IOException {
-    final TarArchiveEntry tarEntry = new TarArchiveEntry(file, filename);
+  private Path createArchive(Path tempFolder) throws IOException {
+    final Path archiveFile = Files.createTempFile(ARCHIVE_FILE_NAME, ".tar.gz");
+    archiveFile.toFile().deleteOnExit();
+    LOGGER.info(String.format("Creating archive file in %s from %s", archiveFile, tempFolder));
+    final TarArchiveOutputStream archive =
+        new TarArchiveOutputStream(new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(archiveFile.toFile()))));
+    Files.walkFileTree(tempFolder, new SimpleFileVisitor<>() {
+
+      @Override
+      public FileVisitResult visitFile(Path file, BasicFileAttributes attributes) {
+        // only copy files, no symbolic links
+        if (attributes.isSymbolicLink()) {
+          return FileVisitResult.CONTINUE;
+        }
+        Path targetFile = tempFolder.relativize(file);
+        try {
+          compressFile(file, targetFile, archive);
+        } catch (IOException e) {
+          LOGGER.error(String.format("Failed to archive file %s: %s", file, e));
+          throw new RuntimeException(e);
+        }
+        return FileVisitResult.CONTINUE;
+      }
+
+      @Override
+      public FileVisitResult visitFileFailed(Path file, IOException exc) {
+        LOGGER.error(String.format("Failed to include file %s in archive", file));
+        return FileVisitResult.CONTINUE;
+      }
+
+    });
+    archive.close();
+    return archiveFile;
+  }
+
+  static private void compressFile(final Path file, final Path filename, final TarArchiveOutputStream archive) throws IOException {
+    final TarArchiveEntry tarEntry = new TarArchiveEntry(file.toFile(), filename.toString());
     archive.putArchiveEntry(tarEntry);
-    Files.copy(file.toPath(), archive);
+    Files.copy(file, archive);
     archive.closeArchiveEntry();
   }
 
