@@ -22,5 +22,4 @@ echo "Waiting for services to begin"
 sleep 10 # TODO need a better way to wait
 
 echo "Running e2e tests via gradle"
-./gradlew --no-daemon :airbyte-tests:acceptanceTests --scan --tests "*AcceptanceTests"
-# todo: add back in --rerun-tasks
+./gradlew --no-daemon :airbyte-tests:acceptanceTests --rerun-tasks --scan --tests "*AcceptanceTests"

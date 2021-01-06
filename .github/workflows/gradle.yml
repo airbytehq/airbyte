@@ -33,6 +33,7 @@ jobs:
           key: ${{ secrets.CACHE_VERSION }}-pip-${{ runner.os }}-${{ hashFiles('**/setup.py') }}-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
             ${{ secrets.CACHE_VERSION }}-pip-${{ runner.os }}-
+
       - name: Npm Caching
         uses: actions/cache@v2
         with:
@@ -41,6 +42,7 @@ jobs:
           key: ${{ secrets.CACHE_VERSION }}-npm-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ secrets.CACHE_VERSION }}-npm-${{ runner.os }}-
+
       # this intentionally does not use restore-keys so we don't mess with gradle caching
       - name: Gradle and Python Caching
         uses: actions/cache@v2
