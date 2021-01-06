@@ -6,7 +6,7 @@ set -e
 
 assert_root
 
-trap 'trap - SIGTERM && kill 0 && kubectl logs svc/airbyte-server-svc' SIGINT SIGTERM EXIT
+trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT
 
 echo "Starting app..."
 
@@ -40,4 +40,6 @@ echo "============"
 kubectl port-forward svc/airbyte-server-svc 8001:8001 &
 
 echo "Running e2e tests via gradle..."
-./gradlew --no-daemon :airbyte-tests:acceptanceTests --scan --tests "*AcceptanceTestsKube"
+./gradlew --no-daemon :airbyte-tests:acceptanceTests --scan --tests "*AcceptanceTestsKube" || true
+kubectl logs svc/airbyte-server-svc
+exit 1
