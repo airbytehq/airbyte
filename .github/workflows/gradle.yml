@@ -90,10 +90,7 @@ jobs:
       - name: Run End-to-End Acceptance Tests
         run: ./tools/bin/acceptance_test.sh
 
-      - name: Set up K3s
-        uses: debianmaster/actions-k3s@master
-        with:
-          version: 'v1.18.2-k3s1'
+      - uses: engineerd/setup-kind@v0.5.0
 
       - name: Run Kubernetes End-to-End Acceptance Tests
         run: |
