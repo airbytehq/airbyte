@@ -194,11 +194,9 @@
           }
         },
         "source_defined_cursor": true,
-        "supported_sync_modes": ["incremental"],
-        "default_cursor_field": []
+        "supported_sync_modes": ["incremental"]
       },
-      "sync_mode": "incremental",
-      "cursor_field": []
+      "sync_mode": "incremental"
     }
   ]
 }
