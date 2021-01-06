@@ -25,17 +25,12 @@
 package io.airbyte.migrate.migrations;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.base.CaseFormat;
 import io.airbyte.commons.enums.Enums;
-import io.airbyte.commons.io.IOs;
-import io.airbyte.commons.json.JsonSchemas;
 import io.airbyte.migrate.Migration;
-import io.airbyte.validation.json.JsonSchemaValidator;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -60,23 +55,11 @@ public class MigrationV0_11_0 implements Migration {
     final Map<Path, JsonNode> schemas = new HashMap<>();
 
     // add config schemas.
-    schemas.putAll(getNameToSchemasFromPath(Path.of("migrations/migrationV0_11_0"), Path.of("config"), Enums.valuesAsStrings(ConfigKeys.class)));
+    schemas.putAll(
+        MigrationUtils.getNameToSchemasFromPath(Path.of("migrations/migrationV0_11_0"), Path.of("config"), Enums.valuesAsStrings(ConfigKeys.class)));
     // add db schemas.
-    schemas.putAll(getNameToSchemasFromPath(Path.of("migrations/migrationV0_11_0"), Path.of("jobs"), Enums.valuesAsStrings(JobKeys.class)));
-
-    return schemas;
-  }
-
-  private Map<Path, JsonNode> getNameToSchemasFromPath(Path resourceRoot, Path pathInResource, Set<String> schemasToInclude) {
-    final Map<Path, JsonNode> schemas = new HashMap<>();
-
-    final Path pathToSchemas = JsonSchemas.prepareSchemas(resourceRoot.resolve(pathInResource).toString(), MigrationV0_11_0.class);
-    IOs.listFiles(pathToSchemas)
-        .stream()
-        .map(f -> JsonSchemaValidator.getSchema(f.toFile()))
-        .filter(j -> schemasToInclude.contains(CaseFormat.UPPER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, j.get("title").asText())))
-        .forEach(
-            j -> schemas.put(pathInResource.resolve(CaseFormat.UPPER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, j.get("title").asText()) + ".yaml"), j));
+    schemas.putAll(
+        MigrationUtils.getNameToSchemasFromPath(Path.of("migrations/migrationV0_11_0"), Path.of("jobs"), Enums.valuesAsStrings(JobKeys.class)));
 
     return schemas;
   }

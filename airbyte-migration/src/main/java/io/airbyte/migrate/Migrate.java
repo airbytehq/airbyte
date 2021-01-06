@@ -111,7 +111,7 @@ public class Migrate {
     // gather all of input paths in the dataset.
     final Set<Path> inputFilePaths = new HashSet<>();
     inputFilePaths.addAll(IOs.listFiles(inputRoot.resolve("config")));
-    // inputFilePaths.addAll(IOs.listFiles(inputRoot.resolve("jobs")));
+    inputFilePaths.addAll(IOs.listFiles(inputRoot.resolve("jobs")));
 
     // create a map of each input resource path to the input stream.
     final Map<Path, Stream<JsonNode>> inputData = createInputStreams(migration, inputFilePaths, inputRoot);
@@ -173,7 +173,7 @@ public class Migrate {
     return pathToOutputStream;
   }
 
-  private Map<Path, Consumer<JsonNode>> mapRecordConsumerToConsumer(Map<Path, RecordConsumer> recordConsumers) {
+  private static Map<Path, Consumer<JsonNode>> mapRecordConsumerToConsumer(Map<Path, RecordConsumer> recordConsumers) {
     return recordConsumers.entrySet()
         .stream()
         .collect(Collectors.toMap(Entry::getKey, e -> (v) -> e.getValue().accept(v)));

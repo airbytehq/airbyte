@@ -47,7 +47,6 @@ public class RecordConsumer implements CloseableConsumer<JsonNode> {
 
   @Override
   public void accept(JsonNode jsonNode) {
-    // todo validate.
     try {
       jsonSchemaValidator.ensure(schema, jsonNode);
       fileWriter.write(Jsons.serialize(jsonNode));

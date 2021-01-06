@@ -26,13 +26,21 @@ package io.airbyte.migrate.migrations;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.commons.enums.Enums;
 import io.airbyte.migrate.Migration;
+import io.airbyte.migrate.migrations.MigrationV0_11_0.ConfigKeys;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+// todo (cgardens) - this migration is just an example. i will not commit it to master.
+/**
+ * This migration adds foo field to DestinationConnection and populates it with bar.
+ */
 public class MigrationV0_11_1 implements Migration {
+
+  private static final Path DESTINATION_CONNECTION_PATH = Path.of("config/DESTINATION_CONNECTION.yaml");
 
   @Override
   public String getVersion() {
@@ -46,15 +54,22 @@ public class MigrationV0_11_1 implements Migration {
 
   @Override
   public Map<Path, JsonNode> getOutputSchema() {
-    return getInputSchema();
+    final Map<Path, JsonNode> outputSchema = getInputSchema();
+    outputSchema.putAll(
+        MigrationUtils.getNameToSchemasFromPath(Path.of("migrations/migrationV0_11_1"), Path.of("config"), Enums.valuesAsStrings(ConfigKeys.class)));
+    return outputSchema;
   }
 
   @Override
   public void migrate(Map<Path, Stream<JsonNode>> inputData, Map<Path, Consumer<JsonNode>> outputData) {
     for (Map.Entry<Path, Stream<JsonNode>> entry : inputData.entrySet()) {
       final Consumer<JsonNode> recordConsumer = outputData.get(entry.getKey());
+
       entry.getValue().forEach(r -> {
-        ((ObjectNode) r).put("tombstone", "test");
+        if (entry.getKey().equals(DESTINATION_CONNECTION_PATH)) {
+          ((ObjectNode) r).put("foo", "bar");
+        }
+
         recordConsumer.accept(r);
       });
     }
