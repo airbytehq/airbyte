@@ -26,6 +26,7 @@ package io.airbyte.commons.io;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
+import io.airbyte.commons.lang.Exceptions;
 import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.File;
@@ -35,6 +36,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -77,6 +79,13 @@ public class IOs {
       return files.collect(Collectors.toList());
     } catch (IOException e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  public static void copyDir(Path src, Path dest) throws IOException {
+    try (Stream<Path> stream = Files.walk(src)) {
+      stream.forEach(
+          source -> Exceptions.toRuntime(() -> Files.copy(source, dest.resolve(src.relativize(source)), StandardCopyOption.REPLACE_EXISTING)));
     }
   }
 

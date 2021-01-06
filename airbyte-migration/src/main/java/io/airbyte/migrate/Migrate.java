@@ -51,14 +51,15 @@ import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
+import org.apache.commons.io.FileUtils;
 
 public class Migrate {
+
   private static final String VERSION_FILE_NAME = "VERSION";
 
   private static final List<Migration> MIGRATIONS = ImmutableList.of(
       new MigrationV0_11_0(),
-      new MigrationV0_11_1()
-  );
+      new MigrationV0_11_1());
 
   private final Path workspaceRoot;
   private final JsonSchemaValidator jsonSchemaValidator;
@@ -98,7 +99,9 @@ public class Migrate {
     }
 
     // write final output
-    Files.copy(inputPath, migrateConfig.getOutputPath());
+    FileUtils.deleteDirectory(migrateConfig.getOutputPath().toFile());
+    Files.createDirectories(migrateConfig.getOutputPath());
+    IOs.copyDir(inputPath, migrateConfig.getOutputPath());
   }
 
   @SuppressWarnings("UnstableApiUsage")
@@ -110,12 +113,14 @@ public class Migrate {
 
     final List<Path> inputFilePaths = new ArrayList<>();
     inputFilePaths.addAll(IOs.listFiles(inputPath.resolve("config")));
-//    inputFilePaths.addAll(IOs.listFiles(inputPath.resolve("jobs")));
+    // inputFilePaths.addAll(IOs.listFiles(inputPath.resolve("jobs")));
 
     for (final Path path : inputFilePaths) {
       final String keyName = com.google.common.io.Files.getNameWithoutExtension(path.getFileName().toString());
       if (!migration.getInputSchema().containsKey(keyName)) {
-        throw new IllegalArgumentException(String.format("Input data contains resource not declared in migration. resource: %s, declared resources: %s", keyName, migration.getInputSchema().keySet()));
+        throw new IllegalArgumentException(
+            String.format("Input data contains resource not declared in migration. resource: %s, declared resources: %s", keyName,
+                migration.getInputSchema().keySet()));
       }
 
       final Stream<JsonNode> recordInputStream = Files.lines(path)
@@ -134,8 +139,8 @@ public class Migrate {
 
     // make the java compiler happy.
     final Map<String, Consumer<JsonNode>> outputDataWithGenericType = outputData.entrySet()
-            .stream()
-            .collect(Collectors.toMap(Entry::getKey, e -> (v) -> e.getValue().accept(v)));
+        .stream()
+        .collect(Collectors.toMap(Entry::getKey, e -> (v) -> e.getValue().accept(v)));
     migration.migrate(inputData, outputDataWithGenericType);
 
     inputData.values().forEach(BaseStream::close);
@@ -206,6 +211,7 @@ public class Migrate {
     public String getTargetVersion() {
       return targetVersion;
     }
+
   }
 
 }

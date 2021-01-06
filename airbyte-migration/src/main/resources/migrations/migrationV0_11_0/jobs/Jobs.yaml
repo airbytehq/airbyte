@@ -18,8 +18,7 @@ properties:
   scope:
     type: string
   config:
-    type:
-      object
+    type: object
   status:
     type: string
   created_at:
