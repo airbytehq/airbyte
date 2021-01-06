@@ -43,14 +43,14 @@ public interface JobPersistence {
   //
 
   /**
-   * Creates a new job. Its initial status will be pending.
+   * Enqueue a new job. Its initial status will be pending.
    *
    * @param scope key that will be used to determine if two jobs should not be run at the same time.
    * @param jobConfig configuration for the job
    * @return job id
    * @throws IOException exception due to interaction with persistence
    */
-  long createJob(String scope, JobConfig jobConfig) throws IOException;
+  Optional<Long> enqueueJob(String scope, JobConfig jobConfig) throws IOException;
 
   /**
    * Set job status from current status to PENDING. Throws {@link IllegalStateException} if the job is
@@ -128,7 +128,7 @@ public interface JobPersistence {
 
   List<Job> listJobsWithStatus(JobConfig.ConfigType configType, JobStatus status) throws IOException;
 
-  Optional<Job> getLastSyncJob(UUID connectionId) throws IOException;
+  Optional<Job> getLastReplicationJob(UUID connectionId) throws IOException;
 
   /**
    * if a job does not succeed, we assume that it synced nothing. that is the most conservative

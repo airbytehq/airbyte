@@ -26,6 +26,7 @@ package io.airbyte.workers.process;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import io.airbyte.workers.WorkerException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -38,7 +39,7 @@ class DockerProcessBuilderFactoryTest {
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
 
   @Test
-  public void testImageExists() throws IOException {
+  public void testImageExists() throws IOException, WorkerException {
     Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "pbf");
 
     final DockerProcessBuilderFactory pbf = new DockerProcessBuilderFactory(workspaceRoot, "", "", "");
@@ -46,7 +47,7 @@ class DockerProcessBuilderFactoryTest {
   }
 
   @Test
-  public void testImageDoesNotExist() throws IOException {
+  public void testImageDoesNotExist() throws IOException, WorkerException {
     Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "pbf");
 
     final DockerProcessBuilderFactory pbf = new DockerProcessBuilderFactory(workspaceRoot, "", "", "");
