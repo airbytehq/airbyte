@@ -34,7 +34,6 @@ class SourceMixpanelSinger(BaseSingerSource):
     tap_name = "Mixpanel API"
     api_error = MixpanelError
     client_class = MixpanelClient
-    force_full_refresh = True
 
     USER_AGENT = "tap-mixpanel contact@airbyte.io"
 
@@ -51,7 +50,7 @@ class SourceMixpanelSinger(BaseSingerSource):
             "date_window_size": raw_config.get("date_window_size", 30),
             "attribution_window": raw_config.get("attribution_window", 5),
             "project_timezone": raw_config.get("project_timezone", "US/Pacific"),
-            "select_properties_by_default": raw_config.get("select_properties_by_default"),
+            "select_properties_by_default": raw_config.get("select_properties_by_default", True),
         }
         # drop None values as some of them has no default fallback
         return {k: v for k, v in airbyte_config.items() if v is not None}

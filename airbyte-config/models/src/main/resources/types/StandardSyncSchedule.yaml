@@ -1,10 +1,10 @@
 ---
 "$schema": http://json-schema.org/draft-07/schema#
 "$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/StandardSyncSchedule.yaml
+title: StandardSyncSchedule
 description:
   ideally this should be a union but java codegen does not handle the union
   type properly.
-title: StandardScheduleConfiguration
 type: object
 required:
   - manual
