@@ -6,8 +6,6 @@ set -e
 
 assert_root
 
-trap 'trap - SIGTERM && kill 0' SIGINT SIGTERM EXIT
-
 echo "Starting app..."
 
 echo "Applying dev manifests to kubernetes..."
