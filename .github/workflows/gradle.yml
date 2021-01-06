@@ -136,10 +136,11 @@ jobs:
         with:
           python-version: '3.7'
 
-      - name: Set up K3s
-        uses: debianmaster/actions-k3s@master
+      - name: Setup Minikube
+        uses: manusa/actions-setup-minikube@v2.3.0
         with:
-          version: 'v1.18.2-k3s1'
+          minikube version: 'v1.16.0'
+          kubernetes version: 'v1.19.2'
 
       - name: Build Core Docker Images
         if: success() && github.ref == 'refs/heads/master'
