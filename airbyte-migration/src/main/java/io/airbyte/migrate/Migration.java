@@ -25,6 +25,7 @@
 package io.airbyte.migrate;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -33,10 +34,10 @@ public interface Migration {
 
   String getVersion();
 
-  Map<String, JsonNode> getInputSchema();
+  Map<Path, JsonNode> getInputSchema();
 
-  Map<String, JsonNode> getOutputSchema();
+  Map<Path, JsonNode> getOutputSchema();
 
-  void migrate(Map<String, Stream<JsonNode>> inputData, Map<String, Consumer<JsonNode>> outputData);
+  void migrate(Map<Path, Stream<JsonNode>> inputData, Map<Path, Consumer<JsonNode>> outputData);
 
 }

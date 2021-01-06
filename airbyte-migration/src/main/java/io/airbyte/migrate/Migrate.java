@@ -104,41 +104,45 @@ public class Migrate {
     IOs.copyDir(inputPath, migrateConfig.getOutputPath());
   }
 
-  @SuppressWarnings("UnstableApiUsage")
   private Path runMigration(Migration migration, Path inputPath) throws IOException {
     final Path outputDir = Files.createDirectory(workspaceRoot.resolve(migration.getVersion()));
 
-    final Map<String, Stream<JsonNode>> inputData = new HashMap<>();
-    final Map<String, RecordConsumer> outputData = new HashMap<>();
+    final Map<Path, Stream<JsonNode>> inputData = new HashMap<>();
+    final Map<Path, RecordConsumer> outputData = new HashMap<>();
 
     final List<Path> inputFilePaths = new ArrayList<>();
     inputFilePaths.addAll(IOs.listFiles(inputPath.resolve("config")));
     // inputFilePaths.addAll(IOs.listFiles(inputPath.resolve("jobs")));
 
-    for (final Path path : inputFilePaths) {
-      final String keyName = com.google.common.io.Files.getNameWithoutExtension(path.getFileName().toString());
-      if (!migration.getInputSchema().containsKey(keyName)) {
+    // todo use map instead.
+    for (final Path absolutePath : inputFilePaths) {
+      final Path relativePath = inputPath.relativize(absolutePath);
+      // final String keyName =
+      // com.google.common.io.Files.getNameWithoutExtension(path.getFileName().toString());
+      if (!migration.getInputSchema().containsKey(relativePath)) {
         throw new IllegalArgumentException(
-            String.format("Input data contains resource not declared in migration. resource: %s, declared resources: %s", keyName,
+            String.format("Input data contains resource not declared in migration. resource: %s, declared resources: %s", relativePath,
                 migration.getInputSchema().keySet()));
       }
 
-      final Stream<JsonNode> recordInputStream = Files.lines(path)
+      final Stream<JsonNode> recordInputStream = Files.lines(absolutePath)
           .map(Jsons::deserialize)
-          .peek(r -> Exceptions.toRuntime(() -> jsonSchemaValidator.ensure(r, migration.getInputSchema().get(keyName))));
-      inputData.put(keyName, recordInputStream);
+          .peek(r -> Exceptions.toRuntime(() -> jsonSchemaValidator.ensure(r, migration.getInputSchema().get(relativePath))));
+      inputData.put(relativePath, recordInputStream);
     }
 
-    for (Map.Entry<String, JsonNode> entry : migration.getOutputSchema().entrySet()) {
-      final String keyName = entry.getKey();
-      final Path outputFile = Files.createFile(outputDir.resolve(keyName + ".yaml"));
-      final BufferedWriter recordOutputWriter = new BufferedWriter(new FileWriter(outputFile.toFile()));
-      final RecordConsumer recordConsumer = new RecordConsumer(recordOutputWriter, jsonSchemaValidator, migration.getOutputSchema().get(keyName));
-      outputData.put(keyName, recordConsumer);
+    for (Map.Entry<Path, JsonNode> entry : migration.getOutputSchema().entrySet()) {
+      final Path path = entry.getKey();
+      final Path absolutePath = outputDir.resolve(entry.getKey());
+      Files.createDirectories(absolutePath.getParent());
+      Files.createFile(absolutePath);
+      final BufferedWriter recordOutputWriter = new BufferedWriter(new FileWriter(absolutePath.toFile()));
+      final RecordConsumer recordConsumer = new RecordConsumer(recordOutputWriter, jsonSchemaValidator, migration.getOutputSchema().get(path));
+      outputData.put(path, recordConsumer);
     }
 
     // make the java compiler happy.
-    final Map<String, Consumer<JsonNode>> outputDataWithGenericType = outputData.entrySet()
+    final Map<Path, Consumer<JsonNode>> outputDataWithGenericType = outputData.entrySet()
         .stream()
         .collect(Collectors.toMap(Entry::getKey, e -> (v) -> e.getValue().accept(v)));
     migration.migrate(inputData, outputDataWithGenericType);
