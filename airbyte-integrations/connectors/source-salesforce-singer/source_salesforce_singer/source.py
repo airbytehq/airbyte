@@ -85,9 +85,5 @@ class SourceSalesforceSinger(SingerSource):
         # Airbyte system to handle these changes, instead of the singer source.
         # todo (cgardens) - this is supposed to be handled in the ui and the api but neither of them are able to
         #  handle it right now. issue: https://github.com/airbytehq/airbyte/issues/892
-        rendered_config = {
-            "is_sandbox": False,
-            **raw_config,
-            "select_fields_by_default": True
-        }
+        rendered_config = {"is_sandbox": False, **raw_config, "select_fields_by_default": True}
         return rendered_config

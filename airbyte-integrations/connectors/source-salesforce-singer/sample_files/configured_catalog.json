@@ -17,8 +17,8 @@
             },
             "CreatedDate": {
               "anyOf": [
-                {"type": "string", "format": "date-time"},
-                {"type": ["string", "null"]}
+                { "type": "string", "format": "date-time" },
+                { "type": ["string", "null"] }
               ]
             },
             "IsAuthenticated": {
@@ -26,8 +26,8 @@
             },
             "ChallengeSentDate": {
               "anyOf": [
-                {"type": "string", "format": "date-time"},
-                {"type": ["string", "null"]}
+                { "type": "string", "format": "date-time" },
+                { "type": ["string", "null"] }
               ]
             },
             "ChallengeMethod": {
