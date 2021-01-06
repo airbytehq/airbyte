@@ -3,26 +3,6 @@ plugins {
 }
 
 dependencies {
-
-//    implementation group: 'org.eclipse.jetty', name: 'jetty-server', version: '9.4.31.v20200723'
-//    implementation group: 'org.eclipse.jetty', name: 'jetty-servlet', version: '9.4.31.v20200723'
-//
-//    implementation group: 'org.glassfish.jaxb', name: 'jaxb-runtime', version: '2.3.3'
-//    implementation group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet'
-//    implementation group: 'org.glassfish.jersey.inject', name: 'jersey-hk2'
-//    implementation group: 'org.glassfish.jersey.media', name: 'jersey-media-json-jackson'
-//    implementation group: 'org.glassfish.jersey.ext', name: 'jersey-bean-validation'
-//
-//    implementation project(':airbyte-analytics')
-//    implementation project(':airbyte-api')
-//    implementation project(':airbyte-config:models')
-//    implementation project(':airbyte-config:persistence')
-//    implementation project(':airbyte-config:init')
-//    implementation project(':airbyte-db')
-//    implementation project(":airbyte-json-validation")
-//    implementation project(':airbyte-protocol:models')
-//    implementation project(':airbyte-scheduler')
-
     implementation project(':airbyte-json-validation')
 
     implementation 'net.sourceforge.argparse4j:argparse4j:0.8.1'

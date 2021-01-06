@@ -1,16 +1,10 @@
-FROM openjdk:14.0.2-slim AS server
+FROM openjdk:14.0.2-slim AS migrate
 
-EXPOSE 8000
-
-ENV WAIT_VERSION=2.7.2
-ENV APPLICATION airbyte-server
+ENV APPLICATION airbyte-migrate
 
 WORKDIR /app
 
-# Install wait
-ADD https://github.com/ufoscout/docker-compose-wait/releases/download/${WAIT_VERSION}/wait wait
-RUN chmod +x wait
-
+# Move and run scheduler
 COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
 
 RUN tar xf ${APPLICATION}.tar --strip-components=1

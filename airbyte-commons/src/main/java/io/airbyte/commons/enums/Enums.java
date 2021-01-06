@@ -75,7 +75,7 @@ public class Enums {
   private static String normalizeName(final String name) {
     return name.toLowerCase().replaceAll("[^a-zA-Z0-9]", "");
   }
-  
+
   public static <T1 extends Enum<T1>> Set<String> valuesAsStrings(Class<T1> e) {
     Preconditions.checkArgument(e.isEnum());
     return Arrays.stream(e.getEnumConstants()).map(Enum::name).collect(Collectors.toSet());
