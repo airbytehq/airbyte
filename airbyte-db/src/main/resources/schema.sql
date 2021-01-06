@@ -83,7 +83,7 @@ CREATE
     INTO
         AIRBYTE_METADATA
     VALUES(
-        'server_uuid',
+        'server-uuid',
         uuid_generate_v4()
     );
 
