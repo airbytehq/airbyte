@@ -51,27 +51,15 @@ The Github connector should not run into Github API limitations under normal usa
 ### Requirements
 
 * Github Account
-* Github Personal Access Token.
+* Github Personal Access Token wih the necessary permissions (described below)
 
 ### Setup guide
 
 Log into Github and then generate a [personal access token](https://github.com/settings/tokens).
 
-We recommend creating a restricted key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access.
-
-### Scopes for OAuth Apps
-
-[Scopes](https://docs.github.com/en/free-pro-team@latest/developers/apps/scopes-for-oauth-apps) let you specify exactly what type of access you need. Scopes limit access for OAuth tokens. They do not grant any additional permission beyond that which the user already has.
-
-When setting up an OAuth App on GitHub, requested scopes are displayed to the user on the authorization form.
-
-Full list of available scopes is presented [here](https://docs.github.com/en/free-pro-team@latest/developers/apps/scopes-for-oauth-apps#available-scopes).
-
-For syncing streams it are required at least public_repo and read:org scopes.
-
-Syncing of some streams has particulars:
-* For calling Collaborators API user has to be one of them. In another case API will return 403 error. To become one of the collaborators, it is needed user to be invited by an owner. More about access permission you can read [here](https://docs.github.com/en/free-pro-team@latest/github/getting-started-with-github/access-permissions-on-github)
-* [Teams](https://docs.github.com/en/free-pro-team@latest/github/setting-up-and-managing-organizations-and-teams/about-teams) are groups of organization members, therefore Teams API is only available to authenticated members of the team's [organization](https://docs.github.com/en/free-pro-team@latest/rest/reference/orgs), in another case it will return 404 error. [Personal user accounts](https://docs.github.com/en/free-pro-team@latest/github/getting-started-with-github/types-of-github-accounts) don't have access to Teams features. If user doesn't have permission, it will return 401 error.
-* Project API returns a 404 Not Found status if projects are disabled in the repository. If user does not have sufficient privileges to perform this action, a 401 Unauthorized or 410 Gone status is returned.
+Your token should have at least the `repo` scope. Depending on which streams you want to sync, the user generating the token needs more permissions: 
+* For syncing Collaborators, the user which generates the personal access token must be a collaborator. To become a collaborator, they must be invited by an owner. Read more about access permissions [here](https://docs.github.com/en/free-pro-team@latest/github/getting-started-with-github/access-permissions-on-github).
+* Syncing [Teams](https://docs.github.com/en/free-pro-team@latest/github/setting-up-and-managing-organizations-and-teams/about-teams) is only available to authenticated members of a team's [organization](https://docs.github.com/en/free-pro-team@latest/rest/reference/orgs). [Personal user accounts](https://docs.github.com/en/free-pro-team@latest/github/getting-started-with-github/types-of-github-accounts) and repositories belonging to them don't have access to Teams features.
+* To sync the Projects stream, the repository must have the Projects feature enabled.
 
 
