@@ -3,5 +3,6 @@
   "name": "Microsoft teams",
   "dockerRepository": "airbyte/source-microsoft-teams",
   "dockerImageTag": "0.1.0",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-microsoft-teams"
+  "documentationUrl": "https://hub.docker.com/r/airbyte/source-microsoft-teams",
+  "latestDockerImageTag": "0.1.0"
 }

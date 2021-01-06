@@ -3,5 +3,6 @@
   "name": "Postgres",
   "dockerRepository": "airbyte/destination-postgres",
   "dockerImageTag": "0.1.9",
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/postgres"
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/postgres",
+  "latestDockerImageTag": "0.1.9"
 }

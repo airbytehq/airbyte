@@ -3,5 +3,6 @@
   "name": "Twilio",
   "dockerRepository": "airbyte/source-twilio-singer",
   "dockerImageTag": "0.1.1",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-twilio-singer"
+  "documentationUrl": "https://hub.docker.com/r/airbyte/source-twilio-singer",
+  "latestDockerImageTag": "0.1.1"
 }

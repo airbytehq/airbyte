@@ -3,5 +3,6 @@
   "name": "BigQuery",
   "dockerRepository": "airbyte/destination-bigquery",
   "dockerImageTag": "0.1.11",
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/bigquery"
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/bigquery",
+  "latestDockerImageTag": "0.1.11"
 }

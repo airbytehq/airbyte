@@ -3,5 +3,6 @@
   "name": "Jira",
   "dockerRepository": "airbyte/source-jira",
   "dockerImageTag": "0.1.0",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-jira"
+  "documentationUrl": "https://hub.docker.com/r/airbyte/source-jira",
+  "latestDockerImageTag": "0.1.0"
 }

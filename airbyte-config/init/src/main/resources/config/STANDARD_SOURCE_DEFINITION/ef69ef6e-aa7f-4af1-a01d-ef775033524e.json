@@ -3,5 +3,6 @@
   "name": "Github",
   "dockerRepository": "airbyte/source-github-singer",
   "dockerImageTag": "0.1.5",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-github-singer"
+  "documentationUrl": "https://hub.docker.com/r/airbyte/source-github-singer",
+  "latestDockerImageTag": "0.1.5"
 }

@@ -3,5 +3,6 @@
   "name": "Facebook Marketing APIs",
   "dockerRepository": "airbyte/source-facebook-marketing-api-singer",
   "dockerImageTag": "0.1.5",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-facebook-marketing-api-singer"
+  "documentationUrl": "https://hub.docker.com/r/airbyte/source-facebook-marketing-api-singer",
+  "latestDockerImageTag": "0.1.5"
 }

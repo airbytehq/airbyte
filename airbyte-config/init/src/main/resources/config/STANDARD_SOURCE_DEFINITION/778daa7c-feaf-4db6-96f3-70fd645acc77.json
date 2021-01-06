@@ -3,5 +3,6 @@
   "name": "File",
   "dockerRepository": "airbyte/source-file",
   "dockerImageTag": "0.1.7",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-file"
+  "documentationUrl": "https://hub.docker.com/r/airbyte/source-file",
+  "latestDockerImageTag": "0.1.7"
 }

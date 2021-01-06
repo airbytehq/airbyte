@@ -3,5 +3,6 @@
   "name": "Recurly",
   "dockerRepository": "airbyte/source-recurly",
   "dockerImageTag": "0.1.0",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-recurly"
+  "documentationUrl": "https://hub.docker.com/r/airbyte/source-recurly",
+  "latestDockerImageTag": "0.1.0"
 }
