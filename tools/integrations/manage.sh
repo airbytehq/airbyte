@@ -21,7 +21,6 @@ cmd_build() {
     ./gradlew "$(_get_rule_base "$path"):build"
 
     _execute_task_if_exists $path "integrationTest"
-    _execute_task_if_exists $path "standardSourceTestPython"
 }
 
 _execute_task_if_exists() {
