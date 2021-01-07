@@ -1,6 +1,6 @@
 # Workers & Jobs
 
-In Airbyte, all interactions with connectors are run as jobs performed by a Worker. Examples of workers are: 
+In Airbyte, all interactions with connectors are run as jobs performed by a Worker. Examples of workers are:
 
 * Spec worker: retrieves the specification of a connector \(the inputs needed to run this connector\)
 * Check connection worker: verifies that the inputs to a connector are valid and can be used to run a sync
@@ -9,7 +9,7 @@ In Airbyte, all interactions with connectors are run as jobs performed by a Work
 
 See the [architecture overview](high-level-view.md) for more information about workers.
 
-### Job State Machine
+## Job State Machine
 
 Jobs in the worker follow the following state machine.
 
