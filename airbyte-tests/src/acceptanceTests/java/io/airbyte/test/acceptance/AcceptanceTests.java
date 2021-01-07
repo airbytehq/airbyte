@@ -67,6 +67,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
+import java.net.http.HttpClient;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
@@ -120,6 +121,8 @@ public class AcceptanceTests {
 
   private final AirbyteApiClient apiClient = new AirbyteApiClient(
       new ApiClient().setScheme("http")
+          // for kube port forwarding
+          .setHttpClientBuilder(HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1))
           .setHost("localhost")
           .setPort(8001)
           .setBasePath("/api"));
