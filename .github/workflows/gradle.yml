@@ -136,11 +136,17 @@ jobs:
         with:
           python-version: '3.7'
 
+      - name: Create local dir
+        run: |
+          mkdir -p /tmp/airbyte_local
+
       - name: Setup Minikube
         uses: manusa/actions-setup-minikube@v2.3.0
         with:
           minikube version: 'v1.16.0'
           kubernetes version: 'v1.19.2'
+          start args:
+            - --mount-string="/tmp/airbyte_local:/local"
 
       - name: Install socat
         run: sudo apt-get install socat
