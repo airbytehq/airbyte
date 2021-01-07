@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.text.Names;
+import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.WriteConfig;
@@ -55,16 +56,17 @@ import java.util.stream.Collectors;
 // the final table name.
 public class JdbcBufferedConsumerFactory {
 
-  public static DestinationConsumer<AirbyteMessage> create(SqlOperations sqlOperations,
+  public static DestinationConsumer<AirbyteMessage> create(JdbcDatabase database,
+                                                           SqlOperations sqlOperations,
                                                            NamingConventionTransformer namingResolver,
                                                            JsonNode config,
                                                            ConfiguredAirbyteCatalog catalog) {
     final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog);
 
     return new BufferedStreamConsumer(
-        onStartFunction(sqlOperations, writeConfigs),
-        recordWriterFunction(sqlOperations, writeConfigs, catalog),
-        onCloseFunction(sqlOperations, writeConfigs),
+        onStartFunction(database, sqlOperations, writeConfigs),
+        recordWriterFunction(database, sqlOperations, writeConfigs, catalog),
+        onCloseFunction(database, sqlOperations, writeConfigs),
         catalog,
         writeConfigs.stream().map(WriteConfig::getStreamName).collect(Collectors.toSet()));
   }
@@ -83,19 +85,20 @@ public class JdbcBufferedConsumerFactory {
     }).collect(Collectors.toList());
   }
 
-  private static OnStartFunction onStartFunction(SqlOperations sqlOperations, List<WriteConfig> writeConfigs) {
+  private static OnStartFunction onStartFunction(JdbcDatabase database, SqlOperations sqlOperations, List<WriteConfig> writeConfigs) {
     return () -> {
       for (final WriteConfig writeConfig : writeConfigs) {
         final String schemaName = writeConfig.getOutputNamespaceName();
         final String tmpTableName = writeConfig.getTmpTableName();
 
-        sqlOperations.createSchemaIfNotExists(schemaName);
-        sqlOperations.createTableIfNotExists(schemaName, tmpTableName);
+        sqlOperations.createSchemaIfNotExists(database, schemaName);
+        sqlOperations.createTableIfNotExists(database, schemaName, tmpTableName);
       }
     };
   }
 
-  private static RecordWriter recordWriterFunction(SqlOperations sqlOperations,
+  private static RecordWriter recordWriterFunction(JdbcDatabase database,
+                                                   SqlOperations sqlOperations,
                                                    List<WriteConfig> writeConfigs,
                                                    ConfiguredAirbyteCatalog catalog) {
     final Map<String, WriteConfig> streamNameToWriteConfig = writeConfigs.stream()
@@ -108,11 +111,11 @@ public class JdbcBufferedConsumerFactory {
       }
 
       final WriteConfig writeConfig = streamNameToWriteConfig.get(streamName);
-      sqlOperations.insertRecords(recordStream, writeConfig.getOutputNamespaceName(), writeConfig.getTmpTableName());
+      sqlOperations.insertRecords(database, recordStream, writeConfig.getOutputNamespaceName(), writeConfig.getTmpTableName());
     };
   }
 
-  private static OnCloseFunction onCloseFunction(SqlOperations sqlOperations, List<WriteConfig> writeConfigs) {
+  private static OnCloseFunction onCloseFunction(JdbcDatabase database, SqlOperations sqlOperations, List<WriteConfig> writeConfigs) {
     return (hasFailed) -> {
       // copy data
       if (!hasFailed) {
@@ -122,7 +125,7 @@ public class JdbcBufferedConsumerFactory {
           final String srcTableName = writeConfig.getTmpTableName();
           final String dstTableName = writeConfig.getOutputTableName();
 
-          sqlOperations.createTableIfNotExists(schemaName, dstTableName);
+          sqlOperations.createTableIfNotExists(database, schemaName, dstTableName);
           switch (writeConfig.getSyncMode()) {
             case FULL_REFRESH -> queries.append(sqlOperations.truncateTableQuery(schemaName, dstTableName));
             case INCREMENTAL -> {}
@@ -130,13 +133,13 @@ public class JdbcBufferedConsumerFactory {
           }
           queries.append(sqlOperations.copyTableQuery(schemaName, srcTableName, dstTableName));
         }
-        sqlOperations.executeTransaction(queries.toString());
+        sqlOperations.executeTransaction(database, queries.toString());
       }
       // clean up
       for (WriteConfig writeConfig : writeConfigs) {
         final String schemaName = writeConfig.getOutputNamespaceName();
         final String tmpTableName = writeConfig.getTmpTableName();
-        sqlOperations.dropTableIfExists(schemaName, tmpTableName);
+        sqlOperations.dropTableIfExists(database, schemaName, tmpTableName);
       }
     };
   }

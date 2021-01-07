@@ -41,13 +41,6 @@ public class RedshiftSqlOperations extends DefaultSqlOperations implements SqlOp
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftSqlOperations.class);
 
-  private final JdbcDatabase database;
-
-  public RedshiftSqlOperations(JdbcDatabase database) {
-    super(database);
-    this.database = database;
-  }
-
   @Override
   public String createTableQuery(String schemaName, String tableName) {
     return String.format(
@@ -60,13 +53,12 @@ public class RedshiftSqlOperations extends DefaultSqlOperations implements SqlOp
   }
 
   @Override
-  public void insertRecords(Stream<AirbyteRecordMessage> recordsStream, String schemaName, String tmpTableName) throws SQLException {
+  public void insertRecords(JdbcDatabase database, Stream<AirbyteRecordMessage> recordsStream, String schemaName, String tmpTableName)
+      throws SQLException {
     final List<AirbyteRecordMessage> records = recordsStream.collect(Collectors.toList());
     LOGGER.info("actual size of batch: {}", records.size());
 
-    // todo (cgardens) - move this into a postgres version of this. this syntax is VERY postgres
-    // specific.
-    // postgres query syntax:
+    // query syntax:
     // INSERT INTO public.users (ab_id, data, emitted_at) VALUES
     // (?, ?::jsonb, ?),
     // ...

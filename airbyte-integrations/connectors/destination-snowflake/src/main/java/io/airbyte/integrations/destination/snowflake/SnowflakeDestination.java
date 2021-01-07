@@ -39,7 +39,7 @@ public class SnowflakeDestination extends AbstractJdbcDestination implements Des
 
   public SnowflakeDestination() {
     // the driver class is a no op because we override getDatabase.
-    super("", new SnowflakeSQLNameTransformer(), SnowflakeSqlOperations::new);
+    super("", new SnowflakeSQLNameTransformer(), new SnowflakeSqlOperations());
   }
 
   @Override

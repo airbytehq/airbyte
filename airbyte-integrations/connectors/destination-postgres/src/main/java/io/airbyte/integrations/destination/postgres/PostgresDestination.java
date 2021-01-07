@@ -42,7 +42,7 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
   public static final String DRIVER_CLASS = "org.postgresql.Driver";
 
   public PostgresDestination() {
-    super("org.postgresql.Driver", new PostgresSQLNameTransformer(), DefaultSqlOperations::new);
+    super("org.postgresql.Driver", new PostgresSQLNameTransformer(), new DefaultSqlOperations());
   }
 
   @Override

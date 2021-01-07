@@ -36,7 +36,7 @@ public class JdbcDestination extends AbstractJdbcDestination implements Destinat
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcDestination.class);
 
   public JdbcDestination() {
-    super("org.postgresql.Driver", new ExtendedNameTransformer(), DefaultSqlOperations::new);
+    super("org.postgresql.Driver", new ExtendedNameTransformer(), new DefaultSqlOperations());
   }
 
   // no-op for JdbcIntegration since the config it receives is designed to be use for JDBC.

@@ -39,17 +39,10 @@ import org.slf4j.LoggerFactory;
 
 class SnowflakeSqlOperations extends DefaultSqlOperations implements SqlOperations {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSqlOperations.class);
-
-  private final JdbcDatabase database;
-
-  public SnowflakeSqlOperations(JdbcDatabase database) {
-    super(database);
-    this.database = database;
-  }
+  private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSqlOperations.class);
 
   @Override
-  public void createTableIfNotExists(String schemaName, String tableName) throws SQLException {
+  public void createTableIfNotExists(JdbcDatabase database, String schemaName, String tableName) throws SQLException {
     final String createTableQuery = String.format(
         "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
             + "%s VARCHAR PRIMARY KEY,\n"
@@ -61,7 +54,8 @@ class SnowflakeSqlOperations extends DefaultSqlOperations implements SqlOperatio
   }
 
   @Override
-  public void insertRecords(Stream<AirbyteRecordMessage> recordsStream, String schemaName, String tableName) throws SQLException {
+  public void insertRecords(JdbcDatabase database, Stream<AirbyteRecordMessage> recordsStream, String schemaName, String tableName)
+      throws SQLException {
     final List<AirbyteRecordMessage> records = recordsStream.collect(Collectors.toList());
     LOGGER.info("actual size of batch: {}", records.size());
 

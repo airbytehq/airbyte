@@ -41,7 +41,7 @@ public class RedshiftDestination extends AbstractJdbcDestination implements Dest
   public static final String DRIVER_CLASS = "com.amazon.redshift.jdbc.Driver";
 
   public RedshiftDestination() {
-    super(DRIVER_CLASS, new RedshiftSQLNameTransformer(), RedshiftSqlOperations::new);
+    super(DRIVER_CLASS, new RedshiftSQLNameTransformer(), new RedshiftSqlOperations());
   }
 
   @Override

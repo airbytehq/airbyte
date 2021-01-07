@@ -39,7 +39,6 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.io.IOException;
-import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,14 +48,14 @@ public abstract class AbstractJdbcDestination implements Destination {
 
   private final String driverClass;
   private final NamingConventionTransformer namingResolver;
-  private final Function<JdbcDatabase, SqlOperations> sqlOperationsFactory;
+  private final SqlOperations sqlOperations;
 
   public AbstractJdbcDestination(final String driverClass,
                                  final NamingConventionTransformer namingResolver,
-                                 final Function<JdbcDatabase, SqlOperations> sqlOperationsFactory) {
+                                 final SqlOperations sqlOperations) {
     this.driverClass = driverClass;
     this.namingResolver = namingResolver;
-    this.sqlOperationsFactory = sqlOperationsFactory;
+    this.sqlOperations = sqlOperations;
   }
 
   @Override
@@ -100,8 +99,7 @@ public abstract class AbstractJdbcDestination implements Destination {
 
   @Override
   public DestinationConsumer<AirbyteMessage> write(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
-    final SqlOperations sqlOperations = sqlOperationsFactory.apply(getDatabase(config));
-    return JdbcBufferedConsumerFactory.create(sqlOperations, namingResolver, config, catalog);
+    return JdbcBufferedConsumerFactory.create(getDatabase(config), sqlOperations, namingResolver, config, catalog);
   }
 
 }

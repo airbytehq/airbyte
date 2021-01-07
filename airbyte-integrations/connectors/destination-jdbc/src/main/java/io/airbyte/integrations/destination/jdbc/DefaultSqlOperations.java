@@ -38,14 +38,8 @@ public class DefaultSqlOperations implements SqlOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSqlOperations.class);
 
-  private final JdbcDatabase database;
-
-  public DefaultSqlOperations(JdbcDatabase database) {
-    this.database = database;
-  }
-
   @Override
-  public void createSchemaIfNotExists(String schemaName) throws Exception {
+  public void createSchemaIfNotExists(JdbcDatabase database, String schemaName) throws Exception {
     database.execute(createSchemaQuery(schemaName));
   }
 
@@ -54,7 +48,7 @@ public class DefaultSqlOperations implements SqlOperations {
   }
 
   @Override
-  public void createTableIfNotExists(String schemaName, String tableName) throws SQLException {
+  public void createTableIfNotExists(JdbcDatabase database, String schemaName, String tableName) throws SQLException {
     database.execute(createTableQuery(schemaName, tableName));
   }
 
@@ -70,7 +64,8 @@ public class DefaultSqlOperations implements SqlOperations {
   }
 
   @Override
-  public void insertRecords(Stream<AirbyteRecordMessage> recordsStream, String schemaName, String tmpTableName) throws SQLException {
+  public void insertRecords(JdbcDatabase database, Stream<AirbyteRecordMessage> recordsStream, String schemaName, String tmpTableName)
+      throws SQLException {
     final List<AirbyteRecordMessage> records = recordsStream.collect(Collectors.toList());
     LOGGER.info("actual size of batch: {}", records.size());
 
@@ -102,12 +97,12 @@ public class DefaultSqlOperations implements SqlOperations {
   }
 
   @Override
-  public void executeTransaction(String queries) throws Exception {
+  public void executeTransaction(JdbcDatabase database, String queries) throws Exception {
     database.execute("BEGIN;\n" + queries + "COMMIT;");
   }
 
   @Override
-  public void dropTableIfExists(String schemaName, String tableName) throws SQLException {
+  public void dropTableIfExists(JdbcDatabase database, String schemaName, String tableName) throws SQLException {
     database.execute(dropTableIfExistsQuery(schemaName, tableName));
   }
 

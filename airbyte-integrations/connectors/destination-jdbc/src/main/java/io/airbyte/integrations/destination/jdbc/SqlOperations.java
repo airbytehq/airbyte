@@ -24,6 +24,7 @@
 
 package io.airbyte.integrations.destination.jdbc;
 
+import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.util.stream.Stream;
 
@@ -37,7 +38,7 @@ public interface SqlOperations {
    * @param schemaName name of schema.
    * @throws Exception exception
    */
-  void createSchemaIfNotExists(String schemaName) throws Exception;
+  void createSchemaIfNotExists(JdbcDatabase database, String schemaName) throws Exception;
 
   /**
    * Create a table with provided name in provided schema if it does not already exist.
@@ -46,7 +47,7 @@ public interface SqlOperations {
    * @param tableName name of table
    * @throws Exception exception
    */
-  void createTableIfNotExists(String schemaName, String tableName) throws Exception;
+  void createTableIfNotExists(JdbcDatabase database, String schemaName, String tableName) throws Exception;
 
   /**
    * Query to create a table with provided name in provided schema if it does not already exist.
@@ -64,7 +65,7 @@ public interface SqlOperations {
    * @param tableName name of table
    * @throws Exception exception
    */
-  void dropTableIfExists(String schemaName, String tableName) throws Exception;
+  void dropTableIfExists(JdbcDatabase database, String schemaName, String tableName) throws Exception;
 
   /**
    * Query to remove all records from a table. Assumes the table exists.
@@ -83,7 +84,7 @@ public interface SqlOperations {
    * @param tableName name of table
    * @throws Exception exception
    */
-  void insertRecords(Stream<AirbyteRecordMessage> records, String schemaName, String tableName) throws Exception;
+  void insertRecords(JdbcDatabase database, Stream<AirbyteRecordMessage> records, String schemaName, String tableName) throws Exception;
 
   /**
    * Query to copy all records from source table to destination table. Both tables must be in the
@@ -102,6 +103,6 @@ public interface SqlOperations {
    * @param queries queries to execute
    * @throws Exception exception
    */
-  void executeTransaction(String queries) throws Exception;
+  void executeTransaction(JdbcDatabase database, String queries) throws Exception;
 
 }
