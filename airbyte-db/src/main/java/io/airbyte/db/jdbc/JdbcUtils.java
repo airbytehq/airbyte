@@ -110,10 +110,18 @@ public class JdbcUtils {
     return jsonNode;
   }
 
+  private static JDBCType safeGetJdbcType(int columnTypeInt) {
+    try {
+      return JDBCType.valueOf(columnTypeInt);
+    } catch (Exception e) {
+      return JDBCType.VARCHAR;
+    }
+  }
+
   private static void setJsonField(ResultSet r, int i, ObjectNode o) throws SQLException {
     final int columnTypeInt = r.getMetaData().getColumnType(i);
     final String columnName = r.getMetaData().getColumnName(i);
-    final JDBCType columnType = JDBCType.valueOf(columnTypeInt);
+    final JDBCType columnType = safeGetJdbcType(columnTypeInt);
 
     // https://www.cis.upenn.edu/~bcpierce/courses/629/jdkdocs/guide/jdbc/getstart/mapping.doc.html
     switch (columnType) {
