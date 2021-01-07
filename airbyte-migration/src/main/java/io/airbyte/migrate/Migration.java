@@ -25,7 +25,6 @@
 package io.airbyte.migrate;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import java.nio.file.Path;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -47,7 +46,7 @@ public interface Migration {
    *
    * @return map
    */
-  Map<Path, JsonNode> getInputSchema();
+  Map<ResourceId, JsonNode> getInputSchema();
 
   /**
    * Returns a map of the relative path of the file resource within the output archive to the
@@ -56,7 +55,7 @@ public interface Migration {
    *
    * @return map
    */
-  Map<Path, JsonNode> getOutputSchema();
+  Map<ResourceId, JsonNode> getOutputSchema();
 
   /**
    * Execute migration.
@@ -66,6 +65,6 @@ public interface Migration {
    * @param outputData Map of the relative path of the file resource within the output archive to a
    *        consumer that takes the transformed records.
    */
-  void migrate(Map<Path, Stream<JsonNode>> inputData, Map<Path, Consumer<JsonNode>> outputData);
+  void migrate(Map<ResourceId, Stream<JsonNode>> inputData, Map<ResourceId, Consumer<JsonNode>> outputData);
 
 }

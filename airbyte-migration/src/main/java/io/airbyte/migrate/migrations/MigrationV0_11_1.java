@@ -28,6 +28,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.migrate.Migration;
+import io.airbyte.migrate.MigrationUtils;
+import io.airbyte.migrate.ResourceId;
 import io.airbyte.migrate.migrations.MigrationV0_11_0.ConfigKeys;
 import java.nio.file.Path;
 import java.util.Map;
@@ -48,12 +50,12 @@ public class MigrationV0_11_1 implements Migration {
   }
 
   @Override
-  public Map<Path, JsonNode> getInputSchema() {
+  public Map<ResourceId, JsonNode> getInputSchema() {
     return new MigrationV0_11_0().getOutputSchema();
   }
 
   @Override
-  public Map<Path, JsonNode> getOutputSchema() {
+  public Map<ResourceId, JsonNode> getOutputSchema() {
     final Map<Path, JsonNode> outputSchema = getInputSchema();
     outputSchema.putAll(
         MigrationUtils.getNameToSchemasFromPath(Path.of("migrations/migrationV0_11_1"), Path.of("config"), Enums.valuesAsStrings(ConfigKeys.class)));
@@ -61,7 +63,7 @@ public class MigrationV0_11_1 implements Migration {
   }
 
   @Override
-  public void migrate(Map<Path, Stream<JsonNode>> inputData, Map<Path, Consumer<JsonNode>> outputData) {
+  public void migrate(Map<ResourceId, Stream<JsonNode>> inputData, Map<ResourceId, Consumer<JsonNode>> outputData) {
     for (Map.Entry<Path, Stream<JsonNode>> entry : inputData.entrySet()) {
       final Consumer<JsonNode> recordConsumer = outputData.get(entry.getKey());
 

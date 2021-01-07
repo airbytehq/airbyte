@@ -22,17 +22,17 @@
  * SOFTWARE.
  */
 
-package io.airbyte.migrate.migrations;
+package io.airbyte.migrate;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.CaseFormat;
-import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.JsonSchemas;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import org.apache.commons.io.FileUtils;
 
 public class MigrationUtils {
 
@@ -51,10 +51,10 @@ public class MigrationUtils {
   public static Map<Path, JsonNode> getNameToSchemasFromPath(Path migrationRoot, Path relativePath, Set<String> schemasToInclude) {
     final Map<Path, JsonNode> schemas = new HashMap<>();
 
-    final Path pathToSchemas = JsonSchemas.prepareSchemas(migrationRoot.resolve(relativePath).toString(), MigrationV0_11_0.class);
-    IOs.listFiles(pathToSchemas)
+    final Path pathToSchemas = JsonSchemas.prepareSchemas(migrationRoot.resolve(relativePath).toString(), MigrationUtils.class);
+    FileUtils.listFiles(pathToSchemas.toFile(), null, false)
         .stream()
-        .map(f -> JsonSchemaValidator.getSchema(f.toFile()))
+        .map(JsonSchemaValidator::getSchema)
         .filter(j -> schemasToInclude.contains(CaseFormat.UPPER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, j.get("title").asText())))
         .forEach(
             j -> schemas.put(relativePath.resolve(CaseFormat.UPPER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, j.get("title").asText()) + ".yaml"), j));

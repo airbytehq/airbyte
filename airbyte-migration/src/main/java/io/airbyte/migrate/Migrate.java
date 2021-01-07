@@ -34,6 +34,7 @@ import io.airbyte.migrate.migrations.MigrationV0_11_0;
 import io.airbyte.migrate.migrations.MigrationV0_11_1;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -103,24 +104,23 @@ public class Migrate {
     // write final output
     FileUtils.deleteDirectory(migrateConfig.getOutputPath().toFile());
     Files.createDirectories(migrateConfig.getOutputPath());
-    IOs.copyDir(inputPath, migrateConfig.getOutputPath());
+    FileUtils.copyDirectory(inputPath.toFile(), migrateConfig.getOutputPath().toFile());
   }
 
   private Path runMigration(Migration migration, Path inputRoot) throws IOException {
     final Path tmpOutputDir = Files.createDirectory(workspaceRoot.resolve(migration.getVersion()));
 
-    // gather all of input paths in the dataset.
-    final Set<Path> inputFilePaths = new HashSet<>();
-    inputFilePaths.addAll(IOs.listFiles(inputRoot.resolve("config")));
-    inputFilePaths.addAll(IOs.listFiles(inputRoot.resolve("jobs")));
-
+    final Map<ResourceId, Stream<JsonNode>> inputData = new HashMap<>();
     // create a map of each input resource path to the input stream.
-    final Map<Path, Stream<JsonNode>> inputData = createInputStreams(migration, inputFilePaths, inputRoot);
+    inputData.putAll(createInputStreams(migration, inputRoot, ResourceType.CONFIG));
     // create a map of each output resource path to the output stream.
-    final Map<Path, RecordConsumer> outputStreams = createOutputStreams(migration, tmpOutputDir);
+    inputData.putAll(createInputStreams(migration, inputRoot, ResourceType.JOB));
+
+
+    final Map<ResourceId, RecordConsumer> outputStreams = createOutputStreams(migration, tmpOutputDir);
     // make the java compiler happy (it can't resolve that RecordConsumer is, in fact, a
     // Consumer<JsonNode>).
-    final Map<Path, Consumer<JsonNode>> outputDataWithGenericType = mapRecordConsumerToConsumer(outputStreams);
+    final Map<ResourceId, Consumer<JsonNode>> outputDataWithGenericType = mapRecordConsumerToConsumer(outputStreams);
 
     // do the migration.
     migration.migrate(inputData, outputDataWithGenericType);
@@ -132,16 +132,22 @@ public class Migrate {
     return tmpOutputDir;
   }
 
-  private Map<Path, Stream<JsonNode>> createInputStreams(Migration migration, Set<Path> inputFilePaths, Path inputDir) throws IOException {
-    assertSamePaths(migration.getInputSchema().keySet(), inputFilePaths.stream().map(inputDir::relativize).collect(Collectors.toSet()));
+  private Map<ResourceId, Stream<JsonNode>> createInputStreams(Migration migration, Path inputRoot, ResourceType resourceType) throws IOException {
+    final List<Path> inputFilePaths = FileUtils.listFiles(inputRoot.resolve(resourceType.toString().toLowerCase()).toFile(), null, false)
+        .stream()
+        .map(File::toPath)
+        .collect(Collectors.toList());
 
-    final Map<Path, Stream<JsonNode>> inputData = new HashMap<>();
+    // todo bring this back
+//    assertSamePaths(migration.getInputSchema().keySet(), inputFilePaths.stream().map(inputRoot::relativize).collect(Collectors.toSet()));
+
+    final Map<ResourceId, Stream<JsonNode>> inputData = new HashMap<>();
     for (final Path absolutePath : inputFilePaths) {
-      final Path relativePath = inputDir.relativize(absolutePath);
+      final ResourceId resourceId = ResourceId.fromPath(resourceType, absolutePath);
       final Stream<JsonNode> recordInputStream = Files.lines(absolutePath)
           .map(Jsons::deserialize)
-          .peek(r -> Exceptions.toRuntime(() -> jsonSchemaValidator.ensure(migration.getInputSchema().get(relativePath), r)));
-      inputData.put(relativePath, recordInputStream);
+          .peek(r -> Exceptions.toRuntime(() -> jsonSchemaValidator.ensure(migration.getInputSchema().get(resourceId), r)));
+      inputData.put(resourceId, recordInputStream);
     }
     return inputData;
   }
@@ -157,24 +163,24 @@ public class Migrate {
         pathsInSchemaNotInData, pathsInDataNoInSchema));
   }
 
-  private Map<Path, RecordConsumer> createOutputStreams(Migration migration, Path outputDir) throws IOException {
-    final Map<Path, RecordConsumer> pathToOutputStream = new HashMap<>();
+  private Map<ResourceId, RecordConsumer> createOutputStreams(Migration migration, Path outputDir) throws IOException {
+    final Map<ResourceId, RecordConsumer> pathToOutputStream = new HashMap<>();
 
-    for (Map.Entry<Path, JsonNode> entry : migration.getOutputSchema().entrySet()) {
-      final Path path = entry.getKey();
+    for (Map.Entry<ResourceId, JsonNode> entry : migration.getOutputSchema().entrySet()) {
+      final ResourceId resourceId = entry.getKey();
       final JsonNode schema = entry.getValue();
-      final Path absolutePath = outputDir.resolve(entry.getKey());
+      final Path absolutePath = outputDir.resolve(resourceId.getResourceRelativePath());
       Files.createDirectories(absolutePath.getParent());
       Files.createFile(absolutePath);
       final BufferedWriter recordOutputWriter = new BufferedWriter(new FileWriter(absolutePath.toFile()));
       final RecordConsumer recordConsumer = new RecordConsumer(recordOutputWriter, jsonSchemaValidator, schema);
-      pathToOutputStream.put(path, recordConsumer);
+      pathToOutputStream.put(resourceId, recordConsumer);
     }
 
     return pathToOutputStream;
   }
 
-  private static Map<Path, Consumer<JsonNode>> mapRecordConsumerToConsumer(Map<Path, RecordConsumer> recordConsumers) {
+  private static Map<ResourceId, Consumer<JsonNode>> mapRecordConsumerToConsumer(Map<ResourceId, RecordConsumer> recordConsumers) {
     return recordConsumers.entrySet()
         .stream()
         .collect(Collectors.toMap(Entry::getKey, e -> (v) -> e.getValue().accept(v)));

@@ -27,6 +27,7 @@ package io.airbyte.migrate.migrations;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.migrate.Migration;
+import io.airbyte.migrate.MigrationUtils;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
