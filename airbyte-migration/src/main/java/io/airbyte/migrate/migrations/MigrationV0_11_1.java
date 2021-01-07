@@ -27,10 +27,13 @@ package io.airbyte.migrate.migrations;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.migrate.Migration;
 import io.airbyte.migrate.MigrationUtils;
 import io.airbyte.migrate.ResourceId;
+import io.airbyte.migrate.ResourceType;
 import io.airbyte.migrate.migrations.MigrationV0_11_0.ConfigKeys;
+import io.airbyte.migrate.migrations.MigrationV0_11_0.JobKeys;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -42,7 +45,17 @@ import java.util.stream.Stream;
  */
 public class MigrationV0_11_1 implements Migration {
 
-  private static final Path DESTINATION_CONNECTION_PATH = Path.of("config/DESTINATION_CONNECTION.yaml");
+  private static final Path RESOURCE_PATH = Path.of("migrations/migrationV0_11_1");
+  private static final ResourceId DESTINATION_CONNECTION_RESOURCE_ID = ResourceId.fromConstantCase(ResourceType.CONFIG, "DESTINATION_CONNECTION");
+  private final Map<ResourceId, JsonNode> inputSchema;
+  private final Map<ResourceId, JsonNode> outputSchema;
+
+  public MigrationV0_11_1() {
+    inputSchema = new MigrationV0_11_0().getOutputSchema();
+    outputSchema = MoreMaps.merge(
+        MigrationUtils.getConfigModels(RESOURCE_PATH, Enums.valuesAsStrings(ConfigKeys.class)),
+        MigrationUtils.getConfigModels(RESOURCE_PATH, Enums.valuesAsStrings(JobKeys.class)));
+  }
 
   @Override
   public String getVersion() {
@@ -51,24 +64,21 @@ public class MigrationV0_11_1 implements Migration {
 
   @Override
   public Map<ResourceId, JsonNode> getInputSchema() {
-    return new MigrationV0_11_0().getOutputSchema();
+    return inputSchema;
   }
 
   @Override
   public Map<ResourceId, JsonNode> getOutputSchema() {
-    final Map<Path, JsonNode> outputSchema = getInputSchema();
-    outputSchema.putAll(
-        MigrationUtils.getNameToSchemasFromPath(Path.of("migrations/migrationV0_11_1"), Path.of("config"), Enums.valuesAsStrings(ConfigKeys.class)));
     return outputSchema;
   }
 
   @Override
   public void migrate(Map<ResourceId, Stream<JsonNode>> inputData, Map<ResourceId, Consumer<JsonNode>> outputData) {
-    for (Map.Entry<Path, Stream<JsonNode>> entry : inputData.entrySet()) {
+    for (Map.Entry<ResourceId, Stream<JsonNode>> entry : inputData.entrySet()) {
       final Consumer<JsonNode> recordConsumer = outputData.get(entry.getKey());
 
       entry.getValue().forEach(r -> {
-        if (entry.getKey().equals(DESTINATION_CONNECTION_PATH)) {
+        if (entry.getKey().equals(DESTINATION_CONNECTION_RESOURCE_ID)) {
           ((ObjectNode) r).put("foo", "bar");
         }
 

@@ -30,6 +30,7 @@ import com.google.common.collect.ImmutableList;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
+import io.airbyte.commons.set.MoreSets;
 import io.airbyte.migrate.migrations.MigrationV0_11_0;
 import io.airbyte.migrate.migrations.MigrationV0_11_1;
 import io.airbyte.validation.json.JsonSchemaValidator;
@@ -40,11 +41,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.BaseStream;
 import java.util.stream.Collectors;
@@ -116,7 +115,6 @@ public class Migrate {
     // create a map of each output resource path to the output stream.
     inputData.putAll(createInputStreams(migration, inputRoot, ResourceType.JOB));
 
-
     final Map<ResourceId, RecordConsumer> outputStreams = createOutputStreams(migration, tmpOutputDir);
     // make the java compiler happy (it can't resolve that RecordConsumer is, in fact, a
     // Consumer<JsonNode>).
@@ -138,29 +136,18 @@ public class Migrate {
         .map(File::toPath)
         .collect(Collectors.toList());
 
-    // todo bring this back
-//    assertSamePaths(migration.getInputSchema().keySet(), inputFilePaths.stream().map(inputRoot::relativize).collect(Collectors.toSet()));
-
     final Map<ResourceId, Stream<JsonNode>> inputData = new HashMap<>();
     for (final Path absolutePath : inputFilePaths) {
-      final ResourceId resourceId = ResourceId.fromPath(resourceType, absolutePath);
+      final ResourceId resourceId = ResourceId.fromRecordFilePath(resourceType, absolutePath);
       final Stream<JsonNode> recordInputStream = Files.lines(absolutePath)
           .map(Jsons::deserialize)
           .peek(r -> Exceptions.toRuntime(() -> jsonSchemaValidator.ensure(migration.getInputSchema().get(resourceId), r)));
       inputData.put(resourceId, recordInputStream);
     }
+
+    MoreSets.assertEqualsVerbose(migration.getInputSchema().keySet(), inputData.keySet());
+
     return inputData;
-  }
-
-  private static void assertSamePaths(Set<Path> schemaPaths, Set<Path> inputFilePaths) {
-    final HashSet<Path> pathsInSchemaNotInData = new HashSet<>(schemaPaths);
-    pathsInSchemaNotInData.removeAll(inputFilePaths);
-    final HashSet<Path> pathsInDataNoInSchema = new HashSet<>(inputFilePaths);
-    pathsInDataNoInSchema.removeAll(schemaPaths);
-
-    Preconditions.checkState(schemaPaths.equals(inputFilePaths), String.format(
-        "Input Schema input resource paths are not the same as the paths in the data. Paths present in schema and not in data: %s. Paths present in data and not present in schema: %s",
-        pathsInSchemaNotInData, pathsInDataNoInSchema));
   }
 
   private Map<ResourceId, RecordConsumer> createOutputStreams(Migration migration, Path outputDir) throws IOException {

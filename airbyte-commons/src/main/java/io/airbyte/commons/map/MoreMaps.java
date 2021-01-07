@@ -22,9 +22,22 @@
  * SOFTWARE.
  */
 
-package io.airbyte.migrate;
+package io.airbyte.commons.map;
 
-public enum ResourceType {
-  CONFIG,
-  JOB
+import com.google.common.base.Preconditions;
+import java.util.HashMap;
+import java.util.Map;
+
+public class MoreMaps {
+
+  public static <K, V> Map<K, V> merge(Map<K, V> map1, Map<K, V> map2) {
+    Preconditions.checkNotNull(map1);
+    Preconditions.checkNotNull(map2);
+
+    final Map<K, V> outputMap = new HashMap<>();
+    outputMap.putAll(map1);
+    outputMap.putAll(map2);
+    return outputMap;
+  }
+
 }

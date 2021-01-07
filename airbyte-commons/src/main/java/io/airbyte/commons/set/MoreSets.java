@@ -22,9 +22,26 @@
  * SOFTWARE.
  */
 
-package io.airbyte.migrate;
+package io.airbyte.commons.set;
 
-public enum ResourceType {
-  CONFIG,
-  JOB
+import com.google.common.base.Preconditions;
+import java.util.HashSet;
+import java.util.Set;
+
+public class MoreSets {
+
+  public static <T> void assertEqualsVerbose(Set<T> set1, Set<T> set2) {
+    Preconditions.checkNotNull(set1);
+    Preconditions.checkNotNull(set2);
+
+    final HashSet<T> set1WithoutContentsOfSet2 = new HashSet<>(set1);
+    set1WithoutContentsOfSet2.removeAll(set2);
+    final HashSet<T> set2WithoutContentsOfSet1 = new HashSet<>(set2);
+    set1WithoutContentsOfSet2.removeAll(set1);
+
+    Preconditions.checkState(set1.equals(set2), String.format(
+        "Sets are not the same. Elements in set 1 and not in set 2: %s.  Elements in set 2 and not in set 1 %s",
+        set1WithoutContentsOfSet2, set2WithoutContentsOfSet1));
+  }
+
 }

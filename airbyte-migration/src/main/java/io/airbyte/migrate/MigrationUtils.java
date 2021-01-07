@@ -39,27 +39,40 @@ public class MigrationUtils {
   // todo (cgardens) - validate that the JsonNode is in fact JsonSchema.
   /**
    *
-   * @param migrationRoot root path of resource files for a given migration migration
+   * @param migrationResourcePath root path of resource files for a given migration migration
    * @param relativePath relative path within the migrationPath to where files for a given type are
    *        found (e.g. config or db).
    * @param schemasToInclude set of which resources to include. other files found in the directory
    *        will be ignored. the common case here is that those other files are referred to by files
    *        that are included here. resolving those dependencies is handled separately.
-   * @return map of a path (concatentation of the relativePath and the file name) to the JsonSchema
-   *         found there.
+   * @return ResourceId to the JsonSchema found there.
    */
-  public static Map<Path, JsonNode> getNameToSchemasFromPath(Path migrationRoot, Path relativePath, Set<String> schemasToInclude) {
-    final Map<Path, JsonNode> schemas = new HashMap<>();
+  private static Map<ResourceId, JsonNode> getNameToSchemasFromPath(Path migrationResourcePath,
+                                                                    Path relativePath,
+                                                                    ResourceType resourceType,
+                                                                    Set<String> schemasToInclude) {
+    final Map<ResourceId, JsonNode> schemas = new HashMap<>();
 
-    final Path pathToSchemas = JsonSchemas.prepareSchemas(migrationRoot.resolve(relativePath).toString(), MigrationUtils.class);
+    final Path pathToSchemas = JsonSchemas.prepareSchemas(migrationResourcePath.resolve(relativePath).toString(), MigrationUtils.class);
     FileUtils.listFiles(pathToSchemas.toFile(), null, false)
         .stream()
         .map(JsonSchemaValidator::getSchema)
         .filter(j -> schemasToInclude.contains(CaseFormat.UPPER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, j.get("title").asText())))
-        .forEach(
-            j -> schemas.put(relativePath.resolve(CaseFormat.UPPER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, j.get("title").asText()) + ".yaml"), j));
+        .forEach(j -> {
+          final ResourceId resourceId =
+              ResourceId.fromConstantCase(resourceType, CaseFormat.UPPER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, j.get("title").asText()));
+          schemas.put(resourceId, j);
+        });
 
     return schemas;
+  }
+
+  public static Map<ResourceId, JsonNode> getConfigModels(Path migrationResourcePath, Set<String> schemasToInclude) {
+    return getNameToSchemasFromPath(migrationResourcePath, Path.of("config"), ResourceType.CONFIG, schemasToInclude);
+  }
+
+  public static Map<ResourceId, JsonNode> getJobModels(Path migrationResourcePath, Set<String> schemasToInclude) {
+    return getNameToSchemasFromPath(migrationResourcePath, Path.of("jobs"), ResourceType.JOB, schemasToInclude);
   }
 
 }

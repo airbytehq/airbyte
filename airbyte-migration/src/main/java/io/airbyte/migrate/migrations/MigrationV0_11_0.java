@@ -26,11 +26,12 @@ package io.airbyte.migrate.migrations;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.migrate.Migration;
 import io.airbyte.migrate.MigrationUtils;
+import io.airbyte.migrate.ResourceId;
 import java.nio.file.Path;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -41,34 +42,29 @@ import java.util.stream.Stream;
  */
 public class MigrationV0_11_0 implements Migration {
 
+  private static final Path RESOURCE_PATH = Path.of("migrations/migrationV0_11_0");
+
   @Override
   public String getVersion() {
     return "v0.11.0-alpha";
   }
 
   @Override
-  public Map<Path, JsonNode> getInputSchema() {
+  public Map<ResourceId, JsonNode> getInputSchema() {
     return Collections.emptyMap();
   }
 
   @Override
-  public Map<Path, JsonNode> getOutputSchema() {
-    final Map<Path, JsonNode> schemas = new HashMap<>();
-
-    // add config schemas.
-    schemas.putAll(
-        MigrationUtils.getNameToSchemasFromPath(Path.of("migrations/migrationV0_11_0"), Path.of("config"), Enums.valuesAsStrings(ConfigKeys.class)));
-    // add db schemas.
-    schemas.putAll(
-        MigrationUtils.getNameToSchemasFromPath(Path.of("migrations/migrationV0_11_0"), Path.of("jobs"), Enums.valuesAsStrings(JobKeys.class)));
-
-    return schemas;
+  public Map<ResourceId, JsonNode> getOutputSchema() {
+    return MoreMaps.merge(
+        MigrationUtils.getConfigModels(RESOURCE_PATH, Enums.valuesAsStrings(ConfigKeys.class)),
+        MigrationUtils.getJobModels(RESOURCE_PATH, Enums.valuesAsStrings(JobKeys.class)));
   }
 
   // no op migration.
   @Override
-  public void migrate(Map<Path, Stream<JsonNode>> inputData, Map<Path, Consumer<JsonNode>> outputData) {
-    for (Map.Entry<Path, Stream<JsonNode>> entry : inputData.entrySet()) {
+  public void migrate(Map<ResourceId, Stream<JsonNode>> inputData, Map<ResourceId, Consumer<JsonNode>> outputData) {
+    for (Map.Entry<ResourceId, Stream<JsonNode>> entry : inputData.entrySet()) {
       final Consumer<JsonNode> recordConsumer = outputData.get(entry.getKey());
       entry.getValue().forEach(recordConsumer);
     }
