@@ -34,11 +34,15 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.stream.Collectors;
+import javax.swing.*;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -52,7 +56,8 @@ class MssqlSourceTest {
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(Lists.newArrayList(CatalogHelpers.createAirbyteStream(
       STREAM_NAME,
       Field.of("id", JsonSchemaPrimitive.NUMBER),
-      Field.of("name", JsonSchemaPrimitive.STRING))
+      Field.of("name", JsonSchemaPrimitive.STRING),
+      Field.of("born", JsonSchemaPrimitive.STRING))
       .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))));
 
   private JsonNode configWithoutDbName;
@@ -78,8 +83,9 @@ class MssqlSourceTest {
     database.query(ctx -> {
       ctx.fetch(String.format("CREATE DATABASE %s;", dbName));
       ctx.fetch(String.format("USE %s;", dbName));
-      ctx.fetch("CREATE TABLE id_and_name(id INTEGER NOT NULL, name VARCHAR(200));");
-      ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
+      ctx.fetch("CREATE TABLE id_and_name(id INTEGER NOT NULL, name VARCHAR(200), born DATETIMEOFFSET(7));");
+      ctx.fetch(
+          "INSERT INTO id_and_name (id, name, born) VALUES (1,'picard', '2124-03-04T01:01:01Z'),  (2, 'crusher', '2124-03-04T01:01:01Z'), (3, 'vash', '2124-03-04T01:01:01Z');");
       return null;
     });
 
@@ -108,6 +114,9 @@ class MssqlSourceTest {
 
     final AirbyteCatalog actual = new MssqlSource().discover(config);
     assertEquals(CATALOG, actual);
+
+    List<AirbyteMessage> read = new MssqlSource().read(config, CatalogHelpers.toDefaultConfiguredCatalog(actual), null).collect(Collectors.toList());
+
   }
 
   private JsonNode getConfig(MSSQLServerContainer<?> db) {

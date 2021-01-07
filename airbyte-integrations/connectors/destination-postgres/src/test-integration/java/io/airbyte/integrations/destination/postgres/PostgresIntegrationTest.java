@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Databases;
+import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.TestDestination;
 import java.sql.SQLException;
@@ -42,7 +43,6 @@ public class PostgresIntegrationTest extends TestDestination {
 
   private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
 
-  private static final String RAW_DATA_COLUMN = "data";
   private PostgreSQLContainer<?> db;
   private ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
 
@@ -79,7 +79,7 @@ public class PostgresIntegrationTest extends TestDestination {
   protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName))
         .stream()
-        .map(r -> Jsons.deserialize(r.get(RAW_DATA_COLUMN).asText()))
+        .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
         .collect(Collectors.toList());
   }
 
