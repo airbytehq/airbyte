@@ -1,5 +1,4 @@
 'use strict';
-const fs = require('fs');
 const path = require('path');
 
 const getSuccessMessage = function(connectorName, outputPath){
@@ -25,7 +24,6 @@ module.exports = function (plop) {
   const singerSourceInputRoot = '../source-singer';
   const genericSourceInputRoot = '../source-generic';
 
-  const basesDir = '../../bases';
   const outputDir = '../../connectors';
   const pythonSourceOutputRoot = `${outputDir}/source-{{dashCase name}}`;
   const singerSourceOutputRoot = `${outputDir}/source-{{dashCase name}}-singer`;
