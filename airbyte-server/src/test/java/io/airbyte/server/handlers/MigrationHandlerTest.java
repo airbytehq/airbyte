@@ -31,7 +31,6 @@ import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.PersistenceConstants;
-import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.helpers.SourceDefinitionHelpers;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -43,15 +42,13 @@ import org.junit.jupiter.api.Test;
 public class MigrationHandlerTest {
 
   private ConfigRepository configRepository;
-  private JobPersistence jobPersistence;
   private MigrationHandler migrationHandler;
 
   @BeforeEach
   void setUp() {
     configRepository = mock(ConfigRepository.class);
     when(configRepository.getAirbyteVersion()).thenReturn("test-version");
-    jobPersistence = mock(JobPersistence.class);
-    migrationHandler = new MigrationHandler(configRepository, jobPersistence);
+    migrationHandler = new MigrationHandler(configRepository);
   }
 
   private StandardWorkspace generateWorkspace() {

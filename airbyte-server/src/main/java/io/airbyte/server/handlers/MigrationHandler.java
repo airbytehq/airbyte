@@ -24,13 +24,13 @@
 
 package io.airbyte.server.handlers;
 
-import io.airbyte.config.persistence.ConfigNotFoundException;
-import io.airbyte.config.persistence.ConfigPersistence;
+import io.airbyte.commons.lang.Exceptions;
+import io.airbyte.config.ConfigSchema;
+import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSyncSchedule;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.DefaultConfigPersistence;
 import io.airbyte.config.persistence.PersistenceConstants;
-import io.airbyte.scheduler.persistence.JobPersistence;
-import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.server.converters.ConfigConverter;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -41,6 +41,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.List;
+import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
@@ -55,23 +57,26 @@ public class MigrationHandler {
   private static final String VERSION_FILE_NAME = "VERSION";
 
   private final ConfigRepository configRepository;
-  private final JobPersistence jobPersistence;
 
-  public MigrationHandler(final ConfigRepository configRepository, final JobPersistence jobPersistence) {
+  public MigrationHandler(final ConfigRepository configRepository) {
     this.configRepository = configRepository;
-    this.jobPersistence = jobPersistence;
   }
 
   public Path exportData() {
     try {
       // Create temp folder where to export data
       final Path tempFolder = Files.createTempDirectory("airbyte_archive");
-      FileUtils.forceDeleteOnExit(tempFolder.toFile());
-      exportAirbyteConfig(tempFolder);
-      exportAirbyteDatabase(tempFolder);
-      exportVersionFile(tempFolder);
-      final Path archive = createArchive(tempFolder);
-      FileUtils.deleteDirectory(tempFolder.toFile());
+      Path archive;
+      try {
+        exportAirbyteConfig(tempFolder);
+        exportAirbyteDatabase(tempFolder);
+        exportVersionFile(tempFolder);
+        final Path archiveFile = Files.createTempFile(ARCHIVE_FILE_NAME, ".tar.gz");
+        archiveFile.toFile().deleteOnExit();
+        archive = createArchive(tempFolder, archiveFile);
+      } finally {
+        FileUtils.deleteDirectory(tempFolder.toFile());
+      }
       return archive;
     } catch (IOException e) {
       LOGGER.error("Export Data failed.");
@@ -81,57 +86,21 @@ public class MigrationHandler {
 
   private void exportAirbyteConfig(Path tempFolder) {
     LOGGER.info(String.format("Exporting Airbyte Configs to %s", tempFolder));
-
-    // TODO Change persistence to YAML persistence instead of Default
-    final ConfigPersistence persistence = new DefaultConfigPersistence(tempFolder, configRepository.getAirbyteVersion());
-    final ConfigRepository tmpConfigRepository = new ConfigRepository(persistence);
-
-    try {
-      tmpConfigRepository.writeStandardWorkspace(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID));
-      configRepository.listStandardSources()
-          .forEach(config -> {
-            try {
-              tmpConfigRepository.writeStandardSource(config);
-            } catch (IOException | JsonValidationException e) {
-              throw new RuntimeException(e);
-            }
-          });
-      configRepository.listStandardDestinationDefinitions()
-          .forEach(config -> {
-            try {
-              tmpConfigRepository.writeStandardDestinationDefinition(config);
-            } catch (IOException | JsonValidationException e) {
-              throw new RuntimeException(e);
-            }
-          });
-      configRepository.listSourceConnection()
-          .forEach(config -> {
-            try {
-              tmpConfigRepository.writeSourceConnection(config);
-            } catch (IOException | JsonValidationException e) {
-              throw new RuntimeException(e);
-            }
-          });
-      configRepository.listDestinationConnection()
-          .forEach(config -> {
-            try {
-              tmpConfigRepository.writeDestinationConnection(config);
-            } catch (IOException | JsonValidationException e) {
-              throw new RuntimeException(e);
-            }
-          });
-      configRepository.listStandardSyncs()
-          .forEach(config -> {
-            try {
-              tmpConfigRepository.writeStandardSync(config);
-              tmpConfigRepository.writeStandardSchedule(configRepository.getStandardSyncSchedule(config.getConnectionId()));
-            } catch (IOException | JsonValidationException | ConfigNotFoundException e) {
-              throw new RuntimeException(e);
-            }
-          });
-    } catch (IOException | JsonValidationException | ConfigNotFoundException e) {
-      throw new RuntimeException(e);
-    }
+    final ConfigConverter configConverter = new ConfigConverter(tempFolder, configRepository.getAirbyteVersion());
+    Exceptions.toRuntime(() -> {
+      configConverter.writeConfig(ConfigSchema.STANDARD_WORKSPACE, configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID));
+      configConverter.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, configRepository.listStandardSources());
+      configConverter.writeConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, configRepository.listStandardDestinationDefinitions());
+      configConverter.writeConfig(ConfigSchema.SOURCE_CONNECTION, configRepository.listSourceConnection());
+      configConverter.writeConfig(ConfigSchema.DESTINATION_CONNECTION, configRepository.listDestinationConnection());
+      final List<StandardSync> standardSyncs = configRepository.listStandardSyncs();
+      configConverter.writeConfig(ConfigSchema.STANDARD_SYNC, standardSyncs);
+      final List<StandardSyncSchedule> standardSchedules = standardSyncs
+          .stream()
+          .map(config -> Exceptions.toRuntime(() -> configRepository.getStandardSyncSchedule(config.getConnectionId())))
+          .collect(Collectors.toList());
+      configConverter.writeConfig(ConfigSchema.STANDARD_SYNC_SCHEDULE, standardSchedules);
+    });
   }
 
   private void exportAirbyteDatabase(Path tempFolder) {
@@ -146,9 +115,7 @@ public class MigrationHandler {
     FileUtils.writeStringToFile(versionFile, currentVersion, Charset.defaultCharset());
   }
 
-  private Path createArchive(Path tempFolder) throws IOException {
-    final Path archiveFile = Files.createTempFile(ARCHIVE_FILE_NAME, ".tar.gz");
-    archiveFile.toFile().deleteOnExit();
+  static private Path createArchive(final Path tempFolder, final Path archiveFile) throws IOException {
     LOGGER.info(String.format("Creating archive file in %s from %s", archiveFile, tempFolder));
     final TarArchiveOutputStream archive =
         new TarArchiveOutputStream(new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(archiveFile.toFile()))));
