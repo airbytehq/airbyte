@@ -11,7 +11,7 @@ If you're interested in our progress on the Airbyte platform, please read below!
 ## [0.10.0](https://github.com/airbytehq/airbyte/milestone/12?closed=1) - delivered on 01/04/2020
 
 * You can now **deploy Airbyte on** [**Kuberbetes**](https://docs.airbyte.io/deploying-airbyte/on-kubernetes) ****\(alpha version\)
-* **Support incremental** for a few new sources: Mixpanel and Hubspot
+* **Support incremental sync** for Mixpanel and Hubspot sources
 * **Fixes on connectors:**
   * Fixed a bug in the GitHub connector where the connector didn’t verify the provided API token was granted the correct permissions
   * Fixed a bug in the Google Sheets connector where rate limits were not always respected
@@ -94,4 +94,3 @@ This is our very first release after 2 months of work.
 * **New blog:** we published a few articles on our startup journey, but also about our vision to making data integrations a commodity.
 
 Stay tuned, we will have new sources and destinations very soon! Don't hesitate to subscribe to our [newsletter](https://airbyte.io/#subscribe-newsletter) to receive our product updates and community news.
-
