@@ -30,7 +30,6 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
-
 import java.math.BigDecimal;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
@@ -56,8 +55,8 @@ public class JdbcUtils {
    * Map records returned in a result set.
    *
    * @param resultSet the result set
-   * @param mapper    function to make each record of the result set
-   * @param <T>       type that each record will be mapped to
+   * @param mapper function to make each record of the result set
+   * @param <T> type that each record will be mapped to
    * @return stream of records that the result set is mapped to.
    */
   public static <T> Stream<T> toStream(ResultSet resultSet, CheckedFunction<ResultSet, T, SQLException> mapper) {
