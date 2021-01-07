@@ -529,11 +529,18 @@ public class AcceptanceTests {
   private Map<Object, Object> getSourceDbConfig() {
     try {
       final Map<Object, Object> dbConfig = new HashMap<>();
-      dbConfig.put("host", Inet4Address.getLocalHost().getHostAddress()); // todo: do this programattically
+
+      if (IS_KUBE) {
+        dbConfig.put("host", Inet4Address.getLocalHost().getHostAddress());
+      } else {
+        dbConfig.put("host", sourcePsql.getHost());
+      }
+
       dbConfig.put("password", sourcePsql.getPassword());
       dbConfig.put("port", sourcePsql.getFirstMappedPort());
       dbConfig.put("database", sourcePsql.getDatabaseName());
       dbConfig.put("username", sourcePsql.getUsername());
+
       return dbConfig;
     } catch (UnknownHostException e) {
       throw new RuntimeException(e);
