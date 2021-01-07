@@ -39,6 +39,8 @@ import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.SyncMode;
 import io.airbyte.api.model.WbConnectionRead;
 import io.airbyte.api.model.WbConnectionReadList;
+import io.airbyte.api.model.WebBackendConnectionIdRequestBody;
+import io.airbyte.api.model.WebBackendConnectionUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -71,11 +73,6 @@ public class WebBackendConnectionsHandler {
       reads.add(buildWbConnectionRead(connection));
     }
     return new WbConnectionReadList().connections(reads);
-  }
-
-  public WbConnectionRead webBackendGetConnection(ConnectionIdRequestBody connectionIdRequestBody)
-      throws ConfigNotFoundException, IOException, JsonValidationException {
-    return buildWbConnectionRead(connectionsHandler.getConnection(connectionIdRequestBody));
   }
 
   private WbConnectionRead buildWbConnectionRead(ConnectionRead connectionRead) throws ConfigNotFoundException, IOException, JsonValidationException {
@@ -111,4 +108,15 @@ public class WebBackendConnectionsHandler {
     return wbConnectionRead;
   }
 
+  public WbConnectionRead webBackendGetConnection(WebBackendConnectionIdRequestBody webBackendConnectionIdRequestBody) throws ConfigNotFoundException, IOException, JsonValidationException {
+    ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody()
+            .connectionId(webBackendConnectionIdRequestBody.getConnectionId());
+
+    return buildWbConnectionRead(connectionsHandler.getConnection(connectionIdRequestBody));
+  }
+
+  public ConnectionRead webBackendUpdateConnection(WebBackendConnectionUpdate webBackendConnectionUpdate) {
+    // todo: delegate to connectionsHandler.updateConnection()
+    return null;
+  }
 }

@@ -46,6 +46,7 @@ import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.WbConnectionRead;
 import io.airbyte.api.model.WbConnectionReadList;
+import io.airbyte.api.model.WebBackendConnectionIdRequestBody;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
@@ -162,9 +163,12 @@ class WebBackendConnectionsHandlerTest {
     final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody();
     connectionIdRequestBody.setConnectionId(connectionRead.getConnectionId());
 
+    final WebBackendConnectionIdRequestBody webBackendConnectionIdRequestBody = new WebBackendConnectionIdRequestBody();
+    webBackendConnectionIdRequestBody.setConnectionId(connectionRead.getConnectionId());
+
     when(connectionsHandler.getConnection(connectionIdRequestBody)).thenReturn(connectionRead);
 
-    final WbConnectionRead wbConnectionRead = wbHandler.webBackendGetConnection(connectionIdRequestBody);
+    final WbConnectionRead wbConnectionRead = wbHandler.webBackendGetConnection(webBackendConnectionIdRequestBody);
 
     assertEquals(expected, wbConnectionRead);
   }
