@@ -30,6 +30,7 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+
 import java.math.BigDecimal;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
@@ -55,8 +56,8 @@ public class JdbcUtils {
    * Map records returned in a result set.
    *
    * @param resultSet the result set
-   * @param mapper function to make each record of the result set
-   * @param <T> type that each record will be mapped to
+   * @param mapper    function to make each record of the result set
+   * @param <T>       type that each record will be mapped to
    * @return stream of records that the result set is mapped to.
    */
   public static <T> Stream<T> toStream(ResultSet resultSet, CheckedFunction<ResultSet, T, SQLException> mapper) {
@@ -110,10 +111,18 @@ public class JdbcUtils {
     return jsonNode;
   }
 
+  private static JDBCType safeGetJdbcType(int columnTypeInt) {
+    try {
+      return JDBCType.valueOf(columnTypeInt);
+    } catch (Exception e) {
+      return JDBCType.VARCHAR;
+    }
+  }
+
   private static void setJsonField(ResultSet r, int i, ObjectNode o) throws SQLException {
     final int columnTypeInt = r.getMetaData().getColumnType(i);
     final String columnName = r.getMetaData().getColumnName(i);
-    final JDBCType columnType = JDBCType.valueOf(columnTypeInt);
+    final JDBCType columnType = safeGetJdbcType(columnTypeInt);
 
     // https://www.cis.upenn.edu/~bcpierce/courses/629/jdkdocs/guide/jdbc/getstart/mapping.doc.html
     switch (columnType) {
