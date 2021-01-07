@@ -24,17 +24,42 @@
 
 package io.airbyte.integrations.destination;
 
-import java.util.Map;
+import io.airbyte.protocol.models.SyncMode;
 
-/**
- * Interface to move data from one temporary location to a final target destination
- *
- * Parameters per String are first set by the setContext methods before executing the actual move
- */
-public interface TmpToFinalTable {
+public class WriteConfig {
 
-  void setContext(Map<String, DestinationCopyContext> configs);
+  private final String streamName;
+  private final String outputNamespaceName;
+  private final String tmpTableName;
+  private final String outputTableName;
+  private final SyncMode syncMode;
 
-  void execute() throws Exception;
+  public WriteConfig(String streamName, String outputNamespaceName, String tmpTableName, String outputTableName, SyncMode syncMode) {
+    this.streamName = streamName;
+    this.outputNamespaceName = outputNamespaceName;
+    this.tmpTableName = tmpTableName;
+    this.outputTableName = outputTableName;
+    this.syncMode = syncMode;
+  }
+
+  public String getStreamName() {
+    return streamName;
+  }
+
+  public String getTmpTableName() {
+    return tmpTableName;
+  }
+
+  public String getOutputNamespaceName() {
+    return outputNamespaceName;
+  }
+
+  public String getOutputTableName() {
+    return outputTableName;
+  }
+
+  public SyncMode getSyncMode() {
+    return syncMode;
+  }
 
 }
