@@ -26,18 +26,20 @@ package io.airbyte.integrations.base;
 
 import io.airbyte.commons.functional.CheckedConsumer;
 
-/**
- * Lifecyle:
- * <p>
- * 1. Consumer object is instantiated.
- * </p>
- * <p>
- * 2. It received messages via {@link DestinationConsumer#accept(T)}
- * </p>
- * <p>
- * 3. Always (on success or failure) finalize by calling {@link DestinationConsumer#close()}
- * </p>
- *
- * @param <T> - type of the message to be consumed.
- */
-public interface DestinationConsumer<T> extends CheckedConsumer<T, Exception>, AutoCloseable {}
+// Lifecycle:
+// 1. Instantiate consumer.
+// 2. start() to initialize any resources that need to be created BEFORE the consumer consumes any
+// messages.
+// 2. consumes ALL records via {@link DestinationConsumer#accept(T)}
+// 3. Always (on success or failure) finalize by calling {@link DestinationConsumer#close()}
+public interface DestinationConsumer<T> extends CheckedConsumer<T, Exception>, AutoCloseable {
+
+  void start() throws Exception;
+
+  @Override
+  void accept(T message) throws Exception;
+
+  @Override
+  void close() throws Exception;
+
+}
