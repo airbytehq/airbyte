@@ -417,6 +417,10 @@ public class AcceptanceTests {
   }
 
   private Set<String> listCsvStreams() throws IOException {
+    for (Path path : Files.list(Path.of("/tmp/airbyte_local")).collect(Collectors.toList())) {
+      System.out.println("path = " + path);
+    }
+
     return Files.list(outputDir)
         .map(file -> adaptCsvName(file.getFileName().toString()))
         .collect(Collectors.toSet());
