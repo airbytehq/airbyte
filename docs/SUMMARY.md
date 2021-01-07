@@ -40,7 +40,7 @@
     * [Recurly](integrations/sources/recurly.md)
     * [Redshift](integrations/sources/redshift.md)
     * [Salesforce](integrations/sources/salesforce.md)
-    * [Twilio Sendgrid](integrations/sources/sendgrid.md)
+    * [Sendgrid](integrations/sources/sendgrid.md)
     * [Shopify](integrations/sources/shopify.md)
     * [Slack](integrations/sources/slack.md)
     * [Stripe](integrations/sources/stripe.md)
