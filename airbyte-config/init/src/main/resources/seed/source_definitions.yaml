@@ -56,7 +56,7 @@
 - sourceDefinitionId: 2470e835-feaf-4db6-96f3-70fd645acc77
   name: Salesforce
   dockerRepository: airbyte/source-salesforce-singer
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.5
   documentationUrl: https://hub.docker.com/r/airbyte/source-salesforce-singer
 - sourceDefinitionId: e094cb9a-26de-4645-8761-65c0c425d1de
   name: Stripe
@@ -116,7 +116,7 @@
 - sourceDefinitionId: 41375467-61ae-4204-8e38-e2b8b7365f23
   name: Slack
   dockerRepository: airbyte/source-slack-singer
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://hub.docker.com/repository/docker/airbyte/source-slack-singer
 - sourceDefinitionId: 59f1e50a-331f-4f09-b3e8-2e8d4d355f44
   name: Greenhouse

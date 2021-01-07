@@ -1,4 +1,4 @@
-# Building New Connectors
+# Developing Connectors
 
 Airbyte supports two types of connectors: Sources and Destinations. A connector takes the form of a Docker image which follows the [Airbyte specification](../../architecture/airbyte-specification.md).
 

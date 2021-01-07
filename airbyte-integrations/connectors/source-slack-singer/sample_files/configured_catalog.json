@@ -135,6 +135,77 @@
           }
         }
       }
+    },
+    {
+      "stream": {
+        "name": "users",
+        "json_schema": {
+          "type": ["null", "object"],
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": ["null", "string"]
+            },
+            "team_id": {
+              "type": ["null", "string"]
+            },
+            "name": {
+              "type": ["null", "string"]
+            },
+            "deleted": {
+              "type": ["null", "boolean"]
+            },
+            "color": {
+              "type": ["null", "string"]
+            },
+            "real_name": {
+              "type": ["null", "string"]
+            },
+            "tz": {
+              "type": ["null", "string"]
+            },
+            "tz_label": {
+              "type": ["null", "string"]
+            },
+            "tz_offset": {
+              "type": ["null", "integer"]
+            },
+            "is_admin": {
+              "type": ["null", "boolean"]
+            },
+            "is_owner": {
+              "type": ["null", "boolean"]
+            },
+            "is_primary_owner": {
+              "type": ["null", "boolean"]
+            },
+            "is_restricted": {
+              "type": ["null", "boolean"]
+            },
+            "is_ultra_restricted": {
+              "type": ["null", "boolean"]
+            },
+            "is_bot": {
+              "type": ["null", "boolean"]
+            },
+            "updated": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "is_app_user": {
+              "type": ["null", "boolean"]
+            },
+            "has_2fa": {
+              "type": ["null", "boolean"]
+            }
+          }
+        },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "incremental",
+      "cursor_field": []
     }
   ]
 }

@@ -1,4 +1,5 @@
 -e ../../bases/airbyte-protocol
 -e ../../bases/base-python
 -e ../../bases/base-singer
+-e ../../bases/base-python-test
 -e .
