@@ -24,44 +24,38 @@
 
 package io.airbyte.integrations.destination.jdbc;
 
-import static org.jooq.impl.DSL.currentSchema;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.lang.CloseableQueue;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
+import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
-import io.airbyte.integrations.destination.DestinationConsumerFactory;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
-import io.airbyte.integrations.destination.SqlDestinationOperations;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.io.IOException;
-import java.sql.SQLException;
-import org.jooq.DSLContext;
-import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class AbstractJdbcDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcDestination.class);
-  protected static final String COLUMN_NAME = "data";
 
   private final String driverClass;
-  private final SQLDialect dialect;
   private final NamingConventionTransformer namingResolver;
+  private final SqlOperations sqlOperations;
 
-  public AbstractJdbcDestination(final String driverClass, final SQLDialect dialect, final NamingConventionTransformer namingResolver) {
+  public AbstractJdbcDestination(final String driverClass,
+                                 final NamingConventionTransformer namingResolver,
+                                 final SqlOperations sqlOperations) {
     this.driverClass = driverClass;
-    this.dialect = dialect;
     this.namingResolver = namingResolver;
+    this.sqlOperations = sqlOperations;
   }
 
   @Override
@@ -73,11 +67,9 @@ public abstract class AbstractJdbcDestination implements Destination {
 
   @Override
   public AirbyteConnectionStatus check(JsonNode config) {
-    try (final Database database = getDatabase(config)) {
-      // attempt to get current schema. this is a cheap query to sanity check that we can connect to the
-      // database. `currentSchema()` is a jooq method that will run the appropriate query based on which
-      // database it is connected to.
-      database.query(this::getCurrentDatabaseName);
+    try (final JdbcDatabase database = getDatabase(config)) {
+      // attempt to get metadata from the database as a cheap way of seeing if we can connect.
+      database.bufferedResultSetQuery(conn -> conn.getMetaData().getCatalogs(), JdbcUtils::rowToJson);
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (Exception e) {
@@ -88,22 +80,17 @@ public abstract class AbstractJdbcDestination implements Destination {
     }
   }
 
-  protected Database getDatabase(JsonNode config) {
+  protected JdbcDatabase getDatabase(JsonNode config) {
     final JsonNode jdbcConfig = toJdbcConfig(config);
 
-    return Databases.createDatabase(
+    return Databases.createJdbcDatabase(
         jdbcConfig.get("username").asText(),
         jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
         jdbcConfig.get("jdbc_url").asText(),
-        driverClass,
-        dialect);
+        driverClass);
   }
 
   public abstract JsonNode toJdbcConfig(JsonNode config);
-
-  private String getCurrentDatabaseName(DSLContext ctx) {
-    return ctx.select(currentSchema()).fetch().get(0).getValue(0, String.class);
-  }
 
   @Override
   public NamingConventionTransformer getNamingTransformer() {
@@ -112,73 +99,7 @@ public abstract class AbstractJdbcDestination implements Destination {
 
   @Override
   public DestinationConsumer<AirbyteMessage> write(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
-    final DestinationImpl destination = new DestinationImpl(getDatabase(config));
-    return DestinationConsumerFactory.build(destination, getNamingTransformer(), config, catalog);
-  }
-
-  protected String getDefaultSchemaName(JsonNode config) {
-    if (config.has("schema")) {
-      return config.get("schema").asText();
-    } else {
-      return "public";
-    }
-  }
-
-  protected String createSchemaQuery(String schemaName) {
-    return String.format("CREATE SCHEMA IF NOT EXISTS %s;\n", schemaName);
-  }
-
-  protected abstract String createDestinationTableQuery(String schemaName, String tableName);
-
-  protected String dropDestinationTableQuery(String schemaName, String tableName) {
-    return String.format("DROP TABLE IF EXISTS %s.%s;\n", schemaName, tableName);
-  }
-
-  protected abstract String insertBufferedRecordsQuery(int batchSize, CloseableQueue<byte[]> writeBuffer, String schemaName, String tableName);
-
-  private class DestinationImpl implements SqlDestinationOperations {
-
-    private final Database database;
-
-    public DestinationImpl(Database database) {
-      this.database = database;
-    }
-
-    @Override
-    public void createSchema(String schemaName) throws Exception {
-      database.query(ctx -> ctx.execute(createSchemaQuery(schemaName)));
-    }
-
-    @Override
-    public void createDestinationTable(String schemaName, String tableName) throws SQLException {
-      database.query(ctx -> ctx.execute(createDestinationTableQuery(schemaName, tableName)));
-    }
-
-    @Override
-    public void insertBufferedRecords(int batchSize, CloseableQueue<byte[]> writeBuffer, String schemaName, String tableName) throws Exception {
-      database.query(ctx -> ctx.execute(insertBufferedRecordsQuery(batchSize, writeBuffer, schemaName, tableName)));
-    }
-
-    @Override
-    public String truncateTableQuery(String schemaName, String tableName) {
-      return String.format("TRUNCATE TABLE %s.%s;\n", schemaName, tableName);
-    }
-
-    @Override
-    public String insertIntoFromSelectQuery(String schemaName, String srcTableName, String dstTableName) {
-      return String.format("INSERT INTO %s.%s SELECT * FROM %s.%s;\n", schemaName, dstTableName, schemaName, srcTableName);
-    }
-
-    @Override
-    public void executeTransaction(String queries) throws Exception {
-      database.transaction(ctx -> ctx.execute(queries));
-    }
-
-    @Override
-    public void dropDestinationTable(String schemaName, String tableName) throws SQLException {
-      database.query(ctx -> ctx.execute(dropDestinationTableQuery(schemaName, tableName)));
-    }
-
+    return JdbcBufferedConsumerFactory.create(getDatabase(config), sqlOperations, namingResolver, config, catalog);
   }
 
 }
