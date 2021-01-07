@@ -24,6 +24,7 @@
 
 package io.airbyte.integrations.destination.jdbc;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -33,6 +34,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 public class SqlOperationsUtils {
 
@@ -51,6 +53,17 @@ public class SqlOperationsUtils {
                                                    String recordQueryComponent,
                                                    JdbcDatabase jdbcDatabase,
                                                    List<AirbyteRecordMessage> records)
+      throws SQLException {
+    insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, jdbcDatabase, records, UUID::randomUUID);
+
+  }
+
+  @VisibleForTesting
+  static void insertRawRecordsInSingleQuery(String insertQueryComponent,
+                                            String recordQueryComponent,
+                                            JdbcDatabase jdbcDatabase,
+                                            List<AirbyteRecordMessage> records,
+                                            Supplier<UUID> uuidSupplier)
       throws SQLException {
     if (records.isEmpty()) {
       return;
@@ -74,7 +87,7 @@ public class SqlOperationsUtils {
         int i = 1;
         for (final AirbyteRecordMessage message : records) {
           // 1-indexed
-          statement.setString(i, UUID.randomUUID().toString());
+          statement.setString(i, uuidSupplier.get().toString());
           statement.setString(i + 1, Jsons.serialize(message.getData()));
           statement.setTimestamp(i + 2, Timestamp.from(Instant.ofEpochMilli(message.getEmittedAt())));
           i += 3;
