@@ -69,6 +69,7 @@ import java.net.Inet4Address;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.Collections;
@@ -417,9 +418,9 @@ public class AcceptanceTests {
   }
 
   private Set<String> listCsvStreams() throws IOException {
-    for (Path path : Files.list(Path.of("/tmp/airbyte_local")).collect(Collectors.toList())) {
-      System.out.println("path = " + path);
-    }
+    Files.walk(Paths.get("/tmp/airbyte_local"))
+            .filter(Files::isRegularFile)
+            .forEach(System.out::println);
 
     return Files.list(outputDir)
         .map(file -> adaptCsvName(file.getFileName().toString()))
