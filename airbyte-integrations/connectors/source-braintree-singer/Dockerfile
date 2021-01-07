@@ -6,7 +6,7 @@ ENV CODE_PATH="source_braintree_singer"
 ENV AIRBYTE_IMPL_MODULE="source_braintree_singer"
 ENV AIRBYTE_IMPL_PATH="SourceBraintreeSinger"
 
-LABEL io.airbyte.version=0.1.1
+LABEL io.airbyte.version=0.1.2
 LABEL io.airbyte.name=airbyte/source-braintree-singer
 
 WORKDIR /airbyte/integration_code
