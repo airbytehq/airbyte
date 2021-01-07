@@ -24,20 +24,35 @@
 
 package io.airbyte.server.handlers;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.SourceConnection;
+import io.airbyte.config.StandardDestinationDefinition;
+import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSyncSchedule;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.PersistenceConstants;
+import io.airbyte.server.helpers.ConnectionHelpers;
+import io.airbyte.server.helpers.DestinationDefinitionHelpers;
+import io.airbyte.server.helpers.DestinationHelpers;
 import io.airbyte.server.helpers.SourceDefinitionHelpers;
+import io.airbyte.server.helpers.SourceHelpers;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 public class MigrationHandlerTest {
 
@@ -65,13 +80,63 @@ public class MigrationHandlerTest {
   }
 
   @Test
-  void testMigration() throws ConfigNotFoundException, IOException, JsonValidationException {
+  void testConfigMigration() throws ConfigNotFoundException, IOException, JsonValidationException {
+    final StandardWorkspace workspace = generateWorkspace();
+    final StandardSourceDefinition standardSource = SourceDefinitionHelpers.generateSource();
+    final StandardDestinationDefinition standardDestination = DestinationDefinitionHelpers.generateDestination();
+    final SourceConnection sourceConnection1 = SourceHelpers.generateSource(standardSource.getSourceDefinitionId());
+    final SourceConnection sourceConnection2 = SourceHelpers.generateSource(standardSource.getSourceDefinitionId());
+    final DestinationConnection destinationConnection = DestinationHelpers.generateDestination(standardDestination.getDestinationDefinitionId());
+    final StandardSync destinationSync = ConnectionHelpers.generateSyncWithDestinationId(destinationConnection.getDestinationId());
+    final StandardSync sourceSync = ConnectionHelpers.generateSyncWithSourceId(sourceConnection1.getSourceId());
+    final StandardSyncSchedule syncSchedule = ConnectionHelpers.generateSchedule(sourceSync.getConnectionId());
+
+    // Read operations
     when(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID))
-        .thenReturn(generateWorkspace());
+        .thenReturn(workspace);
     when(configRepository.listStandardSources())
-        .thenReturn(List.of(SourceDefinitionHelpers.generateSource()));
+        .thenReturn(List.of(standardSource));
+    when(configRepository.listStandardDestinationDefinitions())
+        .thenReturn(List.of(standardDestination));
+    when(configRepository.listSourceConnection())
+        .thenReturn(List.of(sourceConnection1, sourceConnection2));
+    when(configRepository.listDestinationConnection())
+        .thenReturn(List.of(destinationConnection));
+    when(configRepository.listStandardSyncs())
+        .thenReturn(List.of(destinationSync, sourceSync));
+    when(configRepository.getStandardSyncSchedule(sourceSync.getConnectionId()))
+        .thenReturn(syncSchedule);
+
+    // Write operations
+    final ArgumentCaptor<StandardWorkspace> resultWorkspace = ArgumentCaptor.forClass(StandardWorkspace.class);
+    final ArgumentCaptor<StandardSourceDefinition> resultStandardSource = ArgumentCaptor.forClass(StandardSourceDefinition.class);
+    final ArgumentCaptor<StandardDestinationDefinition> resultStandardDestination = ArgumentCaptor.forClass(StandardDestinationDefinition.class);
+    final ArgumentCaptor<SourceConnection> resultSourceConnection = ArgumentCaptor.forClass(SourceConnection.class);
+    final ArgumentCaptor<DestinationConnection> resultDestinationConnection = ArgumentCaptor.forClass(DestinationConnection.class);
+    final ArgumentCaptor<StandardSync> resultSync = ArgumentCaptor.forClass(StandardSync.class);
+    final ArgumentCaptor<StandardSyncSchedule> resultSyncSchedule = ArgumentCaptor.forClass(StandardSyncSchedule.class);
+
     migrationHandler.importData(migrationHandler.exportData());
-    // TODO check before/after
+
+    verify(configRepository, times(1)).writeStandardWorkspace(resultWorkspace.capture());
+    verify(configRepository, times(1)).writeStandardSource(resultStandardSource.capture());
+    verify(configRepository, times(1)).writeStandardDestinationDefinition(resultStandardDestination.capture());
+    verify(configRepository, times(2)).writeSourceConnection(resultSourceConnection.capture());
+    verify(configRepository, times(1)).writeDestinationConnection(resultDestinationConnection.capture());
+    verify(configRepository, times(2)).writeStandardSync(resultSync.capture());
+    verify(configRepository, times(1)).writeStandardSchedule(resultSyncSchedule.capture());
+
+    assertEquals(workspace, resultWorkspace.getValue());
+    assertEquals(standardSource, resultStandardSource.getValue());
+    assertEquals(standardDestination, resultStandardDestination.getValue());
+    List<SourceConnection> sourceConnectionList = resultSourceConnection.getAllValues();
+    assertTrue(sourceConnectionList.contains(sourceConnection1));
+    assertTrue(sourceConnectionList.contains(sourceConnection2));
+    assertEquals(destinationConnection, resultDestinationConnection.getValue());
+    List<StandardSync> syncList = resultSync.getAllValues();
+    assertTrue(syncList.contains(sourceSync));
+    assertTrue(syncList.contains(destinationSync));
+    assertEquals(syncSchedule, resultSyncSchedule.getValue());
   }
 
 }

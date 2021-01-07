@@ -24,23 +24,25 @@
 
 package io.airbyte.server.converters;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.yaml.Yamls;
 import io.airbyte.config.ConfigSchema;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 public class ConfigConverter {
 
   private static final String CONFIG_FOLDER_NAME = "AirbyteConfig";
 
   private final Path storageRoot;
-  private final String version;
 
-  public ConfigConverter(final Path storageRoot, final String version) {
+  public ConfigConverter(final Path storageRoot) {
     this.storageRoot = storageRoot;
-    this.version = version;
   }
 
   private Path buildConfigPath(ConfigSchema schemaType) {
@@ -48,43 +50,23 @@ public class ConfigConverter {
         .resolve(String.format("%s.yaml", schemaType.toString()));
   }
 
-  public <T> void writeConfig(ConfigSchema schemaType, T config) throws IOException {
+  public <T> void writeConfigList(ConfigSchema schemaType, List<T> configList) throws IOException {
     final Path configPath = buildConfigPath(schemaType);
     Files.createDirectories(configPath.getParent());
-    Files.writeString(configPath, Yamls.serialize(new ConfigWrapper<>(version, config)));
+    Files.writeString(configPath, Yamls.serialize(configList));
   }
 
-  public <T> T readConfig(ConfigSchema schemaType) throws IOException {
+  public <T> List<T> readConfigList(ConfigSchema schemaType, Class<T> clazz) throws IOException {
     final Path configPath = buildConfigPath(schemaType);
     final String configStr = Files.readString(configPath);
-    ConfigWrapper wrapper = Yamls.deserialize(configStr, ConfigWrapper.class);
-    if (!version.equals(wrapper.getAirbyteVersion())) {
-      throw new IOException(String.format("Mismatch version, expected %s", version));
+    final JsonNode node = Yamls.deserialize(configStr);
+    final List<T> results = new ArrayList<>();
+    final Iterator<JsonNode> it = node.elements();
+    while (it.hasNext()) {
+      final JsonNode element = it.next();
+      results.add(Jsons.object(element, clazz));
     }
-    return (T) wrapper.getAirbyteConfig();
-  }
-
-  static private class ConfigWrapper<T> {
-
-    @JsonProperty("airbyteVersion")
-    private final String airbyteVersion;
-
-    @JsonProperty("airbyteConfig")
-    private final T airbyteConfig;
-
-    public ConfigWrapper(final String version, T config) {
-      airbyteVersion = version;
-      airbyteConfig = config;
-    }
-
-    public String getAirbyteVersion() {
-      return airbyteVersion;
-    }
-
-    public T getAirbyteConfig() {
-      return airbyteConfig;
-    }
-
+    return results;
   }
 
 }
