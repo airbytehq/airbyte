@@ -22,5 +22,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-def test_example_method():
-    assert True
+from setuptools import find_packages, setup
+
+setup(
+    name="source_appstore_singer",
+    description="Source implementation for Appstore, built on the Singer tap implementation.",
+    author="Airbyte",
+    author_email="contact@airbyte.io",
+    packages=find_packages(),
+    install_requires=["airbyte-protocol"],
+    package_data={"": ["*.json"]},
+    setup_requires=["pytest-runner"],
+    tests_require=["pytest"],
+    extras_require={
+        # Dependencies required by the main package but not tests should go in main. Deps required by
+        # integration tests but not the main package go in tests. Deps required by both should go in
+        # install_requires.
+        "main": ["base-singer", "base-python"],
+        "tests": ["airbyte-python-test", "pytest"],
+    },
+    dependency_links=["https://github.com/miroapp/tap-appstore/tarball/master#egg=tap-appstore"],
+)
