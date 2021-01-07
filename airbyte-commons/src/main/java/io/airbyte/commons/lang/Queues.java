@@ -32,6 +32,14 @@ import java.util.stream.StreamSupport;
 
 public class Queues {
 
+  /**
+   * Exposes the contents a {@link CloseableQueue} as a {@link Stream}. Consuming or closing the
+   * stream does NOT close the queue.
+   *
+   * @param queue queue whose content will be exposed as a stream.
+   * @param <T> type provided by the queue
+   * @return stream interface on top of the queue.
+   */
   public static <T> Stream<T> toStream(CloseableQueue<T> queue) {
     return StreamSupport.stream(new Spliterators.AbstractSpliterator<>(Long.MAX_VALUE, Spliterator.ORDERED) {
 
