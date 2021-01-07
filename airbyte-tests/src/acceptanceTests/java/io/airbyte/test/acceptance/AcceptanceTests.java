@@ -516,7 +516,7 @@ public class AcceptanceTests {
 
   private Map<Object, Object> getSourceDbConfig() {
     final Map<Object, Object> dbConfig = new HashMap<>();
-    dbConfig.put("host", "host.minikube.internal"); // todo: do this programattically
+    dbConfig.put("host", "0.0.0.0"); // todo: do this programattically
     dbConfig.put("password", sourcePsql.getPassword());
     dbConfig.put("port", sourcePsql.getFirstMappedPort());
     dbConfig.put("database", sourcePsql.getDatabaseName());
