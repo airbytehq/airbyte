@@ -8,6 +8,10 @@ This is the changelog for Airbyte core. For our connector changelog, please visi
 
 If you're interested in our progress on the Airbyte platform, please read below!
 
+## [Upcoming: 0.11.0](https://github.com/airbytehq/airbyte/milestone/12?closed=1) - ETA 01/11/2020
+* **Support incremental sync** for Salesforce, Slack, and Braintree sources
+* Fix a bug in MSSQL and Redshift source connectors where custom SQL types weren't being handled correctly. [Pull request](https://github.com/airbytehq/airbyte/pull/1576)
+
 ## [0.10.0](https://github.com/airbytehq/airbyte/milestone/12?closed=1) - delivered on 01/04/2020
 
 * You can now **deploy Airbyte on** [**Kuberbetes**](https://docs.airbyte.io/deploying-airbyte/on-kubernetes) ****\(alpha version\)
