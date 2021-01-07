@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Salesforce source supports Full Refresh syncs. That is, every time a sync is run, Airbyte will copy all rows in the tables and columns you set up for replication into the destination in a new table.
+The Salesforce source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
 This source wraps the Singer.io [tap-salesforce](https://github.com/singer-io/tap-salesforce).
 
@@ -34,7 +34,7 @@ The connector is restricted by normal Salesforce rate limiting. For large transf
 
 We recommend the following [walkthrough](https://medium.com/@bpmmendis94/obtain-access-refresh-tokens-from-salesforce-rest-api-a324fe4ccd9b) **while keeping in mind the edits we suggest below** for setting up a Salesforce app that can pull data from Salesforce and locating the credentials you need to provide to Airbyte.
 
-Suggested edits: 
+Suggested edits:
 
 1. If your salesforce URL does not take the form `X.salesforce.com`, use your actual Salesforce domain name. For example, if your Salesforce URL is `awesomecompany.force.com` then use that instead of `awesomecompany.salesforce.com`. 
 2. When running a `curl` command, always run it with the `-L` option to follow any redirects.
