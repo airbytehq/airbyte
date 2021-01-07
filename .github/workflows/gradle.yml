@@ -145,8 +145,7 @@ jobs:
         with:
           minikube version: 'v1.16.0'
           kubernetes version: 'v1.19.2'
-          start args:
-            - --mount-string="/tmp/airbyte_local:/local"
+          start args: '--mount-string="/tmp/airbyte_local:/local"'
 
       - name: Install socat
         run: sudo apt-get install socat
