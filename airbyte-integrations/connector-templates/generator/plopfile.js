@@ -66,11 +66,6 @@ module.exports = function (plop) {
         templateFile: `${pythonSourceInputRoot}/.dockerignore.hbs`,
         path: `${pythonSourceOutputRoot}/.dockerignore`
       },
-      function(answers, config, plop){
-        const renderedOutputDir = plop.renderString(pythonSourceOutputRoot, answers);
-        fs.symlinkSync(`${basesDir}/base-python/base_python`, `${renderedOutputDir}/base_python`);
-        fs.symlinkSync(`${basesDir}/airbyte-protocol/airbyte_protocol`, `${renderedOutputDir}/airbyte_protocol`);
-      },
       {type: 'emitSuccess', outputPath: pythonSourceOutputRoot}]
   });
 
@@ -103,12 +98,6 @@ module.exports = function (plop) {
         abortOnFail: true,
         templateFile: `${singerSourceInputRoot}/.dockerignore.hbs`,
         path: `${singerSourceOutputRoot}/.dockerignore`
-      },
-      function(answers, config, plop){
-        const renderedOutputDir = plop.renderString(singerSourceOutputRoot, answers);
-        fs.symlinkSync(`${basesDir}/base-python/base_python`, `${renderedOutputDir}/base_python`);
-        fs.symlinkSync(`${basesDir}/airbyte-protocol/airbyte_protocol`, `${renderedOutputDir}/airbyte_protocol`);
-        fs.symlinkSync(`${basesDir}/base-singer/base_singer`, `${renderedOutputDir}/base_singer`);
       },
         {type: 'emitSuccess', outputPath: singerSourceOutputRoot},
     ]
