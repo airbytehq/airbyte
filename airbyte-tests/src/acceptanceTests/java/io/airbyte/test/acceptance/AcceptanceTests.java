@@ -228,7 +228,10 @@ public class AcceptanceTests {
 
     final CheckConnectionRead checkConnectionRead = apiClient.getSourceApi().checkConnectionToSource(new SourceIdRequestBody().sourceId(sourceId));
 
-    assertEquals(CheckConnectionRead.StatusEnum.SUCCEEDED, checkConnectionRead.getStatus());
+    assertEquals(
+            CheckConnectionRead.StatusEnum.SUCCEEDED,
+            checkConnectionRead.getStatus(),
+            checkConnectionRead.getMessage());
   }
 
   @Test
@@ -513,7 +516,7 @@ public class AcceptanceTests {
 
   private Map<Object, Object> getSourceDbConfig() {
     final Map<Object, Object> dbConfig = new HashMap<>();
-    dbConfig.put("host", sourcePsql.getContainerIpAddress()); // "host.minikube.internal" todo: do this programattically
+    dbConfig.put("host", "host.minikube.internal"); // todo: do this programattically
     dbConfig.put("password", sourcePsql.getPassword());
     dbConfig.put("port", sourcePsql.getFirstMappedPort());
     dbConfig.put("database", sourcePsql.getDatabaseName());
