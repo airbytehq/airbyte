@@ -19,4 +19,4 @@ sleep 20s
 kubectl port-forward svc/airbyte-server-svc 8001:8001 &
 
 echo "Running e2e tests via gradle..."
-./gradlew --no-daemon :airbyte-tests:acceptanceTests --info --scan --tests "*AcceptanceTests"
+KUBE=true ./gradlew --no-daemon :airbyte-tests:acceptanceTests --scan

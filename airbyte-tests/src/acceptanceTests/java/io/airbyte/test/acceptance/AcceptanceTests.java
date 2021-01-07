@@ -69,7 +69,6 @@ import java.net.Inet4Address;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.Collections;
@@ -103,6 +102,11 @@ import org.testcontainers.utility.MountableFile;
 // e.g. We test that we can create a destination before we test whether we can sync data to it.
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AcceptanceTests {
+
+  // Since we don't support local outputs, we can just skip this with Kube for now
+  // It still tests that all the actions work properly
+  // In the future we can support local mounts in Kube or use a Postgres table as the destination here
+  private static final boolean IS_KUBE = System.getenv().containsKey("KUBE");
 
   private static final String TABLE_NAME = "id_and_name";
   private static final String STREAM_NAME = "public." + TABLE_NAME;
@@ -232,9 +236,9 @@ public class AcceptanceTests {
     final CheckConnectionRead checkConnectionRead = apiClient.getSourceApi().checkConnectionToSource(new SourceIdRequestBody().sourceId(sourceId));
 
     assertEquals(
-            CheckConnectionRead.StatusEnum.SUCCEEDED,
-            checkConnectionRead.getStatus(),
-            checkConnectionRead.getMessage());
+        CheckConnectionRead.StatusEnum.SUCCEEDED,
+        checkConnectionRead.getStatus(),
+        checkConnectionRead.getMessage());
   }
 
   @Test
@@ -385,15 +389,17 @@ public class AcceptanceTests {
   }
 
   private void assertSourceAndTargetDbInSync(PostgreSQLContainer sourceDb) throws Exception {
-    final Database database = getDatabase(sourceDb);
+    if (!IS_KUBE) {
+      final Database database = getDatabase(sourceDb);
 
-    final Set<String> sourceStreams = listStreams(database);
-    final Set<String> destinationStreams = listCsvStreams();
-    assertEquals(sourceStreams, destinationStreams,
-        String.format("streams did not match.\n source stream names: %s\n destination stream names: %s\n", sourceStreams, destinationStreams));
+      final Set<String> sourceStreams = listStreams(database);
+      final Set<String> destinationStreams = listCsvStreams();
+      assertEquals(sourceStreams, destinationStreams,
+          String.format("streams did not match.\n source stream names: %s\n destination stream names: %s\n", sourceStreams, destinationStreams));
 
-    for (String table : sourceStreams) {
-      assertStreamsEquivalent(database, table);
+      for (String table : sourceStreams) {
+        assertStreamsEquivalent(database, table);
+      }
     }
   }
 
@@ -418,28 +424,27 @@ public class AcceptanceTests {
   }
 
   private Set<String> listCsvStreams() throws IOException {
-    Files.walk(Paths.get("/tmp/airbyte_local"))
-            .filter(Files::isRegularFile)
-            .forEach(System.out::println);
-
     return Files.list(outputDir)
         .map(file -> adaptCsvName(file.getFileName().toString()))
         .collect(Collectors.toSet());
   }
 
   private void assertDestinationContains(List<JsonNode> sourceRecords, String streamName) throws Exception {
-    final Set<JsonNode> destinationRecords = new HashSet<>(retrieveCsvRecords(streamName));
+    if (!IS_KUBE) {
+      final Set<JsonNode> destinationRecords = new HashSet<>(retrieveCsvRecords(streamName));
 
-    assertEquals(sourceRecords.size(), destinationRecords.size(),
-        String.format("destination contains: %s record. source contains: %s", sourceRecords.size(), destinationRecords.size()));
+      assertEquals(sourceRecords.size(), destinationRecords.size(),
+          String.format("destination contains: %s record. source contains: %s", sourceRecords.size(), destinationRecords.size()));
 
-    for (JsonNode sourceStreamRecord : sourceRecords) {
-      assertTrue(destinationRecords.contains(sourceStreamRecord),
-          String.format("destination does not contain record:\n %s \n destination contains:\n %s\n", sourceStreamRecord, destinationRecords));
+      for (JsonNode sourceStreamRecord : sourceRecords) {
+        assertTrue(destinationRecords.contains(sourceStreamRecord),
+            String.format("destination does not contain record:\n %s \n destination contains:\n %s\n", sourceStreamRecord, destinationRecords));
+      }
     }
   }
 
   private void assertStreamsEquivalent(Database database, String table) throws Exception {
+
     final List<JsonNode> allRecords = retrievePgRecords(database, table);
     assertDestinationContains(allRecords, table);
   }
