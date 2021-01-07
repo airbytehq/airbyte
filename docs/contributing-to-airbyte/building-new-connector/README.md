@@ -57,6 +57,10 @@ Generated templates provide the following Gradle tasks:
 1. `:airbyte-integrations:connectors:source-<name>:build` should run unit tests and build the integration's Docker image
 2. `:airbyte-integrations:connectors:source-<name>:integrationTest` should run integration tests including Airbyte's Standard test suite.
 
+### Best practices
+
+Make sure to review the [Best Practices for Connector Development](best-practices-for-connector-development.md) guide. Following best practices is **not** a requirement for merging your contribution to Airbyte, but it certainly doesn't hurt ;\)  
+
 ## Updating a connector
 
 Once you've finished iterating on the changes to a connector as specified in its `README.md`, follow these instructions to tell Airbyte to use the latest version of your connector.
