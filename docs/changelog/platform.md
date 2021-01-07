@@ -16,7 +16,7 @@ If you're interested in our progress on the Airbyte platform, please read below!
   * Fixed a bug in the GitHub connector where the connector didn’t verify the provided API token was granted the correct permissions
   * Fixed a bug in the Google Sheets connector where rate limits were not always respected
   * Alpha version of Facebook marketing API v9. This connector is a native Airbyte connector \(current is Singer based\).
-* **New source:** Looker \(contributed by [@tgiardina](https://github.com/tgiardina) - thanks Thomas!\)
+* **New source:** Plaid \(contributed by [@tgiardina](https://github.com/tgiardina) - thanks Thomas!\)
 
 ## [0.9.0](https://github.com/airbytehq/airbyte/milestone/11?closed=1) - delivered on 12/23/2020
 
