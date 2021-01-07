@@ -33,8 +33,21 @@ public abstract class FailureTrackingConsumer<T> implements DestinationConsumer<
 
   private boolean hasFailed = false;
 
+  protected abstract void startTracked() throws Exception;
+
+  @Override
+  public void start() throws Exception {
+    try {
+      startTracked();
+    } catch (Exception e) {
+      hasFailed = true;
+      throw e;
+    }
+  }
+
   protected abstract void acceptTracked(T t) throws Exception;
 
+  @Override
   public void accept(T t) throws Exception {
     try {
       acceptTracked(t);
@@ -46,6 +59,7 @@ public abstract class FailureTrackingConsumer<T> implements DestinationConsumer<
 
   protected abstract void close(boolean hasFailed) throws Exception;
 
+  @Override
   public void close() throws Exception {
     LOGGER.info("hasFailed: {}.", hasFailed);
     close(hasFailed);
