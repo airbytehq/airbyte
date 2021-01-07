@@ -156,7 +156,7 @@ public class CsvDestination implements Destination {
 
     @Override
     protected void startTracked() {
-      // no op.
+      // todo (cgardens) - move contents of #write into this method.
     }
 
     @Override

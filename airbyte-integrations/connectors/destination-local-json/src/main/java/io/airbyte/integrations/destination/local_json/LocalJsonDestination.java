@@ -154,7 +154,7 @@ public class LocalJsonDestination implements Destination {
 
     @Override
     protected void startTracked() {
-
+      // todo (cgardens) - move contents of #write into this method.
     }
 
     @Override
