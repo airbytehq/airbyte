@@ -66,6 +66,8 @@ import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.Inet4Address;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -518,14 +520,17 @@ public class AcceptanceTests {
 
   private Map<Object, Object> getSourceDbConfig() {
     try {
+      Socket socket = new Socket();
+      socket.connect(new InetSocketAddress("google.com", 80));
+
       final Map<Object, Object> dbConfig = new HashMap<>();
-      dbConfig.put("host", Inet4Address.getLocalHost().getHostAddress()); // todo: do this programattically
+      dbConfig.put("host", socket.getLocalAddress()); // todo: do this programattically
       dbConfig.put("password", sourcePsql.getPassword());
       dbConfig.put("port", sourcePsql.getFirstMappedPort());
       dbConfig.put("database", sourcePsql.getDatabaseName());
       dbConfig.put("username", sourcePsql.getUsername());
       return dbConfig;
-    } catch (UnknownHostException e) {
+    } catch (UnknownHostException | IOException e) {
       throw new RuntimeException(e);
     }
   }
