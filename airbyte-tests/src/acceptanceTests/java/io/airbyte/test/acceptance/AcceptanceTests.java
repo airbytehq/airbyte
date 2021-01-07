@@ -65,6 +65,8 @@ import io.airbyte.db.Databases;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.Inet4Address;
+import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
@@ -515,13 +517,17 @@ public class AcceptanceTests {
   }
 
   private Map<Object, Object> getSourceDbConfig() {
-    final Map<Object, Object> dbConfig = new HashMap<>();
-    dbConfig.put("host", "0.0.0.0"); // todo: do this programattically
-    dbConfig.put("password", sourcePsql.getPassword());
-    dbConfig.put("port", sourcePsql.getFirstMappedPort());
-    dbConfig.put("database", sourcePsql.getDatabaseName());
-    dbConfig.put("username", sourcePsql.getUsername());
-    return dbConfig;
+    try {
+      final Map<Object, Object> dbConfig = new HashMap<>();
+      dbConfig.put("host", Inet4Address.getLocalHost().getHostAddress()); // todo: do this programattically
+      dbConfig.put("password", sourcePsql.getPassword());
+      dbConfig.put("port", sourcePsql.getFirstMappedPort());
+      dbConfig.put("database", sourcePsql.getDatabaseName());
+      dbConfig.put("username", sourcePsql.getUsername());
+      return dbConfig;
+    } catch (UnknownHostException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private SourceRead createPostgresSource() throws ApiException {
