@@ -31,21 +31,13 @@ import io.airbyte.config.StandardSyncSchedule;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.server.converters.ConfigConverter;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.zip.GZIPOutputStream;
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
-import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,16 +56,14 @@ public class MigrationHandler {
 
   public Path exportData() {
     try {
-      // Create temp folder where to export data
       final Path tempFolder = Files.createTempDirectory("airbyte_archive");
-      Path archive;
+      final Path archive = Files.createTempFile(ARCHIVE_FILE_NAME, ".tar.gz");;
+      archive.toFile().deleteOnExit();
       try {
         exportAirbyteConfig(tempFolder);
         exportAirbyteDatabase(tempFolder);
         exportVersionFile(tempFolder);
-        final Path archiveFile = Files.createTempFile(ARCHIVE_FILE_NAME, ".tar.gz");
-        archiveFile.toFile().deleteOnExit();
-        archive = createArchive(tempFolder, archiveFile);
+        ArchiveHelper.createArchive(tempFolder, archive);
       } finally {
         FileUtils.deleteDirectory(tempFolder.toFile());
       }
@@ -115,54 +105,11 @@ public class MigrationHandler {
     FileUtils.writeStringToFile(versionFile, currentVersion, Charset.defaultCharset());
   }
 
-  static private Path createArchive(final Path tempFolder, final Path archiveFile) throws IOException {
-    LOGGER.info(String.format("Creating archive file in %s from %s", archiveFile, tempFolder));
-    final TarArchiveOutputStream archive =
-        new TarArchiveOutputStream(new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(archiveFile.toFile()))));
-    Files.walkFileTree(tempFolder, new SimpleFileVisitor<>() {
-
-      @Override
-      public FileVisitResult visitFile(Path file, BasicFileAttributes attributes) {
-        // only copy files, no symbolic links
-        if (attributes.isSymbolicLink()) {
-          return FileVisitResult.CONTINUE;
-        }
-        Path targetFile = tempFolder.relativize(file);
-        try {
-          compressFile(file, targetFile, archive);
-        } catch (IOException e) {
-          LOGGER.error(String.format("Failed to archive file %s: %s", file, e));
-          throw new RuntimeException(e);
-        }
-        return FileVisitResult.CONTINUE;
-      }
-
-      @Override
-      public FileVisitResult visitFileFailed(Path file, IOException exc) {
-        LOGGER.error(String.format("Failed to include file %s in archive", file));
-        return FileVisitResult.CONTINUE;
-      }
-
-    });
-    archive.close();
-    return archiveFile;
-  }
-
-  static private void compressFile(final Path file, final Path filename, final TarArchiveOutputStream archive) throws IOException {
-    final TarArchiveEntry tarEntry = new TarArchiveEntry(file.toFile(), filename.toString());
-    archive.putArchiveEntry(tarEntry);
-    Files.copy(file, archive);
-    archive.closeArchiveEntry();
-  }
-
   public void importData(Path archive) {
     try {
-      // Create temp folder where to extract archive
       final Path tempFolder = Files.createTempDirectory("airbyte_archive");
-      FileUtils.forceDeleteOnExit(tempFolder.toFile());
-      // TODO Extract tarball to temp folder
-      final String currentVersion = configRepository.getAirbyteVersion();
-      // TODO Check VERSION file against currentVersion
+      ArchiveHelper.openArchive(tempFolder, archive);
+      checkVersion(tempFolder);
       importAirbyteConfig(tempFolder);
       importAirbyteDatabase(tempFolder);
       FileUtils.deleteDirectory(tempFolder.toFile());
@@ -172,11 +119,15 @@ public class MigrationHandler {
     }
   }
 
-  private void importAirbyteConfig(Path inputFolder) {
+  private void checkVersion(Path tempFolder) {
+    // TODO implement check version against current version
+  }
+
+  private void importAirbyteConfig(Path tempFolder) {
     // TODO implement
   }
 
-  private void importAirbyteDatabase(Path inputFolder) {
+  private void importAirbyteDatabase(Path tempFolder) {
     // TODO implement
   }
 
