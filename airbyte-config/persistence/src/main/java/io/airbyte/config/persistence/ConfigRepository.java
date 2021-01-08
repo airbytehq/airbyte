@@ -49,10 +49,6 @@ public class ConfigRepository {
     this.persistence = persistence;
   }
 
-  public String getAirbyteVersion() {
-    return persistence.getAirbyteVersion();
-  }
-
   public StandardWorkspace getStandardWorkspace(final UUID workspaceId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     return persistence.getConfig(

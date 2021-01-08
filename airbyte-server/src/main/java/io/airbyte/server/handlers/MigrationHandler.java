@@ -54,9 +54,11 @@ public class MigrationHandler {
   private static final String ARCHIVE_FILE_NAME = "airbyte_config_data";
   private static final String VERSION_FILE_NAME = "VERSION";
 
+  private final String version;
   private final ConfigRepository configRepository;
 
-  public MigrationHandler(final ConfigRepository configRepository) {
+  public MigrationHandler(final String version, final ConfigRepository configRepository) {
+    this.version = version;
     this.configRepository = configRepository;
   }
 
@@ -81,15 +83,13 @@ public class MigrationHandler {
   }
 
   private void exportVersionFile(Path tempFolder) throws IOException {
-    LOGGER.info(String.format("Exporting Airbyte Version to %s", tempFolder));
-    final String currentVersion = configRepository.getAirbyteVersion();
     final File versionFile = Files.createFile(tempFolder.resolve(VERSION_FILE_NAME)).toFile();
-    FileUtils.writeStringToFile(versionFile, currentVersion, Charset.defaultCharset());
+    FileUtils.writeStringToFile(versionFile, version, Charset.defaultCharset());
   }
 
   private void exportAirbyteConfig(Path tempFolder) {
-    LOGGER.info(String.format("Exporting Airbyte Configs to %s", tempFolder));
-    final ConfigConverter configConverter = new ConfigConverter(tempFolder, configRepository.getAirbyteVersion());
+    LOGGER.info("Exporting Airbyte Configs");
+    final ConfigConverter configConverter = new ConfigConverter(version, tempFolder);
     Exceptions.toRuntime(() -> {
       configConverter.writeConfigList(ConfigSchema.STANDARD_WORKSPACE,
           List.of(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID)));
@@ -109,7 +109,7 @@ public class MigrationHandler {
   }
 
   private void exportAirbyteDatabase(Path tempFolder) {
-    LOGGER.info(String.format("Exporting Airbyte Database to %s", tempFolder));
+    LOGGER.info("Exporting Airbyte Database");
     // TODO implement
   }
 
@@ -118,7 +118,7 @@ public class MigrationHandler {
       final Path tempFolder = Files.createTempDirectory("airbyte_archive");
       try {
         ArchiveHelper.openArchive(tempFolder, archive);
-        checkVersion(tempFolder);
+        checkImport(tempFolder);
         importAirbyteConfig(tempFolder, false);
         importAirbyteDatabase(tempFolder, false);
       } finally {
@@ -130,20 +130,20 @@ public class MigrationHandler {
     }
   }
 
-  private void checkVersion(Path tempFolder) throws IOException {
+  private void checkImport(Path tempFolder) throws IOException {
     final Path versionFile = tempFolder.resolve(VERSION_FILE_NAME);
     final String importVersion = Files.readString(versionFile, Charset.defaultCharset());
     LOGGER.info(String.format("Checking Airbyte Version to import %s", importVersion));
-    final String currentVersion = configRepository.getAirbyteVersion();
-    if (!importVersion.equals(currentVersion)) {
-      throw new IOException(String.format("Version of files to import %s does not match current version %s", importVersion, currentVersion));
+    if (!importVersion.equals(version)) {
+      throw new IOException(String.format("Version in VERSION file (%s) does not match current Airbyte version (%s)", importVersion, version));
     }
+    // Check if all files to import are valid and with expected airbyte version
     importAirbyteConfig(tempFolder, true);
     importAirbyteDatabase(tempFolder, true);
   }
 
   private void importAirbyteConfig(Path tempFolder, boolean dryRun) throws IOException {
-    final ConfigConverter configConverter = new ConfigConverter(tempFolder, configRepository.getAirbyteVersion());
+    final ConfigConverter configConverter = new ConfigConverter(version, tempFolder);
     if (dryRun) {
       configConverter.readConfigList(ConfigSchema.STANDARD_WORKSPACE, StandardWorkspace.class);
       configConverter.readConfigList(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class);

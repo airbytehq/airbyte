@@ -162,7 +162,7 @@ public class ServerApp {
     LOGGER.info("configRoot = " + configRoot);
 
     LOGGER.info("Creating config repository...");
-    final ConfigRepository configRepository = new ConfigRepository(new DefaultConfigPersistence(configRoot, configs.getAirbyteVersion()));
+    final ConfigRepository configRepository = new ConfigRepository(new DefaultConfigPersistence(configRoot));
 
     // hack: upon installation we need to assign a random customerId so that when
     // tracking we can associate all action with the correct anonymous id.

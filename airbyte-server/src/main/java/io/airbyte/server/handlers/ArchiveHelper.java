@@ -48,7 +48,6 @@ public class ArchiveHelper {
   private static final Logger LOGGER = LoggerFactory.getLogger(MigrationHandler.class);
 
   static public void createArchive(final Path tempFolder, final Path archiveFile) throws IOException {
-    LOGGER.info(String.format("Creating archive file in %s from %s", archiveFile, tempFolder));
     final TarArchiveOutputStream archive =
         new TarArchiveOutputStream(new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(archiveFile.toFile()))));
     Files.walkFileTree(tempFolder, new SimpleFileVisitor<>() {

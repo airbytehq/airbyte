@@ -62,8 +62,7 @@ public class MigrationHandlerTest {
   @BeforeEach
   void setUp() {
     configRepository = mock(ConfigRepository.class);
-    when(configRepository.getAirbyteVersion()).thenReturn("test-version");
-    migrationHandler = new MigrationHandler(configRepository);
+    migrationHandler = new MigrationHandler("test-version", configRepository);
   }
 
   private StandardWorkspace generateWorkspace() {

@@ -36,17 +36,20 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ConfigConverter {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(ConfigConverter.class);
   private static final String CONFIG_FOLDER_NAME = "AirbyteConfig";
 
-  private final Path storageRoot;
   private final String version;
+  private final Path storageRoot;
 
-  public ConfigConverter(final Path storageRoot, String version) {
-    this.storageRoot = storageRoot;
+  public ConfigConverter(final String version, final Path storageRoot) {
     this.version = version;
+    this.storageRoot = storageRoot;
   }
 
   private Path buildConfigPath(ConfigSchema schemaType) {
@@ -58,22 +61,29 @@ public class ConfigConverter {
     final Path configPath = buildConfigPath(schemaType);
     Files.createDirectories(configPath.getParent());
     Files.writeString(configPath, Yamls.serialize(new ConfigWrapper(version, configList)));
+    LOGGER.debug(String.format("Successful export of airbyte config %s", schemaType));
   }
 
   public <T> List<T> readConfigList(ConfigSchema schemaType, Class<T> clazz) throws IOException {
-    final Path configPath = buildConfigPath(schemaType);
-    final String configStr = Files.readString(configPath);
-    final JsonNode node = Yamls.deserialize(configStr);
-    final ConfigWrapper wrapper = Jsons.object(node, ConfigWrapper.class);
-    final String readVersion = wrapper.getAirbyteVersion();
-    if (!version.equals(readVersion)) {
-      throw new IOException(String.format("Version of files to import %s does not match current version %s", readVersion, version));
-    }
     final List<T> results = new ArrayList<>();
-    final Iterator<JsonNode> it = wrapper.getConfigs().elements();
-    while (it.hasNext()) {
-      final JsonNode element = it.next();
-      results.add(Jsons.object(element, clazz));
+    final Path configPath = buildConfigPath(schemaType);
+    if (configPath.toFile().exists()) {
+      final String configStr = Files.readString(configPath);
+      final JsonNode node = Yamls.deserialize(configStr);
+      final ConfigWrapper wrapper = Jsons.object(node, ConfigWrapper.class);
+      final String readVersion = wrapper.getAirbyteVersion();
+      if (!version.equals(readVersion)) {
+        throw new IOException(
+            String.format("Version of %s to import (%s) does not match current Airbyte version (%s)", schemaType, readVersion, version));
+      }
+      final Iterator<JsonNode> it = wrapper.getConfigs().elements();
+      while (it.hasNext()) {
+        final JsonNode element = it.next();
+        results.add(Jsons.object(element, clazz));
+      }
+      LOGGER.debug(String.format("Successful read of airbyte config %s", schemaType));
+    } else {
+      LOGGER.debug(String.format("Airbyte config %s was not found", schemaType));
     }
     return results;
   }

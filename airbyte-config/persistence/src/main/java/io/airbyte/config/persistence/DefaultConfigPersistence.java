@@ -47,21 +47,14 @@ public class DefaultConfigPersistence implements ConfigPersistence {
 
   private final JsonSchemaValidator jsonSchemaValidator;
   private final Path storageRoot;
-  private final String version;
 
-  public DefaultConfigPersistence(final Path storageRoot, final String version) {
-    this(storageRoot, new JsonSchemaValidator(), version);
+  public DefaultConfigPersistence(final Path storageRoot) {
+    this(storageRoot, new JsonSchemaValidator());
   }
 
-  public DefaultConfigPersistence(final Path storageRoot, final JsonSchemaValidator schemaValidator, final String version) {
+  public DefaultConfigPersistence(final Path storageRoot, final JsonSchemaValidator schemaValidator) {
     this.storageRoot = storageRoot.resolve(CONFIG_DIR);
     jsonSchemaValidator = schemaValidator;
-    this.version = version;
-  }
-
-  @Override
-  public String getAirbyteVersion() {
-    return version;
   }
 
   @Override
