@@ -63,16 +63,17 @@ public class Yamls {
     }
   }
 
+  // todo (cgardens) - share this with Jsons if ever needed.
   public static <T> CloseableConsumer<T> listWriter(Writer writer) {
-    return new YamlConsumer<>(writer);
+    return new YamlConsumer<>(writer, OBJECT_MAPPER);
   }
 
   public static class YamlConsumer<T> implements CloseableConsumer<T> {
 
     private final SequenceWriter sequenceWriter;
 
-    public YamlConsumer(Writer writer) {
-      this.sequenceWriter = Exceptions.toRuntime(() -> OBJECT_MAPPER.writer().writeValuesAsArray(writer));
+    public YamlConsumer(Writer writer, ObjectMapper objectMapper) {
+      this.sequenceWriter = Exceptions.toRuntime(() -> objectMapper.writer().writeValuesAsArray(writer));
 
     }
 
