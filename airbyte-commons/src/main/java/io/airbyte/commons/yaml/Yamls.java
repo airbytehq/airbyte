@@ -69,11 +69,9 @@ public class Yamls {
 
   public static class YamlConsumer<T> implements CloseableConsumer<T> {
 
-    private final Writer writer;
     private final SequenceWriter sequenceWriter;
 
     public YamlConsumer(Writer writer) {
-      this.writer = writer;
       this.sequenceWriter = Exceptions.toRuntime(() -> OBJECT_MAPPER.writer().writeValuesAsArray(writer));
 
     }
@@ -89,15 +87,10 @@ public class Yamls {
 
     @Override
     public void close() throws Exception {
+      // closing the SequenceWriter closes the Writer that it wraps.
       sequenceWriter.close();
-      writer.close();
     }
 
   }
 
-  // public static void main(String[] args) throws IOException {
-  // final BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("/tmp/blah10.txt"));
-  // writer(bufferedWriter, Lists.newArrayList(ImmutableMap.of("ping", "pong"),
-  // ImmutableMap.of("plop", "ploop")).stream());
-  // }
 }
