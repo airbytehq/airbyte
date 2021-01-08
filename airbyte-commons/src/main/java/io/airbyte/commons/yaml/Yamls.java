@@ -95,4 +95,9 @@ public class Yamls {
 
   }
 
+  // public static void main(String[] args) throws IOException {
+  // final BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("/tmp/blah10.txt"));
+  // writer(bufferedWriter, Lists.newArrayList(ImmutableMap.of("ping", "pong"),
+  // ImmutableMap.of("plop", "ploop")).stream());
+  // }
 }

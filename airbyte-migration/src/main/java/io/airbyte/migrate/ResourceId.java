@@ -81,11 +81,7 @@ public class ResourceId {
   }
 
   public Path getResourceRelativePath() {
-    return Path.of(type.toString().toLowerCase()).resolve(name + ".yaml");
-  }
-
-  public Path getRecordPath() {
-    return Path.of(type.toString().toLowerCase()).resolve(name + ".yaml");
+    return type.getDirectoryName().resolve(name + ".yaml");
   }
 
   @Override

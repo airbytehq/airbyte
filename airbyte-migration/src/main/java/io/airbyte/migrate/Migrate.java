@@ -35,6 +35,7 @@ import io.airbyte.commons.stream.MoreStreams;
 import io.airbyte.commons.yaml.Yamls;
 import io.airbyte.migrate.migrations.MigrationV0_11_0;
 import io.airbyte.validation.json.JsonSchemaValidator;
+import io.airbyte.validation.json.JsonValidationException;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -67,17 +68,17 @@ public class Migrate {
   private final List<Migration> migrations;
 
   public Migrate(Path migrateRoot) {
-    this(migrateRoot, new JsonSchemaValidator(), MIGRATIONS);
+    this(migrateRoot, MIGRATIONS);
   }
 
-  public Migrate(Path migrateRoot, JsonSchemaValidator jsonSchemaValidator, List<Migration> migrations) {
+  public Migrate(Path migrateRoot, List<Migration> migrations) {
     this.migrateRoot = migrateRoot;
-    this.jsonSchemaValidator = jsonSchemaValidator;
+    this.jsonSchemaValidator = new JsonSchemaValidator();
     this.migrations = migrations;
   }
 
   public void run(MigrateConfig migrateConfig) throws IOException {
-    // ensure migration root exsts
+    // ensure migration root exists
     Files.createDirectories(migrateRoot);
     final Path initialInputPath = migrateConfig.getInputPath();
     // detect current version.
@@ -86,15 +87,17 @@ public class Migrate {
     final String targetVersion = migrateConfig.getTargetVersion();
     // select migrations to run.
     final int currentVersionIndex = migrations.stream().map(Migration::getVersion).collect(Collectors.toList()).indexOf(currentVersion);
-    Preconditions.checkState(currentVersionIndex >= 0, "No migration found for current version: " + currentVersion);
+    Preconditions.checkArgument(currentVersionIndex >= 0, "No migration found for current version: " + currentVersion);
     final int targetVersionIndex = migrations.stream().map(Migration::getVersion).collect(Collectors.toList()).indexOf(targetVersion);
-    Preconditions.checkState(targetVersionIndex >= 0, "No migration found for target version: " + targetVersion);
-    Preconditions.checkState(currentVersionIndex < targetVersionIndex, String
-        .format("Target version is not greater than the current version. current version: %s, target version: %s", currentVersion, targetVersion));
+    Preconditions.checkArgument(targetVersionIndex >= 0, "No migration found for target version: " + targetVersion);
+    Preconditions.checkArgument(currentVersionIndex < targetVersionIndex, String
+        .format(
+            "Target version is not greater than the current version. current version: %s, target version: %s. Note migration order is determined by membership in migrations list, not any canonical sorting of the version string itself.",
+            currentVersion, targetVersion));
 
     // for each migration to run:
     Path inputPath = initialInputPath;
-    for (int i = currentVersionIndex + 1; i == targetVersionIndex; i++) {
+    for (int i = currentVersionIndex + 1; i <= targetVersionIndex; i++) {
       // run migration
       // write output of each migration to disk.
       final Migration migration = migrations.get(i);
@@ -130,16 +133,22 @@ public class Migrate {
     return tmpOutputDir;
   }
 
-  private Map<ResourceId, Stream<JsonNode>> createInputStreams(Migration migration, Path migrationInputRoot) throws IOException {
+  private Map<ResourceId, Stream<JsonNode>> createInputStreams(Migration migration, Path migrationInputRoot) {
     final Map<ResourceId, Stream<JsonNode>> resourceIdToInputStreams = MoreMaps.merge(
         createInputStreamsForResourceType(migration, migrationInputRoot, ResourceType.CONFIG),
         createInputStreamsForResourceType(migration, migrationInputRoot, ResourceType.JOB));
-    MoreSets.assertEqualsVerbose(migration.getInputSchema().keySet(), resourceIdToInputStreams.keySet());
+
+    try {
+      MoreSets.assertEqualsVerbose(migration.getInputSchema().keySet(), resourceIdToInputStreams.keySet());
+    } catch (IllegalArgumentException e) {
+      throw new IllegalArgumentException("Input record resources do not match declared schema resources", e);
+    }
     return resourceIdToInputStreams;
   }
 
-  private Map<ResourceId, Stream<JsonNode>> createInputStreamsForResourceType(Migration migration, Path migrationInputRoot, ResourceType resourceType)
-      throws IOException {
+  private Map<ResourceId, Stream<JsonNode>> createInputStreamsForResourceType(Migration migration,
+                                                                              Path migrationInputRoot,
+                                                                              ResourceType resourceType) {
     final List<Path> inputFilePaths = FileUtils.listFiles(migrationInputRoot.resolve(resourceType.getDirectoryName()).toFile(), null, false)
         .stream()
         .map(File::toPath)
@@ -149,7 +158,13 @@ public class Migrate {
     for (final Path absolutePath : inputFilePaths) {
       final ResourceId resourceId = ResourceId.fromRecordFilePath(resourceType, absolutePath);
       final Stream<JsonNode> recordInputStream = MoreStreams.toStream(Yamls.deserialize(IOs.readFile(absolutePath)).elements())
-          .peek(r -> Exceptions.toRuntime(() -> jsonSchemaValidator.ensure(migration.getInputSchema().get(resourceId), r)));
+          .peek(r -> {
+            try {
+              jsonSchemaValidator.ensure(migration.getInputSchema().get(resourceId), r);
+            } catch (JsonValidationException e) {
+              throw new IllegalArgumentException("Input data schema does not match declared input schema.", e);
+            }
+          });
       inputData.put(resourceId, recordInputStream);
     }
 

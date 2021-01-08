@@ -49,7 +49,7 @@ public class RecordConsumer implements CloseableConsumer<JsonNode> {
       jsonSchemaValidator.ensure(schema, jsonNode);
       consumer.accept(jsonNode);
     } catch (JsonValidationException e) {
-      throw new RuntimeException(e);
+      throw new IllegalArgumentException("Output record does not conform to declared output schema", e);
     }
   }
 
