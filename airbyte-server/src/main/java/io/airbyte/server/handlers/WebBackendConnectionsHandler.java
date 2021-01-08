@@ -162,7 +162,7 @@ public class WebBackendConnectionsHandler {
           stream.setSyncMode(originalStream.getSyncMode());
         }
 
-        Set<String> updatedCursorFields = new HashSet<>(stream.getDefaultCursorField());
+        Set<String> updatedCursorFields = new HashSet<>();
 
         for (String oldCursorField : originalStream.getCursorField()) {
           if(fieldNames.contains(oldCursorField)) {
