@@ -37,6 +37,7 @@ import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.server.converters.ConfigConverter;
+import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -125,13 +126,13 @@ public class MigrationHandler {
       } finally {
         FileUtils.deleteDirectory(tempFolder.toFile());
       }
-    } catch (IOException e) {
+    } catch (IOException | JsonValidationException e) {
       LOGGER.error("Import Data failed.");
       throw new RuntimeException(e);
     }
   }
 
-  private void checkImport(Path tempFolder) throws IOException {
+  private void checkImport(Path tempFolder) throws IOException, JsonValidationException {
     final Path versionFile = tempFolder.resolve(VERSION_FILE_NAME);
     final String importVersion = Files.readString(versionFile, Charset.defaultCharset());
     LOGGER.info(String.format("Checking Airbyte Version to import %s", importVersion));
@@ -143,7 +144,7 @@ public class MigrationHandler {
     importAirbyteDatabase(tempFolder, true);
   }
 
-  private void importAirbyteConfig(Path tempFolder, boolean dryRun) throws IOException {
+  private void importAirbyteConfig(Path tempFolder, boolean dryRun) throws IOException, JsonValidationException {
     final ConfigConverter configConverter = new ConfigConverter(version, tempFolder);
     if (dryRun) {
       configConverter.readConfigList(ConfigSchema.STANDARD_WORKSPACE, StandardWorkspace.class);

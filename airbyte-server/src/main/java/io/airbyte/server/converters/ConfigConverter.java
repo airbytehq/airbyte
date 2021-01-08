@@ -30,6 +30,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.yaml.Yamls;
 import io.airbyte.config.ConfigSchema;
+import io.airbyte.validation.json.JsonSchemaValidator;
+import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -46,10 +48,16 @@ public class ConfigConverter {
 
   private final String version;
   private final Path storageRoot;
+  private final JsonSchemaValidator jsonSchemaValidator;
 
-  public ConfigConverter(final String version, final Path storageRoot) {
+  public ConfigConverter(final String version, final Path storageRoot, final JsonSchemaValidator jsonSchemaValidator) {
     this.version = version;
     this.storageRoot = storageRoot;
+    this.jsonSchemaValidator = jsonSchemaValidator;
+  }
+
+  public ConfigConverter(final String version, final Path storageRoot) {
+    this(version, storageRoot, new JsonSchemaValidator());
   }
 
   private Path buildConfigPath(ConfigSchema schemaType) {
@@ -64,7 +72,7 @@ public class ConfigConverter {
     LOGGER.debug(String.format("Successful export of airbyte config %s", schemaType));
   }
 
-  public <T> List<T> readConfigList(ConfigSchema schemaType, Class<T> clazz) throws IOException {
+  public <T> List<T> readConfigList(ConfigSchema schemaType, Class<T> clazz) throws IOException, JsonValidationException {
     final List<T> results = new ArrayList<>();
     final Path configPath = buildConfigPath(schemaType);
     if (configPath.toFile().exists()) {
@@ -79,13 +87,20 @@ public class ConfigConverter {
       final Iterator<JsonNode> it = wrapper.getConfigs().elements();
       while (it.hasNext()) {
         final JsonNode element = it.next();
-        results.add(Jsons.object(element, clazz));
+        final T config = Jsons.object(element, clazz);
+        validateJson(config, schemaType);
+        results.add(config);
       }
       LOGGER.debug(String.format("Successful read of airbyte config %s", schemaType));
     } else {
       LOGGER.debug(String.format("Airbyte config %s was not found", schemaType));
     }
     return results;
+  }
+
+  private <T> void validateJson(T config, ConfigSchema configType) throws JsonValidationException {
+    JsonNode schema = JsonSchemaValidator.getSchema(configType.getFile());
+    jsonSchemaValidator.ensure(schema, Jsons.jsonNode(config));
   }
 
   @JsonPropertyOrder({
