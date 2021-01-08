@@ -35,13 +35,13 @@ class MoreSetsTest {
 
   @Test
   void testAssertEqualsVerbose() {
-    Set<Integer> set1 = ImmutableSet.of(1, 2, 3);
-    Set<Integer> set2 = ImmutableSet.of(1, 2, 3);
-    Set<Integer> set3 = ImmutableSet.of(1, 2);
+    final Set<Integer> set1 = ImmutableSet.of(1, 2, 3);
+    final Set<Integer> set2 = ImmutableSet.of(1, 2, 3);
+    final Set<Integer> set3 = ImmutableSet.of(1, 2);
 
     assertDoesNotThrow(() -> MoreSets.assertEqualsVerbose(set1, set1));
     assertDoesNotThrow(() -> MoreSets.assertEqualsVerbose(set1, set2));
-    assertThrows(IllegalStateException.class, () -> MoreSets.assertEqualsVerbose(set1, set3));
+    assertThrows(IllegalArgumentException.class, () -> MoreSets.assertEqualsVerbose(set1, set3));
   }
 
 }
