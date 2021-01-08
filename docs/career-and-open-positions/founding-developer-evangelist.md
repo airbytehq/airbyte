@@ -1,4 +1,4 @@
-# Founding Developer Evangelist
+# Founding Developer Advocate
 
 ## **About Airbyte**
 
@@ -10,18 +10,20 @@ We're backed by some of the world's [top investors](./#our-investors) and believ
 
 ## **Description**
 
-As our Founding Developer Evangelist, you will have two focus:
+As our Founding Developer Advocate, you will have three focus \(prioritized\):
 
-1. Generating awareness about Airbyte, by contributing and participating in guides, tutorials, webinars, meetups, conference panels, anything of value to the ecosystem
-2. Engaging with our users and contributors, so they become evangelists outside the company. 
+1. Helping us providing the best developer experience through our documentation and tutorials
+2. Engaging with our users and contributors, so they become evangelists outside the company.
+3. Generating awareness about Airbyte, by contributing and participating in guides, tutorials, webinars, meetups, conference panels, anything of value to the ecosystem.
 
-As the first member of our developer evangelism team, you will work closely with the founders to collaborate and connect with our community. You shouldn’t be afraid to be hands-on, you might write sample code, set up our swag program, etc.
+As the first member of our developer relationship team, you will work closely with the founders to collaborate and connect with our community. You shouldn’t be afraid to be hands-on, you might write sample code, set up our swag program, etc.
 
 ## **Responsibilities**
 
-* Reach mass developers by creating unique content that educates the ecosystem
+* Help us provide the most frictionless experience to our audience, by constantly improving our documentation and tutorials
+* Educate users through unique tutorials that educate the ecosystem and help us increase our reach 
+* Organize or participate to \(online or offline\) events to give Airbyte a voice
 * Lead the conversation around the latest technology advancements and best practices in the developer community 
-* Contribute to relevant open source projects, in order to give Airbyte a voice and front seat access to the developments in our space of interest
 * Channel information back to product and engineering about your learnings being an active contributor in the community
 * Be a force in the community!
 
