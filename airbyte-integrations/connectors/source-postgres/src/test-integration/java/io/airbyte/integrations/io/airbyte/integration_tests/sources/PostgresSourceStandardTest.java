@@ -45,7 +45,7 @@ import java.util.List;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-public class PostgresIntegrationTests extends StandardSourceTest {
+public class PostgresSourceStandardTest extends StandardSourceTest {
 
   private static final String STREAM_NAME = "public.id_and_name";
   private static final String STREAM_NAME2 = "public.starships";
