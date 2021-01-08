@@ -91,6 +91,6 @@
   * [Strategy](company-handbook/strategy.md)
   * [Business Model](company-handbook/business-model.md)
 * [Career & Open Positions](career-and-open-positions/README.md)
-  * [Founding Developer Evangelist](career-and-open-positions/founding-developer-evangelist.md)
+  * [Founding Developer Advocate](career-and-open-positions/founding-developer-evangelist.md)
 * [License](license.md)
 
