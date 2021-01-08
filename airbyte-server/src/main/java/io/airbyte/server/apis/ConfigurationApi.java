@@ -80,6 +80,7 @@ import io.airbyte.server.handlers.DestinationDefinitionsHandler;
 import io.airbyte.server.handlers.DestinationHandler;
 import io.airbyte.server.handlers.HealthCheckHandler;
 import io.airbyte.server.handlers.JobHistoryHandler;
+import io.airbyte.server.handlers.MigrationHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.handlers.SourceDefinitionsHandler;
 import io.airbyte.server.handlers.SourceHandler;
@@ -90,6 +91,7 @@ import io.airbyte.server.handlers.WorkspacesHandler;
 import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
+import java.io.File;
 import java.io.IOException;
 import javax.validation.Valid;
 import org.eclipse.jetty.http.HttpStatus;
@@ -110,8 +112,10 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   private final WebBackendSourceHandler webBackendSourceHandler;
   private final WebBackendDestinationHandler webBackendDestinationHandler;
   private final HealthCheckHandler healthCheckHandler;
+  private final MigrationHandler migrationHandler;
 
-  public ConfigurationApi(final ConfigRepository configRepository,
+  public ConfigurationApi(final String airbyteVersion,
+                          final ConfigRepository configRepository,
                           final JobPersistence jobPersistence,
                           final CachingSchedulerJobClient schedulerJobClient) {
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
@@ -129,6 +133,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     webBackendDestinationHandler = new WebBackendDestinationHandler(destinationHandler, schedulerHandler);
     debugInfoHandler = new DebugInfoHandler(configRepository);
     healthCheckHandler = new HealthCheckHandler(configRepository);
+    migrationHandler = new MigrationHandler(airbyteVersion, configRepository);
   }
 
   // WORKSPACE
@@ -383,6 +388,21 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public WbConnectionRead webBackendGetConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
     return execute(() -> webBackendConnectionsHandler.webBackendGetConnection(connectionIdRequestBody));
+  }
+
+  // MIGRATION
+
+  @Override
+  public File exportAirbyte() {
+    return execute(migrationHandler::exportData);
+  }
+
+  @Override
+  public void importAirbyte(@Valid File archiveFile) {
+    execute(() -> {
+      migrationHandler.importData(archiveFile);
+      return null;
+    });
   }
 
   private <T> T execute(HandlerCall<T> call) {

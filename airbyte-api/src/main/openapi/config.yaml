@@ -52,6 +52,8 @@ tags:
     description: Connection between sources and destinations.
   - name: health
     description: Healthchecks
+  - name: migration
+    description: Export/Import Airbyte Configuration and Database resources.
 
 paths:
   /v1/workspaces/get:
@@ -995,6 +997,34 @@ paths:
                 $ref: "#/components/schemas/HealthCheckRead"
         "404":
           description: Debug info not found
+  /v1/migration/export:
+    post:
+      tags:
+        - migration
+      summary: Export Airbyte Configuration and Data
+      operationId: exportAirbyte
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/x-gzip:
+              schema:
+                $ref: "#/components/schemas/MigrationArchive"
+  /v1/migration/import:
+    post:
+      tags:
+        - migration
+      summary: Import Airbyte Configuration and Data
+      operationId: importAirbyte
+      requestBody:
+        content:
+          application/x-gzip:
+            schema:
+              $ref: "#/components/schemas/MigrationArchive"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
 components:
   securitySchemes:
     bearerAuth:
@@ -1862,6 +1892,10 @@ components:
       enum:
         - full_refresh
         - incremental
+    MigrationArchive:
+      type: string
+      format: binary
+      description: Tarball Archive (.tar.gz) of Airbyte Configuration and Database
   responses:
     InvalidInput:
       description: Invalid Input

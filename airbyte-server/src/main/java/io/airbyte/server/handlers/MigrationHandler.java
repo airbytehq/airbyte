@@ -64,16 +64,16 @@ public class MigrationHandler {
     this.configRepository = configRepository;
   }
 
-  public Path exportData() {
+  public File exportData() {
     try {
       final Path tempFolder = Files.createTempDirectory("airbyte_archive");
-      final Path archive = Files.createTempFile(ARCHIVE_FILE_NAME, ".tar.gz");;
-      archive.toFile().deleteOnExit();
+      final File archive = Files.createTempFile(ARCHIVE_FILE_NAME, ".tar.gz").toFile();
+      archive.deleteOnExit();
       try {
         exportVersionFile(tempFolder);
         exportAirbyteConfig(tempFolder);
         exportAirbyteDatabase(tempFolder);
-        ArchiveHelper.createArchive(tempFolder, archive);
+        ArchiveHelper.createArchive(tempFolder, archive.toPath());
       } finally {
         FileUtils.deleteDirectory(tempFolder.toFile());
       }
@@ -115,11 +115,11 @@ public class MigrationHandler {
     // TODO implement
   }
 
-  public void importData(Path archive) {
+  public void importData(File archive) {
     try {
       final Path tempFolder = Files.createTempDirectory("airbyte_archive");
       try {
-        ArchiveHelper.openArchive(tempFolder, archive);
+        ArchiveHelper.openArchive(tempFolder, archive.toPath());
         checkImport(tempFolder);
         importAirbyteConfig(tempFolder, false);
         importAirbyteDatabase(tempFolder, false);
