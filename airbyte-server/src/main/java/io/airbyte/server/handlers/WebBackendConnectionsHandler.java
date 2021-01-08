@@ -25,6 +25,7 @@
 package io.airbyte.server.handlers;
 
 import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
@@ -43,6 +44,7 @@ import io.airbyte.api.model.SourceDiscoverSchemaRead;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.SourceSchema;
+import io.airbyte.api.model.SourceSchemaField;
 import io.airbyte.api.model.SourceSchemaStream;
 import io.airbyte.api.model.SyncMode;
 import io.airbyte.api.model.WbConnectionRead;
@@ -54,8 +56,11 @@ import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class WebBackendConnectionsHandler {
 
@@ -150,7 +155,22 @@ public class WebBackendConnectionsHandler {
       SourceSchemaStream originalStream = originalStreamsByName.get(stream.getName());
 
       if (originalStream != null) {
+        Set<String> fieldNames = stream.getFields().stream().map(SourceSchemaField::getName).collect(toSet());
         stream.setSelected(originalStream.getSelected());
+
+        if(stream.getSupportedSyncModes().contains(originalStream.getSyncMode())) {
+          stream.setSyncMode(originalStream.getSyncMode());
+        }
+
+        Set<String> updatedCursorFields = new HashSet<>(stream.getDefaultCursorField());
+
+        for (String oldCursorField : originalStream.getCursorField()) {
+          if(fieldNames.contains(oldCursorField)) {
+            updatedCursorFields.add(oldCursorField);
+          }
+        }
+
+        stream.setCursorField(new ArrayList<>(updatedCursorFields));
       }
 
     }
