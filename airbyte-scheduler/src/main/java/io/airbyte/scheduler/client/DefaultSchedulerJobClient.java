@@ -125,7 +125,7 @@ public class DefaultSchedulerJobClient implements SchedulerJobClient {
       }
     }
 
-    throw new RuntimeException("Check connection job did not complete.");
+    throw new RuntimeException("Job" + jobId + "  did not complete.");
   }
 
 }
