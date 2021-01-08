@@ -24,8 +24,6 @@
 
 package io.airbyte.integrations.source.mssql;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
@@ -34,21 +32,20 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
-import java.sql.SQLException;
-import java.util.List;
-import java.util.stream.Collectors;
-import javax.swing.*;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MSSQLServerContainer;
+
+import java.sql.SQLException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class MssqlSourceTest {
 
@@ -114,9 +111,6 @@ class MssqlSourceTest {
 
     final AirbyteCatalog actual = new MssqlSource().discover(config);
     assertEquals(CATALOG, actual);
-
-    List<AirbyteMessage> read = new MssqlSource().read(config, CatalogHelpers.toDefaultConfiguredCatalog(actual), null).collect(Collectors.toList());
-
   }
 
   private JsonNode getConfig(MSSQLServerContainer<?> db) {

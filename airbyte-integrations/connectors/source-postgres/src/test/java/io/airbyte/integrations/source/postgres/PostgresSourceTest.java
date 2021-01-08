@@ -52,7 +52,9 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -81,14 +83,16 @@ class PostgresSourceTest {
   private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.createConfiguredAirbyteCatalog(
       STREAM_NAME,
       Field.of("id", JsonSchemaPrimitive.NUMBER),
-      Field.of("name", JsonSchemaPrimitive.STRING));
+      Field.of("name", JsonSchemaPrimitive.STRING),
+      Field.of("power", JsonSchemaPrimitive.NUMBER));
   private static final Set<AirbyteMessage> ASCII_MESSAGES = Sets.newHashSet(
       new AirbyteMessage().withType(Type.RECORD)
-          .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME).withData(Jsons.jsonNode(ImmutableMap.of("id", 1, "name", "goku")))),
+          .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME).withData(Jsons.jsonNode(map("id", 1.0, "name", "goku", "power", null)))),
       new AirbyteMessage().withType(Type.RECORD)
-          .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME).withData(Jsons.jsonNode(ImmutableMap.of("id", 2, "name", "vegeta")))),
+          .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME).withData(Jsons.jsonNode(map("id", 2.0, "name", "vegeta", "power", 9000.1)))),
       new AirbyteMessage().withType(Type.RECORD)
-          .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME).withData(Jsons.jsonNode(ImmutableMap.of("id", 3, "name", "piccolo")))));
+          .withRecord(
+              new AirbyteRecordMessage().withStream(STREAM_NAME).withData(Jsons.jsonNode(map("id", null, "name", "piccolo", "power", null)))));
 
   private static final Set<AirbyteMessage> UTF8_MESSAGES = Sets.newHashSet(
       new AirbyteMessage().withType(Type.RECORD)
@@ -120,8 +124,8 @@ class PostgresSourceTest {
 
     final Database database = getDatabaseFromConfig(config);
     database.query(ctx -> {
-      ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
-      ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'goku'),  (2, 'vegeta'), (3, 'piccolo');");
+      ctx.fetch("CREATE TABLE id_and_name(id NUMERIC(20, 10), name VARCHAR(200), power double precision);");
+      ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
       ctx.fetch("CREATE SCHEMA test_another_schema;");
       ctx.fetch("CREATE TABLE test_another_schema.id_and_name(id INTEGER, name VARCHAR(200));");
       ctx.fetch("INSERT INTO test_another_schema.id_and_name (id, name) VALUES (1,'tom'),  (2, 'jerry');");
@@ -242,6 +246,22 @@ class PostgresSourceTest {
     final PostgresSource source = new PostgresSource();
 
     assertThrows(RuntimeException.class, () -> source.read(config, catalog, null));
+  }
+
+  private static Map map(Object... entries) {
+    if (entries.length % 2 != 0) {
+      throw new IllegalArgumentException("Entries must have even length");
+    }
+
+    return new HashMap<>() {
+
+      {
+        for (int i = 0; i < entries.length; i++) {
+          put(entries[i++], entries[i]);
+        }
+      }
+
+    };
   }
 
 }
