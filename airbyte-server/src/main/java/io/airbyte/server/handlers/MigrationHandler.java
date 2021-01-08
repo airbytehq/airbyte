@@ -24,6 +24,8 @@
 
 package io.airbyte.server.handlers;
 
+import io.airbyte.api.model.ImportRead;
+import io.airbyte.api.model.ImportRead.StatusEnum;
 import io.airbyte.commons.io.ArchiveHelper;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.ConfigSchema;
@@ -115,7 +117,8 @@ public class MigrationHandler {
     // TODO implement
   }
 
-  public void importData(File archive) {
+  public ImportRead importData(File archive) {
+    ImportRead result;
     try {
       final Path tempFolder = Files.createTempDirectory("airbyte_archive");
       try {
@@ -123,6 +126,7 @@ public class MigrationHandler {
         checkImport(tempFolder);
         importAirbyteConfig(tempFolder, false);
         importAirbyteDatabase(tempFolder, false);
+        result = new ImportRead().status(StatusEnum.SUCCEEDED);
       } finally {
         FileUtils.deleteDirectory(tempFolder.toFile());
       }
@@ -130,6 +134,7 @@ public class MigrationHandler {
       LOGGER.error("Import Data failed.");
       throw new RuntimeException(e);
     }
+    return result;
   }
 
   private void checkImport(Path tempFolder) throws IOException, JsonValidationException {

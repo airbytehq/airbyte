@@ -1025,6 +1025,10 @@ paths:
       responses:
         "200":
           description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImportRead"
 components:
   securitySchemes:
     bearerAuth:
@@ -1896,6 +1900,14 @@ components:
       type: string
       format: binary
       description: Tarball Archive (.tar.gz) of Airbyte Configuration and Database
+    ImportRead:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - succeeded
+            - failed
   responses:
     InvalidInput:
       description: Invalid Input

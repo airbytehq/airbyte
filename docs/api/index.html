@@ -2017,15 +2017,31 @@ font-style: italic;
 
 
 
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#ImportRead">ImportRead</a>
+      
+    </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
 
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "status" : "succeeded"
+}</code></pre>
 
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
 
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     Successful operation
-        <a href="#"></a>
+        <a href="#ImportRead">ImportRead</a>
   </div> <!-- method -->
   <hr/>
   <h1><a name="Scheduler">Scheduler</a></h1>
@@ -3828,6 +3844,7 @@ font-style: italic;
     <li><a href="#DestinationRecreate"><code>DestinationRecreate</code> - </a></li>
     <li><a href="#DestinationUpdate"><code>DestinationUpdate</code> - </a></li>
     <li><a href="#HealthCheckRead"><code>HealthCheckRead</code> - </a></li>
+    <li><a href="#ImportRead"><code>ImportRead</code> - </a></li>
     <li><a href="#JobConfigType"><code>JobConfigType</code> - </a></li>
     <li><a href="#JobIdRequestBody"><code>JobIdRequestBody</code> - </a></li>
     <li><a href="#JobInfoRead"><code>JobInfoRead</code> - </a></li>
@@ -4103,6 +4120,15 @@ font-style: italic;
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">db </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="ImportRead"><code>ImportRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">status (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+        <div class="param-enum-header">Enum:</div>
+        <div class="param-enum">succeeded</div><div class="param-enum">failed</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">

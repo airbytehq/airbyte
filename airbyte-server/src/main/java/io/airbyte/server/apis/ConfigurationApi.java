@@ -45,6 +45,7 @@ import io.airbyte.api.model.DestinationReadList;
 import io.airbyte.api.model.DestinationRecreate;
 import io.airbyte.api.model.DestinationUpdate;
 import io.airbyte.api.model.HealthCheckRead;
+import io.airbyte.api.model.ImportRead;
 import io.airbyte.api.model.JobIdRequestBody;
 import io.airbyte.api.model.JobInfoRead;
 import io.airbyte.api.model.JobListRequestBody;
@@ -398,11 +399,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public void importAirbyte(@Valid File archiveFile) {
-    execute(() -> {
-      migrationHandler.importData(archiveFile);
-      return null;
-    });
+  public ImportRead importAirbyte(@Valid File archiveFile) {
+    return execute(() -> migrationHandler.importData(archiveFile));
   }
 
   private <T> T execute(HandlerCall<T> call) {
