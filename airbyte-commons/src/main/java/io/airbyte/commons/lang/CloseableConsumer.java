@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.commons.closeable;
+package io.airbyte.commons.lang;
 
 import java.util.function.Consumer;
 

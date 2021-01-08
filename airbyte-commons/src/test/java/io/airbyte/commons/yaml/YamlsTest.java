@@ -31,7 +31,7 @@ import static org.mockito.Mockito.verify;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import io.airbyte.commons.closeable.CloseableConsumer;
+import io.airbyte.commons.lang.CloseableConsumer;
 import io.airbyte.commons.json.Jsons;
 import java.io.StringWriter;
 import java.util.List;

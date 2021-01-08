@@ -25,7 +25,7 @@
 package io.airbyte.migrate;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.closeable.CloseableConsumer;
+import io.airbyte.commons.lang.CloseableConsumer;
 import io.airbyte.commons.yaml.Yamls;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
