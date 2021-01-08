@@ -64,6 +64,14 @@ public class Yamls {
   }
 
   // todo (cgardens) - share this with Jsons if ever needed.
+
+  /**
+   * Creates a consumer that writes list items to the writer in a streaming fashion.
+   *
+   * @param writer writer to write to
+   * @param <T> type of items being written
+   * @return consumer that is able to write element to a list element by element. must be closed!
+   */
   public static <T> CloseableConsumer<T> listWriter(Writer writer) {
     return new YamlConsumer<>(writer, OBJECT_MAPPER);
   }
