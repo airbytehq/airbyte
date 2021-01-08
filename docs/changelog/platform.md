@@ -9,12 +9,13 @@ This is the changelog for Airbyte core. For our connector changelog, please visi
 If you're interested in our progress on the Airbyte platform, please read below!
 
 ## [Upcoming: 0.11.0](https://github.com/airbytehq/airbyte/milestone/12?closed=1) - ETA 01/11/2020
+
 * **Support incremental sync** for Salesforce, Slack, and Braintree sources
 * Fix a bug in MSSQL and Redshift source connectors where custom SQL types weren't being handled correctly. [Pull request](https://github.com/airbytehq/airbyte/pull/1576)
 
 ## [0.10.0](https://github.com/airbytehq/airbyte/milestone/12?closed=1) - delivered on 01/04/2020
 
-* You can now **deploy Airbyte on** [**Kuberbetes**](https://docs.airbyte.io/deploying-airbyte/on-kubernetes) ****\(alpha version\)
+* You can now **deploy Airbyte on** [**Kuberbetes**](https://docs.airbyte.io/deploying-airbyte/on-kubernetes) _\*\*_\(alpha version\)
 * **Support incremental sync** for Mixpanel and Hubspot sources
 * **Fixes on connectors:**
   * Fixed a bug in the GitHub connector where the connector didn’t verify the provided API token was granted the correct permissions
@@ -27,7 +28,7 @@ If you're interested in our progress on the Airbyte platform, please read below!
 * **New chat app from the web app** so you can directly chat with the team for any issues you run into
 * **Debugging** has been made easier in the UI, with checks, discover logs, and sync download logs
 * Support of **Kubernetes in local**. GKE will come at the next release.
-* **New source:** Looker ****
+* **New source:** Looker _\*\*_
 
 ## [0.8.0](https://github.com/airbytehq/airbyte/milestone/10?closed=1) - delivered on 12/17/2020
 
@@ -98,3 +99,4 @@ This is our very first release after 2 months of work.
 * **New blog:** we published a few articles on our startup journey, but also about our vision to making data integrations a commodity.
 
 Stay tuned, we will have new sources and destinations very soon! Don't hesitate to subscribe to our [newsletter](https://airbyte.io/#subscribe-newsletter) to receive our product updates and community news.
+

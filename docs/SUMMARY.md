@@ -74,7 +74,7 @@
   * [Code of Conduct](contributing-to-airbyte/code-of-conduct.md)
   * [Developing Locally](contributing-to-airbyte/developing-locally.md)
   * [Developing Connectors](contributing-to-airbyte/building-new-connector/README.md)
-    * [Best Practices for Connector Development](contributing-to-airbyte/building-new-connector/best-practices-for-connector-development.md)
+    * [Best Practices](contributing-to-airbyte/building-new-connector/best-practices.md)
     * [Java Connectors](contributing-to-airbyte/building-new-connector/java-connectors.md)
     * [Python Connectors](contributing-to-airbyte/building-new-connector/python-connectors.md)
     * [Testing Connectors](contributing-to-airbyte/building-new-connector/testing-connectors.md)
