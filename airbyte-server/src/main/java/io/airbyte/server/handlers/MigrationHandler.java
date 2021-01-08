@@ -24,6 +24,7 @@
 
 package io.airbyte.server.handlers;
 
+import io.airbyte.commons.io.ArchiveHelper;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;

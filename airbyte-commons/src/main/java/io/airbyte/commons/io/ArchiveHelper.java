@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.server.handlers;
+package io.airbyte.commons.io;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -45,12 +45,15 @@ import org.slf4j.LoggerFactory;
 
 public class ArchiveHelper {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(MigrationHandler.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ArchiveHelper.class);
 
-  static public void createArchive(final Path tempFolder, final Path archiveFile) throws IOException {
+  /**
+   * Compress a @param sourceFolder into a Gzip Tarball @param archiveFile
+   */
+  static public void createArchive(final Path sourceFolder, final Path archiveFile) throws IOException {
     final TarArchiveOutputStream archive =
         new TarArchiveOutputStream(new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(archiveFile.toFile()))));
-    Files.walkFileTree(tempFolder, new SimpleFileVisitor<>() {
+    Files.walkFileTree(sourceFolder, new SimpleFileVisitor<>() {
 
       @Override
       public FileVisitResult visitFile(Path file, BasicFileAttributes attributes) {
@@ -58,7 +61,7 @@ public class ArchiveHelper {
         if (attributes.isSymbolicLink()) {
           return FileVisitResult.CONTINUE;
         }
-        Path targetFile = tempFolder.relativize(file);
+        Path targetFile = sourceFolder.relativize(file);
         try {
           compressFile(file, targetFile, archive);
         } catch (IOException e) {
@@ -85,12 +88,15 @@ public class ArchiveHelper {
     archive.closeArchiveEntry();
   }
 
-  static public void openArchive(final Path tempFolder, final Path archiveFile) throws IOException {
+  /**
+   * Uncompress a Gzip Tarball @param archiveFile into the @param destinationFolder
+   */
+  static public void openArchive(final Path destinationFolder, final Path archiveFile) throws IOException {
     final TarArchiveInputStream archive =
         new TarArchiveInputStream(new GzipCompressorInputStream(new BufferedInputStream(Files.newInputStream(archiveFile))));
     ArchiveEntry entry;
     while ((entry = archive.getNextEntry()) != null) {
-      final Path newPath = zipSlipProtect(entry, tempFolder);
+      final Path newPath = zipSlipProtect(entry, destinationFolder);
       if (entry.isDirectory()) {
         Files.createDirectories(newPath);
       } else {
@@ -105,13 +111,13 @@ public class ArchiveHelper {
     }
   }
 
-  private static Path zipSlipProtect(ArchiveEntry entry, Path tempFolder)
+  private static Path zipSlipProtect(ArchiveEntry entry, Path destinationFolder)
       throws IOException {
-    final Path targetDirResolved = tempFolder.resolve(entry.getName());
-    // make sure normalized file still has tempFolder as its prefix,
+    final Path targetDirResolved = destinationFolder.resolve(entry.getName());
+    // make sure normalized file still has destinationFolder as its prefix,
     // else throws exception
     final Path normalizePath = targetDirResolved.normalize();
-    if (!normalizePath.startsWith(tempFolder)) {
+    if (!normalizePath.startsWith(destinationFolder)) {
       throw new IOException("Bad entry: " + entry.getName());
     }
     return normalizePath;
