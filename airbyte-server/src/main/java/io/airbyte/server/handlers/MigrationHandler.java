@@ -89,7 +89,7 @@ public class MigrationHandler {
 
   private void exportAirbyteConfig(Path tempFolder) {
     LOGGER.info(String.format("Exporting Airbyte Configs to %s", tempFolder));
-    final ConfigConverter configConverter = new ConfigConverter(tempFolder);
+    final ConfigConverter configConverter = new ConfigConverter(tempFolder, configRepository.getAirbyteVersion());
     Exceptions.toRuntime(() -> {
       configConverter.writeConfigList(ConfigSchema.STANDARD_WORKSPACE,
           List.of(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID)));
@@ -119,8 +119,8 @@ public class MigrationHandler {
       try {
         ArchiveHelper.openArchive(tempFolder, archive);
         checkVersion(tempFolder);
-        importAirbyteConfig(tempFolder);
-        importAirbyteDatabase(tempFolder);
+        importAirbyteConfig(tempFolder, false);
+        importAirbyteDatabase(tempFolder, false);
       } finally {
         FileUtils.deleteDirectory(tempFolder.toFile());
       }
@@ -138,29 +138,41 @@ public class MigrationHandler {
     if (!importVersion.equals(currentVersion)) {
       throw new IOException(String.format("Version of files to import %s does not match current version %s", importVersion, currentVersion));
     }
+    importAirbyteConfig(tempFolder, true);
+    importAirbyteDatabase(tempFolder, true);
   }
 
-  private void importAirbyteConfig(Path tempFolder) {
-    final ConfigConverter configConverter = new ConfigConverter(tempFolder);
-    Exceptions.toRuntime(() -> {
-      configConverter.readConfigList(ConfigSchema.STANDARD_WORKSPACE, StandardWorkspace.class)
-          .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeStandardWorkspace(config)));
-      configConverter.readConfigList(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class)
-          .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeStandardSource(config)));
-      configConverter.readConfigList(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class)
-          .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeStandardDestinationDefinition(config)));
-      configConverter.readConfigList(ConfigSchema.SOURCE_CONNECTION, SourceConnection.class)
-          .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeSourceConnection(config)));
-      configConverter.readConfigList(ConfigSchema.DESTINATION_CONNECTION, DestinationConnection.class)
-          .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeDestinationConnection(config)));
-      configConverter.readConfigList(ConfigSchema.STANDARD_SYNC, StandardSync.class)
-          .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeStandardSync(config)));
-      configConverter.readConfigList(ConfigSchema.STANDARD_SYNC_SCHEDULE, StandardSyncSchedule.class)
-          .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeStandardSchedule(config)));
-    });
+  private void importAirbyteConfig(Path tempFolder, boolean dryRun) throws IOException {
+    final ConfigConverter configConverter = new ConfigConverter(tempFolder, configRepository.getAirbyteVersion());
+    if (dryRun) {
+      configConverter.readConfigList(ConfigSchema.STANDARD_WORKSPACE, StandardWorkspace.class);
+      configConverter.readConfigList(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class);
+      configConverter.readConfigList(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class);
+      configConverter.readConfigList(ConfigSchema.SOURCE_CONNECTION, SourceConnection.class);
+      configConverter.readConfigList(ConfigSchema.DESTINATION_CONNECTION, DestinationConnection.class);
+      configConverter.readConfigList(ConfigSchema.STANDARD_SYNC, StandardSync.class);
+      configConverter.readConfigList(ConfigSchema.STANDARD_SYNC_SCHEDULE, StandardSyncSchedule.class);
+    } else {
+      Exceptions.toRuntime(() -> {
+        configConverter.readConfigList(ConfigSchema.STANDARD_WORKSPACE, StandardWorkspace.class)
+            .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeStandardWorkspace(config)));
+        configConverter.readConfigList(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class)
+            .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeStandardSource(config)));
+        configConverter.readConfigList(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class)
+            .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeStandardDestinationDefinition(config)));
+        configConverter.readConfigList(ConfigSchema.SOURCE_CONNECTION, SourceConnection.class)
+            .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeSourceConnection(config)));
+        configConverter.readConfigList(ConfigSchema.DESTINATION_CONNECTION, DestinationConnection.class)
+            .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeDestinationConnection(config)));
+        configConverter.readConfigList(ConfigSchema.STANDARD_SYNC, StandardSync.class)
+            .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeStandardSync(config)));
+        configConverter.readConfigList(ConfigSchema.STANDARD_SYNC_SCHEDULE, StandardSyncSchedule.class)
+            .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeStandardSchedule(config)));
+      });
+    }
   }
 
-  private void importAirbyteDatabase(Path tempFolder) {
+  private void importAirbyteDatabase(Path tempFolder, boolean dryRun) {
     // TODO implement
   }
 
