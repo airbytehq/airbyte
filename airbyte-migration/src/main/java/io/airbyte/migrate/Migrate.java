@@ -28,11 +28,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import io.airbyte.commons.io.IOs;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
+import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.commons.set.MoreSets;
+import io.airbyte.commons.stream.MoreStreams;
+import io.airbyte.commons.yaml.Yamls;
 import io.airbyte.migrate.migrations.MigrationV0_11_0;
-import io.airbyte.migrate.migrations.MigrationV0_11_1;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -56,35 +57,37 @@ import org.apache.commons.io.FileUtils;
 
 public class Migrate {
 
-  private static final String VERSION_FILE_NAME = "VERSION";
+  public static final String VERSION_FILE_NAME = "VERSION";
 
   // all migrations must be added to the list in the order that they should be applied.
-  private static final List<Migration> MIGRATIONS = ImmutableList.of(
-      new MigrationV0_11_0(),
-      new MigrationV0_11_1());
+  private static final List<Migration> MIGRATIONS = ImmutableList.of(new MigrationV0_11_0());
 
-  private final Path workspaceRoot;
+  private final Path migrateRoot;
   private final JsonSchemaValidator jsonSchemaValidator;
+  private final List<Migration> migrations;
 
-  public Migrate(Path workspaceRoot) {
-    this(workspaceRoot, new JsonSchemaValidator());
+  public Migrate(Path migrateRoot) {
+    this(migrateRoot, new JsonSchemaValidator(), MIGRATIONS);
   }
 
-  public Migrate(Path workspaceRoot, JsonSchemaValidator jsonSchemaValidator) {
-    this.workspaceRoot = workspaceRoot;
+  public Migrate(Path migrateRoot, JsonSchemaValidator jsonSchemaValidator, List<Migration> migrations) {
+    this.migrateRoot = migrateRoot;
     this.jsonSchemaValidator = jsonSchemaValidator;
+    this.migrations = migrations;
   }
 
   public void run(MigrateConfig migrateConfig) throws IOException {
+    // ensure migration root exsts
+    Files.createDirectories(migrateRoot);
     final Path initialInputPath = migrateConfig.getInputPath();
     // detect current version.
     final String currentVersion = getCurrentVersion(initialInputPath);
     // detect desired version.
     final String targetVersion = migrateConfig.getTargetVersion();
     // select migrations to run.
-    final int currentVersionIndex = MIGRATIONS.stream().map(Migration::getVersion).collect(Collectors.toList()).indexOf(currentVersion);
+    final int currentVersionIndex = migrations.stream().map(Migration::getVersion).collect(Collectors.toList()).indexOf(currentVersion);
     Preconditions.checkState(currentVersionIndex >= 0, "No migration found for current version: " + currentVersion);
-    final int targetVersionIndex = MIGRATIONS.stream().map(Migration::getVersion).collect(Collectors.toList()).indexOf(targetVersion);
+    final int targetVersionIndex = migrations.stream().map(Migration::getVersion).collect(Collectors.toList()).indexOf(targetVersion);
     Preconditions.checkState(targetVersionIndex >= 0, "No migration found for target version: " + targetVersion);
     Preconditions.checkState(currentVersionIndex < targetVersionIndex, String
         .format("Target version is not greater than the current version. current version: %s, target version: %s", currentVersion, targetVersion));
@@ -94,7 +97,7 @@ public class Migrate {
     for (int i = currentVersionIndex + 1; i == targetVersionIndex; i++) {
       // run migration
       // write output of each migration to disk.
-      final Migration migration = MIGRATIONS.get(i);
+      final Migration migration = migrations.get(i);
       final Path outputPath = runMigration(migration, inputPath);
       IOs.writeFile(outputPath.resolve(VERSION_FILE_NAME), migration.getVersion());
       inputPath = outputPath;
@@ -106,14 +109,11 @@ public class Migrate {
     FileUtils.copyDirectory(inputPath.toFile(), migrateConfig.getOutputPath().toFile());
   }
 
-  private Path runMigration(Migration migration, Path inputRoot) throws IOException {
-    final Path tmpOutputDir = Files.createDirectory(workspaceRoot.resolve(migration.getVersion()));
+  private Path runMigration(Migration migration, Path migrationInputRoot) throws IOException {
+    final Path tmpOutputDir = Files.createDirectories(migrateRoot.resolve(migration.getVersion()));
 
-    final Map<ResourceId, Stream<JsonNode>> inputData = new HashMap<>();
     // create a map of each input resource path to the input stream.
-    inputData.putAll(createInputStreams(migration, inputRoot, ResourceType.CONFIG));
-    // create a map of each output resource path to the output stream.
-    inputData.putAll(createInputStreams(migration, inputRoot, ResourceType.JOB));
+    final Map<ResourceId, Stream<JsonNode>> inputData = createInputStreams(migration, migrationInputRoot);
 
     final Map<ResourceId, RecordConsumer> outputStreams = createOutputStreams(migration, tmpOutputDir);
     // make the java compiler happy (it can't resolve that RecordConsumer is, in fact, a
@@ -130,8 +130,17 @@ public class Migrate {
     return tmpOutputDir;
   }
 
-  private Map<ResourceId, Stream<JsonNode>> createInputStreams(Migration migration, Path inputRoot, ResourceType resourceType) throws IOException {
-    final List<Path> inputFilePaths = FileUtils.listFiles(inputRoot.resolve(resourceType.toString().toLowerCase()).toFile(), null, false)
+  private Map<ResourceId, Stream<JsonNode>> createInputStreams(Migration migration, Path migrationInputRoot) throws IOException {
+    final Map<ResourceId, Stream<JsonNode>> resourceIdToInputStreams = MoreMaps.merge(
+        createInputStreamsForResourceType(migration, migrationInputRoot, ResourceType.CONFIG),
+        createInputStreamsForResourceType(migration, migrationInputRoot, ResourceType.JOB));
+    MoreSets.assertEqualsVerbose(migration.getInputSchema().keySet(), resourceIdToInputStreams.keySet());
+    return resourceIdToInputStreams;
+  }
+
+  private Map<ResourceId, Stream<JsonNode>> createInputStreamsForResourceType(Migration migration, Path migrationInputRoot, ResourceType resourceType)
+      throws IOException {
+    final List<Path> inputFilePaths = FileUtils.listFiles(migrationInputRoot.resolve(resourceType.getDirectoryName()).toFile(), null, false)
         .stream()
         .map(File::toPath)
         .collect(Collectors.toList());
@@ -139,13 +148,10 @@ public class Migrate {
     final Map<ResourceId, Stream<JsonNode>> inputData = new HashMap<>();
     for (final Path absolutePath : inputFilePaths) {
       final ResourceId resourceId = ResourceId.fromRecordFilePath(resourceType, absolutePath);
-      final Stream<JsonNode> recordInputStream = Files.lines(absolutePath)
-          .map(Jsons::deserialize)
+      final Stream<JsonNode> recordInputStream = MoreStreams.toStream(Yamls.deserialize(IOs.readFile(absolutePath)).elements())
           .peek(r -> Exceptions.toRuntime(() -> jsonSchemaValidator.ensure(migration.getInputSchema().get(resourceId), r)));
       inputData.put(resourceId, recordInputStream);
     }
-
-    MoreSets.assertEqualsVerbose(migration.getInputSchema().keySet(), inputData.keySet());
 
     return inputData;
   }
@@ -210,32 +216,6 @@ public class Migrate {
     final MigrateConfig migrateConfig = parse(args);
     final Path workspaceRoot = Files.createTempDirectory(Path.of("/tmp"), "migrate");
     new Migrate(workspaceRoot).run(migrateConfig);
-  }
-
-  private static class MigrateConfig {
-
-    private final Path inputPath;
-    private final Path outputPath;
-    private final String targetVersion;
-
-    public MigrateConfig(Path inputPath, Path outputPath, String targetVersion) {
-      this.inputPath = inputPath;
-      this.outputPath = outputPath;
-      this.targetVersion = targetVersion;
-    }
-
-    public Path getInputPath() {
-      return inputPath;
-    }
-
-    public Path getOutputPath() {
-      return outputPath;
-    }
-
-    public String getTargetVersion() {
-      return targetVersion;
-    }
-
   }
 
 }

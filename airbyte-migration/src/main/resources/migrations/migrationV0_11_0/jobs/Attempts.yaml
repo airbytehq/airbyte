@@ -1,6 +1,6 @@
 ---
 "$schema": http://json-schema.org/draft-07/schema#
-title: JobsRecord
+title: Attempts
 description: representation of a attempts record.
 type: object
 required:

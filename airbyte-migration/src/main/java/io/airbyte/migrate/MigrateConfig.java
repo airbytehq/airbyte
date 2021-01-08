@@ -22,21 +22,32 @@
  * SOFTWARE.
  */
 
-package io.airbyte.commons.set;
+package io.airbyte.migrate;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Sets;
-import java.util.Set;
+import java.nio.file.Path;
 
-public class MoreSets {
+public class MigrateConfig {
 
-  public static <T> void assertEqualsVerbose(Set<T> set1, Set<T> set2) {
-    Preconditions.checkNotNull(set1);
-    Preconditions.checkNotNull(set2);
+  private final Path inputPath;
+  private final Path outputPath;
+  private final String targetVersion;
 
-    Preconditions.checkState(set1.equals(set2), String.format(
-        "Sets are not the same. Elements in set 1 and not in set 2: %s.  Elements in set 2 and not in set 1 %s",
-        Sets.difference(set1, set2), Sets.difference(set2, set1)));
+  public MigrateConfig(Path inputPath, Path outputPath, String targetVersion) {
+    this.inputPath = inputPath;
+    this.outputPath = outputPath;
+    this.targetVersion = targetVersion;
+  }
+
+  public Path getInputPath() {
+    return inputPath;
+  }
+
+  public Path getOutputPath() {
+    return outputPath;
+  }
+
+  public String getTargetVersion() {
+    return targetVersion;
   }
 
 }

@@ -70,7 +70,7 @@ public class MigrationV0_11_0 implements Migration {
     }
   }
 
-  enum ConfigKeys {
+  public enum ConfigKeys {
     STANDARD_WORKSPACE,
     STANDARD_SOURCE_DEFINITION,
     STANDARD_DESTINATION_DEFINITION,
@@ -80,7 +80,7 @@ public class MigrationV0_11_0 implements Migration {
     STANDARD_SYNC_SCHEDULE,
   }
 
-  enum JobKeys {
+  public enum JobKeys {
     JOBS,
     ATTEMPTS,
     AIRBYTE_METADATA

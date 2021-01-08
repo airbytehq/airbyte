@@ -26,21 +26,19 @@ package io.airbyte.migrate;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.closeable.CloseableConsumer;
-import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.yaml.Yamls;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.BufferedWriter;
-import java.io.IOException;
 
 public class RecordConsumer implements CloseableConsumer<JsonNode> {
 
-  private final BufferedWriter fileWriter;
+  private final CloseableConsumer<JsonNode> consumer;
   private final JsonSchemaValidator jsonSchemaValidator;
   private final JsonNode schema;
 
   public RecordConsumer(BufferedWriter fileWriter, JsonSchemaValidator jsonSchemaValidator, JsonNode schema) {
-
-    this.fileWriter = fileWriter;
+    this.consumer = Yamls.listWriter(fileWriter);
     this.jsonSchemaValidator = jsonSchemaValidator;
     this.schema = schema;
   }
@@ -49,16 +47,15 @@ public class RecordConsumer implements CloseableConsumer<JsonNode> {
   public void accept(JsonNode jsonNode) {
     try {
       jsonSchemaValidator.ensure(schema, jsonNode);
-      fileWriter.write(Jsons.serialize(jsonNode));
-      fileWriter.newLine();
-    } catch (IOException | JsonValidationException e) {
+      consumer.accept(jsonNode);
+    } catch (JsonValidationException e) {
       throw new RuntimeException(e);
     }
   }
 
   @Override
   public void close() throws Exception {
-    fileWriter.close();
+    consumer.close();
   }
 
 }

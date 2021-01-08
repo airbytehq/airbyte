@@ -27,8 +27,12 @@ package io.airbyte.commons.yaml;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import io.airbyte.commons.closeable.CloseableConsumer;
+import io.airbyte.commons.lang.Exceptions;
 import java.io.IOException;
+import java.io.Writer;
 
 public class Yamls {
 
@@ -57,6 +61,38 @@ public class Yamls {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public static <T> CloseableConsumer<T> listWriter(Writer writer) {
+    return new YamlConsumer<>(writer);
+  }
+
+  public static class YamlConsumer<T> implements CloseableConsumer<T> {
+
+    private final Writer writer;
+    private final SequenceWriter sequenceWriter;
+
+    public YamlConsumer(Writer writer) {
+      this.writer = writer;
+      this.sequenceWriter = Exceptions.toRuntime(() -> OBJECT_MAPPER.writer().writeValuesAsArray(writer));
+
+    }
+
+    @Override
+    public void accept(T t) {
+      try {
+        sequenceWriter.write(t);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+    @Override
+    public void close() throws Exception {
+      sequenceWriter.close();
+      writer.close();
+    }
+
   }
 
 }

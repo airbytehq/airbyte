@@ -52,27 +52,29 @@ public class MigrationUtils {
                                                                     ResourceType resourceType,
                                                                     Set<String> schemasToInclude) {
     final Map<ResourceId, JsonNode> schemas = new HashMap<>();
-
     final Path pathToSchemas = JsonSchemas.prepareSchemas(migrationResourcePath.resolve(relativePath).toString(), MigrationUtils.class);
     FileUtils.listFiles(pathToSchemas.toFile(), null, false)
         .stream()
         .map(JsonSchemaValidator::getSchema)
-        .filter(j -> schemasToInclude.contains(CaseFormat.UPPER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, j.get("title").asText())))
+        .filter(j -> schemasToInclude.contains(getTitleAsConstantCase(j)))
         .forEach(j -> {
-          final ResourceId resourceId =
-              ResourceId.fromConstantCase(resourceType, CaseFormat.UPPER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, j.get("title").asText()));
+          final ResourceId resourceId = ResourceId.fromConstantCase(resourceType, getTitleAsConstantCase(j));
           schemas.put(resourceId, j);
         });
 
     return schemas;
   }
 
+  private static String getTitleAsConstantCase(JsonNode jsonNode) {
+    return CaseFormat.UPPER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, jsonNode.get("title").asText());
+  }
+
   public static Map<ResourceId, JsonNode> getConfigModels(Path migrationResourcePath, Set<String> schemasToInclude) {
-    return getNameToSchemasFromPath(migrationResourcePath, Path.of("config"), ResourceType.CONFIG, schemasToInclude);
+    return getNameToSchemasFromPath(migrationResourcePath, ResourceType.CONFIG.getDirectoryName(), ResourceType.CONFIG, schemasToInclude);
   }
 
   public static Map<ResourceId, JsonNode> getJobModels(Path migrationResourcePath, Set<String> schemasToInclude) {
-    return getNameToSchemasFromPath(migrationResourcePath, Path.of("jobs"), ResourceType.JOB, schemasToInclude);
+    return getNameToSchemasFromPath(migrationResourcePath, ResourceType.JOB.getDirectoryName(), ResourceType.JOB, schemasToInclude);
   }
 
 }
