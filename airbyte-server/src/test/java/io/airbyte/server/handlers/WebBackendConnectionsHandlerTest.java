@@ -34,6 +34,9 @@ import io.airbyte.api.model.AttemptStatus;
 import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.ConnectionReadList;
+import io.airbyte.api.model.ConnectionSchedule;
+import io.airbyte.api.model.ConnectionStatus;
+import io.airbyte.api.model.ConnectionUpdate;
 import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.JobConfigType;
@@ -44,9 +47,11 @@ import io.airbyte.api.model.JobStatus;
 import io.airbyte.api.model.JobWithAttemptsRead;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceRead;
+import io.airbyte.api.model.SourceSchema;
 import io.airbyte.api.model.WbConnectionRead;
 import io.airbyte.api.model.WbConnectionReadList;
 import io.airbyte.api.model.WebBackendConnectionIdRequestBody;
+import io.airbyte.api.model.WebBackendConnectionUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
@@ -61,9 +66,13 @@ import io.airbyte.server.helpers.SourceDefinitionHelpers;
 import io.airbyte.server.helpers.SourceHelpers;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -83,7 +92,8 @@ class WebBackendConnectionsHandlerTest {
     SourceHandler sourceHandler = mock(SourceHandler.class);
     DestinationHandler destinationHandler = mock(DestinationHandler.class);
     JobHistoryHandler jobHistoryHandler = mock(JobHistoryHandler.class);
-    wbHandler = new WebBackendConnectionsHandler(connectionsHandler, sourceHandler, destinationHandler, jobHistoryHandler);
+    SchedulerHandler schedulerHandler = mock(SchedulerHandler.class);
+    wbHandler = new WebBackendConnectionsHandler(connectionsHandler, sourceHandler, destinationHandler, jobHistoryHandler, schedulerHandler);
 
     final StandardSourceDefinition standardSourceDefinition = SourceDefinitionHelpers.generateSource();
     SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
@@ -171,6 +181,51 @@ class WebBackendConnectionsHandlerTest {
     final WbConnectionRead wbConnectionRead = wbHandler.webBackendGetConnection(webBackendConnectionIdRequestBody);
 
     assertEquals(expected, wbConnectionRead);
+  }
+
+  @Test
+  public void testExtractConnectionUpdate() throws IOException {
+    final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
+    final StandardSync standardSync = ConnectionHelpers.generateSyncWithSourceId(source.getSourceId());
+
+    final SourceSchema newApiSchema = ConnectionHelpers.generateBasicApiSchema();
+    newApiSchema.getStreams().get(0).setName("azkaban_users");
+    newApiSchema.getStreams().get(0).cleanedName("azkaban_users");
+
+    final ConnectionSchedule schedule = new ConnectionSchedule().units(1L).timeUnit(ConnectionSchedule.TimeUnitEnum.MINUTES);
+
+    final WebBackendConnectionUpdate input = new WebBackendConnectionUpdate()
+        .connectionId(standardSync.getConnectionId())
+        .status(ConnectionStatus.INACTIVE)
+        .schedule(schedule)
+        .syncSchema(newApiSchema)
+        .withRefreshedCatalog(false);
+
+    final ConnectionUpdate expected = new ConnectionUpdate()
+        .connectionId(standardSync.getConnectionId())
+        .status(ConnectionStatus.INACTIVE)
+        .schedule(schedule)
+        .syncSchema(newApiSchema);
+
+    final ConnectionUpdate actual = WebBackendConnectionsHandler.extractConnectionUpdate(input);
+
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void testForCompleteness() {
+    final Set<String> handledMethods = Set.of(
+        "schedule", "connectionId", "syncSchema", "status");
+
+    final Set<String> methods = Arrays.stream(ConnectionUpdate.class.getMethods())
+        .filter(method -> method.getReturnType() == ConnectionUpdate.class)
+        .map(Method::getName)
+        .collect(Collectors.toSet());
+
+    final String message =
+        "If this test is failing, it means you added a field to ConnectionUpdate. Congratulations, but you're not done yet. You should update WebBackendConnectionsHandler::extractConnectionUpdate and ensure that the field is tested in testExtractConnectionUpdate. Then you can add the field name here to make this test pass.";
+
+    assertEquals(handledMethods, methods, message);
   }
 
 }

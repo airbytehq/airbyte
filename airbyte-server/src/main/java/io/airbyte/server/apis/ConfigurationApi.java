@@ -126,7 +126,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     destinationHandler = new DestinationHandler(configRepository, schemaValidator, schedulerHandler, connectionsHandler);
     sourceHandler = new SourceHandler(configRepository, schemaValidator, schedulerHandler, connectionsHandler);
     jobHistoryHandler = new JobHistoryHandler(jobPersistence);
-    webBackendConnectionsHandler = new WebBackendConnectionsHandler(connectionsHandler, sourceHandler, destinationHandler, jobHistoryHandler);
+    webBackendConnectionsHandler =
+        new WebBackendConnectionsHandler(connectionsHandler, sourceHandler, destinationHandler, jobHistoryHandler, schedulerHandler);
     webBackendSourceHandler = new WebBackendSourceHandler(sourceHandler, schedulerHandler);
     webBackendDestinationHandler = new WebBackendDestinationHandler(destinationHandler, schedulerHandler);
     debugInfoHandler = new DebugInfoHandler(configRepository);
@@ -315,7 +316,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   @Override
   public JobInfoRead syncConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
-    return execute(() -> schedulerHandler.syncConnection(connectionIdRequestBody));
+    return execute(() -> schedulerHandler.syncConnection(connectionIdRequestBody, true));
   }
 
   @Override

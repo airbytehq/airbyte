@@ -199,7 +199,7 @@ public class SchedulerHandler {
         .orElseThrow(() -> new IllegalStateException("no spec output found"));
   }
 
-  public JobInfoRead syncConnection(final ConnectionIdRequestBody connectionIdRequestBody)
+  public JobInfoRead syncConnection(final ConnectionIdRequestBody connectionIdRequestBody, boolean waitForCompletion)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final UUID connectionId = connectionIdRequestBody.getConnectionId();
     final StandardSync standardSync = configRepository.getStandardSync(connectionId);
@@ -218,7 +218,8 @@ public class SchedulerHandler {
         destination,
         standardSync,
         sourceImageName,
-        destinationImageName);
+        destinationImageName,
+        waitForCompletion);
 
     return JobConverter.getJobInfoRead(job);
   }

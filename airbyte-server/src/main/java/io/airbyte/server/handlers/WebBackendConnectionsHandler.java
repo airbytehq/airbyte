@@ -24,18 +24,26 @@
 
 package io.airbyte.server.handlers;
 
+import static java.util.stream.Collectors.toMap;
+
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.ConnectionRead;
+import io.airbyte.api.model.ConnectionUpdate;
 import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.JobConfigType;
+import io.airbyte.api.model.JobInfoRead;
 import io.airbyte.api.model.JobListRequestBody;
 import io.airbyte.api.model.JobReadList;
 import io.airbyte.api.model.JobStatus;
 import io.airbyte.api.model.JobWithAttemptsRead;
+import io.airbyte.api.model.SourceDiscoverSchemaRead;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceRead;
+import io.airbyte.api.model.SourceSchema;
+import io.airbyte.api.model.SourceSchemaStream;
 import io.airbyte.api.model.SyncMode;
 import io.airbyte.api.model.WbConnectionRead;
 import io.airbyte.api.model.WbConnectionReadList;
@@ -47,6 +55,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 public class WebBackendConnectionsHandler {
 
@@ -54,15 +63,18 @@ public class WebBackendConnectionsHandler {
   private final SourceHandler sourceHandler;
   private final DestinationHandler destinationHandler;
   private final JobHistoryHandler jobHistoryHandler;
+  private final SchedulerHandler schedulerHandler;
 
   public WebBackendConnectionsHandler(final ConnectionsHandler connectionsHandler,
                                       final SourceHandler sourceHandler,
                                       final DestinationHandler destinationHandler,
-                                      final JobHistoryHandler jobHistoryHandler) {
+                                      final JobHistoryHandler jobHistoryHandler,
+                                      final SchedulerHandler schedulerHandler) {
     this.connectionsHandler = connectionsHandler;
     this.sourceHandler = sourceHandler;
     this.destinationHandler = destinationHandler;
     this.jobHistoryHandler = jobHistoryHandler;
+    this.schedulerHandler = schedulerHandler;
   }
 
   public WbConnectionReadList webBackendListConnectionsForWorkspace(WorkspaceIdRequestBody workspaceIdRequestBody)
@@ -108,15 +120,76 @@ public class WebBackendConnectionsHandler {
     return wbConnectionRead;
   }
 
-  public WbConnectionRead webBackendGetConnection(WebBackendConnectionIdRequestBody webBackendConnectionIdRequestBody) throws ConfigNotFoundException, IOException, JsonValidationException {
-    ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody()
-            .connectionId(webBackendConnectionIdRequestBody.getConnectionId());
+  public WbConnectionRead webBackendGetConnection(WebBackendConnectionIdRequestBody webBackendConnectionIdRequestBody)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody()
+        .connectionId(webBackendConnectionIdRequestBody.getConnectionId());
 
-    return buildWbConnectionRead(connectionsHandler.getConnection(connectionIdRequestBody));
+    final ConnectionRead connection = connectionsHandler.getConnection(connectionIdRequestBody);
+
+    if (webBackendConnectionIdRequestBody.getWithRefreshedCatalog() != null && webBackendConnectionIdRequestBody.getWithRefreshedCatalog()) {
+      final SourceIdRequestBody sourceId = new SourceIdRequestBody().sourceId(connection.getSourceId());
+      final SourceDiscoverSchemaRead discoverSchema = schedulerHandler.discoverSchemaForSourceFromSourceId(sourceId);
+
+      final SourceSchema original = connection.getSyncSchema();
+      final SourceSchema discovered = discoverSchema.getSchema();
+      final SourceSchema combined = updateSchemaWithDiscovery(original, discovered);
+
+      connection.setSyncSchema(combined);
+    }
+
+    return buildWbConnectionRead(connection);
   }
 
-  public ConnectionRead webBackendUpdateConnection(WebBackendConnectionUpdate webBackendConnectionUpdate) {
-    // todo: delegate to connectionsHandler.updateConnection()
-    return null;
+  @VisibleForTesting
+  protected static SourceSchema updateSchemaWithDiscovery(SourceSchema original, SourceSchema discovered) {
+    Map<String, SourceSchemaStream> originalStreamsByName = original.getStreams().stream()
+        .collect(toMap(SourceSchemaStream::getName, s -> s));
+
+    for (SourceSchemaStream stream : discovered.getStreams()) {
+      SourceSchemaStream originalStream = originalStreamsByName.get(stream.getName());
+
+      if (originalStream != null) {
+        stream.setSelected(originalStream.getSelected());
+      }
+
+    }
+
+    return original;
   }
+
+  public ConnectionRead webBackendUpdateConnection(WebBackendConnectionUpdate webBackendConnectionUpdate)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    final ConnectionUpdate connectionUpdate = extractConnectionUpdate(webBackendConnectionUpdate);
+    final ConnectionRead connectionRead = connectionsHandler.updateConnection(connectionUpdate);
+
+    if (webBackendConnectionUpdate.getWithRefreshedCatalog() != null && webBackendConnectionUpdate.getWithRefreshedCatalog()) {
+      ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(webBackendConnectionUpdate.getConnectionId());
+
+      // wait for this to execute
+      JobInfoRead resetJob = schedulerHandler.resetConnection(connectionId);
+
+      if (!resetJob.getJob().getStatus().equals(JobStatus.SUCCEEDED)) {
+        throw new RuntimeException("Resetting data after updating the connection failed! Please manually reset your data and launch a manual sync.");
+      }
+
+      // just create the job
+      schedulerHandler.syncConnection(connectionId, false);
+    }
+
+    return connectionRead;
+  }
+
+  @VisibleForTesting
+  protected static ConnectionUpdate extractConnectionUpdate(WebBackendConnectionUpdate webBackendConnectionUpdate) {
+    ConnectionUpdate connectionUpdate = new ConnectionUpdate();
+
+    connectionUpdate.setConnectionId(webBackendConnectionUpdate.getConnectionId());
+    connectionUpdate.setSchedule(webBackendConnectionUpdate.getSchedule());
+    connectionUpdate.setStatus(webBackendConnectionUpdate.getStatus());
+    connectionUpdate.setSyncSchema(webBackendConnectionUpdate.getSyncSchema());
+
+    return connectionUpdate;
+  }
+
 }
