@@ -10,13 +10,13 @@ We're backed by some of the world's [top investors](./#our-investors) and believ
 
 ## **Description**
 
-As our Founding Developer Advocate, you will have three focus \(prioritized\):
+As our Founding Developer Advocate, you will own three priorities:
 
-1. Helping us providing the best developer experience through our documentation and tutorials
-2. Engaging with our users and contributors, so they become evangelists outside the company.
-3. Generating awareness about Airbyte, by contributing and participating in guides, tutorials, webinars, meetups, conference panels, anything of value to the ecosystem.
+1. **Ensure Airbyte provides a world class contributor experience**. This can be anything from building tutorials and documentation or advocating for users to the product & engineering team to brainstorming and executing on new ideas. 
+2. **Foster & develop the Airbyte community of users and contributors**. We want our community to have such an amazing experience with Airbyte that they become our evangelists outside the company. 
+3. **Generate awareness about Airbyte**. We want Airbyte to be top of mind for anyone looking for an ELT solution, OSS or otherwise. 
 
-As the first member of our developer relationship team, you will work closely with the founders to collaborate and connect with our community. You shouldn’t be afraid to be hands-on, you might write sample code, set up our swag program, etc.
+This is a function-founding role: you'll have a large ownership over building out Airbyte's developer advocacy program. You'll have freedom You'll collaborate closely with the founders, the core team, and the community. You'll take on all sorts of tasks from writing sample code or setting up a swag program to shaping the vision for developer advocacy at Airbyte. 
 
 ## **Responsibilities**
 
