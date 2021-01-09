@@ -21,10 +21,9 @@ This is a function-founding role: you'll have a large ownership over building ou
 ## **Responsibilities**
 
 * Help us provide the most frictionless experience to our audience, by constantly improving our documentation and tutorials
-* Educate users through unique tutorials that educate the ecosystem and help us increase our reach 
-* Organize or participate to \(online or offline\) events to give Airbyte a voice
+* Organize or participate in \(online or offline\) events to give Airbyte a voice
 * Lead the conversation around the latest technology advancements and best practices in the developer community 
-* Channel information back to product and engineering about your learnings being an active contributor in the community
+* Channel information back to product and engineering about your learnings from the community
 * Be a force in the community!
 
 ## **Requirements**
