@@ -35,6 +35,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
   private static ConfigRepository configRepository;
   private static JobPersistence jobPersistence;
   private static CachingSchedulerJobClient schedulerJobClient;
+  private static String airbyteVersion;
 
   public static void setConfigRepository(final ConfigRepository configRepository) {
     ConfigurationApiFactory.configRepository = configRepository;
@@ -48,9 +49,14 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
     ConfigurationApiFactory.schedulerJobClient = schedulerJobClient;
   }
 
+  public static void setAirbyteVersion(final String airbyteVersion) {
+    ConfigurationApiFactory.airbyteVersion = airbyteVersion;
+  }
+
   @Override
   public ConfigurationApi provide() {
     return new ConfigurationApi(
+        ConfigurationApiFactory.airbyteVersion,
         ConfigurationApiFactory.configRepository,
         ConfigurationApiFactory.jobPersistence,
         ConfigurationApiFactory.schedulerJobClient);
