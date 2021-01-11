@@ -2,7 +2,7 @@
 
 ## Sync overview
 
-This source can sync data for the [Slack API](https://api.slack.com/).
+This source can sync data for the [Slack API](https://api.slack.com/). It supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
 This Source Connector is based on a [Singer Tap](https://github.com/singer-io/tap-slack).
 
@@ -33,7 +33,7 @@ This Source is capable of syncing the following core Streams:
 | Feature | Supported?\(Yes/No\) | Notes |
 | :--- | :--- | :--- |
 | Full Refresh Sync | yes |  |
-| Incremental Sync | no |  |
+| Incremental Sync | yes |  |
 
 ### Performance considerations
 

@@ -117,3 +117,45 @@ jobs:
           SLACK_USERNAME: Buildbot
           SLACK_TITLE: "Build Success"
           SLACK_FOOTER: ""
+
+  test_kube:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+
+      - uses: actions/setup-java@v1
+        with:
+          java-version: '14'
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '14.7'
+
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.7'
+
+      - name: Create local dir
+        run: |
+          mkdir -p /tmp/airbyte_local
+
+      - name: Setup Minikube
+        uses: manusa/actions-setup-minikube@v2.3.0
+        with:
+          minikube version: 'v1.16.0'
+          kubernetes version: 'v1.19.2'
+          start args: --mount-string=/tmp/airbyte_local:/local
+
+      - name: Install socat
+        run: sudo apt-get install socat
+
+      - name: Build Core Docker Images
+        if: success() && github.ref == 'refs/heads/master'
+        run: ./gradlew --no-daemon composeBuild --scan
+        env:
+          GIT_REVISION: ${{ github.sha }}
+
+      - name: Run Kubernetes End-to-End Acceptance Tests
+        run: |
+          ./tools/bin/acceptance_test_kube.sh

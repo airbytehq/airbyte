@@ -34,7 +34,28 @@ import org.junit.jupiter.api.Test;
 class FailureTrackingConsumerTest {
 
   @Test
-  void testNoFailure() throws Exception {
+  void testStartNoFailure() throws Exception {
+    final TestConsumer consumer = spy(new TestConsumer());
+    consumer.start();
+    consumer.close();
+
+    verify(consumer).close(false);
+  }
+
+  @Test
+  void testStartWithFailure() throws Exception {
+    final TestConsumer consumer = spy(new TestConsumer());
+    doThrow(new RuntimeException()).when(consumer).startTracked();
+
+    // verify the exception still gets thrown.
+    assertThrows(RuntimeException.class, consumer::start);
+    consumer.close();
+
+    verify(consumer).close(true);
+  }
+
+  @Test
+  void testAcceptNoFailure() throws Exception {
     final TestConsumer consumer = spy(new TestConsumer());
     consumer.accept("");
     consumer.close();
@@ -43,7 +64,7 @@ class FailureTrackingConsumerTest {
   }
 
   @Test
-  void testWithFailure() throws Exception {
+  void testAcceptWithFailure() throws Exception {
     final TestConsumer consumer = spy(new TestConsumer());
     doThrow(new RuntimeException()).when(consumer).acceptTracked("");
 
@@ -55,6 +76,11 @@ class FailureTrackingConsumerTest {
   }
 
   static class TestConsumer extends FailureTrackingConsumer<String> {
+
+    @Override
+    protected void startTracked() {
+
+    }
 
     @Override
     protected void acceptTracked(String s) {

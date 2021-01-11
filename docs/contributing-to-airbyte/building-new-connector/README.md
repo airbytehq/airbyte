@@ -1,4 +1,4 @@
-# Building New Connectors
+# Developing Connectors
 
 Airbyte supports two types of connectors: Sources and Destinations. A connector takes the form of a Docker image which follows the [Airbyte specification](../../architecture/airbyte-specification.md).
 
@@ -56,6 +56,10 @@ Generated templates provide the following Gradle tasks:
 
 1. `:airbyte-integrations:connectors:source-<name>:build` should run unit tests and build the integration's Docker image
 2. `:airbyte-integrations:connectors:source-<name>:integrationTest` should run integration tests including Airbyte's Standard test suite.
+
+### Best practices
+
+Make sure to review the [Best Practices for Connector Development](best-practices.md) guide. Following best practices is **not** a requirement for merging your contribution to Airbyte, but it certainly doesn't hurt ;\)
 
 ## Updating a connector
 

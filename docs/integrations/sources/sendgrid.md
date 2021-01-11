@@ -1,4 +1,4 @@
-# Twilio Sendgrid
+# Sendgrid
 
 ## Overview
 

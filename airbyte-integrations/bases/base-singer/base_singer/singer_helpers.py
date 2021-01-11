@@ -94,9 +94,13 @@ def set_sync_modes_from_metadata(airbyte_stream: AirbyteStream, metadatas: List[
             airbyte_stream.supported_sync_modes = [SyncMode.incremental]
             # TODO if there are multiple replication keys, allow configuring which one is used. For now we deterministically take the first
             airbyte_stream.default_cursor_field = [sorted(replication_keys)[0]]
-        elif stream_metadata.get("forced-replication-method", "").upper() == _INCREMENTAL:
-            airbyte_stream.source_defined_cursor = True
-            airbyte_stream.supported_sync_modes = [SyncMode.incremental]
+        elif "forced-replication-method" in stream_metadata:
+            forced_replication_method = stream_metadata["forced-replication-method"]
+            if isinstance(forced_replication_method, dict):
+                forced_replication_method = forced_replication_method.get("replication-method", "")
+            if forced_replication_method.upper() == _INCREMENTAL:
+                airbyte_stream.source_defined_cursor = True
+                airbyte_stream.supported_sync_modes = [SyncMode.incremental]
 
 
 def override_sync_modes(airbyte_stream: AirbyteStream, overrides: SyncModeInfo):
