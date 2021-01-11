@@ -40,11 +40,10 @@ class Client(BaseClient):
 
     PARAMS = {"limit": DEFAULT_ITEMS_PER_PAGE, "offset": 0}
     ENTITIES_MAP = {
-        # "projects": {"url": "/project/search", "func": lambda v: v["values"], "params": PARAMS},
+        "accounts": {"url": "/accounts", "func": lambda v: v["results"], "params": PARAMS},
+        "customers": {"url": "/customers", "func": lambda v: v["results"], "params": PARAMS},
         "worklogs": {"url": "/worklogs", "func": lambda v: v["results"], "params": PARAMS},
         "workload-schemes": {"url": "/workload-schemes", "func": lambda v: v["results"], "params": PARAMS},
-        "accounts": {"url": "/accounts", "func": lambda v: v["results"], "params": PARAMS},
-
     }
 
     def __init__(self, api_token):
@@ -54,12 +53,9 @@ class Client(BaseClient):
 
     def lists(self, name, url, params, func, **kwargs):
         while True:
-            print({"type": "LOG", "log": params["offset"]})
-            # response = requests.get(f"{self.base_api_url}{url}", params=params, headers=self.headers)
             response = requests.get(f"{self.base_api_url}{url}?limit={params['limit']}&offset={params['offset']}", headers=self.headers)
             data = func(response.json())
             yield from data
-            print({"type": "LOG", "log": len(data)})
             if len(data) < self.DEFAULT_ITEMS_PER_PAGE:
                 break
             params["offset"] += self.DEFAULT_ITEMS_PER_PAGE
