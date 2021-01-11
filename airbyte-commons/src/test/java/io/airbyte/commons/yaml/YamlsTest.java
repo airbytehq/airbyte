@@ -25,10 +25,16 @@
 package io.airbyte.commons.yaml;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.lang.CloseableConsumer;
+import java.io.StringWriter;
+import java.util.List;
 import java.util.Objects;
 import org.junit.jupiter.api.Test;
 
@@ -99,6 +105,20 @@ class YamlsTest {
                 + "- str: \"abc\"\n"
                 + "- str: \"abc\"\n")
             .toString());
+  }
+
+  @Test
+  void testListWriter() throws Exception {
+    final List<Integer> values = Lists.newArrayList(1, 2, 3);
+    final StringWriter writer = spy(new StringWriter());
+    final CloseableConsumer<Integer> consumer = Yamls.listWriter(writer);
+    values.forEach(consumer);
+    consumer.close();
+
+    verify(writer).close();
+
+    final List<?> deserialize = Yamls.deserialize(writer.toString(), List.class);
+    assertEquals(values, deserialize);
   }
 
   private static class ToClass {

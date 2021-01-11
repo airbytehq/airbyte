@@ -1,4 +1,4 @@
-# Founding Developer Evangelist
+# Founding Developer Advocate
 
 ## **About Airbyte**
 
@@ -10,19 +10,20 @@ We're backed by some of the world's [top investors](./#our-investors) and believ
 
 ## **Description**
 
-As our Founding Developer Evangelist, you will have two focus:
+As our Founding Developer Advocate, you will own three priorities:
 
-1. Generating awareness about Airbyte, by contributing and participating in guides, tutorials, webinars, meetups, conference panels, anything of value to the ecosystem
-2. Engaging with our users and contributors, so they become evangelists outside the company. 
+1. **Ensure Airbyte provides a world class contributor experience**. This can be anything from building tutorials and documentation or advocating for users to the product & engineering team to brainstorming and executing on new ideas. 
+2. **Foster & develop the Airbyte community of users and contributors**. We want our community to have such an amazing experience with Airbyte that they become our evangelists outside the company. 
+3. **Generate awareness about Airbyte**. We want Airbyte to be top of mind for anyone looking for an ELT solution, OSS or otherwise. 
 
-As the first member of our developer evangelism team, you will work closely with the founders to collaborate and connect with our community. You shouldn’t be afraid to be hands-on, you might write sample code, set up our swag program, etc.
+This is a function-founding role: you'll have a large ownership over building out Airbyte's developer advocacy program. You'll collaborate closely with the founders, the core team, and the community. You'll take on all sorts of tasks from writing sample code or setting up a swag program to shaping the vision for developer advocacy at Airbyte. 
 
 ## **Responsibilities**
 
-* Reach mass developers by creating unique content that educates the ecosystem
+* Help us provide the most frictionless experience to our audience, by constantly improving our documentation and tutorials
+* Organize or participate in \(online or offline\) events to give Airbyte a voice
 * Lead the conversation around the latest technology advancements and best practices in the developer community 
-* Contribute to relevant open source projects, in order to give Airbyte a voice and front seat access to the developments in our space of interest
-* Channel information back to product and engineering about your learnings being an active contributor in the community
+* Channel information back to product and engineering about your learnings from the community
 * Be a force in the community!
 
 ## **Requirements**
