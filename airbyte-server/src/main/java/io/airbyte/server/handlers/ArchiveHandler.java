@@ -24,6 +24,8 @@
 
 package io.airbyte.server.handlers;
 
+import io.airbyte.api.model.ImportRead;
+import io.airbyte.api.model.ImportRead.StatusEnum;
 import io.airbyte.commons.io.Archives;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.ConfigSchema;
@@ -64,16 +66,16 @@ public class ArchiveHandler {
     this.configRepository = configRepository;
   }
 
-  public Path exportData() {
+  public File exportData() {
     try {
       final Path tempFolder = Files.createTempDirectory("airbyte_archive");
-      final Path archive = Files.createTempFile(ARCHIVE_FILE_NAME, ".tar.gz");;
-      archive.toFile().deleteOnExit();
+      final File archive = Files.createTempFile(ARCHIVE_FILE_NAME, ".tar.gz").toFile();
+      archive.deleteOnExit();
       try {
         exportVersionFile(tempFolder);
         exportAirbyteConfig(tempFolder);
         exportAirbyteDatabase(tempFolder);
-        Archives.createArchive(tempFolder, archive);
+        Archives.createArchive(tempFolder, archive.toPath());
       } finally {
         FileUtils.deleteDirectory(tempFolder.toFile());
       }
@@ -115,14 +117,16 @@ public class ArchiveHandler {
     // TODO implement
   }
 
-  public void importData(Path archive) {
+  public ImportRead importData(File archive) {
+    ImportRead result;
     try {
       final Path tempFolder = Files.createTempDirectory("airbyte_archive");
       try {
-        Archives.extractArchive(archive, tempFolder);
+        Archives.extractArchive(archive.toPath(), tempFolder);
         checkImport(tempFolder);
         importAirbyteConfig(tempFolder, false);
         importAirbyteDatabase(tempFolder, false);
+        result = new ImportRead().status(StatusEnum.SUCCEEDED);
       } finally {
         FileUtils.deleteDirectory(tempFolder.toFile());
       }
@@ -130,6 +134,7 @@ public class ArchiveHandler {
       LOGGER.error("Import Data failed.");
       throw new RuntimeException(e);
     }
+    return result;
   }
 
   private void checkImport(Path tempFolder) throws IOException, JsonValidationException {

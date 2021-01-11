@@ -45,6 +45,7 @@ import io.airbyte.api.model.DestinationReadList;
 import io.airbyte.api.model.DestinationRecreate;
 import io.airbyte.api.model.DestinationUpdate;
 import io.airbyte.api.model.HealthCheckRead;
+import io.airbyte.api.model.ImportRead;
 import io.airbyte.api.model.JobIdRequestBody;
 import io.airbyte.api.model.JobInfoRead;
 import io.airbyte.api.model.JobListRequestBody;
@@ -74,6 +75,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.client.CachingSchedulerJobClient;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.errors.KnownException;
+import io.airbyte.server.handlers.ArchiveHandler;
 import io.airbyte.server.handlers.ConnectionsHandler;
 import io.airbyte.server.handlers.DebugInfoHandler;
 import io.airbyte.server.handlers.DestinationDefinitionsHandler;
@@ -90,6 +92,7 @@ import io.airbyte.server.handlers.WorkspacesHandler;
 import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
+import java.io.File;
 import java.io.IOException;
 import javax.validation.Valid;
 import org.eclipse.jetty.http.HttpStatus;
@@ -110,8 +113,10 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   private final WebBackendSourceHandler webBackendSourceHandler;
   private final WebBackendDestinationHandler webBackendDestinationHandler;
   private final HealthCheckHandler healthCheckHandler;
+  private final ArchiveHandler archiveHandler;
 
-  public ConfigurationApi(final ConfigRepository configRepository,
+  public ConfigurationApi(final String airbyteVersion,
+                          final ConfigRepository configRepository,
                           final JobPersistence jobPersistence,
                           final CachingSchedulerJobClient schedulerJobClient) {
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
@@ -129,6 +134,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     webBackendDestinationHandler = new WebBackendDestinationHandler(destinationHandler, schedulerHandler);
     debugInfoHandler = new DebugInfoHandler(configRepository);
     healthCheckHandler = new HealthCheckHandler(configRepository);
+    archiveHandler = new ArchiveHandler(airbyteVersion, configRepository);
   }
 
   // WORKSPACE
@@ -383,6 +389,18 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public WbConnectionRead webBackendGetConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
     return execute(() -> webBackendConnectionsHandler.webBackendGetConnection(connectionIdRequestBody));
+  }
+
+  // ARCHIVES
+
+  @Override
+  public File exportArchive() {
+    return execute(archiveHandler::exportData);
+  }
+
+  @Override
+  public ImportRead importArchive(@Valid File archiveFile) {
+    return execute(() -> archiveHandler.importData(archiveFile));
   }
 
   private <T> T execute(HandlerCall<T> call) {
