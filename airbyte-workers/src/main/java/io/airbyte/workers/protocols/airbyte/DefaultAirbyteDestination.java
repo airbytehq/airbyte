@@ -100,7 +100,7 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
     }
 
     LOGGER.debug("Closing target process");
-    WorkerUtils.gentleClose(targetProcess, 5, TimeUnit.MINUTES);
+    WorkerUtils.gentleClose(targetProcess, 10, TimeUnit.MINUTES);
     if (targetProcess.isAlive() || targetProcess.exitValue() != 0) {
       throw new WorkerException("target process wasn't successful");
     }
