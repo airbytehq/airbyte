@@ -68,12 +68,8 @@ import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
-import java.io.FileReader;
-import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.Collections;
@@ -81,11 +77,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
+import org.jooq.JSONB;
 import org.jooq.Record;
 import org.jooq.Result;
 import org.junit.Assume;
@@ -107,9 +102,7 @@ import org.testcontainers.utility.MountableFile;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AcceptanceTests {
 
-  // Since we don't support local outputs, we can just skip this with Kube for now
-  // It still tests that all the actions work properly
-  // In the future we can support local mounts in Kube or use a Postgres table as the destination here
+  // Skip networking related failures on kube using this flag
   private static final boolean IS_KUBE = System.getenv().containsKey("KUBE");
 
   private static final String TABLE_NAME = "id_and_name";
@@ -354,26 +347,26 @@ public class AcceptanceTests {
     assertSourceAndTargetDbInSync(sourcePsql);
 
     // add new records and run again.
-    final Database database = getDatabase(sourcePsql);
+    final Database source = getDatabase(sourcePsql);
     // get contents of source before mutating records.
-    final List<JsonNode> expectedRecords = retrievePgRecords(database, STREAM_NAME);
+    final List<JsonNode> expectedRecords = retrieveSourceRecords(source, STREAM_NAME);
     expectedRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, "geralt").build()));
     // add a new record
-    database.query(ctx -> ctx.execute("INSERT INTO id_and_name(id, name) VALUES(6, 'geralt')"));
+    source.query(ctx -> ctx.execute("INSERT INTO id_and_name(id, name) VALUES(6, 'geralt')"));
     // mutate a record that was already synced with out updating its cursor value. if we are actually
     // full refreshing, this record will appear in the output and cause the test to fail. if we are,
     // correctly, doing incremental, we will not find this value in the destination.
-    database.query(ctx -> ctx.execute("UPDATE id_and_name SET name='yennefer' WHERE id=2"));
-    database.close();
+    source.query(ctx -> ctx.execute("UPDATE id_and_name SET name='yennefer' WHERE id=2"));
+    source.close();
 
     final JobInfoRead connectionSyncRead2 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     assertEquals(JobStatus.SUCCEEDED, connectionSyncRead2.getJob().getStatus());
-    assertDestinationContains(expectedRecords, TABLE_NAME);
+    assertDestinationContains(expectedRecords, STREAM_NAME);
 
     // reset back to no data.
     apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    assertDestinationContains(Collections.emptyList(), TABLE_NAME);
+    assertDestinationContains(Collections.emptyList(), STREAM_NAME);
 
     // sync one more time. verify it is the equivalent of a full refresh.
     final JobInfoRead connectionSyncRead3 = apiClient.getConnectionApi()
@@ -409,19 +402,17 @@ public class AcceptanceTests {
   }
 
   private void assertSourceAndTargetDbInSync(PostgreSQLContainer sourceDb) throws Exception {
-    if (!IS_KUBE) {
-      final Database database = getDatabase(sourceDb);
+    final Database source = getDatabase(sourceDb);
 
-      final Set<String> sourceStreams = listStreams(database);
-      final Set<String> sourceStreamsWithRawSuffix = sourceStreams.stream().map(x -> x+ "_raw").collect(Collectors.toSet());
-      Database destination = getDatabase(destinationPsql);
-      final Set<String> destinationStreams = listDestinationStreams(destination);
-      assertEquals(sourceStreamsWithRawSuffix, destinationStreams,
-          String.format("streams did not match.\n source stream names: %s\n destination stream names: %s\n", sourceStreams, destinationStreams));
+    final Set<String> sourceStreams = listStreams(source);
+    final Set<String> sourceStreamsWithRawSuffix = sourceStreams.stream().map(x -> x + "_raw").collect(Collectors.toSet());
+    final Database destination = getDatabase(destinationPsql);
+    final Set<String> destinationStreams = listDestinationStreams(destination);
+    assertEquals(sourceStreamsWithRawSuffix, destinationStreams,
+        String.format("streams did not match.\n source stream names: %s\n destination stream names: %s\n", sourceStreams, destinationStreams));
 
-      for (String table : sourceStreams) {
-        assertStreamsEquivalent(database, table);
-      }
+    for (String table : sourceStreams) {
+      assertStreamsEquivalent(source, table);
     }
   }
 
@@ -447,29 +438,29 @@ public class AcceptanceTests {
 
   private Set<String> listDestinationStreams(Database destination) throws SQLException {
     return destination.query(ctx -> ctx.resultQuery("SELECT table_name\n" +
-            "FROM information_schema.tables\n" +
-            "WHERE table_schema = 'public'\n" +
-            "ORDER BY table_name;"))
-            .stream()
-            .map(x -> x.get("table_name", String.class))
-            .collect(Collectors.toSet());
+        "FROM information_schema.tables\n" +
+        "WHERE table_schema = 'public'\n" +
+        "ORDER BY table_name;"))
+        .stream()
+        .map(x -> x.get("table_name", String.class))
+        .collect(Collectors.toSet());
   }
 
   private void assertDestinationContains(List<JsonNode> sourceRecords, String streamName) throws Exception {
-      final Set<JsonNode> destinationRecords = new HashSet<>(retrieveDestinationRecords(streamName));
+    final Set<JsonNode> destinationRecords = new HashSet<>(retrieveDestinationRecords(streamName));
 
-      assertEquals(sourceRecords.size(), destinationRecords.size(),
-          String.format("destination contains: %s record. source contains: %s", sourceRecords.size(), destinationRecords.size()));
+    assertEquals(sourceRecords.size(), destinationRecords.size(),
+        String.format("destination contains: %s record. source contains: %s", sourceRecords.size(), destinationRecords.size()));
 
-      for (JsonNode sourceStreamRecord : sourceRecords) {
-        assertTrue(destinationRecords.contains(sourceStreamRecord),
-            String.format("destination does not contain record:\n %s \n destination contains:\n %s\n", sourceStreamRecord, destinationRecords));
-      }
+    for (JsonNode sourceStreamRecord : sourceRecords) {
+      assertTrue(destinationRecords.contains(sourceStreamRecord),
+          String.format("destination does not contain record:\n %s \n destination contains:\n %s\n", sourceStreamRecord, destinationRecords));
+    }
   }
 
-  private void assertStreamsEquivalent(Database database, String table) throws Exception {
-    final List<JsonNode> allRecords = retrievePgRecords(database, table);
-    assertDestinationContains(allRecords, table);
+  private void assertStreamsEquivalent(Database source, String table) throws Exception {
+    final List<JsonNode> sourceRecords = retrieveSourceRecords(source, table);
+    assertDestinationContains(sourceRecords, table);
   }
 
   private ConnectionRead createConnection(String name,
@@ -520,15 +511,23 @@ public class AcceptanceTests {
         .getDestinationDefinitionId();
   }
 
-  private List<JsonNode> retrievePgRecords(Database database, String table) throws SQLException {
-    System.out.println("---");
-    for (String stream : listDestinationStreams(database)) {
-      System.out.println("stream = " + stream);
-    }
+  private List<JsonNode> retrieveSourceRecords(Database database, String table) throws SQLException {
+    final String cleanedName = table.replace("public.", "");
+    return database.query(context -> context.fetch(String.format("SELECT * FROM \"%s\";", cleanedName)))
+        .stream()
+        .map(Record::intoMap)
+        .map(Jsons::jsonNode)
+        .collect(Collectors.toList());
+  }
 
+  private List<JsonNode> retrieveDestinationRecords(Database database, String table) throws SQLException {
     return database.query(context -> context.fetch(String.format("SELECT * FROM \"%s\";", table)))
         .stream()
         .map(Record::intoMap)
+        .map(r -> r.get("data"))
+        .map(f -> (JSONB) f)
+        .map(JSONB::data)
+        .map(Jsons::deserialize)
         .map(Jsons::jsonNode)
         .collect(Collectors.toList());
   }
@@ -536,9 +535,10 @@ public class AcceptanceTests {
   private List<JsonNode> retrieveDestinationRecords(String streamName) throws Exception {
     Database destination = getDatabase(destinationPsql);
     Set<String> destinationStreams = listDestinationStreams(destination);
-    assertTrue(destinationStreams.contains(streamName + "_raw"));
 
-    return retrievePgRecords(destination, streamName + "_raw");
+    assertTrue(destinationStreams.contains(streamName + "_raw"), "can't find a normalized version of " + streamName);
+
+    return retrieveDestinationRecords(destination, streamName + "_raw");
   }
 
   private JsonNode getSourceDbConfig() {
@@ -564,7 +564,7 @@ public class AcceptanceTests {
       // necessary for minikube tests on Github Actions instead of psql.getHost()
       dbConfig.put("host", Inet4Address.getLocalHost().getHostAddress());
 
-      if(hiddenPassword) {
+      if (hiddenPassword) {
         dbConfig.put("password", "**********");
       } else {
         dbConfig.put("password", psql.getPassword());
