@@ -30,7 +30,6 @@ from base_python import BaseClient
 
 # from requests.exceptions import ConnectionError
 
-
 class Client(BaseClient):
     """
     Tempo API Reference: https://tempo-io.github.io/tempo-api-docs/
@@ -43,6 +42,9 @@ class Client(BaseClient):
     ENTITIES_MAP = {
         # "projects": {"url": "/project/search", "func": lambda v: v["values"], "params": PARAMS},
         "worklogs": {"url": "/worklogs", "func": lambda v: v["results"], "params": PARAMS},
+        "workload-schemes": {"url": "/workload-schemes", "func": lambda v: v["results"], "params": PARAMS},
+        "accounts": {"url": "/accounts", "func": lambda v: v["results"], "params": PARAMS},
+
     }
 
     def __init__(self, api_token):
@@ -52,12 +54,14 @@ class Client(BaseClient):
 
     def lists(self, name, url, params, func, **kwargs):
         while True:
-            print(params["offset"])
-            print(params["limit"])
+            print({"type": "LOG", "log": params["offset"]})
             # response = requests.get(f"{self.base_api_url}{url}", params=params, headers=self.headers)
             response = requests.get(f"{self.base_api_url}{url}?limit={params['limit']}&offset={params['offset']}", headers=self.headers)
             data = func(response.json())
             yield from data
+            print({"type": "LOG", "log": len(data)})
+            if len(data) < self.DEFAULT_ITEMS_PER_PAGE:
+                break
             params["offset"] += self.DEFAULT_ITEMS_PER_PAGE
 
     def _enumerate_methods(self) -> Mapping[str, callable]:
