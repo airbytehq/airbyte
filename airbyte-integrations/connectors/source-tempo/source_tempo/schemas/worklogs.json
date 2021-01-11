@@ -22,8 +22,8 @@
       "type": "object",
       "description": "Details of the issue",
       "additionalProperties": {
-          "type": "string",
-          "readOnly": true
+        "type": "string",
+        "readOnly": true
       },
       "readOnly": true
     },
@@ -62,8 +62,8 @@
       "description": "Author of the worklog",
       "readOnly": true,
       "additionalProperties": {
-          "type": "string",
-          "readOnly": true
+        "type": "string",
+        "readOnly": true
       }
     },
     "attributes": {
@@ -71,8 +71,8 @@
       "description": "Additional attribute of the worklog",
       "readOnly": true,
       "additionalProperties": {
-          "type": "string",
-          "readOnly": true
+        "type": "string",
+        "readOnly": true
       }
     }
   },

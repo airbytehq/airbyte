@@ -22,15 +22,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import operator
-from functools import partial, reduce
-from json.decoder import JSONDecodeError
+from functools import partial
 from typing import Mapping, Tuple
 
 import requests
 from base_python import BaseClient
-from requests.auth import HTTPBasicAuth
-from requests.exceptions import ConnectionError
+
+# from requests.exceptions import ConnectionError
 
 
 class Client(BaseClient):
@@ -43,18 +41,21 @@ class Client(BaseClient):
 
     PARAMS = {"limit": DEFAULT_ITEMS_PER_PAGE, "offset": 0}
     ENTITIES_MAP = {
-        #"projects": {"url": "/project/search", "func": lambda v: v["values"], "params": PARAMS},
-        "worklogs": {"url": "/worklogs", "func": lambda v: v["issues"], "params": PARAMS},
+        # "projects": {"url": "/project/search", "func": lambda v: v["values"], "params": PARAMS},
+        "worklogs": {"url": "/worklogs", "func": lambda v: v["results"], "params": PARAMS},
     }
 
-    def __init__(self, api_token, domain, email):
-        self.headers = {'Authorization': 'Bearer '+api_token}
+    def __init__(self, api_token):
+        self.headers = {"Authorization": "Bearer " + api_token}
         self.base_api_url = f"https://api.tempo.io/core/{self.API_VERSION}"
         super().__init__()
 
     def lists(self, name, url, params, func, **kwargs):
         while True:
-            response = requests.get(f"{self.base_api_url}{url}", params=params, headers=self.headers)
+            print(params["offset"])
+            print(params["limit"])
+            # response = requests.get(f"{self.base_api_url}{url}", params=params, headers=self.headers)
+            response = requests.get(f"{self.base_api_url}{url}?limit={params['limit']}&offset={params['offset']}", headers=self.headers)
             data = func(response.json())
             yield from data
             params["offset"] += self.DEFAULT_ITEMS_PER_PAGE
@@ -65,7 +66,7 @@ class Client(BaseClient):
     def health_check(self) -> Tuple[bool, str]:
         alive = True
         error_msg = None
-        #must be implemented later
+        # must be implemented later
 
         # try:
         #     next(self.lists(name="resolutions", **self.ENTITIES_MAP["resolutions"]))

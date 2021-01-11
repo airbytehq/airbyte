@@ -13,8 +13,8 @@ WORKDIR /airbyte/integration_code
 COPY source_tempo source_tempo
 COPY $CODE_PATH $CODE_PATH
 COPY sample_files/*.json $CODE_PATH/
-COPY secrets/* $CODE_PATH
-COPY source_tempo/*.json $CODE_PATH
+COPY secrets/* $CODE_PATH/
+COPY source_tempo/*.json $CODE_PATH/
 COPY setup.py ./
 
 RUN pip install ".[tests]"
