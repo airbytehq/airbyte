@@ -1,4 +1,4 @@
-# Best Practices for Connector Development
+# Best Practices
 
 In order to guarantee the highest quality for connectors, we've compiled the following best practices for connector development. Connectors which follow these best practices will be labelled as "Airbyte Certified" to indicate they've passed a high quality bar and will perform reliably in all production use cases. Following these guidelines is **not required** for your contribution to Airbyte to be accepted, as they add a barrier to entry for contribution \(though adopting them certainly doesn't hurt!\).
 
