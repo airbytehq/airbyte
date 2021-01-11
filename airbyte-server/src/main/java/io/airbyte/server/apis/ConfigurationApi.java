@@ -391,15 +391,15 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     return execute(() -> webBackendConnectionsHandler.webBackendGetConnection(connectionIdRequestBody));
   }
 
-  // MIGRATION
+  // ARCHIVES
 
   @Override
-  public File exportAirbyte() {
+  public File exportArchive() {
     return execute(archiveHandler::exportData);
   }
 
   @Override
-  public ImportRead importAirbyte(@Valid File archiveFile) {
+  public ImportRead importArchive(@Valid File archiveFile) {
     return execute(() -> archiveHandler.importData(archiveFile));
   }
 
