@@ -32,7 +32,7 @@ setuptools.setup(
     url="https://github.com/airbytehq/airbyte",
     packages=setuptools.find_packages(),
     package_data={"": ["models/yaml/*.yaml"]},
-    install_requires=["PyYAML==5.3.1", "pydantic==1.6.1", "airbyte-protocol", "jsonschema"],
+    install_requires=["PyYAML==5.3.1", "pydantic==1.6.1", "airbyte-protocol==0.0.0", "jsonschema==3.2.0"],
     entry_points={
         "console_scripts": ["base-python=base_python.entrypoint:main"],
     },

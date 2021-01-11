@@ -40,7 +40,7 @@ setup(
     ],
     package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
     setup_requires=["pytest-runner"],
-    tests_require=["pytest"],
+    tests_require=["pytest==6.1.2"],
     extras_require={
         "tests": ["airbyte_python_test==0.0.0", "pytest==6.1.2"],
     },
