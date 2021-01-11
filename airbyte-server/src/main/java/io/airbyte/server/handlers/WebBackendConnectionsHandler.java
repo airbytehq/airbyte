@@ -140,10 +140,6 @@ public class WebBackendConnectionsHandler {
       final SourceSchema discovered = discoverSchema.getSchema();
       final SourceSchema combined = updateSchemaWithDiscovery(original, discovered);
 
-      System.out.println("original = " + original);
-      System.out.println("discovered = " + discovered);
-      System.out.println("combined = " + combined);
-
       connection.setSyncSchema(combined);
     }
 
