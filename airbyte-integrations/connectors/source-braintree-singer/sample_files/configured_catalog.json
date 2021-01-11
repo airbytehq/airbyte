@@ -193,8 +193,10 @@
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"]
-      }
+        "source_defined_cursor": true,
+        "supported_sync_modes": ["incremental"]
+      },
+      "sync_mode": "incremental"
     }
   ]
 }

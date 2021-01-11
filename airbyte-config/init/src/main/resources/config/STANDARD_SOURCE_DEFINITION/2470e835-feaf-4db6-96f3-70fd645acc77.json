@@ -2,6 +2,6 @@
   "sourceDefinitionId": "2470e835-feaf-4db6-96f3-70fd645acc77",
   "name": "Salesforce",
   "dockerRepository": "airbyte/source-salesforce-singer",
-  "dockerImageTag": "0.1.4",
+  "dockerImageTag": "0.1.5",
   "documentationUrl": "https://hub.docker.com/r/airbyte/source-salesforce-singer"
 }

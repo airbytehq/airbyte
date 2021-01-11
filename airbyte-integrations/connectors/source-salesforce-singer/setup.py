@@ -38,4 +38,7 @@ setup(
         "base-python",
         "base-singer",
     ],
+    setup_requires=["pytest-runner"],
+    tests_require=["pytest"],
+    extras_require={"main": ["base-singer"], "tests": ["airbyte_python_test", "pytest"]},
 )

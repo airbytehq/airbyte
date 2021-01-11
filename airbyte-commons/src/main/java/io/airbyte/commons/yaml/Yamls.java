@@ -27,8 +27,12 @@ package io.airbyte.commons.yaml;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import io.airbyte.commons.lang.CloseableConsumer;
+import io.airbyte.commons.lang.Exceptions;
 import java.io.IOException;
+import java.io.Writer;
 
 public class Yamls {
 
@@ -57,6 +61,45 @@ public class Yamls {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  // todo (cgardens) - share this with Jsons if ever needed.
+
+  /**
+   * Creates a consumer that writes list items to the writer in a streaming fashion.
+   *
+   * @param writer writer to write to
+   * @param <T> type of items being written
+   * @return consumer that is able to write element to a list element by element. must be closed!
+   */
+  public static <T> CloseableConsumer<T> listWriter(Writer writer) {
+    return new YamlConsumer<>(writer, OBJECT_MAPPER);
+  }
+
+  public static class YamlConsumer<T> implements CloseableConsumer<T> {
+
+    private final SequenceWriter sequenceWriter;
+
+    public YamlConsumer(Writer writer, ObjectMapper objectMapper) {
+      this.sequenceWriter = Exceptions.toRuntime(() -> objectMapper.writer().writeValuesAsArray(writer));
+
+    }
+
+    @Override
+    public void accept(T t) {
+      try {
+        sequenceWriter.write(t);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+    @Override
+    public void close() throws Exception {
+      // closing the SequenceWriter closes the Writer that it wraps.
+      sequenceWriter.close();
+    }
+
   }
 
 }

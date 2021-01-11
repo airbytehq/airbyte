@@ -75,13 +75,13 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.client.CachingSchedulerJobClient;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.errors.KnownException;
+import io.airbyte.server.handlers.ArchiveHandler;
 import io.airbyte.server.handlers.ConnectionsHandler;
 import io.airbyte.server.handlers.DebugInfoHandler;
 import io.airbyte.server.handlers.DestinationDefinitionsHandler;
 import io.airbyte.server.handlers.DestinationHandler;
 import io.airbyte.server.handlers.HealthCheckHandler;
 import io.airbyte.server.handlers.JobHistoryHandler;
-import io.airbyte.server.handlers.MigrationHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.handlers.SourceDefinitionsHandler;
 import io.airbyte.server.handlers.SourceHandler;
@@ -113,7 +113,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   private final WebBackendSourceHandler webBackendSourceHandler;
   private final WebBackendDestinationHandler webBackendDestinationHandler;
   private final HealthCheckHandler healthCheckHandler;
-  private final MigrationHandler migrationHandler;
+  private final ArchiveHandler archiveHandler;
 
   public ConfigurationApi(final String airbyteVersion,
                           final ConfigRepository configRepository,
@@ -134,7 +134,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     webBackendDestinationHandler = new WebBackendDestinationHandler(destinationHandler, schedulerHandler);
     debugInfoHandler = new DebugInfoHandler(configRepository);
     healthCheckHandler = new HealthCheckHandler(configRepository);
-    migrationHandler = new MigrationHandler(airbyteVersion, configRepository);
+    archiveHandler = new ArchiveHandler(airbyteVersion, configRepository);
   }
 
   // WORKSPACE
@@ -395,12 +395,12 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   @Override
   public File exportAirbyte() {
-    return execute(migrationHandler::exportData);
+    return execute(archiveHandler::exportData);
   }
 
   @Override
   public ImportRead importAirbyte(@Valid File archiveFile) {
-    return execute(() -> migrationHandler.importData(archiveFile));
+    return execute(() -> archiveHandler.importData(archiveFile));
   }
 
   private <T> T execute(HandlerCall<T> call) {

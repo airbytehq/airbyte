@@ -130,7 +130,7 @@
   "sources.cancelled": "Cancelled",
   "sources.incomplete": "Retrying",
   "sources.additionLogs": " Logs",
-  "sources.emptyLogs": "Empty data",
+  "sources.emptyLogs": "Waiting for logs...",
   "sources.hour": "{hour}h ",
   "sources.minute": "{minute}m ",
   "sources.second": "{second}s",
