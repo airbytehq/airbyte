@@ -24,16 +24,14 @@
 
 package io.airbyte.commons.io;
 
+import io.airbyte.commons.lang.Exceptions;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.zip.GZIPOutputStream;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
@@ -43,45 +41,26 @@ import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ArchiveHelper {
+public class Archives {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(ArchiveHelper.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(Archives.class);
 
   /**
    * Compress a @param sourceFolder into a Gzip Tarball @param archiveFile
    */
-  static public void createArchive(final Path sourceFolder, final Path archiveFile) throws IOException {
+  public static void createArchive(final Path sourceFolder, final Path archiveFile) throws IOException {
     final TarArchiveOutputStream archive =
         new TarArchiveOutputStream(new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(archiveFile.toFile()))));
-    Files.walkFileTree(sourceFolder, new SimpleFileVisitor<>() {
-
-      @Override
-      public FileVisitResult visitFile(Path file, BasicFileAttributes attributes) {
-        // only copy files, no symbolic links
-        if (attributes.isSymbolicLink()) {
-          return FileVisitResult.CONTINUE;
-        }
-        Path targetFile = sourceFolder.relativize(file);
-        try {
-          compressFile(file, targetFile, archive);
-        } catch (IOException e) {
-          LOGGER.error(String.format("Failed to archive file %s: %s", file, e));
-          throw new RuntimeException(e);
-        }
-        return FileVisitResult.CONTINUE;
-      }
-
-      @Override
-      public FileVisitResult visitFileFailed(Path file, IOException exc) {
-        LOGGER.error(String.format("Failed to include file %s in archive", file));
-        return FileVisitResult.CONTINUE;
-      }
-
-    });
+    Files.walk(sourceFolder)
+        .filter(Files::isRegularFile)
+        .forEach(file -> {
+          Path targetFile = sourceFolder.relativize(file);
+          Exceptions.toRuntime(() -> compressFile(file, targetFile, archive));
+        });
     archive.close();
   }
 
-  static private void compressFile(final Path file, final Path filename, final TarArchiveOutputStream archive) throws IOException {
+  private static void compressFile(final Path file, final Path filename, final TarArchiveOutputStream archive) throws IOException {
     final TarArchiveEntry tarEntry = new TarArchiveEntry(file.toFile(), filename.toString());
     archive.putArchiveEntry(tarEntry);
     Files.copy(file, archive);
@@ -91,7 +70,7 @@ public class ArchiveHelper {
   /**
    * Uncompress a Gzip Tarball @param archiveFile into the @param destinationFolder
    */
-  static public void openArchive(final Path destinationFolder, final Path archiveFile) throws IOException {
+  public static void extractArchive(final Path archiveFile, final Path destinationFolder) throws IOException {
     final TarArchiveInputStream archive =
         new TarArchiveInputStream(new GzipCompressorInputStream(new BufferedInputStream(Files.newInputStream(archiveFile))));
     ArchiveEntry entry;
@@ -115,7 +94,7 @@ public class ArchiveHelper {
       throws IOException {
     final Path targetDirResolved = destinationFolder.resolve(entry.getName());
     // make sure normalized file still has destinationFolder as its prefix,
-    // else throws exception
+    // else throws exception, see: https://snyk.io/research/zip-slip-vulnerability
     final Path normalizePath = targetDirResolved.normalize();
     if (!normalizePath.startsWith(destinationFolder)) {
       throw new IOException("Bad entry: " + entry.getName());

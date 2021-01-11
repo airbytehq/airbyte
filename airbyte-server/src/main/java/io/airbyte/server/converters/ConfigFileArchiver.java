@@ -36,27 +36,29 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ConfigConverter {
+public class ConfigFileArchiver {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(ConfigConverter.class);
-  private static final String CONFIG_FOLDER_NAME = "AirbyteConfig";
+  private static final Logger LOGGER = LoggerFactory.getLogger(ConfigFileArchiver.class);
+  private static final String CONFIG_FOLDER_NAME = "airbyte_config";
 
   private final String version;
   private final Path storageRoot;
   private final JsonSchemaValidator jsonSchemaValidator;
 
-  public ConfigConverter(final String version, final Path storageRoot, final JsonSchemaValidator jsonSchemaValidator) {
+  public ConfigFileArchiver(final String version, final Path storageRoot, final JsonSchemaValidator jsonSchemaValidator) {
     this.version = version;
     this.storageRoot = storageRoot;
     this.jsonSchemaValidator = jsonSchemaValidator;
   }
 
-  public ConfigConverter(final String version, final Path storageRoot) {
+  public ConfigFileArchiver(final String version, final Path storageRoot) {
     this(version, storageRoot, new JsonSchemaValidator());
   }
 
@@ -65,14 +67,25 @@ public class ConfigConverter {
         .resolve(String.format("%s.yaml", schemaType.toString()));
   }
 
-  public <T> void writeConfigList(ConfigSchema schemaType, List<T> configList) throws IOException {
+  /**
+   * Takes configuration objects from @param configList with schema @param schemaType and serializes
+   * them into a single archive file stored in YAML. Objects will be ordered by their String
+   * representation in the archive.
+   */
+  public <T> void writeConfigsToArchive(final ConfigSchema schemaType, final List<T> configList) throws IOException {
     final Path configPath = buildConfigPath(schemaType);
     Files.createDirectories(configPath.getParent());
-    Files.writeString(configPath, Yamls.serialize(new ConfigWrapper(version, configList)));
+    final List<T> sortedConfigs = configList.stream().sorted(Comparator.comparing(T::toString)).collect(Collectors.toList());
+    Files.writeString(configPath, Yamls.serialize(new ConfigWrapper(version, sortedConfigs)));
     LOGGER.debug(String.format("Successful export of airbyte config %s", schemaType));
   }
 
-  public <T> List<T> readConfigList(ConfigSchema schemaType, Class<T> clazz) throws IOException, JsonValidationException {
+  /**
+   * Reads a YAML configuration archive file and deserializes them into a list of configuration
+   * objects. The objects will be validated against the current version of Airbyte server's JSON
+   * Schema @param schemaType.
+   */
+  public <T> List<T> readConfigsFromArchive(final ConfigSchema schemaType, final Class<T> clazz) throws IOException, JsonValidationException {
     final List<T> results = new ArrayList<>();
     final Path configPath = buildConfigPath(schemaType);
     if (configPath.toFile().exists()) {
@@ -98,7 +111,7 @@ public class ConfigConverter {
     return results;
   }
 
-  private <T> void validateJson(T config, ConfigSchema configType) throws JsonValidationException {
+  private <T> void validateJson(final T config, final ConfigSchema configType) throws JsonValidationException {
     JsonNode schema = JsonSchemaValidator.getSchema(configType.getFile());
     jsonSchemaValidator.ensure(schema, Jsons.jsonNode(config));
   }

@@ -24,7 +24,7 @@
 
 package io.airbyte.server.handlers;
 
-import io.airbyte.commons.io.ArchiveHelper;
+import io.airbyte.commons.io.Archives;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
@@ -36,7 +36,7 @@ import io.airbyte.config.StandardSyncSchedule;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.PersistenceConstants;
-import io.airbyte.server.converters.ConfigConverter;
+import io.airbyte.server.converters.ConfigFileArchiver;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
 import java.io.IOException;
@@ -50,16 +50,16 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MigrationHandler {
+public class ArchiveHandler {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(MigrationHandler.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ArchiveHandler.class);
   private static final String ARCHIVE_FILE_NAME = "airbyte_config_data";
   private static final String VERSION_FILE_NAME = "VERSION";
 
   private final String version;
   private final ConfigRepository configRepository;
 
-  public MigrationHandler(final String version, final ConfigRepository configRepository) {
+  public ArchiveHandler(final String version, final ConfigRepository configRepository) {
     this.version = version;
     this.configRepository = configRepository;
   }
@@ -73,7 +73,7 @@ public class MigrationHandler {
         exportVersionFile(tempFolder);
         exportAirbyteConfig(tempFolder);
         exportAirbyteDatabase(tempFolder);
-        ArchiveHelper.createArchive(tempFolder, archive);
+        Archives.createArchive(tempFolder, archive);
       } finally {
         FileUtils.deleteDirectory(tempFolder.toFile());
       }
@@ -91,22 +91,22 @@ public class MigrationHandler {
 
   private void exportAirbyteConfig(Path tempFolder) {
     LOGGER.info("Exporting Airbyte Configs");
-    final ConfigConverter configConverter = new ConfigConverter(version, tempFolder);
+    final ConfigFileArchiver configFileArchiver = new ConfigFileArchiver(version, tempFolder);
     Exceptions.toRuntime(() -> {
-      configConverter.writeConfigList(ConfigSchema.STANDARD_WORKSPACE,
+      configFileArchiver.writeConfigsToArchive(ConfigSchema.STANDARD_WORKSPACE,
           List.of(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID)));
-      configConverter.writeConfigList(ConfigSchema.STANDARD_SOURCE_DEFINITION, configRepository.listStandardSources());
-      configConverter.writeConfigList(ConfigSchema.STANDARD_DESTINATION_DEFINITION, configRepository.listStandardDestinationDefinitions());
-      configConverter.writeConfigList(ConfigSchema.SOURCE_CONNECTION, configRepository.listSourceConnection());
-      configConverter.writeConfigList(ConfigSchema.DESTINATION_CONNECTION, configRepository.listDestinationConnection());
+      configFileArchiver.writeConfigsToArchive(ConfigSchema.STANDARD_SOURCE_DEFINITION, configRepository.listStandardSources());
+      configFileArchiver.writeConfigsToArchive(ConfigSchema.STANDARD_DESTINATION_DEFINITION, configRepository.listStandardDestinationDefinitions());
+      configFileArchiver.writeConfigsToArchive(ConfigSchema.SOURCE_CONNECTION, configRepository.listSourceConnection());
+      configFileArchiver.writeConfigsToArchive(ConfigSchema.DESTINATION_CONNECTION, configRepository.listDestinationConnection());
       final List<StandardSync> standardSyncs = configRepository.listStandardSyncs();
-      configConverter.writeConfigList(ConfigSchema.STANDARD_SYNC, standardSyncs);
+      configFileArchiver.writeConfigsToArchive(ConfigSchema.STANDARD_SYNC, standardSyncs);
       final List<StandardSyncSchedule> standardSchedules = standardSyncs
           .stream()
           .map(config -> Exceptions.toRuntime(() -> configRepository.getStandardSyncSchedule(config.getConnectionId())))
           .filter(Objects::nonNull)
           .collect(Collectors.toList());
-      configConverter.writeConfigList(ConfigSchema.STANDARD_SYNC_SCHEDULE, standardSchedules);
+      configFileArchiver.writeConfigsToArchive(ConfigSchema.STANDARD_SYNC_SCHEDULE, standardSchedules);
     });
   }
 
@@ -119,7 +119,7 @@ public class MigrationHandler {
     try {
       final Path tempFolder = Files.createTempDirectory("airbyte_archive");
       try {
-        ArchiveHelper.openArchive(tempFolder, archive);
+        Archives.extractArchive(archive, tempFolder);
         checkImport(tempFolder);
         importAirbyteConfig(tempFolder, false);
         importAirbyteDatabase(tempFolder, false);
@@ -145,30 +145,30 @@ public class MigrationHandler {
   }
 
   private void importAirbyteConfig(Path tempFolder, boolean dryRun) throws IOException, JsonValidationException {
-    final ConfigConverter configConverter = new ConfigConverter(version, tempFolder);
+    final ConfigFileArchiver configFileArchiver = new ConfigFileArchiver(version, tempFolder);
     if (dryRun) {
-      configConverter.readConfigList(ConfigSchema.STANDARD_WORKSPACE, StandardWorkspace.class);
-      configConverter.readConfigList(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class);
-      configConverter.readConfigList(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class);
-      configConverter.readConfigList(ConfigSchema.SOURCE_CONNECTION, SourceConnection.class);
-      configConverter.readConfigList(ConfigSchema.DESTINATION_CONNECTION, DestinationConnection.class);
-      configConverter.readConfigList(ConfigSchema.STANDARD_SYNC, StandardSync.class);
-      configConverter.readConfigList(ConfigSchema.STANDARD_SYNC_SCHEDULE, StandardSyncSchedule.class);
+      configFileArchiver.readConfigsFromArchive(ConfigSchema.STANDARD_WORKSPACE, StandardWorkspace.class);
+      configFileArchiver.readConfigsFromArchive(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class);
+      configFileArchiver.readConfigsFromArchive(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class);
+      configFileArchiver.readConfigsFromArchive(ConfigSchema.SOURCE_CONNECTION, SourceConnection.class);
+      configFileArchiver.readConfigsFromArchive(ConfigSchema.DESTINATION_CONNECTION, DestinationConnection.class);
+      configFileArchiver.readConfigsFromArchive(ConfigSchema.STANDARD_SYNC, StandardSync.class);
+      configFileArchiver.readConfigsFromArchive(ConfigSchema.STANDARD_SYNC_SCHEDULE, StandardSyncSchedule.class);
     } else {
       Exceptions.toRuntime(() -> {
-        configConverter.readConfigList(ConfigSchema.STANDARD_WORKSPACE, StandardWorkspace.class)
+        configFileArchiver.readConfigsFromArchive(ConfigSchema.STANDARD_WORKSPACE, StandardWorkspace.class)
             .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeStandardWorkspace(config)));
-        configConverter.readConfigList(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class)
+        configFileArchiver.readConfigsFromArchive(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class)
             .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeStandardSource(config)));
-        configConverter.readConfigList(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class)
+        configFileArchiver.readConfigsFromArchive(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class)
             .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeStandardDestinationDefinition(config)));
-        configConverter.readConfigList(ConfigSchema.SOURCE_CONNECTION, SourceConnection.class)
+        configFileArchiver.readConfigsFromArchive(ConfigSchema.SOURCE_CONNECTION, SourceConnection.class)
             .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeSourceConnection(config)));
-        configConverter.readConfigList(ConfigSchema.DESTINATION_CONNECTION, DestinationConnection.class)
+        configFileArchiver.readConfigsFromArchive(ConfigSchema.DESTINATION_CONNECTION, DestinationConnection.class)
             .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeDestinationConnection(config)));
-        configConverter.readConfigList(ConfigSchema.STANDARD_SYNC, StandardSync.class)
+        configFileArchiver.readConfigsFromArchive(ConfigSchema.STANDARD_SYNC, StandardSync.class)
             .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeStandardSync(config)));
-        configConverter.readConfigList(ConfigSchema.STANDARD_SYNC_SCHEDULE, StandardSyncSchedule.class)
+        configFileArchiver.readConfigsFromArchive(ConfigSchema.STANDARD_SYNC_SCHEDULE, StandardSyncSchedule.class)
             .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeStandardSchedule(config)));
       });
     }

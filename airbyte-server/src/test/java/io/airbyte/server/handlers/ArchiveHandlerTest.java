@@ -24,7 +24,6 @@
 
 package io.airbyte.server.handlers;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -54,15 +53,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-public class MigrationHandlerTest {
+public class ArchiveHandlerTest {
 
   private ConfigRepository configRepository;
-  private MigrationHandler migrationHandler;
+  private ArchiveHandler archiveHandler;
 
   @BeforeEach
   void setUp() {
     configRepository = mock(ConfigRepository.class);
-    migrationHandler = new MigrationHandler("test-version", configRepository);
+    archiveHandler = new ArchiveHandler("test-version", configRepository);
   }
 
   private StandardWorkspace generateWorkspace() {
@@ -107,35 +106,25 @@ public class MigrationHandlerTest {
         .thenReturn(syncSchedule);
 
     // Write operations
-    final ArgumentCaptor<StandardWorkspace> resultWorkspace = ArgumentCaptor.forClass(StandardWorkspace.class);
-    final ArgumentCaptor<StandardSourceDefinition> resultStandardSource = ArgumentCaptor.forClass(StandardSourceDefinition.class);
-    final ArgumentCaptor<StandardDestinationDefinition> resultStandardDestination = ArgumentCaptor.forClass(StandardDestinationDefinition.class);
     final ArgumentCaptor<SourceConnection> resultSourceConnection = ArgumentCaptor.forClass(SourceConnection.class);
-    final ArgumentCaptor<DestinationConnection> resultDestinationConnection = ArgumentCaptor.forClass(DestinationConnection.class);
     final ArgumentCaptor<StandardSync> resultSync = ArgumentCaptor.forClass(StandardSync.class);
-    final ArgumentCaptor<StandardSyncSchedule> resultSyncSchedule = ArgumentCaptor.forClass(StandardSyncSchedule.class);
 
-    migrationHandler.importData(migrationHandler.exportData());
+    archiveHandler.importData(archiveHandler.exportData());
 
-    verify(configRepository, times(1)).writeStandardWorkspace(resultWorkspace.capture());
-    verify(configRepository, times(1)).writeStandardSource(resultStandardSource.capture());
-    verify(configRepository, times(1)).writeStandardDestinationDefinition(resultStandardDestination.capture());
+    verify(configRepository, times(1)).writeStandardWorkspace(workspace);
+    verify(configRepository, times(1)).writeStandardSource(standardSource);
+    verify(configRepository, times(1)).writeStandardDestinationDefinition(standardDestination);
     verify(configRepository, times(2)).writeSourceConnection(resultSourceConnection.capture());
-    verify(configRepository, times(1)).writeDestinationConnection(resultDestinationConnection.capture());
+    verify(configRepository, times(1)).writeDestinationConnection(destinationConnection);
     verify(configRepository, times(2)).writeStandardSync(resultSync.capture());
-    verify(configRepository, times(1)).writeStandardSchedule(resultSyncSchedule.capture());
+    verify(configRepository, times(1)).writeStandardSchedule(syncSchedule);
 
-    assertEquals(workspace, resultWorkspace.getValue());
-    assertEquals(standardSource, resultStandardSource.getValue());
-    assertEquals(standardDestination, resultStandardDestination.getValue());
     List<SourceConnection> sourceConnectionList = resultSourceConnection.getAllValues();
     assertTrue(sourceConnectionList.contains(sourceConnection1));
     assertTrue(sourceConnectionList.contains(sourceConnection2));
-    assertEquals(destinationConnection, resultDestinationConnection.getValue());
     List<StandardSync> syncList = resultSync.getAllValues();
     assertTrue(syncList.contains(sourceSync));
     assertTrue(syncList.contains(destinationSync));
-    assertEquals(syncSchedule, resultSyncSchedule.getValue());
   }
 
 }
