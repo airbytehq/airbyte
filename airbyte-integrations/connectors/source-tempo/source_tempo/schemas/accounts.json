@@ -2,9 +2,9 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-      "self": {
-        "type": "string"
-      },
+    "self": {
+      "type": "string"
+    },
     "key": {
       "type": "string"
     },
@@ -25,78 +25,78 @@
     },
     "lead": {
       "type": "object",
-      "properties":{
-          "self": {
-              "type": "string"
-          },
-          "accountId": {
-              "type": "string"
-          },
-          "displayName": {
-              "type": "string"
-          }
+      "properties": {
+        "self": {
+          "type": "string"
+        },
+        "accountId": {
+          "type": "string"
+        },
+        "displayName": {
+          "type": "string"
+        }
       }
     },
     "contact": {
       "type": "object",
-      "properties":{
-          "self": {
-              "type": "string"
-          },
-          "accountId": {
-              "type": "string"
-          },
-          "displayName": {
-              "type": "string"
-          },
-          "type": {
-              "type": "string"
-          }
+      "properties": {
+        "self": {
+          "type": "string"
+        },
+        "accountId": {
+          "type": "string"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
       }
     },
     "category": {
       "type": "object",
-      "properties":{
-          "self": {
-              "type": "string"
-          },
-          "key": {
-              "type": "string"
-          },
-          "id": {
-              "type": "string"
-          },
-          "name": {
-              "type": "string"
-          },
-          "type": {
-              "type": "string"
-          }
+      "properties": {
+        "self": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
       }
     },
     "customer": {
       "type": "object",
-      "properties":{
-          "self": {
-              "type": "string"
-          },
-          "key": {
-              "type": "string"
-          },
-          "id": {
-              "type": "string"
-          },
-          "name": {
-              "type": "string"
-          }
+      "properties": {
+        "self": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
       }
     },
     "links": {
       "type": "object",
-      "properties":{
-          "self": {
-              "type": "string"
-          }
+      "properties": {
+        "self": {
+          "type": "string"
+        }
       }
     }
   },
