@@ -140,6 +140,10 @@ public class WebBackendConnectionsHandler {
       final SourceSchema discovered = discoverSchema.getSchema();
       final SourceSchema combined = updateSchemaWithDiscovery(original, discovered);
 
+      System.out.println("original = " + original);
+      System.out.println("discovered = " + discovered);
+      System.out.println("combined = " + combined);
+
       connection.setSyncSchema(combined);
     }
 
@@ -151,6 +155,8 @@ public class WebBackendConnectionsHandler {
     Map<String, SourceSchemaStream> originalStreamsByName = original.getStreams().stream()
         .collect(toMap(SourceSchemaStream::getName, s -> s));
 
+    List<SourceSchemaStream> streams = new ArrayList<>();
+
     for (SourceSchemaStream stream : discovered.getStreams()) {
       SourceSchemaStream originalStream = originalStreamsByName.get(stream.getName());
 
@@ -158,24 +164,26 @@ public class WebBackendConnectionsHandler {
         Set<String> fieldNames = stream.getFields().stream().map(SourceSchemaField::getName).collect(toSet());
         stream.setSelected(originalStream.getSelected());
 
-        if(stream.getSupportedSyncModes().contains(originalStream.getSyncMode())) {
+        if (stream.getSupportedSyncModes().contains(originalStream.getSyncMode())) {
           stream.setSyncMode(originalStream.getSyncMode());
         }
 
         Set<String> updatedCursorFields = new HashSet<>();
 
         for (String oldCursorField : originalStream.getCursorField()) {
-          if(fieldNames.contains(oldCursorField)) {
+          if (fieldNames.contains(oldCursorField)) {
             updatedCursorFields.add(oldCursorField);
           }
         }
 
         stream.setCursorField(new ArrayList<>(updatedCursorFields));
+
+        streams.add(stream);
       }
 
     }
 
-    return original;
+    return new SourceSchema().streams(streams);
   }
 
   public ConnectionRead webBackendUpdateConnection(WebBackendConnectionUpdate webBackendConnectionUpdate)
