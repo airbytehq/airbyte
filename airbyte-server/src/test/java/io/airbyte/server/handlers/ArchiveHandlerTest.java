@@ -24,7 +24,6 @@
 
 package io.airbyte.server.handlers;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -89,7 +88,6 @@ public class ArchiveHandlerTest {
     final StandardSync sourceSync = ConnectionHelpers.generateSyncWithSourceId(sourceConnection1.getSourceId());
     final StandardSyncSchedule syncSchedule = ConnectionHelpers.generateSchedule(sourceSync.getConnectionId());
 
-    // Read operations
     when(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID))
         .thenReturn(workspace);
     when(configRepository.listStandardSources())
@@ -105,26 +103,17 @@ public class ArchiveHandlerTest {
     when(configRepository.getStandardSyncSchedule(sourceSync.getConnectionId()))
         .thenReturn(syncSchedule);
 
-    // Write operations
-    final ArgumentCaptor<SourceConnection> resultSourceConnection = ArgumentCaptor.forClass(SourceConnection.class);
-    final ArgumentCaptor<StandardSync> resultSync = ArgumentCaptor.forClass(StandardSync.class);
-
     archiveHandler.importData(archiveHandler.exportData());
 
     verify(configRepository, times(1)).writeStandardWorkspace(workspace);
     verify(configRepository, times(1)).writeStandardSource(standardSource);
     verify(configRepository, times(1)).writeStandardDestinationDefinition(standardDestination);
-    verify(configRepository, times(2)).writeSourceConnection(resultSourceConnection.capture());
+    verify(configRepository, times(1)).writeSourceConnection(sourceConnection1);
+    verify(configRepository, times(1)).writeSourceConnection(sourceConnection2);
     verify(configRepository, times(1)).writeDestinationConnection(destinationConnection);
-    verify(configRepository, times(2)).writeStandardSync(resultSync.capture());
+    verify(configRepository, times(1)).writeStandardSync(sourceSync);
+    verify(configRepository, times(1)).writeStandardSync(destinationSync);
     verify(configRepository, times(1)).writeStandardSchedule(syncSchedule);
-
-    List<SourceConnection> sourceConnectionList = resultSourceConnection.getAllValues();
-    assertTrue(sourceConnectionList.contains(sourceConnection1));
-    assertTrue(sourceConnectionList.contains(sourceConnection2));
-    List<StandardSync> syncList = resultSync.getAllValues();
-    assertTrue(syncList.contains(sourceSync));
-    assertTrue(syncList.contains(destinationSync));
   }
 
 }
