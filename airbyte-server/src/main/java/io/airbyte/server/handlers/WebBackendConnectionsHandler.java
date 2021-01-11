@@ -174,6 +174,16 @@ public class WebBackendConnectionsHandler {
 
         stream.setCursorField(new ArrayList<>(updatedCursorFields));
 
+        Map<String, SourceSchemaField> originalFieldsByName = originalStream.getFields().stream()
+            .collect(toMap(SourceSchemaField::getName, f -> f));
+
+        for (SourceSchemaField field : stream.getFields()) {
+          if (originalFieldsByName.containsKey(field.getName())) {
+            SourceSchemaField originalField = originalFieldsByName.get(field.getName());
+            field.setSelected(originalField.getSelected());
+          }
+        }
+
         streams.add(stream);
       }
 

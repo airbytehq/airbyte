@@ -56,6 +56,7 @@ import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.SourceSchema;
 import io.airbyte.api.model.SourceSchemaField;
 import io.airbyte.api.model.SourceSchemaStream;
+import io.airbyte.api.model.SyncMode;
 import io.airbyte.api.model.WbConnectionRead;
 import io.airbyte.api.model.WbConnectionReadList;
 import io.airbyte.api.model.WebBackendConnectionIdRequestBody;
@@ -78,6 +79,7 @@ import java.lang.reflect.Method;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -343,6 +345,73 @@ class WebBackendConnectionsHandlerTest {
     ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(connectionRead.getConnectionId());
     verify(schedulerHandler, times(1)).resetConnection(connectionId);
     verify(schedulerHandler, times(1)).syncConnection(connectionId, false);
+  }
+
+  @Test
+  public void testUpdateSchemaWithDiscovery() {
+    SourceSchema original = new SourceSchema()
+        .streams(List.of(
+            new SourceSchemaStream()
+                .name("stream1")
+                .cleanedName("stream1")
+                .syncMode(SyncMode.INCREMENTAL)
+                .cursorField(List.of("field2"))
+                .defaultCursorField(List.of("field1"))
+                .fields(List.of(
+                    new SourceSchemaField()
+                        .name("field1")
+                        .cleanedName("field1")
+                        .dataType(DataType.NUMBER)
+                        .selected(true),
+                    new SourceSchemaField()
+                        .name("field2")
+                        .cleanedName("field2")
+                        .dataType(DataType.NUMBER)
+                        .selected(true),
+                    new SourceSchemaField()
+                        .name("field5")
+                        .cleanedName("field5")
+                        .dataType(DataType.STRING)
+                        .selected(true)))
+                .selected(true)
+                .sourceDefinedCursor(false)
+                .supportedSyncModes(List.of(SyncMode.INCREMENTAL, SyncMode.FULL_REFRESH))));
+    SourceSchema discovered = new SourceSchema()
+        .streams(List.of(
+            new SourceSchemaStream()
+                .name("stream1")
+                .cleanedName("stream1")
+                .syncMode(SyncMode.FULL_REFRESH)
+                .defaultCursorField(List.of("field3"))
+                .fields(List.of(
+                    new SourceSchemaField()
+                        .name("field2")
+                        .cleanedName("field2")
+                        .dataType(DataType.STRING)))
+                .selected(true)
+                .sourceDefinedCursor(false)
+                .supportedSyncModes(List.of(SyncMode.FULL_REFRESH))));
+    SourceSchema expected = new SourceSchema()
+        .streams(List.of(
+            new SourceSchemaStream()
+                .name("stream1")
+                .cleanedName("stream1")
+                .syncMode(SyncMode.FULL_REFRESH)
+                .cursorField(List.of("field2"))
+                .defaultCursorField(List.of("field3"))
+                .fields(List.of(
+                    new SourceSchemaField()
+                        .name("field2")
+                        .cleanedName("field2")
+                        .dataType(DataType.STRING)
+                        .selected(true)))
+                .selected(true)
+                .sourceDefinedCursor(false)
+                .supportedSyncModes(List.of(SyncMode.FULL_REFRESH))));
+
+    SourceSchema actual = WebBackendConnectionsHandler.updateSchemaWithDiscovery(original, discovered);
+
+    assertEquals(expected, actual);
   }
 
 }
