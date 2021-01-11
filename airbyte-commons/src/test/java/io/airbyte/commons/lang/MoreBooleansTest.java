@@ -34,9 +34,9 @@ class MoreBooleansTest {
   @SuppressWarnings("ConstantConditions")
   @Test
   void evaluateNullAsFalse() {
-    assertTrue(MoreBooleans.evaluateNullAsFalse(Boolean.TRUE));
-    assertFalse(MoreBooleans.evaluateNullAsFalse(Boolean.FALSE));
-    assertFalse(MoreBooleans.evaluateNullAsFalse(null));
+    assertTrue(MoreBooleans.isTruthy(Boolean.TRUE));
+    assertFalse(MoreBooleans.isTruthy(Boolean.FALSE));
+    assertFalse(MoreBooleans.isTruthy(null));
   }
 
 }
