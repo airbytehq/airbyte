@@ -23,12 +23,13 @@ SOFTWARE.
 """
 
 from functools import partial
+from json import JSONDecodeError
 from typing import Mapping, Tuple
 
 import requests
 from base_python import BaseClient
+from requests.exceptions import ConnectionError
 
-# from requests.exceptions import ConnectionError
 
 class Client(BaseClient):
     """
@@ -68,16 +69,16 @@ class Client(BaseClient):
         error_msg = None
         # must be implemented later
 
-        # try:
-        #     next(self.lists(name="resolutions", **self.ENTITIES_MAP["resolutions"]))
-        #
-        # except ConnectionError as error:
-        #     alive, error_msg = False, str(error)
-        # # If the input domain is incorrect or doesn't exist, then the response would be empty, resulting in a JSONDecodeError
-        # except JSONDecodeError:
-        #     alive, error_msg = (
-        #         False,
-        #         "Unable to connect to the Jira API with the provided credentials. Please make sure the input credentials and environment are correct.",
-        #     )
+        try:
+            next(self.lists(name="workload-schemes", **self.ENTITIES_MAP["workload-schemes"]))
+
+        except ConnectionError as error:
+            alive, error_msg = False, str(error)
+        # If the input domain is incorrect or doesn't exist, then the response would be empty, resulting in a JSONDecodeError
+        except JSONDecodeError:
+            alive, error_msg = (
+                False,
+                "Unable to connect to the Tempo API with the provided credentials. Please make sure the input credentials and environment are correct.",
+            )
 
         return alive, error_msg
