@@ -97,6 +97,11 @@ class AirbytePythonPlugin implements Plugin<Project> {
             dependsOn project.flakeCheck
         }
 
+        // enabled running format for just the current python module (not the whole world).
+        project.task('format', type: DefaultTask) {
+            dependsOn project.airbytePythonApply
+            dependsOn project.rootProject.spotlessApply
+        }
 
         project.task('airbytePythonTest', type: DefaultTask) {
             dependsOn project.airbytePythonApply

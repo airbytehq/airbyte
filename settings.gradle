@@ -48,7 +48,6 @@ include ':tools:code-generator'
 
 // include all connector projects
 def integrationsPath = rootDir.toPath().resolve('airbyte-integrations/connectors')
-println integrationsPath
 integrationsPath.eachDir { dir ->
     def buildFiles = file(dir).list { file, name -> name == "build.gradle" }
 
