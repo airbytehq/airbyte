@@ -59,7 +59,7 @@ Generated templates provide the following Gradle tasks:
 
 ### Best practices
 
-Make sure to review the [Best Practices for Connector Development](best-practices-for-connector-development.md) guide. Following best practices is **not** a requirement for merging your contribution to Airbyte, but it certainly doesn't hurt ;\)
+Make sure to review the [Best Practices for Connector Development](best-practices.md) guide. Following best practices is **not** a requirement for merging your contribution to Airbyte, but it certainly doesn't hurt ;\)
 
 ## Updating a connector
 
