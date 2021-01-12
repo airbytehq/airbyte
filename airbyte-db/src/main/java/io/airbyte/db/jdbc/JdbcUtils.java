@@ -26,11 +26,11 @@ package io.airbyte.db.jdbc;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import java.math.BigDecimal;
+import java.sql.Date;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -39,6 +39,7 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -110,10 +111,18 @@ public class JdbcUtils {
     return jsonNode;
   }
 
+  private static JDBCType safeGetJdbcType(int columnTypeInt) {
+    try {
+      return JDBCType.valueOf(columnTypeInt);
+    } catch (Exception e) {
+      return JDBCType.VARCHAR;
+    }
+  }
+
   private static void setJsonField(ResultSet r, int i, ObjectNode o) throws SQLException {
     final int columnTypeInt = r.getMetaData().getColumnType(i);
     final String columnName = r.getMetaData().getColumnName(i);
-    final JDBCType columnType = JDBCType.valueOf(columnTypeInt);
+    final JDBCType columnType = safeGetJdbcType(columnTypeInt);
 
     // https://www.cis.upenn.edu/~bcpierce/courses/629/jdkdocs/guide/jdbc/getstart/mapping.doc.html
     switch (columnType) {
@@ -138,8 +147,12 @@ public class JdbcUtils {
     }
   }
 
-  @VisibleForTesting
-  static String toISO8601String(java.util.Date date) {
+  // todo (cgardens) - move generic date helpers to commons.
+  public static String toISO8601String(long epochMillis) {
+    return DATE_FORMAT.format(Date.from(Instant.ofEpochMilli(epochMillis)));
+  }
+
+  public static String toISO8601String(java.util.Date date) {
     return DATE_FORMAT.format(date);
   }
 

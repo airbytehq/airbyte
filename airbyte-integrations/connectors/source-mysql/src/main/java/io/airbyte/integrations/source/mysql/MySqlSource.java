@@ -29,25 +29,27 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
-import io.airbyte.integrations.source.jdbc.AbstractJooqSource;
-import java.util.List;
-import org.jooq.SQLDialect;
+import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MySqlSource extends AbstractJooqSource implements Source {
+public class MySqlSource extends AbstractJdbcSource implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlSource.class);
 
+  public static final String DRIVER_CLASS = "com.mysql.cj.jdbc.Driver";
+
   public MySqlSource() {
-    super("com.mysql.cj.jdbc.Driver", SQLDialect.MYSQL);
+    super(DRIVER_CLASS, new MySqlJdbcStreamingQueryConfiguration());
   }
 
   @Override
   public JsonNode toJdbcConfig(JsonNode config) {
     ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put("username", config.get("username").asText())
-        .put("jdbc_url", String.format("jdbc:mysql://%s:%s/%s",
+        // see MySqlJdbcStreamingQueryConfiguration for more context on why useCursorFetch=true is needed.
+        .put("jdbc_url", String.format("jdbc:mysql://%s:%s/%s?useCursorFetch=true",
             config.get("host").asText(),
             config.get("port").asText(),
             config.get("database").asText()));
@@ -60,8 +62,8 @@ public class MySqlSource extends AbstractJooqSource implements Source {
   }
 
   @Override
-  protected List<String> getExcludedInternalSchemas() {
-    return List.of(
+  public Set<String> getExcludedInternalSchemas() {
+    return Set.of(
         "information_schema",
         "mysql",
         "performance_schema",

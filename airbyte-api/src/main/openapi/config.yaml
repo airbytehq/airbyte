@@ -52,6 +52,8 @@ tags:
     description: Connection between sources and destinations.
   - name: health
     description: Healthchecks
+  - name: deployment
+    description: Export/Import Airbyte Configuration and Database resources.
 
 paths:
   /v1/workspaces/get:
@@ -1016,6 +1018,38 @@ paths:
                 $ref: "#/components/schemas/HealthCheckRead"
         "404":
           description: Debug info not found
+  /v1/deployment/export:
+    post:
+      tags:
+        - deployment
+      summary: Export Airbyte Configuration and Data Archive
+      operationId: exportArchive
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/x-gzip:
+              schema:
+                $ref: "#/components/schemas/AirbyteArchive"
+  /v1/deployment/import:
+    post:
+      tags:
+        - deployment
+      summary: Import Airbyte Configuration and Data Archive
+      operationId: importArchive
+      requestBody:
+        content:
+          application/x-gzip:
+            schema:
+              $ref: "#/components/schemas/AirbyteArchive"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImportRead"
 components:
   securitySchemes:
     bearerAuth:
@@ -1045,7 +1079,6 @@ components:
         - name
         - slug
         - initialSetupComplete
-        - onboardingComplete
       properties:
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
@@ -1059,12 +1092,13 @@ components:
           type: boolean
         onboardingComplete:
           type: boolean
+        displaySetupWizard:
+          type: boolean
     WorkspaceUpdate:
       type: object
       required:
         - workspaceId
         - initialSetupComplete
-        - onboardingComplete
         - anonymousDataCollection
         - news
         - securityUpdates
@@ -1083,6 +1117,8 @@ components:
         news:
           type: boolean
         securityUpdates:
+          type: boolean
+        displaySetupWizard:
           type: boolean
     # SLUG
     SlugRequestBody:
@@ -1899,6 +1935,18 @@ components:
       enum:
         - full_refresh
         - incremental
+    AirbyteArchive:
+      type: string
+      format: binary
+      description: Tarball Archive (.tar.gz) of Airbyte Configuration and Database
+    ImportRead:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - succeeded
+            - failed
   responses:
     InvalidInput:
       description: Invalid Input
