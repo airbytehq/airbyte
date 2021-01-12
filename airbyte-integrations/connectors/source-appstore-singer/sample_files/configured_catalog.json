@@ -1,11 +1,10 @@
 {
   "streams": [
     {
-      "sync_mode": "INCREMENTAL",
+      "sync_mode": "incremental",
       "stream": {
         "name": "sales_report",
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
+        "supported_sync_modes": ["incremental"],
         "json_schema": {
           "type": "object",
           "properties": {
@@ -111,11 +110,10 @@
       }
     },
     {
-      "sync_mode": "INCREMENTAL",
+      "sync_mode": "incremental",
       "stream": {
         "name": "subscriber_report",
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
+        "supported_sync_modes": ["incremental"],
         "json_schema": {
           "type": "object",
           "properties": {
@@ -215,11 +213,10 @@
       }
     },
     {
-      "sync_mode": "INCREMENTAL",
+      "sync_mode": "incremental",
       "stream": {
         "name": "subscription_event_report",
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
+        "supported_sync_modes": ["incremental"],
         "json_schema": {
           "type": "object",
           "properties": {
@@ -325,11 +322,10 @@
       }
     },
     {
-      "sync_mode": "INCREMENTAL",
+      "sync_mode": "incremental",
       "stream": {
         "name": "subscription_report",
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
+        "supported_sync_modes": ["incremental"],
         "json_schema": {
           "type": "object",
           "properties": {
