@@ -54,7 +54,7 @@ class SourceAppstoreSinger(SingerSource):
                 "subscription_report": {"reportType": "SUBSCRIPTION", "frequency": "DAILY", "reportSubType": "SUMMARY", "version": "1_2"}
             }
             # report_filters = {"reportDate": test_date.strftime("%Y-%m-%d"), "vendorNumber": "{}".format(config["vendor"])}
-            report_filters = {"reportDate": "2021-01-08", "vendorNumber": "{}".format(config["vendor"])}
+            report_filters = {"reportDate": "2021-01-10", "vendorNumber": "{}".format(config["vendor"])}
             print("oooo")
             report_filters.update(api_fields_to_test["subscription_report"])
             # fetch data from appstore api
