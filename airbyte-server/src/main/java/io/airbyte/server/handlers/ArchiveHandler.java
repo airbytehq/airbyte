@@ -129,6 +129,7 @@ public class ArchiveHandler {
         result = new ImportRead().status(StatusEnum.SUCCEEDED);
       } finally {
         FileUtils.deleteDirectory(tempFolder.toFile());
+        FileUtils.deleteQuietly(archive);
       }
     } catch (IOException | JsonValidationException e) {
       LOGGER.error("Import Data failed.");
