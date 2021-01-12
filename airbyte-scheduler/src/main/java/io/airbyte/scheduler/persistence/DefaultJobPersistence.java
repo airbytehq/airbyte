@@ -25,6 +25,7 @@
 package io.airbyte.scheduler.persistence;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Sets;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.text.Names;
@@ -50,6 +51,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -278,14 +280,23 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public List<Job> listJobsWithStatus(ConfigType configType, JobStatus status) throws IOException {
+  public List<Job> listJobsWithStatus(JobStatus status) throws IOException {
+    return listJobsWithStatus(Sets.newHashSet(ConfigType.values()), status);
+  }
+
+  @Override
+  public List<Job> listJobsWithStatus(Set<ConfigType> configTypes, JobStatus status) throws IOException {
     return database.query(ctx -> getJobsFromResult(ctx
         .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE " +
-            "CAST(config_type AS VARCHAR) = ? AND " +
+            "CAST(config_type AS VARCHAR) IN " + Sqls.toSqlInFragment(configTypes) + " AND " +
             "CAST(jobs.status AS VARCHAR) = ? " +
             "ORDER BY jobs.created_at DESC",
-            Sqls.toSqlName(configType),
             Sqls.toSqlName(status))));
+  }
+
+  @Override
+  public List<Job> listJobsWithStatus(ConfigType configType, JobStatus status) throws IOException {
+    return listJobsWithStatus(Sets.newHashSet(configType), status);
   }
 
   @Override
