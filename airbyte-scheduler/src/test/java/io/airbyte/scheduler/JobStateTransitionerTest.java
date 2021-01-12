@@ -38,18 +38,18 @@ import java.util.Collections;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class JobRetrierTest {
+class JobStateTransitionerTest {
 
   private static final Instant NOW = Instant.now();
 
   private JobPersistence persistence;
-  private JobRetrier jobRetrier;
+  private JobStateTransitioner jobStateTransitioner;
   private Job job;
 
   @BeforeEach
   void setup() throws IOException {
     persistence = mock(JobPersistence.class);
-    jobRetrier = new JobRetrier(persistence, () -> NOW);
+    jobStateTransitioner = new JobStateTransitioner(persistence, () -> NOW);
     job = mock(Job.class);
     when(job.getId()).thenReturn(12L);
     when(job.getStatus()).thenReturn(JobStatus.INCOMPLETE);
@@ -63,7 +63,7 @@ class JobRetrierTest {
     when(job.getAttemptsCount()).thenReturn(1);
     when(job.getUpdatedAtInSecond()).thenReturn(NOW.minus(Duration.ofMinutes(2)).getEpochSecond());
 
-    jobRetrier.run();
+    jobStateTransitioner.run();
 
     verify(persistence).listJobsWithStatus(JobConfig.ConfigType.SYNC, JobStatus.INCOMPLETE);
     verify(persistence).resetJob(12L);
@@ -75,7 +75,7 @@ class JobRetrierTest {
     when(job.getAttemptsCount()).thenReturn(1);
     when(job.getUpdatedAtInSecond()).thenReturn(NOW.minus(Duration.ofSeconds(10)).getEpochSecond());
 
-    jobRetrier.run();
+    jobStateTransitioner.run();
 
     verify(persistence).listJobsWithStatus(JobConfig.ConfigType.SYNC, JobStatus.INCOMPLETE);
     verifyNoMoreInteractions(persistence);
@@ -86,7 +86,7 @@ class JobRetrierTest {
     when(job.getAttemptsCount()).thenReturn(5);
     when(job.getUpdatedAtInSecond()).thenReturn(NOW.minus(Duration.ofMinutes(2)).getEpochSecond());
 
-    jobRetrier.run();
+    jobStateTransitioner.run();
 
     verify(persistence).listJobsWithStatus(JobConfig.ConfigType.SYNC, JobStatus.INCOMPLETE);
     verify(persistence).failJob(12L);

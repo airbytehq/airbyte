@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 public interface JobPersistence {
@@ -125,6 +126,10 @@ public interface JobPersistence {
    * @throws IOException - what you do when you IO
    */
   List<Job> listJobs(JobConfig.ConfigType configType, String configId) throws IOException;
+
+  List<Job> listJobsWithStatus(JobStatus status) throws IOException;
+
+  List<Job> listJobsWithStatus(Set<JobConfig.ConfigType> configTypes, JobStatus status) throws IOException;
 
   List<Job> listJobsWithStatus(JobConfig.ConfigType configType, JobStatus status) throws IOException;
 
