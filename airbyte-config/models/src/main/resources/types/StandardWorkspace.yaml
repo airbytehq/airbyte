@@ -9,7 +9,6 @@ required:
   - name
   - slug
   - initialSetupComplete
-  - onboardingComplete
 additionalProperties: false
 properties:
   workspaceId:
@@ -34,4 +33,6 @@ properties:
   news:
     type: boolean
   securityUpdates:
+    type: boolean
+  displaySetupWizard:
     type: boolean

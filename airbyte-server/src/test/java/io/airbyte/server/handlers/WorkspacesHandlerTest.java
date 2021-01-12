@@ -66,7 +66,8 @@ class WorkspacesHandlerTest {
         .withName("test workspace")
         .withSlug("default")
         .withInitialSetupComplete(false)
-        .withOnboardingComplete(true);
+        .withOnboardingComplete(true)
+        .withDisplaySetupWizard(true);
   }
 
   @Test
@@ -82,7 +83,8 @@ class WorkspacesHandlerTest {
         .name("test workspace")
         .slug("default")
         .onboardingComplete(true)
-        .initialSetupComplete(false);
+        .initialSetupComplete(false)
+        .displaySetupWizard(true);
 
     assertEquals(workspaceRead, workspacesHandler.getWorkspace(workspaceIdRequestBody));
   }
@@ -100,7 +102,8 @@ class WorkspacesHandlerTest {
         .name("test workspace")
         .slug("default")
         .onboardingComplete(true)
-        .initialSetupComplete(false);
+        .initialSetupComplete(false)
+        .displaySetupWizard(true);
 
     assertEquals(workspaceRead, workspacesHandler.getWorkspaceBySlug(slugRequestBody));
   }
@@ -114,7 +117,8 @@ class WorkspacesHandlerTest {
         .securityUpdates(false)
         .news(false)
         .onboardingComplete(false)
-        .initialSetupComplete(true);
+        .initialSetupComplete(true)
+        .displaySetupWizard(false);
 
     final StandardWorkspace expectedWorkspace = new StandardWorkspace()
         .withWorkspaceId(workspace.getWorkspaceId())
@@ -126,7 +130,8 @@ class WorkspacesHandlerTest {
         .withSecurityUpdates(false)
         .withNews(false)
         .withOnboardingComplete(false)
-        .withInitialSetupComplete(true);
+        .withInitialSetupComplete(true)
+        .withDisplaySetupWizard(false);
 
     when(configRepository.getStandardWorkspace(workspace.getWorkspaceId()))
         .thenReturn(workspace)
@@ -140,7 +145,8 @@ class WorkspacesHandlerTest {
         .name("test workspace")
         .slug("default")
         .onboardingComplete(false)
-        .initialSetupComplete(true);
+        .initialSetupComplete(true)
+        .displaySetupWizard(false);
 
     verify(configRepository).writeStandardWorkspace(expectedWorkspace);
 

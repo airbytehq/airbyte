@@ -93,7 +93,7 @@ public class ArchiveHandler {
 
   private void exportAirbyteConfig(Path tempFolder) {
     LOGGER.info("Exporting Airbyte Configs");
-    final ConfigFileArchiver configFileArchiver = new ConfigFileArchiver(version, tempFolder);
+    final ConfigFileArchiver configFileArchiver = new ConfigFileArchiver(tempFolder);
     Exceptions.toRuntime(() -> {
       configFileArchiver.writeConfigsToArchive(ConfigSchema.STANDARD_WORKSPACE,
           List.of(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID)));
@@ -129,6 +129,7 @@ public class ArchiveHandler {
         result = new ImportRead().status(StatusEnum.SUCCEEDED);
       } finally {
         FileUtils.deleteDirectory(tempFolder.toFile());
+        FileUtils.deleteQuietly(archive);
       }
     } catch (IOException | JsonValidationException e) {
       LOGGER.error("Import Data failed.");
@@ -150,7 +151,7 @@ public class ArchiveHandler {
   }
 
   private void importAirbyteConfig(Path tempFolder, boolean dryRun) throws IOException, JsonValidationException {
-    final ConfigFileArchiver configFileArchiver = new ConfigFileArchiver(version, tempFolder);
+    final ConfigFileArchiver configFileArchiver = new ConfigFileArchiver(tempFolder);
     if (dryRun) {
       configFileArchiver.readConfigsFromArchive(ConfigSchema.STANDARD_WORKSPACE, StandardWorkspace.class);
       configFileArchiver.readConfigsFromArchive(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class);
