@@ -30,7 +30,9 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJooqSource;
+import org.jooq.Field;
 import org.jooq.SQLDialect;
+import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,6 +58,16 @@ public class PostgresSource extends AbstractJooqSource implements Source {
     }
 
     return Jsons.jsonNode(configBuilder.build());
+  }
+
+  @Override
+  protected Field<?> getFieldQueryOverrides(Field<?> field){
+    if (field.getDataType().getSQLDataType().) {
+      return DSL.field("nullif(" + field.getName() + ", 'NaN')").as(field);
+    } else {
+      return field;
+    }
+
   }
 
   public static void main(String[] args) throws Exception {
