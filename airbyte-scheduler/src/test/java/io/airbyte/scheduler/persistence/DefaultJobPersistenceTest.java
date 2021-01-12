@@ -49,7 +49,6 @@ import io.airbyte.scheduler.Attempt;
 import io.airbyte.scheduler.AttemptStatus;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.JobStatus;
-
 import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.SQLException;
@@ -61,7 +60,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-
 import org.jooq.Record;
 import org.jooq.Result;
 import org.junit.jupiter.api.AfterAll;
@@ -410,9 +408,12 @@ class DefaultJobPersistenceTest {
     jobPersistence.failAttempt(failedSpecJobId, attemptNumber);
 
     final List<Job> allPendingJobs = jobPersistence.listJobsWithStatus(JobStatus.PENDING);
-    final Job expectedPendingSpecJob = createJob(pendingSpecJobId, SPEC_JOB_CONFIG, JobStatus.PENDING, Lists.newArrayList(), NOW.getEpochSecond(), SPEC_SCOPE);
-    final Job expectedPendingCheckJob = createJob(pendingCheckJobId, CHECK_JOB_CONFIG, JobStatus.PENDING, Lists.newArrayList(), NOW.getEpochSecond(), CHECK_SCOPE);
-    final Job expectedPendingSyncJob = createJob(pendingSyncJobId, SYNC_JOB_CONFIG, JobStatus.PENDING, Lists.newArrayList(), NOW.getEpochSecond(), SYNC_SCOPE);
+    final Job expectedPendingSpecJob =
+        createJob(pendingSpecJobId, SPEC_JOB_CONFIG, JobStatus.PENDING, Lists.newArrayList(), NOW.getEpochSecond(), SPEC_SCOPE);
+    final Job expectedPendingCheckJob =
+        createJob(pendingCheckJobId, CHECK_JOB_CONFIG, JobStatus.PENDING, Lists.newArrayList(), NOW.getEpochSecond(), CHECK_SCOPE);
+    final Job expectedPendingSyncJob =
+        createJob(pendingSyncJobId, SYNC_JOB_CONFIG, JobStatus.PENDING, Lists.newArrayList(), NOW.getEpochSecond(), SYNC_SCOPE);
 
     final List<Job> allPendingSyncAndSpecJobs = jobPersistence.listJobsWithStatus(Set.of(ConfigType.GET_SPEC, ConfigType.SYNC), JobStatus.PENDING);
 

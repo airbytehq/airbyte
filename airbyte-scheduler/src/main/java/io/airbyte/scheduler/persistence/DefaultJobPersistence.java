@@ -26,7 +26,6 @@ package io.airbyte.scheduler.persistence;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
-import com.google.common.collect.Streams;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.text.Names;
@@ -42,13 +41,11 @@ import io.airbyte.scheduler.Attempt;
 import io.airbyte.scheduler.AttemptStatus;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.JobStatus;
-
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -59,7 +56,6 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import org.jooq.DSLContext;
 import org.jooq.Record;
 import org.jooq.Result;
@@ -92,7 +88,8 @@ public class DefaultJobPersistence implements JobPersistence {
   private final ExceptionWrappingDatabase database;
   private final Supplier<Instant> timeSupplier;
 
-  @VisibleForTesting DefaultJobPersistence(Database database, Supplier<Instant> timeSupplier) {
+  @VisibleForTesting
+  DefaultJobPersistence(Database database, Supplier<Instant> timeSupplier) {
     this.database = new ExceptionWrappingDatabase(database);
     this.timeSupplier = timeSupplier;
   }
@@ -108,9 +105,9 @@ public class DefaultJobPersistence implements JobPersistence {
 
     String queueingRequest = Job.REPLICATION_TYPES.contains(jobConfig.getConfigType())
         ? String.format("WHERE NOT EXISTS (SELECT 1 FROM jobs WHERE config_type IN (%s) AND scope = '%s' AND status NOT IN (%s)) ",
-        Job.REPLICATION_TYPES.stream().map(Sqls::toSqlName).map(Names::singleQuote).collect(Collectors.joining(",")),
-        scope,
-        JobStatus.TERMINAL_STATUSES.stream().map(Sqls::toSqlName).map(Names::singleQuote).collect(Collectors.joining(",")))
+            Job.REPLICATION_TYPES.stream().map(Sqls::toSqlName).map(Names::singleQuote).collect(Collectors.joining(",")),
+            scope,
+            JobStatus.TERMINAL_STATUSES.stream().map(Sqls::toSqlName).map(Names::singleQuote).collect(Collectors.joining(",")))
         : "";
 
     return database.query(
@@ -284,7 +281,7 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public List<Job> listJobsWithStatus(JobStatus status) throws IOException{
+  public List<Job> listJobsWithStatus(JobStatus status) throws IOException {
     return listJobsWithStatus(Sets.newHashSet(ConfigType.values()), status);
   }
 
@@ -295,9 +292,9 @@ public class DefaultJobPersistence implements JobPersistence {
     Object[] bindings = Stream.concat(configTypes.stream().map(Sqls::toSqlName), Stream.of(Sqls.toSqlName(status))).toArray();
     return database.query(ctx -> getJobsFromResult(ctx
         .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE " +
-                configTypeWhereClause + " AND " +
-                "CAST(jobs.status AS VARCHAR) = ? " +
-                "ORDER BY jobs.created_at DESC",
+            configTypeWhereClause + " AND " +
+            "CAST(jobs.status AS VARCHAR) = ? " +
+            "ORDER BY jobs.created_at DESC",
             bindings)));
   }
 
@@ -310,10 +307,10 @@ public class DefaultJobPersistence implements JobPersistence {
   public Optional<Job> getLastReplicationJob(UUID connectionId) throws IOException {
     return database.query(ctx -> ctx
         .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE " +
-                "CAST(jobs.config_type AS VARCHAR) in " + Sqls.toSqlInFragment(Job.REPLICATION_TYPES) + " AND " +
-                "scope = ? AND " +
-                "CAST(jobs.status AS VARCHAR) <> ? " +
-                "ORDER BY jobs.created_at DESC LIMIT 1",
+            "CAST(jobs.config_type AS VARCHAR) in " + Sqls.toSqlInFragment(Job.REPLICATION_TYPES) + " AND " +
+            "scope = ? AND " +
+            "CAST(jobs.status AS VARCHAR) <> ? " +
+            "ORDER BY jobs.created_at DESC LIMIT 1",
             connectionId.toString(),
             Sqls.toSqlName(JobStatus.CANCELLED))
         .stream()
@@ -325,10 +322,10 @@ public class DefaultJobPersistence implements JobPersistence {
   public Optional<State> getCurrentState(UUID connectionId) throws IOException {
     return database.query(ctx -> ctx
         .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE " +
-                "CAST(jobs.config_type AS VARCHAR) in " + Sqls.toSqlInFragment(Job.REPLICATION_TYPES) + " AND " +
-                "scope = ? AND " +
-                "CAST(jobs.status AS VARCHAR) = ? " +
-                "ORDER BY jobs.created_at DESC LIMIT 1",
+            "CAST(jobs.config_type AS VARCHAR) in " + Sqls.toSqlInFragment(Job.REPLICATION_TYPES) + " AND " +
+            "scope = ? AND " +
+            "CAST(jobs.status AS VARCHAR) = ? " +
+            "ORDER BY jobs.created_at DESC LIMIT 1",
             connectionId.toString(),
             Sqls.toSqlName(JobStatus.SUCCEEDED))
         .stream()
