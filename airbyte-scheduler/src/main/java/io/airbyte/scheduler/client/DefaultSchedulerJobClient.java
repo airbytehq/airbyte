@@ -78,8 +78,7 @@ public class DefaultSchedulerJobClient implements SchedulerJobClient {
                                       DestinationConnection destination,
                                       StandardSync standardSync,
                                       String sourceDockerImage,
-                                      String destinationDockerImage,
-                                      boolean waitForCompletion)
+                                      String destinationDockerImage)
       throws IOException {
     final Optional<Long> jobIdOptional = jobCreator.createSyncJob(
         source,
@@ -92,11 +91,7 @@ public class DefaultSchedulerJobClient implements SchedulerJobClient {
         ? jobPersistence.getLastReplicationJob(standardSync.getConnectionId()).orElseThrow(() -> new RuntimeException("No job available")).getId()
         : jobIdOptional.get();
 
-    if (waitForCompletion) {
-      return waitUntilJobIsTerminalOrTimeout(jobId);
-    } else {
       return jobPersistence.getJob(jobId);
-    }
   }
 
   @Override

@@ -48,8 +48,7 @@ public interface SchedulerJobClient {
                                DestinationConnection destination,
                                StandardSync standardSync,
                                String sourceDockerImage,
-                               String destinationDockerImage,
-                               boolean waitForCompletion)
+                               String destinationDockerImage)
       throws IOException;
 
   Job createOrGetActiveResetConnectionJob(DestinationConnection destination,

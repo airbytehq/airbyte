@@ -211,7 +211,7 @@ public class WebBackendConnectionsHandler {
       }
 
       // just create the job
-      schedulerHandler.syncConnection(connectionId, false);
+      schedulerHandler.syncConnection(connectionId);
     }
 
     return connectionRead;

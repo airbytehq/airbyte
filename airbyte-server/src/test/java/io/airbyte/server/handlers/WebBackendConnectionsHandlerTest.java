@@ -314,7 +314,7 @@ class WebBackendConnectionsHandlerTest {
 
     ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(connectionRead.getConnectionId());
     verify(schedulerHandler, times(0)).resetConnection(connectionId);
-    verify(schedulerHandler, times(0)).syncConnection(connectionId, false);
+    verify(schedulerHandler, times(0)).syncConnection(connectionId);
   }
 
   @Test
@@ -343,7 +343,7 @@ class WebBackendConnectionsHandlerTest {
 
     ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(connectionRead.getConnectionId());
     verify(schedulerHandler, times(1)).resetConnection(connectionId);
-    verify(schedulerHandler, times(1)).syncConnection(connectionId, false);
+    verify(schedulerHandler, times(1)).syncConnection(connectionId);
   }
 
   @Test

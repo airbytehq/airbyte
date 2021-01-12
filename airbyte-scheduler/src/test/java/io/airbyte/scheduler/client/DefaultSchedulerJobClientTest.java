@@ -107,7 +107,7 @@ class DefaultSchedulerJobClientTest {
     when(jobCreator.createSyncJob(source, destination, standardSync, DOCKER_IMAGE, destinationDockerImage)).thenReturn(Optional.of(JOB_ID));
     doReturn(job).when(client).waitUntilJobIsTerminalOrTimeout(JOB_ID);
 
-    assertEquals(job, client.createOrGetActiveSyncJob(source, destination, standardSync, DOCKER_IMAGE, destinationDockerImage, true));
+    assertEquals(job, client.createOrGetActiveSyncJob(source, destination, standardSync, DOCKER_IMAGE, destinationDockerImage));
   }
 
   @Test
@@ -126,7 +126,7 @@ class DefaultSchedulerJobClientTest {
 
     doReturn(currentJob).when(client).waitUntilJobIsTerminalOrTimeout(42L);
 
-    assertEquals(currentJob, client.createOrGetActiveSyncJob(source, destination, standardSync, DOCKER_IMAGE, destinationDockerImage, true));
+    assertEquals(currentJob, client.createOrGetActiveSyncJob(source, destination, standardSync, DOCKER_IMAGE, destinationDockerImage));
   }
 
   @Test

@@ -322,7 +322,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   @Override
   public JobInfoRead syncConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
-    return execute(() -> schedulerHandler.syncConnection(connectionIdRequestBody, true));
+    return execute(() -> schedulerHandler.syncConnection(connectionIdRequestBody));
   }
 
   @Override
