@@ -30,7 +30,7 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=["airbyte-protocol", "appstoreconnect", "tap-appstore @ git+https://github.com/miroapp/tap-appstore"],
+    install_requires=["airbyte-protocol", "appstoreconnect", "pyjwt==1.7.1", "tap-appstore @ git+https://github.com/miroapp/tap-appstore"],
     package_data={"": ["*.json"]},
     setup_requires=["pytest-runner"],
     tests_require=["pytest"],

@@ -23,12 +23,13 @@ SOFTWARE.
 """
 
 import json
-from datetime import date, timedelta
 
 from airbyte_protocol import AirbyteConnectionStatus
 from appstoreconnect import Api
 from base_python import AirbyteLogger
 from base_singer import SingerSource, Status
+
+# from datetime import date, timedelta
 
 
 class SourceAppstoreSinger(SingerSource):
@@ -48,21 +49,18 @@ class SourceAppstoreSinger(SingerSource):
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
         try:
-            test_date = date.today() - timedelta(days=2)
+            # test_date = date.today() - timedelta(days=2)
             api_fields_to_test = {
                 "subscription_report": {"reportType": "SUBSCRIPTION", "frequency": "DAILY", "reportSubType": "SUMMARY", "version": "1_2"}
             }
-            report_filters = {"reportDate": test_date.strftime("%Y-%m-%d"), "vendorNumber": "{}".format(config["vendor"])}
-
+            # report_filters = {"reportDate": test_date.strftime("%Y-%m-%d"), "vendorNumber": "{}".format(config["vendor"])}
+            report_filters = {"reportDate": "2021-01-08", "vendorNumber": "{}".format(config["vendor"])}
+            print("oooo")
             report_filters.update(api_fields_to_test["subscription_report"])
             # fetch data from appstore api
             api = Api(config["key_id"], config["key_file"], config["issuer_id"])
 
             rep_tsv = api.download_sales_and_trends_reports(filters=report_filters)
-            print("ohooooooo")
-            print(config["key_file"])
-            with open(config["key_file"], "r") as fh:
-                print(fh.read())
 
             if isinstance(rep_tsv, dict):
                 return AirbyteConnectionStatus(
@@ -95,7 +93,7 @@ class SourceAppstoreSinger(SingerSource):
         Return the string commands to invoke the tap with the right configuration options to read data from the source
         """
         # path where we will write the private key.
-        keyfile_path = "/tmp/keyfile.json"
+        keyfile_path = "/tmp/keyfile.p8"
 
         # write the private key to a file.
         private_key = raw_config["private_key"]
@@ -107,8 +105,5 @@ class SourceAppstoreSinger(SingerSource):
 
         # remove private_key because we shouldn't need it for anything else in the config.
         del raw_config["private_key"]
-
-        with open(keyfile_path, "r") as fh:
-            print(fh.read())
 
         return raw_config
