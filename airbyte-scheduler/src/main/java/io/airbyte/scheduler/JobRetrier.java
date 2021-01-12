@@ -82,7 +82,6 @@ public class JobRetrier implements Runnable {
   }
 
   private boolean hasReachedMaxAttempt(Job job) {
-
     if (Job.REPLICATION_TYPES.contains(job.getConfigType())) {
       return job.getAttemptsCount() >= MAX_SYNC_JOB_ATTEMPTS;
     } else {
