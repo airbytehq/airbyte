@@ -72,7 +72,7 @@ public class ArchiveHandler {
 
   public File exportData() {
     try {
-      final Path tempFolder = Files.createTempDirectory(ARCHIVE_FILE_NAME);
+      final Path tempFolder = Files.createTempDirectory(Path.of("/tmp"), ARCHIVE_FILE_NAME);
       final File archive = Files.createTempFile(ARCHIVE_FILE_NAME, ".tar.gz").toFile();
       archive.deleteOnExit();
       try {

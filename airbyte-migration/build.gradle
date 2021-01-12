@@ -9,6 +9,6 @@ dependencies {
 }
 
 application {
-    mainClass = 'io.airbyte.migration.Migrate'
+    mainClass = 'io.airbyte.migrate.MigrationRunner'
 }
 
