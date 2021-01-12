@@ -58,7 +58,6 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -168,7 +167,7 @@ public class WebBackendConnectionsHandler {
 
         if (originalStream.getCursorField().size() > 0) {
           final String topLevelField = originalStream.getCursorField().get(0);
-          if(fieldNames.contains(topLevelField)) {
+          if (fieldNames.contains(topLevelField)) {
             stream.setCursorField(originalStream.getCursorField());
           }
         }
