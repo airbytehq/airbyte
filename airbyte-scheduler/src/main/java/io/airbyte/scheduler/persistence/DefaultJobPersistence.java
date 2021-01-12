@@ -55,7 +55,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.jooq.DSLContext;
 import org.jooq.Record;
 import org.jooq.Result;
@@ -287,15 +286,12 @@ public class DefaultJobPersistence implements JobPersistence {
 
   @Override
   public List<Job> listJobsWithStatus(Set<ConfigType> configTypes, JobStatus status) throws IOException {
-    String[] clauses = configTypes.stream().map(type -> "CAST(config_type AS VARCHAR) = ? ").toArray(String[]::new);
-    final String configTypeWhereClause = "(" + String.join(" OR ", clauses) + ")";
-    Object[] bindings = Stream.concat(configTypes.stream().map(Sqls::toSqlName), Stream.of(Sqls.toSqlName(status))).toArray();
     return database.query(ctx -> getJobsFromResult(ctx
         .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE " +
-            configTypeWhereClause + " AND " +
+            "CAST(config_type AS VARCHAR) IN " + Sqls.toSqlInFragment(configTypes) + " AND " +
             "CAST(jobs.status AS VARCHAR) = ? " +
             "ORDER BY jobs.created_at DESC",
-            bindings)));
+            Sqls.toSqlName(status))));
   }
 
   @Override

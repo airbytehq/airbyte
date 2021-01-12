@@ -24,7 +24,6 @@
 
 package io.airbyte.scheduler;
 
-import io.airbyte.config.JobConfig;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import java.io.IOException;
 import java.time.Instant;
@@ -83,7 +82,8 @@ public class JobRetrier implements Runnable {
   }
 
   private boolean hasReachedMaxAttempt(Job job) {
-    if (job.getConfigType() == JobConfig.ConfigType.SYNC) {
+
+    if (Job.REPLICATION_TYPES.contains(job.getConfigType())) {
       return job.getAttemptsCount() >= MAX_SYNC_JOB_ATTEMPTS;
     } else {
       return job.getAttemptsCount() >= 1;
@@ -91,7 +91,7 @@ public class JobRetrier implements Runnable {
   }
 
   private boolean shouldRetry(Job job) {
-    if (job.getConfigType() == JobConfig.ConfigType.SYNC) {
+    if (Job.REPLICATION_TYPES.contains(job.getConfigType())) {
       long lastRun = job.getUpdatedAtInSecond();
       // todo (cgardens) - use exponential backoff.
       return lastRun < timeSupplier.get().getEpochSecond() - TimeUnit.MINUTES.toSeconds(RETRY_WAIT_MINUTES);
