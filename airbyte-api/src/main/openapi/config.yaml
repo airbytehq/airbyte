@@ -1058,7 +1058,6 @@ components:
         - name
         - slug
         - initialSetupComplete
-        - onboardingComplete
       properties:
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
@@ -1079,7 +1078,6 @@ components:
       required:
         - workspaceId
         - initialSetupComplete
-        - onboardingComplete
         - anonymousDataCollection
         - news
         - securityUpdates
