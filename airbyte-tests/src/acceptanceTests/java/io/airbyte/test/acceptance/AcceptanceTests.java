@@ -36,6 +36,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.api.client.AirbyteApiClient;
+import io.airbyte.api.client.JobsApi;
 import io.airbyte.api.client.invoker.ApiClient;
 import io.airbyte.api.client.invoker.ApiException;
 import io.airbyte.api.client.model.CheckConnectionRead;
@@ -51,7 +52,9 @@ import io.airbyte.api.client.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.client.model.DestinationDefinitionSpecificationRead;
 import io.airbyte.api.client.model.DestinationIdRequestBody;
 import io.airbyte.api.client.model.DestinationRead;
+import io.airbyte.api.client.model.JobIdRequestBody;
 import io.airbyte.api.client.model.JobInfoRead;
+import io.airbyte.api.client.model.JobRead;
 import io.airbyte.api.client.model.JobStatus;
 import io.airbyte.api.client.model.SourceCreate;
 import io.airbyte.api.client.model.SourceDefinitionIdRequestBody;
@@ -313,7 +316,7 @@ public class AcceptanceTests {
     final UUID connectionId = createConnection(connectionName, sourceId, destinationId, schema, null, syncMode).getConnectionId();
 
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    assertEquals(JobStatus.SUCCEEDED, connectionSyncRead.getJob().getStatus());
+    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
     assertSourceAndTargetDbInSync(sourcePsql);
   }
 
@@ -343,7 +346,8 @@ public class AcceptanceTests {
 
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    assertEquals(JobStatus.SUCCEEDED, connectionSyncRead1.getJob().getStatus());
+    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead1.getJob());
+
     assertSourceAndTargetDbInSync(sourcePsql);
 
     // add new records and run again.
@@ -361,7 +365,7 @@ public class AcceptanceTests {
 
     final JobInfoRead connectionSyncRead2 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    assertEquals(JobStatus.SUCCEEDED, connectionSyncRead2.getJob().getStatus());
+    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead2.getJob());
     assertDestinationContains(expectedRecords, STREAM_NAME);
 
     // reset back to no data.
@@ -371,7 +375,7 @@ public class AcceptanceTests {
     // sync one more time. verify it is the equivalent of a full refresh.
     final JobInfoRead connectionSyncRead3 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    assertEquals(JobStatus.SUCCEEDED, connectionSyncRead3.getJob().getStatus());
+    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead3.getJob());
     assertSourceAndTargetDbInSync(sourcePsql);
   }
 
@@ -632,6 +636,18 @@ public class AcceptanceTests {
 
   private void deleteDestination(UUID destinationId) throws ApiException {
     apiClient.getDestinationApi().deleteDestination(new DestinationIdRequestBody().destinationId(destinationId));
+  }
+
+  private static void waitForSuccessfulJob(JobsApi jobsApi, JobRead originalJob) throws InterruptedException, ApiException {
+    JobRead job = originalJob;
+    int count = 0;
+    while (count < 15 && (job.getStatus() == JobStatus.PENDING || job.getStatus() == JobStatus.RUNNING)) {
+      Thread.sleep(1000);
+      count++;
+
+      job = jobsApi.getJobInfo(new JobIdRequestBody().id(job.getId())).getJob();
+    }
+    assertEquals(JobStatus.SUCCEEDED, job.getStatus());
   }
 
 }

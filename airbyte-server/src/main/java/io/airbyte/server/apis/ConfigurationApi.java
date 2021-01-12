@@ -67,6 +67,8 @@ import io.airbyte.api.model.SourceRecreate;
 import io.airbyte.api.model.SourceUpdate;
 import io.airbyte.api.model.WbConnectionRead;
 import io.airbyte.api.model.WbConnectionReadList;
+import io.airbyte.api.model.WebBackendConnectionRequestBody;
+import io.airbyte.api.model.WebBackendConnectionUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.api.model.WorkspaceRead;
 import io.airbyte.api.model.WorkspaceUpdate;
@@ -131,7 +133,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     destinationHandler = new DestinationHandler(configRepository, schemaValidator, schedulerHandler, connectionsHandler);
     sourceHandler = new SourceHandler(configRepository, schemaValidator, schedulerHandler, connectionsHandler);
     jobHistoryHandler = new JobHistoryHandler(jobPersistence);
-    webBackendConnectionsHandler = new WebBackendConnectionsHandler(connectionsHandler, sourceHandler, destinationHandler, jobHistoryHandler);
+    webBackendConnectionsHandler =
+        new WebBackendConnectionsHandler(connectionsHandler, sourceHandler, destinationHandler, jobHistoryHandler, schedulerHandler);
     webBackendSourceHandler = new WebBackendSourceHandler(sourceHandler, schedulerHandler);
     webBackendDestinationHandler = new WebBackendDestinationHandler(destinationHandler, schedulerHandler);
     debugInfoHandler = new DebugInfoHandler(configRepository);
@@ -389,8 +392,13 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public WbConnectionRead webBackendGetConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
-    return execute(() -> webBackendConnectionsHandler.webBackendGetConnection(connectionIdRequestBody));
+  public WbConnectionRead webBackendGetConnection(@Valid WebBackendConnectionRequestBody webBackendConnectionRequestBody) {
+    return execute(() -> webBackendConnectionsHandler.webBackendGetConnection(webBackendConnectionRequestBody));
+  }
+
+  @Override
+  public ConnectionRead webBackendUpdateConnection(@Valid WebBackendConnectionUpdate webBackendConnectionUpdate) {
+    return execute(() -> webBackendConnectionsHandler.webBackendUpdateConnection(webBackendConnectionUpdate));
   }
 
   // ARCHIVES

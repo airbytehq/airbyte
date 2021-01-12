@@ -866,7 +866,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ConnectionIdRequestBody"
+              $ref: "#/components/schemas/WebBackendConnectionRequestBody"
         required: true
       responses:
         "200":
@@ -877,6 +877,27 @@ paths:
                 $ref: "#/components/schemas/WbConnectionRead"
         "404":
           description: Connection not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/web_backend/connections/update:
+    post:
+      tags:
+        - web_backend
+      summary: Update a connection
+      operationId: webBackendUpdateConnection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WebBackendConnectionUpdate"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionRead"
         "422":
           $ref: "#/components/responses/InvalidInput"
   /v1/web_backend/sources/recreate:
@@ -1494,6 +1515,15 @@ components:
       properties:
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
+    WebBackendConnectionRequestBody:
+      type: object
+      required:
+        - connectionId
+      properties:
+        with_refreshed_catalog:
+          type: boolean
+        connectionId:
+          $ref: "#/components/schemas/ConnectionId"
     ConnectionCreate:
       type: object
       required:
@@ -1533,6 +1563,13 @@ components:
           $ref: "#/components/schemas/ConnectionSchedule"
         status:
           $ref: "#/components/schemas/ConnectionStatus"
+    WebBackendConnectionUpdate:
+      allOf:
+        - $ref: "#/components/schemas/ConnectionUpdate"
+        - type: object
+          properties:
+            with_refreshed_catalog:
+              type: boolean
     ConnectionRead:
       type: object
       required:
