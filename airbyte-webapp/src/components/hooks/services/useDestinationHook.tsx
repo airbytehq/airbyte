@@ -1,4 +1,6 @@
+import { useCallback } from "react";
 import { useFetcher } from "rest-hooks";
+import { useStatefulResource } from "@rest-hooks/legacy";
 
 import config from "../../../config";
 import DestinationResource, {
@@ -10,10 +12,7 @@ import ConnectionResource, {
 } from "../../../core/resources/Connection";
 import { Routes } from "../../../pages/routes";
 import useRouter from "../useRouterHook";
-import { useCallback, useEffect, useState } from "react";
-import DestinationDefinitionSpecificationResource, {
-  DestinationDefinitionSpecification
-} from "../../../core/resources/DestinationDefinitionSpecification";
+import DestinationDefinitionSpecificationResource from "../../../core/resources/DestinationDefinitionSpecification";
 import SchedulerResource from "../../../core/resources/Scheduler";
 
 type ValuesProps = {
@@ -27,55 +26,20 @@ type ConnectorProps = { name: string; destinationDefinitionId: string };
 export const useDestinationDefinitionSpecificationLoad = (
   destinationDefinitionId: string
 ) => {
-  const [
-    destinationDefinitionSpecification,
-    setDestinationSpecification
-  ] = useState<null | DestinationDefinitionSpecification>(null);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const fetchDestinationDefinitionSpecification = useFetcher(
+  const {
+    loading: isLoading,
+    error,
+    data: destinationDefinitionSpecification
+  } = useStatefulResource(
     DestinationDefinitionSpecificationResource.detailShape(),
-    true
+    destinationDefinitionId
+      ? {
+          destinationDefinitionId
+        }
+      : undefined
   );
 
-  useEffect(() => {
-    (async () => {
-      if (destinationDefinitionId) {
-        setIsLoading(true);
-        setDestinationSpecification(
-          await fetchDestinationDefinitionSpecification({
-            destinationDefinitionId
-          })
-        );
-        setIsLoading(false);
-      }
-    })();
-  }, [fetchDestinationDefinitionSpecification, destinationDefinitionId]);
-
-  return { destinationDefinitionSpecification, isLoading };
-};
-
-export const useDestinationDetails = (destinationId?: string) => {
-  const [destination, setDestination] = useState<null | Destination>(null);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const fetchDestination = useFetcher(DestinationResource.detailShape(), true);
-
-  useEffect(() => {
-    (async () => {
-      if (destinationId) {
-        setIsLoading(true);
-        setDestination(
-          await fetchDestination({
-            destinationId
-          })
-        );
-        setIsLoading(false);
-      }
-    })();
-  }, [destinationId, fetchDestination]);
-
-  return { destination, isLoading };
+  return { destinationDefinitionSpecification, error, isLoading };
 };
 
 const useDestination = () => {
@@ -109,7 +73,6 @@ const useDestination = () => {
     destinationConnector?: ConnectorProps;
   }) => {
     AnalyticsService.track("New Destination - Action", {
-      user_id: config.ui.workspaceId,
       action: "Test a connector",
       connector_destination: destinationConnector?.name,
       connector_destination_definition_id:
@@ -150,7 +113,6 @@ const useDestination = () => {
       );
 
       AnalyticsService.track("New Destination - Action", {
-        user_id: config.ui.workspaceId,
         action: "Tested connector - success",
         connector_destination: destinationConnector?.name,
         connector_destination_definition_id:
@@ -160,7 +122,6 @@ const useDestination = () => {
       return result;
     } catch (e) {
       AnalyticsService.track("New Destination - Action", {
-        user_id: config.ui.workspaceId,
         action: "Tested connector - failure",
         connector_destination: destinationConnector?.name,
         connector_destination_definition_id:
