@@ -59,7 +59,7 @@ import io.airbyte.api.model.SourceSchemaStream;
 import io.airbyte.api.model.SyncMode;
 import io.airbyte.api.model.WbConnectionRead;
 import io.airbyte.api.model.WbConnectionReadList;
-import io.airbyte.api.model.WebBackendConnectionIdRequestBody;
+import io.airbyte.api.model.WebBackendConnectionRequestBody;
 import io.airbyte.api.model.WebBackendConnectionUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.config.DestinationConnection;
@@ -219,12 +219,12 @@ class WebBackendConnectionsHandlerTest {
     final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody();
     connectionIdRequestBody.setConnectionId(connectionRead.getConnectionId());
 
-    final WebBackendConnectionIdRequestBody webBackendConnectionIdRequestBody = new WebBackendConnectionIdRequestBody();
-    webBackendConnectionIdRequestBody.setConnectionId(connectionRead.getConnectionId());
+    final WebBackendConnectionRequestBody webBackendConnectionRequestBody = new WebBackendConnectionRequestBody();
+    webBackendConnectionRequestBody.setConnectionId(connectionRead.getConnectionId());
 
     when(connectionsHandler.getConnection(connectionIdRequestBody)).thenReturn(connectionRead);
 
-    final WbConnectionRead wbConnectionRead = wbHandler.webBackendGetConnection(webBackendConnectionIdRequestBody);
+    final WbConnectionRead wbConnectionRead = wbHandler.webBackendGetConnection(webBackendConnectionRequestBody);
 
     assertEquals(expected, wbConnectionRead);
   }
@@ -234,7 +234,7 @@ class WebBackendConnectionsHandlerTest {
     final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody();
     connectionIdRequestBody.setConnectionId(connectionRead.getConnectionId());
 
-    final WebBackendConnectionIdRequestBody webBackendConnectionIdRequestBody = new WebBackendConnectionIdRequestBody();
+    final WebBackendConnectionRequestBody webBackendConnectionIdRequestBody = new WebBackendConnectionRequestBody();
     webBackendConnectionIdRequestBody.setConnectionId(connectionRead.getConnectionId());
     webBackendConnectionIdRequestBody.setWithRefreshedCatalog(true);
 

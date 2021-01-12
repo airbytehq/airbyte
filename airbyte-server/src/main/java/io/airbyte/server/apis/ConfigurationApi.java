@@ -66,7 +66,7 @@ import io.airbyte.api.model.SourceRecreate;
 import io.airbyte.api.model.SourceUpdate;
 import io.airbyte.api.model.WbConnectionRead;
 import io.airbyte.api.model.WbConnectionReadList;
-import io.airbyte.api.model.WebBackendConnectionIdRequestBody;
+import io.airbyte.api.model.WebBackendConnectionRequestBody;
 import io.airbyte.api.model.WebBackendConnectionUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.api.model.WorkspaceRead;
@@ -384,8 +384,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public WbConnectionRead webBackendGetConnection(@Valid WebBackendConnectionIdRequestBody webBackendConnectionIdRequestBody) {
-    return execute(() -> webBackendConnectionsHandler.webBackendGetConnection(webBackendConnectionIdRequestBody));
+  public WbConnectionRead webBackendGetConnection(@Valid WebBackendConnectionRequestBody webBackendConnectionRequestBody) {
+    return execute(() -> webBackendConnectionsHandler.webBackendGetConnection(webBackendConnectionRequestBody));
   }
 
   @Override

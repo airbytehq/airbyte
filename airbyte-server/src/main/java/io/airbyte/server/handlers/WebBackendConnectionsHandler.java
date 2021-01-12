@@ -49,7 +49,7 @@ import io.airbyte.api.model.SourceSchemaStream;
 import io.airbyte.api.model.SyncMode;
 import io.airbyte.api.model.WbConnectionRead;
 import io.airbyte.api.model.WbConnectionReadList;
-import io.airbyte.api.model.WebBackendConnectionIdRequestBody;
+import io.airbyte.api.model.WebBackendConnectionRequestBody;
 import io.airbyte.api.model.WebBackendConnectionUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
@@ -125,14 +125,14 @@ public class WebBackendConnectionsHandler {
     return wbConnectionRead;
   }
 
-  public WbConnectionRead webBackendGetConnection(WebBackendConnectionIdRequestBody webBackendConnectionIdRequestBody)
+  public WbConnectionRead webBackendGetConnection(WebBackendConnectionRequestBody webBackendConnectionRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody()
-        .connectionId(webBackendConnectionIdRequestBody.getConnectionId());
+        .connectionId(webBackendConnectionRequestBody.getConnectionId());
 
     final ConnectionRead connection = connectionsHandler.getConnection(connectionIdRequestBody);
 
-    if (webBackendConnectionIdRequestBody.getWithRefreshedCatalog() != null && webBackendConnectionIdRequestBody.getWithRefreshedCatalog()) {
+    if (webBackendConnectionRequestBody.getWithRefreshedCatalog() != null && webBackendConnectionRequestBody.getWithRefreshedCatalog()) {
       final SourceIdRequestBody sourceId = new SourceIdRequestBody().sourceId(connection.getSourceId());
       final SourceDiscoverSchemaRead discoverSchema = schedulerHandler.discoverSchemaForSourceFromSourceId(sourceId);
 
@@ -166,9 +166,9 @@ public class WebBackendConnectionsHandler {
 
         Set<String> updatedCursorFields = new HashSet<>();
 
-        for (String oldCursorField : originalStream.getCursorField()) {
-          if (fieldNames.contains(oldCursorField)) {
-            updatedCursorFields.add(oldCursorField);
+        for (String originalCursorField : originalStream.getCursorField()) {
+          if (fieldNames.contains(originalCursorField)) {
+            updatedCursorFields.add(originalCursorField);
           }
         }
 

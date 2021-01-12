@@ -130,8 +130,7 @@ public class DefaultSchedulerJobClient implements SchedulerJobClient {
       }
     }
 
-    // todo: this exception isn't only for check connection jobs
-    throw new RuntimeException("Check connection job did not complete.");
+    throw new RuntimeException("Job did not complete.");
   }
 
 }
