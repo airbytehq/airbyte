@@ -70,7 +70,8 @@ public class WorkspacesHandler {
         .withInitialSetupComplete(workspaceUpdate.getInitialSetupComplete())
         .withAnonymousDataCollection(workspaceUpdate.getAnonymousDataCollection())
         .withNews(workspaceUpdate.getNews())
-        .withSecurityUpdates(workspaceUpdate.getSecurityUpdates());
+        .withSecurityUpdates(workspaceUpdate.getSecurityUpdates())
+        .withDisplaySetupWizard(workspaceUpdate.getDisplaySetupWizard());
 
     configRepository.writeStandardWorkspace(persistedWorkspace);
 
@@ -89,7 +90,8 @@ public class WorkspacesHandler {
         .name(workspace.getName())
         .slug(workspace.getSlug())
         .initialSetupComplete(workspace.getInitialSetupComplete())
-        .onboardingComplete(workspace.getOnboardingComplete());
+        .onboardingComplete(workspace.getOnboardingComplete())
+        .displaySetupWizard(workspace.getDisplaySetupWizard());
   }
 
 }

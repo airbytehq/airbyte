@@ -1059,6 +1059,7 @@ components:
         - slug
         - initialSetupComplete
         - onboardingComplete
+        - displaySetupWizard
       properties:
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
@@ -1072,6 +1073,8 @@ components:
           type: boolean
         onboardingComplete:
           type: boolean
+        displaySetupWizard:
+          type: boolean
     WorkspaceUpdate:
       type: object
       required:
@@ -1081,6 +1084,7 @@ components:
         - anonymousDataCollection
         - news
         - securityUpdates
+        - displaySetupWizard
       properties:
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
@@ -1096,6 +1100,8 @@ components:
         news:
           type: boolean
         securityUpdates:
+          type: boolean
+        displaySetupWizard:
           type: boolean
     # SLUG
     SlugRequestBody:
