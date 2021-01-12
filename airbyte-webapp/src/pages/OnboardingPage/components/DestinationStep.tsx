@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useResource } from "rest-hooks";
 
@@ -7,7 +7,6 @@ import ServiceForm from "../../../components/ServiceForm";
 import ConnectionBlock from "../../../components/ConnectionBlock";
 import SourceDefinitionResource from "../../../core/resources/SourceDefinition";
 import { AnalyticsService } from "../../../core/analytics/AnalyticsService";
-import config from "../../../config";
 import usePrepareDropdownLists from "./usePrepareDropdownLists";
 import { Destination } from "../../../core/resources/Destination";
 import { useDestinationDefinitionSpecificationLoad } from "../../../components/hooks/services/useDestinationHook";
@@ -42,11 +41,13 @@ const DestinationStep: React.FC<IProps> = ({
   jobInfo,
   afterSelectConnector
 }) => {
-  const [destinationId, setDestinationId] = useState("");
+  const [destinationDefinitionId, setDestinationDefinitionId] = useState(
+    destination?.destinationDefinitionId || ""
+  );
   const {
     destinationDefinitionSpecification,
     isLoading
-  } = useDestinationDefinitionSpecificationLoad(destinationId);
+  } = useDestinationDefinitionSpecificationLoad(destinationDefinitionId);
   const currentSource = useResource(SourceDefinitionResource.detailShape(), {
     sourceDefinitionId: currentSourceDefinitionId
   });
@@ -55,7 +56,6 @@ const DestinationStep: React.FC<IProps> = ({
   const onDropDownSelect = (sourceId: string) => {
     const destinationConnector = getDestinationDefinitionById(sourceId);
     AnalyticsService.track("New Destination - Action", {
-      user_id: config.ui.workspaceId,
       action: "Select a connector",
       connector_destination: destinationConnector?.name,
       connector_destination_definition_id:
@@ -66,7 +66,7 @@ const DestinationStep: React.FC<IProps> = ({
       afterSelectConnector();
     }
 
-    setDestinationId(sourceId);
+    setDestinationDefinitionId(sourceId);
   };
   const onSubmitForm = async (values: {
     name: string;
@@ -80,11 +80,6 @@ const DestinationStep: React.FC<IProps> = ({
   };
 
   const errorMessage = createFormErrorMessage(errorStatus);
-
-  useEffect(
-    () => setDestinationId(destination?.destinationDefinitionId || ""),
-    [destination]
-  );
 
   return (
     <>
