@@ -12,8 +12,6 @@ Check out our [GitHub project](https://github.com/airbytehq/airbyte/projects/1) 
 
 We understand that we're not "production-ready" for a lot of companies yet. In the end, we just got started in July 2020, so we're at the beginning of the journey. Here is a highlight of the main features we are planning on releasing in the next few months:
 
-* Incremental syncs \([\#247](https://github.com/airbytehq/airbyte/issues/247)\)
-* Kubernetes support \([\#835](https://github.com/airbytehq/airbyte/issues/835)\)
 * Airflow support \([\#836](https://github.com/airbytehq/airbyte/issues/836)\)
 * Credential and secrets vaulting \([\#837](https://github.com/airbytehq/airbyte/issues/837)\)
 * OAuth support for connector configuration \([\#768](https://github.com/airbytehq/airbyte/issues/768)\)

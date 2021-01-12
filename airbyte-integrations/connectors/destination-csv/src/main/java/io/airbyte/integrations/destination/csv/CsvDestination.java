@@ -142,7 +142,7 @@ public class CsvDestination implements Destination {
    * successfully, it moves the tmp files to files named by their respective stream. If there are any
    * failures, nothing is written.
    */
-  private static class CsvConsumer extends FailureTrackingConsumer<AirbyteMessage> {
+  private static class CsvConsumer extends FailureTrackingConsumer<AirbyteMessage> implements DestinationConsumer<AirbyteMessage> {
 
     private final Map<String, WriteConfig> writeConfigs;
     private final ConfiguredAirbyteCatalog catalog;
@@ -155,8 +155,12 @@ public class CsvDestination implements Destination {
     }
 
     @Override
-    protected void acceptTracked(AirbyteMessage message) throws Exception {
+    protected void startTracked() {
+      // todo (cgardens) - move contents of #write into this method.
+    }
 
+    @Override
+    protected void acceptTracked(AirbyteMessage message) throws Exception {
       // ignore other message types.
       if (message.getType() == AirbyteMessage.Type.RECORD) {
         if (!writeConfigs.containsKey(message.getRecord().getStream())) {

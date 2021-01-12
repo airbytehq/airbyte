@@ -29,6 +29,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.TestDestination;
 import java.nio.file.Path;
@@ -40,7 +41,6 @@ import org.apache.commons.lang3.RandomStringUtils;
 
 public class SnowflakeIntegrationTest extends TestDestination {
 
-  private static final String COLUMN_NAME = "data";
   // config from which to create / delete schemas.
   private JsonNode baseConfig;
   // config which refers to the schema that the test is being run in.
@@ -72,7 +72,7 @@ public class SnowflakeIntegrationTest extends TestDestination {
   protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName))
         .stream()
-        .map(j -> Jsons.deserialize(j.get(COLUMN_NAME).asText()))
+        .map(j -> Jsons.deserialize(j.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
         .collect(Collectors.toList());
   }
 

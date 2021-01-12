@@ -120,6 +120,7 @@ public class IntegrationRunner {
   static void consumeWriteStream(DestinationConsumer<AirbyteMessage> consumer) throws Exception {
     final Scanner input = new Scanner(System.in);
     try (consumer) {
+      consumer.start();
       while (input.hasNextLine()) {
         final String inputString = input.nextLine();
         final Optional<AirbyteMessage> singerMessageOptional = Jsons.tryDeserialize(inputString, AirbyteMessage.class);

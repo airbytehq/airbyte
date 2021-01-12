@@ -66,11 +66,12 @@ public class ServerApp {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
 
+  private final String airbyteVersion;
   private final ConfigRepository configRepository;
   private final JobPersistence jobPersistence;
 
-  public ServerApp(final ConfigRepository configRepository, final JobPersistence jobPersistence) {
-
+  public ServerApp(final String airbyteVersion, final ConfigRepository configRepository, final JobPersistence jobPersistence) {
+    this.airbyteVersion = airbyteVersion;
     this.configRepository = configRepository;
     this.jobPersistence = jobPersistence;
   }
@@ -82,6 +83,7 @@ public class ServerApp {
 
     ServletContextHandler handler = new ServletContextHandler();
 
+    ConfigurationApiFactory.setAirbyteVersion(airbyteVersion);
     ConfigurationApiFactory.setSpecCache(new SpecCachingSchedulerJobClient(jobPersistence, new DefaultJobCreator(jobPersistence)));
     ConfigurationApiFactory.setConfigRepository(configRepository);
     ConfigurationApiFactory.setJobPersistence(jobPersistence);
@@ -181,7 +183,7 @@ public class ServerApp {
         configs.getDatabaseUrl()));
 
     LOGGER.info("Starting server...");
-    new ServerApp(configRepository, jobPersistence).start();
+    new ServerApp(configs.getAirbyteVersion(), configRepository, jobPersistence).start();
   }
 
 }
