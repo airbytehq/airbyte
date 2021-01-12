@@ -35,3 +35,5 @@ properties:
     type: boolean
   securityUpdates:
     type: boolean
+  displaySetupWizard:
+    type: boolean
