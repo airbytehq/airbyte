@@ -24,6 +24,7 @@
 
 package io.airbyte.server.handlers;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -77,6 +78,23 @@ public class ArchiveHandlerTest {
     container = mock(PostgreSQLContainer.class);
     database = mock(Database.class);
     archiveHandler = new ArchiveHandler("test-version", configRepository, database);
+  }
+
+  void setUpDatabase() {
+    container = new PostgreSQLContainer<>("postgres:13-alpine");
+    container.start();
+    dbConfig = Jsons.jsonNode(ImmutableMap.builder()
+        .put("username", container.getUsername())
+        .put("password", container.getPassword())
+        .put("jdbc_url", String.format("jdbc:postgresql://%s:%s/%s",
+            container.getHost(),
+            container.getFirstMappedPort(),
+            container.getDatabaseName()))
+        .build());
+    database = Databases.createPostgresDatabase(
+        dbConfig.get("username").asText(),
+        dbConfig.get("password").asText(),
+        dbConfig.get("jdbc_url").asText());
   }
 
   @AfterEach
@@ -152,25 +170,29 @@ public class ArchiveHandlerTest {
   }
 
   @Test
-  void testDatabaseMigration() throws SQLException {
-    container = new PostgreSQLContainer<>("postgres:13-alpine");
-    container.start();
-    dbConfig = Jsons.jsonNode(ImmutableMap.builder()
-        .put("username", container.getUsername())
-        .put("password", container.getPassword())
-        .put("jdbc_url", String.format("jdbc:postgresql://%s:%s/%s",
-            container.getHost(),
-            container.getFirstMappedPort(),
-            container.getDatabaseName()))
-        .build());
-    database = Databases.createPostgresDatabase(
-        dbConfig.get("username").asText(),
-        dbConfig.get("password").asText(),
-        dbConfig.get("jdbc_url").asText());
+  void testWrongDatabaseMigration() throws SQLException {
+    setUpDatabase();
     database.query(ctx -> {
       ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), updated_at DATE);");
       ctx.fetch(
           "INSERT INTO id_and_name (id, name, updated_at) VALUES (1,'picard', '2004-10-19'),  (2, 'crusher', '2005-10-19'), (3, 'vash', '2006-10-19');");
+      return null;
+    });
+    archiveHandler = new ArchiveHandler("test-version", configRepository, database);
+    assertThrows(IllegalArgumentException.class, () -> archiveHandler.importData(archiveHandler.exportData()));
+  }
+
+  @Test
+  void testDatabaseMigration() throws SQLException {
+    setUpDatabase();
+    database.query(ctx -> {
+      ctx.fetch(
+          "CREATE TABLE jobs(id VARCHAR(200), scope VARCHAR(200), config JSONB, status VARCHAR(200), created_at VARCHAR(200), updated_at VARCHAR(200));");
+      ctx.fetch(
+          "INSERT INTO jobs(id, scope, config, status, created_at, updated_at) VALUES ('"
+              + UUID.randomUUID() + "','getspec', '{ \"type\" : \"getSpec\" }', 'success', '2004-10-19', '2004-10-19'), ('"
+              + UUID.randomUUID() + "','sync', '{ \"job\" : \"sync\" }', 'running', '2005-10-19', '2005-10-19'), ('"
+              + UUID.randomUUID() + "','sync', '{ \"job\" : \"sync\" }', 'pending', '2006-10-19', '2006-10-19');");
       return null;
     });
     archiveHandler = new ArchiveHandler("test-version", configRepository, database);

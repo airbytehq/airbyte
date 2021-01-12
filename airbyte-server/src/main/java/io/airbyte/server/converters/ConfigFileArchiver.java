@@ -70,10 +70,12 @@ public class ConfigFileArchiver {
    */
   public <T> void writeConfigsToArchive(final ConfigSchema schemaType, final List<T> configList) throws IOException {
     final Path configPath = buildConfigPath(schemaType);
-    Files.createDirectories(configPath.getParent());
-    final List<T> sortedConfigs = configList.stream().sorted(Comparator.comparing(T::toString)).collect(Collectors.toList());
-    Files.writeString(configPath, Yamls.serialize(sortedConfigs));
-    LOGGER.debug(String.format("Successful export of airbyte config %s", schemaType));
+    if (!configList.isEmpty()) {
+      Files.createDirectories(configPath.getParent());
+      final List<T> sortedConfigs = configList.stream().sorted(Comparator.comparing(T::toString)).collect(Collectors.toList());
+      Files.writeString(configPath, Yamls.serialize(sortedConfigs));
+      LOGGER.debug(String.format("Successful export of airbyte config %s", schemaType));
+    }
   }
 
   /**
@@ -94,9 +96,9 @@ public class ConfigFileArchiver {
         validateJson(config, schemaType);
         results.add(config);
       }
-      LOGGER.debug(String.format("Successful read of airbyte config %s", schemaType));
+      LOGGER.debug(String.format("Successful read of airbyte config %s from archive", schemaType));
     } else {
-      LOGGER.debug(String.format("Airbyte config %s was not found", schemaType));
+      LOGGER.debug(String.format("Airbyte config %s was not found in the archive", schemaType));
     }
     return results;
   }
