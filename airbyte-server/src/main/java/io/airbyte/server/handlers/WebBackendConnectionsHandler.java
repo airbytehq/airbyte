@@ -166,15 +166,12 @@ public class WebBackendConnectionsHandler {
           stream.setSyncMode(originalStream.getSyncMode());
         }
 
-        Set<String> updatedCursorFields = new HashSet<>();
-
-        for (String originalCursorField : originalStream.getCursorField()) {
-          if (fieldNames.contains(originalCursorField)) {
-            updatedCursorFields.add(originalCursorField);
+        if (originalStream.getCursorField().size() > 0) {
+          final String topLevelField = originalStream.getCursorField().get(0);
+          if(fieldNames.contains(topLevelField)) {
+            stream.setCursorField(originalStream.getCursorField());
           }
         }
-
-        stream.setCursorField(new ArrayList<>(updatedCursorFields));
 
         Map<String, SourceSchemaField> originalFieldsByName = originalStream.getFields()
             .stream()
