@@ -38,7 +38,9 @@ import io.airbyte.config.StandardSyncSchedule;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.PersistenceConstants;
+import io.airbyte.db.Database;
 import io.airbyte.server.converters.ConfigFileArchiver;
+import io.airbyte.server.converters.DatabaseArchiver;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
 import java.io.IOException;
@@ -55,20 +57,22 @@ import org.slf4j.LoggerFactory;
 public class ArchiveHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ArchiveHandler.class);
-  private static final String ARCHIVE_FILE_NAME = "airbyte_config_data";
+  private static final String ARCHIVE_FILE_NAME = "airbyte_archive";
   private static final String VERSION_FILE_NAME = "VERSION";
 
   private final String version;
   private final ConfigRepository configRepository;
+  private final Database database;
 
-  public ArchiveHandler(final String version, final ConfigRepository configRepository) {
+  public ArchiveHandler(final String version, final ConfigRepository configRepository, final Database database) {
     this.version = version;
     this.configRepository = configRepository;
+    this.database = database;
   }
 
   public File exportData() {
     try {
-      final Path tempFolder = Files.createTempDirectory("airbyte_archive");
+      final Path tempFolder = Files.createTempDirectory(ARCHIVE_FILE_NAME);
       final File archive = Files.createTempFile(ARCHIVE_FILE_NAME, ".tar.gz").toFile();
       archive.deleteOnExit();
       try {
@@ -95,8 +99,9 @@ public class ArchiveHandler {
     LOGGER.info("Exporting Airbyte Configs");
     final ConfigFileArchiver configFileArchiver = new ConfigFileArchiver(tempFolder);
     Exceptions.toRuntime(() -> {
-      configFileArchiver.writeConfigsToArchive(ConfigSchema.STANDARD_WORKSPACE,
-          List.of(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID)));
+      final StandardWorkspace standardWorkspace = configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID);
+      if (standardWorkspace != null)
+        configFileArchiver.writeConfigsToArchive(ConfigSchema.STANDARD_WORKSPACE, List.of(standardWorkspace));
       configFileArchiver.writeConfigsToArchive(ConfigSchema.STANDARD_SOURCE_DEFINITION, configRepository.listStandardSources());
       configFileArchiver.writeConfigsToArchive(ConfigSchema.STANDARD_DESTINATION_DEFINITION, configRepository.listStandardDestinationDefinitions());
       configFileArchiver.writeConfigsToArchive(ConfigSchema.SOURCE_CONNECTION, configRepository.listSourceConnection());
@@ -114,7 +119,8 @@ public class ArchiveHandler {
 
   private void exportAirbyteDatabase(Path tempFolder) {
     LOGGER.info("Exporting Airbyte Database");
-    // TODO implement
+    final DatabaseArchiver databaseArchiver = new DatabaseArchiver(database, tempFolder);
+    Exceptions.toRuntime(databaseArchiver::writeDatabaseToArchive);
   }
 
   public ImportRead importData(File archive) {
@@ -124,8 +130,8 @@ public class ArchiveHandler {
       try {
         Archives.extractArchive(archive.toPath(), tempFolder);
         checkImport(tempFolder);
+        checkAndImportAirbyteDatabase(tempFolder);
         importAirbyteConfig(tempFolder, false);
-        importAirbyteDatabase(tempFolder, false);
         result = new ImportRead().status(StatusEnum.SUCCEEDED);
       } finally {
         FileUtils.deleteDirectory(tempFolder.toFile());
@@ -147,7 +153,15 @@ public class ArchiveHandler {
     }
     // Check if all files to import are valid and with expected airbyte version
     importAirbyteConfig(tempFolder, true);
-    importAirbyteDatabase(tempFolder, true);
+  }
+
+  private void checkAndImportAirbyteDatabase(final Path tempFolder) throws IOException, JsonValidationException {
+    final DatabaseArchiver databaseArchiver = new DatabaseArchiver(database, tempFolder);
+    final String tempSchema = databaseArchiver.readDatabaseFromArchive();
+    if (databaseArchiver.checkDatabase(tempSchema)) {
+      databaseArchiver.commitDatabase(tempSchema);
+    }
+    databaseArchiver.dropSchema(tempSchema);
   }
 
   private void importAirbyteConfig(Path tempFolder, boolean dryRun) throws IOException, JsonValidationException {
@@ -178,10 +192,6 @@ public class ArchiveHandler {
             .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeStandardSchedule(config)));
       });
     }
-  }
-
-  private void importAirbyteDatabase(Path tempFolder, boolean dryRun) {
-    // TODO implement
   }
 
 }
