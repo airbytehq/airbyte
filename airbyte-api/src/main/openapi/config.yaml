@@ -1059,7 +1059,6 @@ components:
         - slug
         - initialSetupComplete
         - onboardingComplete
-        - displaySetupWizard
       properties:
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
@@ -1084,7 +1083,6 @@ components:
         - anonymousDataCollection
         - news
         - securityUpdates
-        - displaySetupWizard
       properties:
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
