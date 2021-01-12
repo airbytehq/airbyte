@@ -53,6 +53,7 @@ import io.airbyte.api.model.WebBackendConnectionRequestBody;
 import io.airbyte.api.model.WebBackendConnectionUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -132,7 +133,7 @@ public class WebBackendConnectionsHandler {
 
     final ConnectionRead connection = connectionsHandler.getConnection(connectionIdRequestBody);
 
-    if (webBackendConnectionRequestBody.getWithRefreshedCatalog() != null && webBackendConnectionRequestBody.getWithRefreshedCatalog()) {
+    if (MoreBooleans.isTruthy(webBackendConnectionRequestBody.getWithRefreshedCatalog())) {
       final SourceIdRequestBody sourceId = new SourceIdRequestBody().sourceId(connection.getSourceId());
       final SourceDiscoverSchemaRead discoverSchema = schedulerHandler.discoverSchemaForSourceFromSourceId(sourceId);
 
@@ -148,7 +149,8 @@ public class WebBackendConnectionsHandler {
 
   @VisibleForTesting
   protected static SourceSchema updateSchemaWithDiscovery(SourceSchema original, SourceSchema discovered) {
-    Map<String, SourceSchemaStream> originalStreamsByName = original.getStreams().stream()
+    Map<String, SourceSchemaStream> originalStreamsByName = original.getStreams()
+        .stream()
         .collect(toMap(SourceSchemaStream::getName, s -> s));
 
     List<SourceSchemaStream> streams = new ArrayList<>();
@@ -174,7 +176,8 @@ public class WebBackendConnectionsHandler {
 
         stream.setCursorField(new ArrayList<>(updatedCursorFields));
 
-        Map<String, SourceSchemaField> originalFieldsByName = originalStream.getFields().stream()
+        Map<String, SourceSchemaField> originalFieldsByName = originalStream.getFields()
+            .stream()
             .collect(toMap(SourceSchemaField::getName, f -> f));
 
         for (SourceSchemaField field : stream.getFields()) {
@@ -194,10 +197,10 @@ public class WebBackendConnectionsHandler {
 
   public ConnectionRead webBackendUpdateConnection(WebBackendConnectionUpdate webBackendConnectionUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    final ConnectionUpdate connectionUpdate = extractConnectionUpdate(webBackendConnectionUpdate);
+    final ConnectionUpdate connectionUpdate = toConnectionUpdate(webBackendConnectionUpdate);
     final ConnectionRead connectionRead = connectionsHandler.updateConnection(connectionUpdate);
 
-    if (webBackendConnectionUpdate.getWithRefreshedCatalog() != null && webBackendConnectionUpdate.getWithRefreshedCatalog()) {
+    if (MoreBooleans.isTruthy(webBackendConnectionUpdate.getWithRefreshedCatalog())) {
       ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(webBackendConnectionUpdate.getConnectionId());
 
       // wait for this to execute
@@ -215,7 +218,7 @@ public class WebBackendConnectionsHandler {
   }
 
   @VisibleForTesting
-  protected static ConnectionUpdate extractConnectionUpdate(WebBackendConnectionUpdate webBackendConnectionUpdate) {
+  protected static ConnectionUpdate toConnectionUpdate(WebBackendConnectionUpdate webBackendConnectionUpdate) {
     ConnectionUpdate connectionUpdate = new ConnectionUpdate();
 
     connectionUpdate.setConnectionId(webBackendConnectionUpdate.getConnectionId());

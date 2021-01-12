@@ -246,7 +246,7 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
-  public void testExtractConnectionUpdate() throws IOException {
+  public void testToConnectionUpdate() throws IOException {
     final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
     final StandardSync standardSync = ConnectionHelpers.generateSyncWithSourceId(source.getSourceId());
 
@@ -269,15 +269,14 @@ class WebBackendConnectionsHandlerTest {
         .schedule(schedule)
         .syncSchema(newApiSchema);
 
-    final ConnectionUpdate actual = WebBackendConnectionsHandler.extractConnectionUpdate(input);
+    final ConnectionUpdate actual = WebBackendConnectionsHandler.toConnectionUpdate(input);
 
     assertEquals(expected, actual);
   }
 
   @Test
   public void testForCompleteness() {
-    final Set<String> handledMethods = Set.of(
-        "schedule", "connectionId", "syncSchema", "status");
+    final Set<String> handledMethods = Set.of("schedule", "connectionId", "syncSchema", "status");
 
     final Set<String> methods = Arrays.stream(ConnectionUpdate.class.getMethods())
         .filter(method -> method.getReturnType() == ConnectionUpdate.class)
