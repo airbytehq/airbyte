@@ -23,19 +23,16 @@ SOFTWARE.
 """
 
 import json
-
+from datetime import date, timedelta
 
 from airbyte_protocol import AirbyteConnectionStatus
+from appstoreconnect import Api
 from base_python import AirbyteLogger
 from base_singer import SingerSource, Status
-from appstoreconnect import Api
-from appstoreconnect.api import APIError
-from datetime import date
-from datetime import timedelta
 
 
 class SourceAppstoreSinger(SingerSource):
-    TAP_CMD = "tap-Appstore"
+    TAP_CMD = "tap-appstore"
 
     def check_config(self, logger: AirbyteLogger, config_path: str, config: json) -> AirbyteConnectionStatus:
         """
@@ -53,31 +50,29 @@ class SourceAppstoreSinger(SingerSource):
         try:
             test_date = date.today() - timedelta(days=2)
             api_fields_to_test = {
-                'subscription_report': {
-                    'reportType': 'SUBSCRIPTION',
-                    'frequency': 'DAILY',
-                    'reportSubType': 'SUMMARY',
-                    'version': '1_2'
-                }
+                "subscription_report": {"reportType": "SUBSCRIPTION", "frequency": "DAILY", "reportSubType": "SUMMARY", "version": "1_2"}
             }
-            report_filters = {
-                'reportDate': iterator.strftime("%Y-%m-%d"),
-                'vendorNumber': "{}".format(Context.config['vendor'])
-            }
+            report_filters = {"reportDate": test_date.strftime("%Y-%m-%d"), "vendorNumber": "{}".format(config["vendor"])}
 
-            report_filters.update(api_fields_to_test['subscription_report'])
-
+            report_filters.update(api_fields_to_test["subscription_report"])
             # fetch data from appstore api
+            api = Api(config["key_id"], config["key_file"], config["issuer_id"])
+
             rep_tsv = api.download_sales_and_trends_reports(filters=report_filters)
+            print("ohooooooo")
+            print(config["key_file"])
+            with open(config["key_file"], "r") as fh:
+                print(fh.read())
 
             if isinstance(rep_tsv, dict):
-                LOGGER.warning("")
-                return AirbyteConnectionStatus(status=Status.FAILED,
-                                               message=f"An exception occurred: Received a JSON response instead of"
-                                                       f" the report: {str(rep_tsv)}")
+                return AirbyteConnectionStatus(
+                    status=Status.FAILED,
+                    message=f"An exception occurred: Received a JSON response instead of" f" the report: {str(rep_tsv)}",
+                )
 
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
+            logger.warn(e)
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")
 
     def discover_cmd(self, logger: AirbyteLogger, config_path: str) -> str:
@@ -94,3 +89,26 @@ class SourceAppstoreSinger(SingerSource):
         properties_option = f"--properties {catalog_path}"
         state_option = f"--state {state_path}" if state_path else ""
         return f"{self.TAP_CMD} {config_option} {properties_option} {state_option}"
+
+    def transform_config(self, raw_config: json) -> json:
+        """
+        Return the string commands to invoke the tap with the right configuration options to read data from the source
+        """
+        # path where we will write the private key.
+        keyfile_path = "/tmp/keyfile.json"
+
+        # write the private key to a file.
+        private_key = raw_config["private_key"]
+        with open(keyfile_path, "w") as fh:
+            fh.write(private_key)
+
+        # add the path of the key file in he config for tap-appstore to use.
+        raw_config["key_file"] = keyfile_path
+
+        # remove private_key because we shouldn't need it for anything else in the config.
+        del raw_config["private_key"]
+
+        with open(keyfile_path, "r") as fh:
+            print(fh.read())
+
+        return raw_config
