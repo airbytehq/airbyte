@@ -1,7 +1,7 @@
 FROM airbyte/integration-base-singer:dev
 
 # Bash is installed for more convenient debugging.
-RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y bash git && rm -rf /var/lib/apt/lists/*
 
 ENV CODE_PATH="source_appstore_singer"
 ENV AIRBYTE_IMPL_MODULE="source_appstore_singer"
