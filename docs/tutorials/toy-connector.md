@@ -918,7 +918,7 @@ dependencies {
 Then **from the Airbyte repository root**, run:
 
 ```bash
-./gradlew :airbyte-integrations:connectors:source-stock-ticker-api:integrationTest
+./gradlew clean :airbyte-integrations:connectors:source-stock-ticker-api:integrationTest
 ```
 
 After tests have run, you should see a test summary like:
@@ -962,7 +962,7 @@ Since we're running this tutorial locally, Airbyte will have access to any Docke
 Airbyte's build system builds and tags your connector's image correctly by default as part of the connector's standard `build` process. **From the Airbyte repo root**, run:
 
 ```bash
-./gradlew :airbyte-integrations:connectors:source-stock-ticker-api:build
+./gradlew clean :airbyte-integrations:connectors:source-stock-ticker-api:build
 ```
 
 This is the equivalent of running `docker build . -t airbyte/source-stock-ticker-api:dev` from the connector root, where the tag `airbyte/source-stock-ticker-api` is extracted from the label `LABEL io.airbyte.name` inside your `Dockerfile`.
