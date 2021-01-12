@@ -1183,7 +1183,7 @@
                   "type": ["null", "string"]
                 },
                 "milestone": {
-                  "type": ["null", "object"]
+                  "type": ["null"]
                 },
                 "closed_at": {
                   "type": ["null", "string"],
