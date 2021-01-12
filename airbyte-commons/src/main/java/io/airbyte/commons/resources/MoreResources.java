@@ -27,6 +27,7 @@ package io.airbyte.commons.resources;
 import com.google.common.base.Preconditions;
 import com.google.common.io.Resources;
 import io.airbyte.commons.io.IOs;
+import io.airbyte.commons.lang.Exceptions;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -47,8 +48,12 @@ public class MoreResources {
     return Resources.toString(resource, StandardCharsets.UTF_8);
   }
 
-  /*
+  /**
    * This class is a bit of a hack. Might have unexpected behavior.
+   * @param klass class whose resources will be access
+   * @param name path to directory in resources list
+   * @return stream of paths to each resource file. THIS STREAM MUST BE CLOSED.
+   * @throws IOException you never know when you IO.
    */
   public static Stream<Path> listResources(Class<?> klass, String name) throws IOException {
     Preconditions.checkNotNull(klass);
@@ -63,11 +68,12 @@ public class MoreResources {
       if (url.toString().startsWith("jar")) {
         final FileSystem fileSystem = FileSystems.newFileSystem(url.toURI(), Collections.emptyMap());
         searchPath = fileSystem.getPath(rootedResourceDir);
+        return Files.walk(searchPath, 1).onClose(() -> Exceptions.toRuntime(fileSystem::close));
       } else {
         searchPath = Path.of(url.toURI());
+        return Files.walk(searchPath, 1);
       }
 
-      return Files.walk(searchPath, 1);
     } catch (URISyntaxException e) {
       throw new RuntimeException(e);
     }

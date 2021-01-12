@@ -34,6 +34,7 @@ import io.airbyte.commons.set.MoreSets;
 import io.airbyte.commons.stream.MoreStreams;
 import io.airbyte.commons.yaml.Yamls;
 import io.airbyte.migrate.migrations.MigrationV0_11_0;
+import io.airbyte.migrate.migrations.MigrationV0_11_1;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.BufferedWriter;
@@ -57,7 +58,10 @@ public class Migrate {
   public static final String VERSION_FILE_NAME = "VERSION";
 
   // all migrations must be added to the list in the order that they should be applied.
-  private static final List<Migration> MIGRATIONS = ImmutableList.of(new MigrationV0_11_0());
+  private static final List<Migration> MIGRATIONS = ImmutableList.of(
+      new MigrationV0_11_0(),
+      new MigrationV0_11_1()
+  );
 
   private final Path migrateRoot;
   private final JsonSchemaValidator jsonSchemaValidator;

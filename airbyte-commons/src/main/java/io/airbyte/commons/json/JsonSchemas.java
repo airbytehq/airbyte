@@ -33,6 +33,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class JsonSchemas {
 
@@ -57,10 +58,13 @@ public class JsonSchemas {
    */
   public static <T> Path prepareSchemas(final String resourceDir, Class<T> klass) {
     try {
-      final List<String> filenames = MoreResources.listResources(klass, resourceDir)
-          .map(p -> p.getFileName().toString())
+      List<String> filenames;
+      try(Stream<Path> resources = MoreResources.listResources(klass, resourceDir)) {
+
+        filenames = resources.map(p -> p.getFileName().toString())
           .filter(p -> p.endsWith(".yaml"))
           .collect(Collectors.toList());
+      }
 
       final Path configRoot = Files.createTempDirectory("schemas");
       for (String filename : filenames) {
@@ -75,5 +79,4 @@ public class JsonSchemas {
       throw new RuntimeException(e);
     }
   }
-
 }

@@ -1,3 +1,7 @@
+create versions with arbitrary versions and run
+
+
+
 ```
 docker-compose down
 ```
@@ -8,10 +12,6 @@ docker-compose up db server
 
 ```
 curl -H "Content-Type: application/json" -X POST localhost:8001/api/v1/deployment/export --output /tmp/airbyte_archive.tar.gz
-```
-
-```
-./gradlew :airbyte-migration:build
 ```
 
 ```

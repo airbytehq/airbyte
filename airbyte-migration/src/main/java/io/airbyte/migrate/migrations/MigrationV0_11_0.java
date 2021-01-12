@@ -46,7 +46,7 @@ public class MigrationV0_11_0 implements Migration {
 
   @Override
   public String getVersion() {
-    return "v0.11.0-alpha";
+    return "0.10.0-alpha";
   }
 
   @Override

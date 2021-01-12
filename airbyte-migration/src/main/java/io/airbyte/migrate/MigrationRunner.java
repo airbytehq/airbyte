@@ -49,7 +49,17 @@ public class MigrationRunner {
           migrateConfig.getTargetVersion());
     }
 
+    final Path outputPath = migrateConfig.getOutputPath();
+
+    // todo hack
+    migrateConfig = new MigrateConfig(
+        migrateConfig.getInputPath(),
+        workspaceRoot.resolve("output"),
+        migrateConfig.getTargetVersion());
+
     new Migrate(workspaceRoot.resolve("migrate")).run(migrateConfig);
+
+    Archives.createArchive(migrateConfig.getOutputPath(), outputPath);
   }
 
   private static MigrateConfig parse(String[] args) {
