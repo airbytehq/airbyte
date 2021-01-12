@@ -52,6 +52,11 @@ def createSpotlessTarget = { pattern ->
         'dbt-project-template',
         'tools'
     ]
+
+    if(System.getenv().containsKey("CORE_ONLY")) {
+        excludes.add("airbyte-integrations/connectors")
+    }
+
     return fileTree(dir: rootDir, include: pattern, exclude: excludes.collect {"**/${it}"})
 }
 
