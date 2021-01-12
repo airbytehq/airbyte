@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 public class JobRetrier implements Runnable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JobRetrier.class);
-  private static final int MAX_ATTEMPTS = 5;
+  private static final int MAX_SYNC_JOB_ATTEMPTS = 5;
   private static final int RETRY_WAIT_MINUTES = 1;
 
   private final JobPersistence persistence;
@@ -87,7 +87,11 @@ public class JobRetrier implements Runnable {
   }
 
   private boolean hasReachedMaxAttempt(Job job) {
-    return job.getAttemptsCount() >= MAX_ATTEMPTS;
+    if (job.getConfigType() == JobConfig.ConfigType.SYNC) {
+      return job.getAttemptsCount() >= MAX_SYNC_JOB_ATTEMPTS;
+    } else {
+      return job.getAttemptsCount() >= 1;
+    }
   }
 
   private boolean shouldRetry(Job job) {
