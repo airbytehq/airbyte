@@ -78,7 +78,7 @@ class MigrateTest {
       .put("dockerImageTag", "v1.2.0")
       .put("documentationUrl", "airbyte.io")
       .build());
-  private static final JsonNode AIRBYTE_METADATA = Jsons.jsonNode(ImmutableMap.of("server_uuid", UUID1));
+  private static final JsonNode AIRBYTE_METADATA = Jsons.jsonNode(ImmutableMap.of("key", "server_uuid", "value", UUID1));
 
   private static final Map<ResourceId, List<JsonNode>> V0_11_0_TEST_RECORDS = ImmutableMap
       .<ResourceId, List<JsonNode>>builder()

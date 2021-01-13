@@ -25,6 +25,7 @@
 package io.airbyte.server.converters;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.CloseableConsumer;
 import io.airbyte.commons.lang.Exceptions;
@@ -38,9 +39,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.jooq.Field;
 import org.jooq.JSONFormat;
 import org.jooq.JSONFormat.RecordFormat;
 import org.jooq.Record;
@@ -96,7 +100,14 @@ public class DatabaseArchiver {
         .from(table.getName())
         .fetchStream());
     records.forEach(r -> Exceptions.toRuntime(() -> {
+      final Set<String> jsonFieldNames = Arrays.stream(r.fields())
+          .filter(f -> f.getDataType().getTypeName().equals("jsonb"))
+          .map(Field::getName)
+          .collect(Collectors.toSet());
       final JsonNode row = Jsons.deserialize(r.formatJSON(DB_JSON_FORMAT));
+      // for json fields, deserialize them so they are treated as objects instead of strings. this is to
+      // get around that formatJson doesn't handle deserializing them for us.
+      jsonFieldNames.forEach(jsonFieldName -> ((ObjectNode) row).replace(jsonFieldName, Jsons.deserialize(row.get(jsonFieldName).asText())));
       // TODO validate table schemas before writing?
       recordConsumer.accept(row);
     }));
