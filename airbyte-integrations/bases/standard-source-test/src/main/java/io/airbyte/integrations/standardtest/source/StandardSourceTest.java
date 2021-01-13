@@ -100,7 +100,11 @@ public abstract class StandardSourceTest {
       "airbyte/source-exchangeratesapi-singer",
       "airbyte/source-hubspot-singer",
       "airbyte/source-marketo-singer",
-      "airbyte/source-twilio-singer");
+      "airbyte/source-twilio-singer",
+      "airbyte/source-mixpanel-singer",
+      "airbyte/source-twilio-singer",
+      "airbyte/source-braintree-singer",
+      "airbyte/source-salesforce-singer");
 
   /**
    * Name of the docker image that the tests will run against.

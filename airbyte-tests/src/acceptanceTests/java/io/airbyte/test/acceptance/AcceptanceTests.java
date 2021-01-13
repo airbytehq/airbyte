@@ -27,6 +27,7 @@ package io.airbyte.test.acceptance;
 import static io.airbyte.api.client.model.ConnectionSchedule.TimeUnitEnum.MINUTES;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -35,6 +36,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.api.client.AirbyteApiClient;
+import io.airbyte.api.client.JobsApi;
 import io.airbyte.api.client.invoker.ApiClient;
 import io.airbyte.api.client.invoker.ApiException;
 import io.airbyte.api.client.model.CheckConnectionRead;
@@ -46,11 +48,17 @@ import io.airbyte.api.client.model.ConnectionStatus;
 import io.airbyte.api.client.model.ConnectionUpdate;
 import io.airbyte.api.client.model.DataType;
 import io.airbyte.api.client.model.DestinationCreate;
+import io.airbyte.api.client.model.DestinationDefinitionIdRequestBody;
+import io.airbyte.api.client.model.DestinationDefinitionSpecificationRead;
 import io.airbyte.api.client.model.DestinationIdRequestBody;
 import io.airbyte.api.client.model.DestinationRead;
+import io.airbyte.api.client.model.JobIdRequestBody;
 import io.airbyte.api.client.model.JobInfoRead;
+import io.airbyte.api.client.model.JobRead;
 import io.airbyte.api.client.model.JobStatus;
 import io.airbyte.api.client.model.SourceCreate;
+import io.airbyte.api.client.model.SourceDefinitionIdRequestBody;
+import io.airbyte.api.client.model.SourceDefinitionSpecificationRead;
 import io.airbyte.api.client.model.SourceIdRequestBody;
 import io.airbyte.api.client.model.SourceRead;
 import io.airbyte.api.client.model.SourceSchema;
@@ -63,10 +71,8 @@ import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
-import java.io.FileReader;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.net.Inet4Address;
+import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.Collections;
@@ -74,15 +80,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVRecord;
+import org.jooq.JSONB;
 import org.jooq.Record;
 import org.jooq.Result;
+import org.junit.Assume;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -101,15 +105,16 @@ import org.testcontainers.utility.MountableFile;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AcceptanceTests {
 
+  // Skip networking related failures on kube using this flag
+  private static final boolean IS_KUBE = System.getenv().containsKey("KUBE");
+
   private static final String TABLE_NAME = "id_and_name";
   private static final String STREAM_NAME = "public." + TABLE_NAME;
   private static final String COLUMN_ID = "id";
   private static final String COLUMN_NAME = "name";
 
-  private static final Path AIRBYTE_LOCAL_ROOT = Path.of("/tmp/airbyte_local");
-  private static final Path RELATIVE_PATH = Path.of("destination_csv/test");
-
   private static PostgreSQLContainer sourcePsql;
+  private static PostgreSQLContainer destinationPsql;
 
   private final AirbyteApiClient apiClient = new AirbyteApiClient(
       new ApiClient().setScheme("http")
@@ -120,13 +125,13 @@ public class AcceptanceTests {
   private List<UUID> sourceIds;
   private List<UUID> connectionIds;
   private List<UUID> destinationIds;
-  private Path outputDir;
-  private Path relativeDir;
 
   @BeforeAll
   public static void init() {
     sourcePsql = new PostgreSQLContainer("postgres:13-alpine");
     sourcePsql.start();
+    destinationPsql = new PostgreSQLContainer("postgres:13-alpine");
+    destinationPsql.start();
   }
 
   @AfterAll
@@ -135,15 +140,10 @@ public class AcceptanceTests {
   }
 
   @BeforeEach
-  public void setup() throws IOException {
+  public void setup() {
     sourceIds = Lists.newArrayList();
     connectionIds = Lists.newArrayList();
     destinationIds = Lists.newArrayList();
-
-    final Path outputRoot = Files.createTempDirectory(AIRBYTE_LOCAL_ROOT, "acceptance_test");
-    outputDir = outputRoot.resolve(RELATIVE_PATH);
-    // get the path that starts with acceptance_tests_<random string>/destination_csv/test.
-    relativeDir = outputRoot.getParent().relativize(outputDir);
 
     // seed database.
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_init.sql"), sourcePsql);
@@ -167,10 +167,30 @@ public class AcceptanceTests {
   }
 
   @Test
+  @Order(-1)
+  public void testGetDestinationSpec() throws ApiException {
+    final UUID destinationDefinitionId = getDestinationDefId();
+    DestinationDefinitionSpecificationRead spec = apiClient.getDestinationDefinitionSpecificationApi()
+        .getDestinationDefinitionSpecification(new DestinationDefinitionIdRequestBody().destinationDefinitionId(destinationDefinitionId));
+    assertEquals(destinationDefinitionId, spec.getDestinationDefinitionId());
+    assertNotNull(spec.getConnectionSpecification());
+  }
+
+  @Test
+  @Order(0)
+  public void testGetSourceSpec() throws ApiException {
+    final UUID sourceDefId = getPostgresSourceDefinitionId();
+    SourceDefinitionSpecificationRead spec = apiClient.getSourceDefinitionSpecificationApi()
+        .getSourceDefinitionSpecification(new SourceDefinitionIdRequestBody().sourceDefinitionId(sourceDefId));
+    assertEquals(sourceDefId, spec.getSourceDefinitionId());
+    assertNotNull(spec.getConnectionSpecification());
+  }
+
+  @Test
   @Order(1)
   public void testCreateDestination() throws ApiException {
     final UUID destinationDefId = getDestinationDefId();
-    final JsonNode destinationConfig = getDestinationConfig();
+    final JsonNode destinationConfig = getDestinationDbConfig();
     final UUID workspaceId = PersistenceConstants.DEFAULT_WORKSPACE_ID;
     final String name = "AccTestDestinationDb-" + UUID.randomUUID().toString();
 
@@ -183,13 +203,13 @@ public class AcceptanceTests {
     assertEquals(name, createdDestination.getName());
     assertEquals(destinationDefId, createdDestination.getDestinationDefinitionId());
     assertEquals(workspaceId, createdDestination.getWorkspaceId());
-    assertEquals(destinationConfig, createdDestination.getConnectionConfiguration());
+    assertEquals(getDestinationDbConfigWithHiddenPassword(), createdDestination.getConnectionConfiguration());
   }
 
   @Test
   @Order(2)
   public void testDestinationCheckConnection() throws ApiException {
-    final UUID destinationId = createCsvDestination().getDestinationId();
+    final UUID destinationId = createDestination().getDestinationId();
 
     final CheckConnectionRead.StatusEnum checkOperationStatus = apiClient.getDestinationApi()
         .checkConnectionToDestination(new DestinationIdRequestBody().destinationId(destinationId))
@@ -204,7 +224,7 @@ public class AcceptanceTests {
     final String dbName = "acc-test-db";
     final UUID postgresSourceDefinitionId = getPostgresSourceDefinitionId();
     final UUID defaultWorkspaceId = PersistenceConstants.DEFAULT_WORKSPACE_ID;
-    final Map<Object, Object> sourceDbConfig = getSourceDbConfig();
+    final JsonNode sourceDbConfig = getSourceDbConfig();
 
     final SourceRead response = createSource(
         dbName,
@@ -228,7 +248,10 @@ public class AcceptanceTests {
 
     final CheckConnectionRead checkConnectionRead = apiClient.getSourceApi().checkConnectionToSource(new SourceIdRequestBody().sourceId(sourceId));
 
-    assertEquals(CheckConnectionRead.StatusEnum.SUCCEEDED, checkConnectionRead.getStatus());
+    assertEquals(
+        CheckConnectionRead.StatusEnum.SUCCEEDED,
+        checkConnectionRead.getStatus(),
+        checkConnectionRead.getMessage());
   }
 
   @Test
@@ -265,7 +288,7 @@ public class AcceptanceTests {
   public void testCreateConnection() throws ApiException {
     final UUID sourceId = createPostgresSource().getSourceId();
     final SourceSchema schema = discoverSourceSchema(sourceId);
-    final UUID destinationId = createCsvDestination().getDestinationId();
+    final UUID destinationId = createDestination().getDestinationId();
     final String name = "test-connection-" + UUID.randomUUID().toString();
     final ConnectionSchedule schedule = new ConnectionSchedule().timeUnit(MINUTES).units(100L);
     final SyncMode syncMode = SyncMode.FULL_REFRESH;
@@ -285,7 +308,7 @@ public class AcceptanceTests {
   public void testManualSync() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
-    final UUID destinationId = createCsvDestination().getDestinationId();
+    final UUID destinationId = createDestination().getDestinationId();
     final SourceSchema schema = discoverSourceSchema(sourceId);
     schema.getStreams().forEach(table -> table.getFields().forEach(c -> c.setSelected(true))); // select all fields
     final SyncMode syncMode = SyncMode.FULL_REFRESH;
@@ -293,7 +316,7 @@ public class AcceptanceTests {
     final UUID connectionId = createConnection(connectionName, sourceId, destinationId, schema, null, syncMode).getConnectionId();
 
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    assertEquals(JobStatus.SUCCEEDED, connectionSyncRead.getJob().getStatus());
+    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
     assertSourceAndTargetDbInSync(sourcePsql);
   }
 
@@ -302,7 +325,7 @@ public class AcceptanceTests {
   public void testIncrementalSync() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
-    final UUID destinationId = createCsvDestination().getDestinationId();
+    final UUID destinationId = createDestination().getDestinationId();
     final SourceSchema schema = discoverSourceSchema(sourceId);
 
     assertEquals(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
@@ -323,44 +346,48 @@ public class AcceptanceTests {
 
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    assertEquals(JobStatus.SUCCEEDED, connectionSyncRead1.getJob().getStatus());
+    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead1.getJob());
+
     assertSourceAndTargetDbInSync(sourcePsql);
 
     // add new records and run again.
-    final Database database = getDatabase(sourcePsql);
+    final Database source = getDatabase(sourcePsql);
     // get contents of source before mutating records.
-    final List<JsonNode> expectedRecords = retrievePgRecords(database, STREAM_NAME);
+    final List<JsonNode> expectedRecords = retrieveSourceRecords(source, STREAM_NAME);
     expectedRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, "geralt").build()));
     // add a new record
-    database.query(ctx -> ctx.execute("INSERT INTO id_and_name(id, name) VALUES(6, 'geralt')"));
+    source.query(ctx -> ctx.execute("INSERT INTO id_and_name(id, name) VALUES(6, 'geralt')"));
     // mutate a record that was already synced with out updating its cursor value. if we are actually
     // full refreshing, this record will appear in the output and cause the test to fail. if we are,
     // correctly, doing incremental, we will not find this value in the destination.
-    database.query(ctx -> ctx.execute("UPDATE id_and_name SET name='yennefer' WHERE id=2"));
-    database.close();
+    source.query(ctx -> ctx.execute("UPDATE id_and_name SET name='yennefer' WHERE id=2"));
+    source.close();
 
     final JobInfoRead connectionSyncRead2 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    assertEquals(JobStatus.SUCCEEDED, connectionSyncRead2.getJob().getStatus());
-    assertDestinationContains(expectedRecords, TABLE_NAME);
+    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead2.getJob());
+    assertDestinationContains(expectedRecords, STREAM_NAME);
 
     // reset back to no data.
     apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    assertDestinationContains(Collections.emptyList(), TABLE_NAME);
+    assertDestinationContains(Collections.emptyList(), STREAM_NAME);
 
     // sync one more time. verify it is the equivalent of a full refresh.
     final JobInfoRead connectionSyncRead3 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    assertEquals(JobStatus.SUCCEEDED, connectionSyncRead3.getJob().getStatus());
+    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead3.getJob());
     assertSourceAndTargetDbInSync(sourcePsql);
   }
 
   @Test
   @Order(9)
   public void testScheduledSync() throws Exception {
+    // skip with Kube. HTTP client error with port forwarding
+    Assume.assumeFalse(IS_KUBE);
+
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
-    final UUID destinationId = createCsvDestination().getDestinationId();
+    final UUID destinationId = createDestination().getDestinationId();
     final SourceSchema schema = discoverSourceSchema(sourceId);
     schema.getStreams().forEach(table -> table.getFields().forEach(c -> c.setSelected(true))); // select all fields
     final ConnectionSchedule connectionSchedule = new ConnectionSchedule().units(1L).timeUnit(MINUTES);
@@ -379,15 +406,17 @@ public class AcceptanceTests {
   }
 
   private void assertSourceAndTargetDbInSync(PostgreSQLContainer sourceDb) throws Exception {
-    final Database database = getDatabase(sourceDb);
+    final Database source = getDatabase(sourceDb);
 
-    final Set<String> sourceStreams = listStreams(database);
-    final Set<String> destinationStreams = listCsvStreams();
-    assertEquals(sourceStreams, destinationStreams,
+    final Set<String> sourceStreams = listStreams(source);
+    final Set<String> sourceStreamsWithRawSuffix = sourceStreams.stream().map(x -> x + "_raw").collect(Collectors.toSet());
+    final Database destination = getDatabase(destinationPsql);
+    final Set<String> destinationStreams = listDestinationStreams(destination);
+    assertEquals(sourceStreamsWithRawSuffix, destinationStreams,
         String.format("streams did not match.\n source stream names: %s\n destination stream names: %s\n", sourceStreams, destinationStreams));
 
     for (String table : sourceStreams) {
-      assertStreamsEquivalent(database, table);
+      assertStreamsEquivalent(source, table);
     }
   }
 
@@ -411,14 +440,18 @@ public class AcceptanceTests {
         });
   }
 
-  private Set<String> listCsvStreams() throws IOException {
-    return Files.list(outputDir)
-        .map(file -> adaptCsvName(file.getFileName().toString()))
+  private Set<String> listDestinationStreams(Database destination) throws SQLException {
+    return destination.query(ctx -> ctx.resultQuery("SELECT table_name\n" +
+        "FROM information_schema.tables\n" +
+        "WHERE table_schema = 'public'\n" +
+        "ORDER BY table_name;"))
+        .stream()
+        .map(x -> x.get("table_name", String.class))
         .collect(Collectors.toSet());
   }
 
   private void assertDestinationContains(List<JsonNode> sourceRecords, String streamName) throws Exception {
-    final Set<JsonNode> destinationRecords = new HashSet<>(retrieveCsvRecords(streamName));
+    final Set<JsonNode> destinationRecords = new HashSet<>(retrieveDestinationRecords(streamName));
 
     assertEquals(sourceRecords.size(), destinationRecords.size(),
         String.format("destination contains: %s record. source contains: %s", sourceRecords.size(), destinationRecords.size()));
@@ -429,9 +462,9 @@ public class AcceptanceTests {
     }
   }
 
-  private void assertStreamsEquivalent(Database database, String table) throws Exception {
-    final List<JsonNode> allRecords = retrievePgRecords(database, table);
-    assertDestinationContains(allRecords, table);
+  private void assertStreamsEquivalent(Database source, String table) throws Exception {
+    final List<JsonNode> sourceRecords = retrieveSourceRecords(source, table);
+    assertDestinationContains(sourceRecords, table);
   }
 
   private ConnectionRead createConnection(String name,
@@ -454,12 +487,12 @@ public class AcceptanceTests {
     return connection;
   }
 
-  private DestinationRead createCsvDestination() throws ApiException {
+  private DestinationRead createDestination() throws ApiException {
     return createDestination(
         "AccTestDestination-" + UUID.randomUUID().toString(),
         PersistenceConstants.DEFAULT_WORKSPACE_ID,
         getDestinationDefId(),
-        getDestinationConfig());
+        getDestinationDbConfig());
   }
 
   private DestinationRead createDestination(String name, UUID workspaceId, UUID destinationId, JsonNode destinationConfig) throws ApiException {
@@ -476,49 +509,79 @@ public class AcceptanceTests {
   private UUID getDestinationDefId() throws ApiException {
     return apiClient.getDestinationDefinitionApi().listDestinationDefinitions().getDestinationDefinitions()
         .stream()
-        .filter(dr -> dr.getName().toLowerCase().contains("csv"))
+        .filter(dr -> dr.getName().toLowerCase().contains("postgres"))
         .findFirst()
         .orElseThrow()
         .getDestinationDefinitionId();
   }
 
-  private JsonNode getDestinationConfig() {
-    return Jsons.jsonNode(ImmutableMap.of("destination_path", Path.of("/local").resolve(relativeDir).toString()));
-  }
-
-  private List<JsonNode> retrievePgRecords(Database database, String table) throws SQLException {
-    return database.query(context -> context.fetch(String.format("SELECT * FROM %s;", table)))
+  private List<JsonNode> retrieveSourceRecords(Database database, String table) throws SQLException {
+    final String cleanedName = table.replace("public.", "");
+    return database.query(context -> context.fetch(String.format("SELECT * FROM \"%s\";", cleanedName)))
         .stream()
         .map(Record::intoMap)
         .map(Jsons::jsonNode)
         .collect(Collectors.toList());
   }
 
-  private List<JsonNode> retrieveCsvRecords(String streamName) throws Exception {
-    final Optional<Path> stream = Files.list(outputDir)
-        .filter(path -> path.getFileName().toString().toLowerCase().contains(adaptToCsvName(streamName)))
-        .findFirst();
-    assertTrue(stream.isPresent());
-
-    final FileReader in = new FileReader(stream.get().toFile());
-    final Iterable<CSVRecord> records = CSVFormat.DEFAULT
-        .withHeader("data")
-        .withFirstRecordAsHeader()
-        .parse(in);
-
-    return StreamSupport.stream(records.spliterator(), false)
-        .map(record -> Jsons.deserialize(record.toMap().get("data")))
+  private List<JsonNode> retrieveDestinationRecords(Database database, String table) throws SQLException {
+    return database.query(context -> context.fetch(String.format("SELECT * FROM \"%s\";", table)))
+        .stream()
+        .map(Record::intoMap)
+        .map(r -> r.get("data"))
+        .map(f -> (JSONB) f)
+        .map(JSONB::data)
+        .map(Jsons::deserialize)
+        .map(Jsons::jsonNode)
         .collect(Collectors.toList());
   }
 
-  private Map<Object, Object> getSourceDbConfig() {
-    final Map<Object, Object> dbConfig = new HashMap<>();
-    dbConfig.put("host", sourcePsql.getHost());
-    dbConfig.put("password", sourcePsql.getPassword());
-    dbConfig.put("port", sourcePsql.getFirstMappedPort());
-    dbConfig.put("database", sourcePsql.getDatabaseName());
-    dbConfig.put("username", sourcePsql.getUsername());
-    return dbConfig;
+  private List<JsonNode> retrieveDestinationRecords(String streamName) throws Exception {
+    Database destination = getDatabase(destinationPsql);
+    Set<String> destinationStreams = listDestinationStreams(destination);
+
+    assertTrue(destinationStreams.contains(streamName + "_raw"), "can't find a normalized version of " + streamName);
+
+    return retrieveDestinationRecords(destination, streamName + "_raw");
+  }
+
+  private JsonNode getSourceDbConfig() {
+    return getDbConfig(sourcePsql);
+  }
+
+  private JsonNode getDestinationDbConfig() {
+    return getDbConfig(destinationPsql);
+  }
+
+  private JsonNode getDestinationDbConfigWithHiddenPassword() {
+    return getDbConfig(destinationPsql, true);
+  }
+
+  private JsonNode getDbConfig(PostgreSQLContainer psql) {
+    return getDbConfig(psql, false);
+  }
+
+  private JsonNode getDbConfig(PostgreSQLContainer psql, boolean hiddenPassword) {
+    try {
+      final Map<Object, Object> dbConfig = new HashMap<>();
+
+      // necessary for minikube tests on Github Actions instead of psql.getHost()
+      dbConfig.put("host", Inet4Address.getLocalHost().getHostAddress());
+
+      if (hiddenPassword) {
+        dbConfig.put("password", "**********");
+      } else {
+        dbConfig.put("password", psql.getPassword());
+      }
+
+      dbConfig.put("port", psql.getFirstMappedPort());
+      dbConfig.put("database", psql.getDatabaseName());
+      dbConfig.put("username", psql.getUsername());
+
+      return Jsons.jsonNode(dbConfig);
+    } catch (UnknownHostException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private SourceRead createPostgresSource() throws ApiException {
@@ -529,12 +592,12 @@ public class AcceptanceTests {
         getSourceDbConfig());
   }
 
-  private SourceRead createSource(String name, UUID workspaceId, UUID sourceDefId, Map<Object, Object> sourceConfig) throws ApiException {
+  private SourceRead createSource(String name, UUID workspaceId, UUID sourceDefId, JsonNode sourceConfig) throws ApiException {
     final SourceRead source = apiClient.getSourceApi().createSource(new SourceCreate()
         .name(name)
         .sourceDefinitionId(sourceDefId)
         .workspaceId(workspaceId)
-        .connectionConfiguration(Jsons.jsonNode(sourceConfig)));
+        .connectionConfiguration(sourceConfig));
     sourceIds.add(source.getSourceId());
     return source;
   }
@@ -575,12 +638,16 @@ public class AcceptanceTests {
     apiClient.getDestinationApi().deleteDestination(new DestinationIdRequestBody().destinationId(destinationId));
   }
 
-  private String adaptCsvName(String streamName) {
-    return streamName.replaceAll("_raw\\.csv", "").replaceAll("public_", "public.");
-  }
+  private static void waitForSuccessfulJob(JobsApi jobsApi, JobRead originalJob) throws InterruptedException, ApiException {
+    JobRead job = originalJob;
+    int count = 0;
+    while (count < 15 && (job.getStatus() == JobStatus.PENDING || job.getStatus() == JobStatus.RUNNING)) {
+      Thread.sleep(1000);
+      count++;
 
-  private String adaptToCsvName(String streamName) {
-    return streamName.replaceAll("public\\.", "public_");
+      job = jobsApi.getJobInfo(new JobIdRequestBody().id(job.getId())).getJob();
+    }
+    assertEquals(JobStatus.SUCCEEDED, job.getStatus());
   }
 
 }

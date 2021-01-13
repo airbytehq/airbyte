@@ -87,7 +87,6 @@ const ServiceForm: React.FC<IProps> = ({
       initialValues={initialValues}
       validateOnBlur={true}
       validateOnChange={true}
-      validateOnMount={true}
       validationSchema={validationSchema}
       onSubmit={async values =>
         onSubmit(validationSchema.cast(values, { stripUnknown: true }))

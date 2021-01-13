@@ -34,7 +34,7 @@ import io.airbyte.scheduler.persistence.JobPersistence;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Collections;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -44,52 +44,71 @@ class JobRetrierTest {
 
   private JobPersistence persistence;
   private JobRetrier jobRetrier;
-  private Job job;
+  private Job incompleteSyncJob;
+  private Job incompleteSpecJob;
 
   @BeforeEach
   void setup() throws IOException {
     persistence = mock(JobPersistence.class);
     jobRetrier = new JobRetrier(persistence, () -> NOW);
-    job = mock(Job.class);
-    when(job.getId()).thenReturn(12L);
-    when(job.getStatus()).thenReturn(JobStatus.INCOMPLETE);
+    incompleteSyncJob = mock(Job.class);
+    when(incompleteSyncJob.getId()).thenReturn(12L);
+    when(incompleteSyncJob.getStatus()).thenReturn(JobStatus.INCOMPLETE);
+    when(incompleteSyncJob.getConfigType()).thenReturn(JobConfig.ConfigType.SYNC);
 
-    when(persistence.listJobsWithStatus(JobConfig.ConfigType.SYNC, JobStatus.INCOMPLETE))
-        .thenReturn(Collections.singletonList(job));
+    incompleteSpecJob = mock(Job.class);
+    when(incompleteSpecJob.getId()).thenReturn(42L);
+    when(incompleteSpecJob.getStatus()).thenReturn(JobStatus.INCOMPLETE);
+    when(incompleteSpecJob.getConfigType()).thenReturn(JobConfig.ConfigType.GET_SPEC);
   }
 
   @Test
-  void testTimeToRetry() throws IOException {
-    when(job.getAttemptsCount()).thenReturn(1);
-    when(job.getUpdatedAtInSecond()).thenReturn(NOW.minus(Duration.ofMinutes(2)).getEpochSecond());
+  void testSyncJobTimeToRetry() throws IOException {
+    when(persistence.listJobsWithStatus(JobStatus.INCOMPLETE)).thenReturn(List.of(incompleteSyncJob));
+    when(incompleteSyncJob.getAttemptsCount()).thenReturn(1);
+    when(incompleteSyncJob.getUpdatedAtInSecond()).thenReturn(NOW.minus(Duration.ofMinutes(2)).getEpochSecond());
 
     jobRetrier.run();
 
-    verify(persistence).listJobsWithStatus(JobConfig.ConfigType.SYNC, JobStatus.INCOMPLETE);
-    verify(persistence).resetJob(12L);
+    verify(persistence).listJobsWithStatus(JobStatus.INCOMPLETE);
+    verify(persistence).resetJob(incompleteSyncJob.getId());
     verifyNoMoreInteractions(persistence);
   }
 
   @Test
   void testToSoonToRetry() throws IOException {
-    when(job.getAttemptsCount()).thenReturn(1);
-    when(job.getUpdatedAtInSecond()).thenReturn(NOW.minus(Duration.ofSeconds(10)).getEpochSecond());
+    when(persistence.listJobsWithStatus(JobStatus.INCOMPLETE)).thenReturn(List.of(incompleteSyncJob));
+    when(incompleteSyncJob.getAttemptsCount()).thenReturn(1);
+    when(incompleteSyncJob.getUpdatedAtInSecond()).thenReturn(NOW.minus(Duration.ofSeconds(10)).getEpochSecond());
 
     jobRetrier.run();
 
-    verify(persistence).listJobsWithStatus(JobConfig.ConfigType.SYNC, JobStatus.INCOMPLETE);
+    verify(persistence).listJobsWithStatus(JobStatus.INCOMPLETE);
     verifyNoMoreInteractions(persistence);
   }
 
   @Test
-  void testTooManyFailures() throws IOException {
-    when(job.getAttemptsCount()).thenReturn(5);
-    when(job.getUpdatedAtInSecond()).thenReturn(NOW.minus(Duration.ofMinutes(2)).getEpochSecond());
+  void testTooManySyncJobFailures() throws IOException {
+    when(persistence.listJobsWithStatus(JobStatus.INCOMPLETE)).thenReturn(List.of(incompleteSyncJob));
+    when(incompleteSyncJob.getAttemptsCount()).thenReturn(5);
+    when(incompleteSyncJob.getUpdatedAtInSecond()).thenReturn(NOW.minus(Duration.ofMinutes(2)).getEpochSecond());
 
     jobRetrier.run();
 
-    verify(persistence).listJobsWithStatus(JobConfig.ConfigType.SYNC, JobStatus.INCOMPLETE);
-    verify(persistence).failJob(12L);
+    verify(persistence).listJobsWithStatus(JobStatus.INCOMPLETE);
+    verify(persistence).failJob(incompleteSyncJob.getId());
+    verifyNoMoreInteractions(persistence);
+  }
+
+  @Test
+  void testSpecJobFailure() throws IOException {
+    when(persistence.listJobsWithStatus(JobStatus.INCOMPLETE)).thenReturn(List.of(incompleteSpecJob));
+    when(incompleteSpecJob.getAttemptsCount()).thenReturn(1);
+
+    jobRetrier.run();
+
+    verify(persistence).listJobsWithStatus(JobStatus.INCOMPLETE);
+    verify(persistence).failJob(incompleteSpecJob.getId());
     verifyNoMoreInteractions(persistence);
   }
 

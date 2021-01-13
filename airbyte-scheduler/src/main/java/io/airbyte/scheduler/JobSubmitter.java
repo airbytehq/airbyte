@@ -181,14 +181,14 @@ public class JobSubmitter implements Runnable {
     switch (job.getConfig().getConfigType()) {
       case CHECK_CONNECTION_SOURCE, DISCOVER_SCHEMA -> {
         final StandardSourceDefinition sourceDefinition = configRepository
-            .getSourceDefinitionFromSource(UUID.fromString(ScopeHelper.getConfigId(job.getScope())));
+            .getSourceDefinitionFromSource(UUID.fromString(job.getScope()));
 
         metadata.put("connector_source", sourceDefinition.getName());
         metadata.put("connector_source_definition_id", sourceDefinition.getSourceDefinitionId());
       }
       case CHECK_CONNECTION_DESTINATION -> {
         final StandardDestinationDefinition destinationDefinition = configRepository
-            .getDestinationDefinitionFromDestination(UUID.fromString(ScopeHelper.getConfigId(job.getScope())));
+            .getDestinationDefinitionFromDestination(UUID.fromString(job.getScope()));
 
         metadata.put("connector_destination", destinationDefinition.getName());
         metadata.put("connector_destination_definition_id", destinationDefinition.getDestinationDefinitionId());
@@ -197,7 +197,7 @@ public class JobSubmitter implements Runnable {
         // no op because this will be noisy as heck.
       }
       case SYNC -> {
-        final UUID connectionId = UUID.fromString(ScopeHelper.getConfigId(job.getScope()));
+        final UUID connectionId = UUID.fromString(job.getScope());
         final StandardSyncSchedule schedule = configRepository.getStandardSyncSchedule(connectionId);
         final StandardSourceDefinition sourceDefinition = configRepository
             .getSourceDefinitionFromConnection(connectionId);

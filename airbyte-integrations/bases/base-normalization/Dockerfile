@@ -11,10 +11,13 @@ COPY normalization ./normalization
 COPY setup.py .
 RUN pip install .
 COPY dbt-project-template/ ./dbt-template/
+WORKDIR /airbyte/normalization_code/dbt-template/
+# Download external dbt dependencies
+RUN dbt deps
 
 WORKDIR /airbyte
 
 ENTRYPOINT ["/airbyte/entrypoint.sh"]
 
-LABEL io.airbyte.version=0.1.2
+LABEL io.airbyte.version=0.1.3
 LABEL io.airbyte.name=airbyte/normalization

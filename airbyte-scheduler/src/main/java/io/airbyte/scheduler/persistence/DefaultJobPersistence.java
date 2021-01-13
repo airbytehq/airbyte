@@ -25,7 +25,11 @@
 package io.airbyte.scheduler.persistence;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Sets;
+import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.text.Names;
+import io.airbyte.commons.text.Sqls;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
@@ -37,7 +41,6 @@ import io.airbyte.scheduler.Attempt;
 import io.airbyte.scheduler.AttemptStatus;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.JobStatus;
-import io.airbyte.scheduler.ScopeHelper;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -48,6 +51,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -64,6 +68,7 @@ public class DefaultJobPersistence implements JobPersistence {
   static final String BASE_JOB_SELECT_AND_JOIN =
       "SELECT\n"
           + "jobs.id AS job_id,\n"
+          + "jobs.config_type AS config_type,\n"
           + "jobs.scope AS scope,\n"
           + "jobs.config AS config,\n"
           + "jobs.status AS job_status,\n"
@@ -92,24 +97,33 @@ public class DefaultJobPersistence implements JobPersistence {
     this(database, Instant::now);
   }
 
-  // configJson is a oneOf checkConnection, discoverSchema, sync
   @Override
-  public long createJob(String scope, JobConfig jobConfig) throws IOException {
-    LOGGER.info("creating pending job for scope: " + scope);
+  public Optional<Long> enqueueJob(String scope, JobConfig jobConfig) throws IOException {
+    LOGGER.info("enqueuing pending job for scope: {}", scope);
     final LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
 
-    final Record record = database.query(
+    String queueingRequest = Job.REPLICATION_TYPES.contains(jobConfig.getConfigType())
+        ? String.format("WHERE NOT EXISTS (SELECT 1 FROM jobs WHERE config_type IN (%s) AND scope = '%s' AND status NOT IN (%s)) ",
+            Job.REPLICATION_TYPES.stream().map(Sqls::toSqlName).map(Names::singleQuote).collect(Collectors.joining(",")),
+            scope,
+            JobStatus.TERMINAL_STATUSES.stream().map(Sqls::toSqlName).map(Names::singleQuote).collect(Collectors.joining(",")))
+        : "";
+
+    return database.query(
         ctx -> ctx.fetch(
-            "INSERT INTO jobs(scope, created_at, updated_at, status, config) VALUES(?, ?, ?, CAST(? AS JOB_STATUS), CAST(? as JSONB)) RETURNING id",
+            "INSERT INTO jobs(config_type, scope, created_at, updated_at, status, config) " +
+                "SELECT CAST(? AS JOB_CONFIG_TYPE), ?, ?, ?, CAST(? AS JOB_STATUS), CAST(? as JSONB) " +
+                queueingRequest +
+                "RETURNING id ",
+            Sqls.toSqlName(jobConfig.getConfigType()),
             scope,
             now,
             now,
-            JobStatus.PENDING.toString().toLowerCase(),
+            Sqls.toSqlName(JobStatus.PENDING),
             Jsons.serialize(jobConfig)))
         .stream()
         .findFirst()
-        .orElseThrow(() -> new RuntimeException("This should not happen"));
-    return record.getValue("id", Long.class);
+        .map(r -> r.getValue("id", Long.class));
   }
 
   @Override
@@ -156,7 +170,7 @@ public class DefaultJobPersistence implements JobPersistence {
   private void updateJobStatus(DSLContext ctx, long jobId, JobStatus newStatus, LocalDateTime now) {
     ctx.execute(
         "UPDATE jobs SET status = CAST(? as JOB_STATUS), updated_at = ? WHERE id = ?",
-        newStatus.toString().toLowerCase(),
+        Sqls.toSqlName(newStatus),
         now,
         jobId);
   }
@@ -183,7 +197,7 @@ public class DefaultJobPersistence implements JobPersistence {
           jobId,
           job.getAttemptsCount(),
           logPath.toString(),
-          AttemptStatus.RUNNING.toString().toLowerCase(),
+          Sqls.toSqlName(AttemptStatus.RUNNING),
           now,
           now)
           .stream()
@@ -203,7 +217,7 @@ public class DefaultJobPersistence implements JobPersistence {
 
       ctx.execute(
           "UPDATE attempts SET status = CAST(? as ATTEMPT_STATUS), updated_at = ? WHERE job_id = ? AND attempt_number = ?",
-          AttemptStatus.FAILED.toString().toLowerCase(),
+          Sqls.toSqlName(AttemptStatus.FAILED),
           now,
           jobId,
           attemptNumber);
@@ -220,7 +234,7 @@ public class DefaultJobPersistence implements JobPersistence {
 
       ctx.execute(
           "UPDATE attempts SET status = CAST(? as ATTEMPT_STATUS), updated_at = ? WHERE job_id = ? AND attempt_number = ?",
-          AttemptStatus.SUCCEEDED.toString().toLowerCase(),
+          Sqls.toSqlName(AttemptStatus.SUCCEEDED),
           now,
           jobId,
           attemptNumber);
@@ -255,28 +269,46 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public List<Job> listJobs(JobConfig.ConfigType configType, String configId) throws IOException {
-    final String scope = ScopeHelper.createScope(configType, configId);
-    return database.query(ctx -> getJobsFromResult(ctx.fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE scope = ? ORDER BY jobs.created_at DESC", scope)));
+  public List<Job> listJobs(ConfigType configType, String configId) throws IOException {
+    return database.query(ctx -> getJobsFromResult(ctx.fetch(
+        BASE_JOB_SELECT_AND_JOIN + "WHERE " +
+            "CAST(config_type AS VARCHAR) = ? AND " +
+            "scope = ? " +
+            "ORDER BY jobs.created_at DESC",
+        Sqls.toSqlName(configType),
+        configId)));
   }
 
   @Override
-  public List<Job> listJobsWithStatus(JobConfig.ConfigType configType, JobStatus status) throws IOException {
-    // todo (cgardens) - jooq does not let you use bindings to do LIKE queries. you have to construct
-    // the string yourself or use their DSL.
-    final String likeStatement = "'" + ScopeHelper.getScopePrefix(configType) + "%'";
+  public List<Job> listJobsWithStatus(JobStatus status) throws IOException {
+    return listJobsWithStatus(Sets.newHashSet(ConfigType.values()), status);
+  }
+
+  @Override
+  public List<Job> listJobsWithStatus(Set<ConfigType> configTypes, JobStatus status) throws IOException {
     return database.query(ctx -> getJobsFromResult(ctx
-        .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE jobs.scope LIKE " + likeStatement
-            + " AND CAST(jobs.status AS VARCHAR) = ? ORDER BY jobs.created_at DESC",
-            status.toString().toLowerCase())));
+        .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE " +
+            "CAST(config_type AS VARCHAR) IN " + Sqls.toSqlInFragment(configTypes) + " AND " +
+            "CAST(jobs.status AS VARCHAR) = ? " +
+            "ORDER BY jobs.created_at DESC",
+            Sqls.toSqlName(status))));
   }
 
   @Override
-  public Optional<Job> getLastSyncJob(UUID connectionId) throws IOException {
+  public List<Job> listJobsWithStatus(ConfigType configType, JobStatus status) throws IOException {
+    return listJobsWithStatus(Sets.newHashSet(configType), status);
+  }
+
+  @Override
+  public Optional<Job> getLastReplicationJob(UUID connectionId) throws IOException {
     return database.query(ctx -> ctx
-        .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE scope = ? AND CAST(jobs.status AS VARCHAR) <> ? ORDER BY jobs.created_at DESC LIMIT 1",
-            ScopeHelper.createScope(ConfigType.SYNC, connectionId.toString()),
-            JobStatus.CANCELLED.toString().toLowerCase())
+        .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE " +
+            "CAST(jobs.config_type AS VARCHAR) in " + Sqls.toSqlInFragment(Job.REPLICATION_TYPES) + " AND " +
+            "scope = ? AND " +
+            "CAST(jobs.status AS VARCHAR) <> ? " +
+            "ORDER BY jobs.created_at DESC LIMIT 1",
+            connectionId.toString(),
+            Sqls.toSqlName(JobStatus.CANCELLED))
         .stream()
         .findFirst()
         .flatMap(r -> getJobOptional(ctx, r.get("job_id", Long.class))));
@@ -285,9 +317,13 @@ public class DefaultJobPersistence implements JobPersistence {
   @Override
   public Optional<State> getCurrentState(UUID connectionId) throws IOException {
     return database.query(ctx -> ctx
-        .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE scope = ? AND CAST(jobs.status AS VARCHAR) = ? ORDER BY attempts.created_at DESC LIMIT 1",
-            ScopeHelper.createScope(ConfigType.SYNC, connectionId.toString()),
-            JobStatus.SUCCEEDED.toString().toLowerCase())
+        .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE " +
+            "CAST(jobs.config_type AS VARCHAR) in " + Sqls.toSqlInFragment(Job.REPLICATION_TYPES) + " AND " +
+            "scope = ? AND " +
+            "CAST(jobs.status AS VARCHAR) = ? " +
+            "ORDER BY jobs.created_at DESC LIMIT 1",
+            connectionId.toString(),
+            Sqls.toSqlName(JobStatus.SUCCEEDED))
         .stream()
         .findFirst()
         .flatMap(r -> getJobOptional(ctx, r.get("job_id", Long.class)))
@@ -303,8 +339,10 @@ public class DefaultJobPersistence implements JobPersistence {
     // 2. job is excluded if another job of the same scope is already running
     // 3. job is excluded if another job of the same scope is already incomplete
     return database.query(ctx -> ctx
-        .fetch(BASE_JOB_SELECT_AND_JOIN
-            + "WHERE CAST(jobs.status AS VARCHAR) = 'pending' AND jobs.scope NOT IN ( SELECT scope FROM jobs WHERE status = 'running' OR status = 'incomplete' ) ORDER BY jobs.created_at ASC LIMIT 1")
+        .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE " +
+            "CAST(jobs.status AS VARCHAR) = 'pending' AND " +
+            "jobs.scope NOT IN ( SELECT scope FROM jobs WHERE status = 'running' OR status = 'incomplete' ) " +
+            "ORDER BY jobs.created_at ASC LIMIT 1")
         .stream()
         .findFirst()
         .flatMap(r -> getJobOptional(ctx, r.get("job_id", Long.class))));
@@ -327,7 +365,7 @@ public class DefaultJobPersistence implements JobPersistence {
                   attemptRecord.get("job_id", Long.class),
                   Path.of(attemptRecord.get("log_path", String.class)),
                   output,
-                  AttemptStatus.valueOf(attemptRecord.get("attempt_status", String.class).toUpperCase()),
+                  Enums.toEnum(attemptRecord.get("attempt_status", String.class), AttemptStatus.class).orElseThrow(),
                   getEpoch(attemptRecord, "attempt_created_at"),
                   getEpoch(attemptRecord, "attempt_updated_at"),
                   Optional.ofNullable(attemptRecord.get("attempt_ended_at"))
@@ -340,6 +378,7 @@ public class DefaultJobPersistence implements JobPersistence {
           final JobConfig jobConfig = Jsons.deserialize(jobEntry.get("config", String.class), JobConfig.class);
           return new Job(
               jobEntry.get("job_id", Long.class),
+              Enums.toEnum(jobEntry.get("config_type", String.class), ConfigType.class).orElseThrow(),
               jobEntry.get("scope", String.class),
               jobConfig,
               attempts,

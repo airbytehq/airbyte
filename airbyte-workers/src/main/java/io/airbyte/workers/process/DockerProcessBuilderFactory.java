@@ -31,6 +31,7 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.WorkerUtils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -111,17 +112,20 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
   }
 
   @VisibleForTesting
-  boolean checkImageExists(String imageName) {
+  boolean checkImageExists(String imageName) throws WorkerException {
     try {
       final Process process = new ProcessBuilder(imageExistsScriptPath.toString(), imageName).start();
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
       LineGobbler.gobble(process.getInputStream(), LOGGER::info);
 
-      process.waitFor(1, TimeUnit.MINUTES);
+      WorkerUtils.gentleClose(process, 2, TimeUnit.MINUTES);
 
-      return process.exitValue() == 0;
-
-    } catch (IOException | InterruptedException e) {
+      if (process.isAlive()) {
+        throw new WorkerException("Process to check if image exists is stuck. Exiting.");
+      } else {
+        return process.exitValue() == 0;
+      }
+    } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }

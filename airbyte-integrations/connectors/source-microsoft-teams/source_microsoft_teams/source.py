@@ -61,8 +61,9 @@ class SourceMicrosoftTeams(BaseSource):
             try:
                 for record in self._read_record(client=client, stream=stream.name):
                     yield AirbyteMessage(type=Type.RECORD, record=record)
-            except requests.exceptions.RequestException:
-                logger.error(f"Get {stream.name} error")
+            except requests.exceptions.RequestException as e:
+                error = json.loads(e.args[0])["error"]
+                logger.error(f"Get {stream.name} error. Error: {error['code']} {error['message']}")
         logger.info(f"Finished syncing {self.__class__.__name__}")
 
     def _read_record(self, client: Client, stream: str):

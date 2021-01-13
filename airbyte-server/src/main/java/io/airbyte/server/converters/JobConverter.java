@@ -40,7 +40,6 @@ import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.scheduler.Attempt;
 import io.airbyte.scheduler.Job;
-import io.airbyte.scheduler.ScopeHelper;
 import java.io.IOException;
 import java.util.stream.Collectors;
 
@@ -55,8 +54,8 @@ public class JobConverter {
   }
 
   public static JobWithAttemptsRead getJobWithAttemptsRead(Job job) {
-    final String configId = ScopeHelper.getConfigId(job.getScope());
-    final JobConfigType configType = Enums.convertTo(job.getConfig().getConfigType(), JobConfigType.class);
+    final String configId = job.getScope();
+    final JobConfigType configType = Enums.convertTo(job.getConfigType(), JobConfigType.class);
 
     return new JobWithAttemptsRead()
         .job(new JobRead()

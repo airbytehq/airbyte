@@ -33,6 +33,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DefaultConfigPersistence;
 import io.airbyte.config.persistence.PersistenceConstants;
+import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.scheduler.client.SpecCachingSchedulerJobClient;
 import io.airbyte.scheduler.persistence.DefaultJobCreator;
@@ -66,11 +67,17 @@ public class ServerApp {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
 
+  private final String airbyteVersion;
+  private final Database database;
   private final ConfigRepository configRepository;
   private final JobPersistence jobPersistence;
 
-  public ServerApp(final ConfigRepository configRepository, final JobPersistence jobPersistence) {
-
+  public ServerApp(final String airbyteVersion,
+                   final Database database,
+                   final ConfigRepository configRepository,
+                   final JobPersistence jobPersistence) {
+    this.airbyteVersion = airbyteVersion;
+    this.database = database;
     this.configRepository = configRepository;
     this.jobPersistence = jobPersistence;
   }
@@ -82,6 +89,8 @@ public class ServerApp {
 
     ServletContextHandler handler = new ServletContextHandler();
 
+    ConfigurationApiFactory.setAirbyteVersion(airbyteVersion);
+    ConfigurationApiFactory.setDatabase(database);
     ConfigurationApiFactory.setSpecCache(new SpecCachingSchedulerJobClient(jobPersistence, new DefaultJobCreator(jobPersistence)));
     ConfigurationApiFactory.setConfigRepository(configRepository);
     ConfigurationApiFactory.setJobPersistence(jobPersistence);
@@ -175,13 +184,14 @@ public class ServerApp {
         configRepository);
 
     LOGGER.info("Creating Scheduler persistence...");
-    final JobPersistence jobPersistence = new DefaultJobPersistence(Databases.createPostgresDatabase(
+    final Database database = Databases.createPostgresDatabase(
         configs.getDatabaseUser(),
         configs.getDatabasePassword(),
-        configs.getDatabaseUrl()));
+        configs.getDatabaseUrl());
+    final JobPersistence jobPersistence = new DefaultJobPersistence(database);
 
     LOGGER.info("Starting server...");
-    new ServerApp(configRepository, jobPersistence).start();
+    new ServerApp(configs.getAirbyteVersion(), database, configRepository, jobPersistence).start();
   }
 
 }

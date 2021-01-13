@@ -64,6 +64,7 @@ import io.airbyte.workers.protocols.airbyte.DefaultAirbyteDestination;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -436,12 +437,12 @@ public abstract class TestDestination {
         .filter(message -> message.getType() == AirbyteMessage.Type.RECORD)
         .map(AirbyteMessage::getRecord)
         .peek(recordMessage -> recordMessage.setEmittedAt(null))
-        .map(recordMessage -> pruneAirbyteInternalFields ? this.safePrune(recordMessage) : recordMessage)
+        .map(recordMessage -> pruneAirbyteInternalFields ? safePrune(recordMessage) : recordMessage)
         .map(recordMessage -> recordMessage.getData())
         .collect(Collectors.toList());
 
     final List<JsonNode> actualProcessed = actual.stream()
-        .map(recordMessage -> pruneAirbyteInternalFields ? this.safePrune(recordMessage) : recordMessage)
+        .map(recordMessage -> pruneAirbyteInternalFields ? safePrune(recordMessage) : recordMessage)
         .map(recordMessage -> recordMessage.getData())
         .collect(Collectors.toList());
 
@@ -515,7 +516,15 @@ public abstract class TestDestination {
       // likely did not exist in the original message. the most consistent thing to do is always remove
       // the null fields (this choice does decrease our ability to check that normalization creates
       // columns even if all the values in that column are null)
-      if (Sets.newHashSet("emitted_at", "ab_id", "normalized_at", "EMITTED_AT", "AB_ID", "NORMALIZED_AT").contains(key) || key.matches("^_.*_hashid$")
+      final HashSet<String> airbyteInternalFields = Sets.newHashSet(
+          "emitted_at",
+          "ab_id",
+          "normalized_at",
+          "EMITTED_AT",
+          "AB_ID",
+          "NORMALIZED_AT",
+          "HASHID");
+      if (airbyteInternalFields.stream().anyMatch(internalField -> key.toLowerCase().contains(internalField.toLowerCase()))
           || json.get(key).isNull()) {
         ((ObjectNode) json).remove(key);
       }

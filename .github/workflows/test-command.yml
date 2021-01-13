@@ -76,6 +76,7 @@ jobs:
           TWILIO_TEST_CREDS: ${{ secrets.TWILIO_TEST_CREDS }}
           ZENDESK_SECRETS_CREDS: ${{ secrets.ZENDESK_SECRETS_CREDS }}
           ZOOM_INTEGRATION_TEST_CREDS: ${{ secrets.ZOOM_INTEGRATION_TEST_CREDS }}
+          PLAID_INTEGRATION_TEST_CREDS: ${{ secrets.PLAID_INTEGRATION_TEST_CREDS }}
       - run: |
           ./tools/bin/ci_integration_test.sh ${{ github.event.inputs.connector }}
         env:

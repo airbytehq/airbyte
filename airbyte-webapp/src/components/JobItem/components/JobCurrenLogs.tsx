@@ -44,7 +44,7 @@ const JobCurrentLogs: React.FC<IProps> = ({ id, jobIsFailed, attempts }) => {
         {attempts.length > 1 && (
           <AttemptDetails attempt={attempts[attemptNumber].attempt} />
         )}
-        <div>{`/tmp/workspace/${id}/${attempts[attemptNumber].attempt.id}/logs.log.`}</div>
+        <div>{`/tmp/workspace/${id}/${attempts[attemptNumber].attempt.id}/logs.log`}</div>
 
         <DownloadButton
           logs={attempts[attemptNumber].logs.logLines}

@@ -37,8 +37,8 @@ import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.SyncMode;
-import io.airbyte.scheduler.ScopeHelper;
 import java.io.IOException;
+import java.util.Optional;
 
 public class DefaultJobCreator implements JobCreator {
 
@@ -50,79 +50,59 @@ public class DefaultJobCreator implements JobCreator {
 
   @Override
   public long createSourceCheckConnectionJob(SourceConnection source, String dockerImageName) throws IOException {
-    final String scope =
-        ScopeHelper.createScope(
-            JobConfig.ConfigType.CHECK_CONNECTION_SOURCE,
-            source.getSourceId().toString());
-
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
         .withConnectionConfiguration(source.getConfiguration())
         .withDockerImage(dockerImageName);
 
     final JobConfig jobConfig = new JobConfig()
-        .withConfigType(JobConfig.ConfigType.CHECK_CONNECTION_SOURCE)
+        .withConfigType(ConfigType.CHECK_CONNECTION_SOURCE)
         .withCheckConnection(jobCheckConnectionConfig);
 
-    return jobPersistence.createJob(scope, jobConfig);
+    return jobPersistence.enqueueJob(source.getSourceId().toString(), jobConfig).orElseThrow();
   }
 
   @Override
   public long createDestinationCheckConnectionJob(DestinationConnection destination, String dockerImageName) throws IOException {
-    final String scope =
-        ScopeHelper.createScope(
-            JobConfig.ConfigType.CHECK_CONNECTION_DESTINATION,
-            destination.getDestinationId().toString());
-
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
         .withConnectionConfiguration(destination.getConfiguration())
         .withDockerImage(dockerImageName);
 
     final JobConfig jobConfig = new JobConfig()
-        .withConfigType(JobConfig.ConfigType.CHECK_CONNECTION_DESTINATION)
+        .withConfigType(ConfigType.CHECK_CONNECTION_DESTINATION)
         .withCheckConnection(jobCheckConnectionConfig);
 
-    return jobPersistence.createJob(scope, jobConfig);
+    return jobPersistence.enqueueJob(destination.getDestinationId().toString(), jobConfig).orElseThrow();
   }
 
   @Override
   public long createDiscoverSchemaJob(SourceConnection source, String dockerImageName) throws IOException {
-    final String scope = ScopeHelper.createScope(
-        JobConfig.ConfigType.DISCOVER_SCHEMA,
-        source.getSourceId().toString());
-
     final JobDiscoverCatalogConfig jobDiscoverCatalogConfig = new JobDiscoverCatalogConfig()
         .withConnectionConfiguration(source.getConfiguration())
         .withDockerImage(dockerImageName);
 
     final JobConfig jobConfig = new JobConfig()
-        .withConfigType(JobConfig.ConfigType.DISCOVER_SCHEMA)
+        .withConfigType(ConfigType.DISCOVER_SCHEMA)
         .withDiscoverCatalog(jobDiscoverCatalogConfig);
 
-    return jobPersistence.createJob(scope, jobConfig);
+    return jobPersistence.enqueueJob(source.getSourceId().toString(), jobConfig).orElseThrow();
   }
 
   @Override
   public long createGetSpecJob(String integrationImage) throws IOException {
-    final String scope = ScopeHelper.createScope(
-        JobConfig.ConfigType.GET_SPEC,
-        integrationImage);
-
     final JobConfig jobConfig = new JobConfig()
-        .withConfigType(JobConfig.ConfigType.GET_SPEC)
+        .withConfigType(ConfigType.GET_SPEC)
         .withGetSpec(new JobGetSpecConfig().withDockerImage(integrationImage));
 
-    return jobPersistence.createJob(scope, jobConfig);
+    return jobPersistence.enqueueJob(integrationImage, jobConfig).orElseThrow();
   }
 
   @Override
-  public long createSyncJob(SourceConnection source,
-                            DestinationConnection destination,
-                            StandardSync standardSync,
-                            String sourceDockerImageName,
-                            String destinationDockerImageName)
+  public Optional<Long> createSyncJob(SourceConnection source,
+                                      DestinationConnection destination,
+                                      StandardSync standardSync,
+                                      String sourceDockerImageName,
+                                      String destinationDockerImageName)
       throws IOException {
-    final String scope = ScopeHelper.createScope(JobConfig.ConfigType.SYNC, standardSync.getConnectionId().toString());
-
     // reusing this isn't going to quite work.
     final JobSyncConfig jobSyncConfig = new JobSyncConfig()
         .withSourceDockerImage(sourceDockerImageName)
@@ -135,9 +115,9 @@ public class DefaultJobCreator implements JobCreator {
     jobPersistence.getCurrentState(standardSync.getConnectionId()).ifPresent(jobSyncConfig::withState);
 
     final JobConfig jobConfig = new JobConfig()
-        .withConfigType(JobConfig.ConfigType.SYNC)
+        .withConfigType(ConfigType.SYNC)
         .withSync(jobSyncConfig);
-    return jobPersistence.createJob(scope, jobConfig);
+    return jobPersistence.enqueueJob(standardSync.getConnectionId().toString(), jobConfig);
   }
 
   // Strategy:
@@ -148,10 +128,8 @@ public class DefaultJobCreator implements JobCreator {
   // 4. The Empty source emits no state message, so state will start at null (i.e. start from the
   // beginning on the next sync).
   @Override
-  public long createResetConnectionJob(DestinationConnection destination, StandardSync standardSync, String destinationDockerImage)
+  public Optional<Long> createResetConnectionJob(DestinationConnection destination, StandardSync standardSync, String destinationDockerImage)
       throws IOException {
-    final String scope = ScopeHelper.createScope(JobConfig.ConfigType.SYNC, standardSync.getConnectionId().toString());
-
     final ConfiguredAirbyteCatalog configuredAirbyteCatalog = AirbyteProtocolConverters.toConfiguredCatalog(standardSync.getSchema());
     configuredAirbyteCatalog.getStreams().forEach(configuredAirbyteStream -> configuredAirbyteStream.setSyncMode(SyncMode.FULL_REFRESH));
 
@@ -163,7 +141,7 @@ public class DefaultJobCreator implements JobCreator {
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(ConfigType.RESET_CONNECTION)
         .withResetConnection(resetConnectionConfig);
-    return jobPersistence.createJob(scope, jobConfig);
+    return jobPersistence.enqueueJob(standardSync.getConnectionId().toString(), jobConfig);
   }
 
 }

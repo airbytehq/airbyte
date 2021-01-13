@@ -30,7 +30,6 @@ import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.ConnectionReadList;
 import io.airbyte.api.model.ConnectionUpdate;
-import io.airbyte.api.model.DebugRead;
 import io.airbyte.api.model.DestinationCoreConfig;
 import io.airbyte.api.model.DestinationCreate;
 import io.airbyte.api.model.DestinationDefinitionCreate;
@@ -45,6 +44,7 @@ import io.airbyte.api.model.DestinationReadList;
 import io.airbyte.api.model.DestinationRecreate;
 import io.airbyte.api.model.DestinationUpdate;
 import io.airbyte.api.model.HealthCheckRead;
+import io.airbyte.api.model.ImportRead;
 import io.airbyte.api.model.JobIdRequestBody;
 import io.airbyte.api.model.JobInfoRead;
 import io.airbyte.api.model.JobListRequestBody;
@@ -66,16 +66,19 @@ import io.airbyte.api.model.SourceRecreate;
 import io.airbyte.api.model.SourceUpdate;
 import io.airbyte.api.model.WbConnectionRead;
 import io.airbyte.api.model.WbConnectionReadList;
+import io.airbyte.api.model.WebBackendConnectionRequestBody;
+import io.airbyte.api.model.WebBackendConnectionUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.api.model.WorkspaceRead;
 import io.airbyte.api.model.WorkspaceUpdate;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.db.Database;
 import io.airbyte.scheduler.client.CachingSchedulerJobClient;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.errors.KnownException;
+import io.airbyte.server.handlers.ArchiveHandler;
 import io.airbyte.server.handlers.ConnectionsHandler;
-import io.airbyte.server.handlers.DebugInfoHandler;
 import io.airbyte.server.handlers.DestinationDefinitionsHandler;
 import io.airbyte.server.handlers.DestinationHandler;
 import io.airbyte.server.handlers.HealthCheckHandler;
@@ -90,6 +93,7 @@ import io.airbyte.server.handlers.WorkspacesHandler;
 import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
+import java.io.File;
 import java.io.IOException;
 import javax.validation.Valid;
 import org.eclipse.jetty.http.HttpStatus;
@@ -103,15 +107,17 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   private final DestinationDefinitionsHandler destinationDefinitionsHandler;
   private final DestinationHandler destinationHandler;
   private final ConnectionsHandler connectionsHandler;
-  private final DebugInfoHandler debugInfoHandler;
   private final SchedulerHandler schedulerHandler;
   private final JobHistoryHandler jobHistoryHandler;
   private final WebBackendConnectionsHandler webBackendConnectionsHandler;
   private final WebBackendSourceHandler webBackendSourceHandler;
   private final WebBackendDestinationHandler webBackendDestinationHandler;
   private final HealthCheckHandler healthCheckHandler;
+  private final ArchiveHandler archiveHandler;
 
-  public ConfigurationApi(final ConfigRepository configRepository,
+  public ConfigurationApi(final String airbyteVersion,
+                          final Database database,
+                          final ConfigRepository configRepository,
                           final JobPersistence jobPersistence,
                           final CachingSchedulerJobClient schedulerJobClient) {
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
@@ -124,11 +130,12 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     destinationHandler = new DestinationHandler(configRepository, schemaValidator, schedulerHandler, connectionsHandler);
     sourceHandler = new SourceHandler(configRepository, schemaValidator, schedulerHandler, connectionsHandler);
     jobHistoryHandler = new JobHistoryHandler(jobPersistence);
-    webBackendConnectionsHandler = new WebBackendConnectionsHandler(connectionsHandler, sourceHandler, destinationHandler, jobHistoryHandler);
+    webBackendConnectionsHandler =
+        new WebBackendConnectionsHandler(connectionsHandler, sourceHandler, destinationHandler, jobHistoryHandler, schedulerHandler);
     webBackendSourceHandler = new WebBackendSourceHandler(sourceHandler, schedulerHandler);
     webBackendDestinationHandler = new WebBackendDestinationHandler(destinationHandler, schedulerHandler);
-    debugInfoHandler = new DebugInfoHandler(configRepository);
     healthCheckHandler = new HealthCheckHandler(configRepository);
+    archiveHandler = new ArchiveHandler(airbyteVersion, configRepository, database);
   }
 
   // WORKSPACE
@@ -349,13 +356,6 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     return execute(() -> jobHistoryHandler.getJobInfo(jobIdRequestBody));
   }
 
-  // DEBUG INFO
-
-  @Override
-  public DebugRead getDebuggingInfo() {
-    return execute(debugInfoHandler::getInfo);
-  }
-
   // HEALTH
   @Override
   public HealthCheckRead getHealthCheck() {
@@ -381,8 +381,25 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public WbConnectionRead webBackendGetConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
-    return execute(() -> webBackendConnectionsHandler.webBackendGetConnection(connectionIdRequestBody));
+  public WbConnectionRead webBackendGetConnection(@Valid WebBackendConnectionRequestBody webBackendConnectionRequestBody) {
+    return execute(() -> webBackendConnectionsHandler.webBackendGetConnection(webBackendConnectionRequestBody));
+  }
+
+  @Override
+  public ConnectionRead webBackendUpdateConnection(@Valid WebBackendConnectionUpdate webBackendConnectionUpdate) {
+    return execute(() -> webBackendConnectionsHandler.webBackendUpdateConnection(webBackendConnectionUpdate));
+  }
+
+  // ARCHIVES
+
+  @Override
+  public File exportArchive() {
+    return execute(archiveHandler::exportData);
+  }
+
+  @Override
+  public ImportRead importArchive(@Valid File archiveFile) {
+    return execute(() -> archiveHandler.importData(archiveFile));
   }
 
   private <T> T execute(HandlerCall<T> call) {
