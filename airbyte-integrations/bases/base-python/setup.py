@@ -24,13 +24,6 @@ SOFTWARE.
 
 import setuptools
 
-BASE_REQUIREMENTS = [
-    "PyYAML==5.3.1",
-    "pydantic==1.6.1",
-    "airbyte-protocol==0.0.0",
-    "jsonschema==2.6.0",
-]
-
 setuptools.setup(
     name="base-python",
     description="Contains machinery to make it easy to write an integration in python.",
@@ -39,7 +32,7 @@ setuptools.setup(
     url="https://github.com/airbytehq/airbyte",
     packages=setuptools.find_packages(),
     package_data={"": ["models/yaml/*.yaml"]},
-    install_requires=BASE_REQUIREMENTS,
+    install_requires=["PyYAML==5.3.1", "pydantic==1.6.1", "airbyte-protocol"],
     entry_points={
         "console_scripts": ["base-python=base_python.entrypoint:main"],
     },

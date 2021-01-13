@@ -24,28 +24,18 @@ SOFTWARE.
 
 from setuptools import find_packages, setup
 
-BASE_REQUIREMENTS = [
-    "airbyte-protocol==0.0.0",
-    "base-singer==0.0.0",
-    "base-python==0.0.0",
-    "tap-facebook==1.9.4",
-]
-
-TEST_REQUIREMENTS = [
-    "airbyte-python-test",
-    "pytest",
-]
-
 setup(
     name="source_facebook_marketing_api_singer",
     description="Source implementation for Facebook Marketing Api, built on the Singer tap implementation.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=BASE_REQUIREMENTS,
+    install_requires=["airbyte-protocol"],
     package_data={"": ["*.json"]},
+    setup_requires=["pytest-runner"],
+    tests_require=["pytest"],
     extras_require={
-        "main": [],
-        "tests": TEST_REQUIREMENTS,
+        "main": ["base-singer", "base-python", "tap-facebook==1.9.4"],
+        "tests": ["airbyte-python-test", "pytest"],
     },
 )

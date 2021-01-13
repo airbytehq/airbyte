@@ -24,15 +24,11 @@ SOFTWARE.
 
 from setuptools import find_packages, setup
 
-BASE_REQUIREMENTS = [
-    "airbyte-protocol==0.0.0",
-]
-
 setup(
     name="base-singer",
     description="Contains helpers for handling Singer sources and destinations.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=BASE_REQUIREMENTS,
+    install_requires=["airbyte-protocol"],
 )
