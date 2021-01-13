@@ -13,9 +13,10 @@ required:
 additionalProperties: false
 properties:
   id:
-    type: string
-    format: uuid
+    type: number
   scope:
+    type: string
+  config_type:
     type: string
   config:
     type: object
@@ -24,6 +25,10 @@ properties:
   created_at:
     # todo should be datetime.
     type: string
+    description: Integration specific blob. Must be a valid JSON string.
+  started_at:
+    # todo should be datetime.
+    type: ["null", string]
     description: Integration specific blob. Must be a valid JSON string.
   updated_at:
     # todo should be datetime.

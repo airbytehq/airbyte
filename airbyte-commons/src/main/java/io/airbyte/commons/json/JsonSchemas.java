@@ -59,11 +59,11 @@ public class JsonSchemas {
   public static <T> Path prepareSchemas(final String resourceDir, Class<T> klass) {
     try {
       List<String> filenames;
-      try(Stream<Path> resources = MoreResources.listResources(klass, resourceDir)) {
+      try (Stream<Path> resources = MoreResources.listResources(klass, resourceDir)) {
 
         filenames = resources.map(p -> p.getFileName().toString())
-          .filter(p -> p.endsWith(".yaml"))
-          .collect(Collectors.toList());
+            .filter(p -> p.endsWith(".yaml"))
+            .collect(Collectors.toList());
       }
 
       final Path configRoot = Files.createTempDirectory("schemas");
@@ -79,4 +79,5 @@ public class JsonSchemas {
       throw new RuntimeException(e);
     }
   }
+
 }

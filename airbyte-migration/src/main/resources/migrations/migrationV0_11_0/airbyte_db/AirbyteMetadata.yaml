@@ -4,9 +4,11 @@ title: AirbyteMetadata
 description: representation of a airbyte_metadata record.
 type: object
 required:
-  - server_uuid
+  - key
+  - value
 additionalProperties: false
 properties:
-  server_uuid:
+  key:
     type: string
-    format: uuid
+  value:
+    type: string

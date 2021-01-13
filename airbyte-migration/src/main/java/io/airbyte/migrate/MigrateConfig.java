@@ -50,4 +50,13 @@ public class MigrateConfig {
     return targetVersion;
   }
 
+  @Override
+  public String toString() {
+    return "MigrateConfig{" +
+        "inputPath=" + inputPath +
+        ", outputPath=" + outputPath +
+        ", targetVersion='" + targetVersion + '\'' +
+        '}';
+  }
+
 }

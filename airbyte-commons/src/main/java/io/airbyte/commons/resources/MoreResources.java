@@ -50,6 +50,7 @@ public class MoreResources {
 
   /**
    * This class is a bit of a hack. Might have unexpected behavior.
+   *
    * @param klass class whose resources will be access
    * @param name path to directory in resources list
    * @return stream of paths to each resource file. THIS STREAM MUST BE CLOSED.

@@ -54,9 +54,11 @@ public class MigrationV0_11_1 implements Migration {
     inputSchema = new MigrationV0_11_0().getOutputSchema();
     outputSchema = new HashMap<>(inputSchema);
     final JsonNode standardSourceDefinitionSchema = Yamls.deserialize(Exceptions
-        .toRuntime(() -> MoreResources.readResource(RESOURCE_PATH.resolve("airbyte_config").resolve("StandardSourceDefinition.yaml").toString())));
+        .toRuntime(() -> MoreResources
+            .readResource(RESOURCE_PATH.resolve(ResourceType.CONFIG.getDirectoryName()).resolve("StandardSourceDefinition.yaml").toString())));
     final JsonNode airbyteMetadataSchema = Yamls.deserialize(Exceptions
-        .toRuntime(() -> MoreResources.readResource(RESOURCE_PATH.resolve("jobs").resolve("AirbyteMetadata.yaml").toString())));
+        .toRuntime(
+            () -> MoreResources.readResource(RESOURCE_PATH.resolve(ResourceType.JOB.getDirectoryName()).resolve("AirbyteMetadata.yaml").toString())));
     outputSchema.put(STANDARD_SOURCE_DEFINITION_RESOURCE_ID, standardSourceDefinitionSchema);
     outputSchema.put(AIRBYTE_METADATA_RESOURCE_ID, airbyteMetadataSchema);
   }

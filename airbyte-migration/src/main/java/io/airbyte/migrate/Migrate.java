@@ -52,16 +52,19 @@ import java.util.stream.BaseStream;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Migrate {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(Migrate.class);
 
   public static final String VERSION_FILE_NAME = "VERSION";
 
   // all migrations must be added to the list in the order that they should be applied.
   private static final List<Migration> MIGRATIONS = ImmutableList.of(
       new MigrationV0_11_0(),
-      new MigrationV0_11_1()
-  );
+      new MigrationV0_11_1());
 
   private final Path migrateRoot;
   private final JsonSchemaValidator jsonSchemaValidator;
@@ -86,6 +89,9 @@ public class Migrate {
     // detect desired version.
     final String targetVersion = migrateConfig.getTargetVersion();
     // select migrations to run.
+
+    LOGGER.info("Starting migrations. Current version: {}, Target version: {}", currentVersion, targetVersion);
+
     final int currentVersionIndex = migrations.stream().map(Migration::getVersion).collect(Collectors.toList()).indexOf(currentVersion);
     Preconditions.checkArgument(currentVersionIndex >= 0, "No migration found for current version: " + currentVersion);
     final int targetVersionIndex = migrations.stream().map(Migration::getVersion).collect(Collectors.toList()).indexOf(targetVersion);
@@ -100,6 +106,7 @@ public class Migrate {
       // run migration
       // write output of each migration to disk.
       final Migration migration = migrations.get(i);
+      LOGGER.info("Migrating from version: {} to version {}.", migrations.get(i - 1).getVersion(), migration.getVersion());
       final Path outputPath = runMigration(migration, inputPath);
       IOs.writeFile(outputPath.resolve(VERSION_FILE_NAME), migration.getVersion());
       inputPath = outputPath;
@@ -109,6 +116,8 @@ public class Migrate {
     FileUtils.deleteDirectory(migrateConfig.getOutputPath().toFile());
     Files.createDirectories(migrateConfig.getOutputPath());
     FileUtils.copyDirectory(inputPath.toFile(), migrateConfig.getOutputPath().toFile());
+
+    LOGGER.info("Migrations complete. Now on version: {}", targetVersion);
   }
 
   private Path runMigration(Migration migration, Path migrationInputRoot) throws IOException {

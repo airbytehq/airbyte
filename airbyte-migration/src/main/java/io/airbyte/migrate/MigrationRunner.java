@@ -28,14 +28,20 @@ import io.airbyte.commons.io.Archives;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MigrationRunner {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(MigrationRunner.class);
+
   public static void run(String[] args) throws IOException {
+
     final Path workspaceRoot = Files.createTempDirectory(Path.of("/tmp"), "airbyte_migrate");
 
     MigrateConfig migrateConfig = parse(args);
@@ -57,12 +63,18 @@ public class MigrationRunner {
         workspaceRoot.resolve("output"),
         migrateConfig.getTargetVersion());
 
+    LOGGER.info("Running migrations...");
+    LOGGER.info(migrateConfig.toString());
+
     new Migrate(workspaceRoot.resolve("migrate")).run(migrateConfig);
 
     Archives.createArchive(migrateConfig.getOutputPath(), outputPath);
+
+    LOGGER.info("Migration output written to {}", outputPath);
   }
 
   private static MigrateConfig parse(String[] args) {
+    LOGGER.info("args: {}", Arrays.asList(args));
     final ArgumentParser parser = ArgumentParsers.newFor(Migrate.class.getName()).build()
         .defaultHelp(true)
         .description("Migrate Airbyte Data");
@@ -73,7 +85,7 @@ public class MigrationRunner {
 
     parser.addArgument("--output")
         .required(true)
-        .help("Path to where to output migrated data.");
+        .help("Full path of the output tarball. By convention should end with .tar.gz");
 
     parser.addArgument("--target-version")
         .required(true)
