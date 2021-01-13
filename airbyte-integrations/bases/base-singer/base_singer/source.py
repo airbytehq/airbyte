@@ -25,7 +25,7 @@ SOFTWARE.
 import json
 import os
 from dataclasses import dataclass
-from typing import Dict, Generator, Type
+from typing import Dict, Generator, Type, List
 
 from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status
 from base_python import AirbyteLogger, CatalogHelper, Source
@@ -97,7 +97,7 @@ class SingerSource(Source):
 
     def _discover_internal(self, logger: AirbyteLogger, config_path: str) -> Catalogs:
         cmd = self.discover_cmd(logger, config_path)
-        catalogs = SingerHelper.get_catalogs(logger, cmd, self.get_sync_mode_overrides())
+        catalogs = SingerHelper.get_catalogs(logger, cmd, self.get_sync_mode_overrides(), self.get_excluded_streams())
         return catalogs
 
     def check(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
@@ -143,6 +143,14 @@ class SingerSource(Source):
         :return: A dict from stream name to the sync modes that should be applied to this stream.
         """
         return {}
+
+    def get_excluded_streams(self) -> List:
+        """
+        This method provide ability to exclude some streams from catalog
+
+        :return: A list of excluded stream names
+        """
+        return []
 
 
 class BaseSingerSource(SingerSource):
