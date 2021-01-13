@@ -73,6 +73,7 @@ import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.api.model.WorkspaceRead;
 import io.airbyte.api.model.WorkspaceUpdate;
 import io.airbyte.config.Configs;
+import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.db.Database;
@@ -125,7 +126,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
                           final ConfigRepository configRepository,
                           final JobPersistence jobPersistence,
                           final CachingSchedulerJobClient schedulerJobClient,
-                          final Configs configs) {
+                          final Configs configs,
+                          final FileTtlManager archiveTtlManager) {
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
     schedulerHandler = new SchedulerHandler(configRepository, schedulerJobClient);
     workspacesHandler = new WorkspacesHandler(configRepository);
@@ -141,9 +143,9 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     webBackendSourceHandler = new WebBackendSourceHandler(sourceHandler, schedulerHandler);
     webBackendDestinationHandler = new WebBackendDestinationHandler(destinationHandler, schedulerHandler);
     healthCheckHandler = new HealthCheckHandler(configRepository);
-    archiveHandler = new ArchiveHandler(airbyteVersion, configRepository, database);
     logsHandler = new LogsHandler();
     this.configs = configs;
+    archiveHandler = new ArchiveHandler(airbyteVersion, configRepository, database, archiveTtlManager);
   }
 
   // WORKSPACE
