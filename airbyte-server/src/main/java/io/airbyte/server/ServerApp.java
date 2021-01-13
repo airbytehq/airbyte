@@ -25,6 +25,7 @@
 package io.airbyte.server;
 
 import io.airbyte.analytics.TrackingClientSingleton;
+import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
@@ -49,6 +50,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -91,9 +93,10 @@ public class ServerApp {
 
     ConfigurationApiFactory.setAirbyteVersion(airbyteVersion);
     ConfigurationApiFactory.setDatabase(database);
-    ConfigurationApiFactory.setSpecCache(new SpecCachingSchedulerJobClient(jobPersistence, new DefaultJobCreator(jobPersistence)));
+    ConfigurationApiFactory.setSchedulerJobClient(new SpecCachingSchedulerJobClient(jobPersistence, new DefaultJobCreator(jobPersistence)));
     ConfigurationApiFactory.setConfigRepository(configRepository);
     ConfigurationApiFactory.setJobPersistence(jobPersistence);
+    ConfigurationApiFactory.setArchiveTtlManager(new FileTtlManager(10, TimeUnit.MINUTES, 10));
 
     ResourceConfig rc =
         new ResourceConfig()
