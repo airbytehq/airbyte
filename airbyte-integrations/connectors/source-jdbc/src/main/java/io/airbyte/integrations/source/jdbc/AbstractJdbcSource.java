@@ -343,11 +343,6 @@ public abstract class AbstractJdbcSource implements Source {
                     try {
                       jdbcType = JDBCType.valueOf(f.get(INTERNAL_COLUMN_TYPE).asInt());
                     } catch (IllegalArgumentException ex) {
-                      LOGGER.warn(String.format("Could not convert column: %s from table: %s.%s with type: %s",
-                          f.get(INTERNAL_COLUMN_NAME),
-                          f.get(INTERNAL_SCHEMA_NAME),
-                          f.get(INTERNAL_TABLE_NAME),
-                          f.get(INTERNAL_COLUMN_TYPE)), ex);
                       jdbcType = JDBCType.VARCHAR;
                     }
                     return new ColumnInfo(f.get(INTERNAL_COLUMN_NAME).asText(), jdbcType);
