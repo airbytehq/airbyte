@@ -205,6 +205,9 @@
 
   "admin.destinations": "Destinations",
   "admin.sources": "Sources",
+  "admin.configuration": "Configuration",
+  "admin.exportConfiguration": "Export Configuration",
+  "admin.importConfiguration": "Import Configuration",
   "admin.newConnector": "+ New connector",
   "admin.manageSource": "Manage your source connectors",
   "admin.availableSource": "Available source connectors",
