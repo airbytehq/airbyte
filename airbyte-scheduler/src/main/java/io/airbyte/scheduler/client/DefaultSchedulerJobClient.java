@@ -125,11 +125,7 @@ public class DefaultSchedulerJobClient implements SchedulerJobClient {
       }
     }
 
-<<<<<<< HEAD
     throw new RuntimeException("Job " + jobId + "  did not complete.");
-=======
-    throw new RuntimeException("Job did not complete.");
->>>>>>> 1e35e62953ee8deb233fc80c1faa87a37d293754
   }
 
 }

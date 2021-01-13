@@ -24,11 +24,6 @@
 
 package io.airbyte.integrations.source.postgres;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.doCallRealMethod;
-import static org.mockito.Mockito.spy;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -43,11 +38,18 @@ import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.jooq.SQLDialect;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.utility.MountableFile;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -56,15 +58,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.RandomStringUtils;
-import org.jooq.SQLDialect;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.shaded.com.fasterxml.jackson.databind.util.ObjectBuffer;
-import org.testcontainers.utility.MountableFile;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class PostgresSourceTest {
 
@@ -98,8 +92,6 @@ class PostgresSourceTest {
     PSQL_DB = new PostgreSQLContainer<>("postgres:13-alpine");
     PSQL_DB.start();
   }
-
-
 
   @BeforeEach
   void setup() throws Exception {
