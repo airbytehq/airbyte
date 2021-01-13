@@ -32,12 +32,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Charsets;
+import io.airbyte.commons.stream.MoreStreams;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Jsons {
 
@@ -132,6 +135,10 @@ public class Jsons {
     } else {
       return new HashSet<>();
     }
+  }
+
+  public static List<JsonNode> children(JsonNode jsonNode) {
+    return MoreStreams.toStream(jsonNode.elements()).collect(Collectors.toList());
   }
 
   public static String toPrettyString(JsonNode jsonNode) {

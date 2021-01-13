@@ -77,7 +77,7 @@ public class BufferedStreamConsumer extends FailureTrackingConsumer<AirbyteMessa
 
   private static final long GRACEFUL_SHUTDOWN_MINUTES = 5L;
   private static final int MIN_RECORDS = 500;
-  private static final int BATCH_SIZE = 500;
+  private static final int BATCH_SIZE = 10000;
 
   private final VoidCallable onStart;
   private final CheckedBiConsumer<String, Stream<AirbyteRecordMessage>, Exception> recordWriter;

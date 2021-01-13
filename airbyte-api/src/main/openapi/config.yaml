@@ -52,6 +52,8 @@ tags:
     description: Connection between sources and destinations.
   - name: health
     description: Healthchecks
+  - name: deployment
+    description: Export/Import Airbyte Configuration and Database resources.
 
 paths:
   /v1/workspaces/get:
@@ -864,7 +866,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ConnectionIdRequestBody"
+              $ref: "#/components/schemas/WebBackendConnectionRequestBody"
         required: true
       responses:
         "200":
@@ -875,6 +877,27 @@ paths:
                 $ref: "#/components/schemas/WbConnectionRead"
         "404":
           description: Connection not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/web_backend/connections/update:
+    post:
+      tags:
+        - web_backend
+      summary: Update a connection
+      operationId: webBackendUpdateConnection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WebBackendConnectionUpdate"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionRead"
         "422":
           $ref: "#/components/responses/InvalidInput"
   /v1/web_backend/sources/recreate:
@@ -995,6 +1018,38 @@ paths:
                 $ref: "#/components/schemas/HealthCheckRead"
         "404":
           description: Debug info not found
+  /v1/deployment/export:
+    post:
+      tags:
+        - deployment
+      summary: Export Airbyte Configuration and Data Archive
+      operationId: exportArchive
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/x-gzip:
+              schema:
+                $ref: "#/components/schemas/AirbyteArchive"
+  /v1/deployment/import:
+    post:
+      tags:
+        - deployment
+      summary: Import Airbyte Configuration and Data Archive
+      operationId: importArchive
+      requestBody:
+        content:
+          application/x-gzip:
+            schema:
+              $ref: "#/components/schemas/AirbyteArchive"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImportRead"
 components:
   securitySchemes:
     bearerAuth:
@@ -1024,7 +1079,6 @@ components:
         - name
         - slug
         - initialSetupComplete
-        - onboardingComplete
       properties:
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
@@ -1038,12 +1092,13 @@ components:
           type: boolean
         onboardingComplete:
           type: boolean
+        displaySetupWizard:
+          type: boolean
     WorkspaceUpdate:
       type: object
       required:
         - workspaceId
         - initialSetupComplete
-        - onboardingComplete
         - anonymousDataCollection
         - news
         - securityUpdates
@@ -1062,6 +1117,8 @@ components:
         news:
           type: boolean
         securityUpdates:
+          type: boolean
+        displaySetupWizard:
           type: boolean
     # SLUG
     SlugRequestBody:
@@ -1458,6 +1515,15 @@ components:
       properties:
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
+    WebBackendConnectionRequestBody:
+      type: object
+      required:
+        - connectionId
+      properties:
+        with_refreshed_catalog:
+          type: boolean
+        connectionId:
+          $ref: "#/components/schemas/ConnectionId"
     ConnectionCreate:
       type: object
       required:
@@ -1497,6 +1563,13 @@ components:
           $ref: "#/components/schemas/ConnectionSchedule"
         status:
           $ref: "#/components/schemas/ConnectionStatus"
+    WebBackendConnectionUpdate:
+      allOf:
+        - $ref: "#/components/schemas/ConnectionUpdate"
+        - type: object
+          properties:
+            with_refreshed_catalog:
+              type: boolean
     ConnectionRead:
       type: object
       required:
@@ -1862,6 +1935,18 @@ components:
       enum:
         - full_refresh
         - incremental
+    AirbyteArchive:
+      type: string
+      format: binary
+      description: Tarball Archive (.tar.gz) of Airbyte Configuration and Database
+    ImportRead:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - succeeded
+            - failed
   responses:
     InvalidInput:
       description: Invalid Input

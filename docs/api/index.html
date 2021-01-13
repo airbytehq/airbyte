@@ -232,6 +232,11 @@ font-style: italic;
   <ul>
   <li><a href="#getDebuggingInfo"><code><span class="http-method">get</span> /v1/debug</code></a></li>
   </ul>
+  <h4><a href="#Deployment">Deployment</a></h4>
+  <ul>
+  <li><a href="#exportArchive"><code><span class="http-method">post</span> /v1/deployment/export</code></a></li>
+  <li><a href="#importArchive"><code><span class="http-method">post</span> /v1/deployment/import</code></a></li>
+  </ul>
   <h4><a href="#Destination">Destination</a></h4>
   <ul>
   <li><a href="#checkConnectionToDestination"><code><span class="http-method">post</span> /v1/destinations/check_connection</code></a></li>
@@ -294,6 +299,7 @@ font-style: italic;
   <li><a href="#webBackendListConnectionsForWorkspace"><code><span class="http-method">post</span> /v1/web_backend/connections/list</code></a></li>
   <li><a href="#webBackendRecreateDestination"><code><span class="http-method">post</span> /v1/web_backend/destinations/recreate</code></a></li>
   <li><a href="#webBackendRecreateSource"><code><span class="http-method">post</span> /v1/web_backend/sources/recreate</code></a></li>
+  <li><a href="#webBackendUpdateConnection"><code><span class="http-method">post</span> /v1/web_backend/connections/update</code></a></li>
   </ul>
   <h4><a href="#Workspace">Workspace</a></h4>
   <ul>
@@ -1013,6 +1019,94 @@ font-style: italic;
     <h4 class="field-label">404</h4>
     Debug info not found
         <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <h1><a name="Deployment">Deployment</a></h1>
+  <div class="method"><a name="exportArchive"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/deployment/export</code></pre></div>
+    <div class="method-summary">Export Airbyte Configuration and Data Archive (<span class="nickname">exportArchive</span>)</div>
+    <div class="method-notes"></div>
+
+
+
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      
+      File
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/x-gzip</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#File">File</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="importArchive"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/deployment/import</code></pre></div>
+    <div class="method-summary">Import Airbyte Configuration and Data Archive (<span class="nickname">importArchive</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/x-gzip</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body <a href="#file">file</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#ImportRead">ImportRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "status" : "succeeded"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#ImportRead">ImportRead</a>
   </div> <!-- method -->
   <hr/>
   <h1><a name="Destination">Destination</a></h1>
@@ -3102,7 +3196,7 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">ConnectionIdRequestBody <a href="#ConnectionIdRequestBody">ConnectionIdRequestBody</a> (required)</div>
+      <div class="param">WebBackendConnectionRequestBody <a href="#WebBackendConnectionRequestBody">WebBackendConnectionRequestBody</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
 
@@ -3528,6 +3622,105 @@ font-style: italic;
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
+  <div class="method"><a name="webBackendUpdateConnection"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/web_backend/connections/update</code></pre></div>
+    <div class="method-summary">Update a connection (<span class="nickname">webBackendUpdateConnection</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">WebBackendConnectionUpdate <a href="#WebBackendConnectionUpdate">WebBackendConnectionUpdate</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#ConnectionRead">ConnectionRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "schedule" : {
+    "units" : 0,
+    "timeUnit" : "minutes"
+  },
+  "name" : "name",
+  "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "syncSchema" : {
+    "streams" : [ {
+      "supportedSyncModes" : [ null, null ],
+      "sourceDefinedCursor" : true,
+      "name" : "name",
+      "cleanedName" : "cleanedName",
+      "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ],
+      "fields" : [ {
+        "name" : "name",
+        "cleanedName" : "cleanedName",
+        "selected" : true
+      }, {
+        "name" : "name",
+        "cleanedName" : "cleanedName",
+        "selected" : true
+      } ],
+      "selected" : true,
+      "cursorField" : [ "cursorField", "cursorField" ]
+    }, {
+      "supportedSyncModes" : [ null, null ],
+      "sourceDefinedCursor" : true,
+      "name" : "name",
+      "cleanedName" : "cleanedName",
+      "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ],
+      "fields" : [ {
+        "name" : "name",
+        "cleanedName" : "cleanedName",
+        "selected" : true
+      }, {
+        "name" : "name",
+        "cleanedName" : "cleanedName",
+        "selected" : true
+      } ],
+      "selected" : true,
+      "cursorField" : [ "cursorField", "cursorField" ]
+    } ]
+  },
+  "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#ConnectionRead">ConnectionRead</a>
+    <h4 class="field-label">422</h4>
+    Invalid Input
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
   <h1><a name="Workspace">Workspace</a></h1>
   <div class="method"><a name="getWorkspace"/>
     <div class="method-path">
@@ -3565,6 +3758,7 @@ font-style: italic;
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
+  "displaySetupWizard" : true,
   "initialSetupComplete" : true,
   "onboardingComplete" : true,
   "customerId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
@@ -3628,6 +3822,7 @@ font-style: italic;
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
+  "displaySetupWizard" : true,
   "initialSetupComplete" : true,
   "onboardingComplete" : true,
   "customerId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
@@ -3691,6 +3886,7 @@ font-style: italic;
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
+  "displaySetupWizard" : true,
   "initialSetupComplete" : true,
   "onboardingComplete" : true,
   "customerId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
@@ -3751,6 +3947,7 @@ font-style: italic;
     <li><a href="#DestinationRecreate"><code>DestinationRecreate</code> - </a></li>
     <li><a href="#DestinationUpdate"><code>DestinationUpdate</code> - </a></li>
     <li><a href="#HealthCheckRead"><code>HealthCheckRead</code> - </a></li>
+    <li><a href="#ImportRead"><code>ImportRead</code> - </a></li>
     <li><a href="#JobConfigType"><code>JobConfigType</code> - </a></li>
     <li><a href="#JobIdRequestBody"><code>JobIdRequestBody</code> - </a></li>
     <li><a href="#JobInfoRead"><code>JobInfoRead</code> - </a></li>
@@ -3782,6 +3979,9 @@ font-style: italic;
     <li><a href="#SyncMode"><code>SyncMode</code> - </a></li>
     <li><a href="#WbConnectionRead"><code>WbConnectionRead</code> - </a></li>
     <li><a href="#WbConnectionReadList"><code>WbConnectionReadList</code> - </a></li>
+    <li><a href="#WebBackendConnectionRequestBody"><code>WebBackendConnectionRequestBody</code> - </a></li>
+    <li><a href="#WebBackendConnectionUpdate"><code>WebBackendConnectionUpdate</code> - </a></li>
+    <li><a href="#WebBackendConnectionUpdate_allOf"><code>WebBackendConnectionUpdate_allOf</code> - </a></li>
     <li><a href="#WorkspaceIdRequestBody"><code>WorkspaceIdRequestBody</code> - </a></li>
     <li><a href="#WorkspaceRead"><code>WorkspaceRead</code> - </a></li>
     <li><a href="#WorkspaceUpdate"><code>WorkspaceUpdate</code> - </a></li>
@@ -4026,6 +4226,15 @@ font-style: italic;
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">db </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="ImportRead"><code>ImportRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">status (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+        <div class="param-enum-header">Enum:</div>
+        <div class="param-enum">succeeded</div><div class="param-enum">failed</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -4300,6 +4509,32 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="WebBackendConnectionRequestBody"><code>WebBackendConnectionRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">with_refreshed_catalog (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">connectionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="WebBackendConnectionUpdate"><code>WebBackendConnectionUpdate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">connectionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">syncSchema </div><div class="param-desc"><span class="param-type"><a href="#SourceSchema">SourceSchema</a></span>  </div>
+<div class="param">schedule (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionSchedule">ConnectionSchedule</a></span>  </div>
+<div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
+<div class="param">with_refreshed_catalog (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="WebBackendConnectionUpdate_allOf"><code>WebBackendConnectionUpdate_allOf</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">with_refreshed_catalog (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="WorkspaceIdRequestBody"><code>WorkspaceIdRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -4315,7 +4550,8 @@ font-style: italic;
 <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">slug </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">initialSetupComplete </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
-<div class="param">onboardingComplete </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">onboardingComplete (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">displaySetupWizard (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -4325,10 +4561,11 @@ font-style: italic;
       <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">email (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  format: email</div>
 <div class="param">initialSetupComplete </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
-<div class="param">onboardingComplete </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">onboardingComplete (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">anonymousDataCollection </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">news </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">securityUpdates </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">displaySetupWizard (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   </body>

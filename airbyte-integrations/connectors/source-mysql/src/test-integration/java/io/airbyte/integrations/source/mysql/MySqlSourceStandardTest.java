@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.io.airbyte.integration_tests.sources;
+package io.airbyte.integrations.source.mysql;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
@@ -43,19 +43,19 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import org.jooq.SQLDialect;
-import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.containers.MySQLContainer;
 
-public class PostgresIntegrationTests extends StandardSourceTest {
+public class MySqlSourceStandardTest extends StandardSourceTest {
 
-  private static final String STREAM_NAME = "public.id_and_name";
+  private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = "public.starships";
 
-  private PostgreSQLContainer<?> container;
+  private MySQLContainer<?> container;
   private JsonNode config;
 
   @Override
   protected void setup(TestDestinationEnv testEnv) throws Exception {
-    container = new PostgreSQLContainer<>("postgres:13-alpine");
+    container = new MySQLContainer<>("mysql:8.0");
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
@@ -69,12 +69,12 @@ public class PostgresIntegrationTests extends StandardSourceTest {
     final Database database = Databases.createDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
-        String.format("jdbc:postgresql://%s:%s/%s",
+        String.format("jdbc:mysql://%s:%s/%s",
             config.get("host").asText(),
             config.get("port").asText(),
             config.get("database").asText()),
-        "org.postgresql.Driver",
-        SQLDialect.POSTGRES);
+        "com.mysql.cj.jdbc.Driver",
+        SQLDialect.MYSQL);
 
     database.query(ctx -> {
       ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
@@ -94,7 +94,7 @@ public class PostgresIntegrationTests extends StandardSourceTest {
 
   @Override
   protected String getImageName() {
-    return "airbyte/source-postgres:dev";
+    return "airbyte/source-mysql:dev";
   }
 
   @Override
@@ -114,7 +114,7 @@ public class PostgresIntegrationTests extends StandardSourceTest {
             .withSyncMode(SyncMode.INCREMENTAL)
             .withCursorField(Lists.newArrayList("id"))
             .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME,
+                String.format("%s.%s", config.get("database").asText(), STREAM_NAME),
                 Field.of("id", JsonSchemaPrimitive.NUMBER),
                 Field.of("name", JsonSchemaPrimitive.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
@@ -122,7 +122,7 @@ public class PostgresIntegrationTests extends StandardSourceTest {
             .withSyncMode(SyncMode.INCREMENTAL)
             .withCursorField(Lists.newArrayList("id"))
             .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME2,
+                String.format("%s.%s", config.get("database").asText(), STREAM_NAME2),
                 Field.of("id", JsonSchemaPrimitive.NUMBER),
                 Field.of("name", JsonSchemaPrimitive.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));

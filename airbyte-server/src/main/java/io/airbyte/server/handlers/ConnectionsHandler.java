@@ -104,12 +104,17 @@ public class ConnectionsHandler {
   }
 
   public ConnectionRead updateConnection(ConnectionUpdate connectionUpdate) throws ConfigNotFoundException, IOException, JsonValidationException {
-    final UUID connectionId = connectionUpdate.getConnectionId();
-
     // retrieve sync
-    final StandardSync persistedSync = configRepository.getStandardSync(connectionId)
+    final StandardSync persistedSync = configRepository.getStandardSync(connectionUpdate.getConnectionId())
         .withSchema(SchemaConverter.toPersistenceSchema(connectionUpdate.getSyncSchema()))
         .withStatus(toPersistenceStatus(connectionUpdate.getStatus()));
+
+    return updateConnection(connectionUpdate, persistedSync);
+  }
+
+  public ConnectionRead updateConnection(ConnectionUpdate connectionUpdate, StandardSync persistedSync)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    final UUID connectionId = connectionUpdate.getConnectionId();
 
     // retrieve schedule
     final StandardSyncSchedule persistedSchedule = configRepository.getStandardSyncSchedule(connectionId);

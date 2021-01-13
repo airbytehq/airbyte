@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.source.mysql;
+package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
@@ -43,19 +43,19 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import org.jooq.SQLDialect;
-import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.containers.PostgreSQLContainer;
 
-public class MySqlIntegrationTest extends StandardSourceTest {
+public class PostgresSourceStandardTest extends StandardSourceTest {
 
-  private static final String STREAM_NAME = "id_and_name";
+  private static final String STREAM_NAME = "public.characters";
   private static final String STREAM_NAME2 = "public.starships";
 
-  private MySQLContainer<?> container;
+  private PostgreSQLContainer<?> container;
   private JsonNode config;
 
   @Override
   protected void setup(TestDestinationEnv testEnv) throws Exception {
-    container = new MySQLContainer<>("mysql:8.0");
+    container = new PostgreSQLContainer<>("postgres:13-alpine");
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
@@ -69,14 +69,17 @@ public class MySqlIntegrationTest extends StandardSourceTest {
     final Database database = Databases.createDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
-        String.format("jdbc:mysql://%s:%s/%s",
+        String.format("jdbc:postgresql://%s:%s/%s",
             config.get("host").asText(),
             config.get("port").asText(),
             config.get("database").asText()),
-        "com.mysql.cj.jdbc.Driver",
-        SQLDialect.MYSQL);
+        "org.postgresql.Driver",
+        SQLDialect.POSTGRES);
 
     database.query(ctx -> {
+      ctx.fetch("CREATE TABLE id_and_name(id NUMERIC(20, 10), name VARCHAR(200), power double precision);");
+      ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
+      ctx.fetch("CREATE SCHEMA test_another_schema;");
       ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
       ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
       ctx.fetch("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
@@ -94,7 +97,7 @@ public class MySqlIntegrationTest extends StandardSourceTest {
 
   @Override
   protected String getImageName() {
-    return "airbyte/source-mysql:dev";
+    return "airbyte/source-postgres:dev";
   }
 
   @Override
@@ -114,7 +117,7 @@ public class MySqlIntegrationTest extends StandardSourceTest {
             .withSyncMode(SyncMode.INCREMENTAL)
             .withCursorField(Lists.newArrayList("id"))
             .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s.%s", config.get("database").asText(), STREAM_NAME),
+                STREAM_NAME,
                 Field.of("id", JsonSchemaPrimitive.NUMBER),
                 Field.of("name", JsonSchemaPrimitive.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
@@ -122,7 +125,7 @@ public class MySqlIntegrationTest extends StandardSourceTest {
             .withSyncMode(SyncMode.INCREMENTAL)
             .withCursorField(Lists.newArrayList("id"))
             .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s.%s", config.get("database").asText(), STREAM_NAME2),
+                STREAM_NAME2,
                 Field.of("id", JsonSchemaPrimitive.NUMBER),
                 Field.of("name", JsonSchemaPrimitive.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));

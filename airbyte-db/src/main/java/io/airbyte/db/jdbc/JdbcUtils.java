@@ -29,6 +29,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+
+import java.awt.geom.Arc2D;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.JDBCType;
@@ -44,6 +46,7 @@ import java.util.Collections;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import javax.xml.bind.DatatypeConverter;
@@ -56,8 +59,8 @@ public class JdbcUtils {
    * Map records returned in a result set.
    *
    * @param resultSet the result set
-   * @param mapper function to make each record of the result set
-   * @param <T> type that each record will be mapped to
+   * @param mapper    function to make each record of the result set
+   * @param <T>       type that each record will be mapped to
    * @return stream of records that the result set is mapped to.
    */
   public static <T> Stream<T> toStream(ResultSet resultSet, CheckedFunction<ResultSet, T, SQLException> mapper) {
@@ -129,10 +132,10 @@ public class JdbcUtils {
       case BIT, BOOLEAN -> o.put(columnName, r.getBoolean(i));
       case TINYINT, SMALLINT -> o.put(columnName, r.getShort(i));
       case INTEGER -> o.put(columnName, r.getInt(i));
-      case BIGINT -> o.put(columnName, r.getLong(i));
-      case FLOAT, DOUBLE -> o.put(columnName, r.getDouble(i));
-      case REAL -> o.put(columnName, r.getFloat(i));
-      case NUMERIC, DECIMAL -> o.put(columnName, r.getBigDecimal(i));
+      case BIGINT -> o.put(columnName, nullIfInvalid(() -> r.getLong(i)));
+      case FLOAT, DOUBLE -> o.put(columnName, nullIfInvalid(() -> r.getDouble(i), Double::isFinite));
+      case REAL -> o.put(columnName, nullIfInvalid(() -> r.getFloat(i), Float::isFinite));
+      case NUMERIC, DECIMAL -> o.put(columnName, nullIfInvalid(() -> r.getBigDecimal(i)));
       case CHAR, VARCHAR, LONGVARCHAR -> o.put(columnName, r.getString(i));
       case DATE -> o.put(columnName, toISO8601String(r.getDate(i)));
       case TIME -> o.put(columnName, toISO8601String(r.getTime(i)));
@@ -148,6 +151,7 @@ public class JdbcUtils {
   }
 
   // todo (cgardens) - move generic date helpers to commons.
+
   public static String toISO8601String(long epochMillis) {
     return DATE_FORMAT.format(Date.from(Instant.ofEpochMilli(epochMillis)));
   }
@@ -191,6 +195,7 @@ public class JdbcUtils {
 
   // the switch statement intentionally has duplicates so that its structure matches the type switch
   // statement above.
+
   @SuppressWarnings("DuplicateBranchesInSwitch")
   public static JsonSchemaPrimitive getType(JDBCType jdbcType) {
     return switch (jdbcType) {
@@ -210,4 +215,25 @@ public class JdbcUtils {
     };
   }
 
+  private static <T> T nullIfInvalid(SQLSupplier<T> valueProducer) {
+    return nullIfInvalid(valueProducer, ignored -> true);
+  }
+
+  private static <T> T nullIfInvalid(SQLSupplier<T> valueProducer, Function<T, Boolean> isValidFn) {
+    // Some edge case values (e.g: Infinity, NaN) have no java or JSON equivalent, and will throw an exception when parsed. We want to parse those
+    // values as null.
+    // This method reduces error handling boilerplate.
+    try {
+      T value = valueProducer.apply();
+      return isValidFn.apply(value) ? value : null;
+    } catch (SQLException e) {
+      return null;
+    }
+  }
+
+  @FunctionalInterface
+  private interface SQLSupplier<O> {
+
+    O apply() throws SQLException;
+  }
 }

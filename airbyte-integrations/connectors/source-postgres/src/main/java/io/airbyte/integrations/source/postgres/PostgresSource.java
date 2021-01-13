@@ -27,21 +27,26 @@ package io.airbyte.integrations.source.postgres;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.jdbc.PostgresJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
-import io.airbyte.integrations.source.jdbc.AbstractJooqSource;
 import org.jooq.Field;
-import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
+import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
+
+import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PostgresSource extends AbstractJooqSource implements Source {
+public class PostgresSource extends AbstractJdbcSource implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSource.class);
 
+  static final String DRIVER_CLASS = "org.postgresql.Driver";
+
   public PostgresSource() {
-    super("org.postgresql.Driver", SQLDialect.POSTGRES);
+    super(DRIVER_CLASS, new PostgresJdbcStreamingQueryConfiguration());
   }
 
   @Override
@@ -60,14 +65,17 @@ public class PostgresSource extends AbstractJooqSource implements Source {
     return Jsons.jsonNode(configBuilder.build());
   }
 
-  @Override
-  protected Field<?> getFieldQueryOverrides(Field<?> field){
-    if (field.getDataType().getSQLDataType().) {
-      return DSL.field("nullif(" + field.getName() + ", 'NaN')").as(field);
-    } else {
-      return field;
-    }
+  //  @Override
+  //  protected Field<?> getFieldQueryOverrides(Field<?> field){
+  //    if (field.getDataType().getSQLDataType().) {
+  //      return DSL.field("nullif(" + field.getName() + ", 'NaN')").as(field);
+  //    } else {
+  //      return field;
+  //    }
 
+  @Override
+  public Set<String> getExcludedInternalSchemas() {
+    return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");
   }
 
   public static void main(String[] args) throws Exception {
