@@ -14,16 +14,15 @@ required:
 additionalProperties: false
 properties:
   id:
-    type: string
-    format: uuid
+    type: number
   job_id:
-    type: string
+    type: number
   attempt_number:
-    type: string
+    type: number
   log_path:
     type: string
   output:
-    type: object
+    type: ["null", object]
   status:
     type: string
   created_at:
@@ -35,4 +34,4 @@ properties:
     type: string
   ended_at:
     # todo should be datetime.
-    type: string
+    type: ["null", string]
