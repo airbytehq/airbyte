@@ -232,12 +232,14 @@ public abstract class AbstractJooqSource implements Source {
   }
 
   /**
-   * This method should be overridden by subclasses if they want to always override certain fields within SELECT query.
+   * This method should be overridden by subclasses if they want to always override certain fields
+   * within SELECT query.
+   *
    * @param field
    * @param <T>
    * @return
    */
-  protected <T> org.jooq.Field<T>   getFieldQueryOverrides(org.jooq.Field<T> field){
+  protected <T> org.jooq.Field<T> getFieldQueryOverrides(org.jooq.Field<T> field) {
     return field;
   }
 

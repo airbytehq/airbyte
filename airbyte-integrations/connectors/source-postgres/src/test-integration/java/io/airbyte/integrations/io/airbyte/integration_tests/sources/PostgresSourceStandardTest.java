@@ -47,7 +47,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 
 public class PostgresSourceStandardTest extends StandardSourceTest {
 
-  private static final String STREAM_NAME = "public.characters";
+  private static final String STREAM_NAME = "public.id_and_name";
   private static final String STREAM_NAME2 = "public.starships";
 
   private PostgreSQLContainer<?> container;
@@ -77,9 +77,6 @@ public class PostgresSourceStandardTest extends StandardSourceTest {
         SQLDialect.POSTGRES);
 
     database.query(ctx -> {
-      ctx.fetch("CREATE TABLE id_and_name(id NUMERIC(20, 10), name VARCHAR(200), power double precision);");
-      ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
-      ctx.fetch("CREATE SCHEMA test_another_schema;");
       ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
       ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
       ctx.fetch("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");

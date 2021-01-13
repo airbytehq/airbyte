@@ -29,8 +29,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
-
-import java.awt.geom.Arc2D;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.JDBCType;
@@ -59,8 +57,8 @@ public class JdbcUtils {
    * Map records returned in a result set.
    *
    * @param resultSet the result set
-   * @param mapper    function to make each record of the result set
-   * @param <T>       type that each record will be mapped to
+   * @param mapper function to make each record of the result set
+   * @param <T> type that each record will be mapped to
    * @return stream of records that the result set is mapped to.
    */
   public static <T> Stream<T> toStream(ResultSet resultSet, CheckedFunction<ResultSet, T, SQLException> mapper) {
@@ -220,7 +218,8 @@ public class JdbcUtils {
   }
 
   private static <T> T nullIfInvalid(SQLSupplier<T> valueProducer, Function<T, Boolean> isValidFn) {
-    // Some edge case values (e.g: Infinity, NaN) have no java or JSON equivalent, and will throw an exception when parsed. We want to parse those
+    // Some edge case values (e.g: Infinity, NaN) have no java or JSON equivalent, and will throw an
+    // exception when parsed. We want to parse those
     // values as null.
     // This method reduces error handling boilerplate.
     try {
@@ -235,5 +234,7 @@ public class JdbcUtils {
   private interface SQLSupplier<O> {
 
     O apply() throws SQLException;
+
   }
+
 }

@@ -24,6 +24,8 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -42,6 +44,12 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
@@ -51,15 +59,6 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 class PostgresSourceTest {
 
   private static final String STREAM_NAME = "public.id_and_name";
@@ -68,20 +67,17 @@ class PostgresSourceTest {
           STREAM_NAME,
           Field.of("id", JsonSchemaPrimitive.NUMBER),
           Field.of("name", JsonSchemaPrimitive.STRING),
-          Field.of("power", JsonSchemaPrimitive.NUMBER)
-      )
+          Field.of("power", JsonSchemaPrimitive.NUMBER))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))));
   private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
   private static final Set<AirbyteMessage> ASCII_MESSAGES = Sets.newHashSet(
       createRecord(STREAM_NAME, map("id", new BigDecimal("1.0"), "name", "goku", "power", null)),
       createRecord(STREAM_NAME, map("id", new BigDecimal("2.0"), "name", "vegeta", "power", 9000.1)),
-      createRecord(STREAM_NAME, map("id", null, "name", "piccolo", "power", null))
-  );
+      createRecord(STREAM_NAME, map("id", null, "name", "piccolo", "power", null)));
 
   private static final Set<AirbyteMessage> UTF8_MESSAGES = Sets.newHashSet(
       createRecord(STREAM_NAME, ImmutableMap.of("id", 1, "name", "\u2013 someutfstring")),
-      createRecord(STREAM_NAME, ImmutableMap.of("id", 2, "name", "\u2215"))
-  );
+      createRecord(STREAM_NAME, ImmutableMap.of("id", 2, "name", "\u2215")));
 
   private static PostgreSQLContainer<?> PSQL_DB;
 
@@ -113,7 +109,6 @@ class PostgresSourceTest {
 
   private Database getDatabaseFromConfig(JsonNode config) {
     return Databases.createDatabase(
-        new PostgresSource().toJdbcConfig(config)
         config.get("username").asText(),
         config.get("password").asText(),
         String.format("jdbc:postgresql://%s:%s/%s",

@@ -30,12 +30,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.PostgresJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
-import org.jooq.Field;
-import org.jooq.impl.DSL;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-
 import java.util.Set;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,13 +61,13 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
     return Jsons.jsonNode(configBuilder.build());
   }
 
-  //  @Override
-  //  protected Field<?> getFieldQueryOverrides(Field<?> field){
-  //    if (field.getDataType().getSQLDataType().) {
-  //      return DSL.field("nullif(" + field.getName() + ", 'NaN')").as(field);
-  //    } else {
-  //      return field;
-  //    }
+  // @Override
+  // protected Field<?> getFieldQueryOverrides(Field<?> field){
+  // if (field.getDataType().getSQLDataType().) {
+  // return DSL.field("nullif(" + field.getName() + ", 'NaN')").as(field);
+  // } else {
+  // return field;
+  // }
 
   @Override
   public Set<String> getExcludedInternalSchemas() {
