@@ -54,11 +54,11 @@ class FileTtlManagerTest {
     final FileTtlManager fileTtlManager = new FileTtlManager(1, TimeUnit.SECONDS, 10);
 
     assertTrue(Files.exists(file1));
-    fileTtlManager.registerTtl(file1);
-    fileTtlManager.registerTtl(file2);
+    fileTtlManager.register(file1);
+    fileTtlManager.register(file2);
     assertTrue(Files.exists(file1));
     Thread.sleep(10001L);
-    fileTtlManager.registerTtl(file3);
+    fileTtlManager.register(file3);
     assertFalse(Files.exists(file1));
   }
 
@@ -67,11 +67,11 @@ class FileTtlManagerTest {
     final FileTtlManager fileTtlManager = new FileTtlManager(1, TimeUnit.HOURS, 2);
 
     assertTrue(Files.exists(file1));
-    fileTtlManager.registerTtl(file1);
+    fileTtlManager.register(file1);
     assertTrue(Files.exists(file1));
-    fileTtlManager.registerTtl(file2);
+    fileTtlManager.register(file2);
     assertTrue(Files.exists(file1));
-    fileTtlManager.registerTtl(file3);
+    fileTtlManager.register(file3);
     assertFalse(Files.exists(file1));
   }
 

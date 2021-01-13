@@ -68,7 +68,7 @@ public class FileTtlManager {
         .build();
   }
 
-  public void registerTtl(Path path) {
+  public void register(Path path) {
     Preconditions.checkNotNull(path);
     Preconditions.checkArgument(path.toFile().isFile()); // only accept files.
 

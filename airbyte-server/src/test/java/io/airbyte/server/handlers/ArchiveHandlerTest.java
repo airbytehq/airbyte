@@ -145,7 +145,7 @@ public class ArchiveHandlerTest {
     verify(configRepository).writeStandardSync(sourceSync);
     verify(configRepository).writeStandardSync(destinationSync);
     verify(configRepository).writeStandardSchedule(syncSchedule);
-    verify(fileTtlManager).registerTtl(any());
+    verify(fileTtlManager).register(any());
   }
 
   @Test

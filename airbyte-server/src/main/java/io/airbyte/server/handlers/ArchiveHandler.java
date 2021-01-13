@@ -77,7 +77,7 @@ public class ArchiveHandler {
     try {
       final Path tempFolder = Files.createTempDirectory(Path.of("/tmp"), ARCHIVE_FILE_NAME);
       final File archive = Files.createTempFile(ARCHIVE_FILE_NAME, ".tar.gz").toFile();
-      fileTtlManager.registerTtl(archive.toPath());
+      fileTtlManager.register(archive.toPath());
       try {
         exportVersionFile(tempFolder);
         exportAirbyteConfig(tempFolder);
