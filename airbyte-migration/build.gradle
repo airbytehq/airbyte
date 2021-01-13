@@ -1,5 +1,6 @@
 plugins {
     id 'application'
+    id 'airbyte-docker'
 }
 
 dependencies {
@@ -9,6 +10,6 @@ dependencies {
 }
 
 application {
-    mainClass = 'io.airbyte.migration.Migrate'
+    mainClass = 'io.airbyte.migrate.MigrationRunner'
 }
 

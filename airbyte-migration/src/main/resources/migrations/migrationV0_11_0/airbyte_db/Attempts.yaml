@@ -1,24 +1,28 @@
 ---
 "$schema": http://json-schema.org/draft-07/schema#
-title: Jobs
-description: representation of a jobs record.
+title: Attempts
+description: representation of a attempts record.
 type: object
 required:
   - id
-  - scope
-  - config
+  - job_id
+  - attempt_number
+  - log_path
   - status
   - created_at
   - updated_at
 additionalProperties: false
 properties:
   id:
+    type: number
+  job_id:
+    type: number
+  attempt_number:
+    type: number
+  log_path:
     type: string
-    format: uuid
-  scope:
-    type: string
-  config:
-    type: object
+  output:
+    type: ["null", object]
   status:
     type: string
   created_at:
@@ -28,3 +32,6 @@ properties:
   updated_at:
     # todo should be datetime.
     type: string
+  ended_at:
+    # todo should be datetime.
+    type: ["null", string]

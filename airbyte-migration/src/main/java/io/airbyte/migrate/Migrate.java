@@ -50,13 +50,13 @@ import java.util.function.Consumer;
 import java.util.stream.BaseStream;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import net.sourceforge.argparse4j.ArgumentParsers;
-import net.sourceforge.argparse4j.inf.ArgumentParser;
-import net.sourceforge.argparse4j.inf.ArgumentParserException;
-import net.sourceforge.argparse4j.inf.Namespace;
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Migrate {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(Migrate.class);
 
   public static final String VERSION_FILE_NAME = "VERSION";
 
@@ -86,14 +86,16 @@ public class Migrate {
     // detect desired version.
     final String targetVersion = migrateConfig.getTargetVersion();
     // select migrations to run.
+
+    LOGGER.info("Starting migrations. Current version: {}, Target version: {}", currentVersion, targetVersion);
+
     final int currentVersionIndex = migrations.stream().map(Migration::getVersion).collect(Collectors.toList()).indexOf(currentVersion);
     Preconditions.checkArgument(currentVersionIndex >= 0, "No migration found for current version: " + currentVersion);
     final int targetVersionIndex = migrations.stream().map(Migration::getVersion).collect(Collectors.toList()).indexOf(targetVersion);
     Preconditions.checkArgument(targetVersionIndex >= 0, "No migration found for target version: " + targetVersion);
-    Preconditions.checkArgument(currentVersionIndex < targetVersionIndex, String
-        .format(
-            "Target version is not greater than the current version. current version: %s, target version: %s. Note migration order is determined by membership in migrations list, not any canonical sorting of the version string itself.",
-            currentVersion, targetVersion));
+    Preconditions.checkArgument(currentVersionIndex < targetVersionIndex, String.format(
+        "Target version is not greater than the current version. current version: %s, target version: %s. Note migration order is determined by membership in migrations list, not any canonical sorting of the version string itself.",
+        currentVersion, targetVersion));
 
     // for each migration to run:
     Path inputPath = initialInputPath;
@@ -101,6 +103,7 @@ public class Migrate {
       // run migration
       // write output of each migration to disk.
       final Migration migration = migrations.get(i);
+      LOGGER.info("Migrating from version: {} to version {}.", migrations.get(i - 1).getVersion(), migration.getVersion());
       final Path outputPath = runMigration(migration, inputPath);
       IOs.writeFile(outputPath.resolve(VERSION_FILE_NAME), migration.getVersion());
       inputPath = outputPath;
@@ -110,6 +113,8 @@ public class Migrate {
     FileUtils.deleteDirectory(migrateConfig.getOutputPath().toFile());
     Files.createDirectories(migrateConfig.getOutputPath());
     FileUtils.copyDirectory(inputPath.toFile(), migrateConfig.getOutputPath().toFile());
+
+    LOGGER.info("Migrations complete. Now on version: {}", targetVersion);
   }
 
   private Path runMigration(Migration migration, Path migrationInputRoot) throws IOException {
@@ -196,41 +201,6 @@ public class Migrate {
 
   private static String getCurrentVersion(Path path) {
     return IOs.readFile(path.resolve(VERSION_FILE_NAME)).trim();
-  }
-
-  private static MigrateConfig parse(String[] args) {
-    final ArgumentParser parser = ArgumentParsers.newFor(Migrate.class.getName()).build()
-        .defaultHelp(true)
-        .description("Migrate Airbyte Data");
-
-    parser.addArgument("--input")
-        .required(true)
-        .help("Path to data to migrate.");
-
-    parser.addArgument("--output")
-        .required(true)
-        .help("Path to where to output migrated data.");
-
-    parser.addArgument("--target-version")
-        .required(true)
-        .help("Version to upgrade the data to");
-
-    try {
-      final Namespace parsed = parser.parseArgs(args);
-      final Path inputPath = Path.of(parsed.getString("input"));
-      final Path outputPath = Path.of(parsed.getString("output"));
-      final String targetVersion = parsed.getString("target_version");
-      return new MigrateConfig(inputPath, outputPath, targetVersion);
-    } catch (ArgumentParserException e) {
-      parser.handleError(e);
-      throw new IllegalArgumentException(e);
-    }
-  }
-
-  public static void main(String[] args) throws IOException {
-    final MigrateConfig migrateConfig = parse(args);
-    final Path workspaceRoot = Files.createTempDirectory(Path.of("/tmp"), "migrate");
-    new Migrate(workspaceRoot).run(migrateConfig);
   }
 
 }
