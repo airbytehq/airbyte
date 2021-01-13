@@ -5,7 +5,6 @@ import {
   Route,
   Switch
 } from "react-router-dom";
-import { useResource } from "rest-hooks";
 
 import SourcesPage from "./SourcesPage";
 import DestinationPage from "./DestinationPage";
@@ -15,11 +14,11 @@ import AdminPage from "./AdminPage";
 import LoadingPage from "../components/LoadingPage";
 import MainView from "../components/MainView";
 import config from "../config";
-import WorkspaceResource from "../core/resources/Workspace";
 import useSegment from "../components/hooks/useSegment";
 import { AnalyticsService } from "../core/analytics/AnalyticsService";
 import useRouter from "../components/hooks/useRouterHook";
 import SupportChat from "../components/SupportChat";
+import useWorkspace from "../components/hooks/services/useWorkspaceHook";
 
 export enum Routes {
   Preferences = "/preferences",
@@ -133,9 +132,7 @@ const OnboardingsRoutes = () => {
 export const Routing = () => {
   useSegment(config.segment.token);
 
-  const workspace = useResource(WorkspaceResource.detailShape(), {
-    workspaceId: config.ui.workspaceId
-  });
+  const { workspace } = useWorkspace();
 
   useEffect(() => {
     if (workspace) {

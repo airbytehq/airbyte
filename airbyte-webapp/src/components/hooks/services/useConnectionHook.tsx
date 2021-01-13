@@ -1,11 +1,10 @@
-import { useFetcher, useResource } from "rest-hooks";
+import { useFetcher } from "rest-hooks";
 
 import config from "../../../config";
 import { AnalyticsService } from "../../../core/analytics/AnalyticsService";
 import ConnectionResource, {
   Connection
 } from "../../../core/resources/Connection";
-import WorkspaceResource from "../../../core/resources/Workspace";
 import { SyncSchema } from "../../../core/resources/Schema";
 import { SourceDefinition } from "../../../core/resources/SourceDefinition";
 import FrequencyConfig from "../../../data/FrequencyConfig.json";
@@ -14,6 +13,7 @@ import { Routes } from "../../../pages/routes";
 import useRouter from "../useRouterHook";
 import { Destination } from "../../../core/resources/Destination";
 import { useCallback } from "react";
+import useWorkspace from "./useWorkspaceHook";
 
 type ValuesProps = {
   frequency: string;
@@ -35,10 +35,7 @@ const useConnection = () => {
   const { push, history } = useRouter();
 
   const createConnectionResource = useFetcher(ConnectionResource.createShape());
-  const updateWorkspace = useFetcher(WorkspaceResource.updateShape());
-  const workspace = useResource(WorkspaceResource.detailShape(), {
-    workspaceId: config.ui.workspaceId
-  });
+  const { finishOnboarding, workspace } = useWorkspace();
   const updateConnectionResource = useFetcher(ConnectionResource.updateShape());
   const updateStateConnectionResource = useFetcher(
     ConnectionResource.updateStateShape()
@@ -105,19 +102,8 @@ const useConnection = () => {
         connector_destination_definition_id:
           destinationDefinition?.destinationDefinitionId
       });
-
       if (workspace.displaySetupWizard) {
-        await updateWorkspace(
-          {},
-          {
-            workspaceId: workspace.workspaceId,
-            initialSetupComplete: workspace.initialSetupComplete,
-            displaySetupWizard: false,
-            anonymousDataCollection: workspace.anonymousDataCollection,
-            news: workspace.news,
-            securityUpdates: workspace.securityUpdates
-          }
-        );
+        await finishOnboarding();
       }
 
       return result;
