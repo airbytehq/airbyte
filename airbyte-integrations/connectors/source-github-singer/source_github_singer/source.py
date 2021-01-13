@@ -98,6 +98,12 @@ class SourceGithubSinger(SingerSource):
         return overrides
 
     def get_excluded_streams(self) -> List:
+        # The below streams are only synced if their parent stream is synced. For example,
+        # review_comments is not synced unless the pull_requests stream is selected. If a user tries
+        # to sync the child without the parent, however, the tap process succeeds without any
+        # exceptions, but no output is emitted for either stream, which is a pretty opaque user
+        # experience. So for now we will exclude the child stream until Airbyte has a way of enforcing
+        # dependencies between streams.
         excluded_streams = [
             "review_comments",
             "review",
