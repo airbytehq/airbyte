@@ -28,9 +28,7 @@ import operator
 from collections import MutableMapping, Sequence
 
 from functools import lru_cache
-from urllib.parse import (
-    unquote, urljoin, urlunsplit, urlsplit
-)
+from urllib.parse import unquote, urljoin, urlunsplit, urlsplit
 
 iteritems = operator.methodcaller("items")
 
@@ -42,10 +40,10 @@ class RefResolutionError(Exception):
 def urldefrag(url):
     if "#" in url:
         s, n, p, q, frag = urlsplit(url)
-        defrag = urlunsplit((s, n, p, q, ''))
+        defrag = urlunsplit((s, n, p, q, ""))
     else:
         defrag = url
-        frag = ''
+        frag = ""
     return defrag, frag
 
 
@@ -124,14 +122,14 @@ class RefResolver(object):
     """
 
     def __init__(
-            self,
-            base_uri,
-            referrer,
-            store=(),
-            cache_remote=True,
-            handlers=(),
-            urljoin_cache=None,
-            remote_cache=None,
+        self,
+        base_uri,
+        referrer,
+        store=(),
+        cache_remote=True,
+        handlers=(),
+        urljoin_cache=None,
+        remote_cache=None,
     ):
         if urljoin_cache is None:
             urljoin_cache = lru_cache(1024)(urljoin)
@@ -143,10 +141,7 @@ class RefResolver(object):
         self.handlers = dict(handlers)
 
         self._scopes_stack = [base_uri]
-        self.store = URIDict(
-            (id, validator.META_SCHEMA)
-            for id, validator in iteritems(meta_schemas)
-        )
+        self.store = URIDict((id, validator.META_SCHEMA) for id, validator in iteritems(meta_schemas))
         self.store.update(store)
         self.store[base_uri] = referrer
 
@@ -182,9 +177,7 @@ class RefResolver(object):
             self._scopes_stack.pop()
         except IndexError:
             raise RefResolutionError(
-                "Failed to pop the scope from an empty stack. "
-                "`pop_scope()` should only be called once for every "
-                "`push_scope()`"
+                "Failed to pop the scope from an empty stack. " "`pop_scope()` should only be called once for every " "`push_scope()`"
             )
 
     @property
@@ -266,8 +259,6 @@ class RefResolver(object):
             try:
                 document = document[part]
             except (TypeError, LookupError):
-                raise RefResolutionError(
-                    "Unresolvable JSON pointer: %r" % fragment
-                )
+                raise RefResolutionError("Unresolvable JSON pointer: %r" % fragment)
 
         return document
