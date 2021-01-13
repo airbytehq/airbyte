@@ -29,7 +29,7 @@ from appstoreconnect import Api
 from base_python import AirbyteLogger
 from base_singer import SingerSource, Status
 
-# from datetime import date, timedelta
+from datetime import date, timedelta
 
 
 class SourceAppstoreSinger(SingerSource):
@@ -49,14 +49,15 @@ class SourceAppstoreSinger(SingerSource):
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
         try:
-            # test_date = date.today() - timedelta(days=2)
+            # create request fields for testing
             api_fields_to_test = {
                 "subscription_report": {"reportType": "SUBSCRIPTION", "frequency": "DAILY", "reportSubType": "SUMMARY", "version": "1_2"}
             }
-            # report_filters = {"reportDate": test_date.strftime("%Y-%m-%d"), "vendorNumber": "{}".format(config["vendor"])}
-            report_filters = {"reportDate": "2021-01-10", "vendorNumber": "{}".format(config["vendor"])}
-            print("oooo")
+            test_date = date.today() - timedelta(days=2)
+            report_filters = {"reportDate": test_date.strftime("%Y-%m-%d"), "vendorNumber": "{}".format(config["vendor"])}
+
             report_filters.update(api_fields_to_test["subscription_report"])
+
             # fetch data from appstore api
             api = Api(config["key_id"], config["key_file"], config["issuer_id"])
 
