@@ -988,21 +988,6 @@ paths:
           description: Job not found
         "422":
           $ref: "#/components/responses/InvalidInput"
-  /v1/debug:
-    get:
-      tags:
-        - debugging
-      summary: Get miscellaneous information for debugging
-      operationId: getDebuggingInfo
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/DebugRead"
-        "404":
-          description: Debug info not found
   /v1/health:
     get:
       tags:
@@ -1016,8 +1001,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthCheckRead"
-        "404":
-          description: Debug info not found
   /v1/deployment/export:
     post:
       tags:
@@ -1857,13 +1840,6 @@ components:
       properties:
         db:
           type: boolean
-    DebugRead:
-      type: object
-      required:
-        - info
-      properties:
-        info:
-          type: object
     # General
     CheckConnectionRead:
       type: object
