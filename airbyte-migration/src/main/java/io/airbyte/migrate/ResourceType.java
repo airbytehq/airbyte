@@ -29,7 +29,7 @@ import java.nio.file.Path;
 public enum ResourceType {
 
   CONFIG(Path.of("airbyte_config")),
-  JOB(Path.of("jobs"));
+  JOB(Path.of("airbyte_db"));
 
   private final Path directoryName;
 
