@@ -41,7 +41,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Stream;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -105,17 +104,14 @@ public class DatabaseArchiver {
    * Reads a YAML configuration archive file and deserialize table into the Airbyte Database. The
    * objects will be validated against the current version of Airbyte server's JSON Schema.
    */
-  public String readDatabaseFromArchive() throws IOException {
+  public void readDatabaseFromArchive(final String tempSchema) throws IOException {
     if (storageRoot.resolve(DB_FOLDER_NAME).toFile().exists()) {
-      final String tempSchema = "import_staging_" + RandomStringUtils.randomAlphanumeric(5);
       Files.walk(storageRoot.resolve(DB_FOLDER_NAME))
           .filter(f -> Files.isRegularFile(f) && f.endsWith(".yaml"))
           .forEach(table -> Exceptions.toRuntime(() -> readTableFromArchive(table, tempSchema)));
       LOGGER.debug("Successful read of airbyte database from archive");
-      return tempSchema;
     } else {
       LOGGER.debug("Airbyte Database was not found in the archive");
-      return null;
     }
   }
 
