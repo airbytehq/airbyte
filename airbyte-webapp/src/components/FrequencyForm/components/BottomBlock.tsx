@@ -11,6 +11,7 @@ type IProps = {
   isValid: boolean;
   dirty: boolean;
   errorMessage?: React.ReactNode;
+  additionBottomControls?: React.ReactNode;
 };
 
 const ButtonContainer = styled.div`
@@ -65,7 +66,8 @@ const BottomBlock: React.FC<IProps> = ({
   isSubmitting,
   isValid,
   dirty,
-  errorMessage
+  errorMessage,
+  additionBottomControls
 }) => {
   if (isSubmitting) {
     return (
@@ -91,9 +93,12 @@ const BottomBlock: React.FC<IProps> = ({
       ) : (
         <div />
       )}
-      <Button type="submit" disabled={isSubmitting || !isValid || !dirty}>
-        <FormattedMessage id="onboarding.setUpConnection" />
-      </Button>
+      <div>
+        {additionBottomControls || null}
+        <Button type="submit" disabled={isSubmitting || !isValid || !dirty}>
+          <FormattedMessage id="onboarding.setUpConnection" />
+        </Button>
+      </div>
     </ButtonContainer>
   );
 };

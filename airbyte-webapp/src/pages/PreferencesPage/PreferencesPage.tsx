@@ -27,7 +27,7 @@ const PreferencesPage: React.FC = () => {
       {
         workspaceId: config.ui.workspaceId,
         initialSetupComplete: true,
-        onboardingComplete: false,
+        displaySetupWizard: true,
         ...data
       }
     );

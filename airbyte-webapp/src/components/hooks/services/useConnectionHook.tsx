@@ -106,13 +106,13 @@ const useConnection = () => {
           destinationDefinition?.destinationDefinitionId
       });
 
-      if (!workspace.onboardingComplete) {
+      if (workspace.displaySetupWizard) {
         await updateWorkspace(
           {},
           {
             workspaceId: workspace.workspaceId,
             initialSetupComplete: workspace.initialSetupComplete,
-            onboardingComplete: true,
+            displaySetupWizard: false,
             anonymousDataCollection: workspace.anonymousDataCollection,
             news: workspace.news,
             securityUpdates: workspace.securityUpdates

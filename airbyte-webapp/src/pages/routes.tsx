@@ -148,7 +148,7 @@ export const Routing = () => {
       <Suspense fallback={<LoadingPage />}>
         {!workspace.initialSetupComplete ? (
           <PreferencesRoutes />
-        ) : !workspace.onboardingComplete ? (
+        ) : workspace.displaySetupWizard ? (
           <OnboardingsRoutes />
         ) : (
           <MainViewRoutes />
