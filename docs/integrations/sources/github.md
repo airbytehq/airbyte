@@ -20,19 +20,11 @@ This connector outputs the following streams:
 * [Issue events](https://docs.github.com/en/free-pro-team@latest/rest/reference/issues#list-issue-events-for-a-repository) 
 * [Issue labels](https://docs.github.com/en/free-pro-team@latest/rest/reference/issues#list-labels-for-a-repository)
 * [Issue milestones](https://docs.github.com/en/free-pro-team@latest/rest/reference/issues#list-milestones)
-* [Projects](https://docs.github.com/en/free-pro-team@latest/rest/reference/projects#list-repository-projects) 
-* [Project cards](https://docs.github.com/en/free-pro-team@latest/rest/reference/projects#list-project-cards) 
-* [Project columns](https://docs.github.com/en/free-pro-team@latest/rest/reference/projects#list-project-columns)
+* [Projects](https://docs.github.com/en/free-pro-team@latest/rest/reference/projects#list-repository-projects)
 * [Pull requests](https://developer.github.com/v3/pulls/#list-pull-requests)
-* [PR commits](https://docs.github.com/en/free-pro-team@latest/rest/reference/pulls#list-commits-on-a-pull-request)  
-* [Pull request reviews](https://docs.github.com/en/free-pro-team@latest/rest/reference/pulls#reviews)
-* [Releases](https://docs.github.com/en/free-pro-team@latest/rest/reference/repos#list-releases)  
-* [Reviews](https://developer.github.com/v3/pulls/reviews/#list-reviews-on-a-pull-request)
-* [Review comments](https://developer.github.com/v3/pulls/comments)
+* [Releases](https://docs.github.com/en/free-pro-team@latest/rest/reference/repos#list-releases)
 * [Stargazers](https://developer.github.com/v3/activity/starring/#list-stargazers)
 * [Teams](https://docs.github.com/en/free-pro-team@latest/rest/reference/teams#list-teams)
-* [Team members](https://docs.github.com/en/free-pro-team@latest/rest/reference/teams#list-team-members) 
-* [Team memberships](https://docs.github.com/en/free-pro-team@latest/rest/reference/teams#get-team-membership-for-a-user)
 
 ### Features
 
