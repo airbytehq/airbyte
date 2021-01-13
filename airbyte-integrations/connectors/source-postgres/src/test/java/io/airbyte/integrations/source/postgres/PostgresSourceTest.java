@@ -28,11 +28,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
+import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -40,7 +42,12 @@ import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -55,43 +62,46 @@ import org.testcontainers.utility.MountableFile;
 class PostgresSourceTest {
 
   private static final String STREAM_NAME = "public.id_and_name";
-  private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.createConfiguredAirbyteCatalog(
-      STREAM_NAME,
-      Field.of("id", JsonSchemaPrimitive.NUMBER),
-      Field.of("name", JsonSchemaPrimitive.STRING));
+  private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
+      CatalogHelpers.createAirbyteStream(
+          STREAM_NAME,
+          Field.of("id", JsonSchemaPrimitive.NUMBER),
+          Field.of("name", JsonSchemaPrimitive.STRING),
+          Field.of("power", JsonSchemaPrimitive.NUMBER))
+          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))));
+  private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
+  private static final Set<AirbyteMessage> ASCII_MESSAGES = Sets.newHashSet(
+      createRecord(STREAM_NAME, map("id", new BigDecimal("1.0"), "name", "goku", "power", null)),
+      createRecord(STREAM_NAME, map("id", new BigDecimal("2.0"), "name", "vegeta", "power", 9000.1)),
+      createRecord(STREAM_NAME, map("id", null, "name", "piccolo", "power", null)));
 
   private static final Set<AirbyteMessage> UTF8_MESSAGES = Sets.newHashSet(
-      new AirbyteMessage().withType(Type.RECORD)
-          .withRecord(
-              new AirbyteRecordMessage().withStream(STREAM_NAME).withData(Jsons.jsonNode(ImmutableMap.of("id", 1, "name", "\u2013 someutfstring")))),
-      new AirbyteMessage().withType(Type.RECORD)
-          .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME).withData(Jsons.jsonNode(ImmutableMap.of("id", 2, "name", "\u2215")))));
+      createRecord(STREAM_NAME, ImmutableMap.of("id", 1, "name", "\u2013 someutfstring")),
+      createRecord(STREAM_NAME, ImmutableMap.of("id", 2, "name", "\u2215")));
 
   private static PostgreSQLContainer<?> PSQL_DB;
+
+  private String dbName;
 
   @BeforeAll
   static void init() {
     PSQL_DB = new PostgreSQLContainer<>("postgres:13-alpine");
     PSQL_DB.start();
-
   }
 
   @BeforeEach
   void setup() throws Exception {
-    final String dbName = "db_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
-    final JsonNode config = getConfig(PSQL_DB, dbName);
+    dbName = "db_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
 
     final String initScriptName = "init_" + dbName.concat(".sql");
     MoreResources.writeResource(initScriptName, "CREATE DATABASE " + dbName + ";");
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource(initScriptName), PSQL_DB);
 
+    final JsonNode config = getConfig(PSQL_DB, dbName);
     final Database database = getDatabaseFromConfig(config);
     database.query(ctx -> {
-      ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
-      ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'goku'),  (2, 'vegeta'), (3, 'piccolo');");
-      ctx.fetch("CREATE SCHEMA test_another_schema;");
-      ctx.fetch("CREATE TABLE test_another_schema.id_and_name(id INTEGER, name VARCHAR(200));");
-      ctx.fetch("INSERT INTO test_another_schema.id_and_name (id, name) VALUES (1,'tom'),  (2, 'jerry');");
+      ctx.fetch("CREATE TABLE id_and_name(id NUMERIC(20, 10), name VARCHAR(200), power double precision);");
+      ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
       return null;
     });
     database.close();
@@ -153,6 +163,40 @@ class PostgresSourceTest {
 
       assertEquals(UTF8_MESSAGES, actualMessages);
     }
+  }
+
+  @Test
+  void testReadSuccess() throws Exception {
+    final Set<AirbyteMessage> actualMessages =
+        new PostgresSource().read(getConfig(PSQL_DB, dbName), CONFIGURED_CATALOG, null).collect(Collectors.toSet());
+
+    actualMessages.forEach(r -> {
+      if (r.getRecord() != null) {
+        r.getRecord().setEmittedAt(null);
+      }
+    });
+
+    assertEquals(ASCII_MESSAGES, actualMessages);
+  }
+
+  private static AirbyteMessage createRecord(String stream, Map<Object, Object> data) {
+    return new AirbyteMessage().withType(Type.RECORD).withRecord(new AirbyteRecordMessage().withData(Jsons.jsonNode(data)).withStream(stream));
+  }
+
+  private static Map<Object, Object> map(Object... entries) {
+    if (entries.length % 2 != 0) {
+      throw new IllegalArgumentException("Entries must have even length");
+    }
+
+    return new HashMap<>() {
+
+      {
+        for (int i = 0; i < entries.length; i++) {
+          put(entries[i++], entries[i]);
+        }
+      }
+
+    };
   }
 
 }
