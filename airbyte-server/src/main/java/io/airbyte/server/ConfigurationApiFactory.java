@@ -24,9 +24,8 @@
 
 package io.airbyte.server;
 
-
-import io.airbyte.config.Configs;
 import io.airbyte.commons.io.FileTtlManager;
+import io.airbyte.config.Configs;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.db.Database;
 import io.airbyte.scheduler.client.CachingSchedulerJobClient;
@@ -63,7 +62,6 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
   public static void setDatabase(Database database) {
     ConfigurationApiFactory.database = database;
   }
-
 
   public static void setConfigs(Configs configs) {
     ConfigurationApiFactory.configs = configs;
