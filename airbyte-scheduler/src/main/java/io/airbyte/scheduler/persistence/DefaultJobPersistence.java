@@ -51,6 +51,7 @@ import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -59,6 +60,7 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.JSONFormat;
@@ -74,6 +76,7 @@ public class DefaultJobPersistence implements JobPersistence {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultJobPersistence.class);
   private static final JSONFormat DB_JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
+  private static final String BACKUP_SCHEMA = "import_backup";
 
   @VisibleForTesting
   static final String BASE_JOB_SELECT_AND_JOIN =
@@ -411,11 +414,22 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public List<String> listTables(final String targetSchema) throws IOException {
-    if (targetSchema != null) {
-      // list tables from public schema only
-      return database.query(context -> context.meta().getSchemas(targetSchema).stream()
-          .flatMap(schema -> context.meta(schema).getTables().stream())
+  public Map<String, Stream<JsonNode>> exportDatabase(final String schema) throws IOException {
+    final List<String> tables = listTables(schema);
+    final Map<String, Stream<JsonNode>> result = new HashMap<>();
+    for (final String table : tables) {
+      result.put(table, exportTable(schema, table));
+    }
+    return result;
+  }
+
+  /**
+   * List tables from @param schema and @return their names
+   */
+  private List<String> listTables(final String schema) throws IOException {
+    if (schema != null) {
+      return database.query(context -> context.meta().getSchemas(schema).stream()
+          .flatMap(s -> context.meta(s).getTables().stream())
           .map(Named::getName)
           .collect(Collectors.toList()));
     } else {
@@ -423,9 +437,9 @@ public class DefaultJobPersistence implements JobPersistence {
     }
   }
 
-  @Override
-  public Stream<JsonNode> serialize(final String tableSQL) throws IOException {
-    try (final Stream<Record> records = database.query(ctx -> ctx.select(DSL.asterisk()).from(tableSQL).fetchStream())) {
+  private Stream<JsonNode> exportTable(final String schema, final String tableName) throws IOException {
+    final String tableSql = String.format("%s.%s", schema, tableName);
+    try (final Stream<Record> records = database.query(ctx -> ctx.select(DSL.asterisk()).from(tableSql).fetchStream())) {
       return records.map(record -> {
         final Set<String> jsonFieldNames = Arrays.stream(record.fields())
             .filter(f -> f.getDataType().getTypeName().equals("jsonb"))
@@ -441,17 +455,30 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public void deserialize(final String tableSQL, final JsonNode jsonSchema, final Stream<JsonNode> recordStream)
-      throws IOException {
+  public void importDatabase(final String targetSchema, final Map<String, Stream<JsonNode>> data) throws IOException {
+    final String tempSchema = "import_staging_" + RandomStringUtils.randomAlphanumeric(5);
+    try {
+      dropSchema(tempSchema);
+      createSchema(tempSchema);
+      for (final String tableName : data.keySet()) {
+        importTable(tempSchema, tableName, data.get(tableName));
+      }
+      swapSchema(tempSchema, targetSchema);
+    } finally {
+      dropSchema(tempSchema);
+    }
+  }
+
+  private void importTable(final String schema, final String tableName, final Stream<JsonNode> recordStream) throws IOException {
     StringBuffer queryString = new StringBuffer();
-    queryString.append(String.format("CREATE TABLE IF NOT EXISTS %s ( \n", tableSQL));
+    queryString.append(String.format("CREATE TABLE IF NOT EXISTS %s.%s ( \n", schema, tableName));
     // TODO convert JSON schema to SQL schema
     queryString.append(") \n");
     final String createTableQuery = queryString.toString();
     database.query(ctx -> ctx.execute(createTableQuery));
 
     queryString = new StringBuffer();
-    queryString.append(String.format("INSERT INTO %s ( \n", tableSQL));
+    queryString.append(String.format("INSERT INTO %s.%s ( \n", schema, tableName));
     // TODO convert JSON schema to list of column names
     queryString.append(") VALUES\n");
     // TODO convert JSON schema to list of column types, for example "(?, ?::jsonb, ?),";
@@ -461,18 +488,19 @@ public class DefaultJobPersistence implements JobPersistence {
     database.query(ctx -> ctx.execute(insertQuery));
   }
 
-  @Override
-  public void swapSchema(final String newSchema, final String oldSchema, final String tmpSchema) throws IOException {
-    String query =
-        String.format("ALTER SCHEMA %s RENAME TO %s;\n", oldSchema, tmpSchema) +
-            String.format("ALTER SCHEMA %s RENAME TO %s;\n", newSchema, oldSchema);
+  private void swapSchema(final String newSchema, final String finalSchema) throws IOException {
+    final String query =
+        String.format("ALTER SCHEMA %s RENAME TO %s;\n", finalSchema, DefaultJobPersistence.BACKUP_SCHEMA) +
+            String.format("ALTER SCHEMA %s RENAME TO %s;\n", newSchema, finalSchema);
     database.transaction(ctx -> ctx.execute(query));
   }
 
-  @Override
-  public void dropSchema(final String schema) throws IOException {
-    final String query = String.format("DROP SCHEMA IF EXISTS %s CASCADE;\n", schema);
-    database.query(ctx -> ctx.execute(query));
+  private void createSchema(final String schema) throws IOException {
+    database.query(ctx -> ctx.execute(String.format("CREATE SCHEMA IF NOT EXISTS %s;\n", schema)));
+  }
+
+  private void dropSchema(final String schema) throws IOException {
+    database.query(ctx -> ctx.execute(String.format("DROP SCHEMA IF EXISTS %s CASCADE;\n", schema)));
   }
 
 }

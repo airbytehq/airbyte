@@ -32,6 +32,7 @@ import io.airbyte.scheduler.JobStatus;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -155,31 +156,16 @@ public interface JobPersistence {
   /// ARCHIVE
 
   /**
-   * List all available table names in the Database's @param schema
+   * Export all SQL tables from @param schema into streams of JsonNode objects. This returns a Map of
+   * table names to the associated streams of records that is being exported.
    */
-  List<String> listTables(String schema) throws IOException;
+  Map<String, Stream<JsonNode>> exportDatabase(String schema) throws IOException;
 
   /**
-   * Serialize the @param tableSQL into a stream of records as JsonNode objects
+   * Import all SQL tables from streams of JsonNode objects.
+   *
+   * @param data is a Map of table names to the associated streams of records to import.
    */
-  Stream<JsonNode> serialize(String tableSQL) throws IOException;
-
-  /**
-   * Deserialize the stream of records @param recordStream using @param jsonSchema into the @param
-   * tableSQL
-   */
-  void deserialize(final String tableSQL, final JsonNode jsonSchema, final Stream<JsonNode> recordStream)
-      throws IOException;
-
-  /**
-   * Atomically rename @param oldSchema as @param tmpSchema for backups then replace @param oldSchema
-   * with @param newSchema
-   */
-  void swapSchema(String newSchema, String oldSchema, String tmpSchema) throws IOException;
-
-  /**
-   * Deletes the schema @param schema and all of its content
-   */
-  void dropSchema(String schema) throws IOException;
+  void importDatabase(String schema, Map<String, Stream<JsonNode>> data) throws IOException;
 
 }

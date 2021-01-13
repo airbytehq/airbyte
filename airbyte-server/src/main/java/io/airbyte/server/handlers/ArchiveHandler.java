@@ -51,7 +51,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -158,15 +157,7 @@ public class ArchiveHandler {
 
   private void checkAndImportAirbyteDatabase(final Path tempFolder) throws IOException, JsonValidationException {
     final DatabaseArchiver databaseArchiver = new DatabaseArchiver(persistence, tempFolder);
-    final String tempSchema = "import_staging_" + RandomStringUtils.randomAlphanumeric(5);
-    try {
-      databaseArchiver.readDatabaseFromArchive(tempSchema);
-      if (databaseArchiver.checkDatabase(tempSchema)) {
-        databaseArchiver.commitDatabase(tempSchema);
-      }
-    } finally {
-      databaseArchiver.dropSchema(tempSchema);
-    }
+    databaseArchiver.readDatabaseFromArchive();
   }
 
   private void importAirbyteConfig(Path tempFolder, boolean dryRun) throws IOException, JsonValidationException {
