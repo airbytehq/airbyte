@@ -60,7 +60,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
 
     return Jsons.jsonNode(configBuilder.build());
   }
-  
+
   @Override
   public Set<String> getExcludedInternalSchemas() {
     return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");

@@ -178,7 +178,6 @@ public abstract class AbstractJooqSource implements Source {
       final Table<?> table = tableNameToTable.get(streamName);
       final List<org.jooq.Field<?>> selectedDatabaseFields = Arrays.stream(table.fields())
           .filter(field -> selectedFields.contains(field.getName()))
-          .map(this::getFieldQueryOverrides)
           .collect(Collectors.toList());
 
       if (selectedDatabaseFields.isEmpty()) {
@@ -229,18 +228,6 @@ public abstract class AbstractJooqSource implements Source {
     }
 
     return resultStream.onClose(() -> Exceptions.toRuntime(database::close));
-  }
-
-  /**
-   * This method should be overridden by subclasses if they want to always override certain fields
-   * within SELECT query.
-   *
-   * @param field
-   * @param <T>
-   * @return
-   */
-  protected <T> org.jooq.Field<T> getFieldQueryOverrides(org.jooq.Field<T> field) {
-    return field;
   }
 
   private static Stream<Record> executeFullRefreshQuery(Database database, List<org.jooq.Field<?>> jooqFields, Table<?> table) throws SQLException {
