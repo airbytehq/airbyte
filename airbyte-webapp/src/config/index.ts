@@ -11,6 +11,7 @@ const config: {
   ui: {
     helpLink: string;
     docsLink: string;
+    configurationArchiveLink: string;
     workspaceId: string;
     tutorialLink: string;
   };
@@ -26,6 +27,8 @@ const config: {
   ui: {
     helpLink: "https://airbyte.io/community",
     docsLink: "https://docs.airbyte.io",
+    configurationArchiveLink:
+      "https://docs.airbyte.io/architecture/configuration-archive",
     tutorialLink:
       "https://www.youtube.com/watch?v=Rcpt5SVsMpk&feature=emb_logo",
     workspaceId: "5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6"
