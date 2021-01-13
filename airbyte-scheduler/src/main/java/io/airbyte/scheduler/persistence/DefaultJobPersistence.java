@@ -24,6 +24,8 @@
 
 package io.airbyte.scheduler.persistence;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.enums.Enums;
@@ -46,6 +48,7 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -55,15 +58,23 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.jooq.DSLContext;
+import org.jooq.Field;
+import org.jooq.JSONFormat;
+import org.jooq.JSONFormat.RecordFormat;
+import org.jooq.Named;
 import org.jooq.Record;
 import org.jooq.Result;
+import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DefaultJobPersistence implements JobPersistence {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultJobPersistence.class);
+  private static final JSONFormat DB_JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
+
   @VisibleForTesting
   static final String BASE_JOB_SELECT_AND_JOIN =
       "SELECT\n"
@@ -397,6 +408,70 @@ public class DefaultJobPersistence implements JobPersistence {
 
   private static long getEpoch(Record record, String fieldName) {
     return record.get(fieldName, LocalDateTime.class).toEpochSecond(ZoneOffset.UTC);
+  }
+
+  @Override
+  public List<String> listTables(final String targetSchema) throws IOException {
+    if (targetSchema != null) {
+      // list tables from public schema only
+      return database.query(context -> context.meta().getSchemas(targetSchema).stream()
+          .flatMap(schema -> context.meta(schema).getTables().stream())
+          .map(Named::getName)
+          .collect(Collectors.toList()));
+    } else {
+      return List.of();
+    }
+  }
+
+  @Override
+  public Stream<JsonNode> dump(final String tableName) throws IOException {
+    try (final Stream<Record> records = database.query(ctx -> ctx.select(DSL.asterisk()).from(tableName).fetchStream())) {
+      return records.map(record -> {
+        final Set<String> jsonFieldNames = Arrays.stream(record.fields())
+            .filter(f -> f.getDataType().getTypeName().equals("jsonb"))
+            .map(Field::getName)
+            .collect(Collectors.toSet());
+        final JsonNode row = Jsons.deserialize(record.formatJSON(DB_JSON_FORMAT));
+        // for json fields, deserialize them so they are treated as objects instead of strings. this is to
+        // get around that formatJson doesn't handle deserializing them for us.
+        jsonFieldNames.forEach(jsonFieldName -> ((ObjectNode) row).replace(jsonFieldName, Jsons.deserialize(row.get(jsonFieldName).asText())));
+        return row;
+      });
+    }
+  }
+
+  @Override
+  public void createTable(final String schema, final String tableName, final JsonNode jsonSchema) throws IOException {
+    final StringBuffer queryString = new StringBuffer();
+    queryString.append(String.format("CREATE TABLE IF NOT EXISTS %s.%s ( \n", schema, tableName));
+    // TODO convert JSON schema to SQL schema
+    queryString.append(") \n");
+    database.query(ctx -> ctx.execute(queryString.toString()));
+  }
+
+  @Override
+  public void insertRecords(final String tempSchema, final String tableName, final JsonNode schema, final Stream<JsonNode> recordStream) {
+    final StringBuffer queryString = new StringBuffer();
+    queryString.append(String.format("INSERT INTO %s.%s ( \n", tempSchema, tableName));
+    // TODO convert JSON schema to list of column names
+    queryString.append(") VALUES\n");
+    // TODO convert JSON schema to list of column types, for example "(?, ?::jsonb, ?),";
+    // TODO convert Stream of JSONNode records to PreparedStatement, see
+    // SqlOperationsUtils.insertRawRecordsInSingleQuery
+  }
+
+  @Override
+  public void swapSchema(final String newSchema, final String oldSchema, final String tmpSchema) throws IOException {
+    String query =
+        String.format("ALTER SCHEMA %s RENAME TO %s;\n", oldSchema, tmpSchema) +
+            String.format("ALTER SCHEMA %s RENAME TO %s;\n", newSchema, oldSchema);
+    database.transaction(ctx -> ctx.execute(query));
+  }
+
+  @Override
+  public void dropSchema(final String schema) throws IOException {
+    final String query = String.format("DROP SCHEMA IF EXISTS %s CASCADE;\n", schema);
+    database.query(ctx -> ctx.execute(query));
   }
 
 }

@@ -38,7 +38,7 @@ import io.airbyte.config.StandardSyncSchedule;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.PersistenceConstants;
-import io.airbyte.db.Database;
+import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.converters.ConfigFileArchiver;
 import io.airbyte.server.converters.DatabaseArchiver;
 import io.airbyte.validation.json.JsonValidationException;
@@ -62,12 +62,12 @@ public class ArchiveHandler {
 
   private final String version;
   private final ConfigRepository configRepository;
-  private final Database database;
+  private final JobPersistence persistence;
 
-  public ArchiveHandler(final String version, final ConfigRepository configRepository, final Database database) {
+  public ArchiveHandler(final String version, final ConfigRepository configRepository, final JobPersistence persistence) {
     this.version = version;
     this.configRepository = configRepository;
-    this.database = database;
+    this.persistence = persistence;
   }
 
   public File exportData() {
@@ -119,7 +119,7 @@ public class ArchiveHandler {
 
   private void exportAirbyteDatabase(Path tempFolder) {
     LOGGER.info("Exporting Airbyte Database");
-    final DatabaseArchiver databaseArchiver = new DatabaseArchiver(database, tempFolder);
+    final DatabaseArchiver databaseArchiver = new DatabaseArchiver(persistence, tempFolder);
     Exceptions.toRuntime(databaseArchiver::writeDatabaseToArchive);
   }
 
@@ -156,7 +156,7 @@ public class ArchiveHandler {
   }
 
   private void checkAndImportAirbyteDatabase(final Path tempFolder) throws IOException, JsonValidationException {
-    final DatabaseArchiver databaseArchiver = new DatabaseArchiver(database, tempFolder);
+    final DatabaseArchiver databaseArchiver = new DatabaseArchiver(persistence, tempFolder);
     final String tempSchema = databaseArchiver.readDatabaseFromArchive();
     if (databaseArchiver.checkDatabase(tempSchema)) {
       databaseArchiver.commitDatabase(tempSchema);

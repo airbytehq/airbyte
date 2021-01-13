@@ -24,6 +24,7 @@
 
 package io.airbyte.scheduler.persistence;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.State;
 import io.airbyte.scheduler.Job;
@@ -34,6 +35,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 public interface JobPersistence {
 
@@ -149,5 +151,40 @@ public interface JobPersistence {
   Optional<State> getCurrentState(UUID connectionId) throws IOException;
 
   Optional<Job> getNextJob() throws IOException;
+
+  /// ARCHIVE
+
+  /**
+   * List all available table names in the Database's @param schema
+   */
+  List<String> listTables(String schema) throws IOException;
+
+  /**
+   * Dump the @param tableSQL into a stream of records deserialized as JsonNode objects
+   */
+  Stream<JsonNode> dump(String tableSQL) throws IOException;
+
+  /**
+   * Create a table @param tableName in the @param schema using the @param jsonSchema
+   */
+  void createTable(String schema, String tableName, JsonNode jsonSchema) throws IOException;
+
+  /**
+   * Insert stream of records @param recordStream, described by @param jsonSchema, into the
+   * table @param tableName in the @param schema
+   */
+  void insertRecords(final String tableSchema, final String tableName, final JsonNode jsonSchema, final Stream<JsonNode> recordStream)
+      throws IOException;
+
+  /**
+   * Atomically rename @param oldSchema as @param tmpSchema for backups then replace @param oldSchema
+   * with @param newSchema
+   */
+  void swapSchema(String newSchema, String oldSchema, String tmpSchema) throws IOException;
+
+  /**
+   * Deletes the schema @param schema and all of its content
+   */
+  void dropSchema(String schema) throws IOException;
 
 }

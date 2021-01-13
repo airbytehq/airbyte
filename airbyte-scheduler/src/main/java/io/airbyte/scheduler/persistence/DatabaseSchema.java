@@ -56,7 +56,7 @@ public enum DatabaseSchema {
     return KNOWN_SCHEMAS_ROOT.resolve(schemaFilename).toFile();
   }
 
-  public static JsonNode find(final String tableName) {
+  public static JsonNode forTable(final String tableName) {
     final Optional<JsonNode> result = FileUtils.listFiles(KNOWN_SCHEMAS_ROOT.toFile(), null, false)
         .stream()
         .map(JsonSchemaValidator::getSchema)

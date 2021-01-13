@@ -47,6 +47,8 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
+import io.airbyte.scheduler.persistence.DefaultJobPersistence;
+import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.helpers.ConnectionHelpers;
 import io.airbyte.server.helpers.DestinationDefinitionHelpers;
 import io.airbyte.server.helpers.DestinationHelpers;
@@ -69,6 +71,7 @@ public class ArchiveHandlerTest {
   private JsonNode dbConfig;
   private PostgreSQLContainer<?> container;
   private Database database;
+  private JobPersistence persistence;
   private ArchiveHandler archiveHandler;
 
   @BeforeEach
@@ -77,7 +80,8 @@ public class ArchiveHandlerTest {
     dbConfig = null;
     container = mock(PostgreSQLContainer.class);
     database = mock(Database.class);
-    archiveHandler = new ArchiveHandler("test-version", configRepository, database);
+    persistence = mock(JobPersistence.class);
+    archiveHandler = new ArchiveHandler("test-version", configRepository, persistence);
   }
 
   void setUpDatabase() {
@@ -95,6 +99,7 @@ public class ArchiveHandlerTest {
         dbConfig.get("username").asText(),
         dbConfig.get("password").asText(),
         dbConfig.get("jdbc_url").asText());
+    persistence = new DefaultJobPersistence(database);
   }
 
   @AfterEach
@@ -178,7 +183,7 @@ public class ArchiveHandlerTest {
           "INSERT INTO id_and_name (id, name, updated_at) VALUES (1,'picard', '2004-10-19'),  (2, 'crusher', '2005-10-19'), (3, 'vash', '2006-10-19');");
       return null;
     });
-    archiveHandler = new ArchiveHandler("test-version", configRepository, database);
+    archiveHandler = new ArchiveHandler("test-version", configRepository, persistence);
     assertThrows(IllegalArgumentException.class, () -> archiveHandler.importData(archiveHandler.exportData()));
   }
 
@@ -195,7 +200,7 @@ public class ArchiveHandlerTest {
               + UUID.randomUUID() + "','sync', '{ \"job\" : \"sync\" }', 'pending', '2006-10-19', '2006-10-19');");
       return null;
     });
-    archiveHandler = new ArchiveHandler("test-version", configRepository, database);
+    archiveHandler = new ArchiveHandler("test-version", configRepository, persistence);
 
     archiveHandler.importData(archiveHandler.exportData());
   }
