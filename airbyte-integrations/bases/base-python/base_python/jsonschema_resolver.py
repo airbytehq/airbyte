@@ -25,7 +25,7 @@ SOFTWARE.
 import contextlib
 import operator
 
-from collections import MutableMapping, Sequence
+from typing import MutableMapping, Sequence
 
 from functools import lru_cache
 from urllib.parse import unquote, urljoin, urlunsplit, urlsplit
