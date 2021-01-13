@@ -52,6 +52,7 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
+
 import java.io.IOException;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
@@ -66,6 +67,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -139,10 +141,10 @@ public abstract class AbstractJdbcSource implements Source {
               database,
               Optional.ofNullable(config.get("database")).map(JsonNode::asText),
               Optional.ofNullable(config.get("schema")).map(JsonNode::asText))
-                  .stream()
-                  .map(t -> CatalogHelpers.createAirbyteStream(t.getName(), t.getFields())
-                      .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))
-                  .collect(Collectors.toList()));
+              .stream()
+              .map(t -> CatalogHelpers.createAirbyteStream(t.getName(), t.getFields())
+                  .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))
+              .collect(Collectors.toList()));
     }
   }
 
@@ -158,8 +160,8 @@ public abstract class AbstractJdbcSource implements Source {
         database,
         Optional.ofNullable(config.get("database")).map(JsonNode::asText),
         Optional.ofNullable(config.get("schema")).map(JsonNode::asText))
-            .stream()
-            .collect(Collectors.toMap(t -> String.format("%s.%s", t.getSchemaName(), t.getName()), Function.identity()));
+        .stream()
+        .collect(Collectors.toMap(t -> String.format("%s.%s", t.getSchemaName(), t.getName()), Function.identity()));
 
     Stream<AirbyteMessage> resultStream = Stream.empty();
 
@@ -343,6 +345,11 @@ public abstract class AbstractJdbcSource implements Source {
                     try {
                       jdbcType = JDBCType.valueOf(f.get(INTERNAL_COLUMN_TYPE).asInt());
                     } catch (IllegalArgumentException ex) {
+                      LOGGER.warn(String.format("Could not convert column: %s from table: %s.%s with type: %s. Casting to VARCHAR.",
+                          f.get(INTERNAL_COLUMN_NAME),
+                          f.get(INTERNAL_SCHEMA_NAME),
+                          f.get(INTERNAL_TABLE_NAME),
+                          f.get(INTERNAL_COLUMN_TYPE)));
                       jdbcType = JDBCType.VARCHAR;
                     }
                     return new ColumnInfo(f.get(INTERNAL_COLUMN_NAME).asText(), jdbcType);
