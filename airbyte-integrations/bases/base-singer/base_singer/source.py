@@ -25,7 +25,7 @@ SOFTWARE.
 import json
 import os
 from dataclasses import dataclass
-from typing import Dict, Generator, Type, List
+from typing import Dict, Generator, List, Type
 
 from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status
 from base_python import AirbyteLogger, CatalogHelper, Source
