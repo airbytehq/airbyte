@@ -24,6 +24,7 @@
 
 package io.airbyte.server;
 
+import io.airbyte.config.Configs;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.db.Database;
 import io.airbyte.scheduler.client.CachingSchedulerJobClient;
@@ -38,6 +39,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
   private static CachingSchedulerJobClient schedulerJobClient;
   private static String airbyteVersion;
   private static Database database;
+  private static Configs configs;
 
   public static void setConfigRepository(final ConfigRepository configRepository) {
     ConfigurationApiFactory.configRepository = configRepository;
@@ -59,6 +61,10 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
     ConfigurationApiFactory.database = database;
   }
 
+  public static void setConfigs(Configs configs) {
+    ConfigurationApiFactory.configs = configs;
+  }
+
   @Override
   public ConfigurationApi provide() {
     return new ConfigurationApi(
@@ -66,7 +72,8 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
         ConfigurationApiFactory.database,
         ConfigurationApiFactory.configRepository,
         ConfigurationApiFactory.jobPersistence,
-        ConfigurationApiFactory.schedulerJobClient);
+        ConfigurationApiFactory.schedulerJobClient,
+        ConfigurationApiFactory.configs);
   }
 
   @Override
