@@ -28,12 +28,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
@@ -73,6 +73,7 @@ public class ArchiveHandlerTest {
   private Database database;
   private JobPersistence persistence;
   private ArchiveHandler archiveHandler;
+  private FileTtlManager fileTtlManager;
 
   @BeforeEach
   void setUp() {
@@ -81,7 +82,8 @@ public class ArchiveHandlerTest {
     container = mock(PostgreSQLContainer.class);
     database = mock(Database.class);
     persistence = mock(JobPersistence.class);
-    archiveHandler = new ArchiveHandler("test-version", configRepository, persistence);
+    fileTtlManager = mock(FileTtlManager.class);
+    archiveHandler = new ArchiveHandler("test-version", configRepository, persistence, fileTtlManager);
   }
 
   void setUpDatabase() {
@@ -146,32 +148,27 @@ public class ArchiveHandlerTest {
     final StandardSync sourceSync = ConnectionHelpers.generateSyncWithSourceId(sourceConnection1.getSourceId());
     final StandardSyncSchedule syncSchedule = ConnectionHelpers.generateSchedule(sourceSync.getConnectionId());
 
-    when(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID))
-        .thenReturn(workspace);
-    when(configRepository.listStandardSources())
-        .thenReturn(List.of(standardSource));
-    when(configRepository.listStandardDestinationDefinitions())
-        .thenReturn(List.of(standardDestination));
-    when(configRepository.listSourceConnection())
-        .thenReturn(List.of(sourceConnection1, sourceConnection2));
-    when(configRepository.listDestinationConnection())
-        .thenReturn(List.of(destinationConnection));
-    when(configRepository.listStandardSyncs())
-        .thenReturn(List.of(destinationSync, sourceSync));
-    when(configRepository.getStandardSyncSchedule(sourceSync.getConnectionId()))
-        .thenReturn(syncSchedule);
+    // Read operations
+    when(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID)).thenReturn(workspace);
+    when(configRepository.listStandardSources()).thenReturn(List.of(standardSource));
+    when(configRepository.listStandardDestinationDefinitions()).thenReturn(List.of(standardDestination));
+    when(configRepository.listSourceConnection()).thenReturn(List.of(sourceConnection1, sourceConnection2));
+    when(configRepository.listDestinationConnection()).thenReturn(List.of(destinationConnection));
+    when(configRepository.listStandardSyncs()).thenReturn(List.of(destinationSync, sourceSync));
+    when(configRepository.getStandardSyncSchedule(sourceSync.getConnectionId())).thenReturn(syncSchedule);
 
     archiveHandler.importData(archiveHandler.exportData());
 
-    verify(configRepository, times(1)).writeStandardWorkspace(workspace);
-    verify(configRepository, times(1)).writeStandardSource(standardSource);
-    verify(configRepository, times(1)).writeStandardDestinationDefinition(standardDestination);
-    verify(configRepository, times(1)).writeSourceConnection(sourceConnection1);
-    verify(configRepository, times(1)).writeSourceConnection(sourceConnection2);
-    verify(configRepository, times(1)).writeDestinationConnection(destinationConnection);
-    verify(configRepository, times(1)).writeStandardSync(sourceSync);
-    verify(configRepository, times(1)).writeStandardSync(destinationSync);
-    verify(configRepository, times(1)).writeStandardSchedule(syncSchedule);
+    verify(configRepository).writeStandardWorkspace(workspace);
+    verify(configRepository).writeStandardSource(standardSource);
+    verify(configRepository).writeStandardDestinationDefinition(standardDestination);
+    verify(configRepository).writeSourceConnection(sourceConnection1);
+    verify(configRepository).writeSourceConnection(sourceConnection2);
+    verify(configRepository).writeDestinationConnection(destinationConnection);
+    verify(configRepository).writeStandardSync(sourceSync);
+    verify(configRepository).writeStandardSync(destinationSync);
+    verify(configRepository).writeStandardSchedule(syncSchedule);
+    verify(fileTtlManager).register(any());
   }
 
   @Test
@@ -183,7 +180,7 @@ public class ArchiveHandlerTest {
           "INSERT INTO id_and_name (id, name, updated_at) VALUES (1,'picard', '2004-10-19'),  (2, 'crusher', '2005-10-19'), (3, 'vash', '2006-10-19');");
       return null;
     });
-    archiveHandler = new ArchiveHandler("test-version", configRepository, persistence);
+    archiveHandler = new ArchiveHandler("test-version", configRepository, persistence, fileTtlManager);
     assertThrows(IllegalArgumentException.class, () -> archiveHandler.importData(archiveHandler.exportData()));
   }
 
@@ -192,16 +189,15 @@ public class ArchiveHandlerTest {
     setUpDatabase();
     database.query(ctx -> {
       ctx.fetch(
-          "CREATE TABLE jobs(id VARCHAR(200), scope VARCHAR(200), config JSONB, status VARCHAR(200), created_at VARCHAR(200), updated_at VARCHAR(200));");
+          "CREATE TABLE jobs(id INTEGER, scope VARCHAR(200), config JSONB, status VARCHAR(200), created_at VARCHAR(200), updated_at VARCHAR(200));");
       ctx.fetch(
-          "INSERT INTO jobs(id, scope, config, status, created_at, updated_at) VALUES ('"
-              + UUID.randomUUID() + "','getspec', '{ \"type\" : \"getSpec\" }', 'success', '2004-10-19', '2004-10-19'), ('"
-              + UUID.randomUUID() + "','sync', '{ \"job\" : \"sync\" }', 'running', '2005-10-19', '2005-10-19'), ('"
-              + UUID.randomUUID() + "','sync', '{ \"job\" : \"sync\" }', 'pending', '2006-10-19', '2006-10-19');");
+          "INSERT INTO jobs(id, scope, config, status, created_at, updated_at) VALUES "
+              + "(1,'getspec', '{ \"type\" : \"getSpec\" }', 'success', '2004-10-19', '2004-10-19'), "
+              + "(2,'sync', '{ \"job\" : \"sync\" }', 'running', '2005-10-19', '2005-10-19'), "
+              + "(3,'sync', '{ \"job\" : \"sync\" }', 'pending', '2006-10-19', '2006-10-19');");
       return null;
     });
-    archiveHandler = new ArchiveHandler("test-version", configRepository, persistence);
-
+    archiveHandler = new ArchiveHandler("test-version", configRepository, persistence, fileTtlManager);
     archiveHandler.importData(archiveHandler.exportData());
   }
 
