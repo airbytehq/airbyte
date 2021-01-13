@@ -60,15 +60,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
 
     return Jsons.jsonNode(configBuilder.build());
   }
-
-  // @Override
-  // protected Field<?> getFieldQueryOverrides(Field<?> field){
-  // if (field.getDataType().getSQLDataType().) {
-  // return DSL.field("nullif(" + field.getName() + ", 'NaN')").as(field);
-  // } else {
-  // return field;
-  // }
-
+  
   @Override
   public Set<String> getExcludedInternalSchemas() {
     return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");
