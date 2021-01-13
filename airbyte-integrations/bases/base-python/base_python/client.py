@@ -28,10 +28,11 @@ import os
 import pkgutil
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Dict, Generator, Tuple, List
+from typing import Dict, Generator, List, Tuple
 
 import pkg_resources
 from airbyte_protocol import AirbyteRecordMessage, AirbyteStream
+
 from .jsonschema_resolver import RefResolver
 
 

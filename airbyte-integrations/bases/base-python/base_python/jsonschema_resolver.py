@@ -24,11 +24,9 @@ SOFTWARE.
 
 import contextlib
 import operator
-
-from typing import MutableMapping, Sequence
-
 from functools import lru_cache
-from urllib.parse import unquote, urljoin, urlunsplit, urlsplit
+from typing import MutableMapping, Sequence
+from urllib.parse import unquote, urljoin, urlsplit, urlunsplit
 
 iteritems = operator.methodcaller("items")
 
