@@ -3,6 +3,8 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import Button from "../../../components/Button";
+import { useFetcher } from "rest-hooks";
+import DeploymentResource from "../../../core/resources/Deployment";
 import ContentCard from "../../../components/ContentCard";
 import config from "../../../config";
 import Link from "../../../components/Link";
@@ -38,10 +40,17 @@ const Warning = styled.div`
 `;
 
 const ConfigurationView: React.FC = () => {
+  const fetchExp = useFetcher(DeploymentResource.exportShape(), true);
+
+  const onExport = async () => {
+    const { file } = await fetchExp({});
+    window.location.assign(file);
+  };
+
   return (
     <Content>
       <ControlContent>
-        <Button>
+        <Button onClick={onExport}>
           <FormattedMessage id="admin.exportConfiguration" />
         </Button>
         <Text>
