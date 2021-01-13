@@ -11,7 +11,7 @@ ENV AIRBYTE_IMPL_PATH="SourceFacebookMarketingApiSinger"
 WORKDIR /airbyte/integration_code
 COPY $CODE_PATH ./$CODE_PATH
 COPY setup.py ./
-RUN pip install .
+RUN pip install ".[main]"
 
 LABEL io.airbyte.version=0.1.5
 LABEL io.airbyte.name=airbyte/source-facebook-marketing-api-singer
