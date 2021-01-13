@@ -84,7 +84,7 @@ public class DatabaseArchiver {
       Files.createDirectories(tablePath.getParent());
       final BufferedWriter recordOutputWriter = new BufferedWriter(new FileWriter(tablePath.toFile()));
       final CloseableConsumer<JsonNode> recordConsumer = Yamls.listWriter(recordOutputWriter);
-      persistence.dump(tableName).forEach(row -> Exceptions.toRuntime(() -> {
+      persistence.serialize(tableName).forEach(row -> Exceptions.toRuntime(() -> {
         jsonSchemaValidator.ensure(schema, row);
         recordConsumer.accept(row);
       }));
@@ -123,7 +123,6 @@ public class DatabaseArchiver {
     final String tableName = tablePath.getFileName().toString();
     final JsonNode schema = DatabaseSchema.forTable(tableName);
     if (schema != null) {
-      persistence.createTable(tempSchema, tableName, schema);
       final Stream<JsonNode> recordStream = MoreStreams.toStream(Yamls.deserialize(IOs.readFile(tablePath)).elements())
           .peek(r -> {
             try {
@@ -132,7 +131,8 @@ public class DatabaseArchiver {
               throw new IllegalArgumentException("Archived Data Schema does not match current Airbyte Data Schemas", e);
             }
           });
-      persistence.insertRecords(tempSchema, tableName, schema, recordStream);
+      final String tableSQL = String.format("%s.%s", tempSchema, tableName);
+      persistence.deserialize(tableSQL, schema, recordStream);
       LOGGER.debug(String.format("Successful read of airbyte table %s", tableName));
     } else {
       throw new IllegalArgumentException(String.format("Unable to locate schema definition for table %s", tableName));

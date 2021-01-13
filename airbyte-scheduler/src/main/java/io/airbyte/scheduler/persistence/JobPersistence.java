@@ -160,20 +160,15 @@ public interface JobPersistence {
   List<String> listTables(String schema) throws IOException;
 
   /**
-   * Dump the @param tableSQL into a stream of records deserialized as JsonNode objects
+   * Serialize the @param tableSQL into a stream of records as JsonNode objects
    */
-  Stream<JsonNode> dump(String tableSQL) throws IOException;
+  Stream<JsonNode> serialize(String tableSQL) throws IOException;
 
   /**
-   * Create a table @param tableName in the @param schema using the @param jsonSchema
+   * Deserialize the stream of records @param recordStream using @param jsonSchema into the @param
+   * tableSQL
    */
-  void createTable(String schema, String tableName, JsonNode jsonSchema) throws IOException;
-
-  /**
-   * Insert stream of records @param recordStream, described by @param jsonSchema, into the
-   * table @param tableName in the @param schema
-   */
-  void insertRecords(final String tableSchema, final String tableName, final JsonNode jsonSchema, final Stream<JsonNode> recordStream)
+  void deserialize(final String tableSQL, final JsonNode jsonSchema, final Stream<JsonNode> recordStream)
       throws IOException;
 
   /**

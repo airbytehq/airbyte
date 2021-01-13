@@ -424,8 +424,8 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public Stream<JsonNode> dump(final String tableName) throws IOException {
-    try (final Stream<Record> records = database.query(ctx -> ctx.select(DSL.asterisk()).from(tableName).fetchStream())) {
+  public Stream<JsonNode> serialize(final String tableSQL) throws IOException {
+    try (final Stream<Record> records = database.query(ctx -> ctx.select(DSL.asterisk()).from(tableSQL).fetchStream())) {
       return records.map(record -> {
         final Set<String> jsonFieldNames = Arrays.stream(record.fields())
             .filter(f -> f.getDataType().getTypeName().equals("jsonb"))
@@ -441,23 +441,24 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public void createTable(final String schema, final String tableName, final JsonNode jsonSchema) throws IOException {
-    final StringBuffer queryString = new StringBuffer();
-    queryString.append(String.format("CREATE TABLE IF NOT EXISTS %s.%s ( \n", schema, tableName));
+  public void deserialize(final String tableSQL, final JsonNode jsonSchema, final Stream<JsonNode> recordStream)
+      throws IOException {
+    StringBuffer queryString = new StringBuffer();
+    queryString.append(String.format("CREATE TABLE IF NOT EXISTS %s ( \n", tableSQL));
     // TODO convert JSON schema to SQL schema
     queryString.append(") \n");
-    database.query(ctx -> ctx.execute(queryString.toString()));
-  }
+    final String createTableQuery = queryString.toString();
+    database.query(ctx -> ctx.execute(createTableQuery));
 
-  @Override
-  public void insertRecords(final String tempSchema, final String tableName, final JsonNode schema, final Stream<JsonNode> recordStream) {
-    final StringBuffer queryString = new StringBuffer();
-    queryString.append(String.format("INSERT INTO %s.%s ( \n", tempSchema, tableName));
+    queryString = new StringBuffer();
+    queryString.append(String.format("INSERT INTO %s ( \n", tableSQL));
     // TODO convert JSON schema to list of column names
     queryString.append(") VALUES\n");
     // TODO convert JSON schema to list of column types, for example "(?, ?::jsonb, ?),";
     // TODO convert Stream of JSONNode records to PreparedStatement, see
     // SqlOperationsUtils.insertRawRecordsInSingleQuery
+    final String insertQuery = queryString.toString();
+    database.query(ctx -> ctx.execute(insertQuery));
   }
 
   @Override
