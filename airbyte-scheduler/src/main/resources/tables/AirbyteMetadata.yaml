@@ -8,6 +8,7 @@ required:
   - value
 additionalProperties: false
 properties:
+  # First column defined is the primary Key
   key:
     type: string
   value:

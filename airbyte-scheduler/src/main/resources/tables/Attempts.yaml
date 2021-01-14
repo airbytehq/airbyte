@@ -13,6 +13,7 @@ required:
   - updated_at
 additionalProperties: false
 properties:
+  # First column defined is the primary Key
   id:
     type: number
   job_id:

@@ -189,12 +189,12 @@ public class ArchiveHandlerTest {
     setUpDatabase();
     database.query(ctx -> {
       ctx.fetch(
-          "CREATE TABLE jobs(id INTEGER, scope VARCHAR(200), config JSONB, status VARCHAR(200), created_at VARCHAR(200), updated_at VARCHAR(200));");
+          "CREATE TABLE jobs(id INTEGER, scope VARCHAR(200), config_type VARCHAR(200), config JSONB, status VARCHAR(200), created_at VARCHAR(200), started_at VARCHAR(200), updated_at VARCHAR(200));");
       ctx.fetch(
-          "INSERT INTO jobs(id, scope, config, status, created_at, updated_at) VALUES "
-              + "(1,'getspec', '{ \"type\" : \"getSpec\" }', 'success', '2004-10-19', '2004-10-19'), "
-              + "(2,'sync', '{ \"job\" : \"sync\" }', 'running', '2005-10-19', '2005-10-19'), "
-              + "(3,'sync', '{ \"job\" : \"sync\" }', 'pending', '2006-10-19', '2006-10-19');");
+          "INSERT INTO jobs(id, scope, config_type, config, status, created_at, started_at, updated_at) VALUES "
+              + "(1,'getspec', 'spec_config', '{ \"type\" : \"getSpec\" }', 'success', '2004-10-19', null, '2004-10-19'), "
+              + "(2,'sync', 'sync_config', '{ \"job\" : \"sync\" }', 'running', '2005-10-19', null, '2005-10-19'), "
+              + "(3,'sync', 'sync_config', '{ \"job\" : \"sync\" }', 'pending', '2006-10-19', null, '2006-10-19');");
       return null;
     });
     archiveHandler = new ArchiveHandler("test-version", configRepository, persistence, fileTtlManager);

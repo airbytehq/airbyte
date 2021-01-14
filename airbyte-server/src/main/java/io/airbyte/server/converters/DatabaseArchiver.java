@@ -105,12 +105,14 @@ public class DatabaseArchiver {
    * objects will be validated against the current version of Airbyte server's JSON Schema.
    */
   public void readDatabaseFromArchive() throws IOException {
-    if (storageRoot.resolve(DB_FOLDER_NAME).toFile().exists()) {
-      final Map<String, Stream<JsonNode>> data = Files
-          .walk(storageRoot.resolve(DB_FOLDER_NAME))
-          .filter(f -> Files.isRegularFile(f) && f.endsWith(".yaml"))
-          .collect(Collectors.toMap(f -> f.getFileName().toString(), this::readTableFromArchive));
-      persistence.importDatabase(DEFAULT_SCHEMA, data);
+    final Path dbFolder = storageRoot.resolve(DB_FOLDER_NAME);
+    if (dbFolder.toFile().exists()) {
+      try (final Stream<Path> files = Files.walk(dbFolder)) {
+        final Map<String, Stream<JsonNode>> data = files
+            .filter(f -> Files.isRegularFile(f) && f.toString().endsWith(".yaml"))
+            .collect(Collectors.toMap(f -> f.getFileName().toString().replace(".yaml", ""), this::readTableFromArchive));
+        persistence.importDatabase(DEFAULT_SCHEMA, data);
+      }
       LOGGER.debug("Successful read of airbyte database from archive");
     } else {
       LOGGER.debug("Airbyte Database was not found in the archive");
@@ -118,7 +120,7 @@ public class DatabaseArchiver {
   }
 
   private Stream<JsonNode> readTableFromArchive(final Path tablePath) {
-    final String tableName = tablePath.getFileName().toString();
+    final String tableName = tablePath.getFileName().toString().replace(".yaml", "");
     final JsonNode schema = DatabaseSchema.forTable(tableName);
     if (schema != null) {
       return MoreStreams.toStream(Yamls.deserialize(IOs.readFile(tablePath)).elements())

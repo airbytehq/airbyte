@@ -24,7 +24,11 @@
 
 package io.airbyte.scheduler.persistence;
 
+import static org.jooq.impl.DSL.primaryKey;
+
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
@@ -48,12 +52,15 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -61,14 +68,21 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.jooq.CreateTableConstraintStep;
 import org.jooq.DSLContext;
+import org.jooq.DataType;
 import org.jooq.Field;
+import org.jooq.InsertValuesStepN;
+import org.jooq.JSONB;
 import org.jooq.JSONFormat;
 import org.jooq.JSONFormat.RecordFormat;
 import org.jooq.Named;
 import org.jooq.Record;
 import org.jooq.Result;
+import org.jooq.SQLDialect;
+import org.jooq.Table;
 import org.jooq.impl.DSL;
+import org.jooq.impl.DefaultDataType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -456,36 +470,133 @@ public class DefaultJobPersistence implements JobPersistence {
 
   @Override
   public void importDatabase(final String targetSchema, final Map<String, Stream<JsonNode>> data) throws IOException {
-    final String tempSchema = "import_staging_" + RandomStringUtils.randomAlphanumeric(5);
-    try {
-      dropSchema(tempSchema);
-      createSchema(tempSchema);
-      for (final String tableName : data.keySet()) {
-        importTable(tempSchema, tableName, data.get(tableName));
+    if (!data.isEmpty()) {
+      final String tempSchema = "import_staging_" + RandomStringUtils.randomAlphanumeric(5);
+      try {
+        dropSchema(tempSchema);
+        createSchema(tempSchema);
+        for (final String tableName : data.keySet()) {
+          importTable(tempSchema, tableName, data.get(tableName));
+        }
+        swapSchema(tempSchema, targetSchema);
+        // TODO write "import success vXX on now()" to audit log table?
+      } finally {
+        dropSchema(tempSchema);
       }
-      swapSchema(tempSchema, targetSchema);
-    } finally {
-      dropSchema(tempSchema);
+    } else {
+      throw new IllegalArgumentException("Import empty Airbyte database");
     }
   }
 
-  private void importTable(final String schema, final String tableName, final Stream<JsonNode> recordStream) throws IOException {
-    StringBuffer queryString = new StringBuffer();
-    queryString.append(String.format("CREATE TABLE IF NOT EXISTS %s.%s ( \n", schema, tableName));
-    // TODO convert JSON schema to SQL schema
-    queryString.append(") \n");
-    final String createTableQuery = queryString.toString();
-    database.query(ctx -> ctx.execute(createTableQuery));
+  private void importTable(final String schema, final String tableName, final Stream<JsonNode> jsonStream) throws IOException {
+    final JsonNode jsonSchema = DatabaseSchema.forTable(tableName);
+    final String tableSql = String.format("%s.%s", schema, tableName);
+    if (jsonSchema != null) {
+      // Use an ArrayList to mirror the order of columns from the file
+      final List<String> columns = new ArrayList<>();
+      // Map column names to their Field Object
+      final Map<String, Field<?>> columnMap = new HashMap<>();
+      for (Entry<String, JsonNode> entry : getProperties(jsonSchema)) {
+        final Class<?> entryType = convertJsonSchemaType(entry.getKey(), entry.getValue());
+        final DataType<?> datatype = DefaultDataType.getDataType(SQLDialect.POSTGRES, entryType);
+        final boolean isNullable = isJsonSchemaTypeNullable(entry.getValue());
+        final Field<?> field = DSL.field(entry.getKey(), datatype.nullable(isNullable));
+        columns.add(entry.getKey());
+        columnMap.put(entry.getKey(), field);
+      }
+      // List of Fields in the same order as columns
+      final List<Field<?>> columnFields = columns.stream().map(columnMap::get).collect(Collectors.toList());
+      final Table<Record> newTable = DSL.table(tableSql);
+      // Create Table first
+      database.query(ctx -> {
+        final CreateTableConstraintStep step = ctx.createTableIfNotExists(newTable)
+            .columns(columnFields)
+            // First column defined in Yaml is the primary Key
+            .constraint(primaryKey(columns.get(0)));
+        return step.execute();
+      });
+      // Build a Stream of List of Values using the same order as columns
+      final Stream<List<?>> data = jsonStream.map(node -> {
+        final List<Object> values = new ArrayList<>();
+        for (final String columnName : columns) {
+          values.add(getJsonNodeValue(columnName, node.get(columnName)));
+        }
+        return values;
+      });
+      // Then Insert rows into table
+      database.query(ctx -> {
+        final InsertValuesStepN<Record> insertStep = ctx
+            .insertInto(DSL.table(tableSql))
+            .columns(columnFields);
+        data.forEach(insertStep::values);
+        return ctx.batch(insertStep).execute();
+      });
+    }
+  }
 
-    queryString = new StringBuffer();
-    queryString.append(String.format("INSERT INTO %s.%s ( \n", schema, tableName));
-    // TODO convert JSON schema to list of column names
-    queryString.append(") VALUES\n");
-    // TODO convert JSON schema to list of column types, for example "(?, ?::jsonb, ?),";
-    // TODO convert Stream of JSONNode records to PreparedStatement, see
-    // SqlOperationsUtils.insertRawRecordsInSingleQuery
-    final String insertQuery = queryString.toString();
-    database.query(ctx -> ctx.execute(insertQuery));
+  private List<Entry<String, JsonNode>> getProperties(final JsonNode jsonSchema) {
+    final List<Entry<String, JsonNode>> result = new ArrayList<>();
+    final JsonNode properties = jsonSchema.get("properties");
+    for (final Iterator<Entry<String, JsonNode>> it = properties.fields(); it.hasNext();) {
+      Entry<String, JsonNode> entry = it.next();
+      result.add(entry);
+    }
+    return result;
+  }
+
+  private Class<?> convertJsonSchemaType(final String columnName, final JsonNode columnNode) {
+    JsonNode element = columnNode.get("type");
+    if (element.getNodeType() == JsonNodeType.ARRAY) {
+      final ArrayNode array = (ArrayNode) element;
+      for (final Iterator<JsonNode> it = array.elements(); it.hasNext();) {
+        element = it.next();
+        if (!element.textValue().equals("null")) {
+          break;
+        }
+      }
+    }
+    return getJsonNodeType(columnName, JsonNodeType.valueOf(element.textValue().toUpperCase()));
+  }
+
+  private boolean isJsonSchemaTypeNullable(final JsonNode columnNode) {
+    JsonNode element = columnNode.get("type");
+    if (element.getNodeType() == JsonNodeType.ARRAY) {
+      final ArrayNode array = (ArrayNode) element;
+      for (final Iterator<JsonNode> it = array.elements(); it.hasNext();) {
+        element = it.next();
+        if (element.textValue().equals("null")) {
+          return true;
+        }
+      }
+    }
+    return element.textValue().equals("null");
+  }
+
+  private Class<?> getJsonNodeType(final String columnName, final JsonNodeType nodeType) {
+    if (nodeType == JsonNodeType.OBJECT) {
+      return JSONB.class;
+    } else if (nodeType == JsonNodeType.STRING) {
+      return String.class;
+    } else if (nodeType == JsonNodeType.NUMBER) {
+      return Integer.class;
+    } else if (nodeType == JsonNodeType.NULL) {
+      return null;
+    }
+    throw new IllegalArgumentException(String.format("Undefined type for column %s", columnName));
+  }
+
+  private Object getJsonNodeValue(final String columnName, final JsonNode valueNode) {
+    final JsonNodeType nodeType = valueNode.getNodeType();
+    if (nodeType == JsonNodeType.OBJECT) {
+      return valueNode.toString();
+    } else if (nodeType == JsonNodeType.STRING) {
+      return valueNode.asText();
+    } else if (nodeType == JsonNodeType.NUMBER) {
+      return valueNode.asDouble();
+    } else if (nodeType == JsonNodeType.NULL) {
+      return null;
+    }
+    throw new IllegalArgumentException(String.format("Undefined type for column %s", columnName));
   }
 
   private void swapSchema(final String newSchema, final String finalSchema) throws IOException {
