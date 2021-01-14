@@ -35,8 +35,8 @@ public class ResourceId {
 
   /**
    * Constructs a {@link ResourceId} from a {@link ResourceType} and a path. Assumes the file name is
-   * constant case. The file name (without the yaml extension) is used as the name. If the input file
-   * is not a yaml, this will break.
+   * snake case (case agnostic). The file name (without the yaml extension) is used as the name. If
+   * the input file is not a yaml, this will break.
    *
    * @param resourceType type of the resource
    * @param path path that to be used to generate resource name
@@ -49,7 +49,7 @@ public class ResourceId {
 
     return new ResourceId(
         resourceType,
-        path.getFileName().toString().replace(".yaml", ""));
+        path.getFileName().toString().replace(".yaml", "").toUpperCase());
   }
 
   /**

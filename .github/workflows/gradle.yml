@@ -87,7 +87,9 @@ jobs:
         env:
           GIT_REVISION: ${{ github.sha }}
 
+      # make sure these always run before pushing core docker images
       - name: Run End-to-End Acceptance Tests
+        if: success() && github.ref == 'refs/heads/master'
         run: ./tools/bin/acceptance_test.sh
 
       - name: Push Core Docker Images
@@ -117,7 +119,36 @@ jobs:
           SLACK_USERNAME: Buildbot
           SLACK_TITLE: "Build Success"
           SLACK_FOOTER: ""
+  test_docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
 
+      - uses: actions/setup-java@v1
+        with:
+          java-version: '14'
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '14.7'
+
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.7'
+
+      - name: Build Core Docker Images and Run Tests
+        run: CORE_ONLY=true ./gradlew --no-daemon format composeBuild test -x :airbyte-webapp:test --scan
+        env:
+          GIT_REVISION: ${{ github.sha }}
+          CORE_ONLY: true
+
+      - name: Ensure no file change
+        run: git status --porcelain && test -z "$(git status --porcelain)"
+
+      - name: Run Docker End-to-End Acceptance Tests
+        run: |
+          ./tools/bin/acceptance_test.sh
   test_kube:
     runs-on: ubuntu-latest
     steps:
@@ -136,25 +167,23 @@ jobs:
         with:
           python-version: '3.7'
 
-      - name: Create local dir
-        run: |
-          mkdir -p /tmp/airbyte_local
-
       - name: Setup Minikube
         uses: manusa/actions-setup-minikube@v2.3.0
         with:
           minikube version: 'v1.16.0'
           kubernetes version: 'v1.19.2'
-          start args: --mount-string=/tmp/airbyte_local:/local
 
       - name: Install socat
         run: sudo apt-get install socat
 
-      - name: Build Core Docker Images
-        if: success() && github.ref == 'refs/heads/master'
-        run: ./gradlew --no-daemon composeBuild --scan
+      - name: Build Core Docker Images and Run Tests
+        run: CORE_ONLY=true ./gradlew --no-daemon format composeBuild test -x :airbyte-webapp:test --scan
         env:
           GIT_REVISION: ${{ github.sha }}
+          CORE_ONLY: true
+
+      - name: Ensure no file change
+        run: git status --porcelain && test -z "$(git status --porcelain)"
 
       - name: Run Kubernetes End-to-End Acceptance Tests
         run: |

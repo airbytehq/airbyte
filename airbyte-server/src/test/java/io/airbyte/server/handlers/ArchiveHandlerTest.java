@@ -24,12 +24,16 @@
 
 package io.airbyte.server.handlers;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.io.FileTtlManager;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -40,6 +44,8 @@ import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.PersistenceConstants;
+import io.airbyte.db.Database;
+import io.airbyte.db.Databases;
 import io.airbyte.server.helpers.ConnectionHelpers;
 import io.airbyte.server.helpers.DestinationDefinitionHelpers;
 import io.airbyte.server.helpers.DestinationHelpers;
@@ -47,21 +53,38 @@ import io.airbyte.server.helpers.SourceDefinitionHelpers;
 import io.airbyte.server.helpers.SourceHelpers;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
+import org.testcontainers.containers.PostgreSQLContainer;
 
 public class ArchiveHandlerTest {
 
   private ConfigRepository configRepository;
+
+  private JsonNode dbConfig;
+  private PostgreSQLContainer<?> container;
+  private Database database;
   private ArchiveHandler archiveHandler;
+  private FileTtlManager fileTtlManager;
 
   @BeforeEach
   void setUp() {
     configRepository = mock(ConfigRepository.class);
-    archiveHandler = new ArchiveHandler("test-version", configRepository);
+    dbConfig = null;
+    container = mock(PostgreSQLContainer.class);
+    database = mock(Database.class);
+    fileTtlManager = mock(FileTtlManager.class);
+    archiveHandler = new ArchiveHandler("test-version", configRepository, database, fileTtlManager);
+  }
+
+  @AfterEach
+  void tearDown() throws Exception {
+    database.close();
+    container.close();
   }
 
   private StandardWorkspace generateWorkspace() {
@@ -78,6 +101,19 @@ public class ArchiveHandlerTest {
   }
 
   @Test
+  void testEmptyMigration() throws JsonValidationException, IOException {
+    archiveHandler.importData(archiveHandler.exportData());
+
+    verify(configRepository, never()).writeStandardWorkspace(any());
+    verify(configRepository, never()).writeStandardSource(any());
+    verify(configRepository, never()).writeStandardDestinationDefinition(any());
+    verify(configRepository, never()).writeSourceConnection(any());
+    verify(configRepository, never()).writeDestinationConnection(any());
+    verify(configRepository, never()).writeStandardSync(any());
+    verify(configRepository, never()).writeStandardSchedule(any());
+  }
+
+  @Test
   void testConfigMigration() throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardWorkspace workspace = generateWorkspace();
     final StandardSourceDefinition standardSource = SourceDefinitionHelpers.generateSource();
@@ -90,41 +126,53 @@ public class ArchiveHandlerTest {
     final StandardSyncSchedule syncSchedule = ConnectionHelpers.generateSchedule(sourceSync.getConnectionId());
 
     // Read operations
-    when(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID))
-        .thenReturn(workspace);
-    when(configRepository.listStandardSources())
-        .thenReturn(List.of(standardSource));
-    when(configRepository.listStandardDestinationDefinitions())
-        .thenReturn(List.of(standardDestination));
-    when(configRepository.listSourceConnection())
-        .thenReturn(List.of(sourceConnection1, sourceConnection2));
-    when(configRepository.listDestinationConnection())
-        .thenReturn(List.of(destinationConnection));
-    when(configRepository.listStandardSyncs())
-        .thenReturn(List.of(destinationSync, sourceSync));
-    when(configRepository.getStandardSyncSchedule(sourceSync.getConnectionId()))
-        .thenReturn(syncSchedule);
-
-    // Write operations
-    final ArgumentCaptor<SourceConnection> resultSourceConnection = ArgumentCaptor.forClass(SourceConnection.class);
-    final ArgumentCaptor<StandardSync> resultSync = ArgumentCaptor.forClass(StandardSync.class);
+    when(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID)).thenReturn(workspace);
+    when(configRepository.listStandardSources()).thenReturn(List.of(standardSource));
+    when(configRepository.listStandardDestinationDefinitions()).thenReturn(List.of(standardDestination));
+    when(configRepository.listSourceConnection()).thenReturn(List.of(sourceConnection1, sourceConnection2));
+    when(configRepository.listDestinationConnection()).thenReturn(List.of(destinationConnection));
+    when(configRepository.listStandardSyncs()).thenReturn(List.of(destinationSync, sourceSync));
+    when(configRepository.getStandardSyncSchedule(sourceSync.getConnectionId())).thenReturn(syncSchedule);
 
     archiveHandler.importData(archiveHandler.exportData());
 
-    verify(configRepository, times(1)).writeStandardWorkspace(workspace);
-    verify(configRepository, times(1)).writeStandardSource(standardSource);
-    verify(configRepository, times(1)).writeStandardDestinationDefinition(standardDestination);
-    verify(configRepository, times(2)).writeSourceConnection(resultSourceConnection.capture());
-    verify(configRepository, times(1)).writeDestinationConnection(destinationConnection);
-    verify(configRepository, times(2)).writeStandardSync(resultSync.capture());
-    verify(configRepository, times(1)).writeStandardSchedule(syncSchedule);
+    verify(configRepository).writeStandardWorkspace(workspace);
+    verify(configRepository).writeStandardSource(standardSource);
+    verify(configRepository).writeStandardDestinationDefinition(standardDestination);
+    verify(configRepository).writeSourceConnection(sourceConnection1);
+    verify(configRepository).writeSourceConnection(sourceConnection2);
+    verify(configRepository).writeDestinationConnection(destinationConnection);
+    verify(configRepository).writeStandardSync(sourceSync);
+    verify(configRepository).writeStandardSync(destinationSync);
+    verify(configRepository).writeStandardSchedule(syncSchedule);
+    verify(fileTtlManager).register(any());
+  }
 
-    List<SourceConnection> sourceConnectionList = resultSourceConnection.getAllValues();
-    assertTrue(sourceConnectionList.contains(sourceConnection1));
-    assertTrue(sourceConnectionList.contains(sourceConnection2));
-    List<StandardSync> syncList = resultSync.getAllValues();
-    assertTrue(syncList.contains(sourceSync));
-    assertTrue(syncList.contains(destinationSync));
+  @Test
+  void testDatabaseMigration() throws SQLException {
+    container = new PostgreSQLContainer<>("postgres:13-alpine");
+    container.start();
+    dbConfig = Jsons.jsonNode(ImmutableMap.builder()
+        .put("username", container.getUsername())
+        .put("password", container.getPassword())
+        .put("jdbc_url", String.format("jdbc:postgresql://%s:%s/%s",
+            container.getHost(),
+            container.getFirstMappedPort(),
+            container.getDatabaseName()))
+        .build());
+    database = Databases.createPostgresDatabase(
+        dbConfig.get("username").asText(),
+        dbConfig.get("password").asText(),
+        dbConfig.get("jdbc_url").asText());
+    database.query(ctx -> {
+      ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), updated_at DATE);");
+      ctx.fetch(
+          "INSERT INTO id_and_name (id, name, updated_at) VALUES (1,'picard', '2004-10-19'),  (2, 'crusher', '2005-10-19'), (3, 'vash', '2006-10-19');");
+      return null;
+    });
+    archiveHandler = new ArchiveHandler("test-version", configRepository, database, fileTtlManager);
+
+    archiveHandler.importData(archiveHandler.exportData());
   }
 
 }

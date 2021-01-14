@@ -24,8 +24,6 @@
 
 package io.airbyte.server.converters;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.yaml.Yamls;
@@ -48,18 +46,16 @@ public class ConfigFileArchiver {
   private static final Logger LOGGER = LoggerFactory.getLogger(ConfigFileArchiver.class);
   private static final String CONFIG_FOLDER_NAME = "airbyte_config";
 
-  private final String version;
   private final Path storageRoot;
   private final JsonSchemaValidator jsonSchemaValidator;
 
-  public ConfigFileArchiver(final String version, final Path storageRoot, final JsonSchemaValidator jsonSchemaValidator) {
-    this.version = version;
+  public ConfigFileArchiver(final Path storageRoot, final JsonSchemaValidator jsonSchemaValidator) {
     this.storageRoot = storageRoot;
     this.jsonSchemaValidator = jsonSchemaValidator;
   }
 
-  public ConfigFileArchiver(final String version, final Path storageRoot) {
-    this(version, storageRoot, new JsonSchemaValidator());
+  public ConfigFileArchiver(final Path storageRoot) {
+    this(storageRoot, new JsonSchemaValidator());
   }
 
   private Path buildConfigPath(ConfigSchema schemaType) {
@@ -76,7 +72,7 @@ public class ConfigFileArchiver {
     final Path configPath = buildConfigPath(schemaType);
     Files.createDirectories(configPath.getParent());
     final List<T> sortedConfigs = configList.stream().sorted(Comparator.comparing(T::toString)).collect(Collectors.toList());
-    Files.writeString(configPath, Yamls.serialize(new ConfigWrapper(version, sortedConfigs)));
+    Files.writeString(configPath, Yamls.serialize(sortedConfigs));
     LOGGER.debug(String.format("Successful export of airbyte config %s", schemaType));
   }
 
@@ -91,13 +87,7 @@ public class ConfigFileArchiver {
     if (configPath.toFile().exists()) {
       final String configStr = Files.readString(configPath);
       final JsonNode node = Yamls.deserialize(configStr);
-      final ConfigWrapper wrapper = Jsons.object(node, ConfigWrapper.class);
-      final String readVersion = wrapper.getAirbyteVersion();
-      if (!version.equals(readVersion)) {
-        throw new IOException(
-            String.format("Version of %s to import (%s) does not match current Airbyte version (%s)", schemaType, readVersion, version));
-      }
-      final Iterator<JsonNode> it = wrapper.getConfigs().elements();
+      final Iterator<JsonNode> it = node.elements();
       while (it.hasNext()) {
         final JsonNode element = it.next();
         final T config = Jsons.object(element, clazz);
@@ -114,37 +104,6 @@ public class ConfigFileArchiver {
   private <T> void validateJson(final T config, final ConfigSchema configType) throws JsonValidationException {
     JsonNode schema = JsonSchemaValidator.getSchema(configType.getFile());
     jsonSchemaValidator.ensure(schema, Jsons.jsonNode(config));
-  }
-
-  @JsonPropertyOrder({
-    "airbyteVersion",
-    "configList"
-  })
-  private static class ConfigWrapper {
-
-    @JsonProperty("airbyteVersion")
-    private String airbyteVersion;
-    @JsonProperty("configs")
-    private JsonNode configs;
-
-    public <T> ConfigWrapper() {}
-
-    public <T> ConfigWrapper(final String airbyteVersion, final List<T> configs) {
-      this();
-      this.airbyteVersion = airbyteVersion;
-      this.configs = Jsons.jsonNode(configs);
-    }
-
-    @JsonProperty("airbyteVersion")
-    public String getAirbyteVersion() {
-      return airbyteVersion;
-    }
-
-    @JsonProperty("configs")
-    public JsonNode getConfigs() {
-      return configs;
-    }
-
   }
 
 }

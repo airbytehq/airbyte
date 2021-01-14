@@ -24,7 +24,6 @@
 
 package io.airbyte.scheduler;
 
-import io.airbyte.config.JobConfig;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import java.io.IOException;
 import java.time.Instant;
@@ -38,7 +37,7 @@ import org.slf4j.LoggerFactory;
 public class JobRetrier implements Runnable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JobRetrier.class);
-  private static final int MAX_ATTEMPTS = 5;
+  private static final int MAX_SYNC_JOB_ATTEMPTS = 5;
   private static final int RETRY_WAIT_MINUTES = 1;
 
   private final JobPersistence persistence;
@@ -51,28 +50,24 @@ public class JobRetrier implements Runnable {
 
   @Override
   public void run() {
-    LOGGER.info("Running job-retrier...");
+    LOGGER.info("Running Job Retrier...");
 
     final AtomicInteger failedJobs = new AtomicInteger();
     final AtomicInteger retriedJobs = new AtomicInteger();
     final List<Job> incompleteJobs = incompleteJobs();
 
-    incompleteJobs
-        .forEach(job -> {
-          if (hasReachedMaxAttempt(job)) {
-            failJob(job);
-            failedJobs.incrementAndGet();
-            return;
-          }
+    incompleteJobs.forEach(job -> {
+      if (hasReachedMaxAttempt(job)) {
+        failJob(job);
+        failedJobs.incrementAndGet();
+      } else if (shouldRetry(job)) {
+        retriedJobs.incrementAndGet();
+        resetJob(job);
+      }
+    });
 
-          if (shouldRetry(job)) {
-            retriedJobs.incrementAndGet();
-            resetJob(job);
-          }
-        });
-
-    LOGGER.info("Completed Job-Retrier...");
-    LOGGER.info("Job-Retrier Summary. Incomplete jobs: {}, Job set to retry: {}, Jobs set to failed: {}",
+    LOGGER.info("Completed Job Retrier...");
+    LOGGER.info("Job Retrier Summary. Incomplete jobs: {}, Job set to retry: {}, Jobs set to failed: {}",
         incompleteJobs.size(),
         failedJobs.get(),
         retriedJobs.get());
@@ -80,20 +75,28 @@ public class JobRetrier implements Runnable {
 
   private List<Job> incompleteJobs() {
     try {
-      return persistence.listJobsWithStatus(JobConfig.ConfigType.SYNC, JobStatus.INCOMPLETE);
+      return persistence.listJobsWithStatus(JobStatus.INCOMPLETE);
     } catch (IOException e) {
       throw new RuntimeException("failed to fetch failed jobs", e);
     }
   }
 
   private boolean hasReachedMaxAttempt(Job job) {
-    return job.getAttemptsCount() >= MAX_ATTEMPTS;
+    if (Job.REPLICATION_TYPES.contains(job.getConfigType())) {
+      return job.getAttemptsCount() >= MAX_SYNC_JOB_ATTEMPTS;
+    } else {
+      return job.getAttemptsCount() >= 1;
+    }
   }
 
   private boolean shouldRetry(Job job) {
-    long lastRun = job.getUpdatedAtInSecond();
-    // todo (cgardens) - use exponential backoff.
-    return lastRun < timeSupplier.get().getEpochSecond() - TimeUnit.MINUTES.toSeconds(RETRY_WAIT_MINUTES);
+    if (Job.REPLICATION_TYPES.contains(job.getConfigType())) {
+      long lastRun = job.getUpdatedAtInSecond();
+      // todo (cgardens) - use exponential backoff.
+      return lastRun < timeSupplier.get().getEpochSecond() - TimeUnit.MINUTES.toSeconds(RETRY_WAIT_MINUTES);
+    } else {
+      return false;
+    }
   }
 
   private void failJob(Job job) {
