@@ -104,7 +104,8 @@ public abstract class StandardSourceTest {
       "airbyte/source-mixpanel-singer",
       "airbyte/source-twilio-singer",
       "airbyte/source-braintree-singer",
-      "airbyte/source-salesforce-singer");
+      "airbyte/source-salesforce-singer",
+      "airbyte/source-stripe-singer");
 
   /**
    * Name of the docker image that the tests will run against.
