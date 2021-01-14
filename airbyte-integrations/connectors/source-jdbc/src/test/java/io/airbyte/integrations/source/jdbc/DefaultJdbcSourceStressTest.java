@@ -50,7 +50,7 @@ import org.testcontainers.utility.MountableFile;
  * itself as a sanity check. The trade off here is that this class is duplicated from the one used
  * in source-postgres.
  */
-@Disabled
+// @Disabled
 class DefaultJdbcSourceStressTest extends JdbcSourceStressTest {
 
   private static PostgreSQLContainer<?> PSQL_DB;
