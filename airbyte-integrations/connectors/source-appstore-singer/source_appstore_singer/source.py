@@ -23,13 +23,12 @@ SOFTWARE.
 """
 
 import json
+from datetime import date, timedelta
 
 from airbyte_protocol import AirbyteConnectionStatus
 from appstoreconnect import Api
 from base_python import AirbyteLogger
 from base_singer import SingerSource, Status
-
-from datetime import date, timedelta
 
 
 class SourceAppstoreSinger(SingerSource):
