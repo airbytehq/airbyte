@@ -1,0 +1,50 @@
+import { useFetcher, useResource } from "rest-hooks";
+
+import config from "../../../config";
+import WorkspaceResource from "../../../core/resources/Workspace";
+
+const useWorkspace = () => {
+  const updateWorkspace = useFetcher(WorkspaceResource.updateShape());
+  const workspace = useResource(WorkspaceResource.detailShape(), {
+    workspaceId: config.ui.workspaceId
+  });
+
+  const finishOnboarding = async () => {
+    await updateWorkspace(
+      {},
+      {
+        workspaceId: workspace.workspaceId,
+        initialSetupComplete: workspace.initialSetupComplete,
+        anonymousDataCollection: workspace.anonymousDataCollection,
+        news: workspace.news,
+        securityUpdates: workspace.securityUpdates,
+        displaySetupWizard: false
+      }
+    );
+  };
+
+  const setInitialSetupConfig = async (data: {
+    email: string;
+    anonymousDataCollection: boolean;
+    news: boolean;
+    securityUpdates: boolean;
+  }) => {
+    await updateWorkspace(
+      {},
+      {
+        workspaceId: config.ui.workspaceId,
+        initialSetupComplete: true,
+        displaySetupWizard: true,
+        ...data
+      }
+    );
+  };
+
+  return {
+    workspace,
+    finishOnboarding,
+    setInitialSetupConfig
+  };
+};
+
+export default useWorkspace;

@@ -6,6 +6,7 @@ import { Source } from "../../../core/resources/Source";
 import { Destination } from "../../../core/resources/Destination";
 import { Routes } from "../../routes";
 import useRouter from "../../../components/hooks/useRouterHook";
+import SkipOnboardingButton from "./SkipOnboardingButton";
 
 type IProps = {
   errorStatus?: number;
@@ -25,6 +26,7 @@ const ConnectionStep: React.FC<IProps> = ({ source, destination }) => {
         itemTo={{ name: destination?.name || "" }}
       />
       <CreateConnectionContent
+        additionBottomControls={<SkipOnboardingButton />}
         source={source}
         destination={destination}
         afterSubmitConnection={afterSubmitConnection}
