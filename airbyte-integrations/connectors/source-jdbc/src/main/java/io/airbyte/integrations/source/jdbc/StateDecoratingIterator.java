@@ -30,6 +30,8 @@ import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import java.util.Iterator;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,6 +91,42 @@ class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> implement
     } else {
       return endOfData();
     }
+  }
+
+  // fixme (cgardens) - this is a hotfix for this issue:
+  // https://github.com/airbytehq/airbyte/issues/1582. the correct fix is still in progress. this will
+  // be temporary.
+  public static Stream<AirbyteMessage> stream(Stream<AirbyteMessage> stream,
+                                              JdbcStateManager stateManager,
+                                              String streamName,
+                                              String cursorField,
+                                              String initialCursor,
+                                              JsonSchemaPrimitive cursorType) {
+    final AtomicReference<String> maxCursor = new AtomicReference<>(initialCursor);
+
+    // 1. translate message stream into a message supplier stream so that it matches the type of the
+    // operation that will create the state message.
+    // 2. perform all of the operations of computeNext() to track the max cursor field.
+    final Stream<Supplier<AirbyteMessage>> messageStream = stream.map(message -> {
+      return () -> {
+        final String cursorCandidate = message.getRecord().getData().get(cursorField).asText();
+        if (IncrementalUtils.compareCursors(maxCursor.get(), cursorCandidate, cursorType) < 0) {
+          maxCursor.set(cursorCandidate);
+        }
+
+        return message;
+      };
+    });
+
+    // create a stream of one element that supplies the state message based on the side effects of the
+    // entire message stream running.
+    final Stream<Supplier<AirbyteMessage>> stateStream = Stream.of(() -> {
+      final AirbyteStateMessage stateMessage = stateManager.updateAndEmit(streamName, maxCursor.get());
+      return new AirbyteMessage().withType(Type.STATE).withState(stateMessage);
+    });
+
+    // smash the two streams together.
+    return Stream.concat(messageStream, stateStream).map(Supplier::get);
   }
 
 }
