@@ -83,7 +83,7 @@ public class StreamingJdbcDatabase implements JdbcDatabase {
    *        just pass the {@link ResultSet} through. it is a stateful object will not be accessible if
    *        returned from recordTransform.
    * @param <T> type that each record will be mapped to.
-   * @return Result of the query mapped to a stream.
+   * @return Result of the query mapped to a stream. This stream must be closed!
    * @throws SQLException SQL related exceptions.
    */
   @Override
@@ -96,8 +96,6 @@ public class StreamingJdbcDatabase implements JdbcDatabase {
       // allow configuration of connection and prepared statement to make streaming possible.
       jdbcStreamingQueryConfiguration.accept(connection, ps);
       return JdbcUtils.toStream(ps.executeQuery(), recordTransform)
-          // because this stream is inside the flatMap of another stream, we have a guarantee that the close
-          // of this stream will be closed if the outer stream is fully consumed.
           .onClose(() -> {
             try {
               connection.setAutoCommit(true);
