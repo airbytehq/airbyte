@@ -173,7 +173,7 @@ public class ServerApp {
   public static void main(String[] args) throws Exception {
     final Configs configs = new EnvConfigs();
 
-    MDC.put(LogHelpers.WORKSPACE_MDC_KEY, LogHelpers.getServerLogsRoot(configs));
+    MDC.put(LogHelpers.WORKSPACE_MDC_KEY, LogHelpers.getServerLogsRoot(configs).toString());
 
     final Path configRoot = configs.getConfigRoot();
     LOGGER.info("configRoot = " + configRoot);

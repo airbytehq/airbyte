@@ -34,20 +34,20 @@ public class LogHelpers {
   public static String WORKSPACE_MDC_KEY = "workspace_app_root";
   public static String LOG_FILENAME = "logs.log";
 
-  public static String getServerLogsRoot(Configs configs) {
-    return configs.getWorkspaceRoot().resolve("server/logs").toString();
+  public static Path getServerLogsRoot(Configs configs) {
+    return configs.getWorkspaceRoot().resolve("server/logs");
   }
 
-  public static String getSchedulerLogsRoot(Configs configs) {
-    return configs.getWorkspaceRoot().resolve("scheduler/logs").toString();
+  public static Path getSchedulerLogsRoot(Configs configs) {
+    return configs.getWorkspaceRoot().resolve("scheduler/logs");
   }
 
   public static File getServerLogFile(Configs configs) {
-    return Path.of(getServerLogsRoot(configs)).resolve(LOG_FILENAME).toFile();
+    return getServerLogsRoot(configs).resolve(LOG_FILENAME).toFile();
   }
 
   public static File getSchedulerLogFile(Configs configs) {
-    return Path.of(getSchedulerLogsRoot(configs)).resolve(LOG_FILENAME).toFile();
+    return getSchedulerLogsRoot(configs).resolve(LOG_FILENAME).toFile();
   }
 
 }

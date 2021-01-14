@@ -1640,19 +1640,19 @@ components:
             - weeks
             - months
     # LOGS
-    LogSource:
+    LogType:
       type: string
-      description: the application that generated the logs
+      description: type/source of logs produced
       enum:
         - server
         - scheduler
     LogsRequestBody:
       type: object
       required:
-        - source
+        - log_type
       properties:
-        source:
-          $ref: "#/components/schemas/LogSource"
+        log_type:
+          $ref: "#/components/schemas/LogType"
     # SCHEMA
     SourceSchema:
       description: describes the available schema.

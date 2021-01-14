@@ -32,14 +32,14 @@ import java.io.File;
 public class LogsHandler {
 
   public File getLogs(Configs configs, LogsRequestBody logsRequestBody) {
-    switch (logsRequestBody.getSource()) {
+    switch (logsRequestBody.getLogType()) {
       case SERVER -> {
         return LogHelpers.getServerLogFile(configs);
       }
       case SCHEDULER -> {
         return LogHelpers.getSchedulerLogFile(configs);
       }
-      default -> throw new IllegalStateException("Unexpected value: " + logsRequestBody.getSource());
+      default -> throw new IllegalStateException("Unexpected value: " + logsRequestBody.getLogType());
     }
   }
 
