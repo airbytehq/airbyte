@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
@@ -8,6 +8,7 @@ import DeploymentResource from "../../../core/resources/Deployment";
 import ContentCard from "../../../components/ContentCard";
 import config from "../../../config";
 import Link from "../../../components/Link";
+import ImportConfigurationModal from "./ImportConfigurationModal";
 
 const Content = styled.div`
   max-width: 813px;
@@ -40,6 +41,7 @@ const Warning = styled.div`
 `;
 
 const ConfigurationView: React.FC = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const fetchExp = useFetcher(DeploymentResource.exportShape(), true);
 
   const onExport = async () => {
@@ -72,7 +74,7 @@ const ConfigurationView: React.FC = () => {
       </ControlContent>
 
       <ControlContent>
-        <Button>
+        <Button onClick={() => setIsModalOpen(true)}>
           <FormattedMessage id="admin.importConfiguration" />
         </Button>
         <Text>
@@ -83,6 +85,13 @@ const ConfigurationView: React.FC = () => {
             }}
           />
         </Text>
+        {isModalOpen && (
+          <ImportConfigurationModal
+            onClose={() => setIsModalOpen(false)}
+            // TODO: add onSubmit func
+            onSubmit={() => null}
+          />
+        )}
       </ControlContent>
     </Content>
   );
