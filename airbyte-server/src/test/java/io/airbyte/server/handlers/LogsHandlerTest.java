@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import io.airbyte.api.model.LogSource;
+import io.airbyte.api.model.LogType;
 import io.airbyte.api.model.LogsRequestBody;
 import io.airbyte.config.Configs;
 import io.airbyte.config.helpers.LogHelpers;
@@ -44,7 +44,7 @@ class LogsHandlerTest {
     when(configs.getWorkspaceRoot()).thenReturn(Path.of("/workspace"));
 
     final File expected = Path.of(String.format("/workspace/server/logs/%s", LogHelpers.LOG_FILENAME)).toFile();
-    final File actual = new LogsHandler().getLogs(configs, new LogsRequestBody().source(LogSource.SERVER));
+    final File actual = new LogsHandler().getLogs(configs, new LogsRequestBody().logType(LogType.SERVER.SERVER));
 
     assertEquals(expected, actual);
   }
@@ -55,7 +55,7 @@ class LogsHandlerTest {
     when(configs.getWorkspaceRoot()).thenReturn(Path.of("/workspace"));
 
     final File expected = Path.of(String.format("/workspace/scheduler/logs/%s", LogHelpers.LOG_FILENAME)).toFile();
-    final File actual = new LogsHandler().getLogs(configs, new LogsRequestBody().source(LogSource.SCHEDULER));
+    final File actual = new LogsHandler().getLogs(configs, new LogsRequestBody().logType(LogType.SERVER));
 
     assertEquals(expected, actual);
   }
