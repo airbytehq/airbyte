@@ -73,3 +73,10 @@ From [Postgres SQL Identifiers syntax](https://www.postgresql.org/docs/9.0/sql-s
 
 Therefore, Airbyte Postgres destination will create tables and schemas using the Unquoted identifiers when possible or fallback to Quoted Identifiers if the names are containing special characters.
 
+## Troubleshooting
+
+### `Connection to localhost:5432 refused` errors when connecting to a local db
+
+On Mac, if you run Airbyte with Docker Compose and want to connect to a local Postgres instance, you will have to use `host.docker.internal` as the hostname instead of `localhost` or `127.0.0.1`.
+
+On Linux, you will have to modify `docker-compose.yml` and add a host that maps to your local machine using [`extra_hosts`](https://docs.docker.com/compose/compose-file/compose-file-v3/#extra_hosts).
