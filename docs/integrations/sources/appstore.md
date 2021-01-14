@@ -1,4 +1,4 @@
-# Braintree
+# Appstore
 
 ## Sync overview
 
@@ -61,4 +61,3 @@ One issue that can happen is the API not having the data available for the perio
 ### Setup guide
 
 Generate/Find all requirements using this [external article](https://leapfin.com/blog/apple-appstore-integration/).
-
