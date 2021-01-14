@@ -25,7 +25,7 @@
       },
       "start_date": {
         "type": "string",
-        "description": "describe me",
+        "description": "date from which to start pulling data",
         "examples": ["2020-11-16T00:00:00Z"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
       }
