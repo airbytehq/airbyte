@@ -386,7 +386,7 @@ def process_node(
     hash_node_columns = ",\n        ".join(
         [safe_cast_to_varchar(column, integration_type, properties) for column in node_properties.keys()]
     )
-    hash_node_columns = jinja_call(f"dbt_utils.surrogate_key([\n        {hash_node_columns}\n    ])")
+    hash_node_columns = jinja_call(f"dbt_utils.surrogate_key([\n {hash_node_columns}\n ])")
 
     hash_id = quote(f"_{name}_hashid", integration_type)
     foreign_hash_id = quote(f"_{name}_foreign_hashid", integration_type)
