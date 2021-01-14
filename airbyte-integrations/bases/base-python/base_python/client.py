@@ -32,7 +32,6 @@ from typing import Dict, Generator, List, Tuple
 
 import pkg_resources
 from airbyte_protocol import AirbyteRecordMessage, AirbyteStream
-
 from jsonschema import RefResolver
 
 
