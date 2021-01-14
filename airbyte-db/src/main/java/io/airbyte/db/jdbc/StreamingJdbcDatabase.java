@@ -90,11 +90,6 @@ public class StreamingJdbcDatabase implements JdbcDatabase {
   public <T> Stream<T> query(CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
                              CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
-    return queryInternal(statementCreator, recordTransform);
-  }
-
-  private <T> Stream<T> queryInternal(CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
-                                      CheckedFunction<ResultSet, T, SQLException> recordTransform) {
     try {
       final Connection connection = dataSource.getConnection();
       final PreparedStatement ps = statementCreator.apply(connection);
