@@ -31,6 +31,7 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.stream.MoreStreams;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
@@ -209,14 +210,15 @@ public abstract class AbstractJdbcSource implements Source {
       }
 
       final JsonSchemaPrimitive cursorType = IncrementalUtils.getCursorType(airbyteStream, cursorField);
-
-      stream = StateDecoratingIterator.stream(
+      final StateDecoratingIterator stateDecoratingIterator = new StateDecoratingIterator(
           internalMessageStream,
           stateManager,
           streamName,
           cursorField,
           cursorOptional.orElse(null),
           cursorType);
+
+      stream = MoreStreams.toStream(stateDecoratingIterator);
     } else if (airbyteStream.getSyncMode() == SyncMode.FULL_REFRESH || airbyteStream.getSyncMode() == null) {
       stream = getFullRefreshStream(database, streamName, selectedDatabaseFields, table, emittedAt);
     } else {

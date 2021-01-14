@@ -75,7 +75,8 @@ public class StreamingJdbcDatabase implements JdbcDatabase {
    * driver being used, this method will return data in streaming / chunked fashion. Review the
    * provided {@link JdbcStreamingQueryConfiguration} to understand the size of these chunks. If the
    * entire stream is consumed the database connection will be closed automatically and the caller
-   * need not call close on the returned stream.
+   * need not call close on the returned stream. This query (and the first chunk) are fetched
+   * immediately. Subsequent chunks will not be pulled until the first chunk is consumed.
    *
    * @param statementCreator create a {@link PreparedStatement} from a {@link Connection}.
    * @param recordTransform transform each record of that result set into the desired type. do NOT
@@ -89,8 +90,7 @@ public class StreamingJdbcDatabase implements JdbcDatabase {
   public <T> Stream<T> query(CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
                              CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
-    // make it lazy.
-    return Stream.of(1).flatMap(i -> queryInternal(statementCreator, recordTransform));
+    return queryInternal(statementCreator, recordTransform);
   }
 
   private <T> Stream<T> queryInternal(CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
