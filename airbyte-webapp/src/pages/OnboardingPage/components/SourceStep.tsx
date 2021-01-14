@@ -14,6 +14,7 @@ import { IDataItem } from "../../../components/DropDown/components/ListItem";
 import { createFormErrorMessage } from "../../../utils/errorStatusMessage";
 import { JobInfo } from "../../../core/resources/Scheduler";
 import { JobsLogItem } from "../../../components/JobItem";
+import SkipOnboardingButton from "./SkipOnboardingButton";
 
 type IProps = {
   source?: Source;
@@ -76,6 +77,7 @@ const SourceStep: React.FC<IProps> = ({
   return (
     <ContentCard title={<FormattedMessage id="onboarding.sourceSetUp" />}>
       <ServiceForm
+        additionBottomControls={<SkipOnboardingButton />}
         allowChangeConnector
         onDropDownSelect={onDropDownSelect}
         onSubmit={onSubmitForm}
