@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-# Braintree
-=======
 # Appstore
->>>>>>> 6f3fc75adf1522ededdb0bf21de13f5a5a61b51c
 
 ## Sync overview
 
