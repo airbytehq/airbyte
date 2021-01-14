@@ -23,6 +23,7 @@ type IProps = {
   className?: string;
   schema: SyncSchema;
   errorMessage?: React.ReactNode;
+  additionBottomControls?: React.ReactNode;
   successMessage?: React.ReactNode;
   onSubmit: (values: { frequency: string; schema: SyncSchema }) => void;
   onReset?: (connectionId?: string) => void;
@@ -56,7 +57,8 @@ const FrequencyForm: React.FC<IProps> = ({
   onDropDownSelect,
   frequencyValue,
   isEditMode,
-  successMessage
+  successMessage,
+  additionBottomControls
 }) => {
   // get cursorField if it is empty and syncMode is INCREMENTAL
   const getDefaultCursorField = (stream: SyncSchemaStream) => {
@@ -211,6 +213,7 @@ const FrequencyForm: React.FC<IProps> = ({
             </>
           ) : (
             <BottomBlock
+              additionBottomControls={additionBottomControls}
               isSubmitting={isSubmitting}
               isValid={isValid}
               dirty={dirty}
