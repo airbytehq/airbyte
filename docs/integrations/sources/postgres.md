@@ -103,9 +103,9 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA <schema_name> GRANT SELECT ON TABLES TO airby
 
 Your database user should now be ready for use with Airbyte.
 
-### Troubleshooting
+## Troubleshooting
 
-#### `Connection to localhost:5432 refused` errors when connecting to a local db
+### `Connection to localhost:5432 refused` errors when connecting to a local db
 
 On Mac, if you run Airbyte with Docker Compose and want to connect to a local Postgres instance, you will have to use `host.docker.internal` as the hostname instead of `localhost` or `127.0.0.1`.
 
