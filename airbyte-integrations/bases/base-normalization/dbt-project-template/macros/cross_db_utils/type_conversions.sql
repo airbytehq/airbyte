@@ -5,11 +5,11 @@
 {%- endmacro %}
 
 {% macro default__boolean_to_varchar(boolean_column) -%}
-    {{ adapter.quote_as_configured(boolean_column, 'identifier'|trim) }}
+    {{ boolean_column }}
 {%- endmacro %}
 
 {% macro redshift__boolean_to_varchar(boolean_column) -%}
-    case when {{ adapter.quote_as_configured(boolean_column, 'identifier'|trim) }} then 'true' else 'false' end
+    case when {{ boolean_column }} then 'true' else 'false' end
 {%- endmacro %}
 
 {# cast_to_boolean -------------------------------------------------     #}

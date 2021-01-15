@@ -61,7 +61,7 @@
       "name": "CapitalCase",
       "json_schema": {
         "properties": {
-          "Deleted": {
+          "deleted": {
             "type": "boolean"
           }
         }

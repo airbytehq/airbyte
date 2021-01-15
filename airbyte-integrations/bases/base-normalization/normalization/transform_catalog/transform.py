@@ -352,10 +352,11 @@ def extract_nested_properties(path: List[str], field: str, properties: dict, int
 
 def safe_cast_to_varchar(field: str, integration_type: str, jsonschema_properties: dict):
     # Redshift booleans cannot be directly cast to varchar. So we use a custom macro to convert any boolean columns.
+    quoted_field = quote(field, integration_type, in_jinja=True)
     if is_boolean(jsonschema_properties[field]["type"]):
-        return f"boolean_to_varchar({quote(field, integration_type, in_jinja=True)})"
+        return f"boolean_to_varchar({quoted_field})"
     else:
-        return quote(field, integration_type, in_jinja=True)
+        return quoted_field
 
 
 def process_node(

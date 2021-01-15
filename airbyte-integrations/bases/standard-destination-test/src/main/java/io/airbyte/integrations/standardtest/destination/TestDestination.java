@@ -61,7 +61,6 @@ import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteDestination;
-
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -72,7 +71,6 @@ import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -126,7 +124,7 @@ public abstract class TestDestination {
    * invoked. These will be used to check that the data actually written is what should actually be
    * there. Note: this returns a set and does not test any order guarantees.
    *
-   * @param testEnv    - information about the test environment.
+   * @param testEnv - information about the test environment.
    * @param streamName - name of the stream for which we are retrieving records.
    * @return All of the records in the destination at the time this method is invoked.
    * @throws Exception - can throw any exception, test framework will handle.
@@ -166,7 +164,7 @@ public abstract class TestDestination {
    * as it would appear in an {@link AirbyteRecordMessage}. Only need to override this method if
    * {@link #implementsBasicNormalization} returns true.
    *
-   * @param testEnv    - information about the test environment.
+   * @param testEnv - information about the test environment.
    * @param streamName - name of the stream for which we are retrieving records.
    * @return All of the records in the destination at the time this method is invoked.
    * @throws Exception - can throw any exception, test framework will handle.
@@ -257,10 +255,10 @@ public abstract class TestDestination {
     @Override
     public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
       return Stream.of(
-          Arguments.of("exchange_rate_messages.txt", "exchange_rate_catalog.json"),
+           Arguments.of("exchange_rate_messages.txt", "exchange_rate_catalog.json"),
           Arguments.of("edge_case_messages.txt", "edge_case_catalog.json")
-          // todo - need to use the new protocol to capture this.
-          // Arguments.of("stripe_messages.txt", "stripe_schema.json")
+      // todo - need to use the new protocol to capture this.
+      // Arguments.of("stripe_messages.txt", "stripe_schema.json")
       );
     }
 
