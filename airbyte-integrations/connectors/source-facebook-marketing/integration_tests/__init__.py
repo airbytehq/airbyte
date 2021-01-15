@@ -22,13 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from setuptools import find_packages, setup
+from .standard_source_test import SourceFacebookMarketingStandardTest
 
-setup(
-    name="base-singer",
-    description="Contains helpers for handling Singer sources and destinations.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    install_requires=["airbyte-protocol"],
-)
+__all__ = ["SourceFacebookMarketingStandardTest"]

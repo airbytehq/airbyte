@@ -22,13 +22,35 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from setuptools import find_packages, setup
+import sys
 
-setup(
-    name="base-singer",
-    description="Contains helpers for handling Singer sources and destinations.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    install_requires=["airbyte-protocol"],
-)
+import backoff
+from base_python.entrypoint import logger  # FIXME (Eugene K): register logger as standard python logger
+from facebook_business.exceptions import FacebookRequestError
+
+FACEBOOK_UNKNOWN_ERROR_CODE = 99
+
+
+class FacebookAPIException(Exception):
+    """General class for all API errors"""
+
+
+def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
+    def log_retry_attempt(details):
+        _, exc, _ = sys.exc_info()
+        logger.info(str(exc))
+        logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} more seconds then retrying...")
+
+    def should_retry_api_error(exc):
+        if isinstance(exc, FacebookRequestError):
+            return exc.api_transient_error() or exc.api_error_subcode() == FACEBOOK_UNKNOWN_ERROR_CODE
+        return False
+
+    return backoff.on_exception(
+        backoff_type,
+        exception,
+        jitter=None,
+        on_backoff=log_retry_attempt,
+        giveup=lambda exc: not should_retry_api_error(exc),
+        **wait_gen_kwargs,
+    )

@@ -1,0 +1,72 @@
+{
+  "properties": {
+    "name": {
+      "type": ["null", "string"]
+    },
+    "objective": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "account_id": {
+      "type": ["null", "string"]
+    },
+    "effective_status": {
+      "type": ["null", "string"]
+    },
+    "buying_type": {
+      "type": ["null", "string"]
+    },
+    "spend_cap": {
+      "type": ["null", "number"]
+    },
+    "start_time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "ads": {
+      "properties": {
+        "data": {
+          "items": {
+            "properties": {
+              "id": {
+                "type": ["null", "string"]
+              }
+            },
+            "type": ["null", "object"]
+          },
+          "type": ["null", "array"]
+        }
+      },
+      "type": ["null", "object"]
+    },
+    "adlabels": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "created_time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_time": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  },
+  "type": ["null", "object"]
+}
