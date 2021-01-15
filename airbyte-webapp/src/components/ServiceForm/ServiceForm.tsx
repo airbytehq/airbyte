@@ -19,6 +19,7 @@ const FormContainer = styled(Form)`
 `;
 
 type IProps = {
+  additionBottomControls?: React.ReactNode;
   isLoading?: boolean;
   isEditMode?: boolean;
   allowChangeConnector?: boolean;
@@ -51,7 +52,7 @@ const ServiceForm: React.FC<IProps> = ({
   documentationUrl,
   allowChangeConnector,
   hasSuccess,
-
+  additionBottomControls,
   isLoading,
   isEditMode
 }) => {
@@ -120,6 +121,7 @@ const ServiceForm: React.FC<IProps> = ({
             />
           ) : (
             <BottomBlock
+              additionBottomControls={additionBottomControls}
               isSubmitting={isSubmitting}
               isValid={isValid}
               isLoadSchema={isLoading}

@@ -9,6 +9,7 @@ type IProps = {
   onSubmit: (values: { frequency: string; syncSchema: SyncSchema }) => void;
   errorStatus: number;
   schema: SyncSchema;
+  additionBottomControls?: React.ReactNode;
   onSelectFrequency: (item: IDataItem) => void;
 };
 
@@ -16,7 +17,8 @@ const CreateConnection: React.FC<IProps> = ({
   onSubmit,
   errorStatus,
   schema,
-  onSelectFrequency
+  onSelectFrequency,
+  additionBottomControls
 }) => {
   const onSubmitForm = async (values: {
     frequency: string;
@@ -32,6 +34,7 @@ const CreateConnection: React.FC<IProps> = ({
 
   return (
     <FrequencyForm
+      additionBottomControls={additionBottomControls}
       onDropDownSelect={onSelectFrequency}
       onSubmit={onSubmitForm}
       errorMessage={errorMessage}

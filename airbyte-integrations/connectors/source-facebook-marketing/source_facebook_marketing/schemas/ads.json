@@ -1,0 +1,454 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "bid_type": {
+      "type": ["null", "string"]
+    },
+    "account_id": {
+      "type": ["null", "string"]
+    },
+    "campaign_id": {
+      "type": ["null", "string"]
+    },
+    "adset_id": {
+      "type": ["null", "string"]
+    },
+    "adlabels": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "created_time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "name": {
+            "type": "string"
+          },
+          "updated_time": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "bid_amount": {
+      "type": ["null", "integer"]
+    },
+    "bid_info": {
+      "type": ["null", "object"],
+      "properties": {
+        "CLICKS": {
+          "type": ["null", "integer"]
+        },
+        "ACTIONS": {
+          "type": ["null", "integer"]
+        },
+        "REACH": {
+          "type": ["null", "integer"]
+        },
+        "IMPRESSIONS": {
+          "type": ["null", "integer"]
+        },
+        "SOCIAL": {
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "creative": {
+      "type": ["null", "object"],
+      "properties": {
+        "creative_id": {
+          "type": ["null", "string"]
+        },
+        "id": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "updated_time": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "created_time": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "targeting": { "$ref": "targeting.json" },
+    "effective_status": {
+      "type": ["null", "string"]
+    },
+    "last_updated_by_app_id": {
+      "type": ["null", "string"]
+    },
+    "recommendations": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "blame_field": {
+            "type": ["null", "string"]
+          },
+          "code": {
+            "type": "integer"
+          },
+          "confidence": {
+            "type": "string"
+          },
+          "importance": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "source_ad_id": {
+      "type": ["null", "string"]
+    },
+    "tracking_specs": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "application": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "post": {
+            "items": {
+              "type": ["null", "string"]
+            },
+            "type": ["null", "array"]
+          },
+          "conversion_id": {
+            "items": {
+              "type": ["null", "string"]
+            },
+            "type": ["null", "array"]
+          },
+          "action.type": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "post.wall": {
+            "items": {
+              "type": ["null", "string"]
+            },
+            "type": ["null", "array"]
+          },
+          "page": {
+            "items": {
+              "type": ["null", "string"]
+            },
+            "type": ["null", "array"]
+          },
+          "creative": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "dataset": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "event": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "event.creator": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "event_type": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "fb_pixel": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "fb_pixel_event": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "leadgen": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "object": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "object.domain": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "offer": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "offer.creator": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "offsite_pixel": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "page.parent": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "post.object": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "post.object.wall": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "question": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "question.creator": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "response": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "subtype": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    },
+    "conversion_specs": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "application": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "post": {
+            "items": {
+              "type": ["null", "string"]
+            },
+            "type": ["null", "array"]
+          },
+          "conversion_id": {
+            "items": {
+              "type": ["null", "string"]
+            },
+            "type": ["null", "array"]
+          },
+          "action.type": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "post.wall": {
+            "items": {
+              "type": ["null", "string"]
+            },
+            "type": ["null", "array"]
+          },
+          "page": {
+            "items": {
+              "type": ["null", "string"]
+            },
+            "type": ["null", "array"]
+          },
+          "creative": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "dataset": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "event": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "event.creator": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "event_type": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "fb_pixel": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "fb_pixel_event": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "leadgen": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "object": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "object.domain": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "offer": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "offer.creator": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "offsite_pixel": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "page.parent": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "post.object": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "post.object.wall": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "question": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "question.creator": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "response": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "subtype": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    }
+  }
+}
