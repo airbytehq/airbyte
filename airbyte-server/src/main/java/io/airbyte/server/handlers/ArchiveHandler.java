@@ -28,17 +28,7 @@ import io.airbyte.api.model.ImportRead;
 import io.airbyte.api.model.ImportRead.StatusEnum;
 import io.airbyte.commons.io.Archives;
 import io.airbyte.commons.io.FileTtlManager;
-import io.airbyte.commons.lang.Exceptions;
-import io.airbyte.config.ConfigSchema;
-import io.airbyte.config.DestinationConnection;
-import io.airbyte.config.SourceConnection;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
-import io.airbyte.config.StandardSync;
-import io.airbyte.config.StandardSyncSchedule;
-import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.converters.ConfigFileArchiver;
 import io.airbyte.server.converters.DatabaseArchiver;
@@ -48,9 +38,6 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,8 +49,8 @@ public class ArchiveHandler {
   private static final String VERSION_FILE_NAME = "VERSION";
 
   private final String version;
-  private final ConfigRepository configRepository;
-  private final JobPersistence persistence;
+  private final ConfigFileArchiver configFileArchiver;
+  private final DatabaseArchiver databaseArchiver;
   private final FileTtlManager fileTtlManager;
 
   public ArchiveHandler(final String version,
@@ -71,8 +58,8 @@ public class ArchiveHandler {
                         final JobPersistence persistence,
                         final FileTtlManager fileTtlManager) {
     this.version = version;
-    this.configRepository = configRepository;
-    this.persistence = persistence;
+    configFileArchiver = new ConfigFileArchiver(configRepository);
+    databaseArchiver = new DatabaseArchiver(persistence);
     this.fileTtlManager = fileTtlManager;
   }
 
@@ -83,9 +70,12 @@ public class ArchiveHandler {
       fileTtlManager.register(archive.toPath());
       try {
         exportVersionFile(tempFolder);
-        exportAirbyteConfig(tempFolder);
-        exportAirbyteDatabase(tempFolder);
+        configFileArchiver.exportConfigsToArchive(tempFolder);
+        databaseArchiver.exportDatabaseToArchive(tempFolder);
         Archives.createArchive(tempFolder, archive.toPath());
+      } catch (Exception e) {
+        LOGGER.error("Export Data failed.");
+        throw new RuntimeException(e);
       } finally {
         FileUtils.deleteDirectory(tempFolder.toFile());
       }
@@ -101,34 +91,6 @@ public class ArchiveHandler {
     FileUtils.writeStringToFile(versionFile, version, Charset.defaultCharset());
   }
 
-  private void exportAirbyteConfig(Path tempFolder) {
-    LOGGER.info("Exporting Airbyte Configs");
-    final ConfigFileArchiver configFileArchiver = new ConfigFileArchiver(tempFolder);
-    Exceptions.toRuntime(() -> {
-      final StandardWorkspace standardWorkspace = configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID);
-      if (standardWorkspace != null)
-        configFileArchiver.writeConfigsToArchive(ConfigSchema.STANDARD_WORKSPACE, List.of(standardWorkspace));
-      configFileArchiver.writeConfigsToArchive(ConfigSchema.STANDARD_SOURCE_DEFINITION, configRepository.listStandardSources());
-      configFileArchiver.writeConfigsToArchive(ConfigSchema.STANDARD_DESTINATION_DEFINITION, configRepository.listStandardDestinationDefinitions());
-      configFileArchiver.writeConfigsToArchive(ConfigSchema.SOURCE_CONNECTION, configRepository.listSourceConnection());
-      configFileArchiver.writeConfigsToArchive(ConfigSchema.DESTINATION_CONNECTION, configRepository.listDestinationConnection());
-      final List<StandardSync> standardSyncs = configRepository.listStandardSyncs();
-      configFileArchiver.writeConfigsToArchive(ConfigSchema.STANDARD_SYNC, standardSyncs);
-      final List<StandardSyncSchedule> standardSchedules = standardSyncs
-          .stream()
-          .map(config -> Exceptions.toRuntime(() -> configRepository.getStandardSyncSchedule(config.getConnectionId())))
-          .filter(Objects::nonNull)
-          .collect(Collectors.toList());
-      configFileArchiver.writeConfigsToArchive(ConfigSchema.STANDARD_SYNC_SCHEDULE, standardSchedules);
-    });
-  }
-
-  private void exportAirbyteDatabase(Path tempFolder) {
-    LOGGER.info("Exporting Airbyte Database");
-    final DatabaseArchiver databaseArchiver = new DatabaseArchiver(persistence, tempFolder);
-    Exceptions.toRuntime(databaseArchiver::writeDatabaseToArchive);
-  }
-
   public ImportRead importData(File archive) {
     ImportRead result;
     try {
@@ -136,8 +98,8 @@ public class ArchiveHandler {
       try {
         Archives.extractArchive(archive.toPath(), tempFolder);
         checkImport(tempFolder);
-        checkAndImportAirbyteDatabase(tempFolder);
-        importAirbyteConfig(tempFolder, false);
+        databaseArchiver.importDatabaseFromArchive(tempFolder);
+        configFileArchiver.importConfigsFromArchive(tempFolder, false);
         result = new ImportRead().status(StatusEnum.SUCCEEDED);
       } finally {
         FileUtils.deleteDirectory(tempFolder.toFile());
@@ -158,42 +120,7 @@ public class ArchiveHandler {
       throw new IOException(String.format("Version in VERSION file (%s) does not match current Airbyte version (%s)", importVersion, version));
     }
     // Check if all files to import are valid and with expected airbyte version
-    importAirbyteConfig(tempFolder, true);
-  }
-
-  private void checkAndImportAirbyteDatabase(final Path tempFolder) throws IOException, JsonValidationException {
-    final DatabaseArchiver databaseArchiver = new DatabaseArchiver(persistence, tempFolder);
-    databaseArchiver.readDatabaseFromArchive();
-  }
-
-  private void importAirbyteConfig(Path tempFolder, boolean dryRun) throws IOException, JsonValidationException {
-    final ConfigFileArchiver configFileArchiver = new ConfigFileArchiver(tempFolder);
-    if (dryRun) {
-      configFileArchiver.readConfigsFromArchive(ConfigSchema.STANDARD_WORKSPACE, StandardWorkspace.class);
-      configFileArchiver.readConfigsFromArchive(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class);
-      configFileArchiver.readConfigsFromArchive(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class);
-      configFileArchiver.readConfigsFromArchive(ConfigSchema.SOURCE_CONNECTION, SourceConnection.class);
-      configFileArchiver.readConfigsFromArchive(ConfigSchema.DESTINATION_CONNECTION, DestinationConnection.class);
-      configFileArchiver.readConfigsFromArchive(ConfigSchema.STANDARD_SYNC, StandardSync.class);
-      configFileArchiver.readConfigsFromArchive(ConfigSchema.STANDARD_SYNC_SCHEDULE, StandardSyncSchedule.class);
-    } else {
-      Exceptions.toRuntime(() -> {
-        configFileArchiver.readConfigsFromArchive(ConfigSchema.STANDARD_WORKSPACE, StandardWorkspace.class)
-            .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeStandardWorkspace(config)));
-        configFileArchiver.readConfigsFromArchive(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class)
-            .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeStandardSource(config)));
-        configFileArchiver.readConfigsFromArchive(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class)
-            .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeStandardDestinationDefinition(config)));
-        configFileArchiver.readConfigsFromArchive(ConfigSchema.SOURCE_CONNECTION, SourceConnection.class)
-            .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeSourceConnection(config)));
-        configFileArchiver.readConfigsFromArchive(ConfigSchema.DESTINATION_CONNECTION, DestinationConnection.class)
-            .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeDestinationConnection(config)));
-        configFileArchiver.readConfigsFromArchive(ConfigSchema.STANDARD_SYNC, StandardSync.class)
-            .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeStandardSync(config)));
-        configFileArchiver.readConfigsFromArchive(ConfigSchema.STANDARD_SYNC_SCHEDULE, StandardSyncSchedule.class)
-            .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeStandardSchedule(config)));
-      });
-    }
+    configFileArchiver.importConfigsFromArchive(tempFolder, true);
   }
 
 }

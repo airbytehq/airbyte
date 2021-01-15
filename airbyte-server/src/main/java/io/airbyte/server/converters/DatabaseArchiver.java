@@ -51,34 +51,32 @@ public class DatabaseArchiver {
   private static final String DB_FOLDER_NAME = "airbyte_db";
 
   private final JobPersistence persistence;
-  private final Path storageRoot;
   private final JsonSchemaValidator jsonSchemaValidator;
 
-  public DatabaseArchiver(final JobPersistence persistence, final Path storageRoot, final JsonSchemaValidator jsonSchemaValidator) {
+  public DatabaseArchiver(final JobPersistence persistence, final JsonSchemaValidator jsonSchemaValidator) {
     this.persistence = persistence;
-    this.storageRoot = storageRoot;
     this.jsonSchemaValidator = jsonSchemaValidator;
   }
 
-  public DatabaseArchiver(final JobPersistence persistence, final Path storageRoot) {
-    this(persistence, storageRoot, new JsonSchemaValidator());
+  public DatabaseArchiver(final JobPersistence persistence) {
+    this(persistence, new JsonSchemaValidator());
   }
 
   /**
    * Serializes each internal Airbyte Database table into a single archive file stored in YAML.
    */
-  public void writeDatabaseToArchive() throws IOException {
+  public void exportDatabaseToArchive(final Path storageRoot) throws IOException {
     final Map<String, Stream<JsonNode>> tables = persistence.exportDatabase();
     if (tables != null && !tables.isEmpty()) {
-      tables.forEach((tableName, tableStream) -> Exceptions.toRuntime(() -> writeTableToArchive(tableName, tableStream)));
+      tables.forEach((tableName, tableStream) -> Exceptions.toRuntime(() -> writeTableToArchive(storageRoot, tableName, tableStream)));
       LOGGER.debug("Successful export of airbyte database");
     }
   }
 
-  private void writeTableToArchive(final String tableName, final Stream<JsonNode> tableStream) throws Exception {
+  private void writeTableToArchive(final Path storageRoot, final String tableName, final Stream<JsonNode> tableStream) throws Exception {
     final JsonNode schema = DatabaseSchema.forTable(tableName);
     if (schema != null) {
-      final Path tablePath = buildTablePath(tableName);
+      final Path tablePath = buildTablePath(storageRoot, tableName);
       Files.createDirectories(tablePath.getParent());
       final BufferedWriter recordOutputWriter = new BufferedWriter(new FileWriter(tablePath.toFile()));
       final CloseableConsumer<JsonNode> recordConsumer = Yamls.listWriter(recordOutputWriter);
@@ -93,7 +91,7 @@ public class DatabaseArchiver {
     }
   }
 
-  private Path buildTablePath(final String tableName) {
+  private static Path buildTablePath(final Path storageRoot, final String tableName) {
     return storageRoot
         .resolve(DB_FOLDER_NAME)
         .resolve(String.format("%s.yaml", tableName.toLowerCase()));
@@ -103,7 +101,7 @@ public class DatabaseArchiver {
    * Reads a YAML configuration archive file and deserialize table into the Airbyte Database. The
    * objects will be validated against the current version of Airbyte server's JSON Schema.
    */
-  public void readDatabaseFromArchive() throws IOException {
+  public void importDatabaseFromArchive(final Path storageRoot) throws IOException {
     final Path dbFolder = storageRoot.resolve(DB_FOLDER_NAME);
     if (dbFolder.toFile().exists()) {
       try (final Stream<Path> files = Files.walk(dbFolder)) {
@@ -114,7 +112,7 @@ public class DatabaseArchiver {
       }
       LOGGER.debug("Successful read of airbyte database from archive");
     } else {
-      LOGGER.debug("Airbyte Database was not found in the archive");
+      LOGGER.info("Airbyte Database was not found in the archive");
     }
   }
 

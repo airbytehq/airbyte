@@ -185,7 +185,7 @@ public class ArchiveHandlerTest {
       return null;
     });
     archiveHandler = new ArchiveHandler("test-version", configRepository, persistence, fileTtlManager);
-    assertThrows(IllegalArgumentException.class, () -> archiveHandler.importData(archiveHandler.exportData()));
+    assertThrows(RuntimeException.class, () -> archiveHandler.importData(archiveHandler.exportData()));
   }
 
   @Test

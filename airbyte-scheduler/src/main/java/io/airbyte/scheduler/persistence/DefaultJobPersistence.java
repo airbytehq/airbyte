@@ -541,7 +541,7 @@ public class DefaultJobPersistence implements JobPersistence {
             .columns(columns);
         data.forEach(insertStep::values);
         if (insertStep.getBindValues().size() > 0) {
-          //LOGGER.debug(insertStep.toString());
+          // LOGGER.debug(insertStep.toString());
           return ctx.batch(insertStep).execute();
         } else
           return null;
