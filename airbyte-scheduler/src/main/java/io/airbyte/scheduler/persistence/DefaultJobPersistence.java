@@ -90,6 +90,7 @@ public class DefaultJobPersistence implements JobPersistence {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultJobPersistence.class);
   private static final JSONFormat DB_JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
+  private static final String DEFAULT_SCHEMA = "public";
   private static final String BACKUP_SCHEMA = "import_backup";
 
   @VisibleForTesting
@@ -428,7 +429,11 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public Map<String, Stream<JsonNode>> exportDatabase(final String schema) throws IOException {
+  public Map<String, Stream<JsonNode>> exportDatabase() throws IOException {
+    return exportDatabase(DEFAULT_SCHEMA);
+  }
+
+  private Map<String, Stream<JsonNode>> exportDatabase(final String schema) throws IOException {
     final List<String> tables = listTables(schema);
     final Map<String, Stream<JsonNode>> result = new HashMap<>();
     for (final String table : tables) {
@@ -469,7 +474,11 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public void importDatabase(final String targetSchema, final Map<String, Stream<JsonNode>> data) throws IOException {
+  public void importDatabase(final Map<String, Stream<JsonNode>> data) throws IOException {
+    importDatabase(DEFAULT_SCHEMA, data);
+  }
+
+  private void importDatabase(final String targetSchema, final Map<String, Stream<JsonNode>> data) throws IOException {
     if (!data.isEmpty()) {
       final String tempSchema = "import_staging_" + RandomStringUtils.randomAlphanumeric(5);
       try {
@@ -497,7 +506,7 @@ public class DefaultJobPersistence implements JobPersistence {
       // Map column names to their Field Object
       final Map<String, Field<?>> columnMap = new HashMap<>();
       for (Entry<String, JsonNode> entry : getProperties(jsonSchema)) {
-        final Class<?> entryType = convertJsonSchemaType(entry.getKey(), entry.getValue());
+        final Class<?> entryType = getJsonSchemaType(entry.getKey(), entry.getValue());
         final DataType<?> datatype = DefaultDataType.getDataType(SQLDialect.POSTGRES, entryType);
         final boolean isNullable = isJsonSchemaTypeNullable(entry.getValue());
         final Field<?> field = DSL.field(entry.getKey(), datatype.nullable(isNullable));
@@ -534,7 +543,7 @@ public class DefaultJobPersistence implements JobPersistence {
     }
   }
 
-  private List<Entry<String, JsonNode>> getProperties(final JsonNode jsonSchema) {
+  private static List<Entry<String, JsonNode>> getProperties(final JsonNode jsonSchema) {
     final List<Entry<String, JsonNode>> result = new ArrayList<>();
     final JsonNode properties = jsonSchema.get("properties");
     for (final Iterator<Entry<String, JsonNode>> it = properties.fields(); it.hasNext();) {
@@ -544,7 +553,7 @@ public class DefaultJobPersistence implements JobPersistence {
     return result;
   }
 
-  private Class<?> convertJsonSchemaType(final String columnName, final JsonNode columnNode) {
+  private static Class<?> getJsonSchemaType(final String columnName, final JsonNode columnNode) {
     JsonNode element = columnNode.get("type");
     if (element.getNodeType() == JsonNodeType.ARRAY) {
       final ArrayNode array = (ArrayNode) element;
@@ -558,7 +567,7 @@ public class DefaultJobPersistence implements JobPersistence {
     return getJsonNodeType(columnName, JsonNodeType.valueOf(element.textValue().toUpperCase()));
   }
 
-  private boolean isJsonSchemaTypeNullable(final JsonNode columnNode) {
+  private static boolean isJsonSchemaTypeNullable(final JsonNode columnNode) {
     JsonNode element = columnNode.get("type");
     if (element.getNodeType() == JsonNodeType.ARRAY) {
       final ArrayNode array = (ArrayNode) element;
@@ -572,7 +581,7 @@ public class DefaultJobPersistence implements JobPersistence {
     return element.textValue().equals("null");
   }
 
-  private Class<?> getJsonNodeType(final String columnName, final JsonNodeType nodeType) {
+  private static Class<?> getJsonNodeType(final String columnName, final JsonNodeType nodeType) {
     if (nodeType == JsonNodeType.OBJECT) {
       return JSONB.class;
     } else if (nodeType == JsonNodeType.STRING) {
@@ -585,7 +594,7 @@ public class DefaultJobPersistence implements JobPersistence {
     throw new IllegalArgumentException(String.format("Undefined type for column %s", columnName));
   }
 
-  private Object getJsonNodeValue(final String columnName, final JsonNode valueNode) {
+  private static Object getJsonNodeValue(final String columnName, final JsonNode valueNode) {
     final JsonNodeType nodeType = valueNode.getNodeType();
     if (nodeType == JsonNodeType.OBJECT) {
       return valueNode.toString();

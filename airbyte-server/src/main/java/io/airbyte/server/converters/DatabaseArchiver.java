@@ -49,7 +49,6 @@ public class DatabaseArchiver {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseArchiver.class);
   private static final String DB_FOLDER_NAME = "airbyte_db";
-  private static final String DEFAULT_SCHEMA = "public";
 
   private final JobPersistence persistence;
   private final Path storageRoot;
@@ -69,7 +68,7 @@ public class DatabaseArchiver {
    * Serializes each internal Airbyte Database table into a single archive file stored in YAML.
    */
   public void writeDatabaseToArchive() throws IOException {
-    final Map<String, Stream<JsonNode>> tables = persistence.exportDatabase(DEFAULT_SCHEMA);
+    final Map<String, Stream<JsonNode>> tables = persistence.exportDatabase();
     if (tables != null && !tables.isEmpty()) {
       tables.forEach((tableName, tableStream) -> Exceptions.toRuntime(() -> writeTableToArchive(tableName, tableStream)));
       LOGGER.debug("Successful export of airbyte database");
@@ -111,7 +110,7 @@ public class DatabaseArchiver {
         final Map<String, Stream<JsonNode>> data = files
             .filter(f -> Files.isRegularFile(f) && f.toString().endsWith(".yaml"))
             .collect(Collectors.toMap(f -> f.getFileName().toString().replace(".yaml", ""), this::readTableFromArchive));
-        persistence.importDatabase(DEFAULT_SCHEMA, data);
+        persistence.importDatabase(data);
       }
       LOGGER.debug("Successful read of airbyte database from archive");
     } else {
