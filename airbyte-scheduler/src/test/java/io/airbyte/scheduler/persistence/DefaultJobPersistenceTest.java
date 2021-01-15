@@ -765,7 +765,8 @@ class DefaultJobPersistenceTest {
       outputStreams.put(entry.getKey(), tableData.stream());
     }
     // Reset database
-    database.query(ctx -> ctx.execute(String.format("DROP SCHEMA %s CASCADE;\n CREATE SCHEMA %s;", DefaultJobPersistence.DEFAULT_SCHEMA, DefaultJobPersistence.DEFAULT_SCHEMA)));
+    database.query(ctx -> ctx.execute(
+        String.format("DROP SCHEMA %s CASCADE;\n CREATE SCHEMA %s;", DefaultJobPersistence.DEFAULT_SCHEMA, DefaultJobPersistence.DEFAULT_SCHEMA)));
     jobPersistence.importDatabase(outputStreams);
 
     final List<Job> actualList = jobPersistence.listJobs(SPEC_JOB_CONFIG.getConfigType(), CONNECTION_ID.toString());
@@ -797,8 +798,8 @@ class DefaultJobPersistenceTest {
     final Map<String, Stream<JsonNode>> inputStreams = jobPersistence.exportDatabase();
     inputStreams.forEach((tableName, tableStream) -> {
       final JsonNode schema = DatabaseSchema.forTable(tableName);
-      assertNotNull(schema);
-
+      assertNotNull(schema,
+          "Json schema files should be created in airbyte-scheduler/src/main/resources/tables for every table in the Database to validate its content");
       tableStream.forEach(row -> {
         try {
           jsonSchemaValidator.ensure(schema, row);
@@ -808,4 +809,5 @@ class DefaultJobPersistenceTest {
       });
     });
   }
+
 }
