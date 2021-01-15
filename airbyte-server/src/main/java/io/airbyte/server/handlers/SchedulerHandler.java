@@ -84,6 +84,8 @@ public class SchedulerHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceCreate.getSourceDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
+    // todo (cgardens) - narrow the struct passed to the client. we are not setting fields that are
+    // technically declared as required.
     final SourceConnection source = new SourceConnection()
         .withSourceDefinitionId(sourceCreate.getSourceDefinitionId())
         .withConfiguration(sourceCreate.getConnectionConfiguration());
@@ -103,6 +105,8 @@ public class SchedulerHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardDestinationDefinition destDef = configRepository.getStandardDestinationDefinition(destinationCreate.getDestinationDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(destDef.getDockerRepository(), destDef.getDockerImageTag());
+    // todo (cgardens) - narrow the struct passed to the client. we are not setting fields that are
+    // technically declared as required.
     final DestinationConnection destination = new DestinationConnection()
         .withDestinationDefinitionId(destinationCreate.getDestinationDefinitionId())
         .withConfiguration(destinationCreate.getConnectionConfiguration());
