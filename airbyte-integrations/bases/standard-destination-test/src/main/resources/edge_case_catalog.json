@@ -10,6 +10,7 @@
         }
       }
     },
+
     {
       "name": "stream_with_underscores",
       "json_schema": {
@@ -52,6 +53,16 @@
         "properties": {
           "field_with_spécial_character": {
             "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "name": "CapitalCase",
+      "json_schema": {
+        "properties": {
+          "deleted": {
+            "type": "boolean"
           }
         }
       }

@@ -234,10 +234,9 @@ def json_extract_base_property(path: List[str], json_col: str, name: str, defini
             quote(name, integration_type),
         )
     elif is_boolean(definition["type"]):
-        return "cast({} as boolean) as {}".format(
-            jinja_call(f"json_extract_scalar('{json_col}', {current})"),
-            quote(name, integration_type),
-        )
+        # In Redshift, it's not possible to convert from a varchar (which is the output type of json_extract_scalar) to a boolean directly.
+        # So we use a macro that handles destination-specific conversions
+        return jinja_call(f"""cast_to_boolean(json_extract_scalar('{json_col}', {current}))""") + f" as {quote(name, integration_type)}"
     else:
         return None
 
@@ -351,6 +350,15 @@ def extract_nested_properties(path: List[str], field: str, properties: dict, int
     return result
 
 
+def safe_cast_to_varchar(field: str, integration_type: str, jsonschema_properties: dict):
+    # Redshift booleans cannot be directly cast to varchar. So we use a custom macro to convert any boolean columns.
+    quoted_field = quote(field, integration_type, in_jinja=True)
+    if is_boolean(jsonschema_properties[field]["type"]):
+        return f"boolean_to_varchar({quoted_field})"
+    else:
+        return quoted_field
+
+
 def process_node(
     path: List[str],
     json_col: str,
@@ -368,8 +376,11 @@ def process_node(
         prefix = previous + ","
     node_properties = extract_node_properties(path=path, json_col=json_col, properties=properties, integration_type=integration_type)
     node_columns = ",\n    ".join([sql for sql in node_properties.values()])
-    hash_node_columns = ",\n        ".join([quote(column, integration_type, in_jinja=True) for column in node_properties.keys()])
-    hash_node_columns = jinja_call(f"dbt_utils.surrogate_key([\n        {hash_node_columns}\n    ])")
+    hash_node_columns = ",\n        ".join(
+        [safe_cast_to_varchar(column, integration_type, properties) for column in node_properties.keys()]
+    )
+    hash_node_columns = jinja_call(f"dbt_utils.surrogate_key([{hash_node_columns}])")
+
     hash_id = quote(f"_{name}_hashid", integration_type)
     foreign_hash_id = quote(f"_{name}_foreign_hashid", integration_type)
     emitted_col = "emitted_at,\n    {} as normalized_at".format(
