@@ -22,13 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from setuptools import find_packages, setup
+from base_python import BaseSource
 
-setup(
-    name="base-singer",
-    description="Contains helpers for handling Singer sources and destinations.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    install_requires=["airbyte-protocol"],
-)
+from .client import Client
+
+
+class SourceFacebookMarketing(BaseSource):
+    client_class = Client
