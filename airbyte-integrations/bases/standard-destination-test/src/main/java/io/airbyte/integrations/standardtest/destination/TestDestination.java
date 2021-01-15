@@ -255,7 +255,7 @@ public abstract class TestDestination {
     @Override
     public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
       return Stream.of(
-//          Arguments.of("exchange_rate_messages.txt", "exchange_rate_catalog.json"),
+          // Arguments.of("exchange_rate_messages.txt", "exchange_rate_catalog.json"),
           Arguments.of("edge_case_messages.txt", "edge_case_catalog.json")
       // todo - need to use the new protocol to capture this.
       // Arguments.of("stripe_messages.txt", "stripe_schema.json")
