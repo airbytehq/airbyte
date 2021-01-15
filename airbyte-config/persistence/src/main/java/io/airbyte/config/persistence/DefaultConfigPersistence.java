@@ -111,7 +111,7 @@ public class DefaultConfigPersistence implements ConfigPersistence {
           configs.add(getConfig(configType, id, clazz));
         } catch (ConfigNotFoundException e) {
           // should not happen since we just read the ids from disk.
-          throw new RuntimeException(e);
+          throw new IOException(e);
         }
       }
 
