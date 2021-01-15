@@ -73,11 +73,11 @@
   dockerRepository: airbyte/source-googleanalytics-singer
   dockerImageTag: 0.1.5
   documentationUrl: https://hub.docker.com/r/airbyte/source-googleanalytics-singer
-- sourceDefinitionId: 74d47f79-8d01-44ac-9755-f5eb0d7caacb
-  name: Facebook Marketing APIs
-  dockerRepository: airbyte/source-facebook-marketing-api-singer
-  dockerImageTag: 0.1.5
-  documentationUrl: https://hub.docker.com/r/airbyte/source-facebook-marketing-api-singer
+- sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
+  name: Facebook Marketing
+  dockerRepository: airbyte/source-facebook-marketing
+  dockerImageTag: 0.1.1
+  documentationUrl: https://hub.docker.com/r/airbyte/source-facebook-marketing
 - sourceDefinitionId: 57eb1576-8f52-463d-beb6-2e107cdf571d
   name: Hubspot
   dockerRepository: airbyte/source-hubspot-singer

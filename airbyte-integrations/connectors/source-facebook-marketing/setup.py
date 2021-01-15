@@ -25,10 +25,22 @@ SOFTWARE.
 from setuptools import find_packages, setup
 
 setup(
-    name="base-singer",
-    description="Contains helpers for handling Singer sources and destinations.",
+    name="source_facebook_marketing",
+    description="Source implementation for Facebook Marketing.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=["airbyte-protocol"],
+    install_requires=[
+        "airbyte-protocol==0.0.0",
+        "base-python==0.0.0",
+        "facebook_business==9.0.1",
+        "backoff==1.10.0",
+        "python-dateutil==2.8.1",
+        "cached_property==1.5.2",
+    ],
+    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
+    tests_require=["pytest==6.1.2"],
+    extras_require={
+        "tests": ["airbyte_python_test==0.0.0", "pytest==6.1.2"],
+    },
 )

@@ -22,13 +22,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from setuptools import find_packages, setup
+import pytest
+from airbyte_protocol import AirbyteStream
+from source_facebook_marketing.client import Client, FacebookAPIException
 
-setup(
-    name="base-singer",
-    description="Contains helpers for handling Singer sources and destinations.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    install_requires=["airbyte-protocol"],
-)
+
+def test__health_check_with_wrong_token():
+    client = Client(account_id="wrong_account", access_token="wrong_key", start_date="2019-03-03T10:00")
+    alive, error = client.health_check()
+
+    assert not alive
+    assert error == "Error: 190, Invalid OAuth access token."
+
+
+def test__campaigns_with_wrong_token():
+    client = Client(account_id="wrong_account", access_token="wrong_key", start_date="2019-03-03T10:00")
+    with pytest.raises(FacebookAPIException, match="Error: 190, Invalid OAuth access token"):
+        next(client.read_stream(AirbyteStream(name="campaigns", json_schema={})))
