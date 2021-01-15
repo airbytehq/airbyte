@@ -50,7 +50,7 @@
 {%- endmacro %}
 
 {% macro redshift__json_extract(json_column, json_path_list) -%}
-    json_extract_path_text({{ adapter.quote_as_configured(json_column, 'identifier')|trim }}, {{ format_json_path(json_path_list) }})
+    case when json_extract_path_text({{ adapter.quote_as_configured(json_column, 'identifier')|trim }}, {{ format_json_path(json_path_list) }}) != '' then json_extract_path_text({{ adapter.quote_as_configured(json_column, 'identifier')|trim }}, {{ format_json_path(json_path_list) }}) end
 {%- endmacro %}
 
 {% macro snowflake__json_extract(json_column, json_path_list) -%}
@@ -102,7 +102,7 @@
 {%- endmacro %}
 
 {% macro redshift__json_extract_array(json_column, json_path_list) -%}
-    case when json_extract_path_text({{ adapter.quote_as_configured(json_column, 'identifier')|trim }}, {{ format_json_path(json_path_list) }}) != '' then json_extract_path_text({{ adapter.quote_as_configured(json_column, 'identifier')|trim }}, {{ format_json_path(json_path_list) }}) end
+    json_extract_path_text({{ adapter.quote_as_configured(json_column, 'identifier')|trim }}, {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
 {% macro snowflake__json_extract_array(json_column, json_path_list) -%}
