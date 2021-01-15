@@ -1,7 +1,7 @@
 ---
 "$schema": http://json-schema.org/draft-07/schema#
 title: Attempts
-description: representation of a attempts record.
+description: representation of a attempts record as created in schema.sql
 type: object
 required:
   - id
@@ -13,7 +13,6 @@ required:
   - updated_at
 additionalProperties: false
 properties:
-  # First column defined is the primary Key
   id:
     type: number
   job_id:
