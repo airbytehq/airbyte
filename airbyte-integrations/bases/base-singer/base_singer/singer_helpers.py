@@ -141,7 +141,7 @@ class SingerHelper:
         return AirbyteCatalog(streams=airbyte_streams)
 
     @staticmethod
-    def get_catalogs(logger, shell_command: str, sync_mode_overrides: Dict[str, SyncModeInfo]) -> Catalogs:
+    def get_catalogs(logger, shell_command: str, sync_mode_overrides: Dict[str, SyncModeInfo], excluded_streams: List) -> Catalogs:
         completed_process = subprocess.run(
             shell_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True
         )
@@ -150,6 +150,9 @@ class SingerHelper:
             logger.log_by_prefix(line, "ERROR")
 
         singer_catalog = json.loads(completed_process.stdout)
+        streams = singer_catalog.get("streams", [])
+        if streams and excluded_streams:
+            singer_catalog["streams"] = [stream for stream in streams if stream["stream"] not in excluded_streams]
         airbyte_catalog = SingerHelper.singer_catalog_to_airbyte_catalog(singer_catalog, sync_mode_overrides)
 
         return Catalogs(singer_catalog=singer_catalog, airbyte_catalog=airbyte_catalog)

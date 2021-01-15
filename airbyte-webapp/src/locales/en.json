@@ -102,6 +102,7 @@
   "onboarding.instructionsLink": "See instructions how to connect {name}",
   "onboarding.fetchingSchema": "We are fetching the schema of your data source.\nThis should take less than a minute...",
   "onboarding.tutorial": "Check how you can sync PostgreSQL databases in minutes",
+  "onboarding.skipOnboarding": "Skip Onboarding",
 
   "sources.searchIncremental": "Search cursor value for incremental",
   "sources.incrementalDefault": "{value} (default)",

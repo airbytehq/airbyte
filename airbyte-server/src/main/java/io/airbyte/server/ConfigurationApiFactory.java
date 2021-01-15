@@ -24,6 +24,8 @@
 
 package io.airbyte.server;
 
+import io.airbyte.commons.io.FileTtlManager;
+import io.airbyte.config.Configs;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.db.Database;
 import io.airbyte.scheduler.client.CachingSchedulerJobClient;
@@ -38,6 +40,8 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
   private static CachingSchedulerJobClient schedulerJobClient;
   private static String airbyteVersion;
   private static Database database;
+  private static Configs configs;
+  private static FileTtlManager archiveTtlManager;
 
   public static void setConfigRepository(final ConfigRepository configRepository) {
     ConfigurationApiFactory.configRepository = configRepository;
@@ -47,7 +51,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
     ConfigurationApiFactory.jobPersistence = jobPersistence;
   }
 
-  public static void setSpecCache(final CachingSchedulerJobClient schedulerJobClient) {
+  public static void setSchedulerJobClient(final CachingSchedulerJobClient schedulerJobClient) {
     ConfigurationApiFactory.schedulerJobClient = schedulerJobClient;
   }
 
@@ -59,6 +63,14 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
     ConfigurationApiFactory.database = database;
   }
 
+  public static void setConfigs(Configs configs) {
+    ConfigurationApiFactory.configs = configs;
+  }
+
+  public static void setArchiveTtlManager(final FileTtlManager archiveTtlManager) {
+    ConfigurationApiFactory.archiveTtlManager = archiveTtlManager;
+  }
+
   @Override
   public ConfigurationApi provide() {
     return new ConfigurationApi(
@@ -66,7 +78,9 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
         ConfigurationApiFactory.database,
         ConfigurationApiFactory.configRepository,
         ConfigurationApiFactory.jobPersistence,
-        ConfigurationApiFactory.schedulerJobClient);
+        ConfigurationApiFactory.schedulerJobClient,
+        ConfigurationApiFactory.configs,
+        ConfigurationApiFactory.archiveTtlManager);
   }
 
   @Override

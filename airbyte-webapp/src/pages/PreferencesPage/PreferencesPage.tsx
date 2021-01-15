@@ -1,20 +1,19 @@
 import React, { useEffect } from "react";
 import { FormattedMessage } from "react-intl";
-import { useFetcher } from "rest-hooks";
 
 import { PageViewContainer } from "../../components/CenteredPageComponents";
 import { H1 } from "../../components/Titles";
 import PreferencesForm from "./components/PreferencesForm";
-import WorkspaceResource from "../../core/resources/Workspace";
 import config from "../../config";
 import { AnalyticsService } from "../../core/analytics/AnalyticsService";
+import useWorkspace from "../../components/hooks/services/useWorkspaceHook";
 
 const PreferencesPage: React.FC = () => {
   useEffect(() => {
     AnalyticsService.page("Preferences Page");
   }, []);
 
-  const updateWorkspace = useFetcher(WorkspaceResource.updateShape());
+  const { setInitialSetupConfig } = useWorkspace();
 
   const onSubmit = async (data: {
     email: string;
@@ -22,15 +21,7 @@ const PreferencesPage: React.FC = () => {
     news: boolean;
     securityUpdates: boolean;
   }) => {
-    await updateWorkspace(
-      {},
-      {
-        workspaceId: config.ui.workspaceId,
-        initialSetupComplete: true,
-        onboardingComplete: false,
-        ...data
-      }
-    );
+    await setInitialSetupConfig(data);
 
     AnalyticsService.track("Specified Preferences", {
       user_id: config.ui.workspaceId,

@@ -25,10 +25,12 @@
 package io.airbyte.server;
 
 import io.airbyte.analytics.TrackingClientSingleton;
+import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.helpers.LogHelpers;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DefaultConfigPersistence;
@@ -49,6 +51,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -71,15 +74,18 @@ public class ServerApp {
   private final Database database;
   private final ConfigRepository configRepository;
   private final JobPersistence jobPersistence;
+  private final Configs configs;
 
   public ServerApp(final String airbyteVersion,
                    final Database database,
                    final ConfigRepository configRepository,
-                   final JobPersistence jobPersistence) {
+                   final JobPersistence jobPersistence,
+                   final Configs configs) {
     this.airbyteVersion = airbyteVersion;
     this.database = database;
     this.configRepository = configRepository;
     this.jobPersistence = jobPersistence;
+    this.configs = configs;
   }
 
   public void start() throws Exception {
@@ -91,9 +97,11 @@ public class ServerApp {
 
     ConfigurationApiFactory.setAirbyteVersion(airbyteVersion);
     ConfigurationApiFactory.setDatabase(database);
-    ConfigurationApiFactory.setSpecCache(new SpecCachingSchedulerJobClient(jobPersistence, new DefaultJobCreator(jobPersistence)));
+    ConfigurationApiFactory.setSchedulerJobClient(new SpecCachingSchedulerJobClient(jobPersistence, new DefaultJobCreator(jobPersistence)));
     ConfigurationApiFactory.setConfigRepository(configRepository);
     ConfigurationApiFactory.setJobPersistence(jobPersistence);
+    ConfigurationApiFactory.setConfigs(configs);
+    ConfigurationApiFactory.setArchiveTtlManager(new FileTtlManager(10, TimeUnit.MINUTES, 10));
 
     ResourceConfig rc =
         new ResourceConfig()
@@ -165,7 +173,7 @@ public class ServerApp {
   public static void main(String[] args) throws Exception {
     final Configs configs = new EnvConfigs();
 
-    MDC.put("workspace_app_root", configs.getWorkspaceRoot().resolve("server/logs").toString());
+    MDC.put(LogHelpers.WORKSPACE_MDC_KEY, LogHelpers.getServerLogsRoot(configs).toString());
 
     final Path configRoot = configs.getConfigRoot();
     LOGGER.info("configRoot = " + configRoot);
@@ -191,7 +199,7 @@ public class ServerApp {
     final JobPersistence jobPersistence = new DefaultJobPersistence(database);
 
     LOGGER.info("Starting server...");
-    new ServerApp(configs.getAirbyteVersion(), database, configRepository, jobPersistence).start();
+    new ServerApp(configs.getAirbyteVersion(), database, configRepository, jobPersistence, configs).start();
   }
 
 }
