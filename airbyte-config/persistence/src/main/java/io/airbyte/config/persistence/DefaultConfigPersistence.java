@@ -58,9 +58,7 @@ public class DefaultConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> T getConfig(final ConfigSchema configType,
-                         final String configId,
-                         final Class<T> clazz)
+  public <T> T getConfig(final ConfigSchema configType, final String configId, final Class<T> clazz)
       throws ConfigNotFoundException, JsonValidationException, IOException {
     synchronized (lock) {
       return getConfigInternal(configType, configId, clazz);
@@ -68,27 +66,20 @@ public class DefaultConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> List<T> listConfigs(ConfigSchema configType,
-                                 Class<T> clazz)
-      throws ConfigNotFoundException, JsonValidationException, IOException {
+  public <T> List<T> listConfigs(ConfigSchema configType, Class<T> clazz) throws JsonValidationException, IOException {
     synchronized (lock) {
       return listConfigsInternal(configType, clazz);
     }
   }
 
   @Override
-  public <T> void writeConfig(ConfigSchema configType,
-                              String configId,
-                              T config)
-      throws JsonValidationException, IOException {
+  public <T> void writeConfig(ConfigSchema configType, String configId, T config) throws JsonValidationException, IOException {
     synchronized (lock) {
       writeConfigInternal(configType, configId, config);
     }
   }
 
-  private <T> T getConfigInternal(ConfigSchema configType,
-                                  String configId,
-                                  Class<T> clazz)
+  private <T> T getConfigInternal(ConfigSchema configType, String configId, Class<T> clazz)
       throws ConfigNotFoundException, JsonValidationException, IOException {
     // validate file with schema
     final Path configPath = buildConfigPath(configType, configId);
@@ -102,33 +93,33 @@ public class DefaultConfigPersistence implements ConfigPersistence {
     return config;
   }
 
-  private <T> List<T> listConfigsInternal(ConfigSchema configType,
-                                          Class<T> clazz)
-      throws ConfigNotFoundException, JsonValidationException, IOException {
+  private <T> List<T> listConfigsInternal(ConfigSchema configType, Class<T> clazz) throws JsonValidationException, IOException {
     final Path configTypePath = buildTypePath(configType);
     if (!Files.exists(configTypePath)) {
       return Collections.emptyList();
     }
 
     try (Stream<Path> files = Files.list(configTypePath)) {
-      List<String> ids = files
+      final List<String> ids = files
           .filter(p -> !p.endsWith(".json"))
           .map(p -> p.getFileName().toString().replace(".json", ""))
           .collect(Collectors.toList());
 
       final List<T> configs = Lists.newArrayList();
       for (String id : ids) {
-        configs.add(getConfig(configType, id, clazz));
+        try {
+          configs.add(getConfig(configType, id, clazz));
+        } catch (ConfigNotFoundException e) {
+          // should not happen since we just read the ids from disk.
+          throw new RuntimeException(e);
+        }
       }
 
       return configs;
     }
   }
 
-  private <T> void writeConfigInternal(ConfigSchema configType,
-                                       String configId,
-                                       T config)
-      throws JsonValidationException, IOException {
+  private <T> void writeConfigInternal(ConfigSchema configType, String configId, T config) throws JsonValidationException, IOException {
     // validate config with schema
     validateJson(Jsons.jsonNode(config), configType);
 
