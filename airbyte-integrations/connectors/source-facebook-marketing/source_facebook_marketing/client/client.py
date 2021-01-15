@@ -233,11 +233,12 @@ class AdsInsightAPI(StreamAPI):
 
 
 class Client(BaseClient):
-    def __init__(self, account_id: str, access_token: str, start_date: str):
+    def __init__(self, account_id: str, access_token: str, start_date: str, include_deleted: bool = False):
         super().__init__()
         self._api = FacebookAdsApi.init(access_token=access_token)
         self._account_id = account_id
         self._start_date = isoparse(start_date)
+        self._include_deleted = include_deleted
 
     @cached_property
     def account(self):
