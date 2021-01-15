@@ -35,6 +35,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -86,7 +87,7 @@ public class ArchiveHandlerTest {
     archiveHandler = new ArchiveHandler("test-version", configRepository, persistence, fileTtlManager);
   }
 
-  void setUpDatabase() {
+  void setUpDatabase() throws IOException, SQLException {
     container = new PostgreSQLContainer<>("postgres:13-alpine");
     container.start();
     dbConfig = Jsons.jsonNode(ImmutableMap.builder()
@@ -102,6 +103,9 @@ public class ArchiveHandlerTest {
         dbConfig.get("password").asText(),
         dbConfig.get("jdbc_url").asText());
     persistence = new DefaultJobPersistence(database);
+    final String schemaFile = MoreResources.readResource("schema.sql");
+    final String sql = schemaFile.substring(schemaFile.indexOf("-- extensions"), schemaFile.indexOf("-- entries"));
+    database.query(ctx -> ctx.execute(sql));
   }
 
   @AfterEach
@@ -172,7 +176,7 @@ public class ArchiveHandlerTest {
   }
 
   @Test
-  void testWrongDatabaseMigration() throws SQLException {
+  void testWrongDatabaseMigration() throws SQLException, IOException {
     setUpDatabase();
     database.query(ctx -> {
       ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), updated_at DATE);");
@@ -185,16 +189,14 @@ public class ArchiveHandlerTest {
   }
 
   @Test
-  void testDatabaseMigration() throws SQLException {
+  void testDatabaseMigration() throws SQLException, IOException {
     setUpDatabase();
     database.query(ctx -> {
       ctx.fetch(
-          "CREATE TABLE jobs(id INTEGER, scope VARCHAR(200), config_type VARCHAR(200), config JSONB, status VARCHAR(200), created_at VARCHAR(200), started_at VARCHAR(200), updated_at VARCHAR(200));");
-      ctx.fetch(
           "INSERT INTO jobs(id, scope, config_type, config, status, created_at, started_at, updated_at) VALUES "
-              + "(1,'getspec', 'spec_config', '{ \"type\" : \"getSpec\" }', 'success', '2004-10-19', null, '2004-10-19'), "
-              + "(2,'sync', 'sync_config', '{ \"job\" : \"sync\" }', 'running', '2005-10-19', null, '2005-10-19'), "
-              + "(3,'sync', 'sync_config', '{ \"job\" : \"sync\" }', 'pending', '2006-10-19', null, '2006-10-19');");
+              + "(1,'get_spec_scope', 'get_spec', '{ \"type\" : \"getSpec\" }', 'succeeded', '2004-10-19', null, '2004-10-19'), "
+              + "(2,'sync_scope', 'sync', '{ \"job\" : \"sync\" }', 'running', '2005-10-19', null, '2005-10-19'), "
+              + "(3,'sync_scope', 'sync', '{ \"job\" : \"sync\" }', 'pending', '2006-10-19', null, '2006-10-19');");
       return null;
     });
     archiveHandler = new ArchiveHandler("test-version", configRepository, persistence, fileTtlManager);
