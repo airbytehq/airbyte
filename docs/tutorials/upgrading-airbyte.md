@@ -4,7 +4,7 @@ _Coming soon! This tutorial is a work in progress for a feature that is currentl
 
 ## Overview
 
-Airbyte releases a new version of its stable version at least once a week. Some of these releases require updating the data the Airbyte stores internally. This tutorial will describe how to determine if you need to run this ugprade process, and if you do, how to do so. This process does require temporarily turning off Airbyte.
+Airbyte releases a new version of its stable version at least once a week. Some of these releases require updating the data that Airbyte stores internally. This tutorial will describe how to determine if you need to run this ugprade process, and if you do, how to do so. This process does require temporarily turning off Airbyte.
 
 ## Determining if you need to Upgrade
 Not every new version will require an upgrade. We follow standard [Semantic Versioning](https://semver.org/) conventions. Data migrations should only be required when upgrading to a new major version of Airbyte. You can always find the latest stable version of Airbyte in our repository [here](https://github.com/airbytehq/airbyte/blob/master/.env#L1). If you are upgrading to a new major version follow the steps below.
