@@ -180,8 +180,7 @@ public class JobSubmitter implements Runnable {
 
     switch (job.getConfig().getConfigType()) {
       case CHECK_CONNECTION_SOURCE, DISCOVER_SCHEMA -> {
-        final StandardSourceDefinition sourceDefinition = configRepository
-            .getSourceDefinitionFromSource(UUID.fromString(job.getScope()));
+        final StandardSourceDefinition sourceDefinition = configRepository.getSourceDefinitionFromSource(UUID.fromString(job.getScope()));
 
         metadata.put("connector_source", sourceDefinition.getName());
         metadata.put("connector_source_definition_id", sourceDefinition.getSourceDefinitionId());
