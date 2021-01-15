@@ -31,18 +31,10 @@ import java.util.List;
 
 public interface ConfigPersistence {
 
-  <T> T getConfig(ConfigSchema configType,
-                  String configId,
-                  Class<T> clazz)
-      throws ConfigNotFoundException, JsonValidationException, IOException;
+  <T> T getConfig(ConfigSchema configType, String configId, Class<T> clazz) throws ConfigNotFoundException, JsonValidationException, IOException;
 
-  <T> List<T> listConfigs(ConfigSchema configType,
-                          Class<T> clazz)
-      throws ConfigNotFoundException, JsonValidationException, IOException;
+  <T> List<T> listConfigs(ConfigSchema configType, Class<T> clazz) throws JsonValidationException, IOException;
 
-  <T> void writeConfig(ConfigSchema configType,
-                       String configId,
-                       T config)
-      throws JsonValidationException, IOException;
+  <T> void writeConfig(ConfigSchema configType, String configId, T config) throws JsonValidationException, IOException;
 
 }
