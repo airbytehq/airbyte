@@ -47,7 +47,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
 
   @Override
   public JsonNode toJdbcConfig(JsonNode config) {
-    ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
+    final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put("username", config.get("username").asText())
         .put("jdbc_url", String.format("jdbc:postgresql://%s:%s/%s",
             config.get("host").asText(),

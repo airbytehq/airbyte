@@ -75,25 +75,18 @@ class SourceGithubSinger(SingerSource):
 
     def get_sync_mode_overrides(self) -> Dict[str, SyncModeInfo]:
         incremental_streams = [
-            "team_memberships",
             "events",
             "comments",
             "commit_comments",
-            "project_cards",
             "issue_milestones",
             "commits",
             "collaborators",
             "stargazers",
             "teams",
-            "review_comments",
             "projects",
             "issue_labels",
             "issues",
             "issue_events",
-            "project_columns",
-            "team_members",
-            "pull_request_reviews",
-            "pr_commits",
         ]
 
         full_refresh_streams = ["assignees", "collaborators", "pull_requests", "reviews", "releases"]
@@ -103,6 +96,25 @@ class SourceGithubSinger(SingerSource):
         for stream_name in full_refresh_streams:
             overrides[stream_name] = SyncModeInfo(supported_sync_modes=[SyncMode.full_refresh])
         return overrides
+
+    def get_excluded_streams(self) -> List:
+        # The below streams are only synced if their parent stream is synced. For example,
+        # review_comments is not synced unless the pull_requests stream is selected. If a user tries
+        # to sync the child without the parent, however, the tap process succeeds without any
+        # exceptions, but no output is emitted for either stream, which is a pretty opaque user
+        # experience. So for now we will exclude the child stream until Airbyte has a way of enforcing
+        # dependencies between streams.
+        excluded_streams = [
+            "review_comments",
+            "review",
+            "project_columns",
+            "project_cards",
+            "team_memberships",
+            "team_members",
+            "pr_commits",
+            "pull_request_reviews",
+        ]
+        return excluded_streams
 
     def read_cmd(self, logger, config_path, catalog_path, state_path=None) -> str:
         config_option = f"--config {config_path}"

@@ -17,6 +17,7 @@
     * [Drift](integrations/sources/drift.md)
     * [Exchange Rates API](integrations/sources/exchangeratesapi-io.md)
     * [Facebook Marketing API](integrations/sources/facebook-marketing-api.md)
+    * [Facebook Marketing](integrations/sources/facebook-marketing.md)
     * [Files](integrations/sources/file.md)
     * [Freshdesk](integrations/sources/freshdesk.md)
     * [Intercom](integrations/sources/intercom.md)
@@ -92,5 +93,6 @@
   * [Business Model](company-handbook/business-model.md)
 * [Career & Open Positions](career-and-open-positions/README.md)
   * [Founding Developer Advocate](career-and-open-positions/founding-developer-evangelist.md)
+  * [Senior Software Engineer](career-and-open-positions/senior-software-engineer.md)
 * [License](license.md)
 

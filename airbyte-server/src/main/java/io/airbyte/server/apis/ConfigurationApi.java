@@ -49,6 +49,7 @@ import io.airbyte.api.model.JobIdRequestBody;
 import io.airbyte.api.model.JobInfoRead;
 import io.airbyte.api.model.JobListRequestBody;
 import io.airbyte.api.model.JobReadList;
+import io.airbyte.api.model.LogsRequestBody;
 import io.airbyte.api.model.SlugRequestBody;
 import io.airbyte.api.model.SourceCoreConfig;
 import io.airbyte.api.model.SourceCreate;
@@ -72,6 +73,7 @@ import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.api.model.WorkspaceRead;
 import io.airbyte.api.model.WorkspaceUpdate;
 import io.airbyte.commons.io.FileTtlManager;
+import io.airbyte.config.Configs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.client.CachingSchedulerJobClient;
@@ -83,6 +85,7 @@ import io.airbyte.server.handlers.DestinationDefinitionsHandler;
 import io.airbyte.server.handlers.DestinationHandler;
 import io.airbyte.server.handlers.HealthCheckHandler;
 import io.airbyte.server.handlers.JobHistoryHandler;
+import io.airbyte.server.handlers.LogsHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.handlers.SourceDefinitionsHandler;
 import io.airbyte.server.handlers.SourceHandler;
@@ -114,11 +117,14 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   private final WebBackendDestinationHandler webBackendDestinationHandler;
   private final HealthCheckHandler healthCheckHandler;
   private final ArchiveHandler archiveHandler;
+  private final LogsHandler logsHandler;
+  private final Configs configs;
 
   public ConfigurationApi(final String airbyteVersion,
                           final ConfigRepository configRepository,
                           final JobPersistence jobPersistence,
                           final CachingSchedulerJobClient schedulerJobClient,
+                          final Configs configs,
                           final FileTtlManager archiveTtlManager) {
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
     schedulerHandler = new SchedulerHandler(configRepository, schedulerJobClient);
@@ -136,6 +142,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     webBackendDestinationHandler = new WebBackendDestinationHandler(destinationHandler, schedulerHandler);
     healthCheckHandler = new HealthCheckHandler(configRepository);
     archiveHandler = new ArchiveHandler(airbyteVersion, configRepository, jobPersistence, archiveTtlManager);
+    logsHandler = new LogsHandler();
+    this.configs = configs;
   }
 
   // WORKSPACE
@@ -354,6 +362,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public JobInfoRead getJobInfo(@Valid JobIdRequestBody jobIdRequestBody) {
     return execute(() -> jobHistoryHandler.getJobInfo(jobIdRequestBody));
+  }
+
+  @Override
+  public File getLogs(@Valid LogsRequestBody logsRequestBody) {
+    return execute(() -> logsHandler.getLogs(configs, logsRequestBody));
   }
 
   // HEALTH
