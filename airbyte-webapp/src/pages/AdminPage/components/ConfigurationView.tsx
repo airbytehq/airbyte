@@ -42,11 +42,32 @@ const Warning = styled.div`
 
 const ConfigurationView: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
   const fetchExp = useFetcher(DeploymentResource.exportShape(), true);
+  const fetchImp = useFetcher(DeploymentResource.importShape(), true);
 
   const onExport = async () => {
     const { file } = await fetchExp({});
     window.location.assign(file);
+  };
+
+  const onImport = async (file: any) => {
+    const reader = new FileReader();
+    reader.readAsText(file);
+
+    reader.onload = async () => {
+      try {
+        setError("");
+        setIsLoading(true);
+        await fetchImp(reader.result);
+        setIsModalOpen(false);
+      } catch (e) {
+        setError(e);
+      } finally {
+        setIsLoading(false);
+      }
+    };
   };
 
   return (
@@ -88,8 +109,10 @@ const ConfigurationView: React.FC = () => {
         {isModalOpen && (
           <ImportConfigurationModal
             onClose={() => setIsModalOpen(false)}
-            // TODO: add onSubmit func
-            onSubmit={() => null}
+            onSubmit={onImport}
+            isLoading={isLoading}
+            error={error}
+            cleanError={() => setError("")}
           />
         )}
       </ControlContent>

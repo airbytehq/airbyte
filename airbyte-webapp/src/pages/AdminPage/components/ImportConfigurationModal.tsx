@@ -10,6 +10,9 @@ export type IProps = {
   onClose: () => void;
   onSubmit: (data: any) => void;
   message?: React.ReactNode;
+  isLoading?: boolean;
+  error?: any;
+  cleanError?: () => void;
 };
 
 const Content = styled.div`
@@ -18,10 +21,6 @@ const Content = styled.div`
   line-height: 28px;
   width: 485px;
 `;
-const ButtonContent = styled.div`
-  padding-top: 27px;
-  text-align: right;
-`;
 const ButtonWithMargin = styled(Button)`
   margin-right: 9px;
 `;
@@ -29,8 +28,27 @@ const DropZoneSubtitle = styled.div`
   font-size: 11px;
   font-weight: bold;
 `;
+const Bottom = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: row;
+  padding-top: 27px;
+`;
+const Error = styled.div`
+  color: ${({ theme }) => theme.dangerColor};
+  font-size: 14px;
+  line-height: 17px;
+  margin-right: 10px;
+`;
 
-const ImportConfigurationModal: React.FC<IProps> = ({ onClose, onSubmit }) => {
+const ImportConfigurationModal: React.FC<IProps> = ({
+  onClose,
+  onSubmit,
+  isLoading,
+  error,
+  cleanError
+}) => {
   const [usersFile, setUsersFile] = useState(null);
   const DropZoneMainText = () => (
     <div>
@@ -49,19 +67,33 @@ const ImportConfigurationModal: React.FC<IProps> = ({ onClose, onSubmit }) => {
         <FileDropZone
           mainText={<DropZoneMainText />}
           options={{
-            onDrop: files => setUsersFile(files[0]),
+            onDrop: files => {
+              setUsersFile(files[0]);
+              if (cleanError) {
+                cleanError();
+              }
+            },
             maxFiles: 1,
-            accept: "application/x-gzip, application/x-gtar, application/x-tgz"
+            accept:
+              "application/x-zip-compressed, application/zip, application/x-gzip, application/x-gtar, application/x-tgz"
           }}
         />
-        <ButtonContent>
-          <ButtonWithMargin onClick={onClose} secondary>
-            <FormattedMessage id="form.cancel" />
-          </ButtonWithMargin>
-          <Button onClick={() => onSubmit(usersFile)} disabled={!usersFile}>
-            <FormattedMessage id="form.submit" />
-          </Button>
-        </ButtonContent>
+        <Bottom>
+          <Error>
+            {error ? <FormattedMessage id="form.someError" /> : null}
+          </Error>
+          <div>
+            <ButtonWithMargin onClick={onClose} secondary disabled={isLoading}>
+              <FormattedMessage id="form.cancel" />
+            </ButtonWithMargin>
+            <Button
+              onClick={() => onSubmit(usersFile)}
+              disabled={!usersFile || isLoading}
+            >
+              <FormattedMessage id="form.submit" />
+            </Button>
+          </div>
+        </Bottom>
       </Content>
     </Modal>
   );
