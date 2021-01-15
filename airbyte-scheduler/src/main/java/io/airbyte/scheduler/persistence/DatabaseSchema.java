@@ -33,6 +33,10 @@ import java.nio.file.Path;
 import java.util.Optional;
 import org.apache.commons.io.FileUtils;
 
+/**
+ * Whenever a new table is created in the Airbyte Database, we should also add a corresponding yaml file
+ * to validate the content of the table when it is exported/imported in files.
+ */
 public enum DatabaseSchema {
 
   // Attempts
