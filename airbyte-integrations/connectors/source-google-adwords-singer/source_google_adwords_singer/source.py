@@ -23,33 +23,58 @@ SOFTWARE.
 """
 
 import json
-import os
+from typing import Dict
+from googleads import adwords, oauth2
+from tap_adwords import VERSION
 
 from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, Status
 from base_python import AirbyteLogger, CatalogHelper
-from base_singer import SingerHelper, SingerSource
+from base_singer import SingerSource, SyncModeInfo, SyncMode
 
 
 class SourceGoogleAdwordsSinger(SingerSource):
     def check_config(self, logger: AirbyteLogger, config_path: str, config: json) -> AirbyteConnectionStatus:
+        # get customers info to verify credentials and permissions
+        # https://developers.google.com/adwords/api/docs/reference/v201809/CustomerService#getcustomers
         try:
-            # singer catalog that attempts to pull a stream ("accounts") that should always exists, though it may be empty.
-            singer_check_catalog_path = os.path.abspath(os.path.dirname(__file__)) + "/singer_check_catalog.json"
-            read_cmd = self.read_cmd(logger, config_path, singer_check_catalog_path)
-            if SingerHelper.read(logger, read_cmd) is not None:
-                return AirbyteConnectionStatus(status=Status.SUCCEEDED)
-            else:
-                return AirbyteConnectionStatus(status=Status.FAILED)
+            customer_ids = config['customer_ids'].split(",")
+            for customer_id in customer_ids:
+                oauth2_client = oauth2.GoogleRefreshTokenClient(config['oauth_client_id'],
+                                                                config['oauth_client_secret'],
+                                                                config['refresh_token'])
 
+                sdk_client = adwords.AdWordsClient(config['developer_token'],
+                                                   oauth2_client, user_agent=config['user_agent'],
+                                                   client_customer_id=customer_id)
+                customer_info = sdk_client.GetService(service_name='CustomerService', version=VERSION).getCustomers()
+                if not customer_info:
+                    return AirbyteConnectionStatus(status=Status.FAILED)
+            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"{str(e)}")
 
+    def get_sync_mode_overrides(self) -> Dict[str, SyncModeInfo]:
+        incremental_streams = [
+            "ACCOUNT_PERFORMANCE_REPORT", "AD_PERFORMANCE_REPORT", "ADGROUP_PERFORMANCE_REPORT",
+            "AGE_RANGE_PERFORMANCE_REPORT", "AUDIENCE_PERFORMANCE_REPORT", "CALL_METRICS_CALL_DETAILS_REPORT",
+            "CAMPAIGN_PERFORMANCE_REPORT", "CLICK_PERFORMANCE_REPORT", "CRITERIA_PERFORMANCE_REPORT",
+            "DISPLAY_KEYWORD_PERFORMANCE_REPORT", "DISPLAY_TOPICS_PERFORMANCE_REPORT", "FINAL_URL_REPORT",
+            "GENDER_PERFORMANCE_REPORT", "GEO_PERFORMANCE_REPORT", "KEYWORDLESS_QUERY_REPORT",
+            "KEYWORDS_PERFORMANCE_REPORT", "SEARCH_QUERY_PERFORMANCE_REPORT", "VIDEO_PERFORMANCE_REPORT"
+        ]
+
+        full_refresh_streams = ["accounts", "ad_groups", "campaigns", "ads",
+                                "PLACEHOLDER_FEED_ITEM_REPORT", "PLACEMENT_PERFORMANCE_REPORT",
+                                "SHOPPING_PERFORMANCE_REPORT", "PLACEHOLDER_REPORT", ]
+        overrides = {}
+        for stream_name in incremental_streams:
+            overrides[stream_name] = SyncModeInfo(supported_sync_modes=[SyncMode.incremental])
+        for stream_name in full_refresh_streams:
+            overrides[stream_name] = SyncModeInfo(supported_sync_modes=[SyncMode.full_refresh])
+        return overrides
+
     def discover_cmd(self, logger, config_path) -> str:
         return f"tap-adwords --config {config_path} --discover"
-
-    def discover(self, logger: AirbyteLogger, config_container) -> AirbyteCatalog:
-        catalog = super().discover(logger, config_container)
-        return CatalogHelper.coerce_catalog_as_full_refresh(catalog)
 
     def read_cmd(self, logger, config_path, catalog_path, state_path=None) -> str:
         config_option = f"--config {config_path}"
