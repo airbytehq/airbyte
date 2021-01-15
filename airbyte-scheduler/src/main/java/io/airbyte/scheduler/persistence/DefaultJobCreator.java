@@ -58,7 +58,8 @@ public class DefaultJobCreator implements JobCreator {
         .withConfigType(ConfigType.CHECK_CONNECTION_SOURCE)
         .withCheckConnection(jobCheckConnectionConfig);
 
-    return jobPersistence.enqueueJob(source.getSourceId().toString(), jobConfig).orElseThrow();
+    final String sourceId = source.getSourceId() != null ? source.getSourceId().toString() : "";
+    return jobPersistence.enqueueJob(sourceId, jobConfig).orElseThrow();
   }
 
   @Override
@@ -71,7 +72,8 @@ public class DefaultJobCreator implements JobCreator {
         .withConfigType(ConfigType.CHECK_CONNECTION_DESTINATION)
         .withCheckConnection(jobCheckConnectionConfig);
 
-    return jobPersistence.enqueueJob(destination.getDestinationId().toString(), jobConfig).orElseThrow();
+    final String destinationId = destination.getDestinationId() != null ? destination.getDestinationId().toString() : "";
+    return jobPersistence.enqueueJob(destinationId, jobConfig).orElseThrow();
   }
 
   @Override
@@ -84,7 +86,8 @@ public class DefaultJobCreator implements JobCreator {
         .withConfigType(ConfigType.DISCOVER_SCHEMA)
         .withDiscoverCatalog(jobDiscoverCatalogConfig);
 
-    return jobPersistence.enqueueJob(source.getSourceId().toString(), jobConfig).orElseThrow();
+    final String sourceId = source.getSourceId() != null ? source.getSourceId().toString() : "";
+    return jobPersistence.enqueueJob(sourceId, jobConfig).orElseThrow();
   }
 
   @Override
