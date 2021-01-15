@@ -502,7 +502,7 @@ public class DefaultJobPersistence implements JobPersistence {
   private void initSchema(final String schema) throws IOException {
     final String schemaFile = MoreResources.readResource("schema.sql");
     final String initSchemaQuery = String.format("SET search_path TO %s;\n", schema)
-        + schemaFile.substring(schemaFile.indexOf("-- types"), schemaFile.indexOf("-- entries"))
+        + schemaFile.substring(schemaFile.indexOf("-- Statements Below"), schemaFile.indexOf("-- Statements Above"))
         + String.format("SET search_path TO %s;\n", DEFAULT_SCHEMA);
     database.query(ctx -> ctx.execute(initSchemaQuery));
   }
@@ -541,7 +541,7 @@ public class DefaultJobPersistence implements JobPersistence {
             .columns(columns);
         data.forEach(insertStep::values);
         if (insertStep.getBindValues().size() > 0) {
-          LOGGER.info(insertStep.toString());
+          //LOGGER.debug(insertStep.toString());
           return ctx.batch(insertStep).execute();
         } else
           return null;

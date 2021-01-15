@@ -8,7 +8,8 @@
  CREATE
     EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- types
+-- Statements Below this line are being re-used to create new schemas
+ -- types
  CREATE
     TYPE JOB_STATUS AS ENUM(
         'pending',
@@ -78,7 +79,8 @@ CREATE
         attempt_number
     );
 
--- entries
+-- Statements Above this line are being re-used to create new schemas
+ -- entries
  INSERT
     INTO
         AIRBYTE_METADATA

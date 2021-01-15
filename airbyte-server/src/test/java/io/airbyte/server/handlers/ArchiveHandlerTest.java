@@ -104,7 +104,7 @@ public class ArchiveHandlerTest {
         dbConfig.get("jdbc_url").asText());
     persistence = new DefaultJobPersistence(database);
     final String schemaFile = MoreResources.readResource("schema.sql");
-    final String sql = schemaFile.substring(schemaFile.indexOf("-- extensions"), schemaFile.indexOf("-- entries"));
+    final String sql = schemaFile.substring(schemaFile.indexOf("-- Statements Below"), schemaFile.indexOf("-- Statements Above"));
     database.query(ctx -> ctx.execute(sql));
   }
 
