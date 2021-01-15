@@ -216,6 +216,7 @@ public class SingerStripeSourceTest {
         .filter(s -> Jsons.tryDeserialize(s).isPresent())
         .map(Jsons::deserialize)
         .map(SingerStripeSourceTest::normalize)
+        .filter(r -> r.get("type").asText().equals("RECORD"))
         .collect(Collectors.toSet());
 
     MoreResources.readResource("sync_output_subset.txt").lines()
@@ -253,7 +254,7 @@ public class SingerStripeSourceTest {
 
     assertTrue(credentials.get("client_secret").textValue().startsWith("sk_test_"));
     assertTrue(credentials.get("account_id").textValue().startsWith("acct_"));
-    assertEquals("2017-01-01T00:00:00Z", credentials.get("start_date").textValue());
+    assertEquals("2020-05-01T00:00:00Z", credentials.get("start_date").textValue());
 
     Files.writeString(
         Path.of(jobRoot.toString(), "config.json"), credentialsJsonString);
@@ -264,7 +265,7 @@ public class SingerStripeSourceTest {
 
     fullConfig.put("client_secret", "sk_test_" + RandomStringUtils.randomAlphanumeric(20));
     fullConfig.put("account_id", "acct_" + RandomStringUtils.randomAlphanumeric(20));
-    fullConfig.put("start_date", "2017-01-01T00:00:00Z");
+    fullConfig.put("start_date", "2020-05-01T00:00:00Z");
 
     Files.writeString(Path.of(jobRoot.toString(), INVALID_CONFIG), Jsons.serialize(fullConfig));
   }
