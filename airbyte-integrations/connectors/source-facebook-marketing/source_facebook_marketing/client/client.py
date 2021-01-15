@@ -26,9 +26,9 @@ from datetime import datetime
 from typing import Iterator, Sequence, Tuple
 
 import backoff
-from cached_property import cached_property
 from base_python import BaseClient
 from base_python.entrypoint import logger  # FIXME (Eugene K): register logger as standard python logger
+from cached_property import cached_property
 from dateutil.parser import isoparse
 from facebook_business import FacebookAdsApi
 from facebook_business.adobjects import user as fb_user
