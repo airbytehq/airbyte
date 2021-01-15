@@ -96,13 +96,13 @@ python3 main_dev_transform_catalog.py \
     def write_yaml_sources(output: str, schema: str, sources: set, integration_type: str) -> None:
         quoted_schema = schema[0] == '"'
         tables = [
-                     {
-                         "name": source,
-                         "quoting": {"identifier": True},
-                     }
-                     for source in sources
-                     if table_name(source, integration_type)[0] == '"'
-                 ] + [{"name": source} for source in sources if table_name(source, integration_type)[0] != '"']
+            {
+                "name": source,
+                "quoting": {"identifier": True},
+            }
+            for source in sources
+            if table_name(source, integration_type)[0] == '"'
+        ] + [{"name": source} for source in sources if table_name(source, integration_type)[0] != '"']
         source_config = {
             "version": 2,
             "sources": [
@@ -236,16 +236,13 @@ def json_extract_base_property(path: List[str], json_col: str, name: str, defini
     elif is_boolean(definition["type"]):
         # In Redshift, it's not possible to convert from a varchar (which is the output type of json_extract_scalar) to a boolean directly.
         # So we use a macro that handles destination-specific conversions
-        return (jinja_call("cast_to_boolean({})") + " as {}").format(
-            jinja_call(f"json_extract_scalar('{json_col}', {current})"),
-            quote(name, integration_type),
-        )
+        return jinja_call(f"""cast_to_boolean(json_extract_scalar('{json_col}', {current}))""") + f" as {quote(name, integration_type)}"
     else:
         return None
 
 
 def json_extract_nested_property(
-        path: List[str], json_col: str, name: str, definition: dict, integration_type: str
+    path: List[str], json_col: str, name: str, definition: dict, integration_type: str
 ) -> Union[Tuple[None, None], Tuple[str, str]]:
     current = path + [name]
     if definition is None or "type" not in definition:
@@ -296,7 +293,7 @@ def find_properties_object(path: List[str], field: str, properties, integration_
             # we found a properties object
             return {field: properties["properties"]}
         elif "type" in properties and json_extract_base_property(
-                path=path, json_col="", name="", definition=properties, integration_type=integration_type
+            path=path, json_col="", name="", definition=properties, integration_type=integration_type
         ):
             # we found a basic type
             return {field: None}
@@ -356,20 +353,20 @@ def extract_nested_properties(path: List[str], field: str, properties: dict, int
 def safe_cast_to_varchar(field: str, integration_type: str, jsonschema_properties: dict):
     # Redshift booleans cannot be directly cast to varchar. So we use a custom macro to convert any boolean columns.
     if is_boolean(jsonschema_properties[field]["type"]):
-        return f"boolean_to_varchar({field})"
+        return f"boolean_to_varchar({quote(field, integration_type, in_jinja=True)})"
     else:
         return quote(field, integration_type, in_jinja=True)
 
 
 def process_node(
-        path: List[str],
-        json_col: str,
-        name: str,
-        properties: dict,
-        integration_type: str,
-        from_table: str = "",
-        previous="with ",
-        inject_cols="",
+    path: List[str],
+    json_col: str,
+    name: str,
+    properties: dict,
+    integration_type: str,
+    from_table: str = "",
+    previous="with ",
+    inject_cols="",
 ) -> dict:
     result = {}
     if previous == "with ":
