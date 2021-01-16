@@ -16,7 +16,7 @@ Several output streams are available from this source. A list of these streams c
 | :--- | :--- |
 | Full Refresh Sync | Yes |
 | Incremental Sync | Yes |
-| Replicate Incremental Deletes | No |
+| Replicate Incremental Deletes | Coming soon |
 | SSL connection | Yes |
 
 ### Performance considerations
