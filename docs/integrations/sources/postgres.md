@@ -56,10 +56,6 @@ Postgres data types are mapped to the following data types when synchronizing da
 | SSL Support | Yes |
 | SSH Tunnel Connection | No |
 
-#### Incremental Sync
-
-Incremental sync \(copying only the data that has changed\) for this source is coming soon.
-
 ## Getting started
 
 ### Requirements
