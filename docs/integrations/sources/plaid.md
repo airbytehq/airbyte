@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Plaid source supports both Full Refresh syncs. It currently only supports pulling from the balances endpoint. It will soon support other data streams \(e.g. transactions\).
+The Plaid source supports Full Refresh syncs. It currently only supports pulling from the balances endpoint. It will soon support other data streams \(e.g. transactions\).
 
 ### Output schema
 
@@ -15,8 +15,8 @@ Output streams:
 | Feature | Supported? |
 | :--- | :--- |
 | Full Refresh Sync | Yes |
-| Incremental - Append Sync | No |
-| Replicate Incremental Deletes | No |
+| Incremental - Append Sync | Coming soon |
+| Replicate Incremental Deletes | Coming soon |
 | SSL connection | Yes |
 
 ### Performance considerations

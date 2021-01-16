@@ -34,8 +34,8 @@ This Source is capable of syncing the following core Streams:
 
 | Feature | Supported?\(Yes/No\) | Notes |
 | :--- | :--- | :--- |
-| Full Refresh Sync | yes |  |
-| Incremental - Append Sync | yes |  |
+| Full Refresh Sync | Yes |  |
+| Incremental - Append Sync | Yes |  |
 
 ### Performance considerations
 

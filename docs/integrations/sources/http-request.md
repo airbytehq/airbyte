@@ -17,7 +17,7 @@ It contains one stream: `data`. That stream will contain one record which is the
 | Feature | Supported? |
 | :--- | :--- |
 | Full Refresh Sync | Yes |
-| Incremental Sync | No |
+| Incremental Sync | Coming soon |
 
 ### Getting started
 
