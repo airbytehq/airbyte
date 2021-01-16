@@ -1,4 +1,4 @@
-# Github
+# GitHub
 
 ## Overview
 
@@ -31,8 +31,8 @@ This connector outputs the following streams:
 | Feature | Supported? |
 | :--- | :--- |
 | Full Refresh Sync | Yes |
-| Incremental - Append Sync | yes |
-| Replicate Incremental Deletes | No |
+| Incremental - Append Sync | Yes |
+| Replicate Incremental Deletes | Coming soon |
 | SSL connection | Yes |
 
 ### Performance considerations
