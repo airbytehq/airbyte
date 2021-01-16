@@ -77,9 +77,7 @@ jobs:
           ZOOM_INTEGRATION_TEST_CREDS: ${{ secrets.ZOOM_INTEGRATION_TEST_CREDS }}
           PLAID_INTEGRATION_TEST_CREDS: ${{ secrets.PLAID_INTEGRATION_TEST_CREDS }}
       - run: |
-          exit 0
-#      - run: |
-#          ./tools/bin/ci_integration_test.sh ${{ github.event.inputs.connector }}
+          ./tools/bin/ci_integration_test.sh ${{ github.event.inputs.connector }}
         name: test ${{ github.event.inputs.connector }}
         id: test
         env:
