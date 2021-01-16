@@ -86,7 +86,7 @@ jobs:
           BUILD_STAT_BUCKET: ${{ secrets.BUILD_STAT_BUCKET }}
           GITHUB_REF: ${{ github.ref }}
       - name: Report Status
-        if: github.ref != 'refs/heads/master' && always() # todo: change this to ==
+        if: github.ref == 'refs/heads/master' && always()
         run: ./tools/status/report.sh ${{ github.event.inputs.connector }} ${{github.repository}} ${{github.run_id}} ${{steps.test.outcome}}
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.STATUS_API_AWS_ACCESS_KEY_ID }}
