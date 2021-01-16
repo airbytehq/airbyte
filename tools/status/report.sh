@@ -54,7 +54,7 @@ while IFS= read -r file; do
     outcome_output="<span style=\"color:red;\">&#10008; $outcome</span>"
   fi
   LINK=$(echo "$line" | jq -r '.link')
-  HTML_TABLE_ROWS="<tr><td>$(date -r "$(echo "$file" | cut -f 1 -d '.')")</td><td>$outcome_output</td><td><a href=\"$LINK\">$LINK</a></td></tr>$HTML_TABLE_ROWS"
+  HTML_TABLE_ROWS="<tr><td>$(date -d @"$(echo "$file" | cut -f 1 -d '.')")</td><td>$outcome_output</td><td><a href=\"$LINK\">$LINK</a></td></tr>$HTML_TABLE_ROWS"
 done <<< "$(ls $LAST_TEN_ROOT)"
 
 echo "successes: $successes"
