@@ -124,7 +124,6 @@ class JdbcDestinationTest {
     container.close();
   }
 
-  // todo - same test as csv destination
   @Test
   void testSpec() throws IOException {
     final ConnectorSpecification actual = new JdbcDestination().spec();
@@ -134,7 +133,6 @@ class JdbcDestinationTest {
     assertEquals(expected, actual);
   }
 
-  // todo - same test as csv destination
   @Test
   void testCheckSuccess() {
     final AirbyteConnectionStatus actual = new JdbcDestination().check(config);
@@ -146,10 +144,8 @@ class JdbcDestinationTest {
   void testCheckFailure() {
     ((ObjectNode) config).put("password", "fake");
     final AirbyteConnectionStatus actual = new JdbcDestination().check(config);
-    final AirbyteConnectionStatus expected = new AirbyteConnectionStatus()
-        .withStatus(Status.FAILED)
-        .withMessage("Can't connect with provided configuration.");
-    assertEquals(expected, actual);
+    assertEquals(Status.FAILED, actual.getStatus());
+    assertTrue(actual.getMessage().startsWith("Can't connect with provided configuration."));
   }
 
   @Test

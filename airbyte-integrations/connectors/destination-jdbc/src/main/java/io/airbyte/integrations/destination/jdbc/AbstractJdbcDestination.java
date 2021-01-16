@@ -76,7 +76,7 @@ public abstract class AbstractJdbcDestination implements Destination {
       LOGGER.debug("Exception while checking connection: ", e);
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
-          .withMessage("Can't connect with provided configuration.");
+          .withMessage("Can't connect with provided configuration. \n" + e.getMessage());
     }
   }
 
