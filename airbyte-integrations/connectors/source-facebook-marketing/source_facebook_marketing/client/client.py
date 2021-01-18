@@ -62,11 +62,15 @@ class IncrementalStreamAPI(StreamAPI, ABC):
 
     @state.setter
     def state(self, value):
-        self._state = pendulum.parse(value[self.state_pk])
+        self._state = self._cursor_from_record(value)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._state = None
+
+    def _cursor_from_record(self, record: dict):
+        short_name = self.state_pk.split('.')[-1]
+        return pendulum.parse(record[short_name])
 
     def _state_filter(self):
         """Additional filters associated with state if any set"""
@@ -74,8 +78,7 @@ class IncrementalStreamAPI(StreamAPI, ABC):
             return {
                 'filtering': [
                     {
-                        # FIXME: 'entity name'
-                        'field': f'ad.{self.state_pk}',
+                        'field': self.state_pk,
                         'operator': 'GREATER_THAN',
                         'value': self._state.int_timestamp,
                     },
@@ -84,42 +87,20 @@ class IncrementalStreamAPI(StreamAPI, ABC):
 
         return {}
 
-    # FIXME: generalize and adopt
-    def _iterate(self, generator, record_preparation):
-        max_bookmark = None
-        for recordset in generator:
-            for record in recordset:
-                updated_at = pendulum.parse(record[self.state_pk])
-                if self._state and self._state >= updated_at:
-                    continue
-                max_bookmark = max(updated_at, max_bookmark) if max_bookmark else updated_at
+    def state_filter(self, records: Iterator[dict]) -> Iterator[Any]:
+        """ Apply state filter to set of records, update cursor(state) if necessary in the end
+        """
+        latest_cursor = None
+        for record in records:
+            cursor = pendulum.parse(record[self.state_pk])
+            if self._state and self._state >= cursor:
+                continue
+            latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
+            yield record
 
-            if max_bookmark:
-                # FIXME
-                yield {'state': advance_bookmark(self, self.state_pk, str(max_bookmark))}
-
-    def advance_bookmark(self, stream, bookmark_key, date):
-        # FIXME
-        tap_stream_id = stream.name
-        state = stream.state or {}
-        logger.info('advance(%s, %s)', tap_stream_id, date)
-        date = pendulum.parse(date) if date else None
-        current_bookmark = get_start(stream, bookmark_key)
-
-        if date is None:
-            logger.info('Did not get a date for stream %s ' +
-                        ' not advancing bookmark',
-                        tap_stream_id)
-        elif not current_bookmark or date > current_bookmark:
-            logger.info('Bookmark for stream %s is currently %s, ' +
-                        'advancing to %s',
-                        tap_stream_id, current_bookmark, date)
-            state = singer.write_bookmark(state, tap_stream_id, bookmark_key, str(date))
-        else:
-            logger.info('Bookmark for stream %s is currently %s ' +
-                        'not changing to %s',
-                        tap_stream_id, current_bookmark, date)
-        return state
+        if latest_cursor:
+            logger.info(f"Advancing bookmark for stream from {self._state} to {latest_cursor}")
+            self._state = max(latest_cursor, self._state) if self._state else latest_cursor
 
 
 class AdCreativeAPI(StreamAPI):
@@ -164,13 +145,12 @@ class AdCreativeAPI(StreamAPI):
 
 class AdsAPI(IncrementalStreamAPI):
     """ doc: https://developers.facebook.com/docs/marketing-api/reference/adgroup """
-    state_pk = "updated_time"
+    state_pk = "ad.updated_time"
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         ads = self._get_ads({"limit": self.result_return_limit})
-        for recordset in ads:
-            for record in recordset:
-                yield self._extend_record(record, fields=fields)
+        for record in self.state_filter(ads):
+            yield self._extend_record(record, fields=fields)
 
     @backoff_policy
     def _get_ads(self, params):
@@ -187,12 +167,12 @@ class AdsAPI(IncrementalStreamAPI):
 
 class AdSetsAPI(IncrementalStreamAPI):
     """ doc: https://developers.facebook.com/docs/marketing-api/reference/ad-campaign """
-    state_pk = "updated_time"
+    state_pk = "adset.updated_time"
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         adsets = self._get_ad_sets({"limit": self.result_return_limit})
 
-        for adset in adsets:
+        for adset in self.state_filter(adsets):
             yield self._extend_record(adset, fields=fields)
 
     @backoff_policy
@@ -209,14 +189,14 @@ class AdSetsAPI(IncrementalStreamAPI):
 
 
 class CampaignAPI(IncrementalStreamAPI):
-    state_pk = "updated_time"
+    state_pk = "campaign.updated_time"
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Read available campaigns"""
         pull_ads = "ads" in fields
         fields = [k for k in fields if k != "ads"]
         campaigns = self._get_campaigns({"limit": self.result_return_limit})
-        for campaign in campaigns:
+        for campaign in self.state_filter(campaigns):
             yield self._extend_record(campaign, fields=fields, pull_ads=pull_ads)
 
     @backoff_policy
