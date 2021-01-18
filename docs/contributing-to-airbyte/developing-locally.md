@@ -26,6 +26,15 @@ This will build all the code and run all the unit tests.
 
 `./gradle build` creates all the necessary artifacts \(Webapp, Jars and Docker images\) so that you can run Airbyte locally.
 
+{% hint style="info" %}
+On Mac, if you run into an error while compiling openssl \(this happens when running pip install\), you may need to explicitly add these flags to your bash profile so that the C compiler can find the appropriate libraries.
+
+```text
+export LDFLAGS="-L/usr/local/opt/openssl/lib"
+export CPPFLAGS="-I/usr/local/opt/openssl/include"
+```
+{% endhint %}
+
 ## Run in `dev` mode with `docker-compose`
 
 ```bash
