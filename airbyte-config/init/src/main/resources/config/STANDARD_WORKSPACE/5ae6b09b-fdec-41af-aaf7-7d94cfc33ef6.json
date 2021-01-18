@@ -3,5 +3,5 @@
   "name": "default",
   "slug": "default",
   "initialSetupComplete": false,
-  "onboardingComplete": false
+  "displaySetupWizard": true
 }
