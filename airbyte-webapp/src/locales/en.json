@@ -69,7 +69,7 @@
   "form.imageCannotFound": "The docker image cannot be found. Please ensure that the input tag points to a valid Airbyte docker image",
   "form.loadingConfiguration": "Loading required configuration parameters for {connector}",
   "form.pattern.error": "Note: The value must match the pattern {pattern}",
-  "form.schemaFailed": "Fetching the schema is failed. Please try again",
+  "form.schemaFailed": "Failed to fetch schema. Please try again",
   "form.tryAgain": "Try again",
   "form.noNeed": "No need!",
   "form.reset": "Reset",
