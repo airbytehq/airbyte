@@ -24,6 +24,7 @@
 
 package io.airbyte.server.handlers;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -33,6 +34,7 @@ import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.validation.json.JsonValidationException;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,8 +52,7 @@ public class ArchiveHandlerTest {
 
   @Test
   void testEmptyMigration() throws JsonValidationException, IOException {
-    archiveHandler.importData(archiveHandler.exportData());
-
+    assertThrows(RuntimeException.class, () -> archiveHandler.importData(archiveHandler.exportData()));
     verify(configRepository, never()).writeStandardWorkspace(any());
     verify(configRepository, never()).writeStandardSource(any());
     verify(configRepository, never()).writeStandardDestinationDefinition(any());
