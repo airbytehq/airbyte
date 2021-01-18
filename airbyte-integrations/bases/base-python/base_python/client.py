@@ -27,7 +27,7 @@ import json
 import os
 import pkgutil
 from abc import ABC, abstractmethod
-from typing import Dict, Generator, List, Tuple, Callable, Any
+from typing import Dict, Generator, List, Tuple, Callable, Any, Mapping
 
 import pkg_resources
 from airbyte_protocol import AirbyteStream, SyncMode
@@ -137,7 +137,7 @@ class BaseClient(StreamStateMixin, ABC):
         self._schema_loader = self.schema_loader_class(package_name)
         self._stream_methods = self._enumerate_methods()
 
-    def _enumerate_methods(self) -> Dict[str, callable]:
+    def _enumerate_methods(self) -> Mapping[str, callable]:
         """Detect available streams and return mapping"""
         prefix = "stream__"
         mapping = {}

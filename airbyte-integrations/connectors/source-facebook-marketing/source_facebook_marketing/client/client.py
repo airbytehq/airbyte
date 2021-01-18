@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 from abc import ABC, abstractmethod
-from typing import Iterator, Sequence, Tuple, Any, Dict
+from typing import Iterator, Sequence, Tuple, Any, Dict, Mapping
 
 import backoff
 import pendulum as pendulum
@@ -293,12 +293,11 @@ class AdsInsightAPI(StreamAPI):
 
 class Client(BaseClient):
     def __init__(self, account_id: str, access_token: str, start_date: str, include_deleted: bool = False):
-        super().__init__()
-        self._api = FacebookAdsApi.init(access_token=access_token)
         self._account_id = account_id
         self._start_date = pendulum.parse(start_date)
         self._include_deleted = include_deleted
 
+        self._api = FacebookAdsApi.init(access_token=access_token)
         self._apis = {
             "campaigns": CampaignAPI(self),
             "adsets": AdSetsAPI(self),
@@ -313,12 +312,13 @@ class Client(BaseClient):
                                                               breakdowns=["publisher_platform", "platform_position",
                                                                           "impression_device"])
         }
+        super().__init__()
 
-    def _enumerate_methods(self) -> Dict[str, callable]:
+    def _enumerate_methods(self) -> Mapping[str, callable]:
         """Detect available streams and return mapping"""
         return {
             name: api.list
-            for name, api in self._apis
+            for name, api in self._apis.items()
         }
 
     def stream_has_state(self, name: str) -> bool:
