@@ -14,6 +14,7 @@ type IProps = {
   isValid: boolean;
   dirty: boolean;
   errorMessage?: React.ReactNode;
+  additionBottomControls?: React.ReactNode;
 };
 
 const ButtonContainer = styled.div`
@@ -71,7 +72,8 @@ const BottomBlock: React.FC<IProps> = ({
   formType,
   hasSuccess,
   errorMessage,
-  isLoadSchema
+  isLoadSchema,
+  additionBottomControls
 }) => {
   if (hasSuccess) {
     return (
@@ -106,9 +108,12 @@ const BottomBlock: React.FC<IProps> = ({
       ) : (
         <div />
       )}
-      <Button type="submit" disabled={!isValid || !dirty || isLoadSchema}>
-        <FormattedMessage id={`onboarding.${formType}SetUp.buttonText`} />
-      </Button>
+      <div>
+        {additionBottomControls || null}
+        <Button type="submit" disabled={!isValid || !dirty || isLoadSchema}>
+          <FormattedMessage id={`onboarding.${formType}SetUp.buttonText`} />
+        </Button>
+      </div>
     </ButtonContainer>
   );
 };

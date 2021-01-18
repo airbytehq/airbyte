@@ -105,7 +105,8 @@ public abstract class StandardSourceTest {
       "airbyte/source-twilio-singer",
       "airbyte/source-braintree-singer",
       "airbyte/source-salesforce-singer",
-      "airbyte/source-stripe-singer");
+      "airbyte/source-stripe-singer",
+      "airbyte/source-hubspot-singer");
 
   /**
    * Name of the docker image that the tests will run against.
@@ -278,11 +279,10 @@ public abstract class StandardSourceTest {
     final List<AirbyteRecordMessage> recordMessagesSecondRun = filterRecords(runRead(configuredCatalog));
     // the worker validates the messages, so we just validate the message, so we do not need to validate
     // again (as long as we use the worker, which we will not want to do long term).
-    final String assertionMessage = "Expected two full refresh syncs to produce the same records";
-    assertFalse(recordMessagesFirstRun.isEmpty(), assertionMessage);
-    assertFalse(recordMessagesSecondRun.isEmpty(), assertionMessage);
+    assertFalse(recordMessagesFirstRun.isEmpty(), "Expected first full refresh to produce records");
+    assertFalse(recordMessagesSecondRun.isEmpty(), "Expected second full refresh to produce records");
 
-    assertSameRecords(recordMessagesFirstRun, recordMessagesSecondRun, assertionMessage);
+    assertSameRecords(recordMessagesFirstRun, recordMessagesSecondRun, "Expected two full refresh syncs to produce the same records");
   }
 
   /**

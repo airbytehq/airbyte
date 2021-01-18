@@ -1001,6 +1001,30 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthCheckRead"
+  /v1/logs/get:
+    post:
+      tags:
+        - logs
+      summary: Get logs
+      operationId: getLogs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LogsRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Returns the log file
+          content:
+            text/plain:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: Logs not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
   /v1/deployment/export:
     post:
       tags:
@@ -1073,9 +1097,13 @@ components:
           type: string
         initialSetupComplete:
           type: boolean
-        onboardingComplete:
-          type: boolean
         displaySetupWizard:
+          type: boolean
+        anonymousDataCollection:
+          type: boolean
+        news:
+          type: boolean
+        securityUpdates:
           type: boolean
     WorkspaceUpdate:
       type: object
@@ -1093,15 +1121,13 @@ components:
           format: email
         initialSetupComplete:
           type: boolean
-        onboardingComplete:
+        displaySetupWizard:
           type: boolean
         anonymousDataCollection:
           type: boolean
         news:
           type: boolean
         securityUpdates:
-          type: boolean
-        displaySetupWizard:
           type: boolean
     # SLUG
     SlugRequestBody:
@@ -1615,6 +1641,20 @@ components:
             - days
             - weeks
             - months
+    # LOGS
+    LogType:
+      type: string
+      description: type/source of logs produced
+      enum:
+        - server
+        - scheduler
+    LogsRequestBody:
+      type: object
+      required:
+        - log_type
+      properties:
+        log_type:
+          $ref: "#/components/schemas/LogType"
     # SCHEMA
     SourceSchema:
       description: describes the available schema.

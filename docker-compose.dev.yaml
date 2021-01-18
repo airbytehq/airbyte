@@ -1,42 +1,15 @@
 version: "3.7"
 
 services:
+  # hook in case we need to add init behavior
+  # every root service (no depends_on) should depend on init
   init:
-    command: /bin/sh -c "
-      ./scripts/create_mount_directories.sh /local_parent ${HACK_LOCAL_ROOT_PARENT} ${LOCAL_ROOT};
-      ./scripts/create_mount_directories.sh /dev_parent ${HACK_DEV_ROOT_PARENT} ${DEV_ROOT}/db;
-      ./scripts/create_mount_directories.sh /dev_parent ${HACK_DEV_ROOT_PARENT} ${DEV_ROOT}/data;
-      ./scripts/create_mount_directories.sh /dev_parent ${HACK_DEV_ROOT_PARENT} ${DEV_ROOT}/workspace;
-      "
-    environment:
-      - HACK_DEV_ROOT_PARENT=${HACK_DEV_ROOT_PARENT}
-      - DEV_ROOT=${DEV_ROOT}
-      - HACK_LOCAL_ROOT_PARENT=${HACK_LOCAL_ROOT_PARENT}
-      - LOCAL_ROOT=${LOCAL_ROOT}
-    volumes:
-      - ${HACK_DEV_ROOT_PARENT}:/dev_parent
-      - ${HACK_LOCAL_ROOT_PARENT}:/local_parent
-  db:
-    ports:
-      - 5432:5432
-    volumes:
-      - ${DEV_ROOT}/db:/var/lib/postgresql/data
+    container_name: init-dev
   seed:
-    command: /bin/sh -c "./scripts/copy_seed_data.sh"
-    volumes:
-      - ${DEV_ROOT}/data:/seed
+    container_name: airbyte-data-seed-dev
   scheduler:
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ${DEV_ROOT}/workspace:${WORKSPACE_ROOT}
-      - ${DEV_ROOT}/data:${CONFIG_ROOT}
-      - ${LOCAL_ROOT}:${LOCAL_DOCKER_MOUNT}
+    container_name: airbyte-scheduler-dev
   server:
-    volumes:
-      - ${DEV_ROOT}/workspace:${WORKSPACE_ROOT}
-      - ${DEV_ROOT}/data:${CONFIG_ROOT}
+    container_name: airbyte-server-dev
   webapp:
-
-volumes:
-  # needed so that we do not try to use the mount name to create the volume like we do in prod.
-  workspace:
+    container_name: airbyte-webapp-dev

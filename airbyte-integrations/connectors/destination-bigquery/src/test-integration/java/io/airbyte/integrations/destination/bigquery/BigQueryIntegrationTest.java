@@ -150,6 +150,7 @@ public class BigQueryIntegrationTest extends TestDestination {
         case FLOAT64, NUMERIC -> fieldValue.getDoubleValue();
         case INT64 -> fieldValue.getLongValue();
         case STRING -> fieldValue.getStringValue();
+        case BOOL -> fieldValue.getBooleanValue();
         default -> fieldValue.getValue();
       };
     } else {

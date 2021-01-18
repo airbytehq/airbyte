@@ -47,7 +47,7 @@ public class DockerImageValidator {
     try {
       schedulerHandler.getConnectorSpecification(imageName);
     } catch (Exception e) {
-      throw new KnownException(422, "Encountered an issue while validating input docker image: " + e.getMessage());
+      throw new KnownException(422, String.format("Encountered an issue while validating input docker image (%s): %s", imageName, e.getMessage()));
     }
   }
 
