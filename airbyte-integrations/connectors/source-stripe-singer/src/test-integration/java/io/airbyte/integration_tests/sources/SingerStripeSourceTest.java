@@ -24,9 +24,6 @@
 
 package io.airbyte.integration_tests.sources;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.stripe.exception.StripeException;
@@ -36,19 +33,19 @@ import com.stripe.param.CustomerCreateParams;
 import com.stripe.param.CustomerListParams;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.IntegrationLauncher;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -61,12 +58,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SingerStripeSourceTest {
 
@@ -198,33 +192,6 @@ public class SingerStripeSourceTest {
     assertTrue(catalog.contains("address_zip_check"));
   }
 
-  @Test
-  public void testSync() throws IOException, InterruptedException, WorkerException {
-    final ConfiguredAirbyteCatalog catalog = CatalogHelpers
-        .toDefaultConfiguredCatalog(Jsons.deserialize(MoreResources.readResource(CATALOG), AirbyteCatalog.class));
-    IOs.writeFile(catalogPath.getParent(), catalogPath.getFileName().toString(), Jsons.serialize(catalog));
-
-    // run syn process
-    Path syncOutputPath = jobRoot.resolve("sync_output.txt");
-    Process process = createSyncProcess(syncOutputPath);
-    process.waitFor(1, TimeUnit.MINUTES);
-
-    assertEquals(0, process.exitValue());
-
-    final Set<JsonNode> actualSyncOutput = IOs.readFile(jobRoot, syncOutputPath.toString()).lines()
-        // the runner in this test doesn't gracefully handle non message items in stdout.
-        .filter(s -> Jsons.tryDeserialize(s).isPresent())
-        .map(Jsons::deserialize)
-        .map(SingerStripeSourceTest::normalize)
-        .filter(r -> r.get("type").asText().equals("RECORD"))
-        .collect(Collectors.toSet());
-
-    MoreResources.readResource("sync_output_subset.txt").lines()
-        .map(Jsons::deserialize)
-        .map(SingerStripeSourceTest::normalize)
-        .forEach(record -> assertTrue(actualSyncOutput.contains(record), "Actual output: " + actualSyncOutput));
-  }
-
   private static JsonNode normalize(JsonNode node) {
     ObjectNode normalized = node.deepCopy();
 
@@ -276,12 +243,5 @@ public class SingerStripeSourceTest {
         .redirectError(ProcessBuilder.Redirect.INHERIT)
         .start();
   }
-
-  private Process createSyncProcess(Path syncOutputPath) throws IOException, WorkerException {
-    return launcher.read(jobRoot, CONFIG, CATALOG)
-        .redirectOutput(syncOutputPath.toFile())
-        .redirectError(ProcessBuilder.Redirect.INHERIT)
-        .start();
-  }
-
+  
 }
