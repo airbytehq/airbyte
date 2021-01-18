@@ -77,7 +77,7 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
         // this.
         // retrieving spec should generally be instantaneous, but since docker images might not be pulled
         // it could take a while longer depending on internet conditions as well.
-        WorkerUtils.gentleClose(process, 10, TimeUnit.MINUTES);
+        WorkerUtils.gentleClose(process, 30, TimeUnit.MINUTES);
       }
 
       int exitCode = process.exitValue();
