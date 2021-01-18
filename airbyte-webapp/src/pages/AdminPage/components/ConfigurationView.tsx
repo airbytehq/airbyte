@@ -54,18 +54,17 @@ const ConfigurationView: React.FC = () => {
 
   const onImport = async (file: any) => {
     const reader = new FileReader();
-    reader.readAsText(file);
+    reader.readAsArrayBuffer(file);
 
-    reader.onload = async () => {
+    reader.onload = async e => {
       try {
         setError("");
         setIsLoading(true);
-        await fetchImp(reader.result);
-        setIsModalOpen(false);
+        await fetchImp({}, (e?.target?.result as any) || "");
+        window.location.reload();
       } catch (e) {
-        setError(e);
-      } finally {
         setIsLoading(false);
+        setError(e);
       }
     };
   };

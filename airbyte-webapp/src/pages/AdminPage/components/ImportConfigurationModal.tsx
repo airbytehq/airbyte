@@ -41,6 +41,10 @@ const Error = styled.div`
   line-height: 17px;
   margin-right: 10px;
 `;
+const Note = styled.div`
+  padding-top: 8px;
+  text-align: center;
+`;
 
 const ImportConfigurationModal: React.FC<IProps> = ({
   onClose,
@@ -78,6 +82,9 @@ const ImportConfigurationModal: React.FC<IProps> = ({
               "application/x-zip-compressed, application/zip, application/x-gzip, application/x-gtar, application/x-tgz"
           }}
         />
+        <Note>
+          <FormattedMessage id="admin.reloadAfterSuccess" />
+        </Note>
         <Bottom>
           <Error>
             {error ? <FormattedMessage id="form.someError" /> : null}

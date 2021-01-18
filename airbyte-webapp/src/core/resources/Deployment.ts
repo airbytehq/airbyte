@@ -1,5 +1,5 @@
 import { Resource } from "rest-hooks";
-import BaseResource from "./BaseResource";
+import BaseResource, { NetworkError } from "./BaseResource";
 
 export interface Deployment {
   status?: string;
@@ -20,13 +20,11 @@ export default class DeploymentResource extends BaseResource
   static exportShape<T extends typeof Resource>(this: T) {
     return {
       ...super.detailShape(),
-      fetch: async (
-        params: Readonly<Record<string, string | number>>
-      ): Promise<any> => {
+      fetch: async (): Promise<any> => {
         const file = await this.fetchResponse(
           "post",
-          `${this.url(params)}/export`,
-          params
+          `${this.url({})}/export`,
+          {}
         )
           .then(res => res.blob())
           .then(blob => {
@@ -44,25 +42,31 @@ export default class DeploymentResource extends BaseResource
   static importShape<T extends typeof Resource>(this: T) {
     return {
       ...super.detailShape(),
-      // TODO: find better way
-      fetch: async (params: any): Promise<any> => {
-        // return await this.fetchResponse(
-        //   "post",
-        //   `${this.url({})}/import`,
-        //   params
-        // );
-
+      fetch: async (
+        _: Readonly<Record<string, string | number>>,
+        file: string
+      ): Promise<any> => {
         let options: RequestInit = {
           method: "POST",
           headers: {
             "Content-Type": "application/x-gzip",
             "Content-Encoding": "gzip"
           },
-          body: JSON.stringify(params)
-        } as any;
-        if (this.fetchOptionsPlugin) options = this.fetchOptionsPlugin(options);
-        console.log(options);
-        return fetch(`${this.url({})}/import`, options);
+          body: file
+        };
+        const response = fetch(`${this.url({})}/import`, options).then(
+          result => {
+            if (result.status >= 200 && result.status < 300) {
+              return result;
+            } else {
+              const e = new NetworkError(result);
+              e.status = result.status;
+              throw e;
+            }
+          }
+        );
+        console.log(response);
+        return response;
       },
       schema: {}
     };

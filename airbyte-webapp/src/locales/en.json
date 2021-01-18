@@ -227,6 +227,7 @@
   "admin.dockerImageTag": "Docker image tag",
   "admin.dockerImageTag.placeholder": "12.3",
   "admin.documentationUrl": "Connector Documentation URL",
+  "admin.reloadAfterSuccess": "Note: The app will be reloaded after success submit",
   "admin.documentationUrl.placeholder": "https://hub.docker.com/r/airbyte/integration-singer-postgres-source",
   "admin.learnMore": "<lnk>Learn more from our documentation</lnk> to understand how to fill these field.",
   "admin.exportConfigurationText": "Download an archive of all configuration and state data. Exported data can be upgraded to another Airbyte version or can be exported to a different Airbyte deployment. For more information visit the <lnk>configuration archive</lnk> page in our docs.",
