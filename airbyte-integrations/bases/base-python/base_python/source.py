@@ -23,10 +23,12 @@ SOFTWARE.
 """
 
 import json
-from typing import Dict, Generator, Type
+from datetime import datetime
+from typing import Dict, Generator, Type, Mapping
 
-import airbyte_protocol
-from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status
+from airbyte_protocol import (AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status,
+                              AirbyteStateMessage,
+                              Type as MessageType, AirbyteRecordMessage)
 
 from .client import BaseClient
 from .integration import Source
@@ -38,7 +40,7 @@ class BaseSource(Source):
 
     client_class: Type[BaseClient] = None
 
-    def _get_client(self, config: json):
+    def _get_client(self, config: Mapping):
         """Construct client"""
         client = self.client_class(**config)
 
@@ -60,12 +62,18 @@ class BaseSource(Source):
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
     def read(
-        self, logger: AirbyteLogger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any]
+            self, logger: AirbyteLogger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any]
     ) -> Generator[AirbyteMessage, None, None]:
         client = self._get_client(config)
 
         logger.info(f"Starting syncing {self.__class__.__name__}")
         for configured_stream in catalog.streams:
+            stream_name = configured_stream.stream.name
             for record in client.read_stream(configured_stream.stream):
-                yield AirbyteMessage(type=airbyte_protocol.Type.RECORD, record=record)
+                now = int(datetime.now().timestamp()) * 1000
+                message = AirbyteRecordMessage(stream=stream_name, data=record, emitted_at=now)
+                yield AirbyteMessage(type=MessageType.RECORD, record=message)
+            if client.stream_has_state(stream_name):
+                yield AirbyteMessage(type=MessageType.STATE,
+                                     state=AirbyteStateMessage(data=client.get_stream_state(stream_name)))
         logger.info(f"Finished syncing {self.__class__.__name__}")

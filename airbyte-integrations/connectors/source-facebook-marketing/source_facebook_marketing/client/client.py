@@ -21,30 +21,105 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-
-from datetime import datetime
-from typing import Iterator, Sequence, Tuple
+from abc import ABC, abstractmethod
+from typing import Iterator, Sequence, Tuple, Dict, Any
 
 import backoff
+import pendulum as pendulum
 from base_python import BaseClient
 from base_python.entrypoint import logger  # FIXME (Eugene K): register logger as standard python logger
 from cached_property import cached_property
-from dateutil.parser import isoparse
 from facebook_business import FacebookAdsApi
 from facebook_business.adobjects import user as fb_user
 from facebook_business.exceptions import FacebookRequestError
 
 from .common import FacebookAPIException, retry_pattern
 
+backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 
-class StreamAPI:
+
+class StreamAPI(ABC):
     result_return_limit = 100
 
-    def __init__(self, api):
+    def __init__(self, api, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self._api = api
 
+    @abstractmethod
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
-        raise NotImplementedError
+        """Iterate over entities"""
+
+
+class IncrementalStreamAPI(StreamAPI, ABC):
+    @property
+    @abstractmethod
+    def state_pk(self):
+        """Name of the field associated with the state"""
+
+    @property
+    def state(self):
+        return {self.state_pk: str(self._state)}
+
+    @state.setter
+    def state(self, value):
+        self._state = pendulum.parse(value[self.state_pk])
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._state = None
+
+    def _state_filter(self):
+        """Additional filters associated with state if any set"""
+        if self.state:
+            return {
+                'filtering': [
+                    {
+                        # FIXME: 'entity name'
+                        'field': f'ad.{self.state_pk}',
+                        'operator': 'GREATER_THAN',
+                        'value': self._state.int_timestamp,
+                    },
+                ],
+            }
+
+        return {}
+
+    # FIXME: generalize and adopt
+    def _iterate(self, generator, record_preparation):
+        max_bookmark = None
+        for recordset in generator:
+            for record in recordset:
+                updated_at = pendulum.parse(record[self.state_pk])
+                if self._state and self._state >= updated_at:
+                    continue
+                max_bookmark = max(updated_at, max_bookmark) if max_bookmark else updated_at
+
+            if max_bookmark:
+                # FIXME
+                yield {'state': advance_bookmark(self, self.state_pk, str(max_bookmark))}
+
+    def advance_bookmark(self, stream, bookmark_key, date):
+        # FIXME
+        tap_stream_id = stream.name
+        state = stream.state or {}
+        logger.info('advance(%s, %s)', tap_stream_id, date)
+        date = pendulum.parse(date) if date else None
+        current_bookmark = get_start(stream, bookmark_key)
+
+        if date is None:
+            logger.info('Did not get a date for stream %s ' +
+                        ' not advancing bookmark',
+                        tap_stream_id)
+        elif not current_bookmark or date > current_bookmark:
+            logger.info('Bookmark for stream %s is currently %s, ' +
+                        'advancing to %s',
+                        tap_stream_id, current_bookmark, date)
+            state = singer.write_bookmark(state, tap_stream_id, bookmark_key, str(date))
+        else:
+            logger.info('Bookmark for stream %s is currently %s ' +
+                        'not changing to %s',
+                        tap_stream_id, current_bookmark, date)
+        return state
 
 
 class AdCreativeAPI(StreamAPI):
@@ -82,15 +157,14 @@ class AdCreativeAPI(StreamAPI):
         # Ensure the final batch is executed
         api_batch.execute()
 
-    @retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
+    @backoff_policy
     def _get_creatives(self):
         return self._api.account.get_ad_creatives(params={"limit": self.result_return_limit})
 
 
-class AdsAPI(StreamAPI):
-    """
-    doc: https://developers.facebook.com/docs/marketing-api/reference/adgroup
-    """
+class AdsAPI(IncrementalStreamAPI):
+    """ doc: https://developers.facebook.com/docs/marketing-api/reference/adgroup """
+    state_pk = "updated_time"
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         ads = self._get_ads({"limit": self.result_return_limit})
@@ -98,21 +172,22 @@ class AdsAPI(StreamAPI):
             for record in recordset:
                 yield self._extend_record(record, fields=fields)
 
-    @retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
+    @backoff_policy
     def _get_ads(self, params):
         """
         This is necessary because the functions that call this endpoint return
         a generator, whose calls need decorated with a backoff.
         """
-        return self._api.account.get_ads(params=params)
+        return self._api.account.get_ads(params={**params, **self._state_filter()})
 
-    @retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
+    @backoff_policy
     def _extend_record(self, ad, fields):
         return ad.api_get(fields=fields).export_all_data()
 
 
-class AdSetsAPI(StreamAPI):
+class AdSetsAPI(IncrementalStreamAPI):
     """ doc: https://developers.facebook.com/docs/marketing-api/reference/ad-campaign """
+    state_pk = "updated_time"
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         adsets = self._get_ad_sets({"limit": self.result_return_limit})
@@ -120,7 +195,7 @@ class AdSetsAPI(StreamAPI):
         for adset in adsets:
             yield self._extend_record(adset, fields=fields)
 
-    @retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
+    @backoff_policy
     def _get_ad_sets(self, params):
         """
         This is necessary because the functions that call this endpoint return
@@ -128,12 +203,14 @@ class AdSetsAPI(StreamAPI):
         """
         return self._api.account.get_ad_sets(params=params)
 
-    @retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
+    @backoff_policy
     def _extend_record(self, ad_set, fields):
         return ad_set.api_get(fields=fields).export_all_data()
 
 
-class CampaignAPI(StreamAPI):
+class CampaignAPI(IncrementalStreamAPI):
+    state_pk = "updated_time"
+
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Read available campaigns"""
         pull_ads = "ads" in fields
@@ -142,7 +219,7 @@ class CampaignAPI(StreamAPI):
         for campaign in campaigns:
             yield self._extend_record(campaign, fields=fields, pull_ads=pull_ads)
 
-    @retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
+    @backoff_policy
     def _extend_record(self, campaign, fields, pull_ads):
         """Request additional attributes for campaign"""
         campaign_out = campaign.api_get(fields=fields).export_all_data()
@@ -153,7 +230,7 @@ class CampaignAPI(StreamAPI):
                 campaign_out["ads"]["data"].append({"id": ad_id})
         return campaign_out
 
-    @retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
+    @backoff_policy
     def _get_campaigns(self, params):
         """Separate method to request list of campaigns
         This is necessary because the functions that call this endpoint return
@@ -163,6 +240,8 @@ class CampaignAPI(StreamAPI):
 
 
 class AdsInsightAPI(StreamAPI):
+    state_pk = "date_start"
+
     ALL_ACTION_ATTRIBUTION_WINDOWS = [
         "1d_click",
         "7d_click",
@@ -210,7 +289,7 @@ class AdsInsightAPI(StreamAPI):
 
     def _params(self, fields: Sequence[str] = None) -> Iterator[dict]:
         buffered_start_date = self.start_date.subtract(days=self.buffer_days)
-        end_date = datetime.now()
+        end_date = pendulum.now()
 
         fields = list(set(fields) - set(self.INVALID_INSIGHT_FIELDS))
 
@@ -227,7 +306,7 @@ class AdsInsightAPI(StreamAPI):
             }
             buffered_start_date = buffered_start_date.add(days=1)
 
-    @retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
+    @backoff_policy
     def _get_insights(self, params):
         return self._api.account.get_insights(params=params)
 
@@ -237,43 +316,46 @@ class Client(BaseClient):
         super().__init__()
         self._api = FacebookAdsApi.init(access_token=access_token)
         self._account_id = account_id
-        self._start_date = isoparse(start_date)
+        self._start_date = pendulum.parse(start_date)
         self._include_deleted = include_deleted
+
+        self._apis = {
+            "campaigns": CampaignAPI(self),
+            "adsets": AdSetsAPI(self),
+            "ads": AdsAPI(self),
+            "adcreatives": AdCreativeAPI(self),
+            "ads_insights": AdsInsightAPI(self, start_date=self._start_date),
+            "ads_insights_age_and_gender": AdsInsightAPI(self, start_date=self._start_date, breakdowns=["age", "gender"]),
+            "ads_insights_country": AdsInsightAPI(self, start_date=self._start_date, breakdowns=["country"]),
+            "ads_insights_region": AdsInsightAPI(self, start_date=self._start_date, breakdowns=["region"]),
+            "ads_insights_dma": AdsInsightAPI(self, start_date=self._start_date, breakdowns=["dma"]),
+            "ads_insights_platform_and_device": AdsInsightAPI(self, start_date=self._start_date,
+                                                              breakdowns=["publisher_platform", "platform_position",
+                                                                          "impression_device"])
+        }
+
+    def _enumerate_methods(self) -> Dict[str, callable]:
+        """Detect available streams and return mapping"""
+        return {
+            name: api.list
+            for name, api in self._apis
+        }
+
+    def stream_has_state(self, name: str) -> bool:
+        """Tell if stream supports incremental sync"""
+        return hasattr(self._apis[name], 'state')
+
+    def get_stream_state(self, name: str) -> Any:
+        """Get state of stream with corresponding name"""
+        return self._apis[name].state
+
+    def set_stream_state(self, name: str, state: Any):
+        """Set state of stream with corresponding name"""
+        self._apis[name].state = state
 
     @cached_property
     def account(self):
         return self._find_account(self._account_id)
-
-    def stream__campaigns(self, fields=None, **kwargs):
-        yield from CampaignAPI(self).list(fields)
-
-    def stream__adsets(self, fields=None, **kwargs):
-        yield from AdSetsAPI(self).list(fields)
-
-    def stream__ads(self, fields=None, **kwargs):
-        yield from AdsAPI(self).list(fields)
-
-    def stream__adcreatives(self, fields=None, **kwargs):
-        yield from AdCreativeAPI(self).list(fields)
-
-    def stream__ads_insights(self, fields=None, **kwargs):
-        client = AdsInsightAPI(self, start_date=self._start_date, **kwargs)
-        yield from client.list(fields)
-
-    def stream__ads_insights_age_and_gender(self, fields=None, **kwargs):
-        yield from self.stream__ads_insights(fields=fields, breakdowns=["age", "gender"])
-
-    def stream__ads_insights_country(self, fields=None, **kwargs):
-        yield from self.stream__ads_insights(fields=fields, breakdowns=["country"])
-
-    def stream__ads_insights_platform_and_device(self, fields=None, **kwargs):
-        yield from self.stream__ads_insights(fields=fields, breakdowns=["publisher_platform", "platform_position", "impression_device"])
-
-    def stream__ads_insights_region(self, fields=None, **kwargs):
-        yield from self.stream__ads_insights(fields=fields, breakdowns=["region"])
-
-    def stream__ads_insights_dma(self, fields=None, **kwargs):
-        yield from self.stream__ads_insights(fields=fields, breakdowns=["dma"])
 
     @staticmethod
     def _find_account(account_id: str):
