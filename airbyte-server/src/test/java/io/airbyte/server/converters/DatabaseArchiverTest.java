@@ -26,10 +26,6 @@ package io.airbyte.server.converters;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableMap;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
@@ -42,6 +38,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.utility.MountableFile;
 
 public class DatabaseArchiverTest {
 
@@ -50,25 +47,19 @@ public class DatabaseArchiverTest {
   private DatabaseArchiver databaseArchiver;
 
   @BeforeEach
-  void setUp() throws IOException, SQLException {
-    container = new PostgreSQLContainer<>("postgres:13-alpine");
+  void setUp() throws IOException, InterruptedException {
+    container = new PostgreSQLContainer<>("postgres:13-alpine")
+        .withDatabaseName("airbyte")
+        .withUsername("docker")
+        .withPassword("docker");
     container.start();
-    final JsonNode dbConfig = Jsons.jsonNode(ImmutableMap.builder()
-        .put("username", container.getUsername())
-        .put("password", container.getPassword())
-        .put("jdbc_url", String.format("jdbc:postgresql://%s:%s/%s",
-            container.getHost(),
-            container.getFirstMappedPort(),
-            container.getDatabaseName()))
-        .build());
-    database = Databases.createPostgresDatabase(
-        dbConfig.get("username").asText(),
-        dbConfig.get("password").asText(),
-        dbConfig.get("jdbc_url").asText());
+
+    container.copyFileToContainer(MountableFile.forClasspathResource("schema.sql"), "/etc/init.sql");
+    // execInContainer uses Docker's EXEC so it needs to be split up like this
+    container.execInContainer("psql", "-d", "airbyte", "-U", "docker", "-a", "-f", "/etc/init.sql");
+
+    database = Databases.createPostgresDatabase(container.getUsername(), container.getPassword(), container.getJdbcUrl());
     JobPersistence persistence = new DefaultJobPersistence(database);
-    final String schemaFile = MoreResources.readResource("schema.sql");
-    final String sql = schemaFile.substring(schemaFile.indexOf("-- Statements Below"), schemaFile.indexOf("-- Statements Above"));
-    database.query(ctx -> ctx.execute(sql));
     databaseArchiver = new DatabaseArchiver(persistence);
   }
 

@@ -28,6 +28,7 @@ import io.airbyte.api.model.ImportRead;
 import io.airbyte.api.model.ImportRead.StatusEnum;
 import io.airbyte.commons.io.Archives;
 import io.airbyte.commons.io.FileTtlManager;
+import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.converters.ConfigFileArchiver;
@@ -63,6 +64,11 @@ public class ArchiveHandler {
     this.fileTtlManager = fileTtlManager;
   }
 
+  /**
+   * Creates an archive tarball file using Gzip compression of internal Airbyte Data and
+   *
+   * @return that tarball File.
+   */
   public File exportData() {
     try {
       final Path tempFolder = Files.createTempDirectory(Path.of("/tmp"), ARCHIVE_FILE_NAME);
@@ -75,6 +81,7 @@ public class ArchiveHandler {
         Archives.createArchive(tempFolder, archive.toPath());
       } catch (Exception e) {
         LOGGER.error("Export Data failed.");
+        FileUtils.deleteQuietly(archive);
         throw new RuntimeException(e);
       } finally {
         FileUtils.deleteDirectory(tempFolder.toFile());
@@ -91,6 +98,12 @@ public class ArchiveHandler {
     FileUtils.writeStringToFile(versionFile, version, Charset.defaultCharset());
   }
 
+  /**
+   * Extract internal Airbyte data from the @param archive tarball file (using Gzip compression) as
+   * produced by {@link #exportData()}. Note that the provided archived file will be deleted.
+   *
+   * @return a status object describing if import was successful or not.
+   */
   public ImportRead importData(File archive) {
     ImportRead result;
     try {
@@ -105,14 +118,14 @@ public class ArchiveHandler {
         FileUtils.deleteDirectory(tempFolder.toFile());
         FileUtils.deleteQuietly(archive);
       }
-    } catch (IOException | JsonValidationException e) {
+    } catch (IOException | JsonValidationException | ConfigNotFoundException e) {
       LOGGER.error("Import Data failed.");
       throw new RuntimeException(e);
     }
     return result;
   }
 
-  private void checkImport(Path tempFolder) throws IOException, JsonValidationException {
+  private void checkImport(Path tempFolder) throws IOException, JsonValidationException, ConfigNotFoundException {
     final Path versionFile = tempFolder.resolve(VERSION_FILE_NAME);
     final String importVersion = Files.readString(versionFile, Charset.defaultCharset());
     LOGGER.info(String.format("Checking Airbyte Version to import %s", importVersion));

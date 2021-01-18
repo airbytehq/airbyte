@@ -765,8 +765,9 @@ class DefaultJobPersistenceTest {
       outputStreams.put(entry.getKey(), tableData.stream());
     }
     // Reset database
-    database.query(ctx -> ctx.execute(
-        String.format("DROP SCHEMA %s CASCADE;\n CREATE SCHEMA %s;", DefaultJobPersistence.DEFAULT_SCHEMA, DefaultJobPersistence.DEFAULT_SCHEMA)));
+    database.query(ctx -> ctx.execute("DELETE FROM jobs"));
+    database.query(ctx -> ctx.execute("DELETE FROM attempts"));
+
     jobPersistence.importDatabase(outputStreams);
 
     final List<Job> actualList = jobPersistence.listJobs(SPEC_JOB_CONFIG.getConfigType(), CONNECTION_ID.toString());

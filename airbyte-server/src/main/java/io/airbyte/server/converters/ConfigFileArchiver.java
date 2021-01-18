@@ -108,7 +108,8 @@ public class ConfigFileArchiver {
     }
   }
 
-  public void importConfigsFromArchive(final Path storageRoot, final boolean dryRun) throws IOException, JsonValidationException {
+  public void importConfigsFromArchive(final Path storageRoot, final boolean dryRun)
+      throws IOException, JsonValidationException, ConfigNotFoundException {
     if (dryRun) {
       readConfigsFromArchive(storageRoot, ConfigSchema.STANDARD_WORKSPACE, StandardWorkspace.class);
       readConfigsFromArchive(storageRoot, ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class);
@@ -143,7 +144,7 @@ public class ConfigFileArchiver {
    * Schema @param schemaType.
    */
   private <T> List<T> readConfigsFromArchive(final Path storageRoot, final ConfigSchema schemaType, final Class<T> clazz)
-      throws IOException, JsonValidationException {
+      throws IOException, JsonValidationException, ConfigNotFoundException {
     final List<T> results = new ArrayList<>();
     final Path configPath = buildConfigPath(storageRoot, schemaType);
     if (configPath.toFile().exists()) {
@@ -158,7 +159,7 @@ public class ConfigFileArchiver {
       }
       LOGGER.debug(String.format("Successful read of airbyte config %s from archive", schemaType));
     } else {
-      LOGGER.info(String.format("Airbyte config %s was not found in the archive", schemaType));
+      throw new ConfigNotFoundException(schemaType, "any");
     }
     return results;
   }

@@ -8,7 +8,7 @@
  CREATE
     EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- Statements Below this line are being re-used to create new schemas
+--< Statements Below this line are being re-used to create new schemas
  -- types
  CREATE
     TYPE JOB_STATUS AS ENUM(
@@ -79,7 +79,7 @@ CREATE
         attempt_number
     );
 
--- Statements Above this line are being re-used to create new schemas
+--> Statements Above this line are being re-used to create new schemas
  -- entries
  INSERT
     INTO

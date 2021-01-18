@@ -35,6 +35,7 @@ import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -112,7 +113,7 @@ public class DatabaseArchiver {
       }
       LOGGER.debug("Successful read of airbyte database from archive");
     } else {
-      LOGGER.info("Airbyte Database was not found in the archive");
+      throw new FileNotFoundException("Airbyte Database was not found in the archive");
     }
   }
 

@@ -31,7 +31,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.text.Names;
 import io.airbyte.commons.text.Sqls;
 import io.airbyte.config.JobConfig;
@@ -64,7 +63,6 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.InsertValuesStepN;
@@ -73,6 +71,7 @@ import org.jooq.JSONFormat.RecordFormat;
 import org.jooq.Named;
 import org.jooq.Record;
 import org.jooq.Result;
+import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -448,7 +447,7 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   private Stream<JsonNode> exportTable(final String schema, final String tableName) throws IOException {
-    final String tableSql = String.format("%s.%s", schema, tableName);
+    final Table<Record> tableSql = getTable(schema, tableName);
     try (final Stream<Record> records = database.query(ctx -> ctx.select(DSL.asterisk()).from(tableSql).fetchStream())) {
       return records.map(record -> {
         final Set<String> jsonFieldNames = Arrays.stream(record.fields())
@@ -466,61 +465,44 @@ public class DefaultJobPersistence implements JobPersistence {
 
   @Override
   public void importDatabase(final Map<String, Stream<JsonNode>> data) throws IOException {
-    importDatabase(DEFAULT_SCHEMA, data, true);
+    importDatabase(DEFAULT_SCHEMA, data, false);
   }
 
-  private void importDatabase(final String targetSchema, final Map<String, Stream<JsonNode>> data, boolean useIntermediateSchema) throws IOException {
+  private void importDatabase(final String targetSchema, final Map<String, Stream<JsonNode>> data, boolean incrementalImport) throws IOException {
     if (!data.isEmpty()) {
-      if (useIntermediateSchema) {
-        final String tempSchema = "import_staging_" + RandomStringUtils.randomAlphanumeric(5);
-        try {
-          dropSchema(tempSchema);
-          createSchema(tempSchema);
-          initSchema(tempSchema);
-          for (final String tableName : data.keySet()) {
-            importTable(tempSchema, tableName, data.get(tableName));
-          }
-          swapSchema(tempSchema, targetSchema);
-        } finally {
-          dropSchema(tempSchema);
-        }
-      } else {
+      createSchema(BACKUP_SCHEMA);
+      database.transaction(ctx -> {
         for (final String tableName : data.keySet()) {
-          importTable(DEFAULT_SCHEMA, tableName, data.get(tableName));
+          if (!incrementalImport) {
+            truncateTable(ctx, DEFAULT_SCHEMA, tableName, BACKUP_SCHEMA);
+          }
+          importTable(ctx, DEFAULT_SCHEMA, tableName, data.get(tableName));
         }
-      }
-      // TODO write "import success vXX on now()" to audit log table?
-    } else {
-      throw new IllegalArgumentException("Import empty Airbyte database");
+        return null;
+      });
     }
+    // TODO write "import success vXX on now()" to audit log table?
   }
 
   private void createSchema(final String schema) throws IOException {
-    database.query(ctx -> ctx.execute(String.format("CREATE SCHEMA IF NOT EXISTS %s;\n", schema)));
+    database.query(ctx -> ctx.createSchemaIfNotExists(schema).execute());
   }
 
-  private void initSchema(final String schema) throws IOException {
-    final String schemaFile = MoreResources.readResource("schema.sql");
-    final String initSchemaQuery = String.format("SET search_path TO %s;\n", schema)
-        + schemaFile.substring(schemaFile.indexOf("-- Statements Below"), schemaFile.indexOf("-- Statements Above"))
-        + String.format("SET search_path TO %s;\n", DEFAULT_SCHEMA);
-    database.query(ctx -> ctx.execute(initSchemaQuery));
+  /**
+   * In a single transaction, truncate all @param tables from @param schema, making backup copies
+   * in @param backupSchema
+   */
+  private void truncateTable(final DSLContext ctx, final String schema, final String tableName, final String backupSchema) {
+    final Table<Record> tableSql = getTable(schema, tableName);
+    final Table<Record> backupTableSql = getTable(backupSchema, tableName);
+    ctx.dropTableIfExists(backupTableSql).execute();
+    ctx.createTable(backupTableSql).as(DSL.select(DSL.asterisk()).from(tableSql)).withData().execute();
+    ctx.truncateTable(tableSql).execute();
   }
 
-  private void swapSchema(final String newSchema, final String finalSchema) throws IOException {
-    final String query =
-        String.format("ALTER SCHEMA %s RENAME TO %s;\n", finalSchema, DefaultJobPersistence.BACKUP_SCHEMA) +
-            String.format("ALTER SCHEMA %s RENAME TO %s;\n", newSchema, finalSchema);
-    database.transaction(ctx -> ctx.execute(query));
-  }
-
-  private void dropSchema(final String schema) throws IOException {
-    database.query(ctx -> ctx.execute(String.format("DROP SCHEMA IF EXISTS %s CASCADE;\n", schema)));
-  }
-
-  private void importTable(final String schema, final String tableName, final Stream<JsonNode> jsonStream) throws IOException {
+  private void importTable(DSLContext ctx, final String schema, final String tableName, final Stream<JsonNode> jsonStream) {
     final JsonNode jsonSchema = DatabaseSchema.forTable(tableName);
-    final String tableSql = String.format("%s.%s", schema, tableName);
+    final Table<Record> tableSql = getTable(schema, tableName);
     if (jsonSchema != null) {
       // Use an ArrayList to mirror the order of columns from the schema file since columns may not be
       // written consistently in the same order in the stream
@@ -535,17 +517,14 @@ public class DefaultJobPersistence implements JobPersistence {
         return values;
       });
       // Then Insert rows into table
-      database.query(ctx -> {
-        final InsertValuesStepN<Record> insertStep = ctx
-            .insertInto(DSL.table(tableSql))
-            .columns(columns);
-        data.forEach(insertStep::values);
-        if (insertStep.getBindValues().size() > 0) {
-          // LOGGER.debug(insertStep.toString());
-          return ctx.batch(insertStep).execute();
-        } else
-          return null;
-      });
+      final InsertValuesStepN<Record> insertStep = ctx
+          .insertInto(tableSql)
+          .columns(columns);
+      data.forEach(insertStep::values);
+      if (insertStep.getBindValues().size() > 0) {
+        // LOGGER.debug(insertStep.toString());
+        ctx.batch(insertStep).execute();
+      }
     }
   }
 
@@ -577,6 +556,10 @@ public class DefaultJobPersistence implements JobPersistence {
       return null;
     }
     throw new IllegalArgumentException(String.format("Undefined type for column %s", columnName));
+  }
+
+  private static Table<Record> getTable(final String schema, final String tableName) {
+    return DSL.table(String.format("%s.%s", schema, tableName));
   }
 
 }
