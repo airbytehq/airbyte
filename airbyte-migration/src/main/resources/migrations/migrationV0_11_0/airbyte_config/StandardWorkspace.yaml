@@ -9,7 +9,6 @@ required:
   - name
   - slug
   - initialSetupComplete
-  - onboardingComplete
 additionalProperties: false
 properties:
   workspaceId:
@@ -26,8 +25,6 @@ properties:
     type: string
     format: email
   initialSetupComplete:
-    type: boolean
-  onboardingComplete:
     type: boolean
   anonymousDataCollection:
     type: boolean

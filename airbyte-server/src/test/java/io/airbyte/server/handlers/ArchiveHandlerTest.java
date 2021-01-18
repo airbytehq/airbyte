@@ -96,8 +96,7 @@ public class ArchiveHandlerTest {
         .withEmail("test@airbyte.io")
         .withName("test workspace")
         .withSlug("default")
-        .withInitialSetupComplete(false)
-        .withOnboardingComplete(true);
+        .withInitialSetupComplete(false);
   }
 
   @Test
