@@ -34,8 +34,7 @@ from base_singer import SingerSource, SyncModeInfo, SyncMode
 
 class SourceGoogleAdwordsSinger(SingerSource):
     def check_config(self, logger: AirbyteLogger, config_path: str, config: json) -> AirbyteConnectionStatus:
-        # get customers info to verify credentials and permissions
-        # https://developers.google.com/adwords/api/docs/reference/v201809/CustomerService#getcustomers
+        # singer catalog that attempts to pull a stream ("accounts") that should always exists, though it may be empty.
         try:
             customer_ids = config['customer_ids'].split(",")
             for customer_id in customer_ids:
@@ -46,8 +45,11 @@ class SourceGoogleAdwordsSinger(SingerSource):
                 sdk_client = adwords.AdWordsClient(config['developer_token'],
                                                    oauth2_client, user_agent=config['user_agent'],
                                                    client_customer_id=customer_id)
-                customer_info = sdk_client.GetService(service_name='CustomerService', version=VERSION).getCustomers()
-                if not customer_info:
+                selector = {
+                    'fields': ['CustomerId'],
+                }
+                accounts = sdk_client.GetService(service_name='ManagedCustomerService', version=VERSION).get(selector)
+                if not accounts:
                     return AirbyteConnectionStatus(status=Status.FAILED)
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
