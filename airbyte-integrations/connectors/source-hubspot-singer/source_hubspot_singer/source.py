@@ -27,12 +27,14 @@ import json
 import requests
 from airbyte_protocol import AirbyteConnectionStatus, Status
 from base_singer import AirbyteLogger, SingerSource
+from requests.status_codes import codes as status_codes
 
 
 class SourceHubspotSinger(SingerSource):
     def check_config(self, logger: AirbyteLogger, config_path: str, config: json) -> AirbyteConnectionStatus:
+        error_msg = "Unable to connect with the provided credentials. Error: {}"
         try:
-            api_key = config.get("hapikey", None)
+            api_key = config.get("hapikey")
             if api_key:
                 logger.info("checking with api key")
                 r = requests.get(f"https://api.hubapi.com/contacts/v1/lists/all/contacts/all?hapikey={api_key}")
@@ -49,25 +51,27 @@ class SourceHubspotSinger(SingerSource):
                 }
                 resp = requests.post("https://api.hubapi.com/oauth/v1/token", data=payload)
 
-                if resp.status_code == 403:
-                    return AirbyteConnectionStatus(status=Status.FAILED, message=resp.content)
+                if resp.status_code == status_codes.FORBIDDEN:
+                    return AirbyteConnectionStatus(status=Status.FAILED, message=error_msg.format(resp.text))
 
                 try:
                     resp.raise_for_status()
                 except Exception as e:
-                    return AirbyteConnectionStatus(status=Status.FAILED, message=f"{str(e)}")
+                    logger.error(str(e))
+                    return AirbyteConnectionStatus(status=Status.FAILED, message=error_msg.format(e))
 
                 auth = resp.json()
                 headers = {"Authorization": "Bearer {}".format(auth["access_token"])}
 
                 r = requests.get("https://api.hubapi.com/contacts/v1/lists/all/contacts/all", headers=headers)
 
-            if r.status_code == 200:
+            if r.status_code == status_codes.OK:
                 return AirbyteConnectionStatus(status=Status.SUCCEEDED)
             else:
-                return AirbyteConnectionStatus(status=Status.FAILED, message=r.text)
+                return AirbyteConnectionStatus(status=Status.FAILED, message=error_msg.format(r.text))
         except Exception as e:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"{str(e)}")
+            logger.error(str(e))
+            return AirbyteConnectionStatus(status=Status.FAILED, message=error_msg.format(e))
 
     def discover_cmd(self, logger, config_path) -> str:
         return f"tap-hubspot --config {config_path} --discover"
