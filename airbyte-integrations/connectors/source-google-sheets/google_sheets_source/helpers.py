@@ -99,7 +99,7 @@ class Helpers(object):
             raise Exception(f"Expected data for exactly one range for sheet {sheet_name}")
 
         all_row_data = range_data[0].rowData
-        if len(all_row_data) != 1:
+        if not all_row_data or len(all_row_data) != 1:
             raise Exception(f"Expected data for exactly one row for sheet {sheet_name}")
 
         first_row_data = all_row_data[0]
