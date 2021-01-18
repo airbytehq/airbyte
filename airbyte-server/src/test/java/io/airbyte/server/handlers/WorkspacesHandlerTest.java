@@ -66,8 +66,10 @@ class WorkspacesHandlerTest {
         .withName("test workspace")
         .withSlug("default")
         .withInitialSetupComplete(false)
-        .withOnboardingComplete(true)
-        .withDisplaySetupWizard(true);
+        .withDisplaySetupWizard(true)
+        .withNews(false)
+        .withAnonymousDataCollection(false)
+        .withSecurityUpdates(false);
   }
 
   @Test
@@ -82,9 +84,11 @@ class WorkspacesHandlerTest {
         .customerId(workspace.getCustomerId())
         .name("test workspace")
         .slug("default")
-        .onboardingComplete(true)
         .initialSetupComplete(false)
-        .displaySetupWizard(true);
+        .displaySetupWizard(true)
+        .news(false)
+        .anonymousDataCollection(false)
+        .securityUpdates(false);
 
     assertEquals(workspaceRead, workspacesHandler.getWorkspace(workspaceIdRequestBody));
   }
@@ -101,9 +105,11 @@ class WorkspacesHandlerTest {
         .customerId(workspace.getCustomerId())
         .name("test workspace")
         .slug("default")
-        .onboardingComplete(true)
         .initialSetupComplete(false)
-        .displaySetupWizard(true);
+        .displaySetupWizard(true)
+        .news(false)
+        .anonymousDataCollection(false)
+        .securityUpdates(false);
 
     assertEquals(workspaceRead, workspacesHandler.getWorkspaceBySlug(slugRequestBody));
   }
@@ -116,7 +122,6 @@ class WorkspacesHandlerTest {
         .anonymousDataCollection(true)
         .securityUpdates(false)
         .news(false)
-        .onboardingComplete(false)
         .initialSetupComplete(true)
         .displaySetupWizard(false);
 
@@ -129,7 +134,6 @@ class WorkspacesHandlerTest {
         .withAnonymousDataCollection(true)
         .withSecurityUpdates(false)
         .withNews(false)
-        .withOnboardingComplete(false)
         .withInitialSetupComplete(true)
         .withDisplaySetupWizard(false);
 
@@ -144,9 +148,11 @@ class WorkspacesHandlerTest {
         .customerId(workspace.getCustomerId())
         .name("test workspace")
         .slug("default")
-        .onboardingComplete(false)
         .initialSetupComplete(true)
-        .displaySetupWizard(false);
+        .displaySetupWizard(false)
+        .news(false)
+        .anonymousDataCollection(true)
+        .securityUpdates(false);
 
     verify(configRepository).writeStandardWorkspace(expectedWorkspace);
 
