@@ -8,13 +8,13 @@ This is the changelog for Airbyte core. For our connector changelog, please visi
 
 If you're interested in our progress on the Airbyte platform, please read below!
 
-## 0.11.1
+## 0.11.1-alpha - Released 01/17/2021
 
-Bugfixes: 
+### Bugfixes 
 * Writing boolean columns to Redshift destination now works correctly 
 * Increase timeout for long running catalog discovery operations from 3 minutes to 30 minutes to avoid prematurely failing long-running operations 
 
-## [0.11.0](https://github.com/airbytehq/airbyte/milestone/12?closed=1) - Delivered 01/14/2020
+## [0.11.0-alpha](https://github.com/airbytehq/airbyte/milestone/12?closed=1) - Delivered 01/14/2021
 
 ### New features 
 * Allow skipping the onboarding flow in the UI
@@ -32,7 +32,7 @@ Bugfixes:
 * Tempo
 * Appstore
 
-## [0.10.0](https://github.com/airbytehq/airbyte/milestone/12?closed=1) - delivered on 01/04/2020
+## [0.10.0](https://github.com/airbytehq/airbyte/milestone/12?closed=1) - delivered on 01/04/2021
 
 * You can now **deploy Airbyte on** [**Kuberbetes**](https://docs.airbyte.io/deploying-airbyte/on-kubernetes) _\*\*_\(alpha version\)
 * **Support incremental sync** for Mixpanel and Hubspot sources
