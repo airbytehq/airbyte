@@ -157,15 +157,15 @@ public interface JobPersistence {
 
   /**
    * Export all SQL tables from @param schema into streams of JsonNode objects. This returns a Map of
-   * table names to the associated streams of records that is being exported.
+   * table schemas to the associated streams of records that is being exported.
    */
-  Map<String, Stream<JsonNode>> exportDatabase() throws IOException;
+  Map<DatabaseSchema, Stream<JsonNode>> exportDatabase() throws IOException;
 
   /**
    * Import all SQL tables from streams of JsonNode objects.
    *
-   * @param data is a Map of table names to the associated streams of records to import.
+   * @param data is a Map of table schemas to the associated streams of records to import.
    */
-  void importDatabase(Map<String, Stream<JsonNode>> data) throws IOException;
+  void importDatabase(Map<DatabaseSchema, Stream<JsonNode>> data) throws IOException;
 
 }

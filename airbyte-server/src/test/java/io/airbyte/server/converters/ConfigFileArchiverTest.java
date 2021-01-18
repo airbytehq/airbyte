@@ -24,10 +24,12 @@
 
 package io.airbyte.server.converters;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -77,7 +79,7 @@ public class ConfigFileArchiverTest {
   }
 
   @Test
-  void testConfigMigration() throws ConfigNotFoundException, IOException, JsonValidationException {
+  void testConfigExportImport() throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardWorkspace workspace = generateWorkspace();
     final StandardSourceDefinition standardSource = SourceDefinitionHelpers.generateSource();
     final StandardDestinationDefinition standardDestination = DestinationDefinitionHelpers.generateDestination();
@@ -110,6 +112,33 @@ public class ConfigFileArchiverTest {
     verify(configRepository).writeStandardSync(sourceSync);
     verify(configRepository).writeStandardSync(destinationSync);
     verify(configRepository).writeStandardSchedule(syncSchedule);
+  }
+
+  @Test
+  void testPartialConfigImport() throws ConfigNotFoundException, IOException, JsonValidationException {
+    final StandardWorkspace workspace = generateWorkspace();
+    final StandardSourceDefinition standardSource = SourceDefinitionHelpers.generateSource();
+    final StandardDestinationDefinition standardDestination = DestinationDefinitionHelpers.generateDestination();
+    final SourceConnection sourceConnection1 = SourceHelpers.generateSource(standardSource.getSourceDefinitionId());
+    final SourceConnection sourceConnection2 = SourceHelpers.generateSource(standardSource.getSourceDefinitionId());
+    final DestinationConnection destinationConnection = DestinationHelpers.generateDestination(standardDestination.getDestinationDefinitionId());
+    final StandardSync destinationSync = ConnectionHelpers.generateSyncWithDestinationId(destinationConnection.getDestinationId());
+    final StandardSync sourceSync = ConnectionHelpers.generateSyncWithSourceId(sourceConnection1.getSourceId());
+    final StandardSyncSchedule syncSchedule = ConnectionHelpers.generateSchedule(sourceSync.getConnectionId());
+
+    // Read operations
+    when(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID)).thenReturn(workspace);
+    when(configRepository.listStandardSources()).thenReturn(List.of(standardSource));
+    when(configRepository.listStandardDestinationDefinitions()).thenReturn(List.of(standardDestination));
+    when(configRepository.listSourceConnection()).thenReturn(List.of(sourceConnection1, sourceConnection2));
+    when(configRepository.listDestinationConnection()).thenReturn(List.of(destinationConnection));
+    when(configRepository.listStandardSyncs()).thenReturn(List.of(destinationSync, sourceSync));
+    when(configRepository.getStandardSyncSchedule(sourceSync.getConnectionId())).thenReturn(syncSchedule);
+
+    final Path tempFolder = Files.createTempDirectory("testConfigMigration");
+    configFileArchiver.exportConfigsToArchive(tempFolder);
+    Files.delete(ConfigFileArchiver.buildConfigPath(tempFolder, ConfigSchema.STANDARD_DESTINATION_DEFINITION));
+    assertThrows(RuntimeException.class, () -> configFileArchiver.importConfigsFromArchive(tempFolder, false));
   }
 
 }

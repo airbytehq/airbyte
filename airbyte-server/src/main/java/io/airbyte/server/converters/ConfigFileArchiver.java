@@ -41,6 +41,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -109,17 +110,17 @@ public class ConfigFileArchiver {
   }
 
   public void importConfigsFromArchive(final Path storageRoot, final boolean dryRun)
-      throws IOException, JsonValidationException, ConfigNotFoundException {
-    if (dryRun) {
-      readConfigsFromArchive(storageRoot, ConfigSchema.STANDARD_WORKSPACE, StandardWorkspace.class);
-      readConfigsFromArchive(storageRoot, ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class);
-      readConfigsFromArchive(storageRoot, ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class);
-      readConfigsFromArchive(storageRoot, ConfigSchema.SOURCE_CONNECTION, SourceConnection.class);
-      readConfigsFromArchive(storageRoot, ConfigSchema.DESTINATION_CONNECTION, DestinationConnection.class);
-      readConfigsFromArchive(storageRoot, ConfigSchema.STANDARD_SYNC, StandardSync.class);
-      readConfigsFromArchive(storageRoot, ConfigSchema.STANDARD_SYNC_SCHEDULE, StandardSyncSchedule.class);
-    } else {
-      Exceptions.toRuntime(() -> {
+      throws IOException, JsonValidationException {
+    Exceptions.toRuntime(() -> {
+      if (dryRun) {
+        readConfigsFromArchive(storageRoot, ConfigSchema.STANDARD_WORKSPACE, StandardWorkspace.class);
+        readConfigsFromArchive(storageRoot, ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class);
+        readConfigsFromArchive(storageRoot, ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class);
+        readConfigsFromArchive(storageRoot, ConfigSchema.SOURCE_CONNECTION, SourceConnection.class);
+        readConfigsFromArchive(storageRoot, ConfigSchema.DESTINATION_CONNECTION, DestinationConnection.class);
+        readConfigsFromArchive(storageRoot, ConfigSchema.STANDARD_SYNC, StandardSync.class);
+        readConfigsFromArchive(storageRoot, ConfigSchema.STANDARD_SYNC_SCHEDULE, StandardSyncSchedule.class);
+      } else {
         readConfigsFromArchive(storageRoot, ConfigSchema.STANDARD_WORKSPACE, StandardWorkspace.class)
             .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeStandardWorkspace(config)));
         readConfigsFromArchive(storageRoot, ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class)
@@ -134,8 +135,8 @@ public class ConfigFileArchiver {
             .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeStandardSync(config)));
         readConfigsFromArchive(storageRoot, ConfigSchema.STANDARD_SYNC_SCHEDULE, StandardSyncSchedule.class)
             .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeStandardSchedule(config)));
-      });
-    }
+      }
+    });
   }
 
   /**
@@ -144,7 +145,7 @@ public class ConfigFileArchiver {
    * Schema @param schemaType.
    */
   private <T> List<T> readConfigsFromArchive(final Path storageRoot, final ConfigSchema schemaType, final Class<T> clazz)
-      throws IOException, JsonValidationException, ConfigNotFoundException {
+      throws IOException, JsonValidationException {
     final List<T> results = new ArrayList<>();
     final Path configPath = buildConfigPath(storageRoot, schemaType);
     if (configPath.toFile().exists()) {
@@ -159,7 +160,7 @@ public class ConfigFileArchiver {
       }
       LOGGER.debug(String.format("Successful read of airbyte config %s from archive", schemaType));
     } else {
-      throw new ConfigNotFoundException(schemaType, "any");
+      throw new FileNotFoundException(String.format("Airbyte Configuration %s was not found in the archive", schemaType));
     }
     return results;
   }
@@ -169,9 +170,9 @@ public class ConfigFileArchiver {
     jsonSchemaValidator.ensure(schema, Jsons.jsonNode(config));
   }
 
-  private static Path buildConfigPath(final Path storageRoot, final ConfigSchema schemaType) {
+  protected static Path buildConfigPath(final Path storageRoot, final ConfigSchema schemaType) {
     return storageRoot.resolve(CONFIG_FOLDER_NAME)
-        .resolve(String.format("%s.yaml", schemaType.toString()));
+        .resolve(String.format("%s.yaml", schemaType.name()));
   }
 
 }

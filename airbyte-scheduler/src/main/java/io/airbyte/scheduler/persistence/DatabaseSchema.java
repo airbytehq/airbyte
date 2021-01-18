@@ -36,6 +36,8 @@ import org.apache.commons.io.FileUtils;
 /**
  * Whenever a new table is created in the Airbyte Database, we should also add a corresponding yaml
  * file to validate the content of the table when it is exported/imported in files.
+ *
+ * This enum maps the table names to the yaml file where the Json Schema is stored.
  */
 public enum DatabaseSchema {
 
@@ -56,21 +58,22 @@ public enum DatabaseSchema {
     this.schemaFilename = schemaFilename;
   }
 
+  public static DatabaseSchema valueOf(final Path filePath) {
+    final String name = filePath.getFileName().toString().replace(".yaml", "");
+    return valueOf(CaseFormat.UPPER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, name));
+  }
+
   public File getFile() {
     return KNOWN_SCHEMAS_ROOT.resolve(schemaFilename).toFile();
   }
 
-  public static JsonNode forTable(final String tableName) {
+  public JsonNode toJsonNode() {
     final Optional<JsonNode> result = FileUtils.listFiles(KNOWN_SCHEMAS_ROOT.toFile(), null, false)
         .stream()
+        .filter(j -> j.getName().equals(schemaFilename))
         .map(JsonSchemaValidator::getSchema)
-        .filter(j -> getTitleAsConstantCase(j).equals(CaseFormat.UPPER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, tableName)))
         .findFirst();
     return result.orElse(null);
-  }
-
-  private static String getTitleAsConstantCase(JsonNode jsonNode) {
-    return CaseFormat.UPPER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, jsonNode.get("title").asText());
   }
 
 }

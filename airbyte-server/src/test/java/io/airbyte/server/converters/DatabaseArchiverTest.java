@@ -28,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
+import io.airbyte.scheduler.persistence.DatabaseSchema;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import java.io.IOException;
@@ -41,6 +42,8 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
 public class DatabaseArchiverTest {
+
+  private static final String TEMP_PREFIX = "testDatabaseArchive";
 
   private PostgreSQLContainer<?> container;
   private Database database;
@@ -70,19 +73,20 @@ public class DatabaseArchiverTest {
   }
 
   @Test
-  void testWrongDatabaseMigration() throws SQLException, IOException {
+  void testUnknownTableExport() throws SQLException, IOException {
+    // Create a table that is not declared in DatabaseSchema
     database.query(ctx -> {
       ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), updated_at DATE);");
       ctx.fetch(
           "INSERT INTO id_and_name (id, name, updated_at) VALUES (1,'picard', '2004-10-19'),  (2, 'crusher', '2005-10-19'), (3, 'vash', '2006-10-19');");
       return null;
     });
-    final Path tempFolder = Files.createTempDirectory("testWrongDatabaseMigration");
+    final Path tempFolder = Files.createTempDirectory(TEMP_PREFIX);
     assertThrows(RuntimeException.class, () -> databaseArchiver.exportDatabaseToArchive(tempFolder));
   }
 
   @Test
-  void testDatabaseMigration() throws SQLException, IOException {
+  void testDatabaseExportImport() throws Exception {
     database.query(ctx -> {
       ctx.fetch(
           "INSERT INTO jobs(id, scope, config_type, config, status, created_at, started_at, updated_at) VALUES "
@@ -91,10 +95,18 @@ public class DatabaseArchiverTest {
               + "(3,'sync_scope', 'sync', '{ \"job\" : \"sync\" }', 'pending', '2006-10-19', null, '2006-10-19');");
       return null;
     });
-    final Path tempFolder = Files.createTempDirectory("testWrongDatabaseMigration");
+    final Path tempFolder = Files.createTempDirectory(TEMP_PREFIX);
     databaseArchiver.exportDatabaseToArchive(tempFolder);
     databaseArchiver.importDatabaseFromArchive(tempFolder);
     // TODO check database state before/after
+  }
+
+  @Test
+  void testPartialDatabaseImport() throws Exception {
+    final Path tempFolder = Files.createTempDirectory(TEMP_PREFIX);
+    databaseArchiver.exportDatabaseToArchive(tempFolder);
+    Files.delete(DatabaseArchiver.buildTablePath(tempFolder.toRealPath(), DatabaseSchema.ATTEMPTS.name()));
+    assertThrows(RuntimeException.class, () -> databaseArchiver.importDatabaseFromArchive(tempFolder));
   }
 
 }

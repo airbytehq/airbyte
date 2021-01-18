@@ -419,15 +419,15 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public Map<String, Stream<JsonNode>> exportDatabase() throws IOException {
+  public Map<DatabaseSchema, Stream<JsonNode>> exportDatabase() throws IOException {
     return exportDatabase(DEFAULT_SCHEMA);
   }
 
-  private Map<String, Stream<JsonNode>> exportDatabase(final String schema) throws IOException {
+  private Map<DatabaseSchema, Stream<JsonNode>> exportDatabase(final String schema) throws IOException {
     final List<String> tables = listTables(schema);
-    final Map<String, Stream<JsonNode>> result = new HashMap<>();
+    final Map<DatabaseSchema, Stream<JsonNode>> result = new HashMap<>();
     for (final String table : tables) {
-      result.put(table, exportTable(schema, table));
+      result.put(DatabaseSchema.valueOf(table.toUpperCase()), exportTable(schema, table));
     }
     return result;
   }
@@ -464,19 +464,20 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public void importDatabase(final Map<String, Stream<JsonNode>> data) throws IOException {
+  public void importDatabase(final Map<DatabaseSchema, Stream<JsonNode>> data) throws IOException {
     importDatabase(DEFAULT_SCHEMA, data, false);
   }
 
-  private void importDatabase(final String targetSchema, final Map<String, Stream<JsonNode>> data, boolean incrementalImport) throws IOException {
+  private void importDatabase(final String targetSchema, final Map<DatabaseSchema, Stream<JsonNode>> data, boolean incrementalImport)
+      throws IOException {
     if (!data.isEmpty()) {
       createSchema(BACKUP_SCHEMA);
       database.transaction(ctx -> {
-        for (final String tableName : data.keySet()) {
+        for (final DatabaseSchema tableType : data.keySet()) {
           if (!incrementalImport) {
-            truncateTable(ctx, DEFAULT_SCHEMA, tableName, BACKUP_SCHEMA);
+            truncateTable(ctx, targetSchema, tableType.name(), BACKUP_SCHEMA);
           }
-          importTable(ctx, DEFAULT_SCHEMA, tableName, data.get(tableName));
+          importTable(ctx, targetSchema, tableType, data.get(tableType));
         }
         return null;
       });
@@ -500,9 +501,9 @@ public class DefaultJobPersistence implements JobPersistence {
     ctx.truncateTable(tableSql).execute();
   }
 
-  private void importTable(DSLContext ctx, final String schema, final String tableName, final Stream<JsonNode> jsonStream) {
-    final JsonNode jsonSchema = DatabaseSchema.forTable(tableName);
-    final Table<Record> tableSql = getTable(schema, tableName);
+  private void importTable(DSLContext ctx, final String schema, final DatabaseSchema tableType, final Stream<JsonNode> jsonStream) {
+    final Table<Record> tableSql = getTable(schema, tableType.name());
+    final JsonNode jsonSchema = tableType.toJsonNode();
     if (jsonSchema != null) {
       // Use an ArrayList to mirror the order of columns from the schema file since columns may not be
       // written consistently in the same order in the stream

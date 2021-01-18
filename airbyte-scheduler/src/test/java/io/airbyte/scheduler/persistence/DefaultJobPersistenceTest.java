@@ -754,12 +754,12 @@ class DefaultJobPersistenceTest {
     final int attemptNumber1 = jobPersistence.createAttempt(jobId, secondAttemptLogPath);
     jobPersistence.succeedAttempt(jobId, attemptNumber1);
 
-    final Map<String, Stream<JsonNode>> inputStreams = jobPersistence.exportDatabase();
+    final Map<DatabaseSchema, Stream<JsonNode>> inputStreams = jobPersistence.exportDatabase();
 
     // Collect streams to memory for temporary storage
-    final Map<String, List<JsonNode>> tempData = new HashMap<>();
-    final Map<String, Stream<JsonNode>> outputStreams = new HashMap<>();
-    for (Entry<String, Stream<JsonNode>> entry : inputStreams.entrySet()) {
+    final Map<DatabaseSchema, List<JsonNode>> tempData = new HashMap<>();
+    final Map<DatabaseSchema, Stream<JsonNode>> outputStreams = new HashMap<>();
+    for (Entry<DatabaseSchema, Stream<JsonNode>> entry : inputStreams.entrySet()) {
       final List<JsonNode> tableData = entry.getValue().collect(Collectors.toList());
       tempData.put(entry.getKey(), tableData);
       outputStreams.put(entry.getKey(), tableData.stream());
@@ -796,9 +796,10 @@ class DefaultJobPersistenceTest {
     jobPersistence.succeedAttempt(jobId, attemptNumber1);
     final JsonSchemaValidator jsonSchemaValidator = new JsonSchemaValidator();
 
-    final Map<String, Stream<JsonNode>> inputStreams = jobPersistence.exportDatabase();
-    inputStreams.forEach((tableName, tableStream) -> {
-      final JsonNode schema = DatabaseSchema.forTable(tableName);
+    final Map<DatabaseSchema, Stream<JsonNode>> inputStreams = jobPersistence.exportDatabase();
+    inputStreams.forEach((tableSchema, tableStream) -> {
+      final String tableName = tableSchema.name();
+      final JsonNode schema = tableSchema.toJsonNode();
       assertNotNull(schema,
           "Json schema files should be created in airbyte-scheduler/src/main/resources/tables for every table in the Database to validate its content");
       tableStream.forEach(row -> {
