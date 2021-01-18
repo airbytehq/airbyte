@@ -62,12 +62,7 @@ public enum DatabaseSchema {
   }
 
   public JsonNode toJsonNode() {
-    final Optional<JsonNode> result = FileUtils.listFiles(KNOWN_SCHEMAS_ROOT.toFile(), null, false)
-        .stream()
-        .filter(j -> j.getName().equals(schemaFilename))
-        .map(JsonSchemaValidator::getSchema)
-        .findFirst();
-    return result.orElse(null);
+    return JsonSchemaValidator.getSchema(getFile());
   }
 
 }
