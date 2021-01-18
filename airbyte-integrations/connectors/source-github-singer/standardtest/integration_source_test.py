@@ -22,7 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from .integration_source_test import TestSourceGithub
-from .standard_source_test import GithubStandardSourceTest
+import json
+import os
+import tempfile
+import uuid
 
-__all__ = ['GithubStandardSourceTest', TestSourceGithub]
+
+class TestSourceGithub(object):
+    private_repo_config: str = "../secrets/private_config.json"
+
