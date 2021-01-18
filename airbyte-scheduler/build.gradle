@@ -3,8 +3,6 @@ plugins {
 }
 
 dependencies {
-    implementation 'org.apache.commons:commons-lang3:3.11'
-
     implementation project(':airbyte-analytics')
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-config:persistence')
