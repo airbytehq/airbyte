@@ -144,7 +144,7 @@ class BaseClient(StreamStateMixin, ABC):
         methods = inspect.getmembers(self.__class__, predicate=inspect.isfunction)
         for name, method in methods:
             if name.startswith(prefix):
-                mapping[name[len(prefix):]] = getattr(self, name)
+                mapping[name[len(prefix) :]] = getattr(self, name)
 
         return mapping
 
@@ -176,8 +176,12 @@ class BaseClient(StreamStateMixin, ABC):
                 supported_sync_modes = [SyncMode.incremental]
                 source_defined_cursor = True
 
-            yield AirbyteStream(name=name, json_schema=self._schema_loader.get_schema(name), supported_sync_modes=supported_sync_modes,
-                                source_defined_cursor=source_defined_cursor)
+            yield AirbyteStream(
+                name=name,
+                json_schema=self._schema_loader.get_schema(name),
+                supported_sync_modes=supported_sync_modes,
+                source_defined_cursor=source_defined_cursor,
+            )
 
     @abstractmethod
     def health_check(self) -> Tuple[bool, str]:

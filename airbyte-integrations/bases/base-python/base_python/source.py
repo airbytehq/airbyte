@@ -24,11 +24,18 @@ SOFTWARE.
 
 import json
 from datetime import datetime
-from typing import Dict, Generator, Type, Mapping
+from typing import Dict, Generator, Mapping, Type
 
-from airbyte_protocol import (AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status,
-                              AirbyteStateMessage,
-                              Type as MessageType, AirbyteRecordMessage)
+from airbyte_protocol import (
+    AirbyteCatalog,
+    AirbyteConnectionStatus,
+    AirbyteMessage,
+    AirbyteRecordMessage,
+    AirbyteStateMessage,
+    ConfiguredAirbyteCatalog,
+    Status,
+)
+from airbyte_protocol import Type as MessageType
 
 from .client import BaseClient
 from .integration import Source
@@ -62,7 +69,7 @@ class BaseSource(Source):
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
     def read(
-            self, logger: AirbyteLogger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any]
+        self, logger: AirbyteLogger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any]
     ) -> Generator[AirbyteMessage, None, None]:
         client = self._get_client(config)
 
@@ -74,6 +81,5 @@ class BaseSource(Source):
                 message = AirbyteRecordMessage(stream=stream_name, data=record, emitted_at=now)
                 yield AirbyteMessage(type=MessageType.RECORD, record=message)
             if client.stream_has_state(stream_name):
-                yield AirbyteMessage(type=MessageType.STATE,
-                                     state=AirbyteStateMessage(data=client.get_stream_state(stream_name)))
+                yield AirbyteMessage(type=MessageType.STATE, state=AirbyteStateMessage(data=client.get_stream_state(stream_name)))
         logger.info(f"Finished syncing {self.__class__.__name__}")
