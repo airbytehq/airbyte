@@ -1097,9 +1097,13 @@ components:
           type: string
         initialSetupComplete:
           type: boolean
-        onboardingComplete:
-          type: boolean
         displaySetupWizard:
+          type: boolean
+        anonymousDataCollection:
+          type: boolean
+        news:
+          type: boolean
+        securityUpdates:
           type: boolean
     WorkspaceUpdate:
       type: object
@@ -1117,15 +1121,13 @@ components:
           format: email
         initialSetupComplete:
           type: boolean
-        onboardingComplete:
+        displaySetupWizard:
           type: boolean
         anonymousDataCollection:
           type: boolean
         news:
           type: boolean
         securityUpdates:
-          type: boolean
-        displaySetupWizard:
           type: boolean
     # SLUG
     SlugRequestBody:

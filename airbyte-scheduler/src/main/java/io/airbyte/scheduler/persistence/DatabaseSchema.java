@@ -25,7 +25,6 @@
 package io.airbyte.scheduler.persistence;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.base.CaseFormat;
 import io.airbyte.commons.json.JsonSchemas;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import java.io.File;
@@ -56,11 +55,6 @@ public enum DatabaseSchema {
 
   DatabaseSchema(final String schemaFilename) {
     this.schemaFilename = schemaFilename;
-  }
-
-  public static DatabaseSchema valueOf(final Path filePath) {
-    final String name = filePath.getFileName().toString().replace(".yaml", "");
-    return valueOf(CaseFormat.UPPER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, name));
   }
 
   public File getFile() {
