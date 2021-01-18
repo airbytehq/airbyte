@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 from abc import ABC, abstractmethod
-from typing import Iterator, Sequence, Tuple, Dict, Any
+from typing import Iterator, Sequence, Tuple, Any, Dict
 
 import backoff
 import pendulum as pendulum
