@@ -105,6 +105,7 @@ public abstract class StandardSourceTest {
       "airbyte/source-twilio-singer",
       "airbyte/source-braintree-singer",
       "airbyte/source-salesforce-singer",
+      "airbyte/source-stripe-singer",
       "airbyte/source-hubspot-singer");
 
   /**

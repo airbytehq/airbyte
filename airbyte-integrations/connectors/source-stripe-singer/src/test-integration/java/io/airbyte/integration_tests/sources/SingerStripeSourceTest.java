@@ -36,14 +36,10 @@ import com.stripe.param.CustomerCreateParams;
 import com.stripe.param.CustomerListParams;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
@@ -61,9 +57,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -198,32 +191,6 @@ public class SingerStripeSourceTest {
     assertTrue(catalog.contains("address_zip_check"));
   }
 
-  @Test
-  public void testSync() throws IOException, InterruptedException, WorkerException {
-    final ConfiguredAirbyteCatalog catalog = CatalogHelpers
-        .toDefaultConfiguredCatalog(Jsons.deserialize(MoreResources.readResource(CATALOG), AirbyteCatalog.class));
-    IOs.writeFile(catalogPath.getParent(), catalogPath.getFileName().toString(), Jsons.serialize(catalog));
-
-    // run syn process
-    Path syncOutputPath = jobRoot.resolve("sync_output.txt");
-    Process process = createSyncProcess(syncOutputPath);
-    process.waitFor(1, TimeUnit.MINUTES);
-
-    assertEquals(0, process.exitValue());
-
-    final Set<JsonNode> actualSyncOutput = IOs.readFile(jobRoot, syncOutputPath.toString()).lines()
-        // the runner in this test doesn't gracefully handle non message items in stdout.
-        .filter(s -> Jsons.tryDeserialize(s).isPresent())
-        .map(Jsons::deserialize)
-        .map(SingerStripeSourceTest::normalize)
-        .collect(Collectors.toSet());
-
-    MoreResources.readResource("sync_output_subset.txt").lines()
-        .map(Jsons::deserialize)
-        .map(SingerStripeSourceTest::normalize)
-        .forEach(record -> assertTrue(actualSyncOutput.contains(record), "Actual output: " + actualSyncOutput));
-  }
-
   private static JsonNode normalize(JsonNode node) {
     ObjectNode normalized = node.deepCopy();
 
@@ -253,7 +220,7 @@ public class SingerStripeSourceTest {
 
     assertTrue(credentials.get("client_secret").textValue().startsWith("sk_test_"));
     assertTrue(credentials.get("account_id").textValue().startsWith("acct_"));
-    assertEquals("2017-01-01T00:00:00Z", credentials.get("start_date").textValue());
+    assertEquals("2020-05-01T00:00:00Z", credentials.get("start_date").textValue());
 
     Files.writeString(
         Path.of(jobRoot.toString(), "config.json"), credentialsJsonString);
@@ -264,7 +231,7 @@ public class SingerStripeSourceTest {
 
     fullConfig.put("client_secret", "sk_test_" + RandomStringUtils.randomAlphanumeric(20));
     fullConfig.put("account_id", "acct_" + RandomStringUtils.randomAlphanumeric(20));
-    fullConfig.put("start_date", "2017-01-01T00:00:00Z");
+    fullConfig.put("start_date", "2020-05-01T00:00:00Z");
 
     Files.writeString(Path.of(jobRoot.toString(), INVALID_CONFIG), Jsons.serialize(fullConfig));
   }
@@ -272,13 +239,6 @@ public class SingerStripeSourceTest {
   private Process createDiscoveryProcess(String configFileName) throws IOException, WorkerException {
     return launcher.discover(jobRoot, configFileName)
         .redirectOutput(catalogPath.toFile())
-        .redirectError(ProcessBuilder.Redirect.INHERIT)
-        .start();
-  }
-
-  private Process createSyncProcess(Path syncOutputPath) throws IOException, WorkerException {
-    return launcher.read(jobRoot, CONFIG, CATALOG)
-        .redirectOutput(syncOutputPath.toFile())
         .redirectError(ProcessBuilder.Redirect.INHERIT)
         .start();
   }
