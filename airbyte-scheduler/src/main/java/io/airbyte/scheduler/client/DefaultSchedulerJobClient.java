@@ -32,13 +32,12 @@ import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.JobStatus;
 import io.airbyte.scheduler.persistence.JobCreator;
 import io.airbyte.scheduler.persistence.JobPersistence;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DefaultSchedulerJobClient implements SchedulerJobClient {
 
@@ -116,7 +115,7 @@ public class DefaultSchedulerJobClient implements SchedulerJobClient {
   Job waitUntilJobIsTerminalOrTimeout(final long jobId) throws IOException {
     Instant startTime = Instant.now();
     LOGGER.info("Waiting for job id: " + jobId);
-    while(Instant.now().isBefore(startTime.plus(REQUEST_TIMEOUT))){
+    while (Instant.now().isBefore(startTime.plus(REQUEST_TIMEOUT))) {
       final Job job = jobPersistence.getJob(jobId);
 
       if (JobStatus.TERMINAL_STATUSES.contains(job.getStatus())) {
