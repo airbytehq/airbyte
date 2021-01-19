@@ -23,7 +23,7 @@ SOFTWARE.
 """
 
 import json
-from typing import Dict
+from typing import Dict, List
 from googleads import adwords, oauth2
 from tap_adwords import VERSION
 
@@ -33,6 +33,37 @@ from base_singer import SingerSource, SyncModeInfo, SyncMode
 
 
 class SourceGoogleAdwordsSinger(SingerSource):
+    @staticmethod
+    def _check_campaigns(customer_id: str, sdk_client: adwords.AdWordsClient, stream: str, logger: AirbyteLogger):
+        try:
+            selector = {
+               'fields': ['CampaignTrialType', 'EndDate', 'Settings', 'StartDate', 'BudgetId', 'Name', 'Id',
+                          'AdServingOptimizationStatus', 'AdvertisingChannelType', 'BaseCampaignId', 'Labels',
+                          'Status', 'ServingStatus', 'UrlCustomParameters'],
+            }
+            sdk_client.GetService(service_name='CampaignService', version=VERSION).get(selector)
+        except Exception as err:
+            logger.error(err)
+            error_msg = f"Unable to sync {stream} for customer id {customer_id}. Error: {err}"
+            return AirbyteConnectionStatus(status=Status.FAILED, message=error_msg)
+
+    def _check_with_catalog(self, logger: AirbyteLogger, streams: List, config: json):
+        customer_ids = config["customer_ids"].split(",")
+        oauth2_client = oauth2.GoogleRefreshTokenClient(config['oauth_client_id'],
+                                                        config['oauth_client_secret'],
+                                                        config['refresh_token'])
+        for customer_id in customer_ids:
+            check_streams = {
+                "campaigns": self._check_campaigns,
+            }
+            sdk_client = adwords.AdWordsClient(config['developer_token'],
+                                               oauth2_client, user_agent=config['user_agent'],
+                                               client_customer_id=customer_id)
+            for stream in streams:
+                if stream in check_streams:
+                    check_method = check_streams[stream]
+                    check_method(customer_id, sdk_client, stream, logger)
+
     def check_config(self, logger: AirbyteLogger, config_path: str, config: json) -> AirbyteConnectionStatus:
         # singer catalog that attempts to pull a stream ("accounts") that should always exists, though it may be empty.
         try:
@@ -50,6 +81,7 @@ class SourceGoogleAdwordsSinger(SingerSource):
                 }
                 managed_customer_page = sdk_client.GetService(service_name='ManagedCustomerService', version=VERSION).get(selector)
                 accounts = managed_customer_page.entries
+                print(accounts)
                 if not accounts:
                     return AirbyteConnectionStatus(status=Status.FAILED)
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
@@ -82,7 +114,13 @@ class SourceGoogleAdwordsSinger(SingerSource):
     def read_cmd(self, logger, config_path, catalog_path, state_path=None) -> str:
         config_option = f"--config {config_path}"
         properties_option = f"--properties {catalog_path}"
-        return f"tap-adwords {config_option} {properties_option}"
+        state_option = f"--state {state_path}" if state_path else ""
+        streams = [
+            stream["stream"] for stream in self.read_config(catalog_path).get("streams", []) if
+            stream["schema"].get("selected", False)
+        ]
+        self._check_with_catalog(logger, streams, self.read_config(config_path))
+        return f"tap-adwords {config_option} {properties_option} {state_option}"
 
     def transform_config(self, raw_config):
         # required property in the singer tap, but seems like an implementation detail of stitch
