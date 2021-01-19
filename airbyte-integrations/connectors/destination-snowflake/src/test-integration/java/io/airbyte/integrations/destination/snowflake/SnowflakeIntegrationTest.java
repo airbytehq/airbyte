@@ -106,7 +106,8 @@ public class SnowflakeIntegrationTest extends TestDestination {
 
   private List<JsonNode> retrieveRecordsFromTable(String tableName) throws SQLException, InterruptedException {
     return SnowflakeDatabase.getDatabase(getConfig()).bufferedResultSetQuery(
-        connection -> connection.createStatement().executeQuery(String.format("SELECT * FROM %s ORDER BY emitted_at ASC;", tableName)),
+        connection -> connection.createStatement()
+            .executeQuery(String.format("SELECT * FROM %s ORDER BY %s ASC;", tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT)),
         JdbcUtils::rowToJson);
   }
 

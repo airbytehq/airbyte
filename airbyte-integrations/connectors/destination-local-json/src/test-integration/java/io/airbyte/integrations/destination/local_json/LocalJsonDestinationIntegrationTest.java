@@ -29,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.TestDestination;
 import java.nio.file.Files;
@@ -39,7 +40,6 @@ import java.util.stream.Collectors;
 
 public class LocalJsonDestinationIntegrationTest extends TestDestination {
 
-  private static final String FIELD_DATA = "data";
   private static final Path RELATIVE_PATH = Path.of("integration_test/test");
 
   @Override
@@ -80,7 +80,7 @@ public class LocalJsonDestinationIntegrationTest extends TestDestination {
 
     return Files.readAllLines(streamOutput.get()).stream()
         .map(Jsons::deserialize)
-        .map(o -> o.get(FIELD_DATA))
+        .map(o -> o.get(JavaBaseConstants.COLUMN_NAME_DATA))
         .collect(Collectors.toList());
   }
 

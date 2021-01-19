@@ -17,9 +17,9 @@ Then basic normalization would create the following table:
 ```sql
 CREATE TABLE "cars" (
     -- metadata added by airbyte
-    "_cars_hashid" VARCHAR, -- uuid assigned by airbyte derived from a hash of the data.
-    "emitted_at" TIMESTAMP_WITH_TIMEZONE, -- time at which the record was emitted.
-    "normalized_at" TIMESTAMP_WITH_TIMEZONE, -- time at which the record was normalized.
+    "_airbyte_cars_hashid" VARCHAR, -- uuid assigned by airbyte derived from a hash of the data.
+    "_airbyte_emitted_at" TIMESTAMP_WITH_TIMEZONE, -- time at which the record was emitted.
+    "_airbyte_normalized_at" TIMESTAMP_WITH_TIMEZONE, -- time at which the record was normalized.
 
     -- data
     "make" VARCHAR,
@@ -84,19 +84,19 @@ The resulting normalized schema would be:
 
 ```sql
 CREATE TABLE "cars" (
-    "_cars_hashid" VARCHAR,
-    "emitted_at" TIMESTAMP_WITH_TIMEZONE,
-    "normalized_at" TIMESTAMP_WITH_TIMEZONE,
+    "_airbyte_cars_hashid" VARCHAR,
+    "_airbyte_emitted_at" TIMESTAMP_WITH_TIMEZONE,
+    "_airbyte_normalized_at" TIMESTAMP_WITH_TIMEZONE,
 
     "make" VARCHAR,
     "model" VARCHAR,
 );
 
 CREATE TABLE "limited_editions" (
-    "_limited_editions_hashid" VARCHAR,
-    "_cars_foreign_hashid" VARCHAR,
-    "emitted_at" TIMESTAMP_WITH_TIMEZONE,
-    "normalized_at" TIMESTAMP_WITH_TIMEZONE,
+    "_airbyte_limited_editions_hashid" VARCHAR,
+    "_airbyte_cars_foreign_hashid" VARCHAR,
+    "_airbyte_emitted_at" TIMESTAMP_WITH_TIMEZONE,
+    "_airbyte_normalized_at" TIMESTAMP_WITH_TIMEZONE,
 
     "name" VARCHAR,
     "release_year" VARCHAR
@@ -117,19 +117,19 @@ The resulting normalized schema would be:
 
 ```sql
 CREATE TABLE "cars" (
-    "_cars_hashid" VARCHAR,
-    "emitted_at" TIMESTAMP_WITH_TIMEZONE,
-    "normalized_at" TIMESTAMP_WITH_TIMEZONE,
+    "_airbyte_cars_hashid" VARCHAR,
+    "_airbyte_emitted_at" TIMESTAMP_WITH_TIMEZONE,
+    "_airbyte_normalized_at" TIMESTAMP_WITH_TIMEZONE,
 
     "make" VARCHAR,
     "model" VARCHAR,
 );
 
 CREATE TABLE "limited_editions" (
-    "_limited_editions_hashid" VARCHAR,
-    "_cars_foreign_hashid" VARCHAR,
-    "emitted_at" TIMESTAMP_WITH_TIMEZONE,
-    "normalized_at" TIMESTAMP_WITH_TIMEZONE,
+    "_airbyte_limited_editions_hashid" VARCHAR,
+    "_airbyte_cars_foreign_hashid" VARCHAR,
+    "_airbyte_emitted_at" TIMESTAMP_WITH_TIMEZONE,
+    "_airbyte_normalized_at" TIMESTAMP_WITH_TIMEZONE,
 
     "data" VARCHAR
 );
@@ -151,19 +151,19 @@ The normalized schema would be:
 
 ```sql
 CREATE TABLE "cars" (
-    "_cars_hashid" VARCHAR,
-    "emitted_at" TIMESTAMP_WITH_TIMEZONE,
-    "normalized_at" TIMESTAMP_WITH_TIMEZONE,
+    "_airbyte_cars_hashid" VARCHAR,
+    "_airbyte_emitted_at" TIMESTAMP_WITH_TIMEZONE,
+    "_airbyte_normalized_at" TIMESTAMP_WITH_TIMEZONE,
 
     "make" VARCHAR,
     "model" VARCHAR,
 );
 
 CREATE TABLE "powertrain_specs" (
-    "_powertrain_hashid" VARCHAR,
-    "_cars_foreign_hashid" VARCHAR,
-    "emitted_at" TIMESTAMP_WITH_TIMEZONE,
-    "normalized_at" TIMESTAMP_WITH_TIMEZONE,
+    "_airbyte_powertrain_hashid" VARCHAR,
+    "_airbyte_cars_foreign_hashid" VARCHAR,
+    "_airbyte_emitted_at" TIMESTAMP_WITH_TIMEZONE,
+    "_airbyte_normalized_at" TIMESTAMP_WITH_TIMEZONE,
 
     "horsepower" INTEGER,
     "transmission" VARCHAR
