@@ -275,7 +275,12 @@ class BigQueryDestinationTest {
 
   private void assertTmpTablesNotPresent(List<String> tableNames) throws InterruptedException {
     final Set<String> tmpTableNamePrefixes = tableNames.stream().map(name -> name + "_").collect(Collectors.toSet());
-    assertTrue(fetchNamesOfTablesInDb().stream().noneMatch(tableName -> tmpTableNamePrefixes.stream().anyMatch(tableName::startsWith)));
+    final Set<String> finalTableNames = tableNames.stream().map(name -> name + "_raw").collect(Collectors.toSet());
+    // search for table names that have the tmp table prefix but are not raw tables.
+    assertTrue(fetchNamesOfTablesInDb()
+        .stream()
+        .filter(tableName -> !finalTableNames.contains(tableName))
+        .noneMatch(tableName -> tmpTableNamePrefixes.stream().anyMatch(tableName::startsWith)));
   }
 
   private List<JsonNode> retrieveRecords(String tableName) throws Exception {
