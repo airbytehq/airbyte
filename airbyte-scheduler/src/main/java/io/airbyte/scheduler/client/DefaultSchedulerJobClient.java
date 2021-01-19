@@ -113,9 +113,9 @@ public class DefaultSchedulerJobClient implements SchedulerJobClient {
 
   @VisibleForTesting
   Job waitUntilJobIsTerminalOrTimeout(final long jobId) throws IOException {
-    Instant startTime = Instant.now();
+    Instant timeoutInstant = Instant.now().plus(REQUEST_TIMEOUT);
     LOGGER.info("Waiting for job id: " + jobId);
-    while (Instant.now().isBefore(startTime.plus(REQUEST_TIMEOUT))) {
+    while (Instant.now().isBefore(timeoutInstant)) {
       final Job job = jobPersistence.getJob(jobId);
 
       if (JobStatus.TERMINAL_STATUSES.contains(job.getStatus())) {
