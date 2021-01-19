@@ -145,7 +145,7 @@ class JdbcDestinationTest {
     ((ObjectNode) config).put("password", "fake");
     final AirbyteConnectionStatus actual = new JdbcDestination().check(config);
     assertEquals(Status.FAILED, actual.getStatus());
-    assertTrue(actual.getMessage().startsWith("Can't connect with provided configuration."));
+    assertTrue(actual.getMessage().startsWith("Could not connect with provided configuration."));
   }
 
   @Test
