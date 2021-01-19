@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
 from abc import ABC, abstractmethod
 from typing import Any, Iterator, Sequence
 
@@ -30,7 +31,6 @@ from base_python.entrypoint import logger  # FIXME (Eugene K): register logger a
 from facebook_business.exceptions import FacebookRequestError
 
 from .common import retry_pattern
-
 
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 
