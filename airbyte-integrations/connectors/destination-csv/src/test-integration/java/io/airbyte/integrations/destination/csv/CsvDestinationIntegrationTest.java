@@ -29,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.TestDestination;
 import java.io.FileReader;
@@ -43,7 +44,6 @@ import org.apache.commons.csv.CSVRecord;
 
 public class CsvDestinationIntegrationTest extends TestDestination {
 
-  private static final String COLUMN_NAME = "data";
   private static final Path RELATIVE_PATH = Path.of("integration_test/test");
 
   @Override
@@ -84,12 +84,12 @@ public class CsvDestinationIntegrationTest extends TestDestination {
 
     final FileReader in = new FileReader(streamOutput.get().toFile());
     final Iterable<CSVRecord> records = CSVFormat.DEFAULT
-        .withHeader(COLUMN_NAME)
+        .withHeader(JavaBaseConstants.COLUMN_NAME_DATA)
         .withFirstRecordAsHeader()
         .parse(in);
 
     return StreamSupport.stream(records.spliterator(), false)
-        .map(record -> Jsons.deserialize(record.toMap().get(COLUMN_NAME)))
+        .map(record -> Jsons.deserialize(record.toMap().get(JavaBaseConstants.COLUMN_NAME_DATA)))
         .collect(Collectors.toList());
   }
 

@@ -112,6 +112,7 @@ public class AcceptanceTests {
   private static final String STREAM_NAME = "public." + TABLE_NAME;
   private static final String COLUMN_ID = "id";
   private static final String COLUMN_NAME = "name";
+  private static final String COLUMN_NAME_DATA = "_airbyte_data";
 
   private static PostgreSQLContainer sourcePsql;
   private static PostgreSQLContainer destinationPsql;
@@ -528,7 +529,7 @@ public class AcceptanceTests {
     return database.query(context -> context.fetch(String.format("SELECT * FROM \"%s\";", table)))
         .stream()
         .map(Record::intoMap)
-        .map(r -> r.get("data"))
+        .map(r -> r.get(COLUMN_NAME_DATA))
         .map(f -> (JSONB) f)
         .map(JSONB::data)
         .map(Jsons::deserialize)
@@ -550,18 +551,18 @@ public class AcceptanceTests {
   }
 
   private JsonNode getDestinationDbConfig() {
-    return getDbConfig(destinationPsql);
+    return getDbConfig(destinationPsql, false, true);
   }
 
   private JsonNode getDestinationDbConfigWithHiddenPassword() {
-    return getDbConfig(destinationPsql, true);
+    return getDbConfig(destinationPsql, true, true);
   }
 
   private JsonNode getDbConfig(PostgreSQLContainer psql) {
-    return getDbConfig(psql, false);
+    return getDbConfig(psql, false, false);
   }
 
-  private JsonNode getDbConfig(PostgreSQLContainer psql, boolean hiddenPassword) {
+  private JsonNode getDbConfig(PostgreSQLContainer psql, boolean hiddenPassword, boolean withSchema) {
     try {
       final Map<Object, Object> dbConfig = new HashMap<>();
 
@@ -577,6 +578,10 @@ public class AcceptanceTests {
       dbConfig.put("port", psql.getFirstMappedPort());
       dbConfig.put("database", psql.getDatabaseName());
       dbConfig.put("username", psql.getUsername());
+
+      if (withSchema) {
+        dbConfig.put("schema", "public");
+      }
 
       return Jsons.jsonNode(dbConfig);
     } catch (UnknownHostException e) {

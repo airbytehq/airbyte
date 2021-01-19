@@ -32,6 +32,7 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
+import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
@@ -59,9 +60,6 @@ public class CsvDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CsvDestination.class);
 
-  static final String COLUMN_DATA = "data"; // we output all data as a blob to a single column.
-  static final String COLUMN_AB_ID = "ab_id"; // we output all data as a blob to a single column.
-  static final String COLUMN_EMITTED_AT = "emitted_at"; // we output all data as a blob to a single column.
   static final String DESTINATION_PATH_FIELD = "destination_path";
 
   private final StandardNameTransformer namingResolver;
@@ -110,7 +108,8 @@ public class CsvDestination implements Destination {
       final String tmpTableName = getNamingTransformer().getTmpTableName(streamName);
       final Path tmpPath = destinationDir.resolve(tmpTableName + ".csv");
       final Path finalPath = destinationDir.resolve(tableName + ".csv");
-      CSVFormat csvFormat = CSVFormat.DEFAULT.withHeader(COLUMN_AB_ID, COLUMN_EMITTED_AT, COLUMN_DATA);
+      CSVFormat csvFormat = CSVFormat.DEFAULT.withHeader(JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
+          JavaBaseConstants.COLUMN_NAME_DATA);
       final boolean isIncremental = stream.getSyncMode() == SyncMode.INCREMENTAL;
       if (isIncremental && finalPath.toFile().exists()) {
         Files.copy(finalPath, tmpPath, StandardCopyOption.REPLACE_EXISTING);

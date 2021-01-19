@@ -35,6 +35,7 @@ import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.DestinationConsumer;
+import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -195,12 +196,12 @@ class CsvDestinationTest {
   private List<JsonNode> csvToJson(Path csvPath) throws IOException {
     final Reader in = new FileReader(csvPath.toFile());
     final Iterable<CSVRecord> records = CSVFormat.DEFAULT
-        .withHeader(CsvDestination.COLUMN_DATA)
+        .withHeader(JavaBaseConstants.COLUMN_NAME_DATA)
         .withFirstRecordAsHeader()
         .parse(in);
 
     return StreamSupport.stream(records.spliterator(), false)
-        .map(record -> Jsons.deserialize(record.toMap().get(CsvDestination.COLUMN_DATA)))
+        .map(record -> Jsons.deserialize(record.toMap().get(JavaBaseConstants.COLUMN_NAME_DATA)))
         .collect(Collectors.toList());
   }
 
