@@ -44,6 +44,7 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.DestinationConsumer;
+import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -288,7 +289,7 @@ class BigQueryDestinationTest {
 
     return StreamSupport
         .stream(BigQueryDestination.executeQuery(bigquery, queryConfig).getLeft().getQueryResults().iterateAll().spliterator(), false)
-        .map(v -> v.get(BigQueryDestination.COLUMN_DATA).getStringValue())
+        .map(v -> v.get(JavaBaseConstants.COLUMN_NAME_DATA).getStringValue())
         .map(Jsons::deserialize)
         .collect(Collectors.toList());
   }

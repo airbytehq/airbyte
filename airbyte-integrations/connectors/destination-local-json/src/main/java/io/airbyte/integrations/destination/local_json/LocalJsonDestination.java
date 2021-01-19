@@ -32,6 +32,7 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
+import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
@@ -57,10 +58,6 @@ import org.slf4j.LoggerFactory;
 public class LocalJsonDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(LocalJsonDestination.class);
-
-  static final String FIELD_DATA = "data";
-  static final String FIELD_AB_ID = "ab_id";
-  static final String FIELD_EMITTED_AT = "emitted_at";
 
   static final String DESTINATION_PATH_FIELD = "destination_path";
 
@@ -170,9 +167,9 @@ public class LocalJsonDestination implements Destination {
 
         final Writer writer = writeConfigs.get(message.getRecord().getStream()).getWriter();
         writer.write(Jsons.serialize(ImmutableMap.of(
-            FIELD_AB_ID, UUID.randomUUID(),
-            FIELD_EMITTED_AT, message.getRecord().getEmittedAt(),
-            FIELD_DATA, message.getRecord().getData())));
+            JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID(),
+            JavaBaseConstants.COLUMN_NAME_EMITTED_AT, message.getRecord().getEmittedAt(),
+            JavaBaseConstants.COLUMN_NAME_DATA, message.getRecord().getData())));
         writer.write(System.lineSeparator());
       }
     }

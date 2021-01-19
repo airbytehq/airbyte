@@ -35,6 +35,7 @@ import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.DestinationConsumer;
+import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -142,14 +143,14 @@ class LocalJsonDestinationTest {
     consumer.close();
 
     final List<JsonNode> usersActual = toJson(destinationPath.resolve(USERS_FILE))
-        .map(o -> o.get(LocalJsonDestination.FIELD_DATA))
+        .map(o -> o.get(JavaBaseConstants.COLUMN_NAME_DATA))
         .collect(Collectors.toList());
 
     assertTrue(usersActual.contains(MESSAGE_USERS1.getRecord().getData()));
     assertTrue(usersActual.contains(MESSAGE_USERS2.getRecord().getData()));
 
     final List<JsonNode> tasksActual = toJson(destinationPath.resolve(TASKS_FILE))
-        .map(o -> o.get(LocalJsonDestination.FIELD_DATA))
+        .map(o -> o.get(JavaBaseConstants.COLUMN_NAME_DATA))
         .collect(Collectors.toList());
 
     assertTrue(tasksActual.contains(MESSAGE_TASKS1.getRecord().getData()));

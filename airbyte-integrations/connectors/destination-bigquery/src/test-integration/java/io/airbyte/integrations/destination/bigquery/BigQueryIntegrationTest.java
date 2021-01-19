@@ -43,6 +43,7 @@ import com.google.cloud.bigquery.TableResult;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.TestDestination;
 import java.io.ByteArrayInputStream;
@@ -106,7 +107,7 @@ public class BigQueryIntegrationTest extends TestDestination {
   protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
     return retrieveRecordsFromTable(env, namingResolver.getRawTableName(streamName))
         .stream()
-        .map(node -> node.get("data").asText())
+        .map(node -> node.get(JavaBaseConstants.COLUMN_NAME_DATA).asText())
         .map(Jsons::deserialize)
         .collect(Collectors.toList());
   }
@@ -123,7 +124,8 @@ public class BigQueryIntegrationTest extends TestDestination {
     final QueryJobConfiguration queryConfig =
         QueryJobConfiguration
             .newBuilder(
-                String.format("SELECT * FROM `%s`.`%s` order by emitted_at asc;", dataset.getDatasetId().getDataset(), tableName))
+                String.format("SELECT * FROM `%s`.`%s` order by %s asc;", dataset.getDatasetId().getDataset(), tableName,
+                    JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
             .setUseLegacySql(false).build();
 
     TableResult queryResults = executeQuery(bigquery, queryConfig).getLeft().getQueryResults();
