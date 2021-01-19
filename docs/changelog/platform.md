@@ -9,28 +9,33 @@ This is the changelog for Airbyte core. For our connector changelog, please visi
 If you're interested in our progress on the Airbyte platform, please read below!
 
 ## 0.11.1-alpha - Released 01/18/2021
+
 * Increase timeout for long running catalog discovery operations from 3 minutes to 30 minutes to avoid prematurely failing long-running operations 
 
 ## 0.11.1-alpha - Released 01/17/2021
 
-### Bugfixes 
+### Bugfixes
+
 * Writing boolean columns to Redshift destination now works correctly 
 
 ## [0.11.0-alpha](https://github.com/airbytehq/airbyte/milestone/12?closed=1) - Delivered 01/14/2021
 
-### New features 
+### New features
+
 * Allow skipping the onboarding flow in the UI
 * Add the ability to reset a connection's schema when the underlying data source schema changes
 
 ### Bugfixes
+
 * Fix UI race condition which showed config for the wrong connector when rapidly choosing between different connector 
 * Fix a bug in MSSQL and Redshift source connectors where custom SQL types weren't being handled correctly. [Pull request](https://github.com/airbytehq/airbyte/pull/1576)
 * Support incremental sync for Salesforce, Slack, and Braintree sources
-* Gracefully handle invalid nuemric values (e.g NaN or Infinity) in MySQL, MSSQL, and Postgtres DB sources
+* Gracefully handle invalid nuemric values \(e.g NaN or Infinity\) in MySQL, MSSQL, and Postgtres DB sources
 * Fix flashing red sources/destinations fields after success submit
 * Fix a bug which caused getting a connector's specification to hang indefinitely if the connector docker image failed to download
 
 ### New connectors
+
 * Tempo
 * Appstore
 
