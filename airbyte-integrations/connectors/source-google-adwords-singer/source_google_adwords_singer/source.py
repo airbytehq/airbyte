@@ -23,6 +23,7 @@ SOFTWARE.
 """
 
 import json
+import sys
 from typing import Dict, List
 from googleads import adwords, oauth2
 from tap_adwords import VERSION
@@ -34,35 +35,47 @@ from base_singer import SingerSource, SyncModeInfo, SyncMode
 
 class SourceGoogleAdwordsSinger(SingerSource):
     @staticmethod
-    def _check_campaigns(customer_id: str, sdk_client: adwords.AdWordsClient, stream: str, logger: AirbyteLogger):
-        try:
-            selector = {
-               'fields': ['CampaignTrialType', 'EndDate', 'Settings', 'StartDate', 'BudgetId', 'Name', 'Id',
-                          'AdServingOptimizationStatus', 'AdvertisingChannelType', 'BaseCampaignId', 'Labels',
-                          'Status', 'ServingStatus', 'UrlCustomParameters'],
-            }
-            sdk_client.GetService(service_name='CampaignService', version=VERSION).get(selector)
-        except Exception as err:
-            logger.error(err)
-            error_msg = f"Unable to sync {stream} for customer id {customer_id}. Error: {err}"
-            return AirbyteConnectionStatus(status=Status.FAILED, message=error_msg)
+    def _get_accounts(logger: AirbyteLogger, sdk_client: adwords.AdWordsClient, selector: Dict):
+        # obtaining accounts for customer_id
+        managed_customer_page = sdk_client.GetService(service_name='ManagedCustomerService', version=VERSION).get(
+            selector)
+        accounts = managed_customer_page.entries
+        return accounts
 
-    def _check_with_catalog(self, logger: AirbyteLogger, streams: List, config: json):
-        customer_ids = config["customer_ids"].split(",")
-        oauth2_client = oauth2.GoogleRefreshTokenClient(config['oauth_client_id'],
-                                                        config['oauth_client_secret'],
-                                                        config['refresh_token'])
-        for customer_id in customer_ids:
-            check_streams = {
-                "campaigns": self._check_campaigns,
-            }
-            sdk_client = adwords.AdWordsClient(config['developer_token'],
-                                               oauth2_client, user_agent=config['user_agent'],
-                                               client_customer_id=customer_id)
-            for stream in streams:
-                if stream in check_streams:
-                    check_method = check_streams[stream]
-                    check_method(customer_id, sdk_client, stream, logger)
+    def _check_internal(self, logger: AirbyteLogger, streams: List, config: json):
+        # checking if REPORT syncing will be called for manager account
+        # https://developers.google.com/adwords/api/docs/common-errors#ReportDefinitionError.CUSTOMER_SERVING_TYPE_REPORT_MISMATCH
+        try:
+            customer_ids = config["customer_ids"].split(",")
+            oauth2_client = oauth2.GoogleRefreshTokenClient(config['oauth_client_id'],
+                                                            config['oauth_client_secret'],
+                                                            config['refresh_token'])
+            for customer_id in customer_ids:
+                sdk_client = adwords.AdWordsClient(config['developer_token'],
+                                                   oauth2_client, user_agent=config['user_agent'],
+                                                   client_customer_id=customer_id)
+                selector = {
+                    'fields': ['Name', 'CanManageClients', 'CustomerId', 'TestAccount', 'DateTimeZone', 'CurrencyCode'],
+                    'predicates': [
+                        {'field': 'CustomerId',
+                         'operator': 'IN',
+                         'values': [customer_id, ]}
+                    ],
+                }
+                accounts = self._get_accounts(logger, sdk_client, selector)
+                if accounts:
+                    account = accounts[0]
+                    is_manager = account.canManageClients
+                    for stream in streams:
+                        if stream.endswith('REPORT') and is_manager:
+                            logger.log_by_prefix(f"Unable to sync {stream} with the manager account {customer_id}", "ERROR")
+                            sys.exit(1)
+                else:
+                    logger.log_by_prefix(f"Unable to sync with the provided customer id {customer_id}", "ERROR")
+                    sys.exit(1)
+        except Exception as err:
+            logger.log_by_prefix(f"Unable to sync. Error: {err}", "ERROR")
+            sys.exit(1)
 
     def check_config(self, logger: AirbyteLogger, config_path: str, config: json) -> AirbyteConnectionStatus:
         # singer catalog that attempts to pull a stream ("accounts") that should always exists, though it may be empty.
@@ -79,9 +92,7 @@ class SourceGoogleAdwordsSinger(SingerSource):
                 selector = {
                     'fields': ['Name', 'CanManageClients', 'CustomerId', 'TestAccount', 'DateTimeZone', 'CurrencyCode'],
                 }
-                managed_customer_page = sdk_client.GetService(service_name='ManagedCustomerService', version=VERSION).get(selector)
-                accounts = managed_customer_page.entries
-                print(accounts)
+                accounts = self._get_accounts(logger, sdk_client, selector)
                 if not accounts:
                     return AirbyteConnectionStatus(status=Status.FAILED)
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
@@ -119,7 +130,7 @@ class SourceGoogleAdwordsSinger(SingerSource):
             stream["stream"] for stream in self.read_config(catalog_path).get("streams", []) if
             stream["schema"].get("selected", False)
         ]
-        self._check_with_catalog(logger, streams, self.read_config(config_path))
+        self._check_internal(logger, streams, self.read_config(config_path))
         return f"tap-adwords {config_option} {properties_option} {state_option}"
 
     def transform_config(self, raw_config):
