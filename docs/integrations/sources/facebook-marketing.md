@@ -41,7 +41,7 @@ For more information, see the [Facebook Insights API documentation. ](https://de
 | Feature | Supported?\(Yes/No\) | Notes |
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
-| Incremental Sync | Coming soon |  |
+| Incremental Sync | Yes | except AdCreatives |
 
 ### Performance considerations
 
