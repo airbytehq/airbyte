@@ -74,12 +74,21 @@ class BaseSource(Source):
         client = self._get_client(config)
 
         logger.info(f"Starting syncing {self.__class__.__name__}")
+        total_state = {**state}
         for configured_stream in catalog.streams:
             stream_name = configured_stream.stream.name
+
+            if client.stream_has_state(stream_name) and state.get(stream_name):
+                client.set_stream_state(stream_name, state.get(stream_name))
+
             for record in client.read_stream(configured_stream.stream):
                 now = int(datetime.now().timestamp()) * 1000
                 message = AirbyteRecordMessage(stream=stream_name, data=record, emitted_at=now)
                 yield AirbyteMessage(type=MessageType.RECORD, record=message)
+
             if client.stream_has_state(stream_name):
-                yield AirbyteMessage(type=MessageType.STATE, state=AirbyteStateMessage(data=client.get_stream_state(stream_name)))
+                total_state[stream_name] = client.get_stream_state(stream_name)
+                # output state object only together with other stream states
+                yield AirbyteMessage(type=MessageType.STATE, state=AirbyteStateMessage(data=total_state))
+
         logger.info(f"Finished syncing {self.__class__.__name__}")
