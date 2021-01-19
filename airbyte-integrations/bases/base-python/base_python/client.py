@@ -27,7 +27,7 @@ import json
 import os
 import pkgutil
 from abc import ABC, abstractmethod
-from typing import Dict, Generator, List, Tuple, Callable, Any, Mapping
+from typing import Any, Callable, Dict, Generator, List, Mapping, Tuple
 
 import pkg_resources
 from airbyte_protocol import AirbyteStream, SyncMode
