@@ -16,9 +16,9 @@ The Airbyte BigQuery destination allows you to sync data to BigQuery. BigQuery i
 
 Each stream will be output into its own table in BigQuery. Each table will contain 3 columns:
 
-* `ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in BigQuery is `String`.
-* `emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in BigQuery is `Timestamp`.
-* `data`: a json blob representing with the event data. The column type in BigQuery is `String`.
+* `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in BigQuery is `String`.
+* `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in BigQuery is `Timestamp`.
+* `_airbyte_data`: a json blob representing with the event data. The column type in BigQuery is `String`.
 
 #### Features
 
