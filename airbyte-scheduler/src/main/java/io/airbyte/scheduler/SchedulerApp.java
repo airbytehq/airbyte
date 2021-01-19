@@ -33,6 +33,7 @@ import io.airbyte.config.helpers.LogHelpers;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DefaultConfigPersistence;
+import io.airbyte.db.AirbyteDbVersion;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
@@ -41,6 +42,7 @@ import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.KubeProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import java.nio.file.Path;
+import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.ExecutorService;
@@ -116,7 +118,7 @@ public class SchedulerApp {
     }
   }
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws SQLException {
 
     final Configs configs = new EnvConfigs();
 
@@ -145,6 +147,8 @@ public class SchedulerApp {
         configs.getAirbyteRole(),
         configs.getAirbyteVersion(),
         configRepository);
+
+    AirbyteDbVersion.check(configs.getAirbyteVersion(), database);
 
     LOGGER.info("Launching scheduler...");
     new SchedulerApp(workspaceRoot, pbf, jobPersistence, configRepository).start();

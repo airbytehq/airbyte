@@ -85,6 +85,14 @@ CREATE
     VALUES(
         'server_uuid',
         uuid_generate_v4()
+    ),
+    (
+        'airbyte_db_version',
+        '0.11.2-alpha'
+    ),
+    (
+        'init_db_' || CURRENT_TIMESTAMP( 0 ),
+        '0.11.2-alpha'
     );
 
 -- grants
