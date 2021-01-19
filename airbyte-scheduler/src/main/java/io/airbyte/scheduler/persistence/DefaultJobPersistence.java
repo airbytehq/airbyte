@@ -24,6 +24,9 @@
 
 package io.airbyte.scheduler.persistence;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.enums.Enums;
@@ -46,8 +49,12 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -55,15 +62,27 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.jooq.DSLContext;
+import org.jooq.Field;
+import org.jooq.InsertValuesStepN;
+import org.jooq.JSONFormat;
+import org.jooq.JSONFormat.RecordFormat;
+import org.jooq.Named;
 import org.jooq.Record;
 import org.jooq.Result;
+import org.jooq.Table;
+import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DefaultJobPersistence implements JobPersistence {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultJobPersistence.class);
+  private static final JSONFormat DB_JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
+  protected static final String DEFAULT_SCHEMA = "public";
+  private static final String BACKUP_SCHEMA = "import_backup";
+
   @VisibleForTesting
   static final String BASE_JOB_SELECT_AND_JOIN =
       "SELECT\n"
@@ -397,6 +416,151 @@ public class DefaultJobPersistence implements JobPersistence {
 
   private static long getEpoch(Record record, String fieldName) {
     return record.get(fieldName, LocalDateTime.class).toEpochSecond(ZoneOffset.UTC);
+  }
+
+  @Override
+  public Map<DatabaseSchema, Stream<JsonNode>> exportDatabase() throws IOException {
+    return exportDatabase(DEFAULT_SCHEMA);
+  }
+
+  private Map<DatabaseSchema, Stream<JsonNode>> exportDatabase(final String schema) throws IOException {
+    final List<String> tables = listTables(schema);
+    final Map<DatabaseSchema, Stream<JsonNode>> result = new HashMap<>();
+    for (final String table : tables) {
+      result.put(DatabaseSchema.valueOf(table.toUpperCase()), exportTable(schema, table));
+    }
+    return result;
+  }
+
+  /**
+   * List tables from @param schema and @return their names
+   */
+  private List<String> listTables(final String schema) throws IOException {
+    if (schema != null) {
+      return database.query(context -> context.meta().getSchemas(schema).stream()
+          .flatMap(s -> context.meta(s).getTables().stream())
+          .map(Named::getName)
+          .collect(Collectors.toList()));
+    } else {
+      return List.of();
+    }
+  }
+
+  private Stream<JsonNode> exportTable(final String schema, final String tableName) throws IOException {
+    final Table<Record> tableSql = getTable(schema, tableName);
+    try (final Stream<Record> records = database.query(ctx -> ctx.select(DSL.asterisk()).from(tableSql).fetchStream())) {
+      return records.map(record -> {
+        final Set<String> jsonFieldNames = Arrays.stream(record.fields())
+            .filter(f -> f.getDataType().getTypeName().equals("jsonb"))
+            .map(Field::getName)
+            .collect(Collectors.toSet());
+        final JsonNode row = Jsons.deserialize(record.formatJSON(DB_JSON_FORMAT));
+        // for json fields, deserialize them so they are treated as objects instead of strings. this is to
+        // get around that formatJson doesn't handle deserializing them for us.
+        jsonFieldNames.forEach(jsonFieldName -> ((ObjectNode) row).replace(jsonFieldName, Jsons.deserialize(row.get(jsonFieldName).asText())));
+        return row;
+      });
+    }
+  }
+
+  @Override
+  public void importDatabase(final Map<DatabaseSchema, Stream<JsonNode>> data) throws IOException {
+    importDatabase(DEFAULT_SCHEMA, data, false);
+  }
+
+  private void importDatabase(final String targetSchema, final Map<DatabaseSchema, Stream<JsonNode>> data, boolean incrementalImport)
+      throws IOException {
+    if (!data.isEmpty()) {
+      createSchema(BACKUP_SCHEMA);
+      database.transaction(ctx -> {
+        for (final DatabaseSchema tableType : data.keySet()) {
+          if (!incrementalImport) {
+            truncateTable(ctx, targetSchema, tableType.name(), BACKUP_SCHEMA);
+          }
+          importTable(ctx, targetSchema, tableType, data.get(tableType));
+        }
+        return null;
+      });
+    }
+    // TODO write "import success vXX on now()" to audit log table?
+  }
+
+  private void createSchema(final String schema) throws IOException {
+    database.query(ctx -> ctx.createSchemaIfNotExists(schema).execute());
+  }
+
+  /**
+   * In a single transaction, truncate all @param tables from @param schema, making backup copies
+   * in @param backupSchema
+   */
+  private void truncateTable(final DSLContext ctx, final String schema, final String tableName, final String backupSchema) {
+    final Table<Record> tableSql = getTable(schema, tableName);
+    final Table<Record> backupTableSql = getTable(backupSchema, tableName);
+    ctx.dropTableIfExists(backupTableSql).execute();
+    ctx.createTable(backupTableSql).as(DSL.select(DSL.asterisk()).from(tableSql)).withData().execute();
+    ctx.truncateTable(tableSql).execute();
+  }
+
+  private void importTable(DSLContext ctx, final String schema, final DatabaseSchema tableType, final Stream<JsonNode> jsonStream) {
+    final Table<Record> tableSql = getTable(schema, tableType.name());
+    final JsonNode jsonSchema = tableType.toJsonNode();
+    if (jsonSchema != null) {
+      // Use an ArrayList to mirror the order of columns from the schema file since columns may not be
+      // written consistently in the same order in the stream
+      final List<Field<?>> columns = getFields(jsonSchema);
+      // Build a Stream of List of Values using the same order as columns, filling blanks if needed (when
+      // stream omits them for nullable columns)
+      final Stream<List<?>> data = jsonStream.map(node -> {
+        final List<Object> values = new ArrayList<>();
+        for (final Field<?> column : columns) {
+          values.add(getJsonNodeValue(column.getName(), node.get(column.getName())));
+        }
+        return values;
+      });
+      // Then Insert rows into table
+      final InsertValuesStepN<Record> insertStep = ctx
+          .insertInto(tableSql)
+          .columns(columns);
+      data.forEach(insertStep::values);
+      if (insertStep.getBindValues().size() > 0) {
+        // LOGGER.debug(insertStep.toString());
+        ctx.batch(insertStep).execute();
+      }
+    }
+  }
+
+  /**
+   * Read @param jsonSchema and @returns a list of properties (converted as Field objects)
+   */
+  private static List<Field<?>> getFields(final JsonNode jsonSchema) {
+    final List<Field<?>> result = new ArrayList<>();
+    final JsonNode properties = jsonSchema.get("properties");
+    for (Iterator<String> it = properties.fieldNames(); it.hasNext();) {
+      final String fieldName = it.next();
+      result.add(DSL.field(fieldName));
+    }
+    return result;
+  }
+
+  /**
+   * Convert the JSON @param valueNode and @return Java Values for the @param columnName
+   */
+  private static Object getJsonNodeValue(final String columnName, final JsonNode valueNode) {
+    final JsonNodeType nodeType = valueNode.getNodeType();
+    if (nodeType == JsonNodeType.OBJECT) {
+      return valueNode.toString();
+    } else if (nodeType == JsonNodeType.STRING) {
+      return valueNode.asText();
+    } else if (nodeType == JsonNodeType.NUMBER) {
+      return valueNode.asDouble();
+    } else if (nodeType == JsonNodeType.NULL) {
+      return null;
+    }
+    throw new IllegalArgumentException(String.format("Undefined type for column %s", columnName));
+  }
+
+  private static Table<Record> getTable(final String schema, final String tableName) {
+    return DSL.table(String.format("%s.%s", schema, tableName));
   }
 
 }
