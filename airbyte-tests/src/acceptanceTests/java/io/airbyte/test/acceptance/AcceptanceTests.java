@@ -555,7 +555,7 @@ public class AcceptanceTests {
   }
 
   private JsonNode getDestinationDbConfigWithHiddenPassword() {
-    return getDbConfig(destinationPsql, true, false);
+    return getDbConfig(destinationPsql, true, true);
   }
 
   private JsonNode getDbConfig(PostgreSQLContainer psql) {
