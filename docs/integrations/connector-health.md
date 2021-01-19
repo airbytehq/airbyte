@@ -2,10 +2,10 @@
 
 Airbyte runs regular testing of all integrations to ensure we are able to properly interact with APIs/DBs/etc. Our goal is to quickly identify breaking changes.
 
-This page shows the status of integration tests running for each connector on `master`. 
+This page shows the status of integration tests running for each connector on `master`.
 
-**Red status badges** mean the last test failed.   
-**Yellow status badges** mean the last test passed, but at least one of the last ten tests failed.   
+**Red status badges** mean the last test failed.  
+**Yellow status badges** mean the last test passed, but at least one of the last ten tests failed.  
 **Green status badges** mean the last ten tests were all successful.
 
 The test status badges are cached and can take 5 minutes to update.
