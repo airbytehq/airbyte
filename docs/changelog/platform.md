@@ -8,7 +8,7 @@ This is the changelog for Airbyte core. For our connector changelog, please visi
 
 If you're interested in our progress on the Airbyte platform, please read below!
 
-## 0.11.1-alpha - Released 01/18/2021
+## 0.11.2-alpha - Released 01/18/2021
 
 * Increase timeout for long running catalog discovery operations from 3 minutes to 30 minutes to avoid prematurely failing long-running operations 
 
