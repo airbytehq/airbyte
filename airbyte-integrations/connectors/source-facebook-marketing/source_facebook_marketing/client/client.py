@@ -267,7 +267,7 @@ class AdsInsightAPI(StreamAPI):
         self.breakdowns = breakdowns
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
-        for params in self._params():
+        for params in self._params(fields=fields):
             for obj in self._get_insights(params):
                 rec = obj.export_all_data()
                 yield rec
