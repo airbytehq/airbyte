@@ -112,6 +112,7 @@ public class AcceptanceTests {
   private static final String STREAM_NAME = "public." + TABLE_NAME;
   private static final String COLUMN_ID = "id";
   private static final String COLUMN_NAME = "name";
+  private static final String COLUMN_NAME_DATA = "_airbyte_data";
 
   private static PostgreSQLContainer sourcePsql;
   private static PostgreSQLContainer destinationPsql;
@@ -528,7 +529,7 @@ public class AcceptanceTests {
     return database.query(context -> context.fetch(String.format("SELECT * FROM \"%s\";", table)))
         .stream()
         .map(Record::intoMap)
-        .map(r -> r.get("data"))
+        .map(r -> r.get(COLUMN_NAME_DATA))
         .map(f -> (JSONB) f)
         .map(JSONB::data)
         .map(Jsons::deserialize)
