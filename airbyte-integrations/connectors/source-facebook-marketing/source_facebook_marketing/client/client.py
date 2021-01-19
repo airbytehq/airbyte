@@ -100,7 +100,10 @@ class IncrementalStreamAPI(StreamAPI, ABC):
             yield record
 
         if latest_cursor:
-            logger.info(f"Advancing bookmark for stream from {self._state} to {latest_cursor}")
+            stream_name = self.__class__.__name__
+            if stream_name.endswith("API"):
+                stream_name = stream_name[:-3]
+            logger.info(f"Advancing bookmark for {stream_name} stream from {self._state} to {latest_cursor}")
             self._state = max(latest_cursor, self._state) if self._state else latest_cursor
 
 
@@ -221,10 +224,11 @@ class CampaignAPI(IncrementalStreamAPI):
         This is necessary because the functions that call this endpoint return
         a generator, whose calls need decorated with a backoff.
         """
-        return self._api.account.get_campaigns(params=params, fields=[self.state_pk])
+        return self._api.account.get_campaigns(params={**params, **self._state_filter()}, fields=[self.state_pk])
 
 
-class AdsInsightAPI(StreamAPI):
+class AdsInsightAPI(IncrementalStreamAPI):
+    entity_prefix = ""
     state_pk = "date_start"
 
     ALL_ACTION_ATTRIBUTION_WINDOWS = [
@@ -264,16 +268,16 @@ class AdsInsightAPI(StreamAPI):
     def __init__(self, api, start_date, breakdowns=None):
         super().__init__(api=api)
         self.start_date = start_date
+        self._state = start_date
         self.breakdowns = breakdowns
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         for params in self._params(fields=fields):
-            for obj in self._get_insights(params):
-                rec = obj.export_all_data()
+            for rec in self.state_filter(obj.export_all_data() for obj in self._get_insights(params)):
                 yield rec
 
     def _params(self, fields: Sequence[str] = None) -> Iterator[dict]:
-        buffered_start_date = self.start_date.subtract(days=self.buffer_days)
+        buffered_start_date = self._state.subtract(days=self.buffer_days)
         end_date = pendulum.now()
 
         fields = list(set(fields) - set(self.INVALID_INSIGHT_FIELDS))

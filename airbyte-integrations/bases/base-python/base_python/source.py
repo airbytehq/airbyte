@@ -79,8 +79,10 @@ class BaseSource(Source):
             stream_name = configured_stream.stream.name
 
             if client.stream_has_state(stream_name) and state.get(stream_name):
+                logger.info(f"Set state of {stream_name} stream to {state.get(stream_name)}")
                 client.set_stream_state(stream_name, state.get(stream_name))
 
+            logger.info(f"Syncing {stream_name} stream")
             for record in client.read_stream(configured_stream.stream):
                 now = int(datetime.now().timestamp()) * 1000
                 message = AirbyteRecordMessage(stream=stream_name, data=record, emitted_at=now)
