@@ -8,11 +8,13 @@ This is the changelog for Airbyte core. For our connector changelog, please visi
 
 If you're interested in our progress on the Airbyte platform, please read below!
 
+## 0.11.1-alpha - Released 01/18/2021
+* Increase timeout for long running catalog discovery operations from 3 minutes to 30 minutes to avoid prematurely failing long-running operations 
+
 ## 0.11.1-alpha - Released 01/17/2021
 
 ### Bugfixes 
 * Writing boolean columns to Redshift destination now works correctly 
-* Increase timeout for long running catalog discovery operations from 3 minutes to 30 minutes to avoid prematurely failing long-running operations 
 
 ## [0.11.0-alpha](https://github.com/airbytehq/airbyte/milestone/12?closed=1) - Delivered 01/14/2021
 
