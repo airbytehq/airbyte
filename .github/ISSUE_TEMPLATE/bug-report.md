@@ -21,6 +21,8 @@ assignees: ''
 ## Severity of the bug for you
 Very low / Low / Medium / High / Critical
 
+## Airbyte Version
+Found in the .env file in the root of the project.
 
 ## Additional context
 *Environment, version, integration...*
