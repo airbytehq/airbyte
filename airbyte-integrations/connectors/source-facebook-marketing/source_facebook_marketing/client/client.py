@@ -53,6 +53,11 @@ class StreamAPI(ABC):
 class IncrementalStreamAPI(StreamAPI, ABC):
     @property
     @abstractmethod
+    def entity_prefix(self):
+        """Prefix of fields in filter"""
+
+    @property
+    @abstractmethod
     def state_pk(self):
         """Name of the field associated with the state"""
 
@@ -62,15 +67,11 @@ class IncrementalStreamAPI(StreamAPI, ABC):
 
     @state.setter
     def state(self, value):
-        self._state = self._cursor_from_record(value)
+        self._state = pendulum.parse(value[self.state_pk])
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._state = None
-
-    def _cursor_from_record(self, record: dict):
-        short_name = self.state_pk.split('.')[-1]
-        return pendulum.parse(record[short_name])
 
     def _state_filter(self):
         """Additional filters associated with state if any set"""
@@ -78,7 +79,7 @@ class IncrementalStreamAPI(StreamAPI, ABC):
             return {
                 'filtering': [
                     {
-                        'field': self.state_pk,
+                        'field': f"{self.entity_prefix}.{self.state_pk}",
                         'operator': 'GREATER_THAN',
                         'value': self._state.int_timestamp,
                     },
@@ -145,7 +146,8 @@ class AdCreativeAPI(StreamAPI):
 
 class AdsAPI(IncrementalStreamAPI):
     """ doc: https://developers.facebook.com/docs/marketing-api/reference/adgroup """
-    state_pk = "ad.updated_time"
+    entity_prefix = "ad"
+    state_pk = "updated_time"
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         ads = self._get_ads({"limit": self.result_return_limit})
@@ -158,7 +160,7 @@ class AdsAPI(IncrementalStreamAPI):
         This is necessary because the functions that call this endpoint return
         a generator, whose calls need decorated with a backoff.
         """
-        return self._api.account.get_ads(params={**params, **self._state_filter()})
+        return self._api.account.get_ads(params={**params, **self._state_filter()}, fields=[self.state_pk])
 
     @backoff_policy
     def _extend_record(self, ad, fields):
@@ -167,7 +169,8 @@ class AdsAPI(IncrementalStreamAPI):
 
 class AdSetsAPI(IncrementalStreamAPI):
     """ doc: https://developers.facebook.com/docs/marketing-api/reference/ad-campaign """
-    state_pk = "adset.updated_time"
+    entity_prefix = "adset"
+    state_pk = "updated_time"
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         adsets = self._get_ad_sets({"limit": self.result_return_limit})
@@ -181,7 +184,7 @@ class AdSetsAPI(IncrementalStreamAPI):
         This is necessary because the functions that call this endpoint return
         a generator, whose calls need decorated with a backoff.
         """
-        return self._api.account.get_ad_sets(params=params)
+        return self._api.account.get_ad_sets(params=params, fields=[self.state_pk])
 
     @backoff_policy
     def _extend_record(self, ad_set, fields):
@@ -189,7 +192,8 @@ class AdSetsAPI(IncrementalStreamAPI):
 
 
 class CampaignAPI(IncrementalStreamAPI):
-    state_pk = "campaign.updated_time"
+    entity_prefix = "campaign"
+    state_pk = "updated_time"
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Read available campaigns"""
@@ -216,7 +220,7 @@ class CampaignAPI(IncrementalStreamAPI):
         This is necessary because the functions that call this endpoint return
         a generator, whose calls need decorated with a backoff.
         """
-        return self._api.account.get_campaigns(params=params)
+        return self._api.account.get_campaigns(params=params, fields=[self.state_pk])
 
 
 class AdsInsightAPI(StreamAPI):

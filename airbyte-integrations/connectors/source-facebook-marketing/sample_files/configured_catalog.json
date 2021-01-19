@@ -214,7 +214,7 @@
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["incremental"]
       }
     }
   ]
