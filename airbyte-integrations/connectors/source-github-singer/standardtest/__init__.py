@@ -25,4 +25,4 @@ SOFTWARE.
 from .integration_source_test import TestSourceGithub
 from .standard_source_test import GithubStandardSourceTest
 
-__all__ = ['GithubStandardSourceTest', TestSourceGithub]
+__all__ = ["GithubStandardSourceTest", TestSourceGithub]

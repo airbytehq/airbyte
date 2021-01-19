@@ -22,12 +22,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import json
 import os
-import tempfile
-import uuid
+
+from base_python import AirbyteLogger
+from base_singer import ConfigContainer
+from source_github_singer import SourceGithubSinger
+
+logger = AirbyteLogger()
 
 
 class TestSourceGithub(object):
-    private_repo_config: str = "../secrets/private_config.json"
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    private_repo_config_path: str = os.path.join(base_dir, "secrets/private_config.json")
+    private_repo_catalog_path: str = os.path.join(base_dir, "resourcesstandardtest/private_configured_catalog.json")
 
+    def test_private_repo(self):
+        singer = SourceGithubSinger()
+        config = singer.read_config(self.private_repo_config_path)
+        configure_container = ConfigContainer(config, self.private_repo_config_path)
+        generator = singer.read(logger, configure_container, self.private_repo_catalog_path)
+        for message in generator:
+            print(message.json(exclude_unset=True))
