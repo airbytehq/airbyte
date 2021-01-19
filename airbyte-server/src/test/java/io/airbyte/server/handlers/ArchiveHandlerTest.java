@@ -24,7 +24,6 @@
 
 package io.airbyte.server.handlers;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -51,7 +50,7 @@ public class ArchiveHandlerTest {
 
   @Test
   void testEmptyMigration() throws JsonValidationException, IOException {
-    assertThrows(RuntimeException.class, () -> archiveHandler.importData(archiveHandler.exportData()));
+    archiveHandler.importData(archiveHandler.exportData());
     verify(configRepository, never()).writeStandardWorkspace(any());
     verify(configRepository, never()).writeStandardSource(any());
     verify(configRepository, never()).writeStandardDestinationDefinition(any());
