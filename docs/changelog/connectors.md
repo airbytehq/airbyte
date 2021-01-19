@@ -64,7 +64,7 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 
 ## 11/04/2020
 
-**New sources:** [Facebook Ads](../integrations/sources/facebook-marketing-api.md), [Google Ads](../integrations/sources/google-adwords.md), [Marketo](../integrations/sources/marketo.md)  
+**New sources:** [Facebook Ads](), [Google Ads](../integrations/sources/google-adwords.md), [Marketo](../integrations/sources/marketo.md)  
 **New destination:** [Snowflake](../integrations/destinations/snowflake.md)
 
 ## 10/30/2020
