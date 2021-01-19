@@ -6,7 +6,7 @@ This destination is meant to be used on a local workstation and won't work on Ku
 
 ## Overview
 
-This destination writes data to a directory on the _local_ filesystem on the host running Airbyte. By default, data is written to [/tmp/airbyte_local](file:///tmp/airbyte_local/). To change this location, modify the `LOCAL_ROOT` environment variable for Airbyte.
+This destination writes data to a directory on the _local_ filesystem on the host running Airbyte. By default, data is written to [/tmp/airbyte\_local](file:///tmp/airbyte_local/). To change this location, modify the `LOCAL_ROOT` environment variable for Airbyte.
 
 ### Sync Overview
 
