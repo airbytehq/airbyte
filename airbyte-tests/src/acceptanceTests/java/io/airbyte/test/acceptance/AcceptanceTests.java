@@ -551,18 +551,18 @@ public class AcceptanceTests {
   }
 
   private JsonNode getDestinationDbConfig() {
-    return getDbConfig(destinationPsql);
+    return getDbConfig(destinationPsql, false, true);
   }
 
   private JsonNode getDestinationDbConfigWithHiddenPassword() {
-    return getDbConfig(destinationPsql, true);
+    return getDbConfig(destinationPsql, true, false);
   }
 
   private JsonNode getDbConfig(PostgreSQLContainer psql) {
-    return getDbConfig(psql, false);
+    return getDbConfig(psql, false, false);
   }
 
-  private JsonNode getDbConfig(PostgreSQLContainer psql, boolean hiddenPassword) {
+  private JsonNode getDbConfig(PostgreSQLContainer psql, boolean hiddenPassword, boolean withSchema) {
     try {
       final Map<Object, Object> dbConfig = new HashMap<>();
 
@@ -578,6 +578,10 @@ public class AcceptanceTests {
       dbConfig.put("port", psql.getFirstMappedPort());
       dbConfig.put("database", psql.getDatabaseName());
       dbConfig.put("username", psql.getUsername());
+
+      if (withSchema) {
+        dbConfig.put("schema", "public");
+      }
 
       return Jsons.jsonNode(dbConfig);
     } catch (UnknownHostException e) {
