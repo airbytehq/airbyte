@@ -70,9 +70,7 @@ export default class ConnectionResource extends BaseResource
       ...super.detailShape(),
       getFetchKey: (params: { connectionId: string }) =>
         "POST /web_backend/get" + JSON.stringify(params),
-      fetch: async (
-        params: Readonly<Record<string, string | number>>
-      ): Promise<any> =>
+      fetch: async (params: any): Promise<any> =>
         await this.fetch(
           "post",
           `${super.rootUrl()}web_backend/connections/get`,

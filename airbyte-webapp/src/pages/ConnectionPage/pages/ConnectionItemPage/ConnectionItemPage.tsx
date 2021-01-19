@@ -24,10 +24,19 @@ const ConnectionItemPage: React.FC = () => {
     false
   );
 
-  const connection = useResource(ConnectionResource.detailShape(), {
-    // @ts-ignore
-    connectionId: query.id
-  });
+  const connection = useResource(
+    ConnectionResource.detailShape(),
+    activeUpdatingSchemaMode
+      ? {
+          // @ts-ignore
+          connectionId: query.id,
+          with_refreshed_catalog: true
+        }
+      : {
+          // @ts-ignore
+          connectionId: query.id
+        }
+  );
 
   const frequency = FrequencyConfig.find(
     item => JSON.stringify(item.config) === JSON.stringify(connection.schedule)
