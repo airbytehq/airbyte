@@ -12,6 +12,10 @@ Clicking on a status will take you to a summary of past tests that link to the G
 
 The test status badges are cached and can take 5 minutes to update.
 
+#### Airbyte Certified
+
+We mark a connector as "Airbyte Certified" after verifying that the connector adheres to our recommended [best practices](../contributing-to-airbyte/building-new-connector/best-practices.md). 
+
 ## Sources
 
 | Source | Status | Airbyte Certified |
@@ -22,7 +26,7 @@ The test status badges are cached and can take 5 minutes to update.
 | Facebook Marketing | [![source-facebook-marketing](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-facebook-marketing%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-facebook-marketing) | |
 | Files | [![source-file](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-file%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-file) | |
 | Freshdesk | [![source-freshdesk](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-freshdesk%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-freshdesk) | |
-| GitHub | [![source-github-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-github-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-github-singer) | :white_check_mark: |
+| GitHub | [![source-github-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-github-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-github-singer) | |
 | Google Adwords | [![source-google-adwords-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-google-adwords-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-google-adwords-singer) | |
 | Google Analytics | [![source-googleanalytics-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-googleanalytics-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-googleanalytics-singer) | |
 | Google Sheets | [![source-google-sheets](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-google-sheets%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-google-sheets) | :white_check_mark: |
@@ -42,7 +46,7 @@ The test status badges are cached and can take 5 minutes to update.
 | Postgres | [![source-postgres](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-postgres%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-postgres) | |
 | Recurly | [![source-recurly](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-recurly%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-recurly) | |
 | Redshift | [![source-redshift](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-redshift%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-redshift) | |
-| Salesforce | [![source-salesforce-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-salesforce-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-salesforce-singer) | :white_check_mark: |
+| Salesforce | [![source-salesforce-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-salesforce-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-salesforce-singer) | |
 | Sendgrid | [![source-sendgrid](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-sendgrid%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-sendgrid) | |
 | Shopify | [![source-shopify-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-shopify-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-shopify-singer) | |
 | Slack | [![source-slack-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-slack-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-slack-singer) | |
