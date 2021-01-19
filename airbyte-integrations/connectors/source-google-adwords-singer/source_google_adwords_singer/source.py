@@ -25,20 +25,19 @@ SOFTWARE.
 import json
 import sys
 from typing import Dict, List
-from googleads import adwords, oauth2
-from tap_adwords import VERSION
 
 from airbyte_protocol import AirbyteConnectionStatus, Status
 from base_python import AirbyteLogger
-from base_singer import SingerSource, SyncModeInfo, SyncMode
+from base_singer import SingerSource, SyncMode, SyncModeInfo
+from googleads import adwords, oauth2
+from tap_adwords import VERSION
 
 
 class SourceGoogleAdwordsSinger(SingerSource):
     @staticmethod
     def _get_accounts(logger: AirbyteLogger, sdk_client: adwords.AdWordsClient, selector: Dict):
         # obtaining accounts for customer_id
-        managed_customer_page = sdk_client.GetService(service_name='ManagedCustomerService', version=VERSION).get(
-            selector)
+        managed_customer_page = sdk_client.GetService(service_name="ManagedCustomerService", version=VERSION).get(selector)
         accounts = managed_customer_page.entries
         return accounts
 
@@ -47,19 +46,23 @@ class SourceGoogleAdwordsSinger(SingerSource):
         # https://developers.google.com/adwords/api/docs/common-errors#ReportDefinitionError.CUSTOMER_SERVING_TYPE_REPORT_MISMATCH
         try:
             customer_ids = config["customer_ids"].split(",")
-            oauth2_client = oauth2.GoogleRefreshTokenClient(config['oauth_client_id'],
-                                                            config['oauth_client_secret'],
-                                                            config['refresh_token'])
+            oauth2_client = oauth2.GoogleRefreshTokenClient(
+                config["oauth_client_id"], config["oauth_client_secret"], config["refresh_token"]
+            )
             for customer_id in customer_ids:
-                sdk_client = adwords.AdWordsClient(config['developer_token'],
-                                                   oauth2_client, user_agent=config['user_agent'],
-                                                   client_customer_id=customer_id)
+                sdk_client = adwords.AdWordsClient(
+                    config["developer_token"], oauth2_client, user_agent=config["user_agent"], client_customer_id=customer_id
+                )
                 selector = {
-                    'fields': ['Name', 'CanManageClients', 'CustomerId', 'TestAccount', 'DateTimeZone', 'CurrencyCode'],
-                    'predicates': [
-                        {'field': 'CustomerId',
-                         'operator': 'IN',
-                         'values': [customer_id, ]}
+                    "fields": ["Name", "CanManageClients", "CustomerId", "TestAccount", "DateTimeZone", "CurrencyCode"],
+                    "predicates": [
+                        {
+                            "field": "CustomerId",
+                            "operator": "IN",
+                            "values": [
+                                customer_id,
+                            ],
+                        }
                     ],
                 }
                 accounts = self._get_accounts(logger, sdk_client, selector)
@@ -67,7 +70,7 @@ class SourceGoogleAdwordsSinger(SingerSource):
                     account = accounts[0]
                     is_manager = account.canManageClients
                     for stream in streams:
-                        if stream.endswith('REPORT') and is_manager:
+                        if stream.endswith("REPORT") and is_manager:
                             logger.log_by_prefix(f"Unable to sync {stream} with the manager account {customer_id}", "ERROR")
                             sys.exit(1)
                 else:
@@ -80,17 +83,17 @@ class SourceGoogleAdwordsSinger(SingerSource):
     def check_config(self, logger: AirbyteLogger, config_path: str, config: json) -> AirbyteConnectionStatus:
         # singer catalog that attempts to pull a stream ("accounts") that should always exists, though it may be empty.
         try:
-            customer_ids = config['customer_ids'].split(",")
+            customer_ids = config["customer_ids"].split(",")
             for customer_id in customer_ids:
-                oauth2_client = oauth2.GoogleRefreshTokenClient(config['oauth_client_id'],
-                                                                config['oauth_client_secret'],
-                                                                config['refresh_token'])
+                oauth2_client = oauth2.GoogleRefreshTokenClient(
+                    config["oauth_client_id"], config["oauth_client_secret"], config["refresh_token"]
+                )
 
-                sdk_client = adwords.AdWordsClient(config['developer_token'],
-                                                   oauth2_client, user_agent=config['user_agent'],
-                                                   client_customer_id=customer_id)
+                sdk_client = adwords.AdWordsClient(
+                    config["developer_token"], oauth2_client, user_agent=config["user_agent"], client_customer_id=customer_id
+                )
                 selector = {
-                    'fields': ['Name', 'CanManageClients', 'CustomerId', 'TestAccount', 'DateTimeZone', 'CurrencyCode'],
+                    "fields": ["Name", "CanManageClients", "CustomerId", "TestAccount", "DateTimeZone", "CurrencyCode"],
                 }
                 accounts = self._get_accounts(logger, sdk_client, selector)
                 if not accounts:
@@ -101,17 +104,36 @@ class SourceGoogleAdwordsSinger(SingerSource):
 
     def get_sync_mode_overrides(self) -> Dict[str, SyncModeInfo]:
         incremental_streams = [
-            "ACCOUNT_PERFORMANCE_REPORT", "AD_PERFORMANCE_REPORT", "ADGROUP_PERFORMANCE_REPORT",
-            "AGE_RANGE_PERFORMANCE_REPORT", "AUDIENCE_PERFORMANCE_REPORT", "CALL_METRICS_CALL_DETAILS_REPORT",
-            "CAMPAIGN_PERFORMANCE_REPORT", "CLICK_PERFORMANCE_REPORT", "CRITERIA_PERFORMANCE_REPORT",
-            "DISPLAY_KEYWORD_PERFORMANCE_REPORT", "DISPLAY_TOPICS_PERFORMANCE_REPORT", "FINAL_URL_REPORT",
-            "GENDER_PERFORMANCE_REPORT", "GEO_PERFORMANCE_REPORT", "KEYWORDLESS_QUERY_REPORT",
-            "KEYWORDS_PERFORMANCE_REPORT", "SEARCH_QUERY_PERFORMANCE_REPORT", "VIDEO_PERFORMANCE_REPORT"
+            "ACCOUNT_PERFORMANCE_REPORT",
+            "AD_PERFORMANCE_REPORT",
+            "ADGROUP_PERFORMANCE_REPORT",
+            "AGE_RANGE_PERFORMANCE_REPORT",
+            "AUDIENCE_PERFORMANCE_REPORT",
+            "CALL_METRICS_CALL_DETAILS_REPORT",
+            "CAMPAIGN_PERFORMANCE_REPORT",
+            "CLICK_PERFORMANCE_REPORT",
+            "CRITERIA_PERFORMANCE_REPORT",
+            "DISPLAY_KEYWORD_PERFORMANCE_REPORT",
+            "DISPLAY_TOPICS_PERFORMANCE_REPORT",
+            "FINAL_URL_REPORT",
+            "GENDER_PERFORMANCE_REPORT",
+            "GEO_PERFORMANCE_REPORT",
+            "KEYWORDLESS_QUERY_REPORT",
+            "KEYWORDS_PERFORMANCE_REPORT",
+            "SEARCH_QUERY_PERFORMANCE_REPORT",
+            "VIDEO_PERFORMANCE_REPORT",
         ]
 
-        full_refresh_streams = ["accounts", "ad_groups", "campaigns", "ads",
-                                "PLACEHOLDER_FEED_ITEM_REPORT", "PLACEMENT_PERFORMANCE_REPORT",
-                                "SHOPPING_PERFORMANCE_REPORT", "PLACEHOLDER_REPORT", ]
+        full_refresh_streams = [
+            "accounts",
+            "ad_groups",
+            "campaigns",
+            "ads",
+            "PLACEHOLDER_FEED_ITEM_REPORT",
+            "PLACEMENT_PERFORMANCE_REPORT",
+            "SHOPPING_PERFORMANCE_REPORT",
+            "PLACEHOLDER_REPORT",
+        ]
         overrides = {}
         for stream_name in incremental_streams:
             overrides[stream_name] = SyncModeInfo(supported_sync_modes=[SyncMode.incremental])
@@ -127,8 +149,7 @@ class SourceGoogleAdwordsSinger(SingerSource):
         properties_option = f"--properties {catalog_path}"
         state_option = f"--state {state_path}" if state_path else ""
         streams = [
-            stream["stream"] for stream in self.read_config(catalog_path).get("streams", []) if
-            stream["schema"].get("selected", False)
+            stream["stream"] for stream in self.read_config(catalog_path).get("streams", []) if stream["schema"].get("selected", False)
         ]
         self._check_internal(logger, streams, self.read_config(config_path))
         return f"tap-adwords {config_option} {properties_option} {state_option}"
