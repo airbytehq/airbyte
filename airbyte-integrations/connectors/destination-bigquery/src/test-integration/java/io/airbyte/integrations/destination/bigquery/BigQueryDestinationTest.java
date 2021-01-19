@@ -69,6 +69,7 @@ import java.util.stream.StreamSupport;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -181,8 +182,7 @@ class BigQueryDestinationTest {
     tornDown = true;
   }
 
-  // todo - same test as csv destination
-  // @Test
+  @Test
   void testSpec() throws IOException {
     final ConnectorSpecification actual = new BigQueryDestination().spec();
     final String resourceString = MoreResources.readResource("spec.json");
@@ -191,15 +191,14 @@ class BigQueryDestinationTest {
     assertEquals(expected, actual);
   }
 
-  // todo - same test as csv destination
-  // @Test
+  @Test
   void testCheckSuccess() {
     final AirbyteConnectionStatus actual = new BigQueryDestination().check(config);
     final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     assertEquals(expected, actual);
   }
 
-  // @Test
+  @Test
   void testCheckFailure() {
     ((ObjectNode) config).put(BigQueryDestination.CONFIG_PROJECT_ID, "fake");
     final AirbyteConnectionStatus actual = new BigQueryDestination().check(config);
@@ -208,7 +207,7 @@ class BigQueryDestinationTest {
     assertEquals(expected, actual);
   }
 
-  // @Test
+  @Test
   void testWriteSuccess() throws Exception {
     final BigQueryDestination destination = new BigQueryDestination();
     final DestinationConsumer<AirbyteMessage> consumer = destination.write(config, CATALOG);
@@ -237,8 +236,7 @@ class BigQueryDestinationTest {
         .collect(Collectors.toList()));
   }
 
-  @SuppressWarnings("ResultOfMethodCallIgnored")
-  // @Test
+  @Test
   void testWriteFailure() throws Exception {
     // hack to force an exception to be thrown from within the consumer.
     final AirbyteMessage spiedMessage = spy(MESSAGE_USERS1);
