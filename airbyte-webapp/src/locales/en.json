@@ -164,6 +164,8 @@
   "connection.destinationTestAgain": "Test again destination connection",
   "connection.sourceTestAgain": "Test again source connection",
   "connection.resetData": "Reset your data",
+  "connection.updateSchema": "Update Schema",
+  "connection.updateSchemaText": "WARNING! Updating the schema will delete all the data for this connection in your destination and start syncing from scratch. Are you sure you want to do this?",
 
   "tables.sourceIsValidating": "Validating the source",
   "tables.sourceIsValidatingBefore": "before you add a new destination",

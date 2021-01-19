@@ -18,6 +18,7 @@ import {
 } from "../../core/resources/Schema";
 import ResetDataModal from "../ResetDataModal";
 import { equal } from "../../utils/objects";
+import { ModalTypes } from "../ResetDataModal/types";
 
 type IProps = {
   className?: string;
@@ -202,7 +203,7 @@ const FrequencyForm: React.FC<IProps> = ({
               />
               {modalIsOpen && (
                 <ResetDataModal
-                  message={<FormattedMessage id="form.changedColumns" />}
+                  modalType={ModalTypes.RESET_CHANGED_COLUMN}
                   onClose={() => setResetModalIsOpen(false)}
                   onSubmit={async () => {
                     await onReset?.();

@@ -15,9 +15,14 @@ import { AnalyticsService } from "../../../../core/analytics/AnalyticsService";
 import FrequencyConfig from "../../../../data/FrequencyConfig.json";
 import Link from "../../../../components/Link";
 import { Routes } from "../../../routes";
+import Button from "../../../../components/Button";
 
 const ConnectionItemPage: React.FC = () => {
   const { query } = useRouter();
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [activeUpdatingSchemaMode, setActiveUpdatingSchemaMode] = useState(
+    false
+  );
 
   const connection = useResource(ConnectionResource.detailShape(), {
     // @ts-ignore
@@ -63,6 +68,12 @@ const ConnectionItemPage: React.FC = () => {
 
     return (
       <SettingsView
+        onCloseModal={() => setIsUpdateModalOpen(false)}
+        onSubmitModal={() => {
+          setActiveUpdatingSchemaMode(true);
+          setIsUpdateModalOpen(false);
+        }}
+        isModalOpen={isUpdateModalOpen}
         connection={connection}
         onAfterSaveSchema={onAfterSaveSchema}
       />
@@ -74,6 +85,17 @@ const ConnectionItemPage: React.FC = () => {
       {connection.source?.name}
     </Link>
   );
+
+  const endControl = () => {
+    if (currentStep === "settings" && !activeUpdatingSchemaMode) {
+      return (
+        <Button onClick={() => setIsUpdateModalOpen(true)}>
+          <FormattedMessage id="connection.updateSchema" />
+        </Button>
+      );
+    }
+    return null;
+  };
 
   const linkToDestination = () => (
     <Link
@@ -106,6 +128,7 @@ const ConnectionItemPage: React.FC = () => {
               activeStep={currentStep}
             />
           }
+          endComponent={endControl()}
         />
       }
     >

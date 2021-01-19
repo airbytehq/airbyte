@@ -10,10 +10,15 @@ import DeleteBlock from "../../../../../components/DeleteBlock";
 import FrequencyForm from "../../../../../components/FrequencyForm";
 import { SyncSchema } from "../../../../../core/resources/Schema";
 import { equal } from "../../../../../utils/objects";
+import ResetDataModal from "../../../../../components/ResetDataModal";
+import { ModalTypes } from "../../../../../components/ResetDataModal/types";
 
 type IProps = {
   connection: Connection;
+  isModalOpen?: boolean;
   onAfterSaveSchema: () => void;
+  onCloseModal: () => void;
+  onSubmitModal: () => void;
 };
 
 const Content = styled.div`
@@ -21,7 +26,13 @@ const Content = styled.div`
   margin: 18px auto;
 `;
 
-const SettingsView: React.FC<IProps> = ({ connection, onAfterSaveSchema }) => {
+const SettingsView: React.FC<IProps> = ({
+  connection,
+  onAfterSaveSchema,
+  isModalOpen,
+  onCloseModal,
+  onSubmitModal
+}) => {
   const [saved, setSaved] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const {
@@ -85,8 +96,14 @@ const SettingsView: React.FC<IProps> = ({ connection, onAfterSaveSchema }) => {
           successMessage={saved && <FormattedMessage id="form.changesSaved" />}
         />
       </ContentCard>
-      {/* TODO: fix on delete*/}
       <DeleteBlock type="connection" onDelete={onDelete} />
+      {isModalOpen ? (
+        <ResetDataModal
+          onClose={onCloseModal}
+          onSubmit={onSubmitModal}
+          modalType={ModalTypes.UPDATE_SCHEMA}
+        />
+      ) : null}
     </Content>
   );
 };
