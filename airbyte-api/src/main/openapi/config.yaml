@@ -1734,8 +1734,10 @@ components:
         - configType
         - configId
       properties:
-        configType:
-          $ref: "#/components/schemas/JobConfigType"
+        configTypes:
+          type: array
+          items:
+            $ref: "#/components/schemas/JobConfigType"
         configId:
           type: string
     JobIdRequestBody:
