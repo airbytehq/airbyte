@@ -113,14 +113,14 @@ class ResourceSchemaLoader:
         return raw_schema
 
 
-class StreamStateMixin(ABC):
-    @abstractmethod
+class StreamStateMixin:
     def get_stream_state(self, name: str) -> Any:
         """Get state of stream with corresponding name"""
+        raise NotImplementedError
 
-    @abstractmethod
     def set_stream_state(self, name: str, state: Any):
         """Set state of stream with corresponding name"""
+        raise NotImplementedError
 
     def stream_has_state(self, name: str) -> bool:
         """Tell if stream supports incremental sync"""
