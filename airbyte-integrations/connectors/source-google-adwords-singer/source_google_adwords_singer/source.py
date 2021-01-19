@@ -48,7 +48,8 @@ class SourceGoogleAdwordsSinger(SingerSource):
                 selector = {
                     'fields': ['CustomerId'],
                 }
-                accounts = sdk_client.GetService(service_name='ManagedCustomerService', version=VERSION).get(selector)
+                managed_customer_page = sdk_client.GetService(service_name='ManagedCustomerService', version=VERSION).get(selector)
+                accounts = managed_customer_page.entries
                 if not accounts:
                     return AirbyteConnectionStatus(status=Status.FAILED)
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
