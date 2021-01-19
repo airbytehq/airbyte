@@ -29,8 +29,6 @@ import io.airbyte.commons.json.JsonSchemas;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import java.io.File;
 import java.nio.file.Path;
-import java.util.Optional;
-import org.apache.commons.io.FileUtils;
 
 /**
  * Whenever a new table is created in the Airbyte Database, we should also add a corresponding yaml
