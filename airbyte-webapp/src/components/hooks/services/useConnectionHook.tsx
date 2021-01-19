@@ -116,7 +116,8 @@ const useConnection = () => {
     connectionId,
     syncSchema,
     status,
-    schedule
+    schedule,
+    with_refreshed_catalog
   }: {
     connectionId: string;
     syncSchema?: SyncSchema;
@@ -125,14 +126,20 @@ const useConnection = () => {
       units: number;
       timeUnit: string;
     } | null;
+    with_refreshed_catalog?: boolean;
   }) => {
+    const withRefreshedCatalog = with_refreshed_catalog
+      ? { with_refreshed_catalog }
+      : null;
+
     return await updateConnectionResource(
       {},
       {
         connectionId,
         syncSchema,
         status,
-        schedule
+        schedule,
+        ...withRefreshedCatalog
       }
     );
   };

@@ -68,7 +68,7 @@ const ConnectionItemPage: React.FC = () => {
 
     return (
       <SettingsView
-        onCloseModal={() => setIsUpdateModalOpen(false)}
+        setModalState={setIsUpdateModalOpen}
         onSubmitModal={() => {
           setActiveUpdatingSchemaMode(true);
           setIsUpdateModalOpen(false);
@@ -76,6 +76,8 @@ const ConnectionItemPage: React.FC = () => {
         isModalOpen={isUpdateModalOpen}
         connection={connection}
         onAfterSaveSchema={onAfterSaveSchema}
+        activeUpdatingSchemaMode={activeUpdatingSchemaMode}
+        deactivatedUpdatingSchemaMode={() => setActiveUpdatingSchemaMode(false)}
       />
     );
   };

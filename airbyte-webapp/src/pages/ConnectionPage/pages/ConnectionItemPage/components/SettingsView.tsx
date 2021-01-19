@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 
 import ContentCard from "../../../../../components/ContentCard";
@@ -16,8 +16,10 @@ import { ModalTypes } from "../../../../../components/ResetDataModal/types";
 type IProps = {
   connection: Connection;
   isModalOpen?: boolean;
+  activeUpdatingSchemaMode?: boolean;
+  deactivatedUpdatingSchemaMode: () => void;
   onAfterSaveSchema: () => void;
-  onCloseModal: () => void;
+  setModalState: (state: boolean) => void;
   onSubmitModal: () => void;
 };
 
@@ -30,10 +32,18 @@ const SettingsView: React.FC<IProps> = ({
   connection,
   onAfterSaveSchema,
   isModalOpen,
-  onCloseModal,
-  onSubmitModal
+  setModalState,
+  onSubmitModal,
+  activeUpdatingSchemaMode,
+  deactivatedUpdatingSchemaMode
 }) => {
+  const formatMessage = useIntl().formatMessage;
   const [saved, setSaved] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentValues, setCurrentValues] = useState<{
+    frequency: string;
+    schema: SyncSchema;
+  }>({ frequency: "", schema: { streams: [] } });
   const [errorMessage, setErrorMessage] = useState("");
   const {
     updateConnection,
@@ -45,29 +55,63 @@ const SettingsView: React.FC<IProps> = ({
     equal(connection.schedule, item.config)
   );
 
+  const onSubmitResetModal = async () => {
+    if (activeUpdatingSchemaMode) {
+      setModalState(false);
+      await onSubmit(currentValues);
+    } else {
+      onSubmitModal();
+    }
+  };
+
+  const onSubmitForm = async (values: {
+    frequency: string;
+    schema: SyncSchema;
+  }) => {
+    if (activeUpdatingSchemaMode) {
+      setCurrentValues(values);
+      setModalState(true);
+    } else {
+      await onSubmit(values);
+    }
+  };
+
   const onSubmit = async (values: {
     frequency: string;
     schema: SyncSchema;
   }) => {
+    setIsLoading(true);
     const frequencyData = FrequencyConfig.find(
       item => item.value === values.frequency
     );
     const initialSyncSchema = connection.syncSchema;
 
-    const result = await updateConnection({
-      connectionId: connection.connectionId,
-      syncSchema: values.schema,
-      status: connection.status,
-      schedule: frequencyData?.config || null
-    });
+    try {
+      await updateConnection({
+        connectionId: connection.connectionId,
+        syncSchema: values.schema,
+        status: connection.status,
+        schedule: frequencyData?.config || null,
+        with_refreshed_catalog: activeUpdatingSchemaMode
+      });
 
-    if (result.status === "failure") {
-      setErrorMessage(result.message);
-    } else {
       setSaved(true);
       if (!equal(values.schema, initialSyncSchema)) {
         onAfterSaveSchema();
       }
+
+      if (activeUpdatingSchemaMode) {
+        deactivatedUpdatingSchemaMode();
+      }
+    } catch (e) {
+      setErrorMessage(
+        e.message ||
+          formatMessage({
+            id: "form.someError"
+          })
+      );
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -89,18 +133,21 @@ const SettingsView: React.FC<IProps> = ({
         <FrequencyForm
           isEditMode
           schema={connection.syncSchema}
-          onSubmit={onSubmit}
+          onSubmit={onSubmitForm}
           onReset={onReset}
           frequencyValue={schedule?.value}
           errorMessage={errorMessage}
           successMessage={saved && <FormattedMessage id="form.changesSaved" />}
+          onCancel={deactivatedUpdatingSchemaMode}
+          editSchemeMode={activeUpdatingSchemaMode}
+          isLoading={isLoading}
         />
       </ContentCard>
       <DeleteBlock type="connection" onDelete={onDelete} />
       {isModalOpen ? (
         <ResetDataModal
-          onClose={onCloseModal}
-          onSubmit={onSubmitModal}
+          onClose={() => setModalState(false)}
+          onSubmit={onSubmitResetModal}
           modalType={ModalTypes.UPDATE_SCHEMA}
         />
       ) : null}

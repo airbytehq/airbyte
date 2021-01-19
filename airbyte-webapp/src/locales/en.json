@@ -155,6 +155,7 @@
   "destinations.newDestinationTitle": "New destination",
   "destinations.destinationSetUp": "Set up the destination",
 
+  "connection.warningUpdateSchema": "WARNING! Updating the schema will delete all the data for this connection in your destination and start syncing from scratch.",
   "connection.fromTo": "From {source} To {destination}",
   "connection.connectionSettings": "Connection settings",
   "connection.testsPassed": "All connection tests passed",
@@ -163,6 +164,7 @@
   "connection.sourceCheckSettings": "Check source settings",
   "connection.destinationTestAgain": "Test again destination connection",
   "connection.sourceTestAgain": "Test again source connection",
+  "connection.saveAndReset": "Save changes & reset data",
   "connection.resetData": "Reset your data",
   "connection.updateSchema": "Update Schema",
   "connection.updateSchemaText": "WARNING! Updating the schema will delete all the data for this connection in your destination and start syncing from scratch. Are you sure you want to do this?",
