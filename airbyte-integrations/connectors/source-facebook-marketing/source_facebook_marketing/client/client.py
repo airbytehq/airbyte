@@ -75,7 +75,7 @@ class IncrementalStreamAPI(StreamAPI, ABC):
 
     def _state_filter(self):
         """Additional filters associated with state if any set"""
-        if self.state:
+        if self._state:
             return {
                 'filtering': [
                     {
@@ -115,21 +115,21 @@ class AdCreativeAPI(StreamAPI):
         ad_creative = self._get_creatives()
 
         # Create the initial batch
-        api_batch = self._api.new_batch()
+        api_batch = self._api._api.new_batch()
         records = []
 
         def success(response):
-            records.append(response)
+            records.append(response.json())
 
         def failure(response):
             raise response.error()
 
         # This loop syncs minimal AdCreative objects
-        for i, creative in enumerate(ad_creative):
+        for i, creative in enumerate(ad_creative, start=1):
             # Execute and create a new batch for every BATCH_SIZE added
             if i % self.BATCH_SIZE == 0:
                 api_batch.execute()
-                api_batch = self._api.new_batch()
+                api_batch = self._api._api.new_batch()
                 yield from records
                 records[:] = []
 
@@ -138,6 +138,7 @@ class AdCreativeAPI(StreamAPI):
 
         # Ensure the final batch is executed
         api_batch.execute()
+        yield from records
 
     @backoff_policy
     def _get_creatives(self):
@@ -184,7 +185,7 @@ class AdSetsAPI(IncrementalStreamAPI):
         This is necessary because the functions that call this endpoint return
         a generator, whose calls need decorated with a backoff.
         """
-        return self._api.account.get_ad_sets(params=params, fields=[self.state_pk])
+        return self._api.account.get_ad_sets(params={**params, **self._state_filter()}, fields=[self.state_pk])
 
     @backoff_policy
     def _extend_record(self, ad_set, fields):
