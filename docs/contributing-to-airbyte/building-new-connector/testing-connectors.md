@@ -84,8 +84,3 @@ Integration tests can also be manually requested by clicking "[Run workflow](htt
 Commits to `master` attempt to launch integration tests. Two workflows launch for each commit: one is a launcher for integration tests, the other is the core build \(the same as the default for PR and branch builds\).
 
 Since some of our connectors use rate-limited external resources, we don't want to overload from multiple commits to master. If a certain threshold of `master` integration tests are running, the integration test launcher passes but does not launch any tests. This can manually be re-run if necessary. The `master` build also runs every few hours automatically, and will launch the integration tests at that time.
-
-#### Connector Health
-
-The build status displayed on for [https://github.com/airbytehq/airbyte/commits/master](https://github.com/airbytehq/airbyte/commits/master) reflects the status of the core build but not integrations. For Airbyte employees to view the connector health, set up secrets and run `./tools/bin/build_status.py`, which will display the past runs for each integration. In modern terminals, you can `Cmd`+click on a status icon to open the workflow for debugging purposes.
-
