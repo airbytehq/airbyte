@@ -27,8 +27,8 @@ from typing import Dict
 from googleads import adwords, oauth2
 from tap_adwords import VERSION
 
-from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, Status
-from base_python import AirbyteLogger, CatalogHelper
+from airbyte_protocol import AirbyteConnectionStatus, Status
+from base_python import AirbyteLogger
 from base_singer import SingerSource, SyncModeInfo, SyncMode
 
 
@@ -46,7 +46,7 @@ class SourceGoogleAdwordsSinger(SingerSource):
                                                    oauth2_client, user_agent=config['user_agent'],
                                                    client_customer_id=customer_id)
                 selector = {
-                    'fields': ['CustomerId'],
+                    'fields': ['Name', 'CanManageClients', 'CustomerId', 'TestAccount', 'DateTimeZone', 'CurrencyCode'],
                 }
                 managed_customer_page = sdk_client.GetService(service_name='ManagedCustomerService', version=VERSION).get(selector)
                 accounts = managed_customer_page.entries
