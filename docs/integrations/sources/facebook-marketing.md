@@ -2,7 +2,8 @@
 
 ## Sync overview
 
-This source can sync data for the core Ad Campaign data available in the [Facebook Marketing API](https://developers.facebook.com/docs/marketing-api/campaign-structure): Campaigns, AdSets, Ads, and AdCreatives. It can also sync [Ad Insights from the Reporting API](https://developers.facebook.com/docs/marketing-api/insights).
+This source can sync data for the core Ad Campaign data available in the [Facebook Marketing API](https://developers.facebook.com/docs/marketing-api/campaign-structure): Campaigns, AdSets, Ads, and AdCreatives.
+It can also sync [Ad Insights from the Reporting API](https://developers.facebook.com/docs/marketing-api/insights).
 
 ### Output schema
 
@@ -17,11 +18,11 @@ The linked Facebook docs go into detail about the fields present on those stream
 
 In addition, this source is capable of syncing ad insights as a stream. Ad insights can also be segmented by the following categories, where each segment is synced as a separate Airbyte stream:
 
-* Country
-* DMA \(Designated Market Area\)
-* Gender & Age
-* Platform & Device
-* Region
+* Country - _comming soon_
+* DMA \(Designated Market Area\) - _comming soon_
+* Gender & Age - _comming soon_
+* Platform & Device - _comming soon_
+* Region - _comming soon_
 
 The segmented streams contain entries of campaign/adset/ad combinations for each day broken down by the chosen segment.
 

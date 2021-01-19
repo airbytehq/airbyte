@@ -225,78 +225,79 @@ class CampaignAPI(IncrementalStreamAPI):
         return self._api.account.get_campaigns(params={**params, **self._state_filter()}, fields=[self.state_pk])
 
 
-class AdsInsightAPI(IncrementalStreamAPI):
-    entity_prefix = ""
-    state_pk = "date_start"
-
-    ALL_ACTION_ATTRIBUTION_WINDOWS = [
-        "1d_click",
-        "7d_click",
-        "28d_click",
-        "1d_view",
-        "7d_view",
-        "28d_view",
-    ]
-
-    ALL_ACTION_BREAKDOWNS = [
-        "action_type",
-        "action_target_id",
-        "action_destination",
-    ]
-
-    # Some automatic fields (primary-keys) cannot be used as 'fields' query params.
-    INVALID_INSIGHT_FIELDS = [
-        "impression_device",
-        "publisher_platform",
-        "platform_position",
-        "age",
-        "gender",
-        "country",
-        "placement",
-        "region",
-        "dma",
-    ]
-
-    MAX_WAIT_TO_START_SECONDS = 2 * 60
-    MAX_WAIT_TO_FINISH_SECONDS = 30 * 60
-    MAX_ASYNC_SLEEP_SECONDS = 5 * 60
-
-    action_breakdowns = ALL_ACTION_BREAKDOWNS
-    level = "ad"
-    action_attribution_windows = ALL_ACTION_ATTRIBUTION_WINDOWS
-    time_increment = 1
-    buffer_days = 28
-
-    def __init__(self, api, start_date, breakdowns=None):
-        super().__init__(api=api)
-        self.start_date = start_date
-        self._state = start_date
-        self.breakdowns = breakdowns
-
-    def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
-        for params in self._params(fields=fields):
-            for rec in self.state_filter(obj.export_all_data() for obj in self._get_insights(params)):
-                yield rec
-
-    def _params(self, fields: Sequence[str] = None) -> Iterator[dict]:
-        buffered_start_date = self._state.subtract(days=self.buffer_days)
-        end_date = pendulum.now()
-
-        fields = list(set(fields) - set(self.INVALID_INSIGHT_FIELDS))
-
-        while buffered_start_date <= end_date:
-            yield {
-                "level": self.level,
-                "action_breakdowns": self.action_breakdowns,
-                "breakdowns": self.breakdowns,
-                "limit": self.result_return_limit,
-                "fields": fields,
-                "time_increment": self.time_increment,
-                "action_attribution_windows": self.action_attribution_windows,
-                "time_ranges": [{"since": buffered_start_date.to_date_string(), "until": buffered_start_date.to_date_string()}],
-            }
-            buffered_start_date = buffered_start_date.add(days=1)
-
-    @backoff_policy
-    def _get_insights(self, params):
-        return self._api.account.get_insights(params=params)
+#
+# class AdsInsightAPI(IncrementalStreamAPI):
+#     entity_prefix = ""
+#     state_pk = "date_start"
+#
+#     ALL_ACTION_ATTRIBUTION_WINDOWS = [
+#         "1d_click",
+#         "7d_click",
+#         "28d_click",
+#         "1d_view",
+#         "7d_view",
+#         "28d_view",
+#     ]
+#
+#     ALL_ACTION_BREAKDOWNS = [
+#         "action_type",
+#         "action_target_id",
+#         "action_destination",
+#     ]
+#
+#     # Some automatic fields (primary-keys) cannot be used as 'fields' query params.
+#     INVALID_INSIGHT_FIELDS = [
+#         "impression_device",
+#         "publisher_platform",
+#         "platform_position",
+#         "age",
+#         "gender",
+#         "country",
+#         "placement",
+#         "region",
+#         "dma",
+#     ]
+#
+#     MAX_WAIT_TO_START_SECONDS = 2 * 60
+#     MAX_WAIT_TO_FINISH_SECONDS = 30 * 60
+#     MAX_ASYNC_SLEEP_SECONDS = 5 * 60
+#
+#     action_breakdowns = ALL_ACTION_BREAKDOWNS
+#     level = "ad"
+#     action_attribution_windows = ALL_ACTION_ATTRIBUTION_WINDOWS
+#     time_increment = 1
+#     buffer_days = 28
+#
+#     def __init__(self, api, start_date, breakdowns=None):
+#         super().__init__(api=api)
+#         self.start_date = start_date
+#         self._state = start_date
+#         self.breakdowns = breakdowns
+#
+#     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
+#         for params in self._params(fields=fields):
+#             for rec in self.state_filter(obj.export_all_data() for obj in self._get_insights(params)):
+#                 yield rec
+#
+#     def _params(self, fields: Sequence[str] = None) -> Iterator[dict]:
+#         buffered_start_date = self._state.subtract(days=self.buffer_days)
+#         end_date = pendulum.now()
+#
+#         fields = list(set(fields) - set(self.INVALID_INSIGHT_FIELDS))
+#
+#         while buffered_start_date <= end_date:
+#             yield {
+#                 "level": self.level,
+#                 "action_breakdowns": self.action_breakdowns,
+#                 "breakdowns": self.breakdowns,
+#                 "limit": self.result_return_limit,
+#                 "fields": fields,
+#                 "time_increment": self.time_increment,
+#                 "action_attribution_windows": self.action_attribution_windows,
+#                 "time_ranges": [{"since": buffered_start_date.to_date_string(), "until": buffered_start_date.to_date_string()}],
+#             }
+#             buffered_start_date = buffered_start_date.add(days=1)
+#
+#     @backoff_policy
+#     def _get_insights(self, params):
+#         return self._api.account.get_insights(params=params)
