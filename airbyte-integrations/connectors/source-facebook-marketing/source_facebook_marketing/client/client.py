@@ -21,8 +21,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
 from abc import ABC, abstractmethod
-from typing import Iterator, Sequence, Tuple, Any, Mapping
+from typing import Any, Iterator, Mapping, Sequence, Tuple
 
 import backoff
 import pendulum as pendulum
@@ -77,11 +78,11 @@ class IncrementalStreamAPI(StreamAPI, ABC):
         """Additional filters associated with state if any set"""
         if self._state:
             return {
-                'filtering': [
+                "filtering": [
                     {
-                        'field': f"{self.entity_prefix}.{self.state_pk}",
-                        'operator': 'GREATER_THAN',
-                        'value': self._state.int_timestamp,
+                        "field": f"{self.entity_prefix}.{self.state_pk}",
+                        "operator": "GREATER_THAN",
+                        "value": self._state.int_timestamp,
                     },
                 ],
             }
@@ -89,8 +90,7 @@ class IncrementalStreamAPI(StreamAPI, ABC):
         return {}
 
     def state_filter(self, records: Iterator[dict]) -> Iterator[Any]:
-        """ Apply state filter to set of records, update cursor(state) if necessary in the end
-        """
+        """Apply state filter to set of records, update cursor(state) if necessary in the end"""
         latest_cursor = None
         for record in records:
             cursor = pendulum.parse(record[self.state_pk])
@@ -150,6 +150,7 @@ class AdCreativeAPI(StreamAPI):
 
 class AdsAPI(IncrementalStreamAPI):
     """ doc: https://developers.facebook.com/docs/marketing-api/reference/adgroup """
+
     entity_prefix = "ad"
     state_pk = "updated_time"
 
@@ -173,6 +174,7 @@ class AdsAPI(IncrementalStreamAPI):
 
 class AdSetsAPI(IncrementalStreamAPI):
     """ doc: https://developers.facebook.com/docs/marketing-api/reference/ad-campaign """
+
     entity_prefix = "adset"
     state_pk = "updated_time"
 
@@ -317,22 +319,19 @@ class Client(BaseClient):
             "ads_insights_country": AdsInsightAPI(self, start_date=self._start_date, breakdowns=["country"]),
             "ads_insights_region": AdsInsightAPI(self, start_date=self._start_date, breakdowns=["region"]),
             "ads_insights_dma": AdsInsightAPI(self, start_date=self._start_date, breakdowns=["dma"]),
-            "ads_insights_platform_and_device": AdsInsightAPI(self, start_date=self._start_date,
-                                                              breakdowns=["publisher_platform", "platform_position",
-                                                                          "impression_device"])
+            "ads_insights_platform_and_device": AdsInsightAPI(
+                self, start_date=self._start_date, breakdowns=["publisher_platform", "platform_position", "impression_device"]
+            ),
         }
         super().__init__()
 
     def _enumerate_methods(self) -> Mapping[str, callable]:
         """Detect available streams and return mapping"""
-        return {
-            name: api.list
-            for name, api in self._apis.items()
-        }
+        return {name: api.list for name, api in self._apis.items()}
 
     def stream_has_state(self, name: str) -> bool:
         """Tell if stream supports incremental sync"""
-        return hasattr(self._apis[name], 'state')
+        return hasattr(self._apis[name], "state")
 
     def get_stream_state(self, name: str) -> Any:
         """Get state of stream with corresponding name"""
