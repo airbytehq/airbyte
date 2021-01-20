@@ -69,7 +69,7 @@
   "form.imageCannotFound": "The docker image cannot be found. Please ensure that the input tag points to a valid Airbyte docker image",
   "form.loadingConfiguration": "Loading required configuration parameters for {connector}",
   "form.pattern.error": "Note: The value must match the pattern {pattern}",
-  "form.schemaFailed": "Fetching the schema is failed. Please try again",
+  "form.schemaFailed": "Failed to fetch schema. Please try again",
   "form.tryAgain": "Try again",
   "form.noNeed": "No need!",
   "form.reset": "Reset",
@@ -99,7 +99,7 @@
   "onboarding.setUpConnection": "Set up connection",
   "onboarding.setConnection": "Set up the connection",
   "onboarding.instructionsLink": "See instructions how to connect {name}",
-  "onboarding.fetchingSchema": "We are fetching the schema of your data source.\nThis should take less than a minute...",
+  "onboarding.fetchingSchema": "We are fetching the schema of your data source. \nThis should take less than a minute, but may take a few minutes on slow internet connections or data sources with a large amount of tables.",
   "onboarding.tutorial": "Check how you can sync PostgreSQL databases in minutes",
   "onboarding.skipOnboarding": "Skip Onboarding",
 
@@ -155,7 +155,7 @@
   "destinations.newDestinationTitle": "New destination",
   "destinations.destinationSetUp": "Set up the destination",
 
-  "connection.fromTo": "From {source} To {destination}",
+  "connection.fromTo": "{source} → {destination}",
   "connection.connectionSettings": "Connection settings",
   "connection.testsPassed": "All connection tests passed",
   "connection.testsFailed": "The connection tests failed.",

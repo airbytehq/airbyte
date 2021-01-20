@@ -167,6 +167,10 @@ def is_object(property_type) -> bool:
     return property_type == "object" or "object" in property_type
 
 
+def is_airbyte_column(name: str) -> bool:
+    return name.startswith("_airbyte_")
+
+
 def find_combining_schema(properties: dict) -> set:
     return set(properties).intersection({"anyOf", "oneOf", "allOf"})
 
@@ -234,10 +238,9 @@ def json_extract_base_property(path: List[str], json_col: str, name: str, defini
             quote(name, integration_type),
         )
     elif is_boolean(definition["type"]):
-        return "cast({} as boolean) as {}".format(
-            jinja_call(f"json_extract_scalar('{json_col}', {current})"),
-            quote(name, integration_type),
-        )
+        # In Redshift, it's not possible to convert from a varchar (which is the output type of json_extract_scalar) to a boolean directly.
+        # So we use a macro that handles destination-specific conversions
+        return jinja_call(f"""cast_to_boolean(json_extract_scalar('{json_col}', {current}))""") + f" as {quote(name, integration_type)}"
     else:
         return None
 
@@ -279,7 +282,7 @@ def extract_node_properties(path: List[str], json_col: str, properties: dict, in
             sql_field = json_extract_base_property(
                 path=path, json_col=json_col, name=field, definition=properties[field], integration_type=integration_type
             )
-            if sql_field:
+            if sql_field and not is_airbyte_column(field):
                 result[field] = sql_field
     return result
 
@@ -351,6 +354,15 @@ def extract_nested_properties(path: List[str], field: str, properties: dict, int
     return result
 
 
+def safe_cast_to_varchar(field: str, integration_type: str, jsonschema_properties: dict):
+    # Redshift booleans cannot be directly cast to varchar. So we use a custom macro to convert any boolean columns.
+    quoted_field = quote(field, integration_type, in_jinja=True)
+    if is_boolean(jsonschema_properties[field]["type"]):
+        return f"boolean_to_varchar({quoted_field})"
+    else:
+        return quoted_field
+
+
 def process_node(
     path: List[str],
     json_col: str,
@@ -368,11 +380,14 @@ def process_node(
         prefix = previous + ","
     node_properties = extract_node_properties(path=path, json_col=json_col, properties=properties, integration_type=integration_type)
     node_columns = ",\n    ".join([sql for sql in node_properties.values()])
-    hash_node_columns = ",\n        ".join([quote(column, integration_type, in_jinja=True) for column in node_properties.keys()])
-    hash_node_columns = jinja_call(f"dbt_utils.surrogate_key([\n        {hash_node_columns}\n    ])")
-    hash_id = quote(f"_{name}_hashid", integration_type)
-    foreign_hash_id = quote(f"_{name}_foreign_hashid", integration_type)
-    emitted_col = "emitted_at,\n    {} as normalized_at".format(
+    hash_node_columns = ",\n        ".join(
+        [safe_cast_to_varchar(column, integration_type, properties) for column in node_properties.keys()]
+    )
+    hash_node_columns = jinja_call(f"dbt_utils.surrogate_key([{hash_node_columns}])")
+
+    hash_id = quote(f"_airbyte_{name}_hashid", integration_type)
+    foreign_hash_id = quote(f"_airbyte_{name}_foreign_hashid", integration_type)
+    emitted_col = "_airbyte_emitted_at,\n    {} as _airbyte_normalized_at".format(
         jinja_call("dbt_utils.current_timestamp_in_utc()"),
     )
     node_sql = f"""{prefix}
@@ -455,16 +470,16 @@ def generate_dbt_model(integration_type: str, catalog: dict, json_col: str, sche
             properties = stream["json_schema"]["properties"]
         else:
             properties = {}
-        # TODO Replace {name}_raw by an argument like we do for the json_blob column
+        # TODO Replace '_airbyte_raw_' + name by an argument like we do for the json_blob column
         # This would enable destination to freely choose where to store intermediate data before notifying
         # normalization step
         table = jinja_call(
-            f"source('{resolve_identifier(schema, integration_type)}', '{resolve_identifier(name + '_raw', integration_type)}')"
+            f"source('{resolve_identifier(schema, integration_type)}', '{resolve_identifier('_airbyte_raw_' + name, integration_type)}')"
         )
         result.update(
             process_node(path=[], json_col=json_col, name=name, properties=properties, from_table=table, integration_type=integration_type)
         )
-        source_tables.add(resolve_identifier(name + "_raw", integration_type))
+        source_tables.add(resolve_identifier("_airbyte_raw_" + name, integration_type))
     return result, source_tables
 
 

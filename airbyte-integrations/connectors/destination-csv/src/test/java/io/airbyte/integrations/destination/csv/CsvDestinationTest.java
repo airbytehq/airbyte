@@ -35,6 +35,8 @@ import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.DestinationConsumer;
+import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -68,8 +70,8 @@ class CsvDestinationTest {
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
   private static final String USERS_STREAM_NAME = "users";
   private static final String TASKS_STREAM_NAME = "tasks";
-  private static final String USERS_FILE = USERS_STREAM_NAME + "_raw.csv";
-  private static final String TASKS_FILE = TASKS_STREAM_NAME + "_raw.csv";
+  private static final String USERS_FILE = new StandardNameTransformer().getRawTableName(USERS_STREAM_NAME) + ".csv";
+  private static final String TASKS_FILE = new StandardNameTransformer().getRawTableName(TASKS_STREAM_NAME) + ".csv";;
   private static final AirbyteMessage MESSAGE_USERS1 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
       .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
           .withData(Jsons.jsonNode(ImmutableMap.builder().put("name", "john").put("id", "10").build()))
@@ -195,12 +197,12 @@ class CsvDestinationTest {
   private List<JsonNode> csvToJson(Path csvPath) throws IOException {
     final Reader in = new FileReader(csvPath.toFile());
     final Iterable<CSVRecord> records = CSVFormat.DEFAULT
-        .withHeader(CsvDestination.COLUMN_DATA)
+        .withHeader(JavaBaseConstants.COLUMN_NAME_DATA)
         .withFirstRecordAsHeader()
         .parse(in);
 
     return StreamSupport.stream(records.spliterator(), false)
-        .map(record -> Jsons.deserialize(record.toMap().get(CsvDestination.COLUMN_DATA)))
+        .map(record -> Jsons.deserialize(record.toMap().get(JavaBaseConstants.COLUMN_NAME_DATA)))
         .collect(Collectors.toList());
   }
 

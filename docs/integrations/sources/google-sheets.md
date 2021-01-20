@@ -25,7 +25,7 @@ This section should contain a table with the following format:
 | Feature | Supported?\(Yes/No\) | Notes |
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
-| Incremental Sync | No |  |
+| Incremental Sync | Coming soon |  |
 
 ### Performance considerations
 

@@ -23,8 +23,8 @@ Please [create a Github issue](https://github.com/airbytehq/airbyte/issues/new/c
 | Feature | Supported?\(Yes/No\) | Notes |
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
-| Incremental Sync | No |  |
-| Replicate Incremental Deletes | No |  |
+| Incremental Sync | Coming soon |  |
+| Replicate Incremental Deletes | Coming soon |  |
 | SSL connection | Yes | Enabled by default |
 
 ### Performance considerations

@@ -20,6 +20,8 @@ Airbyte is on a mission to make data integration pipelines a commodity.
 * **No more security compliance process** to go through as Airbyte is self-hosted. 
 * **No more pricing indexed on volume**, as cloud-based solutions offer. 
 
+Here's a list of our [connectors with their health status](docs/integrations/connector-health.md).
+
 ## Quick start
 
 ```bash

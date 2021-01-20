@@ -78,8 +78,8 @@ public class JdbcBufferedConsumerFactory {
     return catalog.getStreams().stream().map(stream -> {
       final String streamName = stream.getStream().getName();
       final String schemaName = namingResolver.getIdentifier(config.get("schema").asText());
-      final String tableName = Names.concatQuotedNames(namingResolver.getIdentifier(streamName), "_raw");
-      final String tmpTableName = Names.concatQuotedNames(tableName, "_" + now.toEpochMilli());
+      final String tableName = Names.concatQuotedNames("_airbyte_raw_", namingResolver.getIdentifier(streamName));
+      final String tmpTableName = Names.concatQuotedNames("_airbyte_" + now.toEpochMilli() + "_", tableName);
       final SyncMode syncMode = stream.getSyncMode() != null ? stream.getSyncMode() : SyncMode.FULL_REFRESH;
       return new WriteConfig(streamName, schemaName, tmpTableName, tableName, syncMode);
     }).collect(Collectors.toList());

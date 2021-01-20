@@ -24,7 +24,6 @@
 
 package io.airbyte.server.handlers;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.api.model.CheckConnectionRead;
 import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.DestinationCoreConfig;
@@ -61,23 +60,15 @@ import io.airbyte.server.converters.SchemaConverter;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.UUID;
-import java.util.function.Supplier;
 
 public class SchedulerHandler {
 
   private final ConfigRepository configRepository;
   private final SchedulerJobClient schedulerJobClient;
-  private final Supplier<UUID> uuidSupplier;
-
-  @VisibleForTesting
-  SchedulerHandler(final ConfigRepository configRepository, SchedulerJobClient schedulerJobClient, Supplier<UUID> uuidSupplier) {
-    this.configRepository = configRepository;
-    this.schedulerJobClient = schedulerJobClient;
-    this.uuidSupplier = uuidSupplier;
-  }
 
   public SchedulerHandler(final ConfigRepository configRepository, SchedulerJobClient schedulerJobClient) {
-    this(configRepository, schedulerJobClient, UUID::randomUUID);
+    this.configRepository = configRepository;
+    this.schedulerJobClient = schedulerJobClient;
   }
 
   public CheckConnectionRead checkSourceConnectionFromSourceId(SourceIdRequestBody sourceIdRequestBody)
@@ -93,14 +84,10 @@ public class SchedulerHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceCreate.getSourceDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
-    final UUID sourceUuid = uuidSupplier.get();
+    // todo (cgardens) - narrow the struct passed to the client. we are not setting fields that are
+    // technically declared as required.
     final SourceConnection source = new SourceConnection()
-        .withName("source:" + sourceUuid) // todo (cgardens) - narrow the struct passed to the client.
         .withSourceDefinitionId(sourceCreate.getSourceDefinitionId())
-        .withWorkspaceId(sourceUuid) // todo (cgardens) - narrow the struct passed to the client.
-        .withTombstone(false)
-        // todo (cgardens) - used to create the scope so we want a random value.
-        .withSourceId(sourceUuid)
         .withConfiguration(sourceCreate.getConnectionConfiguration());
 
     return reportConnectionStatus(schedulerJobClient.createSourceCheckConnectionJob(source, imageName));
@@ -118,14 +105,10 @@ public class SchedulerHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardDestinationDefinition destDef = configRepository.getStandardDestinationDefinition(destinationCreate.getDestinationDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(destDef.getDockerRepository(), destDef.getDockerImageTag());
-    final UUID destinationUuid = uuidSupplier.get();
+    // todo (cgardens) - narrow the struct passed to the client. we are not setting fields that are
+    // technically declared as required.
     final DestinationConnection destination = new DestinationConnection()
-        .withName("destination:" + destinationUuid) // todo (cgardens) - narrow the struct passed to the client.
         .withDestinationDefinitionId(destinationCreate.getDestinationDefinitionId())
-        .withWorkspaceId(destinationUuid) // todo (cgardens) - narrow the struct passed to the client.
-        .withTombstone(false)
-        // todo (cgardens) - used to create the scope so we want a random value.
-        .withDestinationId(destinationUuid)
         .withConfiguration(destinationCreate.getConnectionConfiguration());
     return reportConnectionStatus(schedulerJobClient.createDestinationCheckConnectionJob(destination, imageName));
   }
@@ -143,14 +126,10 @@ public class SchedulerHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceCreate.getSourceDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
-    final UUID sourceUuid = uuidSupplier.get();
+    // todo (cgardens) - narrow the struct passed to the client. we are not setting fields that are
+    // technically declared as required.
     final SourceConnection source = new SourceConnection()
-        .withName("source:" + sourceUuid) // todo (cgardens) - narrow the struct passed to the client.
         .withSourceDefinitionId(sourceCreate.getSourceDefinitionId())
-        .withWorkspaceId(sourceUuid) // todo (cgardens) - narrow the struct passed to the client.
-        .withTombstone(false)
-        // todo (cgardens) - used to create the scope so we want a random value.
-        .withSourceId(sourceUuid)
         .withConfiguration(sourceCreate.getConnectionConfiguration());
     final Job job = schedulerJobClient.createDiscoverSchemaJob(source, imageName);
     return discoverJobToOutput(job);
