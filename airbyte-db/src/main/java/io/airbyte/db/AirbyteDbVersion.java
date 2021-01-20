@@ -56,8 +56,9 @@ public class AirbyteDbVersion {
     database.query(ctx -> AirbyteDbVersion.check(airbyteVersion, ctx));
   }
 
-  public static String check(final String airbyteVersion, final DSLContext ctx) throws SQLException {
-    final String dbVersion = AirbyteDbVersion.get(ctx);
+  public static String check(String airbyteVersion, final DSLContext ctx) throws SQLException {
+    final String dbVersion = AirbyteDbVersion.get(ctx).replace("\n", "").strip();
+    airbyteVersion = airbyteVersion.replace("\n", "").strip();
     if (!airbyteVersion.startsWith(dbVersion)) {
       throw new IllegalStateException(String.format(
           "Version mismatch: %s while Database version is %s.\n" +

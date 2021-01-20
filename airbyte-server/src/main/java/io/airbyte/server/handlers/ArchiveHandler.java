@@ -127,10 +127,10 @@ public class ArchiveHandler {
 
   private void checkImport(Path tempFolder) throws IOException, JsonValidationException, ConfigNotFoundException {
     final Path versionFile = tempFolder.resolve(VERSION_FILE_NAME);
-    final String importVersion = Files.readString(versionFile, Charset.defaultCharset());
+    final String importVersion = Files.readString(versionFile, Charset.defaultCharset()).replace("\n", "").strip();
     LOGGER.info(String.format("Checking Airbyte Version to import %s", importVersion));
     if (!version.equals(importVersion)) {
-      throw new IOException(String.format("Version in VERSION file (%s) does not match current Airbyte version (%s)", importVersion, version));
+      throw new IOException(String.format("VERSION file (%s) does not match current Airbyte version (%s)", importVersion, version));
     }
     databaseArchiver.checkVersion(version);
     // Check if all files to import are valid and with expected airbyte version

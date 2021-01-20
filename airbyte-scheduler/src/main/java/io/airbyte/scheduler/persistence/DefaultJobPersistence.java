@@ -46,6 +46,7 @@ import io.airbyte.scheduler.AttemptStatus;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.JobStatus;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -58,6 +59,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -72,6 +74,7 @@ import org.jooq.JSONFormat.RecordFormat;
 import org.jooq.Named;
 import org.jooq.Record;
 import org.jooq.Result;
+import org.jooq.Sequence;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.slf4j.Logger;
@@ -508,7 +511,7 @@ public class DefaultJobPersistence implements JobPersistence {
     final Table<Record> backupTableSql = getTable(backupSchema, tableName);
     ctx.dropTableIfExists(backupTableSql).execute();
     ctx.createTable(backupTableSql).as(DSL.select(DSL.asterisk()).from(tableSql)).withData().execute();
-    ctx.truncateTable(tableSql).execute();
+    ctx.truncateTable(tableSql).restartIdentity().execute();
   }
 
   private static void importTable(DSLContext ctx, final String schema, final DatabaseSchema tableType, final Stream<JsonNode> jsonStream) {
@@ -536,12 +539,27 @@ public class DefaultJobPersistence implements JobPersistence {
         // LOGGER.debug(insertStep.toString());
         ctx.batch(insertStep).execute();
       }
+      final Optional<Field<?>> idColumn = columns.stream().filter(f -> f.getName().equals("id")).findFirst();
+      if (idColumn.isPresent())
+        resetIdentityColumn(ctx, schema, tableType);
+    }
+  }
+
+  private static void resetIdentityColumn(final DSLContext ctx, final String schema, final DatabaseSchema tableType) {
+    final Result<Record> result = ctx.fetch(String.format("SELECT MAX(id) FROM %s.%s", schema, tableType.name()));
+    final Optional<Integer> maxId = result.stream()
+        .map(r -> r.get(0, Integer.class))
+        .filter(Objects::nonNull)
+        .findFirst();
+    if (maxId.isPresent()) {
+      final Sequence<BigInteger> sequenceName = DSL.sequence(DSL.name(schema, String.format("%s_%s_seq", tableType.name().toLowerCase(), "id")));
+      ctx.alterSequenceIfExists(sequenceName).restartWith(maxId.get() + 101).execute();
     }
   }
 
   private static void registerImportMetadata(final DSLContext ctx, final String airbyteVersion) {
-    ctx.execute("INSERT INTO airbyte_metadata VALUES(CURRENT_TIMESTAMP(0) || '_import_db', '%s');", airbyteVersion);
-    ctx.execute("UPDATE airbyte_metadata SET value = '%s' WHERE key = 'airbyte_db_version';", airbyteVersion);
+    ctx.execute(String.format("INSERT INTO airbyte_metadata VALUES(CURRENT_TIMESTAMP(0) || '_import_db', '%s');", airbyteVersion));
+    ctx.execute(String.format("UPDATE airbyte_metadata SET value = '%s' WHERE key = 'airbyte_db_version';", airbyteVersion));
   }
 
   /**
