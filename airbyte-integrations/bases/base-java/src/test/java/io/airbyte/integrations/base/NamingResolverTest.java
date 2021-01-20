@@ -52,7 +52,7 @@ class NamingResolverTest {
     assertEquals("identifier_", namingResolver.getIdentifier("identifier%"));
     assertEquals("_identifier_", namingResolver.getIdentifier("`identifier`"));
 
-    assertEquals("identifier_name_raw", namingResolver.getRawTableName("identifier_name"));
+    assertEquals("_airbyte_raw_identifier_name", namingResolver.getRawTableName("identifier_name"));
   }
 
   @Test
@@ -74,8 +74,8 @@ class NamingResolverTest {
     assertEquals("\"identifier%\"", namingResolver.getIdentifier("identifier%"));
     assertEquals("\"`identifier`\"", namingResolver.getIdentifier("`identifier`"));
 
-    assertEquals("identifier_name_raw", namingResolver.getRawTableName("identifier_name"));
-    assertEquals("\"identifiêr name_raw\"", namingResolver.getRawTableName("identifiêr name"));
+    assertEquals("_airbyte_raw_identifier_name", namingResolver.getRawTableName("identifier_name"));
+    assertEquals("\"_airbyte_raw_identifiêr name\"", namingResolver.getRawTableName("identifiêr name"));
   }
 
 }
