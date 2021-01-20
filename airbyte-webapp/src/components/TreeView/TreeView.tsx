@@ -18,14 +18,17 @@ const SelectButton = styled(Button)`
 `;
 
 const TreeView: React.FC<IProps> = ({ schema, onChangeSchema }) => {
-  const sortedSchema = {
-    streams: schema.streams
-      .sort((a, b) => (a.name > b.name ? 1 : -1))
-      .map(item => ({
-        ...item,
-        fields: item.fields.sort((a, b) => (a.name > b.name ? 1 : -1))
-      }))
-  };
+  const sortedSchema = useMemo(
+    () => ({
+      streams: schema.streams
+        .sort((a, b) => (a.name > b.name ? 1 : -1))
+        .map(item => ({
+          ...item,
+          fields: item.fields.sort((a, b) => (a.name > b.name ? 1 : -1))
+        }))
+    }),
+    [schema.streams]
+  );
 
   const hasSelectedItem = useMemo(() => {
     return sortedSchema.streams.find(item => {
