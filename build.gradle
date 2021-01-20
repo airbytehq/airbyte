@@ -100,6 +100,7 @@ allprojects {
         def composeDeps = [
                 "airbyte-config:init",
                 "airbyte-db",
+                "airbyte-migration",
                 "airbyte-scheduler",
                 "airbyte-server",
                 "airbyte-webapp",

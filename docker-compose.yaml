@@ -1,5 +1,7 @@
 version: "3.7"
 
+# This compose file contains containers that should be pushed to docker hub as part of the core platform AND are run as part of the app at startup.
+
 services:
   # hook in case we need to add init behavior
   # every root service (no depends_on) should depend on init

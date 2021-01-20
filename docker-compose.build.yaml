@@ -1,5 +1,7 @@
 version: "3.7"
 
+# This compose file contains containers that should be built as part of the core platform.
+
 services:
   init:
     image: airbyte/init:${BUILD_TAG}
@@ -41,5 +43,12 @@ services:
     build:
       dockerfile: Dockerfile
       context: airbyte-webapp
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}
+  migration:
+    image: airbyte/migration:${BUILD_TAG}
+    build:
+      dockerfile: Dockerfile
+      context: airbyte-migration
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
