@@ -53,6 +53,7 @@ import io.airbyte.api.model.WebBackendConnectionRequestBody;
 import io.airbyte.api.model.WebBackendConnectionUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.validation.json.JsonValidationException;
@@ -148,44 +149,44 @@ public class WebBackendConnectionsHandler {
 
   @VisibleForTesting
   protected static SourceSchema updateSchemaWithDiscovery(SourceSchema original, SourceSchema discovered) {
-    Map<String, SourceSchemaStream> originalStreamsByName = original.getStreams()
+    final Map<String, SourceSchemaStream> originalStreamsByName = original.getStreams()
         .stream()
         .collect(toMap(SourceSchemaStream::getName, s -> s));
 
-    List<SourceSchemaStream> streams = new ArrayList<>();
+    final List<SourceSchemaStream> streams = new ArrayList<>();
 
     for (SourceSchemaStream stream : discovered.getStreams()) {
-      SourceSchemaStream originalStream = originalStreamsByName.get(stream.getName());
+      final SourceSchemaStream outputStream = Jsons.clone(stream);
+      final SourceSchemaStream originalStream = originalStreamsByName.get(outputStream.getName());
 
       if (originalStream != null) {
-        Set<String> fieldNames = stream.getFields().stream().map(SourceSchemaField::getName).collect(toSet());
-        stream.setSelected(originalStream.getSelected());
+        final Set<String> fieldNames = outputStream.getFields().stream().map(SourceSchemaField::getName).collect(toSet());
+        outputStream.setSelected(originalStream.getSelected());
 
-        if (stream.getSupportedSyncModes().contains(originalStream.getSyncMode())) {
-          stream.setSyncMode(originalStream.getSyncMode());
+        if (outputStream.getSupportedSyncModes().contains(originalStream.getSyncMode())) {
+          outputStream.setSyncMode(originalStream.getSyncMode());
         }
 
         if (originalStream.getCursorField().size() > 0) {
           final String topLevelField = originalStream.getCursorField().get(0);
           if (fieldNames.contains(topLevelField)) {
-            stream.setCursorField(originalStream.getCursorField());
+            outputStream.setCursorField(originalStream.getCursorField());
           }
         }
 
-        Map<String, SourceSchemaField> originalFieldsByName = originalStream.getFields()
+        final Map<String, SourceSchemaField> originalFieldsByName = originalStream.getFields()
             .stream()
             .collect(toMap(SourceSchemaField::getName, f -> f));
 
-        for (SourceSchemaField field : stream.getFields()) {
+        for (SourceSchemaField field : outputStream.getFields()) {
           if (originalFieldsByName.containsKey(field.getName())) {
             SourceSchemaField originalField = originalFieldsByName.get(field.getName());
             field.setSelected(originalField.getSelected());
           }
         }
 
-        streams.add(stream);
       }
-
+      streams.add(outputStream);
     }
 
     return new SourceSchema().streams(streams);
