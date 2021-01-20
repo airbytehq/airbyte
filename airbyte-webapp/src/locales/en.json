@@ -155,7 +155,7 @@
   "destinations.newDestinationTitle": "New destination",
   "destinations.destinationSetUp": "Set up the destination",
 
-  "connection.fromTo": "From {source} To {destination}",
+  "connection.fromTo": "{source} → {destination}",
   "connection.connectionSettings": "Connection settings",
   "connection.testsPassed": "All connection tests passed",
   "connection.testsFailed": "The connection tests failed.",
