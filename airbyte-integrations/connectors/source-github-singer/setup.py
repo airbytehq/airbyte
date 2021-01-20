@@ -34,7 +34,7 @@ setup(
     # two sets of dependencies: 1) for main 2) for standard test deps. 2 does not have all of the dependencies of 1, which is we cannot use install_requires.
     extras_require={
         "main": [
-            "tap-github @ https://github.com/vitaliizazmic/tap-github/tarball/master#egg=tap-github-1.9.1",
+            "tap-github @ https://github.com/airbytehq/tap-github/tarball/master#egg=tap-github-1.9.1",
             "requests",
             "airbyte-protocol",
             "base-singer",
