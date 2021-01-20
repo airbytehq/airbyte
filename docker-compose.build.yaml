@@ -1,7 +1,5 @@
 version: "3.7"
 
-# This compose file contains containers that should be built as part of the core platform.
-
 services:
   init:
     image: airbyte/init:${BUILD_TAG}
