@@ -470,16 +470,16 @@ def generate_dbt_model(integration_type: str, catalog: dict, json_col: str, sche
             properties = stream["json_schema"]["properties"]
         else:
             properties = {}
-        # TODO Replace {name}_raw by an argument like we do for the json_blob column
+        # TODO Replace '_airbyte_raw_' + name by an argument like we do for the json_blob column
         # This would enable destination to freely choose where to store intermediate data before notifying
         # normalization step
         table = jinja_call(
-            f"source('{resolve_identifier(schema, integration_type)}', '{resolve_identifier(name + '_raw', integration_type)}')"
+            f"source('{resolve_identifier(schema, integration_type)}', '{resolve_identifier('_airbyte_raw_' + name, integration_type)}')"
         )
         result.update(
             process_node(path=[], json_col=json_col, name=name, properties=properties, from_table=table, integration_type=integration_type)
         )
-        source_tables.add(resolve_identifier(name + "_raw", integration_type))
+        source_tables.add(resolve_identifier("_airbyte_raw_" + name, integration_type))
     return result, source_tables
 
 
