@@ -7,6 +7,7 @@
   * [Config & Persistence](tutorials/airbyte-config-persistence.md)
   * [Building a toy connector](tutorials/toy-connector.md)
   * [Beginner's Guide to the AirbyteCatalog](tutorials/beginners-guide-to-catalog.md)
+  * [Upgrading Airbyte](tutorials/upgrading-airbyte.md)
 * [Changelog](changelog/README.md)
   * [Platform](changelog/platform.md)
   * [Connectors](changelog/connectors.md)
