@@ -1731,7 +1731,7 @@ components:
     JobListRequestBody:
       type: object
       required:
-        - configType
+        - configTypes
         - configId
       properties:
         configTypes:
