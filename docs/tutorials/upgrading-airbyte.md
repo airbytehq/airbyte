@@ -1,4 +1,6 @@
-_Coming soon! This tutorial is a work in progress for a feature that is currently in development. It is not usable yet!_
+{% hint style="warning" %}
+Coming soon! This tutorial is a work in progress for a feature that is currently in development. It is not usable yet!
+{% endhint %}
 
 # Upgrading Airbyte
 
