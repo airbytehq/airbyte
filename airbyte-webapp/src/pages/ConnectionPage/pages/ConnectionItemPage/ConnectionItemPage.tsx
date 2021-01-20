@@ -15,28 +15,14 @@ import { AnalyticsService } from "../../../../core/analytics/AnalyticsService";
 import FrequencyConfig from "../../../../data/FrequencyConfig.json";
 import Link from "../../../../components/Link";
 import { Routes } from "../../../routes";
-import Button from "../../../../components/Button";
 
 const ConnectionItemPage: React.FC = () => {
   const { query } = useRouter();
-  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
-  const [activeUpdatingSchemaMode, setActiveUpdatingSchemaMode] = useState(
-    false
-  );
 
-  const connection = useResource(
-    ConnectionResource.detailShape(),
-    activeUpdatingSchemaMode
-      ? {
-          // @ts-ignore
-          connectionId: query.id,
-          with_refreshed_catalog: true
-        }
-      : {
-          // @ts-ignore
-          connectionId: query.id
-        }
-  );
+  const connection = useResource(ConnectionResource.detailShape(), {
+    // @ts-ignore
+    connectionId: query.id
+  });
 
   const frequency = FrequencyConfig.find(
     item => JSON.stringify(item.config) === JSON.stringify(connection.schedule)
@@ -77,16 +63,8 @@ const ConnectionItemPage: React.FC = () => {
 
     return (
       <SettingsView
-        setModalState={setIsUpdateModalOpen}
-        onSubmitModal={() => {
-          setActiveUpdatingSchemaMode(true);
-          setIsUpdateModalOpen(false);
-        }}
-        isModalOpen={isUpdateModalOpen}
-        connection={connection}
         onAfterSaveSchema={onAfterSaveSchema}
-        activeUpdatingSchemaMode={activeUpdatingSchemaMode}
-        deactivatedUpdatingSchemaMode={() => setActiveUpdatingSchemaMode(false)}
+        connectionId={connection.connectionId}
       />
     );
   };
@@ -96,17 +74,6 @@ const ConnectionItemPage: React.FC = () => {
       {connection.source?.name}
     </Link>
   );
-
-  const endControl = () => {
-    if (currentStep === "settings" && !activeUpdatingSchemaMode) {
-      return (
-        <Button onClick={() => setIsUpdateModalOpen(true)}>
-          <FormattedMessage id="connection.updateSchema" />
-        </Button>
-      );
-    }
-    return null;
-  };
 
   const linkToDestination = () => (
     <Link
@@ -139,7 +106,6 @@ const ConnectionItemPage: React.FC = () => {
               activeStep={currentStep}
             />
           }
-          endComponent={endControl()}
         />
       }
     >

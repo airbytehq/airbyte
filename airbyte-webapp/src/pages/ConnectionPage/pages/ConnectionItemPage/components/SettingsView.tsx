@@ -3,7 +3,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 
 import ContentCard from "../../../../../components/ContentCard";
-import { Connection } from "../../../../../core/resources/Connection";
+import ConnectionResource from "../../../../../core/resources/Connection";
 import FrequencyConfig from "../../../../../data/FrequencyConfig.json";
 import useConnection from "../../../../../components/hooks/services/useConnectionHook";
 import DeleteBlock from "../../../../../components/DeleteBlock";
@@ -12,15 +12,12 @@ import { SyncSchema } from "../../../../../core/resources/Schema";
 import { equal } from "../../../../../utils/objects";
 import ResetDataModal from "../../../../../components/ResetDataModal";
 import { ModalTypes } from "../../../../../components/ResetDataModal/types";
+import Button from "../../../../../components/Button";
+import { useResource } from "rest-hooks/lib/react-integration/hooks";
 
 type IProps = {
-  connection: Connection;
-  isModalOpen?: boolean;
-  activeUpdatingSchemaMode?: boolean;
-  deactivatedUpdatingSchemaMode: () => void;
   onAfterSaveSchema: () => void;
-  setModalState: (state: boolean) => void;
-  onSubmitModal: () => void;
+  connectionId: string;
 };
 
 const Content = styled.div`
@@ -28,15 +25,35 @@ const Content = styled.div`
   margin: 18px auto;
 `;
 
+const TitleContainer = styled.div<{ hasButton: boolean }>`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin: ${({ hasButton }) => (hasButton ? "-5px 0" : 0)};
+`;
+
 const SettingsView: React.FC<IProps> = ({
-  connection,
   onAfterSaveSchema,
-  isModalOpen,
-  setModalState,
-  onSubmitModal,
-  activeUpdatingSchemaMode,
-  deactivatedUpdatingSchemaMode
+  connectionId
 }) => {
+  const [isModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [activeUpdatingSchemaMode, setActiveUpdatingSchemaMode] = useState(
+    false
+  );
+
+  const connection = useResource(
+    ConnectionResource.detailShape(),
+    activeUpdatingSchemaMode
+      ? {
+          connectionId,
+          with_refreshed_catalog: true
+        }
+      : {
+          connectionId
+        }
+  );
+
   const formatMessage = useIntl().formatMessage;
   const [saved, setSaved] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -57,7 +74,7 @@ const SettingsView: React.FC<IProps> = ({
 
   const onSubmitResetModal = async () => {
     if (activeUpdatingSchemaMode) {
-      setModalState(false);
+      setIsUpdateModalOpen(false);
       await onSubmit(currentValues);
     } else {
       onSubmitModal();
@@ -70,7 +87,7 @@ const SettingsView: React.FC<IProps> = ({
   }) => {
     if (activeUpdatingSchemaMode) {
       setCurrentValues(values);
-      setModalState(true);
+      setIsUpdateModalOpen(true);
     } else {
       await onSubmit(values);
     }
@@ -101,7 +118,7 @@ const SettingsView: React.FC<IProps> = ({
       }
 
       if (activeUpdatingSchemaMode) {
-        deactivatedUpdatingSchemaMode();
+        setActiveUpdatingSchemaMode(false);
       }
     } catch (e) {
       setErrorMessage(
@@ -115,6 +132,11 @@ const SettingsView: React.FC<IProps> = ({
     }
   };
 
+  const onSubmitModal = () => {
+    setActiveUpdatingSchemaMode(true);
+    setIsUpdateModalOpen(false);
+  };
+
   const onDelete = useCallback(
     () => deleteConnection({ connectionId: connection.connectionId }),
     [deleteConnection, connection.connectionId]
@@ -125,10 +147,26 @@ const SettingsView: React.FC<IProps> = ({
     connection.connectionId
   ]);
 
+  const endControl = () => {
+    if (!activeUpdatingSchemaMode) {
+      return (
+        <Button onClick={() => setIsUpdateModalOpen(true)}>
+          <FormattedMessage id="connection.updateSchema" />
+        </Button>
+      );
+    }
+    return null;
+  };
+
   return (
     <Content>
       <ContentCard
-        title={<FormattedMessage id="connection.connectionSettings" />}
+        title={
+          <TitleContainer hasButton={!activeUpdatingSchemaMode}>
+            <FormattedMessage id="connection.connectionSettings" />{" "}
+            {endControl()}
+          </TitleContainer>
+        }
       >
         <FrequencyForm
           isEditMode
@@ -138,7 +176,7 @@ const SettingsView: React.FC<IProps> = ({
           frequencyValue={schedule?.value}
           errorMessage={errorMessage}
           successMessage={saved && <FormattedMessage id="form.changesSaved" />}
-          onCancel={deactivatedUpdatingSchemaMode}
+          onCancel={() => setActiveUpdatingSchemaMode(false)}
           editSchemeMode={activeUpdatingSchemaMode}
           isLoading={isLoading}
         />
@@ -146,7 +184,7 @@ const SettingsView: React.FC<IProps> = ({
       <DeleteBlock type="connection" onDelete={onDelete} />
       {isModalOpen ? (
         <ResetDataModal
-          onClose={() => setModalState(false)}
+          onClose={() => setIsUpdateModalOpen(false)}
           onSubmit={onSubmitResetModal}
           modalType={ModalTypes.UPDATE_SCHEMA}
         />
