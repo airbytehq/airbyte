@@ -46,6 +46,7 @@ export default class ConnectionResource extends BaseResource
   readonly destinationId: string = "";
   readonly syncMode: string = "";
   readonly status: string = "";
+  readonly message: string = "";
   readonly schedule: ScheduleProperties | null = null;
   readonly source: SourceInformation | undefined = undefined;
   readonly destination: DestinationInformation | undefined = undefined;
