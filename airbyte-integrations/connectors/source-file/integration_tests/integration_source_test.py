@@ -26,6 +26,7 @@ import json
 import os
 import tempfile
 import uuid
+from typing import Mapping
 
 import boto3
 import pytest
@@ -36,7 +37,7 @@ from google.cloud import storage
 from source_file import SourceFile
 
 
-class TestSourceFile(object):
+class TestSourceFile:
     service_account_file: str = "../secrets/gcs.json"
     aws_credentials: str = "../secrets/aws.json"
     cloud_bucket_name: str = "airbytetestbucket"
@@ -160,14 +161,14 @@ class TestSourceFile(object):
 
 def run_load_dataframes(config, expected_columns=10, expected_rows=42):
     df_list = SourceFile.load_dataframes(config=config, logger=AirbyteLogger(), skip_data=False)
-    assert len(df_list) == 1  # Properly load 1 DataFrame
+    assert len(df_list) == 1, "Properly load 1 DataFrame"
     df = df_list[0]
-    assert len(df.columns) == expected_columns  # DataFrame should have 10 columns
-    assert len(df.index) == expected_rows  # DataFrame should have 42 rows of data
+    assert len(df.columns) == expected_columns, "DataFrame should have 10 columns"
+    assert len(df.index) == expected_rows, "DataFrame should have 42 rows of data"
     return df
 
 
-def get_config(index: int) -> dict:
+def get_config(index: int) -> Mapping[str, str]:
     configs = [
         {"format": "csv", "reader_options": '{"sep": ",", "nrows": 42}', "provider": {}},
         {"format": "csv", "reader_options": '{"sep": ",", "nrows": 42, "compression": "gzip"}', "provider": {}},
