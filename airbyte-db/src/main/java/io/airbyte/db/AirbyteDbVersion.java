@@ -28,6 +28,7 @@ import static org.jooq.impl.DSL.field;
 
 import java.sql.SQLException;
 import java.util.Optional;
+import org.jooq.DSLContext;
 import org.jooq.Record;
 import org.jooq.Result;
 
@@ -36,28 +37,34 @@ import org.jooq.Result;
  */
 public class AirbyteDbVersion {
 
-  public static String get(Database database) throws SQLException {
-    return database.query(ctx -> {
-      Result<Record> result =
-          ctx.select().from("airbyte_metadata").where(field("key").eq("airbyte_db_version")).fetch();
-      Optional<String> first = result.stream().findFirst().map(r -> r.getValue("value", String.class));
+  public static String get(final Database database) throws SQLException {
+    return database.query(AirbyteDbVersion::get);
+  }
 
-      if (first.isEmpty()) {
-        throw new IllegalStateException("Undefined airbyte_metadata for key = 'airbyte_db_version'");
-      } else {
-        return first.get();
-      }
-    });
+  public static String get(final DSLContext ctx) {
+    Result<Record> result = ctx.select().from("airbyte_metadata").where(field("key").eq("airbyte_db_version")).fetch();
+    Optional<String> first = result.stream().findFirst().map(r -> r.getValue("value", String.class));
+
+    if (first.isEmpty()) {
+      throw new IllegalStateException("Undefined airbyte_metadata for key = 'airbyte_db_version'");
+    } else {
+      return first.get();
+    }
   }
 
   public static void check(final String airbyteVersion, final Database database) throws SQLException {
-    final String dbVersion = AirbyteDbVersion.get(database);
+    database.query(ctx -> AirbyteDbVersion.check(airbyteVersion, ctx));
+  }
+
+  public static String check(final String airbyteVersion, final DSLContext ctx) throws SQLException {
+    final String dbVersion = AirbyteDbVersion.get(ctx);
     if (!airbyteVersion.startsWith(dbVersion)) {
       throw new IllegalStateException(String.format(
-          "Version mismatch: Server is %s & Database is %s.\n" +
+          "Version mismatch: %s while Database version is %s.\n" +
               "Please run migration scripts, see https://docs.airbyte.io/tutorials/tutorials/upgrading-airbyte",
           airbyteVersion, dbVersion));
     }
+    return dbVersion;
   }
 
 }

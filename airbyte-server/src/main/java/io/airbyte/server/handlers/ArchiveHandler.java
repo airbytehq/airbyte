@@ -129,9 +129,10 @@ public class ArchiveHandler {
     final Path versionFile = tempFolder.resolve(VERSION_FILE_NAME);
     final String importVersion = Files.readString(versionFile, Charset.defaultCharset());
     LOGGER.info(String.format("Checking Airbyte Version to import %s", importVersion));
-    if (!importVersion.equals(version)) {
+    if (!version.equals(importVersion)) {
       throw new IOException(String.format("Version in VERSION file (%s) does not match current Airbyte version (%s)", importVersion, version));
     }
+    databaseArchiver.checkVersion(version);
     // Check if all files to import are valid and with expected airbyte version
     configFileArchiver.importConfigsFromArchive(tempFolder, true);
   }

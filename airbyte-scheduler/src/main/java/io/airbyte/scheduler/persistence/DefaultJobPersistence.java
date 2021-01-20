@@ -38,6 +38,7 @@ import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.State;
+import io.airbyte.db.AirbyteDbVersion;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.scheduler.Attempt;
@@ -416,6 +417,11 @@ public class DefaultJobPersistence implements JobPersistence {
 
   private static long getEpoch(Record record, String fieldName) {
     return record.get(fieldName, LocalDateTime.class).toEpochSecond(ZoneOffset.UTC);
+  }
+
+  @Override
+  public void checkVersion(final String airbyteVersion) throws IOException {
+    database.query(ctx -> AirbyteDbVersion.check(airbyteVersion, ctx));
   }
 
   @Override

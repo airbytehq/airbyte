@@ -99,6 +99,10 @@ public class DatabaseArchiver {
         .resolve(String.format("%s.yaml", tableName.toLowerCase()));
   }
 
+  public void checkVersion(final String airbyteVersion) throws IOException {
+    persistence.checkVersion(airbyteVersion);
+  }
+
   /**
    * Reads a YAML configuration archive file and deserialize table into the Airbyte Database. The
    * objects will be validated against the current version of Airbyte server's JSON Schema.
