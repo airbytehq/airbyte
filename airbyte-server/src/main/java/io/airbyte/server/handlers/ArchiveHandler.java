@@ -111,7 +111,7 @@ public class ArchiveHandler {
       try {
         Archives.extractArchive(archive.toPath(), tempFolder);
         checkImport(tempFolder);
-        databaseArchiver.importDatabaseFromArchive(tempFolder);
+        databaseArchiver.importDatabaseFromArchive(tempFolder, version);
         configFileArchiver.importConfigsFromArchive(tempFolder, false);
         result = new ImportRead().status(StatusEnum.SUCCEEDED);
       } finally {

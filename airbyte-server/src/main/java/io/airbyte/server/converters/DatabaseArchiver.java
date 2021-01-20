@@ -103,14 +103,14 @@ public class DatabaseArchiver {
    * Reads a YAML configuration archive file and deserialize table into the Airbyte Database. The
    * objects will be validated against the current version of Airbyte server's JSON Schema.
    */
-  public void importDatabaseFromArchive(final Path storageRoot) throws IOException {
+  public void importDatabaseFromArchive(final Path storageRoot, final String airbyteVersion) throws IOException {
     final Map<DatabaseSchema, Stream<JsonNode>> data = new HashMap<>();
     for (DatabaseSchema tableType : DatabaseSchema.values()) {
       final Path tablePath = buildTablePath(storageRoot, tableType.name());
       data.put(tableType, readTableFromArchive(tableType, tablePath));
     }
-    persistence.importDatabase(data);
-    LOGGER.debug("Successful read of airbyte database from archive");
+    persistence.importDatabase(airbyteVersion, data);
+    LOGGER.debug("Successful upgrade of airbyte database from archive");
   }
 
   private Stream<JsonNode> readTableFromArchive(final DatabaseSchema tableSchema, final Path tablePath) throws FileNotFoundException {

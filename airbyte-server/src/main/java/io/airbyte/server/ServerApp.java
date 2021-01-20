@@ -51,7 +51,6 @@ import io.airbyte.server.errors.UncaughtExceptionMapper;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.sql.SQLException;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;

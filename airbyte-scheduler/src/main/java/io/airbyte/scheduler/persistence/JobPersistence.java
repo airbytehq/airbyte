@@ -165,7 +165,9 @@ public interface JobPersistence {
    * Import all SQL tables from streams of JsonNode objects.
    *
    * @param data is a Map of table schemas to the associated streams of records to import.
+   * @param airbyteVersion is the version of the files to be imported and should match the Airbyte
+   *        version in the Database.
    */
-  void importDatabase(Map<DatabaseSchema, Stream<JsonNode>> data) throws IOException;
+  void importDatabase(String airbyteVersion, Map<DatabaseSchema, Stream<JsonNode>> data) throws IOException;
 
 }

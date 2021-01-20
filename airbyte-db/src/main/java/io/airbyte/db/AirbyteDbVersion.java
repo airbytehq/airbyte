@@ -26,7 +26,6 @@ package io.airbyte.db;
 
 import static org.jooq.impl.DSL.field;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Optional;
 import org.jooq.Record;
@@ -60,6 +59,5 @@ public class AirbyteDbVersion {
           airbyteVersion, dbVersion));
     }
   }
-
 
 }

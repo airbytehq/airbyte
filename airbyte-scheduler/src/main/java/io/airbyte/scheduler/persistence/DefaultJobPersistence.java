@@ -464,11 +464,14 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public void importDatabase(final Map<DatabaseSchema, Stream<JsonNode>> data) throws IOException {
-    importDatabase(DEFAULT_SCHEMA, data, false);
+  public void importDatabase(final String airbyteVersion, final Map<DatabaseSchema, Stream<JsonNode>> data) throws IOException {
+    importDatabase(airbyteVersion, DEFAULT_SCHEMA, data, false);
   }
 
-  private void importDatabase(final String targetSchema, final Map<DatabaseSchema, Stream<JsonNode>> data, boolean incrementalImport)
+  private void importDatabase(final String airbyteVersion,
+                              final String targetSchema,
+                              final Map<DatabaseSchema, Stream<JsonNode>> data,
+                              boolean incrementalImport)
       throws IOException {
     if (!data.isEmpty()) {
       createSchema(BACKUP_SCHEMA);
@@ -479,6 +482,7 @@ public class DefaultJobPersistence implements JobPersistence {
           }
           importTable(ctx, targetSchema, tableType, data.get(tableType));
         }
+        registerImportMetadata(ctx, airbyteVersion);
         return null;
       });
     }
@@ -493,7 +497,7 @@ public class DefaultJobPersistence implements JobPersistence {
    * In a single transaction, truncate all @param tables from @param schema, making backup copies
    * in @param backupSchema
    */
-  private void truncateTable(final DSLContext ctx, final String schema, final String tableName, final String backupSchema) {
+  private static void truncateTable(final DSLContext ctx, final String schema, final String tableName, final String backupSchema) {
     final Table<Record> tableSql = getTable(schema, tableName);
     final Table<Record> backupTableSql = getTable(backupSchema, tableName);
     ctx.dropTableIfExists(backupTableSql).execute();
@@ -501,7 +505,7 @@ public class DefaultJobPersistence implements JobPersistence {
     ctx.truncateTable(tableSql).execute();
   }
 
-  private void importTable(DSLContext ctx, final String schema, final DatabaseSchema tableType, final Stream<JsonNode> jsonStream) {
+  private static void importTable(DSLContext ctx, final String schema, final DatabaseSchema tableType, final Stream<JsonNode> jsonStream) {
     final Table<Record> tableSql = getTable(schema, tableType.name());
     final JsonNode jsonSchema = tableType.toJsonNode();
     if (jsonSchema != null) {
@@ -527,6 +531,11 @@ public class DefaultJobPersistence implements JobPersistence {
         ctx.batch(insertStep).execute();
       }
     }
+  }
+
+  private static void registerImportMetadata(final DSLContext ctx, final String airbyteVersion) {
+    ctx.execute("INSERT INTO airbyte_metadata VALUES(CURRENT_TIMESTAMP(0) || '_import_db', '%s');", airbyteVersion);
+    ctx.execute("UPDATE airbyte_metadata SET value = '%s' WHERE key = 'airbyte_db_version';", airbyteVersion);
   }
 
   /**

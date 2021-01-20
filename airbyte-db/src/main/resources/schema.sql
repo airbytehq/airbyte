@@ -91,7 +91,7 @@ CREATE
         '0.11.2-alpha'
     ),
     (
-        'init_db_' || CURRENT_TIMESTAMP( 0 ),
+        CURRENT_TIMESTAMP( 0 )|| '_init_db',
         '0.11.2-alpha'
     );
 
