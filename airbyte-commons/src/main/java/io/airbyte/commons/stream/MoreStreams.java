@@ -36,4 +36,8 @@ public class MoreStreams {
     return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), false);
   }
 
+  public static <T> Stream<T> toStream(Iterable<T> iterable) {
+    return toStream(iterable.iterator());
+  }
+
 }

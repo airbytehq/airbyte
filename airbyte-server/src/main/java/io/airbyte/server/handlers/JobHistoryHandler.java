@@ -33,6 +33,7 @@ import io.airbyte.api.model.JobListRequestBody;
 import io.airbyte.api.model.JobReadList;
 import io.airbyte.api.model.JobWithAttemptsRead;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.commons.stream.MoreStreams;
 import io.airbyte.config.JobConfig;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.persistence.JobPersistence;
@@ -41,7 +42,6 @@ import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 public class JobHistoryHandler {
 
@@ -73,7 +73,7 @@ public class JobHistoryHandler {
       jobReads = Iterables.mergeSorted(ImmutableList.of(jobReads, jobReadsForType), Comparator.comparing(v -> v.getJob().getCreatedAt()));
     }
 
-    return new JobReadList().jobs(StreamSupport.stream(jobReads.spliterator(), false).collect(Collectors.toList()));
+    return new JobReadList().jobs(MoreStreams.toStream(jobReads).collect(Collectors.toList()));
   }
 
   public JobInfoRead getJobInfo(JobIdRequestBody jobIdRequestBody) throws IOException {
