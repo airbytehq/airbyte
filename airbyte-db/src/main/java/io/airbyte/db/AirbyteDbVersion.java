@@ -57,15 +57,20 @@ public class AirbyteDbVersion {
   }
 
   public static String check(String airbyteVersion, final DSLContext ctx) throws SQLException {
-    final String dbVersion = AirbyteDbVersion.get(ctx).replace("\n", "").strip();
-    airbyteVersion = airbyteVersion.replace("\n", "").strip();
-    if (!airbyteVersion.startsWith(dbVersion)) {
+    final String dbVersion = AirbyteDbVersion.get(ctx);
+    if (checkVersion(airbyteVersion, dbVersion)) {
       throw new IllegalStateException(String.format(
-          "Version mismatch: %s while Database version is %s.\n" +
-              "Please run migration scripts, see https://docs.airbyte.io/tutorials/tutorials/upgrading-airbyte",
-          airbyteVersion, dbVersion));
+          "Version mismatch using %s while Database version is %s.\n" +
+              "Please Upgrade or Reset your Airbyte Database, see more at https://docs.airbyte.io/tutorials/tutorials/upgrading-airbyte",
+          airbyteVersion.replace("\n", "").strip(), dbVersion.replace("\n", "").strip()));
     }
     return dbVersion;
+  }
+
+  public static boolean checkVersion(final String version1, final String version2) {
+    final String cleanVersion1 = version1.replace("dev", "").replace("\n", "").strip();
+    final String cleanVersion2 = version2.replace("dev", "").replace("\n", "").strip();
+    return cleanVersion1.equals(cleanVersion2);
   }
 
 }
