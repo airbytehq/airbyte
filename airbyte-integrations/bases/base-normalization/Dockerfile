@@ -19,5 +19,5 @@ WORKDIR /airbyte
 
 ENTRYPOINT ["/airbyte/entrypoint.sh"]
 
-LABEL io.airbyte.version=0.1.7
+LABEL io.airbyte.version=0.1.8
 LABEL io.airbyte.name=airbyte/normalization

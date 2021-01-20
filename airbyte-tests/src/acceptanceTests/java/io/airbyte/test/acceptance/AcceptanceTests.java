@@ -410,10 +410,10 @@ public class AcceptanceTests {
     final Database source = getDatabase(sourceDb);
 
     final Set<String> sourceStreams = listStreams(source);
-    final Set<String> sourceStreamsWithRawSuffix = sourceStreams.stream().map(x -> x + "_raw").collect(Collectors.toSet());
+    final Set<String> sourceStreamsWithRawPrefix = sourceStreams.stream().map(x -> "_airbyte_raw_" + x).collect(Collectors.toSet());
     final Database destination = getDatabase(destinationPsql);
     final Set<String> destinationStreams = listDestinationStreams(destination);
-    assertEquals(sourceStreamsWithRawSuffix, destinationStreams,
+    assertEquals(sourceStreamsWithRawPrefix, destinationStreams,
         String.format("streams did not match.\n source stream names: %s\n destination stream names: %s\n", sourceStreams, destinationStreams));
 
     for (String table : sourceStreams) {
@@ -541,9 +541,9 @@ public class AcceptanceTests {
     Database destination = getDatabase(destinationPsql);
     Set<String> destinationStreams = listDestinationStreams(destination);
 
-    assertTrue(destinationStreams.contains(streamName + "_raw"), "can't find a normalized version of " + streamName);
+    assertTrue(destinationStreams.contains("_airbyte_raw_" + streamName), "can't find a normalized version of " + streamName);
 
-    return retrieveDestinationRecords(destination, streamName + "_raw");
+    return retrieveDestinationRecords(destination, "_airbyte_raw_" + streamName);
   }
 
   private JsonNode getSourceDbConfig() {
