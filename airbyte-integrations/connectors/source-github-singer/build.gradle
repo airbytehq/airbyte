@@ -9,6 +9,7 @@ airbytePython {
     moduleDirectory 'source_github_singer'
 }
 
+
 dependencies {
     implementation files(project(':airbyte-integrations:bases:base-singer').airbyteDocker.outputs)
 }
