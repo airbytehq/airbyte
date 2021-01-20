@@ -3,9 +3,10 @@ import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 
 import ContentCard from "../../../../../components/ContentCard";
-import ConnectionResource from "../../../../../core/resources/Connection";
 import FrequencyConfig from "../../../../../data/FrequencyConfig.json";
-import useConnection from "../../../../../components/hooks/services/useConnectionHook";
+import useConnection, {
+  useConnectionLoad
+} from "../../../../../components/hooks/services/useConnectionHook";
 import DeleteBlock from "../../../../../components/DeleteBlock";
 import FrequencyForm from "../../../../../components/FrequencyForm";
 import { SyncSchema } from "../../../../../core/resources/Schema";
@@ -13,7 +14,7 @@ import { equal } from "../../../../../utils/objects";
 import ResetDataModal from "../../../../../components/ResetDataModal";
 import { ModalTypes } from "../../../../../components/ResetDataModal/types";
 import Button from "../../../../../components/Button";
-import { useResource } from "rest-hooks/lib/react-integration/hooks";
+import LoadingSchema from "../../../../../components/LoadingSchema";
 
 type IProps = {
   onAfterSaveSchema: () => void;
@@ -41,19 +42,6 @@ const SettingsView: React.FC<IProps> = ({
   const [activeUpdatingSchemaMode, setActiveUpdatingSchemaMode] = useState(
     false
   );
-
-  const connection = useResource(
-    ConnectionResource.detailShape(),
-    activeUpdatingSchemaMode
-      ? {
-          connectionId,
-          with_refreshed_catalog: true
-        }
-      : {
-          connectionId
-        }
-  );
-
   const formatMessage = useIntl().formatMessage;
   const [saved, setSaved] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -68,9 +56,24 @@ const SettingsView: React.FC<IProps> = ({
     resetConnection
   } = useConnection();
 
-  const schedule = FrequencyConfig.find(item =>
-    equal(connection.schedule, item.config)
+  const { connection, isLoadingConnection } = useConnectionLoad(
+    connectionId,
+    activeUpdatingSchemaMode
   );
+
+  const onDelete = useCallback(
+    () => deleteConnection({ connectionId: connectionId }),
+    [deleteConnection, connectionId]
+  );
+
+  const onReset = useCallback(() => resetConnection(connectionId), [
+    resetConnection,
+    connectionId
+  ]);
+
+  const schedule =
+    connection &&
+    FrequencyConfig.find(item => equal(connection.schedule, item.config));
 
   const onSubmitResetModal = async () => {
     if (activeUpdatingSchemaMode) {
@@ -101,13 +104,13 @@ const SettingsView: React.FC<IProps> = ({
     const frequencyData = FrequencyConfig.find(
       item => item.value === values.frequency
     );
-    const initialSyncSchema = connection.syncSchema;
+    const initialSyncSchema = connection?.syncSchema;
 
     try {
       await updateConnection({
-        connectionId: connection.connectionId,
+        connectionId: connectionId,
         syncSchema: values.schema,
-        status: connection.status,
+        status: connection?.status || "",
         schedule: frequencyData?.config || null,
         with_refreshed_catalog: activeUpdatingSchemaMode
       });
@@ -137,16 +140,6 @@ const SettingsView: React.FC<IProps> = ({
     setIsUpdateModalOpen(false);
   };
 
-  const onDelete = useCallback(
-    () => deleteConnection({ connectionId: connection.connectionId }),
-    [deleteConnection, connection.connectionId]
-  );
-
-  const onReset = useCallback(() => resetConnection(connection.connectionId), [
-    resetConnection,
-    connection.connectionId
-  ]);
-
   const endControl = () => {
     if (!activeUpdatingSchemaMode) {
       return (
@@ -168,18 +161,24 @@ const SettingsView: React.FC<IProps> = ({
           </TitleContainer>
         }
       >
-        <FrequencyForm
-          isEditMode
-          schema={connection.syncSchema}
-          onSubmit={onSubmitForm}
-          onReset={onReset}
-          frequencyValue={schedule?.value}
-          errorMessage={errorMessage}
-          successMessage={saved && <FormattedMessage id="form.changesSaved" />}
-          onCancel={() => setActiveUpdatingSchemaMode(false)}
-          editSchemeMode={activeUpdatingSchemaMode}
-          isLoading={isLoading}
-        />
+        {!isLoadingConnection && connection ? (
+          <FrequencyForm
+            isEditMode
+            schema={connection.syncSchema}
+            onSubmit={onSubmitForm}
+            onReset={onReset}
+            frequencyValue={schedule?.value}
+            errorMessage={errorMessage}
+            successMessage={
+              saved && <FormattedMessage id="form.changesSaved" />
+            }
+            onCancel={() => setActiveUpdatingSchemaMode(false)}
+            editSchemeMode={activeUpdatingSchemaMode}
+            isLoading={isLoading}
+          />
+        ) : (
+          <LoadingSchema />
+        )}
       </ContentCard>
       <DeleteBlock type="connection" onDelete={onDelete} />
       {isModalOpen ? (

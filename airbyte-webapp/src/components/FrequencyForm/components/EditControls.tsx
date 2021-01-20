@@ -90,7 +90,10 @@ const EditControls: React.FC<IProps> = ({
         <Button
           type="button"
           secondary
-          disabled={(isSubmitting || !isValid || !dirty) && !editSchemeMode}
+          disabled={
+            (isSubmitting || !isValid || !dirty) &&
+            (!editSchemeMode || isSubmitting)
+          }
           onClick={resetForm}
         >
           <FormattedMessage id={`form.cancel`} />

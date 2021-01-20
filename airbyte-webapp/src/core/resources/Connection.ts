@@ -68,8 +68,10 @@ export default class ConnectionResource extends BaseResource
   static detailShape<T extends typeof Resource>(this: T) {
     return {
       ...super.detailShape(),
-      getFetchKey: (params: { connectionId: string }) =>
-        "POST /web_backend/get" + JSON.stringify(params),
+      getFetchKey: (params: {
+        connectionId: string;
+        with_refreshed_catalog?: boolean;
+      }) => "POST /web_backend/get" + JSON.stringify(params),
       fetch: async (params: any): Promise<any> =>
         await this.fetch(
           "post",
