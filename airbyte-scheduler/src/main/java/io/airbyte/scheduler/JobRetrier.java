@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
 public class JobRetrier implements Runnable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JobRetrier.class);
-  private static final int MAX_SYNC_JOB_ATTEMPTS = 5;
+  private static final int MAX_SYNC_JOB_ATTEMPTS = 3;
   private static final int RETRY_WAIT_MINUTES = 1;
 
   private final JobPersistence persistence;
