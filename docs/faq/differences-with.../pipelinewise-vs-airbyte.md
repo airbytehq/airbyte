@@ -1,4 +1,4 @@
-# Pipelinewise vs Airbyte
+# PipelineWise vs Airbyte
 
 ### **PipelineWise:** 
 
@@ -22,5 +22,4 @@ In contrast, Airbyte is  a company fully committed to the open-source MIT projec
 * **Decoupling of the whole platform** to let teams use whatever part of Airbyte they want based on their needs and their existing stack \(orchestration with Airflow, Kubernetes, or Airbyte, transformation with [DBT](http://getdbt.com) or again Airbyte, etc.\). Teams can use Airbyte’s orchestrator or not, their normalization or not; everything becomes possible. 
 
 The data protocols for both projects are compatible with Singer’s. So it is easy to migrate a Singer tap or target onto Airbyte or PipelineWise.  
-
 
