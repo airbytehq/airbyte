@@ -21,24 +21,24 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
 import json
 import traceback
 from typing import Iterable, List
 from urllib.parse import urlparse
 
-from airbyte_protocol import AirbyteStream
-from base_python.entrypoint import logger
-
+import gcsfs
 import numpy as np
 import pandas as pd
+import smart_open
+from airbyte_protocol import AirbyteStream
+from base_python.entrypoint import logger
 from botocore import UNSIGNED
 from botocore.config import Config
 from genson import SchemaBuilder
 from google.cloud.storage import Client as GCSClient
 from google.oauth2 import service_account
 from s3fs import S3FileSystem
-import smart_open
-import gcsfs
 
 
 class ConfigurationError(Exception):
@@ -46,7 +46,7 @@ class ConfigurationError(Exception):
 
 
 class URLFile:
-    """ Class to manage read from file located at different providers
+    """Class to manage read from file located at different providers
 
     Supported examples of URL this class can accept are as follows:
     ```
@@ -68,6 +68,7 @@ class URLFile:
         [ssh|scp|sftp]://username:password@host/path/file
     ```
     """
+
     def __init__(self, url: str, provider: dict, reader_options: dict = None):
         self._url = url
         self._provider = provider
@@ -163,7 +164,7 @@ class URLFile:
         return ""
 
     def _open_gcs_url(self, binary) -> object:
-        mode = 'rb' if binary else 'r'
+        mode = "rb" if binary else "r"
         service_account_json = self._provider.get("service_account_json")
         credentials = None
         if service_account_json:
@@ -180,7 +181,7 @@ class URLFile:
         else:
             if credentials:
                 credentials = service_account.Credentials.from_service_account_info(credentials)
-                client = GCSClient(credentials=credentials, project=credentials.get('project_id'))
+                client = GCSClient(credentials=credentials, project=credentials.get("project_id"))
             else:
                 client = GCSClient.create_anonymous_client()
             file_to_close = smart_open.open(self.full_url, transport_params=dict(client=client), mode=mode)
@@ -210,8 +211,8 @@ class URLFile:
 
 
 class Client:
-    """ Class that manages reading and parsing data from streams
-    """
+    """Class that manages reading and parsing data from streams"""
+
     reader_class = URLFile
 
     def __init__(self, dataset_name: str, url: str, provider: dict, format: str = None, reader_options: str = None):
@@ -270,7 +271,7 @@ class Client:
             "feather": pd.read_feather,
             "parquet": pd.read_parquet,
             "orc": pd.read_orc,
-            "pickle": pd.read_pickle
+            "pickle": pd.read_pickle,
         }
 
         try:
@@ -333,8 +334,7 @@ class Client:
         return mapping.get(self._reader_format, False)
 
     def read(self, fields: Iterable = None) -> Iterable[dict]:
-        """ Read data from the stream
-        """
+        """Read data from the stream"""
         with self.reader.open(binary=self.binary_source) as fp:
             if self._reader_format == "json":
                 yield from self.load_nested_json(fp)
@@ -358,8 +358,7 @@ class Client:
 
     @property
     def streams(self) -> Iterable:
-        """ Discovers available streams
-        """
+        """Discovers available streams"""
         # TODO handle discovery of directories of multiple files instead
         json_schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
