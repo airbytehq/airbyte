@@ -18,3 +18,10 @@ __pycache__
 
 # dbt
 profiles.yml
+
+# Terraform
+.terraform/
+crash.log
+*.tfstate
+*.tfstate.backup
+*.lock.hcl
