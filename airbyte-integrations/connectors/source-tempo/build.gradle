@@ -9,6 +9,6 @@ airbytePython {
     moduleDirectory 'source_tempo'
 }
 
-//dependencies {
-//    implementation files(project(':airbyte-integrations:bases:base-python').airbyteDocker.outputs)
-//}
+dependencies {
+    implementation files(project(':airbyte-integrations:bases:base-singer').airbyteDocker.outputs)
+}

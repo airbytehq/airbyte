@@ -44,6 +44,7 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.DestinationConsumer;
+import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -68,6 +69,7 @@ import java.util.stream.StreamSupport;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -180,8 +182,7 @@ class BigQueryDestinationTest {
     tornDown = true;
   }
 
-  // todo - same test as csv destination
-  // @Test
+  @Test
   void testSpec() throws IOException {
     final ConnectorSpecification actual = new BigQueryDestination().spec();
     final String resourceString = MoreResources.readResource("spec.json");
@@ -190,24 +191,23 @@ class BigQueryDestinationTest {
     assertEquals(expected, actual);
   }
 
-  // todo - same test as csv destination
-  // @Test
+  @Test
   void testCheckSuccess() {
     final AirbyteConnectionStatus actual = new BigQueryDestination().check(config);
     final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     assertEquals(expected, actual);
   }
 
-  // @Test
+  @Test
   void testCheckFailure() {
     ((ObjectNode) config).put(BigQueryDestination.CONFIG_PROJECT_ID, "fake");
     final AirbyteConnectionStatus actual = new BigQueryDestination().check(config);
     final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.FAILED)
-        .withMessage("Access Denied: Project fake: User does not have bigquery.jobs.create permission in project fake.");
+        .withMessage("Access Denied: Project fake: User does not have bigquery.datasets.create permission in project fake.");
     assertEquals(expected, actual);
   }
 
-  // @Test
+  @Test
   void testWriteSuccess() throws Exception {
     final BigQueryDestination destination = new BigQueryDestination();
     final DestinationConsumer<AirbyteMessage> consumer = destination.write(config, CATALOG);
@@ -236,8 +236,7 @@ class BigQueryDestinationTest {
         .collect(Collectors.toList()));
   }
 
-  @SuppressWarnings("ResultOfMethodCallIgnored")
-  // @Test
+  @Test
   void testWriteFailure() throws Exception {
     // hack to force an exception to be thrown from within the consumer.
     final AirbyteMessage spiedMessage = spy(MESSAGE_USERS1);
@@ -276,7 +275,12 @@ class BigQueryDestinationTest {
 
   private void assertTmpTablesNotPresent(List<String> tableNames) throws InterruptedException {
     final Set<String> tmpTableNamePrefixes = tableNames.stream().map(name -> name + "_").collect(Collectors.toSet());
-    assertTrue(fetchNamesOfTablesInDb().stream().noneMatch(tableName -> tmpTableNamePrefixes.stream().anyMatch(tableName::startsWith)));
+    final Set<String> finalTableNames = tableNames.stream().map(name -> name + "_raw").collect(Collectors.toSet());
+    // search for table names that have the tmp table prefix but are not raw tables.
+    assertTrue(fetchNamesOfTablesInDb()
+        .stream()
+        .filter(tableName -> !finalTableNames.contains(tableName))
+        .noneMatch(tableName -> tmpTableNamePrefixes.stream().anyMatch(tableName::startsWith)));
   }
 
   private List<JsonNode> retrieveRecords(String tableName) throws Exception {
@@ -288,7 +292,7 @@ class BigQueryDestinationTest {
 
     return StreamSupport
         .stream(BigQueryDestination.executeQuery(bigquery, queryConfig).getLeft().getQueryResults().iterateAll().spliterator(), false)
-        .map(v -> v.get(BigQueryDestination.COLUMN_DATA).getStringValue())
+        .map(v -> v.get(JavaBaseConstants.COLUMN_NAME_DATA).getStringValue())
         .map(Jsons::deserialize)
         .collect(Collectors.toList());
   }

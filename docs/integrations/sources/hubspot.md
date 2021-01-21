@@ -14,7 +14,7 @@ Several output streams are available from this source \(campaigns, contacts, dea
 | :--- | :--- |
 | Full Refresh Sync | Yes |
 | Incremental Sync | Yes |
-| Replicate Incremental Deletes | No |
+| Replicate Incremental Deletes | Coming soon |
 | SSL connection | Yes |
 
 ### Performance considerations

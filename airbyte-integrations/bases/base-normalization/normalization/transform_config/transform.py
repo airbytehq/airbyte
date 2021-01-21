@@ -107,7 +107,7 @@ class TransformConfig:
         dbt_config["type"] = "postgres"
         dbt_config["host"] = config["host"]
         dbt_config["user"] = config["username"]
-        dbt_config["pass"] = config["password"]
+        dbt_config["pass"] = config.get("password", "")
         dbt_config["port"] = config["port"]
         dbt_config["dbname"] = config["database"]
         dbt_config["schema"] = config["schema"]

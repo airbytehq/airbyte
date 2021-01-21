@@ -460,18 +460,18 @@ Example Output:
 with 
 covid_epidemiology_node as (
   select 
-    emitted_at,
-    {{ dbt_utils.current_timestamp_in_utc()  }} as normalized_at,
-    cast({{ json_extract_scalar('data', ['date'])  }} as {{ dbt_utils.type_string()  }}) as date,
-    cast({{ json_extract_scalar('data', ['new_recovered'])  }} as {{ dbt_utils.type_float()  }}) as new_recovered,
-    cast({{ json_extract_scalar('data', ['new_tested'])  }} as {{ dbt_utils.type_float()  }}) as new_tested,
-    cast({{ json_extract_scalar('data', ['total_deceased'])  }} as {{ dbt_utils.type_float()  }}) as total_deceased,
-    cast({{ json_extract_scalar('data', ['new_deceased'])  }} as {{ dbt_utils.type_float()  }}) as new_deceased,
-    cast({{ json_extract_scalar('data', ['new_confirmed'])  }} as {{ dbt_utils.type_float()  }}) as new_confirmed,
-    cast({{ json_extract_scalar('data', ['total_confirmed'])  }} as {{ dbt_utils.type_float()  }}) as total_confirmed,
-    cast({{ json_extract_scalar('data', ['total_tested'])  }} as {{ dbt_utils.type_float()  }}) as total_tested,
-    cast({{ json_extract_scalar('data', ['total_recovered'])  }} as {{ dbt_utils.type_float()  }}) as total_recovered,
-    cast({{ json_extract_scalar('data', ['key'])  }} as {{ dbt_utils.type_string()  }}) as key
+    _airbyte_emitted_at,
+    {{ dbt_utils.current_timestamp_in_utc()  }} as _airbyte_normalized_at,
+    cast({{ json_extract_scalar('_airbyte_data', ['date'])  }} as {{ dbt_utils.type_string()  }}) as date,
+    cast({{ json_extract_scalar('_airbyte_data', ['new_recovered'])  }} as {{ dbt_utils.type_float()  }}) as new_recovered,
+    cast({{ json_extract_scalar('_airbyte_data', ['new_tested'])  }} as {{ dbt_utils.type_float()  }}) as new_tested,
+    cast({{ json_extract_scalar('_airbyte_data', ['total_deceased'])  }} as {{ dbt_utils.type_float()  }}) as total_deceased,
+    cast({{ json_extract_scalar('_airbyte_data', ['new_deceased'])  }} as {{ dbt_utils.type_float()  }}) as new_deceased,
+    cast({{ json_extract_scalar('_airbyte_data', ['new_confirmed'])  }} as {{ dbt_utils.type_float()  }}) as new_confirmed,
+    cast({{ json_extract_scalar('_airbyte_data', ['total_confirmed'])  }} as {{ dbt_utils.type_float()  }}) as total_confirmed,
+    cast({{ json_extract_scalar('_airbyte_data', ['total_tested'])  }} as {{ dbt_utils.type_float()  }}) as total_tested,
+    cast({{ json_extract_scalar('_airbyte_data', ['total_recovered'])  }} as {{ dbt_utils.type_float()  }}) as total_recovered,
+    cast({{ json_extract_scalar('_airbyte_data', ['key'])  }} as {{ dbt_utils.type_string()  }}) as key
   from {{ source('quarantine', 'covid_epidemiology_raw')  }}
 ),
 covid_epidemiology_with_id as (
@@ -488,7 +488,7 @@ covid_epidemiology_with_id as (
         'total_tested',
         'total_recovered',
         'key'
-    ])  }} as _covid_epidemiology_hashid
+    ])  }} as _airbyte_covid_epidemiology_hashid
     from covid_epidemiology_node
 )
 select * from covid_epidemiology_with_id

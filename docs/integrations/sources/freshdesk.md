@@ -25,8 +25,8 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 | Feature | Supported? |
 | :--- | :--- |
 | Full Refresh Sync | Yes |
-| Incremental Sync | No |
-| Replicate Incremental Deletes | No |
+| Incremental Sync | Coming soon |
+| Replicate Incremental Deletes | Coming soon |
 | SSL connection | Yes |
 
 ### Performance considerations
