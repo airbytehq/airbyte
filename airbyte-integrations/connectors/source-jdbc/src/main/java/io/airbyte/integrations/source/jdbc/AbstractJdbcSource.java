@@ -128,7 +128,7 @@ public abstract class AbstractJdbcSource implements Source {
       LOGGER.debug("Exception while checking connection: ", e);
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
-          .withMessage("Can't connect with provided configuration.");
+          .withMessage("Could not connect with provided configuration.");
     }
   }
 
