@@ -38,7 +38,7 @@ import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.State;
-import io.airbyte.db.AirbyteDbVersion;
+import io.airbyte.db.AirbyteVersion;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.scheduler.Attempt;
@@ -424,7 +424,7 @@ public class DefaultJobPersistence implements JobPersistence {
 
   @Override
   public void checkVersion(final String airbyteVersion) throws IOException {
-    database.query(ctx -> AirbyteDbVersion.check(airbyteVersion, ctx));
+    database.query(ctx -> AirbyteVersion.check(airbyteVersion, ctx));
   }
 
   @Override
@@ -559,7 +559,7 @@ public class DefaultJobPersistence implements JobPersistence {
 
   private static void registerImportMetadata(final DSLContext ctx, final String airbyteVersion) {
     ctx.execute(String.format("INSERT INTO airbyte_metadata VALUES(CURRENT_TIMESTAMP(0) || '_import_db', '%s');", airbyteVersion));
-    ctx.execute(String.format("UPDATE airbyte_metadata SET value = '%s' WHERE key = 'airbyte_db_version';", airbyteVersion));
+    ctx.execute(String.format("UPDATE airbyte_metadata SET value = '%s' WHERE key = '%s';", airbyteVersion, AirbyteVersion.AIRBYTE_VERSION_KEY_NAME));
   }
 
   /**

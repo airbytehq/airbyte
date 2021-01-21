@@ -33,7 +33,7 @@ import io.airbyte.config.helpers.LogHelpers;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DefaultConfigPersistence;
-import io.airbyte.db.AirbyteDbVersion;
+import io.airbyte.db.AirbyteVersion;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
@@ -148,7 +148,7 @@ public class SchedulerApp {
         configs.getAirbyteVersion(),
         configRepository);
 
-    AirbyteDbVersion.check(configs.getAirbyteVersion(), database);
+    AirbyteVersion.check(configs.getAirbyteVersion(), database);
 
     LOGGER.info("Launching scheduler...");
     new SchedulerApp(workspaceRoot, pbf, jobPersistence, configRepository).start();

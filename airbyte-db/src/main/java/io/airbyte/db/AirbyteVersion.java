@@ -32,32 +32,34 @@ import org.jooq.DSLContext;
 import org.jooq.Record;
 import org.jooq.Result;
 
-/*
- * The AirbyteDbVersion identifies the version of the database used internally by Airbyte services.
+/**
+ * The AirbyteVersion identifies the version of the database used internally by Airbyte services.
  */
-public class AirbyteDbVersion {
+public class AirbyteVersion {
+
+  public static final String AIRBYTE_VERSION_KEY_NAME = "airbyte_version";
 
   public static String get(final Database database) throws SQLException {
-    return database.query(AirbyteDbVersion::get);
+    return database.query(AirbyteVersion::get);
   }
 
   public static String get(final DSLContext ctx) {
-    Result<Record> result = ctx.select().from("airbyte_metadata").where(field("key").eq("airbyte_db_version")).fetch();
+    Result<Record> result = ctx.select().from("airbyte_metadata").where(field("key").eq(AIRBYTE_VERSION_KEY_NAME)).fetch();
     Optional<String> first = result.stream().findFirst().map(r -> r.getValue("value", String.class));
 
     if (first.isEmpty()) {
-      throw new IllegalStateException("Undefined airbyte_metadata for key = 'airbyte_db_version'");
+      throw new IllegalStateException(String.format("Undefined airbyte_metadata for key = '%s'", AIRBYTE_VERSION_KEY_NAME));
     } else {
       return first.get();
     }
   }
 
   public static void check(final String airbyteVersion, final Database database) throws SQLException {
-    database.query(ctx -> AirbyteDbVersion.check(airbyteVersion, ctx));
+    database.query(ctx -> AirbyteVersion.check(airbyteVersion, ctx));
   }
 
   public static String check(String airbyteVersion, final DSLContext ctx) throws SQLException {
-    final String dbVersion = AirbyteDbVersion.get(ctx);
+    final String dbVersion = AirbyteVersion.get(ctx);
     if (checkVersion(airbyteVersion, dbVersion)) {
       throw new IllegalStateException(String.format(
           "Version mismatch using %s while Database version is %s.\n" +

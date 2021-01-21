@@ -35,7 +35,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DefaultConfigPersistence;
 import io.airbyte.config.persistence.PersistenceConstants;
-import io.airbyte.db.AirbyteDbVersion;
+import io.airbyte.db.AirbyteVersion;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.scheduler.client.SpecCachingSchedulerJobClient;
@@ -192,7 +192,7 @@ public class ServerApp {
         configs.getDatabaseUrl());
     final JobPersistence jobPersistence = new DefaultJobPersistence(database);
 
-    AirbyteDbVersion.check(configs.getAirbyteVersion(), database);
+    AirbyteVersion.check(configs.getAirbyteVersion(), database);
 
     LOGGER.info("Starting server...");
     new ServerApp(configRepository, jobPersistence, configs).start();
