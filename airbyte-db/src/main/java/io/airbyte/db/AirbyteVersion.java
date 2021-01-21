@@ -27,9 +27,40 @@ package io.airbyte.db;
 /**
  * The AirbyteVersion identifies the version of the database used internally by Airbyte services.
  */
-public class AirbyteVersion {
+public class AirbyteVersion implements Comparable<AirbyteVersion> {
 
   public static final String AIRBYTE_VERSION_KEY_NAME = "airbyte_version";
+
+  private final String major;
+  private final String minor;
+  private final String patch;
+
+  public AirbyteVersion(final String version) {
+    final String[] parsedVersion = version.replace("\n", "").strip().split("-")[0].split("\\.");
+    if (parsedVersion.length >= 3) {
+      major = parsedVersion[0];
+      minor = parsedVersion[1];
+      patch = parsedVersion[2];
+    } else {
+      major = version;
+      minor = "";
+      patch = "";
+    }
+  }
+
+  /**
+   * Compares two Airbyte Version to check if they are equivalent.
+   *
+   * Only the major and minor part of the Version is taken into account.
+   */
+  @Override
+  public int compareTo(final AirbyteVersion another) {
+    final int majorDiff = major.compareTo(another.major);
+    if (majorDiff != 0) {
+      return majorDiff;
+    }
+    return minor.compareTo(another.minor);
+  }
 
   public static void check(final String version1, final String version2) throws IllegalStateException {
     final String cleanVersion1 = version1.replace("\n", "").strip();
@@ -42,11 +73,10 @@ public class AirbyteVersion {
     }
   }
 
-  public static boolean isInvalid(final String version1, final String version2) {
-    final String cleanVersion1 = version1.replace("\n", "").strip();
-    final String cleanVersion2 = version2.replace("\n", "").strip();
-    // TODO implement semantic version check
-    return !cleanVersion1.equals(cleanVersion2);
+  public static boolean isInvalid(final String v1, final String v2) {
+    final AirbyteVersion version1 = new AirbyteVersion(v1);
+    final AirbyteVersion version2 = new AirbyteVersion(v2);
+    return version1.compareTo(version2) != 0;
   }
 
 }

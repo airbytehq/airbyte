@@ -103,7 +103,7 @@ public class DatabaseArchiver {
 
   public void checkVersion(final String airbyteVersion) throws IOException {
     final Optional<String> airbyteDatabaseVersion = persistence.getVersion();
-    airbyteDatabaseVersion.ifPresent(s -> AirbyteVersion.check(airbyteVersion, s));
+    airbyteDatabaseVersion.ifPresent(dbversion -> AirbyteVersion.check(airbyteVersion, dbversion));
   }
 
   /**

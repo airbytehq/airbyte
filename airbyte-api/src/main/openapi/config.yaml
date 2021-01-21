@@ -1957,12 +1957,16 @@ components:
       description: Tarball Archive (.tar.gz) of Airbyte Configuration and Database
     ImportRead:
       type: object
+      required:
+        - status
       properties:
         status:
           type: string
           enum:
             - succeeded
             - failed
+        reason:
+          type: string
   responses:
     InvalidInput:
       description: Invalid Input

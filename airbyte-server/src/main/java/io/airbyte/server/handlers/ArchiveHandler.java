@@ -119,9 +119,9 @@ public class ArchiveHandler {
         FileUtils.deleteDirectory(tempFolder.toFile());
         FileUtils.deleteQuietly(archive);
       }
-    } catch (IOException | JsonValidationException | ConfigNotFoundException e) {
-      LOGGER.error("Import Data failed.");
-      throw new RuntimeException(e);
+    } catch (IOException | JsonValidationException | ConfigNotFoundException | RuntimeException e) {
+      result = new ImportRead().status(StatusEnum.FAILED);
+      result.setReason(e.getMessage());
     }
     return result;
   }
