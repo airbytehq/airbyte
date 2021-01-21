@@ -41,6 +41,10 @@ import smart_open
 import gcsfs
 
 
+class ConfigurationError(Exception):
+    pass
+
+
 class URLFile:
     """ Class to manage read from file located at different providers
 
@@ -64,15 +68,10 @@ class URLFile:
         [ssh|scp|sftp]://username:password@host/path/file
     ```
     """
-    def __init__(self, url: str, provider: dict, reader_options: str = None):
+    def __init__(self, url: str, provider: dict, reader_options: dict = None):
         self._url = url
         self._provider = provider
-        self._reader_options = {}
-        if reader_options:
-            try:
-                self._reader_options = json.loads(reader_options)
-            except json.decoder.JSONDecodeError as err:
-                logger.error(f"Failed to parse reader options {repr(err)}\n{reader_options}\n{traceback.format_exc()}")
+        self._reader_options = reader_options or {}
         self._file = None
 
     def __enter__(self):
@@ -168,8 +167,9 @@ class URLFile:
             try:
                 credentials = json.dumps(json.loads(self._provider["service_account_json"]))
             except json.decoder.JSONDecodeError as err:
-                logger.error(f"Failed to parse gcs service account json: {repr(err)}\n{traceback.format_exc()}")
-                raise err
+                error_msg = f"Failed to parse gcs service account json: {repr(err)}\n{traceback.format_exc()}"
+                logger.error(error_msg)
+                raise ConfigurationError(error_msg) from err
 
         if self.reader_impl == "gcsfs":
             fs = gcsfs.GCSFileSystem(token=credentials or "anon")
@@ -220,7 +220,9 @@ class Client:
             try:
                 self._reader_options = json.loads(reader_options)
             except json.decoder.JSONDecodeError as err:
-                logger.error(f"Failed to parse reader options {repr(err)}\n{reader_options}\n{traceback.format_exc()}")
+                error_msg = f"Failed to parse reader options {repr(err)}\n{reader_options}\n{traceback.format_exc()}"
+                logger.error(error_msg)
+                raise ConfigurationError(error_msg) from err
 
     @property
     def stream_name(self) -> str:
@@ -270,9 +272,9 @@ class Client:
         try:
             reader = readers[self._reader_format]
         except KeyError:
-            reason = f"Reader {self._reader_format} is not supported\n{traceback.format_exc()}"
-            logger.error(reason)
-            raise ValueError(reason)
+            error_msg = f"Reader {self._reader_format} is not supported\n{traceback.format_exc()}"
+            logger.error(error_msg)
+            raise ConfigurationError(error_msg) from KeyError
 
         reader_options = {**self._reader_options}
         if skip_data and self._reader_format == "csv":
@@ -309,7 +311,7 @@ class Client:
 
     @property
     def reader(self) -> reader_class:
-        return self.reader_class(url=self.url, provider=self._provider, reader_options=self._reader_options)
+        return self.reader_class(url=self._url, provider=self._provider, reader_options=self._reader_options)
 
     def read(self, fields: Iterable = None) -> Iterable[dict]:
         """ Read data from the stream

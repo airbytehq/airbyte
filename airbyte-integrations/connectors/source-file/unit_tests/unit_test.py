@@ -22,8 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from source_file.source import SourceFile
+from source_file.client import Client
 
 
 def test_example_method():
-    assert SourceFile.convert_dtype("bool") == "bool"
+    assert Client.dtype_to_json_type("bool") == "bool"
