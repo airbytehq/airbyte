@@ -86,7 +86,7 @@ class URLFile:
 
     @property
     def full_url(self):
-        return f"{self.storage_scheme}{self._url}"
+        return f"{self.storage_scheme}{self.url}"
 
     def close(self):
         if self._file:
