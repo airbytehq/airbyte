@@ -130,10 +130,10 @@ public class ArchiveHandler {
     final Path versionFile = tempFolder.resolve(VERSION_FILE_NAME);
     final String importVersion = Files.readString(versionFile, Charset.defaultCharset()).replace("\n", "").strip();
     LOGGER.info(String.format("Checking Airbyte Version to import %s", importVersion));
-    if (!AirbyteVersion.checkVersion(version, importVersion)) {
+    if (AirbyteVersion.isInvalid(version, importVersion)) {
       throw new IOException(String.format("Imported VERSION (%s) is incompatible with current Airbyte version (%s).\n" +
-          "Please Upgrade your Airbyte Archive, see more at https://docs.airbyte.io/tutorials/tutorials/upgrading-airbyte\n", importVersion,
-          version));
+          "Please Upgrade your Airbyte Archive, see more at https://docs.airbyte.io/tutorials/tutorials/upgrading-airbyte\n",
+          importVersion, version));
     }
     databaseArchiver.checkVersion(version);
     // Check if all files to import are valid and with expected airbyte version

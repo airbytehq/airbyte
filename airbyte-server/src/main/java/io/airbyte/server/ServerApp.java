@@ -51,6 +51,7 @@ import io.airbyte.server.errors.UncaughtExceptionMapper;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -192,7 +193,14 @@ public class ServerApp {
         configs.getDatabaseUrl());
     final JobPersistence jobPersistence = new DefaultJobPersistence(database);
 
-    AirbyteVersion.check(configs.getAirbyteVersion(), database);
+    final String airbyteVersion = configs.getAirbyteVersion();
+    final Optional<String> airbyteDatabaseVersion = jobPersistence.getVersion();
+    if (airbyteDatabaseVersion.isEmpty()) {
+      LOGGER.info(String.format("Setting Database version to %s...", airbyteVersion));
+      jobPersistence.setVersion(airbyteVersion);
+    } else {
+      AirbyteVersion.check(airbyteVersion, airbyteDatabaseVersion.get());
+    }
 
     LOGGER.info("Starting server...");
     new ServerApp(configRepository, jobPersistence, configs).start();

@@ -41,10 +41,11 @@ import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.KubeProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
+import java.io.IOException;
 import java.nio.file.Path;
-import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -118,7 +119,7 @@ public class SchedulerApp {
     }
   }
 
-  public static void main(String[] args) throws SQLException {
+  public static void main(String[] args) throws IOException, InterruptedException {
 
     final Configs configs = new EnvConfigs();
 
@@ -148,7 +149,19 @@ public class SchedulerApp {
         configs.getAirbyteVersion(),
         configRepository);
 
-    AirbyteVersion.check(configs.getAirbyteVersion(), database);
+    Optional<String> airbyteDatabaseVersion = jobPersistence.getVersion();
+    int loopCount = 0;
+    while (airbyteDatabaseVersion.isEmpty() && loopCount < 300) {
+      LOGGER.warn("Waiting for Server to start...");
+      TimeUnit.SECONDS.sleep(1);
+      airbyteDatabaseVersion = jobPersistence.getVersion();
+      loopCount++;
+    }
+    if (airbyteDatabaseVersion.isPresent()) {
+      AirbyteVersion.check(configs.getAirbyteVersion(), airbyteDatabaseVersion.get());
+    } else {
+      throw new IllegalStateException("Unable to retrieve Airbyte Version, aborting...");
+    }
 
     LOGGER.info("Launching scheduler...");
     new SchedulerApp(workspaceRoot, pbf, jobPersistence, configRepository).start();

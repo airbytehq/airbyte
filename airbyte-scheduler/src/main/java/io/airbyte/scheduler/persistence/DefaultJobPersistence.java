@@ -24,6 +24,8 @@
 
 package io.airbyte.scheduler.persistence;
 
+import static org.jooq.impl.DSL.field;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -51,6 +53,8 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -106,6 +110,8 @@ public class DefaultJobPersistence implements JobPersistence {
           + "attempts.updated_at AS attempt_updated_at,\n"
           + "attempts.ended_at AS attempt_ended_at\n"
           + "FROM jobs LEFT OUTER JOIN attempts ON jobs.id = attempts.job_id ";
+
+  private static final String AIRBYTE_METADATA_TABLE = "airbyte_metadata";
 
   private final ExceptionWrappingDatabase database;
   private final Supplier<Instant> timeSupplier;
@@ -423,8 +429,25 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public void checkVersion(final String airbyteVersion) throws IOException {
-    database.query(ctx -> AirbyteVersion.check(airbyteVersion, ctx));
+  public Optional<String> getVersion() throws IOException {
+    final Result<Record> result = database.query(ctx -> ctx.select()
+        .from(AIRBYTE_METADATA_TABLE)
+        .where(field("key").eq(AirbyteVersion.AIRBYTE_VERSION_KEY_NAME))
+        .fetch());
+    return result.stream().findFirst().map(r -> r.getValue("value", String.class));
+  }
+
+  @Override
+  public void setVersion(String airbyteVersion) throws IOException {
+    database.query(ctx -> ctx.execute(String.format(
+        "INSERT INTO %s VALUES('%s', '%s'), ('%s_init_db', '%s');",
+        AIRBYTE_METADATA_TABLE,
+        AirbyteVersion.AIRBYTE_VERSION_KEY_NAME, airbyteVersion,
+        current_timestamp(), airbyteVersion)));
+  }
+
+  private static String current_timestamp() {
+    return ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
   }
 
   @Override
@@ -545,6 +568,14 @@ public class DefaultJobPersistence implements JobPersistence {
     }
   }
 
+  /**
+   * In schema.sql, we create tables with IDENTITY PRIMARY KEY columns named 'id' that will generate
+   * auto-incremented ID for each new record. When importing batch of records from outside of the DB,
+   * we need to update Postgres Internal state to continue auto-incrementing from the latest value or
+   * we would risk to violate primary key constraints by inserting new records with duplicate ids.
+   *
+   * This function reset such Identity states (called SQL Sequence objects).
+   */
   private static void resetIdentityColumn(final DSLContext ctx, final String schema, final DatabaseSchema tableType) {
     final Result<Record> result = ctx.fetch(String.format("SELECT MAX(id) FROM %s.%s", schema, tableType.name()));
     final Optional<Integer> maxId = result.stream()
@@ -553,13 +584,18 @@ public class DefaultJobPersistence implements JobPersistence {
         .findFirst();
     if (maxId.isPresent()) {
       final Sequence<BigInteger> sequenceName = DSL.sequence(DSL.name(schema, String.format("%s_%s_seq", tableType.name().toLowerCase(), "id")));
-      ctx.alterSequenceIfExists(sequenceName).restartWith(maxId.get() + 101).execute();
+      ctx.alterSequenceIfExists(sequenceName).restartWith(maxId.get() + 1).execute();
     }
   }
 
+  /**
+   * Insert records into the metadata table to keep track of import Events that were applied on the
+   * database. Update and overwrite the corresponding @param airbyteVersion.
+   */
   private static void registerImportMetadata(final DSLContext ctx, final String airbyteVersion) {
-    ctx.execute(String.format("INSERT INTO airbyte_metadata VALUES(CURRENT_TIMESTAMP(0) || '_import_db', '%s');", airbyteVersion));
-    ctx.execute(String.format("UPDATE airbyte_metadata SET value = '%s' WHERE key = '%s';", airbyteVersion, AirbyteVersion.AIRBYTE_VERSION_KEY_NAME));
+    ctx.execute(String.format("INSERT INTO %s VALUES('%s_import_db', '%s');", AIRBYTE_METADATA_TABLE, current_timestamp(), airbyteVersion));
+    ctx.execute(String.format("UPDATE %s SET value = '%s' WHERE key = '%s';", AIRBYTE_METADATA_TABLE, airbyteVersion,
+        AirbyteVersion.AIRBYTE_VERSION_KEY_NAME));
   }
 
   /**

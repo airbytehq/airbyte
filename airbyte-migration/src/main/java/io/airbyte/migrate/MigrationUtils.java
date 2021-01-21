@@ -32,6 +32,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import java.nio.file.Path;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -90,8 +91,12 @@ public class MigrationUtils {
     final ResourceId resourceId = ResourceId.fromConstantCase(ResourceType.JOB, metadataTable);
     final Consumer<JsonNode> metadataOutputConsumer = outputData.get(resourceId);
     metadataOutputConsumer.accept(Jsons.jsonNode(ImmutableMap.of(
-        "key", String.format("%s_migrate_to", ZonedDateTime.now()),
+        "key", String.format("%s_migrate_to", current_timestamp()),
         "value", version)));
+  }
+
+  public static String current_timestamp() {
+    return ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
   }
 
 }

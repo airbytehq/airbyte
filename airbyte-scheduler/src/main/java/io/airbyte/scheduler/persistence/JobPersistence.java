@@ -158,7 +158,12 @@ public interface JobPersistence {
   /**
    * Returns the AirbyteVersion stored in the database
    */
-  void checkVersion(String airbyteVersion) throws IOException;
+  Optional<String> getVersion() throws IOException;
+
+  /**
+   * Set the database to @param AirbyteVersion
+   */
+  void setVersion(String airbyteVersion) throws IOException;
 
   /**
    * Export all SQL tables from @param schema into streams of JsonNode objects. This returns a Map of
