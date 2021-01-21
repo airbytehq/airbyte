@@ -36,7 +36,7 @@ export const useDestinationDefinitionSpecificationLoad = (
       ? {
           destinationDefinitionId
         }
-      : null
+      : undefined
   );
 
   return { destinationDefinitionSpecification, error, isLoading };
