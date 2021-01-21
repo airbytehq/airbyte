@@ -84,3 +84,7 @@ Some sources cannot define the cursor without user input. For example, in the [p
 
 \(You can find a more technical details about the configuration data model [here](catalog.md)\).
 
+## Known Limitations
+
+When the source's schema changes, for example, when a column is added, renamed or deleted to an existing stream, the current behavior of **Incremental - Append** is not able to handle such events yet. Therefore, it is recommended to trigger a [full refresh](full-refresh.md) to recreate at the destination the data with the new metadata included.
+

@@ -75,7 +75,6 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -109,9 +108,7 @@ class SchedulerHandlerTest {
   private ConfigRepository configRepository;
   private Job completedJob;
   private SchedulerJobClient schedulerJobClient;
-  private Supplier<UUID> uuidSupplier;
 
-  @SuppressWarnings("unchecked")
   @BeforeEach
   void setup() {
     completedJob = mock(Job.class, RETURNS_DEEP_STUBS);
@@ -119,11 +116,10 @@ class SchedulerHandlerTest {
     when(completedJob.getConfig().getConfigType()).thenReturn(ConfigType.SYNC);
     when(completedJob.getScope()).thenReturn("sync:123");
 
-    uuidSupplier = mock(Supplier.class);
     schedulerJobClient = spy(SchedulerJobClient.class);
     configRepository = mock(ConfigRepository.class);
 
-    schedulerHandler = new SchedulerHandler(configRepository, schedulerJobClient, uuidSupplier);
+    schedulerHandler = new SchedulerHandler(configRepository, schedulerJobClient);
   }
 
   @Test
@@ -147,11 +143,9 @@ class SchedulerHandlerTest {
 
   @Test
   void testCheckSourceConnectionFromSourceCreate() throws JsonValidationException, IOException, ConfigNotFoundException {
-    final SourceConnection source = Jsons.clone(SOURCE);
-    source.setName("source:" + source.getSourceId());
-    source.setWorkspaceId(source.getSourceId());
-
-    when(uuidSupplier.get()).thenReturn(source.getSourceId());
+    final SourceConnection source = new SourceConnection()
+        .withSourceDefinitionId(SOURCE.getSourceDefinitionId())
+        .withConfiguration(SOURCE.getConfiguration());
 
     final SourceCoreConfig sourceCoreConfig = new SourceCoreConfig()
         .sourceDefinitionId(source.getSourceDefinitionId())
@@ -261,12 +255,10 @@ class SchedulerHandlerTest {
   }
 
   @Test
-  void testCheckSourceConnectionFromDestinationCreate() throws JsonValidationException, IOException, ConfigNotFoundException {
-    final DestinationConnection destination = Jsons.clone(DESTINATION);
-    destination.setName("destination:" + destination.getDestinationId());
-    destination.setWorkspaceId(destination.getDestinationId());
-
-    when(uuidSupplier.get()).thenReturn(destination.getDestinationId());
+  void testCheckDestinationConnectionFromDestinationCreate() throws JsonValidationException, IOException, ConfigNotFoundException {
+    final DestinationConnection destination = new DestinationConnection()
+        .withDestinationDefinitionId(DESTINATION.getDestinationDefinitionId())
+        .withConfiguration(DESTINATION.getConfiguration());
 
     final DestinationCoreConfig destinationCoreConfig = new DestinationCoreConfig()
         .destinationDefinitionId(destination.getDestinationDefinitionId())
@@ -309,11 +301,10 @@ class SchedulerHandlerTest {
 
   @Test
   void testDiscoverSchemaForSourceFromSourceCreate() throws JsonValidationException, IOException, ConfigNotFoundException {
-    final SourceConnection source = Jsons.clone(SOURCE);
-    source.setName("source:" + source.getSourceId());
-    source.setWorkspaceId(source.getSourceId());
+    final SourceConnection source = new SourceConnection()
+        .withSourceDefinitionId(SOURCE.getSourceDefinitionId())
+        .withConfiguration(SOURCE.getConfiguration());
 
-    when(uuidSupplier.get()).thenReturn(source.getSourceId());
     final JobOutput jobOutput = mock(JobOutput.class);
     when(completedJob.getSuccessOutput()).thenReturn(Optional.of(jobOutput));
     when(jobOutput.getDiscoverCatalog()).thenReturn(new StandardDiscoverCatalogOutput().withCatalog(new AirbyteCatalog()));

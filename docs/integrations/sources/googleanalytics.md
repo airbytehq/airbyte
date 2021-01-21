@@ -26,8 +26,8 @@ Please reach out to us on Slack or [create an issue](https://github.com/airbyteh
 | Feature | Supported? |
 | :--- | :--- |
 | Full Refresh Sync | Yes |
-| Incremental Sync | No |
-| Replicate Incremental Deletes | No |
+| Incremental Sync | Coming soon |
+| Replicate Incremental Deletes | Coming soon |
 | SSL connection | Yes |
 
 ### Performance considerations

@@ -45,17 +45,24 @@ public class Names {
   }
 
   /**
-   * Concatenate Strings together, but handles the case where the first string is already quoted
-   *
-   * @param name Quoted or Unquoted name to append more characters to
-   * @param suffix additional string to concatenate
-   * @return name and suffix concatenated together
+   * Concatenate Strings together, but handles the case where the strings are already quoted
    */
-  public static String concatQuotedNames(String name, String suffix) {
-    if (name.endsWith("\"")) {
-      return name.substring(0, name.length() - 1) + suffix + "\"";
+  public static String concatQuotedNames(final String inputStr1, final String inputStr2) {
+    boolean anyQuotes = false;
+    String unquotedStr1 = inputStr1;
+    String unquotedStr2 = inputStr2;
+    if (inputStr1.startsWith("\"")) {
+      unquotedStr1 = inputStr1.substring(1, inputStr1.length() - 1);
+      anyQuotes = true;
+    }
+    if (inputStr2.startsWith("\"")) {
+      unquotedStr2 = inputStr2.substring(1, inputStr2.length() - 1);
+      anyQuotes = true;
+    }
+    if (anyQuotes) {
+      return "\"" + unquotedStr1 + unquotedStr2 + "\"";
     } else {
-      return name + suffix;
+      return unquotedStr1 + unquotedStr2;
     }
   }
 

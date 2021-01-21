@@ -301,12 +301,12 @@ class JdbcDestinationTest {
 
   private Set<JsonNode> recordRetriever(String streamName) throws Exception {
     return database.query(ctx -> ctx
-        .fetch(String.format("SELECT * FROM %s ORDER BY emitted_at ASC;", streamName))
+        .fetch(String.format("SELECT * FROM %s ORDER BY %s ASC;", streamName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
         .stream()
         .peek(record -> {
           // ensure emitted_at is not in the future
           OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
-          OffsetDateTime emitted_at = record.get("emitted_at", OffsetDateTime.class);
+          OffsetDateTime emitted_at = record.get(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, OffsetDateTime.class);
 
           assertTrue(now.toEpochSecond() >= emitted_at.toEpochSecond());
         })
