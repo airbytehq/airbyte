@@ -67,7 +67,6 @@ public class DefaultSqlOperations implements SqlOperations {
   public void insertRecords(JdbcDatabase database, Stream<AirbyteRecordMessage> recordsStream, String schemaName, String tmpTableName)
       throws SQLException {
     final List<AirbyteRecordMessage> records = recordsStream.collect(Collectors.toList());
-    LOGGER.info("actual size of batch: {}. writing to {}.{}. ", records.size(), schemaName, tmpTableName);
 
     // todo (cgardens) - move this into a postgres version of this. this syntax is VERY postgres
     // specific.
