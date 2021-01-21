@@ -1,5 +1,5 @@
 import { FetchOptions, Resource } from "rest-hooks";
-import BaseResource from "./BaseResource";
+import BaseResource, { NetworkError } from "./BaseResource";
 import { SyncSchema } from "./Schema";
 
 export type ScheduleProperties = {
@@ -68,11 +68,11 @@ export default class ConnectionResource extends BaseResource
   static detailShape<T extends typeof Resource>(this: T) {
     return {
       ...super.detailShape(),
-      getFetchKey: (params: { connectionId: string }) =>
-        "POST /web_backend/get" + JSON.stringify(params),
-      fetch: async (
-        params: Readonly<Record<string, string | number>>
-      ): Promise<any> =>
+      getFetchKey: (params: {
+        connectionId: string;
+        with_refreshed_catalog?: boolean;
+      }) => "POST /web_backend/get" + JSON.stringify(params),
+      fetch: async (params: any): Promise<any> =>
         await this.fetch(
           "post",
           `${super.rootUrl()}web_backend/connections/get`,
@@ -85,6 +85,27 @@ export default class ConnectionResource extends BaseResource
   static updateShape<T extends typeof Resource>(this: T) {
     return {
       ...super.partialUpdateShape(),
+      fetch: async (
+        _: Readonly<Record<string, string | number>>,
+        body: any
+      ): Promise<any> => {
+        const result = await this.fetch(
+          "post",
+          `${super.rootUrl()}web_backend/connections/update`,
+          body
+        );
+
+        if (result.status === "failure") {
+          console.log("failure");
+
+          const e = new NetworkError(result);
+          e.status = result.status;
+          e.message = result.message;
+          throw e;
+        }
+
+        return result;
+      },
       schema: this.asSchema()
     };
   }
