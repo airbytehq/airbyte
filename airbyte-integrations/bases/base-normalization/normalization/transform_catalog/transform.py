@@ -389,8 +389,7 @@ def process_node(
     column_to_sql_expression = extract_node_properties(
         path=path, json_col=json_col, properties=properties, integration_type=integration_type
     )
-    print(f"NODE PROPERTIES: {column_to_sql_expression}")
-    print("HELLOOOOOO")
+
     node_columns = ",\n    ".join([sql for sql in column_to_sql_expression.values()])
     hash_node_columns = ",\n        ".join(
         [safe_cast_to_varchar(column, integration_type, properties) for column in column_to_sql_expression.keys()]

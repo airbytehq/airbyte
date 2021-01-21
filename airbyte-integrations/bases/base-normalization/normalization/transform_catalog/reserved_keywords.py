@@ -1212,6 +1212,6 @@ SNOWFLAKE = set(
 
 RESERVED_KEYWORDS = defaultdict(set, {"bigquery": BIGQUERY, "postgres": POSTGRES, "redshift": REDSHIFT, "snowflake": SNOWFLAKE})
 
-@staticmethod
+
 def is_reserved_keyword(token: str, integration_type: str) -> bool:
-    return token in RESERVED_KEYWORDS[integration_type]
+    return token.upper() in RESERVED_KEYWORDS[integration_type]
