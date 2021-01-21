@@ -153,7 +153,7 @@ class Helpers(object):
         return [sheet.properties.title for sheet in spreadsheet_metadata.sheets]
 
     @staticmethod
-    def get_sheets_properties(client, spreadsheet_id: str):
+    def get_sheet_row_count(client, spreadsheet_id: str):
         spreadsheet_metadata = Spreadsheet.parse_obj(client.get(spreadsheetId=spreadsheet_id, includeGridData=False))
         return {sheet.properties.title: sheet.properties.gridProperties["rowCount"] for sheet in spreadsheet_metadata.sheets}
 

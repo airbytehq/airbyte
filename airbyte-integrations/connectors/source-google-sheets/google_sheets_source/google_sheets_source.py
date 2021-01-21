@@ -100,7 +100,7 @@ class GoogleSheetsSource(Source):
         # For each sheet in the spreadsheet, get a batch of rows, and as long as there hasn't been
         # a blank row, emit the row batch
         sheet_to_column_index_to_name = Helpers.get_available_sheets_to_column_index_to_name(client, spreadsheet_id, sheet_to_column_name)
-        sheet_parameters = Helpers.get_sheets_properties(client, spreadsheet_id)
+        sheet_parameters = Helpers.get_sheet_row_count(client, spreadsheet_id)
         for sheet in sheet_to_column_index_to_name.keys():
             logger.info(f"Syncing sheet {sheet}")
             column_index_to_name = sheet_to_column_index_to_name[sheet]
