@@ -47,6 +47,13 @@ public class EnvConfigs implements Configs {
   public static final String DATABASE_USER = "DATABASE_USER";
   public static final String DATABASE_PASSWORD = "DATABASE_PASSWORD";
   public static final String DATABASE_URL = "DATABASE_URL";
+  private static final String MINIMUM_WORKSPACE_RETENTION_DAYS = "MINIMUM_WORKSPACE_RETENTION_DAYS";
+  private static final String MAXIMUM_WORKSPACE_RETENTION_DAYS = "MAXIMUM_WORKSPACE_RETENTION_DAYS";
+  private static final String MAXIMUM_WORKSPACE_SIZE_MB = "MAXIMUM_WORKSPACE_SIZE_MB";
+
+  private static final long DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS = 1;
+  private static final long DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS = 60;
+  private static final long DEFAULT_MAXIMUM_WORKSPACE_SIZE_MB = 5000;
 
   public static final String DEFAULT_NETWORK = "host";
 
@@ -158,6 +165,39 @@ public class EnvConfigs implements Configs {
 
     LOGGER.info(WORKER_ENVIRONMENT + " not found, defaulting to " + WorkerEnvironment.DOCKER);
     return WorkerEnvironment.DOCKER;
+  }
+
+  @Override
+  public long getMinimumWorkspaceRetentionDays() {
+    final String minimumWorkspaceRetentionDays = getEnv.apply(MINIMUM_WORKSPACE_RETENTION_DAYS);
+    if (minimumWorkspaceRetentionDays != null) {
+      return Long.parseLong(minimumWorkspaceRetentionDays);
+    } else {
+      LOGGER.info("MINIMUM_WORKSPACE_RETENTION_DAYS not found, defaulting to " + DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS);
+      return DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS;
+    }
+  }
+
+  @Override
+  public long getMaximumWorkspaceRetentionDays() {
+    final String maximumWorkspaceRetentionDays = getEnv.apply(MAXIMUM_WORKSPACE_RETENTION_DAYS);
+    if (maximumWorkspaceRetentionDays != null) {
+      return Long.parseLong(maximumWorkspaceRetentionDays);
+    } else {
+      LOGGER.info("MAXIMUM_WORKSPACE_RETENTION_DAYS not found, defaulting to " + DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS);
+      return DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS;
+    }
+  }
+
+  @Override
+  public long getMaximumWorkspaceSizeMb() {
+    final String maximumWorkspaceSizeMb = getEnv.apply(MAXIMUM_WORKSPACE_SIZE_MB);
+    if (maximumWorkspaceSizeMb != null) {
+      return Long.parseLong(maximumWorkspaceSizeMb);
+    } else {
+      LOGGER.info("MAXIMUM_WORKSPACE_SIZE_MB not found, defaulting to " + DEFAULT_MAXIMUM_WORKSPACE_SIZE_MB);
+      return DEFAULT_MAXIMUM_WORKSPACE_SIZE_MB;
+    }
   }
 
   private String getEnv(final String name) {

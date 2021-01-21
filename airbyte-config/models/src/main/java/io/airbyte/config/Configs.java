@@ -54,6 +54,12 @@ public interface Configs {
 
   WorkerEnvironment getWorkerEnvironment();
 
+  long getMinimumWorkspaceRetentionDays();
+
+  long getMaximumWorkspaceRetentionDays();
+
+  long getMaximumWorkspaceSizeMb();
+
   enum TrackingStrategy {
     SEGMENT,
     LOGGING
