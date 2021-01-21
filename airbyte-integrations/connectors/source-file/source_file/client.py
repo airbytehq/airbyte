@@ -93,22 +93,24 @@ class URLFile:
             self._file.close()
             self._file = None
 
-    def open(self):
+    def open(self, binary=False):
         self.close()
-        self._file = self._open()
+        self._file = self._open(binary=binary)
+        return self
 
-    def _open(self):
+    def _open(self, binary):
+        mode = "rb" if binary else "r"
         storage = self.storage_scheme
         url = self.url
 
         if storage == "gs://":
-            return self._open_gcs_url()
+            return self._open_gcs_url(binary=binary)
         elif storage == "s3://":
-            return self._open_aws_url()
+            return self._open_aws_url(binary=binary)
         elif storage == "webhdfs://":
             host = self._provider["host"]
             port = self._provider["port"]
-            return smart_open.open(f"webhdfs://{host}:{port}/{url}")
+            return smart_open.open(f"webhdfs://{host}:{port}/{url}", mode=mode)
         elif storage == "ssh://" or storage == "scp://" or storage == "sftp://":
             user = self._provider["user"]
             host = self._provider["host"]
@@ -116,11 +118,11 @@ class URLFile:
                 password = self._provider["password"]
                 # Explicitly turn off ssh keys stored in ~/.ssh
                 transport_params = {"connect_kwargs": {"look_for_keys": False}}
-                result = smart_open.open(f"{storage}{user}:{password}@{host}/{url}", transport_params=transport_params)
+                result = smart_open.open(f"{storage}{user}:{password}@{host}/{url}", transport_params=transport_params, mode=mode)
             else:
-                result = smart_open.open(f"{storage}{user}@{host}/{url}")
+                result = smart_open.open(f"{storage}{user}@{host}/{url}", mode=mode)
             return result
-        return smart_open.open(self.full_url)
+        return smart_open.open(self.full_url, mode=mode)
 
     @property
     def url(self) -> str:
@@ -138,7 +140,7 @@ class URLFile:
         """Convert Storage Names to the proper URL Prefix
         :return: the corresponding URL prefix / scheme
         """
-        storage_name = self._provider["storage_name"].upper()
+        storage_name = self._provider["storage"].upper()
         parse_result = urlparse(self._url)
         if storage_name == "GCS":
             return "gs://"
@@ -160,7 +162,8 @@ class URLFile:
         logger.error(f"Unknown Storage provider in: {self.full_url}")
         return ""
 
-    def _open_gcs_url(self) -> object:
+    def _open_gcs_url(self, binary) -> object:
+        mode = 'rb' if binary else 'r'
         service_account_json = self._provider.get("service_account_json")
         credentials = None
         if service_account_json:
@@ -173,35 +176,36 @@ class URLFile:
 
         if self.reader_impl == "gcsfs":
             fs = gcsfs.GCSFileSystem(token=credentials or "anon")
-            file_to_close = fs.open(self.full_url)
+            file_to_close = fs.open(self.full_url, mode=mode)
         else:
             if credentials:
                 credentials = service_account.Credentials.from_service_account_info(credentials)
                 client = GCSClient(credentials=credentials, project=credentials.get('project_id'))
             else:
                 client = GCSClient.create_anonymous_client()
-            file_to_close = smart_open.open(self.full_url, transport_params=dict(client=client))
+            file_to_close = smart_open.open(self.full_url, transport_params=dict(client=client), mode=mode)
         return file_to_close
 
-    def _open_aws_url(self):
+    def _open_aws_url(self, binary):
+        mode = "rb" if binary else "r"
         aws_access_key_id = self._provider.get("aws_access_key_id")
         aws_secret_access_key = self._provider.get("aws_secret_access_key")
         use_aws_account = aws_access_key_id and aws_secret_access_key
 
         if self.reader_impl == "s3fs":
             s3 = S3FileSystem(anon=not use_aws_account, key=aws_access_key_id, secret=aws_secret_access_key)
-            result = s3.open(self.full_url, mode="r")
+            result = s3.open(self.full_url, mode=mode)
         else:
             if use_aws_account:
                 aws_access_key_id = self._provider.get("aws_access_key_id", "")
                 aws_secret_access_key = self._provider.get("aws_secret_access_key", "")
-                result = smart_open.open(f"{self.storage_scheme}{aws_access_key_id}:{aws_secret_access_key}@{self.url}")
+                result = smart_open.open(f"{self.storage_scheme}{aws_access_key_id}:{aws_secret_access_key}@{self.url}", mode=mode)
             else:
                 config = Config(signature_version=UNSIGNED)
                 params = {
                     "resource_kwargs": {"config": config},
                 }
-                result = smart_open.open(self.full_url, transport_params=params)
+                result = smart_open.open(self.full_url, transport_params=params, mode=mode)
         return result
 
 
@@ -313,10 +317,25 @@ class Client:
     def reader(self) -> reader_class:
         return self.reader_class(url=self._url, provider=self._provider, reader_options=self._reader_options)
 
+    @property
+    def binary_source(self):
+        mapping = {
+            "csv": False,
+            "flat_json": False,
+            "json": False,
+            "html": False,
+            "excel": True,
+            "feather": True,
+            "parquet": True,
+            "orc": True,
+            "pickle": True,
+        }
+        return mapping.get(self._reader_format, False)
+
     def read(self, fields: Iterable = None) -> Iterable[dict]:
         """ Read data from the stream
         """
-        with self.reader.open() as fp:
+        with self.reader.open(binary=self.binary_source) as fp:
             if self._reader_format == "json":
                 yield from self.load_nested_json(fp)
             else:
@@ -326,7 +345,7 @@ class Client:
                     yield from df[columns].to_dict(orient="records")
 
     def _stream_properties(self):
-        with self.reader.open() as fp:
+        with self.reader.open(binary=self.binary_source) as fp:
             if self._reader_format == "json":
                 return self.load_nested_json_schema(fp)
 
