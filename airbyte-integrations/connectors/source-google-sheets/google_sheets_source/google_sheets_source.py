@@ -100,16 +100,22 @@ class GoogleSheetsSource(Source):
         # For each sheet in the spreadsheet, get a batch of rows, and as long as there hasn't been
         # a blank row, emit the row batch
         sheet_to_column_index_to_name = Helpers.get_available_sheets_to_column_index_to_name(client, spreadsheet_id, sheet_to_column_name)
+        sheet_row_counts = Helpers.get_sheet_row_count(client, spreadsheet_id)
+        logger.info(f"Row counts: {sheet_row_counts}")
         for sheet in sheet_to_column_index_to_name.keys():
             logger.info(f"Syncing sheet {sheet}")
             column_index_to_name = sheet_to_column_index_to_name[sheet]
             row_cursor = 2  # we start syncing past the header row
-            while True:
+            # For the loop, it is necessary that the initial row exists when we send a request to the API,
+            # if the last row of the interval goes outside the sheet - this is normal, we will return
+            # only the real data of the sheet and in the next iteration we will loop out.
+            while row_cursor <= sheet_row_counts[sheet]:
                 range = f"{sheet}!{row_cursor}:{row_cursor + ROW_BATCH_SIZE}"
                 logger.info(f"Fetching range {range}")
                 row_batch = SpreadsheetValues.parse_obj(
                     client.get_values(spreadsheetId=spreadsheet_id, ranges=range, majorDimension="ROWS")
                 )
+
                 row_cursor += ROW_BATCH_SIZE + 1
                 # there should always be one range since we requested only one
                 value_ranges = row_batch.valueRanges[0]
@@ -122,8 +128,6 @@ class GoogleSheetsSource(Source):
                     break
 
                 for row in row_values:
-                    if Helpers.is_row_empty(row):
-                        continue
-                    elif Helpers.row_contains_relevant_data(row, column_index_to_name.keys()):
+                    if not Helpers.is_row_empty(row) and Helpers.row_contains_relevant_data(row, column_index_to_name.keys()):
                         yield AirbyteMessage(type=Type.RECORD, record=Helpers.row_data_to_record_message(sheet, row, column_index_to_name))
         logger.info(f"Finished syncing spreadsheet {spreadsheet_id}")
