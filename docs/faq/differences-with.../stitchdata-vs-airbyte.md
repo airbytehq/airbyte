@@ -19,9 +19,8 @@ We wrote an article, “[Open-source vs. Commercial Software: How to Solve the D
 * **Addressing the long tail of connectors:** with the help of the community, Airbyte ambitions to support thousands of connectors. 
 * **Adapt existing connectors to your needs:** you can adapt any existing connector to address your own unique edge case.
 * **Using data integration in a workflow:** Airbyte’s API lets engineering teams add data integration jobs into their workflow seamlessly.
-* **Integrates with your data stack:** Airbyte integrates with Kubernetes, and will soon integrate with Airflow, if you want to keep using them for orchestration purposes.  
+* **Integrates with your data stack and your needs:** Airflow, Kubernetes, DBT, etc. Its normalization is optional, it gives you a basic version that works out of the box, but also allows you to use DBT to do more complicated things.
 * **Debugging autonomy:** if you experience any connector issue, you won’t need to wait for Fivetran’s customer support team to get back to you, if you can fix the issue fast yourself. 
 * **Your data stays in your cloud.** Have full control over your data, and the costs of your data transfers.
 * **No more security and privacy compliance, as self-hosted and open-sourced \(MIT\).** Any team can directly address their integration needs.
-* **Decoupling of Extract-Load from Transformation:** a normalization stands for an opinionated view of how one should use the data. Airbyte enables engineers, who want to transform the data themselves with their processes, to do that. It also enables engineers / analysts / data scientists / teams, to use the normalized data right out of the box, if this is in line with what they need.
 

@@ -6,16 +6,17 @@ It can take a while for Airbyte to load data into your destination. Some sources
 
 ## **What happens if a sync fails?**
 
-You do not lose data when a sync fails, but no data is added or updated in your destination.
+You won't loose data when a sync fails, however, no data will be added or updated in your destination.
 
-Airbyte will make 3 separate attempts automatically. You can see and export the logs for those sync attempts from within the connection detail page, which you can access through the Source or Destination detail page.
+Airbyte will automatically attempt to replicate data 3 times. You can see and export the logs for those attempts in the connection detail page. You can access this page through the Source or Destination detail page.
 
-In the future, we might send you an email notification \(optional, of course\) with an additional option to create a GitHub issue with the logs. We’re still thinking about it, but the purpose would be to help the community and the Airbyte team fix the issue as soon as possible, if it’s an issue with the connector.
+In the future, you will be able to configure a notification \(email, Slack...\) when a sync fails, with an option to create a GitHub issue with the logs. We’re still working on it, and the purpose would be to help the community and the Airbyte team fix the issue as soon as possible, especially if it is a connector issue.
 
-In the meantime, here is what you can do now:
+Until we have this system in place, here is what you can do:
 
 * File a GitHub issue: go [here](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=type%2Fbug&template=bug-report.md&title=) and file an issue with the detailed logs copied in the issue’s description. The team will be notified about your issue and will update it for any progress or comment on it.  
-* Fix the issue yourself: with open source, you don’t need to wait for anybody to fix your issue if it is important to you. In that case, just fork the [GitHub project](http://github.com/airbytehq/airbyte) and fix the connector you need fixed. If you’re okay with contributing your fix to the community, please then create a pull request. Don’t hesitate to ping the team on [Slack](https://slack.airbyte.io), so we can check your PR as soon as possible. But you do NOT need to wait for the PR to be approved to benefit from your own fix. Put your connector in a new folder, and add your connector directly through our UI by clicking on + New connector in the Admin section. This way, you will be able to use your connector as a separate one from the connector available to the community. 
+* Fix the issue yourself: Airbyte is open source so you don’t need to wait for anybody to fix your issue if it is important to you. To do so, just fork the [GitHub project](http://github.com/airbytehq/airbyte) and fix the piece of code that need fixing. If you’re okay with contributing your fix to the community, you can submit a pull request. We will review it ASAP.
+* Ask on Slack: don’t hesitate to ping the team on [Slack](https://slack.airbyte.io).
 
 Once all this is done, Airbyte resumes your sync from where it left off.
 
@@ -48,7 +49,8 @@ Unfortunately not yet.
 You can either:
 
 * Submit a [connector request](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=area%2Fintegration%2C+new-integration&template=new-integration-request.md&title=) on our Github project, and be notified once we or the community build a connector for it. 
-* Build a connector yourself by forking our [GitHub project](https://github.com/airbytehq/airbyte) and submitting a pull request. Don’t hesitate to ping the team on [Slack](https://slack.airbyte.io), so we can check your PR as soon as possible. But you do NOT need to wait for the PR to be approved to benefit from your own fix. Put your connector in a new folder, and add your connector directly through our UI by clicking on + New connector in the Admin section. This way, you will be able to use your connector as a separate one from the connector available to the community. 
+* Build a connector yourself by forking our [GitHub project](https://github.com/airbytehq/airbyte) and submitting a pull request. Here are the [instructions how to build a connector](../contributing-to-airbyte/building-new-connector/).
+* Ask on Slack: don’t hesitate to ping the team on [Slack](https://slack.airbyte.io).
 
 ## **What kind of notifications do I get?**
 
@@ -56,6 +58,7 @@ For the moment, the UI will only display one kind of notification: when a sync f
 
 However, there are other types of notifications we’re thinking about:
 
-* When a connector that you use is no longer up to date 
-* An email notification when one of your connections fails
+* When a connector that you use is no longer up to date
+* When your connections fails
+* When core isn't up to date
 

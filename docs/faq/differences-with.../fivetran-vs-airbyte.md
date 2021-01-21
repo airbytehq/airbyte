@@ -2,7 +2,7 @@
 
 We wrote an article, “[Open-source vs. Commercial Software: How to Solve the Data Integration Problem](https://airbyte.io/articles/data-engineering-thoughts/open-source-vs-commercial-software-how-to-better-solve-data-integration/),” in which we describe the pros and cons of Fivetran’s commercial approach and Airbyte’s open-source approach. Don’t hesitate to check it out for more detailed arguments. As a summary, here are the differences: 
 
-![](https://lh4.googleusercontent.com/bcNM7lS3u9ijFkQzJJoIIUUBzqYSnlpmBQWArPaBQOc2_1ztmDVeH-51wcK43zNWWOmLW-_SjIajenHPbejjorNrTmI31-v8r9h0gOLiqDXwVmmKKASea4ks2l-Y5BoxuFpWT7cz)
+![](https://airbyte.io/wp-content/uploads/2021/01/Airbyte-vs-Fivetran.png)
 
 ### **Fivetran:**
 
@@ -19,7 +19,7 @@ We wrote an article, “[Open-source vs. Commercial Software: How to Solve the D
 * **Addressing the long tail of connectors:** with the help of the community, Airbyte ambitions to support thousands of connectors. 
 * **Adapt existing connectors to your needs:** you can adapt any existing connector to address your own unique edge case.
 * **Using data integration in a workflow:** Airbyte’s API lets engineering teams add data integration jobs into their workflow seamlessly. 
-* **Integrates with your data stack:** Airbyte integrates with Kubernetes, and will soon integrate with Airflow, if you want to keep using them for orchestration purposes.  
+* **Integrates with your data stack and your needs:** Airflow, Kubernetes, DBT, etc. Its normalization is optional, it gives you a basic version that works out of the box, but also allows you to use DBT to do more complicated things.
 * **Debugging autonomy:** if you experience any connector issue, you won’t need to wait for Fivetran’s customer support team to get back to you, if you can fix the issue fast yourself. 
 * **No more security and privacy compliance, as self-hosted and open-sourced \(MIT\)**. Any team can directly address their integration needs.
 
