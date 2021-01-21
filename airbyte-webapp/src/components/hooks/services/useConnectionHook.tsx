@@ -38,6 +38,7 @@ export const useConnectionLoad = (
   const [connection, setConnection] = useState<null | Connection>(null);
   const [isLoadingConnection, setIsLoadingConnection] = useState(false);
 
+  // TODO: change to useStatefulResource
   const fetchConnection = useFetcher(ConnectionResource.detailShape(), false);
   const baseConnection = useResource(ConnectionResource.detailShape(), {
     connectionId
