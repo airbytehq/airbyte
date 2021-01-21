@@ -4,11 +4,12 @@ import styled from "styled-components";
 
 import Modal from "../Modal";
 import Button from "../Button";
+import { ModalTypes } from "./types";
 
 export type IProps = {
   onClose: () => void;
   onSubmit: (data: any) => void;
-  message?: React.ReactNode;
+  modalType?: ModalTypes;
 };
 
 const Content = styled.div`
@@ -25,18 +26,52 @@ const ButtonWithMargin = styled(Button)`
   margin-right: 9px;
 `;
 
-const ResetDataModal: React.FC<IProps> = ({ onClose, onSubmit, message }) => {
+const ResetDataModal: React.FC<IProps> = ({ onClose, onSubmit, modalType }) => {
+  const modalText = () => {
+    if (modalType === ModalTypes.RESET_CHANGED_COLUMN) {
+      return <FormattedMessage id="form.changedColumns" />;
+    }
+
+    if (modalType === ModalTypes.UPDATE_SCHEMA) {
+      return <FormattedMessage id="connection.updateSchemaText" />;
+    }
+
+    return <FormattedMessage id="form.resetDataText" />;
+  };
+
+  const modalTitle = () => {
+    if (modalType === ModalTypes.UPDATE_SCHEMA) {
+      return <FormattedMessage id="connection.updateSchema" />;
+    }
+
+    return <FormattedMessage id="form.resetData" />;
+  };
+
+  const modalCancelButtonText = () => {
+    if (modalType === ModalTypes.UPDATE_SCHEMA) {
+      return <FormattedMessage id="form.cancel" />;
+    }
+
+    return <FormattedMessage id="form.noNeed" />;
+  };
+
+  const modalSubmitButtonText = () => {
+    if (modalType === ModalTypes.UPDATE_SCHEMA) {
+      return <FormattedMessage id="connection.updateSchema" />;
+    }
+
+    return <FormattedMessage id="form.reset" />;
+  };
+
   return (
-    <Modal onClose={onClose} title={<FormattedMessage id="form.resetData" />}>
+    <Modal onClose={onClose} title={modalTitle()}>
       <Content>
-        {message || <FormattedMessage id="form.resetDataText" />}
+        {modalText()}
         <ButtonContent>
           <ButtonWithMargin onClick={onClose} secondary>
-            <FormattedMessage id="form.noNeed" />
+            {modalCancelButtonText()}
           </ButtonWithMargin>
-          <Button onClick={onSubmit}>
-            <FormattedMessage id="form.reset" />
-          </Button>
+          <Button onClick={onSubmit}>{modalSubmitButtonText()}</Button>
         </ButtonContent>
       </Content>
     </Modal>
