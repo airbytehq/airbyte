@@ -76,6 +76,16 @@
           }
         }
       }
+    },
+    {
+      "name": "groups",
+      "json_schema": {
+        "properties": {
+          "authorization": {
+            "type": "string"
+          }
+        }
+      }
     }
   ]
 }
