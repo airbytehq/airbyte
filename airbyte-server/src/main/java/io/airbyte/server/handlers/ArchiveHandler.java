@@ -120,8 +120,7 @@ public class ArchiveHandler {
         FileUtils.deleteQuietly(archive);
       }
     } catch (IOException | JsonValidationException | ConfigNotFoundException | RuntimeException e) {
-      result = new ImportRead().status(StatusEnum.FAILED);
-      result.setReason(e.getMessage());
+      result = new ImportRead().status(StatusEnum.FAILED).reason(e.getMessage());
     }
     return result;
   }
