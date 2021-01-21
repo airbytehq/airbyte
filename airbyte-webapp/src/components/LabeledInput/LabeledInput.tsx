@@ -3,14 +3,14 @@ import styled from "styled-components";
 
 import Input from "../Input";
 import Label from "../Label/Label";
+import { InputProps } from "../Input/types";
 
 type IProps = {
-  error?: boolean;
   success?: boolean;
   message?: React.ReactNode;
   labelAdditionLength?: number;
   label?: React.ReactNode;
-} & React.InputHTMLAttributes<HTMLInputElement>;
+} & InputProps;
 
 const InputContainer = styled.div`
   width: 100%;

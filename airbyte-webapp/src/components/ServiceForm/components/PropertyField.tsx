@@ -100,11 +100,6 @@ const PropertyField: React.FC<IProps> = ({ property }) => {
       ? "number"
       : "text";
 
-    const onKeyDown = (key: React.KeyboardEvent) => {
-      key.preventDefault();
-      form.setValue(key.key);
-    };
-
     return (
       <LabeledInput
         {...field}
@@ -115,11 +110,8 @@ const PropertyField: React.FC<IProps> = ({ property }) => {
         placeholder={placeholder}
         type={inputType}
         value={field.value || property.default || ""}
-        onKeyDown={
-          inputType === "password" && field.value === meta.initialValue
-            ? (key: React.KeyboardEvent) => onKeyDown(key)
-            : undefined
-        }
+        withEditButton={inputType === "password" && !!meta.initialValue}
+        setValue={form.setValue}
       />
     );
   }
