@@ -2,7 +2,7 @@
 
 ### **Meltano:**
 
-Meltano is a Gitlab side project. Since 2019, they have been iterating on several approaches. The latest positioning is an orchestrator dedicated to data integration that was built by Gitlab on top of Singer’s taps and targets. They now have only one maintainer for this project. 
+Meltano is a Gitlab side project. Since 2019, they have been iterating on several approaches. The latest positioning is an orchestrator dedicated to data integration that was built by Gitlab on top of Singer’s taps and targets. They currently have only one maintainer for this project. 
 
 * **Only 19 connectors built on top of Singer, after more than a year**. This means that Meltano has the same limitations as Singer in regards to its data protocol. 
 * **CLI-first approach:** Meltano was primarily built with a command line interface in mind. In that sense, they seem to target engineers with a preference for that interface. Unfortunately, it’s not thought to be part of some workflows. 
@@ -20,4 +20,3 @@ In contrast, Airbyte is a company fully committed to the open-source MIT project
 * **Not limited by Singer’s data protocol:** In contrast to Meltano, Airbyte was not built on top of Singer, but its data protocol is compatible with Singer’s. This means Airbyte can go beyond Singer, but Meltano will remain limited. 
 * **Connectors can be built in the language of your choice,** as Airbyte runs them as Docker containers.
 * **Decoupling of the whole platform** to let teams use whatever part of Airbyte they want based on their needs and their existing stack \(orchestration with Airflow, Kubernetes, or Airbyte, transformation with DBT or again Airbyte, etc.\). Teams can use Airbyte’s orchestrator or not, their normalization or not; everything becomes possible. 
-
