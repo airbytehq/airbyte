@@ -59,6 +59,7 @@ import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import io.airbyte.workers.protocols.airbyte.AirbyteSource;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteSource;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -67,6 +68,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -106,6 +108,7 @@ public abstract class StandardSourceTest {
       "airbyte/source-braintree-singer",
       "airbyte/source-salesforce-singer",
       "airbyte/source-stripe-singer",
+      "airbyte/source-github-singer",
       "airbyte/source-hubspot-singer");
 
   /**
@@ -290,11 +293,11 @@ public abstract class StandardSourceTest {
    * correctly. It does this by running two read operations on the connector's Docker image: the first
    * takes the configured catalog and config provided to this test as input. It then verifies that the
    * sync produced a non-zero number of RECORD and STATE messages.
-   *
+   * <p>
    * The second read takes the same catalog and config used in the first test, plus the last STATE
    * message output by the first read operation as the input state file. It verifies that no records
    * are produced (since we read all records in the first sync).
-   *
+   * <p>
    * This test is performed only for streams which support incremental. Streams which do not support
    * incremental sync are ignored. If no streams in the input catalog support incremental sync, this
    * test is skipped.
@@ -337,13 +340,12 @@ public abstract class StandardSourceTest {
 
   /**
    * If the source does not support incremental sync, this test is skipped.
-   *
+   * <p>
    * Otherwise, this test runs two syncs: one where all streams provided in the input catalog sync in
    * full refresh mode, and another where all the streams which in the input catalog which support
    * incremental, sync in incremental mode (streams which don't support incremental sync in full
    * refresh mode). Then, the test asserts that the two syncs produced the same RECORD messages. Any
    * other type of message is disregarded.
-   *
    */
   @Test
   public void testEmptyStateIncrementalIdenticalToFullRefresh() throws Exception {
