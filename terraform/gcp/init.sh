@@ -13,7 +13,6 @@ install_docker() {
   sudo apt-get update
   sudo apt-get install -y containerd.io
   sudo apt-get install -y docker-ce docker-ce-cli || true
-#  sudo usermod -a -G docker "$USER"
   sudo service docker start
 }
 

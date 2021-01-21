@@ -19,6 +19,11 @@ variable "subnets" {
   ]
 }
 
+variable "key_name" {
+  type = string
+  default = "airbyte-app"
+}
+
 variable "certificate" {
   type = string
   default = "arn:aws:acm:us-east-1:168714685353:certificate/c762da95-be91-466d-a9f0-1c22f449ae0d"
@@ -95,7 +100,7 @@ resource "aws_instance" "airbyte-instance" {
 
   security_groups = [aws_security_group.airbyte-instance-sg.name]
 
-  key_name = "airbyte-app"
+  key_name = var.key_name
 
   user_data = file("${path.module}/init.sh")
 
@@ -140,6 +145,10 @@ resource "aws_lb_target_group" "airbyte-webapp" {
   port     = 8000
   protocol = "HTTP"
   vpc_id = var.vpc
+
+  health_check {
+    path = "/"
+  }
 }
 
 resource "aws_lb_target_group_attachment" "airbyte-webapp" {
@@ -153,6 +162,10 @@ resource "aws_lb_target_group" "airbyte-api" {
   port     = 8001
   protocol = "HTTP"
   vpc_id = var.vpc
+
+  health_check {
+    path = "/api/v1/health"
+  }
 }
 
 resource "aws_lb_target_group_attachment" "airbyte-api" {
@@ -173,3 +186,20 @@ resource "aws_lb_listener" "airbyte-app" {
     target_group_arn = aws_lb_target_group.airbyte-webapp.arn
   }
 }
+
+resource "aws_lb_listener_rule" "api" {
+  listener_arn = aws_lb_listener.airbyte-app.arn
+  priority     = 100
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.airbyte-api.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/api/v1/*"]
+    }
+  }
+}
+
