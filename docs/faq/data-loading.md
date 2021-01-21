@@ -8,7 +8,7 @@ It can take a while for Airbyte to load data into your destination. Some sources
 
 You do not lose data when a sync fails, but no data is added or updated in your destination. 
 
-Airbyte will make 4 separate attempts automatically. You can see and export the logs for those sync attempts from within the connection detail page, which you can access through the Source or Destination detail page. 
+Airbyte will make 3 separate attempts automatically. You can see and export the logs for those sync attempts from within the connection detail page, which you can access through the Source or Destination detail page. 
 
 In the future, we might send you an email notification \(optional, of course\) with an additional option to create a GitHub issue with the logs. We’re still thinking about it, but the purpose would be to help the community and the Airbyte team fix the issue as soon as possible, if it’s an issue with the connector. 
 
@@ -58,4 +58,3 @@ However, there are other types of notifications we’re thinking about:
 
 * When a connector that you use is no longer up to date 
 * An email notification when one of your connections fails
-
