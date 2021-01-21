@@ -66,6 +66,16 @@
           }
         }
       }
+    },
+    {
+      "name": "reserved_keywords",
+      "json_schema": {
+        "properties": {
+          "order": {
+            "type": "string"
+          }
+        }
+      }
     }
   ]
 }

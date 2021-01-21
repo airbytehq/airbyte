@@ -25,9 +25,6 @@
 package io.airbyte.integrations.source.jdbc;
 
 import com.google.common.collect.AbstractIterator;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import java.util.Iterator;
 import java.util.stream.Stream;
