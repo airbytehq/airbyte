@@ -55,6 +55,8 @@ export default class SchedulerResource extends BaseResource
           // Generate error with failed status and received logs
           e.status = 400;
           e.response = jobInfo;
+          e.message = result.message || "";
+
           throw e;
         }
 
@@ -89,6 +91,8 @@ export default class SchedulerResource extends BaseResource
           // Generate error with failed status and received logs
           e.status = 400;
           e.response = jobInfo;
+          e.message = result.message || "";
+
           throw e;
         }
 

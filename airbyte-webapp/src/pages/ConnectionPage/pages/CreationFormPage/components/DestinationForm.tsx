@@ -16,7 +16,7 @@ type IProps = {
 const CreateDestinationPage: React.FC<IProps> = ({ afterSubmit }) => {
   const { push, location } = useRouter();
   const [successRequest, setSuccessRequest] = useState(false);
-  const [errorStatusRequest, setErrorStatusRequest] = useState<number>(0);
+  const [errorStatusRequest, setErrorStatusRequest] = useState(undefined);
 
   const { destinationDefinitions } = useResource(
     DestinationDefinitionResource.listShape(),
@@ -44,7 +44,7 @@ const CreateDestinationPage: React.FC<IProps> = ({ afterSubmit }) => {
     const connector = destinationDefinitions.find(
       item => item.destinationDefinitionId === values.serviceType
     );
-    setErrorStatusRequest(0);
+    setErrorStatusRequest(undefined);
     try {
       const result = await createDestination({
         values,
@@ -59,7 +59,7 @@ const CreateDestinationPage: React.FC<IProps> = ({ afterSubmit }) => {
         });
       }, 2000);
     } catch (e) {
-      setErrorStatusRequest(e.status);
+      setErrorStatusRequest(e);
     }
   };
 
@@ -68,7 +68,7 @@ const CreateDestinationPage: React.FC<IProps> = ({ afterSubmit }) => {
       onSubmit={onSubmitDestinationForm}
       dropDownData={destinationsDropDownData}
       hasSuccess={successRequest}
-      errorStatus={errorStatusRequest}
+      error={errorStatusRequest}
     />
   );
 };
