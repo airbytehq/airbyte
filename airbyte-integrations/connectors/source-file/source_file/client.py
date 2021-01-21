@@ -30,7 +30,7 @@ from airbyte_protocol import AirbyteStream
 from base_python.entrypoint import logger
 
 import numpy as np
-import panda as pd
+import pandas as pd
 from botocore import UNSIGNED
 from botocore.config import Config
 from genson import SchemaBuilder
