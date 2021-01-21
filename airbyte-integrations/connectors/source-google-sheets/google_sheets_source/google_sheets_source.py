@@ -105,6 +105,9 @@ class GoogleSheetsSource(Source):
             logger.info(f"Syncing sheet {sheet}")
             column_index_to_name = sheet_to_column_index_to_name[sheet]
             row_cursor = 2  # we start syncing past the header row
+            # For the loop, it is necessary that the initial row exists when we send a request to the API,
+            # if the last row of the interval goes outside the sheet - this is normal, we will return
+            # only the real data of the sheet and in the next iteration we will loop out.
             while row_cursor <= sheet_parameters[sheet]:
                 range = f"{sheet}!{row_cursor}:{row_cursor + ROW_BATCH_SIZE}"
                 logger.info(f"Fetching range {range}")
