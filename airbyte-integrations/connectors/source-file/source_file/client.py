@@ -276,10 +276,10 @@ class Client:
 
         try:
             reader = readers[self._reader_format]
-        except KeyError:
+        except KeyError as err:
             error_msg = f"Reader {self._reader_format} is not supported\n{traceback.format_exc()}"
             logger.error(error_msg)
-            raise ConfigurationError(error_msg) from KeyError
+            raise ConfigurationError(error_msg) from err
 
         reader_options = {**self._reader_options}
         if skip_data and self._reader_format == "csv":
@@ -287,17 +287,6 @@ class Client:
             reader_options["index_col"] = 0
 
         return [reader(fp, **reader_options)]
-
-    @property
-    def url(self) -> str:
-        """Convert URL to remove the URL prefix (scheme)
-        :return: the corresponding URL without URL prefix / scheme
-        """
-        parse_result = urlparse(self._url)
-        if parse_result.scheme:
-            return self._url.split("://")[-1]
-        else:
-            return self._url
 
     @staticmethod
     def dtype_to_json_type(dtype) -> str:
