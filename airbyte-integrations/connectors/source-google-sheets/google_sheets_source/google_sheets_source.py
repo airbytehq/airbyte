@@ -107,9 +107,13 @@ class GoogleSheetsSource(Source):
             while True:
                 range = f"{sheet}!{row_cursor}:{row_cursor + ROW_BATCH_SIZE}"
                 logger.info(f"Fetching range {range}")
-                row_batch = SpreadsheetValues.parse_obj(
-                    client.get_values(spreadsheetId=spreadsheet_id, ranges=range, majorDimension="ROWS")
-                )
+                try:
+                    row_batch = SpreadsheetValues.parse_obj(
+                        client.get_values(spreadsheetId=spreadsheet_id, ranges=range, majorDimension="ROWS")
+                    )
+                except errors.HttpError:
+                    break
+
                 row_cursor += ROW_BATCH_SIZE + 1
                 # there should always be one range since we requested only one
                 value_ranges = row_batch.valueRanges[0]
