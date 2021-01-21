@@ -12,7 +12,7 @@ import DestinationForm from "./components/DestinationForm";
 import ConnectionBlock from "../../../../components/ConnectionBlock";
 import { Routes } from "../../../routes";
 import CreateConnectionContent from "../../../../components/CreateConnectionContent";
-import { useResource } from "rest-hooks";
+import { useResource } from "rest-hooks/lib/react-integration/hooks";
 import SourceResource from "../../../../core/resources/Source";
 import DestinationResource from "../../../../core/resources/Destination";
 
