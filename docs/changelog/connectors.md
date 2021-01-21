@@ -11,7 +11,32 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 ## Currently under construction
 
 **New sources:** Hive, MongoDB, Mailgun  
-**New destinations:** Panoply, S3, MySQL, Kafka, MongoDB
+**New destinations:** Panoply, S3, MySQL, MSSQL, Kafka, MongoDB
+
+## 01/19/2021
+
+* **Our new** [**Connector Health Status**](../integrations/connector-health.md) **page**
+* **1 new source:** App Store \(thanks to [@Muriloo](https://github.com/Muriloo)
+* Fixes on connectors:
+  * Bug fix writing boolean columns to Redshift
+  * Bug fix where getting a connector’s input configuration hung indefinitely 
+  * Stripe connector now gracefully handles rate limiting from the Stripe API
+
+## 01/12/2021
+
+* **1 new source:** Tempo \(thanks to [@thomasvl](https://github.com/thomasvl)\)
+* **Incremental support for 3 new source connectors:** [Salesforce](../integrations/sources/salesforce.md), [Slack](../integrations/sources/slack.md) and [Braintree](../integrations/sources/braintree.md)
+* Fixes on connectors:
+  * Fix a bug in MSSQL and Redshift source connectors where custom SQL types weren't being handled correctly.
+  * Improvement of the Snowflake connector from [@hudsondba](https://github.com/hudsondba) \(batch size and timeout sync\)
+
+## 01/05/2021
+
+* **Incremental support for 2 new source connectors:** [Mixpanel](../integrations/sources/mixpanel.md) and [Hubspot](../integrations/sources/hubspot.md)
+* Fixes on connectors:
+  * Fixed a bug in the github connector where the connector didn’t verify the provided API token was granted the correct permissions
+  * Fixed a bug in the Google sheets connector where rate limits were not always respected
+  * Alpha version of Facebook marketing API v9. This connector is a native Airbyte connector \(current is Singer based\).
 
 ## 12/30/2020
 

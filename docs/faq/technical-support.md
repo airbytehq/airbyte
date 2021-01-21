@@ -4,7 +4,7 @@ description: Common issues and their workarounds
 
 # Technical Support
 
-### Airbyte is stuck while loading required configuration parameters for my connector
+## Airbyte is stuck while loading required configuration parameters for my connector
 
 Example of the issue:
 
