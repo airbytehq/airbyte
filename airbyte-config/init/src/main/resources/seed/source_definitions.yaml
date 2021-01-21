@@ -16,7 +16,7 @@
 - sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
   name: Github
   dockerRepository: airbyte/source-github-singer
-  dockerImageTag: 0.1.6
+  dockerImageTag: 0.1.7
   documentationUrl: https://hub.docker.com/r/airbyte/source-github-singer
 - sourceDefinitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
   name: Microsoft SQL Server (MSSQL)
@@ -56,7 +56,7 @@
 - sourceDefinitionId: 2470e835-feaf-4db6-96f3-70fd645acc77
   name: Salesforce
   dockerRepository: airbyte/source-salesforce-singer
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.6
   documentationUrl: https://hub.docker.com/r/airbyte/source-salesforce-singer
 - sourceDefinitionId: e094cb9a-26de-4645-8761-65c0c425d1de
   name: Stripe
