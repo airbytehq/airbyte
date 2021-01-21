@@ -29,8 +29,8 @@ ENV_VERSION=$(grep VERSION .env | xargs)
 ENV_VERSION=${ENV_VERSION#*=}
 
 ./gradlew clean composeBuild
-BUILD_TAG=$ENV_VERSION GIT_REVISION=$GIT_REVISION docker-compose -f docker-compose.build.yaml build
-BUILD_TAG=$ENV_VERSION GIT_REVISION=$GIT_REVISION docker-compose -f docker-compose.build.yaml push
+VERSION=$ENV_VERSION GIT_REVISION=$GIT_REVISION docker-compose -f docker-compose.build.yaml build
+VERSION=$ENV_VERSION GIT_REVISION=$GIT_REVISION docker-compose -f docker-compose.build.yaml push
 echo "Completed building and publishing..."
 
 echo "Final Steps:"

@@ -203,7 +203,7 @@ task composeBuild {
         exec {
             workingDir rootDir
             commandLine 'docker-compose', '-f', 'docker-compose.build.yaml', 'build', '--parallel', '--quiet'
-            environment 'BUILD_TAG', buildTag
+            environment 'VERSION', buildTag
         }
     }
 }
