@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useState } from "react";
 import { useFetcher, useResource } from "rest-hooks";
 
 import config from "../../../config";
@@ -5,7 +6,6 @@ import { AnalyticsService } from "../../../core/analytics/AnalyticsService";
 import ConnectionResource, {
   Connection
 } from "../../../core/resources/Connection";
-import WorkspaceResource from "../../../core/resources/Workspace";
 import { SyncSchema } from "../../../core/resources/Schema";
 import { SourceDefinition } from "../../../core/resources/SourceDefinition";
 import FrequencyConfig from "../../../data/FrequencyConfig.json";
@@ -13,7 +13,7 @@ import { Source } from "../../../core/resources/Source";
 import { Routes } from "../../../pages/routes";
 import useRouter from "../useRouterHook";
 import { Destination } from "../../../core/resources/Destination";
-import { useCallback } from "react";
+import useWorkspace from "./useWorkspaceHook";
 
 type ValuesProps = {
   frequency: string;
@@ -31,14 +31,46 @@ type CreateConnectionProps = {
   destinationDefinition?: { name: string; destinationDefinitionId: string };
 };
 
+export const useConnectionLoad = (
+  connectionId: string,
+  withRefresh?: boolean
+) => {
+  const [connection, setConnection] = useState<null | Connection>(null);
+  const [isLoadingConnection, setIsLoadingConnection] = useState(false);
+
+  // TODO: change to useStatefulResource
+  const fetchConnection = useFetcher(ConnectionResource.detailShape(), false);
+  const baseConnection = useResource(ConnectionResource.detailShape(), {
+    connectionId
+  });
+
+  useEffect(() => {
+    (async () => {
+      if (withRefresh) {
+        setIsLoadingConnection(true);
+        setConnection(
+          await fetchConnection({
+            connectionId,
+            with_refreshed_catalog: withRefresh
+          })
+        );
+
+        setIsLoadingConnection(false);
+      }
+    })();
+  }, [connectionId, fetchConnection, withRefresh]);
+
+  return {
+    connection: withRefresh ? connection : baseConnection,
+    isLoadingConnection
+  };
+};
+
 const useConnection = () => {
   const { push, history } = useRouter();
 
   const createConnectionResource = useFetcher(ConnectionResource.createShape());
-  const updateWorkspace = useFetcher(WorkspaceResource.updateShape());
-  const workspace = useResource(WorkspaceResource.detailShape(), {
-    workspaceId: config.ui.workspaceId
-  });
+  const { finishOnboarding, workspace } = useWorkspace();
   const updateConnectionResource = useFetcher(ConnectionResource.updateShape());
   const updateStateConnectionResource = useFetcher(
     ConnectionResource.updateStateShape()
@@ -105,19 +137,8 @@ const useConnection = () => {
         connector_destination_definition_id:
           destinationDefinition?.destinationDefinitionId
       });
-
-      if (!workspace.onboardingComplete) {
-        await updateWorkspace(
-          {},
-          {
-            workspaceId: workspace.workspaceId,
-            initialSetupComplete: workspace.initialSetupComplete,
-            onboardingComplete: true,
-            anonymousDataCollection: workspace.anonymousDataCollection,
-            news: workspace.news,
-            securityUpdates: workspace.securityUpdates
-          }
-        );
+      if (workspace.displaySetupWizard) {
+        await finishOnboarding();
       }
 
       return result;
@@ -130,7 +151,8 @@ const useConnection = () => {
     connectionId,
     syncSchema,
     status,
-    schedule
+    schedule,
+    with_refreshed_catalog
   }: {
     connectionId: string;
     syncSchema?: SyncSchema;
@@ -139,14 +161,20 @@ const useConnection = () => {
       units: number;
       timeUnit: string;
     } | null;
+    with_refreshed_catalog?: boolean;
   }) => {
+    const withRefreshedCatalog = with_refreshed_catalog
+      ? { with_refreshed_catalog }
+      : null;
+
     return await updateConnectionResource(
       {},
       {
         connectionId,
         syncSchema,
         status,
-        schedule
+        schedule,
+        ...withRefreshedCatalog
       }
     );
   };

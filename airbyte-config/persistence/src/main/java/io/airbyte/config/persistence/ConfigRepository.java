@@ -36,12 +36,8 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ConfigRepository {
-
-  private final static Logger LOGGER = LoggerFactory.getLogger(ConfigRepository.class);
 
   private final ConfigPersistence persistence;
 
@@ -49,28 +45,17 @@ public class ConfigRepository {
     this.persistence = persistence;
   }
 
-  public StandardWorkspace getStandardWorkspace(final UUID workspaceId)
-      throws JsonValidationException, IOException, ConfigNotFoundException {
-    return persistence.getConfig(
-        ConfigSchema.STANDARD_WORKSPACE,
-        workspaceId.toString(),
-        StandardWorkspace.class);
+  public StandardWorkspace getStandardWorkspace(final UUID workspaceId) throws JsonValidationException, IOException, ConfigNotFoundException {
+    return persistence.getConfig(ConfigSchema.STANDARD_WORKSPACE, workspaceId.toString(), StandardWorkspace.class);
   }
 
-  public void writeStandardWorkspace(final StandardWorkspace workspace)
-      throws JsonValidationException, IOException {
-    persistence.writeConfig(
-        ConfigSchema.STANDARD_WORKSPACE,
-        workspace.getWorkspaceId().toString(),
-        workspace);
+  public void writeStandardWorkspace(final StandardWorkspace workspace) throws JsonValidationException, IOException {
+    persistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspace.getWorkspaceId().toString(), workspace);
   }
 
   public StandardSourceDefinition getStandardSourceDefinition(final UUID sourceDefinitionId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    return persistence.getConfig(
-        ConfigSchema.STANDARD_SOURCE_DEFINITION,
-        sourceDefinitionId.toString(),
-        StandardSourceDefinition.class);
+    return persistence.getConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefinitionId.toString(), StandardSourceDefinition.class);
   }
 
   public StandardSourceDefinition getSourceDefinitionFromSource(UUID sourceId) {
@@ -91,23 +76,17 @@ public class ConfigRepository {
     }
   }
 
-  public List<StandardSourceDefinition> listStandardSources()
-      throws JsonValidationException, IOException, ConfigNotFoundException {
+  public List<StandardSourceDefinition> listStandardSources() throws JsonValidationException, IOException {
     return persistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class);
   }
 
   public void writeStandardSource(final StandardSourceDefinition source) throws JsonValidationException, IOException {
-    persistence.writeConfig(
-        ConfigSchema.STANDARD_SOURCE_DEFINITION,
-        source.getSourceDefinitionId().toString(),
-        source);
+    persistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, source.getSourceDefinitionId().toString(), source);
   }
 
   public StandardDestinationDefinition getStandardDestinationDefinition(final UUID destinationDefinitionId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    return persistence.getConfig(
-        ConfigSchema.STANDARD_DESTINATION_DEFINITION,
-        destinationDefinitionId.toString(),
+    return persistence.getConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destinationDefinitionId.toString(),
         StandardDestinationDefinition.class);
   }
 
@@ -129,8 +108,7 @@ public class ConfigRepository {
     }
   }
 
-  public List<StandardDestinationDefinition> listStandardDestinationDefinitions()
-      throws JsonValidationException, IOException, ConfigNotFoundException {
+  public List<StandardDestinationDefinition> listStandardDestinationDefinitions() throws JsonValidationException, IOException {
     return persistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class);
   }
 
@@ -143,58 +121,36 @@ public class ConfigRepository {
   }
 
   public SourceConnection getSourceConnection(final UUID sourceId) throws JsonValidationException, IOException, ConfigNotFoundException {
-    return persistence.getConfig(
-        ConfigSchema.SOURCE_CONNECTION,
-        sourceId.toString(),
-        SourceConnection.class);
+    return persistence.getConfig(ConfigSchema.SOURCE_CONNECTION, sourceId.toString(), SourceConnection.class);
   }
 
   public void writeSourceConnection(final SourceConnection source) throws JsonValidationException, IOException {
-    persistence.writeConfig(
-        ConfigSchema.SOURCE_CONNECTION,
-        source.getSourceId().toString(),
-        source);
+    persistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, source.getSourceId().toString(), source);
   }
 
-  public List<SourceConnection> listSourceConnection() throws JsonValidationException, IOException, ConfigNotFoundException {
-    return persistence.listConfigs(
-        ConfigSchema.SOURCE_CONNECTION,
-        SourceConnection.class);
+  public List<SourceConnection> listSourceConnection() throws JsonValidationException, IOException {
+    return persistence.listConfigs(ConfigSchema.SOURCE_CONNECTION, SourceConnection.class);
   }
 
   public DestinationConnection getDestinationConnection(final UUID destinationId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    return persistence.getConfig(
-        ConfigSchema.DESTINATION_CONNECTION,
-        destinationId.toString(),
-        DestinationConnection.class);
+    return persistence.getConfig(ConfigSchema.DESTINATION_CONNECTION, destinationId.toString(), DestinationConnection.class);
   }
 
   public void writeDestinationConnection(DestinationConnection destinationConnection) throws JsonValidationException, IOException {
-    persistence.writeConfig(
-        ConfigSchema.DESTINATION_CONNECTION,
-        destinationConnection.getDestinationId().toString(),
-        destinationConnection);
+    persistence.writeConfig(ConfigSchema.DESTINATION_CONNECTION, destinationConnection.getDestinationId().toString(), destinationConnection);
   }
 
-  public List<DestinationConnection> listDestinationConnection() throws JsonValidationException, IOException, ConfigNotFoundException {
-    return persistence.listConfigs(
-        ConfigSchema.DESTINATION_CONNECTION,
-        DestinationConnection.class);
+  public List<DestinationConnection> listDestinationConnection() throws JsonValidationException, IOException {
+    return persistence.listConfigs(ConfigSchema.DESTINATION_CONNECTION, DestinationConnection.class);
   }
 
   public StandardSync getStandardSync(final UUID connectionId) throws JsonValidationException, IOException, ConfigNotFoundException {
-    return persistence.getConfig(
-        ConfigSchema.STANDARD_SYNC,
-        connectionId.toString(),
-        StandardSync.class);
+    return persistence.getConfig(ConfigSchema.STANDARD_SYNC, connectionId.toString(), StandardSync.class);
   }
 
   public void writeStandardSync(final StandardSync standardSync) throws JsonValidationException, IOException {
-    persistence.writeConfig(
-        ConfigSchema.STANDARD_SYNC,
-        standardSync.getConnectionId().toString(),
-        standardSync);
+    persistence.writeConfig(ConfigSchema.STANDARD_SYNC, standardSync.getConnectionId().toString(), standardSync);
   }
 
   public List<StandardSync> listStandardSyncs() throws ConfigNotFoundException, IOException, JsonValidationException {
@@ -202,18 +158,11 @@ public class ConfigRepository {
   }
 
   public StandardSyncSchedule getStandardSyncSchedule(final UUID connectionId) throws JsonValidationException, IOException, ConfigNotFoundException {
-    return persistence.getConfig(
-        ConfigSchema.STANDARD_SYNC_SCHEDULE,
-        connectionId.toString(),
-        StandardSyncSchedule.class);
+    return persistence.getConfig(ConfigSchema.STANDARD_SYNC_SCHEDULE, connectionId.toString(), StandardSyncSchedule.class);
   }
 
-  public void writeStandardSchedule(final StandardSyncSchedule schedule)
-      throws JsonValidationException, IOException {
-    persistence.writeConfig(
-        ConfigSchema.STANDARD_SYNC_SCHEDULE,
-        schedule.getConnectionId().toString(),
-        schedule);
+  public void writeStandardSchedule(final StandardSyncSchedule schedule) throws JsonValidationException, IOException {
+    persistence.writeConfig(ConfigSchema.STANDARD_SYNC_SCHEDULE, schedule.getConnectionId().toString(), schedule);
   }
 
 }

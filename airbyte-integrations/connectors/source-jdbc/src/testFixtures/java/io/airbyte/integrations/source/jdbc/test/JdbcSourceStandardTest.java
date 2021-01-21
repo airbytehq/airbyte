@@ -49,6 +49,7 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -57,6 +58,7 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -128,7 +130,7 @@ public abstract class JdbcSourceStandardTest {
         getDriverClass());
 
     database.execute(connection -> {
-      connection.createStatement().execute(String.format("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), updated_at DATE);"));
+      connection.createStatement().execute("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), updated_at DATE);");
       connection.createStatement().execute(
           "INSERT INTO id_and_name (id, name, updated_at) VALUES (1,'picard', '2004-10-19'),  (2, 'crusher', '2005-10-19'), (3, 'vash', '2006-10-19');");
     });
@@ -155,7 +157,7 @@ public abstract class JdbcSourceStandardTest {
     ((ObjectNode) config).put("password", "fake");
     final AirbyteConnectionStatus actual = source.check(config);
     final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.FAILED)
-        .withMessage("Can't connect with provided configuration.");
+        .withMessage("Could not connect with provided configuration.");
     assertEquals(expected, actual);
   }
 
@@ -163,6 +165,34 @@ public abstract class JdbcSourceStandardTest {
   void testDiscover() throws Exception {
     final AirbyteCatalog actual = source.discover(config);
     assertEquals(getCatalog(), actual);
+  }
+
+  @Test
+  void testDiscoverWithMultipleSchemas() throws Exception {
+    // mysql does not have a concept of schemas, so this test does not make sense for it.
+    if (getDriverClass().toLowerCase().contains("mysql")) {
+      return;
+    }
+
+    // add table and data to a separate schema.
+    database.execute(connection -> {
+      connection.createStatement().execute("CREATE SCHEMA public2;");
+      connection.createStatement().execute("CREATE TABLE public2.id_and_name(id VARCHAR(200), name VARCHAR(200));");
+      connection.createStatement().execute(
+          "INSERT INTO public2.id_and_name (id, name) VALUES ('1','picard'),  ('2', 'crusher'), ('3', 'vash');");
+    });
+
+    final AirbyteCatalog actual = source.discover(config);
+
+    final AirbyteCatalog expected = getCatalog();
+    expected.getStreams().add(CatalogHelpers.createAirbyteStream("public2.id_and_name",
+        Field.of("id", JsonSchemaPrimitive.STRING),
+        Field.of("name", JsonSchemaPrimitive.STRING))
+        .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)));
+    // sort streams by name so that we are comparing lists with the same order.
+    expected.getStreams().sort(Comparator.comparing(AirbyteStream::getName));
+    actual.getStreams().sort(Comparator.comparing(AirbyteStream::getName));
+    assertEquals(expected, actual);
   }
 
   @Test

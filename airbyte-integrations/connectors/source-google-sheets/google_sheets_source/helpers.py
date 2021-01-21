@@ -99,7 +99,7 @@ class Helpers(object):
             raise Exception(f"Expected data for exactly one range for sheet {sheet_name}")
 
         all_row_data = range_data[0].rowData
-        if len(all_row_data) != 1:
+        if not all_row_data or len(all_row_data) != 1:
             raise Exception(f"Expected data for exactly one row for sheet {sheet_name}")
 
         first_row_data = all_row_data[0]
@@ -148,9 +148,14 @@ class Helpers(object):
         return available_sheets_to_column_index_to_name
 
     @staticmethod
-    def get_sheets_in_spreadsheet(client, spreadsheet_id: str):
+    def get_sheets_in_spreadsheet(client, spreadsheet_id: str) -> List[str]:
         spreadsheet_metadata = Spreadsheet.parse_obj(client.get(spreadsheetId=spreadsheet_id, includeGridData=False))
         return [sheet.properties.title for sheet in spreadsheet_metadata.sheets]
+
+    @staticmethod
+    def get_sheet_row_count(client, spreadsheet_id: str) -> Dict[str, int]:
+        spreadsheet_metadata = Spreadsheet.parse_obj(client.get(spreadsheetId=spreadsheet_id, includeGridData=False))
+        return {sheet.properties.title: sheet.properties.gridProperties["rowCount"] for sheet in spreadsheet_metadata.sheets}
 
     @staticmethod
     def is_row_empty(cell_values: List[str]) -> bool:

@@ -18,18 +18,30 @@ const SelectButton = styled(Button)`
 `;
 
 const TreeView: React.FC<IProps> = ({ schema, onChangeSchema }) => {
+  const sortedSchema = useMemo(
+    () => ({
+      streams: schema.streams
+        .sort((a, b) => (a.name > b.name ? 1 : -1))
+        .map(item => ({
+          ...item,
+          fields: item.fields.sort((a, b) => (a.name > b.name ? 1 : -1))
+        }))
+    }),
+    [schema.streams]
+  );
+
   const hasSelectedItem = useMemo(() => {
-    return schema.streams.find(item => {
+    return sortedSchema.streams.find(item => {
       if (item.selected) {
         return true;
       }
 
       return !!item.fields?.find(field => field.selected);
     });
-  }, [schema.streams]);
+  }, [sortedSchema.streams]);
 
   const onUpdateItem = (newItem: SyncSchemaStream) => {
-    const newSchema = schema.streams.map(item => {
+    const newSchema = sortedSchema.streams.map(item => {
       if (item.name === newItem?.name) {
         return newItem;
       }
@@ -43,7 +55,7 @@ const TreeView: React.FC<IProps> = ({ schema, onChangeSchema }) => {
   const onCheckAll = useCallback(() => {
     const setSelectedValue = !hasSelectedItem;
 
-    const newSchema = schema.streams.map(item => {
+    const newSchema = sortedSchema.streams.map(item => {
       if (!item.fields?.length) {
         return { ...item, selected: setSelectedValue };
       }
@@ -56,7 +68,7 @@ const TreeView: React.FC<IProps> = ({ schema, onChangeSchema }) => {
     });
 
     onChangeSchema({ streams: newSchema });
-  }, [hasSelectedItem, onChangeSchema, schema.streams]);
+  }, [hasSelectedItem, onChangeSchema, sortedSchema.streams]);
 
   return (
     <div>
@@ -67,7 +79,7 @@ const TreeView: React.FC<IProps> = ({ schema, onChangeSchema }) => {
           <FormattedMessage id="sources.schemaSelectAll" />
         )}
       </SelectButton>
-      {schema.streams.map(item => (
+      {sortedSchema.streams.map(item => (
         <TreeViewRow item={item} updateItem={onUpdateItem} />
       ))}
     </div>

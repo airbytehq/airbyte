@@ -24,6 +24,7 @@
 
 package io.airbyte.scheduler.persistence;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.State;
 import io.airbyte.scheduler.Job;
@@ -31,9 +32,11 @@ import io.airbyte.scheduler.JobStatus;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 public interface JobPersistence {
 
@@ -149,5 +152,20 @@ public interface JobPersistence {
   Optional<State> getCurrentState(UUID connectionId) throws IOException;
 
   Optional<Job> getNextJob() throws IOException;
+
+  /// ARCHIVE
+
+  /**
+   * Export all SQL tables from @param schema into streams of JsonNode objects. This returns a Map of
+   * table schemas to the associated streams of records that is being exported.
+   */
+  Map<DatabaseSchema, Stream<JsonNode>> exportDatabase() throws IOException;
+
+  /**
+   * Import all SQL tables from streams of JsonNode objects.
+   *
+   * @param data is a Map of table schemas to the associated streams of records to import.
+   */
+  void importDatabase(Map<DatabaseSchema, Stream<JsonNode>> data) throws IOException;
 
 }

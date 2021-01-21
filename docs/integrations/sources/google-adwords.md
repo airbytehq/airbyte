@@ -15,8 +15,8 @@ Several output streams are available from this source \(accounts, campaigns, ads
 | Feature | Supported? |
 | :--- | :--- |
 | Full Refresh Sync | Yes |
-| Incremental Sync | No |
-| Replicate Incremental Deletes | No |
+| Incremental Sync | Coming soon |
+| Replicate Incremental Deletes | Coming soon |
 | SSL connection | Yes |
 
 ### Performance considerations

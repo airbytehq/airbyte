@@ -46,6 +46,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -137,6 +138,11 @@ public class JobSubmitter implements Runnable {
   @VisibleForTesting
   void trackSubmission(Job job) {
     try {
+      // if there is no scope, do not track. this is the case where we are running check for sources /
+      // destinations that don't exist.
+      if (Strings.isEmpty(job.getScope())) {
+        return;
+      }
       final Builder<String, Object> metadataBuilder = generateMetadata(job);
       metadataBuilder.put("attempt_stage", "STARTED");
       track(metadataBuilder.build());
@@ -148,6 +154,11 @@ public class JobSubmitter implements Runnable {
   @VisibleForTesting
   void trackCompletion(Job job, io.airbyte.workers.JobStatus status) {
     try {
+      // if there is no scope, do not track. this is the case where we are running check for sources /
+      // destinations that don't exist.
+      if (Strings.isEmpty(job.getScope())) {
+        return;
+      }
       final Builder<String, Object> metadataBuilder = generateMetadata(job);
       metadataBuilder.put("attempt_stage", "ENDED");
       metadataBuilder.put("attempt_completion_status", status);
@@ -180,8 +191,7 @@ public class JobSubmitter implements Runnable {
 
     switch (job.getConfig().getConfigType()) {
       case CHECK_CONNECTION_SOURCE, DISCOVER_SCHEMA -> {
-        final StandardSourceDefinition sourceDefinition = configRepository
-            .getSourceDefinitionFromSource(UUID.fromString(job.getScope()));
+        final StandardSourceDefinition sourceDefinition = configRepository.getSourceDefinitionFromSource(UUID.fromString(job.getScope()));
 
         metadata.put("connector_source", sourceDefinition.getName());
         metadata.put("connector_source_definition_id", sourceDefinition.getSourceDefinitionId());

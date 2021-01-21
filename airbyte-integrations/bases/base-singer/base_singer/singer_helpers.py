@@ -101,6 +101,9 @@ def set_sync_modes_from_metadata(airbyte_stream: AirbyteStream, metadatas: List[
             if forced_replication_method.upper() == _INCREMENTAL:
                 airbyte_stream.source_defined_cursor = True
                 airbyte_stream.supported_sync_modes = [SyncMode.incremental]
+            elif forced_replication_method.upper() == _FULL_TABLE:
+                airbyte_stream.source_defined_cursor = False
+                airbyte_stream.supported_sync_modes = [SyncMode.full_refresh]
 
 
 def override_sync_modes(airbyte_stream: AirbyteStream, overrides: SyncModeInfo):

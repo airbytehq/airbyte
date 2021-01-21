@@ -1,7 +1,7 @@
 import React, { Suspense, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import LoadingSchema from "./components/LoadingSchema";
+import LoadingSchema from "../LoadingSchema";
 import CreateConnection from "./components/CreateConnection";
 import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
 import ContentCard from "../ContentCard";
@@ -17,6 +17,7 @@ import config from "../../config";
 import { JobsLogItem } from "../JobItem";
 
 type IProps = {
+  additionBottomControls?: React.ReactNode;
   source?: Source;
   destination?: Destination;
   afterSubmitConnection?: () => void;
@@ -25,7 +26,8 @@ type IProps = {
 const CreateConnectionContent: React.FC<IProps> = ({
   source,
   destination,
-  afterSubmitConnection
+  afterSubmitConnection,
+  additionBottomControls
 }) => {
   const { createConnection } = useConnection();
   const [errorStatusRequest, setErrorStatusRequest] = useState<number>(0);
@@ -97,6 +99,7 @@ const CreateConnectionContent: React.FC<IProps> = ({
     <ContentCard title={<FormattedMessage id="onboarding.setConnection" />}>
       <Suspense fallback={<LoadingSchema />}>
         <CreateConnection
+          additionBottomControls={additionBottomControls}
           schema={schema}
           onSelectFrequency={onSelectFrequency}
           onSubmit={onSubmitConnectionStep}

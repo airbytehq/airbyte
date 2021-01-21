@@ -26,11 +26,14 @@ package io.airbyte.scheduler.persistence;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -49,17 +52,23 @@ import io.airbyte.scheduler.Attempt;
 import io.airbyte.scheduler.AttemptStatus;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.JobStatus;
+import io.airbyte.validation.json.JsonSchemaValidator;
+import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.jooq.Record;
 import org.jooq.Result;
 import org.junit.jupiter.api.AfterAll;
@@ -734,6 +743,73 @@ class DefaultJobPersistenceTest {
         null,
         time,
         time);
+  }
+
+  @Test
+  void testExportImport() throws IOException, SQLException {
+    final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
+    final int attemptNumber0 = jobPersistence.createAttempt(jobId, LOG_PATH);
+    jobPersistence.failAttempt(jobId, attemptNumber0);
+    final Path secondAttemptLogPath = LOG_PATH.resolve("2");
+    final int attemptNumber1 = jobPersistence.createAttempt(jobId, secondAttemptLogPath);
+    jobPersistence.succeedAttempt(jobId, attemptNumber1);
+
+    final Map<DatabaseSchema, Stream<JsonNode>> inputStreams = jobPersistence.exportDatabase();
+
+    // Collect streams to memory for temporary storage
+    final Map<DatabaseSchema, List<JsonNode>> tempData = new HashMap<>();
+    final Map<DatabaseSchema, Stream<JsonNode>> outputStreams = new HashMap<>();
+    for (Entry<DatabaseSchema, Stream<JsonNode>> entry : inputStreams.entrySet()) {
+      final List<JsonNode> tableData = entry.getValue().collect(Collectors.toList());
+      tempData.put(entry.getKey(), tableData);
+      outputStreams.put(entry.getKey(), tableData.stream());
+    }
+    // Reset database
+    database.query(ctx -> ctx.execute("DELETE FROM jobs"));
+    database.query(ctx -> ctx.execute("DELETE FROM attempts"));
+
+    jobPersistence.importDatabase(outputStreams);
+
+    final List<Job> actualList = jobPersistence.listJobs(SPEC_JOB_CONFIG.getConfigType(), CONNECTION_ID.toString());
+
+    final Job actual = actualList.get(0);
+    final Job expected = createJob(
+        jobId,
+        SPEC_JOB_CONFIG,
+        JobStatus.SUCCEEDED,
+        Lists.newArrayList(
+            createAttempt(0L, jobId, AttemptStatus.FAILED, LOG_PATH),
+            createAttempt(1L, jobId, AttemptStatus.SUCCEEDED, secondAttemptLogPath)),
+        NOW.getEpochSecond());
+
+    assertEquals(1, actualList.size());
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  void testYamlSchemas() throws IOException {
+    final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
+    final int attemptNumber0 = jobPersistence.createAttempt(jobId, LOG_PATH);
+    jobPersistence.failAttempt(jobId, attemptNumber0);
+    final Path secondAttemptLogPath = LOG_PATH.resolve("2");
+    final int attemptNumber1 = jobPersistence.createAttempt(jobId, secondAttemptLogPath);
+    jobPersistence.succeedAttempt(jobId, attemptNumber1);
+    final JsonSchemaValidator jsonSchemaValidator = new JsonSchemaValidator();
+
+    final Map<DatabaseSchema, Stream<JsonNode>> inputStreams = jobPersistence.exportDatabase();
+    inputStreams.forEach((tableSchema, tableStream) -> {
+      final String tableName = tableSchema.name();
+      final JsonNode schema = tableSchema.toJsonNode();
+      assertNotNull(schema,
+          "Json schema files should be created in airbyte-scheduler/src/main/resources/tables for every table in the Database to validate its content");
+      tableStream.forEach(row -> {
+        try {
+          jsonSchemaValidator.ensure(schema, row);
+        } catch (JsonValidationException e) {
+          fail(String.format("JSON Schema validation failed for %s with record %s", tableName, row.toPrettyString()));
+        }
+      });
+    });
   }
 
 }
