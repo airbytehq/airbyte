@@ -63,8 +63,8 @@ const ConnectionItemPage: React.FC = () => {
 
     return (
       <SettingsView
-        connection={connection}
         onAfterSaveSchema={onAfterSaveSchema}
+        connectionId={connection.connectionId}
       />
     );
   };

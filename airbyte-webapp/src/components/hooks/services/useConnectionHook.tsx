@@ -1,4 +1,5 @@
-import { useFetcher } from "rest-hooks";
+import { useCallback, useEffect, useState } from "react";
+import { useFetcher, useResource } from "rest-hooks";
 
 import config from "../../../config";
 import { AnalyticsService } from "../../../core/analytics/AnalyticsService";
@@ -12,7 +13,6 @@ import { Source } from "../../../core/resources/Source";
 import { Routes } from "../../../pages/routes";
 import useRouter from "../useRouterHook";
 import { Destination } from "../../../core/resources/Destination";
-import { useCallback } from "react";
 import useWorkspace from "./useWorkspaceHook";
 
 type ValuesProps = {
@@ -29,6 +29,41 @@ type CreateConnectionProps = {
     | SourceDefinition
     | { name: string; sourceDefinitionId: string };
   destinationDefinition?: { name: string; destinationDefinitionId: string };
+};
+
+export const useConnectionLoad = (
+  connectionId: string,
+  withRefresh?: boolean
+) => {
+  const [connection, setConnection] = useState<null | Connection>(null);
+  const [isLoadingConnection, setIsLoadingConnection] = useState(false);
+
+  // TODO: change to useStatefulResource
+  const fetchConnection = useFetcher(ConnectionResource.detailShape(), false);
+  const baseConnection = useResource(ConnectionResource.detailShape(), {
+    connectionId
+  });
+
+  useEffect(() => {
+    (async () => {
+      if (withRefresh) {
+        setIsLoadingConnection(true);
+        setConnection(
+          await fetchConnection({
+            connectionId,
+            with_refreshed_catalog: withRefresh
+          })
+        );
+
+        setIsLoadingConnection(false);
+      }
+    })();
+  }, [connectionId, fetchConnection, withRefresh]);
+
+  return {
+    connection: withRefresh ? connection : baseConnection,
+    isLoadingConnection
+  };
 };
 
 const useConnection = () => {
@@ -116,7 +151,8 @@ const useConnection = () => {
     connectionId,
     syncSchema,
     status,
-    schedule
+    schedule,
+    with_refreshed_catalog
   }: {
     connectionId: string;
     syncSchema?: SyncSchema;
@@ -125,14 +161,20 @@ const useConnection = () => {
       units: number;
       timeUnit: string;
     } | null;
+    with_refreshed_catalog?: boolean;
   }) => {
+    const withRefreshedCatalog = with_refreshed_catalog
+      ? { with_refreshed_catalog }
+      : null;
+
     return await updateConnectionResource(
       {},
       {
         connectionId,
         syncSchema,
         status,
-        schedule
+        schedule,
+        ...withRefreshedCatalog
       }
     );
   };
