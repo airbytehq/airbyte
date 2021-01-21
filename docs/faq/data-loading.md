@@ -1,16 +1,16 @@
 # Data Loading
 
-### **Why don’t I see any data in my destination yet?**
+## **Why don’t I see any data in my destination yet?**
 
 It can take a while for Airbyte to load data into your destination. Some sources have restrictive API limits which constrain how much data we can sync in a given time. Large amounts of data in your source can also make the initial sync take longer. You can check your sync status in your connection detail page that you can access through the destination detail page or the source one.
 
-### **What happens if a sync fails?**
+## **What happens if a sync fails?**
 
-You do not lose data when a sync fails, but no data is added or updated in your destination. 
+You do not lose data when a sync fails, but no data is added or updated in your destination.
 
-Airbyte will make 3 separate attempts automatically. You can see and export the logs for those sync attempts from within the connection detail page, which you can access through the Source or Destination detail page. 
+Airbyte will make 3 separate attempts automatically. You can see and export the logs for those sync attempts from within the connection detail page, which you can access through the Source or Destination detail page.
 
-In the future, we might send you an email notification \(optional, of course\) with an additional option to create a GitHub issue with the logs. We’re still thinking about it, but the purpose would be to help the community and the Airbyte team fix the issue as soon as possible, if it’s an issue with the connector. 
+In the future, we might send you an email notification \(optional, of course\) with an additional option to create a GitHub issue with the logs. We’re still thinking about it, but the purpose would be to help the community and the Airbyte team fix the issue as soon as possible, if it’s an issue with the connector.
 
 In the meantime, here is what you can do now:
 
@@ -19,17 +19,17 @@ In the meantime, here is what you can do now:
 
 Once all this is done, Airbyte resumes your sync from where it left off.
 
-We truly appreciate any contribution you make to help the community. Airbyte will become the open-source standard only if everybody participates. 
+We truly appreciate any contribution you make to help the community. Airbyte will become the open-source standard only if everybody participates.
 
-### **What happens to data in the pipeline if the destination gets disconnected? Could I lose data, or wind up with duplicate data when the pipeline is reconnected?**
+## **What happens to data in the pipeline if the destination gets disconnected? Could I lose data, or wind up with duplicate data when the pipeline is reconnected?**
 
 Airbyte is architected to prevent data loss or duplication. We will display a failure for the sync, and re-attempt it at the next syncing, according to the frequency you set.
 
-### **How frequently can Airbyte sync data?**
+## **How frequently can Airbyte sync data?**
 
 You can adjust the load time to run as frequent as every five minutes and as infrequent as every 24 hours.
 
-### **Why wouldn’t I choose to load all of my data every five minutes?**
+## **Why wouldn’t I choose to load all of my data every five minutes?**
 
 While frequent data loads will give you more up-to-date data, there are a few reasons you wouldn’t want to load your data every five minutes, including:
 
@@ -39,22 +39,23 @@ While frequent data loads will give you more up-to-date data, there are a few re
 
 We generally recommend setting the incremental loads to every hour to help limit API calls.
 
-### **Is there a way to know the estimated time to completion for the first historic sync?**
+## **Is there a way to know the estimated time to completion for the first historic sync?**
 
-Unfortunately not yet. 
+Unfortunately not yet.
 
-### **I see you support a lot of connectors – what about connectors Airbyte doesn’t support yet?**
+## **I see you support a lot of connectors – what about connectors Airbyte doesn’t support yet?**
 
 You can either:
 
 * Submit a [connector request](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=area%2Fintegration%2C+new-integration&template=new-integration-request.md&title=) on our Github project, and be notified once we or the community build a connector for it. 
-* Build a connector yourself by forking our [GitHub project](https://github.com/airbytehq/airbyte) and submitting a pull request. Don’t hesitate to ping the team on [Slack](http://slack.airbyte.io), so we can check your PR as soon as possible. But you do NOT need to wait for the PR to be approved to benefit from your own fix. Put your connector in a new folder, and add your connector directly through our UI by clicking on + New connector in the Admin section. This way, you will be able to use your connector as a separate one from the connector available to the community. 
+* Build a connector yourself by forking our [GitHub project](https://github.com/airbytehq/airbyte) and submitting a pull request. Don’t hesitate to ping the team on [Slack](https://slack.airbyte.io), so we can check your PR as soon as possible. But you do NOT need to wait for the PR to be approved to benefit from your own fix. Put your connector in a new folder, and add your connector directly through our UI by clicking on + New connector in the Admin section. This way, you will be able to use your connector as a separate one from the connector available to the community. 
 
-### **What kind of notifications do I get?**
+## **What kind of notifications do I get?**
 
-For the moment, the UI will only display one kind of notification: when a sync fails, we will display the failure at the source/destination level in the list of sources/destinations,  and in the connection detail page along with the logs. 
+For the moment, the UI will only display one kind of notification: when a sync fails, we will display the failure at the source/destination level in the list of sources/destinations, and in the connection detail page along with the logs.
 
-However, there are other types of notifications we’re thinking about: 
+However, there are other types of notifications we’re thinking about:
 
 * When a connector that you use is no longer up to date 
 * An email notification when one of your connections fails
+
