@@ -26,6 +26,7 @@ import json
 import os
 import tempfile
 import uuid
+from pathlib import Path
 
 import boto3
 import pytest
@@ -40,6 +41,7 @@ class TestSourceFile(object):
     service_account_file: str = "../secrets/gcs.json"
     aws_credentials: str = "../secrets/aws.json"
     cloud_bucket_name: str = "airbytetestbucket"
+    local_files_directory = Path(__file__).resolve().parent.parent.joinpath("sample_files/formats")
 
     @pytest.fixture(scope="class")
     def download_gcs_public_data(self):
@@ -157,6 +159,31 @@ class TestSourceFile(object):
         config["provider"]["host"] = host
         run_load_dataframes(config, columns_nb, rows_nb)
 
+    @pytest.mark.parametrize(
+        "file_format, extension, columns_nb, rows_nb",
+        [
+            ("csv", "csv", 8, 5000),
+            ("json", "json", 0, 2),
+            ("html", "html", 3, 2),
+            ("excel", "xls", 8, 50),
+            ("excel", "xlsx", 8, 50),
+            ("feather", "feather", 9, 3),
+            ("parquet", "parquet", 9, 3),
+        ],
+    )
+    def test_local_file_read(
+        self,
+        file_format,
+        extension,
+        columns_nb,
+        rows_nb,
+    ):
+        file_directory = self.local_files_directory.joinpath(file_format)
+        load_method = run_load_nested_json_schema if file_format == "json" else run_load_dataframes
+        file_path = str(file_directory.joinpath(f"demo.{extension}"))
+        configs = {"dataset_name": "test", "format": file_format, "url": file_path, "provider": {"storage": "local"}}
+        load_method(configs, columns_nb, rows_nb)
+
 
 def run_load_dataframes(config, expected_columns=10, expected_rows=42):
     df_list = SourceFile.load_dataframes(config=config, logger=AirbyteLogger(), skip_data=False)
@@ -164,6 +191,14 @@ def run_load_dataframes(config, expected_columns=10, expected_rows=42):
     df = df_list[0]
     assert len(df.columns) == expected_columns  # DataFrame should have 10 columns
     assert len(df.index) == expected_rows  # DataFrame should have 42 rows of data
+    return df
+
+
+def run_load_nested_json_schema(config, expected_columns=10, expected_rows=42):
+    data_list = SourceFile.load_nested_json(config, logger=AirbyteLogger())
+    assert len(data_list) == 1  # Properly load data
+    df = data_list[0]
+    assert len(df) == expected_rows  # DataFrame should have 42 items
     return df
 
 

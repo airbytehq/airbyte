@@ -72,11 +72,11 @@ File Formats are mostly enabled \(and further tested\) thanks to other open-sour
 | JSON | Experimental |
 | HTML | Untested |
 | XML | No |
-| Excel | Untested |
-| Feather | Untested |
-| Parquet | Untested |
-| Orc | Untested |
-| Pickle | Untested |
+| Excel | Yes |
+| Feather | Yes |
+| Parquet | Yes |
+| Orc | No |
+| Pickle | No |
 | SAS | Hidden |
 | SPS | Hidden |
 | Stata | Hidden |
