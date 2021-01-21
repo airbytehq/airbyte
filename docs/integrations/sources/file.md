@@ -70,7 +70,7 @@ File Formats are mostly enabled \(and further tested\) thanks to other open-sour
 | :--- | :--- |
 | CSV | Yes |
 | JSON | Experimental |
-| HTML | Untested |
+| HTML | No |
 | XML | No |
 | Excel | Yes |
 | Feather | Yes |
