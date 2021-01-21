@@ -67,7 +67,7 @@ resource "aws_security_group" "airbyte-instance-sg" {
     from_port   = 8000
     to_port     = 8000
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    security_groups = [aws_security_group.airbyte-alb-sg.id]
   }
 
   ingress {
@@ -75,7 +75,7 @@ resource "aws_security_group" "airbyte-instance-sg" {
     from_port   = 8001
     to_port     = 8001
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    security_groups = [aws_security_group.airbyte-alb-sg.id]
   }
 
   ingress {
@@ -189,7 +189,7 @@ resource "aws_lb_listener" "airbyte-app" {
 
 resource "aws_lb_listener_rule" "api" {
   listener_arn = aws_lb_listener.airbyte-app.arn
-  priority     = 100
+  priority     = 99
 
   action {
     type             = "forward"
@@ -198,8 +198,33 @@ resource "aws_lb_listener_rule" "api" {
 
   condition {
     path_pattern {
-      values = ["/api/v1/*"]
+      values = [
+        "/api/v1/*/list",
+        "/api/v1/*/get",
+        "/api/v1/*/get_by_slug",
+        "/api/v1/*/health",
+      ]
     }
   }
 }
 
+resource "aws_lb_listener_rule" "roapi" {
+  listener_arn = aws_lb_listener.airbyte-app.arn
+  priority     = 100
+
+  action {
+    type = "fixed-response"
+
+    fixed_response {
+      content_type = "application/json"
+      message_body = "{}"
+      status_code  = "401"
+    }
+  }
+
+  condition {
+    path_pattern {
+      values = ["/api/v1/*"]
+    }
+  }
+}
