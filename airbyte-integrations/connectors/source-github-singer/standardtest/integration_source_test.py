@@ -22,24 +22,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from setuptools import find_packages, setup
+import os
 
-setup(
-    name="source_github_singer",
-    description="Source implementation for Github.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    package_data={"": ["*.json"]},
-    # two sets of dependencies: 1) for main 2) for standard test deps. 2 does not have all of the dependencies of 1, which is we cannot use install_requires.
-    extras_require={
-        "main": [
-            "tap-github @ https://github.com/airbytehq/tap-github/tarball/master#egg=tap-github-1.9.1",
-            "requests",
-            "airbyte-protocol",
-            "base-singer",
-            "base-python",
-        ],
-        "standardtest": ["airbyte_python_test"],
-    },
-)
+from base_python import AirbyteLogger
+from base_singer import ConfigContainer
+from source_github_singer import SourceGithubSinger
+
+logger = AirbyteLogger()
+
+
+class TestSourceGithub(object):
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    private_repo_config_path: str = os.path.join(base_dir, "secrets/private_config.json")
+    private_repo_catalog_path: str = os.path.join(base_dir, "resourcesstandardtest/private_configured_catalog.json")
+
+    def test_private_repo(self):
+        singer = SourceGithubSinger()
+        config = singer.read_config(self.private_repo_config_path)
+        configure_container = ConfigContainer(config, self.private_repo_config_path)
+        generator = singer.read(logger, configure_container, self.private_repo_catalog_path)
+        for message in generator:
+            print(message.json(exclude_unset=True))
