@@ -100,7 +100,8 @@ class GoogleSheetsSource(Source):
         # For each sheet in the spreadsheet, get a batch of rows, and as long as there hasn't been
         # a blank row, emit the row batch
         sheet_to_column_index_to_name = Helpers.get_available_sheets_to_column_index_to_name(client, spreadsheet_id, sheet_to_column_name)
-        sheet_parameters = Helpers.get_sheet_row_count(client, spreadsheet_id)
+        sheet_row_counts = Helpers.get_sheet_row_count(client, spreadsheet_id)
+        logger.info(f"Row counts: {sheet_row_counts}")
         for sheet in sheet_to_column_index_to_name.keys():
             logger.info(f"Syncing sheet {sheet}")
             column_index_to_name = sheet_to_column_index_to_name[sheet]
@@ -108,7 +109,7 @@ class GoogleSheetsSource(Source):
             # For the loop, it is necessary that the initial row exists when we send a request to the API,
             # if the last row of the interval goes outside the sheet - this is normal, we will return
             # only the real data of the sheet and in the next iteration we will loop out.
-            while row_cursor <= sheet_parameters[sheet]:
+            while row_cursor <= sheet_row_counts[sheet]:
                 range = f"{sheet}!{row_cursor}:{row_cursor + ROW_BATCH_SIZE}"
                 logger.info(f"Fetching range {range}")
                 row_batch = SpreadsheetValues.parse_obj(
