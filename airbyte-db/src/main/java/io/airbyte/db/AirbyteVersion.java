@@ -31,21 +31,42 @@ public class AirbyteVersion implements Comparable<AirbyteVersion> {
 
   public static final String AIRBYTE_VERSION_KEY_NAME = "airbyte_version";
 
+  private final String version;
   private final String major;
   private final String minor;
   private final String patch;
 
   public AirbyteVersion(final String version) {
+    this.version = version;
     final String[] parsedVersion = version.replace("\n", "").strip().split("-")[0].split("\\.");
-    if (parsedVersion.length >= 3) {
+    String major = "";
+    String minor = "";
+    String patch = "";
+    if (parsedVersion.length >= 1)
       major = parsedVersion[0];
+    if (parsedVersion.length >= 2)
       minor = parsedVersion[1];
+    if (parsedVersion.length >= 3)
       patch = parsedVersion[2];
-    } else {
-      major = version;
-      minor = "";
-      patch = "";
-    }
+    this.major = major;
+    this.minor = minor;
+    this.patch = patch;
+  }
+
+  public String getVersion() {
+    return version;
+  }
+
+  public String getMajorVersion() {
+    return major;
+  }
+
+  public String getMinorVersion() {
+    return minor;
+  }
+
+  public String getPatchVersion() {
+    return patch;
   }
 
   /**
@@ -55,6 +76,8 @@ public class AirbyteVersion implements Comparable<AirbyteVersion> {
    */
   @Override
   public int compareTo(final AirbyteVersion another) {
+    if (version.equals("dev") || another.version.equals("dev"))
+      return 0;
     final int majorDiff = major.compareTo(another.major);
     if (majorDiff != 0) {
       return majorDiff;
