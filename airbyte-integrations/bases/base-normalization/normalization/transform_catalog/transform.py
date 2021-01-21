@@ -367,10 +367,6 @@ def safe_cast_to_varchar(field: str, integration_type: str, jsonschema_propertie
         return quoted_field
 
 
-def quote_reserved_keywords(column_name: str, integration_type: str):
-    return column_name
-
-
 def process_node(
     path: List[str],
     json_col: str,
