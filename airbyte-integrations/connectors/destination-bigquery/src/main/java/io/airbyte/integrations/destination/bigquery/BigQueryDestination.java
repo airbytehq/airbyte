@@ -141,10 +141,13 @@ public class BigQueryDestination implements Destination {
 
   private BigQuery getBigQuery(JsonNode config) {
     final String projectId = config.get(CONFIG_PROJECT_ID).asText();
-    final String credentialsString = config.get(CONFIG_CREDS).asText();
+    // handle the credentials json being passed as a json object or a json object already serialized as
+    // a string.
+    final String credentialsString =
+        config.get(CONFIG_CREDS).isObject() ? Jsons.serialize(config.get(CONFIG_CREDS)) : config.get(CONFIG_CREDS).asText();
     try {
-      final ServiceAccountCredentials credentials =
-          ServiceAccountCredentials.fromStream(new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
+      final ServiceAccountCredentials credentials = ServiceAccountCredentials
+          .fromStream(new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
 
       return BigQueryOptions.newBuilder()
           .setProjectId(projectId)
