@@ -30,11 +30,10 @@ from typing import Mapping
 
 import boto3
 import pytest
-from base_python import AirbyteLogger
 from botocore.errorfactory import ClientError
 from google.api_core.exceptions import Conflict
 from google.cloud import storage
-from source_file import SourceFile
+from source_file.client import Client
 
 
 class TestSourceFile:
@@ -160,7 +159,8 @@ class TestSourceFile:
 
 
 def run_load_dataframes(config, expected_columns=10, expected_rows=42):
-    df_list = SourceFile.load_dataframes(config=config, logger=AirbyteLogger(), skip_data=False)
+    client = Client(**config)
+    df_list = client.read(fields=expected_columns)
     assert len(df_list) == 1, "Properly load 1 DataFrame"
     df = df_list[0]
     assert len(df.columns) == expected_columns, "DataFrame should have 10 columns"
