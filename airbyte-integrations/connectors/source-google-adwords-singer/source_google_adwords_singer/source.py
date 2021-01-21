@@ -74,7 +74,8 @@ class SourceGoogleAdwordsSinger(SingerSource):
                             logger.log_by_prefix(f"Unable to sync {stream} with the manager account {customer_id}", "ERROR")
                             sys.exit(1)
                 else:
-                    logger.log_by_prefix(f"Unable to sync with the provided customer id {customer_id}", "ERROR")
+                    err = f"No accounts associated with customer id {customer_id}"
+                    logger.log_by_prefix(f"Unable to sync with the provided credentials. Error: {err}", "ERROR")
                     sys.exit(1)
         except Exception as err:
             logger.log_by_prefix(f"Unable to sync. Error: {err}", "ERROR")
@@ -97,7 +98,9 @@ class SourceGoogleAdwordsSinger(SingerSource):
                 }
                 accounts = self._get_accounts(logger, sdk_client, selector)
                 if not accounts:
-                    return AirbyteConnectionStatus(status=Status.FAILED)
+                    err = f"No accounts associated with customer id {customer_id}"
+                    error_msg = f"Unable to connect with the provided credentials. Error: {err}"
+                    return AirbyteConnectionStatus(status=Status.FAILED, message=error_msg)
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"{str(e)}")
