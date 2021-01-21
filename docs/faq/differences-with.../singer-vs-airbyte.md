@@ -7,7 +7,7 @@ We wrote an article about this topic: “[Airbyte vs. Singer: Why Airbyte is not
 * **Supports 96 connectors after 4 years.**
 * **Increasingly outdated connectors:** Talend \(acquirer of StitchData\) seems to have stopped investing in maintaining Singer’s community and connectors. As most connectors see schema changes several times a year, more and more Singer’s taps and targets are not actively maintained and are becoming outdated. 
 * **Absence of standardization:** each connector is its own open-source project. So you never know the quality of a tap or target until you have actually used it. There is no guarantee whatsoever about what you’ll get.
-* **Singer’s connectors are standalone binaries:** you still need to build everything around to make them work. 
+* **Singer’s connectors are standalone binaries:** you still need to build everything around to make them work (e.g. UI, configuration validation, state management, normalization, schema migration, monitoring, etc). 
 * **No full commitment to open sourcing all connectors,** as some connectors are only offered by StitchData under a paid plan.  ****
 
 ### **Airbyte:**
@@ -20,5 +20,4 @@ We wrote an article about this topic: “[Airbyte vs. Singer: Why Airbyte is not
 * **A full commitment to the open-source MIT project** with the promise not to hide some connectors behind paid walls.
 
 Note that Airbyte’s data protocol is compatible with Singer’s. So it is easy to migrate a Singer tap onto Airbyte.  
-
 
