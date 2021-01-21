@@ -10,7 +10,9 @@ We also intend to integrate deeply with DBT to make it easier for your team to c
 
 ### **How does Airbyte handle replication when a data source changes its schema?**
 
-How Airbyte handles data structure changes in a data source varies depending on the connector, as well as the replication method used for a given table within that connector.
+Airbyte continues to sync data using the configured schema until that schema is updated. Because Airbyte treats all fields as optional, if a field is renamed or deleted in the source, that field simply will no longer be replicated, but all remaining fields will. The same is true for streams as well.
+
+For now, the schema can only be updated manually in the UI (by clicking "Update Schema" in the settings page for the connection). When a schema is updated Airbyte will re-sync all data for that source using the new schema.
 
 
 At that point, you should see a failure displayed in Airbyte’s UI at the source level, along with all the detailed logs. You then have two options: 
