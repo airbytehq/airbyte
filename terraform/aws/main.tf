@@ -8,6 +8,11 @@ variable "vpc" {
   default = "vpc-0e436274"
 }
 
+variable "default-sg-id" {
+  type = string
+  default = "sg-551dc903"
+}
+
 variable "subnets" {
   default = [
     "subnet-8a7d68ed",
@@ -19,7 +24,7 @@ variable "subnets" {
   ]
 }
 
-variable "key_name" {
+variable "key-name" {
   type = string
   default = "airbyte-app"
 }
@@ -43,6 +48,10 @@ provider "aws" {
   shared_credentials_file = "~/.aws/credentials"
 }
 
+data "aws_security_group" "default" {
+  id = var.default-sg-id
+}
+
 data "aws_ami" "amazon-linux-2" {
   owners = [137112412989]
   most_recent = true
@@ -58,25 +67,9 @@ data "aws_ami" "amazon-linux-2" {
   }
 }
 
-resource "aws_security_group" "airbyte-instance-sg" {
-  name        = "${var.name}-airbyte-instance-sg"
-  description = "Allow traffic to the airbyte instance"
-
-  ingress {
-    description = "http-webapp"
-    from_port   = 8000
-    to_port     = 8000
-    protocol    = "tcp"
-    security_groups = [aws_security_group.airbyte-alb-sg.id]
-  }
-
-  ingress {
-    description = "http-api"
-    from_port   = 8001
-    to_port     = 8001
-    protocol    = "tcp"
-    security_groups = [aws_security_group.airbyte-alb-sg.id]
-  }
+resource "aws_security_group" "airbyte-ssh-sg" {
+  name        = "${var.name}-airbyte-ssh-sg"
+  description = "Allow ssh traffic"
 
   ingress {
     description = "ssh"
@@ -85,22 +78,18 @@ resource "aws_security_group" "airbyte-instance-sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
 }
 
 resource "aws_instance" "airbyte-instance" {
   instance_type = "t3.medium"
   ami           = data.aws_ami.amazon-linux-2.id
 
-  security_groups = [aws_security_group.airbyte-instance-sg.name]
+  security_groups = [
+    data.aws_security_group.default.name,
+    aws_security_group.airbyte-ssh-sg.name
+  ]
 
-  key_name = var.key_name
+  key_name = var.key-name
 
   user_data = file("${path.module}/init.sh")
 
@@ -120,21 +109,14 @@ resource "aws_security_group" "airbyte-alb-sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-
-  ingress {
-    description = "http"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+//
+//  ingress {
+//    description = "http"
+//    from_port   = 80
+//    to_port     = 80
+//    protocol    = "tcp"
+//    security_groups = [aws_security_group.airbyte-instance-sg.id]
+//  }
 }
 
 resource "aws_lb_target_group" "airbyte-webapp" {
@@ -188,7 +170,10 @@ resource "aws_lb" "airbyte-alb" {
 
   internal           = false
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.airbyte-alb-sg.id]
+  security_groups    = [
+    data.aws_security_group.default.id,
+    aws_security_group.airbyte-alb-sg.id
+  ]
   subnets = var.subnets
 }
 
@@ -256,7 +241,10 @@ resource "aws_lb" "airbyte-admin-alb" {
 
   internal           = true
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.airbyte-alb-sg.id]
+  security_groups    = [
+    data.aws_security_group.default.id,
+    aws_security_group.airbyte-alb-sg.id
+  ]
   subnets = var.subnets
 }
 
