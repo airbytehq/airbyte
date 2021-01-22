@@ -120,8 +120,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   private final LogsHandler logsHandler;
   private final Configs configs;
 
-  public ConfigurationApi(final String airbyteVersion,
-                          final ConfigRepository configRepository,
+  public ConfigurationApi(final ConfigRepository configRepository,
                           final JobPersistence jobPersistence,
                           final CachingSchedulerJobClient schedulerJobClient,
                           final Configs configs,
@@ -141,7 +140,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     webBackendSourceHandler = new WebBackendSourceHandler(sourceHandler, schedulerHandler);
     webBackendDestinationHandler = new WebBackendDestinationHandler(destinationHandler, schedulerHandler);
     healthCheckHandler = new HealthCheckHandler(configRepository);
-    archiveHandler = new ArchiveHandler(airbyteVersion, configRepository, jobPersistence, archiveTtlManager);
+    archiveHandler = new ArchiveHandler(configs.getAirbyteVersion(), configRepository, jobPersistence, archiveTtlManager);
     logsHandler = new LogsHandler();
     this.configs = configs;
   }

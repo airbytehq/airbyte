@@ -768,7 +768,7 @@ class DefaultJobPersistenceTest {
     database.query(ctx -> ctx.execute("DELETE FROM jobs"));
     database.query(ctx -> ctx.execute("DELETE FROM attempts"));
 
-    jobPersistence.importDatabase(outputStreams);
+    jobPersistence.importDatabase("test", outputStreams);
 
     final List<Job> actualList = jobPersistence.listJobs(SPEC_JOB_CONFIG.getConfigType(), CONNECTION_ID.toString());
 
