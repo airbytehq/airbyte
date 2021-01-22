@@ -198,7 +198,7 @@ subprojects {
 }
 
 task composeBuild {
-    def buildTag = System.getenv('BUILD_TAG') ?: 'dev'
+    def buildTag = System.getenv('VERSION') ?: 'dev'
     doFirst {
         exec {
             workingDir rootDir
