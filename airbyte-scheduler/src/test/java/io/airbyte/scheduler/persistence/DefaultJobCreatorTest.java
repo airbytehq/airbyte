@@ -47,7 +47,6 @@ import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.Schema;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
-import io.airbyte.config.StandardSync.SyncMode;
 import io.airbyte.config.Stream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.io.IOException;
@@ -116,8 +115,7 @@ public class DefaultJobCreatorTest {
         .withStatus(StandardSync.Status.ACTIVE)
         .withSchema(schema)
         .withSourceId(sourceId)
-        .withDestinationId(destinationId)
-        .withSyncMode(SyncMode.FULL_REFRESH);
+        .withDestinationId(destinationId);
   }
 
   @BeforeEach
@@ -185,8 +183,7 @@ public class DefaultJobCreatorTest {
         .withConfigType(JobConfig.ConfigType.GET_SPEC)
         .withGetSpec(new JobGetSpecConfig().withDockerImage(integrationImage));
 
-    final String expectedScope = integrationImage;
-    when(jobPersistence.enqueueJob(expectedScope, jobConfig)).thenReturn(Optional.of(JOB_ID));
+    when(jobPersistence.enqueueJob(integrationImage, jobConfig)).thenReturn(Optional.of(JOB_ID));
 
     final long jobId = jobCreator.createGetSpecJob(integrationImage);
     assertEquals(JOB_ID, jobId);

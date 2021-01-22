@@ -34,7 +34,6 @@ import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.DataType;
 import io.airbyte.config.Field;
 import io.airbyte.config.Schema;
-import io.airbyte.config.StandardSync.SyncMode;
 import io.airbyte.config.Stream;
 import org.junit.jupiter.api.Test;
 
@@ -52,9 +51,9 @@ class SchemaConverterTest {
               .withName(COLUMN_ID)
               .withSelected(true)))
           .withSourceDefinedCursor(false)
-          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+          .withSupportedSyncModes(Lists.newArrayList(io.airbyte.config.SyncMode.FULL_REFRESH, io.airbyte.config.SyncMode.INCREMENTAL))
           .withDefaultCursorField(Lists.newArrayList(COLUMN_ID))
-          .withSyncMode(SyncMode.INCREMENTAL)
+          .withSyncMode(io.airbyte.config.SyncMode.INCREMENTAL)
           .withCursorField(Lists.newArrayList(COLUMN_ID))));
 
   private static final SourceSchema API_SCHEMA = new SourceSchema()
@@ -85,7 +84,7 @@ class SchemaConverterTest {
   @Test
   void testEnumConversion() {
     assertTrue(Enums.isCompatible(io.airbyte.api.model.DataType.class, DataType.class));
-    assertTrue(Enums.isCompatible(io.airbyte.config.StandardSync.SyncMode.class, io.airbyte.api.model.SyncMode.class));
+    assertTrue(Enums.isCompatible(io.airbyte.config.SyncMode.class, io.airbyte.api.model.SyncMode.class));
   }
 
 }
