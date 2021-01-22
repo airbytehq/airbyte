@@ -76,8 +76,12 @@
           },
           "type": ["null", "object"]
         },
-        "supported_sync_modes": ["incremental"]
-      }
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_time"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_time"]
     },
     {
       "stream": {
@@ -214,8 +218,12 @@
             }
           }
         },
-        "supported_sync_modes": ["incremental"]
-      }
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_time"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_time"]
     },
     {
       "stream": {
