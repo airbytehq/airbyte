@@ -140,7 +140,7 @@ public class JobSubmitter implements Runnable {
     try {
       // if there is no scope, do not track. this is the case where we are running check for sources /
       // destinations that don't exist.
-      if (Strings.isEmpty(job.getScope())) {
+      if (Strings.isNullOrEmpty(job.getScope())) {
         return;
       }
       final Builder<String, Object> metadataBuilder = generateMetadata(job);
