@@ -8,7 +8,7 @@ variable "vpc" {
   default = "vpc-0e436274"
 }
 
-variable "default-sg-id" {
+variable "default-sg" {
   type = string
   default = "sg-551dc903"
 }
@@ -48,8 +48,12 @@ provider "aws" {
   shared_credentials_file = "~/.aws/credentials"
 }
 
+data "aws_vpc" "vpc" {
+  id = var.vpc
+}
+
 data "aws_security_group" "default" {
-  id = var.default-sg-id
+  id = var.default-sg
 }
 
 data "aws_ami" "amazon-linux-2" {
@@ -109,14 +113,6 @@ resource "aws_security_group" "airbyte-alb-sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-//
-//  ingress {
-//    description = "http"
-//    from_port   = 80
-//    to_port     = 80
-//    protocol    = "tcp"
-//    security_groups = [aws_security_group.airbyte-instance-sg.id]
-//  }
 }
 
 resource "aws_lb_target_group" "airbyte-webapp" {
@@ -125,7 +121,7 @@ resource "aws_lb_target_group" "airbyte-webapp" {
   name     = "${var.name}-${count.index}-airbyte-webapp-tg"
   port     = 8000
   protocol = "HTTP"
-  vpc_id = var.vpc
+  vpc_id = data.aws_vpc.vpc.id
 
   health_check {
     path = "/"
@@ -146,7 +142,7 @@ resource "aws_lb_target_group" "airbyte-api" {
   name     = "${var.name}-${count.index}-airbyte-api-tg"
   port     = 8001
   protocol = "HTTP"
-  vpc_id = var.vpc
+  vpc_id = data.aws_vpc.vpc.id
 
   health_check {
     path = "/api/v1/health"
@@ -171,7 +167,6 @@ resource "aws_lb" "airbyte-alb" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [
-    data.aws_security_group.default.id,
     aws_security_group.airbyte-alb-sg.id
   ]
   subnets = var.subnets
@@ -211,7 +206,7 @@ resource "aws_lb_listener_rule" "allow-read-api" {
   }
 }
 
-resource "aws_lb_listener_rule" "read-only-api" {
+resource "aws_lb_listener_rule" "deny-all-api" {
   listener_arn = aws_lb_listener.airbyte-alb.arn
   priority     = 100
 
@@ -239,12 +234,11 @@ resource "aws_lb" "airbyte-admin-alb" {
 
   name               = "${var.name}-airbyte-admin-alb"
 
+  # lets make sure we are the only one who can modify
   internal           = true
+
   load_balancer_type = "application"
-  security_groups    = [
-    data.aws_security_group.default.id,
-    aws_security_group.airbyte-alb-sg.id
-  ]
+  security_groups    = [data.aws_security_group.default.id]
   subnets = var.subnets
 }
 
