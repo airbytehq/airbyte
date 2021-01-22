@@ -28,7 +28,6 @@ export interface Connection {
   name: string;
   sourceId: string;
   destinationId: string;
-  syncMode: string;
   status: string;
   schedule: ScheduleProperties | null;
   syncSchema: SyncSchema;
@@ -44,7 +43,6 @@ export default class ConnectionResource extends BaseResource
   readonly name: string = "";
   readonly sourceId: string = "";
   readonly destinationId: string = "";
-  readonly syncMode: string = "";
   readonly status: string = "";
   readonly schedule: ScheduleProperties | null = null;
   readonly source: SourceInformation | undefined = undefined;
