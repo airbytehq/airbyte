@@ -106,7 +106,6 @@ const useConnection = () => {
         {
           sourceId: source?.sourceId,
           destinationId: destination?.destinationId,
-          syncMode: "full_refresh",
           schedule: frequencyData?.config,
           status: "active",
           syncSchema: values.syncSchema
