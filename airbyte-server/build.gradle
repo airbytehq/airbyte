@@ -3,6 +3,8 @@ plugins {
 }
 
 dependencies {
+    implementation group: 'org.apache.cxf', name: 'cxf-core', version: '3.4.2'
+
     implementation group: 'org.eclipse.jetty', name: 'jetty-server', version: '9.4.31.v20200723'
     implementation group: 'org.eclipse.jetty', name: 'jetty-servlet', version: '9.4.31.v20200723'
 

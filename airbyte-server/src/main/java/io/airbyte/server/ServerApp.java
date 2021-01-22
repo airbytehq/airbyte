@@ -50,9 +50,12 @@ import io.airbyte.server.errors.UncaughtExceptionMapper;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+
+import org.apache.cxf.common.logging.Slf4jLogger;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -99,6 +102,8 @@ public class ServerApp {
     ConfigurationApiFactory.setConfigs(configs);
     ConfigurationApiFactory.setArchiveTtlManager(new FileTtlManager(10, TimeUnit.MINUTES, 10));
 
+    Map<String, String> mdc = MDC.getCopyOfContextMap();
+
     ResourceConfig rc =
         new ResourceConfig()
             // todo (cgardens) - the CORs settings are wide open. will need to revisit when we add
@@ -127,11 +132,13 @@ public class ServerApp {
             // needed so that the custom json exception mappers don't get overridden
             // https://stackoverflow.com/questions/35669774/jersey-custom-exception-mapper-for-invalid-json-string
             .register(JacksonJaxbJsonProvider.class)
+            // make sure logs in servlets have the right MDC values
+            .register(new MdcFilter(mdc))
             // request logger
             // https://www.javaguides.net/2018/06/jersey-rest-logging-using-loggingfeature.html
             .register(
                 new LoggingFeature(
-                    java.util.logging.Logger.getLogger(LoggingFeature.DEFAULT_LOGGER_NAME),
+                    new Slf4jLogger(LoggingFeature.DEFAULT_LOGGER_NAME, null),
                     Level.INFO,
                     LoggingFeature.Verbosity.PAYLOAD_ANY,
                     10000));
