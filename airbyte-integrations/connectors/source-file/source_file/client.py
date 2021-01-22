@@ -27,7 +27,6 @@ import traceback
 from typing import Iterable, List
 from urllib.parse import urlparse
 
-import gcsfs
 import numpy as np
 import pandas as pd
 import smart_open
@@ -38,7 +37,6 @@ from botocore.config import Config
 from genson import SchemaBuilder
 from google.cloud.storage import Client as GCSClient
 from google.oauth2 import service_account
-from s3fs import S3FileSystem
 
 
 class ConfigurationError(Exception):
