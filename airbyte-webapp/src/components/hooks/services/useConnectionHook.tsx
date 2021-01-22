@@ -163,7 +163,7 @@ const useConnection = () => {
     } | null;
     withRefreshedCatalog?: boolean;
   }) => {
-    const withRefreshedCatalog = withRefreshedCatalog
+    const withRefreshedCatalogCleaned = withRefreshedCatalog
       ? { withRefreshedCatalog }
       : null;
 
@@ -174,7 +174,7 @@ const useConnection = () => {
         syncSchema,
         status,
         schedule,
-        ...withRefreshedCatalog
+        ...withRefreshedCatalogCleaned
       }
     );
   };
