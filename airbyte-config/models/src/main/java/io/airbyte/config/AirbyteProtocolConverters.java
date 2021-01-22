@@ -95,7 +95,7 @@ public class AirbyteProtocolConverters {
             .withFields(toFields(airbyteStream.getJsonSchema().get("properties")))
             .withSupportedSyncModes(airbyteStream.getSupportedSyncModes()
                 .stream()
-                .map(e -> Enums.convertTo(e, StandardSync.SyncMode.class))
+                .map(e -> Enums.convertTo(e, io.airbyte.config.SyncMode.class))
                 .collect(Collectors.toList()))
             .withSourceDefinedCursor(airbyteStream.getSourceDefinedCursor())
             .withDefaultCursorField(airbyteStream.getDefaultCursorField())

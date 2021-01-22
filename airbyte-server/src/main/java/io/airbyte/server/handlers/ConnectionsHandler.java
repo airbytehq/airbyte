@@ -74,7 +74,6 @@ public class ConnectionsHandler {
         .withName(connectionCreate.getName() != null ? connectionCreate.getName() : "default")
         .withSourceId(connectionCreate.getSourceId())
         .withDestinationId(connectionCreate.getDestinationId())
-        .withSyncMode(Enums.convertTo(connectionCreate.getSyncMode(), StandardSync.SyncMode.class))
         .withStatus(toPersistenceStatus(connectionCreate.getStatus()));
 
     if (connectionCreate.getSyncSchema() != null) {
@@ -208,7 +207,6 @@ public class ConnectionsHandler {
         .destinationId(standardSync.getDestinationId())
         .status(toApiStatus(standardSync.getStatus()))
         .schedule(apiSchedule)
-        .syncMode(toApiSyncMode(standardSync.getSyncMode()))
         .name(standardSync.getName())
         .syncSchema(SchemaConverter.toApiSchema(standardSync.getSchema()));
   }
@@ -217,7 +215,7 @@ public class ConnectionsHandler {
     return Enums.convertTo(apiStatus, StandardSync.Status.class);
   }
 
-  private SyncMode toApiSyncMode(StandardSync.SyncMode persistenceStatus) {
+  private SyncMode toApiSyncMode(io.airbyte.config.SyncMode persistenceStatus) {
     return Enums.convertTo(persistenceStatus, SyncMode.class);
   }
 

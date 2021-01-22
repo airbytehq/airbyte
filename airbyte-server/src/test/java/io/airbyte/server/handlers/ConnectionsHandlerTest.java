@@ -97,7 +97,6 @@ class ConnectionsHandlerTest {
         .destinationId(standardSync.getDestinationId())
         .name("presto to hudi")
         .status(ConnectionStatus.ACTIVE)
-        .syncMode(SyncMode.FULL_REFRESH)
         .schedule(ConnectionHelpers.generateBasicSchedule())
         .syncSchema(ConnectionHelpers.generateBasicApiSchema());
 
@@ -134,7 +133,6 @@ class ConnectionsHandlerTest {
         .withName("presto to hudi")
         .withSourceId(standardSync.getSourceId())
         .withDestinationId(standardSync.getDestinationId())
-        .withSyncMode(standardSync.getSyncMode())
         .withStatus(StandardSync.Status.INACTIVE)
         .withSchema(newPersistenceSchema);
 
@@ -227,7 +225,7 @@ class ConnectionsHandlerTest {
   @Test
   void testEnumConversion() {
     assertTrue(Enums.isCompatible(ConnectionStatus.class, StandardSync.Status.class));
-    assertTrue(Enums.isCompatible(StandardSync.SyncMode.class, SyncMode.class));
+    assertTrue(Enums.isCompatible(io.airbyte.config.SyncMode.class, SyncMode.class));
     assertTrue(Enums.isCompatible(StandardSync.Status.class, ConnectionStatus.class));
     assertTrue(Enums.isCompatible(ConnectionSchedule.TimeUnitEnum.class, Schedule.TimeUnit.class));
     assertTrue(Enums.isCompatible(io.airbyte.api.model.DataType.class, DataType.class));
