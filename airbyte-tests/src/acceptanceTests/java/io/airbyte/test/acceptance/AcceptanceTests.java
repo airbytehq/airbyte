@@ -27,6 +27,7 @@ package io.airbyte.test.acceptance;
 import static io.airbyte.api.client.model.ConnectionSchedule.TimeUnitEnum.MINUTES;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -35,6 +36,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.io.Files;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.JobsApi;
 import io.airbyte.api.client.invoker.ApiClient;
@@ -56,6 +58,8 @@ import io.airbyte.api.client.model.JobIdRequestBody;
 import io.airbyte.api.client.model.JobInfoRead;
 import io.airbyte.api.client.model.JobRead;
 import io.airbyte.api.client.model.JobStatus;
+import io.airbyte.api.client.model.LogType;
+import io.airbyte.api.client.model.LogsRequestBody;
 import io.airbyte.api.client.model.SourceCreate;
 import io.airbyte.api.client.model.SourceDefinitionIdRequestBody;
 import io.airbyte.api.client.model.SourceDefinitionSpecificationRead;
@@ -71,8 +75,12 @@ import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
+
+import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
+import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.Collections;
@@ -113,6 +121,8 @@ public class AcceptanceTests {
   private static final String COLUMN_ID = "id";
   private static final String COLUMN_NAME = "name";
   private static final String COLUMN_NAME_DATA = "_airbyte_data";
+  private static final String SOURCE_USERNAME = "sourceusername";
+  private static final String SOURCE_PASSWORD = "hunter2";
 
   private static PostgreSQLContainer sourcePsql;
   private static PostgreSQLContainer destinationPsql;
@@ -129,7 +139,9 @@ public class AcceptanceTests {
 
   @BeforeAll
   public static void init() {
-    sourcePsql = new PostgreSQLContainer("postgres:13-alpine");
+    sourcePsql = new PostgreSQLContainer("postgres:13-alpine")
+            .withUsername(SOURCE_USERNAME)
+            .withPassword(SOURCE_PASSWORD);
     sourcePsql.start();
     destinationPsql = new PostgreSQLContainer("postgres:13-alpine");
     destinationPsql.start();
@@ -221,7 +233,7 @@ public class AcceptanceTests {
 
   @Test
   @Order(3)
-  public void testCreateSource() throws ApiException {
+  public void testCreateSource() throws ApiException, IOException {
     final String dbName = "acc-test-db";
     final UUID postgresSourceDefinitionId = getPostgresSourceDefinitionId();
     final UUID defaultWorkspaceId = PersistenceConstants.DEFAULT_WORKSPACE_ID;
@@ -240,6 +252,26 @@ public class AcceptanceTests {
     assertEquals(defaultWorkspaceId, response.getWorkspaceId());
     assertEquals(postgresSourceDefinitionId, response.getSourceDefinitionId());
     assertEquals(expectedConfig, response.getConnectionConfiguration());
+
+    // check that the source password is not present in the logs
+    final List<String> serverLogLines = Files.readLines(
+            apiClient.getLogsApi().getLogs(new LogsRequestBody().logType(LogType.SCHEDULER)), Charset.defaultCharset() // todo: server
+    );
+
+    assertTrue(serverLogLines.size() > 0);
+
+    boolean hasSourceUsername = false;
+
+    for (String line : serverLogLines) {
+      assertFalse(line.contains(SOURCE_PASSWORD));
+
+      if(line.contains(SOURCE_USERNAME)) {
+        hasSourceUsername = true;
+      }
+    }
+
+    // ensures the request log containing the username is present
+    assertTrue(hasSourceUsername);
   }
 
   @Test
