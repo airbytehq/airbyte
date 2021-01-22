@@ -1,0 +1,18 @@
+version: '3'
+services:
+  ssh:
+    image: gotechnies/alpine-ssh
+    hostname: 'test-ssh'
+    ports:
+      - "2222:22"
+    volumes:
+      - ./sample_files:/files
+
+  sftp:
+      image: atmoz/sftp
+      hostname: 'test-sftp'
+      ports:
+        - "2223:22"
+      volumes:
+          - ./sample_files:/files
+      command: root:root:1001

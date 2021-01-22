@@ -24,8 +24,10 @@ SOFTWARE.
 
 import json
 import os
+import socket
 import tempfile
 import uuid
+from pathlib import Path
 from typing import Mapping
 
 import boto3
@@ -34,6 +36,90 @@ from botocore.errorfactory import ClientError
 from google.api_core.exceptions import Conflict
 from google.cloud import storage
 from source_file.client import Client
+from paramiko.client import SSHClient, AutoAddPolicy
+from paramiko.ssh_exception import SSHException
+
+HERE = Path(__file__).parent.absolute()
+
+
+@pytest.fixture(scope="session")
+def docker_compose_file():
+    return HERE / "docker-compose.yml"
+
+
+def is_ssh_ready(ip, port):
+    try:
+        with SSHClient() as ssh:
+            ssh.set_missing_host_key_policy(AutoAddPolicy)
+            ssh.connect(ip, port=port, username="root", password="root", )
+        return True
+    except (SSHException, socket.error) as err:
+        return False
+
+
+@pytest.fixture(scope="session")
+def ssh_service(docker_ip, docker_services):
+    """Ensure that SSH service is up and responsive."""
+
+    # `port_for` takes a container port and returns the corresponding host port
+    port = docker_services.port_for("ssh", 22)
+    # url = "ssh://{}:{}".format(docker_ip, port)
+    docker_services.wait_until_responsive(
+        timeout=30.0, pause=0.1, check=lambda: is_ssh_ready(docker_ip, port)
+    )
+    return docker_ip
+
+
+@pytest.fixture(scope="session")
+def sftp_service(docker_ip, docker_services):
+    """Ensure that SFTP service is up and responsive."""
+
+    # `port_for` takes a container port and returns the corresponding host port
+    port = docker_services.port_for("sftp", 22)
+    docker_services.wait_until_responsive(
+        timeout=30.0, pause=0.1, check=lambda: is_ssh_ready(docker_ip, port)
+    )
+    return docker_ip
+
+
+# @pytest.fixture(scope="session")
+# def hdfs_service(docker_ip, docker_services):
+#     """Ensure that SFTP service is up and responsive."""
+#
+#     `port_for` takes a container port and returns the corresponding host port
+#     port = docker_services.port_for("hdfs", 22)
+#     docker_services.wait_until_responsive(
+#     timeout=30.0, pause=0.1, check=lambda: is_ssh_ready(docker_ip, port)
+# )
+# return docker_ip
+
+
+def test_ssh(ssh_service):
+    client = Client(dataset_name="output", format="csv", url="files/test.csv",
+                    provider=dict(storage="SSH", host=ssh_service, user="root", password="root", port=2222))
+    result = next(client.read())
+    assert result == {'header1': 'text', 'header2': 1, 'header3': 0.2}
+
+
+def test_scp(ssh_service):
+    client = Client(dataset_name="output", format="csv", url="files/test.csv",
+                    provider=dict(storage="SCP", host=ssh_service, user="root", password="root", port=2222))
+    result = next(client.read())
+    assert result == {'header1': 'text', 'header2': 1, 'header3': 0.2}
+
+
+def test_sftp(sftp_service):
+    client = Client(dataset_name="output", format="csv", url="files/test.csv",
+                    provider=dict(storage="SFTP", host=sftp_service, user="root", password="root", port=2223))
+    result = next(client.read())
+    assert result == {'header1': 'text', 'header2': 1, 'header3': 0.2}
+
+
+# def test_hdfs(ssh_service):
+#     client = Client(dataset_name="output", format="csv", url="files/test.csv",
+#                     provider=dict(storage="SFTP", host=ssh_service, user="root", password="root", port=2222))
+#     result = next(client.read())
+#     assert result == {'header1': 'text', 'header2': 1, 'header3': 0.2}
 
 
 class TestSourceFile:

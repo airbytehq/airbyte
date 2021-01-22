@@ -115,13 +115,14 @@ class URLFile:
         elif storage == "ssh://" or storage == "scp://" or storage == "sftp://":
             user = self._provider["user"]
             host = self._provider["host"]
+            port = self._provider.get("port", 22)
             if "password" in self._provider:
                 password = self._provider["password"]
                 # Explicitly turn off ssh keys stored in ~/.ssh
                 transport_params = {"connect_kwargs": {"look_for_keys": False}}
-                result = smart_open.open(f"{storage}{user}:{password}@{host}/{url}", transport_params=transport_params, mode=mode)
+                result = smart_open.open(f"{storage}{user}:{password}@{host}:{port}/{url}", transport_params=transport_params, mode=mode)
             else:
-                result = smart_open.open(f"{storage}{user}@{host}/{url}", mode=mode)
+                result = smart_open.open(f"{storage}{user}@{host}:{port}/{url}", mode=mode)
             return result
         return smart_open.open(self.full_url, mode=mode)
 

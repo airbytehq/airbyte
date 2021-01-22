@@ -117,6 +117,10 @@
               },
               "host": {
                 "type": "string"
+              },
+              "port": {
+                "type": "number",
+                "default": 22
               }
             }
           },
