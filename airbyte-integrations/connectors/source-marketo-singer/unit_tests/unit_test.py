@@ -33,13 +33,14 @@ state = "/tmp/state.json"
 
 
 def test_discover_cmd():
-    assert f"tap-marketo -c {config} --discover" == source.discover_cmd(logger, config).strip()
+    assert f"tap-marketo --config {config} --discover" == source.discover_cmd(logger, config).strip()
 
 
 def test_read_cmd_no_state():
-    assert f"tap-marketo -c {config} -p {catalog}" == source.read_cmd(logger, config, catalog).strip()
+    assert f"tap-marketo --config {config} --properties {catalog}" == source.read_cmd(logger, config, catalog).strip()
 
 
-# TODO state is temporarily disabled
-# def test_read_cmd_with_state():
-#     assert f"tap-marketo -c {config} -p {catalog} --state {state}" == source.read_cmd(logger, config, catalog, state).strip()
+def test_read_cmd_with_state():
+    assert (
+        f"tap-marketo --config {config} --properties {catalog} --state {state}" == source.read_cmd(logger, config, catalog, state).strip()
+    )
