@@ -70,7 +70,7 @@ export default class ConnectionResource extends BaseResource
       ...super.detailShape(),
       getFetchKey: (params: {
         connectionId: string;
-        with_refreshed_catalog?: boolean;
+        withRefreshedCatalog?: boolean;
       }) => "POST /web_backend/get" + JSON.stringify(params),
       fetch: async (params: any): Promise<any> =>
         await this.fetch(

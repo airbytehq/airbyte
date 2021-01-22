@@ -112,7 +112,7 @@ const SettingsView: React.FC<IProps> = ({
         syncSchema: values.schema,
         status: connection?.status || "",
         schedule: frequencyData?.config || null,
-        with_refreshed_catalog: activeUpdatingSchemaMode
+        withRefreshedCatalog: activeUpdatingSchemaMode
       });
 
       setSaved(true);
