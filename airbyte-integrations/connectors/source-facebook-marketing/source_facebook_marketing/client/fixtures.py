@@ -46,7 +46,7 @@ class FakeDataFactory:
             Campaign.Field.objective: Campaign.Objective.messages,
         }
         record = account.create_campaign(params=params)
-        print(f'Campaign {record} created')
+        print(f"Campaign {record} created")
         return record
 
     @staticmethod
@@ -59,7 +59,7 @@ class FakeDataFactory:
             Ad.Field.status: Ad.Status.paused,
         }
         record = account.create_ad(params=params)
-        print(f'Advertisment {record} created')
+        print(f"Advertisment {record} created")
         return record
 
     @staticmethod
@@ -73,26 +73,25 @@ class FakeDataFactory:
             AdSet.Field.bid_amount: 2,
             AdSet.Field.targeting: {
                 Targeting.Field.geo_locations: {
-                    'countries': ['US'],
+                    "countries": ["US"],
                 },
             },
-
         }
         record = account.create_ad_set(params=params)
-        print(f'AdSet {record} created')
+        print(f"AdSet {record} created")
         return record
 
     @staticmethod
     def creative(account: AdAccount, seed: int):
         link_data = AdCreativeLinkData()
-        link_data[AdCreativeLinkData.Field.message] = 'My message'
-        link_data[AdCreativeLinkData.Field.link] = 'http://airbyte.io/'
-        link_data[AdCreativeLinkData.Field.caption] = 'www.domain.com'
+        link_data[AdCreativeLinkData.Field.message] = "My message"
+        link_data[AdCreativeLinkData.Field.link] = "http://airbyte.io/"
+        link_data[AdCreativeLinkData.Field.caption] = "www.domain.com"
 
         call_to_action = {
-            'type': 'SIGN_UP',
-            'value': {
-                'link': 'http://airbyte.io/',
+            "type": "SIGN_UP",
+            "value": {
+                "link": "http://airbyte.io/",
             },
         }
 
@@ -107,15 +106,19 @@ class FakeDataFactory:
             AdCreative.Field.object_story_spec: object_story_spec,
         }
         record = account.create_ad_creative(params=params)
-        print(f'AdCreative {record} created')
+        print(f"AdCreative {record} created")
         return record
 
 
 def main():
-    client = Client(account_id=os.getenv("FB_ACCOUNT_ID", "212551616838260"),
-                    access_token=os.getenv("FB_ACCESS_TOKEN",
-                                           "EAAIiMrySdgkBANf507FCKOAy874goyqT7mAPTlEdfcRP24DNk4m4wlB7beZC9b8ccsNKV8nxlUtDRxa0KG0tJdkV3PRdLrssTVwccsmamvN1UORBG1UZADEcKSspK4deXbuo70N53uVpsSA8t2K6ZAlzKRGBhGZCXiLWiKPK3AZDZD"),
-                    start_date="2020-04-21T18:53:15-0700")
+    client = Client(
+        account_id=os.getenv("FB_ACCOUNT_ID", "212551616838260"),
+        access_token=os.getenv(
+            "FB_ACCESS_TOKEN",
+            "EAAIiMrySdgkBANf507FCKOAy874goyqT7mAPTlEdfcRP24DNk4m4wlB7beZC9b8ccsNKV8nxlUtDRxa0KG0tJdkV3PRdLrssTVwccsmamvN1UORBG1UZADEcKSspK4deXbuo70N53uVpsSA8t2K6ZAlzKRGBhGZCXiLWiKPK3AZDZD",
+        ),
+        start_date="2020-04-21T18:53:15-0700",
+    )
     print(client.account.get_promote_pages())
     for i in range(10):
         campaign = FakeDataFactory.campaign(account=client.account, seed=i)

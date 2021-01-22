@@ -224,6 +224,7 @@ class CampaignAPI(IncrementalStreamAPI):
         """
         return self._api.account.get_campaigns(params={**params, **self._state_filter()}, fields=[self.state_pk])
 
+
 #
 # FIXME: Disabled until we populate test account with AdsInsights data to test
 #  https://github.com/airbytehq/airbyte/issues/1709
