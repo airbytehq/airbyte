@@ -69,10 +69,9 @@ class URLFile:
     ```
     """
 
-    def __init__(self, url: str, provider: dict, reader_options: dict = None):
+    def __init__(self, url: str, provider: dict):
         self._url = url
         self._provider = provider
-        self._reader_options = reader_options or {}
         self._file = None
 
     def __enter__(self):
@@ -80,10 +79,6 @@ class URLFile:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
-
-    @property
-    def reader_impl(self):
-        return self._provider.get("reader_impl", "")
 
     @property
     def full_url(self):
@@ -176,16 +171,13 @@ class URLFile:
                 logger.error(error_msg)
                 raise ConfigurationError(error_msg) from err
 
-        if self.reader_impl == "gcsfs":
-            fs = gcsfs.GCSFileSystem(token=credentials or "anon")
-            file_to_close = fs.open(self.full_url, mode=mode)
+        if credentials:
+            credentials = service_account.Credentials.from_service_account_info(credentials)
+            client = GCSClient(credentials=credentials, project=credentials.get("project_id"))
         else:
-            if credentials:
-                credentials = service_account.Credentials.from_service_account_info(credentials)
-                client = GCSClient(credentials=credentials, project=credentials.get("project_id"))
-            else:
-                client = GCSClient.create_anonymous_client()
-            file_to_close = smart_open.open(self.full_url, transport_params=dict(client=client), mode=mode)
+            client = GCSClient.create_anonymous_client()
+        file_to_close = smart_open.open(self.full_url, transport_params=dict(client=client), mode=mode)
+
         return file_to_close
 
     def _open_aws_url(self, binary):
@@ -194,20 +186,16 @@ class URLFile:
         aws_secret_access_key = self._provider.get("aws_secret_access_key")
         use_aws_account = aws_access_key_id and aws_secret_access_key
 
-        if self.reader_impl == "s3fs":
-            s3 = S3FileSystem(anon=not use_aws_account, key=aws_access_key_id, secret=aws_secret_access_key)
-            result = s3.open(self.full_url, mode=mode)
+        if use_aws_account:
+            aws_access_key_id = self._provider.get("aws_access_key_id", "")
+            aws_secret_access_key = self._provider.get("aws_secret_access_key", "")
+            result = smart_open.open(f"{self.storage_scheme}{aws_access_key_id}:{aws_secret_access_key}@{self.url}", mode=mode)
         else:
-            if use_aws_account:
-                aws_access_key_id = self._provider.get("aws_access_key_id", "")
-                aws_secret_access_key = self._provider.get("aws_secret_access_key", "")
-                result = smart_open.open(f"{self.storage_scheme}{aws_access_key_id}:{aws_secret_access_key}@{self.url}", mode=mode)
-            else:
-                config = Config(signature_version=UNSIGNED)
-                params = {
-                    "resource_kwargs": {"config": config},
-                }
-                result = smart_open.open(self.full_url, transport_params=params, mode=mode)
+            config = Config(signature_version=UNSIGNED)
+            params = {
+                "resource_kwargs": {"config": config},
+            }
+            result = smart_open.open(self.full_url, transport_params=params, mode=mode)
         return result
 
 
