@@ -35,7 +35,7 @@ setup(
         "base-python==0.0.0",
         "facebook_business==9.0.1",
         "backoff==1.10.0",
-        "python-dateutil==2.8.1",
+        "pendulum==1.2.0",
         "cached_property==1.5.2",
     ],
     package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
