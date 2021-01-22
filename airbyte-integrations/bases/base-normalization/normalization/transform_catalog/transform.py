@@ -186,12 +186,15 @@ def strip_accents(s):
 
 
 def normalize_identifier_name(input_name: str, integration_type: str) -> str:
-    if integration_type == "bigquery":
-        input_name = strip_accents(input_name)
-        input_name = sub(r"\s+", "_", input_name)
-        return sub(r"[^a-zA-Z0-9_]", "_", input_name)
-    else:
-        return input_name
+    # Temporarily disabling the behavior of the ExtendedNameTransformer, see (issue #1785)
+    # if integration_type == "bigquery":
+    input_name = strip_accents(input_name)
+    input_name = sub(r"\s+", "_", input_name)
+    return sub(r"[^a-zA-Z0-9_]", "_", input_name)
+
+
+# else:
+#   return input_name
 
 
 def table_name(input_name: str, integration_type) -> str:

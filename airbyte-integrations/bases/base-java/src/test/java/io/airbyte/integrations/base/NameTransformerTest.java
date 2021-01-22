@@ -31,7 +31,7 @@ import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import org.junit.jupiter.api.Test;
 
-class NamingResolverTest {
+class NameTransformerTest {
 
   @Test
   void testStandardSQLNaming() {
@@ -55,7 +55,8 @@ class NamingResolverTest {
     assertEquals("_airbyte_raw_identifier_name", namingResolver.getRawTableName("identifier_name"));
   }
 
-  @Test
+  // Temporarily disabling the behavior of the ExtendedNameTransformer, see (issue #1785)
+  // @Test
   void testExtendedSQLNaming() {
     final NamingConventionTransformer namingResolver = new ExtendedNameTransformer();
     assertEquals("identifier_name", namingResolver.getIdentifier("identifier_name"));
