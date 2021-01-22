@@ -30,6 +30,8 @@ public interface TrackingClient {
 
   void identify();
 
+  void alias(String previousCustomerId);
+
   void track(String action);
 
   void track(String action, Map<String, Object> metadata);
