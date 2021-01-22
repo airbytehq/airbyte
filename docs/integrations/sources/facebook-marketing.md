@@ -18,11 +18,11 @@ The linked Facebook docs go into detail about the fields present on those stream
 
 In addition, this source is capable of syncing ad insights as a stream. Ad insights can also be segmented by the following categories, where each segment is synced as a separate Airbyte stream:
 
-* Country - _comming soon_
-* DMA \(Designated Market Area\) - _comming soon_
-* Gender & Age - _comming soon_
-* Platform & Device - _comming soon_
-* Region - _comming soon_
+* Country - _coming soon_
+* DMA \(Designated Market Area\) - _coming soon_
+* Gender & Age - _coming soon_
+* Platform & Device - _coming soon_
+* Region - _coming soon_
 
 The segmented streams contain entries of campaign/adset/ad combinations for each day broken down by the chosen segment.
 
