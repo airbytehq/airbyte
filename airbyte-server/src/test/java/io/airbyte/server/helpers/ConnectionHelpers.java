@@ -31,7 +31,6 @@ import io.airbyte.api.model.ConnectionStatus;
 import io.airbyte.api.model.SourceSchema;
 import io.airbyte.api.model.SourceSchemaField;
 import io.airbyte.api.model.SourceSchemaStream;
-import io.airbyte.api.model.SyncMode;
 import io.airbyte.config.DataType;
 import io.airbyte.config.Field;
 import io.airbyte.config.Schedule;
@@ -52,8 +51,7 @@ public class ConnectionHelpers {
         .withStatus(StandardSync.Status.ACTIVE)
         .withSchema(generateBasicPersistenceSchema())
         .withSourceId(sourceId)
-        .withDestinationId(UUID.randomUUID())
-        .withSyncMode(StandardSync.SyncMode.FULL_REFRESH);
+        .withDestinationId(UUID.randomUUID());
   }
 
   public static StandardSync generateSyncWithDestinationId(UUID destinationId) {
@@ -65,8 +63,7 @@ public class ConnectionHelpers {
         .withStatus(StandardSync.Status.ACTIVE)
         .withSchema(generateBasicPersistenceSchema())
         .withSourceId(UUID.randomUUID())
-        .withDestinationId(destinationId)
-        .withSyncMode(StandardSync.SyncMode.FULL_REFRESH);
+        .withDestinationId(destinationId);
   }
 
   public static Schema generateBasicPersistenceSchema() {
@@ -115,7 +112,6 @@ public class ConnectionHelpers {
         .destinationId(destinationId)
         .name("presto to hudi")
         .status(ConnectionStatus.ACTIVE)
-        .syncMode(SyncMode.FULL_REFRESH)
         .schedule(generateBasicSchedule())
         .syncSchema(ConnectionHelpers.generateBasicApiSchema());
   }
