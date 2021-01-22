@@ -22,9 +22,6 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
 
-      - name: Check images exist
-        run: ./tools/bin/check_images_exist.sh
-
       - uses: actions/setup-java@v1
         with:
           java-version: '14'
