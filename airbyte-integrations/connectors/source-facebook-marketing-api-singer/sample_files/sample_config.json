@@ -1,6 +1,0 @@
-{
-  "start_date": "2020-09-01T:00:00:00Z",
-  "account_id": "<place your FB Ad account ID here>",
-  "access_token": "<place your access token here>",
-  "include_deleted": "true"
-}
