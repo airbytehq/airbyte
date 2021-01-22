@@ -1324,11 +1324,11 @@ components:
       type: object
       required:
         - schema
-        - job_info
+        - jobInfo
       properties:
         schema:
           $ref: "#/components/schemas/SourceSchema"
-        job_info:
+        jobInfo:
           $ref: "#/components/schemas/JobInfoRead"
     # DESTINATION DEFINITION
     DestinationDefinitionId:
@@ -1529,7 +1529,7 @@ components:
       required:
         - connectionId
       properties:
-        with_refreshed_catalog:
+        withRefreshedCatalog:
           type: boolean
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
@@ -1577,7 +1577,7 @@ components:
         - $ref: "#/components/schemas/ConnectionUpdate"
         - type: object
           properties:
-            with_refreshed_catalog:
+            withRefreshedCatalog:
               type: boolean
     ConnectionRead:
       type: object
@@ -1651,9 +1651,9 @@ components:
     LogsRequestBody:
       type: object
       required:
-        - log_type
+        - logType
       properties:
-        log_type:
+        logType:
           $ref: "#/components/schemas/LogType"
     # SCHEMA
     SourceSchema:
@@ -1894,7 +1894,7 @@ components:
             - failed
         message:
           type: string
-        job_info:
+        jobInfo:
           $ref: "#/components/schemas/JobInfoRead"
     # Web Backend
     WbConnectionRead:

@@ -1103,7 +1103,8 @@ font-style: italic;
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
-  "job_info" : {
+  "message" : "message",
+  "jobInfo" : {
     "job" : {
       "createdAt" : 6,
       "configId" : "configId",
@@ -1136,7 +1137,6 @@ font-style: italic;
       }
     } ]
   },
-  "message" : "message",
   "status" : "succeeded"
 }</code></pre>
 
@@ -2090,7 +2090,8 @@ font-style: italic;
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
-  "job_info" : {
+  "message" : "message",
+  "jobInfo" : {
     "job" : {
       "createdAt" : 6,
       "configId" : "configId",
@@ -2123,7 +2124,6 @@ font-style: italic;
       }
     } ]
   },
-  "message" : "message",
   "status" : "succeeded"
 }</code></pre>
 
@@ -2179,7 +2179,8 @@ font-style: italic;
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
-  "job_info" : {
+  "message" : "message",
+  "jobInfo" : {
     "job" : {
       "createdAt" : 6,
       "configId" : "configId",
@@ -2212,7 +2213,6 @@ font-style: italic;
       }
     } ]
   },
-  "message" : "message",
   "status" : "succeeded"
 }</code></pre>
 
@@ -2305,7 +2305,7 @@ font-style: italic;
       "cursorField" : [ "cursorField", "cursorField" ]
     } ]
   },
-  "job_info" : {
+  "jobInfo" : {
     "job" : {
       "createdAt" : 6,
       "configId" : "configId",
@@ -2393,7 +2393,8 @@ font-style: italic;
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
-  "job_info" : {
+  "message" : "message",
+  "jobInfo" : {
     "job" : {
       "createdAt" : 6,
       "configId" : "configId",
@@ -2426,7 +2427,6 @@ font-style: italic;
       }
     } ]
   },
-  "message" : "message",
   "status" : "succeeded"
 }</code></pre>
 
@@ -2626,7 +2626,7 @@ font-style: italic;
       "cursorField" : [ "cursorField", "cursorField" ]
     } ]
   },
-  "job_info" : {
+  "jobInfo" : {
     "job" : {
       "createdAt" : 6,
       "configId" : "configId",
@@ -4037,7 +4037,7 @@ font-style: italic;
         <div class="param-enum-header">Enum:</div>
         <div class="param-enum">succeeded</div><div class="param-enum">failed</div>
 <div class="param">message (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">job_info (optional)</div><div class="param-desc"><span class="param-type"><a href="#JobInfoRead">JobInfoRead</a></span>  </div>
+<div class="param">jobInfo </div><div class="param-desc"><span class="param-type"><a href="#JobInfoRead">JobInfoRead</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -4325,7 +4325,7 @@ font-style: italic;
     <h3><a name="LogsRequestBody"><code>LogsRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">log_type </div><div class="param-desc"><span class="param-type"><a href="#LogType">LogType</a></span>  </div>
+      <div class="param">logType </div><div class="param-desc"><span class="param-type"><a href="#LogType">LogType</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -4418,7 +4418,7 @@ font-style: italic;
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">schema </div><div class="param-desc"><span class="param-type"><a href="#SourceSchema">SourceSchema</a></span>  </div>
-<div class="param">job_info </div><div class="param-desc"><span class="param-type"><a href="#JobInfoRead">JobInfoRead</a></span>  </div>
+<div class="param">jobInfo </div><div class="param-desc"><span class="param-type"><a href="#JobInfoRead">JobInfoRead</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -4534,7 +4534,7 @@ font-style: italic;
     <h3><a name="WebBackendConnectionRequestBody"><code>WebBackendConnectionRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">with_refreshed_catalog (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+      <div class="param">withRefreshedCatalog (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">connectionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
     </div>  <!-- field-items -->
   </div>
@@ -4546,14 +4546,14 @@ font-style: italic;
 <div class="param">syncSchema </div><div class="param-desc"><span class="param-type"><a href="#SourceSchema">SourceSchema</a></span>  </div>
 <div class="param">schedule (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionSchedule">ConnectionSchedule</a></span>  </div>
 <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
-<div class="param">with_refreshed_catalog (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">withRefreshedCatalog (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
     <h3><a name="WebBackendConnectionUpdate_allOf"><code>WebBackendConnectionUpdate_allOf</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">with_refreshed_catalog (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+      <div class="param">withRefreshedCatalog (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
