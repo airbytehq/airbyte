@@ -51,7 +51,7 @@ export const useConnectionLoad = (
         setConnection(
           await fetchConnection({
             connectionId,
-            with_refreshed_catalog: withRefresh
+            withRefreshedCatalog: withRefresh
           })
         );
 
@@ -152,7 +152,7 @@ const useConnection = () => {
     syncSchema,
     status,
     schedule,
-    with_refreshed_catalog
+    withRefreshedCatalog
   }: {
     connectionId: string;
     syncSchema?: SyncSchema;
@@ -161,10 +161,10 @@ const useConnection = () => {
       units: number;
       timeUnit: string;
     } | null;
-    with_refreshed_catalog?: boolean;
+    withRefreshedCatalog?: boolean;
   }) => {
-    const withRefreshedCatalog = with_refreshed_catalog
-      ? { with_refreshed_catalog }
+    const withRefreshedCatalog = withRefreshedCatalog
+      ? { withRefreshedCatalog }
       : null;
 
     return await updateConnectionResource(
