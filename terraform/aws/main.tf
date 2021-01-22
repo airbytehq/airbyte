@@ -121,6 +121,14 @@ resource "aws_security_group" "airbyte-alb-sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  ingress {
+    description = "http"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -130,7 +138,9 @@ resource "aws_security_group" "airbyte-alb-sg" {
 }
 
 resource "aws_lb_target_group" "airbyte-webapp" {
-  name     = "${var.name}-airbyte-webapp-tg"
+  count = 2
+
+  name     = "${var.name}-${count.index}-airbyte-webapp-tg"
   port     = 8000
   protocol = "HTTP"
   vpc_id = var.vpc
@@ -141,13 +151,17 @@ resource "aws_lb_target_group" "airbyte-webapp" {
 }
 
 resource "aws_lb_target_group_attachment" "airbyte-webapp" {
-  target_group_arn = aws_lb_target_group.airbyte-webapp.arn
+  count = 2
+
+  target_group_arn = aws_lb_target_group.airbyte-webapp[count.index].arn
   target_id        = aws_instance.airbyte-instance.id
   port             = 8000
 }
 
 resource "aws_lb_target_group" "airbyte-api" {
-  name     = "${var.name}-airbyte-api-tg"
+  count = 2
+
+  name     = "${var.name}-${count.index}-airbyte-api-tg"
   port     = 8001
   protocol = "HTTP"
   vpc_id = var.vpc
@@ -158,7 +172,9 @@ resource "aws_lb_target_group" "airbyte-api" {
 }
 
 resource "aws_lb_target_group_attachment" "airbyte-api" {
-  target_group_arn = aws_lb_target_group.airbyte-api.arn
+  count = 2
+
+  target_group_arn = aws_lb_target_group.airbyte-api[count.index].arn
   target_id        = aws_instance.airbyte-instance.id
   port             = 8001
 }
@@ -176,7 +192,7 @@ resource "aws_lb" "airbyte-alb" {
   subnets = var.subnets
 }
 
-resource "aws_lb_listener" "airbyte-app" {
+resource "aws_lb_listener" "airbyte-alb" {
   load_balancer_arn = aws_lb.airbyte-alb.arn
   port              = "443"
   protocol          = "HTTPS"
@@ -185,17 +201,17 @@ resource "aws_lb_listener" "airbyte-app" {
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.airbyte-webapp.arn
+    target_group_arn = aws_lb_target_group.airbyte-webapp[0].arn
   }
 }
 
 resource "aws_lb_listener_rule" "allow-read-api" {
-  listener_arn = aws_lb_listener.airbyte-app.arn
+  listener_arn = aws_lb_listener.airbyte-alb.arn
   priority     = 99
 
   action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.airbyte-api.arn
+    target_group_arn = aws_lb_target_group.airbyte-api[0].arn
   }
 
   condition {
@@ -211,7 +227,7 @@ resource "aws_lb_listener_rule" "allow-read-api" {
 }
 
 resource "aws_lb_listener_rule" "read-only-api" {
-  listener_arn = aws_lb_listener.airbyte-app.arn
+  listener_arn = aws_lb_listener.airbyte-alb.arn
   priority     = 100
 
   action {
@@ -238,32 +254,30 @@ resource "aws_lb" "airbyte-admin-alb" {
 
   name               = "${var.name}-airbyte-admin-alb"
 
-  internal           = false
+  internal           = true
   load_balancer_type = "application"
   security_groups    = [aws_security_group.airbyte-alb-sg.id]
   subnets = var.subnets
 }
 
-resource "aws_lb_listener" "airbyte-admin-app" {
+resource "aws_lb_listener" "airbyte-admin-alb" {
   load_balancer_arn = aws_lb.airbyte-admin-alb.arn
-  port              = "443"
-  protocol          = "HTTPS"
-  ssl_policy        = "ELBSecurityPolicy-2016-08"
-  certificate_arn   = var.certificate
+  port              = "80"
+  protocol          = "HTTP"
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.airbyte-webapp.arn
+    target_group_arn = aws_lb_target_group.airbyte-webapp[1].arn
   }
 }
 
 resource "aws_lb_listener_rule" "allow-all-api" {
-  listener_arn = aws_lb_listener.airbyte-admin-app.arn
+  listener_arn = aws_lb_listener.airbyte-admin-alb.arn
   priority     = 101
 
   action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.airbyte-api.arn
+    target_group_arn = aws_lb_target_group.airbyte-api[1].arn
   }
 
   condition {
