@@ -41,6 +41,10 @@ import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.KubeProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -51,9 +55,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 /**
  * The SchedulerApp is responsible for finding new scheduled jobs that need to be run and to launch
@@ -94,7 +95,8 @@ public class SchedulerApp {
     final JobScheduler jobScheduler = new JobScheduler(jobPersistence, configRepository);
     final JobSubmitter jobSubmitter = new JobSubmitter(workerThreadPool, jobPersistence, configRepository, workerRunFactory);
 
-    cleanup(jobPersistence);
+    // We cancel jobs that where running before the restart. They are not being monitored by the worker anymore.
+    cleanupZombies(jobPersistence);
 
     scheduledPool.scheduleWithFixedDelay(
         () -> {
@@ -109,8 +111,8 @@ public class SchedulerApp {
     Runtime.getRuntime().addShutdownHook(new GracefulShutdownHandler(Duration.ofSeconds(GRACEFUL_SHUTDOWN_SECONDS), workerThreadPool, scheduledPool));
   }
 
-  private void cleanup(JobPersistence jobPersistence) throws IOException {
-    for (Job zombieJob : jobPersistence.listJobsWithStatus(Job.REPLICATION_TYPES, JobStatus.RUNNING)) {
+  private void cleanupZombies(JobPersistence jobPersistence) throws IOException {
+    for (Job zombieJob : jobPersistence.listJobsWithStatus(JobStatus.RUNNING)) {
       jobPersistence.cancelJob(zombieJob.getId());
     }
   }
