@@ -23,10 +23,19 @@ SOFTWARE.
 """
 
 import json
-from typing import Dict, Generator, Type
+from datetime import datetime
+from typing import Dict, Generator, Mapping, Type
 
-import airbyte_protocol
-from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status
+from airbyte_protocol import (
+    AirbyteCatalog,
+    AirbyteConnectionStatus,
+    AirbyteMessage,
+    AirbyteRecordMessage,
+    AirbyteStateMessage,
+    ConfiguredAirbyteCatalog,
+    Status,
+)
+from airbyte_protocol import Type as MessageType
 
 from .client import BaseClient
 from .integration import Source
@@ -38,7 +47,7 @@ class BaseSource(Source):
 
     client_class: Type[BaseClient] = None
 
-    def _get_client(self, config: json):
+    def _get_client(self, config: Mapping):
         """Construct client"""
         client = self.client_class(**config)
 
@@ -65,7 +74,23 @@ class BaseSource(Source):
         client = self._get_client(config)
 
         logger.info(f"Starting syncing {self.__class__.__name__}")
+        total_state = {**state}
         for configured_stream in catalog.streams:
+            stream_name = configured_stream.stream.name
+
+            if client.stream_has_state(stream_name) and state.get(stream_name):
+                logger.info(f"Set state of {stream_name} stream to {state.get(stream_name)}")
+                client.set_stream_state(stream_name, state.get(stream_name))
+
+            logger.info(f"Syncing {stream_name} stream")
             for record in client.read_stream(configured_stream.stream):
-                yield AirbyteMessage(type=airbyte_protocol.Type.RECORD, record=record)
+                now = int(datetime.now().timestamp()) * 1000
+                message = AirbyteRecordMessage(stream=stream_name, data=record, emitted_at=now)
+                yield AirbyteMessage(type=MessageType.RECORD, record=message)
+
+            if client.stream_has_state(stream_name):
+                total_state[stream_name] = client.get_stream_state(stream_name)
+                # output state object only together with other stream states
+                yield AirbyteMessage(type=MessageType.STATE, state=AirbyteStateMessage(data=total_state))
+
         logger.info(f"Finished syncing {self.__class__.__name__}")
