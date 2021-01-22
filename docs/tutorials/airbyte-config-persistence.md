@@ -1,3 +1,11 @@
+{% hint style="warning" %}
+This tutorial is going to be deprecated! It will be splitted into smaller pages describing separately:
+- how to upgrade airbyte
+- manage airbyte configurations
+- explore logs 
+- and integrate with DBT
+{% endhint %}
+
 # Config & Persistence
 
 Once you manage to spin up a local instance of Airbyte, following steps in the [Getting started Tutorial](../getting-started.md), you may want to gain a better understanding of what configuration files are available in Airbyte and how to work with it.
@@ -362,15 +370,15 @@ Here are some examples of public API CSV:
 https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv
 ```
 
-![](../.gitbook/assets/airbyte_config_persistence_4.png)
+![](../.gitbook/assets/connecting-EL-with-T-1.png)
 
 And a local Postgres Database:
 
-![](../.gitbook/assets/airbyte_config_persistence_5.png)
+![](../.gitbook/assets/connecting-EL-with-T-2.png)
 
 After setting up the connectors, we can trigger the sync and study the logs:
 
-![](../.gitbook/assets/airbyte_config_persistence_6.png)
+![](../.gitbook/assets/connecting-EL-with-T-3.png)
 
 Since we wiped the workspace volume and restarted the Airbyte Server, notice that the process ran in the `/tmp/workspace/5/0` as well but the logs for ExchangeRate are gone...
 
