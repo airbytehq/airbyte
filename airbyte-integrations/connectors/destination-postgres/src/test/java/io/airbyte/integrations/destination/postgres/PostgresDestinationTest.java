@@ -148,10 +148,8 @@ class PostgresDestinationTest {
   void testCheckFailure() {
     ((ObjectNode) config).put("password", "fake");
     final AirbyteConnectionStatus actual = new PostgresDestination().check(config);
-    final AirbyteConnectionStatus expected = new AirbyteConnectionStatus()
-        .withStatus(Status.FAILED)
-        .withMessage("Can't connect with provided configuration.");
-    assertEquals(expected, actual);
+    assertEquals(Status.FAILED, actual.getStatus());
+    assertTrue(actual.getMessage().startsWith("Could not connect with provided configuration."));
   }
 
   @Test

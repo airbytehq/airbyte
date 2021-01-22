@@ -157,7 +157,7 @@ public abstract class JdbcSourceStandardTest {
     ((ObjectNode) config).put("password", "fake");
     final AirbyteConnectionStatus actual = source.check(config);
     final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.FAILED)
-        .withMessage("Can't connect with provided configuration.");
+        .withMessage("Could not connect with provided configuration.");
     assertEquals(expected, actual);
   }
 
