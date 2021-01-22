@@ -43,6 +43,7 @@ import io.airbyte.workers.process.ProcessBuilderFactory;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -91,8 +92,11 @@ public class SchedulerApp {
     final JobScheduler jobScheduler = new JobScheduler(jobPersistence, configRepository);
     final JobSubmitter jobSubmitter = new JobSubmitter(workerThreadPool, jobPersistence, configRepository, workerRunFactory);
 
+    Map<String, String> mdc = MDC.getCopyOfContextMap();
+
     scheduledPool.scheduleWithFixedDelay(
         () -> {
+          MDC.setContextMap(mdc);
           jobRetrier.run();
           jobScheduler.run();
           jobSubmitter.run();
