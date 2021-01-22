@@ -31,6 +31,7 @@ from pathlib import Path
 from typing import Mapping
 
 import boto3
+import pandas
 import pytest
 from botocore.errorfactory import ClientError
 from google.api_core.exceptions import Conflict
@@ -51,9 +52,9 @@ def is_ssh_ready(ip, port):
     try:
         with SSHClient() as ssh:
             ssh.set_missing_host_key_policy(AutoAddPolicy)
-            ssh.connect(ip, port=port, username="root", password="root", )
+            ssh.connect(ip, port=port, username="user1", password="pass1", )
         return True
-    except (SSHException, socket.error) as err:
+    except (SSHException, socket.error):
         return False
 
 
@@ -63,63 +64,54 @@ def ssh_service(docker_ip, docker_services):
 
     # `port_for` takes a container port and returns the corresponding host port
     port = docker_services.port_for("ssh", 22)
-    # url = "ssh://{}:{}".format(docker_ip, port)
     docker_services.wait_until_responsive(
         timeout=30.0, pause=0.1, check=lambda: is_ssh_ready(docker_ip, port)
     )
     return docker_ip
 
 
-@pytest.fixture(scope="session")
-def sftp_service(docker_ip, docker_services):
-    """Ensure that SFTP service is up and responsive."""
+@pytest.fixture
+def provider_config(ssh_service):
+    def lookup(name):
+        providers = {
+            "ssh": dict(storage="SSH", host=ssh_service, user="user1", password="pass1", port=2222),
+            "scp": dict(storage="SCP", host=ssh_service, user="user1", password="pass1", port=2222),
+            "sftp": dict(storage="SFTP", host=ssh_service, user="user1", password="pass1", port=100),
+            "hdfs": None
+        }
+        return providers[name]
 
-    # `port_for` takes a container port and returns the corresponding host port
-    port = docker_services.port_for("sftp", 22)
-    docker_services.wait_until_responsive(
-        timeout=30.0, pause=0.1, check=lambda: is_ssh_ready(docker_ip, port)
-    )
-    return docker_ip
-
-
-# @pytest.fixture(scope="session")
-# def hdfs_service(docker_ip, docker_services):
-#     """Ensure that SFTP service is up and responsive."""
-#
-#     `port_for` takes a container port and returns the corresponding host port
-#     port = docker_services.port_for("hdfs", 22)
-#     docker_services.wait_until_responsive(
-#     timeout=30.0, pause=0.1, check=lambda: is_ssh_ready(docker_ip, port)
-# )
-# return docker_ip
+    return lookup
 
 
-def test_ssh(ssh_service):
-    client = Client(dataset_name="output", format="csv", url="files/test.csv",
-                    provider=dict(storage="SSH", host=ssh_service, user="root", password="root", port=2222))
+"""
+1. incorrect configuration, missing values or syntax
+2. unknown url (dns)
+3. don't have permissions or password/user don't match
+4. file doesn't exist                                   // <- all before and this one should be covered in check as well
+5. binary/text file
+6. multiple binary formats pandas recognize and not
+
+7. all above with read, check and discover
+"""
+
+
+@pytest.mark.parametrize(
+    "provider_name,file_path", [
+        ("ssh", "files/test.csv"),
+        ("scp", "files/test.csv"),
+        ("sftp", "files/test.csv"),
+        # ("ssh", "files/test.pkl"),
+        # ("sftp", "files/test.pkl"),
+        # ("ssh", "files/empty.csv"),
+        # ("sftp", "files/test.pkl"),
+    ]
+)
+def test__read_from_ssh_providers(ssh_service, provider_config, provider_name, file_path):
+    client = Client(dataset_name="output", format="csv", url=file_path,
+                    provider=provider_config(provider_name))
     result = next(client.read())
     assert result == {'header1': 'text', 'header2': 1, 'header3': 0.2}
-
-
-def test_scp(ssh_service):
-    client = Client(dataset_name="output", format="csv", url="files/test.csv",
-                    provider=dict(storage="SCP", host=ssh_service, user="root", password="root", port=2222))
-    result = next(client.read())
-    assert result == {'header1': 'text', 'header2': 1, 'header3': 0.2}
-
-
-def test_sftp(sftp_service):
-    client = Client(dataset_name="output", format="csv", url="files/test.csv",
-                    provider=dict(storage="SFTP", host=sftp_service, user="root", password="root", port=2223))
-    result = next(client.read())
-    assert result == {'header1': 'text', 'header2': 1, 'header3': 0.2}
-
-
-# def test_hdfs(ssh_service):
-#     client = Client(dataset_name="output", format="csv", url="files/test.csv",
-#                     provider=dict(storage="SFTP", host=ssh_service, user="root", password="root", port=2222))
-#     result = next(client.read())
-#     assert result == {'header1': 'text', 'header2': 1, 'header3': 0.2}
 
 
 class TestSourceFile:
@@ -130,10 +122,7 @@ class TestSourceFile:
     @pytest.fixture(scope="class")
     def download_gcs_public_data(self):
         print("\nDownload public dataset from gcs to local /tmp")
-        config = get_config(0)
-        config["provider"]["storage"] = "HTTPS"
-        config["url"] = "https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv"
-        df = run_load_dataframes(config)
+        df = pandas.read_csv("https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv")
         tmp_file = tempfile.NamedTemporaryFile(delete=False)
         df.to_csv(tmp_file.name, index=False)
         yield tmp_file.name
@@ -246,22 +235,26 @@ class TestSourceFile:
 
 def run_load_dataframes(config, expected_columns=10, expected_rows=42):
     client = Client(**config)
-    df_list = client.read(fields=expected_columns)
-    assert len(df_list) == 1, "Properly load 1 DataFrame"
-    df = df_list[0]
-    assert len(df.columns) == expected_columns, "DataFrame should have 10 columns"
-    assert len(df.index) == expected_rows, "DataFrame should have 42 rows of data"
-    return df
+    rows = list(client.read())
+    assert len(rows[0]) == expected_columns, "DataFrame should have 10 columns"
+    assert len(rows) == expected_rows, "DataFrame should have 42 rows of data"
+    return rows
 
 
 def get_config(index: int) -> Mapping[str, str]:
+    default_config = {
+        "format": "csv",
+        "provider": {},
+        "dataset_name": "output",
+    }
+
     configs = [
-        {"format": "csv", "reader_options": '{"sep": ",", "nrows": 42}', "provider": {}},
-        {"format": "csv", "reader_options": '{"sep": ",", "nrows": 42, "compression": "gzip"}', "provider": {}},
-        {"format": "csv", "reader_options": '{"sep": "\\t", "nrows": 42, "header": null}', "provider": {}},
-        {"format": "csv", "reader_options": '{"sep": "\\r\\n", "names": ["text"], "header": null, "engine": "python"}', "provider": {}},
+        {"reader_options": '{"sep": ",", "nrows": 42}'},
+        {"reader_options": '{"sep": ",", "nrows": 42, "compression": "gzip"}'},
+        {"reader_options": '{"sep": "\\t", "nrows": 42, "header": null}'},
+        {"reader_options": '{"sep": "\\r\\n", "names": ["text"], "header": null, "engine": "python"}'},
     ]
-    return configs[index]
+    return {**default_config, **configs[index]}
 
 
 def create_unique_gcs_bucket(storage_client, name: str) -> str:

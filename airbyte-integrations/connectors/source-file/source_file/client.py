@@ -112,7 +112,7 @@ class URLFile:
             host = self._provider["host"]
             port = self._provider["port"]
             return smart_open.open(f"webhdfs://{host}:{port}/{url}", mode=mode)
-        elif storage == "ssh://" or storage == "scp://" or storage == "sftp://":
+        elif storage in ("ssh://", "scp://", "sftp://"):
             user = self._provider["user"]
             host = self._provider["host"]
             port = self._provider.get("port", 22)
