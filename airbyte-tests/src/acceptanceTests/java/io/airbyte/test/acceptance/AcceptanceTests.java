@@ -298,7 +298,6 @@ public class AcceptanceTests {
 
     assertEquals(sourceId, createdConnection.getSourceId());
     assertEquals(destinationId, createdConnection.getDestinationId());
-    assertEquals(SyncMode.FULL_REFRESH, createdConnection.getSyncMode());
     assertEquals(schema, createdConnection.getSyncSchema());
     assertEquals(schedule, createdConnection.getSchedule());
     assertEquals(name, createdConnection.getName());
@@ -480,7 +479,6 @@ public class AcceptanceTests {
             .status(ConnectionStatus.ACTIVE)
             .sourceId(sourceId)
             .destinationId(destinationId)
-            .syncMode(syncMode)
             .syncSchema(schema)
             .schedule(schedule)
             .name(name));
