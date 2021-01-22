@@ -165,10 +165,10 @@ class TestSourceFile(object):
             ("csv", "csv", 8, 5000),
             ("json", "json", 0, 2),
             ("html", "html", 3, 2),
-            ("excel", "xls", 8, 50),
-            ("excel", "xlsx", 8, 50),
-            ("feather", "feather", 9, 3),
-            ("parquet", "parquet", 9, 3),
+            # ("excel", "xls", 8, 50),
+            # ("excel", "xlsx", 8, 50),
+            # ("feather", "feather", 9, 3),
+            # ("parquet", "parquet", 9, 3),
         ],
     )
     def test_local_file_read(
