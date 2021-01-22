@@ -41,7 +41,7 @@
 - sourceDefinitionId: 9e0556f4-69df-4522-a3fb-03264d36b348
   name: Marketo
   dockerRepository: airbyte/source-marketo-singer
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.5
   documentationUrl: https://hub.docker.com/r/airbyte/source-marketo-singer
 - sourceDefinitionId: 71607ba1-c0ac-4799-8049-7f4b90dd50f7
   name: Google Sheets
