@@ -128,7 +128,10 @@ public class ArchiveHandler {
         FileUtils.deleteDirectory(tempFolder.toFile());
         FileUtils.deleteQuietly(archive);
       }
-      // report that the previous customer id now superseded by the imported one.
+
+      // identify this instance as the new customer id.
+      TrackingClientSingleton.get().identify();
+      // report that the previous customer id is now superseded by the imported one.
       previousCustomerIdOptional.ifPresent(previousCustomerId -> TrackingClientSingleton.get().alias(previousCustomerId.toString()));
     } catch (IOException | JsonValidationException | ConfigNotFoundException | RuntimeException e) {
       result = new ImportRead().status(StatusEnum.FAILED).reason(e.getMessage());
