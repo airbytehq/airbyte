@@ -129,17 +129,6 @@ resource "aws_security_group" "airbyte-alb-sg" {
   }
 }
 
-resource "aws_lb" "airbyte-alb" {
-  enable_deletion_protection = true
-
-  name               = "${var.name}-airbyte-alb"
-
-  internal           = false
-  load_balancer_type = "application"
-  security_groups    = [aws_security_group.airbyte-alb-sg.id]
-  subnets = var.subnets
-}
-
 resource "aws_lb_target_group" "airbyte-webapp" {
   name     = "${var.name}-airbyte-webapp-tg"
   port     = 8000
@@ -174,6 +163,19 @@ resource "aws_lb_target_group_attachment" "airbyte-api" {
   port             = 8001
 }
 
+# READ ONLY
+
+resource "aws_lb" "airbyte-alb" {
+  enable_deletion_protection = true
+
+  name               = "${var.name}-airbyte-alb"
+
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.airbyte-alb-sg.id]
+  subnets = var.subnets
+}
+
 resource "aws_lb_listener" "airbyte-app" {
   load_balancer_arn = aws_lb.airbyte-alb.arn
   port              = "443"
@@ -187,7 +189,7 @@ resource "aws_lb_listener" "airbyte-app" {
   }
 }
 
-resource "aws_lb_listener_rule" "api" {
+resource "aws_lb_listener_rule" "allow-read-api" {
   listener_arn = aws_lb_listener.airbyte-app.arn
   priority     = 99
 
@@ -208,7 +210,7 @@ resource "aws_lb_listener_rule" "api" {
   }
 }
 
-resource "aws_lb_listener_rule" "roapi" {
+resource "aws_lb_listener_rule" "read-only-api" {
   listener_arn = aws_lb_listener.airbyte-app.arn
   priority     = 100
 
@@ -225,6 +227,50 @@ resource "aws_lb_listener_rule" "roapi" {
   condition {
     path_pattern {
       values = ["/api/v1/*"]
+    }
+  }
+}
+
+# ADMIN
+
+resource "aws_lb" "airbyte-admin-alb" {
+  enable_deletion_protection = true
+
+  name               = "${var.name}-airbyte-admin-alb"
+
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.airbyte-alb-sg.id]
+  subnets = var.subnets
+}
+
+resource "aws_lb_listener" "airbyte-admin-app" {
+  load_balancer_arn = aws_lb.airbyte-admin-alb.arn
+  port              = "443"
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-2016-08"
+  certificate_arn   = var.certificate
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.airbyte-webapp.arn
+  }
+}
+
+resource "aws_lb_listener_rule" "allow-all-api" {
+  listener_arn = aws_lb_listener.airbyte-admin-app.arn
+  priority     = 101
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.airbyte-api.arn
+  }
+
+  condition {
+    path_pattern {
+      values = [
+        "/api/v1/*",
+      ]
     }
   }
 }
