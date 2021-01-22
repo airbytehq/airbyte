@@ -7,13 +7,28 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
-            "Firstname": {
+            "0": {
+              "type": "number"
+            },
+            "First Name": {
               "type": "string"
             },
-            "Lastname": {
+            "Last Name": {
+              "type": "string"
+            },
+            "Gender": {
+              "type": "string"
+            },
+            "Country": {
               "type": "string"
             },
             "Age": {
+              "type": "number"
+            },
+            "Date": {
+              "type": "string"
+            },
+            "Id": {
               "type": "number"
             }
           }

@@ -7,11 +7,11 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
-            "0": {
-              "type": "string"
+            "foo": {
+              "type": "number"
             },
-            "1": {
-              "type": "string"
+            "bar": {
+              "type": "number"
             }
           }
         }
