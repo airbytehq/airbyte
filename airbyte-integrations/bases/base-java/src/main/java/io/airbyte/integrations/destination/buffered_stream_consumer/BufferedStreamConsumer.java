@@ -115,11 +115,17 @@ public class BufferedStreamConsumer extends FailureTrackingConsumer<AirbyteMessa
     Preconditions.checkState(!hasStarted, "Consumer has already been started.");
     hasStarted = true;
 
+    LOGGER.info("{} started.", BufferedStreamConsumer.class);
+
+    LOGGER.info("Buffer creation started for {} streams.", streamNames.size());
     final Path queueRoot = Files.createTempDirectory("queues");
     for (String streamName : streamNames) {
+      LOGGER.info("Buffer creation for stream {}.", streamName);
       final BigQueue writeBuffer = new BigQueue(queueRoot.resolve(streamName), streamName);
       writeBuffers.put(streamName, writeBuffer);
     }
+    LOGGER.info("Buffer creation completed.");
+
     onStart.call();
 
     writerPool.scheduleWithFixedDelay(
