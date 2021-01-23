@@ -1,3 +1,7 @@
+#
+# Define all the variables that you might want to override
+#
+
 variable "name" {
   type = string
   default = "demo"
@@ -22,6 +26,11 @@ variable "subnets" {
     "subnet-64f0e638",
     "subnet-e9f33ce7"
   ]
+}
+
+variable "instance-size" {
+  type = string
+  default = "t3.medium"
 }
 
 variable "key-name" {
@@ -52,7 +61,7 @@ data "aws_vpc" "vpc" {
   id = var.vpc
 }
 
-data "aws_security_group" "default" {
+data "aws_security_group" "default-sg" {
   id = var.default-sg
 }
 
@@ -71,6 +80,7 @@ data "aws_ami" "amazon-linux-2" {
   }
 }
 
+# Ensure we can ssh to the airbyte instance
 resource "aws_security_group" "airbyte-ssh-sg" {
   name        = "${var.name}-airbyte-ssh-sg"
   description = "Allow ssh traffic"
@@ -85,11 +95,11 @@ resource "aws_security_group" "airbyte-ssh-sg" {
 }
 
 resource "aws_instance" "airbyte-instance" {
-  instance_type = "t3.medium"
+  instance_type = var.instance-size
   ami           = data.aws_ami.amazon-linux-2.id
 
   security_groups = [
-    data.aws_security_group.default.name,
+    data.aws_security_group.default-sg.name,
     aws_security_group.airbyte-ssh-sg.name
   ]
 
@@ -115,10 +125,17 @@ resource "aws_security_group" "airbyte-alb-sg" {
   }
 }
 
-resource "aws_lb_target_group" "airbyte-webapp" {
-  count = 2
+locals {
+  lb-types = toset([
+    "read-only",
+    "admin"
+  ])
+}
 
-  name     = "${var.name}-${count.index}-airbyte-webapp-tg"
+resource "aws_lb_target_group" "airbyte-webapp" {
+  for_each = local.lb-types
+
+  name     = "${var.name}-${each.key}-airbyte-webapp-tg"
   port     = 8000
   protocol = "HTTP"
   vpc_id = data.aws_vpc.vpc.id
@@ -129,17 +146,17 @@ resource "aws_lb_target_group" "airbyte-webapp" {
 }
 
 resource "aws_lb_target_group_attachment" "airbyte-webapp" {
-  count = 2
+  for_each = local.lb-types
 
-  target_group_arn = aws_lb_target_group.airbyte-webapp[count.index].arn
+  target_group_arn = aws_lb_target_group.airbyte-webapp[each.key].arn
   target_id        = aws_instance.airbyte-instance.id
   port             = 8000
 }
 
 resource "aws_lb_target_group" "airbyte-api" {
-  count = 2
+  for_each = local.lb-types
 
-  name     = "${var.name}-${count.index}-airbyte-api-tg"
+  name     = "${var.name}-${each.key}-airbyte-api-tg"
   port     = 8001
   protocol = "HTTP"
   vpc_id = data.aws_vpc.vpc.id
@@ -150,9 +167,9 @@ resource "aws_lb_target_group" "airbyte-api" {
 }
 
 resource "aws_lb_target_group_attachment" "airbyte-api" {
-  count = 2
+  for_each = local.lb-types
 
-  target_group_arn = aws_lb_target_group.airbyte-api[count.index].arn
+  target_group_arn = aws_lb_target_group.airbyte-api[each.key].arn
   target_id        = aws_instance.airbyte-instance.id
   port             = 8001
 }
@@ -167,12 +184,13 @@ resource "aws_lb" "airbyte-alb" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [
+    data.aws_security_group.default-sg.id,
     aws_security_group.airbyte-alb-sg.id
   ]
   subnets = var.subnets
 }
 
-resource "aws_lb_listener" "airbyte-alb" {
+resource "aws_lb_listener" "airbyte-alb-listener" {
   load_balancer_arn = aws_lb.airbyte-alb.arn
   port              = "443"
   protocol          = "HTTPS"
@@ -181,17 +199,17 @@ resource "aws_lb_listener" "airbyte-alb" {
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.airbyte-webapp[0].arn
+    target_group_arn = aws_lb_target_group.airbyte-webapp["read-only"].arn
   }
 }
 
 resource "aws_lb_listener_rule" "allow-read-api" {
-  listener_arn = aws_lb_listener.airbyte-alb.arn
+  listener_arn = aws_lb_listener.airbyte-alb-listener.arn
   priority     = 99
 
   action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.airbyte-api[0].arn
+    target_group_arn = aws_lb_target_group.airbyte-api["read-only"].arn
   }
 
   condition {
@@ -207,7 +225,7 @@ resource "aws_lb_listener_rule" "allow-read-api" {
 }
 
 resource "aws_lb_listener_rule" "deny-all-api" {
-  listener_arn = aws_lb_listener.airbyte-alb.arn
+  listener_arn = aws_lb_listener.airbyte-alb-listener.arn
   priority     = 100
 
   action {
@@ -234,32 +252,32 @@ resource "aws_lb" "airbyte-admin-alb" {
 
   name               = "${var.name}-airbyte-admin-alb"
 
-  # lets make sure we are the only one who can modify
+  # lets make sure the admin version can only be accessed internally
   internal           = true
 
   load_balancer_type = "application"
-  security_groups    = [data.aws_security_group.default.id]
+  security_groups    = [data.aws_security_group.default-sg.id]
   subnets = var.subnets
 }
 
-resource "aws_lb_listener" "airbyte-admin-alb" {
+resource "aws_lb_listener" "airbyte-admin-alb-listener" {
   load_balancer_arn = aws_lb.airbyte-admin-alb.arn
   port              = "80"
   protocol          = "HTTP"
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.airbyte-webapp[1].arn
+    target_group_arn = aws_lb_target_group.airbyte-webapp["admin"].arn
   }
 }
 
 resource "aws_lb_listener_rule" "allow-all-api" {
-  listener_arn = aws_lb_listener.airbyte-admin-alb.arn
+  listener_arn = aws_lb_listener.airbyte-admin-alb-listener.arn
   priority     = 101
 
   action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.airbyte-api[1].arn
+    target_group_arn = aws_lb_target_group.airbyte-api["admin"].arn
   }
 
   condition {
