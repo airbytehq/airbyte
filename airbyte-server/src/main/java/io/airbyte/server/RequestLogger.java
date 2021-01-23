@@ -93,7 +93,7 @@ public class RequestLogger implements ContainerRequestFilter, ContainerResponseF
     int status = responseContext.getStatus();
 
     StringBuilder logBuilder = new StringBuilder()
-        .append("req ")
+        .append("REQ ")
         .append(remoteAddr)
         .append(" ")
         .append(method)
@@ -102,7 +102,7 @@ public class RequestLogger implements ContainerRequestFilter, ContainerResponseF
         .append(" ")
         .append(url);
 
-    if (method.equals("POST") && requestBody != null) {
+    if (method.equals("POST") && requestBody != null && !requestBody.equals("")) {
       logBuilder
           .append(" - ")
           .append(redactSensitiveInfo(requestBody));
