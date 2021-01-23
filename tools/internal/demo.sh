@@ -43,7 +43,6 @@ main () {
   local cmd=$1; shift || error "Missing command\n\n$USAGE"
 
   cmd_"$cmd"
-
 }
 
 main "$@"
