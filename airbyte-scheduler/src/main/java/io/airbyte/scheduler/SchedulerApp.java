@@ -85,7 +85,7 @@ public class SchedulerApp {
     this.configRepository = configRepository;
   }
 
-  public void start() {
+  public void start() throws IOException {
     final ExecutorService workerThreadPool = Executors.newFixedThreadPool(MAX_WORKERS, THREAD_FACTORY);
     final ScheduledExecutorService scheduledPool = Executors.newSingleThreadScheduledExecutor();
     final WorkerRunFactory workerRunFactory = new WorkerRunFactory(workspaceRoot, pbf);
@@ -93,6 +93,10 @@ public class SchedulerApp {
     final JobRetrier jobRetrier = new JobRetrier(jobPersistence, Instant::now);
     final JobScheduler jobScheduler = new JobScheduler(jobPersistence, configRepository);
     final JobSubmitter jobSubmitter = new JobSubmitter(workerThreadPool, jobPersistence, configRepository, workerRunFactory);
+
+    // We cancel jobs that where running before the restart. They are not being monitored by the worker
+    // anymore.
+    cleanupZombies(jobPersistence);
 
     scheduledPool.scheduleWithFixedDelay(
         () -> {
@@ -105,6 +109,12 @@ public class SchedulerApp {
         TimeUnit.MILLISECONDS);
 
     Runtime.getRuntime().addShutdownHook(new GracefulShutdownHandler(Duration.ofSeconds(GRACEFUL_SHUTDOWN_SECONDS), workerThreadPool, scheduledPool));
+  }
+
+  private void cleanupZombies(JobPersistence jobPersistence) throws IOException {
+    for (Job zombieJob : jobPersistence.listJobsWithStatus(JobStatus.RUNNING)) {
+      jobPersistence.cancelJob(zombieJob.getId());
+    }
   }
 
   private static ProcessBuilderFactory getProcessBuilderFactory(Configs configs) {
