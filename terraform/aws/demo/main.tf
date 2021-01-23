@@ -33,6 +33,5 @@ module "admin-lb" {
   vpc = var.vpc
   subnets = var.subnets
   default-sg = var.default-sg
-  certificate = var.certificate
   instance-id = module.airbyte-instance.instance-id
 }
