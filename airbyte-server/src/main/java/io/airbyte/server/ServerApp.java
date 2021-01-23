@@ -46,6 +46,7 @@ import io.airbyte.server.errors.InvalidInputExceptionMapper;
 import io.airbyte.server.errors.InvalidJsonExceptionMapper;
 import io.airbyte.server.errors.InvalidJsonInputExceptionMapper;
 import io.airbyte.server.errors.KnownExceptionMapper;
+import io.airbyte.server.errors.NotFoundExceptionMapper;
 import io.airbyte.server.errors.UncaughtExceptionMapper;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -53,15 +54,11 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-
-import org.apache.cxf.common.logging.Slf4jLogger;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.jackson.internal.jackson.jaxrs.json.JacksonJaxbJsonProvider;
-import org.glassfish.jersey.logging.LoggingFeature;
 import org.glassfish.jersey.process.internal.RequestScoped;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
@@ -95,21 +92,23 @@ public class ServerApp {
 
     ServletContextHandler handler = new ServletContextHandler();
 
+    Map<String, String> mdc = MDC.getCopyOfContextMap();
+
     ConfigurationApiFactory.setAirbyteVersion(airbyteVersion);
     ConfigurationApiFactory.setSchedulerJobClient(new SpecCachingSchedulerJobClient(jobPersistence, new DefaultJobCreator(jobPersistence)));
     ConfigurationApiFactory.setConfigRepository(configRepository);
     ConfigurationApiFactory.setJobPersistence(jobPersistence);
     ConfigurationApiFactory.setConfigs(configs);
     ConfigurationApiFactory.setArchiveTtlManager(new FileTtlManager(10, TimeUnit.MINUTES, 10));
-
-    Map<String, String> mdc = MDC.getCopyOfContextMap();
+    ConfigurationApiFactory.setMdc(mdc);
 
     ResourceConfig rc =
         new ResourceConfig()
-            // todo (cgardens) - the CORs settings are wide open. will need to revisit when we add
-            // auth.
+            // todo (cgardens) - the CORs settings are wide open. will need to revisit when we add auth.
             // cors
             .register(new CorsFilter())
+            // request logging
+            .register(new RequestLogger(mdc))
             // api
             .register(ConfigurationApi.class)
             .register(
@@ -129,19 +128,10 @@ public class ServerApp {
             .register(InvalidJsonInputExceptionMapper.class)
             .register(KnownExceptionMapper.class)
             .register(UncaughtExceptionMapper.class)
+            .register(NotFoundExceptionMapper.class)
             // needed so that the custom json exception mappers don't get overridden
             // https://stackoverflow.com/questions/35669774/jersey-custom-exception-mapper-for-invalid-json-string
-            .register(JacksonJaxbJsonProvider.class)
-            // make sure logs in servlets have the right MDC values
-            .register(new MdcFilter(mdc))
-            // request logger
-            // https://www.javaguides.net/2018/06/jersey-rest-logging-using-loggingfeature.html
-            .register(
-                new LoggingFeature(
-                    new Slf4jLogger(LoggingFeature.DEFAULT_LOGGER_NAME, null),
-                    Level.INFO,
-                    LoggingFeature.Verbosity.PAYLOAD_ANY,
-                    10000));
+            .register(JacksonJaxbJsonProvider.class);
 
     ServletHolder configServlet = new ServletHolder(new ServletContainer(rc));
 

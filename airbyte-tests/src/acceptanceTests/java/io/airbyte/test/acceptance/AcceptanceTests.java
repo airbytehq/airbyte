@@ -75,12 +75,10 @@ import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
-
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
-import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.Collections;
@@ -140,8 +138,8 @@ public class AcceptanceTests {
   @BeforeAll
   public static void init() {
     sourcePsql = new PostgreSQLContainer("postgres:13-alpine")
-            .withUsername(SOURCE_USERNAME)
-            .withPassword(SOURCE_PASSWORD);
+        .withUsername(SOURCE_USERNAME)
+        .withPassword(SOURCE_PASSWORD);
     sourcePsql.start();
     destinationPsql = new PostgreSQLContainer("postgres:13-alpine");
     destinationPsql.start();
@@ -252,26 +250,6 @@ public class AcceptanceTests {
     assertEquals(defaultWorkspaceId, response.getWorkspaceId());
     assertEquals(postgresSourceDefinitionId, response.getSourceDefinitionId());
     assertEquals(expectedConfig, response.getConnectionConfiguration());
-
-    // check that the source password is not present in the logs
-    final List<String> serverLogLines = Files.readLines(
-            apiClient.getLogsApi().getLogs(new LogsRequestBody().logType(LogType.SCHEDULER)), Charset.defaultCharset() // todo: server
-    );
-
-    assertTrue(serverLogLines.size() > 0);
-
-    boolean hasSourceUsername = false;
-
-    for (String line : serverLogLines) {
-      assertFalse(line.contains(SOURCE_PASSWORD));
-
-      if(line.contains(SOURCE_USERNAME)) {
-        hasSourceUsername = true;
-      }
-    }
-
-    // ensures the request log containing the username is present
-    assertTrue(hasSourceUsername);
   }
 
   @Test
@@ -432,6 +410,28 @@ public class AcceptanceTests {
     // Then it will wait the sync interval.
     Thread.sleep(Duration.of(30, SECONDS).toMillis());
     assertSourceAndTargetDbInSync(sourcePsql);
+  }
+
+  @Test
+  @Order(10)
+  public void testRedactionOfSensitiveRequestBodies() throws Exception {
+    // check that the source password is not present in the logs
+    final List<String> serverLogLines = Files.readLines(
+        apiClient.getLogsApi().getLogs(new LogsRequestBody().logType(LogType.SERVER)), Charset.defaultCharset());
+
+    assertTrue(serverLogLines.size() > 0);
+
+    boolean hasRedacted = false;
+
+    for (String line : serverLogLines) {
+      assertFalse(line.contains(SOURCE_PASSWORD));
+
+      if (line.contains("REDACTED")) {
+        hasRedacted = true;
+      }
+    }
+
+    assertTrue(hasRedacted);
   }
 
   private SourceSchema discoverSourceSchema(UUID sourceId) throws ApiException {

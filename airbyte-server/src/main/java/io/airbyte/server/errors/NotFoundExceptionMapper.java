@@ -22,20 +22,27 @@
  * SOFTWARE.
  */
 
-package io.airbyte.server.logging;
+package io.airbyte.server.errors;
 
-import javax.ws.rs.core.Feature;
-import javax.ws.rs.core.FeatureContext;
+import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.json.Jsons;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.ExceptionMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class CustomLoggingFeature implements Feature {
+public class NotFoundExceptionMapper implements ExceptionMapper<NotFoundException> {
 
-  public CustomLoggingFeature() {
-
-  }
+  private static final Logger LOGGER = LoggerFactory.getLogger(NotFoundExceptionMapper.class);
 
   @Override
-  public boolean configure(FeatureContext context) {
-    return false;
+  public Response toResponse(NotFoundException e) {
+    LOGGER.debug("Not found exception", e);
+    return Response.status(404)
+        .entity(Jsons.serialize(ImmutableMap.of("message", e.getMessage())))
+        .type("application/json")
+        .build();
   }
 
 }
