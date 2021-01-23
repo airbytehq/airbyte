@@ -46,7 +46,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * The job cleaner is responsible for limiting the retention of files in the workspace root. It does
- * this two ways. 1. It cleans out all files and directories that are older than the maximum
+ * this in two ways. 1. It cleans out all files and directories that are older than the maximum
  * retention date. 2. It cleans out the oldest files before the minimum retention date until it is
  * within the max workspace size.
  */
