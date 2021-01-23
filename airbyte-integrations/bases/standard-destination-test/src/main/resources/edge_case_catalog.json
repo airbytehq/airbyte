@@ -86,6 +86,16 @@
           }
         }
       }
+    },
+    {
+      "name": "ProperCase",
+      "json_schema": {
+        "properties": {
+          "ProperCase": {
+            "type": "boolean"
+          }
+        }
+      }
     }
   ]
 }
