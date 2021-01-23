@@ -26,8 +26,10 @@ package io.airbyte.server;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.api.client.model.DestinationCreate;
+import io.airbyte.api.client.model.DestinationRecreate;
 import io.airbyte.api.client.model.DestinationUpdate;
 import io.airbyte.api.client.model.SourceCreate;
+import io.airbyte.api.client.model.SourceRecreate;
 import io.airbyte.api.client.model.SourceUpdate;
 import io.airbyte.commons.json.Jsons;
 import java.io.ByteArrayInputStream;
@@ -115,9 +117,11 @@ public class RequestLogger implements ContainerRequestFilter, ContainerResponseF
 
   private static final Set<Class<?>> SENSITIVE_INFO_REQUESTS = Set.of(
       SourceCreate.class,
-      DestinationCreate.class,
       SourceUpdate.class,
-      DestinationUpdate.class);
+      SourceRecreate.class,
+      DestinationCreate.class,
+      DestinationUpdate.class,
+      DestinationRecreate.class);
 
   private static String redactSensitiveInfo(String requestBody) {
     Optional<JsonNode> jsonNode = Jsons.tryDeserialize(requestBody);
