@@ -39,7 +39,6 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
   private static ConfigRepository configRepository;
   private static JobPersistence jobPersistence;
   private static CachingSchedulerJobClient schedulerJobClient;
-  private static String airbyteVersion;
   private static Configs configs;
   private static FileTtlManager archiveTtlManager;
   private static Map<String, String> mdc;
@@ -54,10 +53,6 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
 
   public static void setSchedulerJobClient(final CachingSchedulerJobClient schedulerJobClient) {
     ConfigurationApiFactory.schedulerJobClient = schedulerJobClient;
-  }
-
-  public static void setAirbyteVersion(final String airbyteVersion) {
-    ConfigurationApiFactory.airbyteVersion = airbyteVersion;
   }
 
   public static void setConfigs(Configs configs) {
@@ -77,7 +72,6 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
     MDC.setContextMap(mdc);
 
     return new ConfigurationApi(
-        ConfigurationApiFactory.airbyteVersion,
         ConfigurationApiFactory.configRepository,
         ConfigurationApiFactory.jobPersistence,
         ConfigurationApiFactory.schedulerJobClient,

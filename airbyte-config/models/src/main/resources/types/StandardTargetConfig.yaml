@@ -7,7 +7,6 @@ type: object
 additionalProperties: false
 required:
   - destinationConnectionConfiguration
-  - syncMode
   - catalog
   - connectionId
 properties:
@@ -15,8 +14,6 @@ properties:
     description: Integration specific blob. Must be a valid JSON string.
     type: object
     existingJavaType: com.fasterxml.jackson.databind.JsonNode
-  syncMode:
-    "$ref": SyncMode.yaml
   catalog:
     type: object
     existingJavaType: io.airbyte.protocol.models.ConfiguredAirbyteCatalog

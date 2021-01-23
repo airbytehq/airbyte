@@ -30,6 +30,7 @@ import io.airbyte.commons.io.Archives;
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.db.AirbyteVersion;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.converters.ConfigFileArchiver;
 import io.airbyte.server.converters.DatabaseArchiver;
@@ -111,27 +112,29 @@ public class ArchiveHandler {
       try {
         Archives.extractArchive(archive.toPath(), tempFolder);
         checkImport(tempFolder);
-        databaseArchiver.importDatabaseFromArchive(tempFolder);
+        databaseArchiver.importDatabaseFromArchive(tempFolder, version);
         configFileArchiver.importConfigsFromArchive(tempFolder, false);
         result = new ImportRead().status(StatusEnum.SUCCEEDED);
       } finally {
         FileUtils.deleteDirectory(tempFolder.toFile());
         FileUtils.deleteQuietly(archive);
       }
-    } catch (IOException | JsonValidationException | ConfigNotFoundException e) {
-      LOGGER.error("Import Data failed.");
-      throw new RuntimeException(e);
+    } catch (IOException | JsonValidationException | ConfigNotFoundException | RuntimeException e) {
+      result = new ImportRead().status(StatusEnum.FAILED).reason(e.getMessage());
     }
     return result;
   }
 
   private void checkImport(Path tempFolder) throws IOException, JsonValidationException, ConfigNotFoundException {
     final Path versionFile = tempFolder.resolve(VERSION_FILE_NAME);
-    final String importVersion = Files.readString(versionFile, Charset.defaultCharset());
+    final String importVersion = Files.readString(versionFile, Charset.defaultCharset()).replace("\n", "").strip();
     LOGGER.info(String.format("Checking Airbyte Version to import %s", importVersion));
-    if (!importVersion.equals(version)) {
-      throw new IOException(String.format("Version in VERSION file (%s) does not match current Airbyte version (%s)", importVersion, version));
+    if (AirbyteVersion.isInvalid(version, importVersion)) {
+      throw new IOException(String.format("Imported VERSION (%s) is incompatible with current Airbyte version (%s).\n" +
+          "Please Upgrade your Airbyte Archive, see more at https://docs.airbyte.io/tutorials/tutorials/upgrading-airbyte\n",
+          importVersion, version));
     }
+    databaseArchiver.checkVersion(version);
     // Check if all files to import are valid and with expected airbyte version
     configFileArchiver.importConfigsFromArchive(tempFolder, true);
   }
