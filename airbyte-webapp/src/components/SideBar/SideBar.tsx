@@ -2,6 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLifeRing, faBook, faCog } from "@fortawesome/free-solid-svg-icons";
+import { faSlack } from "@fortawesome/free-brands-svg-icons";
 import { FormattedMessage } from "react-intl";
 import { NavLink } from "react-router-dom";
 
@@ -129,6 +130,15 @@ const SideBar: React.FC = () => {
         </Menu>
       </div>
       <Menu>
+        <li>
+          <MenuLinkItem href={config.ui.slackLink} target="_blank">
+            {/*@ts-ignore*/}
+            <HelpIcon icon={faSlack} />
+            <Text>
+              <FormattedMessage id="sidebar.slack" />
+            </Text>
+          </MenuLinkItem>
+        </li>
         <li>
           <MenuLinkItem href={config.ui.helpLink} target="_blank">
             <HelpIcon icon={faLifeRing} />
