@@ -16,7 +16,7 @@ type IProps = {
 const SourceFormComponent: React.FC<IProps> = ({ afterSubmit }) => {
   const { push, location } = useRouter();
   const [successRequest, setSuccessRequest] = useState(false);
-  const [errorStatusRequest, setErrorStatusRequest] = useState(undefined);
+  const [errorStatusRequest, setErrorStatusRequest] = useState(null);
 
   const { sourceDefinitions } = useResource(
     SourceDefinitionResource.listShape(),
@@ -44,7 +44,7 @@ const SourceFormComponent: React.FC<IProps> = ({ afterSubmit }) => {
     const connector = sourceDefinitions.find(
       item => item.sourceDefinitionId === values.serviceType
     );
-    setErrorStatusRequest(undefined);
+    setErrorStatusRequest(null);
     try {
       const result = await createSource({ values, sourceConnector: connector });
       setSuccessRequest(true);

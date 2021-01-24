@@ -16,7 +16,7 @@ type IProps = {
 const CreateDestinationPage: React.FC<IProps> = ({ afterSubmit }) => {
   const { push, location } = useRouter();
   const [successRequest, setSuccessRequest] = useState(false);
-  const [errorStatusRequest, setErrorStatusRequest] = useState(undefined);
+  const [errorStatusRequest, setErrorStatusRequest] = useState(null);
 
   const { destinationDefinitions } = useResource(
     DestinationDefinitionResource.listShape(),
@@ -44,7 +44,7 @@ const CreateDestinationPage: React.FC<IProps> = ({ afterSubmit }) => {
     const connector = destinationDefinitions.find(
       item => item.destinationDefinitionId === values.serviceType
     );
-    setErrorStatusRequest(undefined);
+    setErrorStatusRequest(null);
     try {
       const result = await createDestination({
         values,

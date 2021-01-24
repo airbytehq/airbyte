@@ -26,7 +26,7 @@ type IProps = {
     destinationDefinitionId?: string;
     connectionConfiguration?: any;
   }) => void;
-  error?: any;
+  error?: null | { message?: string; status?: number };
   currentSourceDefinitionId: string;
   jobInfo?: JobInfo;
   afterSelectConnector?: () => void;
@@ -80,7 +80,7 @@ const DestinationStep: React.FC<IProps> = ({
     });
   };
 
-  const errorMessage = error?.message || createFormErrorMessage(error?.status);
+  const errorMessage = error ? createFormErrorMessage(error) : "";
 
   return (
     <>

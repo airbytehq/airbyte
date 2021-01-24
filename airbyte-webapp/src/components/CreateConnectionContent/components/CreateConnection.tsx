@@ -30,7 +30,7 @@ const CreateConnection: React.FC<IProps> = ({
     });
   };
 
-  const errorMessage = createFormErrorMessage(errorStatus);
+  const errorMessage = createFormErrorMessage({ status: errorStatus });
 
   return (
     <FrequencyForm
