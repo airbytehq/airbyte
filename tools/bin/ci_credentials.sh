@@ -27,7 +27,6 @@ write_standard_creds source-drift "$DRIFT_INTEGRATION_TEST_CREDS"
 write_standard_creds source-file "$AWS_S3_INTEGRATION_TEST_CREDS" "aws.json"
 write_standard_creds source-freshdesk "$FRESHDESK_TEST_CREDS"
 write_standard_creds source-facebook-marketing "$FACEBOOK_MARKETING_TEST_INTEGRATION_CREDS"
-write_standard_creds source-facebook-marketing-api-singer "$FACEBOOK_MARKETING_API_TEST_INTEGRATION_CREDS"
 # pull sample config. add in the access key. write to secrets.
 GH_CREDS=$(jq --arg v "$GH_INTEGRATION_TEST_CREDS" '.access_token = $v' airbyte-integrations/connectors/source-github-singer/config.sample.json)
 write_standard_creds source-github-singer "$GH_CREDS"

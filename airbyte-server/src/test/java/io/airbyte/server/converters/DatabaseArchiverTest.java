@@ -97,7 +97,7 @@ public class DatabaseArchiverTest {
     });
     final Path tempFolder = Files.createTempDirectory(TEMP_PREFIX);
     databaseArchiver.exportDatabaseToArchive(tempFolder);
-    databaseArchiver.importDatabaseFromArchive(tempFolder);
+    databaseArchiver.importDatabaseFromArchive(tempFolder, "test");
     // TODO check database state before/after
   }
 
@@ -106,7 +106,7 @@ public class DatabaseArchiverTest {
     final Path tempFolder = Files.createTempDirectory(TEMP_PREFIX);
     databaseArchiver.exportDatabaseToArchive(tempFolder);
     Files.delete(DatabaseArchiver.buildTablePath(tempFolder.toRealPath(), DatabaseSchema.ATTEMPTS.name()));
-    assertThrows(RuntimeException.class, () -> databaseArchiver.importDatabaseFromArchive(tempFolder));
+    assertThrows(RuntimeException.class, () -> databaseArchiver.importDatabaseFromArchive(tempFolder, "test"));
   }
 
 }

@@ -35,13 +35,13 @@ export type SyncSchema = {
 export interface Schema {
   id: string;
   schema: SyncSchema;
-  job_info?: JobInfo;
+  jobInfo?: JobInfo;
 }
 
 export default class SchemaResource extends BaseResource implements Schema {
   readonly schema: SyncSchema = { streams: [] };
   readonly id: string = "";
-  readonly job_info: JobInfo | undefined = undefined;
+  readonly jobInfo: JobInfo | undefined = undefined;
 
   pk() {
     return this.id?.toString();
@@ -63,17 +63,17 @@ export default class SchemaResource extends BaseResource implements Schema {
           params
         );
 
-        if (result.job_info.job.status === Status.FAILED || !result.schema) {
+        if (result.jobInfo.job.status === Status.FAILED || !result.schema) {
           const e = new NetworkError(result);
           // Generate error with failed status and received logs
           e.status = 400;
-          e.response = result.job_info;
+          e.response = result.jobInfo;
           throw e;
         }
 
         return {
           schema: result.schema,
-          job_info: result.job_info,
+          jobInfo: result.jobInfo,
           id: params.sourceId
         };
       },

@@ -1,5 +1,5 @@
 import { FetchOptions, Resource } from "rest-hooks";
-import BaseResource from "./BaseResource";
+import BaseResource, { NetworkError } from "./BaseResource";
 import { SyncSchema } from "./Schema";
 
 export type ScheduleProperties = {
@@ -28,7 +28,6 @@ export interface Connection {
   name: string;
   sourceId: string;
   destinationId: string;
-  syncMode: string;
   status: string;
   schedule: ScheduleProperties | null;
   syncSchema: SyncSchema;
@@ -44,7 +43,6 @@ export default class ConnectionResource extends BaseResource
   readonly name: string = "";
   readonly sourceId: string = "";
   readonly destinationId: string = "";
-  readonly syncMode: string = "";
   readonly status: string = "";
   readonly schedule: ScheduleProperties | null = null;
   readonly source: SourceInformation | undefined = undefined;
@@ -68,11 +66,11 @@ export default class ConnectionResource extends BaseResource
   static detailShape<T extends typeof Resource>(this: T) {
     return {
       ...super.detailShape(),
-      getFetchKey: (params: { connectionId: string }) =>
-        "POST /web_backend/get" + JSON.stringify(params),
-      fetch: async (
-        params: Readonly<Record<string, string | number>>
-      ): Promise<any> =>
+      getFetchKey: (params: {
+        connectionId: string;
+        withRefreshedCatalog?: boolean;
+      }) => "POST /web_backend/get" + JSON.stringify(params),
+      fetch: async (params: any): Promise<any> =>
         await this.fetch(
           "post",
           `${super.rootUrl()}web_backend/connections/get`,
@@ -85,6 +83,27 @@ export default class ConnectionResource extends BaseResource
   static updateShape<T extends typeof Resource>(this: T) {
     return {
       ...super.partialUpdateShape(),
+      fetch: async (
+        _: Readonly<Record<string, string | number>>,
+        body: any
+      ): Promise<any> => {
+        const result = await this.fetch(
+          "post",
+          `${super.rootUrl()}web_backend/connections/update`,
+          body
+        );
+
+        if (result.status === "failure") {
+          console.log("failure");
+
+          const e = new NetworkError(result);
+          e.status = result.status;
+          e.message = result.message;
+          throw e;
+        }
+
+        return result;
+      },
       schema: this.asSchema()
     };
   }

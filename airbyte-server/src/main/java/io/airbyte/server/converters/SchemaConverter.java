@@ -56,12 +56,12 @@ public class SchemaConverter {
                   .withFields(persistenceFields)
                   .withSupportedSyncModes(apiStream.getSupportedSyncModes()
                       .stream()
-                      .map(e -> Enums.convertTo(e, io.airbyte.config.StandardSync.SyncMode.class))
+                      .map(e -> Enums.convertTo(e, io.airbyte.config.SyncMode.class))
                       .collect(Collectors.toList()))
                   .withSourceDefinedCursor(apiStream.getSourceDefinedCursor())
                   .withDefaultCursorField(apiStream.getDefaultCursorField())
                   // configurable
-                  .withSyncMode(Enums.convertTo(apiStream.getSyncMode(), io.airbyte.config.StandardSync.SyncMode.class))
+                  .withSyncMode(Enums.convertTo(apiStream.getSyncMode(), io.airbyte.config.SyncMode.class))
                   .withCursorField(apiStream.getCursorField())
                   .withSelected(persistenceFields.stream().anyMatch(Field::getSelected));
             })

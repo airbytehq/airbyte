@@ -78,7 +78,7 @@ class AirbyteProtocolConvertersTest {
                   .withName(COLUMN_AGE)
                   .withDataType(DataType.NUMBER)))
           .withSourceDefinedCursor(false)
-          .withSupportedSyncModes(Lists.newArrayList(StandardSync.SyncMode.FULL_REFRESH, StandardSync.SyncMode.INCREMENTAL))
+          .withSupportedSyncModes(Lists.newArrayList(io.airbyte.config.SyncMode.FULL_REFRESH, io.airbyte.config.SyncMode.INCREMENTAL))
           .withDefaultCursorField(Lists.newArrayList(COLUMN_AGE))));
 
   private static final Schema SCHEMA_WITH_UNSELECTED = new Schema()
@@ -93,7 +93,7 @@ class AirbyteProtocolConvertersTest {
                   .withName(COLUMN_AGE)
                   .withDataType(DataType.NUMBER)))
           .withSourceDefinedCursor(false)
-          .withSupportedSyncModes(Lists.newArrayList(StandardSync.SyncMode.FULL_REFRESH, StandardSync.SyncMode.INCREMENTAL))
+          .withSupportedSyncModes(Lists.newArrayList(io.airbyte.config.SyncMode.FULL_REFRESH, io.airbyte.config.SyncMode.INCREMENTAL))
           .withDefaultCursorField(Lists.newArrayList(COLUMN_AGE)),
           new Stream()
               .withName(STREAM_2)
@@ -109,7 +109,7 @@ class AirbyteProtocolConvertersTest {
   void testToConfiguredCatalog() {
     final Schema schema = Jsons.clone(SCHEMA);
     schema.getStreams().get(0).withCursorField(Lists.newArrayList(COLUMN_NAME));
-    schema.getStreams().get(0).withSyncMode(StandardSync.SyncMode.INCREMENTAL);
+    schema.getStreams().get(0).withSyncMode(io.airbyte.config.SyncMode.INCREMENTAL);
     assertEquals(CONFIGURED_CATALOG, AirbyteProtocolConverters.toConfiguredCatalog(schema));
   }
 
@@ -119,7 +119,7 @@ class AirbyteProtocolConvertersTest {
   void testToConfiguredCatalogWithUnselectedStream() {
     final Schema schema = Jsons.clone(SCHEMA_WITH_UNSELECTED);
     schema.getStreams().get(0).withCursorField(Lists.newArrayList(COLUMN_NAME));
-    schema.getStreams().get(0).withSyncMode(StandardSync.SyncMode.INCREMENTAL);
+    schema.getStreams().get(0).withSyncMode(io.airbyte.config.SyncMode.INCREMENTAL);
     assertEquals(CONFIGURED_CATALOG, AirbyteProtocolConverters.toConfiguredCatalog(schema));
   }
 
@@ -175,7 +175,7 @@ class AirbyteProtocolConvertersTest {
   void testStreamWithNoFields() {
     final Schema schema = Jsons.clone(SCHEMA);
     schema.getStreams().get(0).withCursorField(Lists.newArrayList(COLUMN_NAME));
-    schema.getStreams().get(0).withSyncMode(StandardSync.SyncMode.INCREMENTAL);
+    schema.getStreams().get(0).withSyncMode(io.airbyte.config.SyncMode.INCREMENTAL);
     schema.getStreams().get(0).setFields(Lists.newArrayList());
     final ConfiguredAirbyteCatalog actualCatalog = AirbyteProtocolConverters.toConfiguredCatalog(schema);
 
@@ -187,7 +187,7 @@ class AirbyteProtocolConvertersTest {
 
   @Test
   void testEnumConversion() {
-    assertTrue(Enums.isCompatible(io.airbyte.protocol.models.SyncMode.class, io.airbyte.config.StandardSync.SyncMode.class));
+    assertTrue(Enums.isCompatible(io.airbyte.protocol.models.SyncMode.class, io.airbyte.config.SyncMode.class));
   }
 
 }
