@@ -292,7 +292,7 @@ class Client:
 
     @property
     def reader(self) -> reader_class:
-        return self.reader_class(url=self._url, provider=self._provider, reader_options=self._reader_options)
+        return self.reader_class(url=self._url, provider=self._provider)
 
     @property
     def binary_source(self):

@@ -115,8 +115,8 @@ def test__read_from_ssh_providers(ssh_service, provider_config, provider_name, f
 
 
 class TestSourceFile:
-    service_account_file: str = "../secrets/gcs.json"
-    aws_credentials: str = "../secrets/aws.json"
+    service_account_file: str = HERE.parent / "secrets/gcs.json"
+    aws_credentials: str = HERE.parent / "secrets/aws.json"
     cloud_bucket_name: str = "airbytetestbucket"
 
     @pytest.fixture(scope="class")
@@ -169,21 +169,21 @@ class TestSourceFile:
         print(f"\nS3 Bucket {bucket_name} is now deleted")
 
     @pytest.mark.parametrize(
-        "reader_impl, storage_provider, url, columns_nb, config_index",
+        "storage_provider, url, columns_nb, config_index",
         [
             # epidemiology csv
-            ("gcsfs", "HTTPS", "https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv", 10, 0),
-            ("smart_open", "HTTPS", "storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv", 10, 0),
-            ("smart_open", "local", "injected by tests", 10, 0),
+            ("HTTPS", "https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv", 10, 0),
+            ("HTTPS", "storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv", 10, 0),
+            ("local", "injected by tests", 10, 0),
             # landsat compressed csv
-            ("gcsfs", "GCS", "gs://gcp-public-data-landsat/index.csv.gz", 18, 1),
-            ("smart_open", "GCS", "gs://gcp-public-data-landsat/index.csv.gz", 18, 0),
+            ("GCS", "gs://gcp-public-data-landsat/index.csv.gz", 18, 1),
+            ("GCS", "gs://gcp-public-data-landsat/index.csv.gz", 18, 0),
             # GDELT csv
-            ("s3fs", "S3", "s3://gdelt-open-data/events/20190914.export.csv", 58, 2),
-            ("smart_open", "S3", "s3://gdelt-open-data/events/20190914.export.csv", 58, 2),
+            ("S3", "s3://gdelt-open-data/events/20190914.export.csv", 58, 2),
+            ("S3", "s3://gdelt-open-data/events/20190914.export.csv", 58, 2),
         ],
     )
-    def test_public_and_local_data(self, download_gcs_public_data, reader_impl, storage_provider, url, columns_nb, config_index):
+    def test_public_and_local_data(self, download_gcs_public_data, storage_provider, url, columns_nb, config_index):
         config = get_config(config_index)
         config["provider"]["storage"] = storage_provider
         if storage_provider != "local":
@@ -191,25 +191,20 @@ class TestSourceFile:
         else:
             # inject temp file path that was downloaded by the test as URL
             config["url"] = download_gcs_public_data
-        config["provider"]["reader_impl"] = reader_impl
         run_load_dataframes(config, expected_columns=columns_nb)
 
-    @pytest.mark.parametrize("reader_impl", ["gcsfs", "smart_open"])
-    def test_private_gcs_load(self, create_gcs_private_data, reader_impl):
+    def test_private_gcs_load(self, create_gcs_private_data):
         config = get_config(0)
         config["provider"]["storage"] = "GCS"
         config["url"] = create_gcs_private_data
-        config["provider"]["reader_impl"] = reader_impl
         with open(self.service_account_file) as json_file:
             config["provider"]["service_account_json"] = json.dumps(json.load(json_file))
         run_load_dataframes(config)
 
-    @pytest.mark.parametrize("reader_impl", ["s3fs", "smart_open"])
-    def test_private_aws_load(self, create_aws_private_data, reader_impl):
+    def test_private_aws_load(self, create_aws_private_data):
         config = get_config(0)
         config["provider"]["storage"] = "S3"
         config["url"] = create_aws_private_data
-        config["provider"]["reader_impl"] = reader_impl
         with open(self.aws_credentials) as json_file:
             aws_config = json.load(json_file)
         config["provider"]["aws_access_key_id"] = aws_config["aws_access_key_id"]
