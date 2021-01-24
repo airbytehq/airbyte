@@ -13,6 +13,7 @@ const config: {
     docsLink: string;
     workspaceId: string;
     tutorialLink: string;
+    technicalSupport: string;
   };
   segment: { token: string };
   papercups: {
@@ -24,6 +25,7 @@ const config: {
   version?: string;
 } = {
   ui: {
+    technicalSupport: "https://docs.airbyte.io/technical-support",
     helpLink: "https://airbyte.io/community",
     docsLink: "https://docs.airbyte.io",
     tutorialLink:
