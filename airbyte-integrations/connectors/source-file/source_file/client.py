@@ -163,7 +163,7 @@ class URLFile:
         credentials = None
         if service_account_json:
             try:
-                credentials = json.dumps(json.loads(self._provider["service_account_json"]))
+                credentials = json.loads(self._provider["service_account_json"])
             except json.decoder.JSONDecodeError as err:
                 error_msg = f"Failed to parse gcs service account json: {repr(err)}\n{traceback.format_exc()}"
                 logger.error(error_msg)
@@ -171,7 +171,7 @@ class URLFile:
 
         if credentials:
             credentials = service_account.Credentials.from_service_account_info(credentials)
-            client = GCSClient(credentials=credentials, project=credentials.get("project_id"))
+            client = GCSClient(credentials=credentials, project=credentials._project_id)
         else:
             client = GCSClient.create_anonymous_client()
         file_to_close = smart_open.open(self.full_url, transport_params=dict(client=client), mode=mode)
