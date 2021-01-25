@@ -26,6 +26,7 @@ package io.airbyte.scheduler;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import io.airbyte.analytics.TrackingClientSingleton;
@@ -46,7 +47,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
-import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -140,7 +140,7 @@ public class JobSubmitter implements Runnable {
     try {
       // if there is no scope, do not track. this is the case where we are running check for sources /
       // destinations that don't exist.
-      if (Strings.isEmpty(job.getScope())) {
+      if (Strings.isNullOrEmpty(job.getScope())) {
         return;
       }
       final Builder<String, Object> metadataBuilder = generateMetadata(job);
@@ -156,7 +156,7 @@ public class JobSubmitter implements Runnable {
     try {
       // if there is no scope, do not track. this is the case where we are running check for sources /
       // destinations that don't exist.
-      if (Strings.isEmpty(job.getScope())) {
+      if (Strings.isNullOrEmpty(job.getScope())) {
         return;
       }
       final Builder<String, Object> metadataBuilder = generateMetadata(job);

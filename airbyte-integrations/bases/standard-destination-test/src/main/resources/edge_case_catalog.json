@@ -66,6 +66,36 @@
           }
         }
       }
+    },
+    {
+      "name": "reserved_keywords",
+      "json_schema": {
+        "properties": {
+          "order": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "name": "groups",
+      "json_schema": {
+        "properties": {
+          "authorization": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "name": "ProperCase",
+      "json_schema": {
+        "properties": {
+          "ProperCase": {
+            "type": "boolean"
+          }
+        }
+      }
     }
   ]
 }

@@ -24,6 +24,8 @@
 
 package io.airbyte.scheduler.persistence;
 
+import static org.jooq.impl.DSL.field;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -38,6 +40,7 @@ import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.State;
+import io.airbyte.db.AirbyteVersion;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.scheduler.Attempt;
@@ -45,10 +48,13 @@ import io.airbyte.scheduler.AttemptStatus;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.JobStatus;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -57,6 +63,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -71,6 +78,7 @@ import org.jooq.JSONFormat.RecordFormat;
 import org.jooq.Named;
 import org.jooq.Record;
 import org.jooq.Result;
+import org.jooq.Sequence;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.slf4j.Logger;
@@ -102,6 +110,8 @@ public class DefaultJobPersistence implements JobPersistence {
           + "attempts.updated_at AS attempt_updated_at,\n"
           + "attempts.ended_at AS attempt_ended_at\n"
           + "FROM jobs LEFT OUTER JOIN attempts ON jobs.id = attempts.job_id ";
+
+  private static final String AIRBYTE_METADATA_TABLE = "airbyte_metadata";
 
   private final ExceptionWrappingDatabase database;
   private final Supplier<Instant> timeSupplier;
@@ -419,6 +429,28 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
+  public Optional<String> getVersion() throws IOException {
+    final Result<Record> result = database.query(ctx -> ctx.select()
+        .from(AIRBYTE_METADATA_TABLE)
+        .where(field("key").eq(AirbyteVersion.AIRBYTE_VERSION_KEY_NAME))
+        .fetch());
+    return result.stream().findFirst().map(r -> r.getValue("value", String.class));
+  }
+
+  @Override
+  public void setVersion(String airbyteVersion) throws IOException {
+    database.query(ctx -> ctx.execute(String.format(
+        "INSERT INTO %s VALUES('%s', '%s'), ('%s_init_db', '%s');",
+        AIRBYTE_METADATA_TABLE,
+        AirbyteVersion.AIRBYTE_VERSION_KEY_NAME, airbyteVersion,
+        current_timestamp(), airbyteVersion)));
+  }
+
+  private static String current_timestamp() {
+    return ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+  }
+
+  @Override
   public Map<DatabaseSchema, Stream<JsonNode>> exportDatabase() throws IOException {
     return exportDatabase(DEFAULT_SCHEMA);
   }
@@ -464,11 +496,14 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public void importDatabase(final Map<DatabaseSchema, Stream<JsonNode>> data) throws IOException {
-    importDatabase(DEFAULT_SCHEMA, data, false);
+  public void importDatabase(final String airbyteVersion, final Map<DatabaseSchema, Stream<JsonNode>> data) throws IOException {
+    importDatabase(airbyteVersion, DEFAULT_SCHEMA, data, false);
   }
 
-  private void importDatabase(final String targetSchema, final Map<DatabaseSchema, Stream<JsonNode>> data, boolean incrementalImport)
+  private void importDatabase(final String airbyteVersion,
+                              final String targetSchema,
+                              final Map<DatabaseSchema, Stream<JsonNode>> data,
+                              boolean incrementalImport)
       throws IOException {
     if (!data.isEmpty()) {
       createSchema(BACKUP_SCHEMA);
@@ -479,6 +514,7 @@ public class DefaultJobPersistence implements JobPersistence {
           }
           importTable(ctx, targetSchema, tableType, data.get(tableType));
         }
+        registerImportMetadata(ctx, airbyteVersion);
         return null;
       });
     }
@@ -493,15 +529,15 @@ public class DefaultJobPersistence implements JobPersistence {
    * In a single transaction, truncate all @param tables from @param schema, making backup copies
    * in @param backupSchema
    */
-  private void truncateTable(final DSLContext ctx, final String schema, final String tableName, final String backupSchema) {
+  private static void truncateTable(final DSLContext ctx, final String schema, final String tableName, final String backupSchema) {
     final Table<Record> tableSql = getTable(schema, tableName);
     final Table<Record> backupTableSql = getTable(backupSchema, tableName);
     ctx.dropTableIfExists(backupTableSql).execute();
     ctx.createTable(backupTableSql).as(DSL.select(DSL.asterisk()).from(tableSql)).withData().execute();
-    ctx.truncateTable(tableSql).execute();
+    ctx.truncateTable(tableSql).restartIdentity().execute();
   }
 
-  private void importTable(DSLContext ctx, final String schema, final DatabaseSchema tableType, final Stream<JsonNode> jsonStream) {
+  private static void importTable(DSLContext ctx, final String schema, final DatabaseSchema tableType, final Stream<JsonNode> jsonStream) {
     final Table<Record> tableSql = getTable(schema, tableType.name());
     final JsonNode jsonSchema = tableType.toJsonNode();
     if (jsonSchema != null) {
@@ -526,7 +562,40 @@ public class DefaultJobPersistence implements JobPersistence {
         // LOGGER.debug(insertStep.toString());
         ctx.batch(insertStep).execute();
       }
+      final Optional<Field<?>> idColumn = columns.stream().filter(f -> f.getName().equals("id")).findFirst();
+      if (idColumn.isPresent())
+        resetIdentityColumn(ctx, schema, tableType);
     }
+  }
+
+  /**
+   * In schema.sql, we create tables with IDENTITY PRIMARY KEY columns named 'id' that will generate
+   * auto-incremented ID for each new record. When importing batch of records from outside of the DB,
+   * we need to update Postgres Internal state to continue auto-incrementing from the latest value or
+   * we would risk to violate primary key constraints by inserting new records with duplicate ids.
+   *
+   * This function reset such Identity states (called SQL Sequence objects).
+   */
+  private static void resetIdentityColumn(final DSLContext ctx, final String schema, final DatabaseSchema tableType) {
+    final Result<Record> result = ctx.fetch(String.format("SELECT MAX(id) FROM %s.%s", schema, tableType.name()));
+    final Optional<Integer> maxId = result.stream()
+        .map(r -> r.get(0, Integer.class))
+        .filter(Objects::nonNull)
+        .findFirst();
+    if (maxId.isPresent()) {
+      final Sequence<BigInteger> sequenceName = DSL.sequence(DSL.name(schema, String.format("%s_%s_seq", tableType.name().toLowerCase(), "id")));
+      ctx.alterSequenceIfExists(sequenceName).restartWith(maxId.get() + 1).execute();
+    }
+  }
+
+  /**
+   * Insert records into the metadata table to keep track of import Events that were applied on the
+   * database. Update and overwrite the corresponding @param airbyteVersion.
+   */
+  private static void registerImportMetadata(final DSLContext ctx, final String airbyteVersion) {
+    ctx.execute(String.format("INSERT INTO %s VALUES('%s_import_db', '%s');", AIRBYTE_METADATA_TABLE, current_timestamp(), airbyteVersion));
+    ctx.execute(String.format("UPDATE %s SET value = '%s' WHERE key = '%s';", AIRBYTE_METADATA_TABLE, airbyteVersion,
+        AirbyteVersion.AIRBYTE_VERSION_KEY_NAME));
   }
 
   /**

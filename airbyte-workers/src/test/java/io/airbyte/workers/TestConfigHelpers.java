@@ -33,7 +33,6 @@ import io.airbyte.config.Field;
 import io.airbyte.config.Schema;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
-import io.airbyte.config.StandardSync.SyncMode;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.State;
 import io.airbyte.config.Stream;
@@ -100,7 +99,6 @@ public class TestConfigHelpers {
         .withDestinationId(destinationId)
         .withSourceId(sourceId)
         .withStatus(StandardSync.Status.ACTIVE)
-        .withSyncMode(SyncMode.FULL_REFRESH)
         .withName(CONNECTION_NAME)
         .withSchema(schema);
 
