@@ -2,6 +2,7 @@ import { useFetcher, useResource } from "rest-hooks";
 
 import config from "../../../config";
 import WorkspaceResource from "../../../core/resources/Workspace";
+import { AnalyticsService } from "../../../core/analytics/AnalyticsService";
 
 const useWorkspace = () => {
   const updateWorkspace = useFetcher(WorkspaceResource.updateShape());
@@ -9,7 +10,13 @@ const useWorkspace = () => {
     workspaceId: config.ui.workspaceId
   });
 
-  const finishOnboarding = async () => {
+  const finishOnboarding = async (skipStep?: string) => {
+    if (skipStep) {
+      AnalyticsService.track("Skip Onboarding", {
+        step: skipStep
+      });
+    }
+
     await updateWorkspace(
       {},
       {
