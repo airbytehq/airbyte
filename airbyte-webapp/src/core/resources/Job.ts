@@ -59,9 +59,7 @@ export default class JobResource extends BaseResource implements Job {
   static listShape<T extends typeof Resource>(this: T) {
     return {
       ...super.listShape(),
-      fetch: async (
-        params: Readonly<Record<string, string | number>>
-      ): Promise<any> => {
+      fetch: async (params: any): Promise<any> => {
         const jobsResult = await this.fetch(
           "post",
           `${this.listUrl(params)}/list`,

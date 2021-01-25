@@ -149,6 +149,8 @@
   "sources.countGB": "{count} GB",
   "sources.countTB": "{count} TB",
   "sources.downloadLogs": "Download logs",
+  "sources.reset_connection": "Reset",
+  "sources.sync": "Sync",
 
   "destination.destinationSettings": "Destination Settings",
   "destination.newDestination": "+ new destination",
