@@ -21,7 +21,7 @@ type IProps = {
   }) => void;
   dropDownData: IDataItem[];
   hasSuccess?: boolean;
-  errorStatus?: number;
+  error?: { message?: string; status?: number } | null;
   jobInfo?: JobInfo;
   afterSelectConnector?: () => void;
 };
@@ -29,7 +29,7 @@ type IProps = {
 const DestinationForm: React.FC<IProps> = ({
   onSubmit,
   dropDownData,
-  errorStatus,
+  error,
   hasSuccess,
   jobInfo,
   afterSelectConnector
@@ -72,7 +72,7 @@ const DestinationForm: React.FC<IProps> = ({
     });
   };
 
-  const errorMessage = createFormErrorMessage(errorStatus);
+  const errorMessage = error ? createFormErrorMessage(error) : null;
 
   return (
     <ContentCard title={<FormattedMessage id="onboarding.destinationSetUp" />}>

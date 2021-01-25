@@ -71,7 +71,7 @@ const CreateSourcePage: React.FC = () => {
           onSubmit={onSubmitSourceStep}
           dropDownData={sourcesDropDownData}
           hasSuccess={successRequest}
-          errorStatus={errorStatusRequest?.status}
+          error={errorStatusRequest}
           jobInfo={errorStatusRequest?.response}
         />
       </FormPageContent>
