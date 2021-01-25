@@ -101,13 +101,15 @@ def provider_config(ssh_service):
         ("ssh", "files/test.csv"),
         ("scp", "files/test.csv"),
         ("sftp", "files/test.csv"),
+        ("ssh", "files/test.csv.gz"),
+        ("sftp", "files/test.csv.gz"),
         # ("ssh", "files/test.pkl"),
         # ("sftp", "files/test.pkl"),
         # ("ssh", "files/empty.csv"),
         # ("sftp", "files/test.pkl"),
     ]
 )
-def test__read_from_ssh_providers(ssh_service, provider_config, provider_name, file_path):
+def test__read_from_ssh_providers(provider_config, provider_name, file_path):
     client = Client(dataset_name="output", format="csv", url=file_path,
                     provider=provider_config(provider_name))
     result = next(client.read())
@@ -245,7 +247,7 @@ def get_config(index: int) -> Mapping[str, str]:
 
     configs = [
         {"reader_options": '{"sep": ",", "nrows": 42}'},
-        {"reader_options": '{"sep": ",", "nrows": 42, "compression": "gzip"}'},
+        {"reader_options": '{"sep": ",", "nrows": 42}'},
         {"reader_options": '{"sep": "\\t", "nrows": 42, "header": null}'},
         {"reader_options": '{"sep": "\\r\\n", "names": ["text"], "header": null, "engine": "python"}'},
     ]
