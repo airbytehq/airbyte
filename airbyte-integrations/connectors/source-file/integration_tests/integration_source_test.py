@@ -65,13 +65,15 @@ def test__read_from_private_ssh(provider_config, provider_name, file_path, file_
 def test__read_file_not_found(provider_config, provider_name, file_path, file_format):
     client = Client(dataset_name="output", format=file_format, url=file_path,
                     provider=provider_config(provider_name))
-    with pytest.raises(FileNotFound):
+    with pytest.raises(FileNotFoundError):
         next(client.read())
 
 
 @pytest.mark.parametrize(
     "provider_name, file_path, file_format", [
         ("ssh", "files/test.csv", "csv"),
+        ("ssh", "files/test.pkl", "pickle"),
+        ("sftp", "files/test.pkl.gz", "pickle"),
     ]
 )
 def test__streams_from_ssh_providers(provider_config, provider_name, file_path, file_format):
