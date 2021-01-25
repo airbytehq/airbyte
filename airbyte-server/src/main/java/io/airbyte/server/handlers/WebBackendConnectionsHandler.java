@@ -57,6 +57,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -101,7 +102,7 @@ public class WebBackendConnectionsHandler {
 
     final JobListRequestBody jobListRequestBody = new JobListRequestBody()
         .configId(connectionRead.getConnectionId().toString())
-        .configType(JobConfigType.SYNC);
+        .configTypes(Collections.singletonList(JobConfigType.SYNC));
 
     final WbConnectionRead wbConnectionRead = new WbConnectionRead()
         .connectionId(connectionRead.getConnectionId())
