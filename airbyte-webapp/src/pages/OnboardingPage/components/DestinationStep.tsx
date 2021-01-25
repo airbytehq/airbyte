@@ -89,7 +89,9 @@ const DestinationStep: React.FC<IProps> = ({
         title={<FormattedMessage id="onboarding.destinationSetUp" />}
       >
         <ServiceForm
-          additionBottomControls={<SkipOnboardingButton />}
+          additionBottomControls={
+            <SkipOnboardingButton step="destination connection" />
+          }
           allowChangeConnector
           onDropDownSelect={onDropDownSelect}
           onSubmit={onSubmitForm}
