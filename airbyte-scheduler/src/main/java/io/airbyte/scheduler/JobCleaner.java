@@ -25,6 +25,7 @@
 package io.airbyte.scheduler;
 
 import com.google.common.collect.Sets;
+import io.airbyte.config.WorkspaceRetentionConfig;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import java.io.File;
 import java.io.IOException;
@@ -57,18 +58,12 @@ public class JobCleaner implements Runnable {
   private final Path workspaceRoot;
   private final JobPersistence jobPersistence;
 
-  private final long minWorkspaceRetentionDays;
-  private final long maxWorkspaceRetentionDays;
-  private final long maxWorkspaceSizeMb;
+  private final WorkspaceRetentionConfig config;
 
-  public JobCleaner(long minWorkspaceRetentionDays,
-                    long maxWorkspaceRetentionDays,
-                    long maxWorkspaceSizeMb,
+  public JobCleaner(WorkspaceRetentionConfig config,
                     Path workspaceRoot,
                     JobPersistence jobPersistence) {
-    this.minWorkspaceRetentionDays = minWorkspaceRetentionDays;
-    this.maxWorkspaceRetentionDays = maxWorkspaceRetentionDays;
-    this.maxWorkspaceSizeMb = maxWorkspaceSizeMb;
+    this.config = config;
     this.workspaceRoot = workspaceRoot;
     this.jobPersistence = jobPersistence;
   }
@@ -84,7 +79,7 @@ public class JobCleaner implements Runnable {
   }
 
   private void deleteOldFiles() throws IOException {
-    final Date oldestAllowed = getDateFromDaysAgo(maxWorkspaceRetentionDays);
+    final Date oldestAllowed = getDateFromDaysAgo(config.getMaxDays());
 
     Files.walk(workspaceRoot)
         .map(Path::toFile)
@@ -114,7 +109,7 @@ public class JobCleaner implements Runnable {
       nonTerminalJobIds.addAll(jobIds);
     }
 
-    final Date youngestAllowed = getDateFromDaysAgo(minWorkspaceRetentionDays);
+    final Date youngestAllowed = getDateFromDaysAgo(config.getMinDays());
 
     final long workspaceBytes = FileUtils.sizeOfDirectory(workspaceRoot.toFile());
     AtomicLong deletedBytes = new AtomicLong(0);
@@ -136,7 +131,7 @@ public class JobCleaner implements Runnable {
           return ft1.compareTo(ft2);
         })
         .forEach(fileToDelete -> {
-          if (workspaceBytes - deletedBytes.get() > maxWorkspaceSizeMb * 1024 * 1024) {
+          if (workspaceBytes - deletedBytes.get() > config.getMaxSizeMb() * 1024 * 1024) {
             long sizeToDelete = fileToDelete.length();
             deletedBytes.addAndGet(sizeToDelete);
             LOGGER.info("Deleting: " + fileToDelete.toString());

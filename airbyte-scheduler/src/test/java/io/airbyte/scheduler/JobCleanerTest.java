@@ -29,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import io.airbyte.config.WorkspaceRetentionConfig;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import java.io.File;
 import java.io.IOException;
@@ -53,9 +54,7 @@ class JobCleanerTest {
     final JobPersistence jobPersistence = mock(JobPersistence.class);
 
     final JobCleaner jobCleaner = new JobCleaner(
-        20,
-        30,
-        0,
+        new WorkspaceRetentionConfig(20, 30, 0),
         folder,
         jobPersistence);
 
@@ -74,9 +73,7 @@ class JobCleanerTest {
     final JobPersistence jobPersistence = mock(JobPersistence.class);
 
     final JobCleaner jobCleaner = new JobCleaner(
-        20,
-        30,
-        0,
+        new WorkspaceRetentionConfig(20, 30, 0),
         folder,
         jobPersistence);
 
@@ -102,9 +99,7 @@ class JobCleanerTest {
     final JobPersistence jobPersistence = mock(JobPersistence.class);
 
     final JobCleaner jobCleaner = new JobCleaner(
-        1,
-        30,
-        4,
+        new WorkspaceRetentionConfig(1, 30, 4),
         folder,
         jobPersistence);
 
@@ -130,9 +125,7 @@ class JobCleanerTest {
     when(jobPersistence.listJobsWithStatus(JobStatus.RUNNING)).thenReturn(List.of(job2));
 
     final JobCleaner jobCleaner = new JobCleaner(
-        1,
-        30,
-        0,
+        new WorkspaceRetentionConfig(1, 30, 0),
         folder,
         jobPersistence);
 

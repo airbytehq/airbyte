@@ -168,35 +168,21 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public long getMinimumWorkspaceRetentionDays() {
-    final String minimumWorkspaceRetentionDays = getEnv.apply(MINIMUM_WORKSPACE_RETENTION_DAYS);
-    if (minimumWorkspaceRetentionDays != null) {
-      return Long.parseLong(minimumWorkspaceRetentionDays);
-    } else {
-      LOGGER.info("MINIMUM_WORKSPACE_RETENTION_DAYS not found, defaulting to " + DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS);
-      return DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS;
-    }
+  public WorkspaceRetentionConfig getWorkspaceRetentionConfig() {
+    long minDays = getEnvOrDefault(MINIMUM_WORKSPACE_RETENTION_DAYS, DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS);
+    long maxDays = getEnvOrDefault(MAXIMUM_WORKSPACE_RETENTION_DAYS, DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS);
+    long maxSizeMb = getEnvOrDefault(MAXIMUM_WORKSPACE_SIZE_MB, DEFAULT_MAXIMUM_WORKSPACE_SIZE_MB);
+
+    return new WorkspaceRetentionConfig(minDays, maxDays, maxSizeMb);
   }
 
-  @Override
-  public long getMaximumWorkspaceRetentionDays() {
-    final String maximumWorkspaceRetentionDays = getEnv.apply(MAXIMUM_WORKSPACE_RETENTION_DAYS);
-    if (maximumWorkspaceRetentionDays != null) {
-      return Long.parseLong(maximumWorkspaceRetentionDays);
+  public long getEnvOrDefault(String key, long defaultValue) {
+    final String value = getEnv.apply(key);
+    if (value != null) {
+      return Long.parseLong(value);
     } else {
-      LOGGER.info("MAXIMUM_WORKSPACE_RETENTION_DAYS not found, defaulting to " + DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS);
-      return DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS;
-    }
-  }
-
-  @Override
-  public long getMaximumWorkspaceSizeMb() {
-    final String maximumWorkspaceSizeMb = getEnv.apply(MAXIMUM_WORKSPACE_SIZE_MB);
-    if (maximumWorkspaceSizeMb != null) {
-      return Long.parseLong(maximumWorkspaceSizeMb);
-    } else {
-      LOGGER.info("MAXIMUM_WORKSPACE_SIZE_MB not found, defaulting to " + DEFAULT_MAXIMUM_WORKSPACE_SIZE_MB);
-      return DEFAULT_MAXIMUM_WORKSPACE_SIZE_MB;
+      LOGGER.info(key + " not found, defaulting to " + defaultValue);
+      return defaultValue;
     }
   }
 

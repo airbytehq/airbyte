@@ -157,9 +157,7 @@ public class SchedulerApp {
     final ConfigPersistence configPersistence = new DefaultConfigPersistence(configRoot);
     final ConfigRepository configRepository = new ConfigRepository(configPersistence);
     final JobCleaner jobCleaner = new JobCleaner(
-        configs.getMinimumWorkspaceRetentionDays(),
-        configs.getMaximumWorkspaceRetentionDays(),
-        configs.getMaximumWorkspaceSizeMb(),
+        configs.getWorkspaceRetentionConfig(),
         workspaceRoot,
         jobPersistence);
 
