@@ -21,23 +21,8 @@
         "minimum": 0,
         "maximum": 65536,
         "default": 5432,
-<<<<<<< HEAD
-        "examples": ["5432"]
-      },
-      "username": {
-        "title": "User",
-        "description": "Username to use to access the database.",
-        "type": "string"
-      },
-      "password": {
-        "title": "Password",
-        "description": "Password associated with the username.",
-        "type": "string",
-        "airbyte_secret": true
-=======
         "examples": ["5432"],
         "order": 1
->>>>>>> master
       },
       "database": {
         "title": "DB Name",
@@ -54,21 +39,23 @@
         "order": 3
       },
       "username": {
+        "title": "User",
         "description": "Username to use to access the database.",
         "type": "string",
         "order": 4
       },
       "password": {
+        "title": "Password",
         "description": "Password associated with the username.",
         "type": "string",
         "airbyte_secret": true,
         "order": 5
       },
       "basic_normalization": {
+        "title": "Basic Normalization",
         "type": "boolean",
         "default": true,
         "description": "Whether or not to normalize the data in the destination. See <a href=\"https://docs.airbyte.io/architecture/basic-normalization\">basic normalization</a> for more details.",
-        "title": "Basic Normalization",
         "examples": [true, false],
         "order": 6
       }
