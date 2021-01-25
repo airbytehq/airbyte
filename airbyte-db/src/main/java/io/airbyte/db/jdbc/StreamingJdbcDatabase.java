@@ -75,34 +75,27 @@ public class StreamingJdbcDatabase implements JdbcDatabase {
    * driver being used, this method will return data in streaming / chunked fashion. Review the
    * provided {@link JdbcStreamingQueryConfiguration} to understand the size of these chunks. If the
    * entire stream is consumed the database connection will be closed automatically and the caller
-   * need not call close on the returned stream.
+   * need not call close on the returned stream. This query (and the first chunk) are fetched
+   * immediately. Subsequent chunks will not be pulled until the first chunk is consumed.
    *
    * @param statementCreator create a {@link PreparedStatement} from a {@link Connection}.
    * @param recordTransform transform each record of that result set into the desired type. do NOT
    *        just pass the {@link ResultSet} through. it is a stateful object will not be accessible if
    *        returned from recordTransform.
    * @param <T> type that each record will be mapped to.
-   * @return Result of the query mapped to a stream.
+   * @return Result of the query mapped to a stream. This stream must be closed!
    * @throws SQLException SQL related exceptions.
    */
   @Override
   public <T> Stream<T> query(CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
                              CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
-    // make it lazy.
-    return Stream.of(1).flatMap(i -> queryInternal(statementCreator, recordTransform));
-  }
-
-  private <T> Stream<T> queryInternal(CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
-                                      CheckedFunction<ResultSet, T, SQLException> recordTransform) {
     try {
       final Connection connection = dataSource.getConnection();
       final PreparedStatement ps = statementCreator.apply(connection);
       // allow configuration of connection and prepared statement to make streaming possible.
       jdbcStreamingQueryConfiguration.accept(connection, ps);
       return JdbcUtils.toStream(ps.executeQuery(), recordTransform)
-          // because this stream is inside the flatMap of another stream, we have a guarantee that the close
-          // of this stream will be closed if the outer stream is fully consumed.
           .onClose(() -> {
             try {
               connection.setAutoCommit(true);

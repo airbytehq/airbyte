@@ -57,6 +57,7 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
+import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
@@ -86,14 +87,10 @@ public class BigQueryDestination implements Destination {
   static final String CONFIG_PROJECT_ID = "project_id";
   static final String CONFIG_CREDS = "credentials_json";
 
-  static final String COLUMN_AB_ID = "ab_id";
-  static final String COLUMN_DATA = "data";
-  static final String COLUMN_EMITTED_AT = "emitted_at";
-
   static final com.google.cloud.bigquery.Schema SCHEMA = com.google.cloud.bigquery.Schema.of(
-      Field.of(COLUMN_AB_ID, StandardSQLTypeName.STRING),
-      Field.of(COLUMN_DATA, StandardSQLTypeName.STRING),
-      Field.of(COLUMN_EMITTED_AT, StandardSQLTypeName.TIMESTAMP));
+      Field.of(JavaBaseConstants.COLUMN_NAME_AB_ID, StandardSQLTypeName.STRING),
+      Field.of(JavaBaseConstants.COLUMN_NAME_DATA, StandardSQLTypeName.STRING),
+      Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP));
 
   private final StandardNameTransformer namingResolver;
 
@@ -141,10 +138,13 @@ public class BigQueryDestination implements Destination {
 
   private BigQuery getBigQuery(JsonNode config) {
     final String projectId = config.get(CONFIG_PROJECT_ID).asText();
-    final String credentialsString = config.get(CONFIG_CREDS).asText();
+    // handle the credentials json being passed as a json object or a json object already serialized as
+    // a string.
+    final String credentialsString =
+        config.get(CONFIG_CREDS).isObject() ? Jsons.serialize(config.get(CONFIG_CREDS)) : config.get(CONFIG_CREDS).asText();
     try {
-      final ServiceAccountCredentials credentials =
-          ServiceAccountCredentials.fromStream(new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
+      final ServiceAccountCredentials credentials = ServiceAccountCredentials
+          .fromStream(new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
 
       return BigQueryOptions.newBuilder()
           .setProjectId(projectId)
@@ -325,9 +325,9 @@ public class BigQueryDestination implements Destination {
         String formattedEmittedAt = QueryParameterValue.timestamp(emittedAtMicroseconds).getValue();
 
         final JsonNode data = Jsons.jsonNode(ImmutableMap.of(
-            COLUMN_AB_ID, UUID.randomUUID().toString(),
-            COLUMN_DATA, Jsons.serialize(message.getRecord().getData()),
-            COLUMN_EMITTED_AT, formattedEmittedAt));
+            JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString(),
+            JavaBaseConstants.COLUMN_NAME_DATA, Jsons.serialize(message.getRecord().getData()),
+            JavaBaseConstants.COLUMN_NAME_EMITTED_AT, formattedEmittedAt));
         try {
           writeConfigs.get(message.getRecord().getStream()).getWriter()
               .write(ByteBuffer.wrap((Jsons.serialize(data) + "\n").getBytes(Charsets.UTF_8)));

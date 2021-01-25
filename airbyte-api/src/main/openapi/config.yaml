@@ -203,7 +203,6 @@ paths:
           description: SourceDefinition not found
         "422":
           $ref: "#/components/responses/InvalidInput"
-  # todo (cgardens) - rename to source_specifications/get_latest_from_source_id
   /v1/source_definition_specifications/get:
     post:
       tags:
@@ -1001,6 +1000,30 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthCheckRead"
+  /v1/logs/get:
+    post:
+      tags:
+        - logs
+      summary: Get logs
+      operationId: getLogs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LogsRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Returns the log file
+          content:
+            text/plain:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: Logs not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
   /v1/deployment/export:
     post:
       tags:
@@ -1073,9 +1096,13 @@ components:
           type: string
         initialSetupComplete:
           type: boolean
-        onboardingComplete:
-          type: boolean
         displaySetupWizard:
+          type: boolean
+        anonymousDataCollection:
+          type: boolean
+        news:
+          type: boolean
+        securityUpdates:
           type: boolean
     WorkspaceUpdate:
       type: object
@@ -1093,15 +1120,13 @@ components:
           format: email
         initialSetupComplete:
           type: boolean
-        onboardingComplete:
+        displaySetupWizard:
           type: boolean
         anonymousDataCollection:
           type: boolean
         news:
           type: boolean
         securityUpdates:
-          type: boolean
-        displaySetupWizard:
           type: boolean
     # SLUG
     SlugRequestBody:
@@ -1298,11 +1323,11 @@ components:
       type: object
       required:
         - schema
-        - job_info
+        - jobInfo
       properties:
         schema:
           $ref: "#/components/schemas/SourceSchema"
-        job_info:
+        jobInfo:
           $ref: "#/components/schemas/JobInfoRead"
     # DESTINATION DEFINITION
     DestinationDefinitionId:
@@ -1503,7 +1528,7 @@ components:
       required:
         - connectionId
       properties:
-        with_refreshed_catalog:
+        withRefreshedCatalog:
           type: boolean
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
@@ -1512,7 +1537,6 @@ components:
       required:
         - sourceId
         - destinationId
-        - syncMode
         - status
       properties:
         name:
@@ -1522,9 +1546,6 @@ components:
           $ref: "#/components/schemas/SourceId"
         destinationId:
           $ref: "#/components/schemas/DestinationId"
-        # todo (cgardens) - remove this after we migrate to incremental schema
-        syncMode:
-          $ref: "#/components/schemas/SyncMode"
         syncSchema:
           $ref: "#/components/schemas/SourceSchema"
         schedule:
@@ -1551,7 +1572,7 @@ components:
         - $ref: "#/components/schemas/ConnectionUpdate"
         - type: object
           properties:
-            with_refreshed_catalog:
+            withRefreshedCatalog:
               type: boolean
     ConnectionRead:
       type: object
@@ -1560,7 +1581,6 @@ components:
         - name
         - sourceId
         - destinationId
-        - syncMode
         - syncSchema
         - status
       properties:
@@ -1572,9 +1592,6 @@ components:
           $ref: "#/components/schemas/SourceId"
         destinationId:
           $ref: "#/components/schemas/DestinationId"
-        # todo (cgardens) - remove this after we migrate to incremental schema
-        syncMode:
-          $ref: "#/components/schemas/SyncMode"
         syncSchema:
           $ref: "#/components/schemas/SourceSchema"
         schedule:
@@ -1615,6 +1632,20 @@ components:
             - days
             - weeks
             - months
+    # LOGS
+    LogType:
+      type: string
+      description: type/source of logs produced
+      enum:
+        - server
+        - scheduler
+    LogsRequestBody:
+      type: object
+      required:
+        - logType
+      properties:
+        logType:
+          $ref: "#/components/schemas/LogType"
     # SCHEMA
     SourceSchema:
       description: describes the available schema.
@@ -1631,8 +1662,7 @@ components:
       required:
         - name
         - fields
-        # todo (cgardens) - make required once sources are migrated
-        # - supportedSyncModes
+        - supportedSyncModes
       properties:
         # immutable
         name:
@@ -1854,7 +1884,7 @@ components:
             - failed
         message:
           type: string
-        job_info:
+        jobInfo:
           $ref: "#/components/schemas/JobInfoRead"
     # Web Backend
     WbConnectionRead:
@@ -1864,7 +1894,6 @@ components:
         - name
         - sourceId
         - destinationId
-        - syncMode
         - syncSchema
         - status
         - source
@@ -1879,8 +1908,6 @@ components:
           $ref: "#/components/schemas/SourceId"
         destinationId:
           $ref: "#/components/schemas/DestinationId"
-        syncMode:
-          $ref: "#/components/schemas/SyncMode"
         syncSchema:
           $ref: "#/components/schemas/SourceSchema"
         schedule:
@@ -1917,12 +1944,16 @@ components:
       description: Tarball Archive (.tar.gz) of Airbyte Configuration and Database
     ImportRead:
       type: object
+      required:
+        - status
       properties:
         status:
           type: string
           enum:
             - succeeded
             - failed
+        reason:
+          type: string
   responses:
     InvalidInput:
       description: Invalid Input

@@ -10,6 +10,7 @@
         }
       }
     },
+
     {
       "name": "stream_with_underscores",
       "json_schema": {
@@ -52,6 +53,46 @@
         "properties": {
           "field_with_spécial_character": {
             "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "name": "CapitalCase",
+      "json_schema": {
+        "properties": {
+          "deleted": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    {
+      "name": "reserved_keywords",
+      "json_schema": {
+        "properties": {
+          "order": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "name": "groups",
+      "json_schema": {
+        "properties": {
+          "authorization": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "name": "ProperCase",
+      "json_schema": {
+        "properties": {
+          "ProperCase": {
+            "type": "boolean"
           }
         }
       }

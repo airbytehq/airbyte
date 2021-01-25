@@ -40,9 +40,9 @@ Some APIs aren't supported in v1.0, e.g. channel messages and channel messages r
 
 | Feature | Supported?\(Yes/No\) | Notes |
 | :--- | :--- | :--- |
-| Full Refresh Sync | yes |  |
-| Incremental Sync | no |  |
-| Replicate Incremental Deletes | No |  |
+| Full Refresh Sync | Yes |  |
+| Incremental Sync | Coming soon |  |
+| Replicate Incremental Deletes | Coming soon |  |
 | SSL connection | Yes |  |
 
 ### Performance considerations

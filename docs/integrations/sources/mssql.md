@@ -2,7 +2,7 @@
 
 ## Overview
 
-The MSSQL source supports Full Refresh syncs.
+The MSSQL source supports Full Refresh and [Incremental - Append](../../architecture/incremental.md) syncs.
 
 ### Resulting schema
 
@@ -31,11 +31,11 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 | Feature | Supported |
 | :--- | :--- |
 | Full Refresh Sync | Yes |
-| Incremental Sync | No |
-| Replicate Incremental Deletes | No |
-| Logical Replication \(WAL\) | No |
+| Incremental Sync - Append | Yes |
+| Replicate Incremental Deletes | Coming soon |
+| Logical Replication \(WAL\) | Coming soon |
 | SSL Support | Yes |
-| SSH Tunnel Connection | No |
+| SSH Tunnel Connection | Coming soon |
 
 ## Getting started
 

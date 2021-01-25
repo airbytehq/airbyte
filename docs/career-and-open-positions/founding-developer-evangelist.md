@@ -16,7 +16,7 @@ As our Founding Developer Advocate, you will own three priorities:
 2. **Foster & develop the Airbyte community of users and contributors**. We want our community to have such an amazing experience with Airbyte that they become our evangelists outside the company. 
 3. **Generate awareness about Airbyte**. We want Airbyte to be top of mind for anyone looking for an ELT solution, OSS or otherwise. 
 
-This is a function-founding role: you'll have a large ownership over building out Airbyte's developer advocacy program. You'll collaborate closely with the founders, the core team, and the community. You'll take on all sorts of tasks from writing sample code or setting up a swag program to shaping the vision for developer advocacy at Airbyte. 
+This is a function-founding role: you'll have a large ownership over building out Airbyte's developer advocacy program. You'll collaborate closely with the founders, the core team, and the community. You'll take on all sorts of tasks from writing sample code or setting up a swag program to shaping the vision for developer advocacy at Airbyte.
 
 ## **Responsibilities**
 
@@ -39,6 +39,13 @@ This is a function-founding role: you'll have a large ownership over building ou
 ## **Location**
 
 North America.
+
+## **We provide**
+
+* Unlimited PTO
+* Remote friendly
+* Equipment stipend
+* For countries where it applies: Health Insurance, Retirement \(401k, etc\)
 
 ## **Applying**
 

@@ -14,6 +14,7 @@ import { IDataItem } from "../../../components/DropDown/components/ListItem";
 import { createFormErrorMessage } from "../../../utils/errorStatusMessage";
 import { JobInfo } from "../../../core/resources/Scheduler";
 import { JobsLogItem } from "../../../components/JobItem";
+import SkipOnboardingButton from "./SkipOnboardingButton";
 
 type IProps = {
   source?: Source;
@@ -25,7 +26,7 @@ type IProps = {
   }) => void;
   dropDownData: IDataItem[];
   hasSuccess?: boolean;
-  errorStatus?: number;
+  error?: null | { message?: string; status?: number };
   jobInfo?: JobInfo;
   afterSelectConnector?: () => void;
 };
@@ -34,7 +35,7 @@ const SourceStep: React.FC<IProps> = ({
   onSubmit,
   dropDownData,
   hasSuccess,
-  errorStatus,
+  error,
   source,
   jobInfo,
   afterSelectConnector
@@ -71,11 +72,12 @@ const SourceStep: React.FC<IProps> = ({
       sourceDefinitionId: sourceDefinitionSpecification?.sourceDefinitionId
     });
 
-  const errorMessage = createFormErrorMessage(errorStatus);
+  const errorMessage = error ? createFormErrorMessage(error) : "";
 
   return (
     <ContentCard title={<FormattedMessage id="onboarding.sourceSetUp" />}>
       <ServiceForm
+        additionBottomControls={<SkipOnboardingButton />}
         allowChangeConnector
         onDropDownSelect={onDropDownSelect}
         onSubmit={onSubmitForm}

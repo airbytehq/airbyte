@@ -32,8 +32,7 @@ setup(
     packages=find_packages(),
     package_data={"": ["*.json"]},
     install_requires=[
-        "tap-stripe==1.4.4",
-        "requests",
+        "tap-stripe @ https://github.com/airbytehq/tap-stripe/tarball/master#egg=tap-stripe-1.4.5",
         "airbyte-protocol",
         "base-singer",
     ],

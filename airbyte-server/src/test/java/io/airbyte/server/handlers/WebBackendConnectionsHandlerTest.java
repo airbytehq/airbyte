@@ -158,7 +158,6 @@ class WebBackendConnectionsHandlerTest {
         .name(connectionRead.getName())
         .syncSchema(connectionRead.getSyncSchema())
         .status(connectionRead.getStatus())
-        .syncMode(connectionRead.getSyncMode())
         .schedule(connectionRead.getSchedule())
         .source(sourceRead)
         .destination(destinationRead)
@@ -190,7 +189,6 @@ class WebBackendConnectionsHandlerTest {
         .name(expected.getName())
         .syncSchema(modifiedSchema)
         .status(expected.getStatus())
-        .syncMode(expected.getSyncMode())
         .schedule(expected.getSchedule())
         .source(expected.getSource())
         .destination(expected.getDestination())
@@ -305,7 +303,6 @@ class WebBackendConnectionsHandlerTest {
             .name(expected.getName())
             .syncSchema(expected.getSyncSchema())
             .status(expected.getStatus())
-            .syncMode(expected.getSyncMode())
             .schedule(expected.getSchedule()));
 
     ConnectionRead connectionRead = wbHandler.webBackendUpdateConnection(updateBody);
@@ -334,7 +331,6 @@ class WebBackendConnectionsHandlerTest {
             .name(expected.getName())
             .syncSchema(expectedWithNewSchema.getSyncSchema())
             .status(expected.getStatus())
-            .syncMode(expected.getSyncMode())
             .schedule(expected.getSchedule()));
 
     ConnectionRead connectionRead = wbHandler.webBackendUpdateConnection(updateBody);
@@ -348,7 +344,7 @@ class WebBackendConnectionsHandlerTest {
 
   @Test
   public void testUpdateSchemaWithDiscovery() {
-    SourceSchema original = new SourceSchema()
+    final SourceSchema original = new SourceSchema()
         .streams(List.of(
             new SourceSchemaStream()
                 .name("stream1")
@@ -375,7 +371,7 @@ class WebBackendConnectionsHandlerTest {
                 .selected(true)
                 .sourceDefinedCursor(false)
                 .supportedSyncModes(List.of(SyncMode.INCREMENTAL, SyncMode.FULL_REFRESH))));
-    SourceSchema discovered = new SourceSchema()
+    final SourceSchema discovered = new SourceSchema()
         .streams(List.of(
             new SourceSchemaStream()
                 .name("stream1")
@@ -390,7 +386,7 @@ class WebBackendConnectionsHandlerTest {
                 .selected(true)
                 .sourceDefinedCursor(false)
                 .supportedSyncModes(List.of(SyncMode.FULL_REFRESH))));
-    SourceSchema expected = new SourceSchema()
+    final SourceSchema expected = new SourceSchema()
         .streams(List.of(
             new SourceSchemaStream()
                 .name("stream1")
@@ -408,7 +404,45 @@ class WebBackendConnectionsHandlerTest {
                 .sourceDefinedCursor(false)
                 .supportedSyncModes(List.of(SyncMode.FULL_REFRESH))));
 
-    SourceSchema actual = WebBackendConnectionsHandler.updateSchemaWithDiscovery(original, discovered);
+    final SourceSchema actual = WebBackendConnectionsHandler.updateSchemaWithDiscovery(original, discovered);
+
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void testUpdateSchemaWithDiscoveryNewTable() {
+    final SourceSchema original = new SourceSchema().streams(List.of());
+    final SourceSchema discovered = new SourceSchema()
+        .streams(List.of(
+            new SourceSchemaStream()
+                .name("stream1")
+                .cleanedName("stream1")
+                .syncMode(SyncMode.FULL_REFRESH)
+                .fields(List.of(
+                    new SourceSchemaField()
+                        .name("field1")
+                        .cleanedName("field1")
+                        .dataType(DataType.STRING)))
+                .selected(true)
+                .sourceDefinedCursor(false)
+                .supportedSyncModes(List.of(SyncMode.FULL_REFRESH))));
+    final SourceSchema expected = new SourceSchema()
+        .streams(List.of(
+            new SourceSchemaStream()
+                .name("stream1")
+                .cleanedName("stream1")
+                .syncMode(SyncMode.FULL_REFRESH)
+                .fields(List.of(
+                    new SourceSchemaField()
+                        .name("field1")
+                        .cleanedName("field1")
+                        .dataType(DataType.STRING)
+                        .selected(null)))
+                .selected(true)
+                .sourceDefinedCursor(false)
+                .supportedSyncModes(List.of(SyncMode.FULL_REFRESH))));
+
+    final SourceSchema actual = WebBackendConnectionsHandler.updateSchemaWithDiscovery(original, discovered);
 
     assertEquals(expected, actual);
   }

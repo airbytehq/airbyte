@@ -25,30 +25,26 @@
 package io.airbyte.server.converters;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.lang.CloseableConsumer;
 import io.airbyte.commons.lang.Exceptions;
+import io.airbyte.commons.stream.MoreStreams;
 import io.airbyte.commons.yaml.Yamls;
-import io.airbyte.db.Database;
-import io.airbyte.db.ExceptionWrappingDatabase;
+import io.airbyte.db.AirbyteVersion;
+import io.airbyte.scheduler.persistence.DatabaseSchema;
+import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
-import org.jooq.Field;
-import org.jooq.JSONFormat;
-import org.jooq.JSONFormat.RecordFormat;
-import org.jooq.Record;
-import org.jooq.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,94 +52,88 @@ public class DatabaseArchiver {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseArchiver.class);
   private static final String DB_FOLDER_NAME = "airbyte_db";
-  private static final String DEFAULT_SCHEMA = "public";
-  private static final JSONFormat DB_JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
 
-  private final ExceptionWrappingDatabase database;
-  private final Path storageRoot;
+  private final JobPersistence persistence;
   private final JsonSchemaValidator jsonSchemaValidator;
 
-  public DatabaseArchiver(final Database database, final Path storageRoot, final JsonSchemaValidator jsonSchemaValidator) {
-    this.database = new ExceptionWrappingDatabase(database);
-    this.storageRoot = storageRoot;
+  public DatabaseArchiver(final JobPersistence persistence, final JsonSchemaValidator jsonSchemaValidator) {
+    this.persistence = persistence;
     this.jsonSchemaValidator = jsonSchemaValidator;
   }
 
-  public DatabaseArchiver(final Database database, final Path storageRoot) {
-    this(database, storageRoot, new JsonSchemaValidator());
+  public DatabaseArchiver(final JobPersistence persistence) {
+    this(persistence, new JsonSchemaValidator());
   }
 
   /**
    * Serializes each internal Airbyte Database table into a single archive file stored in YAML.
    */
-  public void writeDatabaseToArchive() throws IOException {
-    List<Table<?>> tables = listTables();
-    if (tables != null) {
-      tables.forEach(table -> Exceptions.toRuntime(() -> writeTableToArchive(table)));
+  public void exportDatabaseToArchive(final Path storageRoot) throws Exception {
+    final Map<DatabaseSchema, Stream<JsonNode>> tables = persistence.exportDatabase();
+    Files.createDirectories(storageRoot.resolve(DB_FOLDER_NAME));
+    for (final DatabaseSchema tableSchema : DatabaseSchema.values()) {
+      final Path tablePath = buildTablePath(storageRoot, tableSchema.name());
+      if (tables.containsKey(tableSchema)) {
+        writeTableToArchive(tableSchema, tablePath, tables.get(tableSchema));
+      } else {
+        // Create empty file
+        Files.createFile(tablePath);
+      }
     }
     LOGGER.debug("Successful export of airbyte database");
   }
 
-  private List<Table<?>> listTables() throws IOException {
-    // list tables from public schema only
-    return database.query(context -> context.meta().getSchemas(DEFAULT_SCHEMA).stream()
-        .flatMap(schema -> context.meta(schema).getTables().stream())
-        .collect(Collectors.toList()));
-  }
-
-  private void writeTableToArchive(Table<?> table) throws Exception {
-    final Path tablePath = buildTablePath(table.getName());
+  private void writeTableToArchive(final DatabaseSchema tableSchema, final Path tablePath, final Stream<JsonNode> tableStream) throws Exception {
     Files.createDirectories(tablePath.getParent());
     final BufferedWriter recordOutputWriter = new BufferedWriter(new FileWriter(tablePath.toFile()));
     final CloseableConsumer<JsonNode> recordConsumer = Yamls.listWriter(recordOutputWriter);
-    final Stream<Record> records = database.query(ctx -> ctx.select(table.fields())
-        .from(table.getName())
-        .fetchStream());
-    records.forEach(r -> Exceptions.toRuntime(() -> {
-      final Set<String> jsonFieldNames = Arrays.stream(r.fields())
-          .filter(f -> f.getDataType().getTypeName().equals("jsonb"))
-          .map(Field::getName)
-          .collect(Collectors.toSet());
-      final JsonNode row = Jsons.deserialize(r.formatJSON(DB_JSON_FORMAT));
-      // for json fields, deserialize them so they are treated as objects instead of strings. this is to
-      // get around that formatJson doesn't handle deserializing them for us.
-      jsonFieldNames.forEach(jsonFieldName -> ((ObjectNode) row).replace(jsonFieldName, Jsons.deserialize(row.get(jsonFieldName).asText())));
-      // TODO validate table schemas before writing?
+    tableStream.forEach(row -> Exceptions.toRuntime(() -> {
+      jsonSchemaValidator.ensure(tableSchema.toJsonNode(), row);
       recordConsumer.accept(row);
     }));
     recordConsumer.close();
+    LOGGER.debug(String.format("Successful export of airbyte table %s", tableSchema.name()));
   }
 
-  private Path buildTablePath(final String tableName) {
+  protected static Path buildTablePath(final Path storageRoot, final String tableName) {
     return storageRoot
         .resolve(DB_FOLDER_NAME)
         .resolve(String.format("%s.yaml", tableName.toLowerCase()));
+  }
+
+  public void checkVersion(final String airbyteVersion) throws IOException {
+    final Optional<String> airbyteDatabaseVersion = persistence.getVersion();
+    airbyteDatabaseVersion.ifPresent(dbversion -> AirbyteVersion.check(airbyteVersion, dbversion));
   }
 
   /**
    * Reads a YAML configuration archive file and deserialize table into the Airbyte Database. The
    * objects will be validated against the current version of Airbyte server's JSON Schema.
    */
-  public String readDatabaseFromArchive() throws IOException, JsonValidationException {
-    final String tempSchema = "tempSchema";
-    // TODO implement to a temp schema
-    LOGGER.debug("Successful read of airbyte database");
-    return tempSchema;
+  public void importDatabaseFromArchive(final Path storageRoot, final String airbyteVersion) throws IOException {
+    final Map<DatabaseSchema, Stream<JsonNode>> data = new HashMap<>();
+    for (DatabaseSchema tableType : DatabaseSchema.values()) {
+      final Path tablePath = buildTablePath(storageRoot, tableType.name());
+      data.put(tableType, readTableFromArchive(tableType, tablePath));
+    }
+    persistence.importDatabase(airbyteVersion, data);
+    LOGGER.debug("Successful upgrade of airbyte database from archive");
   }
 
-  public boolean checkDatabase(final String tempSchema) {
-    // TODO implement
-    LOGGER.debug("Successful test of staged airbyte database");
-    return true;
-  }
-
-  public void commitDatabase(final String tempSchema) {
-    // TODO implement
-    LOGGER.debug("Successful import of airbyte database");
-  }
-
-  public void dropSchema(String tempSchema) {
-    // TODO implement
+  private Stream<JsonNode> readTableFromArchive(final DatabaseSchema tableSchema, final Path tablePath) throws FileNotFoundException {
+    final JsonNode schema = tableSchema.toJsonNode();
+    if (schema != null) {
+      return MoreStreams.toStream(Yamls.deserialize(IOs.readFile(tablePath)).elements())
+          .peek(r -> {
+            try {
+              jsonSchemaValidator.ensure(schema, r);
+            } catch (JsonValidationException e) {
+              throw new IllegalArgumentException("Archived Data Schema does not match current Airbyte Data Schemas", e);
+            }
+          });
+    } else {
+      throw new FileNotFoundException(String.format("Airbyte Database table %s was not found in the archive", tableSchema.name()));
+    }
   }
 
 }

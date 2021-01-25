@@ -9,42 +9,55 @@
     "additionalProperties": false,
     "properties": {
       "host": {
+        "title": "Host",
         "description": "Hostname of the database.",
-        "type": "string"
+        "type": "string",
+        "order": 0
       },
       "port": {
+        "title": "Port",
         "description": "Port of the database.",
         "type": "integer",
         "minimum": 0,
         "maximum": 65536,
         "default": 5432,
-        "examples": ["5432"]
-      },
-      "username": {
-        "description": "Username to use to access the database.",
-        "type": "string"
-      },
-      "password": {
-        "description": "Password associated with the username.",
-        "type": "string",
-        "airbyte_secret": true
+        "examples": ["5432"],
+        "order": 1
       },
       "database": {
+        "title": "DB Name",
         "description": "Name of the database.",
-        "type": "string"
+        "type": "string",
+        "order": 2
       },
       "schema": {
+        "title": "Schema",
         "description": "Unless specifically configured, the usual value for this field is \"public\".",
         "type": "string",
         "examples": ["public"],
-        "default": "public"
+        "default": "public",
+        "order": 3
+      },
+      "username": {
+        "title": "User",
+        "description": "Username to use to access the database.",
+        "type": "string",
+        "order": 4
+      },
+      "password": {
+        "title": "Password",
+        "description": "Password associated with the username.",
+        "type": "string",
+        "airbyte_secret": true,
+        "order": 5
       },
       "basic_normalization": {
-        "type": "boolean",
-        "default": false,
-        "description": "Whether or not to normalize the data in the destination. See <a href=\"https://docs.airbyte.io/architecture/basic-normalization\">basic normalization</a> for more details.",
         "title": "Basic Normalization",
-        "examples": [true, false]
+        "type": "boolean",
+        "default": true,
+        "description": "Whether or not to normalize the data in the destination. See <a href=\"https://docs.airbyte.io/architecture/basic-normalization\">basic normalization</a> for more details.",
+        "examples": [true, false],
+        "order": 6
       }
     }
   }

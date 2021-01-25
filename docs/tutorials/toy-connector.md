@@ -35,7 +35,7 @@ On some systems, `python` points to a Python2 installation and `python3` points 
 
 ## Our connector: a stock ticker API
 
-Our connector will output the daily price of a stock since a given date. We'll leverage the free [IEX Cloud API](https://iexcloud.io/pricing/) for this (the free account is at the bottom). We'll use Python to implement the connector because its syntax is accessible to most programmers, but the process described here can be applied to any language.
+Our connector will output the daily price of a stock since a given date. We'll leverage the free [IEX Cloud API](https://iexcloud.io/pricing/) for this \(the free account is at the bottom\). We'll use Python to implement the connector because its syntax is accessible to most programmers, but the process described here can be applied to any language.
 
 Here's the outline of what we'll do to build our connector:
 
@@ -83,7 +83,7 @@ We'll select the `generic` template and call the connector `stock-ticker-api`:
 
 ![](../.gitbook/assets/newsourcetutorial_plop.gif)
 
-Note: The generic template is very bare. If you are planning on developing a python source, we recommend using the `python` template. It provides some convenience code to help reduce boilerplate. This tutorial uses the bare-bones version because it makes it easier to see how all the pieces of a connector work together. You can find a walk through on how to build a python connector here (__coming soon__).
+Note: The generic template is very bare. If you are planning on developing a python source, we recommend using the `python` template. It provides some convenience code to help reduce boilerplate. This tutorial uses the bare-bones version because it makes it easier to see how all the pieces of a connector work together. You can find a walk through on how to build a python connector here \(**coming soon**\).
 
 Head to the connector directory and we should see the following files have been generated:
 
@@ -257,7 +257,7 @@ $ echo '{"api_key": "<put_your_key_here>", "stock_ticker": "TSLA"}' > secrets/va
 $ echo '{"api_key": "not_a_real_key", "stock_ticker": "TSLA"}' > secrets/invalid_config.json
 ```
 
-Make sure to add your actual API key (the private key) instead of the placeholder value `<put_your_key_here>` when following the tutorial.
+Make sure to add your actual API key \(the private key\) instead of the placeholder value `<put_your_key_here>` when following the tutorial.
 
 Then we'll add the `check_method`:
 
@@ -359,7 +359,7 @@ Our connector is able to detect valid and invalid configs correctly. Two methods
 
 #### Implementing Discover
 
-The `discover` command outputs a Catalog, a struct that declares the Streams and Fields \(Airbyte's equivalents of tables and columns\) output by the connector. It also includes metadata around which features a connector supports (e.g. which sync modes). In other words it describes what data is available in the source. If you'd like to read a bit more about this concept check out our [Beginner's Guide to the Airbyte Catalog](beginners-guide-to-catalog.md) or for a more detailed treatment read the [Airbyte Specification](../architecture/airbyte-specification.md).
+The `discover` command outputs a Catalog, a struct that declares the Streams and Fields \(Airbyte's equivalents of tables and columns\) output by the connector. It also includes metadata around which features a connector supports \(e.g. which sync modes\). In other words it describes what data is available in the source. If you'd like to read a bit more about this concept check out our [Beginner's Guide to the Airbyte Catalog](beginners-guide-to-catalog.md) or for a more detailed treatment read the [Airbyte Specification](../architecture/airbyte-specification.md).
 
 The data output by this connector will be structured in a very simple way. This connector outputs records belonging to exactly one Stream \(table\). Each record contains three Fields \(columns\): `date`, `price`, and `stock_ticker`, corresponding to the price of a stock on a given day.
 
@@ -476,7 +476,7 @@ python source.py read --config <config_file_path> --catalog <configured_catalog.
 
 Each of these are described in the Airbyte Specification in detail, but we'll give a quick description of the two options we haven't seen so far:
 
-* `--catalog` points to a Configured Catalog. The Configured Catalog contains the contents for the Catalog (remember the Catalog we output from discover?). It also contains some configuration information that describes how the data will by replicated. For example, we had `supported_sync_modes` in the Catalog. In the Configured Catalog, we select which of the `supported_sync_modes` we want to use by specifying the `sync_mode` field. (This is the most complicated concept when working Airbyte, so if it is still not making sense that's okay for now. If you're just dying to understand how the Configured Catalog works checkout the [Beginner's Guide to the Airbyte Catalog](beginners-guide-to-catalog.md).)
+* `--catalog` points to a Configured Catalog. The Configured Catalog contains the contents for the Catalog \(remember the Catalog we output from discover?\). It also contains some configuration information that describes how the data will by replicated. For example, we had `supported_sync_modes` in the Catalog. In the Configured Catalog, we select which of the `supported_sync_modes` we want to use by specifying the `sync_mode` field. \(This is the most complicated concept when working Airbyte, so if it is still not making sense that's okay for now. If you're just dying to understand how the Configured Catalog works checkout the [Beginner's Guide to the Airbyte Catalog](beginners-guide-to-catalog.md).\)
 * `--state` points to a state file. The state file is only relevant when some Streams are synced with the sync mode `incremental`, so we'll cover the state file in more detail in the incremental section below.
 
 For our connector, the contents of those two files should be very unsurprising: the connector only supports one Stream, `stock_prices`, so we'd expect the input catalog to contain that stream configured to sync in full refresh. Since our connector doesn't support incremental sync \(yet!\) we'll ignore the state option for now.

@@ -103,9 +103,12 @@ const CreateConnector: React.FC<IProps> = ({ type }) => {
 
   return (
     <>
-      <Button onClick={onChangeModalState}>
-        <FormattedMessage id="admin.newConnector" />
-      </Button>
+      {type === "configuration" ? null : (
+        <Button onClick={onChangeModalState}>
+          <FormattedMessage id="admin.newConnector" />
+        </Button>
+      )}
+
       {isModalOpen && (
         <CreateConnectorModal
           onClose={onChangeModalState}

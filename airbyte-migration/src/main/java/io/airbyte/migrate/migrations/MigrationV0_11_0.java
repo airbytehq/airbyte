@@ -68,6 +68,7 @@ public class MigrationV0_11_0 implements Migration {
       final Consumer<JsonNode> recordConsumer = outputData.get(entry.getKey());
       entry.getValue().forEach(recordConsumer);
     }
+    MigrationUtils.registerMigrationRecord(outputData, JobKeys.AIRBYTE_METADATA.toString(), getVersion());
   }
 
   public enum ConfigKeys {

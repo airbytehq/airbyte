@@ -14,6 +14,7 @@ import { IDataItem } from "../../../components/DropDown/components/ListItem";
 import { createFormErrorMessage } from "../../../utils/errorStatusMessage";
 import { JobInfo } from "../../../core/resources/Scheduler";
 import { JobsLogItem } from "../../../components/JobItem";
+import SkipOnboardingButton from "./SkipOnboardingButton";
 
 type IProps = {
   destination?: Destination;
@@ -25,7 +26,7 @@ type IProps = {
     destinationDefinitionId?: string;
     connectionConfiguration?: any;
   }) => void;
-  errorStatus?: number;
+  error?: null | { message?: string; status?: number };
   currentSourceDefinitionId: string;
   jobInfo?: JobInfo;
   afterSelectConnector?: () => void;
@@ -35,7 +36,7 @@ const DestinationStep: React.FC<IProps> = ({
   onSubmit,
   dropDownData,
   hasSuccess,
-  errorStatus,
+  error,
   currentSourceDefinitionId,
   destination,
   jobInfo,
@@ -79,7 +80,7 @@ const DestinationStep: React.FC<IProps> = ({
     });
   };
 
-  const errorMessage = createFormErrorMessage(errorStatus);
+  const errorMessage = error ? createFormErrorMessage(error) : "";
 
   return (
     <>
@@ -88,6 +89,7 @@ const DestinationStep: React.FC<IProps> = ({
         title={<FormattedMessage id="onboarding.destinationSetUp" />}
       >
         <ServiceForm
+          additionBottomControls={<SkipOnboardingButton />}
           allowChangeConnector
           onDropDownSelect={onDropDownSelect}
           onSubmit={onSubmitForm}
