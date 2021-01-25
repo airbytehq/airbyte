@@ -27,6 +27,7 @@ import traceback
 from typing import Iterable, List
 from urllib.parse import urlparse
 
+import google
 import numpy as np
 import pandas as pd
 import smart_open
@@ -41,10 +42,6 @@ from google.oauth2 import service_account
 
 class ConfigurationError(Exception):
     """Client mis-configured"""
-
-
-class FileNotFound(Exception):
-    """Object not found"""
 
 
 class PermissionsError(Exception):
@@ -97,7 +94,10 @@ class URLFile:
 
     def open(self, binary=False):
         self.close()
-        self._file = self._open(binary=binary)
+        try:
+            self._file = self._open(binary=binary)
+        except google.api_core.exceptions.NotFound as err:
+            raise FileNotFoundError(self.url) from err
         return self
 
     def _open(self, binary):

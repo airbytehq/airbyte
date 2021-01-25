@@ -75,7 +75,9 @@ def provider_config(ssh_service):
             "ssh": dict(storage="SSH", host=ssh_service, user="user1", password="pass1", port=2222),
             "scp": dict(storage="SCP", host=ssh_service, user="user1", password="pass1", port=2222),
             "sftp": dict(storage="SFTP", host=ssh_service, user="user1", password="pass1", port=100),
-            "hdfs": None
+            "hdfs": None,
+            "gcs": dict(storage="GCS"),
+            "s3": dict(storage="S3"),
         }
         return providers[name]
 
@@ -106,7 +108,9 @@ def download_gcs_public_data():
     df = pandas.read_csv("https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv")
     tmp_file = tempfile.NamedTemporaryFile(delete=False)
     df.to_csv(tmp_file.name, index=False)
+
     yield tmp_file.name
+
     os.remove(tmp_file.name)
     print(f"\nLocal File {tmp_file.name} is now deleted")
 

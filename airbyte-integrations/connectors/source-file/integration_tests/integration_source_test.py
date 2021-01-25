@@ -57,20 +57,30 @@ def test__read_from_private_ssh(provider_config, provider_name, file_path, file_
 
 
 @pytest.mark.parametrize(
+    "provider_name,file_path,file_format", [
+        ("ssh", "files/file_does_not_exist.csv", "csv"),
+        ("gcs", "gs://gcp-public-data-landsat/file_does_not_exist.csv", "csv"),
+    ]
+)
+def test__read_file_not_found(provider_config, provider_name, file_path, file_format):
+    client = Client(dataset_name="output", format=file_format, url=file_path,
+                    provider=provider_config(provider_name))
+    with pytest.raises(FileNotFound):
+        next(client.read())
+
+
+@pytest.mark.parametrize(
     "provider_name, file_path, file_format", [
         ("ssh", "files/test.csv", "csv"),
-        ("scp", "files/test.csv", "csv"),
-        ("sftp", "files/test.csv", "csv"),
-        ("ssh", "files/test.csv.gz", "csv"),  # text in binary
-        ("ssh", "files/test.pkl", "pickle"),  # binary
-        ("sftp", "files/test.pkl.gz", "pickle"),  # binary in binary
     ]
 )
 def test__streams_from_ssh_providers(provider_config, provider_name, file_path, file_format):
     client = Client(dataset_name="output", format=file_format, url=file_path,
                     provider=provider_config(provider_name))
-    result = next(client.read())
-    assert result == {'header1': 'text', 'header2': 1, 'header3': 0.2}
+    streams = list(client.streams)
+    assert len(streams) == 1
+    assert streams[0].json_schema['properties'] == {'header1': {'type': 'string'}, 'header2': {'type': 'number'},
+                                                    'header3': {'type': 'number'}}
 
 
 @pytest.mark.parametrize(
