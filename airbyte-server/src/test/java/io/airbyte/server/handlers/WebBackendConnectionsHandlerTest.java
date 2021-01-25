@@ -147,7 +147,7 @@ class WebBackendConnectionsHandlerTest {
     final JobReadList jobReadList = new JobReadList();
     jobReadList.setJobs(Collections.singletonList(jobRead));
     final JobListRequestBody jobListRequestBody = new JobListRequestBody();
-    jobListRequestBody.setConfigType(JobConfigType.SYNC);
+    jobListRequestBody.setConfigTypes(Collections.singletonList(JobConfigType.SYNC));
     jobListRequestBody.setConfigId(connectionRead.getConnectionId().toString());
     when(jobHistoryHandler.listJobsFor(jobListRequestBody)).thenReturn(jobReadList);
 
