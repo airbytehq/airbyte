@@ -1,3 +1,27 @@
+"""
+MIT License
+
+Copyright (c) 2020 Airbyte
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+"""
+
 import json
 import os
 import socket
@@ -50,7 +74,12 @@ def is_ssh_ready(ip, port):
     try:
         with SSHClient() as ssh:
             ssh.set_missing_host_key_policy(AutoAddPolicy)
-            ssh.connect(ip, port=port, username="user1", password="pass1", )
+            ssh.connect(
+                ip,
+                port=port,
+                username="user1",
+                password="pass1",
+            )
         return True
     except (SSHException, socket.error):
         return False
@@ -62,9 +91,7 @@ def ssh_service(docker_ip, docker_services):
 
     # `port_for` takes a container port and returns the corresponding host port
     port = docker_services.port_for("ssh", 22)
-    docker_services.wait_until_responsive(
-        timeout=30.0, pause=0.1, check=lambda: is_ssh_ready(docker_ip, port)
-    )
+    docker_services.wait_until_responsive(timeout=30.0, pause=0.1, check=lambda: is_ssh_ready(docker_ip, port))
     return docker_ip
 
 
