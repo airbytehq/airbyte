@@ -77,7 +77,9 @@ const SourceStep: React.FC<IProps> = ({
   return (
     <ContentCard title={<FormattedMessage id="onboarding.sourceSetUp" />}>
       <ServiceForm
-        additionBottomControls={<SkipOnboardingButton />}
+        additionBottomControls={
+          <SkipOnboardingButton step="source connection" />
+        }
         allowChangeConnector
         onDropDownSelect={onDropDownSelect}
         onSubmit={onSubmitForm}
