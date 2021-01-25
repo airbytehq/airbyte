@@ -90,7 +90,7 @@ class GoogleSheetsSourceStandardTest(DefaultStandardSourceTest):
         spreadsheet_id = spreadsheet.spreadsheetId
 
         rows = [["header1", "irrelevant", "header3", "", "ignored"]]
-        rows.extend([f"a{i}", "dontmindme", i] for i in range(300))
+        rows.extend([f"a{i}", "dontmindme", i] for i in range(320))
         rows.append(["lonely_left_value", "", ""])
         rows.append(["", "", "lonelyrightvalue"])
         rows.append(["", "", ""])

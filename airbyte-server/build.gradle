@@ -3,14 +3,16 @@ plugins {
 }
 
 dependencies {
-    implementation group: 'org.eclipse.jetty', name: 'jetty-server', version: '9.4.31.v20200723'
-    implementation group: 'org.eclipse.jetty', name: 'jetty-servlet', version: '9.4.31.v20200723'
+    implementation 'org.apache.cxf:cxf-core:3.4.2'
 
-    implementation group: 'org.glassfish.jaxb', name: 'jaxb-runtime', version: '2.3.3'
-    implementation group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet'
-    implementation group: 'org.glassfish.jersey.inject', name: 'jersey-hk2'
-    implementation group: 'org.glassfish.jersey.media', name: 'jersey-media-json-jackson'
-    implementation group: 'org.glassfish.jersey.ext', name: 'jersey-bean-validation'
+    implementation 'org.eclipse.jetty:jetty-server:9.4.31.v20200723'
+    implementation 'org.eclipse.jetty:jetty-servlet:9.4.31.v20200723'
+
+    implementation 'org.glassfish.jaxb:jaxb-runtime:2.3.3'
+    implementation 'org.glassfish.jersey.containers:jersey-container-servlet'
+    implementation 'org.glassfish.jersey.inject:jersey-hk2'
+    implementation 'org.glassfish.jersey.media:jersey-media-json-jackson'
+    implementation 'org.glassfish.jersey.ext:jersey-bean-validation'
 
     implementation project(':airbyte-analytics')
     implementation project(':airbyte-api')

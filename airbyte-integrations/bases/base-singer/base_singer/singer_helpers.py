@@ -101,6 +101,9 @@ def set_sync_modes_from_metadata(airbyte_stream: AirbyteStream, metadatas: List[
             if forced_replication_method.upper() == _INCREMENTAL:
                 airbyte_stream.source_defined_cursor = True
                 airbyte_stream.supported_sync_modes = [SyncMode.incremental]
+            elif forced_replication_method.upper() == _FULL_TABLE:
+                airbyte_stream.source_defined_cursor = False
+                airbyte_stream.supported_sync_modes = [SyncMode.full_refresh]
 
 
 def override_sync_modes(airbyte_stream: AirbyteStream, overrides: SyncModeInfo):
@@ -225,6 +228,9 @@ class SingerHelper:
                                 replication_method = _FULL_TABLE
                             new_metadata["metadata"]["forced-replication-method"] = replication_method
                             new_metadata["metadata"]["replication-method"] = replication_method
+                        else:
+                            if "fieldExclusions" in new_metadata["metadata"]:
+                                new_metadata["metadata"]["selected"] = True if not new_metadata["metadata"]["fieldExclusions"] else False
                         new_metadatas += [new_metadata]
                     singer_stream["metadata"] = new_metadatas
 

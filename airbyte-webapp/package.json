@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.27",
+    "@fortawesome/free-brands-svg-icons": "^5.15.2",
     "@fortawesome/free-regular-svg-icons": "^5.14.0",
     "@fortawesome/free-solid-svg-icons": "^5.12.1",
     "@fortawesome/react-fontawesome": "^0.1.8",
@@ -28,6 +29,7 @@
     "react-checkbox-tree": "^1.6.0",
     "react-code-input": "^3.9.0",
     "react-copy-to-clipboard": "^5.0.2",
+    "react-dropzone": "^11.2.4",
     "react-helmet": "^5.2.1",
     "react-intl": "^3.12.0",
     "react-pose": "^4.0.10",

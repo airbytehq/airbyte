@@ -27,12 +27,14 @@ from typing import Dict
 
 from airbyte_protocol import AirbyteConnectionStatus, Status, SyncMode
 from base_python import AirbyteLogger
-from base_singer import SingerSource, SyncModeInfo
-
-TAP_CMD = "tap-marketo"
+from base_singer import BaseSingerSource, SyncModeInfo
 
 
-class SourceMarketoSinger(SingerSource):
+class SourceMarketoSinger(BaseSingerSource):
+    tap_cmd = "tap-marketo"
+    tap_name = "Marketo API"
+    api_error = Exception
+
     def transform_config(self, raw_config):
         return {
             "endpoint": raw_config["endpoint_url"],
@@ -42,19 +44,18 @@ class SourceMarketoSinger(SingerSource):
             "start_date": raw_config["start_date"],
         }
 
+    def try_connect(self, logger: AirbyteLogger, config_path: str):
+        self.discover(logger, config_path)
+
     def check_config(self, logger: AirbyteLogger, config_path: str, config: json) -> AirbyteConnectionStatus:
         try:
-            self.discover(logger, config_path)
-            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
-        except Exception as e:
-            logger.error("Exception while connecting to the Marketo API")
-            logger.error(str(e))
-            return AirbyteConnectionStatus(
-                status=Status.FAILED, message="Unable to connect to the Marketo API with the provided credentials. "
-            )
-
-    def discover_cmd(self, logger: AirbyteLogger, config_path: str) -> str:
-        return f"{TAP_CMD} -c {config_path} --discover"
+            self.try_connect(logger, config_path)
+        except self.api_error as err:
+            logger.error(f"Exception while connecting to {self.tap_name}: {err}")
+            # this should be in UI
+            error_msg = f"Unable to connect to {self.tap_name} with the provided credentials."
+            return AirbyteConnectionStatus(status=Status.FAILED, message=error_msg)
+        return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
     def get_sync_mode_overrides(self) -> Dict[str, SyncModeInfo]:
         incremental_streams = [
@@ -109,4 +110,4 @@ class SourceMarketoSinger(SingerSource):
 
     def read_cmd(self, logger: AirbyteLogger, config_path: str, catalog_path: str, state_path: str = None) -> str:
         state_opt = f"--state {state_path}" if state_path else ""
-        return f"{TAP_CMD} -c {config_path} -p {catalog_path} {state_opt}"
+        return f"{self.tap_cmd} --config {config_path} --properties {catalog_path} {state_opt}"

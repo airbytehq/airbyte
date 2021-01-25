@@ -21,17 +21,12 @@ export default abstract class BaseResource extends Resource {
     url: string,
     body?: Readonly<object | string>
   ) {
-    // const session = (await authService.getCurrentSession())
-    //   .getAccessToken()
-    //   .getJwtToken();
-
     let options: RequestInit = {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
-        // Authorization: `Bearer ${session}`
       }
-    } as any;
+    };
     if (this.fetchOptionsPlugin) options = this.fetchOptionsPlugin(options);
     if (body) options.body = JSON.stringify(body);
 

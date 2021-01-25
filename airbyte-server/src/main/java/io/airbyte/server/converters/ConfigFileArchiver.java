@@ -135,6 +135,7 @@ public class ConfigFileArchiver {
             .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeStandardSync(config)));
         readConfigsFromArchive(storageRoot, ConfigSchema.STANDARD_SYNC_SCHEDULE, StandardSyncSchedule.class)
             .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeStandardSchedule(config)));
+        LOGGER.debug("Successful import of airbyte configs");
       }
     });
   }

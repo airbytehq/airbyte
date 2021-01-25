@@ -11,7 +11,8 @@
       "host": {
         "title": "Host",
         "description": "Hostname of the database.",
-        "type": "string"
+        "type": "string",
+        "order": 0
       },
       "port": {
         "title": "Port",
@@ -20,6 +21,7 @@
         "minimum": 0,
         "maximum": 65536,
         "default": 5432,
+<<<<<<< HEAD
         "examples": ["5432"]
       },
       "username": {
@@ -32,25 +34,43 @@
         "description": "Password associated with the username.",
         "type": "string",
         "airbyte_secret": true
+=======
+        "examples": ["5432"],
+        "order": 1
+>>>>>>> master
       },
       "database": {
         "title": "DB Name",
         "description": "Name of the database.",
-        "type": "string"
+        "type": "string",
+        "order": 2
       },
       "schema": {
         "title": "Schema",
         "description": "Unless specifically configured, the usual value for this field is \"public\".",
         "type": "string",
         "examples": ["public"],
-        "default": "public"
+        "default": "public",
+        "order": 3
+      },
+      "username": {
+        "description": "Username to use to access the database.",
+        "type": "string",
+        "order": 4
+      },
+      "password": {
+        "description": "Password associated with the username.",
+        "type": "string",
+        "airbyte_secret": true,
+        "order": 5
       },
       "basic_normalization": {
         "type": "boolean",
-        "default": false,
+        "default": true,
         "description": "Whether or not to normalize the data in the destination. See <a href=\"https://docs.airbyte.io/architecture/basic-normalization\">basic normalization</a> for more details.",
         "title": "Basic Normalization",
-        "examples": [true, false]
+        "examples": [true, false],
+        "order": 6
       }
     }
   }
