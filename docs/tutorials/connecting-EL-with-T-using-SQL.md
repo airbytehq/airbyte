@@ -4,20 +4,19 @@
 
 This tutorial will describe how to integrate SQL based transformations with Airbyte syncs using plain SQL queries.
 
-This is the first part of ELT tutorial. 
+This is the first part of ELT tutorial.
 The second part goes deeper with [connecting EL with T using DBT](connecting-EL-with-T-using-DBT.md).
 
-## First transformation step: Normalization 
+## First transformation step: Normalization
 
 At its core, Airbyte is geared to handle the EL (Extract Load) steps of an ELT process.
 These steps can also be referred in Airbyte's dialect as "Source" and "Destination".
 
-However, this is actually producing a table in the destination with a JSON blob column... 
-This is probably not what would be expected from an integration tool such as Airbyte as an output 
-for analytics usage!
+However, this is actually producing a table in the destination with a JSON blob column...
+For the typical analytics use case, you probably want this json blob normalized so that each field is its own column.
 
 So, after EL, comes the T (transformation) and the first T step that Airbyte actually applies on top of
-the extracted data is called "Normalization". 
+the extracted data is called "Normalization".
 You can find more information about it [here](../architecture/basic-normalization.md).
 
 Airbyte runs this step before handing the final data over to other tools that will manage further transformation down the line.
@@ -29,14 +28,14 @@ with examples of implementation underneath:
 ![](../.gitbook/assets/connecting-EL-with-T-4.png)
 
 Anyway, it is possible to short-circuit this process (no vendor lock-in) and handle it yourself by turning this option
-off in the destination settings page. 
+off in the destination settings page.
 
 This could be useful if:
 1. you have different usage than analytics that could be handled with these initial data in raw JSON format.
 1. you can implement your own Transformer (even in a different language such as Java or in Spark for example, or another transformation tool: DBT or Dataform)
 1. you want to customize and change how the data is normalized with your own queries (add deduplication logic since Airbyte is not doing it natively yet?)
 
-In order to do so, we will now describe how you can leverage the basic normalization outputs that Airbyte 
+In order to do so, we will now describe how you can leverage the basic normalization outputs that Airbyte
 generates to build your own transformations if you don't want to start from scratch.
 
 Note: We will rely on docker commands that we've gone over as part of another [Tutorial on Exploring Docker Volumes](exploring-workspace-folder.md).
@@ -67,7 +66,7 @@ Notice that the process ran in the `/tmp/workspace/5/0` folder.
 
 ## Identify Workspace ID with Normalize steps
 
-If you went through the previous setup of source/destination section and run a sync, you were able 
+If you went through the previous setup of source/destination section and run a sync, you were able
 to identify which workspace was used, let's define some environment variables to remember this:
 
 ```bash
@@ -83,16 +82,16 @@ NORMALIZE_WORKSPACE=`docker run --rm -i -v airbyte_workspace:/data  busybox find
 
 ## Export Plain SQL files
 
-Airbyte is using internally a tool for handling transformations. 
+Airbyte is internally using a specialized tool for handling transformations called DBT.
 
-It is a python-based program that reads the `catalog.json` file and generates code on how to interpret and transform it.
+It is made possible thanks to another python-based program that reads the `catalog.json` file and generates code on how to interpret and transform it.
 
-The final output of such a tool is producing SQL files that can be run on top of the destination that you selected.
+The final output of DBT is producing SQL files that can be run on top of the destination that you selected.
 
 Therefore, it is possible to extract these SQL files, modify them and run it yourself manually outside of Airbyte!
 
-You would be able to find these at the following location inside the docker containers: 
-    
+You would be able to find these at the following location inside the server's docker container:
+
     /tmp/workspace/${NORMALIZE_WORKSPACE}/build/run/airbyte_utils/models/generated/<your_table_name>.sql
 
 In order to extract them, you can run:
@@ -117,43 +116,43 @@ Example Output:
 ```sql
 create  table "postgres"."public"."covid_epidemiology__dbt_tmp"
   as (
-    with 
+    with
 covid_epidemiology_node as (
-  select 
+  select
     _airbyte_emitted_at,
-    
+
     (current_timestamp at time zone 'utc')::
     timestamp
 
  as _airbyte_normalized_at,
-    cast(jsonb_extract_path_text("_airbyte_data",'key') as 
+    cast(jsonb_extract_path_text("_airbyte_data",'key') as
     varchar
 ) as "key",
-    cast(jsonb_extract_path_text("_airbyte_data",'date') as 
+    cast(jsonb_extract_path_text("_airbyte_data",'date') as
     varchar
 ) as "date",
-    cast(jsonb_extract_path_text("_airbyte_data",'new_tested') as 
+    cast(jsonb_extract_path_text("_airbyte_data",'new_tested') as
     float
 ) as new_tested,
-    cast(jsonb_extract_path_text("_airbyte_data",'new_deceased') as 
+    cast(jsonb_extract_path_text("_airbyte_data",'new_deceased') as
     float
 ) as new_deceased,
-    cast(jsonb_extract_path_text("_airbyte_data",'total_tested') as 
+    cast(jsonb_extract_path_text("_airbyte_data",'total_tested') as
     float
 ) as total_tested,
-    cast(jsonb_extract_path_text("_airbyte_data",'new_confirmed') as 
+    cast(jsonb_extract_path_text("_airbyte_data",'new_confirmed') as
     float
 ) as new_confirmed,
-    cast(jsonb_extract_path_text("_airbyte_data",'new_recovered') as 
+    cast(jsonb_extract_path_text("_airbyte_data",'new_recovered') as
     float
 ) as new_recovered,
-    cast(jsonb_extract_path_text("_airbyte_data",'total_deceased') as 
+    cast(jsonb_extract_path_text("_airbyte_data",'total_deceased') as
     float
 ) as total_deceased,
-    cast(jsonb_extract_path_text("_airbyte_data",'total_confirmed') as 
+    cast(jsonb_extract_path_text("_airbyte_data",'total_confirmed') as
     float
 ) as total_confirmed,
-    cast(jsonb_extract_path_text("_airbyte_data",'total_recovered') as 
+    cast(jsonb_extract_path_text("_airbyte_data",'total_recovered') as
     float
 ) as total_recovered
   from "postgres".public._airbyte_raw_covid_epidemiology
@@ -162,30 +161,30 @@ covid_epidemiology_with_id as (
   select
     *,
     md5(cast(
-    
-    coalesce(cast("key" as 
+
+    coalesce(cast("key" as
     varchar
-), '') || '-' || coalesce(cast("date" as 
+), '') || '-' || coalesce(cast("date" as
     varchar
-), '') || '-' || coalesce(cast(new_tested as 
+), '') || '-' || coalesce(cast(new_tested as
     varchar
-), '') || '-' || coalesce(cast(new_deceased as 
+), '') || '-' || coalesce(cast(new_deceased as
     varchar
-), '') || '-' || coalesce(cast(total_tested as 
+), '') || '-' || coalesce(cast(total_tested as
     varchar
-), '') || '-' || coalesce(cast(new_confirmed as 
+), '') || '-' || coalesce(cast(new_confirmed as
     varchar
-), '') || '-' || coalesce(cast(new_recovered as 
+), '') || '-' || coalesce(cast(new_recovered as
     varchar
-), '') || '-' || coalesce(cast(total_deceased as 
+), '') || '-' || coalesce(cast(total_deceased as
     varchar
-), '') || '-' || coalesce(cast(total_confirmed as 
+), '') || '-' || coalesce(cast(total_confirmed as
     varchar
-), '') || '-' || coalesce(cast(total_recovered as 
+), '') || '-' || coalesce(cast(total_recovered as
     varchar
 ), '')
 
- as 
+ as
     varchar
 )) as _airbyte_covid_epidemiology_hashid
     from covid_epidemiology_node
@@ -194,9 +193,9 @@ select * from covid_epidemiology_with_id
   );
 ```
 
-### Simple SQL Query 
+### Simple SQL Query
 
-We could simplify the SQL query by removing some parts that may be unnecessary for your current usage 
+We could simplify the SQL query by removing some parts that may be unnecessary for your current usage
 (such as generating a md5 column; [Why exactly would I want to use that?!](https://blog.getdbt.com/the-most-underutilized-function-in-sql/)).
 
 It would turn into a simpler query:
@@ -204,10 +203,10 @@ It would turn into a simpler query:
 ```sql
 create table "postgres"."public"."covid_epidemiology"
 as (
-    select 
-        _airbyte_emitted_at,        
+    select
+        _airbyte_emitted_at,
         (current_timestamp at time zone 'utc')::timestamp as _airbyte_normalized_at,
-        
+
         cast(jsonb_extract_path_text("_airbyte_data",'key') as varchar) as "key",
         cast(jsonb_extract_path_text("_airbyte_data",'date') as varchar) as "date",
         cast(jsonb_extract_path_text("_airbyte_data",'new_tested') as float) as new_tested,
@@ -225,12 +224,12 @@ as (
 ### Customize SQL Query
 
 Feel free to:
-- Rename the columns as you desire 
+- Rename the columns as you desire
     - avoiding using keywords such as `"key"` or `"date"`
-- You can tweak the column data type if the ones generated by Airbyte are not the ones you favor    
+- You can tweak the column data type if the ones generated by Airbyte are not the ones you favor
     - For example, let's use `Integer` instead of `Float` for the number of Covid cases...
-- Add deduplicating logic 
-    - if you can identify which columns to use as Primary Keys 
+- Add deduplicating logic
+    - if you can identify which columns to use as Primary Keys
   (since airbyte isn't able to detect those automatically yet...)
     - (Note: actually I am not even sure if I can tell the proper primary key in this dataset...)
 - Create a View (or materialized views) instead of a Table.
@@ -240,9 +239,9 @@ Feel free to:
 ```sql
 create view "postgres"."public"."covid_epidemiology" as (
     with parse_json_cte as (
-        select 
-            _airbyte_emitted_at,        
-            
+        select
+            _airbyte_emitted_at,
+
             cast(jsonb_extract_path_text("_airbyte_data",'key') as varchar) as id,
             cast(jsonb_extract_path_text("_airbyte_data",'date') as varchar) as updated_at,
             cast(jsonb_extract_path_text("_airbyte_data",'new_tested') as float) as new_tested,
@@ -256,19 +255,19 @@ create view "postgres"."public"."covid_epidemiology" as (
         from "postgres".public._airbyte_raw_covid_epidemiology
     ),
     cte as (
-        select 
-            *, 
+        select
+            *,
             row_number() over (
                 partition by id
                 order by updated_at desc
             ) as row_num
         from parse_json_cte
     )
-    select 
+    select
         substring(id, 1, 2) as id, -- Probably not the right way to identify the primary key in this dataset...
         updated_at,
-        _airbyte_emitted_at, 
-        
+        _airbyte_emitted_at,
+
         case when new_tested = 'NaN' then 0 else cast(new_tested as integer) end as new_tested,
         case when new_deceased = 'NaN' then 0 else cast(new_deceased as integer) end as new_deceased,
         case when total_tested = 'NaN' then 0 else cast(total_tested as integer) end as total_tested,
@@ -284,5 +283,5 @@ create view "postgres"."public"."covid_epidemiology" as (
 
 Then you can run in your preferred SQL editor or tool!
 
-If you are familiar with DBT or want to learn more about it, you can continue with the following 
+If you are familiar with DBT or want to learn more about it, you can continue with the following
 [tutorial using DBT](connecting-EL-with-T-using-DBT.md)...
