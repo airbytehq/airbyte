@@ -68,22 +68,26 @@ public class SchedulerApp {
 
   private static final long GRACEFUL_SHUTDOWN_SECONDS = 30;
   private static final int MAX_WORKERS = 4;
-  private static final long JOB_SUBMITTER_DELAY_MILLIS = 5000L;
+  private static final Duration SCHEDULING_DELAY = Duration.ofSeconds(5);
+  private static final Duration CLEANING_DELAY = Duration.ofHours(2);
   private static final ThreadFactory THREAD_FACTORY = new ThreadFactoryBuilder().setNameFormat("worker-%d").build();
 
   private final Path workspaceRoot;
   private final ProcessBuilderFactory pbf;
   private final JobPersistence jobPersistence;
   private final ConfigRepository configRepository;
+  private final JobCleaner jobCleaner;
 
   public SchedulerApp(Path workspaceRoot,
                       ProcessBuilderFactory pbf,
                       JobPersistence jobPersistence,
-                      ConfigRepository configRepository) {
+                      ConfigRepository configRepository,
+                      JobCleaner jobCleaner) {
     this.workspaceRoot = workspaceRoot;
     this.pbf = pbf;
     this.jobPersistence = jobPersistence;
     this.configRepository = configRepository;
+    this.jobCleaner = jobCleaner;
   }
 
   public void start() throws IOException {
@@ -109,8 +113,17 @@ public class SchedulerApp {
           jobSubmitter.run();
         },
         0L,
-        JOB_SUBMITTER_DELAY_MILLIS,
-        TimeUnit.MILLISECONDS);
+        SCHEDULING_DELAY.toSeconds(),
+        TimeUnit.SECONDS);
+
+    scheduledPool.scheduleWithFixedDelay(
+        () -> {
+          MDC.setContextMap(mdc);
+          jobCleaner.run();
+        },
+        CLEANING_DELAY.toSeconds(),
+        CLEANING_DELAY.toSeconds(),
+        TimeUnit.SECONDS);
 
     Runtime.getRuntime().addShutdownHook(new GracefulShutdownHandler(Duration.ofSeconds(GRACEFUL_SHUTDOWN_SECONDS), workerThreadPool, scheduledPool));
   }
@@ -156,6 +169,10 @@ public class SchedulerApp {
     final JobPersistence jobPersistence = new DefaultJobPersistence(database);
     final ConfigPersistence configPersistence = new DefaultConfigPersistence(configRoot);
     final ConfigRepository configRepository = new ConfigRepository(configPersistence);
+    final JobCleaner jobCleaner = new JobCleaner(
+        configs.getWorkspaceRetentionConfig(),
+        workspaceRoot,
+        jobPersistence);
 
     TrackingClientSingleton.initialize(
         configs.getTrackingStrategy(),
@@ -178,7 +195,7 @@ public class SchedulerApp {
     }
 
     LOGGER.info("Launching scheduler...");
-    new SchedulerApp(workspaceRoot, pbf, jobPersistence, configRepository).start();
+    new SchedulerApp(workspaceRoot, pbf, jobPersistence, configRepository, jobCleaner).start();
   }
 
 }

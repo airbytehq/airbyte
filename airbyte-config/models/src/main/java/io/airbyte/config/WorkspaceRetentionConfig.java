@@ -24,46 +24,28 @@
 
 package io.airbyte.config;
 
-import java.nio.file.Path;
+public class WorkspaceRetentionConfig {
 
-public interface Configs {
+  private final long minDays;
+  private final long maxDays;
+  private final long maxSizeMb;
 
-  String getAirbyteRole();
-
-  String getAirbyteVersion();
-
-  Path getConfigRoot();
-
-  Path getWorkspaceRoot();
-
-  Path getLocalRoot();
-
-  String getDatabaseUser();
-
-  String getDatabasePassword();
-
-  String getDatabaseUrl();
-
-  String getWorkspaceDockerMount();
-
-  String getLocalDockerMount();
-
-  String getDockerNetwork();
-
-  TrackingStrategy getTrackingStrategy();
-
-  WorkerEnvironment getWorkerEnvironment();
-
-  WorkspaceRetentionConfig getWorkspaceRetentionConfig();
-
-  enum TrackingStrategy {
-    SEGMENT,
-    LOGGING
+  public WorkspaceRetentionConfig(long minDays, long maxDays, long maxSizeMb) {
+    this.minDays = minDays;
+    this.maxDays = maxDays;
+    this.maxSizeMb = maxSizeMb;
   }
 
-  enum WorkerEnvironment {
-    DOCKER,
-    KUBERNETES
+  public long getMinDays() {
+    return minDays;
+  }
+
+  public long getMaxDays() {
+    return maxDays;
+  }
+
+  public long getMaxSizeMb() {
+    return maxSizeMb;
   }
 
 }
