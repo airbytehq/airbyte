@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -98,12 +99,15 @@ public class SchedulerApp {
     final JobScheduler jobScheduler = new JobScheduler(jobPersistence, configRepository);
     final JobSubmitter jobSubmitter = new JobSubmitter(workerThreadPool, jobPersistence, configRepository, workerRunFactory);
 
+    Map<String, String> mdc = MDC.getCopyOfContextMap();
+
     // We cancel jobs that where running before the restart. They are not being monitored by the worker
     // anymore.
     cleanupZombies(jobPersistence);
 
     scheduledPool.scheduleWithFixedDelay(
         () -> {
+          MDC.setContextMap(mdc);
           jobRetrier.run();
           jobScheduler.run();
           jobSubmitter.run();
