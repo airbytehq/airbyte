@@ -53,6 +53,8 @@ Several things to check:
 
 If the above workaround does not fix your problem, please report it [here](https://github.com/airbytehq/airbyte/issues/1462) or in our [Slack](https://slack.airbyte.io).
 
-  
+## **Connection refused errors when connecting to a local db**
 
+Depending on your Docker network configuration, you may not be able to connect to `localhost` or `127.0.0.1` directly.
 
+If you are running into connection refused errors when running Airbyte via Docker Compose on Mac, try using `host.docker.internal` as the host. On Linux, you may have to modify `docker-compose.yml` and add a host that maps to your local machine using [`extra_hosts`](https://docs.docker.com/compose/compose-file/compose-file-v3/#extra_hosts).
