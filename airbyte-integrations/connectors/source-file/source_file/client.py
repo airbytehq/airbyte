@@ -40,7 +40,15 @@ from google.oauth2 import service_account
 
 
 class ConfigurationError(Exception):
-    pass
+    """Client mis-configured"""
+
+
+class FileNotFound(Exception):
+    """Object not found"""
+
+
+class PermissionsError(Exception):
+    """User don't have enough permissions"""
 
 
 class URLFile:
@@ -109,14 +117,14 @@ class URLFile:
             user = self._provider["user"]
             host = self._provider["host"]
             port = self._provider.get("port", 22)
+            # Explicitly turn off ssh keys stored in ~/.ssh
+            transport_params = {"connect_kwargs": {"look_for_keys": False}}
             if "password" in self._provider:
                 password = self._provider["password"]
-                # Explicitly turn off ssh keys stored in ~/.ssh
-                transport_params = {"connect_kwargs": {"look_for_keys": False}}
-                result = smart_open.open(f"{storage}{user}:{password}@{host}:{port}/{url}", transport_params=transport_params, mode=mode)
+                uri = f"{storage}{user}:{password}@{host}:{port}/{url}"
             else:
-                result = smart_open.open(f"{storage}{user}@{host}:{port}/{url}", mode=mode)
-            return result
+                uri = f"{storage}{user}@{host}:{port}/{url}"
+            return smart_open.open(uri, transport_params=transport_params, mode=mode)
         return smart_open.open(self.full_url, mode=mode)
 
     @property
