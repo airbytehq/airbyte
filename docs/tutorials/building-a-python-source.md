@@ -40,7 +40,7 @@ All `./gradlew` commands must be run from the root of the airbyte project.
 * If you need help with any step of the process, feel free to submit a PR with your progress and any questions you have. 
 * Submit a PR.
 * To run integration tests, Airbyte needs access to a test account/environment. Coordinate with an Airbyte engineer (via the PR) to add test credentials so that we can run tests for the integration in the CI. (We will create our own test account once you let us know what source we need to create it for.)
-* Once the config is stored in Github Secrets, edit `.github/workflows/gradle.yaml` to inject the config into the build environment.
+* Once the config is stored in Github Secrets, edit `.github/workflows/test-command.yml` to inject the config into the build environment.
 * Edit the `airbyte/tools/bin/ci_credentials.sh` script to pull the script from the build environment and write it to `secrets/config.json` during the build.
 * From the `airbyte` project root, run `./gradlew :airbyte-integrations:connectors:source-<source-name>:build` to make sure your module builds.
 * Apply Airbyte auto formatting `./gradlew format` and commit any changes.
