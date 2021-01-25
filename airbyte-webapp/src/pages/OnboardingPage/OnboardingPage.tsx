@@ -83,6 +83,7 @@ const OnboardingPage: React.FC = () => {
   const [errorStatusRequest, setErrorStatusRequest] = useState<{
     status: number;
     response: JobInfo;
+    message: string;
   } | null>(null);
 
   const afterUpdateStep = () => {
@@ -175,7 +176,7 @@ const OnboardingPage: React.FC = () => {
           onSubmit={onSubmitSourceStep}
           dropDownData={sourcesDropDownData}
           hasSuccess={successRequest}
-          errorStatus={errorStatusRequest?.status}
+          error={errorStatusRequest}
           source={sources.length && !successRequest ? sources[0] : undefined}
         />
       );
@@ -188,7 +189,7 @@ const OnboardingPage: React.FC = () => {
           onSubmit={onSubmitDestinationStep}
           dropDownData={destinationsDropDownData}
           hasSuccess={successRequest}
-          errorStatus={errorStatusRequest?.status}
+          error={errorStatusRequest}
           currentSourceDefinitionId={sources[0].sourceDefinitionId}
           destination={
             destinations.length && !successRequest ? destinations[0] : undefined
