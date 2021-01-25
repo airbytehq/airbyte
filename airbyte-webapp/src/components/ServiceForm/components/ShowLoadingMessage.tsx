@@ -9,6 +9,8 @@ type IProps = {
   connector?: string;
 };
 
+const TIMEOUT_MS = 10000;
+
 const ShowLoadingMessage: React.FC<IProps> = ({ connector }) => {
   const [longLoading, setLongLoading] = useState(false);
 
@@ -16,7 +18,7 @@ const ShowLoadingMessage: React.FC<IProps> = ({ connector }) => {
     setLongLoading(false);
     const timer = setTimeout(() => {
       setLongLoading(true);
-    }, 10000);
+    }, TIMEOUT_MS);
     return () => {
       clearTimeout(timer);
     };
