@@ -10,6 +10,7 @@ declare global {
 const config: {
   ui: {
     helpLink: string;
+    slackLink: string;
     docsLink: string;
     configurationArchiveLink: string;
     workspaceId: string;
@@ -26,6 +27,7 @@ const config: {
 } = {
   ui: {
     helpLink: "https://airbyte.io/community",
+    slackLink: "https://slack.airbyte.io",
     docsLink: "https://docs.airbyte.io",
     configurationArchiveLink:
       "https://docs.airbyte.io/architecture/configuration-archive",

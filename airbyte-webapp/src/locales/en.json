@@ -6,6 +6,7 @@
   "sidebar.admin": "Admin",
   "sidebar.help": "Help",
   "sidebar.docs": "Docs",
+  "sidebar.slack": "Slack",
 
   "form.continue": "Continue",
   "form.emailOptional": "Your email (optional)",
