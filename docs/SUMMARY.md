@@ -7,7 +7,6 @@
   * [Building a toy connector](tutorials/toy-connector.md)
   * [Beginner's Guide to the AirbyteCatalog](tutorials/beginners-guide-to-catalog.md)
   * [Upgrading Airbyte](tutorials/upgrading-airbyte.md)
-  * [Managing Airbyte Configurations](tutorials/working-with-airbyte-config.md)
   * [Exploring Airbyte logs folder](tutorials/exploring-workspace-folder.md)
   * [Connecting EL with T using SQL (part 1/2)](tutorials/connecting-EL-with-T-using-SQL.md)
   * [Connecting EL with T using DBT (part 2/2)](tutorials/connecting-EL-with-T-using-DBT.md)
