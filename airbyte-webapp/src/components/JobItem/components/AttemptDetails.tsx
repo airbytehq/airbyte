@@ -8,6 +8,7 @@ import { Attempt } from "../../../core/resources/Job";
 type IProps = {
   className?: string;
   attempt: Attempt;
+  configType?: string;
 };
 
 const Details = styled.div`
@@ -16,7 +17,11 @@ const Details = styled.div`
   color: ${({ theme }) => theme.greyColor40};
 `;
 
-const AttemptDetails: React.FC<IProps> = ({ attempt, className }) => {
+const AttemptDetails: React.FC<IProps> = ({
+  attempt,
+  className,
+  configType
+}) => {
   const formatBytes = (bytes: number) => {
     if (!bytes) {
       return (
@@ -64,6 +69,16 @@ const AttemptDetails: React.FC<IProps> = ({ attempt, className }) => {
         ) : null}
         <FormattedMessage id="sources.second" values={{ second: seconds }} />
       </span>
+      {configType ? (
+        <span>
+          {" "}
+          |{" "}
+          <FormattedMessage
+            id={`sources.${configType}`}
+            defaultMessage={configType}
+          />
+        </span>
+      ) : null}
     </Details>
   );
 };
