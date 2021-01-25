@@ -39,18 +39,16 @@ class Client(BaseClient):
     """
 
     API_VERSION = 3
-    DEFAULT_ITEMS_PER_PAGE = 100
 
-    PARAMS = {"maxResults": DEFAULT_ITEMS_PER_PAGE, "startAt": 0}
     ENTITIES_MAP = {
-        "projects": {"url": "/project/search", "func": lambda v: v["values"], "params": PARAMS},
-        "issues": {"url": "/search", "func": lambda v: v["issues"], "params": PARAMS},
+        "projects": {"url": "/project/search", "func": lambda v: v["values"], "params": {}},
+        "issues": {"url": "/search", "func": lambda v: v["issues"], "params": {}},
         "issue_comments": {
             "url": "/search",
             "func": lambda v: reduce(operator.iadd, [obj["fields"]["comment"]["comments"] for obj in v["issues"]], []),
-            "params": {**PARAMS, **{"fields": ["comment"]}},
+            "params": {**{"fields": ["comment"]}},
         },
-        "users": {"url": "/users/search", "func": lambda v: v, "params": PARAMS},
+        "users": {"url": "/users/search", "func": lambda v: v, "params": {}},
         "resolutions": {"url": "/resolution", "func": lambda v: v, "params": {}},
     }
 
@@ -60,13 +58,19 @@ class Client(BaseClient):
         super().__init__()
 
     def lists(self, name, url, params, func, **kwargs):
+        next_page = None
         while True:
-            response = requests.get(f"{self.base_api_url}{url}", params=params, auth=self.auth)
+            if next_page:
+                response = requests.get(next_page, params=params, auth=self.auth)
+            else:
+                response = requests.get(f"{self.base_api_url}{url}", params=params, auth=self.auth)
             data = func(response.json())
             yield from data
-            if name == "resolutions" or len(data) < self.DEFAULT_ITEMS_PER_PAGE:
+            # print(response.json())
+            if "nextPage" in response.json():
+                next_page = response.json()["nextPage"]
+            else:
                 break
-            params["startAt"] += self.DEFAULT_ITEMS_PER_PAGE
 
     def _enumerate_methods(self) -> Mapping[str, callable]:
         return {entity: partial(self.lists, name=entity, **value) for entity, value in self.ENTITIES_MAP.items()}
