@@ -37,6 +37,7 @@ All `./gradlew` commands must be run from the root of the airbyte project.
 {% endhint %}
 
 ### Submitting a Source to Airbyte 
+* If you need help with any step of the process, feel free to submit a PR with your progress and any questions you have. 
 * Submit a PR.
 * Coordinate with an Airbyte engineer (via the PR) to add test credentials so that we can run tests for the integration in the CI. (We will create our own test account once you let us know what source we need to create it for.)
 * Once the config is stored in Github Secrets, edit `.github/workflows/gradle.yaml` to inject the config into the build environment.
