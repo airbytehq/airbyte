@@ -57,4 +57,3 @@ This step is optional but highly recommended to allow for better permission cont
 _Coming soon: suggestions on how to create this user._
 
 Your database user should now be ready for use with Airbyte.
-
