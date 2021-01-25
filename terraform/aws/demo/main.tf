@@ -14,7 +14,7 @@ module "airbyte-instance" {
 }
 
 module "public-lb" {
-  source = "./lb/public"
+  source = "./lb"
 
   name = var.name
 
@@ -23,15 +23,5 @@ module "public-lb" {
   default-sg = var.default-sg
   certificate = var.certificate
   instance-id = module.airbyte-instance.instance-id
-}
-
-module "admin-lb" {
-  source = "./lb/admin"
-
-  name = var.name
-
-  vpc = var.vpc
-  subnets = var.subnets
-  default-sg = var.default-sg
-  instance-id = module.airbyte-instance.instance-id
+  auth-secret = var.auth-secret
 }

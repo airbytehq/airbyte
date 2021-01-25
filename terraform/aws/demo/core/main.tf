@@ -3,6 +3,7 @@ data "aws_security_group" "default-sg" {
 }
 
 data "aws_ami" "amazon-linux-2" {
+  # Hardcoded 'Amazon' owner id
   owners = [137112412989]
   most_recent = true
 

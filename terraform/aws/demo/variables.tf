@@ -29,3 +29,7 @@ variable "key-name" {
 variable "certificate" {
   type = string
 }
+
+variable "auth-secret" {
+  type = string
+}
