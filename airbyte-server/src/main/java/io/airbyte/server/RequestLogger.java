@@ -25,12 +25,7 @@
 package io.airbyte.server;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.api.client.model.DestinationCreate;
-import io.airbyte.api.client.model.DestinationRecreate;
-import io.airbyte.api.client.model.DestinationUpdate;
-import io.airbyte.api.client.model.SourceCreate;
-import io.airbyte.api.client.model.SourceRecreate;
-import io.airbyte.api.client.model.SourceUpdate;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -51,8 +46,6 @@ import org.glassfish.jersey.message.MessageUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
-
-// todo: make sure handler code has MDC functional
 
 public class RequestLogger implements ContainerRequestFilter, ContainerResponseFilter {
 
@@ -115,23 +108,26 @@ public class RequestLogger implements ContainerRequestFilter, ContainerResponseF
     }
   }
 
-  private static final Set<Class<?>> SENSITIVE_INFO_REQUESTS = Set.of(
-      SourceCreate.class,
-      SourceUpdate.class,
-      SourceRecreate.class,
-      DestinationCreate.class,
-      DestinationUpdate.class,
-      DestinationRecreate.class);
+  private static final Set<String> TOP_LEVEL_SENSITIVE_FIELDS = Set.of(
+      "connectionConfiguration");
 
   private static String redactSensitiveInfo(String requestBody) {
-    Optional<JsonNode> jsonNode = Jsons.tryDeserialize(requestBody);
+    Optional<JsonNode> jsonNodeOpt = Jsons.tryDeserialize(requestBody);
 
-    if (jsonNode.isPresent()) {
-      for (Class<?> sensitiveClass : SENSITIVE_INFO_REQUESTS) {
-        Optional<?> object = Jsons.tryObject(jsonNode.get(), sensitiveClass);
-        if (object.isPresent()) {
-          return "(REDACTED) Request body contains sensitive information!";
+    if (jsonNodeOpt.isPresent()) {
+      JsonNode jsonNode = jsonNodeOpt.get();
+      if (jsonNode instanceof ObjectNode) {
+        ObjectNode objectNode = (ObjectNode) jsonNode;
+
+        for (String topLevelSensitiveField : TOP_LEVEL_SENSITIVE_FIELDS) {
+          if (objectNode.has(topLevelSensitiveField)) {
+            objectNode.put(topLevelSensitiveField, "REDACTED");
+          }
         }
+
+        return objectNode.toString();
+      } else {
+        return "Unable to deserialize POST body for logging.";
       }
     }
 
