@@ -1320,9 +1320,9 @@ components:
           items:
             $ref: "#/components/schemas/SourceRead"
     SourceDiscoverSchemaRead:
+      description: Returns the results of a discover schema job. If the job was not successful, the schema field will not be present. jobInfo will aways be present and its status be used to determine if the job was successful or not.
       type: object
       required:
-        - schema
         - jobInfo
       properties:
         schema:
