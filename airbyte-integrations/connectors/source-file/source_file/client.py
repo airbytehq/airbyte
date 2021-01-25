@@ -56,7 +56,6 @@ class URLFile:
         s3://my_bucket/my_key
         s3://my_key:my_secret@my_bucket/my_key
         gs://my_bucket/my_blob
-        azure://my_bucket/my_blob (not tested)
         hdfs:///path/file (not tested)
         hdfs://path/file (not tested)
         webhdfs://host:port/path/file (not tested)

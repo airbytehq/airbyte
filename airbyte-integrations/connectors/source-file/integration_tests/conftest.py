@@ -75,7 +75,6 @@ def provider_config(ssh_service):
             "ssh": dict(storage="SSH", host=ssh_service, user="user1", password="pass1", port=2222),
             "scp": dict(storage="SCP", host=ssh_service, user="user1", password="pass1", port=2222),
             "sftp": dict(storage="SFTP", host=ssh_service, user="user1", password="pass1", port=100),
-            "hdfs": None,
             "gcs": dict(storage="GCS"),
             "s3": dict(storage="S3"),
         }

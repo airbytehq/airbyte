@@ -134,24 +134,6 @@
             }
           },
           {
-            "title": "WebHDFS: HDFS REST API (Untested)",
-            "required": ["storage", "host", "port"],
-            "properties": {
-              "storage": {
-                "type": "string",
-                "description": "WARNING: smart_open library provides the ability to stream files over this protocol but we haven't been able to test this as part of Airbyte yet, please use with caution. We would love to hear feedbacks from you if you are able or fail to use this!",
-                "enum": ["WebHDFS"],
-                "default": "WebHDFS"
-              },
-              "host": {
-                "type": "string"
-              },
-              "port": {
-                "type": "number"
-              }
-            }
-          },
-          {
             "title": "Local Filesystem (limited)",
             "required": ["storage"],
             "properties": {
