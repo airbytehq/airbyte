@@ -1,14 +1,14 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
+import { useAsyncFn } from "react-use";
 
 import Button from "../../../components/Button";
-import { useFetcher } from "rest-hooks";
-import DeploymentResource from "../../../core/resources/Deployment";
 import ContentCard from "../../../components/ContentCard";
 import config from "../../../config";
 import Link from "../../../components/Link";
 import ImportConfigurationModal from "./ImportConfigurationModal";
+import DeploymentService from "../../../core/resources/DeploymentService";
 
 const Content = styled.div`
   max-width: 813px;
@@ -42,31 +42,39 @@ const Warning = styled.div`
 
 const ConfigurationView: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
-  const fetchExp = useFetcher(DeploymentResource.exportShape(), true);
-  const fetchImp = useFetcher(DeploymentResource.importShape(), true);
+  const [error, setError] = useState<Error | null>(null);
+
+  const [{ loading }, onImport] = useAsyncFn(async (fileBlob: Blob) => {
+    try {
+      const reader = new FileReader();
+      reader.readAsArrayBuffer(fileBlob);
+
+      return new Promise((resolve, reject) => {
+        reader.onloadend = async e => {
+          // setError("");
+          // setIsLoading(true);
+          const file = e?.target?.result;
+          if (!file) {
+            throw new Error("No file");
+          }
+          try {
+            await DeploymentService.importDeployment(file);
+
+            window.location.reload();
+            resolve(true);
+          } catch (e) {
+            reject(e);
+          }
+        };
+      });
+    } catch (e) {
+      setError(e);
+    }
+  });
 
   const onExport = async () => {
-    const { file } = await fetchExp({});
+    const file = await DeploymentService.exportDeployment();
     window.location.assign(file);
-  };
-
-  const onImport = async (file: any) => {
-    const reader = new FileReader();
-    reader.readAsArrayBuffer(file);
-
-    reader.onload = async e => {
-      try {
-        setError("");
-        setIsLoading(true);
-        await fetchImp({}, (e?.target?.result as any) || "");
-        window.location.reload();
-      } catch (e) {
-        setIsLoading(false);
-        setError(e);
-      }
-    };
   };
 
   return (
@@ -109,9 +117,9 @@ const ConfigurationView: React.FC = () => {
           <ImportConfigurationModal
             onClose={() => setIsModalOpen(false)}
             onSubmit={onImport}
-            isLoading={isLoading}
+            isLoading={loading}
             error={error}
-            cleanError={() => setError("")}
+            cleanError={() => setError(null)}
           />
         )}
       </ControlContent>

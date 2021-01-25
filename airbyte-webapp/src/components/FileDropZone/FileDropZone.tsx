@@ -1,10 +1,10 @@
 import React from "react";
-import { useDropzone } from "react-dropzone";
+import { DropzoneOptions, useDropzone } from "react-dropzone";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFile } from "@fortawesome/free-regular-svg-icons";
 
-const Content = styled.div<any>`
+const Content = styled.div<{ hasFiles: boolean }>`
   width: 100%;
   outline: none;
   padding: 12px 10px;
@@ -43,6 +43,7 @@ const Content = styled.div<any>`
 
 const FileView = styled.div`
   color: ${({ theme }) => theme.textColor};
+
   &:first-child {
     margin-top: 7px;
   }
@@ -56,11 +57,7 @@ const FileIcon = styled(FontAwesomeIcon)`
 type IProps = {
   className?: string;
   mainText?: React.ReactNode;
-  options?: {
-    maxFiles?: number;
-    accept?: string;
-    onDrop?: (files: any) => void;
-  };
+  options?: DropzoneOptions;
 };
 
 const FileDropZone: React.FC<IProps> = ({ className, mainText, options }) => {
@@ -74,8 +71,8 @@ const FileDropZone: React.FC<IProps> = ({ className, mainText, options }) => {
       <input {...getInputProps()} />
       {mainText}
       <div>
-        {acceptedFiles.map(file => (
-          <FileView>
+        {acceptedFiles.map((file, index) => (
+          <FileView key={index}>
             <FileIcon icon={faFile} />
             {file.name}
           </FileView>

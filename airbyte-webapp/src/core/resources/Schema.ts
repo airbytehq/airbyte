@@ -1,7 +1,8 @@
 import { Resource } from "rest-hooks";
-import BaseResource, { NetworkError } from "./BaseResource";
+import BaseResource from "./BaseResource";
 import { JobInfo } from "./Scheduler";
 import Status from "../statuses";
+import { NetworkError } from "./NetworkError";
 
 export enum SyncMode {
   Incremental = "incremental",

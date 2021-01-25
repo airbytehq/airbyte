@@ -1,10 +1,10 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useFetcher, useResource } from "rest-hooks";
+import { CellProps } from "react-table";
 
 import { Block, Title, FormContentTitle } from "./PageComponents";
 import Table from "../../../components/Table";
-import { CellProps } from "react-table";
 import ConnectorCell from "./ConnectorCell";
 import ImageCell from "./ImageCell";
 import VersionCell from "./VersionCell";

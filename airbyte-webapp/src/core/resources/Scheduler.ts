@@ -1,8 +1,9 @@
 import { Resource } from "rest-hooks";
-import BaseResource, { NetworkError } from "./BaseResource";
+import BaseResource from "./BaseResource";
 import { propertiesType } from "./SourceDefinitionSpecification";
 import { Attempt, JobItem } from "./Job";
 import Status from "../statuses";
+import { NetworkError } from "./NetworkError";
 
 export type JobInfo = {
   job: JobItem;

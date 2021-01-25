@@ -1,19 +1,9 @@
 import { Method, Resource } from "rest-hooks";
 
-// import { authService } from "../auth/authService";
-import config from "../../config";
+import AirbyteRequestService from "./AirbyteRequestService";
+import { NetworkError } from "./NetworkError";
 
-export class NetworkError extends Error {
-  status: number;
-  response: Response;
-
-  constructor(response: Response) {
-    super(response.statusText);
-    this.status = response.status;
-    this.response = response;
-  }
-}
-
+// TODO: rename to crud resource after upgrade to rest-hook 5.0.0
 export default abstract class BaseResource extends Resource {
   /** Perform network request and resolve with HTTP Response */
   static async fetchResponse(
@@ -51,15 +41,18 @@ export default abstract class BaseResource extends Resource {
   }
 
   static listUrl<T extends typeof Resource>(this: T): string {
-    return `${config.apiUrl}${this.urlRoot}`;
+    return `${AirbyteRequestService.rootUrl}${this.urlRoot}`;
   }
 
-  static url<T extends typeof Resource>(this: T): string {
-    return `${config.apiUrl}${this.urlRoot}`;
+  static url<T extends typeof Resource>(
+    this: T,
+    _: Readonly<Record<string, any>>
+  ): string {
+    return `${AirbyteRequestService.rootUrl}${this.urlRoot}`;
   }
 
   static rootUrl(): string {
-    return config.apiUrl;
+    return AirbyteRequestService.rootUrl;
   }
 
   static listShape<T extends typeof Resource>(this: T) {

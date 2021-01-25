@@ -21,13 +21,16 @@ const Content = styled.div`
   line-height: 28px;
   width: 485px;
 `;
+
 const ButtonWithMargin = styled(Button)`
   margin-right: 9px;
 `;
+
 const DropZoneSubtitle = styled.div`
   font-size: 11px;
   font-weight: bold;
 `;
+
 const Bottom = styled.div`
   display: flex;
   justify-content: space-between;
@@ -35,16 +38,27 @@ const Bottom = styled.div`
   flex-direction: row;
   padding-top: 27px;
 `;
+
 const Error = styled.div`
   color: ${({ theme }) => theme.dangerColor};
   font-size: 14px;
   line-height: 17px;
   margin-right: 10px;
 `;
+
 const Note = styled.div`
   padding-top: 8px;
   text-align: center;
 `;
+
+const DropZoneMainText = () => (
+  <div>
+    <FormattedMessage id="admin.dropZoneTitle" />
+    <DropZoneSubtitle>
+      <FormattedMessage id="admin.dropZoneSubtitle" />
+    </DropZoneSubtitle>
+  </div>
+);
 
 const ImportConfigurationModal: React.FC<IProps> = ({
   onClose,
@@ -53,15 +67,8 @@ const ImportConfigurationModal: React.FC<IProps> = ({
   error,
   cleanError
 }) => {
-  const [usersFile, setUsersFile] = useState(null);
-  const DropZoneMainText = () => (
-    <div>
-      <FormattedMessage id="admin.dropZoneTitle" />
-      <DropZoneSubtitle>
-        <FormattedMessage id="admin.dropZoneSubtitle" />
-      </DropZoneSubtitle>
-    </div>
-  );
+  const [usersFile, setUsersFile] = useState<File | null>(null);
+
   return (
     <Modal
       onClose={onClose}
@@ -73,9 +80,7 @@ const ImportConfigurationModal: React.FC<IProps> = ({
           options={{
             onDrop: files => {
               setUsersFile(files[0]);
-              if (cleanError) {
-                cleanError();
-              }
+              cleanError?.();
             },
             maxFiles: 1,
             accept:

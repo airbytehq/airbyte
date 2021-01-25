@@ -34,6 +34,7 @@
     "react-pose": "^4.0.10",
     "react-router-dom": "^5.1.2",
     "react-table": "^7.5.0",
+    "react-use": "^15.3.8",
     "react-widgets": "^4.5.0",
     "rest-hooks": "^4.5.9",
     "sanitize-html": "^2.1.2",
