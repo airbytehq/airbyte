@@ -26,6 +26,7 @@ import json
 import os
 import selectors
 import subprocess
+import sys
 from dataclasses import dataclass
 from datetime import datetime
 from typing import DefaultDict, Dict, Generator, List, Optional
@@ -197,6 +198,8 @@ class SingerHelper:
                             logger.log_by_prefix(line, "INFO")
                     else:
                         logger.log_by_prefix(line, "ERROR")
+                        if line.split()[0] == "CRITICAL":
+                            sys.exit(1)
 
     @staticmethod
     def create_singer_catalog_with_selection(masked_airbyte_catalog: ConfiguredAirbyteCatalog, discovered_singer_catalog: object) -> str:
