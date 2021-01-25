@@ -117,7 +117,10 @@ public class SchedulerApp {
         TimeUnit.SECONDS);
 
     scheduledPool.scheduleWithFixedDelay(
-        jobCleaner,
+        () -> {
+          MDC.setContextMap(mdc);
+          jobCleaner.run();
+        },
         CLEANING_DELAY.toSeconds(),
         CLEANING_DELAY.toSeconds(),
         TimeUnit.SECONDS);
