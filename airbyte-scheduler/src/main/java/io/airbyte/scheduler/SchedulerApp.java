@@ -67,7 +67,8 @@ public class SchedulerApp {
 
   private static final long GRACEFUL_SHUTDOWN_SECONDS = 30;
   private static final int MAX_WORKERS = 4;
-  private static final long DELAY_SECONDS = 5L;
+  private static final Duration SCHEDULING_DELAY = Duration.ofSeconds(5);
+  private static final Duration CLEANING_DELAY = Duration.ofHours(2);
   private static final ThreadFactory THREAD_FACTORY = new ThreadFactoryBuilder().setNameFormat("worker-%d").build();
 
   private final Path workspaceRoot;
@@ -106,10 +107,15 @@ public class SchedulerApp {
           jobRetrier.run();
           jobScheduler.run();
           jobSubmitter.run();
-          jobCleaner.run();
         },
         0L,
-        DELAY_SECONDS,
+        SCHEDULING_DELAY.toSeconds(),
+        TimeUnit.SECONDS);
+
+    scheduledPool.scheduleWithFixedDelay(
+        jobCleaner,
+        CLEANING_DELAY.toSeconds(),
+        CLEANING_DELAY.toSeconds(),
         TimeUnit.SECONDS);
 
     Runtime.getRuntime().addShutdownHook(new GracefulShutdownHandler(Duration.ofSeconds(GRACEFUL_SHUTDOWN_SECONDS), workerThreadPool, scheduledPool));

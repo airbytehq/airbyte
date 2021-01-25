@@ -117,9 +117,15 @@ public class JobCleaner implements Runnable {
     Files.walk(workspaceRoot)
         .map(Path::toFile)
         .filter(f -> {
-          String[] splits = f.toPath().toString().replace(workspaceRoot.toString(), "").split("/");
-          if (splits.length >= 2) {
-            return !nonTerminalJobIds.contains(splits[1]);
+          Path relativePath = workspaceRoot.relativize(f.toPath());
+
+          // if the directory is ID/something instead of just ID, get just the ID
+          if (relativePath.getParent() != null) {
+            relativePath = workspaceRoot.relativize(f.toPath()).getParent();
+          }
+
+          if (!relativePath.toString().equals("")) {
+            return !nonTerminalJobIds.contains(relativePath.toString());
           } else {
             return true;
           }
