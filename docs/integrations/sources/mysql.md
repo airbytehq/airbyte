@@ -69,11 +69,3 @@ GRANT SELECT ON <database name>.* TO 'airbyte'@'%';
 You can limit this grant down to specific tables instead of the whole database. Note that to replicate data from multiple MySQL schemas, you can re-run the command above to grant access to all the relevant schemas, but you'll need to set up multiple sources connecting to the same db on multiple schemas.
 
 Your database user should now be ready for use with Airbyte.
-
-## Troubleshooting
-
-### `Connection to localhost:5432 refused` errors when connecting to a local db
-
-On Mac, if you run Airbyte with Docker Compose and want to connect to a local db instance, you will have to use `host.docker.internal` as the hostname instead of `localhost` or `127.0.0.1`.
-
-On Linux, you will have to modify `docker-compose.yml` and add a host that maps to your local machine using [`extra_hosts`](https://docs.docker.com/compose/compose-file/compose-file-v3/#extra_hosts).
