@@ -94,7 +94,10 @@ const MainInfo: React.FC<IProps> = ({
           <FormattedMessage id={`sources.${job.status}`} />
           {shortInfo ? <FormattedMessage id="sources.additionLogs" /> : null}
           {attempts.length && !shortInfo ? (
-            <AttemptDetails attempt={attempts[attempts.length - 1]} />
+            <AttemptDetails
+              attempt={attempts[attempts.length - 1]}
+              configType={job.configType}
+            />
           ) : null}
         </Title>
       </Cell>

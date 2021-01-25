@@ -32,7 +32,6 @@ const LoadLogs = styled.div`
 `;
 
 const JobItem: React.FC<IProps> = ({ job, attempts }) => {
-  console.log(job);
   const [isOpen, setIsOpen] = useState(false);
   const onExpand = () => setIsOpen(!isOpen);
   const isFailed = job.status === Status.FAILED;

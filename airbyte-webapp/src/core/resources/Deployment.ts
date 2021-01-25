@@ -65,7 +65,6 @@ export default class DeploymentResource extends BaseResource
             }
           }
         );
-        console.log(response);
         return response;
       },
       schema: {}
