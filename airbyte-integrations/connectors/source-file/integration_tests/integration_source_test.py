@@ -38,10 +38,11 @@ from source_file import SourceFile
 
 
 class TestSourceFile(object):
-    service_account_file: str = "../secrets/gcs.json"
-    aws_credentials: str = "../secrets/aws.json"
+    config_directory: str = Path(__file__).resolve().parent.parent.joinpath("secrets")
+    service_account_file: str = config_directory.joinpath("gcs.json")
+    aws_credentials: str = config_directory.joinpath("aws.json")
     cloud_bucket_name: str = "airbytetestbucket"
-    local_files_directory = Path(__file__).resolve().parent.parent.joinpath("sample_files/formats")
+    local_files_directory: str = Path(__file__).resolve().parent.parent.joinpath("sample_files/formats")
 
     @pytest.fixture(scope="class")
     def download_gcs_public_data(self):
