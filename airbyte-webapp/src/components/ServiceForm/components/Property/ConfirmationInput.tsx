@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef } from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 
@@ -18,22 +18,21 @@ const SmallButton = styled(Button)`
 
 type ConfirmationInputProps = InputProps & {
   showButtons?: boolean;
-  onStart?: () => void;
-  onCancel?: () => void;
-  onDone?: () => void;
+  isEditInProgress?: boolean;
+  onStart: () => void;
+  onCancel: () => void;
+  onDone: () => void;
 };
 
 const ConfirmationInput: React.FC<ConfirmationInputProps> = props => {
   const inputElement = useRef<HTMLInputElement>(null);
-  const { showButtons, onStart, onCancel, onDone } = props;
-  const [isInEditMode, setInEditMode] = useState(false);
+  const { isEditInProgress, showButtons, onStart, onCancel, onDone } = props;
 
   if (!showButtons) {
     return <Input {...props} />;
   }
 
   const handleStartEdit = () => {
-    setInEditMode(true);
     if (inputElement && inputElement.current) {
       inputElement.current.removeAttribute("disabled");
       inputElement.current.focus();
@@ -42,12 +41,10 @@ const ConfirmationInput: React.FC<ConfirmationInputProps> = props => {
   };
 
   const handleCancel = () => {
-    setInEditMode(false);
     onCancel?.();
   };
 
   const handleDone = () => {
-    setInEditMode(false);
     onDone?.();
   };
 
@@ -56,10 +53,10 @@ const ConfirmationInput: React.FC<ConfirmationInputProps> = props => {
       <Input
         {...props}
         ref={inputElement}
-        autoFocus={isInEditMode}
-        disabled={!isInEditMode}
+        autoFocus={isEditInProgress}
+        disabled={!isEditInProgress}
       />
-      {isInEditMode ? (
+      {isEditInProgress ? (
         <>
           <SmallButton onClick={handleDone} type="button">
             <FormattedMessage id="form.done" />

@@ -58,6 +58,7 @@ const Control: React.FC<IProps> = ({ property }) => {
       />
     );
   } else if (property.isSecret) {
+    const unfinishedSecret = unfinishedSecrets[fieldName];
     return (
       <ConfirmationInput
         {...field}
@@ -66,13 +67,13 @@ const Control: React.FC<IProps> = ({ property }) => {
         type="password"
         value={value ?? ""}
         showButtons={!!meta.initialValue}
+        isEditInProgress={!!unfinishedSecret}
         onDone={() => removeUnfinishedSecret(fieldName)}
         onStart={() => {
           addUnfinishedSecret(fieldName, { startValue: field.value });
           form.setValue("");
         }}
         onCancel={() => {
-          const unfinishedSecret = unfinishedSecrets[fieldName];
           removeUnfinishedSecret(fieldName);
           if (
             unfinishedSecret &&

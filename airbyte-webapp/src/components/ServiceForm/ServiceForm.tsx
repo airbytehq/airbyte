@@ -14,7 +14,7 @@ import {
   useBuildUiWidgets,
   useConstructValidationSchema
 } from "./useBuildForm";
-import { WidgetInfoProvider } from "./uiWidgetContext";
+import { WidgetInfo, WidgetInfoProvider } from "./uiWidgetContext";
 
 const FormContainer = styled(Form)`
   padding: 22px 27px 23px 24px;
@@ -125,14 +125,21 @@ const ServiceForm: React.FC<IProps> = ({
             />
 
             {isEditMode ? (
-              <EditControls
-                isSubmitting={isSubmitting}
-                isValid={isValid}
-                dirty={dirty}
-                errorMessage={errorMessage}
-                resetForm={resetForm}
-                successMessage={successMessage}
-              />
+              <WidgetInfo>
+                {({ resetUiFormProgress }) => (
+                  <EditControls
+                    isSubmitting={isSubmitting}
+                    isValid={isValid}
+                    dirty={dirty}
+                    errorMessage={errorMessage}
+                    resetForm={() => {
+                      resetForm();
+                      resetUiFormProgress();
+                    }}
+                    successMessage={successMessage}
+                  />
+                )}
+              </WidgetInfo>
             ) : (
               <BottomBlock
                 isSubmitting={isSubmitting}

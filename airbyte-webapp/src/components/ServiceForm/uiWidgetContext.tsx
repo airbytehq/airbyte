@@ -12,6 +12,7 @@ type Context = {
   unfinishedSecrets: Record<string, any>;
   addUnfinishedSecret: (key: string, info?: Record<string, any>) => void;
   removeUnfinishedSecret: (key: string) => void;
+  resetUiFormProgress: () => void;
 };
 
 const context: Context = {
@@ -19,7 +20,8 @@ const context: Context = {
   unfinishedSecrets: {},
   setUiWidgetsInfo: (_path: string, _value: object) => ({}),
   addUnfinishedSecret: (_key: string, _info?: Record<string, any>) => ({}),
-  removeUnfinishedSecret: (_key: string) => ({})
+  removeUnfinishedSecret: (_key: string) => ({}),
+  resetUiFormProgress: () => ({})
 };
 
 const FormWidgetContext = React.createContext<Context>(context);
@@ -47,7 +49,10 @@ const WidgetInfoProvider: React.FC<{
           Object.fromEntries(
             Object.entries(unfinishedSecrets).filter(([key]) => key !== path)
           )
-        )
+        ),
+      resetUiFormProgress: () => {
+        setUiWidgetsInfo("_common.unfinishedSecrets", {});
+      }
     };
   }, [widgetsInfo, setUiWidgetsInfo]);
 
@@ -58,4 +63,14 @@ const WidgetInfoProvider: React.FC<{
   );
 };
 
-export { useWidgetInfo, WidgetInfoProvider };
+const WidgetInfo = ({
+  children
+}: {
+  children: (widgetInfo: Context) => React.ReactElement;
+}) => {
+  const widgetInfo = useWidgetInfo();
+
+  return children(widgetInfo);
+};
+
+export { useWidgetInfo, WidgetInfoProvider, WidgetInfo };
