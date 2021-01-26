@@ -28,24 +28,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.ConnectorSpecification;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import org.junit.jupiter.api.Test;
 
 class SnowflakeDestinationTest {
-
-  @Test
-  void testSpec() throws IOException {
-    final ConnectorSpecification actual = new SnowflakeDestination().spec();
-    final String resourceString = MoreResources.readResource("spec.json");
-    final ConnectorSpecification expected = Jsons.deserialize(resourceString, ConnectorSpecification.class);
-
-    assertEquals(expected, actual);
-  }
 
   @Test
   void testCheckFailsWithInvalidPermissions() throws IOException {
