@@ -4,20 +4,17 @@ import styled from "styled-components";
 import * as yup from "yup";
 import { Field, FieldProps, Form, Formik } from "formik";
 
-import LabeledDropDown from "../LabeledDropDown";
-import FrequencyConfig from "../../data/FrequencyConfig.json";
 import BottomBlock from "./components/BottomBlock";
 import Label from "../Label";
 import SchemaView from "./components/SchemaView";
 import { IDataItem } from "../DropDown/components/ListItem";
 import EditControls from "../ServiceForm/components/EditControls";
-import {
-  SyncMode,
-  SyncSchema,
-  SyncSchemaStream
-} from "../../core/resources/Schema";
+import { SyncSchema } from "../../core/resources/Schema";
 import ResetDataModal from "../ResetDataModal";
 import { equal } from "../../utils/objects";
+import { useFrequencyDropdownData, useInitialSchema } from "./useInitialSchema";
+import { ControlLabels } from "../LabeledControl";
+import DropDown from "../DropDown";
 
 type IProps = {
   className?: string;
@@ -31,10 +28,6 @@ type IProps = {
   frequencyValue?: string;
   isEditMode?: boolean;
 };
-
-const SmallLabeledDropDown = styled(LabeledDropDown)`
-  max-width: 202px;
-`;
 
 const FormContainer = styled(Form)`
   padding: 22px 27px 23px 24px;
@@ -60,86 +53,12 @@ const FrequencyForm: React.FC<IProps> = ({
   successMessage,
   additionBottomControls
 }) => {
-  // get cursorField if it is empty and syncMode is INCREMENTAL
-  const getDefaultCursorField = (stream: SyncSchemaStream) => {
-    if (stream.defaultCursorField.length) {
-      return stream.defaultCursorField;
-    }
-    if (stream.fields?.length) {
-      return [stream.fields[0].cleanedName];
-    }
+  const initialSchema = useInitialSchema(schema);
+  const dropdownData = useFrequencyDropdownData();
 
-    return stream.cursorField;
-  };
-
-  const initialSchema = React.useMemo(
-    () => ({
-      streams: schema.streams.map(item => {
-        // If the value in supportedSyncModes is empty assume the only supported sync mode is FULL_REFRESH.
-        // Otherwise it supports whatever sync modes are present.
-        const itemWithSupportedSyncModes =
-          !item.supportedSyncModes || !item.supportedSyncModes.length
-            ? { ...item, supportedSyncModes: [SyncMode.FullRefresh] }
-            : item;
-
-        // If syncMode isn't null - don't change item
-        if (!!itemWithSupportedSyncModes.syncMode) {
-          return itemWithSupportedSyncModes;
-        }
-
-        const hasFullRefreshOption = itemWithSupportedSyncModes.supportedSyncModes.includes(
-          SyncMode.FullRefresh
-        );
-
-        const hasIncrementalOption = itemWithSupportedSyncModes.supportedSyncModes.includes(
-          SyncMode.Incremental
-        );
-
-        // If syncMode is null, FULL_REFRESH should be selected by default (if it support FULL_REFRESH).
-        return hasFullRefreshOption
-          ? {
-              ...itemWithSupportedSyncModes,
-              syncMode: SyncMode.FullRefresh
-            }
-          : hasIncrementalOption // If source support INCREMENTAL and not FULL_REFRESH. Set INCREMENTAL
-          ? {
-              ...itemWithSupportedSyncModes,
-              cursorField: itemWithSupportedSyncModes.cursorField.length
-                ? itemWithSupportedSyncModes.cursorField
-                : getDefaultCursorField(itemWithSupportedSyncModes),
-              syncMode: SyncMode.Incremental
-            }
-          : // If source don't support INCREMENTAL and FULL_REFRESH - set first value from supportedSyncModes list
-            {
-              ...itemWithSupportedSyncModes,
-              syncMode: itemWithSupportedSyncModes.supportedSyncModes[0]
-            };
-      })
-    }),
-    [schema.streams]
-  );
-
-  const [newSchema, setNewSchema] = useState(initialSchema);
   const [modalIsOpen, setResetModalIsOpen] = useState(false);
   const formatMessage = useIntl().formatMessage;
-  const dropdownData = React.useMemo(
-    () =>
-      FrequencyConfig.map(item => ({
-        ...item,
-        text:
-          item.value === "manual"
-            ? item.text
-            : formatMessage(
-                {
-                  id: "form.every"
-                },
-                {
-                  value: item.text
-                }
-              )
-      })),
-    [formatMessage]
-  );
+  const [newSchema, setNewSchema] = useState(initialSchema);
 
   return (
     <Formik
@@ -168,26 +87,27 @@ const FrequencyForm: React.FC<IProps> = ({
           ) : null}
           <Field name="frequency">
             {({ field }: FieldProps<string>) => (
-              <SmallLabeledDropDown
-                {...field}
-                labelAdditionLength={300}
+              <ControlLabels
+                // error={!!fieldProps.meta.error && fieldProps.meta.touched}
                 label={formatMessage({
                   id: "form.frequency"
                 })}
                 message={formatMessage({
                   id: "form.frequency.message"
                 })}
-                placeholder={formatMessage({
-                  id: "form.frequency.placeholder"
-                })}
-                data={dropdownData}
-                onSelect={item => {
-                  if (onDropDownSelect) {
-                    onDropDownSelect(item);
-                  }
-                  setFieldValue("frequency", item.value);
-                }}
-              />
+                labelAdditionLength={300}
+              >
+                <DropDown
+                  {...field}
+                  data={dropdownData}
+                  onSelect={item => {
+                    if (onDropDownSelect) {
+                      onDropDownSelect(item);
+                    }
+                    setFieldValue("frequency", item.value);
+                  }}
+                />
+              </ControlLabels>
             )}
           </Field>
           {isEditMode ? (

@@ -195,7 +195,7 @@ const DropDown: React.FC<IProps> = props => {
       textField="text"
       valueField="value"
       value={props.value}
-      groupBy={props.groupBy || undefined}
+      groupBy={props.groupBy}
       groupComponent={GroupHeader}
       disabled={props.disabled}
       valueComponent={({ item }: { item: IDataItem }) =>

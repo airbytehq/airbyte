@@ -7,16 +7,24 @@ import { IDataItem } from "../DropDown/components/ListItem";
 import FormContent from "./components/FormContent";
 import BottomBlock from "./components/BottomBlock";
 import EditControls from "./components/EditControls";
+
 import {
   useBuildForm,
   FormInitialValues,
   useBuildUiWidgets,
   useConstructValidationSchema
 } from "./useBuildForm";
+import { WidgetInfoProvider } from "./uiWidgetContext";
 
 const FormContainer = styled(Form)`
   padding: 22px 27px 23px 24px;
 `;
+
+const defaultDataItemSort = (a: IDataItem, b: IDataItem) => {
+  if (a.text < b.text) return -1;
+  if (a.text > b.text) return 1;
+  return 0;
+};
 
 type IProps = {
   additionBottomControls?: React.ReactNode;
@@ -68,72 +76,79 @@ const ServiceForm: React.FC<IProps> = ({
     initialValues
   );
 
+  // As validation schema depends on what path of oneOf is currently selected in jsonschema
   const validationSchema = useConstructValidationSchema(
     uiWidgetsInfo,
     specifications
   );
 
   const sortedDropDownData = useMemo(
-    () =>
-      dropDownData.sort((a, b) => {
-        if (a.text < b.text) return -1;
-        if (a.text > b.text) return 1;
-        return 0;
-      }),
+    () => dropDownData.sort(defaultDataItemSort),
     [dropDownData]
   );
 
   return (
-    <Formik
-      initialValues={initialValues}
-      validateOnBlur={true}
-      validateOnChange={true}
-      validationSchema={validationSchema}
-      onSubmit={async values =>
-        onSubmit(validationSchema.cast(values, { stripUnknown: true }))
-      }
+    <WidgetInfoProvider
+      widgetsInfo={uiWidgetsInfo}
+      setUiWidgetsInfo={setUiWidgetsInfo}
     >
-      {({ isSubmitting, isValid, dirty, resetForm, ...formProps }) => (
-        <FormContainer>
-          <FormContent
-            {...formProps}
-            allowChangeConnector={allowChangeConnector}
-            schema={validationSchema}
-            dropDownData={sortedDropDownData}
-            formType={formType}
-            formFields={formFields}
-            widgetsInfo={uiWidgetsInfo}
-            isEditMode={isEditMode}
-            isLoadingSchema={isLoading}
-            onChangeServiceType={onDropDownSelect}
-            setUiWidgetsInfo={setUiWidgetsInfo}
-            documentationUrl={documentationUrl}
-          />
-
-          {isEditMode ? (
-            <EditControls
-              isSubmitting={isSubmitting}
-              isValid={isValid}
-              dirty={dirty}
-              resetForm={resetForm}
-              successMessage={successMessage}
-              errorMessage={errorMessage}
-            />
-          ) : (
-            <BottomBlock
-              additionBottomControls={additionBottomControls}
-              isSubmitting={isSubmitting}
-              isValid={isValid}
-              isLoadSchema={isLoading}
-              dirty={dirty}
+      <Formik
+        initialValues={initialValues}
+        validateOnBlur={true}
+        validateOnChange={true}
+        validationSchema={validationSchema}
+        onSubmit={async values =>
+          onSubmit(validationSchema.cast(values, { stripUnknown: true }))
+        }
+      >
+        {({
+          isSubmitting,
+          isValid,
+          dirty,
+          resetForm,
+          validateForm,
+          values
+        }) => (
+          <FormContainer>
+            <FormContent
+              values={values}
+              validateForm={validateForm}
+              allowChangeConnector={allowChangeConnector}
+              schema={validationSchema}
+              dropDownData={sortedDropDownData}
               formType={formType}
-              hasSuccess={hasSuccess}
-              errorMessage={errorMessage}
+              formFields={formFields}
+              isEditMode={isEditMode}
+              isLoadingSchema={isLoading}
+              onChangeServiceType={onDropDownSelect}
+              documentationUrl={documentationUrl}
             />
-          )}
-        </FormContainer>
-      )}
-    </Formik>
+
+            {isEditMode ? (
+              <EditControls
+                isSubmitting={isSubmitting}
+                isValid={isValid}
+                dirty={dirty}
+                errorMessage={errorMessage}
+                resetForm={resetForm}
+                successMessage={successMessage}
+              />
+            ) : (
+              <BottomBlock
+                isSubmitting={isSubmitting}
+                isValid={isValid}
+                dirty={dirty}
+                errorMessage={errorMessage}
+                isLoadSchema={isLoading}
+                formType={formType}
+                additionBottomControls={additionBottomControls}
+                hasSuccess={hasSuccess}
+              />
+            )}
+          </FormContainer>
+        )}
+      </Formik>
+    </WidgetInfoProvider>
   );
 };
 
