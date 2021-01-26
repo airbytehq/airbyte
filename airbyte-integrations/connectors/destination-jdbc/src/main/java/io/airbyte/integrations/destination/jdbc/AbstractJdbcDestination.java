@@ -73,7 +73,7 @@ public abstract class AbstractJdbcDestination implements Destination {
       database.bufferedResultSetQuery(conn -> conn.getMetaData().getCatalogs(), JdbcUtils::rowToJson);
 
       // verify we have write permissions on the target schema by creating a table with a random name,
-      // inserting a record, then dropping that table
+      // then dropping that table
       String outputSchema = namingResolver.getIdentifier(config.get("schema").asText());
       String outputTableName = "_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", "");
       sqlOperations.createSchemaIfNotExists(database, outputSchema);
