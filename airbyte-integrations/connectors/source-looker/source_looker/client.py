@@ -96,13 +96,13 @@ class Client(BaseClient):
             self._user_ids = [obj["id"] for obj in self._request(f"{self.BASE_URL}/users")]
         return self._user_ids
 
-    def stream__color_collections(self):
+    def stream__color_collections(self, fields):
         yield from self._request(f"{self.BASE_URL}/color_collections")
 
-    def stream__connections(self):
+    def stream__connections(self, fields):
         yield from self._request(f"{self.BASE_URL}/connections")
 
-    def stream__dashboards(self):
+    def stream__dashboards(self, fields):
         dashboards_list = [obj for obj in self._request(f"{self.BASE_URL}/dashboards") if isinstance(obj["id"], int)]
         self._dashboard_ids = [obj["id"] for obj in dashboards_list]
         self._context_metadata_mapping["dashboards"] = [
@@ -110,135 +110,135 @@ class Client(BaseClient):
         ]
         yield from dashboards_list
 
-    def stream__dashboard_elements(self):
+    def stream__dashboard_elements(self, fields):
         for dashboard_id in self._get_dashboard_ids():
             yield from self._request(f"{self.BASE_URL}/dashboards/{dashboard_id}/dashboard_elements")
 
-    def stream__dashboard_filters(self):
+    def stream__dashboard_filters(self, fields):
         for dashboard_id in self._get_dashboard_ids():
             yield from self._request(f"{self.BASE_URL}/dashboards/{dashboard_id}/dashboard_filters")
 
-    def stream__dashboard_layouts(self):
+    def stream__dashboard_layouts(self, fields):
         for dashboard_id in self._get_dashboard_ids():
             yield from self._request(f"{self.BASE_URL}/dashboards/{dashboard_id}/dashboard_layouts")
 
-    def stream__datagroups(self):
+    def stream__datagroups(self, fields):
         yield from self._request(f"{self.BASE_URL}/datagroups")
 
-    def stream__folders(self):
+    def stream__folders(self, fields):
         folders_list = self._request(f"{self.BASE_URL}/folders")
         self._context_metadata_mapping["folders"] = [
             obj["content_metadata_id"] for obj in folders_list if isinstance(obj["content_metadata_id"], int)
         ]
         yield from folders_list
 
-    def stream__groups(self):
+    def stream__groups(self, fields):
         yield from self._request(f"{self.BASE_URL}/groups")
 
-    def stream__homepages(self):
+    def stream__homepages(self, fields):
         homepages_list = self._request(f"{self.BASE_URL}/homepages")
         self._context_metadata_mapping["homepages"] = [
             obj["content_metadata_id"] for obj in homepages_list if isinstance(obj["content_metadata_id"], int)
         ]
         yield from homepages_list
 
-    def stream__integration_hubs(self):
+    def stream__integration_hubs(self, fields):
         yield from self._request(f"{self.BASE_URL}/integration_hubs")
 
-    def stream__integrations(self):
+    def stream__integrations(self, fields):
         yield from self._request(f"{self.BASE_URL}/integrations")
 
-    def stream__lookml_dashboards(self):
+    def stream__lookml_dashboards(self, fields):
         lookml_dashboards_list = [obj for obj in self._request(f"{self.BASE_URL}/dashboards") if isinstance(obj["id"], str)]
         yield from lookml_dashboards_list
 
-    def stream__lookml_models(self):
+    def stream__lookml_models(self, fields):
         yield from self._request(f"{self.BASE_URL}/lookml_models")
 
-    def stream__looks(self):
+    def stream__looks(self, fields):
         looks_list = self._request(f"{self.BASE_URL}/looks")
         self._context_metadata_mapping["looks"] = [
             obj["content_metadata_id"] for obj in looks_list if isinstance(obj["content_metadata_id"], int)
         ]
         yield from looks_list
 
-    def stream__model_sets(self):
+    def stream__model_sets(self, fields):
         yield from self._request(f"{self.BASE_URL}/model_sets")
 
-    def stream__permission_sets(self):
+    def stream__permission_sets(self, fields):
         yield from self._request(f"{self.BASE_URL}/permission_sets")
 
-    def stream__permissions(self):
+    def stream__permissions(self, fields):
         yield from self._request(f"{self.BASE_URL}/permissions")
 
-    def stream__projects(self):
+    def stream__projects(self, fields):
         projects_list = self._request(f"{self.BASE_URL}/projects")
         self._project_ids = [obj["id"] for obj in projects_list]
         yield from projects_list
 
-    def stream__project_files(self):
+    def stream__project_files(self, fields):
         for project_id in self._get_project_ids():
             yield from self._request(f"{self.BASE_URL}/projects/{project_id}/files")
 
-    def stream__git_branches(self):
+    def stream__git_branches(self, fields):
         for project_id in self._get_project_ids():
             yield from self._request(f"{self.BASE_URL}/projects/{project_id}/git_branches")
 
-    def stream__roles(self):
+    def stream__roles(self, fields):
         roles_list = self._request(f"{self.BASE_URL}/roles")
         self._role_ids = [obj["id"] for obj in roles_list]
         yield from roles_list
 
-    def stream__role_groups(self):
+    def stream__role_groups(self, fields):
         if not self._role_ids:
             self._role_ids = [obj["id"] for obj in self._request(f"{self.BASE_URL}/roles")]
         for role_id in self._role_ids:
             yield from self._request(f"{self.BASE_URL}/roles/{role_id}/groups")
 
-    def stream__scheduled_plans(self):
+    def stream__scheduled_plans(self, fields):
         yield from self._request(f"{self.BASE_URL}/scheduled_plans?all_users=true")
 
-    def stream__spaces(self):
+    def stream__spaces(self, fields):
         spaces_list = self._request(f"{self.BASE_URL}/spaces")
         self._context_metadata_mapping["spaces"] = [
             obj["content_metadata_id"] for obj in spaces_list if isinstance(obj["content_metadata_id"], int)
         ]
         yield from spaces_list
 
-    def stream__user_attributes(self):
+    def stream__user_attributes(self, fields):
         user_attributes_list = self._request(f"{self.BASE_URL}/user_attributes")
         self._user_attribute_ids = [obj["id"] for obj in user_attributes_list]
         yield from user_attributes_list
 
-    def stream__user_attribute_group_values(self):
+    def stream__user_attribute_group_values(self, fields):
         if not self._user_attribute_ids:
             self._user_attribute_ids = [obj["id"] for obj in self._request(f"{self.BASE_URL}/user_attributes")]
         for user_attribute_id in self._user_attribute_ids:
             yield from self._request(f"{self.BASE_URL}/user_attributes/{user_attribute_id}/group_values")
 
-    def stream__user_login_lockouts(self):
+    def stream__user_login_lockouts(self, fields):
         yield from self._request(f"{self.BASE_URL}/user_login_lockouts")
 
-    def stream__users(self):
+    def stream__users(self, fields):
         users_list = self._request(f"{self.BASE_URL}/users")
         self._user_ids = [obj["id"] for obj in users_list]
         yield from users_list
 
-    def stream__user_attribute_values(self):
+    def stream__user_attribute_values(self, fields):
         for user_ids in self._get_user_ids():
             yield from self._request(f"{self.BASE_URL}/users/{user_ids}/attribute_values?all_values=true&include_unset=true")
 
-    def stream__user_sessions(self):
+    def stream__user_sessions(self, fields):
         for user_ids in self._get_user_ids():
             yield from self._request(f"{self.BASE_URL}/users/{user_ids}/sessions")
 
-    def stream__versions(self):
+    def stream__versions(self, fields):
         yield from self._request(f"{self.BASE_URL}/versions")
 
-    def stream__workspaces(self):
+    def stream__workspaces(self, fields):
         yield from self._request(f"{self.BASE_URL}/workspaces")
 
-    def stream__query_history(self):
+    def stream__query_history(self, fields):
         request_data = {
             "model": "i__looker",
             "view": "history",
@@ -263,10 +263,10 @@ class Client(BaseClient):
         for history_data in history_list:
             yield {k.replace(".", "_"): v for k, v in history_data.items()}
 
-    def stream__content_metadata(self):
+    def stream__content_metadata(self, fields):
         yield from self._metadata_processing(f"{self.BASE_URL}/content_metadata/")
 
-    def stream__content_metadata_access(self):
+    def stream__content_metadata_access(self, fields):
         yield from self._metadata_processing(f"{self.BASE_URL}/content_metadata_access?content_metadata_id=")
 
     def _metadata_processing(self, url: str):
