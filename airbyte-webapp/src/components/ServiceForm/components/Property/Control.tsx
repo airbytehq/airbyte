@@ -69,6 +69,7 @@ const Control: React.FC<IProps> = ({ property }) => {
         onDone={() => removeUnfinishedSecret(fieldName)}
         onStart={() => {
           addUnfinishedSecret(fieldName, { startValue: field.value });
+          form.setValue("");
         }}
         onCancel={() => {
           const unfinishedSecret = unfinishedSecrets[fieldName];

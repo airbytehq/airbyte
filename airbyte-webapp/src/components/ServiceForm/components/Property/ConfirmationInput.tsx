@@ -64,7 +64,7 @@ const ConfirmationInput: React.FC<ConfirmationInputProps> = props => {
           <SmallButton onClick={handleDone} type="button">
             <FormattedMessage id="form.done" />
           </SmallButton>
-          <SmallButton onClick={handleCancel} type="button">
+          <SmallButton onClick={handleCancel} type="button" secondary>
             <FormattedMessage id="form.cancel" />
           </SmallButton>
         </>
