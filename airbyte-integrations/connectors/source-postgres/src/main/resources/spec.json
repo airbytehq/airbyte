@@ -8,10 +8,12 @@
     "additionalProperties": false,
     "properties": {
       "host": {
+        "title": "Host",
         "description": "Hostname of the database.",
         "type": "string"
       },
       "port": {
+        "title": "Port",
         "description": "Port of the database.",
         "type": "integer",
         "minimum": 0,
@@ -20,14 +22,17 @@
         "examples": ["5432"]
       },
       "database": {
+        "title": "DB Name",
         "description": "Name of the database.",
         "type": "string"
       },
       "username": {
+        "title": "User",
         "description": "Username to use to access the database.",
         "type": "string"
       },
       "password": {
+        "title": "Password",
         "description": "Password associated with the username.",
         "type": "string",
         "airbyte_secret": true

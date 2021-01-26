@@ -26,7 +26,7 @@ const ConnectionStep: React.FC<IProps> = ({ source, destination }) => {
         itemTo={{ name: destination?.name || "" }}
       />
       <CreateConnectionContent
-        additionBottomControls={<SkipOnboardingButton />}
+        additionBottomControls={<SkipOnboardingButton step="connection" />}
         source={source}
         destination={destination}
         afterSubmitConnection={afterSubmitConnection}

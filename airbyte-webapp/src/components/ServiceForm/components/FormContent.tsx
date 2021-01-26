@@ -18,6 +18,7 @@ import {
 } from "../../../core/form/types";
 import { FormInitialValues } from "../useBuildForm";
 import { FormikProps } from "formik/dist/types";
+import ShowLoadingMessage from "./ShowLoadingMessage";
 
 type IProps = {
   schema: any;
@@ -229,10 +230,7 @@ const FormContent: React.FC<IProps> = ({
         <LoaderContainer>
           <Spinner />
           <LoadingMessage>
-            <FormattedMessage
-              id="form.loadingConfiguration"
-              values={{ connector: service?.text }}
-            />
+            <ShowLoadingMessage connector={service?.text} />
           </LoadingMessage>
         </LoaderContainer>
       )}

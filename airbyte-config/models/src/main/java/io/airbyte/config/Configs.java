@@ -54,6 +54,8 @@ public interface Configs {
 
   WorkerEnvironment getWorkerEnvironment();
 
+  WorkspaceRetentionConfig getWorkspaceRetentionConfig();
+
   enum TrackingStrategy {
     SEGMENT,
     LOGGING

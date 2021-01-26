@@ -41,12 +41,10 @@ import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.AirbyteProtocolConverters;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobOutput;
-import io.airbyte.config.Schema;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.config.StandardGetSpecOutput;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
@@ -136,14 +134,15 @@ public class SchedulerHandler {
   }
 
   private static SourceDiscoverSchemaRead discoverJobToOutput(Job job) {
-    StandardDiscoverCatalogOutput discoverOutput = job.getSuccessOutput()
-        .map(JobOutput::getDiscoverCatalog)
-        .orElseThrow(() -> new IllegalStateException("no discover output found"));
-    final Schema schema = AirbyteProtocolConverters.toSchema(discoverOutput.getCatalog());
-
-    return new SourceDiscoverSchemaRead()
-        .schema(SchemaConverter.toApiSchema(schema))
+    final SourceDiscoverSchemaRead sourceDiscoverSchemaRead = new SourceDiscoverSchemaRead()
         .jobInfo(JobConverter.getJobInfoRead(job));
+
+    job.getSuccessOutput()
+        .map(JobOutput::getDiscoverCatalog)
+        .map(discoverOutput -> AirbyteProtocolConverters.toSchema(discoverOutput.getCatalog()))
+        .ifPresent(catalog -> sourceDiscoverSchemaRead.schema(SchemaConverter.toApiSchema(catalog)));
+
+    return sourceDiscoverSchemaRead;
   }
 
   public SourceDefinitionSpecificationRead getSourceDefinitionSpecification(SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody)
