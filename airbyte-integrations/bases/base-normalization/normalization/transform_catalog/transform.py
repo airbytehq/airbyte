@@ -31,6 +31,8 @@ from typing import List, Optional, Set, Tuple, Union
 
 import yaml
 
+from .reserved_keywords import is_reserved_keyword
+
 
 class TransformCatalog:
     """
@@ -183,18 +185,21 @@ def strip_accents(s):
     return "".join(c for c in ud.normalize("NFD", s) if ud.category(c) != "Mn")
 
 
-def resolve_identifier(input_name: str, integration_type: str) -> str:
-    if integration_type == "bigquery":
-        input_name = strip_accents(input_name)
-        input_name = sub(r"\s+", "_", input_name)
-        return sub(r"[^a-zA-Z0-9_]", "_", input_name)
-    else:
-        return input_name
+def normalize_identifier_name(input_name: str, integration_type: str) -> str:
+    # Temporarily disabling the behavior of the ExtendedNameTransformer, see (issue #1785)
+    # if integration_type == "bigquery":
+    input_name = strip_accents(input_name)
+    input_name = sub(r"\s+", "_", input_name)
+    return sub(r"[^a-zA-Z0-9_]", "_", input_name)
+
+
+# else:
+#   return input_name
 
 
 def table_name(input_name: str, integration_type) -> str:
     if integration_type == "bigquery":
-        return resolve_identifier(input_name, integration_type)
+        return normalize_identifier_name(input_name, integration_type)
     elif match("[^A-Za-z_]", input_name[0]) or match(".*[^A-Za-z0-9_].*", input_name):
         return '"' + input_name + '"'
     else:
@@ -202,14 +207,16 @@ def table_name(input_name: str, integration_type) -> str:
 
 
 def quote(input_name: str, integration_type: str, in_jinja=False) -> str:
-    if integration_type == "bigquery":
-        input_name = resolve_identifier(input_name, integration_type)
-    if match("[^A-Za-z_]", input_name[0]) or match(".*[^A-Za-z0-9_].*", input_name):
-        result = f"adapter.quote('{input_name}')"
+    normalized_input_name = normalize_identifier_name(input_name, integration_type)
+
+    doesnt_start_with_alphaunderscore = match("[^A-Za-z_]", normalized_input_name[0])
+    doesnt_contain_alphanumeric = match(".*[^A-Za-z0-9_].*", normalized_input_name)
+    if doesnt_start_with_alphaunderscore or doesnt_contain_alphanumeric or is_reserved_keyword(normalized_input_name, integration_type):
+        result = f"adapter.quote('{normalized_input_name}')"
     elif in_jinja:
-        result = f"'{input_name}'"
+        result = f"'{normalized_input_name}'"
     else:
-        return input_name
+        return normalized_input_name
     if not in_jinja:
         return jinja_call(result)
     return result
@@ -240,7 +247,7 @@ def json_extract_base_property(path: List[str], json_col: str, name: str, defini
     elif is_boolean(definition["type"]):
         # In Redshift, it's not possible to convert from a varchar (which is the output type of json_extract_scalar) to a boolean directly.
         # So we use a macro that handles destination-specific conversions
-        return jinja_call(f"""cast_to_boolean(json_extract_scalar('{json_col}', {current}))""") + f" as {quote(name, integration_type)}"
+        return jinja_call(f"cast_to_boolean(json_extract_scalar('{json_col}', {current}))") + f" as {quote(name, integration_type)}"
     else:
         return None
 
@@ -378,10 +385,13 @@ def process_node(
         prefix = previous
     else:
         prefix = previous + ","
-    node_properties = extract_node_properties(path=path, json_col=json_col, properties=properties, integration_type=integration_type)
-    node_columns = ",\n    ".join([sql for sql in node_properties.values()])
+    column_to_sql_expression = extract_node_properties(
+        path=path, json_col=json_col, properties=properties, integration_type=integration_type
+    )
+
+    node_columns = ",\n    ".join([sql for sql in column_to_sql_expression.values()])
     hash_node_columns = ",\n        ".join(
-        [safe_cast_to_varchar(column, integration_type, properties) for column in node_properties.keys()]
+        [safe_cast_to_varchar(column, integration_type, properties) for column in column_to_sql_expression.keys()]
     )
     hash_node_columns = jinja_call(f"dbt_utils.surrogate_key([{hash_node_columns}])")
 
@@ -404,7 +414,7 @@ def process_node(
     from {table_name(f"{name}_node", integration_type)}
 )"""
     # SQL Query for current node's basic properties
-    result[resolve_identifier(name, integration_type)] = node_sql + select_table(f"{name}_with_id", integration_type)
+    result[normalize_identifier_name(name, integration_type)] = node_sql + select_table(f"{name}_with_id", integration_type)
 
     children_columns = extract_nested_properties(path=path, field=name, properties=properties, integration_type=integration_type)
     if children_columns:
@@ -442,7 +452,7 @@ def process_node(
                 result.update(children)
             else:
                 # SQL Query for current node's basic properties
-                result[resolve_identifier(f"{name}_{col}", integration_type)] = child_sql + select_table(
+                result[normalize_identifier_name(f"{name}_{col}", integration_type)] = child_sql + select_table(
                     f"{name}_with_id",
                     integration_type,
                     columns=f"""
@@ -470,16 +480,16 @@ def generate_dbt_model(integration_type: str, catalog: dict, json_col: str, sche
             properties = stream["json_schema"]["properties"]
         else:
             properties = {}
-        # TODO Replace {name}_raw by an argument like we do for the json_blob column
+        # TODO Replace '_airbyte_raw_' + name by an argument like we do for the json_blob column
         # This would enable destination to freely choose where to store intermediate data before notifying
         # normalization step
         table = jinja_call(
-            f"source('{resolve_identifier(schema, integration_type)}', '{resolve_identifier(name + '_raw', integration_type)}')"
+            f"source('{normalize_identifier_name(schema, integration_type)}', '{normalize_identifier_name('_airbyte_raw_' + name, integration_type)}')"
         )
         result.update(
             process_node(path=[], json_col=json_col, name=name, properties=properties, from_table=table, integration_type=integration_type)
         )
-        source_tables.add(resolve_identifier(name + "_raw", integration_type))
+        source_tables.add(normalize_identifier_name("_airbyte_raw_" + name, integration_type))
     return result, source_tables
 
 

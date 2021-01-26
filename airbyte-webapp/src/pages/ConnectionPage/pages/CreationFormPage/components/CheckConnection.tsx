@@ -52,7 +52,7 @@ const CheckConnection: React.FC<IProps> = ({
   linkToSettings
 }) => {
   if (error) {
-    const errorMessage = createFormErrorMessage(error);
+    const errorMessage = createFormErrorMessage({ status: error });
 
     return (
       <Content>

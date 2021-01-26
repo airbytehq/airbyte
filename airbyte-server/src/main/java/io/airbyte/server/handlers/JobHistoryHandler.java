@@ -24,17 +24,22 @@
 
 package io.airbyte.server.handlers;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import io.airbyte.api.model.JobIdRequestBody;
 import io.airbyte.api.model.JobInfoRead;
 import io.airbyte.api.model.JobListRequestBody;
 import io.airbyte.api.model.JobReadList;
 import io.airbyte.api.model.JobWithAttemptsRead;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.commons.stream.MoreStreams;
 import io.airbyte.config.JobConfig;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.converters.JobConverter;
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -46,16 +51,29 @@ public class JobHistoryHandler {
     this.jobPersistence = jobPersistence;
   }
 
+  @SuppressWarnings("UnstableApiUsage")
   public JobReadList listJobsFor(JobListRequestBody request) throws IOException {
-    final JobConfig.ConfigType configType = Enums.convertTo(request.getConfigType(), JobConfig.ConfigType.class);
+    Preconditions.checkNotNull(request.getConfigTypes(), "configType cannot be null.");
+    Preconditions.checkState(!request.getConfigTypes().isEmpty(), "Must include at least one configType.");
+
+    final List<JobConfig.ConfigType> configTypes = request.getConfigTypes()
+        .stream()
+        .map(type -> Enums.convertTo(type, JobConfig.ConfigType.class))
+        .collect(Collectors.toList());
     final String configId = request.getConfigId();
 
-    final List<JobWithAttemptsRead> jobReads = jobPersistence.listJobs(configType, configId)
-        .stream()
-        .map(JobConverter::getJobWithAttemptsRead)
-        .collect(Collectors.toList());
+    // get jobs for each type and merge them into a single list sorted by created at.
+    Iterable<JobWithAttemptsRead> jobReads = ImmutableList.of();
+    for (final JobConfig.ConfigType configType : configTypes) {
+      final List<JobWithAttemptsRead> jobReadsForType = jobPersistence.listJobs(configType, configId)
+          .stream()
+          .map(JobConverter::getJobWithAttemptsRead)
+          .collect(Collectors.toList());
 
-    return new JobReadList().jobs(jobReads);
+      jobReads = Iterables.mergeSorted(ImmutableList.of(jobReads, jobReadsForType), Comparator.comparing(v -> v.getJob().getCreatedAt()));
+    }
+
+    return new JobReadList().jobs(MoreStreams.toStream(jobReads).collect(Collectors.toList()));
   }
 
   public JobInfoRead getJobInfo(JobIdRequestBody jobIdRequestBody) throws IOException {

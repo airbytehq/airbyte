@@ -147,7 +147,7 @@ class WebBackendConnectionsHandlerTest {
     final JobReadList jobReadList = new JobReadList();
     jobReadList.setJobs(Collections.singletonList(jobRead));
     final JobListRequestBody jobListRequestBody = new JobListRequestBody();
-    jobListRequestBody.setConfigType(JobConfigType.SYNC);
+    jobListRequestBody.setConfigTypes(Collections.singletonList(JobConfigType.SYNC));
     jobListRequestBody.setConfigId(connectionRead.getConnectionId().toString());
     when(jobHistoryHandler.listJobsFor(jobListRequestBody)).thenReturn(jobReadList);
 
@@ -158,7 +158,6 @@ class WebBackendConnectionsHandlerTest {
         .name(connectionRead.getName())
         .syncSchema(connectionRead.getSyncSchema())
         .status(connectionRead.getStatus())
-        .syncMode(connectionRead.getSyncMode())
         .schedule(connectionRead.getSchedule())
         .source(sourceRead)
         .destination(destinationRead)
@@ -190,7 +189,6 @@ class WebBackendConnectionsHandlerTest {
         .name(expected.getName())
         .syncSchema(modifiedSchema)
         .status(expected.getStatus())
-        .syncMode(expected.getSyncMode())
         .schedule(expected.getSchedule())
         .source(expected.getSource())
         .destination(expected.getDestination())
@@ -305,7 +303,6 @@ class WebBackendConnectionsHandlerTest {
             .name(expected.getName())
             .syncSchema(expected.getSyncSchema())
             .status(expected.getStatus())
-            .syncMode(expected.getSyncMode())
             .schedule(expected.getSchedule()));
 
     ConnectionRead connectionRead = wbHandler.webBackendUpdateConnection(updateBody);
@@ -334,7 +331,6 @@ class WebBackendConnectionsHandlerTest {
             .name(expected.getName())
             .syncSchema(expectedWithNewSchema.getSyncSchema())
             .status(expected.getStatus())
-            .syncMode(expected.getSyncMode())
             .schedule(expected.getSchedule()));
 
     ConnectionRead connectionRead = wbHandler.webBackendUpdateConnection(updateBody);

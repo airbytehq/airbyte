@@ -156,6 +156,16 @@ public interface JobPersistence {
   /// ARCHIVE
 
   /**
+   * Returns the AirbyteVersion stored in the database
+   */
+  Optional<String> getVersion() throws IOException;
+
+  /**
+   * Set the database to @param AirbyteVersion
+   */
+  void setVersion(String airbyteVersion) throws IOException;
+
+  /**
    * Export all SQL tables from @param schema into streams of JsonNode objects. This returns a Map of
    * table schemas to the associated streams of records that is being exported.
    */
@@ -165,7 +175,9 @@ public interface JobPersistence {
    * Import all SQL tables from streams of JsonNode objects.
    *
    * @param data is a Map of table schemas to the associated streams of records to import.
+   * @param airbyteVersion is the version of the files to be imported and should match the Airbyte
+   *        version in the Database.
    */
-  void importDatabase(Map<DatabaseSchema, Stream<JsonNode>> data) throws IOException;
+  void importDatabase(String airbyteVersion, Map<DatabaseSchema, Stream<JsonNode>> data) throws IOException;
 
 }

@@ -203,7 +203,6 @@ paths:
           description: SourceDefinition not found
         "422":
           $ref: "#/components/responses/InvalidInput"
-  # todo (cgardens) - rename to source_specifications/get_latest_from_source_id
   /v1/source_definition_specifications/get:
     post:
       tags:
@@ -1321,14 +1320,14 @@ components:
           items:
             $ref: "#/components/schemas/SourceRead"
     SourceDiscoverSchemaRead:
+      description: Returns the results of a discover schema job. If the job was not successful, the schema field will not be present. jobInfo will aways be present and its status be used to determine if the job was successful or not.
       type: object
       required:
-        - schema
-        - job_info
+        - jobInfo
       properties:
         schema:
           $ref: "#/components/schemas/SourceSchema"
-        job_info:
+        jobInfo:
           $ref: "#/components/schemas/JobInfoRead"
     # DESTINATION DEFINITION
     DestinationDefinitionId:
@@ -1529,7 +1528,7 @@ components:
       required:
         - connectionId
       properties:
-        with_refreshed_catalog:
+        withRefreshedCatalog:
           type: boolean
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
@@ -1538,7 +1537,6 @@ components:
       required:
         - sourceId
         - destinationId
-        - syncMode
         - status
       properties:
         name:
@@ -1548,9 +1546,6 @@ components:
           $ref: "#/components/schemas/SourceId"
         destinationId:
           $ref: "#/components/schemas/DestinationId"
-        # todo (cgardens) - remove this after we migrate to incremental schema
-        syncMode:
-          $ref: "#/components/schemas/SyncMode"
         syncSchema:
           $ref: "#/components/schemas/SourceSchema"
         schedule:
@@ -1577,7 +1572,7 @@ components:
         - $ref: "#/components/schemas/ConnectionUpdate"
         - type: object
           properties:
-            with_refreshed_catalog:
+            withRefreshedCatalog:
               type: boolean
     ConnectionRead:
       type: object
@@ -1586,7 +1581,6 @@ components:
         - name
         - sourceId
         - destinationId
-        - syncMode
         - syncSchema
         - status
       properties:
@@ -1598,9 +1592,6 @@ components:
           $ref: "#/components/schemas/SourceId"
         destinationId:
           $ref: "#/components/schemas/DestinationId"
-        # todo (cgardens) - remove this after we migrate to incremental schema
-        syncMode:
-          $ref: "#/components/schemas/SyncMode"
         syncSchema:
           $ref: "#/components/schemas/SourceSchema"
         schedule:
@@ -1651,9 +1642,9 @@ components:
     LogsRequestBody:
       type: object
       required:
-        - log_type
+        - logType
       properties:
-        log_type:
+        logType:
           $ref: "#/components/schemas/LogType"
     # SCHEMA
     SourceSchema:
@@ -1671,8 +1662,7 @@ components:
       required:
         - name
         - fields
-        # todo (cgardens) - make required once sources are migrated
-        # - supportedSyncModes
+        - supportedSyncModes
       properties:
         # immutable
         name:
@@ -1741,11 +1731,13 @@ components:
     JobListRequestBody:
       type: object
       required:
-        - configType
+        - configTypes
         - configId
       properties:
-        configType:
-          $ref: "#/components/schemas/JobConfigType"
+        configTypes:
+          type: array
+          items:
+            $ref: "#/components/schemas/JobConfigType"
         configId:
           type: string
     JobIdRequestBody:
@@ -1894,7 +1886,7 @@ components:
             - failed
         message:
           type: string
-        job_info:
+        jobInfo:
           $ref: "#/components/schemas/JobInfoRead"
     # Web Backend
     WbConnectionRead:
@@ -1904,7 +1896,6 @@ components:
         - name
         - sourceId
         - destinationId
-        - syncMode
         - syncSchema
         - status
         - source
@@ -1919,8 +1910,6 @@ components:
           $ref: "#/components/schemas/SourceId"
         destinationId:
           $ref: "#/components/schemas/DestinationId"
-        syncMode:
-          $ref: "#/components/schemas/SyncMode"
         syncSchema:
           $ref: "#/components/schemas/SourceSchema"
         schedule:
@@ -1957,12 +1946,16 @@ components:
       description: Tarball Archive (.tar.gz) of Airbyte Configuration and Database
     ImportRead:
       type: object
+      required:
+        - status
       properties:
         status:
           type: string
           enum:
             - succeeded
             - failed
+        reason:
+          type: string
   responses:
     InvalidInput:
       description: Invalid Input

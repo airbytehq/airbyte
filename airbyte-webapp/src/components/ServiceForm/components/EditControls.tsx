@@ -30,6 +30,9 @@ const Success = styled(ButtonContainer)`
 
 const Error = styled(Success)`
   color: ${({ theme }) => theme.dangerColor};
+  max-width: 68%;
+  display: inline-block;
+  vertical-align: middle;
 `;
 
 const SpinnerContainer = styled.div`

@@ -26,12 +26,17 @@ package io.airbyte.migrate;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.CaseFormat;
+import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.JsonSchemas;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import java.nio.file.Path;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import org.apache.commons.io.FileUtils;
 
 public class MigrationUtils {
@@ -75,6 +80,23 @@ public class MigrationUtils {
 
   public static Map<ResourceId, JsonNode> getJobModels(Path migrationResourcePath, Set<String> schemasToInclude) {
     return getNameToSchemasFromPath(migrationResourcePath, ResourceType.JOB.getDirectoryName(), ResourceType.JOB, schemasToInclude);
+  }
+
+  /**
+   * Insert new records in @param metadataTable table to keep track that a migration was applied to
+   * the set of Resources in @param outputData. After applying this migration successfully, such
+   * resource files are now upgraded and compatible with Airbyte @param version
+   */
+  public static void registerMigrationRecord(final Map<ResourceId, Consumer<JsonNode>> outputData, final String metadataTable, final String version) {
+    final ResourceId resourceId = ResourceId.fromConstantCase(ResourceType.JOB, metadataTable);
+    final Consumer<JsonNode> metadataOutputConsumer = outputData.get(resourceId);
+    metadataOutputConsumer.accept(Jsons.jsonNode(ImmutableMap.of(
+        "key", String.format("%s_migrate_to", current_timestamp()),
+        "value", version)));
+  }
+
+  public static String current_timestamp() {
+    return ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
   }
 
 }

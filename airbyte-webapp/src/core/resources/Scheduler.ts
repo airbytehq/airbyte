@@ -15,14 +15,14 @@ export type JobInfo = {
 export interface Scheduler {
   status: string;
   message: string;
-  job_info?: JobInfo;
+  jobInfo?: JobInfo;
 }
 
 export default class SchedulerResource extends BaseResource
   implements Scheduler {
   readonly status: string = "";
   readonly message: string = "";
-  readonly job_info: JobInfo | undefined = undefined;
+  readonly jobInfo: JobInfo | undefined = undefined;
 
   pk() {
     return Date.now().toString();
@@ -47,14 +47,16 @@ export default class SchedulerResource extends BaseResource
         // If check connection for source has status 'failed'
         if (result.status === Status.FAILED) {
           const jobInfo = {
-            ...result.job_info,
-            job: { ...result.job_info.job, status: result.status }
+            ...result.jobInfo,
+            job: { ...result.jobInfo.job, status: result.status }
           };
 
           const e = new NetworkError(result);
           // Generate error with failed status and received logs
           e.status = 400;
           e.response = jobInfo;
+          e.message = result.message || "";
+
           throw e;
         }
 
@@ -81,14 +83,16 @@ export default class SchedulerResource extends BaseResource
         // If check connection for destination has status 'failed'
         if (result.status === Status.FAILED) {
           const jobInfo = {
-            ...result.job_info,
-            job: { ...result.job_info.job, status: result.status }
+            ...result.jobInfo,
+            job: { ...result.jobInfo.job, status: result.status }
           };
 
           const e = new NetworkError(result);
           // Generate error with failed status and received logs
           e.status = 400;
           e.response = jobInfo;
+          e.message = result.message || "";
+
           throw e;
         }
 
