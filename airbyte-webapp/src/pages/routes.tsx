@@ -19,6 +19,8 @@ import { AnalyticsService } from "../core/analytics/AnalyticsService";
 import useRouter from "../components/hooks/useRouterHook";
 import SupportChat from "../components/SupportChat";
 import useWorkspace from "../components/hooks/services/useWorkspaceHook";
+import SingletonCard from "../components/SingletonCard";
+import { FormattedMessage } from "react-intl";
 
 export enum Routes {
   Preferences = "/preferences",
@@ -153,6 +155,10 @@ export const Routing = () => {
         <SupportChat
           papercupsConfig={config.papercups}
           customerId={workspace.customerId}
+        />
+        <SingletonCard
+          title={<FormattedMessage id="demo.message.title" />}
+          text={<FormattedMessage id="demo.message.body" />}
         />
       </Suspense>
     </Router>

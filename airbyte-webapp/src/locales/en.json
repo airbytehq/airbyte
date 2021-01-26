@@ -228,5 +228,8 @@
   "admin.dockerImageTag.placeholder": "12.3",
   "admin.documentationUrl": "Connector Documentation URL",
   "admin.documentationUrl.placeholder": "https://hub.docker.com/r/airbyte/integration-singer-postgres-source",
-  "admin.learnMore": "<lnk>Learn more from our documentation</lnk> to understand how to fill these field."
+  "admin.learnMore": "<lnk>Learn more from our documentation</lnk> to understand how to fill these field.",
+
+  "demo.message.title": "This demo is read-only",
+  "demo.message.body": "You cannot add or edit any connectors. You will see error messages on purpose if you try to do so."
 }
