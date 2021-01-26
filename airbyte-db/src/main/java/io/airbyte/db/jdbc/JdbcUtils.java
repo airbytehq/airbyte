@@ -240,12 +240,28 @@ public class JdbcUtils {
 
   }
 
+  /**
+   * Given a database connection and identifier, adds db-specific quoting.
+   *
+   * @param connection database connection
+   * @param identifier identifier to quote
+   * @return quoted identifier
+   * @throws SQLException throws if there are any issues fulling the quoting metadata from the db.
+   */
   public static String enquoteIdentifier(Connection connection, String identifier) throws SQLException {
     final String identifierQuoteString = connection.getMetaData().getIdentifierQuoteString();
 
     return identifierQuoteString + identifier + identifierQuoteString;
   }
 
+  /**
+   * Given a database connection and identifiers, adds db-specific quoting to each identifier.
+   *
+   * @param connection database connection
+   * @param identifiers identifiers to quote
+   * @return quoted identifiers
+   * @throws SQLException throws if there are any issues fulling the quoting metadata from the db.
+   */
   public static String enquoteIdentifierList(Connection connection, List<String> identifiers) throws SQLException {
     final StringJoiner joiner = new StringJoiner(",");
     for (String col : identifiers) {
