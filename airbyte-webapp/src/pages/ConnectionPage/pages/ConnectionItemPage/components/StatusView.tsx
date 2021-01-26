@@ -54,11 +54,11 @@ const StatusView: React.FC<IProps> = ({ connection, frequencyText }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { jobs } = useResource(JobResource.listShape(), {
     configId: connection.connectionId,
-    configType: "sync"
+    configTypes: ["sync", "reset_connection"]
   });
   useSubscription(JobResource.listShape(), {
     configId: connection.connectionId,
-    configType: "sync"
+    configTypes: ["sync", "reset_connection"]
   });
 
   const SyncConnection = useFetcher(ConnectionResource.syncShape());

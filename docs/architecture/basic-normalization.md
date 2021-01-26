@@ -39,7 +39,7 @@ Airbyte places the json blob version of your data in a table called `_airbyte_ra
 * [BigQuery](../integrations/destinations/bigquery.md)
 * [Postgres](../integrations/destinations/postgres.md)
 * [Snowflake](../integrations/destinations/snowflake.md)
-* \(_coming soon_\) Redshift
+* [Redshift](../integrations/destinations/redshift.md)
 
 Basic Normalization can be used in each of these destinations by configuring the "basic normalization" field to true when configuring the destination in the UI.
 

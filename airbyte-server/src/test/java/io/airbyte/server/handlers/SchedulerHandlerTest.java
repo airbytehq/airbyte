@@ -25,6 +25,8 @@
 package io.airbyte.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
@@ -40,6 +42,7 @@ import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.JobInfoRead;
 import io.airbyte.api.model.SourceCoreConfig;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
+import io.airbyte.api.model.SourceDiscoverSchemaRead;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
@@ -293,8 +296,35 @@ class SchedulerHandlerTest {
             .withCatalog(CatalogHelpers.createAirbyteCatalog("shoes", Field.of("sku", JsonSchemaPrimitive.STRING))));
     when(completedJob.getSuccessOutput()).thenReturn(Optional.of(jobOutput));
 
-    schedulerHandler.discoverSchemaForSourceFromSourceId(request);
+    final SourceDiscoverSchemaRead actual = schedulerHandler.discoverSchemaForSourceFromSourceId(request);
 
+    assertNotNull(actual.getSchema());
+    assertNotNull(actual.getJobInfo());
+    assertEquals(io.airbyte.api.model.JobStatus.SUCCEEDED, actual.getJobInfo().getJob().getStatus());
+    verify(configRepository).getSourceConnection(source.getSourceId());
+    verify(schedulerJobClient).createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE);
+  }
+
+  @Test
+  void testDiscoverSchemaForSourceFromSourceIdFailed() throws IOException, JsonValidationException, ConfigNotFoundException {
+    final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
+    final SourceIdRequestBody request = new SourceIdRequestBody().sourceId(source.getSourceId());
+
+    when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
+        .thenReturn(new StandardSourceDefinition()
+            .withDockerRepository(SOURCE_DOCKER_REPO)
+            .withDockerImageTag(SOURCE_DOCKER_TAG)
+            .withSourceDefinitionId(source.getSourceDefinitionId()));
+    when(configRepository.getSourceConnection(source.getSourceId())).thenReturn(source);
+    when(schedulerJobClient.createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE)).thenReturn(completedJob);
+    when(completedJob.getSuccessOutput()).thenReturn(Optional.empty());
+    when(completedJob.getStatus()).thenReturn(JobStatus.FAILED);
+
+    final SourceDiscoverSchemaRead actual = schedulerHandler.discoverSchemaForSourceFromSourceId(request);
+
+    assertNull(actual.getSchema());
+    assertNotNull(actual.getJobInfo());
+    assertEquals(io.airbyte.api.model.JobStatus.FAILED, actual.getJobInfo().getJob().getStatus());
     verify(configRepository).getSourceConnection(source.getSourceId());
     verify(schedulerJobClient).createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE);
   }
@@ -320,8 +350,38 @@ class SchedulerHandlerTest {
             .withSourceDefinitionId(source.getSourceDefinitionId()));
     when(schedulerJobClient.createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE)).thenReturn(completedJob);
 
-    schedulerHandler.discoverSchemaForSourceFromSourceCreate(sourceCoreConfig);
+    final SourceDiscoverSchemaRead actual = schedulerHandler.discoverSchemaForSourceFromSourceCreate(sourceCoreConfig);
 
+    assertNotNull(actual.getSchema());
+    assertNotNull(actual.getJobInfo());
+    assertEquals(io.airbyte.api.model.JobStatus.SUCCEEDED, actual.getJobInfo().getJob().getStatus());
+    verify(schedulerJobClient).createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE);
+  }
+
+  @Test
+  void testDiscoverSchemaForSourceFromSourceCreateFailed() throws JsonValidationException, IOException, ConfigNotFoundException {
+    final SourceConnection source = new SourceConnection()
+        .withSourceDefinitionId(SOURCE.getSourceDefinitionId())
+        .withConfiguration(SOURCE.getConfiguration());
+
+    final SourceCoreConfig sourceCoreConfig = new SourceCoreConfig()
+        .sourceDefinitionId(source.getSourceDefinitionId())
+        .connectionConfiguration(source.getConfiguration());
+
+    when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
+        .thenReturn(new StandardSourceDefinition()
+            .withDockerRepository(SOURCE_DOCKER_REPO)
+            .withDockerImageTag(SOURCE_DOCKER_TAG)
+            .withSourceDefinitionId(source.getSourceDefinitionId()));
+    when(schedulerJobClient.createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE)).thenReturn(completedJob);
+    when(completedJob.getSuccessOutput()).thenReturn(Optional.empty());
+    when(completedJob.getStatus()).thenReturn(JobStatus.FAILED);
+
+    final SourceDiscoverSchemaRead actual = schedulerHandler.discoverSchemaForSourceFromSourceCreate(sourceCoreConfig);
+
+    assertNull(actual.getSchema());
+    assertNotNull(actual.getJobInfo());
+    assertEquals(io.airbyte.api.model.JobStatus.FAILED, actual.getJobInfo().getJob().getStatus());
     verify(schedulerJobClient).createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE);
   }
 

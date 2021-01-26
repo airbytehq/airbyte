@@ -26,7 +26,7 @@ type IProps = {
     destinationDefinitionId?: string;
     connectionConfiguration?: any;
   }) => void;
-  errorStatus?: number;
+  error?: null | { message?: string; status?: number };
   currentSourceDefinitionId: string;
   jobInfo?: JobInfo;
   afterSelectConnector?: () => void;
@@ -36,7 +36,7 @@ const DestinationStep: React.FC<IProps> = ({
   onSubmit,
   dropDownData,
   hasSuccess,
-  errorStatus,
+  error,
   currentSourceDefinitionId,
   destination,
   jobInfo,
@@ -80,7 +80,7 @@ const DestinationStep: React.FC<IProps> = ({
     });
   };
 
-  const errorMessage = createFormErrorMessage(errorStatus);
+  const errorMessage = error ? createFormErrorMessage(error) : "";
 
   return (
     <>
@@ -89,7 +89,9 @@ const DestinationStep: React.FC<IProps> = ({
         title={<FormattedMessage id="onboarding.destinationSetUp" />}
       >
         <ServiceForm
-          additionBottomControls={<SkipOnboardingButton />}
+          additionBottomControls={
+            <SkipOnboardingButton step="destination connection" />
+          }
           allowChangeConnector
           onDropDownSelect={onDropDownSelect}
           onSubmit={onSubmitForm}

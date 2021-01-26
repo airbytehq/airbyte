@@ -26,9 +26,11 @@ package io.airbyte.integrations.source.jdbc;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -70,7 +72,7 @@ class StateDecoratingIteratorTest {
   }
 
   @Test
-  void test() {
+  void testWithoutInitialCursor() {
     when(stateManager.updateAndEmit(STREAM_NAME, "def")).thenReturn(stateMessage);
 
     final StateDecoratingIterator iterator = new StateDecoratingIterator(
@@ -102,6 +104,28 @@ class StateDecoratingIteratorTest {
     assertEquals(RECORD_MESSAGE1, iterator.next());
     assertEquals(RECORD_MESSAGE2, iterator.next());
     assertEquals(stateMessage, iterator.next().getState());
+    assertFalse(iterator.hasNext());
+  }
+
+  @Test
+  void testCursorFieldIsEmpty() {
+    final AirbyteMessage recordMessage = Jsons.clone(RECORD_MESSAGE1);
+    ((ObjectNode) recordMessage.getRecord().getData()).remove(UUID_FIELD_NAME);
+    final Stream<AirbyteMessage> messageStream = Stream.of(recordMessage);
+
+    when(stateManager.updateAndEmit(STREAM_NAME, "xyz")).thenReturn(stateMessage);
+
+    final StateDecoratingIterator iterator = new StateDecoratingIterator(
+        messageStream,
+        stateManager,
+        STREAM_NAME,
+        UUID_FIELD_NAME,
+        null,
+        JsonSchemaPrimitive.STRING);
+
+    assertEquals(recordMessage, iterator.next());
+    // null because no records with a cursor field were replicated for the stream.
+    assertNull(iterator.next().getState());
     assertFalse(iterator.hasNext());
   }
 

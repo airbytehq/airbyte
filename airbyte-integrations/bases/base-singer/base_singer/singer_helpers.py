@@ -228,6 +228,9 @@ class SingerHelper:
                                 replication_method = _FULL_TABLE
                             new_metadata["metadata"]["forced-replication-method"] = replication_method
                             new_metadata["metadata"]["replication-method"] = replication_method
+                        else:
+                            if "fieldExclusions" in new_metadata["metadata"]:
+                                new_metadata["metadata"]["selected"] = True if not new_metadata["metadata"]["fieldExclusions"] else False
                         new_metadatas += [new_metadata]
                     singer_stream["metadata"] = new_metadatas
 

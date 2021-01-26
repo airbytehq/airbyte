@@ -107,7 +107,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
     }
 
     LOGGER.debug("Closing tap process");
-    WorkerUtils.gentleClose(tapProcess, 1, TimeUnit.MINUTES);
+    WorkerUtils.gentleClose(tapProcess, 10, TimeUnit.HOURS);
     if (tapProcess.isAlive() || tapProcess.exitValue() != 0) {
       throw new WorkerException("Tap process wasn't successful");
     }

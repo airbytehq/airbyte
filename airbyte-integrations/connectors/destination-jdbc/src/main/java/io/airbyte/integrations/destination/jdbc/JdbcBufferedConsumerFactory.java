@@ -44,6 +44,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // Strategy:
 // 1. Create a temporary table for each stream
@@ -55,6 +57,8 @@ import java.util.stream.Collectors;
 // 5. In a single transaction, delete the target tables if they exist and rename the temp tables to
 // the final table name.
 public class JdbcBufferedConsumerFactory {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(JdbcBufferedConsumerFactory.class);
 
   public static DestinationConsumer<AirbyteMessage> create(JdbcDatabase database,
                                                            SqlOperations sqlOperations,
@@ -87,13 +91,17 @@ public class JdbcBufferedConsumerFactory {
 
   private static OnStartFunction onStartFunction(JdbcDatabase database, SqlOperations sqlOperations, List<WriteConfig> writeConfigs) {
     return () -> {
+      LOGGER.info("Preparing tmp tables in destination started for {} streams", writeConfigs.size());
       for (final WriteConfig writeConfig : writeConfigs) {
         final String schemaName = writeConfig.getOutputNamespaceName();
         final String tmpTableName = writeConfig.getTmpTableName();
+        LOGGER.info("Preparing tmp table in destination started for stream {}. schema {}, tmp table name: {}", writeConfig.getStreamName(),
+            schemaName, tmpTableName);
 
         sqlOperations.createSchemaIfNotExists(database, schemaName);
         sqlOperations.createTableIfNotExists(database, schemaName, tmpTableName);
       }
+      LOGGER.info("Preparing tables in destination completed.");
     };
   }
 
@@ -120,10 +128,13 @@ public class JdbcBufferedConsumerFactory {
       // copy data
       if (!hasFailed) {
         final StringBuilder queries = new StringBuilder();
+        LOGGER.info("Finalizing tables in destination started for {} streams", writeConfigs.size());
         for (WriteConfig writeConfig : writeConfigs) {
           final String schemaName = writeConfig.getOutputNamespaceName();
           final String srcTableName = writeConfig.getTmpTableName();
           final String dstTableName = writeConfig.getOutputTableName();
+          LOGGER.info("Finalizing stream {}. schema {}, tmp table {}, final table {}", writeConfig.getStreamName(), schemaName, srcTableName,
+              dstTableName);
 
           sqlOperations.createTableIfNotExists(database, schemaName, dstTableName);
           switch (writeConfig.getSyncMode()) {
@@ -133,14 +144,22 @@ public class JdbcBufferedConsumerFactory {
           }
           queries.append(sqlOperations.copyTableQuery(schemaName, srcTableName, dstTableName));
         }
+
+        LOGGER.info("Executing finalization of tables.");
         sqlOperations.executeTransaction(database, queries.toString());
+        LOGGER.info("Finalizing tables in destination completed.");
       }
       // clean up
+      LOGGER.info("Cleaning tmp tables in destination started for {} streams", writeConfigs.size());
       for (WriteConfig writeConfig : writeConfigs) {
         final String schemaName = writeConfig.getOutputNamespaceName();
         final String tmpTableName = writeConfig.getTmpTableName();
+        LOGGER.info("Cleaning tmp table in destination started for stream {}. schema {}, tmp table name: {}", writeConfig.getStreamName(), schemaName,
+            tmpTableName);
+
         sqlOperations.dropTableIfExists(database, schemaName, tmpTableName);
       }
+      LOGGER.info("Cleaning tmp tables in destination completed.");
     };
   }
 

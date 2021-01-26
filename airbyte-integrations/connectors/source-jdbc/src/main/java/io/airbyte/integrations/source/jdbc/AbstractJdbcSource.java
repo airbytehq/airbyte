@@ -63,6 +63,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -226,7 +227,13 @@ public abstract class AbstractJdbcSource implements Source {
       throw new IllegalArgumentException(String.format("%s does not support sync mode: %s.", airbyteStream.getSyncMode(), AbstractJdbcSource.class));
     }
 
-    return stream;
+    final AtomicLong recordCount = new AtomicLong();
+    return stream.peek(r -> {
+      final long count = recordCount.incrementAndGet();
+      if (count % 10000 == 0) {
+        LOGGER.info("Reading stream {}. Records read: {}", streamName, count);
+      }
+    });
   }
 
   private static Stream<AirbyteMessage> getIncrementalStream(JdbcDatabase database,

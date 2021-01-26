@@ -72,4 +72,3 @@ From [Postgres SQL Identifiers syntax](https://www.postgresql.org/docs/9.0/sql-s
 * If you want to write portable applications you are advised to always quote a particular name or never quote it.
 
 Therefore, Airbyte Postgres destination will create tables and schemas using the Unquoted identifiers when possible or fallback to Quoted Identifiers if the names are containing special characters.
-
