@@ -25,7 +25,6 @@
 package io.airbyte.integrations.destination.snowflake;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
@@ -35,7 +34,6 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-
 import org.junit.jupiter.api.Test;
 
 class SnowflakeDestinationTest {
@@ -51,8 +49,10 @@ class SnowflakeDestinationTest {
 
   @Test
   void testCheckFailsWithInvalidPermissions() throws IOException {
-    // TODO(sherifnada) this test case is assumes config.json does not have permission to access the schema
-    //  this connector should be updated with multiple credentials, each with a clear purpose (valid, invalid: insufficient permissions, invalid: wrong password, etc..)
+    // TODO(sherifnada) this test case is assumes config.json does not have permission to access the
+    // schema
+    // this connector should be updated with multiple credentials, each with a clear purpose (valid,
+    // invalid: insufficient permissions, invalid: wrong password, etc..)
     JsonNode credentialsJsonString = Jsons.deserialize(new String(Files.readAllBytes(Paths.get("secrets/config.json"))));
     AirbyteConnectionStatus check = new SnowflakeDestination().check(credentialsJsonString);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, check.getStatus());
