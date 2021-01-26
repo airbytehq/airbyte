@@ -30,6 +30,7 @@ import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import java.math.BigDecimal;
+import java.sql.Connection;
 import java.sql.Date;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
@@ -41,8 +42,10 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.Collections;
+import java.util.List;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.StringJoiner;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -235,6 +238,21 @@ public class JdbcUtils {
 
     O apply() throws SQLException;
 
+  }
+
+  public static String enquoteIdentifier(Connection connection, String identifier) throws SQLException {
+    final String identifierQuoteString = connection.getMetaData().getIdentifierQuoteString();
+
+    return identifierQuoteString + identifier + identifierQuoteString;
+  }
+
+  public static String enquoteIdentifierList(Connection connection, List<String> identifiers) throws SQLException {
+    final StringJoiner joiner = new StringJoiner(",");
+    for (String col : identifiers) {
+      String s = JdbcUtils.enquoteIdentifier(connection, col);
+      joiner.add(s);
+    }
+    return joiner.toString();
   }
 
 }
