@@ -4,7 +4,8 @@
 * [Getting Started](getting-started.md)
 * [Tutorials](tutorials/README.md)
   * [Postgres Replication](tutorials/postgres-replication.md)
-  * [Building a toy connector](tutorials/toy-connector.md)
+  * [Building a Python Source](tutorials/building-a-python-source.md)
+  * [Building a Toy Connector](tutorials/toy-connector.md)
   * [Beginner's Guide to the AirbyteCatalog](tutorials/beginners-guide-to-catalog.md)
   * [Upgrading Airbyte](tutorials/upgrading-airbyte.md)
   * [Exploring Airbyte logs folder](tutorials/exploring-workspace-folder.md)
@@ -109,4 +110,3 @@
   * [Founding Developer Advocate](career-and-open-positions/founding-developer-evangelist.md)
   * [Senior Software Engineer](career-and-open-positions/senior-software-engineer.md)
 * [License](license.md)
-
