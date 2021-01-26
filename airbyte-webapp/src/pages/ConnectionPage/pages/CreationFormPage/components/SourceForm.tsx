@@ -16,7 +16,7 @@ type IProps = {
 const SourceFormComponent: React.FC<IProps> = ({ afterSubmit }) => {
   const { push, location } = useRouter();
   const [successRequest, setSuccessRequest] = useState(false);
-  const [errorStatusRequest, setErrorStatusRequest] = useState<number>(0);
+  const [errorStatusRequest, setErrorStatusRequest] = useState(null);
 
   const { sourceDefinitions } = useResource(
     SourceDefinitionResource.listShape(),
@@ -44,7 +44,7 @@ const SourceFormComponent: React.FC<IProps> = ({ afterSubmit }) => {
     const connector = sourceDefinitions.find(
       item => item.sourceDefinitionId === values.serviceType
     );
-    setErrorStatusRequest(0);
+    setErrorStatusRequest(null);
     try {
       const result = await createSource({ values, sourceConnector: connector });
       setSuccessRequest(true);
@@ -56,7 +56,7 @@ const SourceFormComponent: React.FC<IProps> = ({ afterSubmit }) => {
         });
       }, 2000);
     } catch (e) {
-      setErrorStatusRequest(e.status);
+      setErrorStatusRequest(e);
     }
   };
 
@@ -65,7 +65,7 @@ const SourceFormComponent: React.FC<IProps> = ({ afterSubmit }) => {
       onSubmit={onSubmitSourceStep}
       dropDownData={sourcesDropDownData}
       hasSuccess={successRequest}
-      errorStatus={errorStatusRequest}
+      error={errorStatusRequest}
     />
   );
 };

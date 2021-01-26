@@ -2,7 +2,7 @@
 description: Building a toy source connector to illustrate Airbyte's main concepts
 ---
 
-# Building a toy connector
+# Building a Toy Connector
 
 This tutorial walks you through building a simple Airbyte source to demonstrate the following concepts in Action:
 

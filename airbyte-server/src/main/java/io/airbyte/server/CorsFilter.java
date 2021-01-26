@@ -39,7 +39,7 @@ public class CorsFilter implements ContainerResponseFilter {
   public void filter(ContainerRequestContext requestContext,
                      ContainerResponseContext responseContext) {
     responseContext.getHeaders().add(ALLOW_ORIGIN, "*");
-    responseContext.getHeaders().add(ALLOW_HEADERS, "Origin, Content-Type, Accept");
+    responseContext.getHeaders().add(ALLOW_HEADERS, "Origin, Content-Type, Accept, Content-Encoding");
     responseContext.getHeaders().add(ALLOW_METHODS, "GET, POST, PUT, DELETE, OPTIONS, HEAD");
   }
 
