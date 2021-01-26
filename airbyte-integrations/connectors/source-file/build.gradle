@@ -10,7 +10,7 @@ airbytePython {
     moduleDirectory 'source_file'
 }
 
-task("customIntegrationTesPython", type: PythonTask, dependsOn: installTestReqs){
+task("customIntegrationTestPython", type: PythonTask, dependsOn: installTestReqs){
     module = "pytest"
     command = "-s integration_tests"
 }
