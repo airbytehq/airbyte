@@ -75,8 +75,7 @@ to role identifier($airbyte_role);
 -- grant Airbyte database access
 grant OWNERSHIP
 on database identifier($airbyte_database)
-to role identifier($airbyte_role)
-revoke current grants;
+to role identifier($airbyte_role);
 
 commit;
 
@@ -94,8 +93,7 @@ begin;
 -- grant Airbyte schema access
 grant OWNERSHIP
 on schema identifier($airbyte_schema)
-to role identifier($airbyte_role)
-revoke current grants;
+to role identifier($airbyte_role);
 
 commit;
 ```
