@@ -58,6 +58,6 @@ setup(
         # integration tests but not the main package go in integration_tests. Deps required by both should go in
         # install_requires.
         "main": [],
-        "integration_tests": TEST_REQUIREMENTS,
+        "tests": TEST_REQUIREMENTS,
     },
 )
