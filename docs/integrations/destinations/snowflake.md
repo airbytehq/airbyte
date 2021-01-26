@@ -88,6 +88,16 @@ USE DATABASE identifier($airbyte_database);
 CREATE SCHEMA IF NOT EXISTS identifier($airbyte_schema);
 
 commit;
+
+begin;
+
+-- grant Airbyte schema access
+grant OWNERSHIP
+on schema identifier($airbyte_schema)
+to role identifier($airbyte_role)
+revoke current grants;
+
+commit;
 ```
 
 ### Setup the Snowflake destination in Airbyte
