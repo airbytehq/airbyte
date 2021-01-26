@@ -75,7 +75,8 @@ to role identifier($airbyte_role);
 -- grant Airbyte database access
 grant OWNERSHIP
 on database identifier($airbyte_database)
-to role identifier($airbyte_role);
+to role identifier($airbyte_role)
+revoke current grants;
 
 commit;
 
@@ -85,15 +86,6 @@ USE DATABASE identifier($airbyte_database);
 
 -- create schema for Airbyte data
 CREATE SCHEMA IF NOT EXISTS identifier($airbyte_schema);
-
-commit;
-
-begin;
-
--- grant Airbyte schema access
-grant OWNERSHIP
-on schema identifier($airbyte_schema)
-to role identifier($airbyte_role);
 
 commit;
 ```
