@@ -1,11 +1,10 @@
-# Diving into Airbyte Workspace folders
+# Exploring Airbyte logs folder
 
 ## Overview
 
-This tutorial will describe how to explore Airbyte Workspace folders. 
+This tutorial will describe how to explore Airbyte Workspace folders.
 
-This is useful if you need to browse the docker volumes where extra output files of 
-Airbyte server and workers are stored since they may not be accessible through the UI.
+This is useful if you need to browse the docker volumes where extra output files of Airbyte server and workers are stored since they may not be accessible through the UI.
 
 ## Exploring the Logs folders
 
@@ -13,20 +12,16 @@ When running a Sync in Airbyte, you have the option to look at the logs in the U
 
 ### Identifying Workspace IDs
 
-In the screenshot below, you can notice the highlighted blue boxes are showing the id numbers 
-that were used for the selected "Attempt" for this sync job.
+In the screenshot below, you can notice the highlighted blue boxes are showing the id numbers that were used for the selected "Attempt" for this sync job.
 
-In this case, the job was running in `/tmp/workspace/9/2/` folder since the tab of the third attempt 
-is being selected in the UI (first attempt would be `/tmp/workspace/9/0/`).
+In this case, the job was running in `/tmp/workspace/9/2/` folder since the tab of the third attempt is being selected in the UI \(first attempt would be `/tmp/workspace/9/0/`\).
 
 ![](../.gitbook/assets/explore_logs.png)
 
 The highlighted button in the red circle on the right would allow you to download the logs.log file.  
-However, there are actually more files being recorded in the same workspace folder...
-Thus, we might want to dive deeper to explore these folders and gain a better understanding of what 
-is being run by Airbyte.
+However, there are actually more files being recorded in the same workspace folder... Thus, we might want to dive deeper to explore these folders and gain a better understanding of what is being run by Airbyte.
 
-### Understanding the Docker run commands 
+### Understanding the Docker run commands
 
 Scrolling down a bit more, we can also read the different docker commands being used internally are starting with:
 
@@ -34,23 +29,19 @@ Scrolling down a bit more, we can also read the different docker commands being 
 docker run --rm -i -v airbyte_workspace:/data -v /tmp/airbyte_local:/local -w /data/9/2 --network host ...
 ```
 
-From there, we can observe that Airbyte is calling the `-v` option to use a docker named volume 
-called `airbyte_workspace` that is mounted in the container at the location `/data`.
+From there, we can observe that Airbyte is calling the `-v` option to use a docker named volume called `airbyte_workspace` that is mounted in the container at the location `/data`.
 
-Following [Docker Volume documentation](https://docs.docker.com/storage/volumes/), we can inspect and 
-manipulate persisted configuration data in these volumes. 
+Following [Docker Volume documentation](https://docs.docker.com/storage/volumes/), we can inspect and manipulate persisted configuration data in these volumes.
 
 ### Opening a Unix shell prompt to browse the Docker volume
 
-For example, we can run any docker container/image to browse the content of this named volume by 
-mounting it similarly, let's use the [busybox](https://hub.docker.com/_/busybox) image.
+For example, we can run any docker container/image to browse the content of this named volume by mounting it similarly, let's use the [busybox](https://hub.docker.com/_/busybox) image.
 
 ```text
 docker run -it --rm --volume airbyte_workspace:/data busybox
 ```
 
-This will drop you into an `sh` shell inside the docker container to allow you to do what you want 
-inside a BusyBox system from which we can browse the filesystem and accessing to log files:
+This will drop you into an `sh` shell inside the docker container to allow you to do what you want inside a BusyBox system from which we can browse the filesystem and accessing to log files:
 
 ```text
 ls /data/9/2/
@@ -81,8 +72,7 @@ normalize                    target_config.json
 
 ### Reading the content of the catalog.json file
 
-For example, it is often useful to inspect the content of the [catalog](beginners-guide-to-catalog.md) file.
-You could do so by running a `cat` command:
+For example, it is often useful to inspect the content of the [catalog](beginners-guide-to-catalog.md) file. You could do so by running a `cat` command:
 
 ```bash
 docker run -it --rm --volume airbyte_workspace:/data busybox cat /data/9/2/catalog.json
@@ -105,11 +95,7 @@ cat catalog.json
 
 ## CSV or JSON local Destinations: Check local data folder
 
-If you setup a pipeline using one of the local File based destinations (CSV or JSON), Airbyte is writing
-the resulting files containing the data in the special `/local/` directory in the container.
-By default, this volume is mounted from `/tmp/airbyte_local` on the host machine. So you need to navigate
-to this [local folder](file:///tmp/airbyte_local/) on the filesystem of the machine running the Airbyte instance
-to retrieve the local data files.
+If you setup a pipeline using one of the local File based destinations \(CSV or JSON\), Airbyte is writing the resulting files containing the data in the special `/local/` directory in the container. By default, this volume is mounted from `/tmp/airbyte_local` on the host machine. So you need to navigate to this [local folder](file:///tmp/airbyte_local/) on the filesystem of the machine running the Airbyte instance to retrieve the local data files.
 
 Or, you can also run through docker commands as proxy:
 
@@ -142,7 +128,7 @@ On the host:
 
 ## Notes about running on macOS vs Linux
 
-Note that Docker for Mac is not a real Docker host, now it actually runs a virtual machine behind the scenes and hides it from you to make things "simpler". 
+Note that Docker for Mac is not a real Docker host, now it actually runs a virtual machine behind the scenes and hides it from you to make things "simpler".
 
 Here are some related links as references on accessing Docker Volumes:
 
@@ -161,3 +147,4 @@ docker volume inspect <volume_name>
 ```
 
 Then look at the `Mountpoint` value, this is where the volume is actually stored in the host filesystem and you can directly retrieve files directly from that folder.
+

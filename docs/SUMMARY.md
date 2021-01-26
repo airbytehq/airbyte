@@ -9,8 +9,8 @@
   * [Beginner's Guide to the AirbyteCatalog](tutorials/beginners-guide-to-catalog.md)
   * [Upgrading Airbyte](tutorials/upgrading-airbyte.md)
   * [Exploring Airbyte logs folder](tutorials/exploring-workspace-folder.md)
-  * [Connecting EL with T using SQL (part 1/2)](tutorials/connecting-EL-with-T-using-SQL.md)
-  * [Connecting EL with T using DBT (part 2/2)](tutorials/connecting-EL-with-T-using-DBT.md)
+  * [Connecting EL with T using SQL \(part 1/2\)](tutorials/connecting-el-with-t-using-sql.md)
+  * [Connecting EL with T using DBT \(part 2/2\)](tutorials/connecting-el-with-t-using-dbt.md)
 * [Changelog](changelog/README.md)
   * [Platform](changelog/platform.md)
   * [Connectors](changelog/connectors.md)
@@ -110,3 +110,4 @@
   * [Founding Developer Advocate](career-and-open-positions/founding-developer-evangelist.md)
   * [Senior Software Engineer](career-and-open-positions/senior-software-engineer.md)
 * [License](license.md)
+
