@@ -49,8 +49,7 @@ const config: {
     window.API_URL ||
     process.env.REACT_APP_API_URL ||
     `${window.location.protocol}//${window.location.hostname}:8001/api/v1/`,
-  // don't show the demo card if the cookie auth cookie is set
-  isDemo: window.IS_DEMO === "true" && !document.cookie.includes("hack-auth")
+  isDemo: window.IS_DEMO === "true"
 };
 
 export default config;
