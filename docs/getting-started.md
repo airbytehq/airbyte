@@ -71,7 +71,7 @@ From there, you can look at the logs, download them, force a sync and adjust the
 Now let's verify that this worked:
 
 ```bash
-cat /tmp/airbyte_local/test_json/exchange_rate_raw.jsonl
+cat /tmp/airbyte_local/json_data/exchange_rate_raw.jsonl
 ```
 
 You should see one line for each day that was replicated.
