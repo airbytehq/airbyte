@@ -156,10 +156,12 @@ export const Routing = () => {
           papercupsConfig={config.papercups}
           customerId={workspace.customerId}
         />
-        <SingletonCard
-          title={<FormattedMessage id="demo.message.title" />}
-          text={<FormattedMessage id="demo.message.body" />}
-        />
+        {config.isDemo && (
+          <SingletonCard
+            title={<FormattedMessage id="demo.message.title" />}
+            text={<FormattedMessage id="demo.message.body" />}
+          />
+        )}
       </Suspense>
     </Router>
   );
