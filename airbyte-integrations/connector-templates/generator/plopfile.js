@@ -1,7 +1,7 @@
 'use strict';
 const path = require('path');
 
-const getSuccessMessage = function(connectorName, outputPath){
+const getSuccessMessage = function(connectorName, outputPath, additionalMessage){
     return `
 🚀 🚀 🚀 🚀 🚀 🚀
 
@@ -16,6 +16,8 @@ Slack: https://slack.airbyte.io
 Github: https://github.com/airbytehq/airbyte
 
 We're always happy to provide you with any support :)
+
+${additionalMessage || ""}
 `
 }
 
@@ -30,7 +32,7 @@ module.exports = function (plop) {
   const genericSourceOutputRoot = `${outputDir}/source-{{dashCase name}}`;
 
   plop.setActionType('emitSuccess', function(answers, config, plopApi){
-      console.log(getSuccessMessage(answers.name, plopApi.renderString(config.outputPath, answers)));
+      console.log(getSuccessMessage(answers.name, plopApi.renderString(config.outputPath, answers), config.message));
   });
 
   plop.setGenerator('Python Source', {
@@ -64,7 +66,7 @@ module.exports = function (plop) {
         templateFile: `${pythonSourceInputRoot}/.dockerignore.hbs`,
         path: `${pythonSourceOutputRoot}/.dockerignore`
       },
-      {type: 'emitSuccess', outputPath: pythonSourceOutputRoot}]
+      {type: 'emitSuccess', outputPath: pythonSourceOutputRoot, message: "For a checklist of what to do next go to https://docs.airbyte.io/tutorials/building-a-python-source"}]
   });
 
   plop.setGenerator('Singer-based Python Source', {
