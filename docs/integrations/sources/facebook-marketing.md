@@ -2,8 +2,7 @@
 
 ## Sync overview
 
-This source can sync data for the core Ad Campaign data available in the [Facebook Marketing API](https://developers.facebook.com/docs/marketing-api/campaign-structure): Campaigns, AdSets, Ads, and AdCreatives.
-It can also sync [Ad Insights from the Reporting API](https://developers.facebook.com/docs/marketing-api/insights).
+This source can sync data for the core Ad Campaign data available in the [Facebook Marketing API](https://developers.facebook.com/docs/marketing-api/campaign-structure): Campaigns, AdSets, Ads, and AdCreatives. It can also sync [Ad Insights from the Reporting API](https://developers.facebook.com/docs/marketing-api/insights).
 
 ### Output schema
 
