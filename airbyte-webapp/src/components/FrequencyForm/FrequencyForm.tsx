@@ -8,7 +8,7 @@ import BottomBlock from "./components/BottomBlock";
 import Label from "../Label";
 import SchemaView from "./components/SchemaView";
 import { IDataItem } from "../DropDown/components/ListItem";
-import EditControls from "../ServiceForm/components/EditControls";
+import EditControls from "./components/EditControls";
 import { SyncSchema } from "../../core/resources/Schema";
 import ResetDataModal from "../ResetDataModal";
 import { equal } from "../../utils/objects";
