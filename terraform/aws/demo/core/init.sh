@@ -21,7 +21,11 @@ install_docker_compose() {
 install_airbyte() {
   mkdir airbyte && cd airbyte
   wget https://raw.githubusercontent.com/airbytehq/airbyte/master/{.env,docker-compose.yaml}
-  API_URL=/api/v1/ AIRBYTE_ROLE=demo docker-compose up -d
+  API_URL=/api/v1/ AIRBYTE_ROLE=demo IS_DEMO=true docker-compose up -d
+}
+
+install_demo_pg() {
+  docker run --rm --name postgres-demo -e POSTGRES_PASSWORD=password -p 3000:5432 -d postgres
 }
 
 main() {
