@@ -33,6 +33,10 @@ resource "aws_security_group" "airbyte-ssh-sg" {
 }
 
 resource "aws_instance" "airbyte-instance" {
+  lifecycle {
+    prevent_destroy = true
+  }
+
   instance_type = var.instance-size
   ami           = data.aws_ami.amazon-linux-2.id
 
