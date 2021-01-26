@@ -2,7 +2,7 @@
 
 We wrote an article, “[Open-source vs. Commercial Software: How to Solve the Data Integration Problem](https://airbyte.io/articles/data-engineering-thoughts/open-source-vs-commercial-software-how-to-better-solve-data-integration/),” in which we describe the pros and cons of StitchData’s commercial approach and Airbyte’s open-source approach. Don’t hesitate to check it out for more detailed arguments. As a summary, here are the differences:
 
-### StitchData:
+## StitchData:
 
 * **Limited deprecating connectors:** Stitch only supports 150 connectors. Talend has stopped investing in StitchData and its connectors. And on Singer, each connector is its own open-source project. So you never know the quality of a tap or target until you have actually used it. There is no guarantee whatsoever about what you’ll get.
 * **Pricing indexed on usage:** StitchData’s pricing is indexed on the connectors used and the volume of data transferred. Teams always need to keep that in mind and are not free to move data without thinking about cost. 
@@ -10,7 +10,7 @@ We wrote an article, “[Open-source vs. Commercial Software: How to Solve the D
 * **No moving data between internal databases:** StitchData sits in the cloud, so if you have to replicate data from an internal database to another, it makes no sense to have the data move through their cloud for privacy and cost reasons. 
 * **StitchData’s Singer connectors are standalone binaries:** you still need to build everything around to make them work. And it’s hard to update some pre-built connectors, as they are of poor quality. 
 
-### Airbyte:
+## Airbyte:
 
 * **Free, as open source, so no more pricing based on usage:** learn more about our [future business model](../../company-handbook/business-model.md) \(connectors will always remain open-source\). 
 * **Supporting 50+ connectors by the end of 2020** \(so in only 5 months of existence\). Our goal is to reach 300+ connectors by the end of 2021.

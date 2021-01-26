@@ -15,6 +15,7 @@ import { equal } from "../../utils/objects";
 import { useFrequencyDropdownData, useInitialSchema } from "./useInitialSchema";
 import { ControlLabels } from "../LabeledControl";
 import DropDown from "../DropDown";
+import { ModalTypes } from "../ResetDataModal/types";
 
 type IProps = {
   className?: string;
@@ -25,8 +26,11 @@ type IProps = {
   onSubmit: (values: { frequency: string; schema: SyncSchema }) => void;
   onReset?: (connectionId?: string) => void;
   onDropDownSelect?: (item: IDataItem) => void;
+  onCancel?: () => void;
+  editSchemeMode?: boolean;
   frequencyValue?: string;
   isEditMode?: boolean;
+  isLoading?: boolean;
 };
 
 const FormContainer = styled(Form)`
@@ -51,7 +55,10 @@ const FrequencyForm: React.FC<IProps> = ({
   frequencyValue,
   isEditMode,
   successMessage,
-  additionBottomControls
+  additionBottomControls,
+  onCancel,
+  editSchemeMode,
+  isLoading
 }) => {
   const initialSchema = useInitialSchema(schema);
   const dropdownData = useFrequencyDropdownData();
@@ -69,8 +76,12 @@ const FrequencyForm: React.FC<IProps> = ({
       validateOnChange={true}
       validationSchema={connectionValidationSchema}
       onSubmit={async values => {
-        const requiresReset = isEditMode && !equal(initialSchema, newSchema);
-        await onSubmit({ frequency: values.frequency, schema: newSchema });
+        const requiresReset =
+          isEditMode && !equal(initialSchema, newSchema) && !editSchemeMode;
+        await onSubmit({
+          frequency: values.frequency,
+          schema: newSchema
+        });
 
         if (requiresReset) {
           setResetModalIsOpen(true);
@@ -113,16 +124,23 @@ const FrequencyForm: React.FC<IProps> = ({
           {isEditMode ? (
             <>
               <EditControls
-                isSubmitting={isSubmitting}
+                isSubmitting={isLoading || isSubmitting}
                 isValid={isValid}
                 dirty={dirty || !equal(initialSchema, newSchema)}
-                resetForm={resetForm}
+                resetForm={() => {
+                  resetForm();
+                  setNewSchema(initialSchema);
+                  if (onCancel) {
+                    onCancel();
+                  }
+                }}
                 successMessage={successMessage}
                 errorMessage={errorMessage}
+                editSchemeMode={editSchemeMode}
               />
               {modalIsOpen && (
                 <ResetDataModal
-                  message={<FormattedMessage id="form.changedColumns" />}
+                  modalType={ModalTypes.RESET_CHANGED_COLUMN}
                   onClose={() => setResetModalIsOpen(false)}
                   onSubmit={async () => {
                     await onReset?.();

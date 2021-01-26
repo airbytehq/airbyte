@@ -33,6 +33,7 @@ import io.airbyte.config.helpers.LogHelpers;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DefaultConfigPersistence;
+import io.airbyte.db.AirbyteVersion;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
@@ -40,9 +41,12 @@ import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.KubeProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -64,25 +68,29 @@ public class SchedulerApp {
 
   private static final long GRACEFUL_SHUTDOWN_SECONDS = 30;
   private static final int MAX_WORKERS = 4;
-  private static final long JOB_SUBMITTER_DELAY_MILLIS = 5000L;
+  private static final Duration SCHEDULING_DELAY = Duration.ofSeconds(5);
+  private static final Duration CLEANING_DELAY = Duration.ofHours(2);
   private static final ThreadFactory THREAD_FACTORY = new ThreadFactoryBuilder().setNameFormat("worker-%d").build();
 
   private final Path workspaceRoot;
   private final ProcessBuilderFactory pbf;
   private final JobPersistence jobPersistence;
   private final ConfigRepository configRepository;
+  private final JobCleaner jobCleaner;
 
   public SchedulerApp(Path workspaceRoot,
                       ProcessBuilderFactory pbf,
                       JobPersistence jobPersistence,
-                      ConfigRepository configRepository) {
+                      ConfigRepository configRepository,
+                      JobCleaner jobCleaner) {
     this.workspaceRoot = workspaceRoot;
     this.pbf = pbf;
     this.jobPersistence = jobPersistence;
     this.configRepository = configRepository;
+    this.jobCleaner = jobCleaner;
   }
 
-  public void start() {
+  public void start() throws IOException {
     final ExecutorService workerThreadPool = Executors.newFixedThreadPool(MAX_WORKERS, THREAD_FACTORY);
     final ScheduledExecutorService scheduledPool = Executors.newSingleThreadScheduledExecutor();
     final WorkerRunFactory workerRunFactory = new WorkerRunFactory(workspaceRoot, pbf);
@@ -91,17 +99,39 @@ public class SchedulerApp {
     final JobScheduler jobScheduler = new JobScheduler(jobPersistence, configRepository);
     final JobSubmitter jobSubmitter = new JobSubmitter(workerThreadPool, jobPersistence, configRepository, workerRunFactory);
 
+    Map<String, String> mdc = MDC.getCopyOfContextMap();
+
+    // We cancel jobs that where running before the restart. They are not being monitored by the worker
+    // anymore.
+    cleanupZombies(jobPersistence);
+
     scheduledPool.scheduleWithFixedDelay(
         () -> {
+          MDC.setContextMap(mdc);
           jobRetrier.run();
           jobScheduler.run();
           jobSubmitter.run();
         },
         0L,
-        JOB_SUBMITTER_DELAY_MILLIS,
-        TimeUnit.MILLISECONDS);
+        SCHEDULING_DELAY.toSeconds(),
+        TimeUnit.SECONDS);
+
+    scheduledPool.scheduleWithFixedDelay(
+        () -> {
+          MDC.setContextMap(mdc);
+          jobCleaner.run();
+        },
+        CLEANING_DELAY.toSeconds(),
+        CLEANING_DELAY.toSeconds(),
+        TimeUnit.SECONDS);
 
     Runtime.getRuntime().addShutdownHook(new GracefulShutdownHandler(Duration.ofSeconds(GRACEFUL_SHUTDOWN_SECONDS), workerThreadPool, scheduledPool));
+  }
+
+  private void cleanupZombies(JobPersistence jobPersistence) throws IOException {
+    for (Job zombieJob : jobPersistence.listJobsWithStatus(JobStatus.RUNNING)) {
+      jobPersistence.cancelJob(zombieJob.getId());
+    }
   }
 
   private static ProcessBuilderFactory getProcessBuilderFactory(Configs configs) {
@@ -116,7 +146,7 @@ public class SchedulerApp {
     }
   }
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws IOException, InterruptedException {
 
     final Configs configs = new EnvConfigs();
 
@@ -139,6 +169,10 @@ public class SchedulerApp {
     final JobPersistence jobPersistence = new DefaultJobPersistence(database);
     final ConfigPersistence configPersistence = new DefaultConfigPersistence(configRoot);
     final ConfigRepository configRepository = new ConfigRepository(configPersistence);
+    final JobCleaner jobCleaner = new JobCleaner(
+        configs.getWorkspaceRetentionConfig(),
+        workspaceRoot,
+        jobPersistence);
 
     TrackingClientSingleton.initialize(
         configs.getTrackingStrategy(),
@@ -146,8 +180,22 @@ public class SchedulerApp {
         configs.getAirbyteVersion(),
         configRepository);
 
+    Optional<String> airbyteDatabaseVersion = jobPersistence.getVersion();
+    int loopCount = 0;
+    while (airbyteDatabaseVersion.isEmpty() && loopCount < 300) {
+      LOGGER.warn("Waiting for Server to start...");
+      TimeUnit.SECONDS.sleep(1);
+      airbyteDatabaseVersion = jobPersistence.getVersion();
+      loopCount++;
+    }
+    if (airbyteDatabaseVersion.isPresent()) {
+      AirbyteVersion.check(configs.getAirbyteVersion(), airbyteDatabaseVersion.get());
+    } else {
+      throw new IllegalStateException("Unable to retrieve Airbyte Version, aborting...");
+    }
+
     LOGGER.info("Launching scheduler...");
-    new SchedulerApp(workspaceRoot, pbf, jobPersistence, configRepository).start();
+    new SchedulerApp(workspaceRoot, pbf, jobPersistence, configRepository, jobCleaner).start();
   }
 
 }

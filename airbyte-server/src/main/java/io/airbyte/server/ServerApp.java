@@ -35,6 +35,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DefaultConfigPersistence;
 import io.airbyte.config.persistence.PersistenceConstants;
+import io.airbyte.db.AirbyteVersion;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.scheduler.client.SpecCachingSchedulerJobClient;
@@ -46,19 +47,20 @@ import io.airbyte.server.errors.InvalidInputExceptionMapper;
 import io.airbyte.server.errors.InvalidJsonExceptionMapper;
 import io.airbyte.server.errors.InvalidJsonInputExceptionMapper;
 import io.airbyte.server.errors.KnownExceptionMapper;
+import io.airbyte.server.errors.NotFoundExceptionMapper;
 import io.airbyte.server.errors.UncaughtExceptionMapper;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.jackson.internal.jackson.jaxrs.json.JacksonJaxbJsonProvider;
-import org.glassfish.jersey.logging.LoggingFeature;
 import org.glassfish.jersey.process.internal.RequestScoped;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
@@ -70,16 +72,13 @@ public class ServerApp {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
 
-  private final String airbyteVersion;
   private final ConfigRepository configRepository;
   private final JobPersistence jobPersistence;
   private final Configs configs;
 
-  public ServerApp(final String airbyteVersion,
-                   final ConfigRepository configRepository,
+  public ServerApp(final ConfigRepository configRepository,
                    final JobPersistence jobPersistence,
                    final Configs configs) {
-    this.airbyteVersion = airbyteVersion;
     this.configRepository = configRepository;
     this.jobPersistence = jobPersistence;
     this.configs = configs;
@@ -92,19 +91,22 @@ public class ServerApp {
 
     ServletContextHandler handler = new ServletContextHandler();
 
-    ConfigurationApiFactory.setAirbyteVersion(airbyteVersion);
+    Map<String, String> mdc = MDC.getCopyOfContextMap();
+
     ConfigurationApiFactory.setSchedulerJobClient(new SpecCachingSchedulerJobClient(jobPersistence, new DefaultJobCreator(jobPersistence)));
     ConfigurationApiFactory.setConfigRepository(configRepository);
     ConfigurationApiFactory.setJobPersistence(jobPersistence);
     ConfigurationApiFactory.setConfigs(configs);
     ConfigurationApiFactory.setArchiveTtlManager(new FileTtlManager(10, TimeUnit.MINUTES, 10));
+    ConfigurationApiFactory.setMdc(mdc);
 
     ResourceConfig rc =
         new ResourceConfig()
-            // todo (cgardens) - the CORs settings are wide open. will need to revisit when we add
-            // auth.
+            // todo (cgardens) - the CORs settings are wide open. will need to revisit when we add auth.
             // cors
             .register(new CorsFilter())
+            // request logging
+            .register(new RequestLogger(mdc))
             // api
             .register(ConfigurationApi.class)
             .register(
@@ -124,17 +126,10 @@ public class ServerApp {
             .register(InvalidJsonInputExceptionMapper.class)
             .register(KnownExceptionMapper.class)
             .register(UncaughtExceptionMapper.class)
+            .register(NotFoundExceptionMapper.class)
             // needed so that the custom json exception mappers don't get overridden
             // https://stackoverflow.com/questions/35669774/jersey-custom-exception-mapper-for-invalid-json-string
-            .register(JacksonJaxbJsonProvider.class)
-            // request logger
-            // https://www.javaguides.net/2018/06/jersey-rest-logging-using-loggingfeature.html
-            .register(
-                new LoggingFeature(
-                    java.util.logging.Logger.getLogger(LoggingFeature.DEFAULT_LOGGER_NAME),
-                    Level.INFO,
-                    LoggingFeature.Verbosity.PAYLOAD_ANY,
-                    10000));
+            .register(JacksonJaxbJsonProvider.class);
 
     ServletHolder configServlet = new ServletHolder(new ServletContainer(rc));
 
@@ -143,7 +138,8 @@ public class ServerApp {
     server.setHandler(handler);
 
     server.start();
-    LOGGER.info(MoreResources.readResource("banner/banner.txt"));
+    final String banner = MoreResources.readResource("banner/banner.txt");
+    LOGGER.info(banner + String.format("Version: %s\n", configs.getAirbyteVersion()));
     server.join();
   }
 
@@ -194,8 +190,17 @@ public class ServerApp {
         configs.getDatabaseUrl());
     final JobPersistence jobPersistence = new DefaultJobPersistence(database);
 
+    final String airbyteVersion = configs.getAirbyteVersion();
+    final Optional<String> airbyteDatabaseVersion = jobPersistence.getVersion();
+    if (airbyteDatabaseVersion.isEmpty()) {
+      LOGGER.info(String.format("Setting Database version to %s...", airbyteVersion));
+      jobPersistence.setVersion(airbyteVersion);
+    } else {
+      AirbyteVersion.check(airbyteVersion, airbyteDatabaseVersion.get());
+    }
+
     LOGGER.info("Starting server...");
-    new ServerApp(configs.getAirbyteVersion(), configRepository, jobPersistence, configs).start();
+    new ServerApp(configRepository, jobPersistence, configs).start();
   }
 
 }

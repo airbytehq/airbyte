@@ -35,6 +35,11 @@ public class ExtendedNameTransformer extends StandardNameTransformer {
 
   @Override
   protected String convertStreamName(String input) {
+    return super.convertStreamName(input);
+  }
+
+  // Temporarily disabling the behavior of the ExtendedNameTransformer, see (issue #1785)
+  protected String disabled_convertStreamName(String input) {
     if (useExtendedIdentifiers(input)) {
       return "\"" + input + "\"";
     } else {

@@ -16,6 +16,7 @@ import Input from "../../Input";
 import LabeledToggle from "../../LabeledToggle";
 import TextWithHTML from "../../TextWithHTML";
 import { useWidgetInfo } from "../uiWidgetContext";
+import ShowLoadingMessage from "./ShowLoadingMessage";
 
 type IProps = {
   schema: any;
@@ -199,10 +200,7 @@ const FormContent: React.FC<IProps> = props => {
         <LoaderContainer>
           <Spinner />
           <LoadingMessage>
-            <FormattedMessage
-              id="form.loadingConfiguration"
-              values={{ connector: service?.text }}
-            />
+            <ShowLoadingMessage connector={service?.text} />
           </LoadingMessage>
         </LoaderContainer>
       )}

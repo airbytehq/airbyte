@@ -46,19 +46,18 @@ import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.SourceSchema;
 import io.airbyte.api.model.SourceSchemaField;
 import io.airbyte.api.model.SourceSchemaStream;
-import io.airbyte.api.model.SyncMode;
 import io.airbyte.api.model.WbConnectionRead;
 import io.airbyte.api.model.WbConnectionReadList;
 import io.airbyte.api.model.WebBackendConnectionRequestBody;
 import io.airbyte.api.model.WebBackendConnectionUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
-import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -103,7 +102,7 @@ public class WebBackendConnectionsHandler {
 
     final JobListRequestBody jobListRequestBody = new JobListRequestBody()
         .configId(connectionRead.getConnectionId().toString())
-        .configType(JobConfigType.SYNC);
+        .configTypes(Collections.singletonList(JobConfigType.SYNC));
 
     final WbConnectionRead wbConnectionRead = new WbConnectionRead()
         .connectionId(connectionRead.getConnectionId())
@@ -112,7 +111,6 @@ public class WebBackendConnectionsHandler {
         .name(connectionRead.getName())
         .syncSchema(connectionRead.getSyncSchema())
         .status(connectionRead.getStatus())
-        .syncMode(Enums.convertTo(connectionRead.getSyncMode(), SyncMode.class))
         .schedule(connectionRead.getSchedule())
         .source(source)
         .destination(destination);

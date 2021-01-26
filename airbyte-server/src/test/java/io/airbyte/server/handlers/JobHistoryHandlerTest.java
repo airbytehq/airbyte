@@ -126,7 +126,9 @@ public class JobHistoryHandlerTest {
   public void testListJobsFor() throws IOException {
     when(jobPersistence.listJobs(CONFIG_TYPE, JOB_CONFIG_ID)).thenReturn(Collections.singletonList(job));
 
-    final JobListRequestBody requestBody = new JobListRequestBody().configType(CONFIG_TYPE_FOR_API).configId(JOB_CONFIG_ID);
+    final JobListRequestBody requestBody = new JobListRequestBody()
+        .configTypes(Collections.singletonList(CONFIG_TYPE_FOR_API))
+        .configId(JOB_CONFIG_ID);
     final JobReadList jobReadList = jobHistoryHandler.listJobsFor(requestBody);
 
     final JobReadList expectedJobReadList = new JobReadList().jobs(Collections.singletonList(JOB_WITH_ATTEMPTS_READ));

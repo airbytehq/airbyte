@@ -9,6 +9,7 @@ import LoadingPage from "../../components/LoadingPage";
 import SourcesView from "./components/SourcesView";
 import DestinationsView from "./components/DestinationsView";
 import CreateConnector from "./components/CreateConnector";
+import ConfigurationView from "./components/ConfigurationView";
 
 const Content = styled.div`
   padding-top: 4px;
@@ -17,7 +18,8 @@ const Content = styled.div`
 `;
 enum StepsTypes {
   SOURCES = "sources",
-  DESTINATIONS = "destinations"
+  DESTINATIONS = "destinations",
+  CONFIGURATION = "configuration"
 }
 
 const AdminPage: React.FC = () => {
@@ -29,6 +31,10 @@ const AdminPage: React.FC = () => {
     {
       id: StepsTypes.DESTINATIONS,
       name: <FormattedMessage id="admin.destinations" />
+    },
+    {
+      id: StepsTypes.CONFIGURATION,
+      name: <FormattedMessage id="admin.configuration" />
     }
   ];
   const [currentStep, setCurrentStep] = useState<string>(StepsTypes.SOURCES);
@@ -37,6 +43,9 @@ const AdminPage: React.FC = () => {
   const renderStep = () => {
     if (currentStep === StepsTypes.SOURCES) {
       return <SourcesView />;
+    }
+    if (currentStep === StepsTypes.CONFIGURATION) {
+      return <ConfigurationView />;
     }
 
     return <DestinationsView />;

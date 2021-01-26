@@ -106,7 +106,6 @@ class DefaultConfigPersistenceTest {
         .withConnectionId(UUID_1)
         .withSourceId(UUID.randomUUID())
         .withDestinationId(UUID.randomUUID())
-        .withSyncMode(StandardSync.SyncMode.FULL_REFRESH)
         .withStatus(StandardSync.Status.ACTIVE)
         .withSchema(schema);
 

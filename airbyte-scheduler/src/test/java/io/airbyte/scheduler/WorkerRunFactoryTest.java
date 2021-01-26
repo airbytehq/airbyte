@@ -138,6 +138,7 @@ class WorkerRunFactoryTest {
     Assertions.assertTrue(argument.getValue() instanceof JobOutputSyncWorker);
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   void testResetConnection() {
     when(job.getConfig().getConfigType()).thenReturn(ConfigType.RESET_CONNECTION);
