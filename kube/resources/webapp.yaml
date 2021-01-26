@@ -48,10 +48,10 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: PAPERCUPS_STORYTIME
-           - name: IS_DEMO
-           valueFrom:
-             configMapKeyRef:
-               name: airbyte-env
-               key: IS_DEMO
+            - name: IS_DEMO
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: IS_DEMO
           ports:
             - containerPort: 80
