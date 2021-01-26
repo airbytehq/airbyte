@@ -37,15 +37,7 @@ const ConfirmationInput: React.FC<ConfirmationInputProps> = props => {
       inputElement.current.removeAttribute("disabled");
       inputElement.current.focus();
     }
-    onStart?.();
-  };
-
-  const handleCancel = () => {
-    onCancel?.();
-  };
-
-  const handleDone = () => {
-    onDone?.();
+    onStart();
   };
 
   return (
@@ -58,10 +50,10 @@ const ConfirmationInput: React.FC<ConfirmationInputProps> = props => {
       />
       {isEditInProgress ? (
         <>
-          <SmallButton onClick={handleDone} type="button">
+          <SmallButton onClick={onDone} type="button">
             <FormattedMessage id="form.done" />
           </SmallButton>
-          <SmallButton onClick={handleCancel} type="button" secondary>
+          <SmallButton onClick={onCancel} type="button" secondary>
             <FormattedMessage id="form.cancel" />
           </SmallButton>
         </>
