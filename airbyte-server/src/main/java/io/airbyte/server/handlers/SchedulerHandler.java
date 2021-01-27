@@ -24,6 +24,7 @@
 
 package io.airbyte.server.handlers;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.api.model.CheckConnectionRead;
 import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.DestinationCoreConfig;
@@ -45,7 +46,6 @@ import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardGetSpecOutput;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -55,6 +55,7 @@ import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.server.converters.JobConverter;
 import io.airbyte.server.converters.SchemaConverter;
+import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.UUID;
@@ -63,10 +64,22 @@ public class SchedulerHandler {
 
   private final ConfigRepository configRepository;
   private final SchedulerJobClient schedulerJobClient;
+  private final SpecFetcher specFetcher;
 
-  public SchedulerHandler(final ConfigRepository configRepository, SchedulerJobClient schedulerJobClient) {
+  public SchedulerHandler(ConfigRepository configRepository, SchedulerJobClient schedulerJobClient) {
+    this(
+        configRepository,
+        schedulerJobClient,
+        new SpecFetcher(schedulerJobClient));
+  }
+
+  @VisibleForTesting
+  SchedulerHandler(ConfigRepository configRepository,
+                   SchedulerJobClient schedulerJobClient,
+                   SpecFetcher specFetcher) {
     this.configRepository = configRepository;
     this.schedulerJobClient = schedulerJobClient;
+    this.specFetcher = specFetcher;
   }
 
   public CheckConnectionRead checkSourceConnectionFromSourceId(SourceIdRequestBody sourceIdRequestBody)
@@ -78,15 +91,15 @@ public class SchedulerHandler {
     return reportConnectionStatus(schedulerJobClient.createSourceCheckConnectionJob(source, imageName));
   }
 
-  public CheckConnectionRead checkSourceConnectionFromSourceCreate(SourceCoreConfig sourceCreate)
+  public CheckConnectionRead checkSourceConnectionFromSourceCreate(SourceCoreConfig sourceConfig)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceCreate.getSourceDefinitionId());
+    final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceConfig.getSourceDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
     // todo (cgardens) - narrow the struct passed to the client. we are not setting fields that are
     // technically declared as required.
     final SourceConnection source = new SourceConnection()
-        .withSourceDefinitionId(sourceCreate.getSourceDefinitionId())
-        .withConfiguration(sourceCreate.getConnectionConfiguration());
+        .withSourceDefinitionId(sourceConfig.getSourceDefinitionId())
+        .withConfiguration(sourceConfig.getConnectionConfiguration());
 
     return reportConnectionStatus(schedulerJobClient.createSourceCheckConnectionJob(source, imageName));
   }
@@ -99,15 +112,15 @@ public class SchedulerHandler {
     return reportConnectionStatus(schedulerJobClient.createDestinationCheckConnectionJob(destination, imageName));
   }
 
-  public CheckConnectionRead checkDestinationConnectionFromDestinationCreate(DestinationCoreConfig destinationCreate)
+  public CheckConnectionRead checkDestinationConnectionFromDestinationCreate(DestinationCoreConfig destinationConfig)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    final StandardDestinationDefinition destDef = configRepository.getStandardDestinationDefinition(destinationCreate.getDestinationDefinitionId());
+    final StandardDestinationDefinition destDef = configRepository.getStandardDestinationDefinition(destinationConfig.getDestinationDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(destDef.getDockerRepository(), destDef.getDockerImageTag());
     // todo (cgardens) - narrow the struct passed to the client. we are not setting fields that are
     // technically declared as required.
     final DestinationConnection destination = new DestinationConnection()
-        .withDestinationDefinitionId(destinationCreate.getDestinationDefinitionId())
-        .withConfiguration(destinationCreate.getConnectionConfiguration());
+        .withDestinationDefinitionId(destinationConfig.getDestinationDefinitionId())
+        .withConfiguration(destinationConfig.getConnectionConfiguration());
     return reportConnectionStatus(schedulerJobClient.createDestinationCheckConnectionJob(destination, imageName));
   }
 
@@ -170,11 +183,7 @@ public class SchedulerHandler {
   }
 
   public ConnectorSpecification getConnectorSpecification(String dockerImage) throws IOException {
-    return schedulerJobClient.createGetSpecJob(dockerImage)
-        .getSuccessOutput()
-        .map(JobOutput::getGetSpec)
-        .map(StandardGetSpecOutput::getSpecification)
-        .orElseThrow(() -> new IllegalStateException("no spec output found"));
+    return specFetcher.execute(dockerImage);
   }
 
   public JobInfoRead syncConnection(final ConnectionIdRequestBody connectionIdRequestBody)
