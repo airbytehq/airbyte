@@ -25,7 +25,7 @@ SOFTWARE.
 import json
 
 import shopify
-from airbyte_protocol import AirbyteConnectionStatus, Status
+from airbyte_protocol import AirbyteConnectionStatus, Status, AirbyteCatalog
 from base_python import AirbyteLogger
 from base_singer import SingerSource
 
@@ -57,6 +57,20 @@ class SourceShopifySinger(SingerSource):
 
     def discover_cmd(self, logger: AirbyteLogger, config_path: str) -> str:
         return f"{TAP_CMD} -c {config_path} --discover"
+
+    def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
+        catalog: AirbyteCatalog = super().discover(logger, config)
+
+        # the metafields stream has a union type i.e: ["null", "integer", "object", "string"], but Airbyte doesn't currently allow the notion of a
+        # union type. See https://github.com/airbytehq/airbyte/issues/1864 for more details.
+        # For now we always declare this field is a nullable string as an escape hatch.
+        for stream in catalog.streams:
+            if stream.name == "metafields":
+                schema = stream.json_schema
+                if "properties" in schema and "metafields" in schema["properties"]:
+                    schema["properties"]["metafields"]["type"] = ["null", "string"]
+
+        return catalog
 
     def read_cmd(self, logger: AirbyteLogger, config_path: str, catalog_path: str, state_path: str = None) -> str:
         state_path = f"--state {state_path}" if state_path else ""
