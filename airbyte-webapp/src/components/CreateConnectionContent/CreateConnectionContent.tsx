@@ -1,7 +1,7 @@
 import React, { Suspense, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import LoadingSchema from "./components/LoadingSchema";
+import LoadingSchema from "../LoadingSchema";
 import CreateConnection from "./components/CreateConnection";
 import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
 import ContentCard from "../ContentCard";

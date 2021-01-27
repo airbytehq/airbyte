@@ -63,9 +63,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -127,7 +129,7 @@ public abstract class AbstractJdbcSource implements Source {
       LOGGER.debug("Exception while checking connection: ", e);
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
-          .withMessage("Can't connect with provided configuration.");
+          .withMessage("Could not connect with provided configuration.");
     }
   }
 
@@ -225,7 +227,13 @@ public abstract class AbstractJdbcSource implements Source {
       throw new IllegalArgumentException(String.format("%s does not support sync mode: %s.", airbyteStream.getSyncMode(), AbstractJdbcSource.class));
     }
 
-    return stream;
+    final AtomicLong recordCount = new AtomicLong();
+    return stream.peek(r -> {
+      final long count = recordCount.incrementAndGet();
+      if (count % 10000 == 0) {
+        LOGGER.info("Reading stream {}. Records read: {}", streamName, count);
+      }
+    });
   }
 
   private static Stream<AirbyteMessage> getIncrementalStream(JdbcDatabase database,
@@ -277,7 +285,7 @@ public abstract class AbstractJdbcSource implements Source {
           // some databases return multiple copies of the same record for a column (e.g. redshift) because
           // they have at least once delivery guarantees. we want to dedupe these, but first we check that the
           // records are actually the same and provide a good error message if they are not.
-          assertColumnsWithSameNameAreSame(t.getName(), t.getFields());
+          assertColumnsWithSameNameAreSame(t.getSchemaName(), t.getName(), t.getFields());
           final List<Field> fields = t.getFields()
               .stream()
               .map(f -> Field.of(f.getColumnName(), JdbcUtils.getType(f.getColumnType())))
@@ -289,7 +297,7 @@ public abstract class AbstractJdbcSource implements Source {
         .collect(Collectors.toList());
   }
 
-  private static void assertColumnsWithSameNameAreSame(String tableName, List<ColumnInfo> columns) {
+  private static void assertColumnsWithSameNameAreSame(String schemaName, String tableName, List<ColumnInfo> columns) {
     columns.stream()
         .collect(Collectors.groupingBy(ColumnInfo::getColumnName))
         .values()
@@ -298,8 +306,8 @@ public abstract class AbstractJdbcSource implements Source {
           columnsWithSameName.forEach(column -> {
             if (!column.equals(comparisonColumn)) {
               throw new RuntimeException(
-                  String.format("Found multiple columns with same name: %s in table: %s but the columns are not the same. columns: %s",
-                      comparisonColumn.getColumnName(), tableName, columns));
+                  String.format("Found multiple columns with same name: %s in table: %s.%s but the columns are not the same. columns: %s",
+                      comparisonColumn.getColumnName(), schemaName, tableName, columns));
             }
           });
         });
@@ -328,32 +336,30 @@ public abstract class AbstractJdbcSource implements Source {
             .build()))
         .stream()
         .filter(t -> !internalSchemas.contains(t.get(INTERNAL_SCHEMA_NAME).asText()))
-        .collect(Collectors.groupingBy(t -> t.get(INTERNAL_TABLE_NAME).asText()))
-        .entrySet()
+        // group by schema and table name to handle the case where a table with the same name exists in
+        // multiple schemas.
+        .collect(Collectors.groupingBy(t -> ImmutablePair.of(t.get(INTERNAL_SCHEMA_NAME).asText(), t.get(INTERNAL_TABLE_NAME).asText())))
+        .values()
         .stream()
-        .map(e -> {
-          final String tableName = e.getKey();
-          final List<JsonNode> fields = e.getValue();
-          return new TableInfoInternal(
-              fields.get(0).get(INTERNAL_SCHEMA_NAME).asText(),
-              tableName,
-              fields.stream()
-                  .map(f -> {
-                    JDBCType jdbcType;
-                    try {
-                      jdbcType = JDBCType.valueOf(f.get(INTERNAL_COLUMN_TYPE).asInt());
-                    } catch (IllegalArgumentException ex) {
-                      LOGGER.warn(String.format("Could not convert column: %s from table: %s.%s with type: %s. Casting to VARCHAR.",
-                          f.get(INTERNAL_COLUMN_NAME),
-                          f.get(INTERNAL_SCHEMA_NAME),
-                          f.get(INTERNAL_TABLE_NAME),
-                          f.get(INTERNAL_COLUMN_TYPE)));
-                      jdbcType = JDBCType.VARCHAR;
-                    }
-                    return new ColumnInfo(f.get(INTERNAL_COLUMN_NAME).asText(), jdbcType);
-                  })
-                  .collect(Collectors.toList()));
-        })
+        .map(fields -> new TableInfoInternal(
+            fields.get(0).get(INTERNAL_SCHEMA_NAME).asText(),
+            fields.get(0).get(INTERNAL_TABLE_NAME).asText(),
+            fields.stream()
+                .map(f -> {
+                  JDBCType jdbcType;
+                  try {
+                    jdbcType = JDBCType.valueOf(f.get(INTERNAL_COLUMN_TYPE).asInt());
+                  } catch (IllegalArgumentException ex) {
+                    LOGGER.warn(String.format("Could not convert column: %s from table: %s.%s with type: %s. Casting to VARCHAR.",
+                        f.get(INTERNAL_COLUMN_NAME),
+                        f.get(INTERNAL_SCHEMA_NAME),
+                        f.get(INTERNAL_TABLE_NAME),
+                        f.get(INTERNAL_COLUMN_TYPE)));
+                    jdbcType = JDBCType.VARCHAR;
+                  }
+                  return new ColumnInfo(f.get(INTERNAL_COLUMN_NAME).asText(), jdbcType);
+                })
+                .collect(Collectors.toList())))
         .collect(Collectors.toList());
   }
 

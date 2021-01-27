@@ -26,6 +26,7 @@ package io.airbyte.scheduler;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import io.airbyte.analytics.TrackingClientSingleton;
@@ -137,6 +138,11 @@ public class JobSubmitter implements Runnable {
   @VisibleForTesting
   void trackSubmission(Job job) {
     try {
+      // if there is no scope, do not track. this is the case where we are running check for sources /
+      // destinations that don't exist.
+      if (Strings.isNullOrEmpty(job.getScope())) {
+        return;
+      }
       final Builder<String, Object> metadataBuilder = generateMetadata(job);
       metadataBuilder.put("attempt_stage", "STARTED");
       track(metadataBuilder.build());
@@ -148,6 +154,11 @@ public class JobSubmitter implements Runnable {
   @VisibleForTesting
   void trackCompletion(Job job, io.airbyte.workers.JobStatus status) {
     try {
+      // if there is no scope, do not track. this is the case where we are running check for sources /
+      // destinations that don't exist.
+      if (Strings.isNullOrEmpty(job.getScope())) {
+        return;
+      }
       final Builder<String, Object> metadataBuilder = generateMetadata(job);
       metadataBuilder.put("attempt_stage", "ENDED");
       metadataBuilder.put("attempt_completion_status", status);

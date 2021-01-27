@@ -74,7 +74,7 @@ const CreateDestinationPage: React.FC = () => {
           onSubmit={onSubmitDestinationForm}
           dropDownData={destinationsDropDownData}
           hasSuccess={successRequest}
-          errorStatus={errorStatusRequest?.status}
+          error={errorStatusRequest}
           jobInfo={errorStatusRequest?.response}
         />
       </FormPageContent>

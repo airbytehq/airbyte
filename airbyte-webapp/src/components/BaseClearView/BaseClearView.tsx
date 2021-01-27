@@ -19,7 +19,7 @@ const Img = styled.img`
 const BaseClearView: React.FC = props => {
   return (
     <Content>
-      <Img src={"/logo.png"} alt={"logo"} />
+      <Img src="/logo.png" alt="logo" />
       {props.children}
     </Content>
   );

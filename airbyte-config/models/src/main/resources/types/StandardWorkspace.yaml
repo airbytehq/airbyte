@@ -26,8 +26,6 @@ properties:
     format: email
   initialSetupComplete:
     type: boolean
-  onboardingComplete:
-    type: boolean
   anonymousDataCollection:
     type: boolean
   news:

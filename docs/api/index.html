@@ -236,6 +236,7 @@ font-style: italic;
   <h4><a href="#Destination">Destination</a></h4>
   <ul>
   <li><a href="#checkConnectionToDestination"><code><span class="http-method">post</span> /v1/destinations/check_connection</code></a></li>
+  <li><a href="#checkConnectionToDestinationForUpdate"><code><span class="http-method">post</span> /v1/destinations/check_connection_for_update</code></a></li>
   <li><a href="#createDestination"><code><span class="http-method">post</span> /v1/destinations/create</code></a></li>
   <li><a href="#deleteDestination"><code><span class="http-method">post</span> /v1/destinations/delete</code></a></li>
   <li><a href="#getDestination"><code><span class="http-method">post</span> /v1/destinations/get</code></a></li>
@@ -275,6 +276,7 @@ font-style: italic;
   <h4><a href="#Source">Source</a></h4>
   <ul>
   <li><a href="#checkConnectionToSource"><code><span class="http-method">post</span> /v1/sources/check_connection</code></a></li>
+  <li><a href="#checkConnectionToSourceForUpdate"><code><span class="http-method">post</span> /v1/sources/check_connection_for_update</code></a></li>
   <li><a href="#createSource"><code><span class="http-method">post</span> /v1/sources/create</code></a></li>
   <li><a href="#deleteSource"><code><span class="http-method">post</span> /v1/sources/delete</code></a></li>
   <li><a href="#discoverSchemaForSource"><code><span class="http-method">post</span> /v1/sources/discover_schema</code></a></li>
@@ -1049,6 +1051,7 @@ font-style: italic;
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
+  "reason" : "reason",
   "status" : "succeeded"
 }</code></pre>
 
@@ -1102,7 +1105,8 @@ font-style: italic;
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
-  "job_info" : {
+  "message" : "message",
+  "jobInfo" : {
     "job" : {
       "createdAt" : 6,
       "configId" : "configId",
@@ -1135,7 +1139,98 @@ font-style: italic;
       }
     } ]
   },
+  "status" : "succeeded"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#CheckConnectionRead">CheckConnectionRead</a>
+    <h4 class="field-label">404</h4>
+    Destination  not found
+        <a href="#"></a>
+    <h4 class="field-label">422</h4>
+    Invalid Input
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="checkConnectionToDestinationForUpdate"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/destinations/check_connection_for_update</code></pre></div>
+    <div class="method-summary">Check connection for a proposed update to a destination (<span class="nickname">checkConnectionToDestinationForUpdate</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">DestinationUpdate <a href="#DestinationUpdate">DestinationUpdate</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#CheckConnectionRead">CheckConnectionRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
   "message" : "message",
+  "jobInfo" : {
+    "job" : {
+      "createdAt" : 6,
+      "configId" : "configId",
+      "id" : 0,
+      "updatedAt" : 1
+    },
+    "attempts" : [ {
+      "attempt" : {
+        "createdAt" : 5,
+        "bytesSynced" : 9,
+        "endedAt" : 7,
+        "id" : 5,
+        "recordsSynced" : 3,
+        "updatedAt" : 2
+      },
+      "logs" : {
+        "logLines" : [ "logLines", "logLines" ]
+      }
+    }, {
+      "attempt" : {
+        "createdAt" : 5,
+        "bytesSynced" : 9,
+        "endedAt" : 7,
+        "id" : 5,
+        "recordsSynced" : 3,
+        "updatedAt" : 2
+      },
+      "logs" : {
+        "logLines" : [ "logLines", "logLines" ]
+      }
+    } ]
+  },
   "status" : "succeeded"
 }</code></pre>
 
@@ -2089,7 +2184,8 @@ font-style: italic;
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
-  "job_info" : {
+  "message" : "message",
+  "jobInfo" : {
     "job" : {
       "createdAt" : 6,
       "configId" : "configId",
@@ -2122,7 +2218,6 @@ font-style: italic;
       }
     } ]
   },
-  "message" : "message",
   "status" : "succeeded"
 }</code></pre>
 
@@ -2178,7 +2273,8 @@ font-style: italic;
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
-  "job_info" : {
+  "message" : "message",
+  "jobInfo" : {
     "job" : {
       "createdAt" : 6,
       "configId" : "configId",
@@ -2211,7 +2307,6 @@ font-style: italic;
       }
     } ]
   },
-  "message" : "message",
   "status" : "succeeded"
 }</code></pre>
 
@@ -2304,7 +2399,7 @@ font-style: italic;
       "cursorField" : [ "cursorField", "cursorField" ]
     } ]
   },
-  "job_info" : {
+  "jobInfo" : {
     "job" : {
       "createdAt" : 6,
       "configId" : "configId",
@@ -2392,7 +2487,8 @@ font-style: italic;
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
-  "job_info" : {
+  "message" : "message",
+  "jobInfo" : {
     "job" : {
       "createdAt" : 6,
       "configId" : "configId",
@@ -2425,7 +2521,98 @@ font-style: italic;
       }
     } ]
   },
+  "status" : "succeeded"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#CheckConnectionRead">CheckConnectionRead</a>
+    <h4 class="field-label">404</h4>
+    Source not found
+        <a href="#"></a>
+    <h4 class="field-label">422</h4>
+    Invalid Input
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="checkConnectionToSourceForUpdate"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/sources/check_connection_for_update</code></pre></div>
+    <div class="method-summary">Check connection for a proposed update to a source (<span class="nickname">checkConnectionToSourceForUpdate</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">SourceUpdate <a href="#SourceUpdate">SourceUpdate</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#CheckConnectionRead">CheckConnectionRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
   "message" : "message",
+  "jobInfo" : {
+    "job" : {
+      "createdAt" : 6,
+      "configId" : "configId",
+      "id" : 0,
+      "updatedAt" : 1
+    },
+    "attempts" : [ {
+      "attempt" : {
+        "createdAt" : 5,
+        "bytesSynced" : 9,
+        "endedAt" : 7,
+        "id" : 5,
+        "recordsSynced" : 3,
+        "updatedAt" : 2
+      },
+      "logs" : {
+        "logLines" : [ "logLines", "logLines" ]
+      }
+    }, {
+      "attempt" : {
+        "createdAt" : 5,
+        "bytesSynced" : 9,
+        "endedAt" : 7,
+        "id" : 5,
+        "recordsSynced" : 3,
+        "updatedAt" : 2
+      },
+      "logs" : {
+        "logLines" : [ "logLines", "logLines" ]
+      }
+    } ]
+  },
   "status" : "succeeded"
 }</code></pre>
 
@@ -2625,7 +2812,7 @@ font-style: italic;
       "cursorField" : [ "cursorField", "cursorField" ]
     } ]
   },
-  "job_info" : {
+  "jobInfo" : {
     "job" : {
       "createdAt" : 6,
       "configId" : "configId",
@@ -3766,11 +3953,13 @@ font-style: italic;
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
   "displaySetupWizard" : true,
+  "news" : true,
   "initialSetupComplete" : true,
-  "onboardingComplete" : true,
+  "anonymousDataCollection" : true,
   "customerId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "name" : "name",
   "slug" : "slug",
+  "securityUpdates" : true,
   "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
 
@@ -3830,11 +4019,13 @@ font-style: italic;
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
   "displaySetupWizard" : true,
+  "news" : true,
   "initialSetupComplete" : true,
-  "onboardingComplete" : true,
+  "anonymousDataCollection" : true,
   "customerId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "name" : "name",
   "slug" : "slug",
+  "securityUpdates" : true,
   "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
 
@@ -3894,11 +4085,13 @@ font-style: italic;
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
   "displaySetupWizard" : true,
+  "news" : true,
   "initialSetupComplete" : true,
-  "onboardingComplete" : true,
+  "anonymousDataCollection" : true,
   "customerId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "name" : "name",
   "slug" : "slug",
+  "securityUpdates" : true,
   "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
 
@@ -4030,7 +4223,7 @@ font-style: italic;
         <div class="param-enum-header">Enum:</div>
         <div class="param-enum">succeeded</div><div class="param-enum">failed</div>
 <div class="param">message (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">job_info (optional)</div><div class="param-desc"><span class="param-type"><a href="#JobInfoRead">JobInfoRead</a></span>  </div>
+<div class="param">jobInfo </div><div class="param-desc"><span class="param-type"><a href="#JobInfoRead">JobInfoRead</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -4040,7 +4233,6 @@ font-style: italic;
       <div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Optional name of the connection </div>
 <div class="param">sourceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">destinationId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
-<div class="param">syncMode </div><div class="param-desc"><span class="param-type"><a href="#SyncMode">SyncMode</a></span>  </div>
 <div class="param">syncSchema (optional)</div><div class="param-desc"><span class="param-type"><a href="#SourceSchema">SourceSchema</a></span>  </div>
 <div class="param">schedule (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionSchedule">ConnectionSchedule</a></span>  </div>
 <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
@@ -4061,7 +4253,6 @@ font-style: italic;
 <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">sourceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">destinationId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
-<div class="param">syncMode </div><div class="param-desc"><span class="param-type"><a href="#SyncMode">SyncMode</a></span>  </div>
 <div class="param">syncSchema </div><div class="param-desc"><span class="param-type"><a href="#SourceSchema">SourceSchema</a></span>  </div>
 <div class="param">schedule (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionSchedule">ConnectionSchedule</a></span>  </div>
 <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
@@ -4233,9 +4424,10 @@ font-style: italic;
     <h3><a name="ImportRead"><code>ImportRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">status (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+      <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
         <div class="param-enum-header">Enum:</div>
         <div class="param-enum">succeeded</div><div class="param-enum">failed</div>
+<div class="param">reason (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -4263,7 +4455,7 @@ font-style: italic;
     <h3><a name="JobListRequestBody"><code>JobListRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">configType </div><div class="param-desc"><span class="param-type"><a href="#JobConfigType">JobConfigType</a></span>  </div>
+      <div class="param">configTypes </div><div class="param-desc"><span class="param-type"><a href="#JobConfigType">array[JobConfigType]</a></span>  </div>
 <div class="param">configId </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
@@ -4317,7 +4509,7 @@ font-style: italic;
     <h3><a name="LogsRequestBody"><code>LogsRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">log_type </div><div class="param-desc"><span class="param-type"><a href="#LogType">LogType</a></span>  </div>
+      <div class="param">logType </div><div class="param-desc"><span class="param-type"><a href="#LogType">LogType</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -4407,10 +4599,10 @@ font-style: italic;
   </div>
   <div class="model">
     <h3><a name="SourceDiscoverSchemaRead"><code>SourceDiscoverSchemaRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
-    <div class='model-description'></div>
+    <div class='model-description'>Returns the results of a discover schema job. If the job was not successful, the schema field will not be present. jobInfo will aways be present and its status be used to determine if the job was successful or not.</div>
     <div class="field-items">
-      <div class="param">schema </div><div class="param-desc"><span class="param-type"><a href="#SourceSchema">SourceSchema</a></span>  </div>
-<div class="param">job_info </div><div class="param-desc"><span class="param-type"><a href="#JobInfoRead">JobInfoRead</a></span>  </div>
+      <div class="param">schema (optional)</div><div class="param-desc"><span class="param-type"><a href="#SourceSchema">SourceSchema</a></span>  </div>
+<div class="param">jobInfo </div><div class="param-desc"><span class="param-type"><a href="#JobInfoRead">JobInfoRead</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -4474,7 +4666,7 @@ font-style: italic;
       <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">cleanedName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">fields </div><div class="param-desc"><span class="param-type"><a href="#SourceSchemaField">array[SourceSchemaField]</a></span>  </div>
-<div class="param">supportedSyncModes (optional)</div><div class="param-desc"><span class="param-type"><a href="#SyncMode">array[SyncMode]</a></span>  </div>
+<div class="param">supportedSyncModes </div><div class="param-desc"><span class="param-type"><a href="#SyncMode">array[SyncMode]</a></span>  </div>
 <div class="param">sourceDefinedCursor (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">defaultCursorField (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span>  </div>
 <div class="param">selected (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
@@ -4505,7 +4697,6 @@ font-style: italic;
 <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">sourceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">destinationId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
-<div class="param">syncMode </div><div class="param-desc"><span class="param-type"><a href="#SyncMode">SyncMode</a></span>  </div>
 <div class="param">syncSchema </div><div class="param-desc"><span class="param-type"><a href="#SourceSchema">SourceSchema</a></span>  </div>
 <div class="param">schedule (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionSchedule">ConnectionSchedule</a></span>  </div>
 <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
@@ -4526,7 +4717,7 @@ font-style: italic;
     <h3><a name="WebBackendConnectionRequestBody"><code>WebBackendConnectionRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">with_refreshed_catalog (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+      <div class="param">withRefreshedCatalog (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">connectionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
     </div>  <!-- field-items -->
   </div>
@@ -4538,14 +4729,14 @@ font-style: italic;
 <div class="param">syncSchema </div><div class="param-desc"><span class="param-type"><a href="#SourceSchema">SourceSchema</a></span>  </div>
 <div class="param">schedule (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionSchedule">ConnectionSchedule</a></span>  </div>
 <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
-<div class="param">with_refreshed_catalog (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">withRefreshedCatalog (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
     <h3><a name="WebBackendConnectionUpdate_allOf"><code>WebBackendConnectionUpdate_allOf</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">with_refreshed_catalog (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+      <div class="param">withRefreshedCatalog (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -4564,8 +4755,10 @@ font-style: italic;
 <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">slug </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">initialSetupComplete </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
-<div class="param">onboardingComplete (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">displaySetupWizard (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">anonymousDataCollection (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">news (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">securityUpdates (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -4575,11 +4768,10 @@ font-style: italic;
       <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">email (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  format: email</div>
 <div class="param">initialSetupComplete </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
-<div class="param">onboardingComplete (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">displaySetupWizard (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">anonymousDataCollection </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">news </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">securityUpdates </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
-<div class="param">displaySetupWizard (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   </body>

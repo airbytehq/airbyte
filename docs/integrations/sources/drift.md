@@ -31,14 +31,12 @@ The Drift connector should not run into Drift API limitations under normal usage
 
 ### Requirements
 
-* Create an App
-* Give your app permission scopes:
+* A Drift API token linked to a Drift App with the following scopes: 
   * `conversation_read` to access Conversions
   * `user_read` to access Users
   * `account_read` to access Accounts
-* Install it to your Drift Account
 
 ### Setup guide
 
-Please read [Quick start](https://devdocs.drift.com/docs/quick-start).
+Follow Drift's [Setting Things Up ](https://devdocs.drift.com/docs/quick-start)guide for a more detailed description of how to obtain the API token. 
 

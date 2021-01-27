@@ -17,11 +17,11 @@ The linked Facebook docs go into detail about the fields present on those stream
 
 In addition, this source is capable of syncing ad insights as a stream. Ad insights can also be segmented by the following categories, where each segment is synced as a separate Airbyte stream:
 
-* Country
-* DMA \(Designated Market Area\)
-* Gender & Age
-* Platform & Device
-* Region
+* Country - _coming soon_
+* DMA \(Designated Market Area\) - _coming soon_
+* Gender & Age - _coming soon_
+* Platform & Device - _coming soon_
+* Region - _coming soon_
 
 The segmented streams contain entries of campaign/adset/ad combinations for each day broken down by the chosen segment.
 
@@ -41,7 +41,7 @@ For more information, see the [Facebook Insights API documentation. ](https://de
 | Feature | Supported?\(Yes/No\) | Notes |
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
-| Incremental Sync | Coming soon |  |
+| Incremental Sync | Yes | except AdCreatives |
 
 ### Performance considerations
 
@@ -73,9 +73,13 @@ Visit the [Facebook Developers App hub](https://developers.facebook.com/apps/) a
 
 From the App's Dashboard screen \(seen in the screenshot below\) enable the Marketing API for your app if it is not already setup.
 
+![](../../.gitbook/assets/facebook_marketing_api.png)
+
 ### API Access Token
 
 In the App Dashboard screen, click Marketing API --&gt; Tools on the left sidebar. Then highlight all the available token permissions \(`ads_management`, `ads_read`, `read_insights`\) and click "Get token". A long string of characters should appear in front of you; **this is the access token.** Copy this string for use in the Airbyte UI later.
+
+![](../../.gitbook/assets/facebook_access_token.png)
 
 With the Ad Account ID and API access token, you should be ready to start pulling data from the Facebook Marketing API. Head to the Airbyte UI to setup your source connector!
 

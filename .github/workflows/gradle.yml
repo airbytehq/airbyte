@@ -96,7 +96,7 @@ jobs:
         if: success() && github.ref == 'refs/heads/master'
         run: |
           docker login -u airbytebot -p ${DOCKER_PASSWORD}
-          docker-compose -f docker-compose.build.yaml push
+          VERSION=dev docker-compose -f docker-compose.build.yaml push
         env:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 

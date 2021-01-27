@@ -12,7 +12,14 @@ type IProps = {
   resetForm: () => void;
   successMessage?: React.ReactNode;
   errorMessage?: React.ReactNode;
+  editSchemeMode?: boolean;
 };
+
+const Warning = styled.div`
+  margin-bottom: 10px;
+  font-size: 12px;
+  font-weight: bold;
+`;
 
 const Controls = styled.div`
   margin-top: 34px;
@@ -45,7 +52,8 @@ const EditControls: React.FC<IProps> = ({
   dirty,
   resetForm,
   successMessage,
-  errorMessage
+  errorMessage,
+  editSchemeMode
 }) => {
   const showStatusMessage = () => {
     if (isSubmitting) {
@@ -66,14 +74,26 @@ const EditControls: React.FC<IProps> = ({
 
   return (
     <Controls>
+      {editSchemeMode ? (
+        <Warning>
+          <FormattedMessage id="connection.warningUpdateSchema" />
+        </Warning>
+      ) : null}
       <Button type="submit" disabled={isSubmitting || !isValid || !dirty}>
-        <FormattedMessage id={`form.saveChanges`} />
+        {editSchemeMode ? (
+          <FormattedMessage id="connection.saveAndReset" />
+        ) : (
+          <FormattedMessage id="form.saveChanges" />
+        )}
       </Button>
       <ButtonContainer>
         <Button
           type="button"
           secondary
-          disabled={isSubmitting || !isValid || !dirty}
+          disabled={
+            (isSubmitting || !isValid || !dirty) &&
+            (!editSchemeMode || isSubmitting)
+          }
           onClick={resetForm}
         >
           <FormattedMessage id={`form.cancel`} />

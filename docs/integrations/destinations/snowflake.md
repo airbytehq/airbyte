@@ -10,9 +10,9 @@ The Airbyte Snowflake destination allows you to sync data to Snowflake.
 
 Each stream will be output into its own table in Snowflake. Each table will contain 3 columns:
 
-* `ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in Snowflake is `VARCHAR`.
-* `emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in Snowflake is `TIMESTAMP WITH TIME ZONE`.
-* `data`: a json blob representing with the event data. The column type in Snowflake is `VARIANT`.
+* `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in Snowflake is `VARCHAR`.
+* `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in Snowflake is `TIMESTAMP WITH TIME ZONE`.
+* `_airbyte_data`: a json blob representing with the event data. The column type in Snowflake is `VARIANT`.
 
 #### Features
 
@@ -75,8 +75,7 @@ to role identifier($airbyte_role);
 -- grant Airbyte database access
 grant OWNERSHIP
 on database identifier($airbyte_database)
-to role identifier($airbyte_role)
-revoke current grants;
+to role identifier($airbyte_role);
 
 commit;
 
@@ -86,6 +85,15 @@ USE DATABASE identifier($airbyte_database);
 
 -- create schema for Airbyte data
 CREATE SCHEMA IF NOT EXISTS identifier($airbyte_schema);
+
+commit;
+
+begin;
+
+-- grant Airbyte schema access
+grant OWNERSHIP
+on schema identifier($airbyte_schema)
+to role identifier($airbyte_role);
 
 commit;
 ```

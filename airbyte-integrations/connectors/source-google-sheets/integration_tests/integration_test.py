@@ -28,8 +28,7 @@ import shutil
 from pathlib import Path
 from typing import Dict
 
-from airbyte_protocol import ConfiguredAirbyteCatalog, ConnectorSpecification
-from base_python_test import StandardSourceTestIface
+from base_python_test import DefaultStandardSourceTest
 from google_sheets_source.client import GoogleSheetsClient
 from google_sheets_source.helpers import Helpers
 from google_sheets_source.models.spreadsheet import Spreadsheet
@@ -42,21 +41,10 @@ SCOPES = [
 ]
 
 
-class GoogleSheetsSourceStandardTest(StandardSourceTestIface):
-    def __init__(self):
-        pass
-
-    def get_spec(self) -> ConnectorSpecification:
-        raw_spec = pkgutil.get_data(self.__class__.__module__.split(".")[0], "spec.json")
-        return ConnectorSpecification.parse_obj(json.loads(raw_spec))
-
+class GoogleSheetsSourceStandardTest(DefaultStandardSourceTest):
     def get_config(self) -> object:
         config = {"credentials_json": json.dumps(self._get_creds()), "spreadsheet_id": self._get_spreadsheet_id()}
         return config
-
-    def get_catalog(self) -> ConfiguredAirbyteCatalog:
-        raw_catalog = pkgutil.get_data(self.__class__.__module__.split(".")[0], "configured_catalog.json")
-        return ConfiguredAirbyteCatalog.parse_obj(json.loads(raw_catalog))
 
     def setup(self) -> None:
         Path(self._get_tmp_dir()).mkdir(parents=True, exist_ok=True)
@@ -102,7 +90,7 @@ class GoogleSheetsSourceStandardTest(StandardSourceTestIface):
         spreadsheet_id = spreadsheet.spreadsheetId
 
         rows = [["header1", "irrelevant", "header3", "", "ignored"]]
-        rows.extend([f"a{i}", "dontmindme", i] for i in range(300))
+        rows.extend([f"a{i}", "dontmindme", i] for i in range(320))
         rows.append(["lonely_left_value", "", ""])
         rows.append(["", "", "lonelyrightvalue"])
         rows.append(["", "", ""])

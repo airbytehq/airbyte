@@ -27,11 +27,10 @@ import json
 import os
 import pkgutil
 from abc import ABC, abstractmethod
-from datetime import datetime
-from typing import Dict, Generator, List, Tuple
+from typing import Any, Callable, Dict, Generator, List, Mapping, Tuple
 
 import pkg_resources
-from airbyte_protocol import AirbyteRecordMessage, AirbyteStream
+from airbyte_protocol import AirbyteStream, SyncMode
 from jsonschema import RefResolver
 
 
@@ -114,17 +113,31 @@ class ResourceSchemaLoader:
         return raw_schema
 
 
-class BaseClient(ABC):
+class StreamStateMixin:
+    def get_stream_state(self, name: str) -> Any:
+        """Get state of stream with corresponding name"""
+        raise NotImplementedError
+
+    def set_stream_state(self, name: str, state: Any):
+        """Set state of stream with corresponding name"""
+        raise NotImplementedError
+
+    def stream_has_state(self, name: str) -> bool:
+        """Tell if stream supports incremental sync"""
+        return False
+
+
+class BaseClient(StreamStateMixin, ABC):
     """Base client for API"""
 
     schema_loader_class = ResourceSchemaLoader
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         package_name = package_name_from_class(self.__class__)
         self._schema_loader = self.schema_loader_class(package_name)
         self._stream_methods = self._enumerate_methods()
 
-    def _enumerate_methods(self) -> Dict[str, callable]:
+    def _enumerate_methods(self) -> Mapping[str, callable]:
         """Detect available streams and return mapping"""
         prefix = "stream__"
         mapping = {}
@@ -139,23 +152,36 @@ class BaseClient(ABC):
     def _get_fields_from_stream(stream: AirbyteStream) -> List[str]:
         return list(stream.json_schema.get("properties", {}).keys())
 
-    def read_stream(self, stream: AirbyteStream) -> Generator[AirbyteRecordMessage, None, None]:
-        """Yield records from stream"""
-        method = self._stream_methods.get(stream.name)
+    def _get_stream_method(self, name: str) -> Callable:
+        method = self._stream_methods.get(name)
         if not method:
-            raise ValueError(f"Client does not know how to read stream `{stream.name}`")
+            raise ValueError(f"Client does not know how to read stream `{name}`")
+        return method
 
+    def read_stream(self, stream: AirbyteStream) -> Generator[Dict[str, Any], None, None]:
+        """Yield records from stream"""
+        method = self._get_stream_method(stream.name)
         fields = self._get_fields_from_stream(stream)
 
         for message in method(fields=fields):
-            now = int(datetime.now().timestamp()) * 1000
-            yield AirbyteRecordMessage(stream=stream.name, data=message, emitted_at=now)
+            yield dict(message)
 
     @property
     def streams(self) -> Generator[AirbyteStream, None, None]:
         """List of available streams"""
         for name, method in self._stream_methods.items():
-            yield AirbyteStream(name=name, json_schema=self._schema_loader.get_schema(name))
+            supported_sync_modes = [SyncMode.full_refresh]
+            source_defined_cursor = False
+            if self.stream_has_state(name):
+                supported_sync_modes = [SyncMode.incremental]
+                source_defined_cursor = True
+
+            yield AirbyteStream(
+                name=name,
+                json_schema=self._schema_loader.get_schema(name),
+                supported_sync_modes=supported_sync_modes,
+                source_defined_cursor=source_defined_cursor,
+            )
 
     @abstractmethod
     def health_check(self) -> Tuple[bool, str]:

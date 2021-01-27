@@ -43,11 +43,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -113,11 +115,17 @@ public class BufferedStreamConsumer extends FailureTrackingConsumer<AirbyteMessa
     Preconditions.checkState(!hasStarted, "Consumer has already been started.");
     hasStarted = true;
 
+    LOGGER.info("{} started.", BufferedStreamConsumer.class);
+
+    LOGGER.info("Buffer creation started for {} streams.", streamNames.size());
     final Path queueRoot = Files.createTempDirectory("queues");
     for (String streamName : streamNames) {
+      LOGGER.info("Buffer creation for stream {}.", streamName);
       final BigQueue writeBuffer = new BigQueue(queueRoot.resolve(streamName), streamName);
       writeBuffers.put(streamName, writeBuffer);
     }
+    LOGGER.info("Buffer creation completed.");
+
     onStart.call();
 
     writerPool.scheduleWithFixedDelay(
@@ -178,11 +186,14 @@ public class BufferedStreamConsumer extends FailureTrackingConsumer<AirbyteMessa
       final CloseableQueue<byte[]> writeBuffer = writeBuffers.get(streamName);
       while (writeBuffer.size() > minRecords) {
         try {
-          final Stream<AirbyteRecordMessage> recordStream = Queues.toStream(writeBuffer)
+          final List<AirbyteRecordMessage> records = Queues.toStream(writeBuffer)
               .limit(BufferedStreamConsumer.BATCH_SIZE)
-              .map(record -> Jsons.deserialize(new String(record, Charsets.UTF_8), AirbyteRecordMessage.class));
-          LOGGER.info("max size of batch: {}", BufferedStreamConsumer.BATCH_SIZE);
-          recordWriter.accept(streamName, recordStream);
+              .map(record -> Jsons.deserialize(new String(record, Charsets.UTF_8), AirbyteRecordMessage.class))
+              .collect(Collectors.toList());
+
+          LOGGER.info("Writing stream {}. Max batch size: {}, Actual batch size: {}, Remaining buffered records: {}",
+              streamName, BufferedStreamConsumer.BATCH_SIZE, records.size(), writeBuffer.size());
+          recordWriter.accept(streamName, records.stream());
         } catch (Exception e) {
           throw new RuntimeException(e);
         }
