@@ -39,9 +39,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
-
 import java.util.Collections;
-
 import org.junit.jupiter.api.Test;
 
 class AirbyteProtocolConvertersTest {
@@ -85,18 +83,18 @@ class AirbyteProtocolConvertersTest {
 
   private static final Schema SCHEMA_WITH_UNSELECTED = new Schema()
       .withStreams(Lists.newArrayList(new Stream()
-              .withSelected(true)
-              .withName(STREAM)
-              .withFields(Lists.newArrayList(
-                  new io.airbyte.config.Field()
-                      .withName(COLUMN_NAME)
-                      .withDataType(DataType.STRING),
-                  new io.airbyte.config.Field()
-                      .withName(COLUMN_AGE)
-                      .withDataType(DataType.NUMBER)))
-              .withSourceDefinedCursor(false)
-              .withSupportedSyncModes(Lists.newArrayList(io.airbyte.config.SyncMode.FULL_REFRESH, io.airbyte.config.SyncMode.INCREMENTAL))
-              .withDefaultCursorField(Lists.newArrayList(COLUMN_AGE)),
+          .withSelected(true)
+          .withName(STREAM)
+          .withFields(Lists.newArrayList(
+              new io.airbyte.config.Field()
+                  .withName(COLUMN_NAME)
+                  .withDataType(DataType.STRING),
+              new io.airbyte.config.Field()
+                  .withName(COLUMN_AGE)
+                  .withDataType(DataType.NUMBER)))
+          .withSourceDefinedCursor(false)
+          .withSupportedSyncModes(Lists.newArrayList(io.airbyte.config.SyncMode.FULL_REFRESH, io.airbyte.config.SyncMode.INCREMENTAL))
+          .withDefaultCursorField(Lists.newArrayList(COLUMN_AGE)),
           new Stream()
               .withName(STREAM_2)
               .withFields(Lists.newArrayList(
