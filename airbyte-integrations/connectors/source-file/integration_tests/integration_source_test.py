@@ -110,7 +110,7 @@ def test__read_from_public_provider(download_gcs_public_data, storage_provider, 
         "dataset_name": "output",
         "reader_options": json.dumps({"sep": separator, "nrows": 42}),
         "provider": storage_provider,
-        "url": url
+        "url": url,
     }
 
     check_read(config, expected_columns=columns_nb)
@@ -124,7 +124,7 @@ def test__read_from_private_gcs(google_cloud_service_credentials, private_google
         "provider": {
             "storage": "GCS",
             "service_account_json": json.dumps(google_cloud_service_credentials),
-        }
+        },
     }
     check_read(config)
 
@@ -138,6 +138,6 @@ def test__read_from_private_aws(aws_credentials, private_aws_file):
             "storage": "S3",
             "aws_access_key_id": aws_credentials["aws_access_key_id"],
             "aws_secret_access_key": aws_credentials["aws_secret_access_key"],
-        }
+        },
     }
     check_read(config)

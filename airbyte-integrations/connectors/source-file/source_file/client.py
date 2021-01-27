@@ -303,7 +303,7 @@ class Client:
 
     @property
     def binary_source(self):
-        binary_formats = {'excel', 'feather', 'parquet', 'orc', 'pickle'}
+        binary_formats = {"excel", "feather", "parquet", "orc", "pickle"}
         return self._reader_format in binary_formats
 
     def read(self, fields: Iterable = None) -> Iterable[dict]:
