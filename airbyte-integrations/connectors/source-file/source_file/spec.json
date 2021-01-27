@@ -113,6 +113,31 @@
             }
           },
           {
+            "title": "SCP: Secure copy protocol",
+            "required": ["storage", "user", "host"],
+            "properties": {
+              "storage": {
+                "type": "string",
+                "enum": ["SCP"],
+                "default": "SCP"
+              },
+              "user": {
+                "type": "string"
+              },
+              "password": {
+                "type": "string",
+                "airbyte_secret": true
+              },
+              "host": {
+                "type": "string"
+              },
+              "port": {
+                "type": "number",
+                "default": 22
+              }
+            }
+          },
+          {
             "title": "SFTP: Secure File Transfer Protocol",
             "required": ["storage", "user", "host"],
             "properties": {
