@@ -133,7 +133,7 @@ public class AirbyteProtocolConverters {
    * @param node - list of types from jsonschema.
    * @return reduce down to one type which best matches the field's data type
    */
-  private static DataType jsonSchemaTypesToDataType(JsonNode node) {
+  public static DataType jsonSchemaTypesToDataType(JsonNode node) {
     if (node.isTextual()) {
       return DataType.valueOf(convertToNumberIfInteger(node.asText().toUpperCase()));
     } else if (node.isArray()) {

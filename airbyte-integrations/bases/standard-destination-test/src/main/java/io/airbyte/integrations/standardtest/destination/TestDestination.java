@@ -36,6 +36,8 @@ import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.config.AirbyteProtocolConverters;
+import io.airbyte.config.DataType;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
@@ -61,16 +63,22 @@ import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteDestination;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -124,7 +132,7 @@ public abstract class TestDestination {
    * invoked. These will be used to check that the data actually written is what should actually be
    * there. Note: this returns a set and does not test any order guarantees.
    *
-   * @param testEnv - information about the test environment.
+   * @param testEnv    - information about the test environment.
    * @param streamName - name of the stream for which we are retrieving records.
    * @return All of the records in the destination at the time this method is invoked.
    * @throws Exception - can throw any exception, test framework will handle.
@@ -164,7 +172,7 @@ public abstract class TestDestination {
    * as it would appear in an {@link AirbyteRecordMessage}. Only need to override this method if
    * {@link #implementsBasicNormalization} returns true.
    *
-   * @param testEnv - information about the test environment.
+   * @param testEnv    - information about the test environment.
    * @param streamName - name of the stream for which we are retrieving records.
    * @return All of the records in the destination at the time this method is invoked.
    * @throws Exception - can throw any exception, test framework will handle.
@@ -328,13 +336,50 @@ public abstract class TestDestination {
     final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
     final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
-        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
+        .map(record -> coerceRecordDataTypes(record, catalog))
+        .collect(Collectors.toList());
     runSync(getConfigWithBasicNormalization(), messages, configuredCatalog);
 
     LOGGER.info("Comparing retrieveRecordsForCatalog for {} and {}", messagesFilename, catalogFilename);
     assertSameMessages(messages, retrieveRecordsForCatalog(catalog));
     LOGGER.info("Comparing retrieveNormalizedRecordsForCatalog for {} and {}", messagesFilename, catalogFilename);
     assertSameMessages(messages, retrieveNormalizedRecordsForCatalog(catalog), true);
+  }
+
+  private AirbyteMessage coerceRecordDataTypes(AirbyteMessage recordMessage, AirbyteCatalog catalog) {
+    if (recordMessage.getType() != AirbyteMessage.Type.RECORD) {
+      throw new IllegalArgumentException("Expected record message");
+    }
+
+    JsonNode data = recordMessage.getRecord().getData();
+    if (data.isObject()) {
+      ObjectNode dataObject = (ObjectNode) data;
+      Map<String, AirbyteStream> streamNameToStream = catalog.getStreams().stream().collect(Collectors.toMap(AirbyteStream::getName, s -> s));
+      StreamSupport.stream(Spliterators.spliteratorUnknownSize(dataObject.fields(), Spliterator.ORDERED), false)
+          .forEach(kv -> {
+            String fieldName = kv.getKey();
+            String streamName = recordMessage.getRecord().getStream();
+            JsonNode type = streamNameToStream.get(streamName).getJsonSchema().get("properties").get(fieldName).get("type");
+            DataType dataType = AirbyteProtocolConverters.jsonSchemaTypesToDataType(type);
+            JsonNode value = kv.getValue();
+            switch (dataType) {
+              case STRING -> dataObject.put(fieldName, value.asText());
+              case NUMBER -> {
+                try {
+                  dataObject.put(fieldName, Long.parseLong(value.asText()));
+                } catch (Exception e) {
+                  dataObject.put(fieldName, value.asDouble());
+                }
+              }
+              case BOOLEAN -> dataObject.put(fieldName, value.asBoolean());
+              case OBJECT, ARRAY -> dataObject.set(fieldName, value);
+              default -> throw new IllegalArgumentException("Unidentified type: " + dataType);
+            }
+          });
+    }
+
+    return recordMessage;
   }
 
   /**

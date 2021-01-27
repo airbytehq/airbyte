@@ -145,8 +145,12 @@ def read_json_catalog(input_path: str) -> dict:
     return json.loads(contents)
 
 
+def is_union_type(property_type) -> bool:
+    return type(property_type) is list and len(property_type) > 2
+
+
 def is_string(property_type) -> bool:
-    return property_type == "string" or "string" in property_type
+    return property_type == "string" or "string" in property_type or is_union_type(property_type)
 
 
 def is_integer(property_type) -> bool:
