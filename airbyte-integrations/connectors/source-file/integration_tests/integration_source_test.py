@@ -109,7 +109,7 @@ def test__read_from_public_provider(download_gcs_public_data, storage_provider, 
         "format": "csv",
         "dataset_name": "output",
         "reader_options": json.dumps({"sep": separator, "nrows": 42}),
-        "provider": storage_provider,
+        "provider": {"storage": storage_provider},
         "url": url,
     }
 
