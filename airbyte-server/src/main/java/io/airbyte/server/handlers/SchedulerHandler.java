@@ -72,13 +72,13 @@ public class SchedulerHandler {
   private final ConfigurationUpdate configurationUpdate;
   private final JsonSchemaValidator jsonSchemaValidator;
 
-  public SchedulerHandler(ConfigRepository configRepository, SchedulerJobClient schedulerJobClient, SpecFetcher specFetcher) {
+  public SchedulerHandler(ConfigRepository configRepository, SchedulerJobClient schedulerJobClient) {
     this(
         configRepository,
         schedulerJobClient,
-        new ConfigurationUpdate(configRepository, specFetcher),
+        new ConfigurationUpdate(configRepository, new SpecFetcher(schedulerJobClient)),
         new JsonSchemaValidator(),
-        specFetcher);
+        new SpecFetcher(schedulerJobClient));
   }
 
   @VisibleForTesting
@@ -276,7 +276,6 @@ public class SchedulerHandler {
         .message(checkConnectionOutput.getMessage())
         .jobInfo(JobConverter.getJobInfoRead(job));
   }
-
 
   private ConnectorSpecification getSpecFromSourceDefinitionId(UUID sourceDefId)
       throws IOException, JsonValidationException, ConfigNotFoundException {

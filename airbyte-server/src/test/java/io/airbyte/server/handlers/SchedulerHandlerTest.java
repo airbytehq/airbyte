@@ -68,9 +68,12 @@ import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.JobStatus;
 import io.airbyte.scheduler.client.SchedulerJobClient;
+import io.airbyte.server.converters.ConfigurationUpdate;
+import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.helpers.ConnectionHelpers;
 import io.airbyte.server.helpers.DestinationHelpers;
 import io.airbyte.server.helpers.SourceHelpers;
+import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URI;
@@ -111,10 +114,16 @@ class SchedulerHandlerTest {
   private ConfigRepository configRepository;
   private Job completedJob;
   private SchedulerJobClient schedulerJobClient;
+  private ConfigurationUpdate configurationUpdate;
+  private JsonSchemaValidator jsonSchemaValidator;
+  private SpecFetcher specFetcher;
 
   @BeforeEach
   void setup() {
     completedJob = mock(Job.class, RETURNS_DEEP_STUBS);
+    configurationUpdate = mock(ConfigurationUpdate.class);
+    jsonSchemaValidator = mock(JsonSchemaValidator.class);
+    specFetcher = mock(SpecFetcher.class);
     when(completedJob.getStatus()).thenReturn(JobStatus.SUCCEEDED);
     when(completedJob.getConfig().getConfigType()).thenReturn(ConfigType.SYNC);
     when(completedJob.getScope()).thenReturn("sync:123");
@@ -122,7 +131,7 @@ class SchedulerHandlerTest {
     schedulerJobClient = spy(SchedulerJobClient.class);
     configRepository = mock(ConfigRepository.class);
 
-    schedulerHandler = new SchedulerHandler(configRepository, schedulerJobClient);
+    schedulerHandler = new SchedulerHandler(configRepository, schedulerJobClient, configurationUpdate, jsonSchemaValidator, specFetcher);
   }
 
   @Test
@@ -177,20 +186,15 @@ class SchedulerHandlerTest {
             .withSourceDefinitionId(sourceDefinitionIdRequestBody.getSourceDefinitionId()));
     when(schedulerJobClient.createGetSpecJob(SOURCE_DOCKER_IMAGE)).thenReturn(completedJob);
 
-    final StandardGetSpecOutput specOutput = new StandardGetSpecOutput().withSpecification(
-        new ConnectorSpecification()
-            .withDocumentationUrl(new URI("https://google.com"))
-            .withChangelogUrl(new URI("https://google.com"))
-            .withConnectionSpecification(Jsons.jsonNode(new HashMap<>())));
-    final JobOutput jobOutput = mock(JobOutput.class);
-
-    when(jobOutput.getGetSpec()).thenReturn(specOutput);
-    when(completedJob.getSuccessOutput()).thenReturn(Optional.of(jobOutput));
+    final ConnectorSpecification connectorSpecification = new ConnectorSpecification()
+        .withDocumentationUrl(new URI("https://google.com"))
+        .withChangelogUrl(new URI("https://google.com"))
+        .withConnectionSpecification(Jsons.jsonNode(new HashMap<>()));
+    when(specFetcher.execute(SOURCE_DOCKER_IMAGE)).thenReturn(connectorSpecification);
 
     schedulerHandler.getSourceDefinitionSpecification(sourceDefinitionIdRequestBody);
 
     verify(configRepository).getStandardSourceDefinition(sourceDefinitionIdRequestBody.getSourceDefinitionId());
-    verify(schedulerJobClient).createGetSpecJob(SOURCE_DOCKER_IMAGE);
   }
 
   @Test
@@ -205,37 +209,27 @@ class SchedulerHandlerTest {
             .withDockerImageTag(DESTINATION_DOCKER_TAG)
             .withDestinationDefinitionId(destinationDefinitionIdRequestBody.getDestinationDefinitionId()));
     when(schedulerJobClient.createGetSpecJob(DESTINATION_DOCKER_IMAGE)).thenReturn(completedJob);
-
-    final StandardGetSpecOutput specOutput = new StandardGetSpecOutput().withSpecification(
-        new ConnectorSpecification()
-            .withDocumentationUrl(new URI("https://google.com"))
-            .withChangelogUrl(new URI("https://google.com"))
-            .withConnectionSpecification(Jsons.jsonNode(new HashMap<>())));
-    final JobOutput jobOutput = mock(JobOutput.class);
-    when(jobOutput.getGetSpec()).thenReturn(specOutput);
-    when(completedJob.getSuccessOutput()).thenReturn(Optional.of(jobOutput));
+    final ConnectorSpecification connectorSpecification = new ConnectorSpecification()
+        .withDocumentationUrl(new URI("https://google.com"))
+        .withChangelogUrl(new URI("https://google.com"))
+        .withConnectionSpecification(Jsons.jsonNode(new HashMap<>()));
+    when(specFetcher.execute(DESTINATION_DOCKER_IMAGE)).thenReturn(connectorSpecification);
 
     schedulerHandler.getDestinationSpecification(destinationDefinitionIdRequestBody);
 
     verify(configRepository).getStandardDestinationDefinition(destinationDefinitionIdRequestBody.getDestinationDefinitionId());
-    verify(schedulerJobClient).createGetSpecJob(DESTINATION_DOCKER_IMAGE);
   }
 
   @Test
   public void testGetConnectorSpec() throws IOException, URISyntaxException {
-    when(schedulerJobClient.createGetSpecJob(SOURCE_DOCKER_IMAGE)).thenReturn(completedJob);
-    final StandardGetSpecOutput specOutput = new StandardGetSpecOutput().withSpecification(
-        new ConnectorSpecification()
-            .withDocumentationUrl(new URI("https://google.com"))
-            .withChangelogUrl(new URI("https://google.com"))
-            .withConnectionSpecification(Jsons.jsonNode(new HashMap<>())));
-    final JobOutput jobOutput = mock(JobOutput.class);
-    when(jobOutput.getGetSpec()).thenReturn(specOutput);
-    when(completedJob.getSuccessOutput()).thenReturn(Optional.of(jobOutput));
+    final ConnectorSpecification connectorSpecification = new ConnectorSpecification()
+        .withDocumentationUrl(new URI("https://google.com"))
+        .withChangelogUrl(new URI("https://google.com"))
+        .withConnectionSpecification(Jsons.jsonNode(new HashMap<>()));
+    final StandardGetSpecOutput specOutput = new StandardGetSpecOutput().withSpecification(connectorSpecification);
+    when(specFetcher.execute(SOURCE_DOCKER_IMAGE)).thenReturn(connectorSpecification);
 
     assertEquals(specOutput.getSpecification(), schedulerHandler.getConnectorSpecification(SOURCE_DOCKER_IMAGE));
-
-    verify(schedulerJobClient).createGetSpecJob(SOURCE_DOCKER_IMAGE);
   }
 
   @Test
