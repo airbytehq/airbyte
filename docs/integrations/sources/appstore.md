@@ -4,7 +4,12 @@
 
 This source can sync data for the [Appstore API](https://developer.apple.com/documentation/appstoreconnectapi). It supports only Incremental syncs. The Applestore API is available for [many types of services](https://developer.apple.com/documentation/appstoreconnectapi), however this integration focuses only on the 'Reporting' service, from where data is extracted from.
 
-Under the 'Reporting' Service, Appstore API has four different categories of Endpoints available. 1. Sales and Trends =&gt; [API docs](https://developer.apple.com/documentation/appstoreconnectapi/download_sales_and_trends_reports); ["UI docs"](https://help.apple.com/app-store-connect/#/dev061699fdb) 2. Finance Reports =&gt; [API docs](https://developer.apple.com/documentation/appstoreconnectapi/download_finance_reports); ["UI docs"](https://help.apple.com/app-store-connect/#/dev716cf3a0d) 3. Get Power and Performance Metrics for an App =&gt; [API docs](https://developer.apple.com/documentation/appstoreconnectapi/get_power_and_performance_metrics_for_an_app); 4. Get Power and Performance Metrics for a Build =&gt; [API docs](https://developer.apple.com/documentation/appstoreconnectapi/get_power_and_performance_metrics_for_a_build);
+Under the 'Reporting' Service, Appstore API has four different categories of Endpoints available. 
+
+1. Sales and Trends =&gt; [API docs](https://developer.apple.com/documentation/appstoreconnectapi/download_sales_and_trends_reports); ["UI docs"](https://help.apple.com/app-store-connect/#/dev061699fdb) 
+2. Finance Reports =&gt; [API docs](https://developer.apple.com/documentation/appstoreconnectapi/download_finance_reports); ["UI docs"](https://help.apple.com/app-store-connect/#/dev716cf3a0d) 
+3. Get Power and Performance Metrics for an App =&gt; [API docs](https://developer.apple.com/documentation/appstoreconnectapi/get_power_and_performance_metrics_for_an_app); 
+4. Get Power and Performance Metrics for a Build =&gt; [API docs](https://developer.apple.com/documentation/appstoreconnectapi/get_power_and_performance_metrics_for_a_build);
 
 This Source Connector is based on a [Singer Tap](https://github.com/miroapp/tap-appstore).
 
