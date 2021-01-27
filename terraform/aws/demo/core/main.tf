@@ -34,7 +34,10 @@ resource "aws_security_group" "airbyte-ssh-sg" {
 
 resource "aws_instance" "airbyte-instance" {
   lifecycle {
+    # If you need to destroy the instance, make sure you back up the airbyte configuration.
     prevent_destroy = true
+    # So we can edit the init.sh script without having to re-create the instance.
+    ignore_changes = [user_data]
   }
 
   instance_type = var.instance-size
