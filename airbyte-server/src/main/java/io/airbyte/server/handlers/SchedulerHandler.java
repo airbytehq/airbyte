@@ -31,12 +31,14 @@ import io.airbyte.api.model.DestinationCoreConfig;
 import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.DestinationDefinitionSpecificationRead;
 import io.airbyte.api.model.DestinationIdRequestBody;
+import io.airbyte.api.model.DestinationUpdate;
 import io.airbyte.api.model.JobInfoRead;
 import io.airbyte.api.model.SourceCoreConfig;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
 import io.airbyte.api.model.SourceDefinitionSpecificationRead;
 import io.airbyte.api.model.SourceDiscoverSchemaRead;
 import io.airbyte.api.model.SourceIdRequestBody;
+import io.airbyte.api.model.SourceUpdate;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.AirbyteProtocolConverters;
@@ -53,9 +55,11 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.client.SchedulerJobClient;
+import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.server.converters.JobConverter;
 import io.airbyte.server.converters.SchemaConverter;
 import io.airbyte.server.converters.SpecFetcher;
+import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.UUID;
@@ -65,20 +69,28 @@ public class SchedulerHandler {
   private final ConfigRepository configRepository;
   private final SchedulerJobClient schedulerJobClient;
   private final SpecFetcher specFetcher;
+  private final ConfigurationUpdate configurationUpdate;
+  private final JsonSchemaValidator jsonSchemaValidator;
 
   public SchedulerHandler(ConfigRepository configRepository, SchedulerJobClient schedulerJobClient) {
     this(
         configRepository,
         schedulerJobClient,
+        new ConfigurationUpdate(configRepository, new SpecFetcher(schedulerJobClient)),
+        new JsonSchemaValidator(),
         new SpecFetcher(schedulerJobClient));
   }
 
   @VisibleForTesting
   SchedulerHandler(ConfigRepository configRepository,
                    SchedulerJobClient schedulerJobClient,
+                   ConfigurationUpdate configurationUpdate,
+                   JsonSchemaValidator jsonSchemaValidator,
                    SpecFetcher specFetcher) {
     this.configRepository = configRepository;
     this.schedulerJobClient = schedulerJobClient;
+    this.configurationUpdate = configurationUpdate;
+    this.jsonSchemaValidator = jsonSchemaValidator;
     this.specFetcher = specFetcher;
   }
 
@@ -104,6 +116,20 @@ public class SchedulerHandler {
     return reportConnectionStatus(schedulerJobClient.createSourceCheckConnectionJob(source, imageName));
   }
 
+  public CheckConnectionRead checkSourceConnectionFromSourceIdForUpdate(SourceUpdate sourceUpdate)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    final SourceConnection updatedSource = configurationUpdate.source(sourceUpdate.getSourceId(), sourceUpdate.getConnectionConfiguration());
+
+    final ConnectorSpecification spec = getSpecFromSourceDefinitionId(updatedSource.getSourceDefinitionId());
+    jsonSchemaValidator.validate(spec.getConnectionSpecification(), updatedSource.getConfiguration());
+
+    final SourceCoreConfig sourceCoreConfig = new SourceCoreConfig()
+        .connectionConfiguration(updatedSource.getConfiguration())
+        .sourceDefinitionId(updatedSource.getSourceDefinitionId());
+
+    return checkSourceConnectionFromSourceCreate(sourceCoreConfig);
+  }
+
   public CheckConnectionRead checkDestinationConnectionFromDestinationId(DestinationIdRequestBody destinationIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final DestinationConnection destination = configRepository.getDestinationConnection(destinationIdRequestBody.getDestinationId());
@@ -122,6 +148,21 @@ public class SchedulerHandler {
         .withDestinationDefinitionId(destinationConfig.getDestinationDefinitionId())
         .withConfiguration(destinationConfig.getConnectionConfiguration());
     return reportConnectionStatus(schedulerJobClient.createDestinationCheckConnectionJob(destination, imageName));
+  }
+
+  public CheckConnectionRead checkDestinationConnectionFromDestinationIdForUpdate(DestinationUpdate destinationUpdate)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    final DestinationConnection updatedDestination = configurationUpdate
+        .destination(destinationUpdate.getDestinationId(), destinationUpdate.getConnectionConfiguration());
+
+    final ConnectorSpecification spec = getSpecFromDestinationDefinitionId(updatedDestination.getDestinationDefinitionId());
+    jsonSchemaValidator.validate(spec.getConnectionSpecification(), updatedDestination.getConfiguration());
+
+    final DestinationCoreConfig destinationCoreConfig = new DestinationCoreConfig()
+        .connectionConfiguration(updatedDestination.getConfiguration())
+        .destinationDefinitionId(updatedDestination.getDestinationDefinitionId());
+
+    return checkDestinationConnectionFromDestinationCreate(destinationCoreConfig);
   }
 
   public SourceDiscoverSchemaRead discoverSchemaForSourceFromSourceId(SourceIdRequestBody sourceIdRequestBody)
@@ -234,6 +275,20 @@ public class SchedulerHandler {
         .status(Enums.convertTo(checkConnectionOutput.getStatus(), CheckConnectionRead.StatusEnum.class))
         .message(checkConnectionOutput.getMessage())
         .jobInfo(JobConverter.getJobInfoRead(job));
+  }
+
+  private ConnectorSpecification getSpecFromSourceDefinitionId(UUID sourceDefId)
+      throws IOException, JsonValidationException, ConfigNotFoundException {
+    final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceDefId);
+    final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
+    return specFetcher.execute(imageName);
+  }
+
+  private ConnectorSpecification getSpecFromDestinationDefinitionId(UUID destDefId)
+      throws IOException, JsonValidationException, ConfigNotFoundException {
+    final StandardDestinationDefinition destinationDef = configRepository.getStandardDestinationDefinition(destDefId);
+    final String imageName = DockerUtils.getTaggedImageName(destinationDef.getDockerRepository(), destinationDef.getDockerImageTag());
+    return specFetcher.execute(imageName);
   }
 
 }
