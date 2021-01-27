@@ -25,21 +25,25 @@
 package io.airbyte.server.handlers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.DestinationCreate;
-import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
-import io.airbyte.api.model.DestinationDefinitionSpecificationRead;
 import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.DestinationReadList;
 import io.airbyte.api.model.DestinationUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
-import io.airbyte.commons.json.JsonSecretsProcessor;
+import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.scheduler.client.SchedulerJobClient;
+import io.airbyte.server.converters.ConfigurationUpdate;
+import io.airbyte.server.converters.JsonSecretsProcessor;
+import io.airbyte.server.converters.SpecFetch;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -50,37 +54,42 @@ import java.util.function.Supplier;
 public class DestinationHandler {
 
   private final ConnectionsHandler connectionsHandler;
-  private final SchedulerHandler schedulerHandler;
+  private final SpecFetch specFetch;
   private final Supplier<UUID> uuidGenerator;
   private final ConfigRepository configRepository;
   private final JsonSchemaValidator validator;
   private final JsonSecretsProcessor secretProcessor;
+  private final ConfigurationUpdate configurationUpdate;
 
+  @VisibleForTesting
   DestinationHandler(final ConfigRepository configRepository,
                      final JsonSchemaValidator integrationSchemaValidation,
-                     final SchedulerHandler schedulerHandler,
+                     final SpecFetch specFetch,
                      final ConnectionsHandler connectionsHandler,
                      final Supplier<UUID> uuidGenerator,
-                     final JsonSecretsProcessor secretsProcessor) {
+                     final JsonSecretsProcessor secretsProcessor,
+                     final ConfigurationUpdate configurationUpdate) {
     this.configRepository = configRepository;
     this.validator = integrationSchemaValidation;
-    this.schedulerHandler = schedulerHandler;
+    this.specFetch = specFetch;
     this.connectionsHandler = connectionsHandler;
     this.uuidGenerator = uuidGenerator;
     this.secretProcessor = secretsProcessor;
+    this.configurationUpdate = configurationUpdate;
   }
 
   public DestinationHandler(final ConfigRepository configRepository,
                             final JsonSchemaValidator integrationSchemaValidation,
-                            final SchedulerHandler schedulerHandler,
+                            final SchedulerJobClient schedulerJobClient,
                             final ConnectionsHandler connectionsHandler) {
-    this(configRepository, integrationSchemaValidation, schedulerHandler, connectionsHandler, UUID::randomUUID, new JsonSecretsProcessor());
+    this(configRepository, integrationSchemaValidation, new SpecFetch(schedulerJobClient), connectionsHandler, UUID::randomUUID,
+        new JsonSecretsProcessor(), new ConfigurationUpdate(configRepository, schedulerJobClient));
   }
 
   public DestinationRead createDestination(final DestinationCreate destinationCreate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // validate configuration
-    final DestinationDefinitionSpecificationRead spec = getSpec(destinationCreate.getDestinationDefinitionId());
+    final ConnectorSpecification spec = getSpec(destinationCreate.getDestinationDefinitionId());
     validateDestination(spec, destinationCreate.getConnectionConfiguration());
 
     // persist
@@ -126,25 +135,22 @@ public class DestinationHandler {
   public DestinationRead updateDestination(final DestinationUpdate destinationUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // get existing implementation
-    final DestinationConnection currentDci = configRepository.getDestinationConnection(destinationUpdate.getDestinationId());
+    final DestinationConnection updatedDestination = configurationUpdate
+        .destination(destinationUpdate.getDestinationId(), destinationUpdate.getConnectionConfiguration());
 
-    final DestinationDefinitionSpecificationRead spec = getSpec(currentDci.getDestinationDefinitionId());
-
-    final JsonNode updateConfigurationWithSecrets = secretProcessor
-        .copySecrets(currentDci.getConfiguration(), destinationUpdate.getConnectionConfiguration(), spec.getConnectionSpecification());
-    destinationUpdate.setConnectionConfiguration(updateConfigurationWithSecrets);
+    final ConnectorSpecification spec = getSpec(updatedDestination.getDestinationDefinitionId());
 
     // validate configuration
-    validateDestination(spec, destinationUpdate.getConnectionConfiguration());
+    validateDestination(spec, updatedDestination.getConfiguration());
 
     // persist
     persistDestinationConnection(
-        destinationUpdate.getName(),
-        currentDci.getDestinationDefinitionId(),
-        currentDci.getWorkspaceId(),
-        destinationUpdate.getDestinationId(),
-        destinationUpdate.getConnectionConfiguration(),
-        currentDci.getTombstone());
+        updatedDestination.getName(),
+        updatedDestination.getDestinationDefinitionId(),
+        updatedDestination.getWorkspaceId(),
+        updatedDestination.getDestinationId(),
+        updatedDestination.getConfiguration(),
+        updatedDestination.getTombstone());
 
     // read configuration from db
     return buildDestinationRead(destinationUpdate.getDestinationId(), spec);
@@ -174,13 +180,15 @@ public class DestinationHandler {
     return new DestinationReadList().destinations(reads);
   }
 
-  private void validateDestination(final DestinationDefinitionSpecificationRead spec, final JsonNode configuration) throws JsonValidationException {
+  private void validateDestination(final ConnectorSpecification spec, final JsonNode configuration) throws JsonValidationException {
     validator.ensure(spec.getConnectionSpecification(), configuration);
   }
 
-  private DestinationDefinitionSpecificationRead getSpec(UUID destinationDefinitionId)
+  private ConnectorSpecification getSpec(UUID destinationDefinitionId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    return schedulerHandler.getDestinationSpecification(new DestinationDefinitionIdRequestBody().destinationDefinitionId(destinationDefinitionId));
+    final StandardDestinationDefinition destinationDef = configRepository.getStandardDestinationDefinition(destinationDefinitionId);
+    final String imageName = DockerUtils.getTaggedImageName(destinationDef.getDockerRepository(), destinationDef.getDockerImageTag());
+    return specFetch.execute(imageName);
   }
 
   private void persistDestinationConnection(final String name,
@@ -202,12 +210,11 @@ public class DestinationHandler {
   }
 
   private DestinationRead buildDestinationRead(final UUID destinationId) throws JsonValidationException, IOException, ConfigNotFoundException {
-    final DestinationDefinitionSpecificationRead spec =
-        getSpec(configRepository.getDestinationConnection(destinationId).getDestinationDefinitionId());
+    final ConnectorSpecification spec = getSpec(configRepository.getDestinationConnection(destinationId).getDestinationDefinitionId());
     return buildDestinationRead(destinationId, spec);
   }
 
-  private DestinationRead buildDestinationRead(final UUID destinationId, DestinationDefinitionSpecificationRead spec)
+  private DestinationRead buildDestinationRead(final UUID destinationId, ConnectorSpecification spec)
       throws ConfigNotFoundException, IOException, JsonValidationException {
 
     // remove secrets from config before returning the read

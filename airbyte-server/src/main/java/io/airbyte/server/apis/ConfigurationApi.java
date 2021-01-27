@@ -128,12 +128,12 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
     schedulerHandler = new SchedulerHandler(configRepository, schedulerJobClient);
     workspacesHandler = new WorkspacesHandler(configRepository);
-    final DockerImageValidator dockerImageValidator = new DockerImageValidator(schedulerHandler);
+    final DockerImageValidator dockerImageValidator = new DockerImageValidator(schedulerJobClient);
     sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, schedulerJobClient);
     connectionsHandler = new ConnectionsHandler(configRepository);
     destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, dockerImageValidator, schedulerJobClient);
-    destinationHandler = new DestinationHandler(configRepository, schemaValidator, schedulerHandler, connectionsHandler);
-    sourceHandler = new SourceHandler(configRepository, schemaValidator, schedulerHandler, connectionsHandler);
+    destinationHandler = new DestinationHandler(configRepository, schemaValidator, schedulerJobClient, connectionsHandler);
+    sourceHandler = new SourceHandler(configRepository, schemaValidator, schedulerJobClient, connectionsHandler);
     jobHistoryHandler = new JobHistoryHandler(jobPersistence);
     webBackendConnectionsHandler =
         new WebBackendConnectionsHandler(connectionsHandler, sourceHandler, destinationHandler, jobHistoryHandler, schedulerHandler);
@@ -337,13 +337,13 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   // SCHEDULER
   @Override
-  public CheckConnectionRead executeSourceCheckConnection(@Valid SourceCoreConfig sourceCreate) {
-    return execute(() -> schedulerHandler.checkSourceConnectionFromSourceCreate(sourceCreate));
+  public CheckConnectionRead executeSourceCheckConnection(@Valid SourceCoreConfig sourceConfig) {
+    return execute(() -> schedulerHandler.checkSourceConnectionFromSourceCreate(sourceConfig));
   }
 
   @Override
-  public CheckConnectionRead executeDestinationCheckConnection(@Valid DestinationCoreConfig destinationCreate) {
-    return execute(() -> schedulerHandler.checkDestinationConnectionFromDestinationCreate(destinationCreate));
+  public CheckConnectionRead executeDestinationCheckConnection(@Valid DestinationCoreConfig destinationConfig) {
+    return execute(() -> schedulerHandler.checkDestinationConnectionFromDestinationCreate(destinationConfig));
   }
 
   @Override
