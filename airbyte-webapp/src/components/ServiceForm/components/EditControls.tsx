@@ -4,6 +4,7 @@ import { FormattedMessage } from "react-intl";
 
 import Button from "../../Button";
 import Spinner from "../../Spinner";
+import { useWidgetInfo } from "../uiWidgetContext";
 
 type IProps = {
   isSubmitting: boolean;
@@ -50,6 +51,8 @@ const EditControls: React.FC<IProps> = ({
   successMessage,
   errorMessage
 }) => {
+  const { unfinishedSecrets } = useWidgetInfo();
+
   const showStatusMessage = () => {
     if (isSubmitting) {
       return (
@@ -69,8 +72,16 @@ const EditControls: React.FC<IProps> = ({
 
   return (
     <Controls>
-      <Button type="submit" disabled={isSubmitting || !isValid || !dirty}>
-        <FormattedMessage id={`form.saveChanges`} />
+      <Button
+        type="submit"
+        disabled={
+          isSubmitting ||
+          !isValid ||
+          !dirty ||
+          Object.keys(unfinishedSecrets).length > 0
+        }
+      >
+        <FormattedMessage id="form.saveChanges" />
       </Button>
       <ButtonContainer>
         <Button
@@ -79,7 +90,7 @@ const EditControls: React.FC<IProps> = ({
           disabled={isSubmitting || !isValid || !dirty}
           onClick={resetForm}
         >
-          <FormattedMessage id={`form.cancel`} />
+          <FormattedMessage id="form.cancel" />
         </Button>
       </ButtonContainer>
       {showStatusMessage()}

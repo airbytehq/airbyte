@@ -19,7 +19,7 @@ export type FormInitialValues = {
   connectionConfiguration?: any;
 };
 
-export function useBuildForm(
+function useBuildForm(
   formType: "connection" | "source" | "destination",
   isLoading?: boolean,
   initialValues?: Partial<FormInitialValues>,
@@ -86,7 +86,7 @@ export function useBuildForm(
   };
 }
 
-export const useConstructValidationSchema = (
+const useConstructValidationSchema = (
   uiWidgetsInfo: WidgetConfigMap,
   jsonSchema?: JSONSchema7
 ) => {
@@ -112,7 +112,7 @@ export const useConstructValidationSchema = (
   }, [uiWidgetsInfo, jsonSchema]);
 };
 
-export const useBuildUiWidgets = (
+const useBuildUiWidgets = (
   formFields: FormBlock[],
   formValues: FormInitialValues
 ) => {
@@ -139,3 +139,5 @@ export const useBuildUiWidgets = (
     setUiWidgetsInfo: setUiWidgetsInfoSubState
   };
 };
+
+export { useBuildForm, useBuildUiWidgets, useConstructValidationSchema };
