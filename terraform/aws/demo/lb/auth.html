@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<body>
+
+    <form>
+        <label for="password">Enter secret: </label>
+        <input id="password" type="password" autocomplete="current-password"/>
+
+        <input id="auth" type="button" value="Auth" onclick="hack_auth(document.getElementById('password').value);"/>
+    </form>
+
+    <script>
+        function hack_auth(password) {
+            console.log(password);
+            document.cookie = `hack-auth-token=${password}; path=/; secure=True; SameSite=Strict;`;
+            document.location.replace("https://demo.airbyte.io");
+        }
+    </script>
+
+</body>
+</html>

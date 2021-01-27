@@ -60,7 +60,7 @@ gcloud --project $PROJECT_ID compute instances list
 
 ```bash
 # In your workstation terminal
-gcloud --project=$PROJECT_ID beta compute ssh airbyte
+gcloud --project=$PROJECT_ID beta compute ssh $INSTANCE_NAME
 ```
 
 * Install `docker`
@@ -99,7 +99,7 @@ logout
 
 ```bash
 # In your workstation terminal
-gcloud --project=$PROJECT_ID beta compute ssh airbyte
+gcloud --project=$PROJECT_ID beta compute ssh $INSTANCE_NAME
 ```
 
 * Install Airbyte
