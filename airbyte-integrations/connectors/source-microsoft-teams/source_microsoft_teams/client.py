@@ -29,6 +29,7 @@ import pkgutil
 import time
 from typing import Dict, List, Optional, Tuple, Union
 
+import backoff
 import msal
 import requests
 from airbyte_protocol import AirbyteStream
@@ -83,6 +84,9 @@ class Client:
         else:
             raise MsalServiceError(error=result.get("error"), error_description=result.get("error_description"))
 
+    @backoff.on_exception(
+        backoff.expo, (requests.exceptions.ConnectionError, MsalServiceError, requests.exceptions.RequestException), max_tries=7
+    )
     def _make_request(self, api_url: str, params: Optional[Dict] = None) -> Union[Dict, object]:
         access_token = self._get_access_token()
         headers = {"Authorization": f"Bearer {access_token}"}
@@ -98,12 +102,12 @@ class Client:
             raw_response = response.content
         else:
             raw_response = response.json()
+            if "value" not in raw_response:
+                raise requests.exceptions.RequestException()
         return raw_response
 
     @staticmethod
     def _get_response_value_unsafe(raw_response: Dict) -> List:
-        if "value" not in raw_response:
-            raise requests.exceptions.RequestException()
         value = raw_response["value"]
         return value
 
