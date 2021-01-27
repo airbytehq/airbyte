@@ -191,7 +191,10 @@ public class LocalJsonDestination implements Destination {
       if (!hasFailed) {
         for (final WriteConfig writeConfig : writeConfigs.values()) {
           Files.move(writeConfig.getTmpPath(), writeConfig.getFinalPath(), StandardCopyOption.REPLACE_EXISTING);
+          LOGGER.info(String.format("File output: %s", writeConfig.getFinalPath()));
         }
+      } else {
+        LOGGER.error("Failed to output files in destination");
       }
       // clean up tmp files.
       for (final WriteConfig writeConfig : writeConfigs.values()) {
