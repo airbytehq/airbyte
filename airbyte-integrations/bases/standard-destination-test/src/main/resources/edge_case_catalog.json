@@ -96,6 +96,16 @@
           }
         }
       }
+    },
+    {
+      "name": "uniontype",
+      "json_schema": {
+        "properties": {
+          "uniontypecolumn": {
+            "type": ["null", "integer", "object", "string"]
+          }
+        }
+      }
     }
   ]
 }

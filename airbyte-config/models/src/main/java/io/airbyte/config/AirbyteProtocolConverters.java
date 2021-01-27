@@ -33,6 +33,7 @@ import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -136,12 +137,18 @@ public class AirbyteProtocolConverters {
     if (node.isTextual()) {
       return DataType.valueOf(convertToNumberIfInteger(node.asText().toUpperCase()));
     } else if (node.isArray()) {
-      return StreamSupport.stream(Spliterators.spliteratorUnknownSize(node.elements(), 0), false)
+      List<DataType> types = StreamSupport.stream(Spliterators.spliteratorUnknownSize(node.elements(), 0), false)
           .filter(typeString -> !typeString.asText().toUpperCase().equals("NULL"))
           .map(typeString -> DataType.valueOf(convertToNumberIfInteger(typeString.asText().toUpperCase())))
-          .findFirst()
-          // todo (cgardens) - or throw?
-          .orElse(DataType.STRING);
+          .collect(Collectors.toList());
+
+      // if there are no data types or there are multiple data types (which could happen in the case of JsonSchema type unions)
+      // then treat it as a string
+      if (types.size() != 1) {
+        return DataType.STRING;
+      } else {
+        return types.get(0);
+      }
     } else {
       throw new IllegalArgumentException("Unknown jsonschema type:" + Jsons.serialize(node));
     }
