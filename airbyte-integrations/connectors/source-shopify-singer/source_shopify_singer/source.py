@@ -25,7 +25,7 @@ SOFTWARE.
 import json
 
 import shopify
-from airbyte_protocol import AirbyteConnectionStatus, Status, AirbyteCatalog
+from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, Status
 from base_python import AirbyteLogger
 from base_singer import SingerSource
 
@@ -67,8 +67,8 @@ class SourceShopifySinger(SingerSource):
         for stream in catalog.streams:
             if stream.name == "metafields":
                 schema = stream.json_schema
-                if "properties" in schema and "metafields" in schema["properties"]:
-                    schema["properties"]["metafields"]["type"] = ["null", "string"]
+                if "properties" in schema and "value" in schema["properties"]:
+                    schema["properties"]["value"]["type"] = ["null", "string"]
 
         return catalog
 
