@@ -228,6 +228,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
+  public CheckConnectionRead checkConnectionToSourceForUpdate(@Valid SourceUpdate sourceUpdate) {
+    return execute(() -> schedulerHandler.checkSourceConnectionFromSourceIdForUpdate(sourceUpdate));
+  }
+
+  @Override
   public SourceDiscoverSchemaRead discoverSchemaForSource(@Valid SourceIdRequestBody sourceIdRequestBody) {
     return execute(() -> schedulerHandler.discoverSchemaForSourceFromSourceId(sourceIdRequestBody));
   }
@@ -294,6 +299,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public CheckConnectionRead checkConnectionToDestination(@Valid DestinationIdRequestBody destinationIdRequestBody) {
     return execute(() -> schedulerHandler.checkDestinationConnectionFromDestinationId(destinationIdRequestBody));
+  }
+
+  @Override
+  public CheckConnectionRead checkConnectionToDestinationForUpdate(@Valid DestinationUpdate destinationUpdate) {
+    return execute(() -> schedulerHandler.checkDestinationConnectionFromDestinationIdForUpdate(destinationUpdate));
   }
 
   // CONNECTION

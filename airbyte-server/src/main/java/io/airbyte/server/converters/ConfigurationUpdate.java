@@ -30,6 +30,7 @@ import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
+import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -76,8 +77,8 @@ public class ConfigurationUpdate {
     // get existing destination
     final DestinationConnection persistedDestination = configRepository.getDestinationConnection(destinationId);
     // get spec
-    final StandardSourceDefinition destinationDefinition =
-        configRepository.getStandardSourceDefinition(persistedDestination.getDestinationDefinitionId());
+    final StandardDestinationDefinition destinationDefinition = configRepository
+        .getStandardDestinationDefinition(persistedDestination.getDestinationDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(destinationDefinition.getDockerRepository(), destinationDefinition.getDockerImageTag());
     final ConnectorSpecification spec = specFetcher.execute(imageName);
     // copy any necessary secrets from the current destination to the incoming updated destination
