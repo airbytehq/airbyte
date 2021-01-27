@@ -24,7 +24,6 @@ SOFTWARE.
 
 import json
 from pathlib import Path
-from typing import Mapping
 
 import pytest
 from source_file.client import Client
@@ -89,60 +88,56 @@ def test__streams_from_ssh_providers(provider_config, provider_name, file_path, 
 
 
 @pytest.mark.parametrize(
-    "storage_provider, url, columns_nb, config_index",
+    "storage_provider, url, columns_nb, separator, has_header",
     [
         # epidemiology csv
-        ("HTTPS", "https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv", 10, 0),
-        ("HTTPS", "storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv", 10, 0),
-        ("local", "injected by tests", 10, 0),
+        ("HTTPS", "https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv", 10, ",", True),
+        ("HTTPS", "storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv", 10, ",", True),
+        ("local", "injected by tests", 10, ",", True),
         # landsat compressed csv
-        ("GCS", "gs://gcp-public-data-landsat/index.csv.gz", 18, 1),
-        ("GCS", "gs://gcp-public-data-landsat/index.csv.gz", 18, 0),
+        ("GCS", "gs://gcp-public-data-landsat/index.csv.gz", 18, ",", True),
+        ("GCS", "gs://gcp-public-data-landsat/index.csv.gz", 18, ",", True),
         # GDELT csv
-        ("S3", "s3://gdelt-open-data/events/20190914.export.csv", 58, 2),
-        ("S3", "s3://gdelt-open-data/events/20190914.export.csv", 58, 2),
+        ("S3", "s3://gdelt-open-data/events/20190914.export.csv", 58, "\\t", False),
+        ("S3", "s3://gdelt-open-data/events/20190914.export.csv", 58, "\\t", False),
     ],
 )
-def test__read_from_public_provider(download_gcs_public_data, storage_provider, url, columns_nb, config_index):
-    config = get_config(config_index)
-    config["provider"]["storage"] = storage_provider
-    if storage_provider != "local":
-        config["url"] = url
-    else:
-        # inject temp file path that was downloaded by the test as URL
-        config["url"] = download_gcs_public_data
+def test__read_from_public_provider(download_gcs_public_data, storage_provider, url, columns_nb, separator, has_header):
+    # inject temp file path that was downloaded by the test as URL
+    url = download_gcs_public_data if storage_provider == "local" else url
+    config = {
+        "format": "csv",
+        "dataset_name": "output",
+        "reader_options": json.dumps({"sep": separator, "nrows": 42}),
+        "provider": storage_provider,
+        "url": url
+    }
+
     check_read(config, expected_columns=columns_nb)
 
 
 def test__read_from_private_gcs(google_cloud_service_credentials, private_google_cloud_file):
-    config = get_config(0)
-    config["provider"]["storage"] = "GCS"
-    config["provider"]["service_account_json"] = json.dumps(google_cloud_service_credentials)
-    config["url"] = private_google_cloud_file
-
+    config = {
+        "dataset_name": "output",
+        "format": "csv",
+        "url": private_google_cloud_file,
+        "provider": {
+            "storage": "GCS",
+            "service_account_json": json.dumps(google_cloud_service_credentials),
+        }
+    }
     check_read(config)
 
 
 def test__read_from_private_aws(aws_credentials, private_aws_file):
-    config = get_config(0)
-    config["provider"]["storage"] = "S3"
-    config["provider"]["aws_access_key_id"] = aws_credentials["aws_access_key_id"]
-    config["provider"]["aws_secret_access_key"] = aws_credentials["aws_secret_access_key"]
-    config["url"] = private_aws_file
-    check_read(config)
-
-
-def get_config(index: int) -> Mapping[str, str]:
-    default_config = {
-        "format": "csv",
-        "provider": {},
+    config = {
         "dataset_name": "output",
+        "format": "csv",
+        "url": private_aws_file,
+        "provider": {
+            "storage": "S3",
+            "aws_access_key_id": aws_credentials["aws_access_key_id"],
+            "aws_secret_access_key": aws_credentials["aws_secret_access_key"],
+        }
     }
-
-    configs = [
-        {"reader_options": '{"sep": ",", "nrows": 42}'},
-        {"reader_options": '{"sep": ",", "nrows": 42}'},
-        {"reader_options": '{"sep": "\\t", "nrows": 42, "header": null}'},
-        {"reader_options": '{"sep": "\\r\\n", "names": ["text"], "header": null, "engine": "python"}'},
-    ]
-    return {**default_config, **configs[index]}
+    check_read(config)
