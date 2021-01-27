@@ -303,18 +303,8 @@ class Client:
 
     @property
     def binary_source(self):
-        mapping = {
-            "csv": False,
-            "flat_json": False,
-            "json": False,
-            "html": False,
-            "excel": True,
-            "feather": True,
-            "parquet": True,
-            "orc": True,
-            "pickle": True,
-        }
-        return mapping.get(self._reader_format, False)
+        binary_formats = {'excel', 'feather', 'parquet', 'orc', 'pickle'}
+        return self._reader_format in binary_formats
 
     def read(self, fields: Iterable = None) -> Iterable[dict]:
         """Read data from the stream"""
