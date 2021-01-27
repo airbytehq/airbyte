@@ -25,6 +25,8 @@
 package io.airbyte.integrations.destination.local_json;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.spy;
 
@@ -101,9 +103,15 @@ class LocalJsonDestinationTest {
     config = Jsons.jsonNode(ImmutableMap.of(LocalJsonDestination.DESTINATION_PATH_FIELD, destinationPath.toString()));
   }
 
+  private LocalJsonDestination getDestination() {
+    LocalJsonDestination result = spy(LocalJsonDestination.class);
+    doReturn(destinationPath).when(result).getDestinationPath(any());
+    return result;
+  }
+
   @Test
   void testSpec() throws IOException {
-    final ConnectorSpecification actual = new LocalJsonDestination().spec();
+    final ConnectorSpecification actual = getDestination().spec();
     final String resourceString = MoreResources.readResource("spec.json");
     final ConnectorSpecification expected = Jsons.deserialize(resourceString, ConnectorSpecification.class);
 
@@ -112,7 +120,7 @@ class LocalJsonDestinationTest {
 
   @Test
   void testCheckSuccess() {
-    final AirbyteConnectionStatus actual = new LocalJsonDestination().check(config);
+    final AirbyteConnectionStatus actual = getDestination().check(config);
     final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     assertEquals(expected, actual);
   }
@@ -121,8 +129,10 @@ class LocalJsonDestinationTest {
   void testCheckFailure() throws IOException {
     final Path looksLikeADirectoryButIsAFile = destinationPath.resolve("file");
     FileUtils.touch(looksLikeADirectoryButIsAFile.toFile());
+    LocalJsonDestination destination = spy(LocalJsonDestination.class);
+    doReturn(looksLikeADirectoryButIsAFile).when(destination).getDestinationPath(any());
     final JsonNode config = Jsons.jsonNode(ImmutableMap.of(LocalJsonDestination.DESTINATION_PATH_FIELD, looksLikeADirectoryButIsAFile.toString()));
-    final AirbyteConnectionStatus actual = new LocalJsonDestination().check(config);
+    final AirbyteConnectionStatus actual = destination.check(config);
     final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.FAILED);
 
     // the message includes the random file path, so just verify it exists and then remove it when we do
@@ -133,8 +143,21 @@ class LocalJsonDestinationTest {
   }
 
   @Test
+  void testCheckInvalidDestinationFolder() {
+    final Path relativePath = Path.of("../tmp/conf.d/");
+    final JsonNode config = Jsons.jsonNode(ImmutableMap.of(LocalJsonDestination.DESTINATION_PATH_FIELD, relativePath.toString()));
+    final AirbyteConnectionStatus actual = new LocalJsonDestination().check(config);
+    final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.FAILED);
+    // the message includes the random file path, so just verify it exists and then remove it when we do
+    // rest of the comparison.
+    assertNotNull(actual.getMessage());
+    actual.setMessage(null);
+    assertEquals(expected, actual);
+  }
+
+  @Test
   void testWriteSuccess() throws Exception {
-    final DestinationConsumer<AirbyteMessage> consumer = new LocalJsonDestination().write(config, CATALOG);
+    final DestinationConsumer<AirbyteMessage> consumer = getDestination().write(config, CATALOG);
 
     consumer.accept(MESSAGE_USERS1);
     consumer.accept(MESSAGE_TASKS1);
@@ -173,7 +196,7 @@ class LocalJsonDestinationTest {
     final AirbyteMessage spiedMessage = spy(MESSAGE_USERS1);
     doThrow(new RuntimeException()).when(spiedMessage).getRecord();
 
-    final DestinationConsumer<AirbyteMessage> consumer = spy(new LocalJsonDestination().write(config, CATALOG));
+    final DestinationConsumer<AirbyteMessage> consumer = spy(getDestination().write(config, CATALOG));
 
     assertThrows(RuntimeException.class, () -> consumer.accept(spiedMessage));
     consumer.accept(MESSAGE_USERS2);

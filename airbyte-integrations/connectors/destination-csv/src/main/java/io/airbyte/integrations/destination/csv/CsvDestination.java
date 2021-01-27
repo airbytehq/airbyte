@@ -46,6 +46,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
@@ -129,11 +130,18 @@ public class CsvDestination implements Destination {
    * @param config - csv config object
    * @return absolute path with the relative path appended to the local volume mount.
    */
-  private Path getDestinationPath(JsonNode config) {
-    final String destinationRelativePath = config.get(DESTINATION_PATH_FIELD).asText();
-    Preconditions.checkNotNull(destinationRelativePath);
+  protected Path getDestinationPath(JsonNode config) {
+    Path destinationPath = Paths.get(config.get(DESTINATION_PATH_FIELD).asText());
+    Preconditions.checkNotNull(destinationPath);
 
-    return Path.of(destinationRelativePath);
+    if (!destinationPath.startsWith("/local"))
+      destinationPath = Path.of("/local", destinationPath.toString());
+    final Path normalizePath = destinationPath.normalize();
+    if (!normalizePath.startsWith("/local")) {
+      throw new IllegalArgumentException("Destination file should be inside the /local directory");
+    }
+
+    return destinationPath;
   }
 
   /**
