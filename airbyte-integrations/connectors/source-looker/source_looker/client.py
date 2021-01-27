@@ -24,6 +24,7 @@ SOFTWARE.
 
 from typing import List, Tuple
 
+import backoff
 import requests
 from base_python import BaseClient
 from requests.exceptions import ConnectionError
@@ -70,6 +71,7 @@ class Client(BaseClient):
             return False, self._connect_error
         return True, ""
 
+    @backoff.on_exception(backoff.expo, requests.exceptions.ConnectionError, max_tries=7)
     def _request(self, url: str, method: str = "GET", data: dict = None) -> List[dict]:
         response = requests.request(method, url, headers=self._headers, json=data)
 
