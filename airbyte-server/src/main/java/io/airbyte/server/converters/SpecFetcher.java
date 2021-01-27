@@ -48,7 +48,7 @@ public class SpecFetcher {
         .getSuccessOutput()
         .map(JobOutput::getGetSpec)
         .map(StandardGetSpecOutput::getSpecification)
-        .orElseThrow(() -> new IllegalStateException("no spec output found"));
+        .orElseThrow(() -> new IllegalArgumentException("no spec output found"));
   }
 
 }
