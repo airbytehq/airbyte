@@ -1,6 +1,8 @@
 import React from "react";
 import styled from "styled-components";
 
+type IStyleProps = InputProps & { theme: any };
+
 const getBackgroundColor = (props: IStyleProps) => {
   if (props.error) {
     return props.theme.greyColor10;
@@ -15,8 +17,6 @@ export type InputProps = {
   error?: boolean;
   light?: boolean;
 } & React.InputHTMLAttributes<HTMLInputElement>;
-
-type IStyleProps = InputProps & { theme: any };
 
 const Input = styled.input<InputProps>`
   outline: none;
@@ -55,4 +55,6 @@ const Input = styled.input<InputProps>`
   }
 `;
 
+// TODO: figure out problem with prettier
+// export type { InputProps };
 export default Input;
