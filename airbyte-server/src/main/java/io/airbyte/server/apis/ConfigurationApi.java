@@ -78,6 +78,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.client.CachingSchedulerJobClient;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.KnownException;
 import io.airbyte.server.handlers.ArchiveHandler;
 import io.airbyte.server.handlers.ConnectionsHandler;
@@ -125,6 +126,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
                           final CachingSchedulerJobClient schedulerJobClient,
                           final Configs configs,
                           final FileTtlManager archiveTtlManager) {
+    final SpecFetcher specFetcher = new SpecFetcher(schedulerJobClient);
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
     schedulerHandler = new SchedulerHandler(configRepository, schedulerJobClient);
     workspacesHandler = new WorkspacesHandler(configRepository);
@@ -132,8 +134,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, schedulerJobClient);
     connectionsHandler = new ConnectionsHandler(configRepository);
     destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, dockerImageValidator, schedulerJobClient);
-    destinationHandler = new DestinationHandler(configRepository, schemaValidator, schedulerJobClient, connectionsHandler);
-    sourceHandler = new SourceHandler(configRepository, schemaValidator, schedulerJobClient, connectionsHandler);
+    destinationHandler = new DestinationHandler(configRepository, schemaValidator, specFetcher, connectionsHandler);
+    sourceHandler = new SourceHandler(configRepository, schemaValidator, specFetcher, connectionsHandler);
     jobHistoryHandler = new JobHistoryHandler(jobPersistence);
     webBackendConnectionsHandler =
         new WebBackendConnectionsHandler(connectionsHandler, sourceHandler, destinationHandler, jobHistoryHandler, schedulerHandler);

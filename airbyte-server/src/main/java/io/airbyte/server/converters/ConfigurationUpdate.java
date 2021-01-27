@@ -34,7 +34,6 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.UUID;
@@ -42,17 +41,17 @@ import java.util.UUID;
 public class ConfigurationUpdate {
 
   private final ConfigRepository configRepository;
-  private final SpecFetch specFetch;
+  private final SpecFetcher specFetcher;
   private final JsonSecretsProcessor secretsProcessor;
 
-  public ConfigurationUpdate(ConfigRepository configRepository, SchedulerJobClient schedulerJobClient) {
-    this(configRepository, new SpecFetch(schedulerJobClient), new JsonSecretsProcessor());
+  public ConfigurationUpdate(ConfigRepository configRepository, SpecFetcher specFetcher) {
+    this(configRepository, specFetcher, new JsonSecretsProcessor());
   }
 
   @VisibleForTesting
-  ConfigurationUpdate(ConfigRepository configRepository, SpecFetch specFetch, JsonSecretsProcessor secretsProcessor) {
+  ConfigurationUpdate(ConfigRepository configRepository, SpecFetcher specFetcher, JsonSecretsProcessor secretsProcessor) {
     this.configRepository = configRepository;
-    this.specFetch = specFetch;
+    this.specFetcher = specFetcher;
     this.secretsProcessor = secretsProcessor;
   }
 
@@ -62,7 +61,7 @@ public class ConfigurationUpdate {
     // get spec
     final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(persistedSource.getSourceDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(sourceDefinition.getDockerRepository(), sourceDefinition.getDockerImageTag());
-    final ConnectorSpecification spec = specFetch.execute(imageName);
+    final ConnectorSpecification spec = specFetcher.execute(imageName);
     // copy any necessary secrets from the current source to the incoming updated source
     final JsonNode updatedConfiguration = secretsProcessor.copySecrets(
         persistedSource.getConfiguration(),
@@ -80,7 +79,7 @@ public class ConfigurationUpdate {
     final StandardSourceDefinition destinationDefinition =
         configRepository.getStandardSourceDefinition(persistedDestination.getDestinationDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(destinationDefinition.getDockerRepository(), destinationDefinition.getDockerImageTag());
-    final ConnectorSpecification spec = specFetch.execute(imageName);
+    final ConnectorSpecification spec = specFetcher.execute(imageName);
     // copy any necessary secrets from the current destination to the incoming updated destination
     final JsonNode updatedConfiguration = secretsProcessor.copySecrets(
         persistedDestination.getConfiguration(),

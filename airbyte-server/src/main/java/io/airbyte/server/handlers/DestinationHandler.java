@@ -40,10 +40,9 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.server.converters.JsonSecretsProcessor;
-import io.airbyte.server.converters.SpecFetch;
+import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -54,7 +53,7 @@ import java.util.function.Supplier;
 public class DestinationHandler {
 
   private final ConnectionsHandler connectionsHandler;
-  private final SpecFetch specFetch;
+  private final SpecFetcher specFetcher;
   private final Supplier<UUID> uuidGenerator;
   private final ConfigRepository configRepository;
   private final JsonSchemaValidator validator;
@@ -64,14 +63,14 @@ public class DestinationHandler {
   @VisibleForTesting
   DestinationHandler(final ConfigRepository configRepository,
                      final JsonSchemaValidator integrationSchemaValidation,
-                     final SpecFetch specFetch,
+                     final SpecFetcher specFetcher,
                      final ConnectionsHandler connectionsHandler,
                      final Supplier<UUID> uuidGenerator,
                      final JsonSecretsProcessor secretsProcessor,
                      final ConfigurationUpdate configurationUpdate) {
     this.configRepository = configRepository;
     this.validator = integrationSchemaValidation;
-    this.specFetch = specFetch;
+    this.specFetcher = specFetcher;
     this.connectionsHandler = connectionsHandler;
     this.uuidGenerator = uuidGenerator;
     this.secretProcessor = secretsProcessor;
@@ -80,10 +79,15 @@ public class DestinationHandler {
 
   public DestinationHandler(final ConfigRepository configRepository,
                             final JsonSchemaValidator integrationSchemaValidation,
-                            final SchedulerJobClient schedulerJobClient,
+                            final SpecFetcher specFetcher,
                             final ConnectionsHandler connectionsHandler) {
-    this(configRepository, integrationSchemaValidation, new SpecFetch(schedulerJobClient), connectionsHandler, UUID::randomUUID,
-        new JsonSecretsProcessor(), new ConfigurationUpdate(configRepository, schedulerJobClient));
+    this(
+        configRepository,
+        integrationSchemaValidation,
+        specFetcher,
+        connectionsHandler, UUID::randomUUID,
+        new JsonSecretsProcessor(),
+        new ConfigurationUpdate(configRepository, specFetcher));
   }
 
   public DestinationRead createDestination(final DestinationCreate destinationCreate)
@@ -188,7 +192,7 @@ public class DestinationHandler {
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final StandardDestinationDefinition destinationDef = configRepository.getStandardDestinationDefinition(destinationDefinitionId);
     final String imageName = DockerUtils.getTaggedImageName(destinationDef.getDockerRepository(), destinationDef.getDockerImageTag());
-    return specFetch.execute(imageName);
+    return specFetcher.execute(imageName);
   }
 
   private void persistDestinationConnection(final String name,

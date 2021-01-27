@@ -31,11 +31,11 @@ import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.client.SchedulerJobClient;
 import java.io.IOException;
 
-public class SpecFetch {
+public class SpecFetcher {
 
   private final SchedulerJobClient schedulerJobClient;
 
-  public SpecFetch(SchedulerJobClient schedulerJobClient) {
+  public SpecFetcher(SchedulerJobClient schedulerJobClient) {
     this.schedulerJobClient = schedulerJobClient;
   }
 

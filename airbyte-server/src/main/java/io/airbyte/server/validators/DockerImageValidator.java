@@ -27,20 +27,20 @@ package io.airbyte.server.validators;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.scheduler.client.SchedulerJobClient;
-import io.airbyte.server.converters.SpecFetch;
+import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.KnownException;
 
 public class DockerImageValidator {
 
-  private final SpecFetch specFetch;
+  private final SpecFetcher specFetcher;
 
   public DockerImageValidator(SchedulerJobClient schedulerJobClient) {
-    this(new SpecFetch(schedulerJobClient));
+    this(new SpecFetcher(schedulerJobClient));
   }
 
   @VisibleForTesting
-  DockerImageValidator(SpecFetch specFetch) {
-    this.specFetch = specFetch;
+  DockerImageValidator(SpecFetcher specFetcher) {
+    this.specFetcher = specFetcher;
   }
 
   /**
@@ -52,7 +52,7 @@ public class DockerImageValidator {
     // job on the provided image.
     String imageName = DockerUtils.getTaggedImageName(dockerRepository, imageTag);
     try {
-      specFetch.execute(imageName);
+      specFetcher.execute(imageName);
     } catch (Exception e) {
       throw new KnownException(422, String.format("Encountered an issue while validating input docker image (%s): %s", imageName, e.getMessage()));
     }

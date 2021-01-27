@@ -39,10 +39,9 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.server.converters.JsonSecretsProcessor;
-import io.airbyte.server.converters.SpecFetch;
+import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -55,21 +54,21 @@ public class SourceHandler {
   private final Supplier<UUID> uuidGenerator;
   private final ConfigRepository configRepository;
   private final JsonSchemaValidator validator;
-  private final SpecFetch specFetch;
+  private final SpecFetcher specFetcher;
   private final ConnectionsHandler connectionsHandler;
   private final JsonSecretsProcessor secretsProcessor;
   private final ConfigurationUpdate configurationUpdate;
 
   SourceHandler(final ConfigRepository configRepository,
                 final JsonSchemaValidator integrationSchemaValidation,
-                final SpecFetch specFetch,
+                final SpecFetcher specFetcher,
                 final ConnectionsHandler connectionsHandler,
                 final Supplier<UUID> uuidGenerator,
                 final JsonSecretsProcessor secretsProcessor,
                 final ConfigurationUpdate configurationUpdate) {
     this.configRepository = configRepository;
     this.validator = integrationSchemaValidation;
-    this.specFetch = specFetch;
+    this.specFetcher = specFetcher;
     this.connectionsHandler = connectionsHandler;
     this.uuidGenerator = uuidGenerator;
     this.secretsProcessor = secretsProcessor;
@@ -78,10 +77,16 @@ public class SourceHandler {
 
   public SourceHandler(final ConfigRepository configRepository,
                        final JsonSchemaValidator integrationSchemaValidation,
-                       final SchedulerJobClient schedulerJobClient,
+                       final SpecFetcher specFetcher,
                        final ConnectionsHandler connectionsHandler) {
-    this(configRepository, integrationSchemaValidation, new SpecFetch(schedulerJobClient), connectionsHandler, UUID::randomUUID,
-        new JsonSecretsProcessor(), new ConfigurationUpdate(configRepository, schedulerJobClient));
+    this(
+        configRepository,
+        integrationSchemaValidation,
+        specFetcher,
+        connectionsHandler,
+        UUID::randomUUID,
+        new JsonSecretsProcessor(),
+        new ConfigurationUpdate(configRepository, specFetcher));
   }
 
   public SourceRead createSource(SourceCreate sourceCreate) throws ConfigNotFoundException, IOException, JsonValidationException {
@@ -172,7 +177,7 @@ public class SourceHandler {
     // read configuration from db
     final StandardSourceDefinition sourceDef = configRepository.getSourceDefinitionFromSource(sourceId);
     final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
-    final ConnectorSpecification spec = specFetch.execute(imageName);
+    final ConnectorSpecification spec = specFetcher.execute(imageName);
     return buildSourceRead(sourceId, spec);
   }
 
@@ -199,7 +204,7 @@ public class SourceHandler {
       throws IOException, JsonValidationException, ConfigNotFoundException {
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceDefId);
     final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
-    return specFetch.execute(imageName);
+    return specFetcher.execute(imageName);
   }
 
   private void persistSourceConnection(final String name,

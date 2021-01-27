@@ -55,7 +55,7 @@ import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.server.converters.JobConverter;
 import io.airbyte.server.converters.SchemaConverter;
-import io.airbyte.server.converters.SpecFetch;
+import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.UUID;
@@ -64,22 +64,22 @@ public class SchedulerHandler {
 
   private final ConfigRepository configRepository;
   private final SchedulerJobClient schedulerJobClient;
-  private final SpecFetch specFetch;
+  private final SpecFetcher specFetcher;
 
   public SchedulerHandler(ConfigRepository configRepository, SchedulerJobClient schedulerJobClient) {
     this(
         configRepository,
         schedulerJobClient,
-        new SpecFetch(schedulerJobClient));
+        new SpecFetcher(schedulerJobClient));
   }
 
   @VisibleForTesting
   SchedulerHandler(ConfigRepository configRepository,
                    SchedulerJobClient schedulerJobClient,
-                   SpecFetch specFetch) {
+                   SpecFetcher specFetcher) {
     this.configRepository = configRepository;
     this.schedulerJobClient = schedulerJobClient;
-    this.specFetch = specFetch;
+    this.specFetcher = specFetcher;
   }
 
   public CheckConnectionRead checkSourceConnectionFromSourceId(SourceIdRequestBody sourceIdRequestBody)
@@ -183,7 +183,7 @@ public class SchedulerHandler {
   }
 
   public ConnectorSpecification getConnectorSpecification(String dockerImage) throws IOException {
-    return specFetch.execute(dockerImage);
+    return specFetcher.execute(dockerImage);
   }
 
   public JobInfoRead syncConnection(final ConnectionIdRequestBody connectionIdRequestBody)
