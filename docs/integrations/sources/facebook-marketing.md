@@ -43,7 +43,7 @@ For more information, see the [Facebook Insights API documentation. ](https://de
 | Full Refresh Sync | Yes |  |
 | Incremental Sync | Yes | except AdCreatives |
 
-### Rate limiting & Performance Considerations
+### Rate Limiting & Performance Considerations
 
 {% hint style="info" %}
 Facebook heavily throttles API tokens generated from "Dev" Facebook Apps, making it infeasible to use such a token for syncs with Airbyte. To be able to use this connector, make sure to use an App with at least the "Business Standard" status to generate the API token below. 
@@ -84,4 +84,3 @@ In the App Dashboard screen, click Marketing API --&gt; Tools on the left sideba
 ![](../../.gitbook/assets/facebook_access_token.png)
 
 With the Ad Account ID and API access token, you should be ready to start pulling data from the Facebook Marketing API. Head to the Airbyte UI to setup your source connector!
-
