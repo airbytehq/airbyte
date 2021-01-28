@@ -41,7 +41,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.testcontainers.containers.MySQLContainer;
 
-class MySqlStandardSourceTest extends JdbcSourceStandardTest {
+class MySqlJdbcStandardTest extends JdbcSourceStandardTest {
 
   private static final String TEST_USER = "test";
   private static final String TEST_PASSWORD = "test";
