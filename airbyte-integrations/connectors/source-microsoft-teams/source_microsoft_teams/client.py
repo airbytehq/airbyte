@@ -102,7 +102,8 @@ class Client:
             raw_response = response.content
         else:
             raw_response = response.json()
-            if "value" not in raw_response:
+            value = raw_response.get("value", [])
+            if not value:
                 raise requests.exceptions.RequestException()
         return raw_response
 
@@ -121,14 +122,12 @@ class Client:
     def _fetch_data(self, endpoint: str, params: Optional[Dict] = None, pagination: bool = True):
         api_url = self._get_api_url(endpoint)
         params = self._get_request_params(params, pagination)
-        while True:
+        while api_url:
             raw_response = self._make_request(api_url, params)
             value = self._get_response_value_unsafe(raw_response)
-            yield value
-            if "@odata.nextLink" not in raw_response:
-                break
             params = None
-            api_url = raw_response["@odata.nextLink"]
+            api_url = raw_response.get("@odata.nextLink", "")
+            yield value
 
     def health_check(self) -> Tuple[bool, object]:
         try:
