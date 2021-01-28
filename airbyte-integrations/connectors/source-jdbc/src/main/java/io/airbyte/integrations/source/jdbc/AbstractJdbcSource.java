@@ -181,7 +181,11 @@ public abstract class AbstractJdbcSource implements Source {
           emittedAt);
       resultStream = Stream.concat(resultStream, stream);
     }
-    return resultStream.onClose(() -> Exceptions.toRuntime(database::close));
+    return resultStream.onClose(() -> {
+      LOGGER.info("closing the stream");
+      Exceptions.toRuntime(database::close);
+      LOGGER.info("closed the stream");
+    });
   }
 
   private Stream<AirbyteMessage> createReadStream(JdbcDatabase database,
@@ -380,14 +384,28 @@ public abstract class AbstractJdbcSource implements Source {
 
   public static Stream<JsonNode> queryTableFullRefresh(JdbcDatabase database, List<String> columnNames, String schemaName, String tableName)
       throws SQLException {
-    return database.query(
-        connection -> {
-          final String sql = String.format("SELECT %s FROM %s",
-              JdbcUtils.enquoteIdentifierList(connection, columnNames),
-              getFullyQualifiedTableNameWithQuoting(connection, schemaName, tableName));
-          return connection.prepareStatement(sql);
-        },
-        JdbcUtils::rowToJson);
+    LOGGER.info("table name {} start", tableName);
+    return Stream.of(1).flatMap( s -> {
+      try {
+        return database.query(
+            connection -> {
+              LOGGER.info("table name {} in connection", tableName);
+              final String sql = String.format("SELECT %s FROM %s",
+                  JdbcUtils.enquoteIdentifierList(connection, columnNames),
+                  getFullyQualifiedTableNameWithQuoting(connection, schemaName, tableName));
+              final PreparedStatement preparedStatement = connection.prepareStatement(sql);
+              LOGGER.info("table name {} statement prepared", tableName);
+              return preparedStatement;
+            },
+            resultSet -> {
+              final JsonNode jsonNode = JdbcUtils.rowToJson(resultSet);
+              LOGGER.info("queryTableFullRefresh stream {}", jsonNode);
+              return jsonNode;
+            });
+      } catch (SQLException e) {
+        throw new RuntimeException(e);
+      }
+    });
   }
 
   public static Stream<JsonNode> queryTableIncremental(JdbcDatabase database,
