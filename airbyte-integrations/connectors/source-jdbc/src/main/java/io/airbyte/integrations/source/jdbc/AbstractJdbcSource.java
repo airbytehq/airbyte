@@ -54,7 +54,6 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
 import java.io.IOException;
-import java.sql.Connection;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -300,7 +299,7 @@ public abstract class AbstractJdbcSource implements Source {
               .distinct()
               .collect(Collectors.toList());
 
-          return new TableInfo(getFullyQualifiedTableName(t.getSchemaName(), t.getName()), fields);
+          return new TableInfo(JdbcUtils.getFullyQualifiedTableName(t.getSchemaName(), t.getName()), fields);
         })
         .collect(Collectors.toList());
   }
@@ -319,15 +318,6 @@ public abstract class AbstractJdbcSource implements Source {
             }
           });
         });
-  }
-
-  private static String getFullyQualifiedTableNameWithQuoting(Connection connection, String schemaName, String tableName) throws SQLException {
-    final String quotedTableName = JdbcUtils.enquoteIdentifier(connection, tableName);
-    return schemaName != null ? JdbcUtils.enquoteIdentifier(connection, schemaName) + "." + quotedTableName : quotedTableName;
-  }
-
-  private static String getFullyQualifiedTableName(String schemaName, String tableName) {
-    return schemaName != null ? schemaName + "." + tableName : tableName;
   }
 
   @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
@@ -394,7 +384,7 @@ public abstract class AbstractJdbcSource implements Source {
               LOGGER.info("table name {} in connection", tableName);
               final String sql = String.format("SELECT %s FROM %s",
                   JdbcUtils.enquoteIdentifierList(connection, columnNames),
-                  getFullyQualifiedTableNameWithQuoting(connection, schemaName, tableName));
+                  JdbcUtils.getFullyQualifiedTableNameWithQuoting(connection, schemaName, tableName));
               final PreparedStatement preparedStatement = connection.prepareStatement(sql);
               LOGGER.info("table name {} statement prepared", tableName);
               return preparedStatement;
@@ -424,7 +414,7 @@ public abstract class AbstractJdbcSource implements Source {
             connection -> {
               final String sql = String.format("SELECT %s FROM %s WHERE %s > ?",
                   JdbcUtils.enquoteIdentifierList(connection, columnNames),
-                  getFullyQualifiedTableNameWithQuoting(connection, schemaName, tableName),
+                  JdbcUtils.getFullyQualifiedTableNameWithQuoting(connection, schemaName, tableName),
                   JdbcUtils.enquoteIdentifier(connection, cursorField));
 
               final PreparedStatement preparedStatement = connection.prepareStatement(sql);

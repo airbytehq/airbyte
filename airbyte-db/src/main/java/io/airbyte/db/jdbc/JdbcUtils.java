@@ -43,6 +43,7 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.StringJoiner;
@@ -231,6 +232,20 @@ public class JdbcUtils {
     } catch (SQLException e) {
       return null;
     }
+  }
+
+  public static String getFullyQualifiedTableNameWithQuoting(Connection connection, String schemaName, String tableName) throws SQLException {
+    final String quotedTableName = enquoteIdentifier(connection, tableName);
+    return schemaName != null ? enquoteIdentifier(connection, schemaName) + "." + quotedTableName : quotedTableName;
+  }
+
+  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+  public static String getFullyQualifiedTableName(Optional<String> schemaNameOptional, String tableName) {
+    return getFullyQualifiedTableName(schemaNameOptional.orElse(null), tableName);
+  }
+
+  public static String getFullyQualifiedTableName(String schemaName, String tableName) {
+    return schemaName != null ? schemaName + "." + tableName : tableName;
   }
 
   @FunctionalInterface

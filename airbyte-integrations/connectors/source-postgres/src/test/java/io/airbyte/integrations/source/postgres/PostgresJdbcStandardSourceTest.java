@@ -22,65 +22,51 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.source.mssql;
+package io.airbyte.integrations.source.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Databases;
-import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceStandardTest;
+import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.testcontainers.containers.MSSQLServerContainer;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.utility.MountableFile;
 
-public class MssqlJdbcSourceStandardTest extends JdbcSourceStandardTest {
+class PostgresJdbcStandardSourceTest extends JdbcSourceStandardTest {
 
-  private static MSSQLServerContainer<?> dbContainer;
-  private static JdbcDatabase database;
+  private static PostgreSQLContainer<?> PSQL_DB;
+
   private JsonNode config;
 
   @BeforeAll
   static void init() {
-    dbContainer = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
-    dbContainer.start();
+    PSQL_DB = new PostgreSQLContainer<>("postgres:13-alpine");
+    PSQL_DB.start();
   }
 
   @BeforeEach
   public void setup() throws Exception {
-    final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", dbContainer.getHost())
-        .put("port", dbContainer.getFirstMappedPort())
-        .put("username", dbContainer.getUsername())
-        .put("password", dbContainer.getPassword())
-        .build());
-
-    database = Databases.createJdbcDatabase(
-        configWithoutDbName.get("username").asText(),
-        configWithoutDbName.get("password").asText(),
-        String.format("jdbc:sqlserver://%s:%s",
-            configWithoutDbName.get("host").asText(),
-            configWithoutDbName.get("port").asInt()),
-        "com.microsoft.sqlserver.jdbc.SQLServerDriver");
-
     final String dbName = "db_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
 
-    database.execute(ctx -> ctx.createStatement().execute(String.format("CREATE DATABASE %s;", dbName)));
+    config = Jsons.jsonNode(ImmutableMap.builder()
+        .put("host", PSQL_DB.getHost())
+        .put("port", PSQL_DB.getFirstMappedPort())
+        .put("database", dbName)
+        .put("username", PSQL_DB.getUsername())
+        .put("password", PSQL_DB.getPassword())
+        .build());
 
-    config = Jsons.clone(configWithoutDbName);
-    ((ObjectNode) config).put("database", dbName);
+    final String initScriptName = "init_" + dbName.concat(".sql");
+    MoreResources.writeResource(initScriptName, "CREATE DATABASE " + dbName + ";");
+    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource(initScriptName), PSQL_DB);
 
     super.setup();
-  }
-
-  @AfterAll
-  public static void cleanUp() throws Exception {
-    database.close();
-    dbContainer.close();
   }
 
   @Override
@@ -89,18 +75,23 @@ public class MssqlJdbcSourceStandardTest extends JdbcSourceStandardTest {
   }
 
   @Override
-  public JsonNode getConfig() {
-    return Jsons.clone(config);
+  public AbstractJdbcSource getSource() {
+    return new PostgresSource();
   }
 
   @Override
-  public AbstractJdbcSource getSource() {
-    return new MssqlSource();
+  public JsonNode getConfig() {
+    return config;
   }
 
   @Override
   public String getDriverClass() {
-    return MssqlSource.DRIVER_CLASS;
+    return PostgresSource.DRIVER_CLASS;
+  }
+
+  @AfterAll
+  static void cleanUp() {
+    PSQL_DB.close();
   }
 
 }

@@ -28,12 +28,19 @@ import com.google.common.collect.AbstractIterator;
 import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.functional.VoidCallable2;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 public class MoreIterators {
+
+  public static <T> Iterator<T> of(T... elements) {
+    return Arrays.asList(elements).iterator();
+  }
 
   public static <T> List<T> toList(Iterator<T> iterator) {
     final List<T> list = new ArrayList<>();
@@ -41,6 +48,14 @@ public class MoreIterators {
       list.add(iterator.next());
     }
     return list;
+  }
+
+  public static <T> Set<T> toSet(Iterator<T> iterator) {
+    final Set<T> set = new HashSet<>();
+    while (iterator.hasNext()) {
+      set.add(iterator.next());
+    }
+    return set;
   }
 
   /**
