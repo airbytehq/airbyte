@@ -22,17 +22,23 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import json
+from typing import Dict
 
 import shopify
-from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, Status
+from airbyte_protocol import AirbyteCatalog
 from base_python import AirbyteLogger
-from base_singer import SingerSource
-
-TAP_CMD = "tap-shopify"
+from base_singer import BaseSingerSource
 
 
-class SourceShopifySinger(SingerSource):
+class SourceShopifySinger(BaseSingerSource):
+    """
+    Shopify API Reference: https://shopify.dev/docs/admin-api/rest/reference
+    """
+
+    tap_cmd = "tap-shopify"
+    tap_name = "Shopify API"
+    api_error = Exception
+
     def transform_config(self, raw_config):
         return {
             "start_date": raw_config["start_date"],
@@ -41,24 +47,14 @@ class SourceShopifySinger(SingerSource):
             "date_window_size": 7,
         }
 
-    def check_config(self, logger: AirbyteLogger, config_path: str, config: json) -> AirbyteConnectionStatus:
-        try:
-            session = shopify.Session(f"{config['shop']}.myshopify.com", "2020-10", config["api_key"])
-            shopify.ShopifyResource.activate_session(session)
-            # try to read the name of the shop, which should be available with any level of permissions
-            shopify.GraphQL().execute("{ shop { name id } }")
-            shopify.ShopifyResource.clear_session()
-            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
-        except Exception as e:
-            logger.error(f"Exception connecting to Shopify: ${e}")
-            return AirbyteConnectionStatus(
-                status=Status.FAILED, message="Unable to connect to the Shopify API with the provided credentials."
-            )
+    def try_connect(self, logger: AirbyteLogger, config: dict):
+        session = shopify.Session(f"{config['shop']}.myshopify.com", "2020-10", config["api_key"])
+        shopify.ShopifyResource.activate_session(session)
+        # try to read the name of the shop, which should be available with any level of permissions
+        shopify.GraphQL().execute("{ shop { name id } }")
+        shopify.ShopifyResource.clear_session()
 
-    def discover_cmd(self, logger: AirbyteLogger, config_path: str) -> str:
-        return f"{TAP_CMD} -c {config_path} --discover"
-
-    def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
+    def discover(self, logger: AirbyteLogger, config: Dict[str, any]) -> AirbyteCatalog:
         catalog: AirbyteCatalog = super().discover(logger, config)
 
         # the metafields stream has a union type i.e: ["null", "integer", "object", "string"], but Airbyte doesn't currently allow the notion of a
@@ -71,7 +67,3 @@ class SourceShopifySinger(SingerSource):
                     schema["properties"]["value"]["type"] = ["null", "string"]
 
         return catalog
-
-    def read_cmd(self, logger: AirbyteLogger, config_path: str, catalog_path: str, state_path: str = None) -> str:
-        state_path = f"--state {state_path}" if state_path else ""
-        return f"{TAP_CMD} -c {config_path} --catalog {catalog_path} {state_path}"
