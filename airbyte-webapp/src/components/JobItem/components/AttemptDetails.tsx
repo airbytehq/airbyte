@@ -4,6 +4,7 @@ import styled from "styled-components";
 import dayjs from "dayjs";
 
 import { Attempt } from "../../../core/resources/Job";
+import Status from "../../../core/statuses";
 
 type IProps = {
   className?: string;
@@ -22,6 +23,17 @@ const AttemptDetails: React.FC<IProps> = ({
   className,
   configType
 }) => {
+  if (attempt.status !== Status.SUCCEEDED && attempt.status !== Status.FAILED) {
+    return (
+      <Details className={className}>
+        <FormattedMessage
+          id={`sources.${configType}`}
+          defaultMessage={configType}
+        />
+      </Details>
+    );
+  }
+
   const formatBytes = (bytes: number) => {
     if (!bytes) {
       return (
