@@ -121,6 +121,7 @@ def test__read_from_private_gcs(google_cloud_service_credentials, private_google
         "dataset_name": "output",
         "format": "csv",
         "url": private_google_cloud_file,
+        "reader_options": json.dumps({"sep": ",", "nrows": 42}),
         "provider": {
             "storage": "GCS",
             "service_account_json": json.dumps(google_cloud_service_credentials),
@@ -134,6 +135,7 @@ def test__read_from_private_aws(aws_credentials, private_aws_file):
         "dataset_name": "output",
         "format": "csv",
         "url": private_aws_file,
+        "reader_options": json.dumps({"sep": ",", "nrows": 42}),
         "provider": {
             "storage": "S3",
             "aws_access_key_id": aws_credentials["aws_access_key_id"],
