@@ -52,8 +52,7 @@ const SourceSettings: React.FC<IProps> = ({
     try {
       await updateSource({
         values,
-        sourceId: currentSource.sourceId,
-        sourceDefinitionId: currentSource.sourceDefinitionId
+        sourceId: currentSource.sourceId
       });
 
       setSaved(true);
