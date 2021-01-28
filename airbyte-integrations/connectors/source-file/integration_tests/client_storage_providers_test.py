@@ -84,7 +84,7 @@ def test__streams_from_ssh_providers(provider_config, provider_name, file_path, 
         "header1": {"type": "string"},
         "header2": {"type": "number"},
         "header3": {"type": "number"},
-        "header4": {"type": "boolean"}
+        "header4": {"type": "boolean"},
     }
 
 
