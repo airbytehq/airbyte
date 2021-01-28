@@ -24,23 +24,32 @@ SOFTWARE.
 
 from setuptools import find_packages, setup
 
+MAIN_REQUIREMENTS = [
+    "airbyte-protocol",
+    "base-python",
+    "gcsfs==0.7.1",
+    "genson==1.2.2",
+    "google-cloud-storage==1.35.0",
+    "pandas>=0.24.1",
+    "paramiko==2.7.2",
+    "s3fs==0.5.2",
+    "smart-open[all]==4.1.2",
+]
+
+TEST_REQUIREMENTS = [
+    "airbyte-python-test",
+    "boto3==1.16.57",
+    "pytest==6.1.2",
+    "pytest-docker==0.10.1",
+]
+
 setup(
     name="source_file",
     description="Source implementation for File",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=[
-        "airbyte-protocol",
-        "base-python",
-        "gcsfs",
-        "genson",
-        "google-cloud-storage",
-        "pandas>=0.24.1",
-        "paramiko",
-        "s3fs",
-        "smart-open[all]",
-    ],
+    install_requires=MAIN_REQUIREMENTS,
     package_data={"": ["*.json"]},
     setup_requires=["pytest-runner"],
     tests_require=["pytest"],
@@ -49,6 +58,6 @@ setup(
         # integration tests but not the main package go in integration_tests. Deps required by both should go in
         # install_requires.
         "main": [],
-        "integration_tests": ["airbyte-python-test", "boto3", "pytest"],
+        "tests": TEST_REQUIREMENTS,
     },
 )
