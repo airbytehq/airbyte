@@ -25,6 +25,8 @@
 package io.airbyte.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
@@ -37,13 +39,17 @@ import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.DestinationCoreConfig;
 import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.DestinationIdRequestBody;
+import io.airbyte.api.model.DestinationUpdate;
 import io.airbyte.api.model.JobInfoRead;
 import io.airbyte.api.model.SourceCoreConfig;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
+import io.airbyte.api.model.SourceDiscoverSchemaRead;
 import io.airbyte.api.model.SourceIdRequestBody;
+import io.airbyte.api.model.SourceUpdate;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
@@ -65,13 +71,15 @@ import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.JobStatus;
 import io.airbyte.scheduler.client.SchedulerJobClient;
+import io.airbyte.server.converters.ConfigurationUpdate;
+import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.helpers.ConnectionHelpers;
 import io.airbyte.server.helpers.DestinationHelpers;
 import io.airbyte.server.helpers.SourceHelpers;
+import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.UUID;
@@ -104,14 +112,25 @@ class SchedulerHandlerTest {
       .withConfiguration(Jsons.emptyObject())
       .withTombstone(false);
 
+  private static final ConnectorSpecification CONNECTION_SPECIFICATION = new ConnectorSpecification()
+      .withDocumentationUrl(Exceptions.toRuntime(() -> new URI("https://google.com")))
+      .withChangelogUrl(Exceptions.toRuntime(() -> new URI("https://google.com")))
+      .withConnectionSpecification(Jsons.jsonNode(new HashMap<>()));
+
   private SchedulerHandler schedulerHandler;
   private ConfigRepository configRepository;
   private Job completedJob;
   private SchedulerJobClient schedulerJobClient;
+  private ConfigurationUpdate configurationUpdate;
+  private JsonSchemaValidator jsonSchemaValidator;
+  private SpecFetcher specFetcher;
 
   @BeforeEach
   void setup() {
     completedJob = mock(Job.class, RETURNS_DEEP_STUBS);
+    configurationUpdate = mock(ConfigurationUpdate.class);
+    jsonSchemaValidator = mock(JsonSchemaValidator.class);
+    specFetcher = mock(SpecFetcher.class);
     when(completedJob.getStatus()).thenReturn(JobStatus.SUCCEEDED);
     when(completedJob.getConfig().getConfigType()).thenReturn(ConfigType.SYNC);
     when(completedJob.getScope()).thenReturn("sync:123");
@@ -119,7 +138,7 @@ class SchedulerHandlerTest {
     schedulerJobClient = spy(SchedulerJobClient.class);
     configRepository = mock(ConfigRepository.class);
 
-    schedulerHandler = new SchedulerHandler(configRepository, schedulerJobClient);
+    schedulerHandler = new SchedulerHandler(configRepository, schedulerJobClient, configurationUpdate, jsonSchemaValidator, specFetcher);
   }
 
   @Test
@@ -164,7 +183,32 @@ class SchedulerHandlerTest {
   }
 
   @Test
-  void testGetSourceSpec() throws JsonValidationException, IOException, ConfigNotFoundException, URISyntaxException {
+  void testCheckSourceConnectionFromUpdate() throws IOException, JsonValidationException, ConfigNotFoundException {
+    final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
+    final SourceUpdate sourceUpdate = new SourceUpdate()
+        .sourceId(source.getSourceId())
+        .connectionConfiguration(source.getConfiguration());
+    when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
+        .thenReturn(new StandardSourceDefinition()
+            .withDockerRepository(DESTINATION_DOCKER_REPO)
+            .withDockerImageTag(DESTINATION_DOCKER_TAG)
+            .withSourceDefinitionId(source.getSourceDefinitionId()));
+    when(configRepository.getSourceConnection(source.getSourceId())).thenReturn(source);
+    when(configurationUpdate.source(source.getSourceId(), sourceUpdate.getConnectionConfiguration())).thenReturn(source);
+    when(specFetcher.execute(DESTINATION_DOCKER_IMAGE)).thenReturn(CONNECTION_SPECIFICATION);
+    final SourceConnection submittedSource = new SourceConnection()
+        .withSourceDefinitionId(source.getSourceDefinitionId())
+        .withConfiguration(source.getConfiguration());
+    when(schedulerJobClient.createSourceCheckConnectionJob(submittedSource, DESTINATION_DOCKER_IMAGE)).thenReturn(completedJob);
+
+    schedulerHandler.checkSourceConnectionFromSourceIdForUpdate(sourceUpdate);
+
+    verify(jsonSchemaValidator).validate(CONNECTION_SPECIFICATION.getConnectionSpecification(), source.getConfiguration());
+    verify(schedulerJobClient).createSourceCheckConnectionJob(submittedSource, DESTINATION_DOCKER_IMAGE);
+  }
+
+  @Test
+  void testGetSourceSpec() throws JsonValidationException, IOException, ConfigNotFoundException {
     final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody = new SourceDefinitionIdRequestBody().sourceDefinitionId(UUID.randomUUID());
     when(configRepository.getStandardSourceDefinition(sourceDefinitionIdRequestBody.getSourceDefinitionId()))
         .thenReturn(new StandardSourceDefinition()
@@ -174,24 +218,15 @@ class SchedulerHandlerTest {
             .withSourceDefinitionId(sourceDefinitionIdRequestBody.getSourceDefinitionId()));
     when(schedulerJobClient.createGetSpecJob(SOURCE_DOCKER_IMAGE)).thenReturn(completedJob);
 
-    final StandardGetSpecOutput specOutput = new StandardGetSpecOutput().withSpecification(
-        new ConnectorSpecification()
-            .withDocumentationUrl(new URI("https://google.com"))
-            .withChangelogUrl(new URI("https://google.com"))
-            .withConnectionSpecification(Jsons.jsonNode(new HashMap<>())));
-    final JobOutput jobOutput = mock(JobOutput.class);
-
-    when(jobOutput.getGetSpec()).thenReturn(specOutput);
-    when(completedJob.getSuccessOutput()).thenReturn(Optional.of(jobOutput));
+    when(specFetcher.execute(SOURCE_DOCKER_IMAGE)).thenReturn(CONNECTION_SPECIFICATION);
 
     schedulerHandler.getSourceDefinitionSpecification(sourceDefinitionIdRequestBody);
 
     verify(configRepository).getStandardSourceDefinition(sourceDefinitionIdRequestBody.getSourceDefinitionId());
-    verify(schedulerJobClient).createGetSpecJob(SOURCE_DOCKER_IMAGE);
   }
 
   @Test
-  void testGetDestinationSpec() throws JsonValidationException, IOException, ConfigNotFoundException, URISyntaxException {
+  void testGetDestinationSpec() throws JsonValidationException, IOException, ConfigNotFoundException {
     final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody =
         new DestinationDefinitionIdRequestBody().destinationDefinitionId(UUID.randomUUID());
 
@@ -202,37 +237,19 @@ class SchedulerHandlerTest {
             .withDockerImageTag(DESTINATION_DOCKER_TAG)
             .withDestinationDefinitionId(destinationDefinitionIdRequestBody.getDestinationDefinitionId()));
     when(schedulerJobClient.createGetSpecJob(DESTINATION_DOCKER_IMAGE)).thenReturn(completedJob);
-
-    final StandardGetSpecOutput specOutput = new StandardGetSpecOutput().withSpecification(
-        new ConnectorSpecification()
-            .withDocumentationUrl(new URI("https://google.com"))
-            .withChangelogUrl(new URI("https://google.com"))
-            .withConnectionSpecification(Jsons.jsonNode(new HashMap<>())));
-    final JobOutput jobOutput = mock(JobOutput.class);
-    when(jobOutput.getGetSpec()).thenReturn(specOutput);
-    when(completedJob.getSuccessOutput()).thenReturn(Optional.of(jobOutput));
+    when(specFetcher.execute(DESTINATION_DOCKER_IMAGE)).thenReturn(CONNECTION_SPECIFICATION);
 
     schedulerHandler.getDestinationSpecification(destinationDefinitionIdRequestBody);
 
     verify(configRepository).getStandardDestinationDefinition(destinationDefinitionIdRequestBody.getDestinationDefinitionId());
-    verify(schedulerJobClient).createGetSpecJob(DESTINATION_DOCKER_IMAGE);
   }
 
   @Test
-  public void testGetConnectorSpec() throws IOException, URISyntaxException {
-    when(schedulerJobClient.createGetSpecJob(SOURCE_DOCKER_IMAGE)).thenReturn(completedJob);
-    final StandardGetSpecOutput specOutput = new StandardGetSpecOutput().withSpecification(
-        new ConnectorSpecification()
-            .withDocumentationUrl(new URI("https://google.com"))
-            .withChangelogUrl(new URI("https://google.com"))
-            .withConnectionSpecification(Jsons.jsonNode(new HashMap<>())));
-    final JobOutput jobOutput = mock(JobOutput.class);
-    when(jobOutput.getGetSpec()).thenReturn(specOutput);
-    when(completedJob.getSuccessOutput()).thenReturn(Optional.of(jobOutput));
+  public void testGetConnectorSpec() throws IOException {
+    final StandardGetSpecOutput specOutput = new StandardGetSpecOutput().withSpecification(CONNECTION_SPECIFICATION);
+    when(specFetcher.execute(SOURCE_DOCKER_IMAGE)).thenReturn(CONNECTION_SPECIFICATION);
 
     assertEquals(specOutput.getSpecification(), schedulerHandler.getConnectorSpecification(SOURCE_DOCKER_IMAGE));
-
-    verify(schedulerJobClient).createGetSpecJob(SOURCE_DOCKER_IMAGE);
   }
 
   @Test
@@ -277,6 +294,31 @@ class SchedulerHandlerTest {
   }
 
   @Test
+  void testCheckDestinationConnectionFromUpdate() throws IOException, JsonValidationException, ConfigNotFoundException {
+    final DestinationConnection destination = DestinationHelpers.generateDestination(UUID.randomUUID());
+    final DestinationUpdate destinationUpdate = new DestinationUpdate()
+        .destinationId(destination.getDestinationId())
+        .connectionConfiguration(destination.getConfiguration());
+    when(configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId()))
+        .thenReturn(new StandardDestinationDefinition()
+            .withDockerRepository(DESTINATION_DOCKER_REPO)
+            .withDockerImageTag(DESTINATION_DOCKER_TAG)
+            .withDestinationDefinitionId(destination.getDestinationDefinitionId()));
+    when(configRepository.getDestinationConnection(destination.getDestinationId())).thenReturn(destination);
+    when(configurationUpdate.destination(destination.getDestinationId(), destinationUpdate.getConnectionConfiguration())).thenReturn(destination);
+    when(specFetcher.execute(DESTINATION_DOCKER_IMAGE)).thenReturn(CONNECTION_SPECIFICATION);
+    final DestinationConnection submittedDestination = new DestinationConnection()
+        .withDestinationDefinitionId(destination.getDestinationDefinitionId())
+        .withConfiguration(destination.getConfiguration());
+    when(schedulerJobClient.createDestinationCheckConnectionJob(submittedDestination, DESTINATION_DOCKER_IMAGE)).thenReturn(completedJob);
+
+    schedulerHandler.checkDestinationConnectionFromDestinationIdForUpdate(destinationUpdate);
+
+    verify(jsonSchemaValidator).validate(CONNECTION_SPECIFICATION.getConnectionSpecification(), destination.getConfiguration());
+    verify(schedulerJobClient).createDestinationCheckConnectionJob(submittedDestination, DESTINATION_DOCKER_IMAGE);
+  }
+
+  @Test
   void testDiscoverSchemaForSourceFromSourceId() throws IOException, JsonValidationException, ConfigNotFoundException {
     final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
     final SourceIdRequestBody request = new SourceIdRequestBody().sourceId(source.getSourceId());
@@ -293,8 +335,35 @@ class SchedulerHandlerTest {
             .withCatalog(CatalogHelpers.createAirbyteCatalog("shoes", Field.of("sku", JsonSchemaPrimitive.STRING))));
     when(completedJob.getSuccessOutput()).thenReturn(Optional.of(jobOutput));
 
-    schedulerHandler.discoverSchemaForSourceFromSourceId(request);
+    final SourceDiscoverSchemaRead actual = schedulerHandler.discoverSchemaForSourceFromSourceId(request);
 
+    assertNotNull(actual.getSchema());
+    assertNotNull(actual.getJobInfo());
+    assertEquals(io.airbyte.api.model.JobStatus.SUCCEEDED, actual.getJobInfo().getJob().getStatus());
+    verify(configRepository).getSourceConnection(source.getSourceId());
+    verify(schedulerJobClient).createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE);
+  }
+
+  @Test
+  void testDiscoverSchemaForSourceFromSourceIdFailed() throws IOException, JsonValidationException, ConfigNotFoundException {
+    final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
+    final SourceIdRequestBody request = new SourceIdRequestBody().sourceId(source.getSourceId());
+
+    when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
+        .thenReturn(new StandardSourceDefinition()
+            .withDockerRepository(SOURCE_DOCKER_REPO)
+            .withDockerImageTag(SOURCE_DOCKER_TAG)
+            .withSourceDefinitionId(source.getSourceDefinitionId()));
+    when(configRepository.getSourceConnection(source.getSourceId())).thenReturn(source);
+    when(schedulerJobClient.createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE)).thenReturn(completedJob);
+    when(completedJob.getSuccessOutput()).thenReturn(Optional.empty());
+    when(completedJob.getStatus()).thenReturn(JobStatus.FAILED);
+
+    final SourceDiscoverSchemaRead actual = schedulerHandler.discoverSchemaForSourceFromSourceId(request);
+
+    assertNull(actual.getSchema());
+    assertNotNull(actual.getJobInfo());
+    assertEquals(io.airbyte.api.model.JobStatus.FAILED, actual.getJobInfo().getJob().getStatus());
     verify(configRepository).getSourceConnection(source.getSourceId());
     verify(schedulerJobClient).createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE);
   }
@@ -320,8 +389,38 @@ class SchedulerHandlerTest {
             .withSourceDefinitionId(source.getSourceDefinitionId()));
     when(schedulerJobClient.createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE)).thenReturn(completedJob);
 
-    schedulerHandler.discoverSchemaForSourceFromSourceCreate(sourceCoreConfig);
+    final SourceDiscoverSchemaRead actual = schedulerHandler.discoverSchemaForSourceFromSourceCreate(sourceCoreConfig);
 
+    assertNotNull(actual.getSchema());
+    assertNotNull(actual.getJobInfo());
+    assertEquals(io.airbyte.api.model.JobStatus.SUCCEEDED, actual.getJobInfo().getJob().getStatus());
+    verify(schedulerJobClient).createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE);
+  }
+
+  @Test
+  void testDiscoverSchemaForSourceFromSourceCreateFailed() throws JsonValidationException, IOException, ConfigNotFoundException {
+    final SourceConnection source = new SourceConnection()
+        .withSourceDefinitionId(SOURCE.getSourceDefinitionId())
+        .withConfiguration(SOURCE.getConfiguration());
+
+    final SourceCoreConfig sourceCoreConfig = new SourceCoreConfig()
+        .sourceDefinitionId(source.getSourceDefinitionId())
+        .connectionConfiguration(source.getConfiguration());
+
+    when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
+        .thenReturn(new StandardSourceDefinition()
+            .withDockerRepository(SOURCE_DOCKER_REPO)
+            .withDockerImageTag(SOURCE_DOCKER_TAG)
+            .withSourceDefinitionId(source.getSourceDefinitionId()));
+    when(schedulerJobClient.createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE)).thenReturn(completedJob);
+    when(completedJob.getSuccessOutput()).thenReturn(Optional.empty());
+    when(completedJob.getStatus()).thenReturn(JobStatus.FAILED);
+
+    final SourceDiscoverSchemaRead actual = schedulerHandler.discoverSchemaForSourceFromSourceCreate(sourceCoreConfig);
+
+    assertNull(actual.getSchema());
+    assertNotNull(actual.getJobInfo());
+    assertEquals(io.airbyte.api.model.JobStatus.FAILED, actual.getJobInfo().getJob().getStatus());
     verify(schedulerJobClient).createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE);
   }
 

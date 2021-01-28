@@ -31,25 +31,29 @@ import static org.mockito.Mockito.when;
 
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.JobOutput;
+import io.airbyte.config.StandardGetSpecOutput;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.scheduler.Job;
+import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.server.errors.KnownException;
-import io.airbyte.server.handlers.SchedulerHandler;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class DockerImageValidatorTest {
 
-  private SchedulerHandler schedulerHandler;
+  private SchedulerJobClient schedulerJobClient;
   private DockerImageValidator validator;
 
   @BeforeEach
   public void init() {
-    schedulerHandler = mock(SchedulerHandler.class);
-    validator = new DockerImageValidator(schedulerHandler);
+    schedulerJobClient = mock(SchedulerJobClient.class);
+    validator = new DockerImageValidator(schedulerJobClient);
   }
 
   @Test
@@ -57,10 +61,17 @@ class DockerImageValidatorTest {
     final String repo = "repo";
     final String tag = "tag";
     final String imageName = DockerUtils.getTaggedImageName(repo, tag);
-    when(schedulerHandler.getConnectorSpecification(imageName)).thenReturn(new ConnectorSpecification()
+
+    final Job job = mock(Job.class);
+    final ConnectorSpecification connectorSpecification = new ConnectorSpecification()
         .withDocumentationUrl(new URI("https://google.com"))
         .withChangelogUrl(new URI("https://google.com"))
-        .withConnectionSpecification(Jsons.jsonNode(new HashMap<>())));
+        .withConnectionSpecification(Jsons.jsonNode(new HashMap<>()));
+    when(schedulerJobClient.createGetSpecJob(imageName)).thenReturn(job);
+    when(job.getSuccessOutput())
+        .thenReturn(Optional.of(new JobOutput().withGetSpec(new StandardGetSpecOutput().withSpecification(connectorSpecification))));
+
+    when(schedulerJobClient.createGetSpecJob(imageName)).thenReturn(job);
 
     assertDoesNotThrow(() -> validator.assertValidIntegrationImage(repo, tag));
   }
@@ -70,7 +81,7 @@ class DockerImageValidatorTest {
     final String repo = "repo";
     final String tag = "tag";
     final String imageName = DockerUtils.getTaggedImageName(repo, tag);
-    when(schedulerHandler.getConnectorSpecification(imageName)).thenThrow(new IllegalArgumentException());
+    when(schedulerJobClient.createGetSpecJob(imageName)).thenThrow(new IllegalArgumentException());
 
     assertThrows(KnownException.class, () -> validator.assertValidIntegrationImage(repo, tag));
   }

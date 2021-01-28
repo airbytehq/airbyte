@@ -359,6 +359,29 @@ paths:
           description: Source not found
         "422":
           $ref: "#/components/responses/InvalidInput"
+  /v1/sources/check_connection_for_update:
+    post:
+      tags:
+        - source
+      summary: Check connection for a proposed update to a source
+      operationId: checkConnectionToSourceForUpdate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceUpdate"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckConnectionRead"
+        "404":
+          description: Source not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
   /v1/sources/discover_schema:
     post:
       tags:
@@ -584,6 +607,29 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/DestinationIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckConnectionRead"
+        "404":
+          description: Destination  not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/destinations/check_connection_for_update:
+    post:
+      tags:
+        - destination
+      summary: Check connection for a proposed update to a destination
+      operationId: checkConnectionToDestinationForUpdate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationUpdate"
         required: true
       responses:
         "200":
@@ -1320,9 +1366,9 @@ components:
           items:
             $ref: "#/components/schemas/SourceRead"
     SourceDiscoverSchemaRead:
+      description: Returns the results of a discover schema job. If the job was not successful, the schema field will not be present. jobInfo will aways be present and its status be used to determine if the job was successful or not.
       type: object
       required:
-        - schema
         - jobInfo
       properties:
         schema:
@@ -1731,11 +1777,13 @@ components:
     JobListRequestBody:
       type: object
       required:
-        - configType
+        - configTypes
         - configId
       properties:
-        configType:
-          $ref: "#/components/schemas/JobConfigType"
+        configTypes:
+          type: array
+          items:
+            $ref: "#/components/schemas/JobConfigType"
         configId:
           type: string
     JobIdRequestBody:

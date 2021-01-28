@@ -47,6 +47,13 @@ public class EnvConfigs implements Configs {
   public static final String DATABASE_USER = "DATABASE_USER";
   public static final String DATABASE_PASSWORD = "DATABASE_PASSWORD";
   public static final String DATABASE_URL = "DATABASE_URL";
+  private static final String MINIMUM_WORKSPACE_RETENTION_DAYS = "MINIMUM_WORKSPACE_RETENTION_DAYS";
+  private static final String MAXIMUM_WORKSPACE_RETENTION_DAYS = "MAXIMUM_WORKSPACE_RETENTION_DAYS";
+  private static final String MAXIMUM_WORKSPACE_SIZE_MB = "MAXIMUM_WORKSPACE_SIZE_MB";
+
+  private static final long DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS = 1;
+  private static final long DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS = 60;
+  private static final long DEFAULT_MAXIMUM_WORKSPACE_SIZE_MB = 5000;
 
   public static final String DEFAULT_NETWORK = "host";
 
@@ -158,6 +165,25 @@ public class EnvConfigs implements Configs {
 
     LOGGER.info(WORKER_ENVIRONMENT + " not found, defaulting to " + WorkerEnvironment.DOCKER);
     return WorkerEnvironment.DOCKER;
+  }
+
+  @Override
+  public WorkspaceRetentionConfig getWorkspaceRetentionConfig() {
+    long minDays = getEnvOrDefault(MINIMUM_WORKSPACE_RETENTION_DAYS, DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS);
+    long maxDays = getEnvOrDefault(MAXIMUM_WORKSPACE_RETENTION_DAYS, DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS);
+    long maxSizeMb = getEnvOrDefault(MAXIMUM_WORKSPACE_SIZE_MB, DEFAULT_MAXIMUM_WORKSPACE_SIZE_MB);
+
+    return new WorkspaceRetentionConfig(minDays, maxDays, maxSizeMb);
+  }
+
+  public long getEnvOrDefault(String key, long defaultValue) {
+    final String value = getEnv.apply(key);
+    if (value != null) {
+      return Long.parseLong(value);
+    } else {
+      LOGGER.info(key + " not found, defaulting to " + defaultValue);
+      return defaultValue;
+    }
   }
 
   private String getEnv(final String name) {

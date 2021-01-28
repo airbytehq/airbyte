@@ -9,11 +9,15 @@ const ButtonWithMargin = styled(Button)`
   margin-right: 9px;
 `;
 
-const SkipOnboardingButton: React.FC = () => {
+type IProps = {
+  step: string;
+};
+
+const SkipOnboardingButton: React.FC<IProps> = ({ step }) => {
   const { finishOnboarding } = useWorkspace();
 
   const onSkip = async () => {
-    await finishOnboarding();
+    await finishOnboarding(step);
   };
 
   return (

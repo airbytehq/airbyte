@@ -66,9 +66,11 @@ class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> implement
   protected AirbyteMessage computeNext() {
     if (messageStream.hasNext()) {
       final AirbyteMessage message = messageStream.next();
-      final String cursorCandidate = message.getRecord().getData().get(cursorField).asText();
-      if (IncrementalUtils.compareCursors(maxCursor, cursorCandidate, cursorType) < 0) {
-        maxCursor = cursorCandidate;
+      if (message.getRecord().getData().hasNonNull(cursorField)) {
+        final String cursorCandidate = message.getRecord().getData().get(cursorField).asText();
+        if (IncrementalUtils.compareCursors(maxCursor, cursorCandidate, cursorType) < 0) {
+          maxCursor = cursorCandidate;
+        }
       }
 
       return message;

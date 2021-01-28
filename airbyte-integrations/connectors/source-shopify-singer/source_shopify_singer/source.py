@@ -22,7 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from typing import Dict
+
 import shopify
+from airbyte_protocol import AirbyteCatalog
 from base_python import AirbyteLogger
 from base_singer import BaseSingerSource
 
@@ -50,3 +53,17 @@ class SourceShopifySinger(BaseSingerSource):
         # try to read the name of the shop, which should be available with any level of permissions
         shopify.GraphQL().execute("{ shop { name id } }")
         shopify.ShopifyResource.clear_session()
+
+    def discover(self, logger: AirbyteLogger, config: Dict[str, any]) -> AirbyteCatalog:
+        catalog: AirbyteCatalog = super().discover(logger, config)
+
+        # the metafields stream has a union type i.e: ["null", "integer", "object", "string"], but Airbyte doesn't currently allow the notion of a
+        # union type. See https://github.com/airbytehq/airbyte/issues/1864 for more details.
+        # For now we always declare this field is a nullable string as an escape hatch.
+        for stream in catalog.streams:
+            if stream.name == "metafields":
+                schema = stream.json_schema
+                if "properties" in schema and "value" in schema["properties"]:
+                    schema["properties"]["value"]["type"] = ["null", "string"]
+
+        return catalog

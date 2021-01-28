@@ -2,14 +2,14 @@
 
 ## Sync overview
 
-This source can sync data for the [Appstore API](https://developer.apple.com/documentation/appstoreconnectapi). It supports only Incremental syncs.
-The Applestore API is available for [many types of services](https://developer.apple.com/documentation/appstoreconnectapi), however this integration focuses only on the 'Reporting' service, from where data is extracted from.
+This source can sync data for the [Appstore API](https://developer.apple.com/documentation/appstoreconnectapi). It supports only Incremental syncs. The Applestore API is available for [many types of services](https://developer.apple.com/documentation/appstoreconnectapi), however this integration focuses only on the 'Reporting' service, from where data is extracted from.
 
 Under the 'Reporting' Service, Appstore API has four different categories of Endpoints available. 
-1. Sales and Trends => [API docs](https://developer.apple.com/documentation/appstoreconnectapi/download_sales_and_trends_reports); ["UI docs"](https://help.apple.com/app-store-connect/#/dev061699fdb)
-2. Finance Reports => [API docs](https://developer.apple.com/documentation/appstoreconnectapi/download_finance_reports); ["UI docs"](https://help.apple.com/app-store-connect/#/dev716cf3a0d)
-3. Get Power and Performance Metrics for an App => [API docs](https://developer.apple.com/documentation/appstoreconnectapi/get_power_and_performance_metrics_for_an_app);
-4. Get Power and Performance Metrics for a Build => [API docs](https://developer.apple.com/documentation/appstoreconnectapi/get_power_and_performance_metrics_for_a_build);
+
+1. Sales and Trends =&gt; [API docs](https://developer.apple.com/documentation/appstoreconnectapi/download_sales_and_trends_reports); ["UI docs"](https://help.apple.com/app-store-connect/#/dev061699fdb) 
+2. Finance Reports =&gt; [API docs](https://developer.apple.com/documentation/appstoreconnectapi/download_finance_reports); ["UI docs"](https://help.apple.com/app-store-connect/#/dev716cf3a0d) 
+3. Get Power and Performance Metrics for an App =&gt; [API docs](https://developer.apple.com/documentation/appstoreconnectapi/get_power_and_performance_metrics_for_an_app); 
+4. Get Power and Performance Metrics for a Build =&gt; [API docs](https://developer.apple.com/documentation/appstoreconnectapi/get_power_and_performance_metrics_for_a_build);
 
 This Source Connector is based on a [Singer Tap](https://github.com/miroapp/tap-appstore).
 
@@ -19,7 +19,7 @@ This Source is capable of syncing the following "Sales and Trends" Streams:
 
 * [SALES](https://help.apple.com/app-store-connect/#/dev15f9508ca)
 * [SUBSCRIPTION](https://help.apple.com/app-store-connect/#/itc5dcdf6693)
-* [SUBSCRIPTION_EVENT](https://help.apple.com/app-store-connect/#/itc0b9b9d5b2)
+* [SUBSCRIPTION\_EVENT](https://help.apple.com/app-store-connect/#/itc0b9b9d5b2)
 * [SUBSCRIBER](https://help.apple.com/app-store-connect/#/itcf20f3392e)
 
 ### Data type mapping
@@ -53,11 +53,12 @@ One issue that can happen is the API not having the data available for the perio
 ### Requirements
 
 * Key ID
-* Key File (Private API Key)
+* Key File \(Private API Key\)
 * Issuer ID 
 * Vendor ID
-* Start Date (The date that will be used in the first sync. Apple only allows to go back 365 days from today.)
+* Start Date \(The date that will be used in the first sync. Apple only allows to go back 365 days from today.\)
 
 ### Setup guide
 
 Generate/Find all requirements using this [external article](https://leapfin.com/blog/apple-appstore-integration/).
+

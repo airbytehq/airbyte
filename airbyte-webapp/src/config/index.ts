@@ -4,6 +4,7 @@ declare global {
     PAPERCUPS_STORYTIME?: string;
     AIRBYTE_VERSION?: string;
     API_URL?: string;
+    IS_DEMO?: string;
   }
 }
 
@@ -15,6 +16,7 @@ const config: {
     configurationArchiveLink: string;
     workspaceId: string;
     tutorialLink: string;
+    technicalSupport: string;
   };
   segment: { token: string };
   papercups: {
@@ -23,9 +25,11 @@ const config: {
     enableStorytime: boolean;
   };
   apiUrl: string;
+  isDemo: boolean;
   version?: string;
 } = {
   ui: {
+    technicalSupport: "https://docs.airbyte.io/technical-support",
     helpLink: "https://airbyte.io/community",
     slackLink: "https://slack.airbyte.io",
     docsLink: "https://docs.airbyte.io",
@@ -51,7 +55,8 @@ const config: {
   apiUrl:
     window.API_URL ||
     process.env.REACT_APP_API_URL ||
-    `${window.location.protocol}//${window.location.hostname}:8001/api/v1/`
+    `${window.location.protocol}//${window.location.hostname}:8001/api/v1/`,
+  isDemo: window.IS_DEMO === "true"
 };
 
 export default config;

@@ -94,8 +94,6 @@ export default class ConnectionResource extends BaseResource
         );
 
         if (result.status === "failure") {
-          console.log("failure");
-
           const e = new NetworkError(result);
           e.status = result.status;
           e.message = result.message;
