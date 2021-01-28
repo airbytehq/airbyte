@@ -53,8 +53,7 @@ const DestinationsSettings: React.FC<IProps> = ({
     try {
       await updateDestination({
         values,
-        destinationId: currentDestination.destinationId,
-        destinationDefinitionId: currentDestination.destinationDefinitionId
+        destinationId: currentDestination.destinationId
       });
 
       setSaved(true);

@@ -40,6 +40,8 @@ export default class SchedulerResource extends BaseResource
       fetch: async (params: any): Promise<any> => {
         const url = !params.sourceId
           ? `${this.url(params)}/sources/check_connection`
+          : params.connectionConfiguration
+          ? `${super.rootUrl()}sources/check_connection_for_update`
           : `${super.rootUrl()}sources/check_connection`;
 
         const result = await this.fetch("post", url, params);
@@ -76,6 +78,8 @@ export default class SchedulerResource extends BaseResource
       fetch: async (params: any): Promise<any> => {
         const url = !params.destinationId
           ? `${this.url(params)}/destinations/check_connection`
+          : params.connectionConfiguration
+          ? `${super.rootUrl()}destinations/check_connection_for_update`
           : `${super.rootUrl()}destinations/check_connection`;
 
         const result = await this.fetch("post", url, params);
