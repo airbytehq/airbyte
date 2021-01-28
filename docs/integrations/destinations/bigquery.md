@@ -35,7 +35,7 @@ To use the BigQuery destination, you'll need:
 
 * A Google Cloud Project with BigQuery enabled
 * A BigQuery Dataset into which Airbyte can sync your data
-* A Google Cloud Service Account with the "BigQuery User" role
+* A Google Cloud Service Account with the "BigQuery User" and "BigQuery Data Editor" roles in your GCP project
 * A Service Account Key to authenticate into your Service Account
 
 See the setup guide for more information about how to create the required resources.
