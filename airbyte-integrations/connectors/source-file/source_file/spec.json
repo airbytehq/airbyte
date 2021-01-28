@@ -45,7 +45,7 @@
           },
           {
             "title": "GCS: Google Cloud Storage",
-            "required": ["storage", "reader_impl"],
+            "required": ["storage"],
             "properties": {
               "storage": {
                 "type": "string",
@@ -55,18 +55,12 @@
               "service_account_json": {
                 "type": "string",
                 "description": "In order to access private Buckets stored on Google Cloud, this connector would need a service account json credentials with the proper permissions as described <a href=\"https://cloud.google.com/iam/docs/service-accounts\" target=\"_blank\">here</a>. Please generate the credentials.json file and copy/paste its content to this field (expecting JSON formats). If accessing publicly available data, this field is not necessary."
-              },
-              "reader_impl": {
-                "type": "string",
-                "enum": ["smart_open", "gcsfs"],
-                "default": "gcsfs",
-                "description": "This connector provides multiple methods to retrieve data from GCS using either smart-open python libraries or GCSFS"
               }
             }
           },
           {
             "title": "S3: Amazon Web Services",
-            "required": ["storage", "reader_impl"],
+            "required": ["storage"],
             "properties": {
               "storage": {
                 "type": "string",
@@ -81,12 +75,6 @@
                 "type": "string",
                 "description": "In order to access private Buckets stored on AWS S3, this connector would need credentials with the proper permissions. If accessing publicly available data, this field is not necessary.",
                 "airbyte_secret": true
-              },
-              "reader_impl": {
-                "type": "string",
-                "enum": ["smart_open", "s3fs"],
-                "default": "s3fs",
-                "description": "This connector provides multiple methods to retrieve data from AWS S3 using either smart-open python libraries or S3FS"
               }
             }
           },
@@ -108,6 +96,35 @@
               },
               "host": {
                 "type": "string"
+              },
+              "port": {
+                "type": "number",
+                "default": 22
+              }
+            }
+          },
+          {
+            "title": "SCP: Secure copy protocol",
+            "required": ["storage", "user", "host"],
+            "properties": {
+              "storage": {
+                "type": "string",
+                "enum": ["SCP"],
+                "default": "SCP"
+              },
+              "user": {
+                "type": "string"
+              },
+              "password": {
+                "type": "string",
+                "airbyte_secret": true
+              },
+              "host": {
+                "type": "string"
+              },
+              "port": {
+                "type": "number",
+                "default": 22
               }
             }
           },
@@ -129,24 +146,6 @@
               },
               "host": {
                 "type": "string"
-              }
-            }
-          },
-          {
-            "title": "WebHDFS: HDFS REST API (Untested)",
-            "required": ["storage", "host", "port"],
-            "properties": {
-              "storage": {
-                "type": "string",
-                "description": "WARNING: smart_open library provides the ability to stream files over this protocol but we haven't been able to test this as part of Airbyte yet, please use with caution. We would love to hear feedbacks from you if you are able or fail to use this!",
-                "enum": ["WebHDFS"],
-                "default": "WebHDFS"
-              },
-              "host": {
-                "type": "string"
-              },
-              "port": {
-                "type": "number"
               }
             }
           },

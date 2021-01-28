@@ -6,7 +6,7 @@
 - sourceDefinitionId: 778daa7c-feaf-4db6-96f3-70fd645acc77
   name: File
   dockerRepository: airbyte/source-file
-  dockerImageTag: 0.1.7
+  dockerImageTag: 0.1.8
   documentationUrl: https://hub.docker.com/r/airbyte/source-file
 - sourceDefinitionId: fdc8b827-3257-4b33-83cc-106d234c34d4
   name: Google Adwords
@@ -86,7 +86,7 @@
 - sourceDefinitionId: b1892b11-788d-44bd-b9ec-3a436f7b54ce
   name: Shopify
   dockerRepository: airbyte/source-shopify-singer
-  dockerImageTag: 0.1.6
+  dockerImageTag: 0.1.7
   documentationUrl: https://hub.docker.com/r/airbyte/source-shopify-singer
 - sourceDefinitionId: 9845d17a-45f1-4070-8a60-50914b1c8e2b
   name: HTTP Request
@@ -161,7 +161,7 @@
 - sourceDefinitionId: 00405b19-9768-4e0c-b1ae-9fc2ee2b2a8c
   name: Looker
   dockerRepository: airbyte/source-looker
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://hub.docker.com/r/airbyte/source-looker
 - sourceDefinitionId: ed799e2b-2158-4c66-8da4-b40fe63bc72a
   name: Plaid

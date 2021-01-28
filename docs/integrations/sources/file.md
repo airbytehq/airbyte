@@ -44,20 +44,17 @@ Storage Providers are mostly enabled \(and further tested\) thanks to other open
 | Amazon Web Services S3 | Yes |
 | SFTP | Yes |
 | SSH / SCP | Yes |
-| WebHDFS | Untested |
 | local filesystem | Experimental |
-| Azure Blob Storage | Hidden |
-| HDFS | Hidden |
 
 ### File / Stream Compression
 
 | Compression | Supported? |
 | :--- | :--- |
 | Gzip | Yes |
-| Zip | Untested |
-| Bzip2 | Untested |
-| Lzma | Untested |
-| Xz | Untested |
+| Zip | No |
+| Bzip2 | No |
+| Lzma | No |
+| Xz | No |
 | Snappy | No |
 
 ### File Formats
@@ -75,11 +72,7 @@ File Formats are mostly enabled \(and further tested\) thanks to other open-sour
 | Excel | Yes |
 | Feather | Yes |
 | Parquet | Yes |
-| Orc | No |
-| Pickle | No |
-| SAS | Hidden |
-| SPS | Hidden |
-| Stata | Hidden |
+| Pickle | Yes |
 
 ### Performance considerations
 
