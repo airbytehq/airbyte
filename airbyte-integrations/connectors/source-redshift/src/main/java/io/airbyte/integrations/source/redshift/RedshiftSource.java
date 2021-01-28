@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 public class RedshiftSource extends AbstractJdbcSource implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftSource.class);
+  public static final String DRIVER_CLASS = "com.amazon.redshift.jdbc.Driver";
 
   // todo (cgardens) - clean up passing the dialect as null versus explicitly adding the case to the
   // constructor.

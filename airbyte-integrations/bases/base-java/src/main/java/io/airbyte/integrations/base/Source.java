@@ -25,6 +25,7 @@
 package io.airbyte.integrations.base;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.util.CloseableIterator;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -43,16 +44,16 @@ public interface Source extends Integration {
   AirbyteCatalog discover(JsonNode config) throws Exception;
 
   /**
-   * Return a stream of messages pulled from the source.
+   * Return a iterator of messages pulled from the source.
    *
    * @param config - integration-specific configuration object as json. e.g. { "username": "airbyte",
    *        "password": "super secure" }
    * @param catalog - schema of the incoming messages.
    * @param state - state of the incoming messages.
-   * @return Stream that produces message. The stream will be consumed until no records remain.
+   * @return Iterator that produces message. The stream will be consumed until no records remain.
    *         {@link Stream#close()} will always be called once regardless of success or failure.
    * @throws Exception - any exception.
    */
-  Stream<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception;
+  CloseableIterator<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception;
 
 }

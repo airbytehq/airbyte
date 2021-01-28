@@ -33,10 +33,10 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.nio.file.Path;
+import java.util.Iterator;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,9 +100,13 @@ public class IntegrationRunner {
         final JsonNode config = parseConfig(parsed.getConfigPath());
         final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
         final Optional<JsonNode> stateOptional = parsed.getStatePath().map(IntegrationRunner::parseConfig);
-        final Stream<AirbyteMessage> messageStream = source.read(config, catalog, stateOptional.orElse(null));
-        messageStream.map(Jsons::serialize).forEach(stdoutConsumer);
-        messageStream.close();
+        final Iterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null));
+        messageIterator.forEachRemaining(v -> {
+          stdoutConsumer.accept(Jsons.serialize(v));
+        });
+        // messageIterator.map(Jsons::serialize).forEach(stdoutConsumer);
+        // restore.
+        // messageStream.close();
       }
       // destination only
       case WRITE -> {

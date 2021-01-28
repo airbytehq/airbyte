@@ -37,6 +37,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
@@ -132,6 +133,7 @@ public abstract class JdbcSourceStandardTest {
         getDriverClass());
 
     database.execute(connection -> {
+      connection.createStatement().execute("SET search_path TO integration_test;");
       connection.createStatement().execute("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), updated_at DATE);");
       connection.createStatement().execute(
           "INSERT INTO id_and_name (id, name, updated_at) VALUES (1,'picard', '2004-10-19'),  (2, 'crusher', '2005-10-19'), (3, 'vash', '2006-10-19');");
@@ -199,7 +201,7 @@ public abstract class JdbcSourceStandardTest {
 
   @Test
   void testReadSuccess() throws Exception {
-    final List<AirbyteMessage> actualMessages = source.read(config, getConfiguredCatalog(), null).collect(Collectors.toList());
+    final List<AirbyteMessage> actualMessages = MoreIterators.toList(source.read(config, getConfiguredCatalog(), null));
 
     actualMessages.forEach(r -> {
       if (r.getRecord() != null) {
@@ -214,7 +216,7 @@ public abstract class JdbcSourceStandardTest {
   void testReadOneColumn() throws Exception {
     final ConfiguredAirbyteCatalog catalog = CatalogHelpers.createConfiguredAirbyteCatalog(streamName, Field.of("id", JsonSchemaPrimitive.NUMBER));
 
-    final List<AirbyteMessage> actualMessages = source.read(config, catalog, null).collect(Collectors.toList());
+    final List<AirbyteMessage> actualMessages = MoreIterators.toList(source.read(config, catalog, null));
 
     actualMessages.forEach(r -> {
       if (r.getRecord() != null) {
@@ -234,19 +236,35 @@ public abstract class JdbcSourceStandardTest {
 
   @Test
   void testReadMultipleTables() throws Exception {
-    final String streamName2 = streamName + 2;
-    database.execute(connection -> {
-      connection.createStatement().execute("CREATE TABLE id_and_name2(id INTEGER, name VARCHAR(200));");
-      connection.createStatement().execute("INSERT INTO id_and_name2 (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
-    });
+    final ConfiguredAirbyteCatalog catalog =
+        new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(getConfiguredCatalog().getStreams().get(0)));
+    final List<AirbyteMessage> expectedMessages = new ArrayList<>(getTestMessages());
 
-    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-        getConfiguredCatalog().getStreams().get(0),
-        CatalogHelpers.createConfiguredAirbyteStream(
-            streamName2,
-            Field.of("id", JsonSchemaPrimitive.NUMBER),
-            Field.of("name", JsonSchemaPrimitive.STRING))));
-    final List<AirbyteMessage> actualMessages = source.read(config, catalog, null).collect(Collectors.toList());
+    for (int i = 2; i < 10; i++) {
+      final int iFinal = i;
+      final String streamName2 = streamName + i;
+      database.execute(connection -> {
+        connection.createStatement().execute(String.format("CREATE TABLE id_and_name%s(id INTEGER, name VARCHAR(200));", iFinal));
+        connection.createStatement()
+            .execute(String.format("INSERT INTO id_and_name%s (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');", iFinal));
+      });
+      catalog.getStreams().add(CatalogHelpers.createConfiguredAirbyteStream(
+          streamName2,
+          Field.of("id", JsonSchemaPrimitive.NUMBER),
+          Field.of("name", JsonSchemaPrimitive.STRING)));
+
+      final List<AirbyteMessage> secondStreamExpectedMessages = getTestMessages()
+          .stream()
+          .map(Jsons::clone)
+          .peek(m -> {
+            m.getRecord().setStream(streamName2);
+            ((ObjectNode) m.getRecord().getData()).remove("updated_at");
+          })
+          .collect(Collectors.toList());
+      expectedMessages.addAll(secondStreamExpectedMessages);
+    }
+
+    final List<AirbyteMessage> actualMessages = MoreIterators.toList(source.read(config, catalog, null));
 
     actualMessages.forEach(r -> {
       if (r.getRecord() != null) {
@@ -254,37 +272,7 @@ public abstract class JdbcSourceStandardTest {
       }
     });
 
-    final List<AirbyteMessage> secondStreamExpectedMessages = getTestMessages()
-        .stream()
-        .map(Jsons::clone)
-        .peek(m -> {
-          m.getRecord().setStream(streamName2);
-          ((ObjectNode) m.getRecord().getData()).remove("updated_at");
-        })
-        .collect(Collectors.toList());
-    final List<AirbyteMessage> expectedMessages = new ArrayList<>(getTestMessages());
-    expectedMessages.addAll(secondStreamExpectedMessages);
-
     assertEquals(expectedMessages, actualMessages);
-  }
-
-  private ConfiguredAirbyteStream createTableWithSpaces() throws SQLException {
-    // test table name with space.
-    final String tableNameWithSpaces = "id and name2";
-    final String streamName2 = getDefaultSchemaName().map(val -> val + "." + tableNameWithSpaces).orElse(tableNameWithSpaces);;
-    // test column name with space.
-    final String lastNameField = "last name";
-    database.execute(connection -> {
-      connection.createStatement().execute(String.format("CREATE TABLE %s (id INTEGER, %s VARCHAR(200));",
-          JdbcUtils.enquoteIdentifier(connection, tableNameWithSpaces), JdbcUtils.enquoteIdentifier(connection, lastNameField)));
-      connection.createStatement().execute(String.format("INSERT INTO %s (id, %s) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');",
-          JdbcUtils.enquoteIdentifier(connection, tableNameWithSpaces), JdbcUtils.enquoteIdentifier(connection, lastNameField)));
-    });
-
-    return CatalogHelpers.createConfiguredAirbyteStream(
-        streamName2,
-        Field.of("id", JsonSchemaPrimitive.NUMBER),
-        Field.of(lastNameField, JsonSchemaPrimitive.STRING));
   }
 
   @Test
@@ -294,7 +282,7 @@ public abstract class JdbcSourceStandardTest {
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
         getConfiguredCatalog().getStreams().get(0),
         streamForTableWithSpaces));
-    final List<AirbyteMessage> actualMessages = source.read(config, catalog, null).collect(Collectors.toList());
+    final List<AirbyteMessage> actualMessages = MoreIterators.toList(source.read(config, catalog, null));
 
     actualMessages.forEach(r -> {
       if (r.getRecord() != null) {
@@ -410,7 +398,7 @@ public abstract class JdbcSourceStandardTest {
     });
 
     final JdbcState state = new JdbcState().withStreams(Lists.newArrayList(new JdbcStreamState().withStreamName(streamName)));
-    final List<AirbyteMessage> actualMessagesFirstSync = source.read(config, configuredCatalog, Jsons.jsonNode(state)).collect(Collectors.toList());
+    final List<AirbyteMessage> actualMessagesFirstSync = MoreIterators.toList(source.read(config, configuredCatalog, Jsons.jsonNode(state)));
 
     final Optional<AirbyteMessage> stateAfterFirstSyncOptional = actualMessagesFirstSync.stream().filter(r -> r.getType() == Type.STATE).findFirst();
     assertTrue(stateAfterFirstSyncOptional.isPresent());
@@ -418,9 +406,8 @@ public abstract class JdbcSourceStandardTest {
     database.execute(connection -> connection.createStatement()
         .execute("INSERT INTO id_and_name (id, name, updated_at) VALUES (4,'riker', '2006-10-19'),  (5, 'data', '2006-10-19');"));
 
-    final List<AirbyteMessage> actualMessagesSecondSync = source
-        .read(config, configuredCatalog, stateAfterFirstSyncOptional.get().getState().getData())
-        .collect(Collectors.toList());
+    final List<AirbyteMessage> actualMessagesSecondSync = MoreIterators
+        .toList(source.read(config, configuredCatalog, stateAfterFirstSyncOptional.get().getState().getData()));
 
     assertEquals(2, (int) actualMessagesSecondSync.stream().filter(r -> r.getType() == Type.RECORD).count());
     final List<AirbyteMessage> expectedMessages = new ArrayList<>();
@@ -467,7 +454,7 @@ public abstract class JdbcSourceStandardTest {
     });
 
     final JdbcState state = new JdbcState().withStreams(Lists.newArrayList(new JdbcStreamState().withStreamName(streamName)));
-    final List<AirbyteMessage> actualMessagesFirstSync = source.read(config, configuredCatalog, Jsons.jsonNode(state)).collect(Collectors.toList());
+    final List<AirbyteMessage> actualMessagesFirstSync = MoreIterators.toList(source.read(config, configuredCatalog, Jsons.jsonNode(state)));
 
     // get last state message.
     final Optional<AirbyteMessage> stateAfterFirstSyncOptional = actualMessagesFirstSync.stream()
@@ -561,7 +548,7 @@ public abstract class JdbcSourceStandardTest {
 
     final ConfiguredAirbyteCatalog configuredCatalog = new ConfiguredAirbyteCatalog().withStreams(ImmutableList.of(airbyteStream));
 
-    final List<AirbyteMessage> actualMessages = source.read(config, configuredCatalog, Jsons.jsonNode(state)).collect(Collectors.toList());
+    final List<AirbyteMessage> actualMessages = MoreIterators.toList(source.read(config, configuredCatalog, Jsons.jsonNode(state)));
 
     actualMessages.forEach(r -> {
       if (r.getRecord() != null) {
@@ -607,6 +594,25 @@ public abstract class JdbcSourceStandardTest {
         new AirbyteMessage().withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName)
                 .withData(Jsons.jsonNode(ImmutableMap.of("id", 3, "name", "vash", "updated_at", "2006-10-19T00:00:00Z")))));
+  }
+
+  private ConfiguredAirbyteStream createTableWithSpaces() throws SQLException {
+    // test table name with space.
+    final String tableNameWithSpaces = "id and name2";
+    final String streamName2 = getDefaultSchemaName().map(val -> val + "." + tableNameWithSpaces).orElse(tableNameWithSpaces);;
+    // test column name with space.
+    final String lastNameField = "last name";
+    database.execute(connection -> {
+      connection.createStatement().execute(String.format("CREATE TABLE %s (id INTEGER, %s VARCHAR(200));",
+          JdbcUtils.enquoteIdentifier(connection, tableNameWithSpaces), JdbcUtils.enquoteIdentifier(connection, lastNameField)));
+      connection.createStatement().execute(String.format("INSERT INTO %s (id, %s) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');",
+          JdbcUtils.enquoteIdentifier(connection, tableNameWithSpaces), JdbcUtils.enquoteIdentifier(connection, lastNameField)));
+    });
+
+    return CatalogHelpers.createConfiguredAirbyteStream(
+        streamName2,
+        Field.of("id", JsonSchemaPrimitive.NUMBER),
+        Field.of(lastNameField, JsonSchemaPrimitive.STRING));
   }
 
 }

@@ -30,7 +30,6 @@ import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import java.util.Iterator;
-import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,13 +47,13 @@ class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> implement
   private boolean hasEmittedState;
 
   public StateDecoratingIterator(
-                                 Stream<AirbyteMessage> messageStream,
+                                 Iterator<AirbyteMessage> messageIterator,
                                  JdbcStateManager stateManager,
                                  String streamName,
                                  String cursorField,
                                  String initialCursor,
                                  JsonSchemaPrimitive cursorType) {
-    this.messageStream = messageStream.iterator();
+    this.messageStream = messageIterator;
     this.stateManager = stateManager;
     this.streamName = streamName;
     this.cursorField = cursorField;

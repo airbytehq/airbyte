@@ -22,27 +22,10 @@
  * SOFTWARE.
  */
 
-package io.airbyte.commons.concurrency;
+package io.airbyte.commons.lang;
 
-import java.util.concurrent.Callable;
+import java.util.function.Supplier;
 
-@FunctionalInterface
-public interface VoidCallable extends Callable<Void> {
-
-  default @Override Void call() throws Exception {
-    voidCall();
-    return null;
-  }
-
-  void voidCall() throws Exception;
-
-  class NoOp implements VoidCallable {
-
-    @Override
-    public void voidCall() throws Exception {
-
-    }
-
-  }
+public interface CloseableSupplier<T> extends Supplier<T>, AutoCloseable {
 
 }
