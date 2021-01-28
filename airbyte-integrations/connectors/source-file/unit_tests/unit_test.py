@@ -26,4 +26,4 @@ from source_file.client import Client
 
 
 def test_example_method():
-    assert Client.dtype_to_json_type("bool") == "bool"
+    assert Client.dtype_to_json_type("bool") == "boolean"
