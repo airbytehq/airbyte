@@ -52,7 +52,7 @@ def check_read(config, expected_columns=10, expected_rows=42):
 def test__read_from_private_ssh(provider_config, provider_name, file_path, file_format):
     client = Client(dataset_name="output", format=file_format, url=file_path, provider=provider_config(provider_name))
     result = next(client.read())
-    assert result == {"header1": "text", "header2": 1, "header3": 0.2}
+    assert result == {"header1": "text", "header2": 1, "header3": 0.2, "header4": True}
 
 
 @pytest.mark.parametrize(
@@ -84,6 +84,7 @@ def test__streams_from_ssh_providers(provider_config, provider_name, file_path, 
         "header1": {"type": "string"},
         "header2": {"type": "number"},
         "header3": {"type": "number"},
+        "header4": {"type": "boolean"},
     }
 
 
