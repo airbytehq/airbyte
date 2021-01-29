@@ -22,18 +22,11 @@
  * SOFTWARE.
  */
 
-package io.airbyte.commons.functional;
-
-import java.util.concurrent.Callable;
+package io.airbyte.commons.concurrency;
 
 @FunctionalInterface
-public interface VoidCallable2 extends Callable<Void> {
+public interface SafeVoidCallable {
 
-  default @Override Void call() throws Exception {
-    voidCall();
-    return null;
-  }
-
-  void voidCall();
+  void call();
 
 }

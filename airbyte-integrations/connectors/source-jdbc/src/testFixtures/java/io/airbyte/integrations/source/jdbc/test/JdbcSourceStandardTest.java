@@ -650,19 +650,20 @@ public abstract class JdbcSourceStandardTest {
     return supportsSchemas() ? SCHEMA_NAME : null;
   }
 
+  private String getDefaultNamespace() {
+    // mysql does not support schemas. it namespaces using database names instead.
+    if (getDriverClass().toLowerCase().contains("mysql")) {
+      return config.get("database").asText();
+    } else {
+      return SCHEMA_NAME;
+    }
+  }
+
   private static void setEmittedAtToNull(Iterable<AirbyteMessage> messages) {
     for (AirbyteMessage actualMessage : messages) {
       if (actualMessage.getRecord() != null) {
         actualMessage.getRecord().setEmittedAt(null);
       }
-    }
-  }
-
-  private String getDefaultNamespace() {
-    if (getDriverClass().toLowerCase().contains("mysql")) {
-      return config.get("database").asText();
-    } else {
-      return SCHEMA_NAME;
     }
   }
 

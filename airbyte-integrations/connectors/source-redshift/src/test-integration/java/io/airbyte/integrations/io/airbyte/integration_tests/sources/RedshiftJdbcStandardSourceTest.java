@@ -35,6 +35,7 @@ import java.sql.SQLException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
+// Run as part of integration tests, instead of unit tests, because there is no test container for Redshift.
 class RedshiftJdbcStandardSourceTest extends JdbcSourceStandardTest {
 
   private JsonNode config;

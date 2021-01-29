@@ -25,8 +25,8 @@
 package io.airbyte.commons.util;
 
 import com.google.common.collect.AbstractIterator;
+import io.airbyte.commons.concurrency.SafeVoidCallable;
 import io.airbyte.commons.concurrency.VoidCallable;
-import io.airbyte.commons.functional.VoidCallable2;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -38,10 +38,24 @@ import java.util.stream.Stream;
 
 public class MoreIterators {
 
+  /**
+   * Create an iterator from elements
+   *
+   * @param elements element to put in iterator
+   * @param <T> type
+   * @return iterator with all elements
+   */
   public static <T> Iterator<T> of(T... elements) {
     return Arrays.asList(elements).iterator();
   }
 
+  /**
+   * Create a list from an iterator
+   *
+   * @param iterator iterator to convert
+   * @param <T> type
+   * @return list
+   */
   public static <T> List<T> toList(Iterator<T> iterator) {
     final List<T> list = new ArrayList<>();
     while (iterator.hasNext()) {
@@ -50,6 +64,13 @@ public class MoreIterators {
     return list;
   }
 
+  /**
+   * Create a set from an iterator
+   *
+   * @param iterator iterator to convert
+   * @param <T> type
+   * @return set
+   */
   public static <T> Set<T> toSet(Iterator<T> iterator) {
     final Set<T> set = new HashSet<>();
     while (iterator.hasNext()) {
@@ -71,7 +92,7 @@ public class MoreIterators {
   }
 
   /**
-   * Create an iterator that only executes the given supplier aft the first invocation of hasNext.
+   * Create an iterator that only executes the given supplier after the first invocation of hasNext.
    *
    * @param iteratorSupplier iterator to be supplied lazily
    * @param <T> type
@@ -79,6 +100,60 @@ public class MoreIterators {
    */
   public static <T> Iterator<T> iteratorSupplierToLazyIterator(Supplier<Iterator<T>> iteratorSupplier) {
     return new LazyIterator<>(iteratorSupplier);
+  }
+
+  /**
+   * Creates an iterator from an iterator. The new iterator when fully consumed will execute the
+   * onClose function.
+   *
+   * @param iterator input iterator
+   * @param onClose on close function to be executed when iterator is completely consumed
+   * @param <T> type
+   * @return auto closing iterator
+   */
+  public static <T> Iterator<T> autoCloseIterator(Iterator<T> iterator, SafeVoidCallable onClose) {
+    return new AutoCloseIterator<>(iterator, onClose);
+  }
+
+  /**
+   * Takes a stream and turns it into an iterator that when fully consumed will close the stream.
+   *
+   * @param stream stream to convert
+   * @param <T> type
+   * @return auto closing iterator
+   */
+  public static <T> Iterator<T> autoCloseIterator(Stream<T> stream) {
+    return new AutoCloseIterator<>(stream.iterator(), stream::close);
+  }
+
+  /**
+   * Coerces a vanilla {@link Iterator} into a {@link CloseableIterator} by adding a no op close
+   * function.
+   *
+   * @param iterator iterator to convert
+   * @param <T> type
+   * @return closeable iterator
+   */
+  public static <T> CloseableIterator<T> toCloseableIterator(Iterator<T> iterator) {
+    return new DefaultCloseableIterator<>(iterator, new VoidCallable.NoOp());
+  }
+
+  /**
+   * Coerces a {@link CloseableIterator} into a vanilla {@link Iterator}. When fully consumed, the
+   * output iterator will call the close function of the input {@link CloseableIterator}.
+   *
+   * @param iterator closeable iterator
+   * @param <T> type
+   * @return vanilla iterator
+   */
+  public static <T> Iterator<T> toCloseableIterator(CloseableIterator<T> iterator) {
+    return new AutoCloseIterator<>(iterator, () -> {
+      try {
+        iterator.close();
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    });
   }
 
   private static class LazyIterator<T> extends AbstractIterator<T> implements Iterator<T> {
@@ -109,37 +184,12 @@ public class MoreIterators {
 
   }
 
-  /**
-   * Creates an iterator from an iterator. The new iterator when fully consumed will execute the
-   * onClose function.
-   *
-   * @param iterator input iterator
-   * @param onClose on close function to be executed when iterator is completely consumed
-   * @param <T> type
-   * @return auto closing iterator
-   */
-  public static <T> Iterator<T> autoCloseIterator(Iterator<T> iterator, VoidCallable2 onClose) {
-    return new AutoCloseIterator<>(iterator, onClose);
-  }
-
-  /**
-   * Takes a stream and turns it into an iterator that when fully consumed will close the input
-   * stream.
-   *
-   * @param stream stream to convert
-   * @param <T> type
-   * @return auto closing iterator
-   */
-  public static <T> Iterator<T> autoCloseIterator(Stream<T> stream) {
-    return new AutoCloseIterator<>(stream.iterator(), stream::close);
-  }
-
   private static class AutoCloseIterator<T> extends AbstractIterator<T> implements Iterator<T> {
 
     private final Iterator<T> internalIterator;
-    private final VoidCallable2 onClose;
+    private final SafeVoidCallable onClose;
 
-    public AutoCloseIterator(Iterator<T> iterator, VoidCallable2 onClose) {
+    public AutoCloseIterator(Iterator<T> iterator, SafeVoidCallable onClose) {
       this.internalIterator = iterator;
       this.onClose = onClose;
     }
@@ -149,28 +199,14 @@ public class MoreIterators {
       if (internalIterator.hasNext()) {
         return internalIterator.next();
       } else {
-        onClose.voidCall();
+        onClose.call();
         return endOfData();
       }
     }
 
   }
 
-  public static <T> CloseableIterator<T> toCloseableIterator(Iterator<T> iterator) {
-    return new DefaultCloseableIterator<>(iterator, new VoidCallable.NoOp());
-  }
-
-  public static <T> Iterator<T> toCloseableIterator(CloseableIterator<T> iterator) {
-    return new AutoCloseIterator<>(iterator, () -> {
-      try {
-        iterator.close();
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
-    });
-  }
-
-  public static class DefaultCloseableIterator<T> extends AbstractIterator<T> implements CloseableIterator<T> {
+  private static class DefaultCloseableIterator<T> extends AbstractIterator<T> implements CloseableIterator<T> {
 
     private final Iterator<T> iterator;
     private final VoidCallable closeable;

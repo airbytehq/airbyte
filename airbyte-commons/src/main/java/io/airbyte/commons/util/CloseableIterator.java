@@ -26,4 +26,9 @@ package io.airbyte.commons.util;
 
 import java.util.Iterator;
 
+/**
+ * If you operate on this iterator, you better close it.
+ *
+ * @param <T> type
+ */
 public interface CloseableIterator<T> extends Iterator<T>, AutoCloseable {}

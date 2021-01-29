@@ -29,11 +29,11 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.util.CloseableIterator;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.nio.file.Path;
-import java.util.Iterator;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.function.Consumer;
@@ -100,13 +100,12 @@ public class IntegrationRunner {
         final JsonNode config = parseConfig(parsed.getConfigPath());
         final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
         final Optional<JsonNode> stateOptional = parsed.getStatePath().map(IntegrationRunner::parseConfig);
-        final Iterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null));
-        messageIterator.forEachRemaining(v -> {
-          stdoutConsumer.accept(Jsons.serialize(v));
-        });
-        // messageIterator.map(Jsons::serialize).forEach(stdoutConsumer);
-        // restore.
-        // messageStream.close();
+        final CloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null));
+        try (messageIterator) {
+          messageIterator.forEachRemaining(v -> {
+            stdoutConsumer.accept(Jsons.serialize(v));
+          });
+        }
       }
       // destination only
       case WRITE -> {
