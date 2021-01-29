@@ -42,7 +42,7 @@ public class RedshiftSource extends AbstractJdbcSource implements Source {
   // todo (cgardens) - clean up passing the dialect as null versus explicitly adding the case to the
   // constructor.
   public RedshiftSource() {
-    super("com.amazon.redshift.jdbc.Driver", new RedshiftJdbcStreamingQueryConfiguration());
+    super(DRIVER_CLASS, new RedshiftJdbcStreamingQueryConfiguration());
   }
 
   @Override

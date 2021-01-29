@@ -24,7 +24,6 @@ dependencies {
     testImplementation 'org.apache.commons:commons-lang3:3.11'
     testImplementation 'org.apache.commons:commons-dbcp2:2.7.0'
 
-
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestJavaImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-redshift')

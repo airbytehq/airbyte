@@ -29,7 +29,6 @@ import io.airbyte.commons.util.CloseableIterator;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import java.util.stream.Stream;
 
 public interface Source extends Integration {
 
@@ -50,8 +49,9 @@ public interface Source extends Integration {
    *        "password": "super secure" }
    * @param catalog - schema of the incoming messages.
    * @param state - state of the incoming messages.
-   * @return Iterator that produces message. The stream will be consumed until no records remain.
-   *         {@link Stream#close()} will always be called once regardless of success or failure.
+   * @return Iterator that produces message. The iterator will be consumed until no records remain.
+   *         {@link CloseableIterator#close()} will always be called once regardless of success or
+   *         failure.
    * @throws Exception - any exception.
    */
   CloseableIterator<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception;

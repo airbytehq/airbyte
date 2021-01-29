@@ -185,9 +185,9 @@ public abstract class AbstractJdbcSource implements Source {
     }
 
     return MoreIterators.toCloseableIterator(MoreIterators.autoCloseIterator(resultIterator, () -> {
-      LOGGER.info("closing the stream");
+      LOGGER.info("Closing database connection pool.");
       Exceptions.toRuntime(database::close);
-      LOGGER.info("closed the stream");
+      LOGGER.info("Closed database connection pool.");
     }));
   }
 
@@ -376,24 +376,20 @@ public abstract class AbstractJdbcSource implements Source {
   }
 
   public static Iterator<JsonNode> queryTableFullRefresh(JdbcDatabase database, List<String> columnNames, String schemaName, String tableName) {
-    LOGGER.info("table name {} start", tableName);
+    LOGGER.info("Queueing query for table: {}", tableName);
     return MoreIterators.streamSupplierToLazyIterator(() -> {
       try {
         return database.query(
             connection -> {
-              LOGGER.info("table name {} in connection", tableName);
+              LOGGER.info("Preparing query for table: {}", tableName);
               final String sql = String.format("SELECT %s FROM %s",
                   JdbcUtils.enquoteIdentifierList(connection, columnNames),
                   JdbcUtils.getFullyQualifiedTableNameWithQuoting(connection, schemaName, tableName));
               final PreparedStatement preparedStatement = connection.prepareStatement(sql);
-              LOGGER.info("table name {} statement prepared", tableName);
+              LOGGER.info("Executing query for table: {}", tableName);
               return preparedStatement;
             },
-            resultSet -> {
-              final JsonNode jsonNode = JdbcUtils.rowToJson(resultSet);
-              LOGGER.info("queryTableFullRefresh stream {}", jsonNode);
-              return jsonNode;
-            });
+            JdbcUtils::rowToJson);
       } catch (SQLException e) {
         throw new RuntimeException(e);
       }
@@ -408,10 +404,12 @@ public abstract class AbstractJdbcSource implements Source {
                                                          JDBCType cursorFieldType,
                                                          String cursor) {
 
+    LOGGER.info("Queueing query for table: {}", tableName);
     return MoreIterators.streamSupplierToLazyIterator(() -> {
       try {
         return database.query(
             connection -> {
+              LOGGER.info("Preparing query for table: {}", tableName);
               final String sql = String.format("SELECT %s FROM %s WHERE %s > ?",
                   JdbcUtils.enquoteIdentifierList(connection, columnNames),
                   JdbcUtils.getFullyQualifiedTableNameWithQuoting(connection, schemaName, tableName),
@@ -419,6 +417,7 @@ public abstract class AbstractJdbcSource implements Source {
 
               final PreparedStatement preparedStatement = connection.prepareStatement(sql);
               JdbcUtils.setStatementField(preparedStatement, 1, cursorFieldType, cursor);
+              LOGGER.info("Executing query for table: {}", tableName);
               return preparedStatement;
             },
             JdbcUtils::rowToJson);
