@@ -200,7 +200,7 @@ class LocalJsonDestinationTest {
 
     assertThrows(RuntimeException.class, () -> consumer.accept(spiedMessage));
     consumer.accept(MESSAGE_USERS2);
-    consumer.close();
+    assertThrows(IOException.class, consumer::close);
 
     // verify tmp files are cleaned up and no files are output at all
     final Set<String> actualFilenames = Files.list(destinationPath).map(Path::getFileName).map(Path::toString).collect(Collectors.toSet());

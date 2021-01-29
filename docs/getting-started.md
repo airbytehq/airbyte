@@ -71,7 +71,7 @@ From there, you can look at the logs, download them, force a sync and adjust the
 Now let's verify that this worked:
 
 ```bash
-cat /tmp/airbyte_local/json_data/exchange_rate_raw.jsonl
+cat /tmp/airbyte_local/json_data/_airbyte_raw_exchange_rate.jsonl
 ```
 
 You should see one line for each day that was replicated.
@@ -79,7 +79,7 @@ You should see one line for each day that was replicated.
 If you have [`jq`](https://stedolan.github.io/jq/) installed, let's look at the evolution of `EUR`.
 
 ```bash
-cat /tmp/airbyte_local/test_json/exchange_rate_raw.jsonl | 
+cat /tmp/airbyte_local/test_json/_airbyte_raw_exchange_rate.jsonl | 
 jq -c '.data | {date: .date, EUR: .EUR }'
 ```
 
