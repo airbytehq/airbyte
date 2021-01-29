@@ -6,7 +6,7 @@ This destination is meant to be used on a local workstation and won't work on Ku
 
 ## Overview
 
-This destination writes data to a directory on the _local_ filesystem on the host running Airbyte. By default, data is written to [/tmp/airbyte\_local](file:///tmp/airbyte_local/). To change this location, modify the `LOCAL_ROOT` environment variable for Airbyte.
+This destination writes data to a directory on the _local_ filesystem on the host running Airbyte. By default, data is written to `/tmp/airbyte_local`. To change this location, modify the `LOCAL_ROOT` environment variable for Airbyte.
 
 ### Sync Overview
 
@@ -31,7 +31,18 @@ This integration will be constrained by the speed at which your filesystem accep
 
 ## Getting Started
 
-### Requirements:
+The `destination_path` will always start with `/local` whether it is specified by the user or not.
+Any directory nesting within local will be mapped onto the local mount.
 
-* The `destination_path` must start with `/local`. Any directory nesting within local will be mapped onto the local mount. By default, the local mount is mounted onto `/tmp/airbyte_local`. This is controlled by the `LOCAL_ROOT` env variable in the `.env` file. If `destination_path` is set to `/local/cars/models` and the local mount is using the `/tmp/airbyte_local` default, then data will be written to `/tmp/airbyte_local/cars/models` directory.
+By default, the `LOCAL_ROOT` env variable in the `.env` file is set `/tmp/airbyte_local`.
 
+The local mount is mounted by Docker onto `LOCAL_ROOT`.
+This means the `/local` is substituted by `/tmp/airbyte_local` by default.
+
+### Example:
+
+- If `destination_path` is set to `/local/cars/models`
+- the local mount is using the `/tmp/airbyte_local` default
+- then all data will be written to `/tmp/airbyte_local/cars/models` directory.
+
+(If Airbyte instance is running on the same computer that you are navigating with, you can open your browser to go to [file:///tmp/airbyte_local](file:///tmp/airbyte_local) and look at the replicated data locally)
