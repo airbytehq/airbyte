@@ -294,7 +294,7 @@ class Client:
         elif dtype in ("int64", "float64"):
             return "number"
         elif dtype == "bool":
-            return "bool"
+            return "boolean"
         return "string"
 
     @property
