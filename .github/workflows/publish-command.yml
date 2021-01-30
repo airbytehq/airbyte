@@ -1,4 +1,4 @@
-name: integration-test
+name: Publish Connector Image
 on:
   workflow_dispatch:
     inputs:
@@ -10,10 +10,10 @@ on:
         required: false
 
 jobs:
-  integration_test:
+  publish_image:
     runs-on: ubuntu-latest
     steps:
-      - name: Search for valid integration name format
+      - name: Search for valid connector name format
         id: regex
         uses: AsasInnab/regex-action@v1
         with:
@@ -62,3 +62,4 @@ jobs:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
             > :x: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+            
