@@ -59,7 +59,7 @@ cmd_publish() {
 
 USAGE="
 
-Usage: $(basename $0) <build|publish> <integration_root_path>
+Usage: $(basename $0) <build|test|publish> <integration_root_path>
 "
 
 main() {
