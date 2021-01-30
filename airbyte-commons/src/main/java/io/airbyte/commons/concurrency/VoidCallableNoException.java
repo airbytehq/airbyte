@@ -24,18 +24,19 @@
 
 package io.airbyte.commons.concurrency;
 
-import java.util.concurrent.Callable;
-
 @FunctionalInterface
-public interface VoidCallable extends Callable<Void> {
+public interface VoidCallableNoException {
 
-  VoidCallable NOOP = () -> {};
+  void call();
 
-  default @Override Void call() throws Exception {
-    voidCall();
-    return null;
+  static VoidCallableNoException fromVoidCallable(VoidCallable callable) {
+    return () -> {
+      try {
+        callable.call();
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    };
   }
-
-  void voidCall() throws Exception;
 
 }

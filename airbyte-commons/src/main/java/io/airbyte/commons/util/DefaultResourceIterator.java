@@ -22,11 +22,35 @@
  * SOFTWARE.
  */
 
-package io.airbyte.commons.concurrency;
+package io.airbyte.commons.util;
 
-@FunctionalInterface
-public interface SafeVoidCallable {
+import com.google.common.collect.AbstractIterator;
+import io.airbyte.commons.concurrency.VoidCallable;
+import java.util.Iterator;
 
-  void call();
+class DefaultResourceIterator<T> extends AbstractIterator<T> implements ResourceIterator<T> {
+
+  private final Iterator<T> iterator;
+  private final VoidCallable closeable;
+
+  public DefaultResourceIterator(Iterator<T> iterator, VoidCallable closeable) {
+
+    this.iterator = iterator;
+    this.closeable = closeable;
+  }
+
+  @Override
+  protected T computeNext() {
+    if (iterator.hasNext()) {
+      return iterator.next();
+    } else {
+      return endOfData();
+    }
+  }
+
+  @Override
+  public void close() throws Exception {
+    closeable.call();
+  }
 
 }

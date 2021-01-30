@@ -31,4 +31,4 @@ import java.util.Iterator;
  *
  * @param <T> type
  */
-public interface CloseableIterator<T> extends Iterator<T>, AutoCloseable {}
+public interface ResourceIterator<T> extends Iterator<T>, AutoCloseable {}
