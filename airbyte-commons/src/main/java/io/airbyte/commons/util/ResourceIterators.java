@@ -24,12 +24,10 @@
 
 package io.airbyte.commons.util;
 
-import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.concurrency.VoidCallableNoException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -53,6 +51,74 @@ public class ResourceIterators {
    */
   public static <T> ResourceIterator<T> resourceIterator(Iterator<T> iterator) {
     return new DefaultResourceIterator<>(iterator, VoidCallable.NOOP);
+  }
+
+  /**
+   * Coerces a vanilla {@link Iterator} into a {@link ResourceIterator}. The provided {@param onClose}
+   * function will be called at most one time.
+   *
+   * @param iterator resource iterator to add another close to
+   * @param onClose the function that will be called on close
+   * @param <T> type
+   * @return new resource iterator with the close function appended
+   */
+  public static <T> ResourceIterator<T> resourceIterator(Iterator<T> iterator, VoidCallableNoException onClose) {
+    return new DefaultResourceIterator<>(iterator, onClose::call);
+  }
+
+  /**
+   * Wraps a {@link Stream} in a {@link ResourceIterator}. When {@link ResourceIterator#close()} is
+   * called, {@link Stream#close()} will be called.
+   *
+   * @param stream stream to wrap
+   * @param <T> type
+   * @return resource iterator
+   */
+  public static <T> ResourceIterator<T> resourceIterator(Stream<T> stream) {
+    return new DefaultResourceIterator<>(stream.iterator(), stream::close);
+  }
+
+  /**
+   * Returns a {@link ResourceIterator} that will call the provided supplier ONE time when
+   * {@link ResourceIterator#hasNext()} is called the first time. The supplier returns a stream that
+   * will be exposed as an iterator. When {@link ResourceIterator#close()} is called,
+   * {@link Stream#close()} will be called.
+   *
+   * @param iteratorSupplier supplier that provides a the resouce iterator that will be invoked lazily
+   * @param <T> type
+   * @return resource iterator
+   */
+  public static <T> ResourceIterator<T> lazyResourceIterator(Supplier<ResourceIterator<T>> iteratorSupplier) {
+    return new LazyResourceIterator<>(iteratorSupplier);
+  }
+
+  /**
+   * Returns a {@link ResourceIterator} that will call {@link ResourceIterator#close()} as soon as the
+   * iterator returns hasNext() = false the first time. When {@link ResourceIterator#close()} is
+   * called, {@link Stream#close()} will be called.
+   *
+   * @param resourceIterator
+   * @param <T>
+   * @return
+   */
+  public static <T> ResourceIterator<T> autoClosingResourceIterator(ResourceIterator<T> resourceIterator) {
+    return new AutoCloseIterator<>(resourceIterator);
+  }
+
+  /**
+   * Returns a {@link ResourceIterator} that will call the provided supplier ONE time when
+   * {@link ResourceIterator#hasNext()} is called the first time. The supplier returns a stream that
+   * will be exposes as an iterator. This stream will be closed
+   *
+   * @param streamSupplier supplies the stream this supplier will be called one time.
+   * @param <T> type
+   * @return resource iterator
+   */
+  public static <T> ResourceIterator<T> lazyAutoClosingResourceIterator(Supplier<Stream<T>> streamSupplier) {
+    return autoClosingResourceIterator(lazyResourceIterator(() -> {
+      final Stream<T> stream = streamSupplier.get();
+      return resourceIterator(stream);
+    }));
   }
 
   /**
@@ -99,14 +165,15 @@ public class ResourceIterators {
     return new DefaultResourceIterator<>(iteratorCreator.apply(resourceIterator), resourceIterator::close);
   }
 
-  @SuppressWarnings("unchecked")
-  public static <T> ResourceIterator<T> concat(ResourceIterator<T>... iterators) {
-    final AutoCloseIterator<T>[] autoCloseIterators = Arrays
-        .stream(iterators)
-        .map(iterator -> new AutoCloseIterator<>(iterator, VoidCallableNoException.fromVoidCallable(iterator::close)))
-        .toArray(AutoCloseIterator[]::new);
-
-    return new DefaultResourceIterator<>(Iterators.concat(autoCloseIterators), () -> {
+  /**
+   * Concatenates {@link ResourceIterator}.
+   *
+   * @param iterators iterators to concatenate.
+   * @param <T> type
+   * @return concatenated iterator
+   */
+  public static <T> ResourceIterator<T> concat(List<ResourceIterator<T>> iterators) {
+    return new DefaultResourceIterator<>(Iterators.concat(iterators.iterator()), () -> {
       for (ResourceIterator<T> iterator : iterators) {
         iterator.close();
       }
@@ -115,94 +182,6 @@ public class ResourceIterators {
 
   public static <T> ResourceIterator<T> concat(ResourceIterator<T> iterator1, ResourceIterator<T> iterator2) {
     return concat(ImmutableList.of(iterator1, iterator2));
-  }
-
-  /**
-   * Concatenates {@link ResourceIterator}. Whenever one of the input iterators is completely consumed
-   * the {@link ResourceIterator#close()} will be called immediately. Calling
-   * {@link ResourceIterator#close()} on the output iterator will call
-   * {@link ResourceIterator#close()} on every input iterator. This means
-   * {@link ResourceIterator#close()} can be called multiple times on any of the input iterators.
-   *
-   * @param iterators iterators to concatenate.
-   * @param <T> type
-   * @return concatenated iterator
-   */
-  @SuppressWarnings("unchecked")
-  public static <T> ResourceIterator<T> concat(List<ResourceIterator<T>> iterators) {
-    final AutoCloseIterator<T>[] autoCloseIterators = iterators
-        .stream()
-        .map(iterator -> new AutoCloseIterator<>(iterator, VoidCallableNoException.fromVoidCallable(iterator::close)))
-        .toArray(AutoCloseIterator[]::new);
-
-    return new DefaultResourceIterator<>(Iterators.concat(autoCloseIterators), () -> {
-      for (ResourceIterator<T> iterator : iterators) {
-        iterator.close();
-      }
-    });
-  }
-
-  public static <T> ResourceIterator<T> toResourceIterator(Supplier<Stream<T>> streamSupplier) {
-    return new LazyResourceIterator<>(() -> {
-      final Stream<T> stream = streamSupplier.get();
-      // todo problem that we will close this stream multiple times?
-      return new DefaultResourceIterator<>(stream.iterator(), stream::close);
-    });
-  }
-
-  private static class LazyResourceIterator<T> extends AbstractIterator<T> implements ResourceIterator<T> {
-
-    private final Supplier<ResourceIterator<T>> iteratorSupplier;
-
-    private boolean hasSupplied;
-    private ResourceIterator<T> internalIterator;
-
-    public LazyResourceIterator(Supplier<ResourceIterator<T>> iteratorSupplier) {
-      this.iteratorSupplier = iteratorSupplier;
-      this.hasSupplied = false;
-    }
-
-    @Override
-    protected T computeNext() {
-      if (!hasSupplied) {
-        internalIterator = iteratorSupplier.get();
-        hasSupplied = true;
-      }
-
-      if (internalIterator.hasNext()) {
-        return internalIterator.next();
-      } else {
-        return endOfData();
-      }
-    }
-
-    @Override
-    public void close() throws Exception {
-      internalIterator.close();
-    }
-
-  }
-
-  private static class AutoCloseIterator<T> extends AbstractIterator<T> implements Iterator<T> {
-
-    private final Iterator<T> internalIterator;
-    private final VoidCallableNoException onClose;
-
-    public AutoCloseIterator(Iterator<T> iterator, VoidCallableNoException onClose) {
-      this.internalIterator = iterator;
-      this.onClose = onClose;
-    }
-
-    @Override
-    protected T computeNext() {
-      if (internalIterator.hasNext()) {
-        return internalIterator.next();
-      } else {
-        onClose.call();
-        return endOfData();
-      }
-    }
-
   }
 
 }

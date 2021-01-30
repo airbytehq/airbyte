@@ -377,7 +377,7 @@ public abstract class AbstractJdbcSource implements Source {
                                                                  String schemaName,
                                                                  String tableName) {
     LOGGER.info("Queueing query for table: {}", tableName);
-    return ResourceIterators.toResourceIterator(() -> {
+    return ResourceIterators.lazyAutoClosingResourceIterator(() -> {
       try {
         return database.query(
             connection -> {
@@ -405,7 +405,7 @@ public abstract class AbstractJdbcSource implements Source {
                                                                  String cursor) {
 
     LOGGER.info("Queueing query for table: {}", tableName);
-    return ResourceIterators.toResourceIterator(() -> {
+    return ResourceIterators.lazyAutoClosingResourceIterator(() -> {
       try {
         return database.query(
             connection -> {

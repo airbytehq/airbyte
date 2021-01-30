@@ -24,12 +24,45 @@
 
 package io.airbyte.commons.util;
 
+import com.google.common.collect.AbstractIterator;
 import java.util.Iterator;
+import java.util.function.Supplier;
 
 /**
- * If you operate on this iterator, you better close it. {@link ResourceIterator#close} must be
- * idempotent. The contract on this interface is that it may be called MANY times.
+ * A {@link ResourceIterator} that calls the provided supplier the first time
+ * {@link Iterator#hasNext} is called.
  *
  * @param <T> type
  */
-public interface ResourceIterator<T> extends Iterator<T>, AutoCloseable {}
+class LazyResourceIterator<T> extends AbstractIterator<T> implements ResourceIterator<T> {
+
+  private final Supplier<ResourceIterator<T>> iteratorSupplier;
+
+  private boolean hasSupplied;
+  private ResourceIterator<T> internalIterator;
+
+  public LazyResourceIterator(Supplier<ResourceIterator<T>> iteratorSupplier) {
+    this.iteratorSupplier = iteratorSupplier;
+    this.hasSupplied = false;
+  }
+
+  @Override
+  protected T computeNext() {
+    if (!hasSupplied) {
+      internalIterator = iteratorSupplier.get();
+      hasSupplied = true;
+    }
+
+    if (internalIterator.hasNext()) {
+      return internalIterator.next();
+    } else {
+      return endOfData();
+    }
+  }
+
+  @Override
+  public void close() throws Exception {
+    internalIterator.close();
+  }
+
+}

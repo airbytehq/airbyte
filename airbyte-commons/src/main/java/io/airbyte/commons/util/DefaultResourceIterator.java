@@ -28,15 +28,23 @@ import com.google.common.collect.AbstractIterator;
 import io.airbyte.commons.concurrency.VoidCallable;
 import java.util.Iterator;
 
+/**
+ * The canonical {@link ResourceIterator}. The default behavior guarantees that the provided close
+ * functional will be called no more than one time.
+ *
+ * @param <T> type
+ */
 class DefaultResourceIterator<T> extends AbstractIterator<T> implements ResourceIterator<T> {
 
   private final Iterator<T> iterator;
-  private final VoidCallable closeable;
+  private final VoidCallable onClose;
 
-  public DefaultResourceIterator(Iterator<T> iterator, VoidCallable closeable) {
+  private boolean hasClosed;
 
+  public DefaultResourceIterator(Iterator<T> iterator, VoidCallable onClose) {
     this.iterator = iterator;
-    this.closeable = closeable;
+    this.onClose = onClose;
+    this.hasClosed = false;
   }
 
   @Override
@@ -50,7 +58,10 @@ class DefaultResourceIterator<T> extends AbstractIterator<T> implements Resource
 
   @Override
   public void close() throws Exception {
-    closeable.call();
+    if (!hasClosed) {
+      hasClosed = true;
+      onClose.call();
+    }
   }
 
 }
