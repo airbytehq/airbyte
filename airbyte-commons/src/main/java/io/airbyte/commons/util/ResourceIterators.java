@@ -67,8 +67,9 @@ public class ResourceIterators {
   }
 
   /**
-   * Wraps a {@link Stream} in a {@link ResourceIterator}. When {@link ResourceIterator#close()} is
-   * called, {@link Stream#close()} will be called.
+   * Wraps a {@link Stream} in a {@link ResourceIterator}. The first time
+   * {@link ResourceIterator#close()} is called, {@link Stream#close()} will be called. It will not be
+   * called again subsequently.
    *
    * @param stream stream to wrap
    * @param <T> type
@@ -81,10 +82,9 @@ public class ResourceIterators {
   /**
    * Returns a {@link ResourceIterator} that will call the provided supplier ONE time when
    * {@link ResourceIterator#hasNext()} is called the first time. The supplier returns a stream that
-   * will be exposed as an iterator. When {@link ResourceIterator#close()} is called,
-   * {@link Stream#close()} will be called.
+   * will be exposed as an iterator.
    *
-   * @param iteratorSupplier supplier that provides a the resouce iterator that will be invoked lazily
+   * @param iteratorSupplier supplier that provides a resource iterator that will be invoked lazily
    * @param <T> type
    * @return resource iterator
    */
@@ -93,22 +93,21 @@ public class ResourceIterators {
   }
 
   /**
-   * Returns a {@link ResourceIterator} that will call {@link ResourceIterator#close()} as soon as the
-   * iterator returns hasNext() = false the first time. When {@link ResourceIterator#close()} is
-   * called, {@link Stream#close()} will be called.
+   * Returns a {@link ResourceIterator} that will call {@link ResourceIterator#close()} at most one
+   * time. Either as soon as {@link Iterator#hasNext()} returns false for the first time or when
+   * {@link ResourceIterator#close()} is called,
    *
-   * @param resourceIterator
-   * @param <T>
-   * @return
+   * @param resourceIterator wrapped resource iterator
+   * @param <T> type
+   * @return resource iterator
    */
   public static <T> ResourceIterator<T> autoClosingResourceIterator(ResourceIterator<T> resourceIterator) {
     return new AutoCloseIterator<>(resourceIterator);
   }
 
   /**
-   * Returns a {@link ResourceIterator} that will call the provided supplier ONE time when
-   * {@link ResourceIterator#hasNext()} is called the first time. The supplier returns a stream that
-   * will be exposes as an iterator. This stream will be closed
+   * Returns a {@link ResourceIterator} that is composed of a {@link DefaultResourceIterator},
+   * {@link LazyResourceIterator}, and {@link AutoCloseIterator}.
    *
    * @param streamSupplier supplies the stream this supplier will be called one time.
    * @param <T> type
