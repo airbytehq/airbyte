@@ -46,6 +46,7 @@ class AirbyteProtocolConvertersTest {
 
   private static final String STREAM = "users";
   private static final String STREAM_2 = "users2";
+  private static final String NAMESPACE = "test";
   private static final String COLUMN_NAME = "name";
   private static final String COLUMN_AGE = "age";
 
@@ -62,6 +63,8 @@ class AirbyteProtocolConvertersTest {
 
   private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = new ConfiguredAirbyteCatalog()
       .withStreams(Lists.newArrayList(new ConfiguredAirbyteStream()
+          .withDestinationName(STREAM)
+          .withDestinationNamespace(NAMESPACE)
           .withStream(AB_STREAM)
           .withSyncMode(SyncMode.INCREMENTAL)
           .withCursorField(Lists.newArrayList(COLUMN_NAME))));
@@ -70,6 +73,8 @@ class AirbyteProtocolConvertersTest {
       .withStreams(Lists.newArrayList(new Stream()
           .withSelected(true)
           .withName(STREAM)
+          .withDestinationName(STREAM)
+          .withDestinationNamespace(NAMESPACE)
           .withFields(Lists.newArrayList(
               new io.airbyte.config.Field()
                   .withName(COLUMN_NAME)
@@ -85,6 +90,8 @@ class AirbyteProtocolConvertersTest {
       .withStreams(Lists.newArrayList(new Stream()
           .withSelected(true)
           .withName(STREAM)
+          .withDestinationName(STREAM)
+          .withDestinationNamespace(NAMESPACE)
           .withFields(Lists.newArrayList(
               new io.airbyte.config.Field()
                   .withName(COLUMN_NAME)
@@ -97,6 +104,8 @@ class AirbyteProtocolConvertersTest {
           .withDefaultCursorField(Lists.newArrayList(COLUMN_AGE)),
           new Stream()
               .withName(STREAM_2)
+              .withDestinationName(STREAM_2)
+              .withDestinationNamespace(NAMESPACE)
               .withFields(Lists.newArrayList(
                   new io.airbyte.config.Field()
                       .withName(COLUMN_NAME)
@@ -128,7 +137,7 @@ class AirbyteProtocolConvertersTest {
     final Schema schema = Jsons.clone(SCHEMA);
     schema.getStreams().forEach(table -> table.getFields().forEach(c -> c.setSelected(true))); // select all fields
 
-    assertEquals(schema, AirbyteProtocolConverters.toSchema(CATALOG));
+    assertEquals(schema, AirbyteProtocolConverters.toSchema(CATALOG, NAMESPACE));
   }
 
   @Test
@@ -138,6 +147,8 @@ class AirbyteProtocolConvertersTest {
     final Schema schema = new Schema()
         .withStreams(Lists.newArrayList(new Stream()
             .withName(STREAM)
+            .withDestinationName(STREAM)
+            .withDestinationNamespace(NAMESPACE)
             .withFields(Lists.newArrayList(
                 new io.airbyte.config.Field()
                     .withName("date")
@@ -149,7 +160,7 @@ class AirbyteProtocolConvertersTest {
                     .withSelected(true)))
             .withSelected(true)));
 
-    assertEquals(schema, AirbyteProtocolConverters.toSchema(catalog));
+    assertEquals(schema, AirbyteProtocolConverters.toSchema(catalog, NAMESPACE));
   }
 
   @Test
@@ -160,6 +171,8 @@ class AirbyteProtocolConvertersTest {
     final Schema schema = new Schema()
         .withStreams(Lists.newArrayList(new Stream()
             .withName(STREAM)
+            .withDestinationName(STREAM)
+            .withDestinationNamespace(NAMESPACE)
             .withFields(Lists.newArrayList(
                 new io.airbyte.config.Field()
                     .withName("date")
@@ -168,7 +181,7 @@ class AirbyteProtocolConvertersTest {
             .withSelected(true)));
 
     final AirbyteCatalog catalog = Jsons.deserialize(testString, AirbyteCatalog.class);
-    assertEquals(schema, AirbyteProtocolConverters.toSchema(catalog));
+    assertEquals(schema, AirbyteProtocolConverters.toSchema(catalog, NAMESPACE));
   }
 
   @Test

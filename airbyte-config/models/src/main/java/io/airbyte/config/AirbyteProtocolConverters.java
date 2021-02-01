@@ -40,6 +40,7 @@ import java.util.Map.Entry;
 import java.util.Spliterators;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import org.apache.commons.lang3.StringUtils;
 
 // todo (cgardens) - hack, remove after we've gotten rid of Schema object.
 public class AirbyteProtocolConverters {
@@ -47,23 +48,29 @@ public class AirbyteProtocolConverters {
   public static ConfiguredAirbyteCatalog toConfiguredCatalog(Schema schema) {
     final List<ConfiguredAirbyteStream> airbyteStreams = schema.getStreams().stream()
         .filter(s -> s.getSelected() != null && s.getSelected())
-        .map(s -> new ConfiguredAirbyteStream()
-            // immutable
-            // todo (cgardens) - not great that we just trust the API to not mutate these.
-            .withStream(new AirbyteStream()
-                .withName(s.getName())
-                .withJsonSchema(toJson(s.getFields()))
-                .withSupportedSyncModes(s.getSupportedSyncModes()
-                    .stream()
-                    .map(e -> Enums.convertTo(e, SyncMode.class))
-                    .collect(Collectors.toList()))
-                .withSourceDefinedCursor(s.getSourceDefinedCursor())
-                .withDefaultCursorField(s.getDefaultCursorField()))
-            // configurable
-            .withSyncMode(Enums.convertTo(s.getSyncMode(), SyncMode.class))
-            .withCursorField(s.getCursorField()))
+        .map(s -> {
+          return new ConfiguredAirbyteStream()
+              // immutable
+              // todo (cgardens) - not great that we just trust the API to not mutate these.
+              .withStream(new AirbyteStream()
+                  .withName(s.getName())
+                  .withJsonSchema(toJson(s.getFields()))
+                  .withSupportedSyncModes(s.getSupportedSyncModes()
+                      .stream()
+                      .map(e -> Enums.convertTo(e, SyncMode.class))
+                      .collect(Collectors.toList()))
+                  .withSourceDefinedCursor(s.getSourceDefinedCursor())
+                  .withDefaultCursorField(s.getDefaultCursorField())
+                  .withNamespace(s.getSourceNamespace()))
+              // configurable
+              .withSyncMode(Enums.convertTo(s.getSyncMode(), SyncMode.class))
+              .withCursorField(s.getCursorField())
+              .withDestinationNamespace(s.getDestinationNamespace())
+              .withDestinationName(s.getDestinationName());
+        })
         .collect(Collectors.toList());
-    return new ConfiguredAirbyteCatalog().withStreams(airbyteStreams);
+    return new ConfiguredAirbyteCatalog()
+        .withStreams(airbyteStreams);
   }
 
   // todo (cgardens) - this will only work with table / column schemas. it's hack to get us through
@@ -86,23 +93,40 @@ public class AirbyteProtocolConverters {
         .build());
   }
 
-  public static Schema toSchema(AirbyteCatalog catalog) {
-    return new Schema().withStreams(catalog.getStreams()
-        .stream()
-        .map(airbyteStream -> new Stream()
-            // immutable
-            .withName(airbyteStream.getName())
-            .withFields(toFields(airbyteStream.getJsonSchema().get("properties")))
-            .withSupportedSyncModes(airbyteStream.getSupportedSyncModes()
-                .stream()
-                .map(e -> Enums.convertTo(e, io.airbyte.config.SyncMode.class))
-                .collect(Collectors.toList()))
-            .withSourceDefinedCursor(airbyteStream.getSourceDefinedCursor())
-            .withDefaultCursorField(airbyteStream.getDefaultCursorField())
-            .withSelected(true)) // by default all discovered streams are treated as default.
-        // configurable fields syncMode and cursorField are not set since they will never be defined in an
-        // AirbyteCatalog.
-        .collect(Collectors.toList()));
+  public static Schema toSchema(final AirbyteCatalog catalog, final String namespacePrefix) {
+    return new Schema()
+        .withStreams(catalog.getStreams()
+            .stream()
+            .map(airbyteStream -> new Stream()
+                // immutable
+                .withName(airbyteStream.getName())
+                .withFields(toFields(airbyteStream.getJsonSchema().get("properties")))
+                .withSupportedSyncModes(airbyteStream.getSupportedSyncModes()
+                    .stream()
+                    .map(e -> Enums.convertTo(e, io.airbyte.config.SyncMode.class))
+                    .collect(Collectors.toList()))
+                .withSourceDefinedCursor(airbyteStream.getSourceDefinedCursor())
+                .withDefaultCursorField(airbyteStream.getDefaultCursorField())
+                .withSourceNamespace(airbyteStream.getNamespace())
+                .withDestinationNamespace(joinNamespaces(namespacePrefix, airbyteStream.getNamespace()))
+                .withDestinationName(airbyteStream.getName())
+                .withSelected(true)) // by default all discovered streams are treated as default.
+            // configurable fields syncMode and cursorField are not set since they will never be defined in an
+            // AirbyteCatalog.
+            .collect(Collectors.toList()));
+  }
+
+  private static String joinNamespaces(String s1, String s2) {
+    if (!StringUtils.isBlank(s1)) {
+      s1 = s1.trim();
+      if (!StringUtils.isBlank(s2)) {
+        s2 = s2.trim();
+        return StringUtils.joinWith("_", s1, s2);
+      } else {
+        return s1;
+      }
+    }
+    return s2;
   }
 
   private static List<Field> toFields(JsonNode jsonSchemaPropertiesObject) {

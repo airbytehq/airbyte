@@ -6,6 +6,7 @@ plugins {
 
 dependencies {
     implementation project(':airbyte-protocol:models')
+    implementation 'org.apache.commons:commons-lang3:3.11'
 }
 
 jsonSchema2Pojo {
