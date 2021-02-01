@@ -52,6 +52,10 @@ resource "aws_instance" "airbyte-instance" {
 
   user_data = file("${path.module}/init.sh")
 
+  root_block_device {
+    volume_size = 60
+  }
+
   tags = {
     Name = "${var.name}-airbyte-app"
   }
