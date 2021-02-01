@@ -29,6 +29,7 @@ import pkgutil
 import time
 from typing import Dict, List, Optional, Tuple, Union
 
+import backoff
 import msal
 import requests
 from airbyte_protocol import AirbyteStream
@@ -83,6 +84,9 @@ class Client:
         else:
             raise MsalServiceError(error=result.get("error"), error_description=result.get("error_description"))
 
+    @backoff.on_exception(
+        backoff.expo, (requests.exceptions.ConnectionError, MsalServiceError, requests.exceptions.RequestException), max_tries=7
+    )
     def _make_request(self, api_url: str, params: Optional[Dict] = None) -> Union[Dict, object]:
         access_token = self._get_access_token()
         headers = {"Authorization": f"Bearer {access_token}"}
@@ -98,12 +102,13 @@ class Client:
             raw_response = response.content
         else:
             raw_response = response.json()
+            value = raw_response.get("value", [])
+            if not value:
+                raise requests.exceptions.RequestException()
         return raw_response
 
     @staticmethod
     def _get_response_value_unsafe(raw_response: Dict) -> List:
-        if "value" not in raw_response:
-            raise requests.exceptions.RequestException()
         value = raw_response["value"]
         return value
 
@@ -117,14 +122,12 @@ class Client:
     def _fetch_data(self, endpoint: str, params: Optional[Dict] = None, pagination: bool = True):
         api_url = self._get_api_url(endpoint)
         params = self._get_request_params(params, pagination)
-        while True:
+        while api_url:
             raw_response = self._make_request(api_url, params)
             value = self._get_response_value_unsafe(raw_response)
-            yield value
-            if "@odata.nextLink" not in raw_response:
-                break
             params = None
-            api_url = raw_response["@odata.nextLink"]
+            api_url = raw_response.get("@odata.nextLink", "")
+            yield value
 
     def health_check(self) -> Tuple[bool, object]:
         try:
