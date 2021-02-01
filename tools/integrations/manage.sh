@@ -19,22 +19,13 @@ cmd_build() {
   echo "Building $path"
   ./gradlew "$(_get_rule_base "$path"):clean"
   ./gradlew "$(_get_rule_base "$path"):build"
-}
-
-cmd_test() {
-  local path=$1
-  echo "Testing $path"
   ./gradlew "$(_get_rule_base "$path"):integrationTest"
 }
 
 cmd_publish() {
   local path=$1
 
-  if [ $SKIP_TESTS != "true" ]; then
-    cmd_test "$path"
-  else
-    cmd_build "$path"
-  fi
+  cmd_build "$path"
 
   local image_name; image_name=$(_get_docker_image_name "$path"/Dockerfile)
   local image_version; image_version=$(_get_docker_image_version "$path"/Dockerfile)
@@ -59,7 +50,7 @@ cmd_publish() {
 
 USAGE="
 
-Usage: $(basename $0) <build|test|publish> <integration_root_path>
+Usage: $(basename $0) <build|publish> <integration_root_path>
 "
 
 main() {
