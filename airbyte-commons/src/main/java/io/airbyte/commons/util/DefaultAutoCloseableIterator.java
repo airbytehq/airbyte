@@ -25,36 +25,32 @@
 package io.airbyte.commons.util;
 
 import com.google.common.collect.AbstractIterator;
+import io.airbyte.commons.concurrency.VoidCallable;
 import java.util.Iterator;
-import java.util.function.Supplier;
 
 /**
- * A {@link ResourceIterator} that calls the provided supplier the first time
- * {@link Iterator#hasNext} is called.
+ * The canonical {@link AutoCloseableIterator}. The default behavior guarantees that the provided close
+ * functional will be called no more than one time.
  *
  * @param <T> type
  */
-class LazyResourceIterator<T> extends AbstractIterator<T> implements ResourceIterator<T> {
+class DefaultAutoCloseableIterator<T> extends AbstractIterator<T> implements AutoCloseableIterator<T> {
 
-  private final Supplier<ResourceIterator<T>> iteratorSupplier;
+  private final Iterator<T> iterator;
+  private final VoidCallable onClose;
 
-  private boolean hasSupplied;
-  private ResourceIterator<T> internalIterator;
+  private boolean hasClosed;
 
-  public LazyResourceIterator(Supplier<ResourceIterator<T>> iteratorSupplier) {
-    this.iteratorSupplier = iteratorSupplier;
-    this.hasSupplied = false;
+  public DefaultAutoCloseableIterator(Iterator<T> iterator, VoidCallable onClose) {
+    this.iterator = iterator;
+    this.onClose = onClose;
+    this.hasClosed = false;
   }
 
   @Override
   protected T computeNext() {
-    if (!hasSupplied) {
-      internalIterator = iteratorSupplier.get();
-      hasSupplied = true;
-    }
-
-    if (internalIterator.hasNext()) {
-      return internalIterator.next();
+    if (iterator.hasNext()) {
+      return iterator.next();
     } else {
       return endOfData();
     }
@@ -62,7 +58,10 @@ class LazyResourceIterator<T> extends AbstractIterator<T> implements ResourceIte
 
   @Override
   public void close() throws Exception {
-    internalIterator.close();
+    if (!hasClosed) {
+      hasClosed = true;
+      onClose.call();
+    }
   }
 
 }

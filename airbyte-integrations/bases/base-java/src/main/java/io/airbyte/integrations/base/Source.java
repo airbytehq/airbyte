@@ -25,7 +25,7 @@
 package io.airbyte.integrations.base;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.util.ResourceIterator;
+import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -49,11 +49,11 @@ public interface Source extends Integration {
    *        "password": "super secure" }
    * @param catalog - schema of the incoming messages.
    * @param state - state of the incoming messages.
-   * @return ResourceIterator that produces message. The iterator will be consumed until no records
-   *         remain or until an exception is thrown. {@link ResourceIterator#close()} will always be
+   * @return {@link AutoCloseableIterator} that produces message. The iterator will be consumed until no records
+   *         remain or until an exception is thrown. {@link AutoCloseableIterator#close()} will always be
    *         called once regardless of success or failure.
    * @throws Exception - any exception.
    */
-  ResourceIterator<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception;
+  AutoCloseableIterator<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception;
 
 }

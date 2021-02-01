@@ -29,19 +29,19 @@ import io.airbyte.commons.concurrency.VoidCallableNoException;
 import java.util.Iterator;
 
 /**
- * A {@link ResourceIterator} that will execute its close function when {@link Iterator#hasNext}
+ * A {@link AutoCloseableIterator} that will execute its close function when {@link Iterator#hasNext}
  * returns false for the first time.
  *
  * @param <T> type
  */
-class AutoCloseIterator<T> extends AbstractIterator<T> implements ResourceIterator<T> {
+class AutoCloseIterator<T> extends AbstractIterator<T> implements AutoCloseableIterator<T> {
 
-  private final ResourceIterator<T> internalIterator;
+  private final AutoCloseableIterator<T> internalIterator;
   private final VoidCallableNoException onClose;
 
   private boolean hasClosed;
 
-  public AutoCloseIterator(ResourceIterator<T> iterator) {
+  public AutoCloseIterator(AutoCloseableIterator<T> iterator) {
     this.internalIterator = iterator;
     this.onClose = VoidCallableNoException.fromVoidCallable(iterator::close);
   }

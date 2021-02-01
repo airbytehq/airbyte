@@ -31,8 +31,8 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.commons.util.ResourceIterator;
-import io.airbyte.commons.util.ResourceIterators;
+import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
@@ -148,7 +148,7 @@ public abstract class AbstractJdbcSource implements Source {
   }
 
   @Override
-  public ResourceIterator<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception {
+  public AutoCloseableIterator<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception {
     final JdbcStateManager stateManager =
         new JdbcStateManager(state == null ? JdbcStateManager.emptyState() : Jsons.object(state, JdbcState.class), catalog);
     final Instant emittedAt = Instant.now();
@@ -162,7 +162,7 @@ public abstract class AbstractJdbcSource implements Source {
             .stream()
             .collect(Collectors.toMap(t -> String.format("%s.%s", t.getSchemaName(), t.getName()), Function.identity()));
 
-    ResourceIterator<AirbyteMessage> resultIterator = ResourceIterators.emptyIterator();
+    AutoCloseableIterator<AirbyteMessage> resultIterator = AutoCloseableIterators.emptyIterator();
 
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
       final String streamName = airbyteStream.getStream().getName();
@@ -172,23 +172,23 @@ public abstract class AbstractJdbcSource implements Source {
       }
 
       final TableInfoInternal table = tableNameToTable.get(streamName);
-      final ResourceIterator<AirbyteMessage> tableReadIterator = createReadIterator(
+      final AutoCloseableIterator<AirbyteMessage> tableReadIterator = createReadIterator(
           database,
           airbyteStream,
           table,
           stateManager,
           emittedAt);
-      resultIterator = ResourceIterators.concat(resultIterator, tableReadIterator);
+      resultIterator = AutoCloseableIterators.concat(resultIterator, tableReadIterator);
     }
 
-    return ResourceIterators.appendOnClose(resultIterator, () -> {
+    return AutoCloseableIterators.appendOnClose(resultIterator, () -> {
       LOGGER.info("Closing database connection pool.");
       Exceptions.toRuntime(database::close);
       LOGGER.info("Closed database connection pool.");
     });
   }
 
-  private ResourceIterator<AirbyteMessage> createReadIterator(JdbcDatabase database,
+  private AutoCloseableIterator<AirbyteMessage> createReadIterator(JdbcDatabase database,
                                                               ConfiguredAirbyteStream airbyteStream,
                                                               TableInfoInternal table,
                                                               JdbcStateManager stateManager,
@@ -201,12 +201,12 @@ public abstract class AbstractJdbcSource implements Source {
         .filter(selectedFieldsInCatalog::contains)
         .collect(Collectors.toList());
 
-    final ResourceIterator<AirbyteMessage> iterator;
+    final AutoCloseableIterator<AirbyteMessage> iterator;
     if (airbyteStream.getSyncMode() == SyncMode.INCREMENTAL) {
       final String cursorField = IncrementalUtils.getCursorField(airbyteStream);
       final Optional<String> cursorOptional = stateManager.getCursor(streamName);
 
-      final ResourceIterator<AirbyteMessage> airbyteMessageIterator;
+      final AutoCloseableIterator<AirbyteMessage> airbyteMessageIterator;
       if (cursorOptional.isPresent()) {
         airbyteMessageIterator = getIncrementalStream(database, airbyteStream, selectedDatabaseFields, table, cursorOptional.get(), emittedAt);
       } else {
@@ -216,8 +216,8 @@ public abstract class AbstractJdbcSource implements Source {
 
       final JsonSchemaPrimitive cursorType = IncrementalUtils.getCursorType(airbyteStream, cursorField);
 
-      iterator = ResourceIterators.transform(resourceIterator -> new StateDecoratingIterator(
-          resourceIterator,
+      iterator = AutoCloseableIterators.transform(autoCloseableIterator -> new StateDecoratingIterator(
+          autoCloseableIterator,
           stateManager,
           streamName,
           cursorField,
@@ -231,7 +231,7 @@ public abstract class AbstractJdbcSource implements Source {
     }
 
     final AtomicLong recordCount = new AtomicLong();
-    return ResourceIterators.transform(iterator, r -> {
+    return AutoCloseableIterators.transform(iterator, r -> {
       final long count = recordCount.incrementAndGet();
       if (count % 10000 == 0) {
         LOGGER.info("Reading stream {}. Records read: {}", streamName, count);
@@ -240,7 +240,7 @@ public abstract class AbstractJdbcSource implements Source {
     });
   }
 
-  private static ResourceIterator<AirbyteMessage> getIncrementalStream(JdbcDatabase database,
+  private static AutoCloseableIterator<AirbyteMessage> getIncrementalStream(JdbcDatabase database,
                                                                        ConfiguredAirbyteStream airbyteStream,
                                                                        List<String> selectedDatabaseFields,
                                                                        TableInfoInternal table,
@@ -257,7 +257,7 @@ public abstract class AbstractJdbcSource implements Source {
     Preconditions.checkState(table.getFields().stream().anyMatch(f -> f.getColumnName().equals(cursorField)),
         String.format("Could not find cursor field %s in table %s", cursorField, table.getName()));
 
-    final ResourceIterator<JsonNode> queryIterator = queryTableIncremental(
+    final AutoCloseableIterator<JsonNode> queryIterator = queryTableIncremental(
         database,
         selectedDatabaseFields,
         table.getSchemaName(),
@@ -269,12 +269,12 @@ public abstract class AbstractJdbcSource implements Source {
     return getMessageIterator(queryIterator, streamName, emittedAt.toEpochMilli());
   }
 
-  private static ResourceIterator<AirbyteMessage> getFullRefreshStream(JdbcDatabase database,
+  private static AutoCloseableIterator<AirbyteMessage> getFullRefreshStream(JdbcDatabase database,
                                                                        String streamName,
                                                                        List<String> selectedDatabaseFields,
                                                                        TableInfoInternal table,
                                                                        Instant emittedAt) {
-    final ResourceIterator<JsonNode> queryStream = queryTableFullRefresh(database, selectedDatabaseFields, table.getSchemaName(), table.getName());
+    final AutoCloseableIterator<JsonNode> queryStream = queryTableFullRefresh(database, selectedDatabaseFields, table.getSchemaName(), table.getName());
     return getMessageIterator(queryStream, streamName, emittedAt.toEpochMilli());
   }
 
@@ -363,8 +363,8 @@ public abstract class AbstractJdbcSource implements Source {
         .collect(Collectors.toList());
   }
 
-  private static ResourceIterator<AirbyteMessage> getMessageIterator(ResourceIterator<JsonNode> recordIterator, String streamName, long emittedAt) {
-    return ResourceIterators.transform(recordIterator, r -> new AirbyteMessage()
+  private static AutoCloseableIterator<AirbyteMessage> getMessageIterator(AutoCloseableIterator<JsonNode> recordIterator, String streamName, long emittedAt) {
+    return AutoCloseableIterators.transform(recordIterator, r -> new AirbyteMessage()
         .withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage()
             .withStream(streamName)
@@ -372,12 +372,12 @@ public abstract class AbstractJdbcSource implements Source {
             .withData(r)));
   }
 
-  public static ResourceIterator<JsonNode> queryTableFullRefresh(JdbcDatabase database,
+  public static AutoCloseableIterator<JsonNode> queryTableFullRefresh(JdbcDatabase database,
                                                                  List<String> columnNames,
                                                                  String schemaName,
                                                                  String tableName) {
     LOGGER.info("Queueing query for table: {}", tableName);
-    return ResourceIterators.lazyAutoClosingResourceIterator(() -> {
+    return AutoCloseableIterators.lazyEagerCloseAutoCloseableIterator(() -> {
       try {
         return database.query(
             connection -> {
@@ -396,7 +396,7 @@ public abstract class AbstractJdbcSource implements Source {
     });
   }
 
-  public static ResourceIterator<JsonNode> queryTableIncremental(JdbcDatabase database,
+  public static AutoCloseableIterator<JsonNode> queryTableIncremental(JdbcDatabase database,
                                                                  List<String> columnNames,
                                                                  String schemaName,
                                                                  String tableName,
@@ -405,7 +405,7 @@ public abstract class AbstractJdbcSource implements Source {
                                                                  String cursor) {
 
     LOGGER.info("Queueing query for table: {}", tableName);
-    return ResourceIterators.lazyAutoClosingResourceIterator(() -> {
+    return AutoCloseableIterators.lazyEagerCloseAutoCloseableIterator(() -> {
       try {
         return database.query(
             connection -> {

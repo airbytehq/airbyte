@@ -29,7 +29,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.util.ResourceIterator;
+import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -100,7 +100,7 @@ public class IntegrationRunner {
         final JsonNode config = parseConfig(parsed.getConfigPath());
         final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
         final Optional<JsonNode> stateOptional = parsed.getStatePath().map(IntegrationRunner::parseConfig);
-        final ResourceIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null));
+        final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null));
         try (messageIterator) {
           messageIterator.forEachRemaining(v -> {
             stdoutConsumer.accept(Jsons.serialize(v));

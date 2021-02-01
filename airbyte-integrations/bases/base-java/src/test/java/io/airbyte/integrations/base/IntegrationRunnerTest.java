@@ -38,7 +38,7 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
-import io.airbyte.commons.util.ResourceIterators;
+import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
@@ -182,7 +182,7 @@ class IntegrationRunnerTest {
             .withData(Jsons.jsonNode(ImmutableMap.of("names", "reginald"))));
 
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
-    when(source.read(CONFIG, CONFIGURED_CATALOG, STATE)).thenReturn(ResourceIterators.resourceIterator(MoreIterators.of(message1, message2)));
+    when(source.read(CONFIG, CONFIGURED_CATALOG, STATE)).thenReturn(AutoCloseableIterators.fromIterator(MoreIterators.of(message1, message2)));
 
     new IntegrationRunner(cliParser, stdoutConsumer, null, source).run(ARGS);
 
