@@ -30,7 +30,7 @@ externalDocs:
   description: Find out more about Airbyte
   url: "https://airbyte.io"
 servers:
-  - url: "http://localhost:8001"
+  - url: "http://localhost:8001/api"
 tags:
   - name: workspace
     description: Workspace related resources.
@@ -577,7 +577,7 @@ paths:
     post:
       tags:
         - destination
-      summary: get configured destination
+      summary: Get configured destination
       operationId: getDestination
       requestBody:
         content:
@@ -1070,6 +1070,20 @@ paths:
           description: Logs not found
         "422":
           $ref: "#/components/responses/InvalidInput"
+  /v1/openapi:
+    get:
+      tags:
+        - openapi
+      summary: Returns the openapi specification
+      operationId: getOpenApiSpec
+      responses:
+        "200":
+          description: Returns the openapi specification file
+          content:
+            text/plain:
+              schema:
+                type: string
+                format: binary
   /v1/deployment/export:
     post:
       tags:

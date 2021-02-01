@@ -24,6 +24,7 @@
 
 package io.airbyte.server.apis;
 
+import com.google.common.io.Resources;
 import io.airbyte.api.model.CheckConnectionRead;
 import io.airbyte.api.model.ConnectionCreate;
 import io.airbyte.api.model.ConnectionIdRequestBody;
@@ -73,6 +74,7 @@ import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.api.model.WorkspaceRead;
 import io.airbyte.api.model.WorkspaceUpdate;
 import io.airbyte.commons.io.FileTtlManager;
+import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.Configs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -87,6 +89,7 @@ import io.airbyte.server.handlers.DestinationHandler;
 import io.airbyte.server.handlers.HealthCheckHandler;
 import io.airbyte.server.handlers.JobHistoryHandler;
 import io.airbyte.server.handlers.LogsHandler;
+import io.airbyte.server.handlers.OpenApiConfigHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.handlers.SourceDefinitionsHandler;
 import io.airbyte.server.handlers.SourceHandler;
@@ -99,6 +102,7 @@ import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import javax.validation.Valid;
 import org.eclipse.jetty.http.HttpStatus;
 
@@ -119,6 +123,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   private final HealthCheckHandler healthCheckHandler;
   private final ArchiveHandler archiveHandler;
   private final LogsHandler logsHandler;
+  private final OpenApiConfigHandler openApiConfigHandler;
   private final Configs configs;
 
   public ConfigurationApi(final ConfigRepository configRepository,
@@ -144,6 +149,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     healthCheckHandler = new HealthCheckHandler(configRepository);
     archiveHandler = new ArchiveHandler(configs.getAirbyteVersion(), configRepository, jobPersistence, archiveTtlManager);
     logsHandler = new LogsHandler();
+    openApiConfigHandler = new OpenApiConfigHandler();
     this.configs = configs;
   }
 
@@ -378,6 +384,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public File getLogs(@Valid LogsRequestBody logsRequestBody) {
     return execute(() -> logsHandler.getLogs(configs, logsRequestBody));
+  }
+
+  @Override
+  public File getOpenApiSpec() {
+    return execute(openApiConfigHandler::getFile);
   }
 
   // HEALTH

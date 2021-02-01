@@ -19,7 +19,7 @@ cmd_build() {
   echo "Building $path"
     ./gradlew "$(_get_rule_base "$path"):clean"
     ./gradlew "$(_get_rule_base "$path"):build"
-    ./gradlew "$(_get_rule_base "$path"):integrationTest"
+#    ./gradlew "$(_get_rule_base "$path"):integrationTest"
 }
 
 _execute_task_if_exists() {
