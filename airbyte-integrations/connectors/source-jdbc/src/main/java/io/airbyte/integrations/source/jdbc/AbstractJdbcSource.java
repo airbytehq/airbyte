@@ -57,6 +57,7 @@ import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -162,7 +163,7 @@ public abstract class AbstractJdbcSource implements Source {
             .stream()
             .collect(Collectors.toMap(t -> String.format("%s.%s", t.getSchemaName(), t.getName()), Function.identity()));
 
-    AutoCloseableIterator<AirbyteMessage> resultIterator = AutoCloseableIterators.emptyIterator();
+    final List<AutoCloseableIterator<AirbyteMessage>> iteratorList = new ArrayList<>();
 
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
       final String streamName = airbyteStream.getStream().getName();
@@ -178,10 +179,10 @@ public abstract class AbstractJdbcSource implements Source {
           table,
           stateManager,
           emittedAt);
-      resultIterator = AutoCloseableIterators.concat(resultIterator, tableReadIterator);
+      iteratorList.add(tableReadIterator);
     }
 
-    return AutoCloseableIterators.appendOnClose(resultIterator, () -> {
+    return AutoCloseableIterators.appendOnClose(AutoCloseableIterators.concatWithEagerClose(iteratorList), () -> {
       LOGGER.info("Closing database connection pool.");
       Exceptions.toRuntime(database::close);
       LOGGER.info("Closed database connection pool.");

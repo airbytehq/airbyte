@@ -24,44 +24,4 @@
 
 package io.airbyte.commons.util;
 
-import com.google.common.collect.AbstractIterator;
-import io.airbyte.commons.concurrency.VoidCallableNoException;
-import java.util.Iterator;
-
-/**
- * A {@link AutoCloseableIterator} that will execute its close function when {@link Iterator#hasNext}
- * returns false for the first time.
- *
- * @param <T> type
- */
-class AutoCloseIterator<T> extends AbstractIterator<T> implements AutoCloseableIterator<T> {
-
-  private final AutoCloseableIterator<T> internalIterator;
-  private final VoidCallableNoException onClose;
-
-  private boolean hasClosed;
-
-  public AutoCloseIterator(AutoCloseableIterator<T> iterator) {
-    this.internalIterator = iterator;
-    this.onClose = VoidCallableNoException.fromVoidCallable(iterator::close);
-  }
-
-  @Override
-  protected T computeNext() {
-    if (internalIterator.hasNext()) {
-      return internalIterator.next();
-    } else {
-      if (!hasClosed) {
-        hasClosed = true;
-        onClose.call();
-      }
-      return endOfData();
-    }
-  }
-
-  @Override
-  public void close() throws Exception {
-    internalIterator.close();
-  }
-
-}
+public interface CompositeIterator<T> extends AutoCloseableIterator<T> {}
