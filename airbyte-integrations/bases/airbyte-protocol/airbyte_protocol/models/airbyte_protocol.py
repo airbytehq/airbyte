@@ -116,10 +116,7 @@ class ConfiguredAirbyteStream(BaseModel):
         None,
         description="Path to the field that will be used to determine if a record is new or modified since the last sync. This field is REQUIRED if `sync_mode` is `incremental`. Otherwise it is ignored.",
     )
-    destination_namespace: Optional[str] = Field(
-        None,
-        description="Namespace to use in the destination to store this stream, if left empty, ConfiguredAirbyteCatalog's defaultNamespace is used",
-    )
+    destination_namespace: Optional[str] = Field(None, description="Namespace to use in the destination to store this stream")
     destination_name: Optional[str] = Field(None, description="Alias name to use in the destination to store this stream")
 
 

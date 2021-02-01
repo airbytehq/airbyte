@@ -175,7 +175,7 @@ definitions:
         items:
           type: string
       destination_namespace:
-        description: Namespace to use in the destination to store this stream, if left empty, ConfiguredAirbyteCatalog's defaultNamespace is used
+        description: Namespace to use in the destination to store this stream
         type: string
       destination_name:
         description: Alias name to use in the destination to store this stream
