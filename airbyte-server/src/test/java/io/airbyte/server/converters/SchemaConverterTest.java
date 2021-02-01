@@ -40,6 +40,8 @@ import org.junit.jupiter.api.Test;
 class SchemaConverterTest {
 
   private static final String STREAM_NAME = "users";
+  private static final String SRC_SCHEMA = "test_src";
+  private static final String DST_SCHEMA = "test_dst";
   private static final String COLUMN_ID = "id";
   private static final Schema SCHEMA = new Schema()
       .withStreams(Lists.newArrayList(new Stream()
@@ -54,7 +56,10 @@ class SchemaConverterTest {
           .withSupportedSyncModes(Lists.newArrayList(io.airbyte.config.SyncMode.FULL_REFRESH, io.airbyte.config.SyncMode.INCREMENTAL))
           .withDefaultCursorField(Lists.newArrayList(COLUMN_ID))
           .withSyncMode(io.airbyte.config.SyncMode.INCREMENTAL)
-          .withCursorField(Lists.newArrayList(COLUMN_ID))));
+          .withCursorField(Lists.newArrayList(COLUMN_ID))
+          .withSourceNamespace(SRC_SCHEMA)
+          .withDestinationName(STREAM_NAME)
+          .withDestinationNamespace(DST_SCHEMA)));
 
   private static final SourceSchema API_SCHEMA = new SourceSchema()
       .streams(Lists.newArrayList(new SourceSchemaStream()
@@ -69,7 +74,10 @@ class SchemaConverterTest {
           .supportedSyncModes(Lists.newArrayList(io.airbyte.api.model.SyncMode.FULL_REFRESH, io.airbyte.api.model.SyncMode.INCREMENTAL))
           .defaultCursorField(Lists.newArrayList(COLUMN_ID))
           .syncMode(io.airbyte.api.model.SyncMode.INCREMENTAL)
-          .cursorField(Lists.newArrayList(COLUMN_ID))));
+          .cursorField(Lists.newArrayList(COLUMN_ID))
+          .sourceNamespace(SRC_SCHEMA)
+          .destinationName(STREAM_NAME)
+          .destinationNamespace(DST_SCHEMA)));
 
   @Test
   void convertToPersistenceSchema() {

@@ -63,7 +63,10 @@ public class SchemaConverter {
                   // configurable
                   .withSyncMode(Enums.convertTo(apiStream.getSyncMode(), io.airbyte.config.SyncMode.class))
                   .withCursorField(apiStream.getCursorField())
-                  .withSelected(persistenceFields.stream().anyMatch(Field::getSelected));
+                  .withSelected(persistenceFields.stream().anyMatch(Field::getSelected))
+                  .withSourceNamespace(apiStream.getSourceNamespace())
+                  .withDestinationName(apiStream.getDestinationName())
+                  .withDestinationNamespace(apiStream.getDestinationNamespace());
             })
             .collect(Collectors.toList());
 
@@ -105,7 +108,10 @@ public class SchemaConverter {
               .defaultCursorField(persistenceStream.getDefaultCursorField())
               // configurable
               .syncMode(Enums.convertTo(persistenceStream.getSyncMode(), io.airbyte.api.model.SyncMode.class))
-              .cursorField(persistenceStream.getCursorField());
+              .cursorField(persistenceStream.getCursorField())
+              .sourceNamespace(persistenceStream.getSourceNamespace())
+              .destinationName(persistenceStream.getDestinationName())
+              .destinationNamespace(persistenceStream.getDestinationNamespace());
         })
         .collect(Collectors.toList());
 
