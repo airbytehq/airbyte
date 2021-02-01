@@ -97,18 +97,7 @@ jobs:
         if: success()
         uses: ridedott/merge-me-action@v1
         with:
-          # Depending on branch protection rules, a  manually populated
-          # `GITHUB_TOKEN_WORKAROUND` environment variable with permissions to
-          # push to a protected branch must be used. This variable can have an
-          # arbitrary name, as an example, this repository uses
-          # `GITHUB_TOKEN_DOTTBOTT`.
-          #
-          # When using a custom token, it is recommended to leave the following
-          # comment for other developers to be aware of the reasoning behind it:
-          #
-          # This must be used as GitHub Actions token does not support
-          # pushing to protected branches.
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.SLASH_COMMAND_PAT }}
           MERGE_METHOD: SQUASH
       - name: Add Failure Comment
         if: github.event.inputs.comment-id && !success()
