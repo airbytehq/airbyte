@@ -65,7 +65,7 @@ Airbyte uses the types described in the catalog to determine the correct type fo
 
 {% hint style="warning" %}
 Normalization is still a work in progress and is very basic for the moment. We are still working on improving it.
-Nested Objects and Arrays are not currently handled by Normalization (only flat jsons are mapped properly mapped out as a table).
+Nested Objects and Arrays are not currently handled by Normalization (only flat jsons are properly mapped out as a table).
 You can follow progress as part of this
 [issue](https://github.com/airbytehq/airbyte/issues/886) and its related children.
 {% endhint %}
