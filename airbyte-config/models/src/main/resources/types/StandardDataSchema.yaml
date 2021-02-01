@@ -41,6 +41,8 @@ definitions:
         type: array
         items:
           type: string
+      sourceNamespace:
+        type: string
       # configurable
       selected:
         type: boolean
@@ -50,6 +52,10 @@ definitions:
         type: array
         items:
           type: string
+      destinationNamespace:
+        type: string
+      destinationName:
+        type: string
   field:
     type: object
     required:

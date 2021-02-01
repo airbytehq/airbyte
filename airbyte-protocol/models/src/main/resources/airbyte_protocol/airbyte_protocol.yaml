@@ -144,6 +144,9 @@ definitions:
         type: array
         items:
           type: string
+      namespace:
+        description: Namespace where this stream is coming from
+        type: string
   ConfiguredAirbyteCatalog:
     description: Airbyte stream schema catalog
     type: object
@@ -171,6 +174,12 @@ definitions:
         type: array
         items:
           type: string
+      destination_namespace:
+        description: Namespace to use in the destination to store this stream, if left empty, ConfiguredAirbyteCatalog's defaultNamespace is used
+        type: string
+      destination_name:
+        description: Alias name to use in the destination to store this stream
+        type: string
   SyncMode:
     type: string
     enum:

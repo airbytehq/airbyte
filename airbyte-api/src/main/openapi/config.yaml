@@ -1729,6 +1729,8 @@ components:
           type: array
           items:
             type: string
+        sourceNamespace:
+          type: string
         # configurable
         selected:
           type: boolean
@@ -1738,6 +1740,10 @@ components:
           type: array
           items:
             type: string
+        destinationNamespace:
+          type: string
+        destinationName:
+          type: string
     SourceSchemaField:
       type: object
       required:
