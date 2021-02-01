@@ -31,7 +31,6 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.commons.util.ResourceIterator;
 import io.airbyte.commons.util.ResourceIterators;
 import io.airbyte.db.Databases;
@@ -59,17 +58,14 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -381,10 +377,9 @@ public abstract class AbstractJdbcSource implements Source {
                                                                  String schemaName,
                                                                  String tableName) {
     LOGGER.info("Queueing query for table: {}", tableName);
-    final AtomicReference<Stream<JsonNode>> streamAtomicReference = new AtomicReference<>();
-    final Iterator<JsonNode> jsonNodeIterator = MoreIterators.lazyIterator(() -> {
+    return ResourceIterators.lazyAutoClosingResourceIterator(() -> {
       try {
-        final Stream<JsonNode> stream = database.query(
+        return database.query(
             connection -> {
               LOGGER.info("Preparing query for table: {}", tableName);
               final String sql = String.format("SELECT %s FROM %s",
@@ -395,14 +390,10 @@ public abstract class AbstractJdbcSource implements Source {
               return preparedStatement;
             },
             JdbcUtils::rowToJson);
-        streamAtomicReference.set(stream);
-        return stream.iterator();
       } catch (SQLException e) {
         throw new RuntimeException(e);
       }
     });
-
-    return ResourceIterators.resourceIterator(jsonNodeIterator, () -> streamAtomicReference.get().close());
   }
 
   public static ResourceIterator<JsonNode> queryTableIncremental(JdbcDatabase database,
@@ -414,10 +405,9 @@ public abstract class AbstractJdbcSource implements Source {
                                                                  String cursor) {
 
     LOGGER.info("Queueing query for table: {}", tableName);
-    final AtomicReference<Stream<JsonNode>> streamAtomicReference = new AtomicReference<>();
-    final Iterator<JsonNode> jsonNodeIterator = MoreIterators.lazyIterator(() -> {
+    return ResourceIterators.lazyAutoClosingResourceIterator(() -> {
       try {
-        final Stream<JsonNode> stream = database.query(
+        return database.query(
             connection -> {
               LOGGER.info("Preparing query for table: {}", tableName);
               final String sql = String.format("SELECT %s FROM %s WHERE %s > ?",
@@ -431,14 +421,10 @@ public abstract class AbstractJdbcSource implements Source {
               return preparedStatement;
             },
             JdbcUtils::rowToJson);
-        streamAtomicReference.set(stream);
-        return stream.iterator();
       } catch (SQLException e) {
         throw new RuntimeException(e);
       }
     });
-
-    return ResourceIterators.resourceIterator(jsonNodeIterator, () -> streamAtomicReference.get().close());
   }
 
   private JdbcDatabase createDatabase(JsonNode config) {

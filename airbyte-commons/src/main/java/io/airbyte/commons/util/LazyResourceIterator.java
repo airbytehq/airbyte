@@ -29,19 +29,19 @@ import java.util.Iterator;
 import java.util.function.Supplier;
 
 /**
- * A {@link Iterator} that calls the provided supplier the first time {@link Iterator#hasNext} is
- * called.
+ * A {@link ResourceIterator} that calls the provided supplier the first time
+ * {@link Iterator#hasNext} is called.
  *
  * @param <T> type
  */
-class LazyIterator<T> extends AbstractIterator<T> implements Iterator<T> {
+class LazyResourceIterator<T> extends AbstractIterator<T> implements ResourceIterator<T> {
 
-  private final Supplier<Iterator<T>> iteratorSupplier;
+  private final Supplier<ResourceIterator<T>> iteratorSupplier;
 
   private boolean hasSupplied;
-  private Iterator<T> internalIterator;
+  private ResourceIterator<T> internalIterator;
 
-  public LazyIterator(Supplier<Iterator<T>> iteratorSupplier) {
+  public LazyResourceIterator(Supplier<ResourceIterator<T>> iteratorSupplier) {
     this.iteratorSupplier = iteratorSupplier;
     this.hasSupplied = false;
   }
@@ -58,6 +58,11 @@ class LazyIterator<T> extends AbstractIterator<T> implements Iterator<T> {
     } else {
       return endOfData();
     }
+  }
+
+  @Override
+  public void close() throws Exception {
+    internalIterator.close();
   }
 
 }
