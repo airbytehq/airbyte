@@ -24,15 +24,24 @@
 
 package io.airbyte.server.converters;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableMap;
+import io.airbyte.api.model.AirbyteCatalog1;
+import io.airbyte.api.model.AirbyteCatalog2;
+import io.airbyte.api.model.AirbyteField2;
 import io.airbyte.api.model.SourceSchema;
 import io.airbyte.api.model.SourceSchemaField;
 import io.airbyte.api.model.SourceSchemaStream;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.text.Names;
 import io.airbyte.config.DataType;
 import io.airbyte.config.Field;
 import io.airbyte.config.Schema;
 import io.airbyte.config.Stream;
+import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -125,6 +134,70 @@ public class SchemaConverter {
       field.dataType(io.airbyte.api.model.DataType.OBJECT);
     }
     return field;
+  }
+
+  public static ConfiguredAirbyteCatalog toApi(AirbyteCatalog1 catalog) {
+    return new ConfiguredAirbyteCatalog().withStreams(catalog.getStreams()
+        .stream()
+        .map(pair -> {
+          final AirbyteStream airbyteStream = new AirbyteStream()
+              .withName(pair.getStream().getName())
+              .withSupportedSyncModes(Enums.convertListTo(pair.getStream().getSupportedSyncModes(), io.airbyte.protocol.models.SyncMode.class))
+              .withJsonSchema(pair.getStream().getJsonSchema())
+              .withDefaultCursorField(pair.getStream().getDefaultCursorField())
+              .withSourceDefinedCursor(pair.getStream().getSourceDefinedCursor());
+
+          return new ConfiguredAirbyteStream()
+              .withStream(airbyteStream)
+              .withCursorField(pair.getConfiguration().getCursorField())
+              .withSyncMode(Enums.convertTo(pair.getConfiguration().getSyncMode(), io.airbyte.protocol.models.SyncMode.class));
+        })
+        .collect(Collectors.toList()));
+  }
+
+  public static ConfiguredAirbyteCatalog toApi(AirbyteCatalog2 catalog) {
+    return new ConfiguredAirbyteCatalog().withStreams(catalog.getStreams()
+        .stream()
+        .map(pair -> {
+          final AirbyteStream airbyteStream = new AirbyteStream()
+              .withName(pair.getStream().getName())
+              .withSupportedSyncModes(Enums.convertListTo(pair.getStream().getSupportedSyncModes(), io.airbyte.protocol.models.SyncMode.class))
+              .withJsonSchema(toJson(pair.getStream().getFields()))
+              .withDefaultCursorField(pair.getStream().getDefaultCursorField())
+              .withSourceDefinedCursor(pair.getStream().getSourceDefinedCursor());
+
+          return new ConfiguredAirbyteStream()
+              .withStream(airbyteStream)
+              .withCursorField(pair.getConfiguration().getCursorField())
+              .withSyncMode(Enums.convertTo(pair.getConfiguration().getSyncMode(), io.airbyte.protocol.models.SyncMode.class));
+        })
+        .collect(Collectors.toList()));
+  }
+
+  // recursively construct jsonnode from airbytefields. just a sketch. still doesn't handle oneof,
+  // etc.
+  public static JsonNode toJson(List<AirbyteField2> fields) {
+    // assumes this shape.
+    // type: object,
+    // property: {
+    // <fieldName>: {
+    // "type" : <fieldType>
+    // }
+    // }
+    return Jsons.jsonNode(ImmutableMap.builder()
+        .put("type", "object")
+        .put("properties", fields
+            .stream()
+            .collect(Collectors.toMap(
+                AirbyteField2::getName,
+                field -> {
+                  if (field.getChildren().isEmpty()) {
+                    return ImmutableMap.of("type", field.getDataType().toString().toLowerCase());
+                  } else {
+                    return toJson(field.getChildren());
+                  }
+                })))
+        .build());
   }
 
 }

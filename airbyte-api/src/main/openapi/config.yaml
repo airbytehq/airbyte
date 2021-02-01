@@ -1693,6 +1693,147 @@ components:
         logType:
           $ref: "#/components/schemas/LogType"
     # SCHEMA
+    # OPTION 1 START
+    AirbyteCatalog1:
+      description: describes the available schema.
+      type: object
+      required:
+        - streams
+      properties:
+        streams:
+          type: array
+          items:
+            $ref: "#/components/schemas/AirbyteStreamAndConfiguration1"
+    AirbyteStreamAndConfiguration1:
+      type: object
+      additionalProperties: false
+      properties:
+        stream:
+          $ref: "#/components/schemas/AirbyteStream1"
+        configuration:
+          $ref: "#/components/schemas/AirbyteStreamConfiguration1"
+    AirbyteStreamConfiguration1:
+      type: object
+      additionalProperties: false
+      properties:
+        syncMode:
+          $ref: "#/components/schemas/SyncMode"
+          default: full_refresh
+        cursorField:
+          description: Path to the field that will be used to determine if a record is new or modified since the last sync. This field is REQUIRED if `sync_mode` is `incremental`. Otherwise it is ignored.
+          type: array
+          items:
+            type: string
+    AirbyteStream1:
+      type: object
+      additionalProperties: false
+      required:
+        - name
+        - json_schema
+        # todo (cgardens) - make required once sources are migrated
+        # - supported_sync_modes
+      properties:
+        name:
+          type: string
+          description: Stream's name.
+        jsonSchema:
+          description: Stream schema using Json Schema specs.
+          $ref: "#/components/schemas/StreamJsonSchema"
+        supportedSyncModes:
+          type: array
+          items:
+            $ref: "#/components/schemas/SyncMode"
+        sourceDefinedCursor:
+          description: If the source defines the cursor field, then it does any other cursor field inputs will be ignored. If it does not either the user_provided one is used or as a backup the default one is used.
+          type: boolean
+        defaultCursorField:
+          description: Path to the field that will be used to determine if a record is new or modified since the last sync. If not provided by the source, the end user will have to specify the comparable themselves.
+          type: array
+          items:
+            type: string
+    StreamJsonSchema:
+      type: object
+    # OPTION 1 END
+    # OPTION 2 START
+    AirbyteCatalog2:
+      description: describes the available schema.
+      type: object
+      required:
+        - streams
+      properties:
+        streams:
+          type: array
+          items:
+            $ref: "#/components/schemas/AirbyteStreamAndConfiguration2"
+    AirbyteStreamAndConfiguration2:
+      type: object
+      additionalProperties: false
+      properties:
+        stream:
+          $ref: "#/components/schemas/AirbyteStream2"
+        configuration:
+          $ref: "#/components/schemas/AirbyteStreamConfiguration2"
+    AirbyteStreamConfiguration2:
+      type: object
+      additionalProperties: false
+      properties:
+        syncMode:
+          $ref: "#/components/schemas/SyncMode"
+          default: full_refresh
+        cursorField:
+          description: Path to the field that will be used to determine if a record is new or modified since the last sync. This field is REQUIRED if `sync_mode` is `incremental`. Otherwise it is ignored.
+          type: array
+          items:
+            type: string
+    AirbyteStream2:
+      type: object
+      additionalProperties: false
+      required:
+        - name
+        - json_schema
+        # todo (cgardens) - make required once sources are migrated
+        # - supported_sync_modes
+      properties:
+        name:
+          type: string
+          description: Stream's name.
+        fields:
+          type: array
+          items:
+            $ref: "#/components/schemas/AirbyteField2"
+        supportedSyncModes:
+          type: array
+          items:
+            $ref: "#/components/schemas/SyncMode"
+        sourceDefinedCursor:
+          description: If the source defines the cursor field, then it does any other cursor field inputs will be ignored. If it does not either the user_provided one is used or as a backup the default one is used.
+          type: boolean
+        defaultCursorField:
+          description: Path to the field that will be used to determine if a record is new or modified since the last sync. If not provided by the source, the end user will have to specify the comparable themselves.
+          type: array
+          items:
+            type: string
+    AirbyteField2:
+      type: object
+      required:
+        - name
+        - dataType
+        - selected
+        - children
+      properties:
+        name:
+          type: string
+        cleanedName:
+          type: string
+        dataType:
+          $ref: "#/components/schemas/DataType"
+        selected:
+          type: boolean
+        children:
+          type: array
+          items:
+            $ref: "#/components/schemas/AirbyteField2"
+    # OPTION 2 END
     SourceSchema:
       description: describes the available schema.
       type: object
