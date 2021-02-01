@@ -32,7 +32,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 public class ResourceIterators {
@@ -80,19 +79,6 @@ public class ResourceIterators {
   }
 
   /**
-   * Returns a {@link ResourceIterator} that will call the provided supplier ONE time when
-   * {@link ResourceIterator#hasNext()} is called the first time. The supplier returns a stream that
-   * will be exposed as an iterator.
-   *
-   * @param iteratorSupplier supplier that provides a resource iterator that will be invoked lazily
-   * @param <T> type
-   * @return resource iterator
-   */
-  public static <T> ResourceIterator<T> lazyResourceIterator(Supplier<ResourceIterator<T>> iteratorSupplier) {
-    return new LazyResourceIterator<>(iteratorSupplier);
-  }
-
-  /**
    * Returns a {@link ResourceIterator} that will call {@link ResourceIterator#close()} at most one
    * time. Either as soon as {@link Iterator#hasNext()} returns false for the first time or when
    * {@link ResourceIterator#close()} is called,
@@ -103,21 +89,6 @@ public class ResourceIterators {
    */
   public static <T> ResourceIterator<T> autoClosingResourceIterator(ResourceIterator<T> resourceIterator) {
     return new AutoCloseIterator<>(resourceIterator);
-  }
-
-  /**
-   * Returns a {@link ResourceIterator} that is composed of a {@link DefaultResourceIterator},
-   * {@link LazyResourceIterator}, and {@link AutoCloseIterator}.
-   *
-   * @param streamSupplier supplies the stream this supplier will be called one time.
-   * @param <T> type
-   * @return resource iterator
-   */
-  public static <T> ResourceIterator<T> lazyAutoClosingResourceIterator(Supplier<Stream<T>> streamSupplier) {
-    return autoClosingResourceIterator(lazyResourceIterator(() -> {
-      final Stream<T> stream = streamSupplier.get();
-      return resourceIterator(stream);
-    }));
   }
 
   /**

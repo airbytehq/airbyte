@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 
 public class MoreIterators {
 
@@ -72,6 +73,10 @@ public class MoreIterators {
       set.add(iterator.next());
     }
     return set;
+  }
+
+  public static <T> Iterator<T> lazyIterator(Supplier<Iterator<T>> iteratorSupplier) {
+    return new LazyIterator<>(iteratorSupplier);
   }
 
 }
