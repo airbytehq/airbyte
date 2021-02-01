@@ -31,18 +31,17 @@ This integration will be constrained by the speed at which your filesystem accep
 
 ## Getting Started
 
-The `destination_path` will always start with `/local` whether it is specified by the user or not.
-Any directory nesting within local will be mapped onto the local mount.
+The `destination_path` will always start with `/local` whether it is specified by the user or not. Any directory nesting within local will be mapped onto the local mount.
 
 By default, the `LOCAL_ROOT` env variable in the `.env` file is set `/tmp/airbyte_local`.
 
-The local mount is mounted by Docker onto `LOCAL_ROOT`.
-This means the `/local` is substituted by `/tmp/airbyte_local` by default.
+The local mount is mounted by Docker onto `LOCAL_ROOT`. This means the `/local` is substituted by `/tmp/airbyte_local` by default.
 
 ### Example:
 
-- If `destination_path` is set to `/local/cars/models`
-- the local mount is using the `/tmp/airbyte_local` default
-- then all data will be written to `/tmp/airbyte_local/cars/models` directory.
+* If `destination_path` is set to `/local/cars/models`
+* the local mount is using the `/tmp/airbyte_local` default
+* then all data will be written to `/tmp/airbyte_local/cars/models` directory.
 
-(If Airbyte instance is running on the same computer that you are navigating with, you can open your browser to go to [file:///tmp/airbyte_local](file:///tmp/airbyte_local) and look at the replicated data locally)
+\(If Airbyte instance is running on the same computer that you are navigating with, you can open your browser to go to [file:///tmp/airbyte\_local](file:///tmp/airbyte_local) and look at the replicated data locally\)
+

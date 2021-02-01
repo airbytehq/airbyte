@@ -1,4 +1,4 @@
-name: integration-test
+name: Publish Connector Image
 on:
   workflow_dispatch:
     inputs:
@@ -10,14 +10,14 @@ on:
         required: false
 
 jobs:
-  integration_test:
+  publish_image:
     runs-on: ubuntu-latest
     steps:
-      - name: Search for valid integration name format
+      - name: Search for valid connector name format
         id: regex
         uses: AsasInnab/regex-action@v1
         with:
-          regex_pattern: '^[a-zA-Z0-9-_]+$'
+          regex_pattern: '^(connectors|bases)/[a-zA-Z0-9-_]+$'
           regex_flags: 'i' # required to be set for this plugin
           search_string: ${{ github.event.inputs.connector }}
       - name: Validate input workflow format
@@ -41,7 +41,7 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: '3.7'
-      - name: Write Integration Test Credentials
+      - name: Write Integration Test Credentials # TODO DRY this with test-command.yml
         run: ./tools/bin/ci_credentials.sh
         env:
           ADWORDS_INTEGRATION_TEST_CREDS: ${{ secrets.ADWORDS_INTEGRATION_TEST_CREDS }}
@@ -80,18 +80,12 @@ jobs:
           ZOOM_INTEGRATION_TEST_CREDS: ${{ secrets.ZOOM_INTEGRATION_TEST_CREDS }}
           PLAID_INTEGRATION_TEST_CREDS: ${{ secrets.PLAID_INTEGRATION_TEST_CREDS }}
       - run: |
-          ./tools/bin/ci_integration_test.sh ${{ github.event.inputs.connector }}
-        name: test ${{ github.event.inputs.connector }}
-        id: test
+          docker login -u airbytebot -p ${DOCKER_PASSWORD}
+          ./tools/integrations/manage.sh publish airbyte-integrations/${{ github.event.inputs.connector }}
+        name: publish ${{ github.event.inputs.connector }}
+        id: publish
         env:
-          ACTION_RUN_ID: ${{github.run_id}}
-      - name: Report Status
-        if: github.ref == 'refs/heads/master' && always()
-        run: ./tools/status/report.sh ${{ github.event.inputs.connector }} ${{github.repository}} ${{github.run_id}} ${{steps.test.outcome}}
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.STATUS_API_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.STATUS_API_AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: 'us-east-2'
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       - name: Add Success Comment
         if: github.event.inputs.comment-id && success()
         uses: peter-evans/create-or-update-comment@v1
@@ -106,3 +100,4 @@ jobs:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
             > :x: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+            
