@@ -38,5 +38,5 @@ The Sendgrid connector should not run into Sendgrid API limitations under normal
 
 Generate a API key using the [Sendgrid documentation](https://sendgrid.com/docs/ui/account-and-settings/api-keys/#creating-an-api-key).
 
-We recommend creating a key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access. The API key should be read-only on all resources except Marketing, where it needs Full Access. 
+We recommend creating a key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access. The API key should be read-only on all resources except Marketing, where it needs Full Access.
 
