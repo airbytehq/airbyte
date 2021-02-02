@@ -17,6 +17,7 @@
 * [Roadmap](roadmap.md)
 * [Connectors](integrations/README.md)
   * [Sources](integrations/sources/README.md)
+    * [Appstore](integrations/sources/appstore.md)
     * [Braintree](integrations/sources/braintree.md)
     * [Drift](integrations/sources/drift.md)
     * [Exchange Rates API](integrations/sources/exchangeratesapi-io.md)

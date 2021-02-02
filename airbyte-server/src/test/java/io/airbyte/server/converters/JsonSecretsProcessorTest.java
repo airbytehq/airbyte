@@ -22,55 +22,71 @@
  * SOFTWARE.
  */
 
-package io.airbyte.commons.json;
+package io.airbyte.server.converters;
 
-import static io.airbyte.commons.json.JsonSecretsProcessor.SECRETS_MASK;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.commons.resources.MoreResources;
-import java.io.IOException;
+import io.airbyte.commons.json.Jsons;
 import org.junit.jupiter.api.Test;
 
 public class JsonSecretsProcessorTest {
 
+  private static final JsonNode SCHEMA = Jsons.deserialize(
+      "{\n"
+          + "  \"properties\": {\n"
+          + "    \"secret1\": {\n"
+          + "      \"type\": \"string\",\n"
+          + "      \"airbyte_secret\": true\n"
+          + "    },\n"
+          + "    \"secret2\": {\n"
+          + "      \"type\": \"string\",\n"
+          + "      \"airbyte_secret\": \"true\"\n"
+          + "    },\n"
+          + "    \"field1\": {\n"
+          + "      \"type\": \"string\"\n"
+          + "    },\n"
+          + "    \"field2\": {\n"
+          + "      \"type\": \"number\"\n"
+          + "    }\n"
+          + "  }\n"
+          + "}\n");
+
   JsonSecretsProcessor processor = new JsonSecretsProcessor();
 
   @Test
-  public void testMaskSecrets() throws IOException {
+  public void testMaskSecrets() {
     JsonNode obj = Jsons.jsonNode(ImmutableMap.builder()
         .put("field1", "value1")
         .put("field2", 2)
         .put("secret1", "donttellanyone")
         .put("secret2", "verysecret").build());
-    JsonNode schema = Jsons.deserialize(MoreResources.readResource("secrets_json_schema.json"));
 
-    JsonNode sanitized = processor.maskSecrets(obj, schema);
+    JsonNode sanitized = processor.maskSecrets(obj, SCHEMA);
 
     JsonNode expected = Jsons.jsonNode(ImmutableMap.builder()
         .put("field1", "value1")
         .put("field2", 2)
-        .put("secret1", SECRETS_MASK)
-        .put("secret2", SECRETS_MASK).build());
+        .put("secret1", JsonSecretsProcessor.SECRETS_MASK)
+        .put("secret2", JsonSecretsProcessor.SECRETS_MASK).build());
     assertEquals(expected, sanitized);
   }
 
   @Test
-  public void testMaskSecretsNotInObj() throws IOException {
-    JsonNode schema = Jsons.deserialize(MoreResources.readResource("secrets_json_schema.json"));
+  public void testMaskSecretsNotInObj() {
     JsonNode obj = Jsons.jsonNode(ImmutableMap.builder()
         .put("field1", "value1")
         .put("field2", 2).build());
 
-    JsonNode actual = processor.maskSecrets(obj, schema);
+    JsonNode actual = processor.maskSecrets(obj, SCHEMA);
 
     // Didn't have secrets, no fields should have been impacted.
     assertEquals(obj, actual);
   }
 
   @Test
-  public void testCopySecrets() throws IOException {
+  public void testCopySecrets() {
     JsonNode src = Jsons.jsonNode(ImmutableMap.builder()
         .put("field1", "value1")
         .put("field2", 2)
@@ -82,13 +98,11 @@ public class JsonSecretsProcessorTest {
     JsonNode dst = Jsons.jsonNode(ImmutableMap.builder()
         .put("field1", "value1")
         .put("field2", 2)
-        .put("secret1", SECRETS_MASK)
+        .put("secret1", JsonSecretsProcessor.SECRETS_MASK)
         .put("secret2", "newvalue")
         .build());
 
-    JsonNode schema = Jsons.deserialize(MoreResources.readResource("secrets_json_schema.json"));
-
-    JsonNode actual = processor.copySecrets(src, dst, schema);
+    JsonNode actual = processor.copySecrets(src, dst, SCHEMA);
 
     JsonNode expected = Jsons.jsonNode(ImmutableMap.builder()
         .put("field1", "value1")
@@ -101,8 +115,7 @@ public class JsonSecretsProcessorTest {
   }
 
   @Test
-  public void testCopySecretsNotInSrc() throws IOException {
-    JsonNode schema = Jsons.deserialize(MoreResources.readResource("secrets_json_schema.json"));
+  public void testCopySecretsNotInSrc() {
     JsonNode src = Jsons.jsonNode(ImmutableMap.builder()
         .put("field1", "value1")
         .put("field2", 2)
@@ -115,7 +128,7 @@ public class JsonSecretsProcessorTest {
         .build());
 
     JsonNode expected = dst.deepCopy();
-    JsonNode actual = processor.copySecrets(src, dst, schema);
+    JsonNode actual = processor.copySecrets(src, dst, SCHEMA);
 
     assertEquals(expected, actual);
   }

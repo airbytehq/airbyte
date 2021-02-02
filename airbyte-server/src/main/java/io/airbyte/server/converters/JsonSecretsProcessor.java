@@ -22,12 +22,13 @@
  * SOFTWARE.
  */
 
-package io.airbyte.commons.json;
+package io.airbyte.server.converters;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import io.airbyte.commons.json.Jsons;
 
 public class JsonSecretsProcessor {
 

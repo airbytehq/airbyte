@@ -32,7 +32,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.stream.MoreStreams;
-import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
@@ -53,6 +52,7 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -280,6 +280,7 @@ public abstract class AbstractJdbcSource implements Source {
                                     final Optional<String> databaseOptional,
                                     final Optional<String> schemaOptional)
       throws Exception {
+
     return discoverInternal(database, databaseOptional, schemaOptional).stream()
         .map(t -> {
           // some databases return multiple copies of the same record for a column (e.g. redshift) because
@@ -311,6 +312,11 @@ public abstract class AbstractJdbcSource implements Source {
             }
           });
         });
+  }
+
+  private static String getFullyQualifiedTableNameWithQuoting(Connection connection, String schemaName, String tableName) throws SQLException {
+    final String quotedTableName = JdbcUtils.enquoteIdentifier(connection, tableName);
+    return schemaName != null ? JdbcUtils.enquoteIdentifier(connection, schemaName) + "." + quotedTableName : quotedTableName;
   }
 
   private static String getFullyQualifiedTableName(String schemaName, String tableName) {
@@ -376,7 +382,9 @@ public abstract class AbstractJdbcSource implements Source {
       throws SQLException {
     return database.query(
         connection -> {
-          final String sql = String.format("SELECT %s FROM %s", Strings.join(columnNames, ","), getFullyQualifiedTableName(schemaName, tableName));
+          final String sql = String.format("SELECT %s FROM %s",
+              JdbcUtils.enquoteIdentifierList(connection, columnNames),
+              getFullyQualifiedTableNameWithQuoting(connection, schemaName, tableName));
           return connection.prepareStatement(sql);
         },
         JdbcUtils::rowToJson);
@@ -390,12 +398,14 @@ public abstract class AbstractJdbcSource implements Source {
                                                        JDBCType cursorFieldType,
                                                        String cursor)
       throws SQLException {
-    final String sql = String.format("SELECT %s FROM %s WHERE %s > ?",
-        Strings.join(columnNames, ","),
-        getFullyQualifiedTableName(schemaName, tableName), cursorField);
 
     return database.query(
         connection -> {
+          final String sql = String.format("SELECT %s FROM %s WHERE %s > ?",
+              JdbcUtils.enquoteIdentifierList(connection, columnNames),
+              getFullyQualifiedTableNameWithQuoting(connection, schemaName, tableName),
+              JdbcUtils.enquoteIdentifier(connection, cursorField));
+
           final PreparedStatement preparedStatement = connection.prepareStatement(sql);
           JdbcUtils.setStatementField(preparedStatement, 1, cursorFieldType, cursor);
           return preparedStatement;
