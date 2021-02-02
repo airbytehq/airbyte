@@ -30,6 +30,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.stream.MoreStreams;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.Databases;
@@ -162,8 +163,7 @@ public abstract class JdbcStressTest {
   private void runTest(ConfiguredAirbyteCatalog configuredCatalog, String testName) throws Exception {
     LOGGER.info("running stress test for: " + testName);
     final Iterator<AirbyteMessage> read = source.read(config, configuredCatalog, Jsons.jsonNode(Collections.emptyMap()));
-    final long actualCount = MoreIterators.toList(read)
-        .stream()
+    final long actualCount = MoreStreams.toStream(read)
         .filter(m -> m.getType() == Type.RECORD)
         .peek(m -> {
           if (m.getRecord().getData().get("id").asLong() % 100000 == 0) {
