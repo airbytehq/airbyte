@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import inspect
 import operator
 from functools import partial, reduce
 from json.decoder import JSONDecodeError
@@ -41,15 +42,21 @@ class Client(BaseClient):
     API_VERSION = 3
 
     ENTITIES_MAP = {
-        "projects": {"url": "/project/search", "func": lambda v: v["values"], "params": {}},
-        "issues": {"url": "/search", "func": lambda v: v["issues"], "params": {}},
-        "issue_comments": {
-            "url": "/search",
-            "func": lambda v: reduce(operator.iadd, [obj["fields"]["comment"]["comments"] for obj in v["issues"]], []),
-            "params": {**{"fields": ["comment"]}},
-        },
-        "users": {"url": "/users/search", "func": lambda v: v, "params": {}},
-        "resolutions": {"url": "/resolution", "func": lambda v: v, "params": {}},
+        # "application_roles": {"url": "/applicationrole", "func": lambda v: v, "params": {}},
+        # "avatars": {"func": lambda v: v["system"], "params": {}},
+        # "dashboards": {"url": "/dashboard", "func": lambda v: v["dashboards"], "params": {}},
+
+        "filters": {"url": "/filter/search", "func": lambda v: v["values"], "params": {}},
+
+        # "projects": {"url": "/project/search", "func": lambda v: v["values"], "params": {}},
+        # "issues": {"url": "/search", "func": lambda v: v["issues"], "params": {}},
+        # "issue_comments": {
+        #     "url": "/search",
+        #     "func": lambda v: reduce(operator.iadd, [obj["fields"]["comment"]["comments"] for obj in v["issues"]], []),
+        #     "params": {**{"fields": ["comment"]}},
+        # },
+        # "users": {"url": "/users/search", "func": lambda v: v, "params": {}},
+        # "resolutions": {"url": "/resolution", "func": lambda v: v, "params": {}},
     }
 
     def __init__(self, api_token, domain, email):
@@ -73,7 +80,12 @@ class Client(BaseClient):
                 break
 
     def _enumerate_methods(self) -> Mapping[str, callable]:
-        return {entity: partial(self.lists, name=entity, **value) for entity, value in self.ENTITIES_MAP.items()}
+        # mapping = super(Client, self)._enumerate_methods()
+        mapping = {}
+        for entity, value in self.ENTITIES_MAP.items():
+            if entity not in mapping:
+                mapping[entity] = partial(self.lists, name=entity, **value)
+        return mapping
 
     def health_check(self) -> Tuple[bool, str]:
         alive = True
@@ -92,3 +104,10 @@ class Client(BaseClient):
             )
 
         return alive, error_msg
+
+    def stream__avatars(self, fields):
+        avatar_types = ("issuetype", "project", "user")
+        avatar_configs = self.ENTITIES_MAP.get("avatars")
+        for avatar_type in avatar_types:
+            for data in self.lists(name="avatars", url=f"/avatar/{avatar_type}/system", **avatar_configs):
+                yield data

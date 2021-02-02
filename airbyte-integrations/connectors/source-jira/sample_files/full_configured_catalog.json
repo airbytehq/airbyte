@@ -2,6 +2,70 @@
   "streams": [
     {
       "stream": {
+        "name": "application_roles",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string",
+              "description": "The key of the application role."
+            },
+            "groups": {
+              "type": "array",
+              "description": "The groups associated with the application role."
+            },
+            "name": {
+              "type": "string",
+              "description": "The display name of the application role."
+            },
+            "defaultGroups": {
+              "type": "array",
+              "description": "The groups that are granted default access for this application role."
+            },
+            "selectedByDefault": {
+              "type": "boolean",
+              "description": "Determines whether this application role should be selected by default on user creation."
+            },
+            "defined": {
+              "type": "boolean",
+              "description": "Deprecated"
+            },
+            "numberOfSeats": {
+              "type": "integer",
+              "description": "The maximum count of users on your license."
+            },
+            "remainingSeats": {
+              "type": "integer",
+              "description": "The count of users remaining on your license."
+            },
+            "userCount": {
+              "type": "integer",
+              "description": "The number of users counting against your license."
+            },
+            "userCountDescription": {
+              "type": "string",
+              "description": "The type of users being counted against your license."
+            },
+            "hasUnlimitedSeats": {
+              "type": "boolean"
+            },
+            "platform": {
+              "type": "boolean",
+              "description": "Indicates if the application role belongs to Jira platform "
+            }
+          },
+          "additionalProperties": false,
+          "description": "Details of an application role."
+        },
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_cursor": false
+      }
+    },
+    {
+      "stream": {
         "name": "projects",
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
