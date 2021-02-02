@@ -49,9 +49,9 @@ public interface Source extends Integration {
    *        "password": "super secure" }
    * @param catalog - schema of the incoming messages.
    * @param state - state of the incoming messages.
-   * @return {@link AutoCloseableIterator} that produces message. The iterator will be consumed until no records
-   *         remain or until an exception is thrown. {@link AutoCloseableIterator#close()} will always be
-   *         called once regardless of success or failure.
+   * @return {@link AutoCloseableIterator} that produces message. The iterator will be consumed until
+   *         no records remain or until an exception is thrown. {@link AutoCloseableIterator#close()}
+   *         will always be called once regardless of success or failure.
    * @throws Exception - any exception.
    */
   AutoCloseableIterator<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception;

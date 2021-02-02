@@ -191,10 +191,10 @@ public abstract class AbstractJdbcSource implements Source {
   }
 
   private AutoCloseableIterator<AirbyteMessage> createReadIterator(JdbcDatabase database,
-                                                              ConfiguredAirbyteStream airbyteStream,
-                                                              TableInfoInternal table,
-                                                              JdbcStateManager stateManager,
-                                                              Instant emittedAt) {
+                                                                   ConfiguredAirbyteStream airbyteStream,
+                                                                   TableInfoInternal table,
+                                                                   JdbcStateManager stateManager,
+                                                                   Instant emittedAt) {
     final String streamName = airbyteStream.getStream().getName();
     final Set<String> selectedFieldsInCatalog = CatalogHelpers.getTopLevelFieldNames(airbyteStream);
     final List<String> selectedDatabaseFields = table.getFields()
@@ -243,11 +243,11 @@ public abstract class AbstractJdbcSource implements Source {
   }
 
   private static AutoCloseableIterator<AirbyteMessage> getIncrementalStream(JdbcDatabase database,
-                                                                       ConfiguredAirbyteStream airbyteStream,
-                                                                       List<String> selectedDatabaseFields,
-                                                                       TableInfoInternal table,
-                                                                       String cursor,
-                                                                       Instant emittedAt) {
+                                                                            ConfiguredAirbyteStream airbyteStream,
+                                                                            List<String> selectedDatabaseFields,
+                                                                            TableInfoInternal table,
+                                                                            String cursor,
+                                                                            Instant emittedAt) {
     final String streamName = airbyteStream.getStream().getName();
     final String cursorField = IncrementalUtils.getCursorField(airbyteStream);
     final JDBCType cursorJdbcType = table.getFields().stream()
@@ -272,11 +272,12 @@ public abstract class AbstractJdbcSource implements Source {
   }
 
   private static AutoCloseableIterator<AirbyteMessage> getFullRefreshStream(JdbcDatabase database,
-                                                                       String streamName,
-                                                                       List<String> selectedDatabaseFields,
-                                                                       TableInfoInternal table,
-                                                                       Instant emittedAt) {
-    final AutoCloseableIterator<JsonNode> queryStream = queryTableFullRefresh(database, selectedDatabaseFields, table.getSchemaName(), table.getName());
+                                                                            String streamName,
+                                                                            List<String> selectedDatabaseFields,
+                                                                            TableInfoInternal table,
+                                                                            Instant emittedAt) {
+    final AutoCloseableIterator<JsonNode> queryStream =
+        queryTableFullRefresh(database, selectedDatabaseFields, table.getSchemaName(), table.getName());
     return getMessageIterator(queryStream, streamName, emittedAt.toEpochMilli());
   }
 
@@ -365,7 +366,9 @@ public abstract class AbstractJdbcSource implements Source {
         .collect(Collectors.toList());
   }
 
-  private static AutoCloseableIterator<AirbyteMessage> getMessageIterator(AutoCloseableIterator<JsonNode> recordIterator, String streamName, long emittedAt) {
+  private static AutoCloseableIterator<AirbyteMessage> getMessageIterator(AutoCloseableIterator<JsonNode> recordIterator,
+                                                                          String streamName,
+                                                                          long emittedAt) {
     return AutoCloseableIterators.transform(recordIterator, r -> new AirbyteMessage()
         .withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage()
@@ -375,9 +378,9 @@ public abstract class AbstractJdbcSource implements Source {
   }
 
   public static AutoCloseableIterator<JsonNode> queryTableFullRefresh(JdbcDatabase database,
-                                                                 List<String> columnNames,
-                                                                 String schemaName,
-                                                                 String tableName) {
+                                                                      List<String> columnNames,
+                                                                      String schemaName,
+                                                                      String tableName) {
     LOGGER.info("Queueing query for table: {}", tableName);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
@@ -400,12 +403,12 @@ public abstract class AbstractJdbcSource implements Source {
   }
 
   public static AutoCloseableIterator<JsonNode> queryTableIncremental(JdbcDatabase database,
-                                                                 List<String> columnNames,
-                                                                 String schemaName,
-                                                                 String tableName,
-                                                                 String cursorField,
-                                                                 JDBCType cursorFieldType,
-                                                                 String cursor) {
+                                                                      List<String> columnNames,
+                                                                      String schemaName,
+                                                                      String tableName,
+                                                                      String cursorField,
+                                                                      JDBCType cursorFieldType,
+                                                                      String cursor) {
 
     LOGGER.info("Queueing query for table: {}", tableName);
     return AutoCloseableIterators.lazyIterator(() -> {

@@ -24,44 +24,32 @@
 
 package io.airbyte.commons.util;
 
-import com.google.common.collect.AbstractIterator;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
 import io.airbyte.commons.concurrency.VoidCallable;
 import java.util.Iterator;
+import org.junit.jupiter.api.Test;
 
-/**
- * The canonical {@link AutoCloseableIterator}. The default behavior guarantees that the provided
- * close functional will be called no more than one time.
- *
- * @param <T> type
- */
-class DefaultAutoCloseableIterator<T> extends AbstractIterator<T> implements AutoCloseableIterator<T> {
+class AutoCloseableIteratorsTest {
 
-  private final Iterator<T> iterator;
-  private final VoidCallable onClose;
+  @Test
+  void testFromIterator() throws Exception {
+    final VoidCallable onClose = mock(VoidCallable.class);
+    final AutoCloseableIterator<String> iterator = AutoCloseableIterators.fromIterator(MoreIterators.of("a", "b", "c"), onClose);
 
-  private boolean hasClosed;
+    assertNext(iterator, "a");
+    assertNext(iterator, "b");
+    assertNext(iterator, "c");
+    iterator.close();
 
-  public DefaultAutoCloseableIterator(Iterator<T> iterator, VoidCallable onClose) {
-    this.iterator = iterator;
-    this.onClose = onClose;
-    this.hasClosed = false;
+    verify(onClose).call();
   }
 
-  @Override
-  protected T computeNext() {
-    if (iterator.hasNext()) {
-      return iterator.next();
-    } else {
-      return endOfData();
-    }
-  }
-
-  @Override
-  public void close() throws Exception {
-    if (!hasClosed) {
-      hasClosed = true;
-      onClose.call();
-    }
+  private void assertNext(Iterator<String> iterator, String value) {
+    assertTrue(iterator.hasNext());
+    assertEquals(value, iterator.next());
   }
 
 }
