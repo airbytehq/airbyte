@@ -43,9 +43,9 @@ import org.junit.jupiter.api.Test;
 
 class CompositeIteratorTest {
 
-  VoidCallable onClose1;
-  VoidCallable onClose2;
-  VoidCallable onClose3;
+  private VoidCallable onClose1;
+  private VoidCallable onClose2;
+  private VoidCallable onClose3;
 
   @BeforeEach
   void setup() {
