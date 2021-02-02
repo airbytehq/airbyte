@@ -70,7 +70,7 @@ You can follow progress as part of this
 [issue](https://github.com/airbytehq/airbyte/issues/886) and its related children.
 {% endhint %}
 
-Basic Normalization attempts to expand any nested arrays or objects it receives into separate tables in order to allow more ergonomic querying of your data.
+<!-- Basic Normalization attempts to expand any nested arrays or objects it receives into separate tables in order to allow more ergonomic querying of your data.
 
 #### Arrays
 
@@ -175,4 +175,4 @@ CREATE TABLE "powertrain_specs" (
     "horsepower" INTEGER,
     "transmission" VARCHAR
 );
-```
+``` -->
