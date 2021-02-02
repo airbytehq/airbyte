@@ -67,6 +67,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -378,9 +379,9 @@ public abstract class AbstractJdbcSource implements Source {
                                                                  String schemaName,
                                                                  String tableName) {
     LOGGER.info("Queueing query for table: {}", tableName);
-    return AutoCloseableIterators.lazyEagerCloseAutoCloseableIterator(() -> {
+    return AutoCloseableIterators.lazyIterator(() -> {
       try {
-        return database.query(
+        final Stream<JsonNode> stream = database.query(
             connection -> {
               LOGGER.info("Preparing query for table: {}", tableName);
               final String sql = String.format("SELECT %s FROM %s",
@@ -391,6 +392,7 @@ public abstract class AbstractJdbcSource implements Source {
               return preparedStatement;
             },
             JdbcUtils::rowToJson);
+        return AutoCloseableIterators.fromStream(stream);
       } catch (SQLException e) {
         throw new RuntimeException(e);
       }
@@ -406,9 +408,9 @@ public abstract class AbstractJdbcSource implements Source {
                                                                  String cursor) {
 
     LOGGER.info("Queueing query for table: {}", tableName);
-    return AutoCloseableIterators.lazyEagerCloseAutoCloseableIterator(() -> {
+    return AutoCloseableIterators.lazyIterator(() -> {
       try {
-        return database.query(
+        final Stream<JsonNode> stream = database.query(
             connection -> {
               LOGGER.info("Preparing query for table: {}", tableName);
               final String sql = String.format("SELECT %s FROM %s WHERE %s > ?",
@@ -422,6 +424,7 @@ public abstract class AbstractJdbcSource implements Source {
               return preparedStatement;
             },
             JdbcUtils::rowToJson);
+        return AutoCloseableIterators.fromStream(stream);
       } catch (SQLException e) {
         throw new RuntimeException(e);
       }
