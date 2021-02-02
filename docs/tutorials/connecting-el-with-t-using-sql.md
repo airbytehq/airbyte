@@ -22,7 +22,7 @@ To summarize, we can represent the ELT process in the diagram below. These are s
 
 Anyway, it is possible to short-circuit this process \(no vendor lock-in\) and handle it yourself by turning this option off in the destination settings page.
 
-This could be useful if: 
+This could be useful if:
 
 1. you have different usage than analytics that could be handled with these initial data in raw JSON format. 
 2. you can implement your own Transformer \(even in a different language such as Java or in Spark for example, or another transformation tool: DBT or Dataform\) 
