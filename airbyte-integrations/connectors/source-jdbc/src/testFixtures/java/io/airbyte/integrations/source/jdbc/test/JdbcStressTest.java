@@ -40,6 +40,7 @@ import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
@@ -139,13 +140,31 @@ public abstract class JdbcStressTest {
 
   }
 
+  // todo (cgardens) - restructure these tests so that testFullRefresh() and testIncremental() can be
+  // separate tests. current constrained by only wanting to setup the fixture in the database once,
+  // but it is not trivial to move them to @BeforeAll because it is static and we are doing
+  // inheritance. Not impossible, just needs to be done thoughtfully and for all JdbcSources.
   @Test
   public void stressTest() throws Exception {
-    final Stream<AirbyteMessage> read = source.read(config, getConfiguredCatalog(), Jsons.jsonNode(Collections.emptyMap()));
+    testFullRefresh();
+    testIncremental();
+  }
+
+  private void testFullRefresh() throws Exception {
+    runTest(getConfiguredCatalogFullRefresh(), "full_refresh");
+  }
+
+  private void testIncremental() throws Exception {
+    runTest(getConfiguredCatalogIncremental(), "incremental");
+  }
+
+  private void runTest(ConfiguredAirbyteCatalog configuredCatalog, String testName) throws Exception {
+    LOGGER.info("running stress test for: " + testName);
+    final Stream<AirbyteMessage> read = source.read(config, configuredCatalog, Jsons.jsonNode(Collections.emptyMap()));
     final long actualCount = read
         .filter(m -> m.getType() == Type.RECORD)
         .peek(m -> {
-          if (m.getRecord().getData().get("id").asLong() % 10000 == 0) {
+          if (m.getRecord().getData().get("id").asLong() % 100000 == 0) {
             LOGGER.info("reading batch: " + m.getRecord().getData().get("id").asLong() / 1000);
           }
         })
@@ -155,8 +174,8 @@ public abstract class JdbcStressTest {
     final long expectedRoundedRecordsCount = TOTAL_RECORDS - TOTAL_RECORDS % 1000;
     LOGGER.info("expected records count: " + TOTAL_RECORDS);
     LOGGER.info("actual records count: " + actualCount);
-    assertEquals(expectedRoundedRecordsCount, actualCount);
-    assertEquals(expectedRoundedRecordsCount, bitSet.cardinality());
+    assertEquals(expectedRoundedRecordsCount, actualCount, "testing: " + testName);
+    assertEquals(expectedRoundedRecordsCount, bitSet.cardinality(), "testing: " + testName);
   }
 
   // each is roughly 106 bytes.
@@ -171,8 +190,15 @@ public abstract class JdbcStressTest {
     assertEquals(expectedMessage, actualMessage);
   }
 
-  private static ConfiguredAirbyteCatalog getConfiguredCatalog() {
+  private static ConfiguredAirbyteCatalog getConfiguredCatalogFullRefresh() {
     return CatalogHelpers.toDefaultConfiguredCatalog(getCatalog());
+  }
+
+  private static ConfiguredAirbyteCatalog getConfiguredCatalogIncremental() {
+    return new ConfiguredAirbyteCatalog()
+        .withStreams(Collections.singletonList(new ConfiguredAirbyteStream().withStream(getCatalog().getStreams().get(0))
+            .withCursorField(Collections.singletonList("id"))
+            .withSyncMode(SyncMode.INCREMENTAL)));
   }
 
   private static AirbyteCatalog getCatalog() {
