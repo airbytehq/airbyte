@@ -24,6 +24,7 @@
 
 package io.airbyte.commons.util;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 import io.airbyte.commons.concurrency.VoidCallable;
 import java.util.Iterator;
@@ -42,6 +43,9 @@ class DefaultAutoCloseableIterator<T> extends AbstractIterator<T> implements Aut
   private boolean hasClosed;
 
   public DefaultAutoCloseableIterator(Iterator<T> iterator, VoidCallable onClose) {
+    Preconditions.checkNotNull(iterator);
+    Preconditions.checkNotNull(onClose);
+
     this.iterator = iterator;
     this.onClose = onClose;
     this.hasClosed = false;
@@ -49,6 +53,8 @@ class DefaultAutoCloseableIterator<T> extends AbstractIterator<T> implements Aut
 
   @Override
   protected T computeNext() {
+    assertHasNotClosed();
+
     if (iterator.hasNext()) {
       return iterator.next();
     } else {
@@ -62,6 +68,10 @@ class DefaultAutoCloseableIterator<T> extends AbstractIterator<T> implements Aut
       hasClosed = true;
       onClose.call();
     }
+  }
+
+  private void assertHasNotClosed() {
+    Preconditions.checkState(!hasClosed);
   }
 
 }

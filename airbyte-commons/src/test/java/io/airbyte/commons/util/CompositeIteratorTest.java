@@ -129,7 +129,7 @@ class CompositeIteratorTest {
 
   @SuppressWarnings("ResultOfMethodCallIgnored")
   @Test
-  void testCannotIterateAfterClosing() throws Exception {
+  void testCannotOperateAfterClosing() throws Exception {
     final AutoCloseableIterator<String> iterator = new CompositeIterator<>(ImmutableList.of(
         AutoCloseableIterators.fromIterator(MoreIterators.of("a", "b", "c"), onClose1)));
 
@@ -139,7 +139,7 @@ class CompositeIteratorTest {
     iterator.close();
     assertThrows(IllegalStateException.class, iterator::hasNext);
     assertThrows(IllegalStateException.class, iterator::next);
-    assertThrows(IllegalStateException.class, iterator::close);
+    iterator.close(); // still allowed to close again.
   }
 
   private void assertNext(Iterator<String> iterator, String value) {
