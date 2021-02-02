@@ -17,19 +17,9 @@ cmd_build() {
   local path=$1
 
   echo "Building $path"
-    ./gradlew "$(_get_rule_base "$path"):clean"
-    ./gradlew "$(_get_rule_base "$path"):build"
-    ./gradlew "$(_get_rule_base "$path"):integrationTest"
-}
-
-_execute_task_if_exists() {
-  local path=$1
-  local task=$2
-  echo "checking if $task exists."
-  if ./gradlew "$(_get_rule_base "$path"):tasks" --all | grep -qw "^$task"; then
-    echo "found $task exists. executing."
-    ./gradlew "$(_get_rule_base "$path"):$task"
-  fi
+  ./gradlew "$(_get_rule_base "$path"):clean"
+  ./gradlew "$(_get_rule_base "$path"):build"
+  ./gradlew "$(_get_rule_base "$path"):integrationTest"
 }
 
 cmd_publish() {
@@ -45,7 +35,7 @@ cmd_publish() {
   echo "image_name $image_name"
   echo "$versioned_image $versioned_image"
   echo "latest_image $latest_image"
-
+  
   docker tag "$image_name:dev" "$versioned_image"
   docker tag "$image_name:dev" "$latest_image"
 
