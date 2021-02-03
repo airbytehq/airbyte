@@ -29,11 +29,15 @@ import io.airbyte.config.StandardTapConfig;
 import io.airbyte.config.StandardTargetConfig;
 import java.util.concurrent.TimeUnit;
 
+import io.airbyte.workflows.AirbyteWorkflow;
 import io.temporal.client.WorkflowClient;
+import io.temporal.client.WorkflowOptions;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.serviceclient.WorkflowServiceStubsOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static io.airbyte.workflows.AirbyteWorkflowImpl.AIRBYTE_WORKFLOW_QUEUE;
 
 public class WorkerUtils {
 
@@ -122,6 +126,15 @@ public class WorkerUtils {
         .withDestinationConnectionConfiguration(sync.getDestinationConfiguration())
         .withCatalog(sync.getCatalog())
         .withState(sync.getState());
+  }
+
+  public static AirbyteWorkflow getWorkflow(WorkflowClient workflowClient, String workflowId) {
+    final WorkflowOptions options = WorkflowOptions.newBuilder()
+            .setTaskQueue(AIRBYTE_WORKFLOW_QUEUE)
+            .setWorkflowId(workflowId)
+            .build();
+
+    return workflowClient.newWorkflowStub(AirbyteWorkflow.class, options);
   }
 
 }
