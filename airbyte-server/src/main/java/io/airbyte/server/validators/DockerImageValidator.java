@@ -29,13 +29,14 @@ import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.KnownException;
+import io.temporal.client.WorkflowClient;
 
 public class DockerImageValidator {
 
   private final SpecFetcher specFetcher;
 
-  public DockerImageValidator(SchedulerJobClient schedulerJobClient) {
-    this(new SpecFetcher(schedulerJobClient));
+  public DockerImageValidator(WorkflowClient workflowClient) {
+    this(new SpecFetcher(workflowClient));
   }
 
   @VisibleForTesting

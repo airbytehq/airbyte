@@ -31,6 +31,8 @@ import io.airbyte.scheduler.client.CachingSchedulerJobClient;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.apis.ConfigurationApi;
 import java.util.Map;
+
+import io.temporal.client.WorkflowClient;
 import org.glassfish.hk2.api.Factory;
 import org.slf4j.MDC;
 
@@ -39,6 +41,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
   private static ConfigRepository configRepository;
   private static JobPersistence jobPersistence;
   private static CachingSchedulerJobClient schedulerJobClient;
+  private static WorkflowClient workflowClient;
   private static Configs configs;
   private static FileTtlManager archiveTtlManager;
   private static Map<String, String> mdc;
@@ -53,6 +56,10 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
 
   public static void setSchedulerJobClient(final CachingSchedulerJobClient schedulerJobClient) {
     ConfigurationApiFactory.schedulerJobClient = schedulerJobClient;
+  }
+
+  public static void setWorkflowClient(final WorkflowClient workflowClient) {
+    ConfigurationApiFactory.workflowClient = workflowClient;
   }
 
   public static void setConfigs(Configs configs) {
@@ -75,6 +82,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
         ConfigurationApiFactory.configRepository,
         ConfigurationApiFactory.jobPersistence,
         ConfigurationApiFactory.schedulerJobClient,
+        ConfigurationApiFactory.workflowClient,
         ConfigurationApiFactory.configs,
         ConfigurationApiFactory.archiveTtlManager);
   }

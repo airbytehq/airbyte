@@ -29,26 +29,35 @@ import io.airbyte.config.StandardGetSpecOutput;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.client.SchedulerJobClient;
+import io.airbyte.workflows.AirbyteWorkflow;
+import io.temporal.client.WorkflowClient;
+import io.temporal.client.WorkflowOptions;
+
 import java.io.IOException;
+
+import static io.airbyte.workflows.AirbyteWorkflowImpl.AIRBYTE_WORKFLOW_QUEUE;
 
 public class SpecFetcher {
 
-  private final SchedulerJobClient schedulerJobClient;
+    private final WorkflowClient workflowClient;
 
-  public SpecFetcher(SchedulerJobClient schedulerJobClient) {
-    this.schedulerJobClient = schedulerJobClient;
-  }
+    public SpecFetcher(WorkflowClient workflowClient) {
+        this.workflowClient = workflowClient;
+    }
 
-  public ConnectorSpecification execute(String dockerImage) throws IOException {
-    return getSpecFromJob(schedulerJobClient.createGetSpecJob(dockerImage));
-  }
+    public ConnectorSpecification execute(String dockerImage) {
+        try {
+            final WorkflowOptions options = WorkflowOptions.newBuilder()
+                    .setTaskQueue(AIRBYTE_WORKFLOW_QUEUE)
+                    .setWorkflowId("fetch-spec-" + dockerImage)
+                    .build();
 
-  private static ConnectorSpecification getSpecFromJob(Job job) {
-    return job
-        .getSuccessOutput()
-        .map(JobOutput::getGetSpec)
-        .map(StandardGetSpecOutput::getSpecification)
-        .orElseThrow(() -> new IllegalArgumentException("no spec output found"));
-  }
+            final AirbyteWorkflow workflow = workflowClient.newWorkflowStub(AirbyteWorkflow.class, options);
+
+            return workflow.getSpec(dockerImage);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("no spec output found");
+        }
+    }
 
 }

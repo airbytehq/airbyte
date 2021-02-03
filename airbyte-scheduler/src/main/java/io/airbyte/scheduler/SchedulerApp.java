@@ -25,10 +25,13 @@
 package io.airbyte.scheduler;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.airbyte.activities.GetSpecActivityImpl;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.concurrency.GracefulShutdownHandler;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
+import io.airbyte.config.JobGetSpecConfig;
+import io.airbyte.config.StandardGetSpecOutput;
 import io.airbyte.config.helpers.LogHelpers;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -38,6 +41,7 @@ import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.workers.OutputAndStatus;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.KubeProcessBuilderFactory;
@@ -48,21 +52,16 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
+import io.airbyte.workflows.AirbyteWorkflowImpl;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityOptions;
-import io.temporal.api.common.v1.WorkflowExecution;
-import io.temporal.client.WorkflowClient;
-import io.temporal.client.WorkflowOptions;
 import io.temporal.common.RetryOptions;
-import io.temporal.serviceclient.WorkflowServiceStubs;
-import io.temporal.serviceclient.WorkflowServiceStubsOptions;
 import io.temporal.worker.Worker;
 import io.temporal.worker.WorkerFactory;
 import io.temporal.workflow.Workflow;
@@ -71,6 +70,8 @@ import io.temporal.workflow.WorkflowMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
+
+import static io.airbyte.workflows.AirbyteWorkflowImpl.*;
 
 /**
  * The SchedulerApp is responsible for finding new scheduled jobs that need to be run and to launch
@@ -114,6 +115,12 @@ public class SchedulerApp {
     final JobRetrier jobRetrier = new JobRetrier(jobPersistence, Instant::now);
     final JobScheduler jobScheduler = new JobScheduler(jobPersistence, configRepository);
     final JobSubmitter jobSubmitter = new JobSubmitter(workerThreadPool, jobPersistence, configRepository, workerRunFactory);
+
+    WorkerFactory factory = WorkerFactory.newInstance(WorkerUtils.TEMPORAL_CLIENT);
+    Worker worker = factory.newWorker(AIRBYTE_WORKFLOW_QUEUE);
+    worker.registerWorkflowImplementationTypes(AirbyteWorkflowImpl.class);
+    worker.registerActivitiesImplementations(new GetSpecActivityImpl(workspaceRoot, pbf));
+    factory.start();
 
     Map<String, String> mdc = MDC.getCopyOfContextMap();
 
@@ -163,159 +170,80 @@ public class SchedulerApp {
   }
 
   public static void main(String[] args) throws IOException, InterruptedException {
+    // todo: wait on temporal startup in a cleaner way
     Thread.sleep(60000L);
     System.out.println("starting...");
 
-    Executors.newFixedThreadPool(1).submit(new InitiateMoneyTransfer());
+    final Configs configs = new EnvConfigs();
 
-    WorkerFactory factory = WorkerFactory.newInstance(WorkerUtils.TEMPORAL_CLIENT);
-    Worker worker = factory.newWorker(MONEY_TRANSFER_TASK_QUEUE);
-    // This Worker hosts both Workflow and Activity implementations.
-    // Workflows are stateful so a type is needed to create instances.
-    worker.registerWorkflowImplementationTypes(MoneyTransferWorkflowImpl.class);
-    // Activities are stateless and thread safe so a shared instance is used.
-    worker.registerActivitiesImplementations(new AccountActivityImpl());
-    // Start listening to the Task Queue.
-    factory.start();
+    final Path configRoot = configs.getConfigRoot();
+    LOGGER.info("configRoot = " + configRoot);
 
-//    final Configs configs = new EnvConfigs();
+    MDC.put(LogHelpers.WORKSPACE_MDC_KEY, LogHelpers.getSchedulerLogsRoot(configs).toString());
+
+    final Path workspaceRoot = configs.getWorkspaceRoot();
+    LOGGER.info("workspaceRoot = " + workspaceRoot);
+
+    LOGGER.info("Creating DB connection pool...");
+    final Database database = Databases.createPostgresDatabase(
+        configs.getDatabaseUser(),
+        configs.getDatabasePassword(),
+        configs.getDatabaseUrl());
+
+    final ProcessBuilderFactory pbf = getProcessBuilderFactory(configs);
+
+    final JobPersistence jobPersistence = new DefaultJobPersistence(database);
+    final ConfigPersistence configPersistence = new DefaultConfigPersistence(configRoot);
+    final ConfigRepository configRepository = new ConfigRepository(configPersistence);
+    final JobCleaner jobCleaner = new JobCleaner(
+        configs.getWorkspaceRetentionConfig(),
+        workspaceRoot,
+        jobPersistence);
+
+    TrackingClientSingleton.initialize(
+        configs.getTrackingStrategy(),
+        configs.getAirbyteRole(),
+        configs.getAirbyteVersion(),
+        configRepository);
+
+    Optional<String> airbyteDatabaseVersion = jobPersistence.getVersion();
+    int loopCount = 0;
+    while (airbyteDatabaseVersion.isEmpty() && loopCount < 300) {
+      LOGGER.warn("Waiting for Server to start...");
+      TimeUnit.SECONDS.sleep(1);
+      airbyteDatabaseVersion = jobPersistence.getVersion();
+      loopCount++;
+    }
+    if (airbyteDatabaseVersion.isPresent()) {
+      AirbyteVersion.check(configs.getAirbyteVersion(), airbyteDatabaseVersion.get());
+    } else {
+      throw new IllegalStateException("Unable to retrieve Airbyte Version, aborting...");
+    }
+
+    LOGGER.info("Launching scheduler...");
+    new SchedulerApp(workspaceRoot, pbf, jobPersistence, configRepository, jobCleaner).start();
+  }
+
 //
-//    final Path configRoot = configs.getConfigRoot();
-//    LOGGER.info("configRoot = " + configRoot);
-//
-//    MDC.put(LogHelpers.WORKSPACE_MDC_KEY, LogHelpers.getSchedulerLogsRoot(configs).toString());
-//
-//    final Path workspaceRoot = configs.getWorkspaceRoot();
-//    LOGGER.info("workspaceRoot = " + workspaceRoot);
-//
-//    LOGGER.info("Creating DB connection pool...");
-//    final Database database = Databases.createPostgresDatabase(
-//        configs.getDatabaseUser(),
-//        configs.getDatabasePassword(),
-//        configs.getDatabaseUrl());
-//
-//    final ProcessBuilderFactory pbf = getProcessBuilderFactory(configs);
-//
-//    final JobPersistence jobPersistence = new DefaultJobPersistence(database);
-//    final ConfigPersistence configPersistence = new DefaultConfigPersistence(configRoot);
-//    final ConfigRepository configRepository = new ConfigRepository(configPersistence);
-//    final JobCleaner jobCleaner = new JobCleaner(
-//        configs.getWorkspaceRetentionConfig(),
-//        workspaceRoot,
-//        jobPersistence);
-//
-//    TrackingClientSingleton.initialize(
-//        configs.getTrackingStrategy(),
-//        configs.getAirbyteRole(),
-//        configs.getAirbyteVersion(),
-//        configRepository);
-//
-//    Optional<String> airbyteDatabaseVersion = jobPersistence.getVersion();
-//    int loopCount = 0;
-//    while (airbyteDatabaseVersion.isEmpty() && loopCount < 300) {
-//      LOGGER.warn("Waiting for Server to start...");
-//      TimeUnit.SECONDS.sleep(1);
-//      airbyteDatabaseVersion = jobPersistence.getVersion();
-//      loopCount++;
+//  public static class InitiateMoneyTransfer implements Runnable{
+//    @Override
+//    public void run() {
+//      WorkflowOptions options = WorkflowOptions.newBuilder()
+//              .setTaskQueue(AIRBYTE_WORKFLOW_QUEUE)
+//              // A WorkflowId prevents this it from having duplicate instances, remove it to duplicate.
+//              .setWorkflowId("money-transfer-workflow")
+//              .build();
+//      // WorkflowStubs enable calls to methods as if the Workflow object is local, but actually perform an RPC.
+//      MoneyTransferWorkflow workflow = WorkerUtils.TEMPORAL_CLIENT.newWorkflowStub(MoneyTransferWorkflow.class, options);
+//      String referenceId = UUID.randomUUID().toString();
+//      String fromAccount = "001-001";
+//      String toAccount = "002-002";
+//      double amount = 18.74;
+//      // Asynchronous execution. This process will exit after making this call.
+//      WorkflowExecution we = WorkflowClient.start(workflow::transfer, fromAccount, toAccount, referenceId, amount);
+//      System.out.printf("\nTransfer of $%f from account %s to account %s is processing\n", amount, fromAccount, toAccount);
+//      System.out.printf("\nWorkflowID: %s RunID: %s", we.getWorkflowId(), we.getRunId());
 //    }
-//    if (airbyteDatabaseVersion.isPresent()) {
-//      AirbyteVersion.check(configs.getAirbyteVersion(), airbyteDatabaseVersion.get());
-//    } else {
-//      throw new IllegalStateException("Unable to retrieve Airbyte Version, aborting...");
-//    }
-//
-//    LOGGER.info("Launching scheduler...");
-//    new SchedulerApp(workspaceRoot, pbf, jobPersistence, configRepository, jobCleaner).start();
-  }
-
-  public static class MoneyTransferWorkflowImpl implements MoneyTransferWorkflow {
-    // RetryOptions specify how to automatically handle retries when Activities fail.
-    private final RetryOptions retryoptions = RetryOptions.newBuilder()
-            .setInitialInterval(Duration.ofSeconds(1))
-            .setMaximumInterval(Duration.ofSeconds(100))
-            .setBackoffCoefficient(2)
-            .setMaximumAttempts(500)
-            .build();
-    private final ActivityOptions options = ActivityOptions.newBuilder()
-            // Timeout options specify when to automatically timeout Activities if the process is taking too long.
-            .setStartToCloseTimeout(Duration.ofSeconds(5))
-            // Optionally provide customized RetryOptions.
-            // Temporal retries failures by default, this is simply an example.
-            .setRetryOptions(retryoptions)
-            .build();
-    // ActivityStubs enable calls to methods as if the Activity object is local, but actually perform an RPC.
-    private final AccountActivity account = Workflow.newActivityStub(AccountActivity.class, options);
-
-    // The transfer method is the entry point to the Workflow.
-    // Activity method executions can be orchestrated here or from within other Activity methods.
-    @Override
-    public void transfer(String fromAccountId, String toAccountId, String referenceId, double amount) {
-
-      account.withdraw(fromAccountId, referenceId, amount);
-      account.deposit(toAccountId, referenceId, amount);
-    }
-  }
-
-  public static class InitiateMoneyTransfer implements Runnable{
-    @Override
-    public void run() {
-      WorkflowOptions options = WorkflowOptions.newBuilder()
-              .setTaskQueue(MONEY_TRANSFER_TASK_QUEUE)
-              // A WorkflowId prevents this it from having duplicate instances, remove it to duplicate.
-              .setWorkflowId("money-transfer-workflow")
-              .build();
-      // WorkflowStubs enable calls to methods as if the Workflow object is local, but actually perform an RPC.
-      MoneyTransferWorkflow workflow = WorkerUtils.TEMPORAL_CLIENT.newWorkflowStub(MoneyTransferWorkflow.class, options);
-      String referenceId = UUID.randomUUID().toString();
-      String fromAccount = "001-001";
-      String toAccount = "002-002";
-      double amount = 18.74;
-      // Asynchronous execution. This process will exit after making this call.
-      WorkflowExecution we = WorkflowClient.start(workflow::transfer, fromAccount, toAccount, referenceId, amount);
-      System.out.printf("\nTransfer of $%f from account %s to account %s is processing\n", amount, fromAccount, toAccount);
-      System.out.printf("\nWorkflowID: %s RunID: %s", we.getWorkflowId(), we.getRunId());
-    }
-  }
-
-  public static class AccountActivityImpl implements AccountActivity {
-
-    @Override
-    public void withdraw(String accountId, String referenceId, double amount) {
-
-      System.out.printf(
-              "\nWithdrawing $%f from account %s. ReferenceId: %s\n",
-              amount, accountId, referenceId
-      );
-    }
-
-    @Override
-    public void deposit(String accountId, String referenceId, double amount) {
-
-      System.out.printf(
-              "\nDepositing $%f into account %s. ReferenceId: %s\n",
-              amount, accountId, referenceId
-      );
-      // Uncomment the following line to simulate an Activity error.
-      // throw new RuntimeException("simulated");
-    }
-  }
-
-  @ActivityInterface
-  public interface AccountActivity {
-
-    void deposit(String accountId, String referenceId, double amount);
-
-    void withdraw(String accountId, String referenceId, double amount);
-  }
-
-  @WorkflowInterface
-  public interface MoneyTransferWorkflow {
-
-    // The Workflow method is called by the initiator either via code or CLI.
-    @WorkflowMethod
-    void transfer(String fromAccountId, String toAccountId, String referenceId, double amount);
-  }
-
-  static final String MONEY_TRANSFER_TASK_QUEUE = "MONEY_TRANSFER_TASK_QUEUE";
+//  }
 
 }

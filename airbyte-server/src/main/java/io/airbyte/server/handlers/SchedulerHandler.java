@@ -61,6 +61,8 @@ import io.airbyte.server.converters.SchemaConverter;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
+import io.temporal.client.WorkflowClient;
+
 import java.io.IOException;
 import java.util.UUID;
 
@@ -72,13 +74,13 @@ public class SchedulerHandler {
   private final ConfigurationUpdate configurationUpdate;
   private final JsonSchemaValidator jsonSchemaValidator;
 
-  public SchedulerHandler(ConfigRepository configRepository, SchedulerJobClient schedulerJobClient) {
+  public SchedulerHandler(ConfigRepository configRepository, SchedulerJobClient schedulerJobClient, WorkflowClient workflowClient) {
     this(
         configRepository,
         schedulerJobClient,
-        new ConfigurationUpdate(configRepository, new SpecFetcher(schedulerJobClient)),
+        new ConfigurationUpdate(configRepository, new SpecFetcher(workflowClient)),
         new JsonSchemaValidator(),
-        new SpecFetcher(schedulerJobClient));
+        new SpecFetcher(workflowClient));
   }
 
   @VisibleForTesting

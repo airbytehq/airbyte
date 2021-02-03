@@ -46,17 +46,12 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultGetSpecWorker.class);
 
   private final IntegrationLauncher integrationLauncher;
-  private final AirbyteStreamFactory streamFactory;
+  private final AirbyteStreamFactory streamFactory = new DefaultAirbyteStreamFactory();
 
   private Process process;
 
-  public DefaultGetSpecWorker(final IntegrationLauncher integrationLauncher, AirbyteStreamFactory streamFactory) {
-    this.integrationLauncher = integrationLauncher;
-    this.streamFactory = streamFactory;
-  }
-
   public DefaultGetSpecWorker(final IntegrationLauncher integrationLauncher) {
-    this(integrationLauncher, new DefaultAirbyteStreamFactory());
+    this.integrationLauncher = integrationLauncher;
   }
 
   @Override

@@ -100,6 +100,8 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
 import java.io.IOException;
 import javax.validation.Valid;
+
+import io.temporal.client.WorkflowClient;
 import org.eclipse.jetty.http.HttpStatus;
 
 @javax.ws.rs.Path("/v1")
@@ -124,13 +126,14 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   public ConfigurationApi(final ConfigRepository configRepository,
                           final JobPersistence jobPersistence,
                           final CachingSchedulerJobClient schedulerJobClient,
+                          final WorkflowClient workflowClient,
                           final Configs configs,
                           final FileTtlManager archiveTtlManager) {
-    final SpecFetcher specFetcher = new SpecFetcher(schedulerJobClient);
+    final SpecFetcher specFetcher = new SpecFetcher(workflowClient);
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
-    schedulerHandler = new SchedulerHandler(configRepository, schedulerJobClient);
+    schedulerHandler = new SchedulerHandler(configRepository, schedulerJobClient, workflowClient);
     workspacesHandler = new WorkspacesHandler(configRepository);
-    final DockerImageValidator dockerImageValidator = new DockerImageValidator(schedulerJobClient);
+    final DockerImageValidator dockerImageValidator = new DockerImageValidator(workflowClient);
     sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, schedulerJobClient);
     connectionsHandler = new ConnectionsHandler(configRepository);
     destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, dockerImageValidator, schedulerJobClient);

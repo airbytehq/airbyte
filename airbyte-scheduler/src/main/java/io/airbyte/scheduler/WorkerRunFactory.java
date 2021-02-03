@@ -89,7 +89,7 @@ public class WorkerRunFactory {
     LOGGER.info("job root: {}", jobRoot);
 
     return switch (job.getConfig().getConfigType()) {
-      case GET_SPEC -> createGetSpecWorker(job.getId(), currentAttempt, job.getConfig().getGetSpec(), jobRoot);
+      case GET_SPEC -> throw new RuntimeException("get spec is deprecated in WorkerRunFactory");
       case CHECK_CONNECTION_SOURCE, CHECK_CONNECTION_DESTINATION -> createConnectionCheckWorker(job.getId(), currentAttempt,
           job.getConfig().getCheckConnection(), jobRoot);
       case DISCOVER_SCHEMA -> createDiscoverCatalogWorker(job.getId(), currentAttempt, job.getConfig().getDiscoverCatalog(), jobRoot);

@@ -56,6 +56,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+
+import io.airbyte.workers.WorkerUtils;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -94,6 +96,7 @@ public class ServerApp {
     Map<String, String> mdc = MDC.getCopyOfContextMap();
 
     ConfigurationApiFactory.setSchedulerJobClient(new SpecCachingSchedulerJobClient(jobPersistence, new DefaultJobCreator(jobPersistence)));
+    ConfigurationApiFactory.setWorkflowClient(WorkerUtils.TEMPORAL_CLIENT);
     ConfigurationApiFactory.setConfigRepository(configRepository);
     ConfigurationApiFactory.setJobPersistence(jobPersistence);
     ConfigurationApiFactory.setConfigs(configs);
