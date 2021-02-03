@@ -31,7 +31,6 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceStandardTest;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
-import java.util.Optional;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -39,7 +38,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
-class PostgresStandardSourceTest extends JdbcSourceStandardTest {
+class PostgresJdbcStandardSourceTest extends JdbcSourceStandardTest {
 
   private static PostgreSQLContainer<?> PSQL_DB;
 
@@ -71,8 +70,8 @@ class PostgresStandardSourceTest extends JdbcSourceStandardTest {
   }
 
   @Override
-  public Optional<String> getDefaultSchemaName() {
-    return Optional.of("public");
+  public boolean supportsSchemas() {
+    return true;
   }
 
   @Override

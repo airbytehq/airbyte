@@ -30,6 +30,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.integrations.source.redshift.RedshiftSource;
 import io.airbyte.integrations.standardtest.source.StandardSourceTest;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -65,7 +66,7 @@ public class RedshiftStandardSourceTest extends StandardSourceTest {
             config.get("host").asText(),
             config.get("port").asText(),
             config.get("database").asText()),
-        "com.amazon.redshift.jdbc.Driver");
+        RedshiftSource.DRIVER_CLASS);
 
     database.execute(connection -> connection.createStatement().execute(createSchemaQuery));
     String createTestTable =
