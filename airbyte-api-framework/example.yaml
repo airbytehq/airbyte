@@ -1,0 +1,5 @@
+
+resources:
+  name_1:
+    base_url: https://${config.account_id}.service.io/api/name_1
+    request_type: 
