@@ -31,7 +31,8 @@ public class AirbyteWorkflowImpl implements AirbyteWorkflow {
             .setRetryOptions(RETRY_OPTIONS)
             .build();
 
-    private static final GetSpecActivity account = Workflow.newActivityStub(GetSpecActivity.class, OPTIONS);
+    // activities should NOT BE STATIC - you get some really weird errors if you do
+    private final GetSpecActivity account = Workflow.newActivityStub(GetSpecActivity.class, OPTIONS);
 
     @Override
     public ConnectorSpecification getSpec(String dockerImage) throws Exception {
