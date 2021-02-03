@@ -9,7 +9,6 @@ application {
 }
 
 dependencies {
-
     implementation project(':airbyte-db')
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-protocol:models')

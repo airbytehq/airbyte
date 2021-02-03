@@ -37,6 +37,7 @@ import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.integrations.DefaultSpecConnector;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.models.JdbcState;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -48,11 +49,11 @@ import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -72,7 +73,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class AbstractJdbcSource implements Source {
+public abstract class AbstractJdbcSource extends DefaultSpecConnector implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcSource.class);
 
@@ -111,13 +112,6 @@ public abstract class AbstractJdbcSource implements Source {
    * @return set of schemas to be ignored.
    */
   public abstract Set<String> getExcludedInternalSchemas();
-
-  @Override
-  public ConnectorSpecification spec() throws IOException {
-    // return a JsonSchema representation of the spec for the integration.
-    final String resourceString = MoreResources.readResource("spec.json");
-    return Jsons.deserialize(resourceString, ConnectorSpecification.class);
-  }
 
   @Override
   public AirbyteConnectionStatus check(JsonNode config) {

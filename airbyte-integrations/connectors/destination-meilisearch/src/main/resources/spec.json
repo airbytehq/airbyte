@@ -5,59 +5,21 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "MeiliSearch Destination Spec",
     "type": "object",
-    "required": ["host", "port", "username", "database", "schema"],
+    "required": ["host"],
     "additionalProperties": false,
     "properties": {
       "host": {
         "title": "Host",
-        "description": "Hostname of the database.",
+        "description": "Hostname of the MeiliSearch instance",
         "type": "string",
         "order": 0
       },
-      "port": {
-        "title": "Port",
-        "description": "Port of the database.",
-        "type": "integer",
-        "minimum": 0,
-        "maximum": 65536,
-        "default": 5432,
-        "examples": ["5432"],
-        "order": 1
-      },
-      "database": {
-        "title": "DB Name",
-        "description": "Name of the database.",
-        "type": "string",
-        "order": 2
-      },
-      "schema": {
-        "title": "Schema",
-        "description": "Unless specifically configured, the usual value for this field is \"public\".",
-        "type": "string",
-        "examples": ["public"],
-        "default": "public",
-        "order": 3
-      },
-      "username": {
-        "title": "User",
-        "description": "Username to use to access the database.",
-        "type": "string",
-        "order": 4
-      },
-      "password": {
-        "title": "Password",
-        "description": "Password associated with the username.",
-        "type": "string",
+      "api_key": {
+        "title": "API Key",
         "airbyte_secret": true,
-        "order": 5
-      },
-      "basic_normalization": {
-        "title": "Basic Normalization",
-        "type": "boolean",
-        "default": true,
-        "description": "Whether or not to normalize the data in the destination. See <a href=\"https://docs.airbyte.io/architecture/basic-normalization\">basic normalization</a> for more details.",
-        "examples": [true, false],
-        "order": 6
+        "description": "MeiliSearch instance API Key",
+        "type": "string",
+        "order": 1
       }
     }
   }
