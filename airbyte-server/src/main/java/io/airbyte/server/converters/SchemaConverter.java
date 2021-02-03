@@ -24,7 +24,6 @@
 
 package io.airbyte.server.converters;
 
-import io.airbyte.api.model.AirbyteStreamFieldConfiguration;
 import io.airbyte.api.model.SourceSchema;
 import io.airbyte.api.model.SourceSchemaField;
 import io.airbyte.api.model.SourceSchemaStream;
@@ -81,7 +80,7 @@ public class SchemaConverter {
     final List<io.airbyte.api.model.AirbyteStreamAndConfiguration> persistenceStreams = catalog.getStreams()
         .stream()
         .map(configuredStream -> {
-          final List<AirbyteStreamFieldConfiguration> fields = new ArrayList<>();
+          final List<io.airbyte.api.model.AirbyteStreamFieldConfiguration> fields = new ArrayList<>();
           // TODO extract fields
           final io.airbyte.api.model.AirbyteStreamConfiguration configuration = new io.airbyte.api.model.AirbyteStreamConfiguration()
               .syncMode(Enums.convertTo(configuredStream.getSyncMode(), io.airbyte.api.model.SyncMode.class))

@@ -1372,7 +1372,7 @@ components:
         - jobInfo
       properties:
         schema:
-          $ref: "#/components/schemas/SourceSchema"
+          $ref: "#/components/schemas/AirbyteCatalog"
         jobInfo:
           $ref: "#/components/schemas/JobInfoRead"
     # DESTINATION DEFINITION
@@ -1593,7 +1593,7 @@ components:
         destinationId:
           $ref: "#/components/schemas/DestinationId"
         syncSchema:
-          $ref: "#/components/schemas/SourceSchema"
+          $ref: "#/components/schemas/ConfiguredAirbyteCatalog"
         schedule:
           $ref: "#/components/schemas/ConnectionSchedule"
         status:
@@ -1608,7 +1608,7 @@ components:
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
         syncSchema:
-          $ref: "#/components/schemas/SourceSchema"
+          $ref: "#/components/schemas/ConfiguredAirbyteCatalog"
         schedule:
           $ref: "#/components/schemas/ConnectionSchedule"
         status:
@@ -1639,7 +1639,7 @@ components:
         destinationId:
           $ref: "#/components/schemas/DestinationId"
         syncSchema:
-          $ref: "#/components/schemas/SourceSchema"
+          $ref: "#/components/schemas/ConfiguredAirbyteCatalog"
         schedule:
           $ref: "#/components/schemas/ConnectionSchedule"
         status:
@@ -2049,7 +2049,7 @@ components:
         destinationId:
           $ref: "#/components/schemas/DestinationId"
         syncSchema:
-          $ref: "#/components/schemas/SourceSchema"
+          $ref: "#/components/schemas/ConfiguredAirbyteCatalog"
         schedule:
           $ref: "#/components/schemas/ConnectionSchedule"
         status:
