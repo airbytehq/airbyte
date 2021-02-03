@@ -32,13 +32,15 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.Optional;
-import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
@@ -56,13 +58,13 @@ class StateDecoratingIteratorTest {
       .withRecord(new AirbyteRecordMessage()
           .withData(Jsons.jsonNode(ImmutableMap.of(UUID_FIELD_NAME, "def"))));
 
-  private static Stream<AirbyteMessage> messageStream;
+  private static Iterator<AirbyteMessage> messageIterator;
   private JdbcStateManager stateManager;
   private AirbyteStateMessage stateMessage;
 
   @BeforeEach
   void setup() {
-    messageStream = Stream.of(RECORD_MESSAGE1, RECORD_MESSAGE2);
+    messageIterator = MoreIterators.of(RECORD_MESSAGE1, RECORD_MESSAGE2);
     stateManager = mock(JdbcStateManager.class);
     stateMessage = mock(AirbyteStateMessage.class);
     when(stateManager.getOriginalCursorField(STREAM_NAME)).thenReturn(Optional.empty());
@@ -76,7 +78,7 @@ class StateDecoratingIteratorTest {
     when(stateManager.updateAndEmit(STREAM_NAME, "def")).thenReturn(stateMessage);
 
     final StateDecoratingIterator iterator = new StateDecoratingIterator(
-        messageStream,
+        messageIterator,
         stateManager,
         STREAM_NAME,
         UUID_FIELD_NAME,
@@ -94,7 +96,7 @@ class StateDecoratingIteratorTest {
     when(stateManager.updateAndEmit(STREAM_NAME, "xyz")).thenReturn(stateMessage);
 
     final StateDecoratingIterator iterator = new StateDecoratingIterator(
-        messageStream,
+        messageIterator,
         stateManager,
         STREAM_NAME,
         UUID_FIELD_NAME,
@@ -111,7 +113,7 @@ class StateDecoratingIteratorTest {
   void testCursorFieldIsEmpty() {
     final AirbyteMessage recordMessage = Jsons.clone(RECORD_MESSAGE1);
     ((ObjectNode) recordMessage.getRecord().getData()).remove(UUID_FIELD_NAME);
-    final Stream<AirbyteMessage> messageStream = Stream.of(recordMessage);
+    final Iterator<AirbyteMessage> messageStream = MoreIterators.of(recordMessage);
 
     when(stateManager.updateAndEmit(STREAM_NAME, "xyz")).thenReturn(stateMessage);
 
@@ -134,7 +136,7 @@ class StateDecoratingIteratorTest {
     when(stateManager.updateAndEmit(STREAM_NAME, null)).thenReturn(stateMessage);
 
     final StateDecoratingIterator iterator = new StateDecoratingIterator(
-        Stream.empty(),
+        Collections.emptyIterator(),
         stateManager,
         STREAM_NAME,
         UUID_FIELD_NAME,

@@ -32,7 +32,6 @@ import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceStandardTest;
-import java.util.Optional;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
@@ -89,8 +88,9 @@ class MySqlJdbcStandardTest extends JdbcSourceStandardTest {
   }
 
   @AfterEach
-  void tearDown() throws Exception {
+  void tearDownMySql() throws Exception {
     database.close();
+    super.tearDown();
   }
 
   @AfterAll
@@ -100,8 +100,8 @@ class MySqlJdbcStandardTest extends JdbcSourceStandardTest {
 
   // MySql does not support schemas in the way most dbs do. Instead we namespace by db name.
   @Override
-  public Optional<String> getDefaultSchemaName() {
-    return Optional.of(config.get("database").asText());
+  public boolean supportsSchemas() {
+    return false;
   }
 
   @Override

@@ -30,6 +30,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.stream.MoreStreams;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
@@ -48,9 +49,9 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -160,8 +161,8 @@ public abstract class JdbcStressTest {
 
   private void runTest(ConfiguredAirbyteCatalog configuredCatalog, String testName) throws Exception {
     LOGGER.info("running stress test for: " + testName);
-    final Stream<AirbyteMessage> read = source.read(config, configuredCatalog, Jsons.jsonNode(Collections.emptyMap()));
-    final long actualCount = read
+    final Iterator<AirbyteMessage> read = source.read(config, configuredCatalog, Jsons.jsonNode(Collections.emptyMap()));
+    final long actualCount = MoreStreams.toStream(read)
         .filter(m -> m.getType() == Type.RECORD)
         .peek(m -> {
           if (m.getRecord().getData().get("id").asLong() % 100000 == 0) {
