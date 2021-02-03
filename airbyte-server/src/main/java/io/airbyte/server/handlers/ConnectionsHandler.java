@@ -77,7 +77,7 @@ public class ConnectionsHandler {
         .withStatus(toPersistenceStatus(connectionCreate.getStatus()));
 
     if (connectionCreate.getSyncSchema() != null) {
-      standardSync.withSchema(SchemaConverter.toPersistenceSchema(connectionCreate.getSyncSchema()));
+      standardSync.withSchema(SchemaConverter.convertTo(connectionCreate.getSyncSchema()));
     } else {
       standardSync.withSchema(new Schema().withStreams(Collections.emptyList()));
     }
@@ -105,7 +105,7 @@ public class ConnectionsHandler {
   public ConnectionRead updateConnection(ConnectionUpdate connectionUpdate) throws ConfigNotFoundException, IOException, JsonValidationException {
     // retrieve sync
     final StandardSync persistedSync = configRepository.getStandardSync(connectionUpdate.getConnectionId())
-        .withSchema(SchemaConverter.toPersistenceSchema(connectionUpdate.getSyncSchema()))
+        .withSchema(SchemaConverter.convertTo(connectionUpdate.getSyncSchema()))
         .withStatus(toPersistenceStatus(connectionUpdate.getStatus()));
 
     return updateConnection(connectionUpdate, persistedSync);
@@ -208,7 +208,7 @@ public class ConnectionsHandler {
         .status(toApiStatus(standardSync.getStatus()))
         .schedule(apiSchedule)
         .name(standardSync.getName())
-        .syncSchema(SchemaConverter.toApiSchema(standardSync.getSchema()));
+        .syncSchema(SchemaConverter.convertTo(standardSync.getSchema()));
   }
 
   private StandardSync.Status toPersistenceStatus(ConnectionStatus apiStatus) {
