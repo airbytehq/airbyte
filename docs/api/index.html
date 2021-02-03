@@ -4120,14 +4120,16 @@ font-style: italic;
 
   <h3>Table of Contents</h3>
   <ol>
-    <li><a href="#AirbyteCatalogSchema"><code>AirbyteCatalogSchema</code> - </a></li>
+    <li><a href="#AirbyteCatalog"><code>AirbyteCatalog</code> - </a></li>
+    <li><a href="#AirbyteStream"><code>AirbyteStream</code> - </a></li>
     <li><a href="#AirbyteStreamAndConfiguration"><code>AirbyteStreamAndConfiguration</code> - </a></li>
     <li><a href="#AirbyteStreamConfiguration"><code>AirbyteStreamConfiguration</code> - </a></li>
-    <li><a href="#AirbyteStreamSchema"><code>AirbyteStreamSchema</code> - </a></li>
+    <li><a href="#AirbyteStreamFieldConfiguration"><code>AirbyteStreamFieldConfiguration</code> - </a></li>
     <li><a href="#AttemptInfoRead"><code>AttemptInfoRead</code> - </a></li>
     <li><a href="#AttemptRead"><code>AttemptRead</code> - </a></li>
     <li><a href="#AttemptStatus"><code>AttemptStatus</code> - </a></li>
     <li><a href="#CheckConnectionRead"><code>CheckConnectionRead</code> - </a></li>
+    <li><a href="#ConfiguredAirbyteCatalog"><code>ConfiguredAirbyteCatalog</code> - </a></li>
     <li><a href="#ConnectionCreate"><code>ConnectionCreate</code> - </a></li>
     <li><a href="#ConnectionIdRequestBody"><code>ConnectionIdRequestBody</code> - </a></li>
     <li><a href="#ConnectionRead"><code>ConnectionRead</code> - </a></li>
@@ -4193,17 +4195,28 @@ font-style: italic;
   </ol>
 
   <div class="model">
-    <h3><a name="AirbyteCatalogSchema"><code>AirbyteCatalogSchema</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="AirbyteCatalog"><code>AirbyteCatalog</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'>describes the available schema.</div>
     <div class="field-items">
-      <div class="param">streams </div><div class="param-desc"><span class="param-type"><a href="#AirbyteStreamAndConfiguration">array[AirbyteStreamAndConfiguration]</a></span>  </div>
+      <div class="param">streams </div><div class="param-desc"><span class="param-type"><a href="#AirbyteStream">array[AirbyteStream]</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="AirbyteStream"><code>AirbyteStream</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Stream's name. </div>
+<div class="param">jsonSchema (optional)</div><div class="param-desc"><span class="param-type"><a href="#StreamJsonSchema">StreamJsonSchema</a></span>  </div>
+<div class="param">supportedSyncModes (optional)</div><div class="param-desc"><span class="param-type"><a href="#SyncMode">array[SyncMode]</a></span>  </div>
+<div class="param">sourceDefinedCursor (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> If the source defines the cursor field, then it does any other cursor field inputs will be ignored. If it does not either the user_provided one is used or as a backup the default one is used. </div>
+<div class="param">defaultCursorField (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span> Path to the field that will be used to determine if a record is new or modified since the last sync. If not provided by the source, the end user will have to specify the comparable themselves. </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
     <h3><a name="AirbyteStreamAndConfiguration"><code>AirbyteStreamAndConfiguration</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">stream (optional)</div><div class="param-desc"><span class="param-type"><a href="#AirbyteStreamSchema">AirbyteStreamSchema</a></span>  </div>
+      <div class="param">stream (optional)</div><div class="param-desc"><span class="param-type"><a href="#AirbyteStream">AirbyteStream</a></span>  </div>
 <div class="param">configuration (optional)</div><div class="param-desc"><span class="param-type"><a href="#AirbyteStreamConfiguration">AirbyteStreamConfiguration</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
@@ -4213,17 +4226,19 @@ font-style: italic;
     <div class="field-items">
       <div class="param">syncMode (optional)</div><div class="param-desc"><span class="param-type"><a href="#SyncMode">SyncMode</a></span>  </div>
 <div class="param">cursorField (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span> Path to the field that will be used to determine if a record is new or modified since the last sync. This field is REQUIRED if <code>sync_mode</code> is <code>incremental</code>. Otherwise it is ignored. </div>
+<div class="param">cleanedName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">selected (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">fields (optional)</div><div class="param-desc"><span class="param-type"><a href="#AirbyteStreamFieldConfiguration">array[AirbyteStreamFieldConfiguration]</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3><a name="AirbyteStreamSchema"><code>AirbyteStreamSchema</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="AirbyteStreamFieldConfiguration"><code>AirbyteStreamFieldConfiguration</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Stream's name. </div>
-<div class="param">jsonSchema (optional)</div><div class="param-desc"><span class="param-type"><a href="#StreamJsonSchema">StreamJsonSchema</a></span>  </div>
-<div class="param">supportedSyncModes (optional)</div><div class="param-desc"><span class="param-type"><a href="#SyncMode">array[SyncMode]</a></span>  </div>
-<div class="param">sourceDefinedCursor (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> If the source defines the cursor field, then it does any other cursor field inputs will be ignored. If it does not either the user_provided one is used or as a backup the default one is used. </div>
-<div class="param">defaultCursorField (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span> Path to the field that will be used to determine if a record is new or modified since the last sync. If not provided by the source, the end user will have to specify the comparable themselves. </div>
+      <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">cleanedName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">dataType </div><div class="param-desc"><span class="param-type"><a href="#DataType">DataType</a></span>  </div>
+<div class="param">selected </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -4262,6 +4277,13 @@ font-style: italic;
         <div class="param-enum">succeeded</div><div class="param-enum">failed</div>
 <div class="param">message (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">jobInfo </div><div class="param-desc"><span class="param-type"><a href="#JobInfoRead">JobInfoRead</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="ConfiguredAirbyteCatalog"><code>ConfiguredAirbyteCatalog</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'>describes the available schema.</div>
+    <div class="field-items">
+      <div class="param">streams </div><div class="param-desc"><span class="param-type"><a href="#AirbyteStreamAndConfiguration">array[AirbyteStreamAndConfiguration]</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">

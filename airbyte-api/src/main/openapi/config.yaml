@@ -1693,7 +1693,7 @@ components:
         logType:
           $ref: "#/components/schemas/LogType"
     # SCHEMA
-    AirbyteCatalogSchema:
+    AirbyteCatalog:
       description: describes the available schema.
       type: object
       required:
@@ -1702,16 +1702,8 @@ components:
         streams:
           type: array
           items:
-            $ref: "#/components/schemas/AirbyteStreamAndConfiguration"
-    AirbyteStreamAndConfiguration:
-      type: object
-      additionalProperties: false
-      properties:
-        stream:
-          $ref: "#/components/schemas/AirbyteStreamSchema"
-        configuration:
-          $ref: "#/components/schemas/AirbyteStreamConfiguration"
-    AirbyteStreamSchema:
+            $ref: "#/components/schemas/AirbyteStream"
+    AirbyteStream:
       type: object
       additionalProperties: false
       required:
@@ -1740,6 +1732,24 @@ components:
             type: string
     StreamJsonSchema:
       type: object
+    ConfiguredAirbyteCatalog:
+      description: describes the available schema.
+      type: object
+      required:
+        - streams
+      properties:
+        streams:
+          type: array
+          items:
+            $ref: "#/components/schemas/AirbyteStreamAndConfiguration"
+    AirbyteStreamAndConfiguration:
+      type: object
+      additionalProperties: false
+      properties:
+        stream:
+          $ref: "#/components/schemas/AirbyteStream"
+        configuration:
+          $ref: "#/components/schemas/AirbyteStreamConfiguration"
     AirbyteStreamConfiguration:
       type: object
       additionalProperties: false
@@ -1752,6 +1762,29 @@ components:
           type: array
           items:
             type: string
+        cleanedName:
+          type: string
+        selected:
+          type: boolean
+        fields:
+          type: array
+          items:
+            $ref: "#/components/schemas/AirbyteStreamFieldConfiguration"
+    AirbyteStreamFieldConfiguration:
+      type: object
+      required:
+        - name
+        - dataType
+        - selected
+      properties:
+        name:
+          type: string
+        cleanedName:
+          type: string
+        dataType:
+          $ref: "#/components/schemas/DataType"
+        selected:
+          type: boolean
     SourceSchema:
       description: describes the available schema.
       type: object
