@@ -1,5 +1,44 @@
 
+defaults:
+  retry: &default-retry
+    strategy: CUSTOM
+    options:
+      coordinate: connector.retry_strategy
+      custom_options:
+        arbitrary_value: 42
+  auth: &default-auth
+    strategy: OAUTH
+    options:
+      secret1: ${config.oauth.secret1}
+      secret2: ${config.oauth.secret2}
+
+config:
+  # simple json/yaml schema
+
 resources:
   name_1:
-    base_url: https://${config.account_id}.service.io/api/name_1
-    request_type: 
+    request:
+      base_url: https://${config.account_id}.service.io/api/name_1
+      type: GET # get could be the default but we expose it for POST type of queries
+    auth:
+      strategy: API_KEY
+      options:
+        location: HEADER
+        name: X-API-KEY
+        value: ${config.api_key}
+    pagination:
+      strategy: NEXT_TOKEN
+      options:
+        path: .nextToken
+        end_value: null
+
+
+
+    retry:
+      strategy: EXPONENTIAL # EXPONENTIAL, FIBONACCI, FIXED, LINEAR, POLYNOMIAL, CUSTOM
+      options:
+        max_wait: 300
+
+
+
+
