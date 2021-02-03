@@ -22,20 +22,14 @@
  * SOFTWARE.
  */
 
-package io.airbyte.commons.concurrency;
+package io.airbyte.commons.util;
 
-import java.util.concurrent.Callable;
+import java.util.Iterator;
 
-@FunctionalInterface
-public interface VoidCallable extends Callable<Void> {
-
-  VoidCallable NOOP = () -> {};
-
-  default @Override Void call() throws Exception {
-    voidCall();
-    return null;
-  }
-
-  void voidCall() throws Exception;
-
-}
+/**
+ * If you operate on this iterator, you better close it. {@link AutoCloseableIterator#close} must be
+ * idempotent. The contract on this interface is that it may be called MANY times.
+ *
+ * @param <T> type
+ */
+public interface AutoCloseableIterator<T> extends Iterator<T>, AutoCloseable {}

@@ -32,7 +32,6 @@ import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceStandardTest;
-import java.util.Optional;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -79,14 +78,14 @@ public class MssqlJdbcSourceStandardTest extends JdbcSourceStandardTest {
   }
 
   @AfterAll
-  public static void tearDown() throws Exception {
+  public static void cleanUp() throws Exception {
     database.close();
     dbContainer.close();
   }
 
   @Override
-  public Optional<String> getDefaultSchemaName() {
-    return Optional.of("dbo");
+  public boolean supportsSchemas() {
+    return true;
   }
 
   @Override
