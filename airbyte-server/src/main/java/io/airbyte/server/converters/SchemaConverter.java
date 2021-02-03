@@ -24,6 +24,10 @@
 
 package io.airbyte.server.converters;
 
+import io.airbyte.api.model.AirbyteCatalogSchema;
+import io.airbyte.api.model.AirbyteStreamAndConfiguration;
+import io.airbyte.api.model.AirbyteStreamConfiguration;
+import io.airbyte.api.model.AirbyteStreamSchema;
 import io.airbyte.api.model.SourceSchema;
 import io.airbyte.api.model.SourceSchemaField;
 import io.airbyte.api.model.SourceSchemaStream;
@@ -33,11 +37,54 @@ import io.airbyte.config.DataType;
 import io.airbyte.config.Field;
 import io.airbyte.config.Schema;
 import io.airbyte.config.Stream;
+import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.util.List;
 import java.util.stream.Collectors;
 
 // todo (cgardens) - update this before merging.
 public class SchemaConverter {
+
+  public static ConfiguredAirbyteCatalog toConfiguredCatalog(final AirbyteCatalogSchema catalog) {
+    return new ConfiguredAirbyteCatalog().withStreams(catalog.getStreams()
+        .stream()
+        .map(pair -> {
+          final AirbyteStream airbyteStream = new AirbyteStream()
+              .withName(pair.getStream().getName())
+              .withJsonSchema(pair.getStream().getJsonSchema())
+              .withSupportedSyncModes(Enums.convertListTo(pair.getStream().getSupportedSyncModes(), io.airbyte.protocol.models.SyncMode.class))
+              .withSourceDefinedCursor(pair.getStream().getSourceDefinedCursor())
+              .withDefaultCursorField(pair.getStream().getDefaultCursorField());
+
+          return new ConfiguredAirbyteStream()
+              .withStream(airbyteStream)
+              .withSyncMode(Enums.convertTo(pair.getConfiguration().getSyncMode(), io.airbyte.protocol.models.SyncMode.class))
+              .withCursorField(pair.getConfiguration().getCursorField());
+        })
+        .collect(Collectors.toList()));
+  }
+
+  public static AirbyteCatalogSchema toApi(final ConfiguredAirbyteCatalog catalog) {
+    final List<AirbyteStreamAndConfiguration> persistenceStreams = catalog.getStreams()
+        .stream()
+        .map(configuredStream -> {
+          final AirbyteStreamSchema stream = new AirbyteStreamSchema()
+              .name(configuredStream.getStream().getName())
+              .jsonSchema(configuredStream.getStream().getJsonSchema())
+              .supportedSyncModes(Enums.convertListTo(configuredStream.getStream().getSupportedSyncModes(), io.airbyte.api.model.SyncMode.class))
+              .sourceDefinedCursor(configuredStream.getStream().getSourceDefinedCursor())
+              .defaultCursorField(configuredStream.getStream().getDefaultCursorField());
+          final AirbyteStreamConfiguration configuration = new AirbyteStreamConfiguration()
+              .syncMode(Enums.convertTo(configuredStream.getSyncMode(), io.airbyte.api.model.SyncMode.class))
+              .cursorField(configuredStream.getCursorField());
+          return new AirbyteStreamAndConfiguration()
+              .stream(stream)
+              ._configuration(configuration);
+        })
+        .collect(Collectors.toList());
+    return new AirbyteCatalogSchema().streams(persistenceStreams);
+  }
 
   public static Schema toPersistenceSchema(SourceSchema sourceSchema) {
     final List<Stream> persistenceStreams =

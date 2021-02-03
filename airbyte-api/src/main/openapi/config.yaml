@@ -1693,7 +1693,7 @@ components:
         logType:
           $ref: "#/components/schemas/LogType"
     # SCHEMA
-    AirbyteCatalog:
+    AirbyteCatalogSchema:
       description: describes the available schema.
       type: object
       required:
@@ -1708,22 +1708,10 @@ components:
       additionalProperties: false
       properties:
         stream:
-          $ref: "#/components/schemas/AirbyteStream"
+          $ref: "#/components/schemas/AirbyteStreamSchema"
         configuration:
           $ref: "#/components/schemas/AirbyteStreamConfiguration"
-    AirbyteStreamConfiguration:
-      type: object
-      additionalProperties: false
-      properties:
-        syncMode:
-          $ref: "#/components/schemas/SyncMode"
-          default: full_refresh
-        cursorField:
-          description: Path to the field that will be used to determine if a record is new or modified since the last sync. This field is REQUIRED if `sync_mode` is `incremental`. Otherwise it is ignored.
-          type: array
-          items:
-            type: string
-    AirbyteStream:
+    AirbyteStreamSchema:
       type: object
       additionalProperties: false
       required:
@@ -1752,6 +1740,18 @@ components:
             type: string
     StreamJsonSchema:
       type: object
+    AirbyteStreamConfiguration:
+      type: object
+      additionalProperties: false
+      properties:
+        syncMode:
+          $ref: "#/components/schemas/SyncMode"
+          default: full_refresh
+        cursorField:
+          description: Path to the field that will be used to determine if a record is new or modified since the last sync. This field is REQUIRED if `sync_mode` is `incremental`. Otherwise it is ignored.
+          type: array
+          items:
+            type: string
     SourceSchema:
       description: describes the available schema.
       type: object
