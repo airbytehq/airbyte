@@ -22,47 +22,105 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import json
-import pkgutil
+import backoff
+import requests
+from base_python import BaseClient
 
-from airbyte_protocol import AirbyteStream, SyncMode
-from python_http_client import ForbiddenError, UnauthorizedError
-from sendgrid import SendGridAPIClient
+PAGE_SIZE = 10
 
 
-class Client:
+class TooManyRequests(Exception):
+    """Too many requests"""
+
+
+class Client(BaseClient):
+    BASE_URL = "https://api.sendgrid.com/v3/"
+
     def __init__(self, apikey: str):
-        self._client = SendGridAPIClient(api_key=apikey)
-        self.ENTITY_MAP = {
-            "campaigns": self.campaigns,
-            "lists": self.lists,
-            "contacts": self.contacts,
-            "stats_automations": self.stats_automations,
-        }
+        self._headers = {"Authorization": f"Bearer {apikey}"}
+        super().__init__()
 
     def health_check(self):
-        try:
-            self._client.client.scopes.get()
+        resp_data = requests.get(f"{self.BASE_URL}scopes", headers=self._headers)
+        if resp_data.status_code == 200:
             return True, None
-        except (UnauthorizedError, ForbiddenError) as err:
-            return False, err.args[0]
 
-    def get_streams(self):
-        streams = []
-        for schema, method in self.ENTITY_MAP.items():
-            raw_schema = json.loads(pkgutil.get_data(self.__class__.__module__.split(".")[0], f"schemas/{schema}.json"))
-            streams.append(AirbyteStream(name=schema, json_schema=raw_schema, supported_sync_modes=[SyncMode.full_refresh]))
-        return streams
+        return False, resp_data.json()["errors"][0]["message"]
 
-    def lists(self):
-        return json.loads(self._client.client.marketing.lists.get().body)["result"]
+    @backoff.on_exception(backoff.expo, TooManyRequests, max_tries=6)
+    def _request(self, url, **kwargs):
+        response = requests.get(url, headers=self._headers, **kwargs)
+        if response.status_code == 429:
+            raise TooManyRequests()
+        return response
 
-    def campaigns(self):
-        return json.loads(self._client.client.marketing.campaigns.get().body)["result"]
+    def _paginator(self, stream_url, pagination_type=None, key=None):
+        if not pagination_type:
+            response = self._request(f"{self.BASE_URL}{stream_url}")
+            if response.status_code == 200:
+                yield from response.json()[key] if key else response.json()
+            return
+        elif pagination_type == "offset":
+            offset = 0
+            while True:
+                response = self._request(f"{self.BASE_URL}{stream_url}?limit={PAGE_SIZE}&offset={offset}")
+                if response.status_code != 200:
+                    return
+                stream_data = response.json()[key] if key else response.json()
+                yield from stream_data
 
-    def contacts(self):
-        return json.loads(self._client.client.marketing.contacts.get().body)["result"]
+                if len(stream_data) < PAGE_SIZE:
+                    return
+                offset += PAGE_SIZE
+        elif pagination_type == "metadata":
+            response = self._request(f"{self.BASE_URL}{stream_url}", params={"page_size": PAGE_SIZE})
+            if response.status_code != 200:
+                return
+            stream_data = (response.json()[key] if key else response.json()) or []
+            yield from stream_data
 
-    def stats_automations(self):
-        stats_data = json.loads(self._client.client.marketing.stats.automations.get().body)["results"]
-        return stats_data or []
+            while response.json()["_metadata"].get("next", False):
+                response = self._request(response.json()["_metadata"]["next"])
+                if response.status_code != 200:
+                    return
+                stream_data = (response.json()[key] if key else response.json()) or []
+                yield from stream_data
+
+    def stream__lists(self, fields):
+        yield from self._paginator("marketing/lists", pagination_type="metadata", key="result")
+
+    def stream__campaigns(self, fields):
+        yield from self._paginator("marketing/campaigns", pagination_type="metadata", key="result")
+
+    def stream__contacts(self, fields):
+        yield from self._paginator("marketing/contacts", key="result")
+
+    def stream__stats_automations(self, fields):
+        yield from self._paginator("marketing/stats/automations", pagination_type="metadata", key="results")
+
+    def stream__segments(self, fields):
+        yield from self._paginator("marketing/segments", key="results")
+
+    def stream__templates(self, fields):
+        yield from self._paginator("templates?generations=legacy,dynamic", pagination_type="metadata", key="result")
+
+    def stream__global_suppressions(self, fields):
+        yield from self._paginator("suppression/unsubscribes", pagination_type="offset")
+
+    def stream__suppression_groups(self, fields):
+        yield from self._paginator("asm/groups")
+
+    def stream__suppression_group_members(self, fields):
+        yield from self._paginator("asm/suppressions", pagination_type="offset")
+
+    def stream__blocks(self, fields):
+        yield from self._paginator("suppression/blocks", pagination_type="offset")
+
+    def stream__bounces(self, fields):
+        yield from self._paginator("suppression/bounces")
+
+    def stream__invalid_emails(self, fields):
+        yield from self._paginator("suppression/invalid_emails", pagination_type="offset")
+
+    def stream__spam_reports(self, fields):
+        yield from self._paginator("suppression/spam_reports", pagination_type="offset")
