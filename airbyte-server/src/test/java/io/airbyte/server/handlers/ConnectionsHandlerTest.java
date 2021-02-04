@@ -119,7 +119,7 @@ class ConnectionsHandlerTest {
   void testUpdateConnection() throws JsonValidationException, ConfigNotFoundException, IOException {
     final AirbyteCatalog newApiSchema = ConnectionHelpers.generateBasicApiCatalog();
     newApiSchema.getStreams().get(0).getStream().setName("azkaban_users");
-    newApiSchema.getStreams().get(0).getConfiguration().setCleanedName("azkaban_users");
+    newApiSchema.getStreams().get(0).getConfiguration().setAliasName("azkaban_users");
 
     final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
         .connectionId(standardSync.getConnectionId())

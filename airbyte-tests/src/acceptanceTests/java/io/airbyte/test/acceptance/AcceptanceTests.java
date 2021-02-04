@@ -287,7 +287,7 @@ public class AcceptanceTests {
     final AirbyteStreamConfiguration streamConfig = new AirbyteStreamConfiguration()
         .syncMode(SyncMode.FULL_REFRESH)
         .cursorField(Collections.emptyList())
-        .cleanedName(STREAM_NAME.replace(".", "_"))
+        .aliasName(STREAM_NAME.replace(".", "_"))
         .selected(true);
     final AirbyteCatalog expectedSchema = new AirbyteCatalog()
         .streams(Lists.newArrayList(new AirbyteStreamAndConfiguration()
@@ -547,8 +547,8 @@ public class AcceptanceTests {
   }
 
   private List<JsonNode> retrieveSourceRecords(Database database, String table) throws SQLException {
-    final String cleanedName = table.replace("public.", "");
-    return database.query(context -> context.fetch(String.format("SELECT * FROM \"%s\";", cleanedName)))
+    final String aliasName = table.replace("public.", "");
+    return database.query(context -> context.fetch(String.format("SELECT * FROM \"%s\";", aliasName)))
         .stream()
         .map(Record::intoMap)
         .map(Jsons::jsonNode)

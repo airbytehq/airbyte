@@ -172,7 +172,7 @@ public class WebBackendConnectionsHandler {
         else
           outputStreamConfig.setCursorField(discoveredStreamConfig.getCursorField());
 
-        outputStreamConfig.setCleanedName(originalStreamConfig.getCleanedName());
+        outputStreamConfig.setAliasName(originalStreamConfig.getAliasName());
         outputStreamConfig.setSelected(originalStreamConfig.getSelected());
       } else {
         outputStreamConfig = s.getConfiguration();

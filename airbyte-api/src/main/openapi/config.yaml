@@ -1755,9 +1755,42 @@ components:
           type: array
           items:
             type: string
-        cleanedName:
+        aliasName:
           type: string
         selected:
+          type: boolean
+        fields:
+          type: array
+          items:
+            $ref: "#/components/schemas/AirbyteStreamField"
+    AirbyteStreamField:
+      type: object
+      required:
+        - name
+        - path
+        - dataType
+        - selected
+      properties:
+        path:
+          description: JSON path in the Json Schema to reach this field
+          type: string
+        name:
+          description: Original name of the field
+          type: string
+        aliasName:
+          description: Name of the field to use in the destination
+          type: string
+        dataType:
+          description: Airbyte DataType for this field to use in the destination
+          $ref: "#/components/schemas/DataType"
+        isPrimaryKey:
+          description: If this field is to be used as a primary key for this stream in the destination
+          type: boolean
+        isNested:
+          description: If this field is to be used as a primary key for this stream in the destination
+          type: boolean
+        selected:
+          description: Expose this field in the destination
           type: boolean
     DataType:
       type: string

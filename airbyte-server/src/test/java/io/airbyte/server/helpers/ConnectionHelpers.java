@@ -143,7 +143,7 @@ public class ConnectionHelpers {
     return new AirbyteStreamConfiguration()
         .syncMode(SyncMode.INCREMENTAL)
         .cursorField(Lists.newArrayList(FIELD_NAME))
-        .cleanedName(Names.toAlphanumericAndUnderscore(STREAM_NAME))
+        .aliasName(Names.toAlphanumericAndUnderscore(STREAM_NAME))
         .selected(true);
   }
 

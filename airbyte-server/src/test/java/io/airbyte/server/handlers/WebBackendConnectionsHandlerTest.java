@@ -342,7 +342,7 @@ class WebBackendConnectionsHandlerTest {
     discovered.getStreams().get(0).getConfiguration()
         .syncMode(SyncMode.FULL_REFRESH)
         .cursorField(Collections.emptyList())
-        .cleanedName("stream1");
+        .aliasName("stream1");
 
     final AirbyteCatalog expected = ConnectionHelpers.generateBasicApiCatalog();
     expected.getStreams().get(0).getStream()
@@ -352,7 +352,7 @@ class WebBackendConnectionsHandlerTest {
     expected.getStreams().get(0).getConfiguration()
         .syncMode(SyncMode.FULL_REFRESH)
         .cursorField(Collections.emptyList())
-        .cleanedName("stream1");
+        .aliasName("stream1");
 
     final AirbyteCatalog actual = WebBackendConnectionsHandler.updateSchemaWithDiscovery(original, discovered);
 
@@ -373,7 +373,7 @@ class WebBackendConnectionsHandlerTest {
     original.getStreams().get(0).getConfiguration()
         .syncMode(SyncMode.INCREMENTAL)
         .cursorField(List.of("field1"))
-        .cleanedName("random_stream");
+        .aliasName("random_stream");
 
     final AirbyteCatalog discovered = ConnectionHelpers.generateBasicApiCatalog();
     discovered.getStreams().get(0).getStream()
@@ -384,7 +384,7 @@ class WebBackendConnectionsHandlerTest {
     discovered.getStreams().get(0).getConfiguration()
         .syncMode(SyncMode.FULL_REFRESH)
         .cursorField(Collections.emptyList())
-        .cleanedName("stream1");
+        .aliasName("stream1");
 
     final AirbyteCatalog expected = ConnectionHelpers.generateBasicApiCatalog();
     expected.getStreams().get(0).getStream()
@@ -395,7 +395,7 @@ class WebBackendConnectionsHandlerTest {
     expected.getStreams().get(0).getConfiguration()
         .syncMode(SyncMode.FULL_REFRESH)
         .cursorField(Collections.emptyList())
-        .cleanedName("stream1");
+        .aliasName("stream1");
 
     final AirbyteCatalog actual = WebBackendConnectionsHandler.updateSchemaWithDiscovery(original, discovered);
 
@@ -416,7 +416,7 @@ class WebBackendConnectionsHandlerTest {
     original.getStreams().get(0).getConfiguration()
         .syncMode(SyncMode.INCREMENTAL)
         .cursorField(List.of("field1"))
-        .cleanedName("renamed_stream");
+        .aliasName("renamed_stream");
 
     final AirbyteCatalog discovered = ConnectionHelpers.generateBasicApiCatalog();
     discovered.getStreams().get(0).getStream()
@@ -427,7 +427,7 @@ class WebBackendConnectionsHandlerTest {
     discovered.getStreams().get(0).getConfiguration()
         .syncMode(SyncMode.FULL_REFRESH)
         .cursorField(Collections.emptyList())
-        .cleanedName("stream1");
+        .aliasName("stream1");
     final AirbyteStreamAndConfiguration newStream = ConnectionHelpers.generateBasicApiCatalog().getStreams().get(0);
     newStream.getStream()
         .name("stream2")
@@ -437,7 +437,7 @@ class WebBackendConnectionsHandlerTest {
     newStream.getConfiguration()
         .syncMode(SyncMode.FULL_REFRESH)
         .cursorField(Collections.emptyList())
-        .cleanedName("stream2");
+        .aliasName("stream2");
     discovered.getStreams().add(newStream);
 
     final AirbyteCatalog expected = ConnectionHelpers.generateBasicApiCatalog();
@@ -449,7 +449,7 @@ class WebBackendConnectionsHandlerTest {
     expected.getStreams().get(0).getConfiguration()
         .syncMode(SyncMode.INCREMENTAL)
         .cursorField(List.of("field1"))
-        .cleanedName("renamed_stream");
+        .aliasName("renamed_stream");
     final AirbyteStreamAndConfiguration expectedNewStream = ConnectionHelpers.generateBasicApiCatalog().getStreams().get(0);
     expectedNewStream.getStream()
         .name("stream2")
@@ -459,7 +459,7 @@ class WebBackendConnectionsHandlerTest {
     expectedNewStream.getConfiguration()
         .syncMode(SyncMode.FULL_REFRESH)
         .cursorField(Collections.emptyList())
-        .cleanedName("stream2");
+        .aliasName("stream2");
     expected.getStreams().add(expectedNewStream);
 
     final AirbyteCatalog actual = WebBackendConnectionsHandler.updateSchemaWithDiscovery(original, discovered);

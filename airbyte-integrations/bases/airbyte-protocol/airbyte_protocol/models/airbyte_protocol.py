@@ -79,6 +79,14 @@ class AirbyteConnectionStatus(BaseModel):
     message: Optional[str] = None
 
 
+class DataType(Enum):
+    string = "string"
+    number = "number"
+    boolean = "boolean"
+    object = "object"
+    array = "array"
+
+
 class SyncMode(Enum):
     full_refresh = "full_refresh"
     incremental = "incremental"
@@ -108,12 +116,14 @@ class AirbyteStream(BaseModel):
     )
 
 
-class ConfiguredAirbyteStream(BaseModel):
-    stream: AirbyteStream
-    sync_mode: Optional[SyncMode] = "full_refresh"
-    cursor_field: Optional[List[str]] = Field(
+class ConfiguredAirbyteStreamField(BaseModel):
+    path: str = Field(..., description="JSON path in the Json Schema to reach this field")
+    name: str = Field(..., description="Original name of the field")
+    aliasName: Optional[str] = Field(None, description="Name of the field to use in the destination")
+    dataType: Optional[DataType] = Field(None, description="Airbyte DataType for this field to use in the destination")
+    primary_key: Optional[bool] = Field(
         None,
-        description="Path to the field that will be used to determine if a record is new or modified since the last sync. This field is REQUIRED if `sync_mode` is `incremental`. Otherwise it is ignored.",
+        description="If this field is to be used as a primary key for this stream in the destination",
     )
 
 
@@ -121,8 +131,15 @@ class AirbyteCatalog(BaseModel):
     streams: List[AirbyteStream]
 
 
-class ConfiguredAirbyteCatalog(BaseModel):
-    streams: List[ConfiguredAirbyteStream]
+class ConfiguredAirbyteStream(BaseModel):
+    stream: AirbyteStream
+    sync_mode: Optional[SyncMode] = "full_refresh"
+    cursor_field: Optional[List[str]] = Field(
+        None,
+        description="Path to the field that will be used to determine if a record is new or modified since the last sync. This field is REQUIRED if `sync_mode` is `incremental`. Otherwise it is ignored.",
+    )
+    aliasName: Optional[str] = None
+    fields: Optional[List[ConfiguredAirbyteStreamField]] = None
 
 
 class AirbyteMessage(BaseModel):
@@ -142,6 +159,10 @@ class AirbyteMessage(BaseModel):
         None,
         description="schema message: the state. Must be the last message produced. The platform uses this information",
     )
+
+
+class ConfiguredAirbyteCatalog(BaseModel):
+    streams: List[ConfiguredAirbyteStream]
 
 
 class AirbyteProtocol(BaseModel):

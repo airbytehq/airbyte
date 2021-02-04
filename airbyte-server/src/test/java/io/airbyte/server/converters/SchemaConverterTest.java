@@ -26,9 +26,18 @@ package io.airbyte.server.converters;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DataType;
 import io.airbyte.server.helpers.ConnectionHelpers;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 class SchemaConverterTest {
@@ -47,6 +56,32 @@ class SchemaConverterTest {
   void testEnumConversion() {
     assertTrue(Enums.isCompatible(io.airbyte.api.model.DataType.class, DataType.class));
     assertTrue(Enums.isCompatible(io.airbyte.config.SyncMode.class, io.airbyte.api.model.SyncMode.class));
+  }
+
+  @Test
+  void testExtractProperties() throws IOException {
+    final JsonNode schema = getTestNestedPropertiesJson();
+    final Map<List<String>, JsonNode> properties = SchemaConverter.extractProperties(schema);
+    final List<String> actual = new ArrayList<>();
+    properties.forEach((k, v) -> actual.add(k.get(0)));
+
+    final List<String> expected = List.of(
+        "vid",
+        "items",
+        "profile-url",
+        "timestamp",
+        "source",
+        "is-contact",
+        "value",
+        "profile-token");
+
+    assertEquals(expected, actual);
+  }
+
+  public static JsonNode getTestNestedPropertiesJson() throws IOException {
+    final Path path =
+        Paths.get("../airbyte-server/src/test/resources/json/TestNestedProperties.json");
+    return Jsons.deserialize(Files.readString(path));
   }
 
 }

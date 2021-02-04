@@ -1,0 +1,44 @@
+{
+  "properties": {
+    "vid": {
+      "type": ["null", "integer"]
+    },
+    "items": {
+      "type": ["null", "integer"]
+    },
+    "is-contact": {
+      "type": ["null", "boolean"]
+    },
+    "profile-token": {
+      "type": ["null", "string"]
+    },
+    "profile-url": {
+      "type": ["null", "string"]
+    },
+    "associated-company": {
+      "type": "object",
+      "properties": {
+        "properties": {
+          "type": "object",
+          "properties": {
+            "about_us": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -171,6 +171,42 @@ definitions:
         type: array
         items:
           type: string
+      aliasName:
+        type: string
+      fields:
+        type: array
+        items:
+          "$ref": "#/definitions/ConfiguredAirbyteStreamField"
+  ConfiguredAirbyteStreamField:
+    type: object
+    additionalProperties: false
+    required:
+      - name
+      - path
+    properties:
+      path:
+        description: JSON path in the Json Schema to reach this field
+        type: string
+      name:
+        description: Original name of the field
+        type: string
+      aliasName:
+        description: Name of the field to use in the destination
+        type: string
+      dataType:
+        description: Airbyte DataType for this field to use in the destination
+        "$ref": "#/definitions/dataType"
+      primary_key:
+        description: If this field is to be used as a primary key for this stream in the destination
+        type: boolean
+  dataType:
+    type: string
+    enum:
+      - string
+      - number
+      - boolean
+      - object
+      - array
   SyncMode:
     type: string
     enum:
