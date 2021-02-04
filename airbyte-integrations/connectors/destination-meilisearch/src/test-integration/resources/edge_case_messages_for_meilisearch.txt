@@ -1,0 +1,11 @@
+{"type": "RECORD", "record": {"stream": "streamWithCamelCase", "emitted_at": 1602637589000, "data": { "id": 1, "data" : "one" }}}
+{"type": "RECORD", "record": {"stream": "stream_with_underscores", "emitted_at": 1602637589100, "data": { "id": 1, "data" : "one" }}}
+{"type": "RECORD", "record": {"stream": "stream_with_edge_case_field_names", "emitted_at": 1602637589200, "data": { "id": 1, "fieldWithCamelCase" : "one" }}}
+{"type": "RECORD", "record": {"stream": "stream_with_edge_case_field_names", "emitted_at": 1602637589300, "data": { "id": 2, "field_with_underscore" : "one" }}}
+{"type": "RECORD", "record": {"stream": "stream-with:spécial:character_names", "emitted_at": 1602637589400, "data": { "id": 1, "field_with_spécial_character" : "one" }}}
+{"type": "RECORD", "record": {"stream": "stream-with:spécial:character_names", "emitted_at": 1602637589400, "data": { "id": 2, "field_with_spécial_character" : "field_with_spécial_character" }}}
+{"type": "RECORD", "record": {"stream": "stream-with:spécial:character_names", "emitted_at": 1602637589400, "data": { "id": 3, "field_with_spécial_character" : "2020-08-31T00:00:00Z" }}}
+{"type": "RECORD", "record": {"stream": "CapitalCase", "emitted_at": 1602637589000, "data": { "id": 1, "deleted" : true }}}
+{"type": "RECORD", "record": {"stream": "reserved_keywords", "emitted_at": 1602637589000, "data": { "id": 1, "order" : "ascending" }}}
+{"type": "RECORD", "record": {"stream": "groups", "emitted_at": 1602637589000, "data": { "id": 1, "authorization" : "into" }}}
+{"type": "RECORD", "record": {"stream": "ProperCase", "emitted_at": 1602637589000, "data": { "id": 1, "ProperCase" : true }}}
