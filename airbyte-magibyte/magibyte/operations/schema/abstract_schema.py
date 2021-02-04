@@ -1,0 +1,2 @@
+class AbstractSchema(object):
+    pass

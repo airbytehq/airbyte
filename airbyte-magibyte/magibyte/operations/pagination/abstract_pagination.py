@@ -1,0 +1,2 @@
+class AbstractAuth(object):
+    pass

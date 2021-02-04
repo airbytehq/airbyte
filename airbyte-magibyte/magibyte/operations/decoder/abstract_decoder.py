@@ -1,0 +1,2 @@
+class AbstractDecoder(object):
+    pass

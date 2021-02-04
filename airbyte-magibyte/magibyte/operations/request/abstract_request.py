@@ -1,0 +1,2 @@
+class AbstractRequest(object):
+    pass
