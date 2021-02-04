@@ -28,6 +28,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -41,6 +42,13 @@ public class Enums {
     }
 
     return Enum.valueOf(oe, ie.name());
+  }
+
+  public static <T1 extends Enum<T1>, T2 extends Enum<T2>> List<T2> convertListTo(List<T1> ies, Class<T2> oe) {
+    return ies
+        .stream()
+        .map(ie -> convertTo(ie, oe))
+        .collect(Collectors.toList());
   }
 
   public static <T1 extends Enum<T1>, T2 extends Enum<T2>> boolean isCompatible(Class<T1> c1,

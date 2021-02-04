@@ -1372,7 +1372,7 @@ components:
         - jobInfo
       properties:
         schema:
-          $ref: "#/components/schemas/SourceSchema"
+          $ref: "#/components/schemas/AirbyteCatalog"
         jobInfo:
           $ref: "#/components/schemas/JobInfoRead"
     # DESTINATION DEFINITION
@@ -1593,7 +1593,7 @@ components:
         destinationId:
           $ref: "#/components/schemas/DestinationId"
         syncSchema:
-          $ref: "#/components/schemas/SourceSchema"
+          $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
           $ref: "#/components/schemas/ConnectionSchedule"
         status:
@@ -1608,7 +1608,7 @@ components:
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
         syncSchema:
-          $ref: "#/components/schemas/SourceSchema"
+          $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
           $ref: "#/components/schemas/ConnectionSchedule"
         status:
@@ -1639,7 +1639,7 @@ components:
         destinationId:
           $ref: "#/components/schemas/DestinationId"
         syncSchema:
-          $ref: "#/components/schemas/SourceSchema"
+          $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
           $ref: "#/components/schemas/ConnectionSchedule"
         status:
@@ -1692,9 +1692,9 @@ components:
       properties:
         logType:
           $ref: "#/components/schemas/LogType"
-    # SCHEMA
-    SourceSchema:
-      description: describes the available schema.
+    # CATALOG / SCHEMA
+    AirbyteCatalog:
+      description: describes the available schema (catalog).
       type: object
       required:
         - streams
@@ -1702,55 +1702,61 @@ components:
         streams:
           type: array
           items:
-            $ref: "#/components/schemas/SourceSchemaStream"
-    SourceSchemaStream:
+            $ref: "#/components/schemas/AirbyteStreamAndConfiguration"
+    AirbyteStreamAndConfiguration:
+      description: each stream is split in two parts; the immutable schema from source and mutable configuration for destination
       type: object
+      additionalProperties: false
+      properties:
+        stream:
+          $ref: "#/components/schemas/AirbyteStream"
+        configuration:
+          $ref: "#/components/schemas/AirbyteStreamConfiguration"
+    AirbyteStream:
+      description: the immutable schema defined by the source
+      type: object
+      additionalProperties: false
       required:
         - name
-        - fields
-        - supportedSyncModes
+        - json_schema
+        # todo (cgardens) - make required once sources are migrated
+        # - supported_sync_modes
       properties:
-        # immutable
         name:
           type: string
-        cleanedName:
-          type: string
-        fields:
-          type: array
-          items:
-            $ref: "#/components/schemas/SourceSchemaField"
+          description: Stream's name.
+        jsonSchema:
+          description: Stream schema using Json Schema specs.
+          $ref: "#/components/schemas/StreamJsonSchema"
         supportedSyncModes:
           type: array
           items:
             $ref: "#/components/schemas/SyncMode"
         sourceDefinedCursor:
+          description: If the source defines the cursor field, then it does any other cursor field inputs will be ignored. If it does not either the user_provided one is used or as a backup the default one is used.
           type: boolean
         defaultCursorField:
+          description: Path to the field that will be used to determine if a record is new or modified since the last sync. If not provided by the source, the end user will have to specify the comparable themselves.
           type: array
           items:
             type: string
-        # configurable
-        selected:
-          type: boolean
+    StreamJsonSchema:
+      type: object
+    AirbyteStreamConfiguration:
+      description: the mutable schema configuration to configure the destination
+      type: object
+      additionalProperties: false
+      properties:
         syncMode:
           $ref: "#/components/schemas/SyncMode"
+          default: full_refresh
         cursorField:
+          description: Path to the field that will be used to determine if a record is new or modified since the last sync. This field is REQUIRED if `sync_mode` is `incremental`. Otherwise it is ignored.
           type: array
           items:
             type: string
-    SourceSchemaField:
-      type: object
-      required:
-        - name
-        - dataType
-        - selected
-      properties:
-        name:
-          type: string
         cleanedName:
           type: string
-        dataType:
-          $ref: "#/components/schemas/DataType"
         selected:
           type: boolean
     DataType:
@@ -1957,7 +1963,7 @@ components:
         destinationId:
           $ref: "#/components/schemas/DestinationId"
         syncSchema:
-          $ref: "#/components/schemas/SourceSchema"
+          $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
           $ref: "#/components/schemas/ConnectionSchedule"
         status:

@@ -23,7 +23,7 @@ properties:
   name:
     type: string
   schema:
-    "$ref": StandardDataSchema.yaml#/definitions/schema
+    existingJavaType: io.airbyte.protocol.models.ConfiguredAirbyteCatalog
   status:
     type: string
     enum:
