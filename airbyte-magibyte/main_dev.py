@@ -25,15 +25,20 @@ SOFTWARE.
 import logging
 import sys
 
-import magibyte
+from magibyte.operations.request import http
+from magibyte.core.extrapolation import extrapolate
 
 logging.basicConfig(level=logging.DEBUG)
 
 
-# from magibyte
-
 def main():
-    magibyte
+    context = {}
+    response = http.HttpRequest({
+        'base_url': 'https://api.exchangeratesapi.io/2020-01-01?base=USD'
+    }).execute(context)
+    logging.debug(response.json())
+
+    extrapolate()
 
 
 if __name__ == "__main__":

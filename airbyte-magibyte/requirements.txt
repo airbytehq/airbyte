@@ -1,1 +1,4 @@
 pyyaml
+requests
+pytest
+jinja2

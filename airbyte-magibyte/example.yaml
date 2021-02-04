@@ -18,14 +18,13 @@ config:
 resources:
   name_1:
     request:
-      strategy: HTTP
+      strategy: http
       options:
-        base_url: https://${config.account_id}.service.io/api/name_1
-        type: GET # get could be the default but we expose it for POST type of queries
+        base_url: https://{config.account_id}.service.io/api/name_1
+        method: GET # get could be the default but we expose it for POST type of queries
     decoder:
       strategy: JSON # XML, CUSTOM, CSV
       options:
-        
     auth:
       strategy: API_KEY
       options:
@@ -37,6 +36,8 @@ resources:
       options:
         location: ${previous_request.body.nextToken}
         end_value: null
+    state:
+
       # strategy: CONDITION
       #   options:
       #     path: ${previous_request.body.hasMore}
