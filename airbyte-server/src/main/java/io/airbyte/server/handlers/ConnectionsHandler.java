@@ -37,11 +37,11 @@ import io.airbyte.api.model.SyncMode;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.Schedule;
-import io.airbyte.config.Schema;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncSchedule;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.server.converters.SchemaConverter;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -77,9 +77,9 @@ public class ConnectionsHandler {
         .withStatus(toPersistenceStatus(connectionCreate.getStatus()));
 
     if (connectionCreate.getSyncSchema() != null) {
-      standardSync.withSchema(SchemaConverter.toPersistenceSchema(connectionCreate.getSyncSchema()));
+      standardSync.withSchema(SchemaConverter.convertTo(connectionCreate.getSyncSchema()));
     } else {
-      standardSync.withSchema(new Schema().withStreams(Collections.emptyList()));
+      standardSync.withSchema(new ConfiguredAirbyteCatalog().withStreams(Collections.emptyList()));
     }
 
     configRepository.writeStandardSync(standardSync);
@@ -105,7 +105,7 @@ public class ConnectionsHandler {
   public ConnectionRead updateConnection(ConnectionUpdate connectionUpdate) throws ConfigNotFoundException, IOException, JsonValidationException {
     // retrieve sync
     final StandardSync persistedSync = configRepository.getStandardSync(connectionUpdate.getConnectionId())
-        .withSchema(SchemaConverter.toPersistenceSchema(connectionUpdate.getSyncSchema()))
+        .withSchema(SchemaConverter.convertTo(connectionUpdate.getSyncSchema()))
         .withStatus(toPersistenceStatus(connectionUpdate.getStatus()));
 
     return updateConnection(connectionUpdate, persistedSync);
@@ -208,7 +208,7 @@ public class ConnectionsHandler {
         .status(toApiStatus(standardSync.getStatus()))
         .schedule(apiSchedule)
         .name(standardSync.getName())
-        .syncSchema(SchemaConverter.toApiSchema(standardSync.getSchema()));
+        .syncSchema(SchemaConverter.convertTo(standardSync.getSchema()));
   }
 
   private StandardSync.Status toPersistenceStatus(ConnectionStatus apiStatus) {

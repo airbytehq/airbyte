@@ -26,59 +26,21 @@ package io.airbyte.server.converters;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.google.common.collect.Lists;
-import io.airbyte.api.model.SourceSchema;
-import io.airbyte.api.model.SourceSchemaField;
-import io.airbyte.api.model.SourceSchemaStream;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.DataType;
-import io.airbyte.config.Field;
-import io.airbyte.config.Schema;
-import io.airbyte.config.Stream;
+import io.airbyte.server.helpers.ConnectionHelpers;
 import org.junit.jupiter.api.Test;
 
 class SchemaConverterTest {
 
-  private static final String STREAM_NAME = "users";
-  private static final String COLUMN_ID = "id";
-  private static final Schema SCHEMA = new Schema()
-      .withStreams(Lists.newArrayList(new Stream()
-          .withName(STREAM_NAME)
-          .withSelected(true)
-          .withFields(Lists.newArrayList(new Field()
-              .withDataType(DataType.STRING)
-              .withName(COLUMN_ID)
-              .withName(COLUMN_ID)
-              .withSelected(true)))
-          .withSourceDefinedCursor(false)
-          .withSupportedSyncModes(Lists.newArrayList(io.airbyte.config.SyncMode.FULL_REFRESH, io.airbyte.config.SyncMode.INCREMENTAL))
-          .withDefaultCursorField(Lists.newArrayList(COLUMN_ID))
-          .withSyncMode(io.airbyte.config.SyncMode.INCREMENTAL)
-          .withCursorField(Lists.newArrayList(COLUMN_ID))));
-
-  private static final SourceSchema API_SCHEMA = new SourceSchema()
-      .streams(Lists.newArrayList(new SourceSchemaStream()
-          .name(STREAM_NAME)
-          .cleanedName(STREAM_NAME)
-          .fields(Lists.newArrayList(new SourceSchemaField()
-              .dataType(io.airbyte.api.model.DataType.STRING)
-              .name(COLUMN_ID)
-              .cleanedName(COLUMN_ID)
-              .selected(true)))
-          .sourceDefinedCursor(false)
-          .supportedSyncModes(Lists.newArrayList(io.airbyte.api.model.SyncMode.FULL_REFRESH, io.airbyte.api.model.SyncMode.INCREMENTAL))
-          .defaultCursorField(Lists.newArrayList(COLUMN_ID))
-          .syncMode(io.airbyte.api.model.SyncMode.INCREMENTAL)
-          .cursorField(Lists.newArrayList(COLUMN_ID))));
-
   @Test
-  void convertToPersistenceSchema() {
-    assertEquals(SCHEMA, SchemaConverter.toPersistenceSchema(API_SCHEMA));
+  void convertToProtocol() {
+    assertEquals(ConnectionHelpers.generateBasicConfiguredAirbyteCatalog(), SchemaConverter.convertTo(ConnectionHelpers.generateBasicApiCatalog()));
   }
 
   @Test
-  void convertToApiSchema() {
-    assertEquals(API_SCHEMA, SchemaConverter.toApiSchema(SCHEMA));
+  void convertToAPI() {
+    assertEquals(ConnectionHelpers.generateBasicApiCatalog(), SchemaConverter.convertTo(ConnectionHelpers.generateBasicConfiguredAirbyteCatalog()));
   }
 
   @Test

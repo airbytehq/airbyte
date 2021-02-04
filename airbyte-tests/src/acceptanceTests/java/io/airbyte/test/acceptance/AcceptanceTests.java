@@ -41,6 +41,10 @@ import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.JobsApi;
 import io.airbyte.api.client.invoker.ApiClient;
 import io.airbyte.api.client.invoker.ApiException;
+import io.airbyte.api.client.model.AirbyteCatalog;
+import io.airbyte.api.client.model.AirbyteStream;
+import io.airbyte.api.client.model.AirbyteStreamAndConfiguration;
+import io.airbyte.api.client.model.AirbyteStreamConfiguration;
 import io.airbyte.api.client.model.CheckConnectionRead;
 import io.airbyte.api.client.model.ConnectionCreate;
 import io.airbyte.api.client.model.ConnectionIdRequestBody;
@@ -65,12 +69,8 @@ import io.airbyte.api.client.model.SourceDefinitionIdRequestBody;
 import io.airbyte.api.client.model.SourceDefinitionSpecificationRead;
 import io.airbyte.api.client.model.SourceIdRequestBody;
 import io.airbyte.api.client.model.SourceRead;
-import io.airbyte.api.client.model.SourceSchema;
-import io.airbyte.api.client.model.SourceSchemaField;
-import io.airbyte.api.client.model.SourceSchemaStream;
 import io.airbyte.api.client.model.SyncMode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.text.Names;
 import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
@@ -270,26 +270,29 @@ public class AcceptanceTests {
   public void testDiscoverSourceSchema() throws ApiException {
     final UUID sourceId = createPostgresSource().getSourceId();
 
-    final SourceSchema actualSchema = discoverSourceSchema(sourceId);
+    final AirbyteCatalog actualSchema = discoverSourceSchema(sourceId);
 
-    final SourceSchema expectedSchema = new SourceSchema().streams(Lists.newArrayList(
-        new SourceSchemaStream()
-            .name(STREAM_NAME)
-            .cleanedName(Names.toAlphanumericAndUnderscore(STREAM_NAME))
-            .fields(Lists.newArrayList(
-                new SourceSchemaField()
-                    .name(COLUMN_ID)
-                    .cleanedName(COLUMN_ID)
-                    .dataType(DataType.NUMBER)
-                    .selected(true),
-                new SourceSchemaField()
-                    .name(COLUMN_NAME)
-                    .cleanedName(COLUMN_NAME)
-                    .dataType(DataType.STRING)
-                    .selected(true)))
-            .supportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-            .defaultCursorField(Collections.emptyList())
-            .cursorField(Collections.emptyList())));
+    final Map<String, Map<String, DataType>> fields = ImmutableMap.of(
+        COLUMN_ID, ImmutableMap.of("type", DataType.NUMBER),
+        COLUMN_NAME, ImmutableMap.of("type", DataType.STRING));
+    final JsonNode jsonSchema = Jsons.jsonNode(ImmutableMap.builder()
+        .put("type", "object")
+        .put("properties", fields)
+        .build());
+    final AirbyteStream stream = new AirbyteStream()
+        .name(STREAM_NAME)
+        .jsonSchema(jsonSchema)
+        .defaultCursorField(Collections.emptyList())
+        .supportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
+    final AirbyteStreamConfiguration streamConfig = new AirbyteStreamConfiguration()
+        .syncMode(SyncMode.FULL_REFRESH)
+        .cursorField(Collections.emptyList())
+        .cleanedName(STREAM_NAME.replace(".", "_"))
+        .selected(true);
+    final AirbyteCatalog expectedSchema = new AirbyteCatalog()
+        .streams(Lists.newArrayList(new AirbyteStreamAndConfiguration()
+            .stream(stream)
+            ._configuration(streamConfig)));
 
     assertEquals(expectedSchema, actualSchema);
   }
@@ -298,12 +301,12 @@ public class AcceptanceTests {
   @Order(6)
   public void testCreateConnection() throws ApiException {
     final UUID sourceId = createPostgresSource().getSourceId();
-    final SourceSchema schema = discoverSourceSchema(sourceId);
+    final AirbyteCatalog schema = discoverSourceSchema(sourceId);
     final UUID destinationId = createDestination().getDestinationId();
     final String name = "test-connection-" + UUID.randomUUID().toString();
     final ConnectionSchedule schedule = new ConnectionSchedule().timeUnit(MINUTES).units(100L);
     final SyncMode syncMode = SyncMode.FULL_REFRESH;
-
+    schema.getStreams().forEach(s -> s.getConfiguration().syncMode(syncMode));
     final ConnectionRead createdConnection = createConnection(name, sourceId, destinationId, schema, schedule, syncMode);
 
     assertEquals(sourceId, createdConnection.getSourceId());
@@ -319,9 +322,9 @@ public class AcceptanceTests {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
     final UUID destinationId = createDestination().getDestinationId();
-    final SourceSchema schema = discoverSourceSchema(sourceId);
-    schema.getStreams().forEach(table -> table.getFields().forEach(c -> c.setSelected(true))); // select all fields
+    final AirbyteCatalog schema = discoverSourceSchema(sourceId);
     final SyncMode syncMode = SyncMode.FULL_REFRESH;
+    schema.getStreams().forEach(s -> s.getConfiguration().syncMode(syncMode));
 
     final UUID connectionId = createConnection(connectionName, sourceId, destinationId, schema, null, syncMode).getConnectionId();
 
@@ -336,21 +339,17 @@ public class AcceptanceTests {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
     final UUID destinationId = createDestination().getDestinationId();
-    final SourceSchema schema = discoverSourceSchema(sourceId);
+    final AirbyteCatalog schema = discoverSourceSchema(sourceId);
+    final AirbyteStream stream = schema.getStreams().get(0).getStream();
 
     assertEquals(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
-        schema.getStreams().get(0).getSupportedSyncModes());
+        stream.getSupportedSyncModes());
     // instead of assertFalse to avoid NPE from unboxed.
-    assertNull(schema.getStreams().get(0).getSourceDefinedCursor());
-    assertTrue(schema.getStreams().get(0).getDefaultCursorField().isEmpty());
+    assertNull(stream.getSourceDefinedCursor());
+    assertTrue(stream.getDefaultCursorField().isEmpty());
 
-    // update schema to use incremental
-    schema.getStreams().get(0)
-        .syncMode(SyncMode.INCREMENTAL)
-        .cursorField(Lists.newArrayList("id"));
-
-    schema.getStreams().forEach(table -> table.getFields().forEach(c -> c.setSelected(true))); // select all fields
     final SyncMode syncMode = SyncMode.INCREMENTAL;
+    schema.getStreams().forEach(s -> s.getConfiguration().syncMode(syncMode).cursorField(List.of(COLUMN_ID)));
 
     final UUID connectionId = createConnection(connectionName, sourceId, destinationId, schema, null, syncMode).getConnectionId();
 
@@ -398,10 +397,11 @@ public class AcceptanceTests {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
     final UUID destinationId = createDestination().getDestinationId();
-    final SourceSchema schema = discoverSourceSchema(sourceId);
-    schema.getStreams().forEach(table -> table.getFields().forEach(c -> c.setSelected(true))); // select all fields
+    final AirbyteCatalog schema = discoverSourceSchema(sourceId);
+
     final ConnectionSchedule connectionSchedule = new ConnectionSchedule().units(1L).timeUnit(MINUTES);
     final SyncMode syncMode = SyncMode.FULL_REFRESH;
+    schema.getStreams().forEach(s -> s.getConfiguration().syncMode(syncMode));
 
     createConnection(connectionName, sourceId, destinationId, schema, connectionSchedule, syncMode);
 
@@ -433,7 +433,7 @@ public class AcceptanceTests {
     assertTrue(hasRedacted);
   }
 
-  private SourceSchema discoverSourceSchema(UUID sourceId) throws ApiException {
+  private AirbyteCatalog discoverSourceSchema(UUID sourceId) throws ApiException {
     return apiClient.getSourceApi().discoverSchemaForSource(new SourceIdRequestBody().sourceId(sourceId)).getSchema();
   }
 
@@ -502,7 +502,7 @@ public class AcceptanceTests {
   private ConnectionRead createConnection(String name,
                                           UUID sourceId,
                                           UUID destinationId,
-                                          SourceSchema schema,
+                                          AirbyteCatalog catalog,
                                           ConnectionSchedule schedule,
                                           SyncMode syncMode)
       throws ApiException {
@@ -511,7 +511,7 @@ public class AcceptanceTests {
             .status(ConnectionStatus.ACTIVE)
             .sourceId(sourceId)
             .destinationId(destinationId)
-            .syncSchema(schema)
+            .syncSchema(catalog)
             .schedule(schedule)
             .name(name));
     connectionIds.add(connection.getConnectionId());
