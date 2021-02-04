@@ -22,11 +22,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from typing import Generator
+
 import backoff
 import requests
 from base_python import BaseClient
+from requests.models import Response
+from requests.status_codes import codes as status_codes
 
-PAGE_SIZE = 10
+PAGE_SIZE = 50
 
 
 class TooManyRequests(Exception):
@@ -42,29 +46,29 @@ class Client(BaseClient):
 
     def health_check(self):
         resp_data = requests.get(f"{self.BASE_URL}scopes", headers=self._headers)
-        if resp_data.status_code == 200:
+        if resp_data.status_code == status_codes.OK:
             return True, None
 
         return False, resp_data.json()["errors"][0]["message"]
 
     @backoff.on_exception(backoff.expo, TooManyRequests, max_tries=6)
-    def _request(self, url, **kwargs):
+    def _request(self, url: str, **kwargs) -> Response:
         response = requests.get(url, headers=self._headers, **kwargs)
-        if response.status_code == 429:
+        if response.status_code == status_codes.TOO_MANY_REQUESTS:
             raise TooManyRequests()
         return response
 
-    def _paginator(self, stream_url, pagination_type=None, key=None):
+    def _paginator(self, stream_url: str, pagination_type: str = None, key: str = None) -> Generator[dict, None, None]:
         if not pagination_type:
             response = self._request(f"{self.BASE_URL}{stream_url}")
-            if response.status_code == 200:
+            if response.status_code == status_codes.OK:
                 yield from response.json()[key] if key else response.json()
             return
         elif pagination_type == "offset":
             offset = 0
             while True:
                 response = self._request(f"{self.BASE_URL}{stream_url}?limit={PAGE_SIZE}&offset={offset}")
-                if response.status_code != 200:
+                if response.status_code != status_codes.OK:
                     return
                 stream_data = response.json()[key] if key else response.json()
                 yield from stream_data
@@ -74,14 +78,14 @@ class Client(BaseClient):
                 offset += PAGE_SIZE
         elif pagination_type == "metadata":
             response = self._request(f"{self.BASE_URL}{stream_url}", params={"page_size": PAGE_SIZE})
-            if response.status_code != 200:
+            if response.status_code != status_codes.OK:
                 return
             stream_data = (response.json()[key] if key else response.json()) or []
             yield from stream_data
 
             while response.json()["_metadata"].get("next", False):
                 response = self._request(response.json()["_metadata"]["next"])
-                if response.status_code != 200:
+                if response.status_code != status_codes.OK:
                     return
                 stream_data = (response.json()[key] if key else response.json()) or []
                 yield from stream_data
