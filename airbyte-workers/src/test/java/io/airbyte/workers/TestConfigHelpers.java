@@ -92,7 +92,7 @@ public class TestConfigHelpers {
         .withSourceId(sourceId)
         .withStatus(StandardSync.Status.ACTIVE)
         .withName(CONNECTION_NAME)
-        .withSchema(catalog);
+        .withCatalog(catalog);
 
     final String stateValue = Jsons.serialize(Map.of("lastSync", String.valueOf(LAST_SYNC_TIME)));
 
@@ -100,7 +100,7 @@ public class TestConfigHelpers {
 
     final StandardSyncInput syncInput = new StandardSyncInput()
         .withDestinationConfiguration(destinationConnectionConfig.getConfiguration())
-        .withCatalog(standardSync.getSchema())
+        .withCatalog(standardSync.getCatalog())
         .withSourceConfiguration(sourceConnectionConfig.getConfiguration())
         .withState(state);
 

@@ -108,7 +108,7 @@ public class WebBackendConnectionsHandler {
         .sourceId(connectionRead.getSourceId())
         .destinationId(connectionRead.getDestinationId())
         .name(connectionRead.getName())
-        .syncSchema(connectionRead.getSyncSchema())
+        .syncCatalog(connectionRead.getSyncCatalog())
         .status(connectionRead.getStatus())
         .schedule(connectionRead.getSchedule())
         .source(source)
@@ -134,11 +134,11 @@ public class WebBackendConnectionsHandler {
       final SourceIdRequestBody sourceId = new SourceIdRequestBody().sourceId(connection.getSourceId());
       final SourceDiscoverSchemaRead discoverSchema = schedulerHandler.discoverSchemaForSourceFromSourceId(sourceId);
 
-      final AirbyteCatalog original = connection.getSyncSchema();
-      final AirbyteCatalog discovered = discoverSchema.getSchema();
+      final AirbyteCatalog original = connection.getSyncCatalog();
+      final AirbyteCatalog discovered = discoverSchema.getCatalog();
       final AirbyteCatalog combined = updateSchemaWithDiscovery(original, discovered);
 
-      connection.setSyncSchema(combined);
+      connection.setSyncCatalog(combined);
     }
 
     return buildWbConnectionRead(connection);
@@ -158,8 +158,8 @@ public class WebBackendConnectionsHandler {
       AirbyteStreamConfiguration outputStreamConfig;
 
       if (originalStream != null) {
-        final AirbyteStreamConfiguration originalStreamConfig = originalStream.getConfiguration();
-        final AirbyteStreamConfiguration discoveredStreamConfig = s.getConfiguration();
+        final AirbyteStreamConfiguration originalStreamConfig = originalStream.getConfig();
+        final AirbyteStreamConfiguration discoveredStreamConfig = s.getConfig();
         outputStreamConfig = new AirbyteStreamConfiguration();
 
         if (stream.getSupportedSyncModes().contains(originalStreamConfig.getSyncMode()))
@@ -172,14 +172,14 @@ public class WebBackendConnectionsHandler {
         else
           outputStreamConfig.setCursorField(discoveredStreamConfig.getCursorField());
 
-        outputStreamConfig.setCleanedName(originalStreamConfig.getCleanedName());
+        outputStreamConfig.setAliasName(originalStreamConfig.getAliasName());
         outputStreamConfig.setSelected(originalStreamConfig.getSelected());
       } else {
-        outputStreamConfig = s.getConfiguration();
+        outputStreamConfig = s.getConfig();
       }
       final AirbyteStreamAndConfiguration outputStream = new AirbyteStreamAndConfiguration()
           .stream(Jsons.clone(stream))
-          ._configuration(outputStreamConfig);
+          .config(outputStreamConfig);
       streams.add(outputStream);
     }
     return new AirbyteCatalog().streams(streams);
@@ -214,7 +214,7 @@ public class WebBackendConnectionsHandler {
     connectionUpdate.setConnectionId(webBackendConnectionUpdate.getConnectionId());
     connectionUpdate.setSchedule(webBackendConnectionUpdate.getSchedule());
     connectionUpdate.setStatus(webBackendConnectionUpdate.getStatus());
-    connectionUpdate.setSyncSchema(webBackendConnectionUpdate.getSyncSchema());
+    connectionUpdate.setSyncCatalog(webBackendConnectionUpdate.getSyncCatalog());
 
     return connectionUpdate;
   }

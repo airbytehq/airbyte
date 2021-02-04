@@ -106,7 +106,7 @@ public class DefaultJobCreatorTest {
         .withConnectionId(connectionId)
         .withName("presto to hudi")
         .withStatus(StandardSync.Status.ACTIVE)
-        .withSchema(catalog)
+        .withCatalog(catalog)
         .withSourceId(sourceId)
         .withDestinationId(destinationId);
   }
@@ -189,7 +189,7 @@ public class DefaultJobCreatorTest {
         .withSourceDockerImage(SOURCE_IMAGE_NAME)
         .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
-        .withConfiguredAirbyteCatalog(STANDARD_SYNC.getSchema());
+        .withConfiguredAirbyteCatalog(STANDARD_SYNC.getCatalog());
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(JobConfig.ConfigType.SYNC)
@@ -214,7 +214,7 @@ public class DefaultJobCreatorTest {
         .withSourceDockerImage(SOURCE_IMAGE_NAME)
         .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
-        .withConfiguredAirbyteCatalog(STANDARD_SYNC.getSchema());
+        .withConfiguredAirbyteCatalog(STANDARD_SYNC.getCatalog());
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(JobConfig.ConfigType.SYNC)
@@ -233,7 +233,7 @@ public class DefaultJobCreatorTest {
 
   @Test
   void testCreateResetConnectionJob() throws IOException {
-    final ConfiguredAirbyteCatalog expectedCatalog = STANDARD_SYNC.getSchema();
+    final ConfiguredAirbyteCatalog expectedCatalog = STANDARD_SYNC.getCatalog();
     expectedCatalog.getStreams()
         .forEach(configuredAirbyteStream -> configuredAirbyteStream.setSyncMode(io.airbyte.protocol.models.SyncMode.FULL_REFRESH));
 
@@ -258,7 +258,7 @@ public class DefaultJobCreatorTest {
 
   @Test
   void testCreateResetConnectionJobEnsureNoQueuing() throws IOException {
-    final ConfiguredAirbyteCatalog expectedCatalog = STANDARD_SYNC.getSchema();
+    final ConfiguredAirbyteCatalog expectedCatalog = STANDARD_SYNC.getCatalog();
     expectedCatalog.getStreams()
         .forEach(configuredAirbyteStream -> configuredAirbyteStream.setSyncMode(io.airbyte.protocol.models.SyncMode.FULL_REFRESH));
 

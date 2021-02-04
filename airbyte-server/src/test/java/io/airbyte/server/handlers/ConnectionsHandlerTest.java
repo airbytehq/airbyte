@@ -92,7 +92,7 @@ class ConnectionsHandlerTest {
 
     when(configRepository.getStandardSyncSchedule(standardSyncSchedule.getConnectionId())).thenReturn(standardSyncSchedule);
 
-    final AirbyteCatalog newApiSchema = ConnectionHelpers.generateBasicApiCatalog();
+    final AirbyteCatalog catalog = ConnectionHelpers.generateBasicApiCatalog();
 
     final ConnectionCreate connectionCreate = new ConnectionCreate()
         .sourceId(standardSync.getSourceId())
@@ -100,7 +100,7 @@ class ConnectionsHandlerTest {
         .name("presto to hudi")
         .status(ConnectionStatus.ACTIVE)
         .schedule(ConnectionHelpers.generateBasicSchedule())
-        .syncSchema(newApiSchema);
+        .syncCatalog(catalog);
 
     final ConnectionRead actualConnectionRead = connectionsHandler.createConnection(connectionCreate);
 
@@ -117,18 +117,18 @@ class ConnectionsHandlerTest {
 
   @Test
   void testUpdateConnection() throws JsonValidationException, ConfigNotFoundException, IOException {
-    final AirbyteCatalog newApiSchema = ConnectionHelpers.generateBasicApiCatalog();
-    newApiSchema.getStreams().get(0).getStream().setName("azkaban_users");
-    newApiSchema.getStreams().get(0).getConfiguration().setCleanedName("azkaban_users");
+    final AirbyteCatalog catalog = ConnectionHelpers.generateBasicApiCatalog();
+    catalog.getStreams().get(0).getStream().setName("azkaban_users");
+    catalog.getStreams().get(0).getConfig().setAliasName("azkaban_users");
 
     final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
         .connectionId(standardSync.getConnectionId())
         .status(ConnectionStatus.INACTIVE)
         .schedule(null)
-        .syncSchema(newApiSchema);
+        .syncCatalog(catalog);
 
-    final ConfiguredAirbyteCatalog newPersistenceSchema = ConnectionHelpers.generateBasicConfiguredAirbyteCatalog();
-    newPersistenceSchema.getStreams().get(0).getStream().withName("azkaban_users");
+    final ConfiguredAirbyteCatalog configuredCatalog = ConnectionHelpers.generateBasicConfiguredAirbyteCatalog();
+    configuredCatalog.getStreams().get(0).getStream().withName("azkaban_users");
 
     final StandardSync updatedStandardSync = new StandardSync()
         .withConnectionId(standardSync.getConnectionId())
@@ -136,7 +136,7 @@ class ConnectionsHandlerTest {
         .withSourceId(standardSync.getSourceId())
         .withDestinationId(standardSync.getDestinationId())
         .withStatus(StandardSync.Status.INACTIVE)
-        .withSchema(newPersistenceSchema);
+        .withCatalog(configuredCatalog);
 
     final StandardSyncSchedule updatedPersistenceSchedule = new StandardSyncSchedule()
         .withConnectionId(standardSyncSchedule.getConnectionId())
@@ -157,7 +157,7 @@ class ConnectionsHandlerTest {
         standardSync.getSourceId(),
         standardSync.getDestinationId())
         .schedule(null)
-        .syncSchema(newApiSchema)
+        .syncCatalog(catalog)
         .status(ConnectionStatus.INACTIVE);
 
     assertEquals(expectedConnectionRead, actualConnectionRead);
@@ -211,7 +211,7 @@ class ConnectionsHandlerTest {
     final ConnectionUpdate expectedConnectionUpdate = new ConnectionUpdate()
         .connectionId(connectionRead.getConnectionId())
         .status(ConnectionStatus.DEPRECATED)
-        .syncSchema(connectionRead.getSyncSchema())
+        .syncCatalog(connectionRead.getSyncCatalog())
         .schedule(connectionRead.getSchedule());
 
     final ConnectionsHandler spiedConnectionsHandler = spy(connectionsHandler);

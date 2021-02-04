@@ -24,8 +24,6 @@
 
 package io.airbyte.server.converters;
 
-import io.airbyte.api.model.AirbyteStreamConfiguration;
-import io.airbyte.api.model.SyncMode;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.text.Names;
 import java.util.List;
@@ -34,9 +32,9 @@ import java.util.stream.Collectors;
 /**
  * Convert classes between io.airbyte.protocol.models and io.airbyte.api.model
  */
-public class SchemaConverter {
+public class CatalogConverter {
 
-  public static io.airbyte.api.model.AirbyteStream convertTo(final io.airbyte.protocol.models.AirbyteStream stream) {
+  private static io.airbyte.api.model.AirbyteStream toApi(final io.airbyte.protocol.models.AirbyteStream stream) {
     return new io.airbyte.api.model.AirbyteStream()
         .name(stream.getName())
         .jsonSchema(stream.getJsonSchema())
@@ -45,7 +43,7 @@ public class SchemaConverter {
         .defaultCursorField(stream.getDefaultCursorField());
   }
 
-  public static io.airbyte.protocol.models.AirbyteStream convertTo(final io.airbyte.api.model.AirbyteStream stream) {
+  private static io.airbyte.protocol.models.AirbyteStream toProtocol(final io.airbyte.api.model.AirbyteStream stream) {
     return new io.airbyte.protocol.models.AirbyteStream()
         .withName(stream.getName())
         .withJsonSchema(stream.getJsonSchema())
@@ -54,54 +52,54 @@ public class SchemaConverter {
         .withDefaultCursorField(stream.getDefaultCursorField());
   }
 
-  public static io.airbyte.api.model.AirbyteCatalog convertTo(final io.airbyte.protocol.models.AirbyteCatalog catalog) {
+  public static io.airbyte.api.model.AirbyteCatalog toApi(final io.airbyte.protocol.models.AirbyteCatalog catalog) {
     return new io.airbyte.api.model.AirbyteCatalog()
         .streams(catalog.getStreams()
             .stream()
-            .map(SchemaConverter::convertTo)
+            .map(CatalogConverter::toApi)
             .map(s -> new io.airbyte.api.model.AirbyteStreamAndConfiguration()
                 .stream(s)
-                ._configuration(getDefaultAirbyteStreamConfiguration(s)))
+                .config(generateDefaultConfiguration(s)))
             .collect(Collectors.toList()));
   }
 
-  private static io.airbyte.api.model.AirbyteStreamConfiguration getDefaultAirbyteStreamConfiguration(io.airbyte.api.model.AirbyteStream s) {
-    io.airbyte.api.model.AirbyteStreamConfiguration result = new AirbyteStreamConfiguration()
-        .cleanedName(Names.toAlphanumericAndUnderscore(s.getName()))
+  private static io.airbyte.api.model.AirbyteStreamConfiguration generateDefaultConfiguration(final io.airbyte.api.model.AirbyteStream s) {
+    io.airbyte.api.model.AirbyteStreamConfiguration result = new io.airbyte.api.model.AirbyteStreamConfiguration()
+        .aliasName(Names.toAlphanumericAndUnderscore(s.getName()))
         .cursorField(s.getDefaultCursorField())
         .selected(true);
     if (s.getSupportedSyncModes().size() > 0)
       result.setSyncMode(s.getSupportedSyncModes().get(0));
     else
-      result.setSyncMode(SyncMode.INCREMENTAL);
+      result.setSyncMode(io.airbyte.api.model.SyncMode.INCREMENTAL);
     return result;
   }
 
-  public static io.airbyte.api.model.AirbyteCatalog convertTo(final io.airbyte.protocol.models.ConfiguredAirbyteCatalog catalog) {
+  public static io.airbyte.api.model.AirbyteCatalog toApi(final io.airbyte.protocol.models.ConfiguredAirbyteCatalog catalog) {
     final List<io.airbyte.api.model.AirbyteStreamAndConfiguration> streams = catalog.getStreams()
         .stream()
         .map(configuredStream -> {
           final io.airbyte.api.model.AirbyteStreamConfiguration configuration = new io.airbyte.api.model.AirbyteStreamConfiguration()
               .syncMode(Enums.convertTo(configuredStream.getSyncMode(), io.airbyte.api.model.SyncMode.class))
               .cursorField(configuredStream.getCursorField())
-              .cleanedName(Names.toAlphanumericAndUnderscore(configuredStream.getStream().getName()))
+              .aliasName(Names.toAlphanumericAndUnderscore(configuredStream.getStream().getName()))
               .selected(true);
           return new io.airbyte.api.model.AirbyteStreamAndConfiguration()
-              .stream(convertTo(configuredStream.getStream()))
-              ._configuration(configuration);
+              .stream(toApi(configuredStream.getStream()))
+              .config(configuration);
         })
         .collect(Collectors.toList());
     return new io.airbyte.api.model.AirbyteCatalog().streams(streams);
   }
 
-  public static io.airbyte.protocol.models.ConfiguredAirbyteCatalog convertTo(final io.airbyte.api.model.AirbyteCatalog catalog) {
+  public static io.airbyte.protocol.models.ConfiguredAirbyteCatalog toProtocol(final io.airbyte.api.model.AirbyteCatalog catalog) {
     final List<io.airbyte.protocol.models.ConfiguredAirbyteStream> streams = catalog.getStreams()
         .stream()
-        .filter(s -> s.getConfiguration().getSelected())
+        .filter(s -> s.getConfig().getSelected())
         .map(s -> new io.airbyte.protocol.models.ConfiguredAirbyteStream()
-            .withStream(convertTo(s.getStream()))
-            .withSyncMode(Enums.convertTo(s.getConfiguration().getSyncMode(), io.airbyte.protocol.models.SyncMode.class))
-            .withCursorField(s.getConfiguration().getCursorField()))
+            .withStream(toProtocol(s.getStream()))
+            .withSyncMode(Enums.convertTo(s.getConfig().getSyncMode(), io.airbyte.protocol.models.SyncMode.class))
+            .withCursorField(s.getConfig().getCursorField()))
         .collect(Collectors.toList());
     return new io.airbyte.protocol.models.ConfiguredAirbyteCatalog()
         .withStreams(streams);

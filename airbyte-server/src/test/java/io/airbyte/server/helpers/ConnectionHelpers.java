@@ -59,7 +59,7 @@ public class ConnectionHelpers {
         .withConnectionId(connectionId)
         .withName("presto to hudi")
         .withStatus(StandardSync.Status.ACTIVE)
-        .withSchema(generateBasicConfiguredAirbyteCatalog())
+        .withCatalog(generateBasicConfiguredAirbyteCatalog())
         .withSourceId(sourceId)
         .withDestinationId(UUID.randomUUID());
   }
@@ -71,7 +71,7 @@ public class ConnectionHelpers {
         .withConnectionId(connectionId)
         .withName("presto to hudi")
         .withStatus(StandardSync.Status.ACTIVE)
-        .withSchema(generateBasicConfiguredAirbyteCatalog())
+        .withCatalog(generateBasicConfiguredAirbyteCatalog())
         .withSourceId(UUID.randomUUID())
         .withDestinationId(destinationId);
   }
@@ -93,7 +93,7 @@ public class ConnectionHelpers {
         .name("presto to hudi")
         .status(ConnectionStatus.ACTIVE)
         .schedule(generateBasicSchedule())
-        .syncSchema(ConnectionHelpers.generateBasicApiCatalog());
+        .syncCatalog(ConnectionHelpers.generateBasicApiCatalog());
   }
 
   public static ConnectionRead generateExpectedConnectionRead(StandardSync standardSync) {
@@ -136,14 +136,14 @@ public class ConnectionHelpers {
   public static AirbyteCatalog generateBasicApiCatalog() {
     return new AirbyteCatalog().streams(Lists.newArrayList(new AirbyteStreamAndConfiguration()
         .stream(generateBasicApiStream())
-        ._configuration(generateBasicApiStreamConfig())));
+        .config(generateBasicApiStreamConfig())));
   }
 
   private static AirbyteStreamConfiguration generateBasicApiStreamConfig() {
     return new AirbyteStreamConfiguration()
         .syncMode(SyncMode.INCREMENTAL)
         .cursorField(Lists.newArrayList(FIELD_NAME))
-        .cleanedName(Names.toAlphanumericAndUnderscore(STREAM_NAME))
+        .aliasName(Names.toAlphanumericAndUnderscore(STREAM_NAME))
         .selected(true);
   }
 

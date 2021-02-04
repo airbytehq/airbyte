@@ -42,7 +42,7 @@ import io.airbyte.config.StandardSyncSchedule;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.server.converters.SchemaConverter;
+import io.airbyte.server.converters.CatalogConverter;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.Collections;
@@ -76,10 +76,11 @@ public class ConnectionsHandler {
         .withDestinationId(connectionCreate.getDestinationId())
         .withStatus(toPersistenceStatus(connectionCreate.getStatus()));
 
-    if (connectionCreate.getSyncSchema() != null) {
-      standardSync.withSchema(SchemaConverter.convertTo(connectionCreate.getSyncSchema()));
+    // TODO Undesirable behavior: sending a null configured catalog should not be valid?
+    if (connectionCreate.getSyncCatalog() != null) {
+      standardSync.withCatalog(CatalogConverter.toProtocol(connectionCreate.getSyncCatalog()));
     } else {
-      standardSync.withSchema(new ConfiguredAirbyteCatalog().withStreams(Collections.emptyList()));
+      standardSync.withCatalog(new ConfiguredAirbyteCatalog().withStreams(Collections.emptyList()));
     }
 
     configRepository.writeStandardSync(standardSync);
@@ -105,7 +106,7 @@ public class ConnectionsHandler {
   public ConnectionRead updateConnection(ConnectionUpdate connectionUpdate) throws ConfigNotFoundException, IOException, JsonValidationException {
     // retrieve sync
     final StandardSync persistedSync = configRepository.getStandardSync(connectionUpdate.getConnectionId())
-        .withSchema(SchemaConverter.convertTo(connectionUpdate.getSyncSchema()))
+        .withCatalog(CatalogConverter.toProtocol(connectionUpdate.getSyncCatalog()))
         .withStatus(toPersistenceStatus(connectionUpdate.getStatus()));
 
     return updateConnection(connectionUpdate, persistedSync);
@@ -168,7 +169,7 @@ public class ConnectionsHandler {
   public void deleteConnection(ConnectionRead connectionRead) throws ConfigNotFoundException, IOException, JsonValidationException {
     final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
         .connectionId(connectionRead.getConnectionId())
-        .syncSchema(connectionRead.getSyncSchema())
+        .syncCatalog(connectionRead.getSyncCatalog())
         .schedule(connectionRead.getSchedule())
         .status(ConnectionStatus.DEPRECATED);
 
@@ -208,7 +209,7 @@ public class ConnectionsHandler {
         .status(toApiStatus(standardSync.getStatus()))
         .schedule(apiSchedule)
         .name(standardSync.getName())
-        .syncSchema(SchemaConverter.convertTo(standardSync.getSchema()));
+        .syncCatalog(CatalogConverter.toApi(standardSync.getCatalog()));
   }
 
   private StandardSync.Status toPersistenceStatus(ConnectionStatus apiStatus) {

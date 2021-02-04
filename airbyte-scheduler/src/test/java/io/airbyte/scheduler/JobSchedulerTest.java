@@ -75,7 +75,7 @@ class JobSchedulerTest {
         .withConnectionId(connectionId)
         .withName("presto to hudi")
         .withStatus(StandardSync.Status.ACTIVE)
-        .withSchema(catalog)
+        .withCatalog(catalog)
         .withSourceId(sourceId)
         .withDestinationId(destinationId);
 

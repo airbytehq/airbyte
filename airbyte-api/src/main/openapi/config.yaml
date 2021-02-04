@@ -386,7 +386,7 @@ paths:
     post:
       tags:
         - source
-      summary: Discover the schema of the source
+      summary: Discover the schema catalog of the source
       operationId: discoverSchemaForSource
       requestBody:
         content:
@@ -1366,12 +1366,12 @@ components:
           items:
             $ref: "#/components/schemas/SourceRead"
     SourceDiscoverSchemaRead:
-      description: Returns the results of a discover schema job. If the job was not successful, the schema field will not be present. jobInfo will aways be present and its status be used to determine if the job was successful or not.
+      description: Returns the results of a discover catalog job. If the job was not successful, the catalog field will not be present. jobInfo will aways be present and its status be used to determine if the job was successful or not.
       type: object
       required:
         - jobInfo
       properties:
-        schema:
+        catalog:
           $ref: "#/components/schemas/AirbyteCatalog"
         jobInfo:
           $ref: "#/components/schemas/JobInfoRead"
@@ -1592,7 +1592,7 @@ components:
           $ref: "#/components/schemas/SourceId"
         destinationId:
           $ref: "#/components/schemas/DestinationId"
-        syncSchema:
+        syncCatalog:
           $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
           $ref: "#/components/schemas/ConnectionSchedule"
@@ -1602,12 +1602,12 @@ components:
       type: object
       required:
         - connectionId
-        - syncSchema
+        - syncCatalog
         - status
       properties:
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
-        syncSchema:
+        syncCatalog:
           $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
           $ref: "#/components/schemas/ConnectionSchedule"
@@ -1627,7 +1627,7 @@ components:
         - name
         - sourceId
         - destinationId
-        - syncSchema
+        - syncCatalog
         - status
       properties:
         connectionId:
@@ -1638,7 +1638,7 @@ components:
           $ref: "#/components/schemas/SourceId"
         destinationId:
           $ref: "#/components/schemas/DestinationId"
-        syncSchema:
+        syncCatalog:
           $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
           $ref: "#/components/schemas/ConnectionSchedule"
@@ -1692,7 +1692,7 @@ components:
       properties:
         logType:
           $ref: "#/components/schemas/LogType"
-    # CATALOG / SCHEMA
+    # SCHEMA CATALOG
     AirbyteCatalog:
       description: describes the available schema (catalog).
       type: object
@@ -1710,7 +1710,7 @@ components:
       properties:
         stream:
           $ref: "#/components/schemas/AirbyteStream"
-        configuration:
+        config:
           $ref: "#/components/schemas/AirbyteStreamConfiguration"
     AirbyteStream:
       description: the immutable schema defined by the source
@@ -1743,7 +1743,7 @@ components:
     StreamJsonSchema:
       type: object
     AirbyteStreamConfiguration:
-      description: the mutable schema configuration to configure the destination
+      description: the mutable part of the stream to configure the destination
       type: object
       additionalProperties: false
       properties:
@@ -1755,7 +1755,8 @@ components:
           type: array
           items:
             type: string
-        cleanedName:
+        aliasName:
+          description: Alias name to the stream to be used in the destination
           type: string
         selected:
           type: boolean
@@ -1948,7 +1949,7 @@ components:
         - name
         - sourceId
         - destinationId
-        - syncSchema
+        - syncCatalog
         - status
         - source
         - destination
@@ -1962,7 +1963,7 @@ components:
           $ref: "#/components/schemas/SourceId"
         destinationId:
           $ref: "#/components/schemas/DestinationId"
-        syncSchema:
+        syncCatalog:
           $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
           $ref: "#/components/schemas/ConnectionSchedule"

@@ -55,9 +55,9 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.client.SchedulerJobClient;
+import io.airbyte.server.converters.CatalogConverter;
 import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.server.converters.JobConverter;
-import io.airbyte.server.converters.SchemaConverter;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
@@ -194,7 +194,7 @@ public class SchedulerHandler {
     job.getSuccessOutput()
         .map(JobOutput::getDiscoverCatalog)
         .map(StandardDiscoverCatalogOutput::getCatalog)
-        .ifPresent(catalog -> sourceDiscoverSchemaRead.schema(SchemaConverter.convertTo(catalog)));
+        .ifPresent(catalog -> sourceDiscoverSchemaRead.catalog(CatalogConverter.toApi(catalog)));
 
     return sourceDiscoverSchemaRead;
   }

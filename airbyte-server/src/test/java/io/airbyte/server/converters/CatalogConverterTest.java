@@ -31,16 +31,16 @@ import io.airbyte.config.DataType;
 import io.airbyte.server.helpers.ConnectionHelpers;
 import org.junit.jupiter.api.Test;
 
-class SchemaConverterTest {
+class CatalogConverterTest {
 
   @Test
-  void convertToProtocol() {
-    assertEquals(ConnectionHelpers.generateBasicConfiguredAirbyteCatalog(), SchemaConverter.convertTo(ConnectionHelpers.generateBasicApiCatalog()));
+  void testConvertToProtocol() {
+    assertEquals(ConnectionHelpers.generateBasicConfiguredAirbyteCatalog(), CatalogConverter.toProtocol(ConnectionHelpers.generateBasicApiCatalog()));
   }
 
   @Test
-  void convertToAPI() {
-    assertEquals(ConnectionHelpers.generateBasicApiCatalog(), SchemaConverter.convertTo(ConnectionHelpers.generateBasicConfiguredAirbyteCatalog()));
+  void testConvertToAPI() {
+    assertEquals(ConnectionHelpers.generateBasicApiCatalog(), CatalogConverter.toApi(ConnectionHelpers.generateBasicConfiguredAirbyteCatalog()));
   }
 
   @Test

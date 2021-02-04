@@ -111,7 +111,7 @@ public class DefaultJobCreator implements JobCreator {
         .withSourceConfiguration(source.getConfiguration())
         .withDestinationDockerImage(destinationDockerImageName)
         .withDestinationConfiguration(destination.getConfiguration())
-        .withConfiguredAirbyteCatalog(standardSync.getSchema())
+        .withConfiguredAirbyteCatalog(standardSync.getCatalog())
         .withState(null);
 
     jobPersistence.getCurrentState(standardSync.getConnectionId()).ifPresent(jobSyncConfig::withState);
@@ -132,7 +132,7 @@ public class DefaultJobCreator implements JobCreator {
   @Override
   public Optional<Long> createResetConnectionJob(DestinationConnection destination, StandardSync standardSync, String destinationDockerImage)
       throws IOException {
-    final ConfiguredAirbyteCatalog configuredAirbyteCatalog = standardSync.getSchema();
+    final ConfiguredAirbyteCatalog configuredAirbyteCatalog = standardSync.getCatalog();
     configuredAirbyteCatalog.getStreams().forEach(configuredAirbyteStream -> configuredAirbyteStream.setSyncMode(SyncMode.FULL_REFRESH));
 
     final JobResetConnectionConfig resetConnectionConfig = new JobResetConnectionConfig()
