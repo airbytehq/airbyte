@@ -179,12 +179,7 @@
                     "type": "string",
                     "description": "The user account type. Can take the following values:\n\n *  `atlassian` regular Atlassian user account\n *  `app` system account used for Connect applications and OAuth to represent external systems\n *  `customer` Jira Service Desk account representing an external service desk",
                     "readOnly": true,
-                    "enum": [
-                      "atlassian",
-                      "app",
-                      "customer",
-                      "unknown"
-                    ]
+                    "enum": ["atlassian", "app", "customer", "unknown"]
                   },
                   "name": {
                     "type": "string",
@@ -442,12 +437,7 @@
                           "type": "string",
                           "description": "The user account type. Can take the following values:\n\n *  `atlassian` regular Atlassian user account\n *  `app` system account used for Connect applications and OAuth to represent external systems\n *  `customer` Jira Service Desk account representing an external service desk",
                           "readOnly": true,
-                          "enum": [
-                            "atlassian",
-                            "app",
-                            "customer",
-                            "unknown"
-                          ]
+                          "enum": ["atlassian", "app", "customer", "unknown"]
                         },
                         "name": {
                           "type": "string",
@@ -699,12 +689,7 @@
                           "type": "string",
                           "description": "The user account type. Can take the following values:\n\n *  `atlassian` regular Atlassian user account\n *  `app` system account used for Connect applications and OAuth to represent external systems\n *  `customer` Jira Service Desk account representing an external service desk",
                           "readOnly": true,
-                          "enum": [
-                            "atlassian",
-                            "app",
-                            "customer",
-                            "unknown"
-                          ]
+                          "enum": ["atlassian", "app", "customer", "unknown"]
                         },
                         "name": {
                           "type": "string",
@@ -947,12 +932,7 @@
                           "type": "string",
                           "description": "The user account type. Can take the following values:\n\n *  `atlassian` regular Atlassian user account\n *  `app` system account used for Connect applications and OAuth to represent external systems\n *  `customer` Jira Service Desk account representing an external service desk",
                           "readOnly": true,
-                          "enum": [
-                            "atlassian",
-                            "app",
-                            "customer",
-                            "unknown"
-                          ]
+                          "enum": ["atlassian", "app", "customer", "unknown"]
                         },
                         "name": {
                           "type": "string",
@@ -1242,10 +1222,7 @@
                           "type": "string",
                           "description": "The type of scope.",
                           "readOnly": true,
-                          "enum": [
-                            "PROJECT",
-                            "TEMPLATE"
-                          ]
+                          "enum": ["PROJECT", "TEMPLATE"]
                         },
                         "project": {
                           "description": "The project the item has scope in.",
@@ -1275,11 +1252,7 @@
                               "type": "string",
                               "description": "The [project type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes) of the project.",
                               "readOnly": true,
-                              "enum": [
-                                "software",
-                                "service_desk",
-                                "business"
-                              ]
+                              "enum": ["software", "service_desk", "business"]
                             },
                             "simplified": {
                               "type": "boolean",
@@ -1360,10 +1333,7 @@
                 "type": "string",
                 "description": "The default assignee when creating issues for this project.",
                 "readOnly": true,
-                "enum": [
-                  "PROJECT_LEAD",
-                  "UNASSIGNED"
-                ]
+                "enum": ["PROJECT_LEAD", "UNASSIGNED"]
               },
               "versions": {
                 "type": "array",
@@ -1583,11 +1553,7 @@
                 "type": "string",
                 "description": "The [project type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes) of the project.",
                 "readOnly": true,
-                "enum": [
-                  "software",
-                  "service_desk",
-                  "business"
-                ]
+                "enum": ["software", "service_desk", "business"]
               },
               "simplified": {
                 "type": "boolean",
@@ -1598,10 +1564,7 @@
                 "type": "string",
                 "description": "The type of the project.",
                 "readOnly": true,
-                "enum": [
-                  "classic",
-                  "next-gen"
-                ]
+                "enum": ["classic", "next-gen"]
               },
               "favourite": {
                 "type": "boolean",
@@ -1658,11 +1621,7 @@
                         },
                         "globalHierarchyLevel": {
                           "type": "string",
-                          "enum": [
-                            "SUBTASK",
-                            "BASE",
-                            "EPIC"
-                          ]
+                          "enum": ["SUBTASK", "BASE", "EPIC"]
                         }
                       }
                     }
@@ -1755,12 +1714,7 @@
                     "type": "string",
                     "description": "The user account type. Can take the following values:\n\n *  `atlassian` regular Atlassian user account\n *  `app` system account used for Connect applications and OAuth to represent external systems\n *  `customer` Jira Service Desk account representing an external service desk",
                     "readOnly": true,
-                    "enum": [
-                      "atlassian",
-                      "app",
-                      "customer",
-                      "unknown"
-                    ]
+                    "enum": ["atlassian", "app", "customer", "unknown"]
                   },
                   "name": {
                     "type": "string",
@@ -2003,12 +1957,7 @@
                     "type": "string",
                     "description": "The user account type. Can take the following values:\n\n *  `atlassian` regular Atlassian user account\n *  `app` system account used for Connect applications and OAuth to represent external systems\n *  `customer` Jira Service Desk account representing an external service desk",
                     "readOnly": true,
-                    "enum": [
-                      "atlassian",
-                      "app",
-                      "customer",
-                      "unknown"
-                    ]
+                    "enum": ["atlassian", "app", "customer", "unknown"]
                   },
                   "name": {
                     "type": "string",
@@ -2319,10 +2268,7 @@
                     "type": "string",
                     "description": "The type of scope.",
                     "readOnly": true,
-                    "enum": [
-                      "PROJECT",
-                      "TEMPLATE"
-                    ]
+                    "enum": ["PROJECT", "TEMPLATE"]
                   },
                   "project": {
                     "description": "The project the item has scope in.",
@@ -2352,11 +2298,7 @@
                         "type": "string",
                         "description": "The [project type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes) of the project.",
                         "readOnly": true,
-                        "enum": [
-                          "software",
-                          "service_desk",
-                          "business"
-                        ]
+                        "enum": ["software", "service_desk", "business"]
                       },
                       "simplified": {
                         "type": "boolean",

@@ -46,10 +46,7 @@
           "type": "string",
           "description": "The type of scope.",
           "readOnly": true,
-          "enum": [
-            "PROJECT",
-            "TEMPLATE"
-          ]
+          "enum": ["PROJECT", "TEMPLATE"]
         },
         "project": {
           "description": "The project the item has scope in.",
@@ -79,11 +76,7 @@
               "type": "string",
               "description": "The [project type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes) of the project.",
               "readOnly": true,
-              "enum": [
-                "software",
-                "service_desk",
-                "business"
-              ]
+              "enum": ["software", "service_desk", "business"]
             },
             "simplified": {
               "type": "boolean",

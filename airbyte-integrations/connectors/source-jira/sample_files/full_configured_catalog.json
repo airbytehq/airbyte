@@ -58,9 +58,7 @@
           "additionalProperties": false,
           "description": "Details of an application role."
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false
       }
     },

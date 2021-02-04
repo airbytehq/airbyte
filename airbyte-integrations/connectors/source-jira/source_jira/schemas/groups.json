@@ -40,11 +40,7 @@
                 "type": {
                   "type": "string",
                   "description": "The type of the group label.",
-                  "enum": [
-                    "ADMIN",
-                    "SINGLE",
-                    "MULTIPLE"
-                  ]
+                  "enum": ["ADMIN", "SINGLE", "MULTIPLE"]
                 }
               }
             }

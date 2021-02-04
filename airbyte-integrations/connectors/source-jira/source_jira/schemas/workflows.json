@@ -51,11 +51,7 @@
             "type": {
               "type": "string",
               "description": "The type of the transition.",
-              "enum": [
-                "global",
-                "initial",
-                "directed"
-              ]
+              "enum": ["global", "initial", "directed"]
             },
             "screen": {
               "type": "object",
