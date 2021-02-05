@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Source Appstore Singer Spec",
     "type": "object",
-    "required": ["key_id", "key_file", "issuer_id", "vendor", "start_date"],
+    "required": ["key_id", "private_key", "issuer_id", "vendor", "start_date"],
     "additionalProperties": false,
     "properties": {
       "key_id": {
