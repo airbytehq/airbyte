@@ -26,7 +26,6 @@ package io.airbyte.integrations.destination.meilisearch;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.base.Preconditions;
 import com.meilisearch.sdk.Client;
 import com.meilisearch.sdk.Config;
 import com.meilisearch.sdk.Index;
@@ -47,10 +46,10 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
@@ -62,48 +61,34 @@ import org.slf4j.LoggerFactory;
  * choices. The main difference that we need to reckon with is that this destination does not work
  * without a primary key for each stream. That primary key needs to be defined ahead of time. Only
  * records for which that primary key is present can be uploaded. There are also some rules around
- * the allowed formats of these primary keys. This implementation hacks around these constraints.
+ * the allowed formats of these primary keys.
  * </p>
  * <p>
- * The strategy is that we first search for a field that contains the word "id" in it (this is
- * stealing the strategy that MeiliSearch uses by
- * default--https://docs.meilisearch.com/learn/core_concepts/documents.html#primary-field). If one
- * cannot be found then we pick an id from the stream. This is a bad strategy because if that field
- * does not appear in subsequent records, then those records will not be written. This means until
- * we support defining a primary key, this destination can only be used in very choice
- * circumstances.
- * </p>
- * <p>
- * After a primary key has been identified, the connector adds an additional primary key column that
- * concatenates a special prefix and the original name of the column being used as the primary key.
- * We do this because primary keys can only have alphanumeric values, so we copy the value from the
- * original primary key column into the special one we've created while cleaning it so that it meets
- * MeiliSearch's requirements.
+ * The strategy is to inject an extra airbyte primary key field in each record. The value of that
+ * field is a randomly generate UUID. This means that we have no ability to ever overwrite
+ * individual records that we put in MeiliSearch.
  * </p>
  * <p>
  * Index names can only contain alphanumeric values, so we normalize stream names to meet these
  * constraints. This is why streamName and indexName are treated separately in this connector.
  * </p>
  * <p>
- * When we sync data we only replicate records that contain a primary key.
- * </p>
- * <p>
  * This destination can support full refresh and incremental. It does NOT support normalization. It
  * breaks from the paradigm of having a "raw" and "normalized" table. There is no DBT for
- * Meilisearch so we write the data a single time in a way that makes it most likely to work well
- * within MeilieSearch.
+ * MeiliSearch so we write the data a single time in a way that makes it most likely to work well
+ * within MeiliSearch.
  * </p>
  */
 public class MeiliSearchDestination extends DefaultSpecConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MeiliSearchDestination.class);
 
-  private static final String AB_PK_PREFIX = "_ab_pk_";
+  public static final String AB_PK_COLUMN = "_ab_pk";
 
   @Override
   public DestinationConsumer<AirbyteMessage> write(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
     final Client client = getClient(config);
-    final Map<String, WriteConfig> indexNameToIndex = createIndices(catalog, client);
+    final Map<String, Index> indexNameToIndex = createIndices(catalog, client);
 
     return new BufferedStreamConsumer(
         () -> LOGGER.info("Starting write to MeiliSearch."),
@@ -113,8 +98,8 @@ public class MeiliSearchDestination extends DefaultSpecConnector implements Dest
         CatalogHelpers.getStreamNames(catalog));
   }
 
-  private static Map<String, WriteConfig> createIndices(ConfiguredAirbyteCatalog catalog, Client client) throws Exception {
-    final Map<String, WriteConfig> map = new HashMap<>();
+  private static Map<String, Index> createIndices(ConfiguredAirbyteCatalog catalog, Client client) throws Exception {
+    final Map<String, Index> map = new HashMap<>();
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final String indexName = getIndexName(stream);
 
@@ -122,9 +107,8 @@ public class MeiliSearchDestination extends DefaultSpecConnector implements Dest
         client.deleteIndex(indexName);
       }
 
-      final PrimaryKey primaryKey = getPrimaryKey(stream);
-      final Index index = client.getOrCreateIndex(indexName, primaryKey.getArtificialKey());
-      map.put(indexName, new WriteConfig(index, primaryKey));
+      final Index index = client.getOrCreateIndex(indexName, AB_PK_COLUMN);
+      map.put(indexName, index);
     }
     return map;
   }
@@ -135,7 +119,7 @@ public class MeiliSearchDestination extends DefaultSpecConnector implements Dest
         .anyMatch(actualIndexName -> actualIndexName.equals(indexName));
   }
 
-  private static CheckedBiConsumer<String, Stream<AirbyteRecordMessage>, Exception> recordWriterFunction(final Map<String, WriteConfig> indexNameToWriteConfig) {
+  private static CheckedBiConsumer<String, Stream<AirbyteRecordMessage>, Exception> recordWriterFunction(final Map<String, Index> indexNameToWriteConfig) {
     return (streamName, recordStream) -> {
       final String resolvedIndexName = getIndexName(streamName);
       if (!indexNameToWriteConfig.containsKey(resolvedIndexName)) {
@@ -144,8 +128,7 @@ public class MeiliSearchDestination extends DefaultSpecConnector implements Dest
                 indexNameToWriteConfig.keySet()));
       }
 
-      final Index index = indexNameToWriteConfig.get(resolvedIndexName).getIndex();
-      final PrimaryKey primaryKey = indexNameToWriteConfig.get(resolvedIndexName).getPrimaryKey();
+      final Index index = indexNameToWriteConfig.get(resolvedIndexName);
 
       // Only writes the data, not the full AirbyteRecordMessage. This is different from how database
       // destinations work. There is not really a viable way to "transform" data after it is MeiliSearch.
@@ -153,24 +136,7 @@ public class MeiliSearchDestination extends DefaultSpecConnector implements Dest
       // possible that does not require alteration.
       final String json = Jsons.serialize(recordStream
           .map(AirbyteRecordMessage::getData)
-          // MeiliSearch document ids can only have alphanumeric characters and _ (docs:
-          // https://docs.meilisearch.com/learn/core_concepts/documents.html#primary-field). thus, we create
-          // an "artificial" field where we take the contents of the field being used as the primary key and
-          // make it compatible with the MeiliSearch document id format.
-          .filter(o -> {
-            if (o.has(primaryKey.getOriginalKey())) {
-              return true;
-            } else {
-              LOGGER.warn("filtering record because it does not contain a primary key. stream: {} primary key: {} record: {}",
-                  streamName,
-                  primaryKey.getOriginalKey(),
-                  o);
-              return false;
-            }
-          })
-          .peek(o -> {
-            ((ObjectNode) o).put(primaryKey.getArtificialKey(), Names.toAlphanumericAndUnderscore(o.get(primaryKey.getOriginalKey()).asText()));
-          })
+          .peek(o -> ((ObjectNode) o).put(AB_PK_COLUMN, Names.toAlphanumericAndUnderscore(UUID.randomUUID().toString())))
           .collect(Collectors.toList()));
       final String s = index.addDocuments(json);
       LOGGER.info("add docs response {}", s);
@@ -184,34 +150,6 @@ public class MeiliSearchDestination extends DefaultSpecConnector implements Dest
       }
       LOGGER.info("waiting for update  to be applied completed {}", Instant.now());
     };
-  }
-
-  private static PrimaryKey getPrimaryKey(ConfiguredAirbyteStream stream) {
-    final ArrayList<String> fieldNames = new ArrayList<>(CatalogHelpers.getTopLevelFieldNames(stream));
-
-    Preconditions.checkState(!fieldNames.isEmpty(), "Cannot infer a primary key from a stream with no fields.");
-
-    // emulating the logic that MeiliSearch uses to infer ids:
-    // https://github.com/meilisearch/MeiliSearch/blob/master/meilisearch-http/src/routes/document.rs#L199-L206
-    for (String fieldName : fieldNames) {
-      if (fieldName.toLowerCase().contains("id")) {
-        LOGGER.info(
-            "For stream {}, inferred {} as the primary key. Any record for which this field is not present will not be uploaded into MeiliSearch.",
-            stream.getStream().getName(), fieldName);
-        return new PrimaryKey(fieldName, fieldNameToPkFieldName(fieldName));
-      }
-    }
-
-    // if cannot "intelligently" infer the id, just pick the first field.
-    final String fallbackPrimaryKey = fieldNames.get(0);
-    LOGGER.warn(
-        "Could not infer an id field for stream {}. Falling back on {}. Any record for which this field is not present will not be uploaded into MeiliSearch.",
-        stream.getStream().getName(), fallbackPrimaryKey);
-    return new PrimaryKey(fallbackPrimaryKey, fieldNameToPkFieldName(fallbackPrimaryKey));
-  }
-
-  private static String fieldNameToPkFieldName(String fieldName) {
-    return AB_PK_PREFIX + fieldName;
   }
 
   private static String getIndexName(String streamName) {
@@ -240,46 +178,6 @@ public class MeiliSearchDestination extends DefaultSpecConnector implements Dest
 
   static Client getClient(JsonNode config) {
     return new Client(new Config(config.get("host").asText(), config.has("api_key") ? config.get("api_key").asText() : null));
-  }
-
-  private static class WriteConfig {
-
-    private final Index index;
-    private final PrimaryKey primaryKey;
-
-    public WriteConfig(Index index, PrimaryKey primaryKey) {
-      this.index = index;
-      this.primaryKey = primaryKey;
-    }
-
-    public Index getIndex() {
-      return index;
-    }
-
-    public PrimaryKey getPrimaryKey() {
-      return primaryKey;
-    }
-
-  }
-
-  private static class PrimaryKey {
-
-    private final String originalKey;
-    private final String artificialKey;
-
-    public PrimaryKey(String originalKey, String artificialKey) {
-      this.originalKey = originalKey;
-      this.artificialKey = artificialKey;
-    }
-
-    public String getOriginalKey() {
-      return originalKey;
-    }
-
-    public String getArtificialKey() {
-      return artificialKey;
-    }
-
   }
 
   public static void main(String[] args) throws Exception {

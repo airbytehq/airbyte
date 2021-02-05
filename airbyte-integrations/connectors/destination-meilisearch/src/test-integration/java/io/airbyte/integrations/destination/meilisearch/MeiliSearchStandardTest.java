@@ -38,15 +38,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.ArgumentsProvider;
-import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -91,9 +83,7 @@ public class MeiliSearchStandardTest extends TestDestination {
     final String responseString = index.getDocuments();
     final JsonNode response = Jsons.deserialize(responseString);
     return MoreStreams.toStream(response.iterator())
-        .peek(r -> MoreStreams.toStream(r.fields()).map(Entry::getKey)
-            .filter(fieldName -> fieldName.startsWith("_ab_pk_"))
-            .findFirst().ifPresent(((ObjectNode) r)::remove))
+        .peek(r -> ((ObjectNode) r).remove(MeiliSearchDestination.AB_PK_COLUMN))
         .collect(Collectors.toList());
   }
 
@@ -115,34 +105,6 @@ public class MeiliSearchStandardTest extends TestDestination {
   @Override
   protected void tearDown(TestDestinationEnv testEnv) {
     genericContainer.stop();
-  }
-
-  protected static class MeiliSearchDataArgumentsProvider implements ArgumentsProvider {
-
-    @Override
-    public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
-      return Stream.of(
-          Arguments.of("exchange_rate_messages_for_meilisearch.txt", "exchange_rate_catalog.json"),
-          Arguments.of("edge_case_messages_for_meilisearch.txt", "edge_case_catalog_for_meilisearch.json"));
-    }
-
-  }
-
-  // override base test in TestDestination so that use records and catalogs that work with this
-  // destination. specifically that a primary key is needed.
-  @Override
-  @ParameterizedTest
-  @ArgumentsSource(MeiliSearchDataArgumentsProvider.class)
-  public void testSync(String messagesFilename, String catalogFilename) throws Exception {
-    super.testSync(messagesFilename, catalogFilename);
-  }
-
-  // override base test in TestDestination so that use records and catalogs that work with this
-  // destination. specifically that a primary key is needed.
-  @Test
-  @Override
-  public void testIncrementalSync() throws Exception {
-    super.testIncrementalSync("exchange_rate_messages_for_meilisearch.txt", "exchange_rate_catalog_for_meilisearch.json");
   }
 
 }
