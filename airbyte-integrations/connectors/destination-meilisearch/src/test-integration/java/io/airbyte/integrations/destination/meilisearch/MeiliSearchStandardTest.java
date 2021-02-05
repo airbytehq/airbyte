@@ -98,6 +98,8 @@ public class MeiliSearchStandardTest extends TestDestination {
     final String responseString = index.getDocuments();
     final JsonNode response = Jsons.deserialize(responseString);
     return MoreStreams.toStream(response.iterator())
+        // strip out the airbyte primary key because the test cases only expect the data, no the airbyte
+        // metadata column.
         .peek(r -> ((ObjectNode) r).remove(MeiliSearchDestination.AB_PK_COLUMN))
         .collect(Collectors.toList());
   }
