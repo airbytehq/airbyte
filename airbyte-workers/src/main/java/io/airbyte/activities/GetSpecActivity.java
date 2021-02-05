@@ -11,6 +11,6 @@ import java.nio.file.Path;
 @ActivityInterface
 public interface GetSpecActivity {
 
-    ConnectorSpecification run(String dockerImage) throws Exception;
+    ConnectorSpecification getSpec(String dockerImage) throws Exception;
 
 }

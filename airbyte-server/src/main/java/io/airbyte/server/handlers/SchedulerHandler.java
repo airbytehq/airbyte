@@ -44,6 +44,7 @@ import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.AirbyteProtocolConverters;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobOutput;
+import io.airbyte.config.Schema;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
@@ -52,6 +53,7 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.client.SchedulerJobClient;
@@ -61,7 +63,10 @@ import io.airbyte.server.converters.SchemaConverter;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workflows.AirbyteWorkflow;
 import io.temporal.client.WorkflowClient;
+import io.temporal.workflow.Workflow;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -73,6 +78,7 @@ public class SchedulerHandler {
   private final SpecFetcher specFetcher;
   private final ConfigurationUpdate configurationUpdate;
   private final JsonSchemaValidator jsonSchemaValidator;
+  private final WorkflowClient workflowClient;
 
   public SchedulerHandler(ConfigRepository configRepository, SchedulerJobClient schedulerJobClient, WorkflowClient workflowClient) {
     this(
@@ -80,7 +86,8 @@ public class SchedulerHandler {
         schedulerJobClient,
         new ConfigurationUpdate(configRepository, new SpecFetcher(workflowClient)),
         new JsonSchemaValidator(),
-        new SpecFetcher(workflowClient));
+        new SpecFetcher(workflowClient),
+            workflowClient);
   }
 
   @VisibleForTesting
@@ -88,12 +95,14 @@ public class SchedulerHandler {
                    SchedulerJobClient schedulerJobClient,
                    ConfigurationUpdate configurationUpdate,
                    JsonSchemaValidator jsonSchemaValidator,
-                   SpecFetcher specFetcher) {
+                   SpecFetcher specFetcher,
+                   WorkflowClient workflowClient) {
     this.configRepository = configRepository;
     this.schedulerJobClient = schedulerJobClient;
     this.configurationUpdate = configurationUpdate;
     this.jsonSchemaValidator = jsonSchemaValidator;
     this.specFetcher = specFetcher;
+    this.workflowClient = workflowClient;
   }
 
   public CheckConnectionRead checkSourceConnectionFromSourceId(SourceIdRequestBody sourceIdRequestBody)
@@ -171,9 +180,16 @@ public class SchedulerHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final SourceConnection source = configRepository.getSourceConnection(sourceIdRequestBody.getSourceId());
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(source.getSourceDefinitionId());
-    final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
-    final Job job = schedulerJobClient.createDiscoverSchemaJob(source, imageName);
-    return discoverJobToOutput(job);
+    final String dockerImage = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
+
+    final AirbyteWorkflow workflow = WorkerUtils.getWorkflow(workflowClient, "discover-schema-" + dockerImage);
+    final AirbyteCatalog catalog = workflow.discoverCatalog(dockerImage, source.getConfiguration());
+    final Schema schema = AirbyteProtocolConverters.toSchema(catalog);
+    return  new SourceDiscoverSchemaRead()
+            .jobInfo(JobConverter.getJobInfoRead(job))
+            .schema(SchemaConverter.toApiSchema(schema));
+
+    // todo: handle error cases like discoverJobToOutput(job);
   }
 
   public SourceDiscoverSchemaRead discoverSchemaForSourceFromSourceCreate(SourceCoreConfig sourceCreate)

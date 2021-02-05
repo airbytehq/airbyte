@@ -1,14 +1,18 @@
 package io.airbyte.workflows;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.activities.DiscoverCatalogActivity;
 import io.airbyte.activities.GetSpecActivity;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.StandardGetSpecOutput;
+import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.workers.OutputAndStatus;
 import io.temporal.activity.ActivityOptions;
 import io.temporal.common.RetryOptions;
 import io.temporal.workflow.Workflow;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Optional;
@@ -32,10 +36,16 @@ public class AirbyteWorkflowImpl implements AirbyteWorkflow {
             .build();
 
     // activities should NOT BE STATIC - you get some really weird errors if you do
-    private final GetSpecActivity account = Workflow.newActivityStub(GetSpecActivity.class, OPTIONS);
+    private final GetSpecActivity getSpecActivity = Workflow.newActivityStub(GetSpecActivity.class, OPTIONS);
+    private final DiscoverCatalogActivity discoverCatalogActivity = Workflow.newActivityStub(DiscoverCatalogActivity.class, OPTIONS);
 
     @Override
     public ConnectorSpecification getSpec(String dockerImage) throws Exception {
-        return account.run(dockerImage);
+        return getSpecActivity.getSpec(dockerImage);
+    }
+
+    @Override
+    public AirbyteCatalog discoverCatalog(String dockerImage, JsonNode connectionConfig) throws IOException {
+        return discoverCatalogActivity.discoverCatalog(dockerImage, connectionConfig);
     }
 }
