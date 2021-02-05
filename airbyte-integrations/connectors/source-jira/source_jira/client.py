@@ -75,7 +75,7 @@ class Client(BaseClient):
         error_msg = None
 
         try:
-            next(self.lists(name="resolutions", **ENTITIES_MAP["resolutions"]))
+            next(self.lists(name="issue_resolutions", **ENTITIES_MAP["issue_resolutions"]))
 
         except ConnectionError as error:
             alive, error_msg = False, str(error)
