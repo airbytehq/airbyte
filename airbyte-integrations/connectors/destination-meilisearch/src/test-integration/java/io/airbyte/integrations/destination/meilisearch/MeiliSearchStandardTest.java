@@ -46,14 +46,34 @@ public class MeiliSearchStandardTest extends TestDestination {
 
   private static final Integer DEFAULT_MEILI_SEARCH_PORT = 7700;
   private static final Integer EXPOSED_PORT = 7701;
-  // calling localhost from within a docker container on mac.
-  private static final String HOST = "http://host.docker.internal:" + EXPOSED_PORT;
-  // calling localhost.
-  private static final String LOCAL_HOST = "http://localhost:" + EXPOSED_PORT;
+
   private static final String API_KEY = "masterKey";
 
   private Client meiliSearchClient;
   private GenericContainer<?> genericContainer;
+  private JsonNode config;
+
+  @Override
+  protected void setup(TestDestinationEnv testEnv) throws IOException {
+    final Path meiliSearchDataDir = Files.createTempDirectory(Path.of("/tmp"), "meilisearch-integration-test");
+    meiliSearchDataDir.toFile().deleteOnExit();
+
+    genericContainer = new GenericContainer<>(DockerImageName.parse("getmeili/meilisearch:latest"))
+        .withFileSystemBind(meiliSearchDataDir.toString(), "/data.ms");
+    genericContainer.setPortBindings(ImmutableList.of(EXPOSED_PORT + ":" + DEFAULT_MEILI_SEARCH_PORT));
+    genericContainer.start();
+
+    config = Jsons.jsonNode(ImmutableMap.builder()
+        .put("host", String.format("http://%s:%s", genericContainer.getHost(), EXPOSED_PORT))
+        .put("api_key", API_KEY)
+        .build());
+    meiliSearchClient = MeiliSearchDestination.getClient(config);
+  }
+
+  @Override
+  protected void tearDown(TestDestinationEnv testEnv) {
+    genericContainer.stop();
+  }
 
   @Override
   protected String getImageName() {
@@ -62,12 +82,7 @@ public class MeiliSearchStandardTest extends TestDestination {
 
   @Override
   protected JsonNode getConfig() {
-    final JsonNode jsonNode = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", HOST)
-        .put("api_key", API_KEY)
-        .build());
-    System.out.println("jsonNode = " + jsonNode);
-    return jsonNode;
+    return config;
   }
 
   @Override
@@ -85,26 +100,6 @@ public class MeiliSearchStandardTest extends TestDestination {
     return MoreStreams.toStream(response.iterator())
         .peek(r -> ((ObjectNode) r).remove(MeiliSearchDestination.AB_PK_COLUMN))
         .collect(Collectors.toList());
-  }
-
-  @Override
-  protected void setup(TestDestinationEnv testEnv) throws IOException {
-    final Path meiliSearchDataDir = Files.createTempDirectory(Path.of("/tmp"), "meilisearch-integration-test");
-    meiliSearchDataDir.toFile().deleteOnExit();
-
-    genericContainer = new GenericContainer<>(DockerImageName.parse("getmeili/meilisearch:latest"))
-        .withFileSystemBind(meiliSearchDataDir.toString(), "/data.ms");
-    genericContainer.setPortBindings(ImmutableList.of(EXPOSED_PORT + ":" + DEFAULT_MEILI_SEARCH_PORT));
-    genericContainer.start();
-
-    final JsonNode localHostConfig = Jsons.clone(getConfig());
-    ((ObjectNode) localHostConfig).put("host", LOCAL_HOST);
-    meiliSearchClient = MeiliSearchDestination.getClient(localHostConfig);
-  }
-
-  @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
-    genericContainer.stop();
   }
 
 }
