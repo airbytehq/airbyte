@@ -11,9 +11,9 @@
         "type": "string",
         "description": "<a href=\"https://developer.apple.com/documentation/appstoreconnectapi/creating_api_keys_for_app_store_connect_api\">Key_id</a> is the API key you use to connect to appstore's API."
       },
-      "key_file": {
+      "private_key": {
         "type": "string",
-        "description": "<a href=\"https://developer.apple.com/documentation/appstoreconnectapi/creating_api_keys_for_app_store_connect_api\">Key_file</a> is the key file you use to connect to appstore's API."
+        "description": "Private_key is the contents of the <a href=\"https://developer.apple.com/documentation/appstoreconnectapi/creating_api_keys_for_app_store_connect_api\">key file</a> you use to connect to appstore's API."
       },
       "issuer_id": {
         "type": "string",
@@ -25,7 +25,7 @@
       },
       "start_date": {
         "type": "string",
-        "description": "date from which to start pulling data",
+        "description": "date from which to start pulling data (example: 2020-11-16T00:00:00Z)",
         "examples": ["2020-11-16T00:00:00Z"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
       }
