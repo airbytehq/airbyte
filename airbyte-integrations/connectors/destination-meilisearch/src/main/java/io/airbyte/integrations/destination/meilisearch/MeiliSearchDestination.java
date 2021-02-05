@@ -86,6 +86,22 @@ public class MeiliSearchDestination extends DefaultSpecConnector implements Dest
   public static final String AB_PK_COLUMN = "_ab_pk";
 
   @Override
+  public AirbyteConnectionStatus check(JsonNode config) {
+    try {
+      LOGGER.info("config in check {}", config);
+      // create a fake index and add a record to it to make sure we can connect and have write access.
+      final Client client = getClient(config);
+      final Index index = client.index("_airbyte");
+      index.addDocuments("[{\"id\": \"_airbyte\" }]");
+      index.search("_airbyte");
+      return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
+    } catch (Exception e) {
+      LOGGER.error("Check connection failed.", e);
+      return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage("Check connection failed: " + e.getMessage());
+    }
+  }
+
+  @Override
   public DestinationConsumer<AirbyteMessage> write(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
     final Client client = getClient(config);
     final Map<String, Index> indexNameToIndex = createIndices(catalog, client);
@@ -158,22 +174,6 @@ public class MeiliSearchDestination extends DefaultSpecConnector implements Dest
 
   private static String getIndexName(ConfiguredAirbyteStream stream) {
     return getIndexName(stream.getStream().getName());
-  }
-
-  @Override
-  public AirbyteConnectionStatus check(JsonNode config) {
-    try {
-      LOGGER.info("config in check {}", config);
-      // create a fake index and add a record to it to make sure we can connect and have write access.
-      final Client client = getClient(config);
-      final Index index = client.index("_airbyte");
-      index.addDocuments("[{\"id\": \"_airbyte\" }]");
-      index.search("_airbyte");
-      return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
-    } catch (Exception e) {
-      LOGGER.error("Check connection failed.", e);
-      return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage("Check connection failed: " + e.getMessage());
-    }
   }
 
   static Client getClient(JsonNode config) {
