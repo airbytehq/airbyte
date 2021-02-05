@@ -31,6 +31,8 @@ from base_python import BaseClient
 from requests.auth import HTTPBasicAuth
 from requests.exceptions import ConnectionError
 
+from .entities import ENTITIES_MAP
+
 
 class Client(BaseClient):
     """
@@ -38,115 +40,6 @@ class Client(BaseClient):
     """
 
     API_VERSION = 3
-
-    ENTITIES_MAP = {
-        "application_roles": {"url": "/applicationrole", "func": lambda v: v, "params": {}},
-        "avatars": {"func": lambda v: v["system"], "params": {}},
-        "dashboards": {"url": "/dashboard", "func": lambda v: v["dashboards"], "params": {}},
-        "filters": {"url": "/filter/search", "func": lambda v: v["values"], "params": {}},
-        "filter_sharing": {"func": lambda v: v, "params": {}},
-        "groups": {"url": "/groups/picker", "func": lambda v: v["groups"], "params": {}},
-        "issues": {
-            "url": "/search",
-            "func": lambda v: v["issues"],
-            "params": {**{"fields": ["attachment", "issuelinks", "security", "issuetype"]}},
-        },
-        "issue_comments": {"func": lambda v: v["comments"], "params": {}},
-        "issue_fields": {"url": "/field", "func": lambda v: v, "params": {}},
-        "issue_field_configurations": {"url": "/fieldconfiguration", "func": lambda v: v["values"], "params": {}},
-        "issue_custom_field_contexts": {"func": lambda v: v["values"], "params": {}},
-        "issue_link_types": {"url": "/issueLinkType", "func": lambda v: v["issueLinkTypes"], "params": {}},
-        "issue_navigator_settings": {"url": "/settings/columns", "func": lambda v: v, "params": {}},
-        "issue_notification_schemes": {"url": "/notificationscheme", "func": lambda v: v["values"], "params": {}},
-        "issue_priorities": {"url": "/priority", "func": lambda v: v, "params": {}},
-        "issue_properties": {"func": lambda v: v["keys"], "params": {}},
-        "issue_remote_links": {"func": lambda v: v, "params": {}},
-        "issue_resolutions": {"url": "/resolution", "func": lambda v: v, "params": {}},
-        "issue_security_schemes": {"url": "/issuesecurityschemes", "func": lambda v: v["issueSecuritySchemes"], "params": {}},
-        "issue_type_schemes": {"url": "/issuetypescheme", "func": lambda v: v["values"], "params": {}},
-        "issue_type_screen_schemes": {"url": "/issuetypescreenscheme", "func": lambda v: v["values"], "params": {}},
-        "issue_votes": {"func": lambda v: v["voters"], "params": {}},
-        "issue_watchers": {"func": lambda v: v["watchers"], "params": {}},
-        "issue_worklogs": {"func": lambda v: v["worklogs"], "params": {}},
-        "jira_settings": {"url": "/application-properties", "func": lambda v: v, "params": {}},
-        "jql": {
-            "url": "/jql/autocompletedata",
-            "func": lambda v: [
-                v,
-            ],
-            "params": {},
-        },
-        "labels": {
-            "url": "/label",
-            "func": lambda v: [
-                {"labels": v["values"]},
-            ],
-            "params": {},
-        },
-        "permissions": {
-            "url": "/permissions",
-            "func": lambda v: [
-                v,
-            ],
-            "params": {},
-        },
-        "permission_schemes": {
-            "url": "/permissions",
-            "func": lambda v: [
-                v,
-            ],
-            "params": {},
-        },
-        "projects": {"url": "/project/search", "func": lambda v: v["values"], "params": {}},
-        "project_avatars": {
-            "func": lambda v: [
-                v,
-            ],
-            "params": {},
-        },
-        "project_categories": {"url": "/projectCategory", "func": lambda v: v, "params": {}},
-        "project_components": {"func": lambda v: v["values"], "params": {}},
-        "project_email": {
-            "func": lambda v: [
-                v,
-            ],
-            "params": {},
-        },
-        "project_permission_schemes": {
-            "func": lambda v: [
-                v,
-            ],
-            "params": {},
-        },
-        "project_types": {"url": "/project/type", "func": lambda v: v, "params": {}},
-        "project_versions": {"func": lambda v: v["values"], "params": {}},
-        "screens": {"url": "/screens", "func": lambda v: v["values"], "params": {}},
-        "screen_tabs": {"func": lambda v: v, "params": {}},
-        "screen_tab_fields": {"func": lambda v: v, "params": {}},
-        "screen_schemes": {"url": "/screenscheme", "func": lambda v: v["values"], "params": {}},
-        "server_info": {
-            "url": "/serverInfo",
-            "func": lambda v: [
-                v,
-            ],
-            "params": {},
-        },
-        "time_tracking": {"url": "/configuration/timetracking/list", "func": lambda v: v, "params": {}},
-        "users": {"url": "/users/search", "func": lambda v: v, "params": {}},
-        "workflows": {"url": "/workflow/search", "func": lambda v: v["values"], "params": {}},
-        "workflow_transition_rules": {"url": "/workflow/search", "func": lambda v: v["values"], "params": {}},
-        "workflow_schemes": {"url": "/workflowscheme", "func": lambda v: v["values"], "params": {}},
-        "workflow_scheme_project_associations": {
-            "url": "/workflowscheme/project",
-            "func": lambda v: [
-                v["values"],
-            ],
-            "params": {},
-        },
-        "workflow_scheme_drafts": {"func": lambda v: v, "params": {}},
-        "workflow_statuses": {"url": "/status", "func": lambda v: v, "params": {}},
-        "workflow_status_categories": {"url": "/statuscategory", "func": lambda v: v, "params": {}},
-    }
 
     def __init__(self, api_token, domain, email):
         self.auth = HTTPBasicAuth(email, api_token)
@@ -172,7 +65,7 @@ class Client(BaseClient):
 
     def _enumerate_methods(self) -> Mapping[str, callable]:
         mapping = super(Client, self)._enumerate_methods()
-        for entity, value in self.ENTITIES_MAP.items():
+        for entity, value in ENTITIES_MAP.items():
             if entity not in mapping:
                 mapping[entity] = partial(self.lists, name=entity, **value)
         return mapping
@@ -182,7 +75,7 @@ class Client(BaseClient):
         error_msg = None
 
         try:
-            next(self.lists(name="resolutions", **self.ENTITIES_MAP["resolutions"]))
+            next(self.lists(name="resolutions", **ENTITIES_MAP["resolutions"]))
 
         except ConnectionError as error:
             alive, error_msg = False, str(error)
@@ -197,7 +90,7 @@ class Client(BaseClient):
 
     def _get_issue_keys(self):
         if not self._issue_keys:
-            issues_configs = self.ENTITIES_MAP.get("issues")
+            issues_configs = ENTITIES_MAP.get("issues")
             issues_configs["params"] = {}
             for issue in self.lists(name="issues", **issues_configs):
                 self._issue_keys.append({"id": issue.get("id"), "key": issue.get("key")})
@@ -205,13 +98,13 @@ class Client(BaseClient):
 
     def _get_project_keys(self):
         if not self._project_keys:
-            for project in self.lists(name="projects", **self.ENTITIES_MAP.get("projects")):
+            for project in self.lists(name="projects", **ENTITIES_MAP.get("projects")):
                 self._project_keys.append({"id": project.get("id"), "key": project.get("key")})
         return self._project_keys
 
     def _get_workflow_scheme_keys(self):
         if not self._workflow_scheme_keys:
-            for workflow in self.lists(name="workflow_schemes", **self.ENTITIES_MAP.get("workflow_schemes")):
+            for workflow in self.lists(name="workflow_schemes", **ENTITIES_MAP.get("workflow_schemes")):
                 self._workflow_scheme_keys.append(
                     {
                         "id": workflow.get("id"),
@@ -220,20 +113,28 @@ class Client(BaseClient):
         return self._workflow_scheme_keys
 
     def _get_custom_fields(self):
-        for field in self.lists(name="issue_fields", **self.ENTITIES_MAP.get("issue_fields")):
+        for field in self.lists(name="issue_fields", **ENTITIES_MAP.get("issue_fields")):
             if field.get("custom"):
                 yield field
 
+    def _get_projects_related(self, name, url_name="", query_param="key"):
+        url_name = url_name or name
+        project_keys = self._get_project_keys()
+        for project_key in project_keys:
+            query_value = project_key.get(query_param)
+            for item in self.lists(name=f"project_{name}", url=f"/project/{query_value}/{url_name}", **ENTITIES_MAP.get(f"project_{name}")):
+                yield item
+
     def stream__avatars(self, fields):
         avatar_types = ("issuetype", "project", "user")
-        avatar_configs = self.ENTITIES_MAP.get("avatars")
+        avatar_configs = ENTITIES_MAP.get("avatars")
         for avatar_type in avatar_types:
             for data in self.lists(name="avatars", url=f"/avatar/{avatar_type}/system", **avatar_configs):
                 yield data
 
     def stream__filter_sharing(self, fields):
-        filter_sharing_configs = self.ENTITIES_MAP.get("filter_sharing")
-        for filter_item in self.lists(name="filters", **self.ENTITIES_MAP.get("filters")):
+        filter_sharing_configs = ENTITIES_MAP.get("filter_sharing")
+        for filter_item in self.lists(name="filters", **ENTITIES_MAP.get("filters")):
             filter_item_id = filter_item.get("id")
             for permission in self.lists(name="filter_sharing", url=f"/filter/{filter_item_id}/permission", **filter_sharing_configs):
                 yield permission
@@ -242,7 +143,7 @@ class Client(BaseClient):
         issue_keys = self._get_issue_keys()
         for item in issue_keys:
             issue_key = item.get("key")
-            for comment in self.lists(name="issue_comments", url=f"/issue/{issue_key}/comment", **self.ENTITIES_MAP.get("issue_comments")):
+            for comment in self.lists(name="issue_comments", url=f"/issue/{issue_key}/comment", **ENTITIES_MAP.get("issue_comments")):
                 yield comment
 
     def stream__issue_custom_field_contexts(self, fields):
@@ -250,7 +151,7 @@ class Client(BaseClient):
             for context in self.lists(
                 name="issue_custom_field_contexts",
                 url=f"/field/{field.get('id')}/context",
-                **self.ENTITIES_MAP.get("issue_custom_field_contexts"),
+                **ENTITIES_MAP.get("issue_custom_field_contexts"),
             ):
                 yield context
 
@@ -265,7 +166,7 @@ class Client(BaseClient):
                 for issue_property in self.lists(
                     name="issue_properties",
                     url=f"/issue/{issue_key}/properties/{issue_property_key}",
-                    **self.ENTITIES_MAP.get("issue_properties"),
+                    **ENTITIES_MAP.get("issue_properties"),
                 ):
                     yield issue_property
 
@@ -274,7 +175,7 @@ class Client(BaseClient):
         for item in issue_keys:
             issue_key = item.get("key")
             for comment in self.lists(
-                name="issue_remote_links", url=f"/issue/{issue_key}/remotelink", **self.ENTITIES_MAP.get("issue_remote_links")
+                name="issue_remote_links", url=f"/issue/{issue_key}/remotelink", **ENTITIES_MAP.get("issue_remote_links")
             ):
                 yield comment
 
@@ -282,32 +183,22 @@ class Client(BaseClient):
         issue_keys = self._get_issue_keys()
         for item in issue_keys:
             issue_key = item.get("key")
-            for voter in self.lists(name="issue_votes", url=f"/issue/{issue_key}/votes", **self.ENTITIES_MAP.get("issue_votes")):
+            for voter in self.lists(name="issue_votes", url=f"/issue/{issue_key}/votes", **ENTITIES_MAP.get("issue_votes")):
                 yield voter
 
     def stream__issue_watchers(self, fields):
         issue_keys = self._get_issue_keys()
         for item in issue_keys:
             issue_key = item.get("key")
-            for watcher in self.lists(name="issue_watchers", url=f"/issue/{issue_key}/watchers", **self.ENTITIES_MAP.get("issue_watchers")):
+            for watcher in self.lists(name="issue_watchers", url=f"/issue/{issue_key}/watchers", **ENTITIES_MAP.get("issue_watchers")):
                 yield watcher
 
     def stream__issue_worklogs(self, fields):
         issue_keys = self._get_issue_keys()
         for item in issue_keys:
             issue_key = item.get("key")
-            for worklog in self.lists(name="issue_watchers", url=f"/issue/{issue_key}/worklog", **self.ENTITIES_MAP.get("issue_worklogs")):
+            for worklog in self.lists(name="issue_watchers", url=f"/issue/{issue_key}/worklog", **ENTITIES_MAP.get("issue_worklogs")):
                 yield worklog
-
-    def _get_projects_related(self, name, url_name="", query_param="key"):
-        url_name = url_name or name
-        project_keys = self._get_project_keys()
-        for project_key in project_keys:
-            query_value = project_key.get(query_param)
-            for item in self.lists(
-                name=f"project_{name}", url=f"/project/{query_value}/{url_name}", **self.ENTITIES_MAP.get(f"project_{name}")
-            ):
-                yield item
 
     def stream__project_avatars(self, fields):
         for avatar in self._get_projects_related("avatars"):
@@ -330,19 +221,19 @@ class Client(BaseClient):
             yield version
 
     def stream__screen_tabs(self, fields):
-        for screen in self.lists(name="screens", **self.ENTITIES_MAP.get("screens")):
+        for screen in self.lists(name="screens", **ENTITIES_MAP.get("screens")):
             screen_id = screen.get("id")
-            for tab in self.lists(name="screen_tabs", url=f"/screens/{screen_id}/tabs", **self.ENTITIES_MAP.get("screen_tabs")):
+            for tab in self.lists(name="screen_tabs", url=f"/screens/{screen_id}/tabs", **ENTITIES_MAP.get("screen_tabs")):
                 yield tab
 
     def stream__screen_tab_fields(self, fields):
-        for screen in self.lists(name="screens", **self.ENTITIES_MAP.get("screens")):
+        for screen in self.lists(name="screens", **ENTITIES_MAP.get("screens")):
             screen_id = screen.get("id")
-            for tab in self.lists(name="screen_tabs", url=f"/screens/{screen_id}/tabs", **self.ENTITIES_MAP.get("screen_tabs")):
+            for tab in self.lists(name="screen_tabs", url=f"/screens/{screen_id}/tabs", **ENTITIES_MAP.get("screen_tabs")):
                 for field in self.lists(
                     name="screen_tab_fields",
                     url=f"/screens/{screen_id}/tabs/{tab.get('id')}/fields",
-                    **self.ENTITIES_MAP.get("screen_tab_fields"),
+                    **ENTITIES_MAP.get("screen_tab_fields"),
                 ):
                     yield field
 
@@ -350,7 +241,7 @@ class Client(BaseClient):
         project_keys = self._get_project_keys()
         for project_key in project_keys:
             project_id = project_key.get("id")
-            configs = self.ENTITIES_MAP.get("workflow_scheme_project_associations")
+            configs = ENTITIES_MAP.get("workflow_scheme_project_associations")
             configs["params"] = {"projectId": project_id}
             for item in self.lists(name="workflow_scheme_project_associations", **configs):
                 return item
@@ -360,6 +251,6 @@ class Client(BaseClient):
         for workflow_key in workflow_keys:
             workflow_id = workflow_key.get("id")
             for draft in self.lists(
-                name="workflow_scheme_drafts", url=f"/workflowscheme/{workflow_id}/draft", **self.ENTITIES_MAP.get("workflow_scheme_drafts")
+                name="workflow_scheme_drafts", url=f"/workflowscheme/{workflow_id}/draft", **ENTITIES_MAP.get("workflow_scheme_drafts")
             ):
                 yield draft
