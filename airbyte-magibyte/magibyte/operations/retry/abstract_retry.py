@@ -1,2 +1,0 @@
-class AbstractRetry(object):
-    pass

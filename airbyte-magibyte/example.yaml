@@ -12,48 +12,78 @@ defaults:
       secret1: ${config.oauth.secret1}
       secret2: ${config.oauth.secret2}
 
-config:
-  # simple json/yaml schema
+info:
+  name: Exchange Rate API
+  documentation_url: "https://docs.airbyte.io/integrations/sources/exchangeratesapi-io"
+  maturity: certified
 
-resources:
+config: # Spec YAML or JSON schema
+  type: object
+  required:
+  - start_date
+  - base
+  properties:
+    start_date:
+      type: string
+      description: Getting data starting from that date.
+      examples:
+      - YYYY-MM-DD
+    base:
+      type: string
+      description: >-
+        ISO reference currency.
+        See <a href="https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html">here</a>.
+      examples:
+      - USD
+  additionalProperties: false
+
+streams:
   name_1:
-    request:
+    var:
+      name: name_1
+
+    schema:
+      strategy: magibyte.operations.schema.StaticSchema
+      options:
+        value:
+          title: 'Name 1'
+          description: 'A resource named name_1'
+          type: object
+
+    state:
+      # can come from data element, can come from data response, can come from external system, can come from local system
+      strategy: magibyte.operations.state.
+    extract:
       strategy: http
       options:
-        base_url: https://{config.account_id}.service.io/api/name_1
-        method: GET # get could be the default but we expose it for POST type of queries
-    decoder:
-      strategy: JSON # XML, CUSTOM, CSV
-      options:
-    auth:
-      strategy: API_KEY
-      options:
-        location: HEADER
-        name: X-API-KEY
-        value: ${config.api_key}
-    pagination:
-      strategy: NEXT_TOKEN
-      options:
-        location: ${previous_request.body.nextToken}
-        end_value: null
-    state:
-
-      # strategy: CONDITION
-      #   options:
-      #     path: ${previous_request.body.hasMore}
-      #     end_value: false
-      # increment page and compare against size or empty
-      # sql type iteration
-
-
-    retry:
-      strategy: EXPONENTIAL # EXPONENTIAL, FIBONACCI, FIXED, LINEAR, POLYNOMIAL, CUSTOM
-      options:
-        max_wait: 300
-    schema:
-      # simple json/yaml schema
-      # default to json blob
-
-
-
-
+        auth:
+          strategy: API_KEY
+          options:
+            location: HEADER
+            name: X-API-KEY
+            value: ${config.api_key}
+        pagination:
+          strategy: DATE
+          options:
+            start_date:
+            end_date:
+            step: 1d
+            inclusive: true
+        request:
+          strategy: http
+          options:
+            base_url: https://{config.account_id}.service.io/api/{var.name}
+            method: GET # get could be the default but we expose it for POST type of queries
+        decoder:
+          strategy: JSON # XML, CUSTOM, CSV
+          options:
+        retry:
+          strategy: EXPONENTIAL # EXPONENTIAL, FIBONACCI, FIXED, LINEAR, POLYNOMIAL, CUSTOM
+          options:
+            max_wait: 300
+          # strategy: CONDITION
+          #   options:
+          #     path: ${previous_request.body.hasMore}
+          #     end_value: false
+          # increment page and compare against size or empty
+          # sql type iteration
