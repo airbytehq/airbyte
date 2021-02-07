@@ -29,9 +29,9 @@ We prioritize **progress over perfection**. We are thankful towards errors of ac
 We should **never pull rank**. If you have to remind someone of your position, you're doing something wrong. Explain the reasons for your decision, and respect everyone irrespective of their function.
 
 We **leverage our time**, and we enable others to leverage their time:
-- We stay away from low impact tasks. If they exist we question their existence, and we automate them or externalize them. 
-- We are never a blocker: respond to ALL communications (internal or external) within 12h.
-- We stay critical about past decisions and existing processes ("Is this meeting really useful?") 
+- We stay away from low impact tasks. If they exist, we question their existence, and we kill them, we automate them or we externalize them. 
+- We are never a blocker. We respond to ALL communications (internal or external) within 12h.
+- We stay critical about past decisions and existing processes ("Is this meeting really useful?") .
 
 ## **Being Intentional and Owning the Outcome**
 
