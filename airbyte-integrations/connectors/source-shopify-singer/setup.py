@@ -30,7 +30,7 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=["airbyte-protocol", "ShopifyAPI==8.0.4"],
+    install_requires=["airbyte-protocol", "ShopifyAPI==8.2.0"],
     package_data={"": ["*.json"]},
     setup_requires=["pytest-runner"],
     tests_require=["pytest"],
