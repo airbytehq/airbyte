@@ -57,7 +57,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * <p>
- * This is our first destination that is not a relational database. It therefore makes some slightly
+ * Since this is not a relational database, it therefore makes some slightly different
  * choices. The main difference that we need to reckon with is that this destination does not work
  * without a primary key for each stream. That primary key needs to be defined ahead of time. Only
  * records for which that primary key is present can be uploaded. There are also some rules around
