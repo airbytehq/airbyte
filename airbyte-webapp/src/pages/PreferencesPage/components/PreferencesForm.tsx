@@ -146,7 +146,7 @@ const PreferencesForm: React.FC<IProps> = ({ onSubmit }) => {
                   disabled={!values.email}
                   label={<FormattedMessage id="preferences.featureUpdates" />}
                   message={
-                    <FormattedMessage id="preferences.unsubcribeAnyTime" />
+                    <FormattedMessage id="preferences.unsubscribeAnyTime" />
                   }
                 />
               )}

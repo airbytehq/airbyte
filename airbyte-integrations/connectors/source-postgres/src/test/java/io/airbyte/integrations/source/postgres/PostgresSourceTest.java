@@ -32,6 +32,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -49,7 +50,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
@@ -153,28 +153,25 @@ class PostgresSourceTest {
         });
       }
 
-      Set<AirbyteMessage> actualMessages = new PostgresSource().read(config, CONFIGURED_CATALOG, null).collect(Collectors.toSet());
-
-      for (AirbyteMessage actualMessage : actualMessages) {
-        if (actualMessage.getRecord() != null) {
-          actualMessage.getRecord().setEmittedAt(null);
-        }
-      }
+      final Set<AirbyteMessage> actualMessages = MoreIterators.toSet(new PostgresSource().read(config, CONFIGURED_CATALOG, null));
+      setEmittedAtToNull(actualMessages);
 
       assertEquals(UTF8_MESSAGES, actualMessages);
     }
   }
 
+  private static void setEmittedAtToNull(Iterable<AirbyteMessage> messages) {
+    for (AirbyteMessage actualMessage : messages) {
+      if (actualMessage.getRecord() != null) {
+        actualMessage.getRecord().setEmittedAt(null);
+      }
+    }
+  }
+
   @Test
   void testReadSuccess() throws Exception {
-    final Set<AirbyteMessage> actualMessages =
-        new PostgresSource().read(getConfig(PSQL_DB, dbName), CONFIGURED_CATALOG, null).collect(Collectors.toSet());
-
-    actualMessages.forEach(r -> {
-      if (r.getRecord() != null) {
-        r.getRecord().setEmittedAt(null);
-      }
-    });
+    final Set<AirbyteMessage> actualMessages = MoreIterators.toSet(new PostgresSource().read(getConfig(PSQL_DB, dbName), CONFIGURED_CATALOG, null));
+    setEmittedAtToNull(actualMessages);
 
     assertEquals(ASCII_MESSAGES, actualMessages);
   }

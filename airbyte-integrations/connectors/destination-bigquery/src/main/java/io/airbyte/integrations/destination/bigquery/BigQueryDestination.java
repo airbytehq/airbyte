@@ -58,7 +58,6 @@ import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
@@ -183,11 +182,6 @@ public class BigQueryDestination implements Destination {
     }
   }
 
-  @Override
-  public NamingConventionTransformer getNamingTransformer() {
-    return namingResolver;
-  }
-
   /**
    * Strategy:
    * <p>
@@ -220,9 +214,9 @@ public class BigQueryDestination implements Destination {
     // create tmp tables if not exist
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getStream().getName();
-      final String schemaName = getNamingTransformer().getIdentifier(datasetId);
-      final String tableName = getNamingTransformer().getRawTableName(streamName);
-      final String tmpTableName = getNamingTransformer().getTmpTableName(streamName);
+      final String schemaName = namingResolver.getIdentifier(datasetId);
+      final String tableName = namingResolver.getRawTableName(streamName);
+      final String tmpTableName = namingResolver.getTmpTableName(streamName);
       if (!schemaSet.contains(schemaName)) {
         createSchemaTable(bigquery, schemaName);
         schemaSet.add(schemaName);
@@ -322,7 +316,7 @@ public class BigQueryDestination implements Destination {
         // Bigquery represents TIMESTAMP to the microsecond precision, so we convert to microseconds then
         // use BQ helpers to string-format correctly.
         long emittedAtMicroseconds = TimeUnit.MICROSECONDS.convert(message.getRecord().getEmittedAt(), TimeUnit.MILLISECONDS);
-        String formattedEmittedAt = QueryParameterValue.timestamp(emittedAtMicroseconds).getValue();
+        final String formattedEmittedAt = QueryParameterValue.timestamp(emittedAtMicroseconds).getValue();
 
         final JsonNode data = Jsons.jsonNode(ImmutableMap.of(
             JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString(),

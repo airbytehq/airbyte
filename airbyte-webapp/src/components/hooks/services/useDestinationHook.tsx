@@ -36,7 +36,7 @@ export const useDestinationDefinitionSpecificationLoad = (
       ? {
           destinationDefinitionId
         }
-      : undefined
+      : null
   );
 
   return { destinationDefinitionSpecification, error, isLoading };
@@ -133,16 +133,15 @@ const useDestination = () => {
 
   const updateDestination = async ({
     values,
-    destinationId,
-    destinationDefinitionId
+    destinationId
   }: {
     values: ValuesProps;
     destinationId: string;
-    destinationDefinitionId: string;
   }) => {
     await destinationCheckConnectionShape({
-      destinationDefinitionId,
-      connectionConfiguration: values.connectionConfiguration
+      connectionConfiguration: values.connectionConfiguration,
+      name: values.name,
+      destinationId
     });
 
     return await updatedestination(

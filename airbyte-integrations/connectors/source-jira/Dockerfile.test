@@ -6,7 +6,7 @@ ENV CODE_PATH="integration_tests"
 ENV AIRBYTE_TEST_MODULE="integration_tests"
 ENV AIRBYTE_TEST_PATH="SourceJiraStandardTest"
 
-LABEL io.airbyte.version=0.1.0
+LABEL io.airbyte.version=0.1.1
 LABEL io.airbyte.name=airbyte/source-jira-standard-test
 
 WORKDIR /airbyte/integration_code

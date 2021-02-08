@@ -1,3 +1,5 @@
+import ru.vyarus.gradle.plugin.python.task.PythonTask
+
 plugins {
     id 'airbyte-python'
     id 'airbyte-docker'
@@ -7,6 +9,13 @@ plugins {
 airbytePython {
     moduleDirectory 'source_file'
 }
+
+task("customIntegrationTestPython", type: PythonTask, dependsOn: installTestReqs){
+    module = "pytest"
+    command = "-s integration_tests"
+}
+
+integrationTest.dependsOn("customIntegrationTestPython")
 
 dependencies {
     implementation files(project(':airbyte-integrations:bases:base-python').airbyteDocker.outputs)

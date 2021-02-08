@@ -35,7 +35,7 @@ export const useSourceDefinitionSpecificationLoad = (
       ? {
           sourceDefinitionId
         }
-      : undefined
+      : null
   );
 
   return { sourceDefinitionSpecification, error, isLoading };
@@ -117,15 +117,14 @@ const useSource = () => {
 
   const updateSource = async ({
     values,
-    sourceId,
-    sourceDefinitionId
+    sourceId
   }: {
     values: ValuesProps;
     sourceId: string;
-    sourceDefinitionId: string;
   }) => {
     await sourceCheckConnectionShape({
-      sourceDefinitionId,
+      name: values.name,
+      sourceId,
       connectionConfiguration: values.connectionConfiguration
     });
 

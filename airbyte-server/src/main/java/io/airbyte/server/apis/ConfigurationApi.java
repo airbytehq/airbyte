@@ -78,6 +78,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.client.CachingSchedulerJobClient;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.KnownException;
 import io.airbyte.server.handlers.ArchiveHandler;
 import io.airbyte.server.handlers.ConnectionsHandler;
@@ -125,15 +126,16 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
                           final CachingSchedulerJobClient schedulerJobClient,
                           final Configs configs,
                           final FileTtlManager archiveTtlManager) {
+    final SpecFetcher specFetcher = new SpecFetcher(schedulerJobClient);
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
     schedulerHandler = new SchedulerHandler(configRepository, schedulerJobClient);
     workspacesHandler = new WorkspacesHandler(configRepository);
-    final DockerImageValidator dockerImageValidator = new DockerImageValidator(schedulerHandler);
+    final DockerImageValidator dockerImageValidator = new DockerImageValidator(schedulerJobClient);
     sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, schedulerJobClient);
     connectionsHandler = new ConnectionsHandler(configRepository);
     destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, dockerImageValidator, schedulerJobClient);
-    destinationHandler = new DestinationHandler(configRepository, schemaValidator, schedulerHandler, connectionsHandler);
-    sourceHandler = new SourceHandler(configRepository, schemaValidator, schedulerHandler, connectionsHandler);
+    destinationHandler = new DestinationHandler(configRepository, schemaValidator, specFetcher, connectionsHandler);
+    sourceHandler = new SourceHandler(configRepository, schemaValidator, specFetcher, connectionsHandler);
     jobHistoryHandler = new JobHistoryHandler(jobPersistence);
     webBackendConnectionsHandler =
         new WebBackendConnectionsHandler(connectionsHandler, sourceHandler, destinationHandler, jobHistoryHandler, schedulerHandler);
@@ -226,6 +228,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
+  public CheckConnectionRead checkConnectionToSourceForUpdate(@Valid SourceUpdate sourceUpdate) {
+    return execute(() -> schedulerHandler.checkSourceConnectionFromSourceIdForUpdate(sourceUpdate));
+  }
+
+  @Override
   public SourceDiscoverSchemaRead discoverSchemaForSource(@Valid SourceIdRequestBody sourceIdRequestBody) {
     return execute(() -> schedulerHandler.discoverSchemaForSourceFromSourceId(sourceIdRequestBody));
   }
@@ -294,6 +301,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     return execute(() -> schedulerHandler.checkDestinationConnectionFromDestinationId(destinationIdRequestBody));
   }
 
+  @Override
+  public CheckConnectionRead checkConnectionToDestinationForUpdate(@Valid DestinationUpdate destinationUpdate) {
+    return execute(() -> schedulerHandler.checkDestinationConnectionFromDestinationIdForUpdate(destinationUpdate));
+  }
+
   // CONNECTION
 
   @Override
@@ -337,13 +349,13 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   // SCHEDULER
   @Override
-  public CheckConnectionRead executeSourceCheckConnection(@Valid SourceCoreConfig sourceCreate) {
-    return execute(() -> schedulerHandler.checkSourceConnectionFromSourceCreate(sourceCreate));
+  public CheckConnectionRead executeSourceCheckConnection(@Valid SourceCoreConfig sourceConfig) {
+    return execute(() -> schedulerHandler.checkSourceConnectionFromSourceCreate(sourceConfig));
   }
 
   @Override
-  public CheckConnectionRead executeDestinationCheckConnection(@Valid DestinationCoreConfig destinationCreate) {
-    return execute(() -> schedulerHandler.checkDestinationConnectionFromDestinationCreate(destinationCreate));
+  public CheckConnectionRead executeDestinationCheckConnection(@Valid DestinationCoreConfig destinationConfig) {
+    return execute(() -> schedulerHandler.checkDestinationConnectionFromDestinationCreate(destinationConfig));
   }
 
   @Override
