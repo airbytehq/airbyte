@@ -144,6 +144,9 @@ definitions:
         type: array
         items:
           type: string
+      namespace:
+        description: Namespace where this stream is coming from
+        type: string
   ConfiguredAirbyteCatalog:
     description: Airbyte stream schema catalog
     type: object
@@ -160,6 +163,8 @@ definitions:
     additionalProperties: false
     required:
       - stream
+      - destination_namespace
+      - destination_name
     properties:
       stream:
         "$ref": "#/definitions/AirbyteStream"
@@ -171,6 +176,14 @@ definitions:
         type: array
         items:
           type: string
+      alias_name:
+        description: Alias name to use in the destination to store this stream
+        type: string
+      target_namespace:
+        description: Namespace to use in the destination to store this stream
+        type: string
+      selected:
+        type: boolean
   SyncMode:
     type: string
     enum:

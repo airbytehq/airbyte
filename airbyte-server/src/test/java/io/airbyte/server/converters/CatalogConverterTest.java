@@ -49,4 +49,12 @@ class CatalogConverterTest {
     assertTrue(Enums.isCompatible(io.airbyte.config.SyncMode.class, io.airbyte.api.model.SyncMode.class));
   }
 
+  @Test
+  void generateDefaultNamespace() {
+    assertEquals("Name", CatalogConverter.generateDefaultNamespace(null, " Name  "));
+    assertEquals("prefix", CatalogConverter.generateDefaultNamespace("  prefix", "   "));
+    assertEquals("prefix_Name", CatalogConverter.generateDefaultNamespace("prefix   ", "  Name"));
+    assertThrows(IllegalArgumentException.class, () -> CatalogConverter.generateDefaultNamespace("", "  "));
+  }
+
 }

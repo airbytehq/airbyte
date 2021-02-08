@@ -129,6 +129,7 @@ class ConnectionsHandlerTest {
 
     final ConfiguredAirbyteCatalog configuredCatalog = ConnectionHelpers.generateBasicConfiguredAirbyteCatalog();
     configuredCatalog.getStreams().get(0).getStream().withName("azkaban_users");
+    configuredCatalog.getStreams().get(0).setAliasName("azkaban_users");
 
     final StandardSync updatedStandardSync = new StandardSync()
         .withConnectionId(standardSync.getConnectionId())

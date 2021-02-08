@@ -70,6 +70,7 @@ public abstract class JdbcStressTest {
   private static final long TOTAL_RECORDS = 10_000_000L;
   private static final int BATCH_SIZE = 1000;
   private static final String TABLE_NAME = "id_and_name";
+  private static final String NAMESPACE = "stress-tests";
 
   private static String streamName;
 
@@ -192,7 +193,7 @@ public abstract class JdbcStressTest {
   }
 
   private static ConfiguredAirbyteCatalog getConfiguredCatalogFullRefresh() {
-    return CatalogHelpers.toDefaultConfiguredCatalog(getCatalog());
+    return CatalogHelpers.toDefaultConfiguredCatalog(NAMESPACE, getCatalog());
   }
 
   private static ConfiguredAirbyteCatalog getConfiguredCatalogIncremental() {

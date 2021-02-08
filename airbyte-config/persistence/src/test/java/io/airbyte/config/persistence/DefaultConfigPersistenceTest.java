@@ -97,7 +97,7 @@ class DefaultConfigPersistenceTest {
   }
 
   @Test
-  void writeConfigWithJsonSchemaRef() throws JsonValidationException, IOException, ConfigNotFoundException {
+  void testWriteConfigWithJsonSchemaRef() throws JsonValidationException, IOException, ConfigNotFoundException {
     final StandardSync standardSync = new StandardSync()
         .withName("sync")
         .withConnectionId(UUID_1)
@@ -113,7 +113,7 @@ class DefaultConfigPersistenceTest {
   }
 
   @Test
-  void writeConfigInvalidConfig() throws JsonValidationException {
+  void testWriteConfigInvalidConfig() throws JsonValidationException {
     StandardSourceDefinition standardSourceDefinition = SOURCE_1.withName(null);
 
     doThrow(new JsonValidationException("error")).when(schemaValidator).ensure(any(), any());

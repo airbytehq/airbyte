@@ -171,7 +171,7 @@ public class SchedulerHandler {
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(source.getSourceDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
     final Job job = schedulerJobClient.createDiscoverSchemaJob(source, imageName);
-    return discoverJobToOutput(job);
+    return discoverJobToOutput(job, source.getName());
   }
 
   public SourceDiscoverSchemaRead discoverSchemaForSourceFromSourceCreate(SourceCoreConfig sourceCreate)
@@ -184,17 +184,17 @@ public class SchedulerHandler {
         .withSourceDefinitionId(sourceCreate.getSourceDefinitionId())
         .withConfiguration(sourceCreate.getConnectionConfiguration());
     final Job job = schedulerJobClient.createDiscoverSchemaJob(source, imageName);
-    return discoverJobToOutput(job);
+    return discoverJobToOutput(job, "");
   }
 
-  private static SourceDiscoverSchemaRead discoverJobToOutput(Job job) {
+  private static SourceDiscoverSchemaRead discoverJobToOutput(Job job, String namespacePrefix) {
     final SourceDiscoverSchemaRead sourceDiscoverSchemaRead = new SourceDiscoverSchemaRead()
         .jobInfo(JobConverter.getJobInfoRead(job));
 
     job.getSuccessOutput()
         .map(JobOutput::getDiscoverCatalog)
         .map(StandardDiscoverCatalogOutput::getCatalog)
-        .ifPresent(catalog -> sourceDiscoverSchemaRead.catalog(CatalogConverter.toApi(catalog)));
+        .ifPresent(catalog -> sourceDiscoverSchemaRead.catalog(CatalogConverter.toApi(catalog, namespacePrefix)));
 
     return sourceDiscoverSchemaRead;
   }

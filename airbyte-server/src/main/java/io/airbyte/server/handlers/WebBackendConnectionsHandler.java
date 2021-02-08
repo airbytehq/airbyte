@@ -173,6 +173,7 @@ public class WebBackendConnectionsHandler {
           outputStreamConfig.setCursorField(discoveredStreamConfig.getCursorField());
 
         outputStreamConfig.setAliasName(originalStreamConfig.getAliasName());
+        outputStreamConfig.setTargetNamespace(originalStreamConfig.getTargetNamespace());
         outputStreamConfig.setSelected(originalStreamConfig.getSelected());
       } else {
         outputStreamConfig = s.getConfig();

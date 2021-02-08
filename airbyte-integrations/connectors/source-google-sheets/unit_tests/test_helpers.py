@@ -103,8 +103,12 @@ class TestHelpers(unittest.TestCase):
 
         catalog = ConfiguredAirbyteCatalog(
             streams=[
-                ConfiguredAirbyteStream(stream=AirbyteStream(name=sheet1, json_schema=sheet1_schema)),
-                ConfiguredAirbyteStream(stream=AirbyteStream(name=sheet2, json_schema=sheet2_schema)),
+                ConfiguredAirbyteStream(
+                    destination_namespace="test", destination_name=sheet1, stream=AirbyteStream(name=sheet1, json_schema=sheet1_schema)
+                ),
+                ConfiguredAirbyteStream(
+                    destination_namespace="test", destination_name=sheet1, stream=AirbyteStream(name=sheet2, json_schema=sheet2_schema)
+                ),
             ]
         )
 

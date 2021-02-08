@@ -1725,6 +1725,9 @@ components:
         name:
           type: string
           description: Stream's name.
+        namespace:
+          description: Optional if source handles namespaces concept such as DB schemas or folders
+          type: string
         jsonSchema:
           description: Stream schema using Json Schema specs.
           $ref: "#/components/schemas/StreamJsonSchema"
@@ -1757,6 +1760,9 @@ components:
             type: string
         aliasName:
           description: Alias name to the stream to be used in the destination
+          type: string
+        targetNamespace:
+          description: Namespace to store the stream in the destination
           type: string
         selected:
           type: boolean

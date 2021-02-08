@@ -85,6 +85,7 @@ public abstract class JdbcSourceStandardTest {
   private static final String SCHEMA_NAME = "jdbc_integration_test";
   private static final String SCHEMA_NAME2 = "jdbc_integration_test2";
   private static final Set<String> TEST_SCHEMAS = ImmutableSet.of(SCHEMA_NAME, SCHEMA_NAME2);
+  private static final String NAMESPACE = "standard-tests";
 
   private static final String TABLE_NAME = "id_and_name";
 
@@ -241,7 +242,8 @@ public abstract class JdbcSourceStandardTest {
 
   @Test
   void testReadOneColumn() throws Exception {
-    final ConfiguredAirbyteCatalog catalog = CatalogHelpers.createConfiguredAirbyteCatalog(streamName, Field.of("id", JsonSchemaPrimitive.NUMBER));
+    final ConfiguredAirbyteCatalog catalog =
+        CatalogHelpers.createConfiguredAirbyteCatalog(NAMESPACE, streamName, Field.of("id", JsonSchemaPrimitive.NUMBER));
 
     final List<AirbyteMessage> actualMessages = MoreIterators.toList(source.read(config, catalog, null));
 
@@ -273,6 +275,7 @@ public abstract class JdbcSourceStandardTest {
             getFullyQualifiedTableName(TABLE_NAME + iFinal)));
       });
       catalog.getStreams().add(CatalogHelpers.createConfiguredAirbyteStream(
+          NAMESPACE,
           streamName2,
           Field.of("id", JsonSchemaPrimitive.NUMBER),
           Field.of("name", JsonSchemaPrimitive.STRING)));
@@ -460,6 +463,7 @@ public abstract class JdbcSourceStandardTest {
 
     final ConfiguredAirbyteCatalog configuredCatalog = getConfiguredCatalog();
     configuredCatalog.getStreams().add(CatalogHelpers.createConfiguredAirbyteStream(
+        NAMESPACE,
         streamName2,
         Field.of("id", JsonSchemaPrimitive.NUMBER),
         Field.of("name", JsonSchemaPrimitive.STRING)));
@@ -578,7 +582,7 @@ public abstract class JdbcSourceStandardTest {
 
   // get catalog and perform a defensive copy.
   private static ConfiguredAirbyteCatalog getConfiguredCatalog() {
-    return CatalogHelpers.toDefaultConfiguredCatalog(getCatalog());
+    return CatalogHelpers.toDefaultConfiguredCatalog(NAMESPACE, getCatalog());
   }
 
   private static AirbyteCatalog getCatalog() {
@@ -619,6 +623,7 @@ public abstract class JdbcSourceStandardTest {
     });
 
     return CatalogHelpers.createConfiguredAirbyteStream(
+        NAMESPACE,
         streamName2,
         Field.of("id", JsonSchemaPrimitive.NUMBER),
         Field.of(lastNameField, JsonSchemaPrimitive.STRING));

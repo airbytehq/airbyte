@@ -49,6 +49,8 @@ import java.util.UUID;
 
 public class ConnectionHelpers {
 
+  private static final String NAMESPACE = "tests";
+  private static final String SOURCE_NAMESPACE = "source";
   private static final String STREAM_NAME = "users-data";
   private static final String FIELD_NAME = "id";
 
@@ -122,12 +124,16 @@ public class ConnectionHelpers {
     final ConfiguredAirbyteStream stream = new ConfiguredAirbyteStream()
         .withStream(generateBasicAirbyteStream())
         .withCursorField(Lists.newArrayList(FIELD_NAME))
-        .withSyncMode(io.airbyte.protocol.models.SyncMode.INCREMENTAL);
+        .withSyncMode(io.airbyte.protocol.models.SyncMode.INCREMENTAL)
+        .withAliasName(Names.toAlphanumericAndUnderscore(STREAM_NAME))
+        .withTargetNamespace(NAMESPACE)
+        .withSelected(true);
     return new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(stream));
   }
 
   private static io.airbyte.protocol.models.AirbyteStream generateBasicAirbyteStream() {
     return CatalogHelpers.createAirbyteStream(STREAM_NAME, Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING))
+        .withNamespace(SOURCE_NAMESPACE)
         .withDefaultCursorField(Lists.newArrayList(FIELD_NAME))
         .withSourceDefinedCursor(false)
         .withSupportedSyncModes(List.of(io.airbyte.protocol.models.SyncMode.FULL_REFRESH, io.airbyte.protocol.models.SyncMode.INCREMENTAL));
@@ -144,12 +150,14 @@ public class ConnectionHelpers {
         .syncMode(SyncMode.INCREMENTAL)
         .cursorField(Lists.newArrayList(FIELD_NAME))
         .aliasName(Names.toAlphanumericAndUnderscore(STREAM_NAME))
+        .targetNamespace(NAMESPACE)
         .selected(true);
   }
 
   private static AirbyteStream generateBasicApiStream() {
     return new AirbyteStream()
         .name(STREAM_NAME)
+        .namespace(SOURCE_NAMESPACE)
         .jsonSchema(generateBasicJsonSchema())
         .defaultCursorField(Lists.newArrayList(FIELD_NAME))
         .sourceDefinedCursor(false)

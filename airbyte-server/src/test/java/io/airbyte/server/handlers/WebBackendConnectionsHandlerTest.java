@@ -416,18 +416,20 @@ class WebBackendConnectionsHandlerTest {
     original.getStreams().get(0).getConfig()
         .syncMode(SyncMode.INCREMENTAL)
         .cursorField(List.of("field1"))
-        .aliasName("renamed_stream");
+        .aliasName("renamed_stream")
+        .targetNamespace("my_desired_output_schema");
 
     final AirbyteCatalog discovered = ConnectionHelpers.generateBasicApiCatalog();
     discovered.getStreams().get(0).getStream()
         .name("stream1")
         .defaultCursorField(List.of("field3"))
         .jsonSchema(CatalogHelpers.fieldsToJsonSchema(Field.of("field2", JsonSchemaPrimitive.STRING)))
-        .supportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
+        .supportedSyncModes(List.of(SyncMode.FULL_REFRESH));
     discovered.getStreams().get(0).getConfig()
         .syncMode(SyncMode.FULL_REFRESH)
         .cursorField(Collections.emptyList())
-        .aliasName("stream1");
+        .aliasName("stream1")
+        .targetNamespace("random_namespace");
     final AirbyteStreamAndConfiguration newStream = ConnectionHelpers.generateBasicApiCatalog().getStreams().get(0);
     newStream.getStream()
         .name("stream2")
@@ -445,11 +447,12 @@ class WebBackendConnectionsHandlerTest {
         .name("stream1")
         .defaultCursorField(List.of("field3"))
         .jsonSchema(CatalogHelpers.fieldsToJsonSchema(Field.of("field2", JsonSchemaPrimitive.STRING)))
-        .supportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
+        .supportedSyncModes(List.of(SyncMode.FULL_REFRESH));
     expected.getStreams().get(0).getConfig()
-        .syncMode(SyncMode.INCREMENTAL)
+        .syncMode(SyncMode.FULL_REFRESH)
         .cursorField(List.of("field1"))
-        .aliasName("renamed_stream");
+        .aliasName("renamed_stream")
+        .targetNamespace("my_desired_output_schema");
     final AirbyteStreamAndConfiguration expectedNewStream = ConnectionHelpers.generateBasicApiCatalog().getStreams().get(0);
     expectedNewStream.getStream()
         .name("stream2")
