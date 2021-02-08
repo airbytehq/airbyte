@@ -32,7 +32,7 @@ import com.meilisearch.sdk.Index;
 import io.airbyte.commons.functional.CheckedBiConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.text.Names;
-import io.airbyte.integrations.DefaultSpecConnector;
+import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
@@ -79,7 +79,7 @@ import org.slf4j.LoggerFactory;
  * within MeiliSearch.
  * </p>
  */
-public class MeiliSearchDestination extends DefaultSpecConnector implements Destination {
+public class MeiliSearchDestination extends BaseConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MeiliSearchDestination.class);
 
@@ -94,6 +94,7 @@ public class MeiliSearchDestination extends DefaultSpecConnector implements Dest
       final Index index = client.index("_airbyte");
       index.addDocuments("[{\"id\": \"_airbyte\" }]");
       index.search("_airbyte");
+      client.deleteIndex(index.getUid());
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (Exception e) {
       LOGGER.error("Check connection failed.", e);

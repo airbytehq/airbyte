@@ -36,7 +36,7 @@ import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
 import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.DefaultSpecConnector;
+import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.models.JdbcState;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -70,7 +70,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class AbstractJdbcSource extends DefaultSpecConnector implements Source {
+public abstract class AbstractJdbcSource extends BaseConnector implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcSource.class);
 
