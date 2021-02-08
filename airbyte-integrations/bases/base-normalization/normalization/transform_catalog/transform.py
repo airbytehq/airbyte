@@ -27,7 +27,7 @@ import json
 import os
 import unicodedata as ud
 from re import match, sub
-from typing import List, Optional, Set, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 import yaml
 
@@ -60,83 +60,24 @@ python3 main_dev_transform_catalog.py \
         parser.add_argument("--out", type=str, required=True, help="path to output generated DBT Models to")
         parser.add_argument("--json-column", type=str, required=False, help="name of the column containing the json blob")
         parsed_args = parser.parse_args(args)
-        profiles_yml = read_profiles_yml(parsed_args.profile_config_dir)
         self.config = {
             "integration_type": parsed_args.integration_type,
-            "schema": extract_schema(profiles_yml),
             "catalog": parsed_args.catalog,
             "output_path": parsed_args.out,
             "json_column": parsed_args.json_column,
         }
 
     def process_catalog(self) -> None:
-        source_tables: set = set()
         integration_type = self.config["integration_type"]
-        schema = self.config["schema"]
         output = self.config["output_path"]
         for catalog_file in self.config["catalog"]:
             print(f"Processing {catalog_file}...")
             catalog = read_json_catalog(catalog_file)
-            result, tables = generate_dbt_model(
-                integration_type=integration_type, catalog=catalog, json_col=self.config["json_column"], schema=schema
+            print(json.dumps(catalog, indent=2))
+            sources = generate_dbt_model(
+                output=output, integration_type=integration_type, catalog=catalog, json_col=self.config["json_column"]
             )
-            self.output_sql_models(output, result)
-            source_tables = source_tables.union(tables)
-        self.write_yaml_sources(output, schema, source_tables, integration_type)
-
-    @staticmethod
-    def output_sql_models(output: str, result: dict) -> None:
-        if result:
-            if not os.path.exists(output):
-                os.makedirs(output)
-            for file, sql in result.items():
-                print(f"  Generating {file}.sql in {output}")
-                with open(os.path.join(output, f"{file}.sql"), "w") as f:
-                    f.write(sql)
-
-    @staticmethod
-    def write_yaml_sources(output: str, schema: str, sources: set, integration_type: str) -> None:
-        quoted_schema = schema[0] == '"'
-        tables = [
-            {
-                "name": source,
-                "quoting": {"identifier": True},
-            }
-            for source in sources
-            if table_name(source, integration_type)[0] == '"'
-        ] + [{"name": source} for source in sources if table_name(source, integration_type)[0] != '"']
-        source_config = {
-            "version": 2,
-            "sources": [
-                {
-                    "name": schema,
-                    "quoting": {
-                        "database": True,
-                        "schema": quoted_schema,
-                        "identifier": False,
-                    },
-                    "tables": tables,
-                },
-            ],
-        }
-        source_path = os.path.join(output, "sources.yml")
-        if not os.path.exists(source_path):
-            with open(source_path, "w") as fh:
-                fh.write(yaml.dump(source_config))
-
-
-def read_profiles_yml(profile_dir: str) -> dict:
-    with open(os.path.join(profile_dir, "profiles.yml"), "r") as file:
-        config = yaml.load(file, Loader=yaml.FullLoader)
-        obj = config["normalize"]["outputs"]["prod"]
-        return obj
-
-
-def extract_schema(profiles_yml: dict) -> str:
-    if "dataset" in profiles_yml:
-        return profiles_yml["dataset"]
-    else:
-        return profiles_yml["schema"]
+            write_yaml_sources(output=output, sources=sources, integration_type=integration_type)
 
 
 def read_json_catalog(input_path: str) -> dict:
@@ -463,34 +404,85 @@ def process_node(
     return result
 
 
-def generate_dbt_model(integration_type: str, catalog: dict, json_col: str, schema: str) -> Tuple[dict, Set[Union[str]]]:
-    result = {}
-    source_tables = set()
+def output_sql_models(output: str, schema: str, data: dict) -> List[str]:
+    result = []
+    output = os.path.join(output, schema)
+    if data:
+        if not os.path.exists(output):
+            os.makedirs(output)
+        for file, sql in data.items():
+            print(f"  Generating {file}.sql in {output}")
+            result.append(file)
+            header = "{{ config(schema='" + schema + "') }}\n"
+            with open(os.path.join(output, f"{file}.sql"), "w") as f:
+                f.write(header + sql)
+    return result
+
+
+def generate_dbt_model(output: str, integration_type: str, catalog: dict, json_col: str) -> Dict[str, List[str]]:
+    source_tables: Dict[str, List[str]] = {}
     for configuredStream in catalog["streams"]:
         if "stream" in configuredStream:
             stream = configuredStream["stream"]
         else:
-            stream = {}
+            raise KeyError("Stream is not defined in Catalog streams")
 
         if "name" in stream:
-            name = stream["name"]
+            stream_name: str = stream["name"]
         else:
-            name = "undefined"  # todo: should this raise an exception?
+            raise KeyError("name is not defined in stream: " + stream)
         if "json_schema" in stream and "properties" in stream["json_schema"]:
             properties = stream["json_schema"]["properties"]
         else:
-            properties = {}
-        # TODO Replace '_airbyte_raw_' + name by an argument like we do for the json_blob column
-        # This would enable destination to freely choose where to store intermediate data before notifying
-        # normalization step
-        table = jinja_call(
-            f"source('{normalize_identifier_name(schema, integration_type)}', '{normalize_identifier_name('_airbyte_raw_' + name, integration_type)}')"
+            raise KeyError("json_schema is not defined for " + stream_name)
+        if "target_namespace" in configuredStream:
+            schema: str = configuredStream["target_namespace"]
+        else:
+            raise KeyError("target_namespace is not defined in configuredStream for " + stream_name)
+        if "alias_name" in configuredStream:
+            name: str = configuredStream["alias_name"]
+        else:
+            raise KeyError("alias_name is not defined in configuredStream for " + stream_name)
+
+        schema = normalize_identifier_name(schema, integration_type)
+        raw_schema = normalize_identifier_name("_airbyte_" + schema, integration_type)
+        table = jinja_call(f"source('{raw_schema}', '{normalize_identifier_name(name, integration_type)}')")
+        result = process_node(
+            path=[], json_col=json_col, name=name, properties=properties, from_table=table, integration_type=integration_type
         )
-        result.update(
-            process_node(path=[], json_col=json_col, name=name, properties=properties, from_table=table, integration_type=integration_type)
+        if raw_schema not in source_tables:
+            source_tables[raw_schema] = []
+        source_tables[raw_schema] += output_sql_models(output, schema, result)
+    return source_tables
+
+
+def write_yaml_sources(output: str, sources: Dict[str, List[str]], integration_type: str) -> None:
+    schemas = []
+    for schema in sources:
+        quoted_schema = schema[0] == '"'
+        tables = [
+            {
+                "name": source,
+                "quoting": {"identifier": True},
+            }
+            for source in sources[schema]
+            if table_name(source, integration_type)[0] == '"'
+        ] + [{"name": source} for source in sources[schema] if table_name(source, integration_type)[0] != '"']
+        schemas.append(
+            {
+                "name": schema,
+                "quoting": {
+                    "database": True,
+                    "schema": quoted_schema,
+                    "identifier": False,
+                },
+                "tables": tables,
+            }
         )
-        source_tables.add(normalize_identifier_name("_airbyte_raw_" + name, integration_type))
-    return result, source_tables
+    source_config = {"version": 2, "sources": schemas}
+    source_path = os.path.join(output, "sources.yml")
+    with open(source_path, "w") as fh:
+        fh.write(yaml.dump(source_config))
 
 
 def main(args=None):

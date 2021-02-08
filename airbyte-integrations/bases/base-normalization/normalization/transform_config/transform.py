@@ -92,7 +92,7 @@ class TransformConfig:
         dbt_config["type"] = "bigquery"
         dbt_config["method"] = "service-account"
         dbt_config["project"] = config["project_id"]
-        dbt_config["dataset"] = config["dataset_id"]
+        dbt_config["dataset"] = ""
         dbt_config["keyfile"] = keyfile_path
         dbt_config["threads"] = 32
         dbt_config["retries"] = 1
@@ -110,7 +110,7 @@ class TransformConfig:
         dbt_config["pass"] = config.get("password", "")
         dbt_config["port"] = config["port"]
         dbt_config["dbname"] = config["database"]
-        dbt_config["schema"] = config["schema"]
+        dbt_config["schema"] = ""
         dbt_config["threads"] = 32
 
         return dbt_config
@@ -126,7 +126,7 @@ class TransformConfig:
         dbt_config["pass"] = config["password"]
         dbt_config["port"] = config["port"]
         dbt_config["dbname"] = config["database"]
-        dbt_config["schema"] = config["schema"]
+        dbt_config["schema"] = ""
         dbt_config["threads"] = 32
 
         return dbt_config
@@ -145,7 +145,7 @@ class TransformConfig:
         dbt_config["role"] = config["role"].upper()
         dbt_config["database"] = config["database"].upper()
         dbt_config["warehouse"] = config["warehouse"].upper()
-        dbt_config["schema"] = config["schema"].upper()
+        dbt_config["schema"] = ""
         dbt_config["threads"] = 32
         dbt_config["client_session_keep_alive"] = False
         dbt_config["query_tag"] = "normalization"

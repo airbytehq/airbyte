@@ -26,7 +26,6 @@ import json
 import os
 
 from normalization import TransformConfig
-from normalization.transform_catalog.transform import extract_schema
 from normalization.transform_config.transform import DestinationType
 
 
@@ -39,7 +38,7 @@ class TestTransformConfig:
             "type": "bigquery",
             "method": "service-account",
             "project": "my_project_id",
-            "dataset": "my_dataset_id",
+            "dataset": "",
             "keyfile": "/tmp/bq_keyfile.json",
             "retries": 1,
             "threads": 32,
@@ -52,7 +51,6 @@ class TestTransformConfig:
             os.remove("/tmp/bq_keyfile.json")
         assert expected_output == actual_output
         assert expected_keyfile == actual_keyfile
-        assert extract_schema(actual_output) == "my_dataset_id"
 
     def test_transform_postgres(self):
         input = {
@@ -61,7 +59,7 @@ class TestTransformConfig:
             "username": "a user",
             "password": "password123",
             "database": "my_db",
-            "schema": "public",
+            "schema": "",
         }
 
         actual = TransformConfig().transform_postgres(input)
@@ -71,13 +69,12 @@ class TestTransformConfig:
             "host": "airbyte.io",
             "pass": "password123",
             "port": 5432,
-            "schema": "public",
+            "schema": "",
             "threads": 32,
             "user": "a user",
         }
 
         assert expected == actual
-        assert extract_schema(actual) == "public"
 
     def test_transform_snowflake(self):
         input = {
@@ -85,7 +82,7 @@ class TestTransformConfig:
             "role": "AIRBYTE_ROLE",
             "warehouse": "AIRBYTE_WAREHOUSE",
             "database": "AIRBYTE_DATABASE",
-            "schema": "AIRBYTE_SCHEMA",
+            "schema": "",
             "username": "AIRBYTE_USER",
             "password": "password123",
         }
@@ -98,7 +95,7 @@ class TestTransformConfig:
             "password": "password123",
             "query_tag": "normalization",
             "role": "AIRBYTE_ROLE",
-            "schema": "AIRBYTE_SCHEMA",
+            "schema": "",
             "threads": 32,
             "type": "snowflake",
             "user": "AIRBYTE_USER",
@@ -106,7 +103,6 @@ class TestTransformConfig:
         }
 
         assert expected == actual
-        assert extract_schema(actual) == "AIRBYTE_SCHEMA"
 
     # test that the full config is produced. this overlaps slightly with the transform_postgres test.
     def test_transform(self):
@@ -116,7 +112,7 @@ class TestTransformConfig:
             "username": "a user",
             "password": "password123",
             "database": "my_db",
-            "schema": "public",
+            "schema": "",
         }
 
         expected = self.get_base_config()
@@ -126,14 +122,13 @@ class TestTransformConfig:
             "host": "airbyte.io",
             "pass": "password123",
             "port": 5432,
-            "schema": "public",
+            "schema": "",
             "threads": 32,
             "user": "a user",
         }
         actual = TransformConfig().transform(DestinationType.postgres, input)
 
         assert expected == actual
-        assert extract_schema(actual["normalize"]["outputs"]["prod"]) == "public"
 
     def get_base_config(self):
         return {
