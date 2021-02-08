@@ -30,7 +30,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
-import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,8 +45,6 @@ public class RedshiftDestination extends AbstractJdbcDestination implements Dest
 
   @Override
   public JsonNode toJdbcConfig(JsonNode redshiftConfig) {
-    final String schema = Optional.ofNullable(redshiftConfig.get("schema")).map(JsonNode::asText).orElse("public");
-
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("username", redshiftConfig.get("username").asText())
         .put("password", redshiftConfig.get("password").asText())
@@ -55,7 +52,6 @@ public class RedshiftDestination extends AbstractJdbcDestination implements Dest
             redshiftConfig.get("host").asText(),
             redshiftConfig.get("port").asText(),
             redshiftConfig.get("database").asText()))
-        .put("schema", schema)
         .build());
   }
 
