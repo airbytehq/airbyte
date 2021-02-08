@@ -35,7 +35,7 @@ export default class DeploymentResource extends BaseResource
           file
         };
       },
-      schema: {}
+      schema: { file: "" }
     };
   }
 
@@ -67,7 +67,7 @@ export default class DeploymentResource extends BaseResource
         );
         return response;
       },
-      schema: {}
+      schema: null
     };
   }
 }

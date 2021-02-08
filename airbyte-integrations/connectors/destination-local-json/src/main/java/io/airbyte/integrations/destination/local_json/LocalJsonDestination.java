@@ -84,11 +84,6 @@ public class LocalJsonDestination implements Destination {
     return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
   }
 
-  @Override
-  public StandardNameTransformer getNamingTransformer() {
-    return namingResolver;
-  }
-
   /**
    * @param config - destination config.
    * @param catalog - schema of the incoming messages.
@@ -104,8 +99,8 @@ public class LocalJsonDestination implements Destination {
     final Map<String, WriteConfig> writeConfigs = new HashMap<>();
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getStream().getName();
-      final Path finalPath = destinationDir.resolve(getNamingTransformer().getRawTableName(streamName) + ".jsonl");
-      final Path tmpPath = destinationDir.resolve(getNamingTransformer().getTmpTableName(streamName) + ".jsonl");
+      final Path finalPath = destinationDir.resolve(namingResolver.getRawTableName(streamName) + ".jsonl");
+      final Path tmpPath = destinationDir.resolve(namingResolver.getTmpTableName(streamName) + ".jsonl");
 
       final boolean isIncremental = stream.getSyncMode() == SyncMode.INCREMENTAL;
       if (isIncremental && finalPath.toFile().exists()) {
