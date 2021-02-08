@@ -10,8 +10,8 @@ ENV AIRBYTE_IMPL_PATH="SourceShopifySinger"
 WORKDIR /airbyte/integration_code
 COPY $CODE_PATH ./$CODE_PATH
 COPY setup.py ./
-RUN pip install https://github.com/ns-admetrics/tap-shopify/archive/bump-shopify-api-version.zip
+RUN pip install https://github.com/airbytehq/tap-shopify/tarball/master
 RUN pip install ".[main]"
 
-LABEL io.airbyte.version=0.1.6
+LABEL io.airbyte.version=0.1.8
 LABEL io.airbyte.name=airbyte/source-shopify-singer

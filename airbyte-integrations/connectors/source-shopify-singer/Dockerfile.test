@@ -18,7 +18,7 @@ COPY secrets/config.json $CODE_PATH/config.json
 COPY $MODULE_NAME/*.json $CODE_PATH/
 COPY setup.py ./
 
-RUN pip install https://github.com/ns-admetrics/tap-shopify/archive/bump-shopify-api-version.zip
+RUN pip install https://github.com/airbytehq/tap-shopify/tarball/master
 RUN pip install ".[tests]"
 
 WORKDIR /airbyte
