@@ -33,7 +33,6 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceStandardTest;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
-import java.util.Optional;
 import java.util.Set;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterAll;
@@ -81,8 +80,8 @@ class AbstractJdbcSourceStandardTest extends JdbcSourceStandardTest {
   }
 
   @Override
-  public Optional<String> getDefaultSchemaName() {
-    return Optional.of("public");
+  public boolean supportsSchemas() {
+    return true;
   }
 
   @Override

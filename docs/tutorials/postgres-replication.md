@@ -10,7 +10,7 @@ Here's a 6-minute video showing you how you can do it.
 
 {% embed url="https://www.youtube.com/watch?v=Rcpt5SVsMpk" caption="" %}
 
-First of all, make sure you have Docker and Docker Compose installed. Then run the following commands:
+First of all, make sure you have Docker and Docker Compose installed. If this isn't the case, then run the following commands:
 
 ```text
 git clone https://github.com/airbytehq/airbyte.git
@@ -28,17 +28,10 @@ You should see an onboarding page. Enter your email if you want updates about Ai
 
 ## 2. Set up your first connection
 
-Now you will see a wizard that allows you choose the data you want to send through Airbyte.
+We support a growing [list of source connectors](../integrations/sources/). For now, we will start out with a Postgres source and destination.
 
-![](../.gitbook/assets/02_set-up-sources.png)
-
-As of our alpha launch, we have one database source \(Postgres\) and two API sources \(an exchange rate API and the Stripe API\). We're currently building an integration framework that makes it easy to create sources and destinations, so you should expect many more soon. Please reach out to us if you need a specific connector or would like to help build one.
-
-For now, we will start out with a Postgres source and destination.
-
-### In the case you don't have a readily available database to sync
-
-Before we configure anything in the UI, we need databases and data. Run the following commands in a new terminal window to start backgrounded source and destination databases:
+**If you don't have a readily available Postgres database to sync, here are some quick instructions:**  
+Run the following commands in a new terminal window to start backgrounded source and destination databases:
 
 ```text
 docker run --rm --name airbyte-source -e POSTGRES_PASSWORD=password -p 2000:5432 -d postgres
@@ -54,7 +47,15 @@ docker exec -it airbyte-source psql -U postgres -c "INSERT INTO public.users(col
 docker exec -it airbyte-source psql -U postgres -c "INSERT INTO public.users(col1) VALUES('record3');"
 ```
 
-Return to the UI and configure a source Postgres database. Use the name `airbyte-source` for the name and `Postgres`as the type. Fill in the configuration fields as follows:
+You now have a Postgres database ready to be replicated!
+
+### **Connect the Postgres database**
+
+In the UI, you will see a wizard that allows you choose the data you want to send through Airbyte.
+
+![](../.gitbook/assets/02_set-up-sources.png)
+
+Use the name `airbyte-source` for the name and `Postgres`as the type. If you used our instructions to create a Postgres database, fill in the configuration fields as follows:
 
 ```text
 Host: localhost
@@ -64,7 +65,9 @@ Password: password
 DB Name: postgres
 ```
 
-Click on `Set Up Source` and the wizard should move on to allow you to configure a destination. We support a growing list of data warehouses, lakes and databases. For now, configure the destination Postgres database:
+Click on `Set Up Source` and the wizard should move on to allow you to configure a destination.
+
+We support a growing list of data warehouses, lakes and databases. For now, use the name `airbyte-destination`, and configure the destination Postgres database:
 
 ```text
 Host: localhost

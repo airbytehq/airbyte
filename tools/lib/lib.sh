@@ -1,5 +1,5 @@
 error() {
-  echo "$@"
+  echo -e "$@"
   exit 1
 }
 

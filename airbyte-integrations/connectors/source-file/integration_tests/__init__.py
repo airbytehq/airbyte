@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from .integration_source_test import TestSourceFile
 from .standard_source_test import SourceFileStandardTest
 
-__all__ = ["SourceFileStandardTest", "TestSourceFile"]
+__all__ = ["SourceFileStandardTest"]

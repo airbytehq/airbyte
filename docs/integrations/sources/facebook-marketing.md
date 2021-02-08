@@ -2,8 +2,7 @@
 
 ## Sync overview
 
-This source can sync data for the core Ad Campaign data available in the [Facebook Marketing API](https://developers.facebook.com/docs/marketing-api/campaign-structure): Campaigns, AdSets, Ads, and AdCreatives.
-It can also sync [Ad Insights from the Reporting API](https://developers.facebook.com/docs/marketing-api/insights).
+This source can sync data for the core Ad Campaign data available in the [Facebook Marketing API](https://developers.facebook.com/docs/marketing-api/campaign-structure): Campaigns, AdSets, Ads, and AdCreatives. It can also sync [Ad Insights from the Reporting API](https://developers.facebook.com/docs/marketing-api/insights).
 
 ### Output schema
 
@@ -44,11 +43,13 @@ For more information, see the [Facebook Insights API documentation. ](https://de
 | Full Refresh Sync | Yes |  |
 | Incremental Sync | Yes | except AdCreatives |
 
-### Performance considerations
+### Rate Limiting & Performance Considerations
 
-**Important note:** In order for data synced from your Facebook account to be up to date, you might need to apply with Facebook to upgrade your access token to the Ads Management Standard Tier as specified in the [Facebook Access documentation](https://developers.facebook.com/docs/marketing-api/access). Otherwise, Facebook might throttle Airbyte syncs, since the default tier \(Dev Access\) is heavily throttled by Facebook.
+{% hint style="info" %}
+Facebook heavily throttles API tokens generated from "Dev" Facebook Apps, making it infeasible to use such a token for syncs with Airbyte. To be able to use this connector, make sure to use an App with at least the "Business Standard" status to generate the API token below.
+{% endhint %}
 
-Note that Airbyte can adapt to throttling from Facebook. In the worst case scenario syncs from Facebook will take longer to complete and data will be less fresh.
+See Facebook's [documentation on rate limiting](https://developers.facebook.com/docs/marketing-apis/rate-limiting) for more information.
 
 ## Getting started
 

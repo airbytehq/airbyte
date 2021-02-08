@@ -25,6 +25,7 @@
 package io.airbyte.integrations.destination.local_json;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
@@ -83,11 +84,6 @@ public class LocalJsonDestination implements Destination {
     return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
   }
 
-  @Override
-  public StandardNameTransformer getNamingTransformer() {
-    return namingResolver;
-  }
-
   /**
    * @param config - destination config.
    * @param catalog - schema of the incoming messages.
@@ -103,8 +99,8 @@ public class LocalJsonDestination implements Destination {
     final Map<String, WriteConfig> writeConfigs = new HashMap<>();
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getStream().getName();
-      final Path finalPath = destinationDir.resolve(getNamingTransformer().getRawTableName(streamName) + ".jsonl");
-      final Path tmpPath = destinationDir.resolve(getNamingTransformer().getTmpTableName(streamName) + ".jsonl");
+      final Path finalPath = destinationDir.resolve(namingResolver.getRawTableName(streamName) + ".jsonl");
+      final Path tmpPath = destinationDir.resolve(namingResolver.getTmpTableName(streamName) + ".jsonl");
 
       final boolean isIncremental = stream.getSyncMode() == SyncMode.INCREMENTAL;
       if (isIncremental && finalPath.toFile().exists()) {
@@ -124,11 +120,16 @@ public class LocalJsonDestination implements Destination {
    * @param config - config object
    * @return absolute path where to write files.
    */
-  private Path getDestinationPath(JsonNode config) {
+  protected Path getDestinationPath(JsonNode config) {
     Path destinationPath = Paths.get(config.get(DESTINATION_PATH_FIELD).asText());
+    Preconditions.checkNotNull(destinationPath);
 
     if (!destinationPath.startsWith("/local"))
-      destinationPath = Path.of("/local").resolve(destinationPath);
+      destinationPath = Path.of("/local", destinationPath.toString());
+    final Path normalizePath = destinationPath.normalize();
+    if (!normalizePath.startsWith("/local")) {
+      throw new IllegalArgumentException("Destination file should be inside the /local directory");
+    }
 
     return destinationPath;
   }
@@ -188,16 +189,23 @@ public class LocalJsonDestination implements Destination {
         }
       }
       // do not persist the data, if there are any failures.
-      if (!hasFailed) {
+      try {
+        if (!hasFailed) {
+          for (final WriteConfig writeConfig : writeConfigs.values()) {
+            Files.move(writeConfig.getTmpPath(), writeConfig.getFinalPath(), StandardCopyOption.REPLACE_EXISTING);
+            LOGGER.info(String.format("File output: %s", writeConfig.getFinalPath()));
+          }
+        } else {
+          final String message = "Failed to output files in destination";
+          LOGGER.error(message);
+          throw new IOException(message);
+        }
+      } finally {
+        // clean up tmp files.
         for (final WriteConfig writeConfig : writeConfigs.values()) {
-          Files.move(writeConfig.getTmpPath(), writeConfig.getFinalPath(), StandardCopyOption.REPLACE_EXISTING);
+          Files.deleteIfExists(writeConfig.getTmpPath());
         }
       }
-      // clean up tmp files.
-      for (final WriteConfig writeConfig : writeConfigs.values()) {
-        Files.deleteIfExists(writeConfig.getTmpPath());
-      }
-
     }
 
   }

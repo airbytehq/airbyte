@@ -2,6 +2,36 @@
   "streams": [
     {
       "stream": {
+        "name": "campaigns",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "created_at": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "updated_at": {
+              "type": "string"
+            },
+            "is_abtest": {
+              "type": "boolean"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      }
+    },
+    {
+      "stream": {
         "name": "lists",
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",

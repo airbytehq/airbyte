@@ -30,7 +30,6 @@ import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import java.util.Iterator;
-import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +37,7 @@ class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> implement
 
   private static final Logger LOGGER = LoggerFactory.getLogger(StateDecoratingIterator.class);
 
-  private final Iterator<AirbyteMessage> messageStream;
+  private final Iterator<AirbyteMessage> messageIterator;
   private final JdbcStateManager stateManager;
   private final String streamName;
   private final String cursorField;
@@ -47,14 +46,13 @@ class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> implement
   private String maxCursor;
   private boolean hasEmittedState;
 
-  public StateDecoratingIterator(
-                                 Stream<AirbyteMessage> messageStream,
+  public StateDecoratingIterator(Iterator<AirbyteMessage> messageIterator,
                                  JdbcStateManager stateManager,
                                  String streamName,
                                  String cursorField,
                                  String initialCursor,
                                  JsonSchemaPrimitive cursorType) {
-    this.messageStream = messageStream.iterator();
+    this.messageIterator = messageIterator;
     this.stateManager = stateManager;
     this.streamName = streamName;
     this.cursorField = cursorField;
@@ -64,8 +62,8 @@ class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> implement
 
   @Override
   protected AirbyteMessage computeNext() {
-    if (messageStream.hasNext()) {
-      final AirbyteMessage message = messageStream.next();
+    if (messageIterator.hasNext()) {
+      final AirbyteMessage message = messageIterator.next();
       if (message.getRecord().getData().hasNonNull(cursorField)) {
         final String cursorCandidate = message.getRecord().getData().get(cursorField).asText();
         if (IncrementalUtils.compareCursors(maxCursor, cursorCandidate, cursorType) < 0) {
