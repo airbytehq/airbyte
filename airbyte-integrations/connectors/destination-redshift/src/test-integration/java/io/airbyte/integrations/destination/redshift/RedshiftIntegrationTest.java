@@ -32,6 +32,7 @@ import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.NamingHelper;
 import io.airbyte.integrations.standardtest.destination.TestDestination;
 import java.nio.file.Path;
 import java.sql.SQLException;
@@ -45,11 +46,14 @@ import org.jooq.JSONFormat.RecordFormat;
 public class RedshiftIntegrationTest extends TestDestination {
 
   private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
-  // config from which to create / delete schemas.
-  private JsonNode baseConfig;
-  // config which refers to the schema that the test is being run in.
+  private String namespace;
   private JsonNode config;
   private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
+
+  @Override
+  protected String getNamespace() {
+    return namespace;
+  }
 
   @Override
   protected String getImageName() {
@@ -74,7 +78,8 @@ public class RedshiftIntegrationTest extends TestDestination {
 
   @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName))
+    streamName = NamingHelper.getTmpSchemaName(namingResolver, getNamespace()) + "." + namingResolver.getIdentifier(streamName);
+    return retrieveRecordsFromTable(streamName)
         .stream()
         .map(j -> Jsons.deserialize(j.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
         .collect(Collectors.toList());
@@ -87,12 +92,15 @@ public class RedshiftIntegrationTest extends TestDestination {
 
   @Override
   protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv testEnv, String streamName) throws Exception {
+    String schemaName = namingResolver.getIdentifier(getNamespace());
     String tableName = namingResolver.getIdentifier(streamName);
-    if (!tableName.startsWith("\"")) {
-      // Currently, Normalization always quote tables identifiers
+    // Currently, Normalization always quote tables identifiers, see quoting rules
+    // in airbyte-integrations/bases/base-normalization/dbt-project-template/dbt_project.yml
+    if (!schemaName.startsWith("\""))
+      schemaName = "\"" + schemaName + "\"";
+    if (!tableName.startsWith("\""))
       tableName = "\"" + tableName + "\"";
-    }
-    return retrieveRecordsFromTable(tableName);
+    return retrieveRecordsFromTable(schemaName + "." + tableName);
   }
 
   @Override
@@ -109,10 +117,9 @@ public class RedshiftIntegrationTest extends TestDestination {
   }
 
   private List<JsonNode> retrieveRecordsFromTable(String tableName) throws SQLException {
-    final String schemaName = config.get("schema").asText();
     return getDatabase().query(
         ctx -> ctx
-            .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+            .fetch(String.format("SELECT * FROM %s ORDER BY %s ASC;", tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
             .stream()
             .map(r -> r.formatJSON(JSON_FORMAT))
             .map(Jsons::deserialize)
@@ -122,29 +129,25 @@ public class RedshiftIntegrationTest extends TestDestination {
   // for each test we create a new schema in the database. run the test in there and then remove it.
   @Override
   protected void setup(TestDestinationEnv testEnv) throws Exception {
-    final String schemaName = ("integration_test_" + RandomStringUtils.randomAlphanumeric(5));
-    final String createSchemaQuery = String.format("CREATE SCHEMA %s", schemaName);
-    baseConfig = getStaticConfig();
-    getDatabase().query(ctx -> ctx.execute(createSchemaQuery));
-    final JsonNode configForSchema = Jsons.clone(baseConfig);
-    ((ObjectNode) configForSchema).put("schema", schemaName);
-    config = configForSchema;
+    namespace = ("integration_test_" + RandomStringUtils.randomAlphanumeric(5));
+    config = getStaticConfig();
   }
 
   @Override
   protected void tearDown(TestDestinationEnv testEnv) throws Exception {
-    final String dropSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s CASCADE", config.get("schema").asText());
-    getDatabase().query(ctx -> ctx.execute(dropSchemaQuery));
+    final String tmpSchema = NamingHelper.getTmpSchemaName(namingResolver, getNamespace());
+    getDatabase().query(ctx -> ctx.execute(String.format("DROP SCHEMA IF EXISTS %s CASCADE", tmpSchema)));
+    getDatabase().query(ctx -> ctx.execute(String.format("DROP SCHEMA IF EXISTS %s CASCADE", getNamespace())));
   }
 
   private Database getDatabase() {
     return Databases.createDatabase(
-        baseConfig.get("username").asText(),
-        baseConfig.get("password").asText(),
+        config.get("username").asText(),
+        config.get("password").asText(),
         String.format("jdbc:redshift://%s:%s/%s",
-            baseConfig.get("host").asText(),
-            baseConfig.get("port").asText(),
-            baseConfig.get("database").asText()),
+            config.get("host").asText(),
+            config.get("port").asText(),
+            config.get("database").asText()),
         "com.amazon.redshift.jdbc.Driver", null);
   }
 

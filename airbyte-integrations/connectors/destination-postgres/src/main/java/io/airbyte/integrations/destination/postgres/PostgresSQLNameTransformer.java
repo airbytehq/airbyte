@@ -28,6 +28,13 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 
 public class PostgresSQLNameTransformer extends ExtendedNameTransformer {
 
+  private static int POSTGRES_NAMELEN = 63;
+
+  @Override
+  protected int getMaxIdentifierLength() {
+    return POSTGRES_NAMELEN;
+  }
+
   @Override
   protected String applyDefaultCase(String input) {
     return input.toLowerCase();

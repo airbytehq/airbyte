@@ -5,18 +5,13 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "BigQuery Destination Spec",
     "type": "object",
-    "required": ["project_id", "dataset_id", "credentials_json"],
+    "required": ["project_id", "credentials_json"],
     "additionalProperties": false,
     "properties": {
       "project_id": {
         "type": "string",
         "description": "The GCP project ID for the project containing the target BigQuery dataset.",
         "title": "Project ID"
-      },
-      "dataset_id": {
-        "type": "string",
-        "description": "The BigQuery dataset id that will house replicated tables.",
-        "title": "Dataset ID"
       },
       "credentials_json": {
         "type": "string",

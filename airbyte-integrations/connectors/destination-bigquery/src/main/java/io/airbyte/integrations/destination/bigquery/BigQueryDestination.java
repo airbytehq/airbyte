@@ -27,6 +27,7 @@ package io.airbyte.integrations.destination.bigquery;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.BigQuery.DatasetDeleteOption;
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.CopyJobConfiguration;
@@ -43,6 +44,7 @@ import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.QueryParameterValue;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.StandardTableDefinition;
+import com.google.cloud.bigquery.Table;
 import com.google.cloud.bigquery.TableDataWriteChannel;
 import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TableId;
@@ -58,6 +60,7 @@ import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.destination.NamingHelper;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
@@ -82,7 +85,6 @@ import org.slf4j.LoggerFactory;
 public class BigQueryDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestination.class);
-  static final String CONFIG_DATASET_ID = "dataset_id";
   static final String CONFIG_PROJECT_ID = "project_id";
   static final String CONFIG_CREDS = "credentials_json";
 
@@ -107,31 +109,19 @@ public class BigQueryDestination implements Destination {
   @Override
   public AirbyteConnectionStatus check(JsonNode config) {
     try {
-      final String datasetId = config.get(CONFIG_DATASET_ID).asText();
       final BigQuery bigquery = getBigQuery(config);
-      createSchemaTable(bigquery, datasetId);
-      QueryJobConfiguration queryConfig = QueryJobConfiguration
-          .newBuilder(String.format("SELECT * FROM %s.INFORMATION_SCHEMA.TABLES LIMIT 1;", datasetId))
-          .setUseLegacySql(false)
-          .build();
-
-      final ImmutablePair<Job, String> result = executeQuery(bigquery, queryConfig);
-      if (result.getLeft() != null) {
-        return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
-      } else {
-        return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(result.getRight());
-      }
+      // verify we have write permissions on the target schema by creating a table with a random name,
+      // then dropping that table
+      final String outputSchemaName = "_airbyte_schema_connection_test_" + UUID.randomUUID().toString().replaceAll("-", "");
+      final String outputTableName = "_airbyte_table_connection_test_" + UUID.randomUUID().toString().replaceAll("-", "");
+      createSchemaIfNotExists(bigquery, outputSchemaName);
+      createTableIfNotExists(bigquery, outputSchemaName, outputTableName);
+      dropTableIfExists(bigquery, outputSchemaName, outputTableName);
+      dropSchemaIfExists(bigquery, outputSchemaName);
+      return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (Exception e) {
       LOGGER.info("Check failed.", e);
       return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(e.getMessage() != null ? e.getMessage() : e.toString());
-    }
-  }
-
-  private void createSchemaTable(BigQuery bigquery, String datasetId) {
-    final Dataset dataset = bigquery.getDataset(datasetId);
-    if (dataset == null || !dataset.exists()) {
-      final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).build();
-      bigquery.create(datasetInfo);
     }
   }
 
@@ -208,24 +198,24 @@ public class BigQueryDestination implements Destination {
   public DestinationConsumer<AirbyteMessage> write(JsonNode config, ConfiguredAirbyteCatalog catalog) {
     final BigQuery bigquery = getBigQuery(config);
     Map<String, WriteConfig> writeConfigs = new HashMap<>();
-    final String datasetId = config.get(CONFIG_DATASET_ID).asText();
     Set<String> schemaSet = new HashSet<>();
 
     // create tmp tables if not exist
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getStream().getName();
-      final String schemaName = namingResolver.getIdentifier(datasetId);
-      final String tableName = namingResolver.getRawTableName(streamName);
-      final String tmpTableName = namingResolver.getTmpTableName(streamName);
-      if (!schemaSet.contains(schemaName)) {
-        createSchemaTable(bigquery, schemaName);
-        schemaSet.add(schemaName);
+      final String schemaName = namingResolver.getIdentifier(stream.getTargetNamespace());
+      final String tableName = namingResolver.getIdentifier(stream.getAliasName());
+      final String tmpSchemaName = NamingHelper.getTmpSchemaName(namingResolver, schemaName);
+      final String tmpTableName = NamingHelper.getTmpTableName(namingResolver, tableName);
+      if (!schemaSet.contains(tmpSchemaName)) {
+        createSchemaIfNotExists(bigquery, tmpSchemaName);
+        schemaSet.add(tmpSchemaName);
       }
-      createTable(bigquery, schemaName, tmpTableName);
+      createTableIfNotExists(bigquery, tmpSchemaName, tmpTableName);
 
       // https://cloud.google.com/bigquery/docs/loading-data-local#loading_data_from_a_local_data_source
       final WriteChannelConfiguration writeChannelConfiguration = WriteChannelConfiguration
-          .newBuilder(TableId.of(schemaName, tmpTableName))
+          .newBuilder(TableId.of(tmpSchemaName, tmpTableName))
           .setCreateDisposition(CreateDisposition.CREATE_IF_NEEDED)
           .setSchema(SCHEMA)
           .setFormatOptions(FormatOptions.json()).build(); // new-line delimited json.
@@ -233,8 +223,8 @@ public class BigQueryDestination implements Destination {
       final TableDataWriteChannel writer = bigquery.writer(JobId.of(UUID.randomUUID().toString()), writeChannelConfiguration);
       final WriteDisposition syncMode = getWriteDisposition(stream.getSyncMode());
 
-      writeConfigs.put(stream.getStream().getName(),
-          new WriteConfig(TableId.of(schemaName, tableName), TableId.of(schemaName, tmpTableName), writer, syncMode));
+      writeConfigs.put(streamName,
+          new WriteConfig(TableId.of(tmpSchemaName, tableName), TableId.of(tmpSchemaName, tmpTableName), writer, syncMode));
     }
 
     // write to tmp tables
@@ -252,24 +242,50 @@ public class BigQueryDestination implements Destination {
     }
   }
 
+  private static void createSchemaIfNotExists(BigQuery bigquery, String datasetId) {
+    final Dataset dataset = bigquery.getDataset(datasetId);
+    if (dataset == null || !dataset.exists()) {
+      final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).build();
+      bigquery.create(datasetInfo);
+      LOGGER.debug(String.format("Schema %s created successfully", datasetId));
+    }
+  }
+
+  private static void dropSchemaIfExists(BigQuery bigquery, String datasetId) {
+    boolean result = bigquery.delete(datasetId, DatasetDeleteOption.deleteContents());
+    if (result) {
+      LOGGER.debug(String.format("Schema %s dropped successfully", datasetId));
+    }
+  }
+
   // https://cloud.google.com/bigquery/docs/tables#create-table
-  private static void createTable(BigQuery bigquery, String datasetName, String tableName) {
+  private static void createTableIfNotExists(final BigQuery bigquery, final String datasetName, final String tableName) {
     try {
+      final Table table = bigquery.getTable(datasetName, tableName);
+      if (table == null || !table.exists()) {
+        final TableId tableId = TableId.of(datasetName, tableName);
+        final TableDefinition tableDefinition = StandardTableDefinition.of(SCHEMA);
+        final TableInfo tableInfo = TableInfo.newBuilder(tableId, tableDefinition).build();
 
-      final TableId tableId = TableId.of(datasetName, tableName);
-      final TableDefinition tableDefinition = StandardTableDefinition.of(SCHEMA);
-      final TableInfo tableInfo = TableInfo.newBuilder(tableId, tableDefinition).build();
-
-      bigquery.create(tableInfo);
-      LOGGER.info("Table created successfully");
+        bigquery.create(tableInfo);
+        LOGGER.debug(String.format("Table %s.%s created successfully", datasetName, tableName));
+      }
     } catch (BigQueryException e) {
-      LOGGER.info("Table was not created. \n" + e.toString());
+      LOGGER.error(String.format("Table %s.%s was not created: %s\n", datasetName, tableName, e.toString()));
+      throw e;
+    }
+  }
+
+  private static void dropTableIfExists(final BigQuery bigquery, final String datasetName, final String tableName) {
+    final TableId tableId = TableId.of(datasetName, tableName);
+    boolean result = bigquery.delete(tableId);
+    if (result) {
+      LOGGER.debug(String.format("Table %s.%s dropped successfully", datasetName, tableName));
     }
   }
 
   // https://cloud.google.com/bigquery/docs/managing-tables#copying_a_single_source_table
-  private static void copyTable(
-                                BigQuery bigquery,
+  private static void copyTable(BigQuery bigquery,
                                 TableId sourceTableId,
                                 TableId destinationTableId,
                                 WriteDisposition syncMode) {
@@ -283,6 +299,8 @@ public class BigQueryDestination implements Destination {
     final ImmutablePair<Job, String> jobStringImmutablePair = executeQuery(job);
     if (jobStringImmutablePair.getRight() != null) {
       throw new RuntimeException("BigQuery was unable to copy table due to an error: \n" + job.getStatus().getError());
+    } else {
+      LOGGER.info(String.format("Table %s.%s written successfully", destinationTableId.getDataset(), destinationTableId.getTable()));
     }
   }
 

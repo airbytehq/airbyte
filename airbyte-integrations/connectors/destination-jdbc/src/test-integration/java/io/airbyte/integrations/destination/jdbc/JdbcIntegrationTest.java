@@ -30,6 +30,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.NamingHelper;
 import io.airbyte.integrations.standardtest.destination.TestDestination;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -79,7 +80,8 @@ public class JdbcIntegrationTest extends TestDestination {
 
   @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName))
+    streamName = NamingHelper.getTmpSchemaName(namingResolver, getNamespace()) + "." + namingResolver.getIdentifier(streamName);
+    return retrieveRecordsFromTable(streamName)
         .stream()
         .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
         .collect(Collectors.toList());
@@ -93,12 +95,15 @@ public class JdbcIntegrationTest extends TestDestination {
   @Override
   protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv env, String streamName)
       throws Exception {
+    String schemaName = namingResolver.getIdentifier(getNamespace());
     String tableName = namingResolver.getIdentifier(streamName);
-    if (!tableName.startsWith("\"")) {
-      // Currently, Normalization always quote tables identifiers
+    // Currently, Normalization always quote tables identifiers, see quoting rules
+    // in airbyte-integrations/bases/base-normalization/dbt-project-template/dbt_project.yml
+    if (!schemaName.startsWith("\""))
+      schemaName = "\"" + schemaName + "\"";
+    if (!tableName.startsWith("\""))
       tableName = "\"" + tableName + "\"";
-    }
-    return retrieveRecordsFromTable(tableName);
+    return retrieveRecordsFromTable(schemaName + "." + tableName);
   }
 
   @Override

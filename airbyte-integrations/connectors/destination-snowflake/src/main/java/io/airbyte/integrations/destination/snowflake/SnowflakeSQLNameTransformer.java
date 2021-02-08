@@ -28,6 +28,13 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 
 public class SnowflakeSQLNameTransformer extends ExtendedNameTransformer {
 
+  private static final int MAX_IDENTIFIER_LENGTH = 255;
+
+  @Override
+  protected int getMaxIdentifierLength() {
+    return MAX_IDENTIFIER_LENGTH;
+  }
+
   @Override
   protected String applyDefaultCase(String input) {
     return input.toUpperCase();

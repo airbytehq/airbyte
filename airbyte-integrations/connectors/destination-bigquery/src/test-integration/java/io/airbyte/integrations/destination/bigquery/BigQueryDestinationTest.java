@@ -33,12 +33,14 @@ import static org.mockito.Mockito.spy;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.api.gax.paging.Page;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.BigQuery.TableListOption;
 import com.google.cloud.bigquery.BigQueryOptions;
-import com.google.cloud.bigquery.Dataset;
-import com.google.cloud.bigquery.DatasetInfo;
 import com.google.cloud.bigquery.QueryJobConfiguration;
+import com.google.cloud.bigquery.Table;
+import com.google.cloud.bigquery.TableInfo;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
@@ -65,6 +67,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -83,6 +86,7 @@ class BigQueryDestinationTest {
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestinationTest.class);
 
   private static final Instant NOW = Instant.now();
+  private static final String NAMESPACE = "tests_" + RandomStringUtils.randomAlphanumeric(4);
   private static final String USERS_STREAM_NAME = "users";
   private static final String TASKS_STREAM_NAME = "tasks";
   private static final AirbyteMessage MESSAGE_USERS1 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
@@ -105,17 +109,16 @@ class BigQueryDestinationTest {
       .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.builder().put("checkpoint", "now!").build())));
 
   private static final ConfiguredAirbyteCatalog CATALOG = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-      CatalogHelpers.createConfiguredAirbyteStream(USERS_STREAM_NAME, io.airbyte.protocol.models.Field.of("name", JsonSchemaPrimitive.STRING),
-          io.airbyte.protocol.models.Field
-              .of("id", JsonSchemaPrimitive.STRING)),
-      CatalogHelpers.createConfiguredAirbyteStream(TASKS_STREAM_NAME, Field.of("goal", JsonSchemaPrimitive.STRING))));
+      CatalogHelpers.createConfiguredAirbyteStream(NAMESPACE, USERS_STREAM_NAME,
+          io.airbyte.protocol.models.Field.of("name", JsonSchemaPrimitive.STRING),
+          io.airbyte.protocol.models.Field.of("id", JsonSchemaPrimitive.STRING)),
+      CatalogHelpers.createConfiguredAirbyteStream(NAMESPACE, TASKS_STREAM_NAME, Field.of("goal", JsonSchemaPrimitive.STRING))));
 
   private static final NamingConventionTransformer NAMING_RESOLVER = new StandardNameTransformer();
 
   private JsonNode config;
 
   private BigQuery bigquery;
-  private Dataset dataset;
 
   private boolean tornDown = true;
 
@@ -140,15 +143,9 @@ class BigQueryDestinationTest {
         .build()
         .getService();
 
-    final String datasetId = "airbyte_tests_" + RandomStringUtils.randomAlphanumeric(8);
-
-    final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).build();
-    dataset = bigquery.create(datasetInfo);
-
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(BigQueryDestination.CONFIG_PROJECT_ID, projectId)
         .put(BigQueryDestination.CONFIG_CREDS, credentialsJsonString)
-        .put(BigQueryDestination.CONFIG_DATASET_ID, datasetId)
         .build());
 
     tornDown = false;
@@ -176,13 +173,10 @@ class BigQueryDestinationTest {
     // allows deletion of a dataset that has contents
     final BigQuery.DatasetDeleteOption option = BigQuery.DatasetDeleteOption.deleteContents();
 
-    final boolean success = bigquery.delete(dataset.getDatasetId(), option);
+    boolean success = bigquery.delete("_airbyte_" + NAMESPACE, option);
     if (success) {
-      LOGGER.info("BQ Dataset " + dataset + " deleted...");
-    } else {
-      LOGGER.info("BQ Dataset cleanup for " + dataset + " failed!");
+      LOGGER.debug("BQ Dataset _airbyte_" + NAMESPACE + " deleted...");
     }
-
     tornDown = true;
   }
 
@@ -223,12 +217,12 @@ class BigQueryDestinationTest {
     consumer.accept(MESSAGE_STATE);
     consumer.close();
 
-    final List<JsonNode> usersActual = retrieveRecords(NAMING_RESOLVER.getRawTableName(USERS_STREAM_NAME));
+    final List<JsonNode> usersActual = retrieveRecords(USERS_STREAM_NAME);
     final List<JsonNode> expectedUsersJson = Lists.newArrayList(MESSAGE_USERS1.getRecord().getData(), MESSAGE_USERS2.getRecord().getData());
     assertEquals(expectedUsersJson.size(), usersActual.size());
     assertTrue(expectedUsersJson.containsAll(usersActual) && usersActual.containsAll(expectedUsersJson));
 
-    final List<JsonNode> tasksActual = retrieveRecords(NAMING_RESOLVER.getRawTableName(TASKS_STREAM_NAME));
+    final List<JsonNode> tasksActual = retrieveRecords(TASKS_STREAM_NAME);
     final List<JsonNode> expectedTasksJson = Lists.newArrayList(MESSAGE_TASKS1.getRecord().getData(), MESSAGE_TASKS2.getRecord().getData());
     assertEquals(expectedTasksJson.size(), tasksActual.size());
     assertTrue(expectedTasksJson.containsAll(tasksActual) && tasksActual.containsAll(expectedTasksJson));
@@ -254,42 +248,33 @@ class BigQueryDestinationTest {
 
     final List<String> tableNames = CATALOG.getStreams()
         .stream()
-        .map(ConfiguredAirbyteStream::getStream)
-        .map(AirbyteStream::getName)
+        .map(ConfiguredAirbyteStream::getAliasName)
         .collect(toList());
-    assertTmpTablesNotPresent(CATALOG.getStreams()
-        .stream()
-        .map(ConfiguredAirbyteStream::getStream)
-        .map(AirbyteStream::getName)
-        .collect(Collectors.toList()));
+    assertTmpTablesNotPresent(tableNames);
     // assert that no tables were created.
-    assertTrue(fetchNamesOfTablesInDb().stream().noneMatch(tableName -> tableNames.stream().anyMatch(tableName::startsWith)));
+    final Set<String> tables = fetchNamesOfTablesInDb();
+    assertTrue(tables.stream().noneMatch(tableName -> tableNames.stream().anyMatch(tableName::startsWith)));
   }
 
   private Set<String> fetchNamesOfTablesInDb() throws InterruptedException {
-    final QueryJobConfiguration queryConfig = QueryJobConfiguration
-        .newBuilder(String.format("SELECT * FROM %s.INFORMATION_SCHEMA.TABLES;", dataset.getDatasetId().getDataset()))
-        .setUseLegacySql(false)
-        .build();
-
-    return StreamSupport
-        .stream(BigQueryDestination.executeQuery(bigquery, queryConfig).getLeft().getQueryResults().iterateAll().spliterator(), false)
-        .map(v -> v.get("TABLE_NAME").getStringValue()).collect(Collectors.toSet());
+    Page<Table> tables = bigquery.listTables(String.format("_airbyte_%s", NAMESPACE), TableListOption.pageSize(10));
+    return StreamSupport.stream(tables.iterateAll().spliterator(), false)
+        .map(TableInfo::getFriendlyName)
+        .collect(Collectors.toSet());
   }
 
   private void assertTmpTablesNotPresent(List<String> tableNames) throws InterruptedException {
-    final Set<String> tmpTableNamePrefixes = tableNames.stream().map(name -> name + "_").collect(Collectors.toSet());
-    final Set<String> finalTableNames = tableNames.stream().map(name -> name + "_raw").collect(Collectors.toSet());
     // search for table names that have the tmp table prefix but are not raw tables.
     assertTrue(fetchNamesOfTablesInDb()
         .stream()
-        .filter(tableName -> !finalTableNames.contains(tableName))
-        .noneMatch(tableName -> tmpTableNamePrefixes.stream().anyMatch(tableName::startsWith)));
+        .filter(Objects::nonNull)
+        .filter(tableName -> !tableNames.contains(tableName))
+        .noneMatch(tableName -> tableName.startsWith("_tmp_")));
   }
 
   private List<JsonNode> retrieveRecords(String tableName) throws Exception {
     QueryJobConfiguration queryConfig =
-        QueryJobConfiguration.newBuilder(String.format("SELECT * FROM %s.%s;", dataset.getDatasetId().getDataset(), tableName.toLowerCase()))
+        QueryJobConfiguration.newBuilder(String.format("SELECT * FROM _airbyte_%s.%s;", NAMESPACE, tableName.toLowerCase()))
             .setUseLegacySql(false).build();
 
     BigQueryDestination.executeQuery(bigquery, queryConfig);

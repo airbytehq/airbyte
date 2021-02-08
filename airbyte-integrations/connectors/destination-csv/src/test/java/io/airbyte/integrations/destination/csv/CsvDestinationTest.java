@@ -38,7 +38,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -70,10 +69,11 @@ class CsvDestinationTest {
 
   private static final Instant NOW = Instant.now();
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
+  private static final String NAMESPACE = "test";
   private static final String USERS_STREAM_NAME = "users";
   private static final String TASKS_STREAM_NAME = "tasks";
-  private static final String USERS_FILE = new StandardNameTransformer().getRawTableName(USERS_STREAM_NAME) + ".csv";
-  private static final String TASKS_FILE = new StandardNameTransformer().getRawTableName(TASKS_STREAM_NAME) + ".csv";;
+  private static final String USERS_FILE = USERS_STREAM_NAME + ".csv";
+  private static final String TASKS_FILE = TASKS_STREAM_NAME + ".csv";
   private static final AirbyteMessage MESSAGE_USERS1 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
       .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
           .withData(Jsons.jsonNode(ImmutableMap.builder().put("name", "john").put("id", "10").build()))
@@ -94,9 +94,9 @@ class CsvDestinationTest {
       .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.builder().put("checkpoint", "now!").build())));
 
   private static final ConfiguredAirbyteCatalog CATALOG = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-      CatalogHelpers.createConfiguredAirbyteStream(USERS_STREAM_NAME, Field.of("name", JsonSchemaPrimitive.STRING),
+      CatalogHelpers.createConfiguredAirbyteStream(NAMESPACE, USERS_STREAM_NAME, Field.of("name", JsonSchemaPrimitive.STRING),
           Field.of("id", JsonSchemaPrimitive.STRING)),
-      CatalogHelpers.createConfiguredAirbyteStream(TASKS_STREAM_NAME, Field.of("goal", JsonSchemaPrimitive.STRING))));
+      CatalogHelpers.createConfiguredAirbyteStream(NAMESPACE, TASKS_STREAM_NAME, Field.of("goal", JsonSchemaPrimitive.STRING))));
 
   private Path destinationPath;
   private JsonNode config;
@@ -171,30 +171,31 @@ class CsvDestinationTest {
     consumer.close();
 
     // verify contents of CSV file
-    final String usersActual = Files.readString(destinationPath.resolve(USERS_FILE));
+    final String usersActual = Files.readString(destinationPath.resolve(NAMESPACE).resolve(USERS_FILE));
     // csv adds all of these goofy quotes.
     final String EXPECTED_USERS1 = "\"{\"\"name\"\":\"\"john\"\",\"\"id\"\":\"\"10\"\"}\"";
     final String EXPECTED_USERS2 = "\"{\"\"name\"\":\"\"susan\"\",\"\"id\"\":\"\"30\"\"}\"";
     assertTrue(usersActual.contains(EXPECTED_USERS1));
     assertTrue(usersActual.contains(EXPECTED_USERS2));
 
-    final String tasksActual = Files.readString(destinationPath.resolve(TASKS_FILE));
+    final String tasksActual = Files.readString(destinationPath.resolve(NAMESPACE).resolve(TASKS_FILE));
     final String EXPECTED_TASKS1 = "\"{\"\"goal\"\":\"\"announce the game.\"\"}\"";
     final String EXPECTED_TASKS2 = "\"{\"\"goal\"\":\"\"ship some code.\"\"}\"";
     assertTrue(tasksActual.contains(EXPECTED_TASKS1));
     assertTrue(tasksActual.contains(EXPECTED_TASKS2));
 
     // verify that the file is parsable as json (sanity check since the quoting is so goofy).
-    final List<JsonNode> actualUsersJson = csvToJson(destinationPath.resolve(USERS_FILE));
+    final List<JsonNode> actualUsersJson = csvToJson(destinationPath.resolve(NAMESPACE).resolve(USERS_FILE));
     final List<JsonNode> expectedUsersJson = Lists.newArrayList(MESSAGE_USERS1.getRecord().getData(), MESSAGE_USERS2.getRecord().getData());
     assertEquals(expectedUsersJson, actualUsersJson);
 
-    final List<JsonNode> actualTasksJson = csvToJson(destinationPath.resolve(TASKS_FILE));
+    final List<JsonNode> actualTasksJson = csvToJson(destinationPath.resolve(NAMESPACE).resolve(TASKS_FILE));
     final List<JsonNode> expectedTasksJson = Lists.newArrayList(MESSAGE_TASKS1.getRecord().getData(), MESSAGE_TASKS2.getRecord().getData());
     assertEquals(expectedTasksJson, actualTasksJson);
 
     // verify tmp files are cleaned up
-    final Set<String> actualFilenames = Files.list(destinationPath).map(Path::getFileName).map(Path::toString).collect(Collectors.toSet());
+    final Set<String> actualFilenames =
+        Files.list(destinationPath.resolve(NAMESPACE)).map(Path::getFileName).map(Path::toString).collect(Collectors.toSet());
     final Set<String> expectedFilenames = Sets.newHashSet(USERS_FILE, TASKS_FILE);
     assertEquals(expectedFilenames, actualFilenames);
   }

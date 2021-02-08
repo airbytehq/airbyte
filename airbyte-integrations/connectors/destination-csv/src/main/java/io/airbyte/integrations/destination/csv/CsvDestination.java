@@ -33,6 +33,7 @@ import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.destination.NamingHelper;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
@@ -98,11 +99,15 @@ public class CsvDestination implements Destination {
 
     final Map<String, WriteConfig> writeConfigs = new HashMap<>();
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
-      final String streamName = stream.getStream().getName();
-      final String tableName = namingResolver.getRawTableName(streamName);
-      final String tmpTableName = namingResolver.getTmpTableName(streamName);
-      final Path tmpPath = destinationDir.resolve(tmpTableName + ".csv");
-      final Path finalPath = destinationDir.resolve(tableName + ".csv");
+      final String folderName = namingResolver.getIdentifier(stream.getTargetNamespace());
+      final String fileName = namingResolver.getIdentifier(stream.getAliasName());
+      final String tmpFolderName = NamingHelper.getTmpSchemaName(namingResolver, folderName);
+      final String tmpFileName = NamingHelper.getTmpTableName(namingResolver, fileName);
+
+      final Path tmpPath = destinationDir.resolve(tmpFolderName).resolve(tmpFileName + ".csv");
+      final Path finalPath = destinationDir.resolve(folderName).resolve(fileName + ".csv");
+      Files.createDirectories(tmpPath.getParent());
+
       CSVFormat csvFormat = CSVFormat.DEFAULT.withHeader(JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
           JavaBaseConstants.COLUMN_NAME_DATA);
       final boolean isIncremental = stream.getSyncMode() == SyncMode.INCREMENTAL;
@@ -194,6 +199,7 @@ public class CsvDestination implements Destination {
       try {
         if (!hasFailed) {
           for (final WriteConfig writeConfig : writeConfigs.values()) {
+            Files.createDirectories(writeConfig.getFinalPath().getParent());
             Files.move(writeConfig.getTmpPath(), writeConfig.getFinalPath(), StandardCopyOption.REPLACE_EXISTING);
             LOGGER.info(String.format("File output: %s", writeConfig.getFinalPath()));
           }
@@ -206,6 +212,7 @@ public class CsvDestination implements Destination {
         // clean up tmp files.
         for (final WriteConfig writeConfig : writeConfigs.values()) {
           Files.deleteIfExists(writeConfig.getTmpPath());
+          FileUtils.deleteDirectory(writeConfig.getTmpPath().getParent().toFile());
         }
       }
     }

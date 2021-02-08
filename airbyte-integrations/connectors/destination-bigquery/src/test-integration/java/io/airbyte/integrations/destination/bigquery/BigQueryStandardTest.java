@@ -44,6 +44,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.destination.NamingHelper;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.TestDestination;
 import java.io.ByteArrayInputStream;
@@ -66,15 +67,20 @@ public class BigQueryStandardTest extends TestDestination {
 
   private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
 
-  private static final String CONFIG_DATASET_ID = "dataset_id";
   private static final String CONFIG_PROJECT_ID = "project_id";
   private static final String CONFIG_CREDS = "credentials_json";
 
   private BigQuery bigquery;
+  private String namespace;
   private Dataset dataset;
   private boolean tornDown;
   private JsonNode config;
   private StandardNameTransformer namingResolver = new StandardNameTransformer();
+
+  @Override
+  protected String getNamespace() {
+    return namespace;
+  }
 
   @Override
   protected String getImageName() {
@@ -99,13 +105,16 @@ public class BigQueryStandardTest extends TestDestination {
 
   @Override
   protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv testEnv, String streamName) throws Exception {
-    String tableName = namingResolver.getIdentifier(streamName);
-    return retrieveRecordsFromTable(testEnv, tableName);
+    final String datasetName = namingResolver.getIdentifier(getNamespace());
+    final String tableName = namingResolver.getIdentifier(streamName);
+    return retrieveRecordsFromTable(datasetName, tableName);
   }
 
   @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
-    return retrieveRecordsFromTable(env, namingResolver.getRawTableName(streamName))
+    final String datasetName = NamingHelper.getTmpSchemaName(namingResolver, getNamespace());
+    final String tableName = namingResolver.getIdentifier(streamName);
+    return retrieveRecordsFromTable(datasetName, tableName)
         .stream()
         .map(node -> node.get(JavaBaseConstants.COLUMN_NAME_DATA).asText())
         .map(Jsons::deserialize)
@@ -120,11 +129,11 @@ public class BigQueryStandardTest extends TestDestination {
     return result;
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(TestDestinationEnv env, String tableName) throws InterruptedException {
+  private List<JsonNode> retrieveRecordsFromTable(String datasetName, String tableName) throws InterruptedException {
     final QueryJobConfiguration queryConfig =
         QueryJobConfiguration
             .newBuilder(
-                String.format("SELECT * FROM `%s`.`%s` order by %s asc;", dataset.getDatasetId().getDataset(), tableName,
+                String.format("SELECT * FROM `%s`.`%s` order by %s asc;", datasetName, tableName,
                     JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
             .setUseLegacySql(false).build();
 
@@ -173,11 +182,9 @@ public class BigQueryStandardTest extends TestDestination {
     final JsonNode credentialsJson = Jsons.deserialize(credentialsJsonString);
     final String projectId = credentialsJson.get(CONFIG_PROJECT_ID).asText();
 
-    final String datasetId = "airbyte_tests_" + RandomStringUtils.randomAlphanumeric(8);
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(CONFIG_PROJECT_ID, projectId)
         .put(CONFIG_CREDS, credentialsJsonString)
-        .put(CONFIG_DATASET_ID, datasetId)
         .build());
 
     final ServiceAccountCredentials credentials =
@@ -188,7 +195,8 @@ public class BigQueryStandardTest extends TestDestination {
         .build()
         .getService();
 
-    final DatasetInfo datasetInfo = DatasetInfo.newBuilder(config.get(CONFIG_DATASET_ID).asText()).build();
+    namespace = ("integration_test_" + RandomStringUtils.randomAlphanumeric(5));
+    final DatasetInfo datasetInfo = DatasetInfo.newBuilder(namespace).build();
     dataset = bigquery.create(datasetInfo);
 
     tornDown = false;
@@ -213,9 +221,9 @@ public class BigQueryStandardTest extends TestDestination {
 
     final boolean success = bigquery.delete(dataset.getDatasetId(), option);
     if (success) {
-      LOGGER.info("BQ Dataset " + dataset + " deleted...");
+      LOGGER.info("BQ Dataset " + namespace + " deleted...");
     } else {
-      LOGGER.info("BQ Dataset cleanup for " + dataset + " failed!");
+      LOGGER.info("BQ Dataset cleanup for " + namespace + " failed!");
     }
 
     tornDown = true;

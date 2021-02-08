@@ -25,27 +25,27 @@
 package io.airbyte.integrations.destination;
 
 import io.airbyte.commons.text.Names;
-import java.time.Instant;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class StandardNameTransformer implements NamingConventionTransformer {
 
+  private static final int MAX_IDENTIFIER_LENGTH = 1024;
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(StandardNameTransformer.class);
+
+  protected int getMaxIdentifierLength() {
+    return MAX_IDENTIFIER_LENGTH;
+  }
+
   @Override
   public String getIdentifier(String name) {
-    return convertStreamName(name);
-  }
-
-  @Override
-  public String getRawTableName(String streamName) {
-    return convertStreamName("_airbyte_raw_" + streamName);
-  }
-
-  @Override
-  public String getTmpTableName(String streamName) {
-    return convertStreamName("_airbyte_" + Instant.now().toEpochMilli() + "_" + streamName);
-  }
-
-  protected String convertStreamName(String input) {
-    return Names.toAlphanumericAndUnderscore(input);
+    if (name.length() >= getMaxIdentifierLength()) {
+      final String newName = name.substring(0, getMaxIdentifierLength() - 1);
+      LOGGER.warn(String.format("Identifier '%s' is too long, truncating it to: `%s`", name, newName));
+      name = newName;
+    }
+    return Names.toAlphanumericAndUnderscore(name);
   }
 
 }

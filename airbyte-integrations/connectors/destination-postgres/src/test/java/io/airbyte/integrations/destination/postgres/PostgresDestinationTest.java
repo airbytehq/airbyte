@@ -42,6 +42,7 @@ import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
+import io.airbyte.integrations.destination.NamingHelper;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -62,6 +63,7 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.jooq.JSONFormat;
@@ -75,6 +77,7 @@ class PostgresDestinationTest {
 
   private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
   private static final Instant NOW = Instant.now();
+  private static final String NAMESPACE = "test";
   private static final String USERS_STREAM_NAME = "users";
   private static final String TASKS_STREAM_NAME = "tasks-list";
   private static final AirbyteMessage MESSAGE_USERS1 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
@@ -98,9 +101,9 @@ class PostgresDestinationTest {
       .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.builder().put("checkpoint", "now!").build())));
 
   private static final ConfiguredAirbyteCatalog CATALOG = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-      CatalogHelpers.createConfiguredAirbyteStream(USERS_STREAM_NAME, Field.of("name", JsonSchemaPrimitive.STRING),
+      CatalogHelpers.createConfiguredAirbyteStream(NAMESPACE, USERS_STREAM_NAME, Field.of("name", JsonSchemaPrimitive.STRING),
           Field.of("id", JsonSchemaPrimitive.STRING)),
-      CatalogHelpers.createConfiguredAirbyteStream(TASKS_STREAM_NAME, Field.of("goal", JsonSchemaPrimitive.STRING))));
+      CatalogHelpers.createConfiguredAirbyteStream(NAMESPACE, TASKS_STREAM_NAME, Field.of("goal", JsonSchemaPrimitive.STRING))));
 
   private static final NamingConventionTransformer NAMING_TRANSFORMER = new PostgresSQLNameTransformer();
 
@@ -168,11 +171,14 @@ class PostgresDestinationTest {
     consumer.accept(MESSAGE_STATE);
     consumer.close();
 
-    Set<JsonNode> usersActual = recordRetriever(NAMING_TRANSFORMER.getRawTableName(USERS_STREAM_NAME));
+    final String schemaName = NamingHelper.getTmpSchemaName(NAMING_TRANSFORMER, NAMESPACE);
+    String streamName = schemaName + "." + NAMING_TRANSFORMER.getIdentifier(USERS_STREAM_NAME);
+    Set<JsonNode> usersActual = recordRetriever(streamName);
     final Set<JsonNode> expectedUsersJson = Sets.newHashSet(MESSAGE_USERS1.getRecord().getData(), MESSAGE_USERS2.getRecord().getData());
     assertEquals(expectedUsersJson, usersActual);
 
-    Set<JsonNode> tasksActual = recordRetriever(NAMING_TRANSFORMER.getRawTableName(TASKS_STREAM_NAME));
+    streamName = schemaName + "." + NAMING_TRANSFORMER.getIdentifier(TASKS_STREAM_NAME);
+    Set<JsonNode> tasksActual = recordRetriever(streamName);
     final Set<JsonNode> expectedTasksJson = Sets.newHashSet(MESSAGE_TASKS1.getRecord().getData(), MESSAGE_TASKS2.getRecord().getData());
     assertEquals(expectedTasksJson, tasksActual);
 
@@ -209,14 +215,17 @@ class PostgresDestinationTest {
     consumer2.accept(messageUser3);
     consumer2.close();
 
-    Set<JsonNode> usersActual = recordRetriever(NAMING_TRANSFORMER.getRawTableName(USERS_STREAM_NAME));
+    final String schemaName = NamingHelper.getTmpSchemaName(NAMING_TRANSFORMER, NAMESPACE);
+    String streamName = schemaName + "." + NAMING_TRANSFORMER.getIdentifier(USERS_STREAM_NAME);
+    Set<JsonNode> usersActual = recordRetriever(streamName);
     final Set<JsonNode> expectedUsersJson = Sets.newHashSet(
         MESSAGE_USERS1.getRecord().getData(),
         MESSAGE_USERS2.getRecord().getData(),
         messageUser3.getRecord().getData());
     assertEquals(expectedUsersJson, usersActual);
 
-    Set<JsonNode> tasksActual = recordRetriever(NAMING_TRANSFORMER.getRawTableName(TASKS_STREAM_NAME));
+    streamName = schemaName + "." + NAMING_TRANSFORMER.getIdentifier(TASKS_STREAM_NAME);
+    Set<JsonNode> tasksActual = recordRetriever(streamName);
     final Set<JsonNode> expectedTasksJson = Sets.newHashSet(MESSAGE_TASKS1.getRecord().getData(), MESSAGE_TASKS2.getRecord().getData());
     assertEquals(expectedTasksJson, tasksActual);
 
@@ -248,13 +257,13 @@ class PostgresDestinationTest {
     consumer.accept(MESSAGE_STATE);
     consumer.close();
 
-    final String schemaName = NAMING_TRANSFORMER.getIdentifier("new_schema");
-    String streamName = schemaName + "." + NAMING_TRANSFORMER.getRawTableName(USERS_STREAM_NAME);
+    final String schemaName = NamingHelper.getTmpSchemaName(NAMING_TRANSFORMER, NAMESPACE);
+    String streamName = schemaName + "." + NAMING_TRANSFORMER.getIdentifier(USERS_STREAM_NAME);
     Set<JsonNode> usersActual = recordRetriever(streamName);
     final Set<JsonNode> expectedUsersJson = Sets.newHashSet(MESSAGE_USERS1.getRecord().getData(), MESSAGE_USERS2.getRecord().getData());
     assertEquals(expectedUsersJson, usersActual);
 
-    streamName = schemaName + "." + NAMING_TRANSFORMER.getRawTableName(TASKS_STREAM_NAME);
+    streamName = schemaName + "." + NAMING_TRANSFORMER.getIdentifier(TASKS_STREAM_NAME);
     Set<JsonNode> tasksActual = recordRetriever(streamName);
     final Set<JsonNode> expectedTasksJson = Sets.newHashSet(MESSAGE_TASKS1.getRecord().getData(), MESSAGE_TASKS2.getRecord().getData());
     assertEquals(expectedTasksJson, tasksActual);
@@ -264,8 +273,6 @@ class PostgresDestinationTest {
         .map(ConfiguredAirbyteStream::getStream)
         .map(AirbyteStream::getName)
         .collect(Collectors.toList()));
-
-    assertThrows(RuntimeException.class, () -> recordRetriever(NAMING_TRANSFORMER.getRawTableName(USERS_STREAM_NAME)));
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -286,7 +293,7 @@ class PostgresDestinationTest {
     final List<String> tableNames = CATALOG.getStreams()
         .stream()
         .map(ConfiguredAirbyteStream::getStream)
-        .map(s -> NAMING_TRANSFORMER.getRawTableName(s.getName()))
+        .map(s -> NamingHelper.getTmpSchemaName(NAMING_TRANSFORMER, s.getName()))
         .collect(Collectors.toList());
     assertTmpTablesNotPresent(CATALOG.getStreams()
         .stream()
@@ -298,15 +305,21 @@ class PostgresDestinationTest {
   }
 
   private List<String> fetchNamesOfTablesInDb() throws SQLException {
+    final String query = String.format("SELECT table_name FROM information_schema.tables WHERE table_schema='%s' AND table_type='BASE TABLE';",
+        NamingHelper.getTmpSchemaName(NAMING_TRANSFORMER, NAMESPACE));
     return database.query(
-        ctx -> ctx.fetch("SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE';"))
+        ctx -> ctx.fetch(query))
         .stream()
         .map(record -> (String) record.get("table_name")).collect(Collectors.toList());
   }
 
   private void assertTmpTablesNotPresent(List<String> tableNames) throws SQLException {
-    Set<String> tmpTableNamePrefixes = tableNames.stream().map(name -> name + "_\\d+").collect(Collectors.toSet());
-    assertTrue(fetchNamesOfTablesInDb().stream().noneMatch(tableName -> tmpTableNamePrefixes.stream().anyMatch(tableName::matches)));
+    // search for table names that have the tmp table prefix but are not raw tables.
+    assertTrue(fetchNamesOfTablesInDb()
+        .stream()
+        .filter(Objects::nonNull)
+        .filter(tableName -> !tableNames.contains(tableName))
+        .noneMatch(tableName -> tableName.startsWith("_tmp_")));
   }
 
   private Set<JsonNode> recordRetriever(String streamName) throws Exception {

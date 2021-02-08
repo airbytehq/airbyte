@@ -24,41 +24,29 @@
 
 package io.airbyte.integrations.destination;
 
-/**
- * When choosing identifiers names in destinations, extended Names can handle more special
- * characters than standard Names by using the quoting characters: "..."
- *
- * This class detects when such special characters are used and adds the appropriate quoting when
- * necessary.
- */
-public class ExtendedNameTransformer extends StandardNameTransformer {
+import java.time.Instant;
+import org.apache.commons.lang3.RandomStringUtils;
 
-  @Override
-  public String getIdentifier(String input) {
-    return super.getIdentifier(input);
+public class NamingHelper {
+
+  /**
+   * Returns the name of a schema for storing raw data associated with a schema name. Make sure to
+   * apply the proper naming convention on the final table name for the database
+   */
+  public static String getTmpSchemaName(NamingConventionTransformer transformer, String schemaName) {
+    if (schemaName != null)
+      return transformer.getIdentifier("_airbyte_" + schemaName);
+    else
+      return transformer.getIdentifier("_airbyte");
   }
 
-  // Temporarily disabling the behavior of the ExtendedNameTransformer, see (issue #1785)
-  protected String disabled_getIdentifier(String input) {
-    if (useExtendedIdentifiers(input)) {
-      return "\"" + input + "\"";
-    } else {
-      return applyDefaultCase(input);
-    }
-  }
-
-  protected String applyDefaultCase(String input) {
-    return input;
-  }
-
-  protected boolean useExtendedIdentifiers(String input) {
-    boolean result = false;
-    if (input.matches("[^\\p{Alpha}_].*")) {
-      result = true;
-    } else if (input.matches(".*[^\\p{Alnum}_].*")) {
-      result = true;
-    }
-    return result;
+  /**
+   * Returns the name of the table for storing tmp data associated with a stream name. Name is
+   * randomly generated.
+   */
+  public static String getTmpTableName(NamingConventionTransformer transformer, String streamName) {
+    return transformer
+        .getIdentifier(String.format("_tmp_%s%s_%s", RandomStringUtils.randomAlphanumeric(4), Instant.now().toEpochMilli(), streamName));
   }
 
 }

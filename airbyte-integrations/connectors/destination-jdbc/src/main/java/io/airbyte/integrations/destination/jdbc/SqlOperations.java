@@ -41,6 +41,14 @@ public interface SqlOperations {
   void createSchemaIfNotExists(JdbcDatabase database, String schemaName) throws Exception;
 
   /**
+   * Drop a schema with provided name if it exists.
+   *
+   * @param schemaName name of schema.
+   * @throws Exception exception
+   */
+  void dropSchemaIfExists(JdbcDatabase database, String schemaName) throws Exception;
+
+  /**
    * Create a table with provided name in provided schema if it does not already exist.
    *
    * @param schemaName name of schema

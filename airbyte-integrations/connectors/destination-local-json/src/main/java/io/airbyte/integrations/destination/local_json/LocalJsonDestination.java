@@ -34,6 +34,7 @@ import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.destination.NamingHelper;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
@@ -98,9 +99,14 @@ public class LocalJsonDestination implements Destination {
 
     final Map<String, WriteConfig> writeConfigs = new HashMap<>();
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
-      final String streamName = stream.getStream().getName();
-      final Path finalPath = destinationDir.resolve(namingResolver.getRawTableName(streamName) + ".jsonl");
-      final Path tmpPath = destinationDir.resolve(namingResolver.getTmpTableName(streamName) + ".jsonl");
+      final String folderName = namingResolver.getIdentifier(stream.getTargetNamespace());
+      final String fileName = namingResolver.getIdentifier(stream.getAliasName());
+      final String tmpFolderName = NamingHelper.getTmpSchemaName(namingResolver, folderName);
+      final String tmpFileName = NamingHelper.getTmpTableName(namingResolver, fileName);
+
+      final Path tmpPath = destinationDir.resolve(tmpFolderName).resolve(tmpFileName + ".jsonl");
+      final Path finalPath = destinationDir.resolve(folderName).resolve(fileName + ".jsonl");
+      Files.createDirectories(tmpPath.getParent());
 
       final boolean isIncremental = stream.getSyncMode() == SyncMode.INCREMENTAL;
       if (isIncremental && finalPath.toFile().exists()) {
@@ -192,6 +198,7 @@ public class LocalJsonDestination implements Destination {
       try {
         if (!hasFailed) {
           for (final WriteConfig writeConfig : writeConfigs.values()) {
+            Files.createDirectories(writeConfig.getFinalPath().getParent());
             Files.move(writeConfig.getTmpPath(), writeConfig.getFinalPath(), StandardCopyOption.REPLACE_EXISTING);
             LOGGER.info(String.format("File output: %s", writeConfig.getFinalPath()));
           }
@@ -204,6 +211,7 @@ public class LocalJsonDestination implements Destination {
         // clean up tmp files.
         for (final WriteConfig writeConfig : writeConfigs.values()) {
           Files.deleteIfExists(writeConfig.getTmpPath());
+          FileUtils.deleteDirectory(writeConfig.getTmpPath().getParent().toFile());
         }
       }
     }

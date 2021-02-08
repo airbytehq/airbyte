@@ -44,28 +44,6 @@ public class Names {
         .replaceAll(NON_ALPHANUMERIC_AND_UNDERSCORE_PATTERN, "_");
   }
 
-  /**
-   * Concatenate Strings together, but handles the case where the strings are already quoted
-   */
-  public static String concatQuotedNames(final String inputStr1, final String inputStr2) {
-    boolean anyQuotes = false;
-    String unquotedStr1 = inputStr1;
-    String unquotedStr2 = inputStr2;
-    if (inputStr1.startsWith("\"")) {
-      unquotedStr1 = inputStr1.substring(1, inputStr1.length() - 1);
-      anyQuotes = true;
-    }
-    if (inputStr2.startsWith("\"")) {
-      unquotedStr2 = inputStr2.substring(1, inputStr2.length() - 1);
-      anyQuotes = true;
-    }
-    if (anyQuotes) {
-      return "\"" + unquotedStr1 + unquotedStr2 + "\"";
-    } else {
-      return unquotedStr1 + unquotedStr2;
-    }
-  }
-
   public static String doubleQuote(String value) {
     return internalQuote(value, '"');
   }

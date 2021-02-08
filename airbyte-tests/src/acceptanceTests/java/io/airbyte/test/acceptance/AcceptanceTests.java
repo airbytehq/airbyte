@@ -268,7 +268,8 @@ public class AcceptanceTests {
   @Test
   @Order(5)
   public void testDiscoverSourceSchema() throws ApiException {
-    final UUID sourceId = createPostgresSource().getSourceId();
+    final SourceRead source = createPostgresSource();
+    final UUID sourceId = source.getSourceId();
 
     final AirbyteCatalog actual = discoverSourceSchema(sourceId);
 
@@ -288,6 +289,7 @@ public class AcceptanceTests {
         .syncMode(SyncMode.FULL_REFRESH)
         .cursorField(Collections.emptyList())
         .aliasName(STREAM_NAME.replace(".", "_"))
+        .targetNamespace(source.getName().replace("-", "_"))
         .selected(true);
     final AirbyteCatalog expected = new AirbyteCatalog()
         .streams(Lists.newArrayList(new AirbyteStreamAndConfiguration()
@@ -320,7 +322,8 @@ public class AcceptanceTests {
   @Order(7)
   public void testManualSync() throws Exception {
     final String connectionName = "test-connection";
-    final UUID sourceId = createPostgresSource().getSourceId();
+    final SourceRead source = createPostgresSource();
+    final UUID sourceId = source.getSourceId();
     final UUID destinationId = createDestination().getDestinationId();
     final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
     final SyncMode syncMode = SyncMode.FULL_REFRESH;
@@ -330,17 +333,19 @@ public class AcceptanceTests {
 
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
-    assertSourceAndTargetDbInSync(sourcePsql);
+    assertSourceAndTargetDbInSync(sourcePsql, source.getName());
   }
 
   @Test
   @Order(8)
   public void testIncrementalSync() throws Exception {
     final String connectionName = "test-connection";
-    final UUID sourceId = createPostgresSource().getSourceId();
+    final SourceRead source = createPostgresSource();
+    final UUID sourceId = source.getSourceId();
     final UUID destinationId = createDestination().getDestinationId();
     final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
     final AirbyteStream stream = catalog.getStreams().get(0).getStream();
+    final String namespace = source.getName();
 
     assertEquals(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
         stream.getSupportedSyncModes());
@@ -357,35 +362,35 @@ public class AcceptanceTests {
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead1.getJob());
 
-    assertSourceAndTargetDbInSync(sourcePsql);
+    assertSourceAndTargetDbInSync(sourcePsql, source.getName());
 
     // add new records and run again.
-    final Database source = getDatabase(sourcePsql);
+    final Database sourceDb = getDatabase(sourcePsql);
     // get contents of source before mutating records.
-    final List<JsonNode> expectedRecords = retrieveSourceRecords(source, STREAM_NAME);
+    final List<JsonNode> expectedRecords = retrieveSourceRecords(sourceDb, STREAM_NAME);
     expectedRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, "geralt").build()));
     // add a new record
-    source.query(ctx -> ctx.execute("INSERT INTO id_and_name(id, name) VALUES(6, 'geralt')"));
+    sourceDb.query(ctx -> ctx.execute("INSERT INTO id_and_name(id, name) VALUES(6, 'geralt')"));
     // mutate a record that was already synced with out updating its cursor value. if we are actually
     // full refreshing, this record will appear in the output and cause the test to fail. if we are,
     // correctly, doing incremental, we will not find this value in the destination.
-    source.query(ctx -> ctx.execute("UPDATE id_and_name SET name='yennefer' WHERE id=2"));
-    source.close();
+    sourceDb.query(ctx -> ctx.execute("UPDATE id_and_name SET name='yennefer' WHERE id=2"));
+    sourceDb.close();
 
     final JobInfoRead connectionSyncRead2 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead2.getJob());
-    assertDestinationContains(expectedRecords, STREAM_NAME);
+    assertDestinationContains(expectedRecords, STREAM_NAME, namespace);
 
     // reset back to no data.
     apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    assertDestinationContains(Collections.emptyList(), STREAM_NAME);
+    assertDestinationContains(Collections.emptyList(), STREAM_NAME, namespace);
 
     // sync one more time. verify it is the equivalent of a full refresh.
     final JobInfoRead connectionSyncRead3 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead3.getJob());
-    assertSourceAndTargetDbInSync(sourcePsql);
+    assertSourceAndTargetDbInSync(sourcePsql, namespace);
   }
 
   @Test
@@ -395,7 +400,8 @@ public class AcceptanceTests {
     Assume.assumeFalse(IS_KUBE);
 
     final String connectionName = "test-connection";
-    final UUID sourceId = createPostgresSource().getSourceId();
+    final SourceRead source = createPostgresSource();
+    final UUID sourceId = source.getSourceId();
     final UUID destinationId = createDestination().getDestinationId();
     final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
 
@@ -408,7 +414,7 @@ public class AcceptanceTests {
     // When a new connection is created, Airbyte might sync it immediately (before the sync interval).
     // Then it will wait the sync interval.
     Thread.sleep(Duration.of(30, SECONDS).toMillis());
-    assertSourceAndTargetDbInSync(sourcePsql);
+    assertSourceAndTargetDbInSync(sourcePsql, source.getName());
   }
 
   @Test
@@ -437,18 +443,18 @@ public class AcceptanceTests {
     return apiClient.getSourceApi().discoverSchemaForSource(new SourceIdRequestBody().sourceId(sourceId)).getCatalog();
   }
 
-  private void assertSourceAndTargetDbInSync(PostgreSQLContainer sourceDb) throws Exception {
+  private void assertSourceAndTargetDbInSync(PostgreSQLContainer sourceDb, String namespace) throws Exception {
     final Database source = getDatabase(sourceDb);
 
     final Set<String> sourceStreams = listStreams(source);
-    final Set<String> sourceStreamsWithRawPrefix = sourceStreams.stream().map(x -> "_airbyte_raw_" + x.replace(".", "_")).collect(Collectors.toSet());
+    final Set<String> formattedSourceStreams = sourceStreams.stream().map(s -> s.replace(".", "_")).collect(Collectors.toSet());
     final Database destination = getDatabase(destinationPsql);
-    final Set<String> destinationStreams = listDestinationStreams(destination);
-    assertEquals(sourceStreamsWithRawPrefix, destinationStreams,
+    final Set<String> destinationStreams = listDestinationStreams(destination, "_airbyte_" + namespace);
+    assertEquals(formattedSourceStreams, destinationStreams,
         String.format("streams did not match.\n source stream names: %s\n destination stream names: %s\n", sourceStreams, destinationStreams));
 
     for (String table : sourceStreams) {
-      assertStreamsEquivalent(source, table);
+      assertStreamsEquivalent(source, table, namespace);
     }
   }
 
@@ -472,18 +478,19 @@ public class AcceptanceTests {
         });
   }
 
-  private Set<String> listDestinationStreams(Database destination) throws SQLException {
-    return destination.query(ctx -> ctx.resultQuery("SELECT table_name\n" +
+  private Set<String> listDestinationStreams(Database destination, String namespace) throws SQLException {
+    final String query = "SELECT table_name\n" +
         "FROM information_schema.tables\n" +
-        "WHERE table_schema = 'public'\n" +
-        "ORDER BY table_name;"))
+        "WHERE table_schema = '" + namespace.replace("-", "_") + "'\n" +
+        "ORDER BY table_name;";
+    return destination.query(ctx -> ctx.resultQuery(query))
         .stream()
         .map(x -> x.get("table_name", String.class))
         .collect(Collectors.toSet());
   }
 
-  private void assertDestinationContains(List<JsonNode> sourceRecords, String streamName) throws Exception {
-    final Set<JsonNode> destinationRecords = new HashSet<>(retrieveDestinationRecords(streamName));
+  private void assertDestinationContains(List<JsonNode> sourceRecords, String streamName, String namespace) throws Exception {
+    final Set<JsonNode> destinationRecords = new HashSet<>(retrieveDestinationRecords(streamName, namespace));
 
     assertEquals(sourceRecords.size(), destinationRecords.size(),
         String.format("destination contains: %s record. source contains: %s", sourceRecords.size(), destinationRecords.size()));
@@ -494,9 +501,9 @@ public class AcceptanceTests {
     }
   }
 
-  private void assertStreamsEquivalent(Database source, String table) throws Exception {
+  private void assertStreamsEquivalent(Database source, String table, String namespace) throws Exception {
     final List<JsonNode> sourceRecords = retrieveSourceRecords(source, table);
-    assertDestinationContains(sourceRecords, table);
+    assertDestinationContains(sourceRecords, table, namespace);
   }
 
   private ConnectionRead createConnection(String name,
@@ -556,7 +563,7 @@ public class AcceptanceTests {
   }
 
   private List<JsonNode> retrieveDestinationRecords(Database database, String table) throws SQLException {
-    return database.query(context -> context.fetch(String.format("SELECT * FROM \"%s\";", table)))
+    return database.query(context -> context.fetch(String.format("SELECT * FROM %s;", table)))
         .stream()
         .map(Record::intoMap)
         .map(r -> r.get(COLUMN_NAME_DATA))
@@ -567,13 +574,14 @@ public class AcceptanceTests {
         .collect(Collectors.toList());
   }
 
-  private List<JsonNode> retrieveDestinationRecords(String streamName) throws Exception {
+  private List<JsonNode> retrieveDestinationRecords(String streamName, String namespace) throws Exception {
+    streamName = streamName.replace(".", "_");
+    namespace = namespace.replace("-", "_");
     Database destination = getDatabase(destinationPsql);
-    Set<String> destinationStreams = listDestinationStreams(destination);
-    final String normalizedStreamName = "_airbyte_raw_" + streamName.replace(".", "_");
-    assertTrue(destinationStreams.contains(normalizedStreamName), "can't find a normalized version of " + streamName);
-
-    return retrieveDestinationRecords(destination, normalizedStreamName);
+    Set<String> normalizedDestinationStreams = listDestinationStreams(destination, namespace);
+    assertTrue(normalizedDestinationStreams.contains(streamName), String.format("can't find a normalized version of %s.%s", namespace, streamName));
+    final String rawDestinationStream = String.format("_airbyte_%s.%s", namespace, streamName);
+    return retrieveDestinationRecords(destination, rawDestinationStream);
   }
 
   private JsonNode getSourceDbConfig() {
@@ -592,7 +600,7 @@ public class AcceptanceTests {
     return getDbConfig(psql, false, false);
   }
 
-  private JsonNode getDbConfig(PostgreSQLContainer psql, boolean hiddenPassword, boolean withSchema) {
+  private JsonNode getDbConfig(PostgreSQLContainer psql, boolean hiddenPassword, boolean shouldNormalize) {
     try {
       final Map<Object, Object> dbConfig = new HashMap<>();
 
@@ -609,8 +617,8 @@ public class AcceptanceTests {
       dbConfig.put("database", psql.getDatabaseName());
       dbConfig.put("username", psql.getUsername());
 
-      if (withSchema) {
-        dbConfig.put("schema", "public");
+      if (shouldNormalize) {
+        dbConfig.put("basic_normalization", true);
       }
 
       return Jsons.jsonNode(dbConfig);
@@ -620,8 +628,10 @@ public class AcceptanceTests {
   }
 
   private SourceRead createPostgresSource() throws ApiException {
+    String sourceName = "acceptanceTestDb-" + UUID.randomUUID().toString();
+    sourceName = sourceName.substring(0, 20).toLowerCase();
     return createSource(
-        "acceptanceTestDb-" + UUID.randomUUID().toString(),
+        sourceName,
         PersistenceConstants.DEFAULT_WORKSPACE_ID,
         getPostgresSourceDefinitionId(),
         getSourceDbConfig());

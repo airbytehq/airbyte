@@ -28,9 +28,16 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 
 public class RedshiftSQLNameTransformer extends ExtendedNameTransformer {
 
+  private static final int MAX_IDENTIFIER_LENGTH = 127;
+
   @Override
-  protected String convertStreamName(String input) {
-    return super.convertStreamName(input).toLowerCase();
+  protected int getMaxIdentifierLength() {
+    return MAX_IDENTIFIER_LENGTH;
+  }
+
+  @Override
+  public String getIdentifier(String input) {
+    return super.getIdentifier(input).toLowerCase();
   }
 
 }

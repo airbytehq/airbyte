@@ -51,8 +51,6 @@ class NameTransformerTest {
     assertEquals("identifier_name", namingResolver.getIdentifier("identifier name"));
     assertEquals("identifier_", namingResolver.getIdentifier("identifier%"));
     assertEquals("_identifier_", namingResolver.getIdentifier("`identifier`"));
-
-    assertEquals("_airbyte_raw_identifier_name", namingResolver.getRawTableName("identifier_name"));
   }
 
   // Temporarily disabling the behavior of the ExtendedNameTransformer, see (issue #1785)
@@ -74,9 +72,6 @@ class NameTransformerTest {
     assertEquals("\"identifier name\"", namingResolver.getIdentifier("identifier name"));
     assertEquals("\"identifier%\"", namingResolver.getIdentifier("identifier%"));
     assertEquals("\"`identifier`\"", namingResolver.getIdentifier("`identifier`"));
-
-    assertEquals("_airbyte_raw_identifier_name", namingResolver.getRawTableName("identifier_name"));
-    assertEquals("\"_airbyte_raw_identifiêr name\"", namingResolver.getRawTableName("identifiêr name"));
   }
 
 }

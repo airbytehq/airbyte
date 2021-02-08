@@ -10,7 +10,6 @@
       "role",
       "warehouse",
       "database",
-      "schema",
       "username",
       "password"
     ],
@@ -35,11 +34,6 @@
       "database": {
         "description": "The database you created for Airbyte to sync data into.",
         "examples": ["AIRBYTE_DATABASE"],
-        "type": "string"
-      },
-      "schema": {
-        "description": "The Snowflake schema you created for Airbyte to sync data into.",
-        "examples": ["AIRBYTE_SCHEMA"],
         "type": "string"
       },
       "username": {

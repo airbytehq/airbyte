@@ -5,6 +5,7 @@ plugins {
 
 dependencies {
     implementation 'commons-cli:commons-cli:1.4'
+    implementation 'org.apache.commons:commons-lang3:3.11'
 
     implementation project(':airbyte-db')
     implementation project(':airbyte-config:models')

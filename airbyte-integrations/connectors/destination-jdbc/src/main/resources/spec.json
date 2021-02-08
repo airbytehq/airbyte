@@ -20,12 +20,6 @@
       "jdbc_url": {
         "description": "JDBC formatted url. See the standard <a href=\"https://docs.oracle.com/cd/E17952_01/connector-j-8.0-en/connector-j-reference-jdbc-url-format.html\">here</a>.",
         "type": "string"
-      },
-      "schema": {
-        "description": "Unless specifically configured, the usual value for this field is \"public\".",
-        "type": "string",
-        "examples": ["public"],
-        "default": "public"
       }
     }
   }

@@ -48,6 +48,15 @@ public class DefaultSqlOperations implements SqlOperations {
   }
 
   @Override
+  public void dropSchemaIfExists(JdbcDatabase database, String schemaName) throws Exception {
+    database.execute(dropSchemaQuery(schemaName));
+  }
+
+  private String dropSchemaQuery(String schemaName) {
+    return String.format("DROP SCHEMA IF EXISTS %s CASCADE;\n", schemaName);
+  }
+
+  @Override
   public void createTableIfNotExists(JdbcDatabase database, String schemaName, String tableName) throws SQLException {
     database.execute(createTableQuery(schemaName, tableName));
   }

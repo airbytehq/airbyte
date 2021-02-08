@@ -74,11 +74,12 @@ public abstract class AbstractJdbcDestination implements Destination {
 
       // verify we have write permissions on the target schema by creating a table with a random name,
       // then dropping that table
-      String outputSchema = namingResolver.getIdentifier(config.get("schema").asText());
-      String outputTableName = "_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", "");
-      sqlOperations.createSchemaIfNotExists(database, outputSchema);
-      sqlOperations.createTableIfNotExists(database, outputSchema, outputTableName);
-      sqlOperations.dropTableIfExists(database, outputSchema, outputTableName);
+      final String outputSchemaName = "_airbyte_schema_connection_test_" + UUID.randomUUID().toString().replaceAll("-", "");
+      final String outputTableName = "_airbyte_table_connection_test_" + UUID.randomUUID().toString().replaceAll("-", "");
+      sqlOperations.createSchemaIfNotExists(database, outputSchemaName);
+      sqlOperations.createTableIfNotExists(database, outputSchemaName, outputTableName);
+      sqlOperations.dropTableIfExists(database, outputSchemaName, outputTableName);
+      sqlOperations.dropSchemaIfExists(database, outputSchemaName);
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (Exception e) {

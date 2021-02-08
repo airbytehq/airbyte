@@ -71,12 +71,13 @@ class IntegrationRunnerTest {
 
   private static final String CONFIG_STRING = "{ \"username\": \"airbyte\" }";
   private static final JsonNode CONFIG = Jsons.deserialize(CONFIG_STRING);
+  private static final String NAMESPACE = "test";
   private static final String STREAM_NAME = "users";
   private static final Long EMITTED_AT = Instant.now().toEpochMilli();
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
 
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(Lists.newArrayList(new AirbyteStream().withName(STREAM_NAME)));
-  private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
+  private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(NAMESPACE, CATALOG);
   private static final JsonNode STATE = Jsons.jsonNode(ImmutableMap.of("checkpoint", "05/08/1945"));
 
   private IntegrationCliParser cliParser;

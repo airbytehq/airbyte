@@ -86,6 +86,7 @@ public abstract class TestDestination {
 
   private static final long JOB_ID = 0L;
   private static final int JOB_ATTEMPT = 0;
+  private static final String NAMESPACE = "standard-integration-tests";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TestDestination.class);
 
@@ -130,6 +131,13 @@ public abstract class TestDestination {
    * @throws Exception - can throw any exception, test framework will handle.
    */
   protected abstract List<JsonNode> retrieveRecords(TestDestinationEnv testEnv, String streamName) throws Exception;
+
+  /**
+   * Function that @returns the namespace to use for running standard tests in the destination
+   */
+  protected String getNamespace() {
+    return NAMESPACE;
+  }
 
   /**
    * Override to return true to if the destination implements basic normalization and it should be
@@ -272,7 +280,7 @@ public abstract class TestDestination {
   @ArgumentsSource(DataArgumentsProvider.class)
   public void testSync(String messagesFilename, String catalogFilename) throws Exception {
     final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
-    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(getNamespace(), catalog);
     final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
     runSync(getConfig(), messages, configuredCatalog);
@@ -293,7 +301,7 @@ public abstract class TestDestination {
 
     final AirbyteCatalog catalog =
         Jsons.deserialize(MoreResources.readResource("exchange_rate_catalog.json"), AirbyteCatalog.class);
-    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(getNamespace(), catalog);
     configuredCatalog.getStreams().forEach(s -> s.withSyncMode(SyncMode.INCREMENTAL));
     final List<AirbyteMessage> firstSyncMessages = MoreResources.readResource("exchange_rate_messages.txt").lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
@@ -326,7 +334,7 @@ public abstract class TestDestination {
     }
 
     final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
-    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(getNamespace(), catalog);
     final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
     runSync(getConfigWithBasicNormalization(), messages, configuredCatalog);
@@ -344,7 +352,7 @@ public abstract class TestDestination {
   public void testSecondSync() throws Exception {
     final AirbyteCatalog catalog =
         Jsons.deserialize(MoreResources.readResource("exchange_rate_catalog.json"), AirbyteCatalog.class);
-    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(getNamespace(), catalog);
     final List<AirbyteMessage> firstSyncMessages = MoreResources.readResource("exchange_rate_messages.txt").lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
     runSync(getConfig(), firstSyncMessages, configuredCatalog);

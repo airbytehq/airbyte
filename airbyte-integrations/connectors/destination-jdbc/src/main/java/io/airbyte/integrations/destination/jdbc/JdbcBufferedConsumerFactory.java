@@ -25,12 +25,11 @@
 package io.airbyte.integrations.destination.jdbc;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.base.Preconditions;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.text.Names;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
+import io.airbyte.integrations.destination.NamingHelper;
 import io.airbyte.integrations.destination.WriteConfig;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer.OnCloseFunction;
@@ -39,7 +38,6 @@ import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStre
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.SyncMode;
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -76,16 +74,14 @@ public class JdbcBufferedConsumerFactory {
   }
 
   private static List<WriteConfig> createWriteConfigs(NamingConventionTransformer namingResolver, JsonNode config, ConfiguredAirbyteCatalog catalog) {
-    Preconditions.checkState(config.has("schema"), "jdbc destinations must specify a schema.");
-    final Instant now = Instant.now();
-
     return catalog.getStreams().stream().map(stream -> {
       final String streamName = stream.getStream().getName();
-      final String schemaName = namingResolver.getIdentifier(config.get("schema").asText());
-      final String tableName = Names.concatQuotedNames("_airbyte_raw_", namingResolver.getIdentifier(streamName));
-      final String tmpTableName = Names.concatQuotedNames("_airbyte_" + now.toEpochMilli() + "_", tableName);
+      final String schemaName = namingResolver.getIdentifier(stream.getTargetNamespace());
+      final String tableName = namingResolver.getIdentifier(stream.getAliasName());
+      final String tmpSchemaName = NamingHelper.getTmpSchemaName(namingResolver, schemaName);
+      final String tmpTableName = NamingHelper.getTmpTableName(namingResolver, tableName);
       final SyncMode syncMode = stream.getSyncMode() != null ? stream.getSyncMode() : SyncMode.FULL_REFRESH;
-      return new WriteConfig(streamName, schemaName, tmpTableName, tableName, syncMode);
+      return new WriteConfig(streamName, tmpSchemaName, tmpTableName, tableName, syncMode);
     }).collect(Collectors.toList());
   }
 
@@ -93,13 +89,13 @@ public class JdbcBufferedConsumerFactory {
     return () -> {
       LOGGER.info("Preparing tmp tables in destination started for {} streams", writeConfigs.size());
       for (final WriteConfig writeConfig : writeConfigs) {
-        final String schemaName = writeConfig.getOutputNamespaceName();
+        final String tmpSchemaName = writeConfig.getTmpNamespaceName();
         final String tmpTableName = writeConfig.getTmpTableName();
         LOGGER.info("Preparing tmp table in destination started for stream {}. schema {}, tmp table name: {}", writeConfig.getStreamName(),
-            schemaName, tmpTableName);
+            tmpSchemaName, tmpTableName);
 
-        sqlOperations.createSchemaIfNotExists(database, schemaName);
-        sqlOperations.createTableIfNotExists(database, schemaName, tmpTableName);
+        sqlOperations.createSchemaIfNotExists(database, tmpSchemaName);
+        sqlOperations.createTableIfNotExists(database, tmpSchemaName, tmpTableName);
       }
       LOGGER.info("Preparing tables in destination completed.");
     };
@@ -119,7 +115,7 @@ public class JdbcBufferedConsumerFactory {
       }
 
       final WriteConfig writeConfig = streamNameToWriteConfig.get(streamName);
-      sqlOperations.insertRecords(database, recordStream, writeConfig.getOutputNamespaceName(), writeConfig.getTmpTableName());
+      sqlOperations.insertRecords(database, recordStream, writeConfig.getTmpNamespaceName(), writeConfig.getTmpTableName());
     };
   }
 
@@ -130,19 +126,19 @@ public class JdbcBufferedConsumerFactory {
         final StringBuilder queries = new StringBuilder();
         LOGGER.info("Finalizing tables in destination started for {} streams", writeConfigs.size());
         for (WriteConfig writeConfig : writeConfigs) {
-          final String schemaName = writeConfig.getOutputNamespaceName();
+          final String tmpSchemaName = writeConfig.getTmpNamespaceName();
           final String srcTableName = writeConfig.getTmpTableName();
           final String dstTableName = writeConfig.getOutputTableName();
-          LOGGER.info("Finalizing stream {}. schema {}, tmp table {}, final table {}", writeConfig.getStreamName(), schemaName, srcTableName,
-              dstTableName);
+          LOGGER.info("Finalizing stream {}. schema {}, tmp table {}, final table {}",
+              writeConfig.getStreamName(), tmpSchemaName, srcTableName, dstTableName);
 
-          sqlOperations.createTableIfNotExists(database, schemaName, dstTableName);
+          sqlOperations.createTableIfNotExists(database, tmpSchemaName, dstTableName);
           switch (writeConfig.getSyncMode()) {
-            case FULL_REFRESH -> queries.append(sqlOperations.truncateTableQuery(schemaName, dstTableName));
+            case FULL_REFRESH -> queries.append(sqlOperations.truncateTableQuery(tmpSchemaName, dstTableName));
             case INCREMENTAL -> {}
             default -> throw new IllegalStateException("Unrecognized sync mode: " + writeConfig.getSyncMode());
           }
-          queries.append(sqlOperations.copyTableQuery(schemaName, srcTableName, dstTableName));
+          queries.append(sqlOperations.copyTableQuery(tmpSchemaName, srcTableName, dstTableName));
         }
 
         LOGGER.info("Executing finalization of tables.");
@@ -152,12 +148,13 @@ public class JdbcBufferedConsumerFactory {
       // clean up
       LOGGER.info("Cleaning tmp tables in destination started for {} streams", writeConfigs.size());
       for (WriteConfig writeConfig : writeConfigs) {
-        final String schemaName = writeConfig.getOutputNamespaceName();
+        final String tmpSchemaName = writeConfig.getTmpNamespaceName();
         final String tmpTableName = writeConfig.getTmpTableName();
-        LOGGER.info("Cleaning tmp table in destination started for stream {}. schema {}, tmp table name: {}", writeConfig.getStreamName(), schemaName,
+        LOGGER.info("Cleaning tmp table in destination started for stream {}. schema {}, tmp table name: {}", writeConfig.getStreamName(),
+            tmpSchemaName,
             tmpTableName);
 
-        sqlOperations.dropTableIfExists(database, schemaName, tmpTableName);
+        sqlOperations.dropTableIfExists(database, tmpSchemaName, tmpTableName);
       }
       LOGGER.info("Cleaning tmp tables in destination completed.");
     };

@@ -75,13 +75,13 @@ public class CsvDestinationIntegrationTest extends TestDestination {
 
   @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv, String streamName) throws Exception {
-    final List<Path> allOutputs = Files.list(testEnv.getLocalRoot().resolve(RELATIVE_PATH)).collect(Collectors.toList());
-    final Optional<Path> streamOutput =
-        allOutputs.stream().filter(path -> path.getFileName().toString().contains(new StandardNameTransformer().getRawTableName(streamName)))
-            .findFirst();
+    final String namespace = new StandardNameTransformer().getIdentifier(getNamespace());
+    final List<Path> allOutputs = Files.list(testEnv.getLocalRoot().resolve(RELATIVE_PATH).resolve(namespace)).collect(Collectors.toList());
+    final Optional<Path> streamOutput = allOutputs.stream()
+        .filter(path -> path.getFileName().toString().contains(new StandardNameTransformer().getIdentifier(streamName)))
+        .findFirst();
 
     assertTrue(streamOutput.isPresent(), "could not find output file for stream: " + streamName);
-
     final FileReader in = new FileReader(streamOutput.get().toFile());
     final Iterable<CSVRecord> records = CSVFormat.DEFAULT
         .withHeader(JavaBaseConstants.COLUMN_NAME_DATA)

@@ -29,14 +29,14 @@ import io.airbyte.protocol.models.SyncMode;
 public class WriteConfig {
 
   private final String streamName;
-  private final String outputNamespaceName;
+  private final String tmpNamespaceName;
   private final String tmpTableName;
   private final String outputTableName;
   private final SyncMode syncMode;
 
-  public WriteConfig(String streamName, String outputNamespaceName, String tmpTableName, String outputTableName, SyncMode syncMode) {
+  public WriteConfig(String streamName, String tmpNamespaceName, String tmpTableName, String outputTableName, SyncMode syncMode) {
     this.streamName = streamName;
-    this.outputNamespaceName = outputNamespaceName;
+    this.tmpNamespaceName = tmpNamespaceName;
     this.tmpTableName = tmpTableName;
     this.outputTableName = outputTableName;
     this.syncMode = syncMode;
@@ -46,12 +46,12 @@ public class WriteConfig {
     return streamName;
   }
 
-  public String getTmpTableName() {
-    return tmpTableName;
+  public String getTmpNamespaceName() {
+    return tmpNamespaceName;
   }
 
-  public String getOutputNamespaceName() {
-    return outputNamespaceName;
+  public String getTmpTableName() {
+    return tmpTableName;
   }
 
   public String getOutputTableName() {
