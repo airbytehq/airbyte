@@ -28,13 +28,13 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.Integration;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import java.io.IOException;
 
 public abstract class BaseConnector implements Integration {
 
   /**
    * By convention the spec is stored as a resource for java connectors. That resource is called
    * spec.json.
+   *
    * @return specification.
    * @throws Exception - any exception.
    */

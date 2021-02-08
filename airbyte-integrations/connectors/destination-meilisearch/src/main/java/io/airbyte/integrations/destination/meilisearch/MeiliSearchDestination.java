@@ -57,11 +57,11 @@ import org.slf4j.LoggerFactory;
 
 /**
  * <p>
- * Since this is not a relational database, it therefore makes some slightly different
- * choices. The main difference that we need to reckon with is that this destination does not work
- * without a primary key for each stream. That primary key needs to be defined ahead of time. Only
- * records for which that primary key is present can be uploaded. There are also some rules around
- * the allowed formats of these primary keys.
+ * Since this is not a relational database, it therefore makes some slightly different choices. The
+ * main difference that we need to reckon with is that this destination does not work without a
+ * primary key for each stream. That primary key needs to be defined ahead of time. Only records for
+ * which that primary key is present can be uploaded. There are also some rules around the allowed
+ * formats of these primary keys.
  * </p>
  * <p>
  * The strategy is to inject an extra airbyte primary key field in each record. The value of that
