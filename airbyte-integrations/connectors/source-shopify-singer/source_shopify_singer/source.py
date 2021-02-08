@@ -46,7 +46,7 @@ class SourceShopifySinger(BaseSingerSource):
             "shop": raw_config["shop"],
             "date_window_size": 7,
         }
-      
+
     def try_connect(self, logger: AirbyteLogger, config: dict):
         session = shopify.Session(f"{config['shop']}.myshopify.com", "2021-01", config["api_key"])
         shopify.ShopifyResource.activate_session(session)
