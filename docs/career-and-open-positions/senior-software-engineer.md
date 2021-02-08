@@ -4,7 +4,7 @@ Join [Airbyte's](https://airbyte.io/) small, but growing, engineering team. We a
 
 You will spend your time solving one of the most complex and unsolved problem with data: Access. We're on a mission to allow anyone to access data, wherever it is, and make it available into the system of their choice.
 
-We work hard, we rest hard, and we are passionate about data, open source, our community and scale! 
+We are passionate about data, open source, our community and scale! 
 
 We love Java, Python, Node, K8s, Docker... but in the end, it doesn't matter: we just want to build the best product.
 
