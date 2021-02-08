@@ -22,26 +22,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import json
 import pkgutil
 from typing import List
 
 import requests
-from airbyte_protocol import ConfiguredAirbyteCatalog, ConnectorSpecification
-from base_python_test import StandardSourceTestIface
+from base_python_test import DefaultStandardSourceTest
 
 
-class GoogleAnalyticsStandardSourceTest(StandardSourceTestIface):
-    def get_spec(self) -> ConnectorSpecification:
-        raw_spec = pkgutil.get_data(self.__class__.__module__.split(".")[0], "spec.json")
-        return ConnectorSpecification.parse_obj(json.loads(raw_spec))
-
-    def get_config(self) -> object:
-        return json.loads(pkgutil.get_data(self.__class__.__module__.split(".")[0], "config.json"))
-
-    def get_catalog(self) -> ConfiguredAirbyteCatalog:
-        raw_spec = pkgutil.get_data(self.__class__.__module__.split(".")[0], "test_catalog.json")
-        return ConfiguredAirbyteCatalog.parse_obj(json.loads(raw_spec))
+class GoogleAnalyticsStandardSourceTest(DefaultStandardSourceTest):
+    CONFIGURED_CATALOG_FILENAME = "test_catalog.json"
 
     # send a page view to GA using a URL constructed with
     # the documentation from https://developers.google.com/analytics/devguides/collection/protocol/v1/devguide#page
@@ -72,8 +61,5 @@ class GoogleAnalyticsStandardSourceTest(StandardSourceTestIface):
             "(.*)RECORD(.*)daily_active_users(.*)",
             "(.*)RECORD(.*)devices(.*)",
         ]
-
-    def teardown(self) -> None:
-        pass
 
     # todo: add regexes that must match and regexes that must not match
