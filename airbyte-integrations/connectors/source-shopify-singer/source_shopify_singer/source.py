@@ -67,4 +67,3 @@ class SourceShopifySinger(BaseSingerSource):
                     schema["properties"]["value"]["type"] = ["null", "string"]
 
         return catalog
-
