@@ -29,24 +29,29 @@ class TestTransformCatalog:
     def test_normalize_identifier_name(self):
         identifier_name = "Approved@Users"
 
-        # unless quoted, redshift and postgres coerce table names to lower case.
+        # redshift and postgres coerce identifier names to lower case. dbt
+        # redshift cannot access identifiers if they are not properly cased.
         assert normalize_identifier_name(identifier_name, "redshift") == "approved_users"
-        assert normalize_identifier_name(identifier_name, "postgres") == "approved_users"
+        assert normalize_identifier_name(identifier_name, "postgres") == "Approved_Users"
         assert normalize_identifier_name(identifier_name, "bigquery") == "Approved_Users"
         assert normalize_identifier_name(identifier_name, "snowflake") == "Approved_Users"
 
     def test_table_name(self):
-        tableName1 = "Approved@Users"
+        table_name1 = "Approved@Users"
 
-        assert table_name(tableName1, "redshift") == '"Approved@Users"'
-        assert table_name(tableName1, "postgres") == '"Approved@Users"'
-        assert table_name(tableName1, "bigquery") == "Approved_Users"
-        assert table_name(tableName1, "snowflake") == '"Approved@Users"'
+        # redshift coerces even quoted names to lower case.
+        assert table_name(table_name1, "redshift") == '"approved@users"'
+        assert table_name(table_name1, "postgres") == '"Approved@Users"'
+        assert table_name(table_name1, "bigquery") == "Approved_Users"
+        assert table_name(table_name1, "snowflake") == '"Approved@Users"'
 
-        tableName2 = "ApprovedUsers"
+        table_name2 = "ApprovedUsers"
 
-        # unless quoted, redshift and postgres coerce table names to lower case.
-        assert table_name(tableName2, "redshift") == "approvedusers"
-        assert table_name(tableName2, "postgres") == "approvedusers"
-        assert table_name(tableName2, "bigquery") == "ApprovedUsers"
-        assert table_name(tableName2, "snowflake") == "ApprovedUsers"
+        # redshift and postgres coerce non-quoted table names to lower case.
+        # normalization fails on second attempt if these names are not lower
+        # cased because DBT finds an "approximate" match.
+        # (issue: https://github.com/airbytehq/airbyte/issues/1926)
+        assert table_name(table_name2, "redshift") == "approvedusers"
+        assert table_name(table_name2, "postgres") == "approvedusers"
+        assert table_name(table_name2, "bigquery") == "ApprovedUsers"
+        assert table_name(table_name2, "snowflake") == "ApprovedUsers"

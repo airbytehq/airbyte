@@ -187,7 +187,8 @@ def strip_accents(s):
 
 # Temporarily disabling the behavior of the ExtendedNameTransformer, see (issue #1785)
 def normalize_identifier_name(input_name: str, integration_type: str) -> str:
-    if integration_type == "redshift" or integration_type == "postgres":
+    # all tables (even quoted ones) are coerced to lowercase.
+    if integration_type == "redshift":
         input_name = input_name.lower()
 
     input_name = strip_accents(input_name)
@@ -196,13 +197,17 @@ def normalize_identifier_name(input_name: str, integration_type: str) -> str:
 
 
 def table_name(input_name: str, integration_type) -> str:
+    # all tables (even quoted ones) are coerced to lowercase.
+    if integration_type == "redshift":
+        input_name = input_name.lower()
 
     if integration_type == "bigquery":
         return normalize_identifier_name(input_name, integration_type)
     elif match("[^A-Za-z_]", input_name[0]) or match(".*[^A-Za-z0-9_].*", input_name):
         return '"' + input_name + '"'
     else:
-        if integration_type == "redshift" or integration_type == "postgres":
+        # postgres coerces non-quoted table names to lower case.
+        if integration_type == "postgres":
             return input_name.lower()
         else:
             return input_name
