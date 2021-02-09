@@ -185,25 +185,27 @@ def strip_accents(s):
     return "".join(c for c in ud.normalize("NFD", s) if ud.category(c) != "Mn")
 
 
+# Temporarily disabling the behavior of the ExtendedNameTransformer, see (issue #1785)
 def normalize_identifier_name(input_name: str, integration_type: str) -> str:
-    # Temporarily disabling the behavior of the ExtendedNameTransformer, see (issue #1785)
-    # if integration_type == "bigquery":
+    if integration_type == "redshift" or integration_type == "postgres":
+        input_name = input_name.lower()
+
     input_name = strip_accents(input_name)
     input_name = sub(r"\s+", "_", input_name)
     return sub(r"[^a-zA-Z0-9_]", "_", input_name)
 
 
-# else:
-#   return input_name
-
-
 def table_name(input_name: str, integration_type) -> str:
+
     if integration_type == "bigquery":
         return normalize_identifier_name(input_name, integration_type)
     elif match("[^A-Za-z_]", input_name[0]) or match(".*[^A-Za-z0-9_].*", input_name):
         return '"' + input_name + '"'
     else:
-        return input_name
+        if integration_type == "redshift" or integration_type == "postgres":
+            return input_name.lower()
+        else:
+            return input_name
 
 
 def quote(input_name: str, integration_type: str, in_jinja=False) -> str:

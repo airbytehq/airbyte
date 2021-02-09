@@ -64,6 +64,8 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
 
   @Override
   public boolean normalize(long jobId, int attempt, Path jobRoot, JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
+    LOGGER.info("normalization version: {}", NORMALIZATION_IMAGE_NAME);
+
     IOs.writeFile(jobRoot, WorkerConstants.TARGET_CONFIG_JSON_FILENAME, Jsons.serialize(config));
     IOs.writeFile(jobRoot, WorkerConstants.CATALOG_JSON_FILENAME, Jsons.serialize(catalog));
 
@@ -94,10 +96,10 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
       return;
     }
 
-    LOGGER.debug("Closing tap process");
+    LOGGER.debug("Closing normalization process");
     WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
     if (process.isAlive() || process.exitValue() != 0) {
-      throw new WorkerException("Tap process wasn't successful");
+      throw new WorkerException("Normalization process wasn't successful");
     }
   }
 
