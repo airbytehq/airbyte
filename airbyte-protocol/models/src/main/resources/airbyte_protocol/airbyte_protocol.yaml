@@ -128,6 +128,9 @@ definitions:
       name:
         type: string
         description: Stream's name.
+      namespace:
+        description: (Optional) namespace where this stream is coming from
+        type: string
       json_schema:
         description: Stream schema using Json Schema specs.
         type: object
@@ -144,9 +147,6 @@ definitions:
         type: array
         items:
           type: string
-      namespace:
-        description: Namespace where this stream is coming from
-        type: string
   ConfiguredAirbyteCatalog:
     description: Airbyte stream schema catalog
     type: object
@@ -163,8 +163,8 @@ definitions:
     additionalProperties: false
     required:
       - stream
-      - destination_namespace
-      - destination_name
+      - target_namespace
+      - alias_name
     properties:
       stream:
         "$ref": "#/definitions/AirbyteStream"

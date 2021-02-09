@@ -102,7 +102,8 @@ public class RedshiftStandardSourceTest extends StandardSourceTest {
 
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
-    return CatalogHelpers.createConfiguredAirbyteCatalog(SCHEMA_NAME,
+    return CatalogHelpers.createConfiguredAirbyteCatalog(
+        SCHEMA_NAME,
         STREAM_NAME,
         Field.of("c_custkey", Field.JsonSchemaPrimitive.NUMBER),
         Field.of("c_name", Field.JsonSchemaPrimitive.STRING),

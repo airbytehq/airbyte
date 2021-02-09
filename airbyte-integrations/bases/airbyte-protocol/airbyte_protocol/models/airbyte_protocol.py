@@ -96,6 +96,7 @@ class ConnectorSpecification(BaseModel):
 
 class AirbyteStream(BaseModel):
     name: str = Field(..., description="Stream's name.")
+    namespace: Optional[str] = Field(None, description="(Optional) namespace where this stream is coming from")
     json_schema: Dict[str, Any] = Field(..., description="Stream schema using Json Schema specs.")
     supported_sync_modes: Optional[List[SyncMode]] = None
     source_defined_cursor: Optional[bool] = Field(
@@ -106,7 +107,6 @@ class AirbyteStream(BaseModel):
         None,
         description="Path to the field that will be used to determine if a record is new or modified since the last sync. If not provided by the source, the end user will have to specify the comparable themselves.",
     )
-    namespace: Optional[str] = Field(None, description="Namespace where this stream is coming from")
 
 
 class ConfiguredAirbyteStream(BaseModel):
@@ -116,8 +116,8 @@ class ConfiguredAirbyteStream(BaseModel):
         None,
         description="Path to the field that will be used to determine if a record is new or modified since the last sync. This field is REQUIRED if `sync_mode` is `incremental`. Otherwise it is ignored.",
     )
-    alias_name: Optional[str] = Field(None, description="Alias name to use in the destination to store this stream")
-    target_namespace: Optional[str] = Field(None, description="Namespace to use in the destination to store this stream")
+    alias_name: str = Field(..., description="Alias name to use in the destination to store this stream")
+    target_namespace: str = Field(..., description="Namespace to use in the destination to store this stream")
     selected: Optional[bool] = None
 
 

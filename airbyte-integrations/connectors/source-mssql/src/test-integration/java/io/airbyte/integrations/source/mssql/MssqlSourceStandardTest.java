@@ -101,7 +101,8 @@ public class MssqlSourceStandardTest extends StandardSourceTest {
 
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
-    return CatalogHelpers.createConfiguredAirbyteCatalog(NAMESPACE,
+    return CatalogHelpers.createConfiguredAirbyteCatalog(
+        NAMESPACE,
         STREAM_NAME,
         Field.of("id", JsonSchemaPrimitive.NUMBER),
         Field.of("name", JsonSchemaPrimitive.STRING),

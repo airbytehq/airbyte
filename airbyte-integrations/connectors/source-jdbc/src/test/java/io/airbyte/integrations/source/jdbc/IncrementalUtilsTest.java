@@ -43,7 +43,8 @@ class IncrementalUtilsTest {
   private static final String NAMESPACE = "test";
   private static final String STREAM_NAME = "shoes";
   private static final String UUID_FIELD_NAME = "ascending_inventory_uuid";
-  private static final ConfiguredAirbyteStream STREAM = CatalogHelpers.createConfiguredAirbyteStream(NAMESPACE,
+  private static final ConfiguredAirbyteStream STREAM = CatalogHelpers.createConfiguredAirbyteStream(
+      NAMESPACE,
       STREAM_NAME,
       Field.of("ascending_inventory_uuid", JsonSchemaPrimitive.STRING));
 
