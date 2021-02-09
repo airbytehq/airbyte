@@ -56,7 +56,10 @@ class Client(BaseClient):
                 response = requests.get(next_page, params=params, auth=self.auth)
             else:
                 response = requests.get(f"{self.base_api_url}{url}", params=params, auth=self.auth)
-            data = func(response.json())
+            if response.status_code == 404:
+                data = []
+            else:
+                data = func(response.json())
             yield from data
             if "nextPage" in response.json():
                 next_page = response.json()["nextPage"]
