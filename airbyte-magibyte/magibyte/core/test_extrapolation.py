@@ -7,6 +7,9 @@ class Test(unittest.TestCase):
     def test_const(self):
         self.assertEqual(extrapolate("abc", {}), "abc")
 
+    def test_not_string_const(self):
+        self.assertEqual(extrapolate(True, {}), True)
+
     def test_1(self):
         self.assertEqual(extrapolate("{{ 1 }}", {}), "1")
 

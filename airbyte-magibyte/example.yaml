@@ -53,15 +53,22 @@ streams:
     state:
       # can come from data element, can come from data response, can come from external system, can come from local system
       strategy: magibyte.operations.state.
+
+
     extract:
-      strategy: http
+      strategy: http_resource
       options:
-        auth:
-          strategy: API_KEY
+        request:
+          strategy: http
           options:
-            location: HEADER
-            name: X-API-KEY
-            value: ${config.api_key}
+            base_url: https://{config.account_id}.service.io/api/{var.name}
+            method: GET # get could be the default but we expose it for POST type of queries
+            headers:
+              x-api-key: ${config.api_key}
+            query:
+            - date:
+              value: {page.start_date or config.start_date}
+              on_empty: skip
         pagination:
           strategy: DATE
           options:
@@ -69,14 +76,10 @@ streams:
             end_date:
             step: 1d
             inclusive: true
-        request:
-          strategy: http
-          options:
-            base_url: https://{config.account_id}.service.io/api/{var.name}
-            method: GET # get could be the default but we expose it for POST type of queries
         decoder:
           strategy: JSON # XML, CUSTOM, CSV
           options:
+
         retry:
           strategy: EXPONENTIAL # EXPONENTIAL, FIBONACCI, FIXED, LINEAR, POLYNOMIAL, CUSTOM
           options:

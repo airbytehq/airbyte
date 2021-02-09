@@ -24,27 +24,46 @@ SOFTWARE.
 
 import logging
 import sys
+from typing import Any, Callable
 
+import requests
+import yaml
+
+from magibyte.core import strategy_builder
+from magibyte.core.extrapolation import extrapolate
 from magibyte.models.source import Source
+from magibyte.operations.extract.http_resource_extract import HttpResourceExtract
+from magibyte.operations.request import HttpRequest
 
 logging.basicConfig(level=logging.DEBUG)
 
 states = {}
 
-config = {
-    'config': {
-        'base': 'USD',
-        'start_date': '2020-01-01'
-    },
-    'resources': [{
-        'rate': {
-            'var': {
-                'name': 'abc'
-            },
+config = yaml.safe_load('''
+config:
+    base: USD
+    start_date: 2021-01-01
 
-        }
-    }]
-}
+streams:
+  rate:
+    extract:
+      strategy: magibyte.operations.extract.http_resource_extract.HttpResourceExtract
+      options:
+        request:
+          strategy: magibyte.operations.request.http_request.HttpRequest
+          options:
+            base_url: "https://api.exchangeratesapi.io/{{ page.current_date.format('YYYY-MM-DD') }}"
+            method: get
+            params:
+            - name: base
+              value: "{{ config.base }}"
+        pagination:
+          strategy: magibyte.operations.pagination.Datetime
+          options:
+            start_date: "{{ config.start_date }}"
+            end_date: "{{ now_local() }}"
+            step: 1d
+''')
 
 
 def emit_record(stream, record):
@@ -60,14 +79,27 @@ def cleanup():
 
 
 def main():
-    source = Source()
+    logging.debug(config)
 
-    for stream in source:
-        for record, state in stream:
-            emit_record(stream, record)
-            emit_state(stream, state)
+    context = {
+        'config': config['config']
+    }
 
-    cleanup()
+    extract = HttpResourceExtract(options=config['streams']['rate']['extract']['options'],
+                                  extrapolate=extrapolate,
+                                  strategy_builder=strategy_builder.build)
+
+    extracted_result = extract.extract(context)
+    logging.debug(extracted_result)
+
+    # source = Source()
+    #
+    # for stream in source:
+    #     for record, state in stream:
+    #         emit_record(stream, record)
+    #         emit_state(stream, state)
+    #
+    # cleanup()
 
     #
     # context = {

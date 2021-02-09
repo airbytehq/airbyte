@@ -2,8 +2,8 @@ from .base_pagination import BasePagination
 
 
 class NoopPagination(BasePagination):
-    def __init__(self, options):
-        super(NoopPagination, self).__init__(options)
+    def __init__(self, **kwargs):
+        super(NoopPagination, self).__init__(**kwargs)
 
     def __iter__(self):
         return self

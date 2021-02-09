@@ -8,4 +8,6 @@ environment.globals['now_utc'] = lambda: datetime.datetime.now(datetime.timezone
 
 
 def extrapolate(input_str, context):
-    return environment.from_string(input_str).render(**context)
+    if isinstance(input_str, str):
+        return environment.from_string(input_str).render(**context)
+    return input_str
