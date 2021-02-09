@@ -102,9 +102,6 @@ class Client:
             raw_response = response.content
         else:
             raw_response = response.json()
-            value = raw_response.get("value", [])
-            if not value:
-                raise requests.exceptions.RequestException()
         return raw_response
 
     @staticmethod
@@ -176,8 +173,7 @@ class Client:
 
     def _get_channel_ids(self, group_id: str):
         api_url = self._get_api_url(f"teams/{group_id}/channels")
-        params = {"$select": "id"}
-        channels_ids = self._get_response_value_unsafe(self._make_request(api_url, params=params))
+        channels_ids = self._get_response_value_unsafe(self._make_request(api_url))
         return channels_ids
 
     def get_channel_members(self):
