@@ -15,12 +15,8 @@ options:
 
 
 class HttpRequest(BaseRequest):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
     def build(self, context):
-        # create a requests compatible object
-
+        # create a `requests` compatible object
         request = {
             'method': self.extrapolate(self.options.get('method', 'get'), context),
             'url': self.extrapolate(self.options['base_url'], context),

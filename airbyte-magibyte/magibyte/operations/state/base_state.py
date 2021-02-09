@@ -1,7 +1,7 @@
 from magibyte.operations.base_operation import BaseOperation
 
 
-class BasePagination(BaseOperation):
+class BaseState(BaseOperation):
 
-    def iterate(self, context):
+    def get(self, context):
         raise NotImplementedError()

@@ -2,4 +2,6 @@ from magibyte.operations.base_operation import BaseOperation
 
 
 class BaseExtract(BaseOperation):
-    pass
+
+    def extract(self, context):
+        raise NotImplementedError()

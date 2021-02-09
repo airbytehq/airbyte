@@ -2,4 +2,6 @@ from magibyte.operations.base_operation import BaseOperation
 
 
 class BaseRequest(BaseOperation):
-    pass
+
+    def build(self, context):
+        raise NotImplementedError()

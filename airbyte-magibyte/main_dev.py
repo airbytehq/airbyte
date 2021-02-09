@@ -24,16 +24,12 @@ SOFTWARE.
 
 import logging
 import sys
-from typing import Any, Callable
 
-import requests
 import yaml
 
 from magibyte.core import strategy_builder
 from magibyte.core.extrapolation import extrapolate
-from magibyte.models.source import Source
 from magibyte.operations.extract.http_resource_extract import HttpResourceExtract
-from magibyte.operations.request import HttpRequest
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -41,16 +37,16 @@ states = {}
 
 config = yaml.safe_load('''
 config:
-    base: USD
-    start_date: 2021-01-01
+  base: USD
+  start_date: 2021-01-01
 
 streams:
   rate:
     extract:
-      strategy: magibyte.operations.extract.http_resource_extract.HttpResourceExtract
+      strategy: magibyte.operations.extract.HttpResource
       options:
         request:
-          strategy: magibyte.operations.request.http_request.HttpRequest
+          strategy: magibyte.operations.request.HttpRequest
           options:
             base_url: "https://api.exchangeratesapi.io/{{ page.current_date.format('YYYY-MM-DD') }}"
             method: get
@@ -60,9 +56,14 @@ streams:
         pagination:
           strategy: magibyte.operations.pagination.Datetime
           options:
-            start_date: "{{ config.start_date }}"
+            start_date: "{{ state.date or config.start_date }}"
             end_date: "{{ now_local() }}"
             step: 1d
+        state:
+          strategy: magibyte.operations.state.Context
+          options:
+            name: date
+            value: "{{ page.current_date.format('YYYY-MM-DD') }}"
 ''')
 
 
@@ -82,7 +83,8 @@ def main():
     logging.debug(config)
 
     context = {
-        'config': config['config']
+        'config': config['config'],
+        'state': {'date': '2021-01-11'}
     }
 
     extract = HttpResourceExtract(options=config['streams']['rate']['extract']['options'],
@@ -100,53 +102,6 @@ def main():
     #         emit_state(stream, state)
     #
     # cleanup()
-
-    #
-    # context = {
-    #     'config': {
-    #         'base': 'USD',
-    #         'start_date': '2020-01-01'
-    #     },
-    #     'state': {
-    #         'last_date': '2021-01-01'
-    #     }
-    # }
-    #
-    # pagination = SinglePagination({})
-    # request_builder = HttpRequest(TransformDict({
-    #     'base_url': 'https://api.exchangeratesapi.io/{{ state.last_date or config.start_date }}?base={{ config.base }}'
-    # }, lambda v: extrapolate(v, context)))
-    #
-    # for page in pagination:
-    #     logging.debug(f"Paginating {page}")
-    #
-    #     request = {}
-    #
-    #     context['previous_page'] = context.get('page')
-    #     context['page'] = page
-    #
-    #     context['previous_request'] = context.get('request')
-    #     context['request'] = request_builder.build()
-    #
-    #     requests.request(
-    #         method=request.get('method', 'get'),
-    #         url=self.options['base_url'])
-    #
-    #     response = make_request(request)
-    #     data = extract_data(response)
-    #     for entry in data:
-    #         emit(entry)
-    #
-    # #
-    # #
-    # # http_options = TransformDict({
-    # #     'base_url': 'https://api.exchangeratesapi.io/{{ state.last_date or config.start_date }}?base={{ config.base }}'
-    # # }, lambda v: extrapolate(v, context))
-    # #
-    # #
-    # # response = operations.http.HttpRequest(http_options).execute(context)
-    # # logging.debug(response.json())
-
 
 if __name__ == "__main__":
     logging.info(f"Starting Magibyte {sys.argv}")
