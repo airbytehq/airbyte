@@ -99,6 +99,9 @@ jobs:
       - name: File sizes
         run: tree --du -h -a
 
+      - name: Docker sizes
+        run: docker system df
+
       # make sure these always run before pushing core docker images
       - name: Run End-to-End Acceptance Tests
         if: success() && github.ref == 'refs/heads/master'
