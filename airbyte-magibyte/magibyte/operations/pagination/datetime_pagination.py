@@ -1,3 +1,4 @@
+import operator
 from datetime import timedelta
 import re
 
@@ -14,19 +15,20 @@ class DatetimePagination(BasePagination):
         start_date = arrow.get(self.extrapolate(self.options.get('start_date'), context))
         end_date = arrow.get(self.extrapolate(self.options.get('end_date'), context))
         step = parse_timedelta(self.extrapolate(self.options.get('step'), context))
-        inclusive = bool(self.extrapolate(self.options.get('inclusive', True), context))
+        start_inclusive = str(self.extrapolate(self.options.get('start_inclusive', True), context)) == 'True'
+        end_inclusive = str(self.extrapolate(self.options.get('end_inclusive', True), context)) == 'True'
 
         current_date = start_date
-        while DatetimePagination._compare(current_date, end_date, inclusive):
+        if not start_inclusive:
+            current_date += step
+
+        comp = operator.le
+        if not end_inclusive:
+            comp = operator.lt
+
+        while comp(current_date, end_date):
             yield {'current_date': current_date}
             current_date = current_date + step
-
-    @staticmethod
-    def _compare(current_date, end_date, inclusive):
-        if inclusive:
-            return current_date <= end_date
-        else:
-            current_date < end_date
 
 
 timedelta_regex = re.compile(

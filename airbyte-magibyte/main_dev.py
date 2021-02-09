@@ -53,11 +53,19 @@ streams:
             params:
             - name: base
               value: "{{ config.base }}"
+        decoder:
+          strategy: magibyte.operations.decode.Json
+        selector:
+          strategy: magibyte.operations.select.JsonPath
+          options:
+            path: $.rates
         pagination:
           strategy: magibyte.operations.pagination.Datetime
           options:
-            start_date: "{{ state.date or config.start_date }}"
+            start_date: "{{ state.date | default(config.start_date) }}"
+            start_inclusive: "{{ state.date | default(true) }}"
             end_date: "{{ now_local() }}"
+            end_inclusive: true
             step: 1d
         state:
           strategy: magibyte.operations.state.Context

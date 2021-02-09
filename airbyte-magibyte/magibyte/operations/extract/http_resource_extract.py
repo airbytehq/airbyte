@@ -9,14 +9,12 @@ class HttpResourceExtract(BaseExtract):
     def __init__(self, **kwargs):
         super(HttpResourceExtract, self).__init__(**kwargs)
 
-        request_config = self.options['request']
-        self.request = self.strategy_builder(request_config['strategy'], request_config['options'], **kwargs)
-
-        pagination_config = self.options['pagination']
-        self.pagination = self.strategy_builder(pagination_config['strategy'], pagination_config['options'], **kwargs)
-
-        state_config = self.options['state']
-        self.state = self.strategy_builder(state_config['strategy'], state_config['options'], **kwargs)
+        self.request = self._build_step('request', **kwargs)
+        self.decoder = self._build_step('decoder', **kwargs)
+        self.selector = self._build_step('selector', **kwargs)
+        self.pagination = self._build_step('pagination', **kwargs)
+        self.state = self._build_step('state', **kwargs)
+        self.request = self._build_step('request', **kwargs)
 
     def extract(self, context):
         context = {
@@ -30,11 +28,17 @@ class HttpResourceExtract(BaseExtract):
         for page in self.pagination.iterate(context):
             context['page'] = page
 
-            request_params = self.request.build(context)
+            context['request'] = self.request.build(context)
+            context['response'] = requests.request(**context['request'])
+            context['decoded_response'] = self.decoder.decode(context)
 
-            response = requests.request(**request_params)
+            for record in self.selector.select(context):
+                logging.debug(record)
 
             state = self.state.get(context)
 
-            logging.debug(response.json())
             logging.debug(state)
+
+    def _build_step(self, name, **kwargs):
+        config = self.options[name]
+        return self.strategy_builder(config['strategy'], config.get('options', {}), **kwargs)
