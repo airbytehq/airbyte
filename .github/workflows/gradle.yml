@@ -87,8 +87,14 @@ jobs:
         env:
           GIT_REVISION: ${{ github.sha }}
 
+      - name: Get Docker Space
+        run: docker run --rm busybox df -h
+
       - name: Docker Prune
         run: docker image prune --force
+        
+      - name: Get Docker Space
+        run: docker run --rm busybox df -h
 
       # make sure these always run before pushing core docker images
       - name: Run End-to-End Acceptance Tests
