@@ -41,7 +41,7 @@ config:
   start_date: 2021-01-01
 
 streams:
-  rate:
+  rates:
     extract:
       strategy: magibyte.operations.extract.HttpResource
       options:
