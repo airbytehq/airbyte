@@ -71,12 +71,8 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     IOs.writeFile(jobRoot, WorkerConstants.CATALOG_JSON_FILENAME, Jsons.serialize(catalog));
 
     try {
-      final String image_name;
-      if (useDevVersion)
-        image_name = DEV_NORMALIZATION_IMAGE_NAME;
-      else
-        image_name = NORMALIZATION_IMAGE_NAME;
-      process = pbf.create(jobId, attempt, jobRoot, image_name, "run",
+      final String imageName = useDevVersion ? DEV_NORMALIZATION_IMAGE_NAME : NORMALIZATION_IMAGE_NAME;
+      process = pbf.create(jobId, attempt, jobRoot, imageName, "run",
           "--integration-type", destinationType.toString().toLowerCase(),
           "--config", WorkerConstants.TARGET_CONFIG_JSON_FILENAME,
           "--catalog", WorkerConstants.CATALOG_JSON_FILENAME).start();
