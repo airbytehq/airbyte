@@ -22,9 +22,6 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
 
-      - name: File sizes
-        run: tree --du -h -a
-
       - name: Check images exist
         run: ./tools/bin/check_images_exist.sh
 
@@ -68,9 +65,6 @@ jobs:
         with:
           python-version: '3.7'
 
-      - name: File sizes
-        run: tree --du -h -a
-
       - name: Format
         run: ./gradlew --no-daemon format --scan
 
@@ -79,9 +73,6 @@ jobs:
 
       - name: Build
         run: ./gradlew --no-daemon build --scan
-
-      - name: File sizes
-        run: tree --du -h -a
 
       - name: Ensure no file change
         run: git status --porcelain && test -z "$(git status --porcelain)"
@@ -96,11 +87,8 @@ jobs:
         env:
           GIT_REVISION: ${{ github.sha }}
 
-      - name: File sizes
-        run: tree --du -h -a
-
-      - name: Docker sizes
-        run: docker system df
+      - name: Docker Prune
+        run: docker image prune --force
 
       # make sure these always run before pushing core docker images
       - name: Run End-to-End Acceptance Tests
