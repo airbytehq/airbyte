@@ -2,7 +2,7 @@
 name: Documentation request
 about: Suggest an idea for new or updated documentation
 title: ''
-labels: type/enhancement area/documentation
+labels: type/enhancement, area/documentation
 assignees: ''
 
 ---
