@@ -31,14 +31,14 @@ from normalization.transform_config.transform import DestinationType
 
 class TestTransformConfig:
     def test_transform_bigquery(self):
-        input = {"project_id": "my_project_id", "dataset_id": "my_dataset_id", "credentials_json": '{ "type": "service_account" }'}
+        input = {"project_id": "my_project_id", "credentials_json": '{ "type": "service_account" }'}
 
         actual_output = TransformConfig().transform_bigquery(input)
         expected_output = {
             "type": "bigquery",
             "method": "service-account",
             "project": "my_project_id",
-            "dataset": "",
+            "dataset": "undefined_namespace",
             "keyfile": "/tmp/bq_keyfile.json",
             "retries": 1,
             "threads": 32,
@@ -59,7 +59,6 @@ class TestTransformConfig:
             "username": "a user",
             "password": "password123",
             "database": "my_db",
-            "schema": "",
         }
 
         actual = TransformConfig().transform_postgres(input)
@@ -69,7 +68,7 @@ class TestTransformConfig:
             "host": "airbyte.io",
             "pass": "password123",
             "port": 5432,
-            "schema": "",
+            "schema": "undefined_namespace",
             "threads": 32,
             "user": "a user",
         }
@@ -82,7 +81,6 @@ class TestTransformConfig:
             "role": "AIRBYTE_ROLE",
             "warehouse": "AIRBYTE_WAREHOUSE",
             "database": "AIRBYTE_DATABASE",
-            "schema": "",
             "username": "AIRBYTE_USER",
             "password": "password123",
         }
@@ -95,7 +93,7 @@ class TestTransformConfig:
             "password": "password123",
             "query_tag": "normalization",
             "role": "AIRBYTE_ROLE",
-            "schema": "",
+            "schema": "undefined_namespace",
             "threads": 32,
             "type": "snowflake",
             "user": "AIRBYTE_USER",
@@ -112,7 +110,6 @@ class TestTransformConfig:
             "username": "a user",
             "password": "password123",
             "database": "my_db",
-            "schema": "",
         }
 
         expected = self.get_base_config()
@@ -122,7 +119,7 @@ class TestTransformConfig:
             "host": "airbyte.io",
             "pass": "password123",
             "port": 5432,
-            "schema": "",
+            "schema": "undefined_namespace",
             "threads": 32,
             "user": "a user",
         }
