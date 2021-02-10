@@ -26,6 +26,7 @@ import csv
 import io
 import json
 import pkgutil
+import sys
 import time
 from typing import Dict, List, Optional, Tuple, Union
 
@@ -33,7 +34,14 @@ import backoff
 import msal
 import requests
 from airbyte_protocol import AirbyteStream
+from base_python import AirbyteLogger
 from msal.exceptions import MsalServiceError
+
+LOGGER = AirbyteLogger()
+
+
+def log_backoff_attempt(details):
+    LOGGER.info(f"Encountered exception when querying the Microsoft API: {str(sys.exc_info()[1])}. Backing off: {details.get('tries')} try")
 
 
 class Client:
@@ -85,7 +93,10 @@ class Client:
             raise MsalServiceError(error=result.get("error"), error_description=result.get("error_description"))
 
     @backoff.on_exception(
-        backoff.expo, (requests.exceptions.ConnectionError, MsalServiceError, requests.exceptions.RequestException), max_tries=7
+        backoff.expo,
+        (requests.exceptions.ConnectionError, MsalServiceError, requests.exceptions.RequestException),
+        max_tries=7,
+        on_backoff=log_backoff_attempt,
     )
     def _make_request(self, api_url: str, params: Optional[Dict] = None) -> Union[Dict, object]:
         access_token = self._get_access_token()
