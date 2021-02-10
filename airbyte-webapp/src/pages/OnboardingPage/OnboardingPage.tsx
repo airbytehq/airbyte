@@ -19,13 +19,19 @@ import { AnalyticsService } from "../../core/analytics/AnalyticsService";
 import useSource from "../../components/hooks/services/useSourceHook";
 import useDestination from "../../components/hooks/services/useDestinationHook";
 import Link from "../../components/Link";
+import Version from "../../components/Version";
 import { JobInfo } from "../../core/resources/Scheduler";
 
 const Content = styled.div`
   width: 100%;
   max-width: 813px;
   margin: 0 auto;
-  padding: 33px 0;
+  padding: 33px 0 13px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 100%;
 `;
 
 const Img = styled.img`
@@ -209,21 +215,29 @@ const OnboardingPage: React.FC = () => {
 
   return (
     <Content>
-      <Img src="/welcome.svg" height={132} />
-      <MainTitle center>
-        <FormattedMessage id="onboarding.title" />
-      </MainTitle>
-      <Subtitle>
-        <FormattedMessage id="onboarding.subtitle" />
-      </Subtitle>
-      <StepsCover>
-        <StepsMenu data={steps} activeStep={currentStep} />
-      </StepsCover>
-      {renderStep()}
-      <TutorialLink as="a" clear target="_blank" href={config.ui.tutorialLink}>
-        <PlayIcon icon={faPlay} />
-        <FormattedMessage id="onboarding.tutorial" />
-      </TutorialLink>
+      <div>
+        <Img src="/welcome.svg" height={132} />
+        <MainTitle center>
+          <FormattedMessage id="onboarding.title" />
+        </MainTitle>
+        <Subtitle>
+          <FormattedMessage id="onboarding.subtitle" />
+        </Subtitle>
+        <StepsCover>
+          <StepsMenu data={steps} activeStep={currentStep} />
+        </StepsCover>
+        {renderStep()}
+        <TutorialLink
+          as="a"
+          clear
+          target="_blank"
+          href={config.ui.tutorialLink}
+        >
+          <PlayIcon icon={faPlay} />
+          <FormattedMessage id="onboarding.tutorial" />
+        </TutorialLink>
+      </div>
+      <Version />
     </Content>
   );
 };
