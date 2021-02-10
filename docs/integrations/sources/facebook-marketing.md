@@ -84,19 +84,15 @@ In the App Dashboard screen, click Marketing API --&gt; Tools on the left sideba
 
 ![](../../.gitbook/assets/facebook_access_token.png)
 
-
-
 ### Request rate limit increase
 
-Facebook [heavily throttles](https://developers.facebook.com/docs/marketing-api/overview/authorization#limits) API tokens generated from Facebook Apps with the "Standard Access" tier \(the default tier for new apps\), making it infeasible to use the token for syncs with Airbyte. You'll need to request an upgrade to Advanced Access for your app on the following permissions: 
+Facebook [heavily throttles](https://developers.facebook.com/docs/marketing-api/overview/authorization#limits) API tokens generated from Facebook Apps with the "Standard Access" tier \(the default tier for new apps\), making it infeasible to use the token for syncs with Airbyte. You'll need to request an upgrade to Advanced Access for your app on the following permissions:
 
 * Ads Management Standard Access
 * ads\_read
 * ads\_management
 
-See the Facebook [documentation on Authorization](https://developers.facebook.com/docs/marketing-api/overview/authorization/#access-levels) for information about how to request Advanced Access to the relevant permissions. 
-
-
+See the Facebook [documentation on Authorization](https://developers.facebook.com/docs/marketing-api/overview/authorization/#access-levels) for information about how to request Advanced Access to the relevant permissions.
 
 With the Ad Account ID and API access token, you should be ready to start pulling data from the Facebook Marketing API. Head to the Airbyte UI to setup your source connector!
 

@@ -26,3 +26,4 @@ To use the MeiliSearch destination, you'll need an existing MeiliSearch instance
 ### Setup guide
 
 The setup only requires two fields. First is the `host` which is the address at which MeiliSearch can be reached. If running on a localhost by default it will be on `http://localhost:7700`. Note that you must include the protocol. The second piece of information is the API key. If no API key is set for your MeiliSearch instance, then this field can be left blank. If it is set, you can find the value for your API by following these [instructions](https://docs.meilisearch.com/reference/features/authentication.html#master-key). in the MeiliSearch docs.
+
