@@ -81,11 +81,17 @@ jobs:
         if: success() && github.ref == 'refs/heads/master'
         run: ./tools/site/link_checker.sh check_docs
 
+      - name: Get Docker Space
+        run: docker run --rm busybox df -h
+
       - name: Build Core Docker Images
         if: success() && github.ref == 'refs/heads/master'
         run: ./gradlew --no-daemon composeBuild --scan
         env:
           GIT_REVISION: ${{ github.sha }}
+
+      - name: Image Cleanup
+        run: ./tools/bin/clean_images.sh
 
       # make sure these always run before pushing core docker images
       - name: Run End-to-End Acceptance Tests
