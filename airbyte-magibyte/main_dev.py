@@ -23,6 +23,7 @@ SOFTWARE.
 """
 
 import logging
+import os
 import sys
 
 import yaml
@@ -35,7 +36,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 states = {}
 
-config = yaml.safe_load('''
+config_exchange_rate = yaml.safe_load('''
 config:
   base: USD
   start_date: 2021-01-01
@@ -75,6 +76,53 @@ streams:
 ''')
 
 
+config_stripe = {
+  "client_secret": os.environ['client_secret'],
+  "account_id": os.environ['account_id'],
+  "start_date": "2020-05-01T00:00:00Z"
+}
+
+streams_stripe = yaml.safe_load('''
+defaults:
+  request: &default_request
+    strategy: magibyte.operations.request.HttpRequest
+    options:
+      base_url: "https://api.stripe.com/v1/{{ vars.resource_name }}"
+      method: get
+      params: []
+      headers:
+      - name: Authorization
+        value: "Bearer {{ config.client_secret }}"
+  
+  decoder: &default_decoder
+    strategy: magibyte.operations.decode.Json
+    
+  selector: &default_selector
+    strategy: magibyte.operations.select.JsonQuery
+    options:
+      path: "data"
+      
+  pagination: &default_pagination
+    strategy: magibyte.operations.pagination.Single
+
+  state: &default_state
+    strategy: magibyte.operations.state.Noop
+      
+streams:
+  accounts:
+    vars:
+      resource_name: accounts
+    extract:
+      strategy: magibyte.operations.extract.HttpResource
+      options:
+        request: *default_request
+        decoder: *default_decoder
+        selector: *default_selector
+        pagination: *default_pagination
+        state: *default_state
+''')
+
+
 def emit_record(stream, record):
     logging.debug(record)
 
@@ -88,14 +136,17 @@ def cleanup():
 
 
 def main():
-    logging.debug(config)
+    config = config_stripe
+    streams = streams_stripe
+    logging.debug(streams)
 
     context = {
-        'config': config['config'],
-        'state': {'date': '2021-01-11'}
+        'config': config,
+        'state': {'date': '2021-01-11'},
+        'vars': streams['streams']['accounts']['vars']
     }
 
-    extract = HttpResourceExtract(options=config['streams']['rates']['extract']['options'],
+    extract = HttpResourceExtract(options=streams['streams']['accounts']['extract']['options'],
                                   extrapolate=extrapolate,
                                   strategy_builder=strategy_builder.build)
 

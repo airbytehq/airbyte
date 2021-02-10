@@ -1,3 +1,5 @@
+from functools import reduce
+
 from .base_request import BaseRequest
 
 """
@@ -21,8 +23,9 @@ class HttpRequest(BaseRequest):
             'method': self.extrapolate(self.options.get('method', 'get'), context),
             'url': self.extrapolate(self.options['base_url'], context),
             'params': self._extract_options('params', context),
-            'headers': self._extract_options('headers', context),
+            'headers': {k: v for (k, v) in self._extract_options('headers', context)},
         }
+
         return request
 
     def _extract_options(self, http_object, context):

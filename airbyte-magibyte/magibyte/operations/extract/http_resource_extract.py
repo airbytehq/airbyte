@@ -20,7 +20,7 @@ class HttpResourceExtract(BaseExtract):
         context = {
             'config': context.get('config'),
             'state': context.get('state'),
-            'var': context.get('var'),
+            'vars': context.get('vars'),
         }
 
         state = None
@@ -29,8 +29,10 @@ class HttpResourceExtract(BaseExtract):
             context['page'] = page
 
             context['request'] = self.request.build(context)
+            logging.debug(context['request'])
             context['response'] = requests.request(**context['request'])
             context['decoded_response'] = self.decoder.decode(context)
+            logging.debug(context['decoded_response'])
 
             for record in self.selector.select(context):
                 logging.debug(record)
