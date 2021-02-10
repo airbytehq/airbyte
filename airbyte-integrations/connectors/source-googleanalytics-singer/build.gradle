@@ -1,7 +1,7 @@
 plugins {
     id 'airbyte-python'
     id 'airbyte-docker'
-    id 'airbyte-source-test'
+    id 'airbyte-standard-source-test-file'
 }
 
 airbytePython {
@@ -10,4 +10,10 @@ airbytePython {
 
 dependencies {
     implementation files(project(':airbyte-integrations:bases:base-singer').airbyteDocker.outputs)
+}
+
+airbyteStandardSourceTestFile {
+    specPath = "source_googleanalytics_singer/spec.json"
+    configPath = "secrets/config.json"
+    configuredCatalogPath = "sample_files/test_catalog.json"
 }
