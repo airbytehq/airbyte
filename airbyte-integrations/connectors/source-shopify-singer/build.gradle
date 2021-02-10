@@ -15,6 +15,6 @@ dependencies {
 // used to allow local iteration to work
 task('installSingerTap', type: PythonTask) {
     module = "pip"
-    command = "install tap-shopify==1.2.6"
+    command = "install https://github.com/airbytehq/tap-shopify/tarball/master"
 }
 installReqs.dependsOn installSingerTap
