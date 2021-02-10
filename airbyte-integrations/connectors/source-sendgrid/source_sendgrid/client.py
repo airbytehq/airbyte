@@ -85,10 +85,14 @@ class Client(BaseClient):
                     return
                 offset += PAGE_SIZE
         elif pagination == Pagination.Metadata:
-            next_page = True
-            while next_page:
-                response = self._request(f"{self.BASE_URL}{stream_url}", params={"page_size": PAGE_SIZE})
-                next_page = response.json()["_metadata"].get("next", False)
+            next_page_url, params = f"{self.BASE_URL}{stream_url}", {"page_size": PAGE_SIZE}
+            while next_page_url:
+                response = self._request(next_page_url, params=params)
+                next_page_url, params = response.json()["_metadata"].get("next", False), {}
+
+                # We use the "or []" construction to prevent the script from breaking in one single case:
+                # for the "stats_automations" stream, if there are no records in the response, than "None" arrives,
+                # in all other streams we get an empty list if there are no records.
                 stream_data = (response.json()[key] if key else response.json()) or []
                 yield from stream_data
         else:
