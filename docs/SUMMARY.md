@@ -74,7 +74,7 @@
   * [Connections](architecture/connections.md)
   * [Full Refresh](architecture/full-refresh.md)
   * [High-level View](architecture/high-level-view.md)
-  * [Incremental](architecture/incremental.md)
+  * [Incremental Sync](architecture/incremental.md)
   * [Workers & Jobs](architecture/jobs.md)
   * [Technical Stack](architecture/tech-stack.md)
 * [Contributing to Airbyte](contributing-to-airbyte/README.md)
