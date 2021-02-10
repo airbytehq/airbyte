@@ -46,7 +46,7 @@
 {%- endmacro %}
 
 {% macro postgres__json_extract(json_column, json_path_list) -%}
-    jsonb_extract_path_text({{ adapter.quote_as_configured(json_column, 'identifier')|trim }}, {{ format_json_path(json_path_list) }})
+    jsonb_extract_path({{ adapter.quote_as_configured(json_column, 'identifier')|trim }}, {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
 {% macro redshift__json_extract(json_column, json_path_list) -%}
@@ -54,7 +54,7 @@
 {%- endmacro %}
 
 {% macro snowflake__json_extract(json_column, json_path_list) -%}
-    json_extract_path_text({{ adapter.quote_as_configured(json_column, 'identifier')|trim }}, {{ format_json_path(json_path_list) }})
+    get_path(parse_json({{ json_column }}), {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
 {# json_extract_scalar -------------------------------------------------     #}
@@ -80,7 +80,7 @@
 {%- endmacro %}
 
 {% macro snowflake__json_extract_scalar(json_column, json_path_list) -%}
-    json_extract_path_text({{ adapter.quote_as_configured(json_column, 'identifier')|trim }}, {{ format_json_path(json_path_list) }})
+    to_varchar(get_path(parse_json({{ json_column }}), {{ format_json_path(json_path_list) }}))
 {%- endmacro %}
 
 {# json_extract_array -------------------------------------------------     #}
@@ -98,7 +98,7 @@
 {%- endmacro %}
 
 {% macro postgres__json_extract_array(json_column, json_path_list) -%}
-    jsonb_array_elements(jsonb_extract_path({{ adapter.quote_as_configured(json_column, 'identifier')|trim }},{{ format_json_path(json_path_list) }})
+    jsonb_extract_path({{ adapter.quote_as_configured(json_column, 'identifier')|trim }},{{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
 {% macro redshift__json_extract_array(json_column, json_path_list) -%}
@@ -106,5 +106,5 @@
 {%- endmacro %}
 
 {% macro snowflake__json_extract_array(json_column, json_path_list) -%}
-    json_extract_path_text({{ adapter.quote_as_configured(json_column, 'identifier')|trim }}, {{ format_json_path(json_path_list) }})
+    get_path(parse_json({{ json_column }}), {{ format_json_path(json_path_list) }})
 {%- endmacro %}

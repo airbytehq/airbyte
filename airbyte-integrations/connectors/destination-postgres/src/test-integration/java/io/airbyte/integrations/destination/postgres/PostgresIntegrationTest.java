@@ -92,10 +92,12 @@ public class PostgresIntegrationTest extends TestDestination {
   protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv env, String streamName)
       throws Exception {
     String tableName = namingResolver.getIdentifier(streamName);
-    if (!tableName.startsWith("\"")) {
-      // Currently, Normalization always quote tables identifiers
-      tableName = "\"" + tableName + "\"";
-    }
+    // Temporarily disabling the behavior of the ExtendedNameTransformer, see (issue #1785) so we don't
+    // use quoted names
+    // if (!tableName.startsWith("\"")) {
+    // // Currently, Normalization always quote tables identifiers
+    // //tableName = "\"" + tableName + "\"";
+    // }
     return retrieveRecordsFromTable(tableName);
   }
 

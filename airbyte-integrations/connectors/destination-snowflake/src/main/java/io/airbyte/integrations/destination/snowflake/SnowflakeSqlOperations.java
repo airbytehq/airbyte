@@ -46,7 +46,7 @@ class SnowflakeSqlOperations extends DefaultSqlOperations implements SqlOperatio
     final String createTableQuery = String.format(
         "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
             + "%s VARCHAR PRIMARY KEY,\n"
-            + "\"%s\" VARIANT,\n"
+            + "%s VARIANT,\n"
             + "%s TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp()\n"
             + ") data_retention_time_in_days = 0;",
         schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
@@ -66,7 +66,7 @@ class SnowflakeSqlOperations extends DefaultSqlOperations implements SqlOperatio
     // (?, ?, ?),
     // ...
     final String insertQuery = String.format(
-        "INSERT INTO %s.%s (%s, \"%s\", %s) SELECT column1, parse_json(column2), column3 FROM VALUES\n",
+        "INSERT INTO %s.%s (%s, %s, %s) SELECT column1, parse_json(column2), column3 FROM VALUES\n",
         schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
     final String recordQuery = "(?, ?, ?),\n";
     SqlOperationsUtils.insertRawRecordsInSingleQuery(insertQuery, recordQuery, database, records);
