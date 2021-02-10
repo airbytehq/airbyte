@@ -25,6 +25,9 @@ jobs:
       - name: Check images exist
         run: ./tools/bin/check_images_exist.sh
 
+      - name: Get Docker Space
+        run: docker run --rm busybox df -h
+
       - name: Pip Caching
         uses: actions/cache@v2
         with:
@@ -64,6 +67,9 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: '3.7'
+
+      - name: Get Docker Space
+        run: docker run --rm busybox df -h
 
       - name: Format
         run: ./gradlew --no-daemon format --scan
