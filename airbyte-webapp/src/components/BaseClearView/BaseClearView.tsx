@@ -1,13 +1,15 @@
 import React from "react";
 import styled from "styled-components";
+import Version from "../Version";
 
 const Content = styled.div`
   height: 100%;
   width: 100%;
-  padding-top: 34px;
+  padding: 34px 0 13px;
   display: flex;
   align-items: center;
   flex-direction: column;
+  justify-content: space-between;
 `;
 
 const Img = styled.img`
@@ -16,11 +18,20 @@ const Img = styled.img`
   margin-bottom: 20px;
 `;
 
+const MainInfo = styled.div`
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+`;
+
 const BaseClearView: React.FC = props => {
   return (
     <Content>
-      <Img src="/logo.png" alt="logo" />
-      {props.children}
+      <MainInfo>
+        <Img src="/logo.png" alt="logo" />
+        {props.children}
+      </MainInfo>
+      <Version />
     </Content>
   );
 };
