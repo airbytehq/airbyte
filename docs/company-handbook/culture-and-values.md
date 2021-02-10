@@ -1,6 +1,6 @@
 # Culture and Values
 
-Culture & values are not a pretty words on a wall. They are the dimensions by which we hire, we promote, and we demote.   
+Culture & values are not a pretty words on a wall. They are the dimensions by which we hire, we promote, and we demote.
 
 We hope the handbook will help you better understand how it feels to work with us as a colleague, a client, a partner or a member of our open source community.
 
@@ -29,9 +29,10 @@ We prioritize **progress over perfection**. We are thankful towards errors of ac
 We should **never pull rank**. If you have to remind someone of your position, you're doing something wrong. Explain the reasons for your decision, and respect everyone irrespective of their function.
 
 We **leverage our time**, and we enable others to leverage their time:
-- We stay away from low impact tasks. If they exist, we question their existence, and we kill them, we automate them or we externalize them. 
-- We are never a blocker. We respond to ALL communications (internal or external) within 12h.
-- We stay critical about past decisions and existing processes ("Is this meeting really useful?") .
+
+* We stay away from low impact tasks. If they exist, we question their existence, and we kill them, we automate them or we externalize them. 
+* We are never a blocker. We respond to ALL communications \(internal or external\) within 12h.
+* We stay critical about past decisions and existing processes \("Is this meeting really useful?"\) .
 
 ## **Being Intentional and Owning the Outcome**
 
@@ -52,3 +53,4 @@ All of this can only work if you can feel comfortable being vulnerable with your
 **Address behavior, not people.** For constructive feedback to work, it should not be tied to the individual.
 
 **Don't let others fail, if you can help.** We succeed together. We keep an eye out for others who may be struggling or stuck, and see how we can provide assistance when needed.
+

@@ -1,13 +1,12 @@
 # Senior Software Engineer
 
-Join [Airbyte's](https://airbyte.io/) small, but growing, engineering team. We are backed by the world's [top investors](https://docs.airbyte.io/career-and-open-positions#our-investors). 
+Join [Airbyte's](https://airbyte.io/) small, but growing, engineering team. We are backed by the world's [top investors](https://docs.airbyte.io/career-and-open-positions#our-investors).
 
 You will spend your time solving one of the most complex and unsolved problem with data: Access. We're on a mission to allow anyone to access data, wherever it is, and make it available into the system of their choice.
 
-We are passionate about data, open source, our community and scale! 
+We are passionate about data, open source, our community and scale!
 
 We love Java, Python, Node, K8s, Docker... but in the end, it doesn't matter: we just want to build the best product.
-
 
 ## **About you**
 
@@ -49,7 +48,9 @@ Wherever you want!
   * Retirement \(401k, etc\)
 
 ## **This is how we think**
+
 We are an open company, we are opinionated and public about how we think!
+
 * Our [company handbook](https://docs.airbyte.io/company-handbook),
 * Our [culture & values](https://docs.airbyte.io/company-handbook/culture-and-values),
 * Our [strategy](https://docs.airbyte.io/company-handbook/strategy),
@@ -61,3 +62,4 @@ We are an open company, we are opinionated and public about how we think!
 Email us at [join-us@airbyte.io](mailto:join-us@airbyte.io) with a link to your LinkedIn / Resume / GitHub \(optional\).
 
 Don't send a cover letter, your resume will speak for you!
+
