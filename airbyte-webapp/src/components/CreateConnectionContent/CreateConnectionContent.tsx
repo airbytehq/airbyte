@@ -71,9 +71,9 @@ const CreateConnectionContent: React.FC<IProps> = ({
       user_id: config.ui.workspaceId,
       action: "Select a frequency",
       frequency: item?.text,
-      connector_source_definition: source?.name,
+      connector_source_definition: source?.sourceName,
       connector_source_definition_id: source?.sourceDefinitionId,
-      connector_destination_definition: destination?.name,
+      connector_destination_definition: destination?.destinationName,
       connector_destination_definition_id: destination?.destinationDefinitionId
     });
   };
