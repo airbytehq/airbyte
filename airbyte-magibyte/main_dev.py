@@ -75,11 +75,10 @@ streams:
             value: "{{ page.current_date.format('YYYY-MM-DD') }}"
 ''')
 
-
 config_stripe = {
-  "client_secret": os.environ['client_secret'],
-  "account_id": os.environ['account_id'],
-  "start_date": "2020-05-01T00:00:00Z"
+    "client_secret": os.environ['client_secret'],
+    "account_id": os.environ['account_id'],
+    "start_date": "2020-05-01T00:00:00Z"
 }
 
 streams_stripe = yaml.safe_load('''
@@ -107,19 +106,29 @@ defaults:
 
   state: &default_state
     strategy: magibyte.operations.state.Noop
+    
+  extract: &default_extract
+    strategy: magibyte.operations.extract.HttpResource
+    options:
+      request: *default_request
+      decoder: *default_decoder
+      selector: *default_selector
+      pagination: *default_pagination
+      state: *default_state
       
 streams:
   accounts:
     vars:
       resource_name: accounts
-    extract:
-      strategy: magibyte.operations.extract.HttpResource
-      options:
-        request: *default_request
-        decoder: *default_decoder
-        selector: *default_selector
-        pagination: *default_pagination
-        state: *default_state
+    extract: *default_extract
+  application_fees:
+    vars:
+      resource_name: application_fees
+    extract: *default_extract
+  application_fees:
+    vars:
+      resource_name: application_fees
+    extract: *default_extract  
 ''')
 
 
@@ -140,18 +149,21 @@ def main():
     streams = streams_stripe
     logging.debug(streams)
 
-    context = {
-        'config': config,
-        'state': {'date': '2021-01-11'},
-        'vars': streams['streams']['accounts']['vars']
-    }
+    for name, stream in streams['streams'].items():
+        print(name)
 
-    extract = HttpResourceExtract(options=streams['streams']['accounts']['extract']['options'],
-                                  extrapolate=extrapolate,
-                                  strategy_builder=strategy_builder.build)
+        context = {
+            'config': config,
+            'state': {'date': '2021-01-11'},
+            'vars': stream['vars']
+        }
 
-    extracted_result = extract.extract(context)
-    logging.debug(extracted_result)
+        extract = HttpResourceExtract(options=stream['extract']['options'],
+                                      extrapolate=extrapolate,
+                                      strategy_builder=strategy_builder.build)
+
+        extracted_result = extract.extract(context)
+        logging.debug(extracted_result)
 
     # source = Source()
     #
@@ -161,6 +173,7 @@ def main():
     #         emit_state(stream, state)
     #
     # cleanup()
+
 
 if __name__ == "__main__":
     logging.info(f"Starting Magibyte {sys.argv}")
