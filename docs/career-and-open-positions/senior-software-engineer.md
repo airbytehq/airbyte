@@ -8,7 +8,6 @@ We are passionate about data, open source, our community and scale!
 
 We love Java, Python, Node, K8s, Docker... but in the end, it doesn't matter: we just want to build the best product.
 
-We believe in product-led growth, not cold sales calls! We build something awesome, and we let our product bring the users.
 
 ## **About you**
 
@@ -62,4 +61,3 @@ We are an open company, we are opinionated and public about how we think!
 Email us at [join-us@airbyte.io](mailto:join-us@airbyte.io) with a link to your LinkedIn / Resume / GitHub \(optional\).
 
 Don't send a cover letter, your resume will speak for you!
-

@@ -16,7 +16,7 @@ We’re huge believers in “Diversity in counsel, unity in action.” Several h
 * **Any opinion or concern needs to be shared**. Saying “I knew it would turn out like this…” is not acceptable if you didn't share your view beforehand. 
 * We always share our challenges: **bad news must travel faster than good news.**
 
-However, “unity in action” means for us that **we don’t believe in consensus**, and that even if you don’t believe in the decision that was made, you must commit to it and give it a chance to succeed. Consensus are diluted solutions.
+However, “unity in action” means for us that **we don’t believe in consensus**, and that even if you don’t believe in the decision that was made, you must commit to it and give it a chance to succeed. Consensus results in diluted solutions.
 
 ## **Humility and Maximizing Growth**
 
@@ -52,4 +52,3 @@ All of this can only work if you can feel comfortable being vulnerable with your
 **Address behavior, not people.** For constructive feedback to work, it should not be tied to the individual.
 
 **Don't let others fail, if you can help.** We succeed together. We keep an eye out for others who may be struggling or stuck, and see how we can provide assistance when needed.
-
