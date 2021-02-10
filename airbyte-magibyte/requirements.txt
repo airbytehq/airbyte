@@ -1,6 +1,6 @@
 arrow
 jinja2
-jsonpath-rw
+jmespath
 pytest
 pyyaml
 requests

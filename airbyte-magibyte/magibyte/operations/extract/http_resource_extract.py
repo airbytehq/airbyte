@@ -34,8 +34,8 @@ class HttpResourceExtract(BaseExtract):
 
             for record in self.selector.select(context):
                 logging.debug(record)
+                context['record'] = record
                 state = self.state.get(context)
-
 
             logging.debug(state)
 

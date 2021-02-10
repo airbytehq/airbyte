@@ -1,1 +1,1 @@
-from .json_path_select import JsonPathSelect as JsonPath
+from .json_query_select import JsonQuerySelect as JsonQuery

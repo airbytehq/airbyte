@@ -56,9 +56,9 @@ streams:
         decoder:
           strategy: magibyte.operations.decode.Json
         selector:
-          strategy: magibyte.operations.select.JsonPath
+          strategy: magibyte.operations.select.JsonQuery
           options:
-            path: $.rates
+            path: "merge({date: date, base: base}, rates).to_array(@)"
         pagination:
           strategy: magibyte.operations.pagination.Datetime
           options:
@@ -95,7 +95,7 @@ def main():
         'state': {'date': '2021-01-11'}
     }
 
-    extract = HttpResourceExtract(options=config['streams']['rate']['extract']['options'],
+    extract = HttpResourceExtract(options=config['streams']['rates']['extract']['options'],
                                   extrapolate=extrapolate,
                                   strategy_builder=strategy_builder.build)
 
