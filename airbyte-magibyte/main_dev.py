@@ -59,7 +59,7 @@ streams:
         selector:
           strategy: magibyte.operations.select.JsonQuery
           options:
-            path: "merge({date: date, base: base}, rates).to_array(@)"
+            path: "merge({date: date, base: base}, rates)"
         pagination:
           strategy: magibyte.operations.pagination.Datetime
           options:
@@ -86,7 +86,7 @@ defaults:
   request: &default_request
     strategy: magibyte.operations.request.HttpRequest
     options:
-      base_url: "https://api.stripe.com/v1/{{ vars.resource_name }}"
+      base_url: "https://api.stripe.com{{ vars.path }}"
       method: get
       params: []
       headers:
@@ -117,18 +117,254 @@ defaults:
       state: *default_state
       
 streams:
+  ####
+  # Core
+  ####
+
+  # balance:
+  #   vars:
+  #     path: /v1/balance
+  #   extract: *default_extract
+  # returns an object
+  
+  balance_transactions:
+    vars:
+      path: /v1/balance_transactions
+    extract: *default_extract
+
+  charges:
+    vars:
+      path: /v1/charges
+    extract: *default_extract
+
+  customers:
+    vars:
+      path: /v1/customers
+    extract: *default_extract
+
+  disputes:
+    vars:
+      path: /v1/disputes
+    extract: *default_extract
+
+  events:
+    vars:
+      path: /v1/events
+    extract: *default_extract
+
+  files:
+    vars:
+      path: /v1/files
+    extract: *default_extract
+
+  file_links:
+    vars:
+      path: /v1/file_links
+    extract: *default_extract
+
+  # /v1/mandates/mandate_1IJAmu2eZvKYlo2CccvtWfFE:
+  #   vars:
+  #     path: 
+  #   extract: *default_extract
+  # 
+
+  payment_intents:
+    vars:
+      path: /v1/payment_intents
+    extract: *default_extract
+
+  setup_intents:
+    vars:
+      path: /v1/setup_intents
+    extract: *default_extract
+
+  # /v1/setup_attempts?setup_intent:
+  #   vars:
+  #     path: /v1/setup_attempts
+  #   extract: *default_extract
+
+  payouts:
+    vars:
+      path: /v1/payouts
+    extract: *default_extract
+
+  products:
+    vars:
+      path: /v1/products
+    extract: *default_extract
+
+  prices:
+    vars:
+      path: /v1/prices
+    extract: *default_extract
+
+  refunds:
+    vars:
+      path: /v1/refunds
+    extract: *default_extract
+  
+  ####
+  # Payment methods
+  ####
+  
+  # Everything is scoped by customer
+
+  ####
+  # Checkout
+  ####
+
+  checkout_sessions:
+    vars:
+      path: /v1/checkout/sessions
+    extract: *default_extract
+
+  ####
+  # Billing
+  ####
+  
+  coupons:
+    vars:
+      path: /v1/coupons
+    extract: *default_extract
+  
+  credit_notes:
+    vars:
+      path: /v1/credit_notes
+    extract: *default_extract
+  
+  # /v1/customers/cus_Iv0oJFmQcCYWsz/balance_transactions:
+  #   vars:
+  #     path: credit_notes
+  #   extract: *default_extract
+  
+  # /v1/customers/cus_Iv0oJFmQcCYWsz/tax_ids:
+  #   vars:
+  #     path: credit_notes
+  #   extract: *default_extract
+  
+  invoices:
+    vars:
+      path: /v1/invoices
+    extract: *default_extract
+  
+  invoiceitems:
+    vars:
+      path: /v1/invoiceitems
+    extract: *default_extract
+  
+  plans:
+    vars:
+      path: /v1/plans
+    extract: *default_extract
+  
+  promotion_codes:
+    vars:
+      path: /v1/promotion_codes
+    extract: *default_extract
+  
+  subscriptions:
+    vars:
+      path: /v1/subscriptions
+    extract: *default_extract
+  
+  # subscription_items:
+  #   vars:
+  #     path: subscriptions
+  #   extract: *default_extract
+  # requires subscription= param
+  
+  subscription_schedules:
+    vars:
+      path: /v1/subscription_schedules
+    extract: *default_extract
+  
+  tax_rates:
+    vars:
+      path: /v1/tax_rates
+    extract: *default_extract
+  
+  # /v1/subscription_items/si_DAyhPiOTjrdfTv/usage_record_summaries:
+  #   vars:
+  #     path: tax_rates
+  #   extract: *default_extract
+
+  ####
+  # Connect
+  ####
+
   accounts:
     vars:
-      resource_name: accounts
+      path: /v1/accounts
     extract: *default_extract
+
   application_fees:
     vars:
-      resource_name: application_fees
+      path: /v1/application_fees
     extract: *default_extract
-  application_fees:
+
+  # /v1/application_fees/fee_1B73DOKbnvuxQXGuhY8Aw0TN/refunds:
+  #   vars:
+  #     path: application_fees
+  #   extract: *default_extract
+
+  # /v1/accounts/acct_1032D82eZvKYlo2C/capabilities:
+  #   vars:
+  #     path: country_specs
+  #   extract: *default_extract
+
+  country_specs:
     vars:
-      resource_name: application_fees
-    extract: *default_extract  
+      path: /v1/country_specs
+    extract: *default_extract
+
+  # /v1/accounts/acct_1032D82eZvKYlo2C/external_accounts:
+  #   vars:
+  #     path: country_specs
+  #   extract: *default_extract
+
+  # /v1/accounts/acct_1032D82eZvKYlo2C/persons:
+  #   vars:
+  #     path: country_specs
+  #   extract: *default_extract
+    
+  topups:
+    vars:
+      path: /v1/topups
+    extract: *default_extract
+
+  transfers:
+    vars:
+      path: /v1/transfers
+    extract: *default_extract
+  
+  # /v1/transfers/tr_1IFzyy2eZvKYlo2CEP6HJyrb/reversals:
+  #   vars:
+  #     path: transfers
+  #   extract: *default_extract
+  
+  ####
+  # Fraud
+  ####
+  
+  radar_early_fraud_warnings:
+    vars:
+      path: /v1/radar/early_fraud_warnings
+    extract: *default_extract
+  
+  reviews:
+    vars:
+      path: /v1/reviews
+    extract: *default_extract
+    
+  radar_value_lists:
+    vars:
+      path: /v1/radar/value_lists
+    extract: *default_extract
+  
+  # /v1/radar/value_list_items?value_list:
+  #   vars:
+  #     path: reviews
+  #   extract: *default_extract
 ''')
 
 
