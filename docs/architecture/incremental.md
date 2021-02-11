@@ -99,7 +99,8 @@ As an example, if you are syncing to a Postgres DB the `employees` table which, 
 | 1 | 2000 | 26 |
 | 3 | 2000 | 76 |
 
-There are many ways to deduplicate rows that share a primary key based on the `airbyte_emitted_at` . One example is the below query:
+
+The below query is one example of how to deduplicate records sharing a primary key using the `airbyte_emitted_at` column:
 
 ```sql
 CREATE VIEW latest_employees_snapshot as (
@@ -110,6 +111,7 @@ CREATE VIEW latest_employees_snapshot as (
 ```
 
 
+You can find more relevant SQL transformations you might need to do on your data in the [Connecting EL with T using SQL \(part 1/2\)](../tutorials/connecting-el-with-t-using-sql.md#simple-sql-query)
 
 Note that in **Incremental Append**, the size of the data in your warehouse increases monotonically since an updated record in the source is appended to the destination rather than updated in-place. If you only care about having the latest snapshot of your data, you may want to periodically run cleanup jobs which retain only the latest instance of each record, deduping by primary key.
 
