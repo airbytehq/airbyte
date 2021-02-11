@@ -1,7 +1,6 @@
 # MeiliSearch Destination
 
 This is the repository for the MeiliSearch destination connector, written in Java.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/destomatopms/meilisearch).
 
 ## Local development
 
