@@ -1,7 +1,9 @@
 import React, { useContext, useEffect } from "react";
-import ChatWidget from "@papercups-io/chat-widget";
 import { Storytime } from "@papercups-io/storytime";
-import { ThemeContext } from "styled-components";
+import styled, { ThemeContext } from "styled-components";
+import Button from "../Button";
+import { faComment } from "@fortawesome/free-regular-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 type PapercupsConfig = {
   accountId: string;
@@ -12,9 +14,28 @@ type PapercupsConfig = {
 type IProps = {
   papercupsConfig: PapercupsConfig;
   customerId: string;
+  onClick?: () => void;
 };
 
-const SupportChat: React.FC<IProps> = ({ papercupsConfig, customerId }) => {
+const ChatButton = styled(Button)`
+  width: 50px;
+  height: 50px;
+
+  border-radius: 50%;
+  padding: 0;
+
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+
+  font-size: 30px;
+`;
+
+const SupportChat: React.FC<IProps> = ({
+  papercupsConfig,
+  customerId,
+  onClick
+}) => {
   useEffect(() => {
     if (papercupsConfig.enableStorytime) {
       Storytime.init({
@@ -26,18 +47,12 @@ const SupportChat: React.FC<IProps> = ({ papercupsConfig, customerId }) => {
   }, [customerId, papercupsConfig]);
 
   const theme = useContext(ThemeContext);
+  console.log(theme);
 
   return (
-    <ChatWidget
-      title="Welcome to Airbyte"
-      subtitle="Ask us anything in the chat window below 😊"
-      primaryColor={theme.primaryColor}
-      greeting="Hello!!!"
-      newMessagePlaceholder="Start typing..."
-      customer={{ external_id: customerId }}
-      accountId={papercupsConfig.accountId}
-      baseUrl={papercupsConfig.baseUrl}
-    />
+    <ChatButton onClick={onClick}>
+      <FontAwesomeIcon icon={faComment} />
+    </ChatButton>
   );
 };
 

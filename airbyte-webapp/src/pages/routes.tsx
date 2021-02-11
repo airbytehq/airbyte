@@ -155,6 +155,7 @@ export const Routing = () => {
         <SupportChat
           papercupsConfig={config.papercups}
           customerId={workspace.customerId}
+          onClick={() => (window as any).open(config.ui.slackLink, "_blank")}
         />
         {config.isDemo && (
           <SingletonCard
