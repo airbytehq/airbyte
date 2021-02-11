@@ -1,45 +1,17 @@
 import { Resource } from "rest-hooks";
-import BaseResource, { NetworkError } from "./BaseResource";
+
+import BaseResource from "./BaseResource";
 import { JobInfo } from "./Scheduler";
-import Status from "../statuses";
+import { SyncSchema } from "../domain/catalog";
+import { toInnerModel } from "../domain/catalog/fieldUtil";
+import { SourceDiscoverSchemaRead } from "../domain/catalog/api";
 
-export enum SyncMode {
-  Incremental = "incremental",
-  FullRefresh = "full_refresh"
-}
-
-export type SyncSchemaField = {
-  name: string;
-  cleanedName: string;
-  selected: boolean;
-  type: string;
-  dataType: string;
-};
-
-export type SyncSchemaStream = {
-  name: string;
-  cleanedName: string;
-  fields: SyncSchemaField[];
-  supportedSyncModes: SyncMode[];
-  sourceDefinedCursor: boolean | null;
-  defaultCursorField: string[];
-  selected: boolean | null;
-  syncMode: string | null;
-  cursorField: string[];
-};
-
-export type SyncSchema = {
-  streams: SyncSchemaStream[];
-};
-
-export interface Schema {
+export interface Schema extends SourceDiscoverSchemaRead {
   id: string;
-  schema: SyncSchema;
-  jobInfo?: JobInfo;
 }
 
 export default class SchemaResource extends BaseResource implements Schema {
-  readonly schema: SyncSchema = { streams: [] };
+  readonly catalog: SyncSchema = { streams: [] };
   readonly id: string = "";
   readonly jobInfo: JobInfo | undefined = undefined;
 
@@ -54,30 +26,22 @@ export default class SchemaResource extends BaseResource implements Schema {
       ...super.detailShape(),
       getFetchKey: (params: { sourceId: string }) =>
         `POST /sources/discover_schema` + JSON.stringify(params),
-      fetch: async (
-        params: Readonly<Record<string, string | number>>
-      ): Promise<any> => {
-        const result = await this.fetch(
+      fetch: async (params: { sourceId: string }): Promise<any> => {
+        const response = await this.fetch(
           "post",
           `${this.url(params)}/discover_schema`,
           params
         );
 
-        if (result.jobInfo.job.status === Status.FAILED || !result.schema) {
-          const e = new NetworkError(result);
-          // Generate error with failed status and received logs
-          e.status = 400;
-          e.response = result.jobInfo;
-          throw e;
-        }
+        const result = toInnerModel(response);
 
         return {
-          schema: result.schema,
+          catalog: result.catalog,
           jobInfo: result.jobInfo,
           id: params.sourceId
         };
       },
-      schema: this.asSchema()
+      schema: this
     };
   }
 }

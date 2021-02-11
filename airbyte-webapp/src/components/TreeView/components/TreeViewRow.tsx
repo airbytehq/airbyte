@@ -7,12 +7,13 @@ import SyncSettingsCell from "./SyncSettingsCell";
 import ChildRow from "./ChildRow";
 
 import {
-  SyncSchemaStream,
-  SyncSchemaField
-} from "../../../core/resources/Schema";
+  AirbyteStreamConfiguration,
+  SyncSchemaStream
+} from "../../../core/domain/catalog";
 import ItemRow from "./ItemRow";
 import TreeItem from "./TreeItem";
 import { IDataItem } from "../../DropDown/components/ListItem";
+import { traverseSchemaToField } from "../../../core/domain/catalog/fieldUtil";
 
 const StyledCell = styled(Cell)`
   overflow: hidden;
@@ -21,106 +22,85 @@ const StyledCell = styled(Cell)`
 
 type IProps = {
   isChild?: boolean;
-  item: SyncSchemaStream;
-  updateItem: (a: any) => void;
+  streamNode: SyncSchemaStream;
+  updateItem: (
+    streamId: string,
+    a: Partial<AirbyteStreamConfiguration>
+  ) => void;
 };
 
-const TreeViewRow: React.FC<IProps> = ({ item, updateItem }) => {
+const TreeViewRow: React.FC<IProps> = ({ streamNode, updateItem }) => {
+  const { stream, config } = streamNode;
+  const streamId = stream.name;
   const [expanded, setExpanded] = useState<Array<string>>([]);
-  const isItemOpen = useMemo(
-    () => !!expanded.find(expandedItem => expandedItem === item.name),
-    [expanded, item.name]
+  const isItemOpen = useMemo<boolean>(
+    () => expanded.some(expandedItem => expandedItem === streamId),
+    [expanded, streamId]
+  );
+  const fields = useMemo(
+    () => traverseSchemaToField(stream.jsonSchema, streamId),
+    [stream]
   );
 
   const onExpand = useCallback(() => {
-    if (isItemOpen) {
-      const newState = expanded.filter(stateItem => stateItem !== item.name);
-      setExpanded(newState);
-    } else {
-      setExpanded([...expanded, item.name]);
-    }
-  }, [expanded, isItemOpen, item.name]);
+    const newState = isItemOpen
+      ? expanded.filter(stateItem => stateItem !== streamId)
+      : [...expanded, streamId];
 
-  const isItemHasChildren = !!(item.fields && item.fields.length);
+    setExpanded(newState);
+  }, [expanded, isItemOpen, streamId]);
 
   const onSelectSyncMode = useCallback(
     (data: IDataItem) => {
       if (data.groupValue) {
-        return updateItem({
-          ...item,
+        updateItem(streamId, {
           syncMode: data.groupValue,
           cursorField: [data.value]
         });
+      } else {
+        updateItem(streamId, {
+          syncMode: data.value,
+          cursorField: []
+        });
       }
-
-      return updateItem({
-        ...item,
-        syncMode: data.value,
-        cursorField: []
-      });
     },
-    [item, updateItem]
+    [streamId, updateItem]
   );
 
-  const isItemSelected = useCallback(() => {
-    if (!isItemHasChildren) {
-      return !!item.selected;
-    }
-
-    return !item.fields.find(field => !field.selected);
-  }, [isItemHasChildren, item.fields, item.selected]);
-
-  const onUpdateField = useCallback(
-    (field: SyncSchemaField) => {
-      const updatedFields = item.fields.map(itemField => {
-        if (field.name === itemField.name) {
-          return field;
-        }
-
-        return itemField;
-      });
-
-      updateItem({ ...item, fields: updatedFields });
-    },
-    [item, updateItem]
+  const onCheckBoxClick = useCallback(
+    () =>
+      updateItem(streamId, {
+        selected: !config.selected
+      }),
+    [streamId, updateItem]
   );
 
-  const onCheckBoxClick = useCallback(() => {
-    if (!isItemHasChildren) {
-      return updateItem({ ...item, selected: !item.selected });
-    }
-    const isFullySelected = !item.fields.find(field => !field.selected);
-    const newFields = item.fields.map(field => {
-      return isFullySelected
-        ? { ...field, selected: false }
-        : { ...field, selected: true };
-    });
-
-    return updateItem({ ...item, fields: newFields });
-  }, [isItemHasChildren, item, updateItem]);
+  const hasChildren = fields && fields.length > 0;
 
   return (
     <>
       <TreeItem>
         <ItemRow>
           <MainInfoCell
-            label={item.name}
+            label={stream.name}
             onCheckBoxClick={onCheckBoxClick}
             onExpand={onExpand}
-            isItemChecked={!!isItemSelected()}
-            isItemHasChildren={isItemHasChildren}
+            isItemChecked={config.selected}
+            isItemHasChildren={hasChildren}
             isItemOpen={isItemOpen}
           />
           <Cell />
-          <StyledCell>{item.cleanedName}</StyledCell>
-          <SyncSettingsCell item={item} onSelect={onSelectSyncMode} />
+          <StyledCell>{config.aliasName}</StyledCell>
+          <SyncSettingsCell
+            streamNode={streamNode}
+            fields={fields}
+            onSelect={onSelectSyncMode}
+          />
         </ItemRow>
       </TreeItem>
       {isItemOpen &&
-        isItemHasChildren &&
-        item.fields?.map(field => (
-          <ChildRow item={field} isChild updateItem={onUpdateField} />
-        ))}
+        hasChildren &&
+        fields?.map(field => <ChildRow item={field} depth={1} />)}
     </>
   );
 };

@@ -9,7 +9,7 @@ import Label from "../Label";
 import SchemaView from "./components/SchemaView";
 import { IDataItem } from "../DropDown/components/ListItem";
 import EditControls from "./components/EditControls";
-import { SyncSchema } from "../../core/resources/Schema";
+import { SyncSchema } from "../../core/domain/catalog";
 import ResetDataModal from "../ResetDataModal";
 import { equal } from "../../utils/objects";
 import { useFrequencyDropdownData, useInitialSchema } from "./useInitialSchema";

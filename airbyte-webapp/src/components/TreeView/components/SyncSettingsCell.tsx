@@ -1,11 +1,15 @@
 import React, { useMemo } from "react";
 import styled from "styled-components";
+import { useIntl } from "react-intl";
 
 import { Cell } from "../../SimpleTableComponents";
-import DropDown from "../../DropDown";
+import DropDown, { DropDownRow } from "../../DropDown";
 import { IDataItem } from "../../DropDown/components/ListItem";
-import { SyncMode, SyncSchemaStream } from "../../../core/resources/Schema";
-import { useIntl } from "react-intl";
+import {
+  SyncMode,
+  SyncSchemaField,
+  SyncSchemaStream
+} from "../../../core/domain/catalog";
 
 const DropDownContainer = styled.div`
   padding-right: 10px;
@@ -19,21 +23,21 @@ const StyledDropDown = styled(DropDown)`
 `;
 
 type IProps = {
-  item: SyncSchemaStream;
+  streamNode: SyncSchemaStream;
+  fields: SyncSchemaField[];
   onSelect: (data: IDataItem) => void;
 };
 
-const SyncSettingsCell: React.FC<IProps> = ({ item, onSelect }) => {
+const SyncSettingsCell: React.FC<IProps> = ({
+  streamNode,
+  fields,
+  onSelect
+}) => {
+  const { stream } = streamNode;
   const formatMessage = useIntl().formatMessage;
 
   const fullData = useMemo(() => {
-    const syncData: {
-      value: string;
-      text: string;
-      secondary?: boolean;
-      groupValue?: string;
-      groupValueText?: string;
-    }[] = item.supportedSyncModes
+    const syncData: DropDownRow.IDataItem[] = stream.supportedSyncModes
       .filter(mode => mode !== SyncMode.Incremental)
       .map(mode => ({
         value: mode,
@@ -43,13 +47,13 @@ const SyncSettingsCell: React.FC<IProps> = ({ item, onSelect }) => {
         })
       }));
 
-    const isIncrementalSupported = item.supportedSyncModes.includes(
+    const isIncrementalSupported = stream.supportedSyncModes.includes(
       SyncMode.Incremental
     );
 
     // If INCREMENTAL is included in the supported sync modes...
     if (isIncrementalSupported) {
-      if (item.sourceDefinedCursor) {
+      if (stream.sourceDefinedCursor) {
         // If sourceDefinedCursor is true, In the dropdown we should just have one row for incremental
         syncData.push({
           text: formatMessage({
@@ -62,15 +66,15 @@ const SyncSettingsCell: React.FC<IProps> = ({ item, onSelect }) => {
 
         // If defaultCursorField is set, then the field specified in there should be at the top of the list
         // and have the word "(default)" next to it
-        if (item.defaultCursorField?.length) {
+        if (stream.defaultCursorField?.length) {
           syncData.push({
             text: formatMessage(
               {
                 id: "sources.incrementalDefault"
               },
-              { value: item.defaultCursorField[0] }
+              { value: stream.defaultCursorField[0] }
             ),
-            value: item.defaultCursorField[0],
+            value: stream.defaultCursorField[0],
             secondary: true,
             groupValue: SyncMode.Incremental,
             groupValueText: formatMessage({
@@ -80,9 +84,9 @@ const SyncSettingsCell: React.FC<IProps> = ({ item, onSelect }) => {
         }
 
         // Any column in the stream can be used as the cursor
-        item.fields.forEach(field => {
+        fields?.forEach(field => {
           if (
-            !syncData.find(dataItem => dataItem.value === field.cleanedName)
+            !syncData.some(dataItem => dataItem.value === field.cleanedName)
           ) {
             syncData.push({
               text: field.cleanedName,
@@ -100,13 +104,13 @@ const SyncSettingsCell: React.FC<IProps> = ({ item, onSelect }) => {
 
     return syncData;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [item.supportedSyncModes, item.fields]);
+  }, [stream.supportedSyncModes, stream.jsonSchema]);
 
-  const currentValue = item.cursorField?.length
-    ? item.sourceDefinedCursor
+  const currentValue = streamNode.config.cursorField?.length
+    ? stream.sourceDefinedCursor
       ? SyncMode.Incremental
-      : item.cursorField[0]
-    : item.syncMode || "";
+      : streamNode.config.cursorField[0]
+    : streamNode.config.syncMode || "";
 
   return (
     <Cell>
