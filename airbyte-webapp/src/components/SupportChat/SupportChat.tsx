@@ -1,6 +1,6 @@
-import React, { useContext, useEffect } from "react";
+import React, { useEffect } from "react";
 import { Storytime } from "@papercups-io/storytime";
-import styled, { ThemeContext } from "styled-components";
+import styled from "styled-components";
 import Button from "../Button";
 import { faComment } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -45,9 +45,6 @@ const SupportChat: React.FC<IProps> = ({
       });
     }
   }, [customerId, papercupsConfig]);
-
-  const theme = useContext(ThemeContext);
-  console.log(theme);
 
   return (
     <ChatButton onClick={onClick}>
