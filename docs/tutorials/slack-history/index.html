@@ -1,0 +1,70 @@
+<!--modified version of: https://docs.meilisearch.com/learn/tutorials/getting_started.html#integrate-with-your-project-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@meilisearch/instant-meilisearch/templates/basic_search.css" />
+</head>
+<body>
+<div class="wrapper">
+  <div id="searchbox" focus></div>
+  <div id="hits"></div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@meilisearch/instant-meilisearch/dist/instant-meilisearch.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/instantsearch.js@4"></script>
+<script>
+    const searchMessages = instantsearch({
+        indexName: "messages",
+        searchClient: instantMeiliSearch(
+            "http://localhost:7700"
+        )
+    });
+    const searchThreads = instantsearch({
+        indexName: "threads",
+        searchClient: instantMeiliSearch(
+            "http://localhost:7700"
+        )
+    });
+
+    searchMessages.addWidgets([
+        instantsearch.widgets.searchBox({
+            container: "#searchbox"
+        }),
+        instantsearch.widgets.configure({ hitsPerPage: 8 }),
+        instantsearch.widgets.hits({
+            container: "#hits",
+            templates: {
+                item: `
+                      <div>
+                      <div class="hit-name">
+                          {{#helpers.highlight}}{ "attribute": "text" }{{/helpers.highlight}}
+                      </div>
+                      </div>
+                  `
+            }
+        })
+    ]);
+    searchMessages.start();
+
+    searchThreads.addWidgets([
+        instantsearch.widgets.searchBox({
+            container: "#searchbox"
+        }),
+        instantsearch.widgets.configure({ hitsPerPage: 8 }),
+        instantsearch.widgets.hits({
+            container: "#hits",
+            templates: {
+                item: `
+                      <div>
+                      <div class="hit-name">
+                          {{#helpers.highlight}}{ "attribute": "text" }{{/helpers.highlight}}
+                      </div>
+                      </div>
+                  `
+            }
+        })
+    ]);
+    searchThreads.start();
+</script>
+</body>
+</html>
