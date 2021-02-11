@@ -96,7 +96,7 @@ class Client(BaseClient):
             issues_configs = ENTITIES_MAP.get("issues").copy()
             issues_configs["params"] = {}
             for issue in self.lists(name="issues", **issues_configs):
-                self._issue_keys.append({"id": issue.get("id"), "key": issue.get("key")})
+                self._issue_keys.append(issue.get("key"))
         return self._issue_keys
 
     def _get_project_keys(self):
@@ -122,12 +122,8 @@ class Client(BaseClient):
 
     def _get_issues_related(self, name):
         issue_keys = self._get_issue_keys()
-        for key in issue_keys:
-            issue_key = key.get("key")
-            configs = {
-                **ENTITIES_MAP.get(f"issue_{name}"),
-                "url": ENTITIES_MAP.get(f"issue_{name}").get("url").format(key=issue_key)
-            }
+        for issue_key in issue_keys:
+            configs = {**ENTITIES_MAP.get(f"issue_{name}"), "url": ENTITIES_MAP.get(f"issue_{name}").get("url").format(key=issue_key)}
             for item in self.lists(name=f"issue_{name}", **configs):
                 yield item
 
@@ -137,18 +133,25 @@ class Client(BaseClient):
             query_value = project_key.get(query_param)
             configs = {
                 **ENTITIES_MAP.get(f"project_{name}"),
-                "url": ENTITIES_MAP.get(f"project_{name}").get("url").format(**{query_param: query_value})
+                "url": ENTITIES_MAP.get(f"project_{name}").get("url").format(**{query_param: query_value}),
             }
             for item in self.lists(name=f"project_{name}", **configs):
                 yield item
 
+    def _get_screen_tabs(self):
+        for screen in self.lists(name="screens", **ENTITIES_MAP.get("screens")):
+            screen_id = screen.get("id")
+            screen_tabs_configs = {
+                **ENTITIES_MAP.get("screen_tabs"),
+                "url": ENTITIES_MAP.get("screen_tabs").get("url").format(id=screen_id),
+            }
+            for tab in self.lists(name="screen_tabs", **screen_tabs_configs):
+                yield {"screen": screen, "tab": tab}
+
     def stream__avatars(self, fields):
         avatar_types = ("issuetype", "project", "user")
         for avatar_type in avatar_types:
-            avatar_configs = {
-                **ENTITIES_MAP.get("avatars"),
-                "url": ENTITIES_MAP.get("avatars").get("url").format(type=avatar_type)
-            }
+            avatar_configs = {**ENTITIES_MAP.get("avatars"), "url": ENTITIES_MAP.get("avatars").get("url").format(type=avatar_type)}
             for data in self.lists(name="avatars", **avatar_configs):
                 yield data
 
@@ -157,7 +160,7 @@ class Client(BaseClient):
             filter_item_id = filter_item.get("id")
             filter_sharing_configs = {
                 **ENTITIES_MAP.get("filter_sharing"),
-                "url": ENTITIES_MAP.get("filter_sharing").get("url").format(id=filter_item_id)
+                "url": ENTITIES_MAP.get("filter_sharing").get("url").format(id=filter_item_id),
             }
             for permission in self.lists(name="filter_sharing", **filter_sharing_configs):
                 yield permission
@@ -170,22 +173,21 @@ class Client(BaseClient):
         for field in self._get_custom_fields():
             issue_custom_field_contexts_configs = {
                 **ENTITIES_MAP.get("issue_custom_field_contexts"),
-                "url": ENTITIES_MAP.get("issue_custom_field_contexts").get("url").format(id=field.get('id'))
+                "url": ENTITIES_MAP.get("issue_custom_field_contexts").get("url").format(id=field.get("id")),
             }
             for context in self.lists(name="issue_custom_field_contexts", **issue_custom_field_contexts_configs):
                 yield context
 
     def stream__issue_properties(self, fields):
         issue_keys = self._get_issue_keys()
-        for item in issue_keys:
-            issue_key = item.get("key")
+        for issue_key in issue_keys:
             for issue_property_key_item in self.lists(
                 name="issue_property_keys", url=f"/issue/{issue_key}/properties", extractor=lambda v: v["keys"], params={}
             ):
                 issue_property_key = issue_property_key_item.get("key")
                 issue_properties_configs = {
                     **ENTITIES_MAP.get("issue_properties"),
-                    "url": ENTITIES_MAP.get("issue_properties").get("url").format(issue_key=issue_key, property_key=issue_property_key)
+                    "url": ENTITIES_MAP.get("issue_properties").get("url").format(issue_key=issue_key, property_key=issue_property_key),
                 }
                 for issue_property in self.lists(name="issue_properties", **issue_properties_configs):
                     yield issue_property
@@ -227,25 +229,19 @@ class Client(BaseClient):
             yield version
 
     def stream__screen_tabs(self, fields):
-        for screen in self.lists(name="screens", **ENTITIES_MAP.get("screens")):
-            screen_id = screen.get("id")
-            screen_tabs_configs = {
-                **ENTITIES_MAP.get("screen_tabs"),
-                "url": ENTITIES_MAP.get("screen_tabs").get("url").format(id=screen_id)
-            }
-            for tab in self.lists(name="screen_tabs", **screen_tabs_configs):
-                yield tab
+        for item in self._get_screen_tabs():
+            yield item.get("tab")
 
     def stream__screen_tab_fields(self, fields):
-        for screen in self.lists(name="screens", **ENTITIES_MAP.get("screens")):
-            screen_id = screen.get("id")
-            for tab in self.lists(name="screen_tabs", url=f"/screens/{screen_id}/tabs", **ENTITIES_MAP.get("screen_tabs")):
-                screen_tab_fields_configs = {
-                    **ENTITIES_MAP.get("screen_tab_fields"),
-                    "url": ENTITIES_MAP.get("screen_tab_fields").get("url").format(id=screen_id, tab_id=tab.get('id'))
-                }
-                for field in self.lists(name="screen_tab_fields", **screen_tab_fields_configs):
-                    yield field
+        for item in self._get_screen_tabs():
+            screen_id = item.get("screen").get("id")
+            tab_id = item.get("tab").get("id")
+            screen_tab_fields_configs = {
+                **ENTITIES_MAP.get("screen_tab_fields"),
+                "url": ENTITIES_MAP.get("screen_tab_fields").get("url").format(id=screen_id, tab_id=tab_id),
+            }
+            for field in self.lists(name="screen_tab_fields", **screen_tab_fields_configs):
+                yield field
 
     def stream__workflow_scheme_project_associations(self, fields):
         project_keys = self._get_project_keys()

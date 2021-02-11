@@ -28,7 +28,7 @@ ENTITIES_MAP = {
     "avatars": {"url": "/avatar/{type}/system", "extractor": lambda v: v["system"], "params": {}},
     "dashboards": {"url": "/dashboard", "extractor": lambda v: v["dashboards"], "params": {}},
     "filters": {"url": "/filter/search", "extractor": lambda v: v["values"], "params": {}},
-    "filter_sharing": {"url": "filter/{id}/permission", "extractor": lambda v: v, "params": {}},
+    "filter_sharing": {"url": "/filter/{id}/permission", "extractor": lambda v: v, "params": {}},
     "groups": {"url": "/groups/picker", "extractor": lambda v: v["groups"], "params": {}},
     "issues": {
         "url": "/search",
