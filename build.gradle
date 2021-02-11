@@ -83,7 +83,7 @@ spotless {
     python {
         target createSpotlessTarget('**/*.py')
 
-        licenseHeaderFile createPythonLicenseWith(rootProject.file('LICENSE')), '(from|import|def|# )'
+        licenseHeaderFile createPythonLicenseWith(rootProject.file('LICENSE')), '(from|import|def|#)'
     }
     format 'styling', {
         target createSpotlessTarget(['**/*.yaml', '**/*.json'])
