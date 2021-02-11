@@ -99,6 +99,7 @@ As an example, if you are syncing to a Postgres DB the `employees` table which, 
 | 1 | 2000 | 26 |
 | 3 | 2000 | 76 |
 
+
 The below query is one example of how to deduplicate records sharing a primary key using the `airbyte_emitted_at` column:
 
 ```sql
@@ -108,6 +109,7 @@ CREATE VIEW latest_employees_snapshot as (
     ) 
 );
 ```
+
 
 You can find more relevant SQL transformations you might need to do on your data in the [Connecting EL with T using SQL \(part 1/2\)](../tutorials/connecting-el-with-t-using-sql.md#simple-sql-query)
 

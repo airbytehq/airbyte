@@ -21,9 +21,14 @@ const AgainButton = styled(Button)`
 type IProps = {
   message?: React.ReactNode;
   onClick: () => void;
+  additionControl?: React.ReactNode;
 };
 
-const TryAfterErrorBlock: React.FC<IProps> = ({ message, onClick }) => {
+const TryAfterErrorBlock: React.FC<IProps> = ({
+  message,
+  onClick,
+  additionControl
+}) => {
   return (
     <Block>
       <StatusIcon success={false} big />
@@ -33,6 +38,7 @@ const TryAfterErrorBlock: React.FC<IProps> = ({ message, onClick }) => {
       <AgainButton onClick={onClick} danger>
         <FormattedMessage id="form.tryAgain" />
       </AgainButton>
+      {additionControl}
     </Block>
   );
 };
