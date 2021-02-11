@@ -28,18 +28,4 @@ export default class DestinationDefinitionResource extends BaseResource
       schema: { destinationDefinitions: [this] }
     };
   }
-
-  static detailShape<T extends typeof Resource>(this: T) {
-    return {
-      ...super.detailShape(),
-      schema: this
-    };
-  }
-
-  static updateShape<T extends typeof Resource>(this: T) {
-    return {
-      ...super.partialUpdateShape(),
-      schema: this
-    };
-  }
 }

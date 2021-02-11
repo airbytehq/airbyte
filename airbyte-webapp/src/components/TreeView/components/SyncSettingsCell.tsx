@@ -33,7 +33,7 @@ const SyncSettingsCell: React.FC<IProps> = ({
   fields,
   onSelect
 }) => {
-  const { stream } = streamNode;
+  const { stream, config } = streamNode;
   const formatMessage = useIntl().formatMessage;
 
   const fullData = useMemo(() => {
@@ -104,13 +104,13 @@ const SyncSettingsCell: React.FC<IProps> = ({
 
     return syncData;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stream.supportedSyncModes, stream.jsonSchema]);
+  }, [fields, stream]);
 
-  const currentValue = streamNode.config.cursorField?.length
+  const currentValue = config.cursorField?.length
     ? stream.sourceDefinedCursor
       ? SyncMode.Incremental
-      : streamNode.config.cursorField[0]
-    : streamNode.config.syncMode || "";
+      : config.cursorField[0]
+    : config.syncMode || "";
 
   return (
     <Cell>

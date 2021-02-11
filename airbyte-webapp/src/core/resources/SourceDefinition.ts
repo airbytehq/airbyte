@@ -29,25 +29,4 @@ export default class SourceDefinitionResource extends BaseResource
       schema: { sourceDefinitions: [this] }
     };
   }
-
-  static detailShape<T extends typeof Resource>(this: T) {
-    return {
-      ...super.detailShape(),
-      schema: this
-    };
-  }
-
-  static updateShape<T extends typeof Resource>(this: T) {
-    return {
-      ...super.partialUpdateShape(),
-      schema: this
-    };
-  }
-
-  static createShape<T extends typeof Resource>(this: T) {
-    return {
-      ...super.createShape(),
-      schema: this
-    };
-  }
 }

@@ -2,8 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import { FormattedMessage, useIntl } from "react-intl";
 
-import { H5 } from "../Titles";
-import DropDown from "../DropDown";
+import { H5, DropDown } from "../../components";
 import { IDataItem } from "../DropDown/components/ListItem";
 
 type IProps = {

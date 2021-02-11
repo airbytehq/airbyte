@@ -39,7 +39,7 @@ const TreeViewRow: React.FC<IProps> = ({ streamNode, updateItem }) => {
   );
   const fields = useMemo(
     () => traverseSchemaToField(stream.jsonSchema, streamId),
-    [stream]
+    [stream, streamId]
   );
 
   const onExpand = useCallback(() => {
@@ -72,7 +72,7 @@ const TreeViewRow: React.FC<IProps> = ({ streamNode, updateItem }) => {
       updateItem(streamId, {
         selected: !config.selected
       }),
-    [streamId, updateItem]
+    [streamId, config, updateItem]
   );
 
   const hasChildren = fields && fields.length > 0;

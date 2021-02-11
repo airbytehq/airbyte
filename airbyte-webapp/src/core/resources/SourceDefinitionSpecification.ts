@@ -1,4 +1,3 @@
-import { Resource } from "rest-hooks";
 import BaseResource from "./BaseResource";
 
 export type propertiesType = {
@@ -30,11 +29,4 @@ export default class SourceDefinitionSpecificationResource extends BaseResource
   }
 
   static urlRoot = "source_definition_specifications";
-
-  static detailShape<T extends typeof Resource>(this: T) {
-    return {
-      ...super.detailShape(),
-      schema: this
-    };
-  }
 }

@@ -17,10 +17,6 @@ const ChildItemRow = styled(ItemRow)`
   margin-left: -64px;
 `;
 
-const ChildTreeItem = styled(TreeItem)`
-  margin-left: 64px;
-`;
-
 const StyledCell = styled(Cell)`
   overflow: hidden;
   text-overflow: ellipsis;
@@ -32,7 +28,7 @@ const ChildRow: React.FC<IProps> = ({ item, depth = 0 }) => {
   // https://airbytehq.slack.com/archives/C01CWUQT7UJ/p1603173180066800
   return (
     <>
-      <ChildTreeItem>
+      <TreeItem depth={0}>
         <ChildItemRow>
           <MainInfoCell
             hideCheckbox={true}
@@ -44,7 +40,7 @@ const ChildRow: React.FC<IProps> = ({ item, depth = 0 }) => {
           <StyledCell>{item.cleanedName}</StyledCell>
           <Cell />
         </ChildItemRow>
-      </ChildTreeItem>
+      </TreeItem>
       {item.fields?.map(field => (
         <ChildRow item={field} depth={depth} />
       ))}

@@ -31,13 +31,6 @@ export default class SourceResource extends BaseResource implements Source {
     };
   }
 
-  static detailShape<T extends typeof Resource>(this: T) {
-    return {
-      ...super.detailShape(),
-      schema: this
-    };
-  }
-
   static recreateShape<T extends typeof Resource>(this: T) {
     return {
       ...super.detailShape(),
