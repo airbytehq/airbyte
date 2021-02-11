@@ -109,6 +109,8 @@ CREATE VIEW latest_employees_snapshot as (
 );
 ```
 
+
+
 Note that in **Incremental Append**, the size of the data in your warehouse increases monotonically since an updated record in the source is appended to the destination rather than updated in-place. If you only care about having the latest snapshot of your data, you may want to periodically run cleanup jobs which retain only the latest instance of each record, deduping by primary key.
 
 ## Known Limitations
