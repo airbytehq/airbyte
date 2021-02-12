@@ -107,6 +107,22 @@ def generate_dbt_model(schema: str, output: str, integration_type: str, catalog:
     all_tables: Dict[str, Set[str]] = {}
     for configuredStream in catalog["streams"]:
         stream = get_field(configuredStream, "stream", "Stream is not defined in Catalog Streams")
+        schema = normalize_schema_table_name(schema, integration_type)
+        name = get_field(stream, "name", "name is not defined in stream: " + str(stream))
+        raw_name = normalize_schema_table_name(f"_airbyte_raw_{name}", integration_type)
+
+        if schema not in source_tables:
+            source_tables[schema] = set()
+            all_tables[schema] = set()
+        if raw_name not in source_tables[schema]:
+            source_tables[schema].add(raw_name)
+            source_tables[schema].add(name)
+            all_tables[schema].add(raw_name)
+            all_tables[schema].add(name)
+        else:
+            raise KeyError(f"Duplicate table {name} in {schema}")
+    for configuredStream in catalog["streams"]:
+        stream = get_field(configuredStream, "stream", "Stream is not defined in Catalog Streams")
 
         schema = normalize_schema_table_name(schema, integration_type)
         name = get_field(stream, "name", "name is not defined in stream: " + str(stream))
@@ -118,16 +134,6 @@ def generate_dbt_model(schema: str, output: str, integration_type: str, catalog:
         properties = get_field(get_field(stream, "json_schema", message), "properties", message)
 
         table = jinja_call("source('{}', '{}')".format(schema, raw_name))
-        if schema not in source_tables:
-            source_tables[schema] = set()
-            all_tables[schema] = set()
-        if raw_name not in source_tables[schema]:
-            source_tables[schema].add(raw_name)
-            source_tables[schema].add(name)
-            all_tables[schema].add(raw_name)
-            all_tables[schema].add(name)
-        else:
-            raise KeyError(f"Duplicate table {name} in {schema}")
 
         # Check properties
         if not properties:
@@ -475,6 +481,10 @@ def normalize_identifier_name(input_name: str, integration_type: str) -> str:
             input_name = input_name[0:1020]
         input_name = strip_accents(input_name)
         input_name = sub(r"\s+", "_", input_name)
+        doesnt_start_with_alphaunderscore = match("[^A-Za-z_]", input_name[0])
+        doesnt_contain_alphanumeric = match(".*[^A-Za-z0-9_].*", input_name)
+        if doesnt_start_with_alphaunderscore or doesnt_contain_alphanumeric:
+            input_name = f"_{input_name}"
         return sub(r"[^a-zA-Z0-9_]", "_", input_name)
     elif integration_type == "redshift":
         if len(input_name) >= 123:
