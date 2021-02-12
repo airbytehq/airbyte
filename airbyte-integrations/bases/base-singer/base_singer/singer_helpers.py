@@ -166,12 +166,16 @@ class SingerHelper:
             sel = selectors.DefaultSelector()
             sel.register(p.stdout, selectors.EVENT_READ)
             sel.register(p.stderr, selectors.EVENT_READ)
-            ok = True
-            while ok:
-                for key, val1 in sel.select():
+            eof = False
+            while not eof:
+                selects_list = sel.select()
+                empty_line_counter = 0
+                for key, val1 in selects_list:
                     line = key.fileobj.readline()
                     if not line:
-                        ok = False
+                        empty_line_counter += 1
+                        if empty_line_counter >= len(selects_list):
+                            eof = True
                     elif key.fileobj is p.stdout:
                         out_json = to_json(line)
                         if out_json is not None and is_message(out_json):
