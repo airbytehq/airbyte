@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Freshdesk source supports Full Refresh syncs. That is, every time a sync is run, Airbyte will copy all rows in the tables and columns you set up for replication into the destination in a new table.
+The Freshdesk supports full refresh and incremental sync. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
 ### Output schema
 
@@ -27,7 +27,7 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 | Feature | Supported? |
 | :--- | :--- |
 | Full Refresh Sync | Yes |
-| Incremental Sync | Coming soon |
+| Incremental Sync | Yes (except Conversations) |
 | Replicate Incremental Deletes | Coming soon |
 | SSL connection | Yes |
 
