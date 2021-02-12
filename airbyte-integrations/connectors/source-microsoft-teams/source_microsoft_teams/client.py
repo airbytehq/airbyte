@@ -184,6 +184,8 @@ class Client:
 
     def _get_channel_ids(self, group_id: str):
         api_url = self._get_api_url(f"teams/{group_id}/channels")
+        # TODO: pass params={"$select": "id"} to make_request once the related bug in the MSFT API
+        # is fixed: microsoftgraph/microsoft-graph-docs#11494
         channels_ids = self._get_response_value_unsafe(self._make_request(api_url))
         return channels_ids
 
