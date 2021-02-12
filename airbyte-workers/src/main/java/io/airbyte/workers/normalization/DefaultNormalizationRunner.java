@@ -44,11 +44,9 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultNormalizationRunner.class);
 
   public static final String NORMALIZATION_IMAGE_NAME = "airbyte/normalization:0.1.10";
-  public static final String DEV_NORMALIZATION_IMAGE_NAME = "airbyte/normalization:dev";
 
   private final DestinationType destinationType;
   private final ProcessBuilderFactory pbf;
-  private final boolean useDevVersion;
 
   private Process process = null;
 
@@ -59,10 +57,9 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     SNOWFLAKE
   }
 
-  public DefaultNormalizationRunner(final DestinationType destinationType, final ProcessBuilderFactory pbf, boolean useDevVersion) {
+  public DefaultNormalizationRunner(final DestinationType destinationType, final ProcessBuilderFactory pbf) {
     this.destinationType = destinationType;
     this.pbf = pbf;
-    this.useDevVersion = useDevVersion;
   }
 
   @Override
@@ -71,8 +68,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     IOs.writeFile(jobRoot, WorkerConstants.CATALOG_JSON_FILENAME, Jsons.serialize(catalog));
 
     try {
-      final String imageName = useDevVersion ? DEV_NORMALIZATION_IMAGE_NAME : NORMALIZATION_IMAGE_NAME;
-      process = pbf.create(jobId, attempt, jobRoot, imageName, "run",
+      process = pbf.create(jobId, attempt, jobRoot, NORMALIZATION_IMAGE_NAME, "run",
           "--integration-type", destinationType.toString().toLowerCase(),
           "--config", WorkerConstants.TARGET_CONFIG_JSON_FILENAME,
           "--catalog", WorkerConstants.CATALOG_JSON_FILENAME).start();

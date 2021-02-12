@@ -48,10 +48,9 @@ public class NormalizationRunnerFactory {
     }
 
     final String imageNameWithoutTag = imageName.split(":")[0];
-    final String imageTag = imageName.split(":")[1];
 
     if (NORMALIZATION_MAPPING.containsKey(imageNameWithoutTag)) {
-      return new DefaultNormalizationRunner(NORMALIZATION_MAPPING.get(imageNameWithoutTag), pbf, imageTag.equalsIgnoreCase("dev"));
+      return new DefaultNormalizationRunner(NORMALIZATION_MAPPING.get(imageNameWithoutTag), pbf);
     } else {
       throw new IllegalStateException(
           String.format("Requested normalization for %s, but it is not included in the normalization mapping.", imageName));
