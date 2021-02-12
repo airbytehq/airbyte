@@ -9,76 +9,81 @@
 <div class="wrapper">
   <div id="searchbox" focus></div>
   <div id="hits"></div>
+  <div id="hits2"></div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@meilisearch/instant-meilisearch/dist/instant-meilisearch.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/meilisearch@latest/dist/bundles/meilisearch.umd.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@4"></script>
 <script>
-    const searchMessages = instantsearch({
-        indexName: "messages",
-        searchClient: instantMeiliSearch(
-            "http://localhost:7700"
-        )
-    });
-    const searchThreads = instantsearch({
-        indexName: "threads",
-        searchClient: instantMeiliSearch(
-            "http://localhost:7700"
-        )
-    });
+    (async function () {
+        const searchMessages = instantsearch({
+            indexName: "messages",
+            searchClient: instantMeiliSearch(
+                "http://localhost:7700"
+            )
+        });
 
-    const client = new MeiliSearch({ host: "http://localhost:7700" });
-    // put this in a map.
-    let users1 = {};
-    client.getIndex("users").then(users => users.getDocuments()).then(users => users1 = users.reduce((map, obj) => {
-        map[obj.id] = obj.name;
-        return map;
-    }, {}));
-    console.log(users1);
-    // access the map from there.
-    // client.get
-
+        const client = new MeiliSearch({host: "http://localhost:7700"});
+        // put all users in a map so that we can display user names.
+        const users = await client.getIndex("users")
+            .then(usersResult => usersResult.getDocuments())
+            .then(usersResult => usersResult.reduce((map, obj) => {
+                map[obj.id] = obj.name;
+                return map;
+            }, {}));
+        console.log(users);
 
         searchMessages.addWidgets([
-        instantsearch.widgets.searchBox({
-            container: "#searchbox"
-        }),
-        instantsearch.widgets.configure({ hitsPerPage: 8 }),
-        instantsearch.widgets.hits({
-            container: "#hits",
-            templates: {
-                item: `
+            instantsearch.widgets.searchBox({
+                container: "#searchbox"
+            }),
+            instantsearch.widgets.configure({hitsPerPage: 8}),
+            instantsearch.widgets.hits({
+                container: "#hits",
+                templates: {
+                    item(hit) {
+                        return `
                       <div>
                       <div class="hit-name">
-                          {{#helpers.highlight}}{ "attribute": "text" }{{/helpers.highlight}}
-                          {{#helpers.highlight}}{ "attribute": "user" }{{/helpers.highlight}}
+                          ${users[hit.user] || hit.user}
+                          (
+                          ${instantsearch.highlight({attribute: 'ts', highlightedTagName: 'mark', hit})}
+                          ):
+                          ${instantsearch.highlight({attribute: 'text', highlightedTagName: 'mark', hit})}
                       </div>
                       </div>
                   `
-            }
-        })
-    ]);
-    searchMessages.start();
+                    }
+                }
+            }),
 
-    // searchThreads.addWidgets([
-    //     instantsearch.widgets.searchBox({
-    //         container: "#searchbox"
-    //     }),
-    //     instantsearch.widgets.configure({ hitsPerPage: 8 }),
-    //     instantsearch.widgets.hits({
-    //         container: "#hits",
-    //         templates: {
-    //             item: `
-    //                   <div>
-    //                   <div class="hit-name">
-    //                       {{#helpers.highlight}}{ "attribute": "text" }{{/helpers.highlight}}
-    //                   </div>
-    //                   </div>
-    //               `
-    //         }
-    //     })
-    // ]);
-    // searchThreads.start();
+            // todo (cgardens) - include messages that are in threads. something like this should work, but it is
+            //  throwing an exception that we need to dig into.
+            //  https://www.algolia.com/doc/guides/building-search-ui/ui-and-ux-patterns/multi-index-search/js/#overview
+            // instantsearch.widgets
+            //     .index({indexName: 'threads'})
+            //     .addWidgets([
+            //         instantsearch.widgets.hits({
+            //             container: "#hits2",
+            //             templates: {
+            //                 item(hit) {
+            //                     return `
+            //             <div>
+            //             <div class="hit-name">
+            //                 ${users[hit.user] || hit.user} :
+            //                 ${instantsearch.highlight({attribute: 'text', highlightedTagName: 'mark', hit})}
+            //                 ${instantsearch.highlight({attribute: 'ts', highlightedTagName: 'mark', hit})}
+            //             </div>
+            //             </div>
+            //         `
+            //                 }
+            //             }
+            //         })
+            //     ])
+        ]);
+
+        searchMessages.start()
+    })();
 </script>
 </body>
 </html>
