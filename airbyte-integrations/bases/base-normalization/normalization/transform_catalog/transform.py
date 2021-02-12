@@ -26,11 +26,11 @@ import argparse
 import json
 import os
 import unicodedata as ud
-from jinja2 import Template
 from re import match, sub
 from typing import Dict, List, Optional, Set
 
 import yaml
+from jinja2 import Template
 
 from .reserved_keywords import is_reserved_keyword
 
@@ -353,7 +353,10 @@ from {{ table }}
                 table=table,
                 parent_hash_id=hash_id,
                 inject_sql_prefix=jinja_call(f"unnest_cte({quoted_name}, {quoted_field})"),
-                inject_sql_suffix="\n{} as _airbyte_data\nwhere {} is not null\n".format(
+                inject_sql_suffix="""
+{}
+where {} is not null
+""".format(
                     jinja_call(f"cross_join_unnest({quoted_name}, {quoted_field})"), quote_column(field, integration_type)
                 ),
                 field=field,
