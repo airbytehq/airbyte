@@ -77,11 +77,11 @@
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
         "default_cursor_field": null
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "cursor_field": null
     },
     {
@@ -132,11 +132,11 @@
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
         "default_cursor_field": null
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "cursor_field": null
     },
     {
@@ -206,35 +206,13 @@
             "unique_external_id": {
               "type": ["integer", "null"]
             }
-          },
-          "required": [
-            "active",
-            "address",
-            "company_id",
-            "created_at",
-            "csat_rating",
-            "custom_fields",
-            "description",
-            "email",
-            "facebook_id",
-            "id",
-            "job_title",
-            "language",
-            "mobile",
-            "name",
-            "phone",
-            "preferred_source",
-            "time_zone",
-            "twitter_id",
-            "unique_external_id",
-            "updated_at"
-          ]
+          }
         },
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
         "default_cursor_field": null
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "cursor_field": null
     },
     {
@@ -300,8 +278,8 @@
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
         "default_cursor_field": null
       },
       "sync_mode": "full_refresh",
@@ -346,11 +324,11 @@
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
         "default_cursor_field": null
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "cursor_field": null
     },
     {
@@ -380,11 +358,11 @@
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
         "default_cursor_field": null
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "cursor_field": null
     },
     {
@@ -426,11 +404,11 @@
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
         "default_cursor_field": null
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "cursor_field": null
     },
     {
@@ -494,11 +472,11 @@
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
         "default_cursor_field": null
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "cursor_field": null
     },
     {
@@ -548,11 +526,11 @@
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
         "default_cursor_field": null
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "cursor_field": null
     },
     {
@@ -663,11 +641,11 @@
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": false,
         "default_cursor_field": null
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "cursor_field": null
     },
     {
@@ -715,11 +693,11 @@
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
         "default_cursor_field": null
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "cursor_field": null
     }
   ]

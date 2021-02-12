@@ -153,7 +153,7 @@ class IncrementalStreamAPI(StreamAPI, ABC):
     @property
     def state_pk(self):
         """Name of the field associated with the state"""
-        return "updated_since"
+        return "updated_at"
 
     @property
     def state(self):
@@ -170,7 +170,7 @@ class IncrementalStreamAPI(StreamAPI, ABC):
     def _state_params(self) -> Mapping[str, Any]:
         """Build query parameters responsible for current state"""
         if self._state:
-            return {self.state_pk: self._state}
+            return {"updated_since": self._state}
         return {}
 
     @property
@@ -183,6 +183,7 @@ class IncrementalStreamAPI(StreamAPI, ABC):
 
     def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
         """Read using getter, patched to respect current state"""
+        params = params or {}
         params = {**params, **self._state_params()}
         latest_cursor = None
         for record in super().read(getter, params):
@@ -260,7 +261,7 @@ class TimeEntriesAPI(IncrementalStreamAPI):
         yield from self.read(partial(self._api.get, url="time_entries"))
 
 
-class ConversationsAPI(IncrementalStreamAPI):
+class ConversationsAPI(StreamAPI):
     """Notes and Replies"""
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
