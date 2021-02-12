@@ -35,7 +35,7 @@ export const useSourceDefinitionSpecificationLoad = (
       ? {
           sourceDefinitionId
         }
-      : undefined
+      : null
   );
 
   return { sourceDefinitionSpecification, error, isLoading };

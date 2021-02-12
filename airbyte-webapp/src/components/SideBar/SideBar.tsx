@@ -8,6 +8,7 @@ import { NavLink } from "react-router-dom";
 
 import Link from "../Link";
 import Source from "./components/Source";
+import Version from "../Version";
 import Destination from "./components/Destination";
 import { Routes } from "../../pages/routes";
 import config from "../../config";
@@ -17,7 +18,7 @@ const Bar = styled.nav`
   min-width: 65px;
   height: 100%;
   background: ${({ theme }) => theme.darkPrimaryColor};
-  padding: 23px 3px 23px 4px;
+  padding: 23px 3px 15px 4px;
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -155,6 +156,11 @@ const SideBar: React.FC = () => {
             </Text>
           </MenuLinkItem>
         </li>
+        {config.version ? (
+          <li>
+            <Version primary />
+          </li>
+        ) : null}
       </Menu>
     </Bar>
   );

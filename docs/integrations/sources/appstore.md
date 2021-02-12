@@ -53,10 +53,10 @@ One issue that can happen is the API not having the data available for the perio
 ### Requirements
 
 * Key ID
-* Key File \(Private API Key\)
-* Issuer ID 
-* Vendor ID
-* Start Date \(The date that will be used in the first sync. Apple only allows to go back 365 days from today.\)
+* Private Key The contents of the private API key file, which is in the P8 format and should start with `-----BEGIN PRIVATE KEY-----` and end with `-----END PRIVATE KEY-----`.
+* Issuer ID
+* Vendor ID Go to "Sales and Trends", then choose "Reports" from the drop-down menu in the top left. On the next screen, there'll be a drop-down menu for "Vendor". Your name and ID will be shown there. Use the numeric Vendor ID.
+* Start Date \(The date that will be used in the first sync. Apple only allows to go back 365 days from today.\) Example: `2020-11-16T00:00:00Z`
 
 ### Setup guide
 

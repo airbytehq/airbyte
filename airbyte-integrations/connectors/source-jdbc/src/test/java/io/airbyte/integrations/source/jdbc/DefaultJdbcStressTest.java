@@ -31,7 +31,7 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.jdbc.PostgresJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
-import io.airbyte.integrations.source.jdbc.test.JdbcSourceStressTest;
+import io.airbyte.integrations.source.jdbc.test.JdbcStressTest;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.util.Optional;
 import java.util.Set;
@@ -51,7 +51,7 @@ import org.testcontainers.utility.MountableFile;
  * in source-postgres.
  */
 @Disabled
-class DefaultJdbcSourceStressTest extends JdbcSourceStressTest {
+class DefaultJdbcStressTest extends JdbcStressTest {
 
   private static PostgreSQLContainer<?> PSQL_DB;
 

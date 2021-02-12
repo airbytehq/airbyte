@@ -35,11 +35,15 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.sql.DataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Database object for interacting with a JDBC connection. Can be used for any JDBC compliant db.
  */
 public class DefaultJdbcDatabase implements JdbcDatabase {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(DefaultJdbcDatabase.class);
 
   private final CloseableConnectionSupplier connectionSupplier;
 
@@ -104,6 +108,7 @@ public class DefaultJdbcDatabase implements JdbcDatabase {
     return JdbcUtils.toStream(statementCreator.apply(connection).executeQuery(), recordTransform)
         .onClose(() -> {
           try {
+            LOGGER.info("closing connection");
             connection.close();
           } catch (SQLException e) {
             throw new RuntimeException(e);

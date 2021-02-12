@@ -66,13 +66,13 @@ File Formats are mostly enabled \(and further tested\) thanks to other open-sour
 | Format | Supported? |
 | :--- | :--- |
 | CSV | Yes |
-| JSON | Experimental |
-| HTML | Untested |
+| JSON | Yes |
+| HTML | No |
 | XML | No |
 | Excel | Yes |
 | Feather | Yes |
 | Parquet | Yes |
-| Pickle | Yes |
+| Pickle | No |
 
 ### Performance considerations
 

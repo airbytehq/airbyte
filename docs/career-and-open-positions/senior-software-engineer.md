@@ -1,48 +1,65 @@
 # Senior Software Engineer
 
-## **About Airbyte**
+Join [Airbyte's](https://airbyte.io/) small, but growing, engineering team. We are backed by the world's [top investors](https://docs.airbyte.io/career-and-open-positions#our-investors).
 
-[Airbyte](https://airbyte.io/) is the upcoming [open-source](https://github.com/airbytehq/airbyte) standard for EL\(T\). We enable data teams to replicate data from applications, APIs, and databases to data warehouses, lakes, and other destinations. We believe open-source is the only approach that can solve the problem of data integration. It allows us to cover the long tail of integrations while enabling teams to adapt pre-built connectors to their needs.
+You will spend your time solving one of the most complex and unsolved problem with data: Access. We're on a mission to allow anyone to access data, wherever it is, and make it available into the system of their choice.
 
-Airbyte is remote friendly, with most of the team based in the Bay Area. We’re fully open as a company. Our [company handbook](https://docs.airbyte.io/company-handbook), [culture & values](https://docs.airbyte.io/company-handbook/culture-and-values), [strategy](https://docs.airbyte.io/company-handbook/strategy) and [roadmap](https://docs.airbyte.io/roadmap) are open to all.
+We are passionate about data, open source, our community and scale!
 
-We're a seed-stage company backed by some of the world's [top investors](https://docs.airbyte.io/career-and-open-positions#our-investors) and believe in product-led growth, where we build something awesome and let our product bring the users, rather than an outbound sales engine with cold calls.
+We love Java, Python, Node, K8s, Docker... but in the end, it doesn't matter: we just want to build the best product.
 
-## **Responsibilities**
+## **About you**
 
-We are looking for an engineer who is passionate about data, open source and scale. You will be working with other engineers to design and build the future standard of data integration.
-
-As an early member of our engineering team, you will play a significant role in shaping the future of Airbyte: product, team culture, process, and everything in between. You’ll take ownership of mission-critical work across all levels of the stack: building and scaling our core platform including execution, configuration, scheduling, integration with data ecosystem \(DBT, Airflow, Spark, K8s...\), monitoring, APIs, deployment, build system and more. You will also scale our connector infrastructure to provide an amazing Developer Experience \(DX\) to our contributors and new members of the team.
-
-Today, our stack is composed of several technologies: Java, Python, Docker, Typescript/React, K8s...
-
-As part of a high-growth startup, you will also have the opportunity to collaborate closely with company leaders, users, partners, and non-engineering parts of the business. Every Airbyte engineer plays a critical role in shaping the future of our product, team, and culture.
-
-If you love taking the lead on ambitious projects, having lots of latitude, and working in a high velocity team, this may be just the role for you.
+* Have attention to detail and bias for action.
+* Are a prolific communicator, and thrive in uncertainty.
+* Are passionate about data, big data, open source and... DATA.
+* Want to help & support users solve their problems.
+* Are looking to work in a fast-paced environment, solving fundamental industry problem.
+* Are comfortable working remotely.
 
 ## **Requirements**
 
-* 3+ years of experience
-* Self-directed and work with minimal supervision
-* Proficiency in at least one programming language: we don’t mind which one
-* Passion for data and solving a fundamental industry problem
-* Excited about working on Open Source and in the open
+* 3+ years of backend engineering work experience.
+* Self-directed and work with minimal supervision.
+* Proficiency writing production-quality code, preferably in Java, Kotlin or Python.
+* Familiarity with scalability.
+* Excellent communication skills.
 * You share [our values](https://docs.airbyte.io/company-handbook/culture-and-values)
+
+## **Great-to-haves**
+
+* Experience with AWS / GCP / Azure.
+* Experience working with huge data sets.
+* Experience with open source development.
 
 ## **Location**
 
 Wherever you want!
 
-## **We provide**
+## **Perks!!!**
 
+* Work with great people
 * Unlimited PTO
 * Remote friendly
 * Equipment stipend
-* For countries where it applies: Health Insurance, Retirement \(401k, etc\)
+* Weekly team events
+* For countries where it applies: 
+  * Health Insurance 
+  * Retirement \(401k, etc\)
+
+## **This is how we think**
+
+We are an open company, we are opinionated and public about how we think!
+
+* Our [company handbook](https://docs.airbyte.io/company-handbook),
+* Our [culture & values](https://docs.airbyte.io/company-handbook/culture-and-values),
+* Our [strategy](https://docs.airbyte.io/company-handbook/strategy),
+* Our [roadmap](https://docs.airbyte.io/roadmap),
+* The [future of data integration](https://airbyte.io/articles/data-engineering-thoughts/why-the-future-of-etl-is-not-elt-but-el/)
 
 ## **Applying**
 
 Email us at [join-us@airbyte.io](mailto:join-us@airbyte.io) with a link to your LinkedIn / Resume / GitHub \(optional\).
 
-You don't need to include a cover letter, but just a paragraph about how you found us and what makes you a great person to join our founding team!
+Don't send a cover letter, your resume will speak for you!
 
