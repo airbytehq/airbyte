@@ -8,7 +8,7 @@ ENV CODE_PATH="source_github_singer"
 ENV AIRBYTE_IMPL_MODULE="source_github_singer"
 ENV AIRBYTE_IMPL_PATH="SourceGithubSinger"
 
-LABEL io.airbyte.version=0.1.7
+LABEL io.airbyte.version=0.1.8
 LABEL io.airbyte.name=airbyte/source-github-singer
 
 WORKDIR /airbyte/integration_code
