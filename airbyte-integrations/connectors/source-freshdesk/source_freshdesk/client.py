@@ -29,16 +29,17 @@ from base_python import BaseClient
 from .api import (
     API,
     AgentsAPI,
+    FreshdeskError,
     CompaniesAPI,
     ContactsAPI,
     ConversationsAPI,
     GroupsAPI,
     RolesAPI,
+    SatisfactionRatingsAPI,
     SkillsAPI,
     SurveysAPI,
     TicketsAPI,
     TimeEntriesAPI,
-    FreshdeskError,
 )
 
 
@@ -56,6 +57,7 @@ class Client(BaseClient):
             "surveys": SurveysAPI(self._api),  # need subscription
             "tickets": TicketsAPI(self._api),
             "time_entries": TimeEntriesAPI(self._api),
+            "satisfaction_ratings": SatisfactionRatingsAPI(self._api),
         }
         super().__init__()
 

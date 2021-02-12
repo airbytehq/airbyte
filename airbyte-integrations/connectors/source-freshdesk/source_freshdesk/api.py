@@ -215,3 +215,11 @@ class ConversationsAPI(StreamAPI):
         for ticket in TicketsAPI(self._api).list():
             url = f"tickets/{ticket['id']}/conversations"
             yield from self.read(partial(self._api.get, url=url))
+
+
+class SatisfactionRatingsAPI(StreamAPI):
+    """Surveys satisfaction replies"""
+
+    def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
+        """Iterate over entities"""
+        yield from self.read(partial(self._api.get, url="surveys/satisfaction_ratings"))
