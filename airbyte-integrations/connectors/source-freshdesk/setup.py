@@ -33,11 +33,8 @@ setup(
     install_requires=[
         "airbyte-protocol",
         "base-python",
-        "python_freshdesk==1.3.7",
     ],
     package_data={"": ["*.json", "schemas/*.json"]},
-    setup_requires=["pytest-runner"],
-    tests_require=["pytest"],
     extras_require={
         "tests": ["airbyte_python_test", "pytest"],
     },
