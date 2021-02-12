@@ -168,10 +168,18 @@ class SingerHelper:
             sel.register(p.stderr, selectors.EVENT_READ)
             ok = True
             while ok:
-                for key, val1 in sel.select():
+                for key, _ in sel.select():
                     line = key.fileobj.readline()
                     if not line:
                         ok = False
+                        try:
+                            p.wait(timeout=60)
+                        except subprocess.TimeoutExpired:
+                            raise Exception(f"Underlying command {shell_command} is hanging")
+
+                        if p.returncode != 0:
+                            raise Exception(f"Underlying command {shell_command} failed with exit code {p.returncode}")
+
                     elif key.fileobj is p.stdout:
                         out_json = to_json(line)
                         if out_json is not None and is_message(out_json):
