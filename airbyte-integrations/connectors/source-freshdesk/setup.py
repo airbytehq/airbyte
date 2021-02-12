@@ -34,6 +34,7 @@ setup(
         "airbyte-protocol",
         "base-python",
         "requests==2.25.1",
+        "pendulum==1.2.0",
     ],
     package_data={"": ["*.json", "schemas/*.json"]},
     extras_require={
