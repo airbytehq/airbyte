@@ -23,10 +23,12 @@ SOFTWARE.
 """
 
 import time
+import sys
 from abc import ABC, abstractmethod
 from functools import partial
 from typing import Any, Callable, Iterator, Mapping, MutableMapping, Optional, Sequence
 
+import backoff as backoff
 import pendulum
 import requests
 from base_python.entrypoint import logger  # FIXME (Eugene K): use standard logger
@@ -62,6 +64,23 @@ class FreshdeskRateLimited(FreshdeskError):
 
 class FreshdeskServerError(FreshdeskError):
     """50X errors"""
+
+
+def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
+    """Retry helper, log each attempt"""
+
+    def log_retry_attempt(details):
+        _, exc, _ = sys.exc_info()
+        logger.info(str(exc))
+        logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} more seconds then retrying...")
+
+    return backoff.on_exception(
+        backoff_type,
+        exception,
+        jitter=None,
+        on_backoff=log_retry_attempt,
+        **wait_gen_kwargs,
+    )
 
 
 class API:
@@ -116,6 +135,7 @@ class API:
 
         return j
 
+    @retry_pattern(backoff.expo, FreshdeskRateLimited, max_tries=5, factor=5)
     def get(self, url: str, params: Mapping = None):
         """Wrapper around request.get() to use the API prefix. Returns a JSON response."""
         for _ in range(10):
