@@ -168,7 +168,8 @@ def generate_dbt_model(schema: str, output: str, integration_type: str, catalog:
             name=name,
             table=table,
             parent_hash_id="",
-            inject_sql="",
+            inject_sql_prefix="",
+            inject_sql_suffix="",
         )
     return source_tables
 
@@ -185,7 +186,8 @@ def process_node(
     name,
     table,
     parent_hash_id: str,
-    inject_sql: str,
+    inject_sql_prefix: str,
+    inject_sql_suffix: str,
 ):
     # Check properties
     if not properties:
@@ -194,7 +196,11 @@ def process_node(
 
     # Generate JSON Parsing model
     sql_file_name = normalize_identifier_name("ab1_{}".format(name), integration_type)
-    sql = "select\n  "
+    if inject_sql_prefix:
+        sql = inject_sql_prefix + "\n"
+    else:
+        sql = ""
+    sql += "select\n  "
     if parent_hash_id:
         sql += "{},\n  ".format(parent_hash_id)
     for field in properties.keys():
@@ -203,8 +209,8 @@ def process_node(
             sql += sql_field + ",\n  "
     sql += "_airbyte_emitted_at"
     sql += "\nfrom {}\n".format(table)
-    if inject_sql:
-        sql += inject_sql
+    if inject_sql_suffix:
+        sql += inject_sql_suffix
     if len(path) > 1:
         sql += "-- {} from {}\n  ".format(name, "/".join(path))
     output_sql_view(output, raw_schema, sql_file_name, sql, path)
@@ -298,10 +304,12 @@ select
                 schema=schema,
                 table=table,
                 parent_hash_id=hash_id,
-                inject_sql=f"where {field} is not null\n",
+                inject_sql_prefix="",
+                inject_sql_suffix=f"where {field} is not null\n",
                 field=field,
             )
         elif is_array(properties[field]["type"]) and "items" in properties[field]:
+            quoted_name = quote(name, integration_type, in_jinja=True)
             quoted_field = quote(field, integration_type, in_jinja=True)
             process_nested_property(
                 output=output,
@@ -314,7 +322,8 @@ select
                 schema=schema,
                 table=table,
                 parent_hash_id=hash_id,
-                inject_sql="\ncross join {} as _airbyte_data\nwhere {} is not null\n".format(
+                inject_sql_prefix=jinja_call(f"unnest_cte({quoted_name}, {quoted_field})"),
+                inject_sql_suffix="\ncross join {} as _airbyte_data\nwhere {} is not null\n".format(
                     jinja_call(f"unnest({quoted_field})"), quote(field, integration_type)
                 ),
                 field=field,
@@ -332,7 +341,8 @@ def process_nested_property(
     schema,
     table,
     parent_hash_id: str,
-    inject_sql: str,
+    inject_sql_prefix: str,
+    inject_sql_suffix: str,
     field: str,
 ):
     children = find_properties_object(path=[], field=field, properties=properties, integration_type=integration_type)
@@ -360,7 +370,8 @@ def process_nested_property(
             name=child_name,
             table=table,
             parent_hash_id=parent_hash_id,
-            inject_sql=inject_sql,
+            inject_sql_prefix=inject_sql_prefix,
+            inject_sql_suffix=inject_sql_suffix,
         )
 
 
