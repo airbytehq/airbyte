@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
 import time
 from abc import ABC, abstractmethod
 from typing import Any, Iterator, Sequence
@@ -292,10 +293,10 @@ class AdsInsightAPI(IncrementalStreamAPI):
         sleep_seconds = 2
         while True:
             job = job.api_get()
-            job_progress_pct = job['async_percent_completion']
+            job_progress_pct = job["async_percent_completion"]
             logger.info(f"ReportRunId {job['report_run_id']} is {job_progress_pct}% complete")
 
-            if job['async_status'] == "Job Completed":
+            if job["async_status"] == "Job Completed":
                 return job
 
             runtime_seconds = (pendulum.now() - start_time).in_seconds()
