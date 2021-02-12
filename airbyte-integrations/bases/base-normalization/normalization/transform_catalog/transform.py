@@ -26,6 +26,7 @@ import argparse
 import json
 import os
 import unicodedata as ud
+from jinja2 import Template
 from re import match, sub
 from typing import Dict, List, Optional, Set
 
@@ -105,41 +106,17 @@ def generate_dbt_model(schema: str, output: str, integration_type: str, catalog:
     source_tables: Dict[str, Set[str]] = {}
     all_tables: Dict[str, Set[str]] = {}
     for configuredStream in catalog["streams"]:
-        if "stream" in configuredStream:
-            stream = configuredStream["stream"]
-        else:
-            raise KeyError("Stream is not defined in Catalog streams")
+        stream = get_field(configuredStream, "stream", "Stream is not defined in Catalog Streams")
 
-        if "name" in stream:
-            stream_name: str = stream["name"]
-        else:
-            raise KeyError("name is not defined in stream: " + stream)
-        if "json_schema" in stream and "properties" in stream["json_schema"]:
-            properties = stream["json_schema"]["properties"]
-        else:
-            raise KeyError("json_schema is not defined for " + stream_name)
-        # Below commented code is to handle namespacing in issue #1921
-        # if "target_namespace" in configuredStream:
-        #     schema: str = configuredStream["target_namespace"]
-        # else:
-        #     raise KeyError("target_namespace is not defined in configuredStream for " + stream_name)
-        # if "alias_name" in configuredStream:
-        #     name: str = configuredStream["alias_name"]
-        # else:
-        #     raise KeyError("alias_name is not defined in configuredStream for " + stream_name)
-        name = stream_name
+        schema = normalize_schema_table_name(schema, integration_type)
+        name = get_field(stream, "name", "name is not defined in stream: " + str(stream))
 
-        schema = normalize_identifier_name(schema, integration_type)
-        raw_schema = normalize_identifier_name("_airbyte_" + schema, integration_type)
-        # Below commented code is to handle namespacing in issue #1921
-        # table = jinja_call(f"source('{raw_schema}', '{normalize_identifier_name(name, integration_type)}')")
-        # if raw_schema not in source_tables:
-        #     source_tables[raw_schema] = set()
-        #     all_tables[schema] = set()
-        # if name not in source_tables[raw_schema]:
-        #     source_tables[raw_schema].add(name)
-        #     all_tables[schema].add(name)
-        raw_name = normalize_identifier_name(f"_airbyte_raw_{name}", integration_type)
+        raw_schema = normalize_schema_table_name("_airbyte_" + schema, integration_type)
+        raw_name = normalize_schema_table_name(f"_airbyte_raw_{name}", integration_type)
+
+        message = f"json_schema is not defined for stream {name}"
+        properties = get_field(get_field(stream, "json_schema", message), "properties", message)
+
         table = jinja_call("source('{}', '{}')".format(schema, raw_name))
         if schema not in source_tables:
             source_tables[schema] = set()
@@ -174,6 +151,13 @@ def generate_dbt_model(schema: str, output: str, integration_type: str, catalog:
     return source_tables
 
 
+def get_field(config, key, message):
+    if key in config:
+        return config[key]
+    else:
+        raise KeyError(message)
+
+
 def process_node(
     output: str,
     integration_type: str,
@@ -191,96 +175,142 @@ def process_node(
 ):
     # Check properties
     if not properties:
-        print("Ignoring '{}' nested field from {} because properties list is empty".format(name, "/".join(path)))
+        print(f"Ignoring '{name}' nested field from {'/'.join(path)} because properties list is empty")
         return
 
     # Generate JSON Parsing model
-    sql_file_name = normalize_identifier_name("ab1_{}".format(name), integration_type)
-    if inject_sql_prefix:
-        sql = inject_sql_prefix + "\n"
-    else:
-        sql = ""
-    sql += "select\n  "
-    if parent_hash_id:
-        sql += "{},\n  ".format(parent_hash_id)
-    for field in properties.keys():
-        sql_field = json_extract_property(json_col=json_col, name=field, definition=properties[field], integration_type=integration_type)
-        if sql_field and not is_airbyte_column(field):
-            sql += sql_field + ",\n  "
-    sql += "_airbyte_emitted_at"
-    sql += "\nfrom {}\n".format(table)
-    if inject_sql_suffix:
-        sql += inject_sql_suffix
-    if len(path) > 1:
-        sql += "-- {} from {}\n  ".format(name, "/".join(path))
+    sql_file_name = normalize_schema_table_name("ab1_{}".format(name), integration_type)
+    template = Template(
+        """
+{{ inject_sql_prefix }}
+select
+{%- if parent_hash_id %}
+    {{ parent_hash_id }},
+{%- endif %}
+{%- for field in fields %}
+  {%- if field %}
+    {{ field }},
+  {%- endif %}
+{%- endfor %}
+    _airbyte_emitted_at
+from {{ table }}
+{{ inject_sql_suffix }}
+{%- if len(path) > 2 %}
+-- {{ name }} from {{ "/".join(path) }}
+{%- endif %}
+"""
+    )
+    template.globals["len"] = len
+    sql = template.render(
+        inject_sql_prefix=inject_sql_prefix,
+        parent_hash_id=parent_hash_id,
+        fields=[
+            json_extract_property(json_col=json_col, name=field, definition=properties[field], integration_type=integration_type)
+            for field in properties.keys()
+            if not is_airbyte_column(field)
+        ],
+        table=table,
+        inject_sql_suffix=inject_sql_suffix,
+        name=name,
+        path=path,
+    )
     output_sql_view(output, raw_schema, sql_file_name, sql, path)
 
     # Generate column typing model
     previous_sql_file_name = sql_file_name
     table = "{{ ref('" + previous_sql_file_name + "') }}"
-    sql_file_name = normalize_identifier_name("ab2_{}".format(name), integration_type)
-    sql = "select\n  "
-    if parent_hash_id:
-        sql += "{},\n  ".format(parent_hash_id)
-    for field in properties.keys():
-        sql_field = cast_property_type(name=field, definition=properties[field], integration_type=integration_type)
-        if sql_field and not is_airbyte_column(field):
-            sql += sql_field + ",\n  "
-    sql += "_airbyte_emitted_at"
-    sql += "\nfrom {}".format(table)
-    if len(path) > 1:
-        sql += "-- {} from {}\n  ".format(name, "/".join(path))
+    sql_file_name = normalize_schema_table_name("ab2_{}".format(name), integration_type)
+    sql = template.render(
+        inject_sql_prefix="",
+        parent_hash_id=parent_hash_id,
+        fields=[
+            cast_property_type(name=field, definition=properties[field], integration_type=integration_type)
+            for field in properties.keys()
+            if not is_airbyte_column(field)
+        ],
+        table=table,
+        inject_sql_suffix="",
+        name=name,
+        path="/".join(path),
+    )
     output_sql_view(output, raw_schema, sql_file_name, sql, path)
 
-    hash_id = quote(f"_airbyte_{name}_hashid", integration_type)
+    hash_id = quote_column(f"_airbyte_{name}_hashid", integration_type)
     # Generate hash_id column model
     previous_sql_file_name = sql_file_name
     table = "{{ ref('" + previous_sql_file_name + "') }}"
-    sql_file_name = normalize_identifier_name("ab3_{}".format(name), integration_type)
-    sql = "select\n  *,\n  "
-    if properties:
-        sql += "{{ dbt_utils.surrogate_key([\n    "
-        if parent_hash_id:
-            sql += "'{}',\n  ".format(parent_hash_id)
-        for field in properties.keys():
-            sql_field = safe_cast_to_varchar(name=field, definition=properties[field], integration_type=integration_type)
-            if sql_field and not is_airbyte_column(field):
-                sql += sql_field + ",\n    "
-        sql += "\n  ]) }} as " + hash_id
-    else:
-        sql += "null as " + hash_id
-    sql += "\nfrom {}".format(table)
-    if len(path) > 1:
-        sql += "-- {} from {}\n  ".format(name, "/".join(path))
+    sql_file_name = normalize_schema_table_name("ab3_{}".format(name), integration_type)
+    template = Template(
+        """
+select
+    *,
+    {{ '{{' }} dbt_utils.surrogate_key([
+{%- if parent_hash_id %}
+      '{{ parent_hash_id }}',
+{%- endif %}
+{%- if fields %}
+  {%- for field in fields %}
+    {%- if field %}
+      {{ field }},
+    {%- endif %}
+  {%- endfor %}
+    ]) {{ '}}' }} as {{ hash_id }}
+{%- else %}
+      null as {{ hash_id }}
+{%- endif %}
+from {{ table }}
+{%- if len(path) > 2 %}
+-- {{ name }} from {{ "/".join(path) }}
+{%- endif %}
+"""
+    )
+    template.globals["len"] = len
+    sql = template.render(
+        parent_hash_id=parent_hash_id,
+        fields=[
+            safe_cast_to_varchar(name=field, definition=properties[field], integration_type=integration_type)
+            for field in properties.keys()
+            if not is_airbyte_column(field)
+        ],
+        hash_id=hash_id,
+        table=table,
+        name=name,
+        path=path,
+    )
     output_sql_view(output, raw_schema, sql_file_name, sql, path)
 
-    # Generate dedup final model
+    # Generate final model
     previous_sql_file_name = sql_file_name
     table = "{{ ref('" + previous_sql_file_name + "') }}"
-    sql_file_name = normalize_identifier_name(name, integration_type)
-    sql = """
-with numbered as (
-  select
-    *,
-    row_number() over (
-      partition by {}
-      order by _airbyte_emitted_at
-    ) as row_num
-  from {}
-)
+    sql_file_name = normalize_schema_table_name(name, integration_type)
+    template = Template(
+        """
 select
-  """.format(
-        hash_id, table
+{%- if parent_hash_id %}
+    {{ parent_hash_id }},
+{%- endif %}
+{%- for field in fields %}
+  {%- if field %}
+    {{ field }},
+  {%- endif %}
+{%- endfor %}
+    _airbyte_emitted_at,
+    {{ hash_id }}
+from {{ table }}
+{%- if len(path) > 2 %}
+-- {{ name }} from {{ "/".join(path) }}
+{%- endif %}
+"""
     )
-    if parent_hash_id:
-        sql += "{},\n  ".format(parent_hash_id)
-    for field in properties.keys():
-        sql += quote(field, integration_type) + ",\n  "
-    sql += "_airbyte_emitted_at,\n  "
-    sql += hash_id
-    sql += "\nfrom numbered where row_num = 1\n"
-    if len(path) > 1:
-        sql += "-- {} from {}\n  ".format(name, "/".join(path))
+    template.globals["len"] = len
+    sql = template.render(
+        parent_hash_id=parent_hash_id,
+        fields=[quote_column(field, integration_type) for field in properties.keys() if not is_airbyte_column(field)],
+        hash_id=hash_id,
+        table=table,
+        name=name,
+        path=path,
+    )
     output_sql_table(output, schema, sql_file_name, sql, path)
 
     # Generate children models
@@ -309,8 +339,8 @@ select
                 field=field,
             )
         elif is_array(properties[field]["type"]) and "items" in properties[field]:
-            quoted_name = quote(name, integration_type, in_jinja=True)
-            quoted_field = quote(field, integration_type, in_jinja=True)
+            quoted_name = f"'{normalize_schema_table_name(name, integration_type)}'"
+            quoted_field = quote_column(field, integration_type, in_jinja=True)
             process_nested_property(
                 output=output,
                 integration_type=integration_type,
@@ -323,8 +353,8 @@ select
                 table=table,
                 parent_hash_id=hash_id,
                 inject_sql_prefix=jinja_call(f"unnest_cte({quoted_name}, {quoted_field})"),
-                inject_sql_suffix="\ncross join {} as _airbyte_data\nwhere {} is not null\n".format(
-                    jinja_call(f"unnest({quoted_field})"), quote(field, integration_type)
+                inject_sql_suffix="\n{} as _airbyte_data\nwhere {} is not null\n".format(
+                    jinja_call(f"cross_join_unnest({quoted_name}, {quoted_field})"), quote_column(field, integration_type)
                 ),
                 field=field,
             )
@@ -350,6 +380,7 @@ def process_nested_property(
         child_name = child
         if child_name in tables_in_schema[schema]:
             if integration_type == "postgres" and len(child) >= 59:
+                # postgres has limit of 63 characters, 59 is enough leftovers for our suffix usage
                 child_str = child[0:55]
             else:
                 child_str = child
@@ -425,41 +456,67 @@ def strip_accents(s):
     return "".join(c for c in ud.normalize("NFD", s) if ud.category(c) != "Mn")
 
 
+def normalize_schema_table_name(input_name: str, integration_type: str) -> str:
+    # Temporarily disabling the behavior of the ExtendedNameTransformer on table/schema names, see (issue #1785)
+    input_name = strip_accents(input_name)
+    input_name = sub(r"\s+", "_", input_name)
+    input_name = sub(r"[^a-zA-Z0-9_]", "_", input_name)
+    input_name = normalize_identifier_name(input_name, integration_type)
+    return input_name
+
+
 def normalize_identifier_name(input_name: str, integration_type: str) -> str:
-    #     Temporarily disabling the behavior of the ExtendedNameTransformer, see (issue #1785)
-    #     if integration_type == "bigquery":
-    #         input_name = strip_accents(input_name)
-    #         input_name = sub(r"\s+", "_", input_name)
-    #         return sub(r"[^a-zA-Z0-9_]", "_", input_name)
-    #     else:
-    #       return input_name
-    if integration_type == "redshift":
+    if integration_type == "bigquery":
+        if len(input_name) >= 1020:
+            # bigquery has limit of 1024 characters
+            input_name = input_name[0:1020]
+        input_name = strip_accents(input_name)
+        input_name = sub(r"\s+", "_", input_name)
+        return sub(r"[^a-zA-Z0-9_]", "_", input_name)
+    elif integration_type == "redshift":
+        if len(input_name) >= 123:
+            # redshift has limit of 127 characters
+            input_name = input_name[0:123]
         # all tables (even quoted ones) are coerced to lowercase.
         input_name = input_name.lower()
     elif integration_type == "postgres":
         if len(input_name) >= 59:
+            # postgres has limit of 63 characters
             input_name = input_name[0:59]
-        input_name = input_name.lower()
+        if input_name[0] != "'" and input_name[0] != '"':
+            input_name = input_name.lower()
     elif integration_type == "snowflake":
-        input_name = input_name.upper()
-    input_name = strip_accents(input_name)
-    input_name = sub(r"\s+", "_", input_name)
-    return sub(r"[^a-zA-Z0-9_]", "_", input_name)
-
-
-def quote(input_name: str, integration_type: str, in_jinja=False) -> str:
-    normalized_input_name = normalize_identifier_name(input_name, integration_type)
-
-    doesnt_start_with_alphaunderscore = match("[^A-Za-z_]", normalized_input_name[0])
-    doesnt_contain_alphanumeric = match(".*[^A-Za-z0-9_].*", normalized_input_name)
-    if doesnt_start_with_alphaunderscore or doesnt_contain_alphanumeric or is_reserved_keyword(normalized_input_name, integration_type):
-        result = f"adapter.quote('{normalized_input_name}')"
-    elif in_jinja:
-        result = f"'{normalized_input_name}'"
+        if len(input_name) >= 251:
+            # snowflake has limit of 255 characters
+            input_name = input_name[0:251]
+        if input_name[0] != "'" and input_name[0] != '"':
+            input_name = input_name.upper()
     else:
-        return normalized_input_name
-    if not in_jinja:
-        return jinja_call(result)
+        raise KeyError(f"Unknown integration type {integration_type}")
+    return input_name
+
+
+def quote_column(input_name: str, integration_type: str, in_jinja=False) -> str:
+    if integration_type != "bigquery":
+        result = normalize_identifier_name(input_name, integration_type)
+        doesnt_start_with_alphaunderscore = match("[^A-Za-z_]", result[0])
+        doesnt_contain_alphanumeric = match(".*[^A-Za-z0-9_].*", result)
+        if doesnt_start_with_alphaunderscore or doesnt_contain_alphanumeric or is_reserved_keyword(result, integration_type):
+            result = f"adapter.quote('{result}')"
+            if not in_jinja:
+                result = jinja_call(result)
+            in_jinja = False
+    elif is_reserved_keyword(input_name, "bigquery"):
+        result = normalize_identifier_name(input_name, "bigquery")
+        result = f"adapter.quote('{result}')"
+        if not in_jinja:
+            result = jinja_call(result)
+        in_jinja = False
+    else:
+        result = normalize_identifier_name(input_name, "bigquery")
+    if in_jinja:
+        # to refer to columns while already in jinja context, always quote
+        return f"'{result}'"
     return result
 
 
@@ -494,69 +551,71 @@ def find_properties_object(path: List[str], field: str, properties, integration_
 def json_extract_property(json_col: str, name: str, definition: dict, integration_type: str) -> Optional[str]:
     current = [name]
     if "type" not in definition:
-        return "{} as {}".format(jinja_call(f"json_extract({json_col}, {current})"), quote(name, integration_type))
+        return "{} as {}".format(jinja_call(f"json_extract({json_col}, {current})"), quote_column(name, integration_type))
     elif is_array(definition["type"]):
-        return "{} as {}".format(jinja_call(f"json_extract_array({json_col}, {current})"), quote(name, integration_type))
+        return "{} as {}".format(jinja_call(f"json_extract_array({json_col}, {current})"), quote_column(name, integration_type))
     elif is_object(definition["type"]):
-        return "{} as {}".format(jinja_call(f"json_extract({json_col}, {current})"), quote(name, integration_type))
+        return "{} as {}".format(jinja_call(f"json_extract({json_col}, {current})"), quote_column(name, integration_type))
     elif is_simple_property(definition["type"]):
         return "{} as {}".format(
             jinja_call(f"json_extract_scalar({json_col}, {current})"),
-            quote(name, integration_type),
+            quote_column(name, integration_type),
         )
     else:
-        return "{} as {}".format(jinja_call(f"json_extract({json_col}, {current})"), quote(name, integration_type))
+        return "{} as {}".format(jinja_call(f"json_extract({json_col}, {current})"), quote_column(name, integration_type))
 
 
 def cast_property_type(name: str, definition: dict, integration_type: str) -> Optional[str]:
     if "type" not in definition:
-        return quote(name, integration_type)
+        print(f"WARN: Unknown type for column {name}")
+        return quote_column(name, integration_type)
     elif is_array(definition["type"]):
         # TODO
-        return quote(name, integration_type)
+        return quote_column(name, integration_type)
     elif is_object(definition["type"]):
         # TODO in bq we can build RECORD objects...
         return "cast({} as {}) as {}".format(
-            quote(name, integration_type),
+            quote_column(name, integration_type),
             jinja_call("type_json()"),
-            quote(name, integration_type),
+            quote_column(name, integration_type),
         )
     elif is_integer(definition["type"]):
         return "cast({} as {}) as {}".format(
-            quote(name, integration_type),
+            quote_column(name, integration_type),
             jinja_call("dbt_utils.type_int()"),
-            quote(name, integration_type),
+            quote_column(name, integration_type),
         )
     elif is_number(definition["type"]):
         return "cast({} as {}) as {}".format(
-            quote(name, integration_type),
+            quote_column(name, integration_type),
             jinja_call("dbt_utils.type_float()"),
-            quote(name, integration_type),
+            quote_column(name, integration_type),
         )
     elif is_boolean(definition["type"]):
         return "{} as {}".format(
             jinja_call(f"cast_to_boolean('{name}')"),
-            quote(name, integration_type),
+            quote_column(name, integration_type),
         )
     elif is_string(definition["type"]):
         return "cast({} as {}) as {}".format(
-            quote(name, integration_type),
+            quote_column(name, integration_type),
             jinja_call("dbt_utils.type_string()"),
-            quote(name, integration_type),
+            quote_column(name, integration_type),
         )
     else:
-        return quote(name, integration_type)
+        print(f"WARN: Unknown type {definition['type']} for column {name}")
+        return quote_column(name, integration_type)
 
 
 def safe_cast_to_varchar(name: str, definition: dict, integration_type: str) -> Optional[str]:
     if "type" not in definition:
-        return quote(name, integration_type, in_jinja=True)
+        return quote_column(name, integration_type, in_jinja=True)
     elif is_boolean(definition["type"]):
-        return f"boolean_to_varchar({quote(name, integration_type, in_jinja=True)})"
+        return f"boolean_to_varchar({quote_column(name, integration_type, in_jinja=True)})"
     elif is_array(definition["type"]):
-        return f"array_to_varchar({quote(name, integration_type, in_jinja=True)})"
+        return f"array_to_varchar({quote_column(name, integration_type, in_jinja=True)})"
     else:
-        return quote(name, integration_type, in_jinja=True)
+        return quote_column(name, integration_type, in_jinja=True)
 
 
 def output_sql_view(output: str, schema: str, file: str, sql: str, path: list):
@@ -574,7 +633,6 @@ def output_sql_file(output: str, schema: str, file: str, sql: str, path: list):
         os.makedirs(output)
     header = "{{ config(schema='" + schema + "') }}\n"
     print("  Generating {}.sql from {}:".format(file, "/".join(path)))
-    # print(header + sql)
     with open(os.path.join(output, f"{file}.sql"), "w") as f:
         f.write(header + sql)
 
@@ -589,8 +647,8 @@ def write_yaml_sources(output: str, sources: Dict[str, Set[str]], integration_ty
                 "quoting": {"identifier": True},
             }
             for source in sources[schema]
-            if normalize_identifier_name(source, integration_type)[0] == '"'
-        ] + [{"name": source} for source in sources[schema] if normalize_identifier_name(source, integration_type)[0] != '"']
+            if normalize_schema_table_name(source, integration_type)[0] == '"'
+        ] + [{"name": source} for source in sources[schema] if normalize_schema_table_name(source, integration_type)[0] != '"']
         schemas.append(
             {
                 "name": schema,

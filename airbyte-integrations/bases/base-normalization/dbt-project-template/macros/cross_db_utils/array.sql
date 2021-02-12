@@ -6,34 +6,35 @@
     - postgres: unnest() -> https://www.postgresqltutorial.com/postgresql-array/
 #}
 
-{# unnest -------------------------------------------------     #}
+{# cross_join_unnest -------------------------------------------------     #}
 
-{% macro unnest(array_col) -%}
-  {{ adapter.dispatch('unnest')(array_col) }}
+{% macro cross_join_unnest(table_name, array_col) -%}
+  {{ adapter.dispatch('cross_join_unnest')(table_name, array_col) }}
 {%- endmacro %}
 
-{% macro default__unnest(array_col) -%}
-    unnest({{ array_col }})
+{% macro default__cross_join_unnest(table_name, array_col) -%}
+    {% do exceptions.warn("Undefined macro cross_join_unnest for this destination engine") %}
 {%- endmacro %}
 
-{% macro bigquery__unnest(array_col) -%}
-    unnest({{ array_col }})
+
+{% macro bigquery__cross_join_unnest(table_name, array_col) -%}
+    cross join unnest({{ array_col }}) as _airbyte_data
 {%- endmacro %}
 
-{% macro postgres__unnest(array_col) -%}
-    jsonb_array_elements(
+{% macro postgres__cross_join_unnest(table_name, array_col) -%}
+    cross join jsonb_array_elements(
         case jsonb_typeof({{ array_col }})
         when 'array' then {{ array_col }}
         else '[]' end
-    )
+    ) as _airbyte_data
 {%- endmacro %}
 
-{% macro redshift__unnest(array_col) -%}
-    joined
+{% macro redshift__cross_join_unnest(table_name, array_col) -%}
+    left join joined on _airbyte_{{ table_name }}_hashid = joined._airbyte_hashid
 {%- endmacro %}
 
-{% macro snowflake__unnest(array_col) -%}
-    table(flatten({{ array_col }}))
+{% macro snowflake__cross_join_unnest(table_name, array_col) -%}
+    cross join table(flatten({{ array_col }})) as _airbyte_data
 {%- endmacro %}
 
 {# unnested_column_value -------------------------------------------------     #}
@@ -84,6 +85,7 @@ with numbers as (
 ),
 joined as (
     select
+        _airbyte_{{ table_name }}_hashid as _airbyte_hashid,
         json_extract_array_element_text({{ column_col }}, numbers.generated_number::int - 1, true) as _airbyte_data
     from {{ ref(table_name) }}
     cross join numbers

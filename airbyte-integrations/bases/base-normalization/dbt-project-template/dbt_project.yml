@@ -29,6 +29,8 @@ clean-targets:         # directories to be removed by `dbt clean`
 
 quoting:
   database: true
+# Temporarily disabling the behavior of the ExtendedNameTransformer on table/schema names, see (issue #1785)
+# all schemas should be unquoted
   schema: false
   identifier: true
 
