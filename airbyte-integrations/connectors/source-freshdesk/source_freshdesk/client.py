@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Mapping, Tuple, Any
+from typing import Any, Mapping, Tuple
 
 from base_python import BaseClient
 

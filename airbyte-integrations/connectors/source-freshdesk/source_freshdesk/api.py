@@ -26,11 +26,10 @@ from abc import ABC, abstractmethod
 from functools import partial
 from typing import Any, Callable, Iterator, Mapping, MutableMapping, Sequence
 
-import requests
 import pendulum
-from requests import HTTPError
-
+import requests
 from base_python.entrypoint import logger  # FIXME (Eugene K): use standard logger
+from requests import HTTPError
 
 
 class FreshdeskError(HTTPError):
@@ -195,8 +194,7 @@ class IncrementalStreamAPI(StreamAPI, ABC):
             yield record
 
         if latest_cursor:
-            logger.info(
-                f"Advancing bookmark for {self.name} stream from {self._state} to {latest_cursor}")
+            logger.info(f"Advancing bookmark for {self.name} stream from {self._state} to {latest_cursor}")
             self._state = max(latest_cursor, self._state) if self._state else latest_cursor
 
 
