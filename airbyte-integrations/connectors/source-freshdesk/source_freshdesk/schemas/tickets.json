@@ -94,6 +94,12 @@
     },
     "nr_escalated": {
       "type": "boolean"
+    },
+    "description": {
+      "type": "string"
+    },
+    "description_text": {
+      "type": "string"
     }
   }
 }
