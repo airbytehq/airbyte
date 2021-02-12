@@ -30,7 +30,6 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import DefaultDict, Dict, Generator, List, Optional
 
-from .subprocess_helpers import graceful_wait
 from airbyte_protocol import (
     AirbyteCatalog,
     AirbyteMessage,
@@ -42,6 +41,7 @@ from airbyte_protocol import (
     SyncMode,
     Type,
 )
+
 
 _INCREMENTAL = "INCREMENTAL"
 _FULL_TABLE = "FULL_TABLE"
@@ -173,8 +173,9 @@ class SingerHelper:
                     line = key.fileobj.readline()
                     if not line:
                         ok = False
-                        graceful_wait(p, 60)
-                        if not p.returncode:
+                        try:
+                            p.wait(timeout=60)
+                        except subprocess.TimeoutExpired:
                             raise Exception(f"Underlying command {shell_command} is hanging")
 
                         if p.returncode != 0:
