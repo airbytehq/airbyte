@@ -42,7 +42,6 @@ from airbyte_protocol import (
     Type,
 )
 
-
 _INCREMENTAL = "INCREMENTAL"
 _FULL_TABLE = "FULL_TABLE"
 
