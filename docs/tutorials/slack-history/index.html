@@ -11,6 +11,7 @@
   <div id="hits"></div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@meilisearch/instant-meilisearch/dist/instant-meilisearch.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/meilisearch@latest/dist/bundles/meilisearch.umd.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@4"></script>
 <script>
     const searchMessages = instantsearch({
@@ -26,7 +27,19 @@
         )
     });
 
-    searchMessages.addWidgets([
+    const client = new MeiliSearch({ host: "http://localhost:7700" });
+    // put this in a map.
+    let users1 = {};
+    client.getIndex("users").then(users => users.getDocuments()).then(users => users1 = users.reduce((map, obj) => {
+        map[obj.id] = obj.name;
+        return map;
+    }, {}));
+    console.log(users1);
+    // access the map from there.
+    // client.get
+
+
+        searchMessages.addWidgets([
         instantsearch.widgets.searchBox({
             container: "#searchbox"
         }),
@@ -38,6 +51,7 @@
                       <div>
                       <div class="hit-name">
                           {{#helpers.highlight}}{ "attribute": "text" }{{/helpers.highlight}}
+                          {{#helpers.highlight}}{ "attribute": "user" }{{/helpers.highlight}}
                       </div>
                       </div>
                   `
@@ -46,25 +60,26 @@
     ]);
     searchMessages.start();
 
-    searchThreads.addWidgets([
-        instantsearch.widgets.searchBox({
-            container: "#searchbox"
-        }),
-        instantsearch.widgets.configure({ hitsPerPage: 8 }),
-        instantsearch.widgets.hits({
-            container: "#hits",
-            templates: {
-                item: `
-                      <div>
-                      <div class="hit-name">
-                          {{#helpers.highlight}}{ "attribute": "text" }{{/helpers.highlight}}
-                      </div>
-                      </div>
-                  `
-            }
-        })
-    ]);
-    searchThreads.start();
+    // searchThreads.addWidgets([
+    //     instantsearch.widgets.searchBox({
+    //         container: "#searchbox"
+    //     }),
+    //     instantsearch.widgets.configure({ hitsPerPage: 8 }),
+    //     instantsearch.widgets.hits({
+    //         container: "#hits",
+    //         templates: {
+    //             item: `
+    //                   <div>
+    //                   <div class="hit-name">
+    //                       {{#helpers.highlight}}{ "attribute": "text" }{{/helpers.highlight}}
+    //                   </div>
+    //                   </div>
+    //               `
+    //         }
+    //     })
+    // ]);
+    // searchThreads.start();
 </script>
 </body>
 </html>
+
