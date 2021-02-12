@@ -190,8 +190,6 @@ class BaseClient(StreamStateMixin, ABC):
 
 def configured_catalog_from_client(client: BaseClient) -> ConfiguredAirbyteCatalog:
     """Helper to generate configured catalog for testing"""
-    catalog = ConfiguredAirbyteCatalog(
-        streams=[ConfiguredAirbyteStream(stream=stream) for stream in client.streams]
-    )
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStream(stream=stream) for stream in client.streams])
 
     return catalog

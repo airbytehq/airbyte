@@ -17,10 +17,7 @@
               "type": "integer"
             },
             "signature": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "ticket_scope": {
               "type": "integer"
@@ -32,16 +29,10 @@
               "type": "string"
             },
             "last_active_at": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "available_since": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "type": {
               "type": "string"
@@ -56,36 +47,22 @@
                   "type": "string"
                 },
                 "job_title": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
+                  "type": ["string", "null"]
                 },
                 "language": {
                   "type": "string"
                 },
                 "last_login_at": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
+                  "type": ["string", "null"]
                 },
                 "mobile": {
-                  "type": [
-                    "string",
-                    "integer",
-                    "null"
-                  ]
+                  "type": ["string", "integer", "null"]
                 },
                 "name": {
                   "type": "string"
                 },
                 "phone": {
-                  "type": [
-                    "string",
-                    "integer",
-                    "null"
-                  ]
+                  "type": ["string", "integer", "null"]
                 },
                 "time_zone": {
                   "type": "string"
@@ -100,9 +77,7 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false,
         "default_cursor_field": null
       },
@@ -123,16 +98,10 @@
               "type": "string"
             },
             "description": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "note": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "domains": {
               "type": "array",
@@ -150,31 +119,20 @@
               "type": "object"
             },
             "health_score": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "account_tier": {
               "type": "string"
             },
             "renewal_date": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "industry": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false,
         "default_cursor_field": null
       },
@@ -192,22 +150,13 @@
               "type": "boolean"
             },
             "address": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "company_id": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "description": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "email": {
               "type": "string"
@@ -216,48 +165,31 @@
               "type": "integer"
             },
             "job_title": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "language": {
               "type": "string"
             },
             "mobile": {
-              "type": [
-                "string",
-                "integer",
-                "null"
-              ]
+              "type": ["string", "integer", "null"]
             },
             "name": {
               "type": "string"
             },
             "phone": {
-              "type": [
-                "string",
-                "integer",
-                "null"
-              ]
+              "type": ["string", "integer", "null"]
             },
             "time_zone": {
               "type": "string"
             },
             "twitter_id": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "custom_fields": {
               "type": "object"
             },
             "facebook_id": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "created_at": {
               "type": "string"
@@ -266,19 +198,13 @@
               "type": "string"
             },
             "csat_rating": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "preferred_source": {
               "type": "string"
             },
             "unique_external_id": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             }
           },
           "required": [
@@ -304,9 +230,7 @@
             "updated_at"
           ]
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false,
         "default_cursor_field": null
       },
@@ -339,10 +263,7 @@
               "type": "integer"
             },
             "support_email": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "source": {
               "type": "integer"
@@ -351,28 +272,16 @@
               "type": "integer"
             },
             "to_emails": {
-              "type": [
-                "array",
-                "null"
-              ]
+              "type": ["array", "null"]
             },
             "from_email": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "cc_emails": {
-              "type": [
-                "array",
-                "null"
-              ]
+              "type": ["array", "null"]
             },
             "bcc_emails": {
-              "type": [
-                "array",
-                "null"
-              ]
+              "type": ["array", "null"]
             },
             "created_at": {
               "type": "string"
@@ -381,25 +290,17 @@
               "type": "string"
             },
             "attachments": {
-              "type": [
-                "array",
-                "null"
-              ]
+              "type": ["array", "null"]
             },
             "ticket_id": {
               "type": "integer"
             },
             "source_additional_info": {
-              "type": [
-                "object",
-                "null"
-              ]
+              "type": ["object", "null"]
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false,
         "default_cursor_field": null
       },
@@ -423,22 +324,13 @@
               "type": "string"
             },
             "escalate_to": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "unassigned_for": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "business_hour_id": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "group_type": {
               "type": "string"
@@ -454,9 +346,7 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false,
         "default_cursor_field": null
       },
@@ -490,9 +380,7 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false,
         "default_cursor_field": null
       },
@@ -560,9 +448,7 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false,
         "default_cursor_field": null
       },
@@ -616,9 +502,7 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false,
         "default_cursor_field": null
       },
@@ -651,16 +535,10 @@
               "type": "boolean"
             },
             "email_config_id": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "group_id": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "priority": {
               "type": "integer"
@@ -675,10 +553,7 @@
               "type": "integer"
             },
             "company_id": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "status": {
               "type": "integer"
@@ -687,25 +562,16 @@
               "type": "string"
             },
             "association_type": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "to_emails": {
-              "type": [
-                "array",
-                "null"
-              ],
+              "type": ["array", "null"],
               "items": {
                 "type": "string"
               }
             },
             "product_id": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "id": {
               "type": "integer"
@@ -732,19 +598,13 @@
               "type": "string"
             },
             "associated_tickets_count": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "tags": {
               "type": "array"
             },
             "nr_due_by": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "nr_escalated": {
               "type": "boolean"
@@ -757,9 +617,7 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false,
         "default_cursor_field": null
       },
@@ -792,10 +650,7 @@
               "type": "integer"
             },
             "company_id": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "time_spent": {
               "type": "string"
@@ -814,9 +669,7 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false,
         "default_cursor_field": null
       },

@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
 from abc import ABC, abstractmethod
 from functools import partial
 from typing import Callable, Mapping, Sequence, Iterator, Any, MutableMapping
@@ -61,10 +62,8 @@ class FreshdeskServerError(FreshdeskError):
 
 
 class API:
-    def __init__(self, domain: str, api_key: str, verify: bool = True,
-                 proxies: MutableMapping[str, str] = None):
-        """ Basic HTTP interface to read from endpoints
-        """
+    def __init__(self, domain: str, api_key: str, verify: bool = True, proxies: MutableMapping[str, str] = None):
+        """Basic HTTP interface to read from endpoints"""
         self._api_prefix = f"https://{domain.rstrip('/')}/api/v2/"
         self._session = requests.Session()
         self._session.auth = (api_key, "unused_with_api_key")
@@ -73,8 +72,7 @@ class API:
         self._session.headers = {"Content-Type": "application/json"}
 
         if domain.find("freshdesk.com") < 0:
-            raise AttributeError(
-                "Freshdesk v2 API works only via Freshdesk domains and not via custom CNAMEs")
+            raise AttributeError("Freshdesk v2 API works only via Freshdesk domains and not via custom CNAMEs")
 
     @staticmethod
     def _parse_and_handle_errors(req):
@@ -145,7 +143,7 @@ class StreamAPI(ABC):
             if len(batch) < self.result_return_limit:
                 break
 
-            pagination_params['page'] += 1
+            pagination_params["page"] += 1
 
 
 class AgentsAPI(StreamAPI):
