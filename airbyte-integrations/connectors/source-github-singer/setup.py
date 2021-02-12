@@ -35,7 +35,7 @@ setup(
     extras_require={
         "main": [
             "tap-github @ https://github.com/airbytehq/tap-github/tarball/master#egg=tap-github-1.9.1",
-            "requests",
+            "requests==2.20.0",
             "airbyte-protocol",
             "base-singer",
             "base-python",
