@@ -29,10 +29,10 @@ from base_python import BaseClient
 from .api import (
     API,
     AgentsAPI,
-    FreshdeskError,
     CompaniesAPI,
     ContactsAPI,
     ConversationsAPI,
+    FreshdeskError,
     GroupsAPI,
     RolesAPI,
     SatisfactionRatingsAPI,

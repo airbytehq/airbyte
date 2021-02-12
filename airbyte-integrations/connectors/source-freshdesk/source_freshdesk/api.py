@@ -24,7 +24,7 @@ SOFTWARE.
 
 from abc import ABC, abstractmethod
 from functools import partial
-from typing import Callable, Mapping, Sequence, Iterator, Any, MutableMapping
+from typing import Any, Callable, Iterator, Mapping, MutableMapping, Sequence
 
 import requests
 from requests import HTTPError
