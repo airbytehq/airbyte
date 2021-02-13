@@ -48,6 +48,10 @@ class AirbyteLogger:
     def fatal(self, message):
         self.log("FATAL", message)
 
+    def exception(self, message):
+        message = f"{message}\n{traceback.format_exc()}"
+        self.error(message)
+
     def error(self, message):
         self.log("ERROR", message)
 
