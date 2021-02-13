@@ -84,6 +84,8 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
 
 
 class API:
+    backoff_policy = retry_pattern(backoff.expo, FreshdeskRateLimited, max_tries=5, factor=5)
+
     def __init__(self, domain: str, api_key: str, verify: bool = True, proxies: MutableMapping[str, str] = None):
         """Basic HTTP interface to read from endpoints"""
         self._api_prefix = f"https://{domain.rstrip('/')}/api/v2/"
@@ -105,20 +107,20 @@ class API:
 
         error_message = "Freshdesk Request Failed"
         if "errors" in j:
-            error_message = "{}: {}".format(j.get("description"), j.get("errors"))
+            error_message = f"{j.get('description')}: {j['errors']}"
         # API docs don't mention this clearly, but in the case of bad credentials the returned JSON will have a
         # "message"  field at the top level
         elif "message" in j:
-            error_message = j["message"]
+            error_message = f"{j.get('code')}: {j['message']}"
 
         if req.status_code == 400:
-            raise FreshdeskBadRequest(error_message)
+            raise FreshdeskBadRequest(error_message or "Wrong input, check your data")
         elif req.status_code == 401:
-            raise FreshdeskUnauthorized(error_message)
+            raise FreshdeskUnauthorized(error_message or "Invalid credentials")
         elif req.status_code == 403:
-            raise FreshdeskAccessDenied(error_message)
+            raise FreshdeskAccessDenied(error_message or "You don't have enough permissions")
         elif req.status_code == 404:
-            raise FreshdeskNotFound(error_message)
+            raise FreshdeskNotFound(error_message or "Resource not found")
         elif req.status_code == 429:
             raise FreshdeskRateLimited(
                 "429 Rate Limit Exceeded: API rate-limit has been reached until {} seconds. See "
@@ -135,7 +137,7 @@ class API:
 
         return j
 
-    @retry_pattern(backoff.expo, FreshdeskRateLimited, max_tries=5, factor=5)
+    @backoff_policy
     def get(self, url: str, params: Mapping = None):
         """Wrapper around request.get() to use the API prefix. Returns a JSON response."""
         for _ in range(10):
