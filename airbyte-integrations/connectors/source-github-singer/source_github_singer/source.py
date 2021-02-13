@@ -92,7 +92,7 @@ class SourceGithubSinger(SingerSource):
         full_refresh_streams = ["assignees", "collaborators", "pull_requests", "reviews", "releases"]
         overrides = {}
         for stream_name in incremental_streams:
-            overrides[stream_name] = SyncModeInfo(supported_sync_modes=[SyncMode.incremental])
+            overrides[stream_name] = SyncModeInfo(supported_sync_modes=[SyncMode.incremental], source_defined_cursor=True)
         for stream_name in full_refresh_streams:
             overrides[stream_name] = SyncModeInfo(supported_sync_modes=[SyncMode.full_refresh])
         return overrides
