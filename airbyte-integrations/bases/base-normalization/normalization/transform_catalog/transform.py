@@ -217,7 +217,7 @@ from {{ table }}
         ],
         table=table,
         inject_sql_suffix=inject_sql_suffix,
-        name=name,
+        name=normalize_schema_table_name(name, integration_type),
         path=path,
     )
     output_sql_view(output, raw_schema, sql_file_name, sql, path)
@@ -236,12 +236,12 @@ from {{ table }}
         ],
         table=table,
         inject_sql_suffix="",
-        name=name,
+        name=normalize_schema_table_name(name, integration_type),
         path="/".join(path),
     )
     output_sql_view(output, raw_schema, sql_file_name, sql, path)
 
-    hash_id = quote_column(f"_airbyte_{name}_hashid", integration_type)
+    hash_id = quote_column(f"_airbyte_{normalize_schema_table_name(name, integration_type)}_hashid", integration_type)
     # Generate hash_id column model
     previous_sql_file_name = sql_file_name
     table = "{{ ref('" + previous_sql_file_name + "') }}"
@@ -280,7 +280,7 @@ from {{ table }}
         ],
         hash_id=hash_id,
         table=table,
-        name=name,
+        name=normalize_schema_table_name(name, integration_type),
         path=path,
     )
     output_sql_view(output, raw_schema, sql_file_name, sql, path)
@@ -314,7 +314,7 @@ from {{ table }}
         fields=[quote_column(field, integration_type) for field in properties.keys() if not is_airbyte_column(field)],
         hash_id=hash_id,
         table=table,
-        name=name,
+        name=normalize_schema_table_name(name, integration_type),
         path=path,
     )
     output_sql_table(output, schema, sql_file_name, sql, path)
@@ -341,7 +341,7 @@ from {{ table }}
                 table=table,
                 parent_hash_id=hash_id,
                 inject_sql_prefix="",
-                inject_sql_suffix=f"where {field} is not null\n",
+                inject_sql_suffix=f"where {quote_column(field, integration_type)} is not null\n",
                 field=field,
             )
         elif is_array(properties[field]["type"]) and "items" in properties[field]:
@@ -388,11 +388,7 @@ def process_nested_property(
     for child in children:
         child_name = child
         if child_name in tables_in_schema[schema]:
-            if integration_type == "postgres" and len(child) >= 59:
-                # postgres has limit of 63 characters, 59 is enough leftovers for our suffix usage
-                child_str = child[0:55]
-            else:
-                child_str = child
+            child_str = normalize_schema_table_name(child_name, integration_type)
             for i in range(1, 100):
                 if f"{child_str}_{i}" not in tables_in_schema[schema]:
                     child_name = f"{child_str}_{i}"
@@ -471,6 +467,7 @@ def normalize_schema_table_name(input_name: str, integration_type: str) -> str:
     input_name = sub(r"\s+", "_", input_name)
     input_name = sub(r"[^a-zA-Z0-9_]", "_", input_name)
     input_name = normalize_identifier_name(input_name, integration_type)
+    input_name = normalize_identifier_case(input_name, integration_type, is_quoted=False)
     return input_name
 
 
@@ -490,19 +487,30 @@ def normalize_identifier_name(input_name: str, integration_type: str) -> str:
         if len(input_name) >= 123:
             # redshift has limit of 127 characters
             input_name = input_name[0:123]
-        # all tables (even quoted ones) are coerced to lowercase.
-        input_name = input_name.lower()
     elif integration_type == "postgres":
         if len(input_name) >= 59:
             # postgres has limit of 63 characters
             input_name = input_name[0:59]
-        if input_name[0] != "'" and input_name[0] != '"':
-            input_name = input_name.lower()
     elif integration_type == "snowflake":
         if len(input_name) >= 251:
             # snowflake has limit of 255 characters
             input_name = input_name[0:251]
-        if input_name[0] != "'" and input_name[0] != '"':
+    else:
+        raise KeyError(f"Unknown integration type {integration_type}")
+    return input_name
+
+
+def normalize_identifier_case(input_name: str, integration_type: str, is_quoted: bool = False):
+    if integration_type == "bigquery":
+        pass
+    elif integration_type == "redshift":
+        # all tables (even quoted ones) are coerced to lowercase.
+        input_name = input_name.lower()
+    elif integration_type == "postgres":
+        if input_name[0] != "'" and input_name[0] != '"' and not is_quoted:
+            input_name = input_name.lower()
+    elif integration_type == "snowflake":
+        if input_name[0] != "'" and input_name[0] != '"' and not is_quoted:
             input_name = input_name.upper()
     else:
         raise KeyError(f"Unknown integration type {integration_type}")
@@ -513,20 +521,25 @@ def quote_column(input_name: str, integration_type: str, in_jinja=False) -> str:
     if integration_type != "bigquery":
         result = normalize_identifier_name(input_name, integration_type)
         doesnt_start_with_alphaunderscore = match("[^A-Za-z_]", result[0])
-        doesnt_contain_alphanumeric = match(".*[^A-Za-z0-9_].*", result)
-        if doesnt_start_with_alphaunderscore or doesnt_contain_alphanumeric or is_reserved_keyword(result, integration_type):
+        contains_non_alphanumeric = match(".*[^A-Za-z0-9_].*", result)
+        if doesnt_start_with_alphaunderscore or contains_non_alphanumeric or is_reserved_keyword(result, integration_type):
             result = f"adapter.quote('{result}')"
+            result = normalize_identifier_case(result, integration_type, is_quoted=True)
             if not in_jinja:
                 result = jinja_call(result)
             in_jinja = False
+        else:
+            result = normalize_identifier_case(result, integration_type, is_quoted=False)
     elif is_reserved_keyword(input_name, "bigquery"):
         result = normalize_identifier_name(input_name, "bigquery")
         result = f"adapter.quote('{result}')"
+        result = normalize_identifier_case(result, "bigquery", is_quoted=True)
         if not in_jinja:
             result = jinja_call(result)
         in_jinja = False
     else:
         result = normalize_identifier_name(input_name, "bigquery")
+        result = normalize_identifier_case(result, "bigquery", is_quoted=False)
     if in_jinja:
         # to refer to columns while already in jinja context, always quote
         return f"'{result}'"
