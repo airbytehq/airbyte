@@ -34,7 +34,7 @@ export default class SourceDefinitionSpecificationResource extends BaseResource
   static detailShape<T extends typeof Resource>(this: T) {
     return {
       ...super.detailShape(),
-      schema: this.asSchema()
+      schema: this
     };
   }
 }
