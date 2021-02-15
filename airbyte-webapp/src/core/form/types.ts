@@ -29,8 +29,8 @@ type FormConditionItem = {
   fieldName: string;
   fieldKey: string;
   isRequired: boolean;
-  title?: string;
   conditions: { [key: string]: FormGroupItem | FormBaseItem };
+  title?: string;
 };
 
 export type FormBlock = FormGroupItem | FormBaseItem | FormConditionItem;

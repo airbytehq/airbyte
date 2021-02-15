@@ -66,11 +66,12 @@ export const jsonSchemaToUiWidget = (
     return {
       ...pickDefaultFields(jsonSchema),
       _type: "formGroup",
+      jsonSchema,
       fieldName: path || key,
       fieldKey: key,
       properties,
       isRequired
-    };
+    } as any;
   }
 
   return {
