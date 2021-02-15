@@ -32,7 +32,7 @@ from facebook_business import FacebookAdsApi
 from facebook_business.adobjects import user as fb_user
 from facebook_business.exceptions import FacebookRequestError
 
-from .api import AdCreativeAPI, AdsAPI, AdSetsAPI, CampaignAPI, AdsInsightAPI
+from .api import AdCreativeAPI, AdsAPI, AdSetsAPI, AdsInsightAPI, CampaignAPI
 from .common import FacebookAPIException
 
 

@@ -22,8 +22,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from base_python_test import DefaultStandardSourceTest
+import json
+
+from airbyte_protocol import ConfiguredAirbyteCatalog, Type
+from base_python import AirbyteLogger
+from source_facebook_marketing.source import SourceFacebookMarketing
+
+config = json.loads(open("secrets/config.json", "r").read())
+insights_catalog = ConfiguredAirbyteCatalog.parse_raw(open("sample_files/configured_catalog_adsinsights.json", "r").read())
 
 
-class SourceFacebookMarketingStandardTest(DefaultStandardSourceTest):
-    pass
+class TestFacebookMarketingSource:
+    def test_ad_insights_streams_outputs_records(self):
+        source = SourceFacebookMarketing()
+        output = source.read(AirbyteLogger(), config, insights_catalog)
+        records = []
+        state = []
+        for message in output:
+            if message.type == Type.RECORD:
+                records.append(message)
+            elif message.type == Type.STATE:
+                state.append(message)
+
+        assert len(records) > 0
+        assert len(state) > 0

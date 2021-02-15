@@ -1,12 +1,25 @@
 plugins {
     id 'airbyte-python'
     id 'airbyte-docker'
-    id 'airbyte-source-test'
+    id 'airbyte-standard-source-test-file'
 }
 
 airbytePython {
     moduleDirectory 'source_facebook_marketing'
 }
+
+airbyteStandardSourceTestFile {
+    specPath = "source_facebook_marketing/spec.json"
+    configPath = "secrets/config.json"
+    configuredCatalogPath = "sample_files/configured_catalog.json"
+}
+
+task("pythonIntegrationTests", type: PythonTask, dependsOn: installTestReqs) {
+    module = "pytest"
+    command = "-s integration_tests"
+}
+
+integrationTest.dependsOn("pythonIntegrationTests")
 
 dependencies {
     implementation files(project(':airbyte-integrations:bases:base-python').airbyteDocker.outputs)

@@ -30,7 +30,7 @@ import backoff
 import pendulum as pendulum
 from base_python.entrypoint import logger  # FIXME (Eugene K): register logger as standard python logger
 from facebook_business.adobjects.adreportrun import AdReportRun
-from facebook_business.exceptions import FacebookRequestError, FacebookBadObjectError
+from facebook_business.exceptions import FacebookBadObjectError, FacebookRequestError
 
 from .common import retry_pattern
 
