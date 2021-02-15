@@ -67,6 +67,10 @@ class Client(BaseClient):
                 break
 
     def _enumerate_methods(self) -> Mapping[str, callable]:
+        # Many streams are just a wrapper around a call to lists() with some preconfigured params. 
+        # However, more complicated streams require a custom implementation, which is expressed via 
+        # a stream__XYZ method. The latter streams are captured via super's _enumerate_methods(),
+        # and the former streams are added here via a partial over lists().
         mapping = super(Client, self)._enumerate_methods()
         for entity, value in ENTITIES_MAP.items():
             if entity not in mapping:
