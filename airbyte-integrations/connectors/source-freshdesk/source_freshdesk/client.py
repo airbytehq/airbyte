@@ -54,7 +54,7 @@ class Client(BaseClient):
             "groups": GroupsAPI(self._api),
             "roles": RolesAPI(self._api),
             "skills": SkillsAPI(self._api),
-            "surveys": SurveysAPI(self._api),  # need subscription
+            "surveys": SurveysAPI(self._api),  
             "tickets": TicketsAPI(self._api),
             "time_entries": TimeEntriesAPI(self._api),
             "satisfaction_ratings": SatisfactionRatingsAPI(self._api),
