@@ -201,7 +201,7 @@ select
     _airbyte_emitted_at
 from {{ table }}
 {{ inject_sql_suffix }}
-{%- if len(path) > 2 %}
+{%- if len(path) > 1 %}
 -- {{ name }} from {{ "/".join(path) }}
 {%- endif %}
 """
@@ -265,7 +265,7 @@ select
       null as {{ hash_id }}
 {%- endif %}
 from {{ table }}
-{%- if len(path) > 2 %}
+{%- if len(path) > 1 %}
 -- {{ name }} from {{ "/".join(path) }}
 {%- endif %}
 """
@@ -303,7 +303,7 @@ select
     _airbyte_emitted_at,
     {{ hash_id }}
 from {{ table }}
-{%- if len(path) > 2 %}
+{%- if len(path) > 1 %}
 -- {{ name }} from {{ "/".join(path) }}
 {%- endif %}
 """
