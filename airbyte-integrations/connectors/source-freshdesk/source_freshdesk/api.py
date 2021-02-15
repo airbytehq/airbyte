@@ -86,8 +86,8 @@ class API:
         error_message = "Freshdesk Request Failed"
         if "errors" in j:
             error_message = "{}: {}".format(j.get("description"), j.get("errors"))
-       # API docs don't mention this clearly, but in the case of bad credentials the returned JSON will have a 
-       # "message"  field at the top level
+        # API docs don't mention this clearly, but in the case of bad credentials the returned JSON will have a
+        # "message"  field at the top level
         elif "message" in j:
             error_message = j["message"]
 
