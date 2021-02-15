@@ -117,15 +117,16 @@ class API:
 
     def get(self, url: str, params: Mapping = None):
         """Wrapper around request.get() to use the API prefix. Returns a JSON response."""
-        params = params or {}
-        response = self._session.get(self._api_prefix + url, params=params)
-        try:
-            return self._parse_and_handle_errors(response)
-        except FreshdeskRateLimited:
-            retry_after = int(response.headers['Retry-After'])
-            logger.info(f"Rate limit reached. Sleeping for {retry_after} seconds")
-            time.sleep(retry_after)
-            return self.get(url, params)
+        for _ in range(10):
+            params = params or {}
+            response = self._session.get(self._api_prefix + url, params=params)
+            try:
+                return self._parse_and_handle_errors(response)
+            except FreshdeskRateLimited:
+                retry_after = int(response.headers['Retry-After'])
+                logger.info(f"Rate limit reached. Sleeping for {retry_after} seconds")
+                time.sleep(retry_after)
+        raise Exception("Max retry limit reached")
 
 
 class StreamAPI(ABC):
