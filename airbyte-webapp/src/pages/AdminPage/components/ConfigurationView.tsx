@@ -9,6 +9,7 @@ import ContentCard from "../../../components/ContentCard";
 import config from "../../../config";
 import Link from "../../../components/Link";
 import ImportConfigurationModal from "./ImportConfigurationModal";
+import LogsContent from "./LogsContent";
 
 const Content = styled.div`
   max-width: 813px;
@@ -17,6 +18,9 @@ const Content = styled.div`
 
 const ControlContent = styled(ContentCard)`
   margin-top: 12px;
+`;
+
+const ButtonContent = styled.div`
   padding: 29px 28px 27px;
   display: flex;
   align-items: center;
@@ -71,49 +75,57 @@ const ConfigurationView: React.FC = () => {
 
   return (
     <Content>
-      <ControlContent>
-        <Button onClick={onExport}>
-          <FormattedMessage id="admin.exportConfiguration" />
-        </Button>
-        <Text>
-          <FormattedMessage
-            id="admin.exportConfigurationText"
-            values={{
-              lnk: (...lnk: React.ReactNode[]) => (
-                <DocLink
-                  target="_blank"
-                  href={config.ui.configurationArchiveLink}
-                  as="a"
-                >
-                  {lnk}
-                </DocLink>
-              )
-            }}
-          />
-        </Text>
+      <ControlContent title={<FormattedMessage id="admin.export" />}>
+        <ButtonContent>
+          <Button onClick={onExport}>
+            <FormattedMessage id="admin.exportConfiguration" />
+          </Button>
+          <Text>
+            <FormattedMessage
+              id="admin.exportConfigurationText"
+              values={{
+                lnk: (...lnk: React.ReactNode[]) => (
+                  <DocLink
+                    target="_blank"
+                    href={config.ui.configurationArchiveLink}
+                    as="a"
+                  >
+                    {lnk}
+                  </DocLink>
+                )
+              }}
+            />
+          </Text>
+        </ButtonContent>
       </ControlContent>
 
-      <ControlContent>
-        <Button onClick={() => setIsModalOpen(true)}>
-          <FormattedMessage id="admin.importConfiguration" />
-        </Button>
-        <Text>
-          <FormattedMessage
-            id="admin.importConfigurationText"
-            values={{
-              b: (...b: React.ReactNode[]) => <Warning>{b}</Warning>
-            }}
-          />
-        </Text>
-        {isModalOpen && (
-          <ImportConfigurationModal
-            onClose={() => setIsModalOpen(false)}
-            onSubmit={onImport}
-            isLoading={isLoading}
-            error={error}
-            cleanError={() => setError("")}
-          />
-        )}
+      <ControlContent title={<FormattedMessage id="admin.import" />}>
+        <ButtonContent>
+          <Button onClick={() => setIsModalOpen(true)}>
+            <FormattedMessage id="admin.importConfiguration" />
+          </Button>
+          <Text>
+            <FormattedMessage
+              id="admin.importConfigurationText"
+              values={{
+                b: (...b: React.ReactNode[]) => <Warning>{b}</Warning>
+              }}
+            />
+          </Text>
+          {isModalOpen && (
+            <ImportConfigurationModal
+              onClose={() => setIsModalOpen(false)}
+              onSubmit={onImport}
+              isLoading={isLoading}
+              error={error}
+              cleanError={() => setError("")}
+            />
+          )}
+        </ButtonContent>
+      </ControlContent>
+
+      <ControlContent title={<FormattedMessage id="admin.logs" />}>
+        <LogsContent />
       </ControlContent>
     </Content>
   );
