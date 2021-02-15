@@ -21,7 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-
+import time
 from abc import ABC, abstractmethod
 from functools import partial
 from typing import Any, Callable, Iterator, Mapping, MutableMapping, Sequence
@@ -118,8 +118,14 @@ class API:
     def get(self, url: str, params: Mapping = None):
         """Wrapper around request.get() to use the API prefix. Returns a JSON response."""
         params = params or {}
-        req = self._session.get(self._api_prefix + url, params=params)
-        return self._parse_and_handle_errors(req)
+        response = self._session.get(self._api_prefix + url, params=params)
+        try:
+            return self._parse_and_handle_errors(response)
+        except FreshdeskRateLimited:
+            retry_after = int(response.headers['Retry-After'])
+            logger.info(f"Rate limit reached. Sleeping for {retry_after} seconds")
+            time.sleep(retry_after)
+            return self.get(url, params)
 
 
 class StreamAPI(ABC):
