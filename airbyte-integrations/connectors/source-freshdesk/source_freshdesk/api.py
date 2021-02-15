@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
 import time
 from abc import ABC, abstractmethod
 from functools import partial
@@ -123,7 +124,7 @@ class API:
             try:
                 return self._parse_and_handle_errors(response)
             except FreshdeskRateLimited:
-                retry_after = int(response.headers['Retry-After'])
+                retry_after = int(response.headers["Retry-After"])
                 logger.info(f"Rate limit reached. Sleeping for {retry_after} seconds")
                 time.sleep(retry_after)
         raise Exception("Max retry limit reached")
