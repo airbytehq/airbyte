@@ -24,7 +24,6 @@
 
 package io.airbyte.scheduler.persistence;
 
-import io.airbyte.config.AirbyteProtocolConverters;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobConfig;
@@ -112,7 +111,7 @@ public class DefaultJobCreator implements JobCreator {
         .withSourceConfiguration(source.getConfiguration())
         .withDestinationDockerImage(destinationDockerImageName)
         .withDestinationConfiguration(destination.getConfiguration())
-        .withConfiguredAirbyteCatalog(AirbyteProtocolConverters.toConfiguredCatalog(standardSync.getSchema()))
+        .withConfiguredAirbyteCatalog(standardSync.getCatalog())
         .withState(null);
 
     jobPersistence.getCurrentState(standardSync.getConnectionId()).ifPresent(jobSyncConfig::withState);
@@ -133,7 +132,7 @@ public class DefaultJobCreator implements JobCreator {
   @Override
   public Optional<Long> createResetConnectionJob(DestinationConnection destination, StandardSync standardSync, String destinationDockerImage)
       throws IOException {
-    final ConfiguredAirbyteCatalog configuredAirbyteCatalog = AirbyteProtocolConverters.toConfiguredCatalog(standardSync.getSchema());
+    final ConfiguredAirbyteCatalog configuredAirbyteCatalog = standardSync.getCatalog();
     configuredAirbyteCatalog.getStreams().forEach(configuredAirbyteStream -> configuredAirbyteStream.setSyncMode(SyncMode.FULL_REFRESH));
 
     final JobResetConnectionConfig resetConnectionConfig = new JobResetConnectionConfig()

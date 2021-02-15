@@ -8,7 +8,7 @@ required:
   - sourceId
   - destinationId
   - name
-  - schema
+  - catalog
 additionalProperties: false
 properties:
   sourceId:
@@ -22,8 +22,8 @@ properties:
     format: uuid
   name:
     type: string
-  schema:
-    "$ref": StandardDataSchema.yaml#/definitions/schema
+  catalog:
+    existingJavaType: io.airbyte.protocol.models.ConfiguredAirbyteCatalog
   status:
     type: string
     enum:
