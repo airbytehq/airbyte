@@ -1,6 +1,6 @@
 import { JSONSchema7Definition } from "json-schema";
-import Status from "../../statuses";
-import { NetworkError } from "../../resources/BaseResource";
+import Status from "core/statuses";
+import { NetworkError } from "core/resources/BaseResource";
 import { SourceDiscoverSchemaRead } from "./api";
 import { SyncSchemaField } from "./models";
 

@@ -1,3 +1,4 @@
+import { Resource } from "rest-hooks";
 import BaseResource from "./BaseResource";
 
 export interface DestinationDefinitionSpecification {
@@ -29,4 +30,11 @@ export default class DestinationDefinitionSpecificationResource
   }
 
   static urlRoot = "destination_definition_specifications";
+
+  static detailShape<T extends typeof Resource>(this: T) {
+    return {
+      ...super.detailShape(),
+      schema: this
+    };
+  }
 }

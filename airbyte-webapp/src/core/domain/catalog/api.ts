@@ -1,5 +1,5 @@
 import { JSONSchema7 } from "json-schema";
-import { JobInfo } from "../../resources/Scheduler";
+import { JobInfo } from "core/resources/Scheduler";
 
 export interface SourceDiscoverSchemaRead {
   catalog: SyncSchema;

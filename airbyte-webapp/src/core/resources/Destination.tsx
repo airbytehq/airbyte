@@ -32,6 +32,13 @@ export default class DestinationResource extends BaseResource
     };
   }
 
+  static detailShape<T extends typeof Resource>(this: T) {
+    return {
+      ...super.detailShape(),
+      schema: this
+    };
+  }
+
   static recreateShape<T extends typeof Resource>(this: T) {
     return {
       ...super.updateShape(),

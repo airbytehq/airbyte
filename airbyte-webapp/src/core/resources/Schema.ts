@@ -2,11 +2,8 @@ import { Resource } from "rest-hooks";
 
 import BaseResource from "./BaseResource";
 import { JobInfo } from "./Scheduler";
-import {
-  SyncSchema,
-  SourceDiscoverSchemaRead,
-  toInnerModel
-} from "../domain/catalog";
+import { SyncSchema, SourceDiscoverSchemaRead } from "core/domain/catalog";
+import { toInnerModel } from "core/domain/catalog/fieldUtil";
 
 export interface Schema extends SourceDiscoverSchemaRead {
   id: string;

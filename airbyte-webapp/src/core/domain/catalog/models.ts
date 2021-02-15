@@ -3,7 +3,6 @@ export type SyncSchemaField = {
   cleanedName: string;
   type: string;
   key: string;
-  // dataType: string;
 
   fields?: SyncSchemaField[];
 };

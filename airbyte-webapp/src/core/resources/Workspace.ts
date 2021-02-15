@@ -37,4 +37,18 @@ export default class WorkspaceResource extends BaseResource
       schema: { workspaces: [this] }
     };
   }
+
+  static detailShape<T extends typeof Resource>(this: T) {
+    return {
+      ...super.detailShape(),
+      schema: this
+    };
+  }
+
+  static updateShape<T extends typeof Resource>(this: T) {
+    return {
+      ...super.partialUpdateShape(),
+      schema: this
+    };
+  }
 }

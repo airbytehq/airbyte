@@ -1,6 +1,6 @@
 import { FetchOptions, Resource } from "rest-hooks";
 import BaseResource, { NetworkError } from "./BaseResource";
-import { SyncSchema } from "../domain/catalog";
+import { SyncSchema } from "core/domain/catalog";
 
 export type ScheduleProperties = {
   units: number;
@@ -147,7 +147,9 @@ export default class ConnectionResource extends BaseResource
       ...super.deleteShape(),
       getFetchKey: (params: { connectionId: string }) =>
         "POST /app/delete" + JSON.stringify(params),
-      fetch: async (): Promise<any> => null
+      fetch: async (): Promise<any> => {
+        return null;
+      }
     };
   }
 
