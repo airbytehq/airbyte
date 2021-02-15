@@ -192,13 +192,13 @@ class SingerHelper:
                     if empty_line_counter >= len(selects_list):
                         eof = True
 
-                    try:
-                        process.wait(timeout=60)
-                    except subprocess.TimeoutExpired:
-                        raise Exception(f"Underlying command {process.args} is hanging")
+                        try:
+                            process.wait(timeout=60)
+                        except subprocess.TimeoutExpired:
+                            raise Exception(f"Underlying command {process.args} is hanging")
 
-                    if process.returncode != 0:
-                        raise Exception(f"Underlying command {process.args} failed with exit code {process.returncode}")
+                        if process.returncode != 0:
+                            raise Exception(f"Underlying command {process.args} failed with exit code {process.returncode}")
                 else:
                     yield line, key.fileobj
 
