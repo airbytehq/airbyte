@@ -31,12 +31,8 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.AirbyteProtocolConverters;
-import io.airbyte.config.DataType;
 import io.airbyte.config.DestinationConnection;
-import io.airbyte.config.Field;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
@@ -44,18 +40,24 @@ import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
-import io.airbyte.config.Schema;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
-import io.airbyte.config.Stream;
+import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class DefaultJobCreatorTest {
+
+  private static final String STREAM_NAME = "users";
+  private static final String FIELD_NAME = "id";
 
   private static final String SOURCE_IMAGE_NAME = "daxtarity/sourceimagename";
   private static final String DESTINATION_IMAGE_NAME = "daxtarity/destinationimagename";
@@ -94,18 +96,9 @@ public class DefaultJobCreatorTest {
         .withConfiguration(implementationJson)
         .withTombstone(false);
 
-    final Field field = new Field()
-        .withDataType(DataType.STRING)
-        .withName("id")
-        .withSelected(true);
-
-    final Stream stream = new Stream()
-        .withName("users")
-        .withFields(Lists.newArrayList(field))
-        .withSelected(true);
-
-    final Schema schema = new Schema()
-        .withStreams(Lists.newArrayList(stream));
+    final ConfiguredAirbyteStream stream = new ConfiguredAirbyteStream()
+        .withStream(CatalogHelpers.createAirbyteStream(STREAM_NAME, Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING)));
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(stream));
 
     final UUID connectionId = UUID.randomUUID();
 
@@ -113,7 +106,7 @@ public class DefaultJobCreatorTest {
         .withConnectionId(connectionId)
         .withName("presto to hudi")
         .withStatus(StandardSync.Status.ACTIVE)
-        .withSchema(schema)
+        .withCatalog(catalog)
         .withSourceId(sourceId)
         .withDestinationId(destinationId);
   }
@@ -196,7 +189,7 @@ public class DefaultJobCreatorTest {
         .withSourceDockerImage(SOURCE_IMAGE_NAME)
         .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
-        .withConfiguredAirbyteCatalog(AirbyteProtocolConverters.toConfiguredCatalog(STANDARD_SYNC.getSchema()));
+        .withConfiguredAirbyteCatalog(STANDARD_SYNC.getCatalog());
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(JobConfig.ConfigType.SYNC)
@@ -221,7 +214,7 @@ public class DefaultJobCreatorTest {
         .withSourceDockerImage(SOURCE_IMAGE_NAME)
         .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
-        .withConfiguredAirbyteCatalog(AirbyteProtocolConverters.toConfiguredCatalog(STANDARD_SYNC.getSchema()));
+        .withConfiguredAirbyteCatalog(STANDARD_SYNC.getCatalog());
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(JobConfig.ConfigType.SYNC)
@@ -240,7 +233,7 @@ public class DefaultJobCreatorTest {
 
   @Test
   void testCreateResetConnectionJob() throws IOException {
-    final ConfiguredAirbyteCatalog expectedCatalog = AirbyteProtocolConverters.toConfiguredCatalog(STANDARD_SYNC.getSchema());
+    final ConfiguredAirbyteCatalog expectedCatalog = STANDARD_SYNC.getCatalog();
     expectedCatalog.getStreams()
         .forEach(configuredAirbyteStream -> configuredAirbyteStream.setSyncMode(io.airbyte.protocol.models.SyncMode.FULL_REFRESH));
 
@@ -265,7 +258,7 @@ public class DefaultJobCreatorTest {
 
   @Test
   void testCreateResetConnectionJobEnsureNoQueuing() throws IOException {
-    final ConfiguredAirbyteCatalog expectedCatalog = AirbyteProtocolConverters.toConfiguredCatalog(STANDARD_SYNC.getSchema());
+    final ConfiguredAirbyteCatalog expectedCatalog = STANDARD_SYNC.getCatalog();
     expectedCatalog.getStreams()
         .forEach(configuredAirbyteStream -> configuredAirbyteStream.setSyncMode(io.airbyte.protocol.models.SyncMode.FULL_REFRESH));
 

@@ -26,16 +26,16 @@ package io.airbyte.workers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.AirbyteProtocolConverters;
-import io.airbyte.config.DataType;
 import io.airbyte.config.DestinationConnection;
-import io.airbyte.config.Field;
-import io.airbyte.config.Schema;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.State;
-import io.airbyte.config.Stream;
+import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
@@ -82,17 +82,9 @@ public class TestConfigHelpers {
         .withDestinationId(destinationId)
         .withTombstone(false);
 
-    final Field field = new Field()
-        .withName(FIELD_NAME)
-        .withDataType(DataType.STRING)
-        .withSelected(true);
-
-    final Stream stream = new Stream()
-        .withName(STREAM_NAME)
-        .withSelected(true)
-        .withFields(Collections.singletonList(field));
-
-    final Schema schema = new Schema().withStreams(Collections.singletonList(stream));
+    final ConfiguredAirbyteStream stream = new ConfiguredAirbyteStream()
+        .withStream(CatalogHelpers.createAirbyteStream(STREAM_NAME, Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING)));
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(stream));
 
     final StandardSync standardSync = new StandardSync()
         .withConnectionId(connectionId)
@@ -100,7 +92,7 @@ public class TestConfigHelpers {
         .withSourceId(sourceId)
         .withStatus(StandardSync.Status.ACTIVE)
         .withName(CONNECTION_NAME)
-        .withSchema(schema);
+        .withCatalog(catalog);
 
     final String stateValue = Jsons.serialize(Map.of("lastSync", String.valueOf(LAST_SYNC_TIME)));
 
@@ -108,7 +100,7 @@ public class TestConfigHelpers {
 
     final StandardSyncInput syncInput = new StandardSyncInput()
         .withDestinationConfiguration(destinationConnectionConfig.getConfiguration())
-        .withCatalog(AirbyteProtocolConverters.toConfiguredCatalog(standardSync.getSchema()))
+        .withCatalog(standardSync.getCatalog())
         .withSourceConfiguration(sourceConnectionConfig.getConfiguration())
         .withState(state);
 

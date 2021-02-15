@@ -31,7 +31,6 @@ import static org.mockito.Mockito.*;
 
 import com.google.common.collect.Sets;
 import io.airbyte.config.ConfigSchema;
-import io.airbyte.config.Schema;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.validation.json.JsonSchemaValidator;
@@ -88,7 +87,7 @@ class DefaultConfigPersistenceTest {
   }
 
   @Test
-  void testListConfigs() throws JsonValidationException, IOException, ConfigNotFoundException {
+  void testListConfigs() throws JsonValidationException, IOException {
     configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_1.toString(), SOURCE_1);
     configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_2.toString(), SOURCE_2);
 
@@ -99,15 +98,12 @@ class DefaultConfigPersistenceTest {
 
   @Test
   void writeConfigWithJsonSchemaRef() throws JsonValidationException, IOException, ConfigNotFoundException {
-    final Schema schema = new Schema();
-
     final StandardSync standardSync = new StandardSync()
         .withName("sync")
         .withConnectionId(UUID_1)
         .withSourceId(UUID.randomUUID())
         .withDestinationId(UUID.randomUUID())
-        .withStatus(StandardSync.Status.ACTIVE)
-        .withSchema(schema);
+        .withStatus(StandardSync.Status.ACTIVE);
 
     configPersistence.writeConfig(ConfigSchema.STANDARD_SYNC, UUID_1.toString(), standardSync);
 
