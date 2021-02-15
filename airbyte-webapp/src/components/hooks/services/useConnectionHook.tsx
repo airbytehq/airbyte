@@ -130,9 +130,9 @@ const useConnection = () => {
         user_id: config.ui.workspaceId,
         action: "Set up connection",
         frequency: frequencyData?.text,
-        connector_source_definition: sourceDefinition?.name,
+        connector_source_definition: source?.sourceName,
         connector_source_definition_id: sourceDefinition?.sourceDefinitionId,
-        connector_destination: destinationDefinition?.name,
+        connector_destination_definition: destination?.destinationName,
         connector_destination_definition_id:
           destinationDefinition?.destinationDefinitionId
       });

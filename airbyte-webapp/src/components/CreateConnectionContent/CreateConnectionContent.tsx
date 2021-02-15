@@ -1,5 +1,6 @@
 import React, { Suspense, useState } from "react";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
 import LoadingSchema from "../LoadingSchema";
 import CreateConnection from "./components/CreateConnection";
@@ -15,6 +16,15 @@ import { useDiscoverSchema } from "../hooks/services/useSchemaHook";
 
 import config from "../../config";
 import { JobsLogItem } from "../JobItem";
+
+const SkipButton = styled.div`
+  margin-top: 6px;
+
+  & > button {
+    min-width: 239px;
+    margin-left: 9px;
+  }
+`;
 
 type IProps = {
   additionBottomControls?: React.ReactNode;
@@ -71,9 +81,9 @@ const CreateConnectionContent: React.FC<IProps> = ({
       user_id: config.ui.workspaceId,
       action: "Select a frequency",
       frequency: item?.text,
-      connector_source_definition: source?.name,
+      connector_source_definition: source?.sourceName,
       connector_source_definition_id: source?.sourceDefinitionId,
-      connector_destination_definition: destination?.name,
+      connector_destination_definition: destination?.destinationName,
       connector_destination_definition_id: destination?.destinationDefinitionId
     });
   };
@@ -89,7 +99,10 @@ const CreateConnectionContent: React.FC<IProps> = ({
   if (schemaErrorStatus) {
     return (
       <ContentCard title={<FormattedMessage id="onboarding.setConnection" />}>
-        <TryAfterErrorBlock onClick={onDiscoverSchema} />
+        <TryAfterErrorBlock
+          onClick={onDiscoverSchema}
+          additionControl={<SkipButton>{additionBottomControls}</SkipButton>}
+        />
         <JobsLogItem jobInfo={schemaErrorStatus?.response} />
       </ContentCard>
     );

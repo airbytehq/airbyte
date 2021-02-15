@@ -102,12 +102,7 @@ public abstract class AbstractJdbcDestination implements Destination {
   public abstract JsonNode toJdbcConfig(JsonNode config);
 
   @Override
-  public NamingConventionTransformer getNamingTransformer() {
-    return namingResolver;
-  }
-
-  @Override
-  public DestinationConsumer<AirbyteMessage> write(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
+  public DestinationConsumer<AirbyteMessage> write(JsonNode config, ConfiguredAirbyteCatalog catalog) {
     return JdbcBufferedConsumerFactory.create(getDatabase(config), sqlOperations, namingResolver, config, catalog);
   }
 

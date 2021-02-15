@@ -18,7 +18,7 @@
     "@hot-loader/react-dom": "16.13.0",
     "@papercups-io/chat-widget": "^1.1.5",
     "@papercups-io/storytime": "^1.0.6",
-    "@rest-hooks/legacy": "^1.0.12",
+    "@rest-hooks/legacy": "^2.0.1",
     "dayjs": "^1.8.35",
     "formik": "2.1.5",
     "lodash.at": "^4.6.0",
@@ -36,7 +36,7 @@
     "react-router-dom": "^5.1.2",
     "react-table": "^7.5.0",
     "react-widgets": "^4.5.0",
-    "rest-hooks": "^4.5.9",
+    "rest-hooks": "^5.0.3",
     "sanitize-html": "^2.1.2",
     "styled-components": "^5.1.1",
     "yup": "^0.28.1"

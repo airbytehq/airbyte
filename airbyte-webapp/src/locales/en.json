@@ -77,7 +77,7 @@
   "preferences.security": "Security updates",
   "preferences.anonymizeData": "Anonymize my usage data.",
   "preferences.featureUpdates": "Receive feature updates.",
-  "preferences.unsubcribeAnyTime": " You can unsubcribe any time.",
+  "preferences.unsubscribeAnyTime": " You can unsubscribe any time.",
   "preferences.securityUpdates": "Receive emails about security updates.",
 
   "onboarding.title": "Let’s set up your first connection.",
@@ -110,6 +110,7 @@
   "sources.settings": "Settings",
   "sources.syncHistory": "Sync history",
   "sources.syncNow": "Sync now",
+  "sources.syncingNow": "Syncing now!",
   "sources.source": "Source",
   "sources.noSync": "No sync yet",
   "sources.emptySchema": "Schema is empty",

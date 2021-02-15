@@ -33,7 +33,6 @@ import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
@@ -46,6 +45,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
@@ -84,11 +84,6 @@ public class CsvDestination implements Destination {
     return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
   }
 
-  @Override
-  public NamingConventionTransformer getNamingTransformer() {
-    return namingResolver;
-  }
-
   /**
    * @param config - csv destination config.
    * @param catalog - schema of the incoming messages.
@@ -104,8 +99,8 @@ public class CsvDestination implements Destination {
     final Map<String, WriteConfig> writeConfigs = new HashMap<>();
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getStream().getName();
-      final String tableName = getNamingTransformer().getRawTableName(streamName);
-      final String tmpTableName = getNamingTransformer().getTmpTableName(streamName);
+      final String tableName = namingResolver.getRawTableName(streamName);
+      final String tmpTableName = namingResolver.getTmpTableName(streamName);
       final Path tmpPath = destinationDir.resolve(tmpTableName + ".csv");
       final Path finalPath = destinationDir.resolve(tableName + ".csv");
       CSVFormat csvFormat = CSVFormat.DEFAULT.withHeader(JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
@@ -129,11 +124,18 @@ public class CsvDestination implements Destination {
    * @param config - csv config object
    * @return absolute path with the relative path appended to the local volume mount.
    */
-  private Path getDestinationPath(JsonNode config) {
-    final String destinationRelativePath = config.get(DESTINATION_PATH_FIELD).asText();
-    Preconditions.checkNotNull(destinationRelativePath);
+  protected Path getDestinationPath(JsonNode config) {
+    Path destinationPath = Paths.get(config.get(DESTINATION_PATH_FIELD).asText());
+    Preconditions.checkNotNull(destinationPath);
 
-    return Path.of(destinationRelativePath);
+    if (!destinationPath.startsWith("/local"))
+      destinationPath = Path.of("/local", destinationPath.toString());
+    final Path normalizePath = destinationPath.normalize();
+    if (!normalizePath.startsWith("/local")) {
+      throw new IllegalArgumentException("Destination file should be inside the /local directory");
+    }
+
+    return destinationPath;
   }
 
   /**
@@ -189,16 +191,23 @@ public class CsvDestination implements Destination {
         }
       }
       // do not persist the data, if there are any failures.
-      if (!hasFailed) {
+      try {
+        if (!hasFailed) {
+          for (final WriteConfig writeConfig : writeConfigs.values()) {
+            Files.move(writeConfig.getTmpPath(), writeConfig.getFinalPath(), StandardCopyOption.REPLACE_EXISTING);
+            LOGGER.info(String.format("File output: %s", writeConfig.getFinalPath()));
+          }
+        } else {
+          final String message = "Failed to output files in destination";
+          LOGGER.error(message);
+          throw new IOException(message);
+        }
+      } finally {
+        // clean up tmp files.
         for (final WriteConfig writeConfig : writeConfigs.values()) {
-          Files.move(writeConfig.getTmpPath(), writeConfig.getFinalPath(), StandardCopyOption.REPLACE_EXISTING);
+          Files.deleteIfExists(writeConfig.getTmpPath());
         }
       }
-      // clean up tmp files.
-      for (final WriteConfig writeConfig : writeConfigs.values()) {
-        Files.deleteIfExists(writeConfig.getTmpPath());
-      }
-
     }
 
   }
