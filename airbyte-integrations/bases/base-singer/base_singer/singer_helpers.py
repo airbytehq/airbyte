@@ -188,10 +188,10 @@ class SingerHelper:
                     try:
                         process.wait(timeout=60)
                     except subprocess.TimeoutExpired:
-                        raise Exception(f"Underlying command {shell_command} is hanging")
+                        raise Exception(f"Underlying command {process.args} is hanging")
 
                     if process.returncode != 0:
-                        raise Exception(f"Underlying command {shell_command} failed with exit code {p.returncode}")
+                        raise Exception(f"Underlying command {process.args} failed with exit code {process.returncode}")
 
                 elif key.fileobj is process.stdout:
                     out_json = to_json(line)
@@ -208,8 +208,7 @@ class SingerHelper:
     def _classify_and_convert_out_json_to_airbyte_message(out_json: Dict, transform) -> AirbyteMessage:
         transformed_json = transform(out_json)
         if transformed_json is not None:
-            if transformed_json.get("type") == "SCHEMA" or transformed_json.get(
-                    "type") == "ACTIVATE_VERSION":
+            if transformed_json.get("type") == "SCHEMA" or transformed_json.get("type") == "ACTIVATE_VERSION":
                 pass
             elif transformed_json.get("type") == "STATE":
                 out_record = AirbyteStateMessage(data=transformed_json["value"])
