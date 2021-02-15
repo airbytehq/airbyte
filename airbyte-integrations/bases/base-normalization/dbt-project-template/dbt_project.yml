@@ -29,14 +29,22 @@ clean-targets:         # directories to be removed by `dbt clean`
 
 quoting:
   database: true
-  schema: true
+# Temporarily disabling the behavior of the ExtendedNameTransformer on table/schema names, see (issue #1785)
+# all schemas should be unquoted
+  schema: false
   identifier: true
 
 # You can define configurations for models in the `source-paths` directory here.
 # Using these configurations, you can enable or disable models, change how they
 # are materialized, and more!
 models:
-  +materialized: table
+  airbyte_utils:
+    generated:
+      airbyte_views:
+        +materialized: view
+      airbyte_tables:
+        +materialized: table
+    +materialized: table
 
 vars:
   dbt_utils_dispatch_list: ['airbyte_utils']

@@ -197,6 +197,7 @@ REDSHIFT = {
     "INITIALLY",
     "INNER",
     "INTERSECT",
+    "INTERVAL",
     "INTO",
     "IS",
     "ISNULL",
