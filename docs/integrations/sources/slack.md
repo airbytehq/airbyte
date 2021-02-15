@@ -60,11 +60,12 @@ This tutorial assumes that you are an administrator on your slack instance. If y
 {% endhint %}
 
 1. Go to the [apps page](https://api.slack.com/apps)
-1. Click "Create New App"
-1. It will request a name and the slack instance you want to create the app for. Make sure you select the instance form which you want to pull data.
-1. Completing that form will take you to the "Basic Information" page for your app.
-1. Now we need to grant the correct permissions to the app. (This is the part that requires you to be an administrator). Go to "Permissions". Then under "Bot Token Scopes" click on "Add an OAuth Scope". We will now need to add the following scopes:
-    ```
+2. Click "Create New App"
+3. It will request a name and the slack instance you want to create the app for. Make sure you select the instance form which you want to pull data.
+4. Completing that form will take you to the "Basic Information" page for your app.
+5. Now we need to grant the correct permissions to the app. \(This is the part that requires you to be an administrator\). Go to "Permissions". Then under "Bot Token Scopes" click on "Add an OAuth Scope". We will now need to add the following scopes:
+
+   ```text
     channels:history
     channels:join
     channels:read
@@ -77,16 +78,21 @@ This tutorial assumes that you are an administrator on your slack instance. If y
     usergroups:read
     users.profile:read
     users:read
-    ```
-    This may look daunting, but the search functionality in the dropdown should make this part go pretty quick.
-1. Scroll to the top of the page and click "Install to Workspace". This will generate a "Bot User OAuth Access Token". We will need this in a moment.
-1. Now go to your slack instance. For any public channel go to info => more => add apps. In the search bar search for the name of your app. (If using the desktop version of slack, you may need to restart Slack for it to pick up the new app).
-![](../../.gitbook/assets/slack-add-apps.png)
-1. In airbyte, create a Slack source. The "Bot User OAuth Access Token" from the earlier should be used as the token.
-1. You can now pull data from your slack instance!
+   ```
 
-### Setup guide (Legacy API Key)
+    This may look daunting, but the search functionality in the dropdown should make this part go pretty quick.
+
+6. Scroll to the top of the page and click "Install to Workspace". This will generate a "Bot User OAuth Access Token". We will need this in a moment.
+7. Now go to your slack instance. For any public channel go to info =&gt; more =&gt; add apps. In the search bar search for the name of your app. \(If using the desktop version of slack, you may need to restart Slack for it to pick up the new app\).
+
+   ![](../../.gitbook/assets/slack-add-apps.png)
+
+8. In airbyte, create a Slack source. The "Bot User OAuth Access Token" from the earlier should be used as the token.
+9. You can now pull data from your slack instance!
+
+### Setup guide \(Legacy API Key\)
 
 You can no longer create "Legacy" API Keys, but if you already have one, you can use it with this source. Fill it into the API key section.
 
 We recommend creating a restricted, read-only key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access.
+
