@@ -28,7 +28,6 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 | :--- | :--- |
 | Full Refresh Sync | Yes |
 | Incremental Sync | Yes (except Conversations) |
-| Replicate Incremental Deletes | Coming soon |
 | SSL connection | Yes |
 
 ### Performance considerations
@@ -45,4 +44,3 @@ The Freshdesk connector should not run into Freshdesk API limitations under norm
 ### Setup guide
 
 Please read [How to find your API key](https://support.freshdesk.com/support/solutions/articles/215517).
-
