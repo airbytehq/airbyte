@@ -17,6 +17,7 @@ import LabeledToggle from "../../LabeledToggle";
 import TextWithHTML from "../../TextWithHTML";
 import { useWidgetInfo } from "../uiWidgetContext";
 import ShowLoadingMessage from "./ShowLoadingMessage";
+import Label from "../../Label";
 
 type IProps = {
   schema: any;
@@ -32,6 +33,32 @@ type IProps = {
 
 const FormItem = styled.div`
   margin-bottom: 27px;
+`;
+
+const FormItemGroupDropDown = styled(FormItem)`
+  margin-top: -17px;
+  background: ${({ theme }) => theme.whiteColor};
+  padding: 0 5px;
+  display: inline-block;
+  vertical-align: middle;
+  & > div {
+    min-width: 180px;
+    display: inline-block;
+  }
+`;
+
+const FormItemGroup = styled(FormItem)`
+  border: 2px solid ${({ theme }) => theme.greyColor20};
+  box-sizing: border-box;
+  border-radius: 8px;
+  padding: 0 20px;
+  margin-top: 41px;
+`;
+
+const GroupLabel = styled(Label)`
+  width: auto;
+  margin-right: 8px;
+  display: inline-block;
 `;
 
 const DropdownLabels = styled(ControlLabels)`
@@ -160,9 +187,12 @@ const FormContent: React.FC<IProps> = props => {
         const currentlySelectedCondition =
           widgetsInfo[formField.fieldName]?.selectedItem;
 
+        const label = formField.title || formField.fieldKey;
+
         return (
-          <>
-            <FormItem key={`form-field-${formField.fieldKey}`}>
+          <FormItemGroup key={`form-field-group-${formField.fieldKey}`}>
+            <FormItemGroupDropDown key={`form-field-${formField.fieldKey}`}>
+              {label ? <GroupLabel>{label}:</GroupLabel> : null}
               <DropDown
                 data={Object.keys(formField.conditions).map(dataItem => ({
                   text: dataItem,
@@ -175,9 +205,9 @@ const FormContent: React.FC<IProps> = props => {
                 }
                 value={currentlySelectedCondition}
               />
-            </FormItem>
+            </FormItemGroupDropDown>
             {renderFormMeta([formField.conditions[currentlySelectedCondition]])}
-          </>
+          </FormItemGroup>
         );
       }
 
