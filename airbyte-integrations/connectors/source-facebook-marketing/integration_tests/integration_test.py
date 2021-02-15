@@ -29,16 +29,26 @@ from base_python import AirbyteLogger
 from source_facebook_marketing.source import SourceFacebookMarketing
 
 config = json.loads(open("secrets/config.json", "r").read())
-insights_catalog = ConfiguredAirbyteCatalog.parse_raw(open("sample_files/configured_catalog_adsinsights.json", "r").read())
 
 
 class TestFacebookMarketingSource:
     def test_ad_insights_streams_outputs_records(self):
-        source = SourceFacebookMarketing()
-        output = source.read(AirbyteLogger(), config, insights_catalog)
+        catalog = self._read_catalog("sample_files/configured_catalog_adsinsights.json")
+        self._run_sync_test(config, catalog)
+
+    def test_ad_creatives_stream_outputs_records(self):
+        catalog = self._read_catalog("sample_files/configured_catalog_adcreatives.json")
+        self._run_sync_test(config, catalog)
+
+    @staticmethod
+    def _read_catalog(path):
+        return ConfiguredAirbyteCatalog.parse_raw(open(path, "r").read())
+
+    @staticmethod
+    def _run_sync_test(conf, catalog):
         records = []
         state = []
-        for message in output:
+        for message in SourceFacebookMarketing().read(AirbyteLogger(), conf, catalog):
             if message.type == Type.RECORD:
                 records.append(message)
             elif message.type == Type.STATE:
