@@ -206,9 +206,11 @@ class BigQueryDestinationTest {
   void testCheckFailure() {
     ((ObjectNode) config).put(BigQueryDestination.CONFIG_PROJECT_ID, "fake");
     final AirbyteConnectionStatus actual = new BigQueryDestination().check(config);
-    final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.FAILED)
-        .withMessage("Access Denied: Project fake: User does not have bigquery.datasets.create permission in project fake.");
-    assertEquals(expected, actual);
+    final String actualMessage = actual.getMessage();
+    LOGGER.info("Checking expected failure message:" + actualMessage);
+    assertTrue(actualMessage.contains("Access Denied:"));
+    final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage("");
+    assertEquals(expected, actual.withMessage(""));
   }
 
   @Test
