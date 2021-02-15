@@ -151,10 +151,8 @@ class StreamAPI(ABC):
 
 
 class IncrementalStreamAPI(StreamAPI, ABC):
-    @property
-    def state_pk(self):
-        """Name of the field associated with the state"""
-        return "updated_at"
+    state_pk = "updated_at"  # Name of the field associated with the state
+    state_filter = "updated_since"  # Name of filter that corresponds to the state
 
     @property
     def state(self):
@@ -171,7 +169,7 @@ class IncrementalStreamAPI(StreamAPI, ABC):
     def _state_params(self) -> Mapping[str, Any]:
         """Build query parameters responsible for current state"""
         if self._state:
-            return {"updated_since": self._state}
+            return {self.state_filter: self._state}
         return {}
 
     @property
@@ -200,25 +198,27 @@ class IncrementalStreamAPI(StreamAPI, ABC):
             self._state = max(latest_cursor, self._state) if self._state else latest_cursor
 
 
-class AgentsAPI(IncrementalStreamAPI):
+class AgentsAPI(StreamAPI):
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Iterate over entities"""
         yield from self.read(partial(self._api.get, url="agents"))
 
 
-class CompaniesAPI(IncrementalStreamAPI):
+class CompaniesAPI(StreamAPI):
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Iterate over entities"""
         yield from self.read(partial(self._api.get, url="companies"))
 
 
 class ContactsAPI(IncrementalStreamAPI):
+    state_filter = "_updated_since"
+
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Iterate over entities"""
         yield from self.read(partial(self._api.get, url="contacts"))
 
 
-class GroupsAPI(IncrementalStreamAPI):
+class GroupsAPI(StreamAPI):
     """Only users with admin privileges can access the following APIs."""
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
@@ -226,7 +226,7 @@ class GroupsAPI(IncrementalStreamAPI):
         yield from self.read(partial(self._api.get, url="groups"))
 
 
-class RolesAPI(IncrementalStreamAPI):
+class RolesAPI(StreamAPI):
     """Only users with admin privileges can access the following APIs."""
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
@@ -234,7 +234,7 @@ class RolesAPI(IncrementalStreamAPI):
         yield from self.read(partial(self._api.get, url="roles"))
 
 
-class SkillsAPI(IncrementalStreamAPI):
+class SkillsAPI(StreamAPI):
     """Only users with admin privileges can access the following APIs."""
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
@@ -242,7 +242,7 @@ class SkillsAPI(IncrementalStreamAPI):
         yield from self.read(partial(self._api.get, url="skills"))
 
 
-class SurveysAPI(IncrementalStreamAPI):
+class SurveysAPI(StreamAPI):
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Iterate over entities"""
         yield from self.read(partial(self._api.get, url="surveys"))
@@ -255,7 +255,7 @@ class TicketsAPI(IncrementalStreamAPI):
         yield from self.read(partial(self._api.get, url="tickets"), params=params)
 
 
-class TimeEntriesAPI(IncrementalStreamAPI):
+class TimeEntriesAPI(StreamAPI):
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Iterate over entities"""
         yield from self.read(partial(self._api.get, url="time_entries"))
@@ -271,7 +271,7 @@ class ConversationsAPI(StreamAPI):
             yield from self.read(partial(self._api.get, url=url))
 
 
-class SatisfactionRatingsAPI(IncrementalStreamAPI):
+class SatisfactionRatingsAPI(StreamAPI):
     """Surveys satisfaction replies"""
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
