@@ -85,7 +85,7 @@ const useFrequencyDropdownData = () => {
                   id: "form.every"
                 },
                 {
-                  value: item.text
+                  value: item.simpleText || item.text
                 }
               )
       })),
