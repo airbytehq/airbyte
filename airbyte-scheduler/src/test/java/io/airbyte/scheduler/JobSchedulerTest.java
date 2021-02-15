@@ -29,17 +29,17 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.DataType;
-import io.airbyte.config.Field;
-import io.airbyte.config.Schema;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.StandardSyncSchedule;
-import io.airbyte.config.Stream;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import io.airbyte.scheduler.job_factory.SyncJobFactory;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.validation.json.JsonValidationException;
@@ -57,22 +57,17 @@ class JobSchedulerTest {
   private static final long JOB_ID = 12L;
   private Job previousJob;
 
+  private static final String STREAM_NAME = "users";
+  private static final String FIELD_NAME = "id";
+
   static {
     final UUID sourceId = UUID.randomUUID();
 
     final UUID destinationId = UUID.randomUUID();
 
-    final Field field = new Field()
-        .withDataType(DataType.STRING)
-        .withName("id")
-        .withSelected(true);
-
-    final Stream stream = new Stream()
-        .withName("users")
-        .withFields(Lists.newArrayList(field))
-        .withSelected(true);
-
-    final Schema schema = new Schema().withStreams(Lists.newArrayList(stream));
+    final ConfiguredAirbyteStream stream = new ConfiguredAirbyteStream()
+        .withStream(CatalogHelpers.createAirbyteStream(STREAM_NAME, Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING)));
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(stream));
 
     final UUID connectionId = UUID.randomUUID();
 
@@ -80,7 +75,7 @@ class JobSchedulerTest {
         .withConnectionId(connectionId)
         .withName("presto to hudi")
         .withStatus(StandardSync.Status.ACTIVE)
-        .withSchema(schema)
+        .withCatalog(catalog)
         .withSourceId(sourceId)
         .withDestinationId(destinationId);
 
