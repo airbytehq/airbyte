@@ -28,7 +28,8 @@ import selectors
 import subprocess
 from dataclasses import dataclass
 from datetime import datetime
-from typing import DefaultDict, Dict, Generator, List, Optional
+from io import TextIOWrapper
+from typing import Any, DefaultDict, Dict, Iterator, List, Mapping, Optional, Tuple
 
 from airbyte_protocol import (
     AirbyteCatalog,
@@ -161,16 +162,22 @@ class SingerHelper:
         return Catalogs(singer_catalog=singer_catalog, airbyte_catalog=airbyte_catalog)
 
     @staticmethod
-    def read(logger, shell_command, is_message=(lambda x: True), transform=(lambda x: x)) -> Generator[AirbyteMessage, None, None]:
+    def read(logger, shell_command, is_message=(lambda x: True)) -> Iterator[AirbyteMessage]:
         with subprocess.Popen(shell_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True) as p:
-            for std_data in SingerHelper._read_std_rows(p, is_message, transform):
-                if isinstance(std_data, AirbyteMessage):
-                    yield std_data
+            for line, text_wrapper in SingerHelper._read_lines(p):
+                if text_wrapper is p.stdout:
+                    out_json = to_json(line)
+                    if out_json is not None and is_message(out_json):
+                        message_data = SingerHelper._airbyte_message_from_json(out_json)
+                        if message_data is not None:
+                            yield message_data
+                    else:
+                        logger.log_by_prefix(line, "INFO")
                 else:
-                    logger.log_by_prefix(*std_data)
+                    logger.log_by_prefix(line, "ERROR")
 
     @staticmethod
-    def _read_std_rows(process: subprocess.Popen, is_message, transform) -> Generator[AirbyteMessage, None, None]:
+    def _read_lines(process: subprocess.Popen) -> Iterator[Tuple[str, TextIOWrapper]]:
         sel = selectors.DefaultSelector()
         sel.register(process.stdout, selectors.EVENT_READ)
         sel.register(process.stderr, selectors.EVENT_READ)
@@ -192,38 +199,26 @@ class SingerHelper:
 
                     if process.returncode != 0:
                         raise Exception(f"Underlying command {process.args} failed with exit code {process.returncode}")
-
-                elif key.fileobj is process.stdout:
-                    out_json = to_json(line)
-                    if out_json is not None and is_message(out_json):
-                        message_data = SingerHelper._classify_and_convert_out_json_to_airbyte_message(out_json, transform)
-                        if message_data is not None:
-                            yield message_data
-                    else:
-                        yield line, "INFO"
                 else:
-                    yield line, "ERROR"
+                    yield line, key.fileobj
 
     @staticmethod
-    def _classify_and_convert_out_json_to_airbyte_message(out_json: Dict, transform) -> AirbyteMessage:
-        transformed_json = transform(out_json)
-        if transformed_json is not None:
-            if transformed_json.get("type") == "SCHEMA" or transformed_json.get("type") == "ACTIVATE_VERSION":
-                pass
-            elif transformed_json.get("type") == "STATE":
-                out_record = AirbyteStateMessage(data=transformed_json["value"])
-                out_message = AirbyteMessage(type=Type.STATE, state=out_record)
-                return transform(out_message)
-            else:
-                # todo: check that messages match the discovered schema
-                stream_name = transformed_json["stream"]
-                out_record = AirbyteRecordMessage(
-                    stream=stream_name,
-                    data=transformed_json["record"],
-                    emitted_at=int(datetime.now().timestamp()) * 1000,
-                )
-                out_message = AirbyteMessage(type=Type.RECORD, record=out_record)
-                return transform(out_message)
+    def _airbyte_message_from_json(transformed_json: Mapping[str, Any]) -> Optional[AirbyteMessage]:
+        if transformed_json is None or transformed_json.get("type") == "SCHEMA" or transformed_json.get("type") == "ACTIVATE_VERSION":
+            return None
+        elif transformed_json.get("type") == "STATE":
+            out_record = AirbyteStateMessage(data=transformed_json["value"])
+            out_message = AirbyteMessage(type=Type.STATE, state=out_record)
+        else:
+            # todo: check that messages match the discovered schema
+            stream_name = transformed_json["stream"]
+            out_record = AirbyteRecordMessage(
+                stream=stream_name,
+                data=transformed_json["record"],
+                emitted_at=int(datetime.now().timestamp()) * 1000,
+            )
+            out_message = AirbyteMessage(type=Type.RECORD, record=out_record)
+        return out_message
 
     @staticmethod
     def create_singer_catalog_with_selection(masked_airbyte_catalog: ConfiguredAirbyteCatalog, discovered_singer_catalog: object) -> str:
