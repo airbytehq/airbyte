@@ -126,7 +126,7 @@ class API:
             except FreshdeskRateLimited:
                 retry_after = int(response.headers["Retry-After"])
                 logger.info(f"Rate limit reached. Sleeping for {retry_after} seconds")
-                time.sleep(retry_after)
+                time.sleep(retry_after + 1)  # extra second to cover any fractions of second
         raise Exception("Max retry limit reached")
 
 
@@ -134,6 +134,7 @@ class StreamAPI(ABC):
     """Basic stream API that allows to iterate over entities"""
 
     result_return_limit = 100  # maximum value
+    maximum_page = 500  # see https://developers.freshdesk.com/api/#best_practices
 
     def __init__(self, api: API, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -146,16 +147,12 @@ class StreamAPI(ABC):
     def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
         """Read using getter"""
         params = params or {}
-        pagination_params = dict(per_page=self.result_return_limit, page=1)
-
-        while True:
-            batch = list(getter(params={**params, **pagination_params}))
+        for page in range(1, self.maximum_page):
+            batch = list(getter(params={**params, "per_page": self.result_return_limit, "page": page}))
             yield from batch
 
             if len(batch) < self.result_return_limit:
                 break
-
-            pagination_params["page"] += 1
 
 
 class IncrementalStreamAPI(StreamAPI, ABC):
