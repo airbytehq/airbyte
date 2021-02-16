@@ -80,7 +80,7 @@ This tutorial assumes that you are an administrator on your slack instance. If y
     users:read
    ```
 
-    This may look daunting, but the search functionality in the dropdown should make this part go pretty quick.
+   This may look daunting, but the search functionality in the dropdown should make this part go pretty quick.
 
 6. Scroll to the top of the page and click "Install to Workspace". This will generate a "Bot User OAuth Access Token". We will need this in a moment.
 7. Now go to your slack instance. For any public channel go to info =&gt; more =&gt; add apps. In the search bar search for the name of your app. \(If using the desktop version of slack, you may need to restart Slack for it to pick up the new app\).
