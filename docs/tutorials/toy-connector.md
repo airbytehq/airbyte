@@ -73,10 +73,7 @@ Switched to a new branch 'sherifnada/source-connector-tutorial'
 Airbyte provides a code generator which bootstraps the scaffolding for our connector. Let's use it by running:
 
 ```bash
-$ cd airbyte-integrations/connector-templates/generator
-# Install NPM from https://www.npmjs.com/get-npm if you don't have it
-$ npm install
-$ npm run generate
+$ ./tools/integrations/manage.sh scaffold
 ```
 
 We'll select the `generic` template and call the connector `stock-ticker-api`:

@@ -29,5 +29,12 @@ _get_docker_image_name() {
   _get_docker_label $1 io.airbyte.name
 }
 
-VERSION=$(cat .env | grep "^VERSION=" | cut -d = -f 2)
-SCRIPT_DIRECTORY=$(_script_directory)
+_to_gradle_path() {
+  local path=$1
+  local task=$2
+
+  echo ":$(echo "$path" | tr -s / :):${task}"
+}
+
+VERSION=$(cat .env | grep "^VERSION=" | cut -d = -f 2); export VERSION
+SCRIPT_DIRECTORY=$(_script_directory); export SCRIPT_DIRECTORY
