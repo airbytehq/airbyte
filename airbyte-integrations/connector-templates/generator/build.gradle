@@ -11,24 +11,26 @@ node {
 assemble.dependsOn(npmInstall)
 
 task generateSourcePythonScaffold {
-    def outputDir = 'airbyte-integrations/connectors/source-scaffold-source-python'
+    def name = 'source-python'
 
-    inputs.files rootProject.fileTree('airbyte-integrations/connector-templates/source-python')
+    def outputDir = "airbyte-integrations/connectors/source-scaffold-${name}"
 
-    doLast {
-        exec {
-            workingDir rootDir
-            commandLine 'rm', '-rf', outputDir
-        }
-        exec {
-            workingDir rootDir
-            commandLine './tools/integrations/manage.sh', 'scaffold', 'source-python', 'scaffold-source-python'
-        }
+    project(":${outputDir.replace('/', ':')}") {
+        build.dependsOn generateSourcePythonScaffold
+    }
+
+    inputs.files rootProject.fileTree("airbyte-integrations/connector-templates/${name}")
+
+    // Ensures it runs during the configuration phase
+    exec {
+        workingDir rootDir
+        commandLine 'rm', '-rf', outputDir
+    }
+    exec {
+        workingDir rootDir
+        commandLine './tools/integrations/manage.sh', 'scaffold', name, "scaffold-${name}"
     }
 
     outputs.dir rootProject.file(outputDir)
 }
 
-project(":airbyte-integrations:connectors:source-scaffold-source-python") {
-    build.dependsOn generateSourcePythonScaffold
-}
