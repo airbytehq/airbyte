@@ -24,8 +24,10 @@ SOFTWARE.
 
 import json
 import os
+import pkgutil
 
 from base_singer import AirbyteLogger, BaseSingerSource
+from jsonschema.validators import Draft4Validator
 from tap_google_analytics import GAClient
 
 
@@ -37,6 +39,71 @@ class GoogleAnalyticsSingerSource(BaseSingerSource):
     tap_cmd = "tap-google-analytics"
     tap_name = "Google Analytics API"
     api_error = Exception
+    _custom_reports_schema = {
+        "$schema": "http://json-schema.org/schema#",
+        "type": "array",
+        "items": {
+            "type": "object",
+            "properties": {
+                "name": {"type": "string"},
+                "dimensions": {
+                    "type": "array",
+                    "title": "dimensions",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "ga:browser",
+                            "ga:city",
+                            "ga:continent",
+                            "ga:country",
+                            "ga:date",
+                            "ga:deviceCategory",
+                            "ga:hostname",
+                            "ga:medium",
+                            "ga:metro",
+                            "ga:operatingSystem",
+                            "ga:pagePath",
+                            "ga:region",
+                            "ga:socialNetwork",
+                            "ga:source",
+                            "ga:subContinent",
+                        ],
+                    },
+                    "maxItems": 7,
+                    "uniqueItems": True,
+                },
+                "metrics": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "ga:14dayUsers",
+                            "ga:1dayUsers",
+                            "ga:28dayUsers",
+                            "ga:30dayUsers",
+                            "ga:7dayUsers",
+                            "ga:avgSessionDuration",
+                            "ga:avgTimeOnPage",
+                            "ga:bounceRate",
+                            "ga:entranceRate",
+                            "ga:entrances",
+                            "ga:exitRate",
+                            "ga:exits",
+                            "ga:newUsers",
+                            "ga:pageviews",
+                            "ga:pageviewsPerSession",
+                            "ga:sessions",
+                            "ga:sessionsPerUser",
+                            "ga:uniquePageviews",
+                            "ga:users",
+                        ],
+                    },
+                    "maxItems": 10,
+                    "uniqueItems": True,
+                },
+            },
+        },
+    }
 
     # can be overridden to change an input config
     def configure(self, raw_config: json, temp_dir: str) -> json:
@@ -44,14 +111,32 @@ class GoogleAnalyticsSingerSource(BaseSingerSource):
         with open(credentials, "w") as fh:
             fh.write(raw_config["credentials_json"])
         raw_config["key_file_location"] = credentials
+        if raw_config["custom_reports"].strip() and json.loads(raw_config["custom_reports"]):
+            custom_reports_data = json.loads(raw_config["custom_reports"])
+            if not Draft4Validator(self._custom_reports_schema).is_valid(custom_reports_data):
+                error_messages = []
+                for error in Draft4Validator(self._custom_reports_schema).iter_errors(custom_reports_data):
+                    error_messages.append(error.message)
+                raise Exception("Schema not validate custom reports data with error(s):\n" + ";\n".join(error_messages))
+
+            report_definition = (
+                json.loads(pkgutil.get_data("tap_google_analytics", "defaults/default_report_definition.json")) + custom_reports_data
+            )
+            custom_reports = os.path.join(temp_dir, "custom_reports.json")
+            with open(custom_reports, "w") as file:
+                file.write(json.dumps(report_definition))
+            raw_config["reports"] = custom_reports
         return super().configure(raw_config, temp_dir)
 
     def transform_config(self, raw_config: json):
-        return {
+        config = {
             "key_file_location": raw_config["key_file_location"],
             "view_id": raw_config["view_id"],
             "start_date": raw_config["start_date"],
         }
+        if raw_config.get("reports"):
+            config["reports"] = raw_config["reports"]
+        return config
 
     def try_connect(self, logger: AirbyteLogger, config: json):
         with open(config["key_file_location"], "r") as file:

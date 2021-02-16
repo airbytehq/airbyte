@@ -20,6 +20,10 @@
         "type": "string",
         "description": "A date in the format YYYY-MM-DDT00:00:00Z.",
         "examples": ["2020-06-01T00:00:00Z"]
+      },
+      "custom_reports": {
+        "type": "string",
+        "description": "You can generate a JSON to receive custom reports from the GA. Check out the <a href=\"https://docs.airbyte.io/integrations/sources/googleanalytics\">docs</a> to get more information about this field."
       }
     }
   }

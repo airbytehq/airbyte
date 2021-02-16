@@ -18,6 +18,7 @@ This Google Analytics source wraps the [Pipelinewise Singer Google Analytics Tap
 * `weekly_active_users`
 * `daily_active_users`
 * `devices`
+* `custom_streams`
 
 Please reach out to us on Slack or [create an issue](https://github.com/airbytehq/airbyte/issues) if you need to send custom Google Analytics report data with Airbyte.
 
@@ -56,3 +57,46 @@ Use the service account email address to [add a user](https://support.google.com
 1. Go to the [Google Analytics Reporting API dashboard](https://console.developers.google.com/apis/api/analyticsreporting.googleapis.com/overview) in the project for your service user. Enable the API for your account. You can set quotas and check usage.
 2. Go to the [Google Analytics API dashboard](https://console.developers.google.com/apis/api/analytics.googleapis.com/overview) in the project for your service user. Enable the API for your account.
 
+### How to generate JSON for custom_reports field
+
+You should create an array of objects as shown in the [example](https://github.com/transferwise/pipelinewise-tap-google-analytics//#optional-parameters) (under the reports section).
+
+To create a list of dimensions, you should use the values from the list below 
+(no more than 7 for one object, and the values in the list must be unique):
+* `ga:browser`
+* `ga:city`
+* `ga:continent`
+* `ga:country`
+* `ga:date`
+* `ga:deviceCategory`
+* `ga:hostname`
+* `ga:medium`
+* `ga:metro`
+* `ga:operatingSystem`
+* `ga:pagePath`
+* `ga:region`
+* `ga:socialNetwork`
+* `ga:source`
+* `ga:subContinent`
+
+To create a list of metrics, you should use the values from the list below 
+(no more than 10 for one object, and the values in the list must be unique):
+* `ga:14dayUsers`
+* `ga:1dayUsers`
+* `ga:28dayUsers`
+* `ga:30dayUsers`
+* `ga:7dayUsers`
+* `ga:avgSessionDuration`
+* `ga:avgTimeOnPage`
+* `ga:bounceRate`
+* `ga:entranceRate`
+* `ga:entrances`
+* `ga:exitRate`
+* `ga:exits`
+* `ga:newUsers`
+* `ga:pageviews`
+* `ga:pageviewsPerSession`
+* `ga:sessions`
+* `ga:sessionsPerUser`
+* `ga:uniquePageviews`
+* `ga:users`
