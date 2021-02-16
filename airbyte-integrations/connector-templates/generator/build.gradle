@@ -10,4 +10,14 @@ node {
 
 assemble.dependsOn(npmInstall)
 
-// TODO add gradle tasks which generate one module for each generator we support and tests that the resulting code is valid.
+task generateSourcePythonScaffold(type: Exec) {
+    def outputDir = 'airbyte-integrations/connectors/source-scaffold-source-python'
+
+    inputs.files rootProject.fileTree('airbyte-integrations/connector-templates/source-python')
+
+    workingDir rootDir
+
+    commandLine './tools/connectors/manage.sh', 'scaffold', 'source-python', 'scaffold-source-python'
+
+    outputs.dir rootProject.file(outputDir)
+}
