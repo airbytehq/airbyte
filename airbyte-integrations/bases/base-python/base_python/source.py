@@ -23,7 +23,7 @@ SOFTWARE.
 """
 
 from datetime import datetime
-from typing import Dict, Generator, Mapping, Type, MutableMapping, Any
+from typing import Dict, Generator, Mapping, Type, MutableMapping, Any, Iterator
 
 from airbyte_protocol import (
     AirbyteCatalog,
@@ -34,6 +34,7 @@ from airbyte_protocol import (
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     Status,
+    SyncMode,
 )
 from airbyte_protocol import Type as MessageType
 
@@ -74,15 +75,17 @@ class BaseSource(Source):
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
     def read(
-        self, logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: Dict[str, any]
-    ) -> Generator[AirbyteMessage, None, None]:
+        self, logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
+    ) -> Iterator[AirbyteMessage]:
+        state = state or {}
         client = self._get_client(config)
 
         logger.info(f"Starting syncing {self.name}")
         total_state = {**state}
         for configured_stream in catalog.streams:
             try:
-                yield from self._read_stream(client=client, configured_stream=configured_stream, state=total_state)
+                yield from self._read_stream(logger=logger, client=client, configured_stream=configured_stream, state=total_state)
+            # TODO: test stream fail
             except Exception:
                 logger.exception(f"Encountered an exception while reading stream {self.name}")
 
@@ -90,8 +93,9 @@ class BaseSource(Source):
 
     def _read_stream(self, logger: AirbyteLogger, client: BaseClient, configured_stream: ConfiguredAirbyteStream, state: MutableMapping[str, Any]):
         stream_name = configured_stream.stream.name
+        use_incremental = configured_stream.sync_mode == SyncMode.incremental and client.stream_has_state(stream_name)
 
-        if client.stream_has_state(stream_name) and state.get(stream_name):
+        if use_incremental and state.get(stream_name):
             logger.info(f"Set state of {stream_name} stream to {state.get(stream_name)}")
             client.set_stream_state(stream_name, state.get(stream_name))
 
@@ -101,7 +105,7 @@ class BaseSource(Source):
             message = AirbyteRecordMessage(stream=stream_name, data=record, emitted_at=now)
             yield AirbyteMessage(type=MessageType.RECORD, record=message)
 
-        if client.stream_has_state(stream_name):
+        if use_incremental and client.get_stream_state(stream_name):
             state[stream_name] = client.get_stream_state(stream_name)
             # output state object only together with other stream states
             yield AirbyteMessage(type=MessageType.STATE,

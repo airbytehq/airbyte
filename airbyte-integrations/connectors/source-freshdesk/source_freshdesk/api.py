@@ -101,17 +101,17 @@ class API:
     @staticmethod
     def _parse_and_handle_errors(req):
         try:
-            j = req.json()
+            body = req.json()
         except ValueError:
-            j = {}
+            body = {}
 
         error_message = "Freshdesk Request Failed"
-        if "errors" in j:
-            error_message = f"{j.get('description')}: {j['errors']}"
+        if "errors" in body:
+            error_message = f"{body.get('description')}: {j['errors']}"
         # API docs don't mention this clearly, but in the case of bad credentials the returned JSON will have a
         # "message"  field at the top level
-        elif "message" in j:
-            error_message = f"{j.get('code')}: {j['message']}"
+        elif "message" in body:
+            error_message = f"{body.get('code')}: {body['message']}"
 
         if req.status_code == 400:
             raise FreshdeskBadRequest(error_message or "Wrong input, check your data")
@@ -122,20 +122,21 @@ class API:
         elif req.status_code == 404:
             raise FreshdeskNotFound(error_message or "Resource not found")
         elif req.status_code == 429:
+            retry_after = req.headers.get("Retry-After")
             raise FreshdeskRateLimited(
-                "429 Rate Limit Exceeded: API rate-limit has been reached until {} seconds. See "
-                "http://freshdesk.com/api#ratelimit".format(req.headers.get("Retry-After"))
+                f"429 Rate Limit Exceeded: API rate-limit has been reached until {retry_after} seconds. See "
+                "http://freshdesk.com/api#ratelimit"
             )
         elif 500 <= req.status_code < 600:
-            raise FreshdeskServerError("{}: Server Error".format(req.status_code))
+            raise FreshdeskServerError(f"{req.status_code}: Server Error")
 
         # Catch any other errors
         try:
             req.raise_for_status()
-        except HTTPError as e:
-            raise FreshdeskError("{}: {}".format(e, j))
+        except HTTPError as err:
+            raise FreshdeskError(f"{err}: {body}")
 
-        return j
+        return body
 
     @backoff_policy
     def get(self, url: str, params: Mapping = None):
