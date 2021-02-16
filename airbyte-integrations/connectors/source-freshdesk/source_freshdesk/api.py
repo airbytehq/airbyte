@@ -25,7 +25,7 @@ SOFTWARE.
 import time
 from abc import ABC, abstractmethod
 from functools import partial
-from typing import Any, Callable, Iterator, Mapping, MutableMapping, Sequence
+from typing import Any, Callable, Iterator, Mapping, MutableMapping, Sequence, Optional
 
 import pendulum
 import requests
@@ -163,16 +163,20 @@ class IncrementalStreamAPI(StreamAPI, ABC):
     state_filter = "updated_since"  # Name of filter that corresponds to the state
 
     @property
-    def state(self):
-        return {self.state_pk: str(self._state)}
+    def state(self) -> Optional[Mapping[str, Any]]:
+        """Current state, if wasn't set return None"""
+        if self._state:
+            return {self.state_pk: str(self._state)}
+        return None
+
 
     @state.setter
-    def state(self, value):
+    def state(self, value: Mapping[str, Any]):
         self._state = pendulum.parse(value[self.state_pk])
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._state = None
+        self._state: Optional[Mapping[str, Any]] = None
 
     def _state_params(self) -> Mapping[str, Any]:
         """Build query parameters responsible for current state"""
@@ -206,13 +210,21 @@ class IncrementalStreamAPI(StreamAPI, ABC):
             self._state = max(latest_cursor, self._state) if self._state else latest_cursor
 
 
-class AgentsAPI(StreamAPI):
+class ClientIncrementalStreamAPI(IncrementalStreamAPI, ABC):
+    """Incremental stream that don't have native API support, i.e we filter on the client side only"""
+
+    def _state_params(self) -> Mapping[str, Any]:
+        """Build query parameters responsible for current state, override because API doesn't support this"""
+        return {}
+
+
+class AgentsAPI(ClientIncrementalStreamAPI):
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Iterate over entities"""
         yield from self.read(partial(self._api.get, url="agents"))
 
 
-class CompaniesAPI(StreamAPI):
+class CompaniesAPI(ClientIncrementalStreamAPI):
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Iterate over entities"""
         yield from self.read(partial(self._api.get, url="companies"))
@@ -226,7 +238,7 @@ class ContactsAPI(IncrementalStreamAPI):
         yield from self.read(partial(self._api.get, url="contacts"))
 
 
-class GroupsAPI(StreamAPI):
+class GroupsAPI(ClientIncrementalStreamAPI):
     """Only users with admin privileges can access the following APIs."""
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
@@ -234,7 +246,7 @@ class GroupsAPI(StreamAPI):
         yield from self.read(partial(self._api.get, url="groups"))
 
 
-class RolesAPI(StreamAPI):
+class RolesAPI(ClientIncrementalStreamAPI):
     """Only users with admin privileges can access the following APIs."""
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
@@ -242,7 +254,7 @@ class RolesAPI(StreamAPI):
         yield from self.read(partial(self._api.get, url="roles"))
 
 
-class SkillsAPI(StreamAPI):
+class SkillsAPI(ClientIncrementalStreamAPI):
     """Only users with admin privileges can access the following APIs."""
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
@@ -250,7 +262,7 @@ class SkillsAPI(StreamAPI):
         yield from self.read(partial(self._api.get, url="skills"))
 
 
-class SurveysAPI(StreamAPI):
+class SurveysAPI(ClientIncrementalStreamAPI):
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Iterate over entities"""
         yield from self.read(partial(self._api.get, url="surveys"))
@@ -263,23 +275,26 @@ class TicketsAPI(IncrementalStreamAPI):
         yield from self.read(partial(self._api.get, url="tickets"), params=params)
 
 
-class TimeEntriesAPI(StreamAPI):
+class TimeEntriesAPI(ClientIncrementalStreamAPI):
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Iterate over entities"""
         yield from self.read(partial(self._api.get, url="time_entries"))
 
 
-class ConversationsAPI(StreamAPI):
+class ConversationsAPI(ClientIncrementalStreamAPI):
     """Notes and Replies"""
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Iterate over entities"""
-        for ticket in TicketsAPI(self._api).list():
+        tickets = TicketsAPI(self._api)
+        if self.state:
+            tickets.state = self.state
+        for ticket in tickets.list():
             url = f"tickets/{ticket['id']}/conversations"
             yield from self.read(partial(self._api.get, url=url))
 
 
-class SatisfactionRatingsAPI(StreamAPI):
+class SatisfactionRatingsAPI(ClientIncrementalStreamAPI):
     """Surveys satisfaction replies"""
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
