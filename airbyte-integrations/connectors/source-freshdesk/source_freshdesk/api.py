@@ -25,7 +25,7 @@ SOFTWARE.
 import time
 from abc import ABC, abstractmethod
 from functools import partial
-from typing import Any, Callable, Iterator, Mapping, MutableMapping, Sequence, Optional
+from typing import Any, Callable, Iterator, Mapping, MutableMapping, Optional, Sequence
 
 import pendulum
 import requests
