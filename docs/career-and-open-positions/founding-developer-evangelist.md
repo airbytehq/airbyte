@@ -33,7 +33,6 @@ This is a function-founding role: you'll have a large ownership over building ou
 * Meaningful social presence with engaged followers
 * Self-directed and work with minimal supervision.
 * Outstanding written and verbal communications skills with the ability to explain and translate complex technology concepts into simple and intuitive communications.
-* Ability to travel up to 40% of the time, once borders are re-opened 
 * You share [our values](../company-handbook/culture-and-values.md)
 
 ## **Location**
