@@ -30,7 +30,7 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=[],
+    install_requires=["airbyte-protocol"],
     package_data={"": ["*.json"]},
     setup_requires=["pytest-runner"],
     tests_require=["pytest"],
@@ -38,7 +38,7 @@ setup(
         # Dependencies required by the main package but not tests should go in main. Deps required by
         # integration tests but not the main package go in tests. Deps required by both should go in
         # install_requires.
-        "main": ["{{ tap_name }}", "airbyte-protocol", "base-singer", "base-python"],
+        "main": ["{{ tap_name }}", "base-singer", "base-python"],
         "tests": ["airbyte-python-test", "pytest"],
     },
 )
