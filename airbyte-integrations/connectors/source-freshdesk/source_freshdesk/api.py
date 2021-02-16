@@ -22,78 +22,31 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import time
-import sys
 from abc import ABC, abstractmethod
 from functools import partial
 from typing import Any, Callable, Iterator, Mapping, MutableMapping, Optional, Sequence
 
-import backoff as backoff
 import pendulum
 import requests
 from base_python.entrypoint import logger  # FIXME (Eugene K): use standard logger
 from requests import HTTPError
-
-
-class FreshdeskError(HTTPError):
-    """
-    Base error class.
-    Subclassing HTTPError to avoid breaking existing code that expects only HTTPErrors.
-    """
-
-
-class FreshdeskBadRequest(FreshdeskError):
-    """Most 40X and 501 status codes"""
-
-
-class FreshdeskUnauthorized(FreshdeskError):
-    """401 Unauthorized"""
-
-
-class FreshdeskAccessDenied(FreshdeskError):
-    """403 Forbidden"""
-
-
-class FreshdeskNotFound(FreshdeskError):
-    """404"""
-
-
-class FreshdeskRateLimited(FreshdeskError):
-    """429 Rate Limit Reached"""
-
-
-class FreshdeskServerError(FreshdeskError):
-    """50X errors"""
-
-
-def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
-    """Retry helper, log each attempt"""
-
-    def log_retry_attempt(details):
-        _, exc, _ = sys.exc_info()
-        logger.info(str(exc))
-        logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} more seconds then retrying...")
-
-    return backoff.on_exception(
-        backoff_type,
-        exception,
-        jitter=None,
-        on_backoff=log_retry_attempt,
-        **wait_gen_kwargs,
-    )
+from source_freshdesk.errors import FreshdeskBadRequest, FreshdeskUnauthorized, FreshdeskAccessDenied, FreshdeskNotFound, FreshdeskRateLimited, FreshdeskServerError, FreshdeskError
+from source_freshdesk.utils import retry_after_handler, retry_connection_handler
 
 
 class API:
-    backoff_policy = retry_pattern(backoff.expo, FreshdeskRateLimited, max_tries=5, factor=5)
 
-    def __init__(self, domain: str, api_key: str, verify: bool = True, proxies: MutableMapping[str, str] = None):
+    def __init__(self, domain: str, api_key: str, verify: bool = True, proxies: MutableMapping[str, Any] = None):
         """Basic HTTP interface to read from endpoints"""
         self._api_prefix = f"https://{domain.rstrip('/')}/api/v2/"
         self._session = requests.Session()
         self._session.auth = (api_key, "unused_with_api_key")
         self._session.verify = verify
         self._session.proxies = proxies
-        self._session.headers = {"Content-Type": "application/json"}
+        self._session.headers = {
+            "Content-Type": "application/json",
+            "User-Agent": "Airbyte",
+        }
 
         if domain.find("freshdesk.com") < 0:
             raise AttributeError("Freshdesk v2 API works only via Freshdesk domains and not via custom CNAMEs")
@@ -107,7 +60,7 @@ class API:
 
         error_message = "Freshdesk Request Failed"
         if "errors" in body:
-            error_message = f"{body.get('description')}: {j['errors']}"
+            error_message = f"{body.get('description')}: {body['errors']}"
         # API docs don't mention this clearly, but in the case of bad credentials the returned JSON will have a
         # "message"  field at the top level
         elif "message" in body:
@@ -124,8 +77,8 @@ class API:
         elif req.status_code == 429:
             retry_after = req.headers.get("Retry-After")
             raise FreshdeskRateLimited(
-                f"429 Rate Limit Exceeded: API rate-limit has been reached until {retry_after} seconds. See "
-                "http://freshdesk.com/api#ratelimit"
+                f"429 Rate Limit Exceeded: API rate-limit has been reached until {retry_after} seconds."
+                " See http://freshdesk.com/api#ratelimit"
             )
         elif 500 <= req.status_code < 600:
             raise FreshdeskServerError(f"{req.status_code}: Server Error")
@@ -138,19 +91,13 @@ class API:
 
         return body
 
-    @backoff_policy
+    @retry_connection_handler
+    @retry_after_handler
     def get(self, url: str, params: Mapping = None):
         """Wrapper around request.get() to use the API prefix. Returns a JSON response."""
-        for _ in range(10):
-            params = params or {}
-            response = self._session.get(self._api_prefix + url, params=params)
-            try:
-                return self._parse_and_handle_errors(response)
-            except FreshdeskRateLimited:
-                retry_after = int(response.headers["Retry-After"])
-                logger.info(f"Rate limit reached. Sleeping for {retry_after} seconds")
-                time.sleep(retry_after + 1)  # extra second to cover any fractions of second
-        raise Exception("Max retry limit reached")
+        params = params or {}
+        response = self._session.get(self._api_prefix + url, params=params)
+        return self._parse_and_handle_errors(response)
 
 
 class StreamAPI(ABC):
