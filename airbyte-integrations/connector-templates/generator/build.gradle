@@ -10,21 +10,13 @@ node {
 
 assemble.dependsOn(npmInstall)
 
-task generateSourcePythonScaffold {
-    def name = 'source-python'
-
+def addScaffoldTask(name) {
+    def taskName = "generate_${name}"
     def outputDir = "airbyte-integrations/connectors/source-scaffold-${name}"
 
-    project(":${outputDir.replace('/', ':')}") {
-        build.dependsOn generateSourcePythonScaffold
-    }
+    def task = tasks.create(taskName) {
+        inputs.files rootProject.fileTree("airbyte-integrations/connector-templates/${name}")
 
-    inputs.files rootProject.fileTree("airbyte-integrations/connector-templates/${name}")
-
-    // I would have preferred to exec during the configuration phase but unfortunately gradle can't cache and it causes the directory to be
-    // removed and add on every builds
-    // Having it exec during the execution phase causes the build to fail if the template changes. I think it is a good tradeoff
-    doLast {
         exec {
             workingDir rootDir
             commandLine 'rm', '-rf', outputDir
@@ -33,7 +25,15 @@ task generateSourcePythonScaffold {
             workingDir rootDir
             commandLine './tools/integrations/manage.sh', 'scaffold', name, "scaffold-${name}"
         }
+
+        outputs.dir rootProject.file(outputDir)
+
     }
 
-    outputs.dir rootProject.file(outputDir)
+    project(":${outputDir.replace('/', ':')}") {
+        build.dependsOn task
+    }
 }
+
+addScaffoldTask('source-python')
+addScaffoldTask('source-python-singer')
