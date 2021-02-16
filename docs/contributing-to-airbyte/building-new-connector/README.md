@@ -36,7 +36,9 @@ If your language/framework is not listed above, we have a minimal generic templa
 Run the interactive generator:
 
 ```text
-./tools/integrations/manage.sh scaffold
+cd airbyte-integrations/connector-templates/generator
+npm install
+npm run generate
 ```
 
 and choose the relevant template. This will generate a new connector in the `airbyte-integrations/connectors/<your-connector>` directory.
