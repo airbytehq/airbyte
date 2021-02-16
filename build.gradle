@@ -218,7 +218,7 @@ task('generate') {
 task('format') {
     dependsOn generate
     dependsOn spotlessApply
-    dependsOn subprojects.collect { it.getTasksByName('blackFormat', true) }
+    dependsOn subprojects.collect { it.getTasksByName('airbytePythonFormat', true) }
 }
 
 // produce reproducible archives
