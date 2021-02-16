@@ -24,7 +24,7 @@ SOFTWARE.
 
 import copy
 from datetime import datetime
-from typing import Mapping, Type, MutableMapping, Any, Iterator
+from typing import Any, Iterator, Mapping, MutableMapping, Type
 
 from airbyte_protocol import (
     AirbyteCatalog,
@@ -92,7 +92,9 @@ class BaseSource(Source):
 
         logger.info(f"Finished syncing {self.name}")
 
-    def _read_stream(self, logger: AirbyteLogger, client: BaseClient, configured_stream: ConfiguredAirbyteStream, state: MutableMapping[str, Any]):
+    def _read_stream(
+        self, logger: AirbyteLogger, client: BaseClient, configured_stream: ConfiguredAirbyteStream, state: MutableMapping[str, Any]
+    ):
         stream_name = configured_stream.stream.name
         use_incremental = configured_stream.sync_mode == SyncMode.incremental and client.stream_has_state(stream_name)
 
@@ -109,5 +111,4 @@ class BaseSource(Source):
         if use_incremental and client.get_stream_state(stream_name):
             state[stream_name] = client.get_stream_state(stream_name)
             # output state object only together with other stream states
-            yield AirbyteMessage(type=MessageType.STATE,
-                                 state=AirbyteStateMessage(data=state))
+            yield AirbyteMessage(type=MessageType.STATE, state=AirbyteStateMessage(data=state))

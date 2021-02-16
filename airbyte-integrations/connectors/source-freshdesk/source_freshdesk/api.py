@@ -30,12 +30,19 @@ import pendulum
 import requests
 from base_python.entrypoint import logger  # FIXME (Eugene K): use standard logger
 from requests import HTTPError
-from source_freshdesk.errors import FreshdeskBadRequest, FreshdeskUnauthorized, FreshdeskAccessDenied, FreshdeskNotFound, FreshdeskRateLimited, FreshdeskServerError, FreshdeskError
+from source_freshdesk.errors import (
+    FreshdeskAccessDenied,
+    FreshdeskBadRequest,
+    FreshdeskError,
+    FreshdeskNotFound,
+    FreshdeskRateLimited,
+    FreshdeskServerError,
+    FreshdeskUnauthorized,
+)
 from source_freshdesk.utils import retry_after_handler, retry_connection_handler
 
 
 class API:
-
     def __init__(self, domain: str, api_key: str, verify: bool = True, proxies: MutableMapping[str, Any] = None):
         """Basic HTTP interface to read from endpoints"""
         self._api_prefix = f"https://{domain.rstrip('/')}/api/v2/"

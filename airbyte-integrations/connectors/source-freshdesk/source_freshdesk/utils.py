@@ -44,13 +44,13 @@ def retry_connection_handler(exception, **wait_gen_kwargs):
         exception,
         jitter=None,
         on_backoff=log_retry_attempt,
-        giveup=lambda e: e.response is not None and 400 <= e.response.status_code < 500
-        **wait_gen_kwargs,
+        giveup=lambda e: e.response is not None and 400 <= e.response.status_code < 500 ** wait_gen_kwargs,
     )
 
 
 def retry_after_handler(max_tries):
     """Retry helper when we hit the call limit, sleeps for specific duration"""
+
     def log_retry_attempt(_details):
         _, exc, _ = sys.exc_info()
         if isinstance(exc, requests.exceptions.RequestException):
