@@ -21,16 +21,19 @@ task generateSourcePythonScaffold {
 
     inputs.files rootProject.fileTree("airbyte-integrations/connector-templates/${name}")
 
-    // Ensures it runs during the configuration phase
-    exec {
-        workingDir rootDir
-        commandLine 'rm', '-rf', outputDir
-    }
-    exec {
-        workingDir rootDir
-        commandLine './tools/integrations/manage.sh', 'scaffold', name, "scaffold-${name}"
+    // I would have preferred to exec during the configuration phase but unfortunately gradle can't cache and it causes the directory to be
+    // removed and add on every builds
+    // Having it exec during the execution phase causes the build to fail if the template changes. I think it is a good tradeoff
+    doLast {
+        exec {
+            workingDir rootDir
+            commandLine 'rm', '-rf', outputDir
+        }
+        exec {
+            workingDir rootDir
+            commandLine './tools/integrations/manage.sh', 'scaffold', name, "scaffold-${name}"
+        }
     }
 
     outputs.dir rootProject.file(outputDir)
 }
-
