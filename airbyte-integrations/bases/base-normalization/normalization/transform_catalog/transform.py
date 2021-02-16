@@ -619,7 +619,7 @@ def cast_property_type(name: str, definition: dict, integration_type: str) -> Op
         )
     elif is_boolean(definition["type"]):
         return "{} as {}".format(
-            jinja_call(f"cast_to_boolean('{name}')"),
+            jinja_call(f"cast_to_boolean({quote_column(name, integration_type, in_jinja=True)})"),
             quote_column(name, integration_type),
         )
     elif is_string(definition["type"]):
