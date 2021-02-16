@@ -5,7 +5,7 @@
 The Freshdesk supports full refresh and incremental sync. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 There are two types of incremental sync:
 * server level (native) - when API supports filter on specific columns that Airbyte use to track changes (`updated_at`, `created_at`, etc)
-* client level - when API doesn't supports filter and Airbyte performs filtration on its side.
+* client level - when API doesn't support filter and Airbyte performs filtration on its side.
 
 ### Output schema
 
