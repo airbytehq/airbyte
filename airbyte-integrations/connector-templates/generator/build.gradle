@@ -10,7 +10,7 @@ node {
 
 assemble.dependsOn(npmInstall)
 
-def addScaffoldTask(name) {
+def addScaffoldTask(name, scaffoldParams=[]) {
     def taskName = "generate_${name}"
     def outputDir = "airbyte-integrations/connectors/source-scaffold-${name}"
 
@@ -23,7 +23,9 @@ def addScaffoldTask(name) {
         }
         exec {
             workingDir rootDir
-            commandLine './tools/integrations/manage.sh', 'scaffold', name, "scaffold-${name}"
+            def cmd = ['./tools/integrations/manage.sh', 'scaffold', name, "scaffold-${name}"]
+            cmd.addAll(scaffoldParams)
+            commandLine cmd
         }
 
         outputs.dir rootProject.file(outputDir)
@@ -36,4 +38,4 @@ def addScaffoldTask(name) {
 }
 
 addScaffoldTask('source-python')
-addScaffoldTask('source-python-singer')
+//addScaffoldTask('source-python-singer', ['tap-exchangeratesapi'])
