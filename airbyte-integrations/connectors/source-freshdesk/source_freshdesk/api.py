@@ -166,7 +166,6 @@ class IncrementalStreamAPI(StreamAPI, ABC):
             return {self.state_pk: str(self._state)}
         return None
 
-
     @state.setter
     def state(self, value: Mapping[str, Any]):
         self._state = pendulum.parse(value[self.state_pk])
