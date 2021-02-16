@@ -21,9 +21,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-
+import copy
 from datetime import datetime
-from typing import Dict, Generator, Mapping, Type, MutableMapping, Any, Iterator
+from typing import Mapping, Type, MutableMapping, Any, Iterator
 
 from airbyte_protocol import (
     AirbyteCatalog,
@@ -81,7 +81,7 @@ class BaseSource(Source):
         client = self._get_client(config)
 
         logger.info(f"Starting syncing {self.name}")
-        total_state = {**state}
+        total_state = copy.deepcopy(state)
         for configured_stream in catalog.streams:
             try:
                 yield from self._read_stream(logger=logger, client=client, configured_stream=configured_stream, state=total_state)
