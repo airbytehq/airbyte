@@ -44,7 +44,8 @@ def retry_connection_handler(exception, **wait_gen_kwargs):
         exception,
         jitter=None,
         on_backoff=log_retry_attempt,
-        giveup=lambda e: e.response is not None and 400 <= e.response.status_code < 500 ** wait_gen_kwargs,
+        giveup=lambda e: e.response is not None and 400 <= e.response.status_code < 500,
+        **wait_gen_kwargs,
     )
 
 
