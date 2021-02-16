@@ -219,6 +219,7 @@ task('format') {
     dependsOn generate
     dependsOn spotlessApply
     dependsOn subprojects.collect { it.getTasksByName('blackFormat', true) }
+    dependsOn subprojects.collect { it.getTasksByName('isortFormat', true) }
 }
 
 // produce reproducible archives
