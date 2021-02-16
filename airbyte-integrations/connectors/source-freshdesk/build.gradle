@@ -19,3 +19,9 @@ airbyteStandardSourceTestFile {
 dependencies {
     implementation files(project(':airbyte-integrations:bases:base-python').airbyteDocker.outputs)
 }
+
+task("pythonIntegrationTests", type: PythonTask, dependsOn: installTestReqs) {
+    module = "pytest"
+    command = "-s integration_tests"
+}
+integrationTest.dependsOn("pythonIntegrationTests")
