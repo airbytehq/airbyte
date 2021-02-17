@@ -30,7 +30,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Callable, Dict, Generator, List, Mapping, Tuple
 
 import pkg_resources
-from airbyte_protocol import AirbyteStream, SyncMode
+from airbyte_protocol import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, SyncMode
 from jsonschema import RefResolver
 
 
@@ -186,3 +186,10 @@ class BaseClient(StreamStateMixin, ABC):
     @abstractmethod
     def health_check(self) -> Tuple[bool, str]:
         """Check if service is up and running"""
+
+
+def configured_catalog_from_client(client: BaseClient) -> ConfiguredAirbyteCatalog:
+    """Helper to generate configured catalog for testing"""
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStream(stream=stream) for stream in client.streams])
+
+    return catalog

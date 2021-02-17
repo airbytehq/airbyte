@@ -62,27 +62,5 @@
     "unique_external_id": {
       "type": ["integer", "null"]
     }
-  },
-  "required": [
-    "active",
-    "address",
-    "company_id",
-    "created_at",
-    "csat_rating",
-    "custom_fields",
-    "description",
-    "email",
-    "facebook_id",
-    "id",
-    "job_title",
-    "language",
-    "mobile",
-    "name",
-    "phone",
-    "preferred_source",
-    "time_zone",
-    "twitter_id",
-    "unique_external_id",
-    "updated_at"
-  ]
+  }
 }
