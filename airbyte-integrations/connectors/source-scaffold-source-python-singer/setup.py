@@ -25,12 +25,12 @@ SOFTWARE.
 from setuptools import find_packages, setup
 
 setup(
-    name="source_{{snakeCase name}}_singer",
-    description="Source implementation for {{titleCase name}}, built on the Singer tap implementation.",
+    name="source_scaffold_source_python_singer",
+    description="Source implementation for Scaffold Source Python, built on the Singer tap implementation.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=["{{ tap_name }}", "airbyte-protocol", "base-singer", "base-python"],
+    install_requires=["tap-exchangeratesapi", "airbyte-protocol", "base-singer", "base-python"],
     package_data={"": ["*.json"]},
     setup_requires=["pytest-runner"],
     tests_require=["pytest"],
