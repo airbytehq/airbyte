@@ -10,36 +10,34 @@ node {
 
 assemble.dependsOn(npmInstall)
 
-def addScaffoldTask(name, scaffoldParams=[]) {
-    def taskName = "generate_${name}"
+task testScaffoldTemplates
+
+def addScaffoldTemplateTask(name, scaffoldParams=[]) {
+    def taskName = "testScaffoldTemplate_${name}"
     def outputDir = "airbyte-integrations/connectors/source-scaffold-${name}"
 
-    def task = tasks.create(taskName) {
+   def task = tasks.create(taskName) {
         inputs.files rootProject.fileTree("airbyte-integrations/connector-templates/${name}")
 
-        exec {
-            workingDir rootDir
-            commandLine 'rm', '-rf', outputDir
-        }
-        exec {
-            workingDir rootDir
-            def cmd = ['./tools/integrations/manage.sh', 'scaffold', name, "scaffold-${name}"]
-            cmd.addAll(scaffoldParams)
-            commandLine cmd
+        doLast {
+            exec {
+                workingDir rootDir
+                commandLine 'rm', '-rf', outputDir
+            }
+            exec {
+                workingDir rootDir
+                def cmd = ['./tools/integrations/manage.sh', 'scaffold', name, "scaffold-${name}"]
+                cmd.addAll(scaffoldParams)
+                commandLine cmd
+            }
         }
 
         outputs.dir rootProject.file(outputDir)
-
     }
 
-    // When we only build core, connector projects don't exist, let's make sure we protect ourselves from it.
-    def scaffoldTestProjectPath = ":${outputDir.replace('/', ':')}"
-    if (findProject(scaffoldTestProjectPath) != null) {
-        project(scaffoldTestProjectPath) {
-            build.dependsOn task
-        }
-    }
+    testScaffoldTemplates.dependsOn task
 }
 
-addScaffoldTask('source-python')
-addScaffoldTask('source-python-singer', ['tap-exchangeratesapi'])
+addScaffoldTemplateTask('source-python')
+// TODO: enable Singer template testing
+//addScaffoldTask('source-python-singer', ['tap-exchangeratesapi'])
