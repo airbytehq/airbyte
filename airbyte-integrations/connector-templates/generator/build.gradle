@@ -38,4 +38,4 @@ def addScaffoldTask(name, scaffoldParams=[]) {
 }
 
 addScaffoldTask('source-python')
-//addScaffoldTask('source-python-singer', ['tap-exchangeratesapi'])
+addScaffoldTask('source-python-singer', ['tap-exchangeratesapi'])
