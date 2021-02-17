@@ -38,9 +38,9 @@ class SourceSlackSinger(SingerSource):
         return {
             "token": raw_config["token"],
             "start_date": raw_config["start_date"],
-            "private_channels": str(raw_config["private_channels"]),
-            "join_public_channels": str(raw_config["join_public_channels"]),
-            "exclude_archived": str(raw_config["exclude_archived"]),
+            "private_channels": False,
+            "join_public_channels": False,
+            "exclude_archived": True,
             "date_window_size": "7",
         }
 
