@@ -59,9 +59,9 @@ class API:
             raise AttributeError("Freshdesk v2 API works only via Freshdesk domains and not via custom CNAMEs")
 
     @staticmethod
-    def _parse_and_handle_errors(req):
+    def _parse_and_handle_errors(response):
         try:
-            body = req.json()
+            body = response.json()
         except ValueError:
             body = {}
 
@@ -73,33 +73,34 @@ class API:
         elif "message" in body:
             error_message = f"{body.get('code')}: {body['message']}"
 
-        if req.status_code == 400:
-            raise FreshdeskBadRequest(error_message or "Wrong input, check your data")
-        elif req.status_code == 401:
-            raise FreshdeskUnauthorized(error_message or "Invalid credentials")
-        elif req.status_code == 403:
-            raise FreshdeskAccessDenied(error_message or "You don't have enough permissions")
-        elif req.status_code == 404:
-            raise FreshdeskNotFound(error_message or "Resource not found")
-        elif req.status_code == 429:
-            retry_after = req.headers.get("Retry-After")
+        if response.status_code == 400:
+            raise FreshdeskBadRequest(error_message or "Wrong input, check your data", response=response)
+        elif response.status_code == 401:
+            raise FreshdeskUnauthorized(error_message or "Invalid credentials", response=response)
+        elif response.status_code == 403:
+            raise FreshdeskAccessDenied(error_message or "You don't have enough permissions", response=response)
+        elif response.status_code == 404:
+            raise FreshdeskNotFound(error_message or "Resource not found", response=response)
+        elif response.status_code == 429:
+            retry_after = response.headers.get("Retry-After")
             raise FreshdeskRateLimited(
                 f"429 Rate Limit Exceeded: API rate-limit has been reached until {retry_after} seconds."
-                " See http://freshdesk.com/api#ratelimit"
+                " See http://freshdesk.com/api#ratelimit",
+                response=response,
             )
-        elif 500 <= req.status_code < 600:
-            raise FreshdeskServerError(f"{req.status_code}: Server Error")
+        elif 500 <= response.status_code < 600:
+            raise FreshdeskServerError(f"{response.status_code}: Server Error", response=response)
 
         # Catch any other errors
         try:
-            req.raise_for_status()
+            response.raise_for_status()
         except HTTPError as err:
-            raise FreshdeskError(f"{err}: {body}")
+            raise FreshdeskError(f"{err}: {body}", response=response) from err
 
         return body
 
-    @retry_connection_handler
-    @retry_after_handler
+    @retry_connection_handler(max_tries=5, factor=5)
+    @retry_after_handler(max_tries=3)
     def get(self, url: str, params: Mapping = None):
         """Wrapper around request.get() to use the API prefix. Returns a JSON response."""
         params = params or {}

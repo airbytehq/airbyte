@@ -21,10 +21,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
+import json
 from pathlib import Path
 from typing import Mapping
 
-import json
 import pytest
 from source_freshdesk.client import Client
 
@@ -80,17 +81,3 @@ def test_client_ok(account_creds):
 
     assert alive
     assert not error
-
-
-def test_client_backoff_once(account_creds, requests_mock):
-    """Error once, check that we retry and not fail"""
-    responses = [
-        {"json": {"error": "limit reached"}, "status_code": 429, "headers": {"Retry-After": 0}},
-        {"json": {"status": "ok"}, "status_code": 200},
-    ]
-    requests_mock.register_uri("GET", "/api/v2/settings/helpdesk", responses)
-    client = Client(domain=account_creds["domain"], api_key=account_creds["api_key"])
-
-    result = client.settings()
-
-    assert result == {"status": "ok"}

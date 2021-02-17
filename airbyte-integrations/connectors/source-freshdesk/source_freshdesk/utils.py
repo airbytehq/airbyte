@@ -31,7 +31,7 @@ from base_python.entrypoint import logger
 from source_freshdesk.errors import FreshdeskRateLimited
 
 
-def retry_connection_handler(exception, **wait_gen_kwargs):
+def retry_connection_handler(**kwargs):
     """Retry helper, log each attempt"""
 
     def log_retry_attempt(details):
@@ -39,22 +39,25 @@ def retry_connection_handler(exception, **wait_gen_kwargs):
         logger.info(str(exc))
         logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} more seconds then retrying...")
 
+    def giveup_handler(exc):
+        return exc.response is not None and 400 <= exc.response.status_code < 500
+
     return backoff.on_exception(
         backoff.expo,
-        exception,
+        requests.exceptions.RequestException,
         jitter=None,
         on_backoff=log_retry_attempt,
-        giveup=lambda e: e.response is not None and 400 <= e.response.status_code < 500,
-        **wait_gen_kwargs,
+        giveup=giveup_handler,
+        **kwargs,
     )
 
 
-def retry_after_handler(max_tries):
+def retry_after_handler(**kwargs):
     """Retry helper when we hit the call limit, sleeps for specific duration"""
 
     def log_retry_attempt(_details):
         _, exc, _ = sys.exc_info()
-        if isinstance(exc, requests.exceptions.RequestException):
+        if isinstance(exc, FreshdeskRateLimited):
             retry_after = int(exc.response.headers["Retry-After"])
             logger.info(f"Rate limit reached. Sleeping for {retry_after} seconds")
             time.sleep(retry_after + 1)  # extra second to cover any fractions of second
@@ -63,10 +66,11 @@ def retry_after_handler(max_tries):
         logger.error("Max retry limit reached")
 
     return backoff.on_exception(
-        backoff.constant(0),
+        backoff.constant,
         FreshdeskRateLimited,
-        max_tries=max_tries,
         jitter=None,
         on_backoff=log_retry_attempt,
         on_giveup=log_giveup,
+        interval=0,  # skip waiting part, we will wait in on_backoff handler
+        **kwargs,
     )
