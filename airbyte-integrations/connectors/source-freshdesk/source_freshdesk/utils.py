@@ -55,7 +55,7 @@ def retry_connection_handler(**kwargs):
 def retry_after_handler(**kwargs):
     """Retry helper when we hit the call limit, sleeps for specific duration"""
 
-    def log_retry_attempt(_details):
+    def sleep_on_ratelimit(_details):
         _, exc, _ = sys.exc_info()
         if isinstance(exc, FreshdeskRateLimited):
             retry_after = int(exc.response.headers["Retry-After"])
@@ -69,7 +69,7 @@ def retry_after_handler(**kwargs):
         backoff.constant,
         FreshdeskRateLimited,
         jitter=None,
-        on_backoff=log_retry_attempt,
+        on_backoff=sleep_on_ratelimit,
         on_giveup=log_giveup,
         interval=0,  # skip waiting part, we will wait in on_backoff handler
         **kwargs,
