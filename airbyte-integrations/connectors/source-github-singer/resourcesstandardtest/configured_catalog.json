@@ -2,6 +2,677 @@
   "streams": [
     {
       "stream": {
+        "name": "assignees",
+        "json_schema": {
+          "type": ["null", "object"],
+          "additionalProperties": false,
+          "properties": {
+            "login": {
+              "type": ["null", "string"]
+            },
+            "id": {
+              "type": ["null", "integer"]
+            },
+            "url": {
+              "type": ["null", "string"]
+            },
+            "type": {
+              "type": ["null", "string"]
+            },
+            "_sdc_repository": {
+              "type": ["string"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false
+      }
+    },
+    {
+      "stream": {
+        "name": "reviews",
+        "json_schema": {
+          "type": ["null", "object"],
+          "additionalProperties": false,
+          "properties": {
+            "_sdc_repository": {
+              "type": ["string"]
+            },
+            "id": {
+              "type": ["null", "integer"]
+            },
+            "user": {
+              "type": ["null", "object"],
+              "additionalProperties": false,
+              "properties": {
+                "login": {
+                  "type": ["null", "string"]
+                },
+                "id": {
+                  "type": ["null", "integer"]
+                }
+              }
+            },
+            "body": {
+              "type": ["null", "string"]
+            },
+            "state": {
+              "type": ["null", "string"]
+            },
+            "commit_id": {
+              "type": ["null", "string"]
+            },
+            "html_url": {
+              "type": ["null", "string"]
+            },
+            "pull_request_url": {
+              "type": ["null", "string"]
+            },
+            "submitted_at": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false
+      }
+    },
+    {
+      "stream": {
+        "name": "events",
+        "json_schema": {
+          "type": ["null", "object"],
+          "properties": {
+            "_sdc_repository": {
+              "type": ["null", "string"]
+            },
+            "actor": {
+              "type": ["null", "object"],
+              "properties": {
+                "avatar_url": {
+                  "type": ["null", "string"]
+                },
+                "display_login": {
+                  "type": ["null", "string"]
+                },
+                "gravatar_id": {
+                  "type": ["null", "string"]
+                },
+                "id": {
+                  "type": ["null", "number"]
+                },
+                "login": {
+                  "type": ["null", "string"]
+                },
+                "url": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "created_at": {
+              "type": ["null", "string"]
+            },
+            "id": {
+              "type": ["null", "number"]
+            },
+            "org": {
+              "type": ["null", "object"],
+              "properties": {
+                "avatar_url": {
+                  "type": ["null", "string"]
+                },
+                "gravatar_id": {
+                  "type": ["null", "string"]
+                },
+                "id": {
+                  "type": ["null", "number"]
+                },
+                "login": {
+                  "type": ["null", "string"]
+                },
+                "url": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "payload": {
+              "type": ["null", "object"],
+              "properties": {
+                "before": {
+                  "type": ["null", "string"]
+                },
+                "action": {
+                  "type": ["null", "string"]
+                },
+                "comment": {
+                  "type": ["null", "string"]
+                },
+                "issue": {
+                  "type": ["null", "string"]
+                },
+                "description": {
+                  "type": ["null", "string"]
+                },
+                "master_branch": {
+                  "type": ["null", "string"]
+                },
+                "pusher_type": {
+                  "type": ["null", "string"]
+                },
+                "ref": {
+                  "type": ["null", "string"]
+                },
+                "ref_type": {
+                  "type": ["null", "string"]
+                },
+                "commits": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "author": {
+                        "type": ["null", "object"],
+                        "properties": {
+                          "email": {
+                            "type": ["null", "string"]
+                          },
+                          "name": {
+                            "type": ["null", "string"]
+                          }
+                        }
+                      },
+                      "distinct": {
+                        "type": ["null", "boolean"]
+                      },
+                      "message": {
+                        "type": ["null", "string"]
+                      },
+                      "sha": {
+                        "type": ["null", "string"]
+                      },
+                      "url": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "distinct_size": {
+              "type": ["null", "number"]
+            },
+            "head": {
+              "type": ["null", "string"]
+            },
+            "push_id": {
+              "type": ["null", "number"]
+            },
+            "ref": {
+              "type": ["null", "string"]
+            },
+            "size": {
+              "type": ["null", "number"]
+            },
+            "public": {
+              "type": ["null", "boolean"]
+            },
+            "repo": {
+              "type": ["null", "object"],
+              "properties": {
+                "id": {
+                  "type": ["null", "number"]
+                },
+                "name": {
+                  "type": ["null", "string"]
+                },
+                "url": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "type": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true
+      },
+      "sync_mode": "incremental"
+    },
+    {
+      "stream": {
+        "name": "comments",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": ["null", "integer"]
+            },
+            "node_id": {
+              "type": ["null", "string"]
+            },
+            "url": {
+              "type": ["null", "string"]
+            },
+            "home_url": {
+              "type": ["null", "string"]
+            },
+            "body": {
+              "type": ["null", "string"]
+            },
+            "html_url": {
+              "type": ["null", "string"]
+            },
+            "issue_url": {
+              "type": ["null", "string"]
+            },
+            "author_association": {
+              "type": ["null", "string"]
+            },
+            "user": {
+              "type": ["null", "object"],
+              "additionalProperties": false,
+              "properties": {
+                "login": {
+                  "type": ["null", "string"]
+                },
+                "id": {
+                  "type": ["null", "integer"]
+                },
+                "node_id": {
+                  "type": ["null", "string"]
+                },
+                "avatar_url": {
+                  "type": ["null", "string"]
+                },
+                "gravatar_id": {
+                  "type": ["null", "string"]
+                },
+                "url": {
+                  "type": ["null", "string"]
+                },
+                "html_url": {
+                  "type": ["null", "string"]
+                },
+                "followers_url": {
+                  "type": ["null", "string"]
+                },
+                "following_url": {
+                  "type": ["null", "string"]
+                },
+                "gists_url": {
+                  "type": ["null", "string"]
+                },
+                "starred_url": {
+                  "type": ["null", "string"]
+                },
+                "subscriptions_url": {
+                  "type": ["null", "string"]
+                },
+                "organizations_url": {
+                  "type": ["null", "string"]
+                },
+                "repos_url": {
+                  "type": ["null", "string"]
+                },
+                "events_url": {
+                  "type": ["null", "string"]
+                },
+                "received_events_url": {
+                  "type": ["null", "string"]
+                },
+                "type": {
+                  "type": ["null", "string"]
+                },
+                "site_admin": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "created_at": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "updated_at": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "_sdc_repository": {
+              "type": ["string"]
+            }
+          }
+        },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true
+      },
+      "sync_mode": "incremental"
+    },
+    {
+      "stream": {
+        "name": "pull_requests",
+        "json_schema": {
+          "type": ["null", "object"],
+          "additionalProperties": false,
+          "properties": {
+            "_sdc_repository": {
+              "type": ["string"]
+            },
+            "id": {
+              "type": ["null", "string"]
+            },
+            "url": {
+              "type": ["null", "string"]
+            },
+            "number": {
+              "type": ["null", "integer"]
+            },
+            "state": {
+              "type": ["null", "string"]
+            },
+            "title": {
+              "type": ["null", "string"]
+            },
+            "body": {
+              "type": ["null", "string"]
+            },
+            "labels": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "object"],
+                "properties": {
+                  "id": {
+                    "type": ["null", "integer"]
+                  },
+                  "node_id": {
+                    "type": ["null", "string"]
+                  },
+                  "url": {
+                    "type": ["null", "string"]
+                  },
+                  "name": {
+                    "type": ["null", "string"]
+                  },
+                  "description": {
+                    "type": ["null", "string"]
+                  },
+                  "color": {
+                    "type": ["null", "string"]
+                  },
+                  "default": {
+                    "type": ["null", "boolean"]
+                  }
+                }
+              }
+            },
+            "user": {
+              "type": ["null", "object"],
+              "additionalProperties": false,
+              "properties": {
+                "login": {
+                  "type": ["null", "string"]
+                },
+                "id": {
+                  "type": ["null", "integer"]
+                }
+              }
+            },
+            "merged_at": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "closed_at": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "created_at": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "updated_at": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false
+      }
+    },
+    {
+      "stream": {
+        "name": "commit_comments",
+        "json_schema": {
+          "type": ["null", "object"],
+          "properties": {
+            "html_url": {
+              "type": ["null", "string"]
+            },
+            "url": {
+              "type": ["null", "string"]
+            },
+            "id": {
+              "type": ["null", "number"]
+            },
+            "node_id": {
+              "type": ["null", "string"]
+            },
+            "body": {
+              "type": ["null", "string"]
+            },
+            "path": {
+              "type": ["null", "string"]
+            },
+            "position": {
+              "type": ["null", "number"]
+            },
+            "line": {
+              "type": ["null", "number"]
+            },
+            "commit_id": {
+              "type": ["null", "string"]
+            },
+            "user": {
+              "type": ["null", "object"],
+              "properties": {
+                "login": {
+                  "type": ["null", "string"]
+                },
+                "id": {
+                  "type": ["null", "number"]
+                },
+                "node_id": {
+                  "type": ["null", "string"]
+                },
+                "avatar_url": {
+                  "type": ["null", "string"]
+                },
+                "gravatar_id": {
+                  "type": ["null", "string"]
+                },
+                "url": {
+                  "type": ["null", "string"]
+                },
+                "html_url": {
+                  "type": ["null", "string"]
+                },
+                "followers_url": {
+                  "type": ["null", "string"]
+                },
+                "following_url": {
+                  "type": ["null", "string"]
+                },
+                "gists_url": {
+                  "type": ["null", "string"]
+                },
+                "starred_url": {
+                  "type": ["null", "string"]
+                },
+                "subscriptions_url": {
+                  "type": ["null", "string"]
+                },
+                "organizations_url": {
+                  "type": ["null", "string"]
+                },
+                "repos_url": {
+                  "type": ["null", "string"]
+                },
+                "events_url": {
+                  "type": ["null", "string"]
+                },
+                "received_events_url": {
+                  "type": ["null", "string"]
+                },
+                "type": {
+                  "type": ["null", "string"]
+                },
+                "site_admin": {
+                  "type": ["null", "boolean"]
+                }
+              }
+            },
+            "created_at": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "updated_at": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            }
+          }
+        },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true
+      },
+      "sync_mode": "incremental"
+    },
+    {
+      "stream": {
+        "name": "issue_milestones",
+        "json_schema": {
+          "type": ["null", "object"],
+          "properties": {
+            "_sdc_repository": {
+              "type": ["null", "string"]
+            },
+            "url": {
+              "type": ["null", "string"]
+            },
+            "html_url": {
+              "type": ["null", "string"]
+            },
+            "labels_url": {
+              "type": ["null", "string"]
+            },
+            "id": {
+              "type": ["null", "number"]
+            },
+            "node_id": {
+              "type": ["null", "string"]
+            },
+            "number": {
+              "type": ["null", "number"]
+            },
+            "state": {
+              "type": ["null", "string"]
+            },
+            "title": {
+              "type": ["null", "string"]
+            },
+            "description": {
+              "type": ["null", "string"]
+            },
+            "creator": {
+              "type": ["null", "object"],
+              "properties": {
+                "login": {
+                  "type": ["null", "string"]
+                },
+                "id": {
+                  "type": ["null", "number"]
+                },
+                "node_id": {
+                  "type": ["null", "string"]
+                },
+                "avatar_url": {
+                  "type": ["null", "string"]
+                },
+                "gravatar_id": {
+                  "type": ["null", "string"]
+                },
+                "url": {
+                  "type": ["null", "string"]
+                },
+                "html_url": {
+                  "type": ["null", "string"]
+                },
+                "followers_url": {
+                  "type": ["null", "string"]
+                },
+                "following_url": {
+                  "type": ["null", "string"]
+                },
+                "gists_url": {
+                  "type": ["null", "string"]
+                },
+                "starred_url": {
+                  "type": ["null", "string"]
+                },
+                "subscriptions_url": {
+                  "type": ["null", "string"]
+                },
+                "organizations_url": {
+                  "type": ["null", "string"]
+                },
+                "repos_url": {
+                  "type": ["null", "string"]
+                },
+                "events_url": {
+                  "type": ["null", "string"]
+                },
+                "received_events_url": {
+                  "type": ["null", "string"]
+                },
+                "type": {
+                  "type": ["null", "string"]
+                },
+                "site_admin": {
+                  "type": ["null", "boolean"]
+                }
+              }
+            },
+            "open_issues": {
+              "type": ["null", "number"]
+            },
+            "closed_issues": {
+              "type": ["null", "number"]
+            },
+            "created_at": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "updated_at": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "closed_at": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "due_on": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            }
+          }
+        },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true
+      },
+      "sync_mode": "incremental"
+    },
+    {
+      "stream": {
         "name": "commits",
         "json_schema": {
           "type": ["null", "object"],
@@ -165,51 +836,71 @@
             }
           }
         },
-        "source_defined_cursor": true,
         "supported_sync_modes": ["incremental"],
-        "default_cursor_field": []
+        "source_defined_cursor": true
       },
-      "sync_mode": "incremental",
-      "cursor_field": []
+      "sync_mode": "incremental"
     },
     {
       "stream": {
-        "name": "issue_labels",
+        "name": "collaborators",
         "json_schema": {
           "type": ["null", "object"],
+          "additionalProperties": false,
           "properties": {
-            "_sdc_repository": {
+            "login": {
               "type": ["null", "string"]
             },
             "id": {
-              "type": ["null", "number"]
-            },
-            "node_id": {
-              "type": ["null", "string"]
+              "type": ["null", "integer"]
             },
             "url": {
               "type": ["null", "string"]
             },
-            "name": {
+            "type": {
               "type": ["null", "string"]
             },
-            "description": {
-              "type": ["null", "string"]
-            },
-            "color": {
-              "type": ["null", "string"]
-            },
-            "default": {
-              "type": ["null", "boolean"]
+            "_sdc_repository": {
+              "type": ["string"]
             }
           }
         },
-        "source_defined_cursor": false,
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false
+      }
+    },
+    {
+      "stream": {
+        "name": "stargazers",
+        "json_schema": {
+          "type": ["null", "object"],
+          "additionalProperties": false,
+          "properties": {
+            "_sdc_repository": {
+              "type": ["string"]
+            },
+            "user": {
+              "type": ["null", "object"],
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": ["null", "integer"]
+                }
+              }
+            },
+            "starred_at": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "user_id": {
+              "type": ["null", "integer"]
+            }
+          }
+        },
         "supported_sync_modes": ["incremental"],
-        "default_cursor_field": []
+        "source_defined_cursor": true
       },
-      "sync_mode": "incremental",
-      "cursor_field": []
+      "sync_mode": "incremental"
     },
     {
       "stream": {
@@ -258,20 +949,18 @@
             }
           }
         },
-        "source_defined_cursor": false,
         "supported_sync_modes": ["incremental"],
-        "default_cursor_field": []
+        "source_defined_cursor": true
       },
-      "sync_mode": "incremental",
-      "cursor_field": []
+      "sync_mode": "incremental"
     },
     {
       "stream": {
-        "name": "issue_milestones",
+        "name": "projects",
         "json_schema": {
           "type": ["null", "object"],
           "properties": {
-            "_sdc_repository": {
+            "owner_url": {
               "type": ["null", "string"]
             },
             "url": {
@@ -280,7 +969,7 @@
             "html_url": {
               "type": ["null", "string"]
             },
-            "labels_url": {
+            "columns_url": {
               "type": ["null", "string"]
             },
             "id": {
@@ -289,16 +978,16 @@
             "node_id": {
               "type": ["null", "string"]
             },
+            "name": {
+              "type": ["null", "string"]
+            },
+            "body": {
+              "type": ["null", "string"]
+            },
             "number": {
               "type": ["null", "number"]
             },
             "state": {
-              "type": ["null", "string"]
-            },
-            "title": {
-              "type": ["null", "string"]
-            },
-            "description": {
               "type": ["null", "string"]
             },
             "creator": {
@@ -309,62 +998,8 @@
                 },
                 "id": {
                   "type": ["null", "number"]
-                },
-                "node_id": {
-                  "type": ["null", "string"]
-                },
-                "avatar_url": {
-                  "type": ["null", "string"]
-                },
-                "gravatar_id": {
-                  "type": ["null", "string"]
-                },
-                "url": {
-                  "type": ["null", "string"]
-                },
-                "html_url": {
-                  "type": ["null", "string"]
-                },
-                "followers_url": {
-                  "type": ["null", "string"]
-                },
-                "following_url": {
-                  "type": ["null", "string"]
-                },
-                "gists_url": {
-                  "type": ["null", "string"]
-                },
-                "starred_url": {
-                  "type": ["null", "string"]
-                },
-                "subscriptions_url": {
-                  "type": ["null", "string"]
-                },
-                "organizations_url": {
-                  "type": ["null", "string"]
-                },
-                "repos_url": {
-                  "type": ["null", "string"]
-                },
-                "events_url": {
-                  "type": ["null", "string"]
-                },
-                "received_events_url": {
-                  "type": ["null", "string"]
-                },
-                "type": {
-                  "type": ["null", "string"]
-                },
-                "site_admin": {
-                  "type": ["null", "boolean"]
                 }
               }
-            },
-            "open_issues": {
-              "type": ["null", "number"]
-            },
-            "closed_issues": {
-              "type": ["null", "number"]
             },
             "created_at": {
               "type": ["null", "string"],
@@ -373,273 +1008,232 @@
             "updated_at": {
               "type": ["null", "string"],
               "format": "date-time"
-            },
-            "closed_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "due_on": {
-              "type": ["null", "string"],
-              "format": "date-time"
             }
           }
         },
-        "source_defined_cursor": false,
         "supported_sync_modes": ["incremental"],
-        "default_cursor_field": []
+        "source_defined_cursor": true
       },
-      "sync_mode": "incremental",
-      "cursor_field": []
+      "sync_mode": "incremental"
+    },
+    {
+      "stream": {
+        "name": "issue_labels",
+        "json_schema": {
+          "type": ["null", "object"],
+          "properties": {
+            "_sdc_repository": {
+              "type": ["null", "string"]
+            },
+            "id": {
+              "type": ["null", "number"]
+            },
+            "node_id": {
+              "type": ["null", "string"]
+            },
+            "url": {
+              "type": ["null", "string"]
+            },
+            "name": {
+              "type": ["null", "string"]
+            },
+            "description": {
+              "type": ["null", "string"]
+            },
+            "color": {
+              "type": ["null", "string"]
+            },
+            "default": {
+              "type": ["null", "boolean"]
+            }
+          }
+        },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true
+      },
+      "sync_mode": "incremental"
     },
     {
       "stream": {
         "name": "issues",
         "json_schema": {
-          "type": ["null", "object"],
           "properties": {
-            "_sdc_repository": {
+            "state": {
               "type": ["null", "string"]
             },
             "url": {
               "type": ["null", "string"]
             },
-            "project_url": {
+            "labels": {
+              "type": ["null", "array"],
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": ["null", "integer"]
+                  },
+                  "node_id": {
+                    "type": ["null", "string"]
+                  },
+                  "url": {
+                    "type": ["null", "string"]
+                  },
+                  "name": {
+                    "type": ["null", "string"]
+                  },
+                  "description": {
+                    "type": ["null", "string"]
+                  },
+                  "color": {
+                    "type": ["null", "string"]
+                  },
+                  "default": {
+                    "type": ["null", "boolean"]
+                  }
+                }
+              }
+            },
+            "repository_url": {
               "type": ["null", "string"]
             },
-            "cards_url": {
-              "type": ["null", "string"]
+            "number": {
+              "type": ["null", "integer"]
             },
-            "id": {
-              "type": ["null", "number"]
-            },
-            "node_id": {
-              "type": ["null", "string"]
-            },
-            "name": {
-              "type": ["null", "string"]
-            },
-            "created_at": {
+            "closed_at": {
               "type": ["null", "string"],
               "format": "date-time"
+            },
+            "labels_url": {
+              "type": ["null", "string"]
+            },
+            "title": {
+              "type": ["null", "string"]
+            },
+            "assignee": {
+              "type": ["null", "object"],
+              "properties": {}
             },
             "updated_at": {
               "type": ["null", "string"],
               "format": "date-time"
-            }
-          }
-        },
-        "source_defined_cursor": false,
-        "supported_sync_modes": ["incremental"],
-        "default_cursor_field": []
-      },
-      "sync_mode": "incremental",
-      "cursor_field": []
-    },
-    {
-      "stream": {
-        "name": "commit_comments",
-        "json_schema": {
-          "type": ["null", "object"],
-          "properties": {
+            },
             "html_url": {
               "type": ["null", "string"]
             },
-            "url": {
+            "author_association": {
               "type": ["null", "string"]
             },
-            "id": {
-              "type": ["null", "number"]
+            "locked": {
+              "type": ["null", "boolean"]
             },
-            "node_id": {
+            "events_url": {
               "type": ["null", "string"]
             },
-            "body": {
-              "type": ["null", "string"]
-            },
-            "path": {
-              "type": ["null", "string"]
-            },
-            "position": {
-              "type": ["null", "number"]
-            },
-            "line": {
-              "type": ["null", "number"]
-            },
-            "commit_id": {
-              "type": ["null", "string"]
-            },
-            "user": {
-              "type": ["null", "object"],
+            "pull_request": {
               "properties": {
-                "login": {
-                  "type": ["null", "string"]
-                },
-                "id": {
-                  "type": ["null", "number"]
-                },
-                "node_id": {
-                  "type": ["null", "string"]
-                },
-                "avatar_url": {
-                  "type": ["null", "string"]
-                },
-                "gravatar_id": {
-                  "type": ["null", "string"]
-                },
-                "url": {
+                "diff_url": {
                   "type": ["null", "string"]
                 },
                 "html_url": {
                   "type": ["null", "string"]
                 },
-                "followers_url": {
+                "patch_url": {
                   "type": ["null", "string"]
                 },
-                "following_url": {
+                "url": {
                   "type": ["null", "string"]
-                },
-                "gists_url": {
-                  "type": ["null", "string"]
-                },
-                "starred_url": {
-                  "type": ["null", "string"]
-                },
-                "subscriptions_url": {
-                  "type": ["null", "string"]
-                },
-                "organizations_url": {
-                  "type": ["null", "string"]
-                },
-                "repos_url": {
-                  "type": ["null", "string"]
-                },
-                "events_url": {
-                  "type": ["null", "string"]
-                },
-                "received_events_url": {
-                  "type": ["null", "string"]
-                },
-                "type": {
-                  "type": ["null", "string"]
-                },
-                "site_admin": {
-                  "type": ["null", "boolean"]
                 }
-              }
+              },
+              "type": ["null", "object"]
             },
-            "created_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "updated_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            }
-          }
-        },
-        "source_defined_cursor": false,
-        "supported_sync_modes": ["incremental"],
-        "default_cursor_field": []
-      },
-      "sync_mode": "incremental",
-      "cursor_field": []
-    },
-    {
-      "stream": {
-        "name": "assignees",
-        "json_schema": {
-          "type": ["null", "object"],
-          "additionalProperties": false,
-          "properties": {
-            "login": {
-              "type": ["null", "string"]
-            },
-            "id": {
-              "type": ["null", "integer"]
-            },
-            "url": {
-              "type": ["null", "string"]
-            },
-            "type": {
-              "type": ["null", "string"]
-            },
-            "_sdc_repository": {
-              "type": ["string"]
-            }
-          }
-        },
-        "source_defined_cursor": false,
-        "supported_sync_modes": ["full_refresh"],
-        "default_cursor_field": []
-      },
-      "sync_mode": "full_refresh",
-      "cursor_field": []
-    },
-    {
-      "stream": {
-        "name": "releases",
-        "json_schema": {
-          "type": ["null", "object"],
-          "additionalProperties": false,
-          "properties": {
-            "_sdc_repository": {
-              "type": ["string"]
-            },
-            "id": {
-              "type": ["null", "string"]
-            },
-            "url": {
-              "type": ["null", "string"]
-            },
-            "html_url": {
-              "type": ["null", "string"]
-            },
-            "target_commitish": {
-              "type": ["null", "string"]
-            },
-            "tag_name": {
-              "type": ["null", "string"]
-            },
-            "name": {
+            "node_id": {
               "type": ["null", "string"]
             },
             "body": {
               "type": ["null", "string"]
             },
-            "draft": {
-              "type": ["null", "boolean"]
-            },
-            "prerelease": {
-              "type": ["null", "boolean"]
-            },
-            "author": {
-              "type": ["null", "object"],
-              "additionalProperties": false,
-              "properties": {
-                "login": {
-                  "type": ["null", "string"]
-                },
-                "id": {
-                  "type": ["null", "integer"]
-                }
-              }
+            "comments": {
+              "type": ["null", "integer"]
             },
             "created_at": {
               "type": ["null", "string"],
               "format": "date-time"
             },
-            "published_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
+            "_sdc_repository": {
+              "type": ["string"]
+            },
+            "user": {
+              "properties": {
+                "repos_url": {
+                  "type": ["null", "string"]
+                },
+                "starred_url": {
+                  "type": ["null", "string"]
+                },
+                "url": {
+                  "type": ["null", "string"]
+                },
+                "received_events_url": {
+                  "type": ["null", "string"]
+                },
+                "site_admin": {
+                  "type": ["null", "boolean"]
+                },
+                "gravatar_id": {
+                  "type": ["null", "string"]
+                },
+                "following_url": {
+                  "type": ["null", "string"]
+                },
+                "avatar_url": {
+                  "type": ["null", "string"]
+                },
+                "events_url": {
+                  "type": ["null", "string"]
+                },
+                "id": {
+                  "type": ["null", "integer"]
+                },
+                "login": {
+                  "type": ["null", "string"]
+                },
+                "organizations_url": {
+                  "type": ["null", "string"]
+                },
+                "html_url": {
+                  "type": ["null", "string"]
+                },
+                "type": {
+                  "type": ["null", "string"]
+                },
+                "subscriptions_url": {
+                  "type": ["null", "string"]
+                },
+                "node_id": {
+                  "type": ["null", "string"]
+                },
+                "followers_url": {
+                  "type": ["null", "string"]
+                },
+                "gists_url": {
+                  "type": ["null", "string"]
+                }
+              },
+              "type": ["null", "object"]
+            },
+            "id": {
+              "type": ["null", "integer"]
+            },
+            "comments_url": {
+              "type": ["null", "string"]
             }
-          }
+          },
+          "type": ["null", "object"]
         },
-        "source_defined_cursor": false,
-        "supported_sync_modes": ["full_refresh"],
-        "default_cursor_field": []
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true
       },
-      "sync_mode": "full_refresh",
-      "cursor_field": []
+      "sync_mode": "incremental"
     },
     {
       "stream": {
@@ -1291,357 +1885,14 @@
             }
           }
         },
-        "source_defined_cursor": false,
         "supported_sync_modes": ["incremental"],
-        "default_cursor_field": []
+        "source_defined_cursor": true
       },
-      "sync_mode": "incremental",
-      "cursor_field": []
+      "sync_mode": "incremental"
     },
     {
       "stream": {
-        "name": "stargazers",
-        "json_schema": {
-          "type": ["null", "object"],
-          "additionalProperties": false,
-          "properties": {
-            "_sdc_repository": {
-              "type": ["string"]
-            },
-            "user": {
-              "type": ["null", "object"],
-              "additionalProperties": false,
-              "properties": {
-                "id": {
-                  "type": ["null", "integer"]
-                }
-              }
-            },
-            "starred_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "user_id": {
-              "type": ["null", "integer"]
-            }
-          }
-        },
-        "source_defined_cursor": false,
-        "supported_sync_modes": ["incremental"],
-        "default_cursor_field": []
-      },
-      "sync_mode": "incremental",
-      "cursor_field": []
-    },
-    {
-      "stream": {
-        "name": "comments",
-        "json_schema": {
-          "type": ["null", "object"],
-          "properties": {
-            "id": {
-              "type": ["null", "integer"]
-            },
-            "node_id": {
-              "type": ["null", "string"]
-            },
-            "url": {
-              "type": ["null", "string"]
-            },
-            "home_url": {
-              "type": ["null", "string"]
-            },
-            "body": {
-              "type": ["null", "string"]
-            },
-            "html_url": {
-              "type": ["null", "string"]
-            },
-            "issue_url": {
-              "type": ["null", "string"]
-            },
-            "author_association": {
-              "type": ["null", "string"]
-            },
-            "user": {
-              "type": ["null", "object"],
-              "additionalProperties": false,
-              "properties": {
-                "login": {
-                  "type": ["null", "string"]
-                },
-                "id": {
-                  "type": ["null", "integer"]
-                },
-                "node_id": {
-                  "type": ["null", "string"]
-                },
-                "avatar_url": {
-                  "type": ["null", "string"]
-                },
-                "gravatar_id": {
-                  "type": ["null", "string"]
-                },
-                "url": {
-                  "type": ["null", "string"]
-                },
-                "html_url": {
-                  "type": ["null", "string"]
-                },
-                "followers_url": {
-                  "type": ["null", "string"]
-                },
-                "following_url": {
-                  "type": ["null", "string"]
-                },
-                "gists_url": {
-                  "type": ["null", "string"]
-                },
-                "starred_url": {
-                  "type": ["null", "string"]
-                },
-                "subscriptions_url": {
-                  "type": ["null", "string"]
-                },
-                "organizations_url": {
-                  "type": ["null", "string"]
-                },
-                "repos_url": {
-                  "type": ["null", "string"]
-                },
-                "events_url": {
-                  "type": ["null", "string"]
-                },
-                "received_events_url": {
-                  "type": ["null", "string"]
-                },
-                "type": {
-                  "type": ["null", "string"]
-                },
-                "site_admin": {
-                  "type": ["null", "string"]
-                }
-              }
-            },
-            "created_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "updated_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "_sdc_repository": {
-              "type": ["string"]
-            }
-          }
-        },
-        "source_defined_cursor": false,
-        "supported_sync_modes": ["incremental"],
-        "default_cursor_field": []
-      },
-      "sync_mode": "incremental",
-      "cursor_field": []
-    },
-    {
-      "stream": {
-        "name": "events",
-        "json_schema": {
-          "type": ["null", "object"],
-          "properties": {
-            "_sdc_repository": {
-              "type": ["null", "string"]
-            },
-            "actor": {
-              "type": ["null", "object"],
-              "properties": {
-                "avatar_url": {
-                  "type": ["null", "string"]
-                },
-                "display_login": {
-                  "type": ["null", "string"]
-                },
-                "gravatar_id": {
-                  "type": ["null", "string"]
-                },
-                "id": {
-                  "type": ["null", "number"]
-                },
-                "login": {
-                  "type": ["null", "string"]
-                },
-                "url": {
-                  "type": ["null", "string"]
-                }
-              }
-            },
-            "created_at": {
-              "type": ["null", "string"]
-            },
-            "id": {
-              "type": ["null", "number"]
-            },
-            "org": {
-              "type": ["null", "object"],
-              "properties": {
-                "avatar_url": {
-                  "type": ["null", "string"]
-                },
-                "gravatar_id": {
-                  "type": ["null", "string"]
-                },
-                "id": {
-                  "type": ["null", "number"]
-                },
-                "login": {
-                  "type": ["null", "string"]
-                },
-                "url": {
-                  "type": ["null", "string"]
-                }
-              }
-            },
-            "payload": {
-              "type": ["null", "object"],
-              "properties": {
-                "before": {
-                  "type": ["null", "string"]
-                },
-                "action": {
-                  "type": ["null", "string"]
-                },
-                "comment": {
-                  "type": ["null", "string"]
-                },
-                "issue": {
-                  "type": ["null", "string"]
-                },
-                "description": {
-                  "type": ["null", "string"]
-                },
-                "master_branch": {
-                  "type": ["null", "string"]
-                },
-                "pusher_type": {
-                  "type": ["null", "string"]
-                },
-                "ref": {
-                  "type": ["null", "string"]
-                },
-                "ref_type": {
-                  "type": ["null", "string"]
-                },
-                "commits": {
-                  "type": ["null", "array"],
-                  "items": {
-                    "type": ["null", "object"],
-                    "properties": {
-                      "author": {
-                        "type": ["null", "object"],
-                        "properties": {
-                          "email": {
-                            "type": ["null", "string"]
-                          },
-                          "name": {
-                            "type": ["null", "string"]
-                          }
-                        }
-                      },
-                      "distinct": {
-                        "type": ["null", "boolean"]
-                      },
-                      "message": {
-                        "type": ["null", "string"]
-                      },
-                      "sha": {
-                        "type": ["null", "string"]
-                      },
-                      "url": {
-                        "type": ["null", "string"]
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "distinct_size": {
-              "type": ["null", "number"]
-            },
-            "head": {
-              "type": ["null", "string"]
-            },
-            "push_id": {
-              "type": ["null", "number"]
-            },
-            "ref": {
-              "type": ["null", "string"]
-            },
-            "size": {
-              "type": ["null", "number"]
-            },
-            "public": {
-              "type": ["null", "boolean"]
-            },
-            "repo": {
-              "type": ["null", "object"],
-              "properties": {
-                "id": {
-                  "type": ["null", "number"]
-                },
-                "name": {
-                  "type": ["null", "string"]
-                },
-                "url": {
-                  "type": ["null", "string"]
-                }
-              }
-            },
-            "type": {
-              "type": ["null", "string"]
-            }
-          }
-        },
-        "source_defined_cursor": false,
-        "supported_sync_modes": ["incremental"],
-        "default_cursor_field": []
-      },
-      "sync_mode": "incremental",
-      "cursor_field": []
-    },
-    {
-      "stream": {
-        "name": "collaborators",
-        "json_schema": {
-          "type": ["null", "object"],
-          "additionalProperties": false,
-          "properties": {
-            "login": {
-              "type": ["null", "string"]
-            },
-            "id": {
-              "type": ["null", "integer"]
-            },
-            "url": {
-              "type": ["null", "string"]
-            },
-            "type": {
-              "type": ["null", "string"]
-            },
-            "_sdc_repository": {
-              "type": ["string"]
-            }
-          }
-        },
-        "source_defined_cursor": false,
-        "supported_sync_modes": ["full_refresh"],
-        "default_cursor_field": []
-      },
-      "sync_mode": "full_refresh",
-      "cursor_field": []
-    },
-    {
-      "stream": {
-        "name": "pull_requests",
+        "name": "releases",
         "json_schema": {
           "type": ["null", "object"],
           "additionalProperties": false,
@@ -1650,96 +1901,6 @@
               "type": ["string"]
             },
             "id": {
-              "type": ["null", "string"]
-            },
-            "url": {
-              "type": ["null", "string"]
-            },
-            "number": {
-              "type": ["null", "integer"]
-            },
-            "state": {
-              "type": ["null", "string"]
-            },
-            "title": {
-              "type": ["null", "string"]
-            },
-            "body": {
-              "type": ["null", "string"]
-            },
-            "labels": {
-              "type": ["null", "array"],
-              "items": {
-                "type": ["null", "object"],
-                "properties": {
-                  "id": {
-                    "type": ["null", "integer"]
-                  },
-                  "node_id": {
-                    "type": ["null", "string"]
-                  },
-                  "url": {
-                    "type": ["null", "string"]
-                  },
-                  "name": {
-                    "type": ["null", "string"]
-                  },
-                  "description": {
-                    "type": ["null", "string"]
-                  },
-                  "color": {
-                    "type": ["null", "string"]
-                  },
-                  "default": {
-                    "type": ["null", "boolean"]
-                  }
-                }
-              }
-            },
-            "user": {
-              "type": ["null", "object"],
-              "additionalProperties": false,
-              "properties": {
-                "login": {
-                  "type": ["null", "string"]
-                },
-                "id": {
-                  "type": ["null", "integer"]
-                }
-              }
-            },
-            "merged_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "closed_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "created_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "updated_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            }
-          }
-        },
-        "source_defined_cursor": false,
-        "supported_sync_modes": ["full_refresh"],
-        "default_cursor_field": []
-      },
-      "sync_mode": "full_refresh",
-      "cursor_field": []
-    },
-    {
-      "stream": {
-        "name": "projects",
-        "json_schema": {
-          "type": ["null", "object"],
-          "properties": {
-            "owner_url": {
               "type": ["null", "string"]
             },
             "url": {
@@ -1748,13 +1909,10 @@
             "html_url": {
               "type": ["null", "string"]
             },
-            "columns_url": {
+            "target_commitish": {
               "type": ["null", "string"]
             },
-            "id": {
-              "type": ["null", "number"]
-            },
-            "node_id": {
+            "tag_name": {
               "type": ["null", "string"]
             },
             "name": {
@@ -1763,20 +1921,21 @@
             "body": {
               "type": ["null", "string"]
             },
-            "number": {
-              "type": ["null", "number"]
+            "draft": {
+              "type": ["null", "boolean"]
             },
-            "state": {
-              "type": ["null", "string"]
+            "prerelease": {
+              "type": ["null", "boolean"]
             },
-            "creator": {
+            "author": {
               "type": ["null", "object"],
+              "additionalProperties": false,
               "properties": {
                 "login": {
                   "type": ["null", "string"]
                 },
                 "id": {
-                  "type": ["null", "number"]
+                  "type": ["null", "integer"]
                 }
               }
             },
@@ -1784,18 +1943,15 @@
               "type": ["null", "string"],
               "format": "date-time"
             },
-            "updated_at": {
+            "published_at": {
               "type": ["null", "string"],
               "format": "date-time"
             }
           }
         },
-        "source_defined_cursor": false,
-        "supported_sync_modes": ["incremental"],
-        "default_cursor_field": []
-      },
-      "sync_mode": "incremental",
-      "cursor_field": []
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false
+      }
     }
   ]
 }
