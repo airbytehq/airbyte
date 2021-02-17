@@ -30,6 +30,8 @@ import io.airbyte.config.StandardTargetConfig;
 import java.util.concurrent.TimeUnit;
 
 import io.airbyte.workflows.AirbyteWorkflow;
+import io.temporal.api.common.v1.WorkflowExecution;
+import io.temporal.api.enums.v1.WorkflowIdReusePolicy;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowOptions;
 import io.temporal.serviceclient.WorkflowServiceStubs;
@@ -47,7 +49,7 @@ public class WorkerUtils {
           .setTarget("temporal:7233")
           .build();
 
-  private static final WorkflowServiceStubs TEMPORAL_SERVICE = WorkflowServiceStubs.newInstance(TEMPORAL_OPTIONS);
+  public static final WorkflowServiceStubs TEMPORAL_SERVICE = WorkflowServiceStubs.newInstance(TEMPORAL_OPTIONS);
 
   public static final WorkflowClient TEMPORAL_CLIENT = WorkflowClient.newInstance(TEMPORAL_SERVICE);
 
@@ -132,6 +134,7 @@ public class WorkerUtils {
     final WorkflowOptions options = WorkflowOptions.newBuilder()
             .setTaskQueue(AIRBYTE_WORKFLOW_QUEUE)
             .setWorkflowId(workflowId)
+            .setWorkflowIdReusePolicy(WorkflowIdReusePolicy.WORKFLOW_ID_REUSE_POLICY_REJECT_DUPLICATE)
             .build();
 
     return workflowClient.newWorkflowStub(AirbyteWorkflow.class, options);

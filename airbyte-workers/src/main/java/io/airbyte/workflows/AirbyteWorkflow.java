@@ -17,10 +17,10 @@ import java.util.Optional;
 public interface AirbyteWorkflow {
 
     @WorkflowMethod
-    ConnectorSpecification getSpec(String dockerImage) throws Exception;
+    ConnectorSpecification getSpec(String dockerImage);
 
     @WorkflowMethod
-    AirbyteCatalog discoverCatalog(String dockerImage, JsonNode connectionConfig) throws IOException;
+    AirbyteCatalog discoverCatalog(String dockerImage, JsonNode connectionConfig);
 
 }
 

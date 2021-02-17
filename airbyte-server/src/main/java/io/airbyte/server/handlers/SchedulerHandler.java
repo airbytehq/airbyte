@@ -25,6 +25,7 @@
 package io.airbyte.server.handlers;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.uber.m3.tally.NoopScope;
 import io.airbyte.api.model.CheckConnectionRead;
 import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.DestinationCoreConfig;
@@ -65,10 +66,17 @@ import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workflows.AirbyteWorkflow;
+import io.temporal.api.common.v1.WorkflowExecution;
+import io.temporal.api.history.v1.HistoryEvent;
+import io.temporal.api.workflow.v1.WorkflowExecutionInfo;
 import io.temporal.client.WorkflowClient;
+import io.temporal.internal.common.WorkflowExecutionUtils;
+import io.temporal.testing.TestWorkflowEnvironment;
+import io.temporal.workflow.Async;
 import io.temporal.workflow.Workflow;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.UUID;
 
 public class SchedulerHandler {
@@ -183,8 +191,23 @@ public class SchedulerHandler {
     final String dockerImage = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
 
     final AirbyteWorkflow workflow = WorkerUtils.getWorkflow(workflowClient, "discover-schema-" + dockerImage);
-    final AirbyteCatalog catalog = workflow.discoverCatalog(dockerImage, source.getConfiguration());
+    WorkflowExecution we = WorkflowClient.start(workflow::discoverCatalog, dockerImage, source.getConfiguration());
+
+    final AirbyteCatalog catalog = workflow.discoverCatalog(dockerImage, source.getConfiguration()); // can we use reusing connections instead of caching for specs?
     final Schema schema = AirbyteProtocolConverters.toSchema(catalog);
+
+    Iterator<HistoryEvent> history = WorkflowExecutionUtils.getHistory(WorkerUtils.TEMPORAL_SERVICE, "", we, new NoopScope());
+
+    System.out.println("we.getWorkflowId() = " + we.getWorkflowId());
+    System.out.println("we.getRunId() = " + we.getRunId());
+
+    // todo: reconstruct history
+    while (history.hasNext()) {
+      HistoryEvent he = history.next();
+      System.out.println("attempt number = " + he.getActivityTaskStartedEventAttributes().getAttempt());
+    }
+
+
     return  new SourceDiscoverSchemaRead()
             .jobInfo(JobConverter.getJobInfoRead(job))
             .schema(SchemaConverter.toApiSchema(schema));

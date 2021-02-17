@@ -40,12 +40,20 @@ public class AirbyteWorkflowImpl implements AirbyteWorkflow {
     private final DiscoverCatalogActivity discoverCatalogActivity = Workflow.newActivityStub(DiscoverCatalogActivity.class, OPTIONS);
 
     @Override
-    public ConnectorSpecification getSpec(String dockerImage) throws Exception {
-        return getSpecActivity.getSpec(dockerImage);
+    public ConnectorSpecification getSpec(String dockerImage) {
+        try {
+            return getSpecActivity.getSpec(dockerImage);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
-    public AirbyteCatalog discoverCatalog(String dockerImage, JsonNode connectionConfig) throws IOException {
-        return discoverCatalogActivity.discoverCatalog(dockerImage, connectionConfig);
+    public AirbyteCatalog discoverCatalog(String dockerImage, JsonNode connectionConfig) {
+        try {
+            return discoverCatalogActivity.discoverCatalog(dockerImage, connectionConfig);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
