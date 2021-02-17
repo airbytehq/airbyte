@@ -33,6 +33,8 @@ from .api import (
     ContactsAPI,
     ConversationsAPI,
     FreshdeskError,
+    FreshdeskNotFound,
+    FreshdeskUnauthorized,
     GroupsAPI,
     RolesAPI,
     SatisfactionRatingsAPI,
@@ -86,8 +88,11 @@ class Client(BaseClient):
 
         try:
             self.settings()
+        except (FreshdeskUnauthorized, FreshdeskNotFound):
+            alive = False
+            error_msg = "Invalid credentials"
         except FreshdeskError as error:
             alive = False
-            error_msg = str(error)
+            error_msg = repr(error)
 
         return alive, error_msg

@@ -22,31 +22,35 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from setuptools import find_packages, setup
+from requests import HTTPError
 
-MAIN_REQUIREMENTS = [
-    "airbyte-protocol",
-    "base-python",
-    "backoff==1.10.0",
-    "requests==2.25.1",
-    "pendulum==1.2.0",
-]
 
-TEST_REQUIREMENTS = [
-    "airbyte_python_test",
-    "pytest==6.1.2",
-    "requests_mock==1.8.0",
-]
+class FreshdeskError(HTTPError):
+    """
+    Base error class.
+    Subclassing HTTPError to avoid breaking existing code that expects only HTTPErrors.
+    """
 
-setup(
-    name="source_freshdesk",
-    description="Source implementation for Freshdesk.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    install_requires=MAIN_REQUIREMENTS,
-    package_data={"": ["*.json", "schemas/*.json"]},
-    extras_require={
-        "tests": TEST_REQUIREMENTS,
-    },
-)
+
+class FreshdeskBadRequest(FreshdeskError):
+    """Most 40X and 501 status codes"""
+
+
+class FreshdeskUnauthorized(FreshdeskError):
+    """401 Unauthorized"""
+
+
+class FreshdeskAccessDenied(FreshdeskError):
+    """403 Forbidden"""
+
+
+class FreshdeskNotFound(FreshdeskError):
+    """404"""
+
+
+class FreshdeskRateLimited(FreshdeskError):
+    """429 Rate Limit Reached"""
+
+
+class FreshdeskServerError(FreshdeskError):
+    """50X errors"""
