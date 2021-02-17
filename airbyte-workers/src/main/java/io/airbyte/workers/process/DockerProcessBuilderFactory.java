@@ -106,6 +106,11 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
     return new ProcessBuilder(cmd);
   }
 
+  @Override
+  public ProcessBuilder create(String jobId, int attempt, final Path jobRoot, final String imageName, final String... args) throws WorkerException {
+    return create(0, attempt, jobRoot, imageName, args);
+  }
+
   private Path rebasePath(final Path jobRoot) {
     final Path relativePath = workspaceRoot.relativize(jobRoot);
     return DATA_MOUNT_DESTINATION.resolve(relativePath);

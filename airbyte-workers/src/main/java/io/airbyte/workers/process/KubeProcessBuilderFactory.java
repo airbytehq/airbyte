@@ -53,6 +53,11 @@ public class KubeProcessBuilderFactory implements ProcessBuilderFactory {
 
   @Override
   public ProcessBuilder create(long jobId, int attempt, final Path jobRoot, final String imageName, final String... args) throws WorkerException {
+    return create(String.valueOf(jobId), attempt, jobRoot, imageName, args);
+  }
+
+    @Override
+  public ProcessBuilder create(String jobId, int attempt, final Path jobRoot, final String imageName, final String... args) throws WorkerException {
 
     try {
       final String template = MoreResources.readResource("kube_runner_template.yaml");
@@ -62,7 +67,7 @@ public class KubeProcessBuilderFactory implements ProcessBuilderFactory {
 
       ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
 
-      final String rendered = template.replaceAll("JOBID", String.valueOf(jobId))
+      final String rendered = template.replaceAll("JOBID", jobId)
           .replaceAll("ATTEMPTID", String.valueOf(attempt))
           .replaceAll("IMAGE", imageName)
           .replaceAll("SUFFIX", suffix)

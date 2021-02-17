@@ -45,7 +45,7 @@ import java.util.stream.Collectors;
 
 public class JobConverter {
 
-  private static final int LOG_TAIL_SIZE = 1000;
+  public static final int LOG_TAIL_SIZE = 1000;
 
   public static JobInfoRead getJobInfoRead(Job job) {
     return new JobInfoRead()

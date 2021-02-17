@@ -35,12 +35,19 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
 
   private final static Logger LOGGER = LoggerFactory.getLogger(AirbyteIntegrationLauncher.class);
 
-  private final long jobId;
+  private final String jobId;
   private final int attempt;
   private final String imageName;
   private final ProcessBuilderFactory pbf;
 
   public AirbyteIntegrationLauncher(long jobId, int attempt, final String imageName, final ProcessBuilderFactory pbf) {
+    this.jobId = String.valueOf(jobId);
+    this.attempt = attempt;
+    this.imageName = imageName;
+    this.pbf = pbf;
+  }
+
+  public AirbyteIntegrationLauncher(String jobId, int attempt, final String imageName, final ProcessBuilderFactory pbf) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.imageName = imageName;

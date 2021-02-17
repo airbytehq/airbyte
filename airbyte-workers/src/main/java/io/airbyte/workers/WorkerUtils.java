@@ -24,30 +24,29 @@
 
 package io.airbyte.workers;
 
+import static io.airbyte.workflows.AirbyteWorkflowImpl.AIRBYTE_WORKFLOW_QUEUE;
+
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardTapConfig;
 import io.airbyte.config.StandardTargetConfig;
-import java.util.concurrent.TimeUnit;
-
-import io.airbyte.workflows.AirbyteWorkflow;
-import io.temporal.api.common.v1.WorkflowExecution;
+import io.airbyte.workflows.DiscoverCatalogWorkflow;
+import io.airbyte.workflows.GetSpecWorkflow;
 import io.temporal.api.enums.v1.WorkflowIdReusePolicy;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowOptions;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.serviceclient.WorkflowServiceStubsOptions;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static io.airbyte.workflows.AirbyteWorkflowImpl.AIRBYTE_WORKFLOW_QUEUE;
 
 public class WorkerUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkerUtils.class);
 
   private static final WorkflowServiceStubsOptions TEMPORAL_OPTIONS = WorkflowServiceStubsOptions.newBuilder()
-          .setTarget("temporal:7233")
-          .build();
+      .setTarget("temporal:7233")
+      .build();
 
   public static final WorkflowServiceStubs TEMPORAL_SERVICE = WorkflowServiceStubs.newInstance(TEMPORAL_OPTIONS);
 
@@ -130,14 +129,24 @@ public class WorkerUtils {
         .withState(sync.getState());
   }
 
-  public static AirbyteWorkflow getWorkflow(WorkflowClient workflowClient, String workflowId) {
+  public static GetSpecWorkflow getSpecWorkflow(WorkflowClient workflowClient, String workflowId) {
     final WorkflowOptions options = WorkflowOptions.newBuilder()
             .setTaskQueue(AIRBYTE_WORKFLOW_QUEUE)
             .setWorkflowId(workflowId)
-            .setWorkflowIdReusePolicy(WorkflowIdReusePolicy.WORKFLOW_ID_REUSE_POLICY_REJECT_DUPLICATE)
+//        .setWorkflowIdReusePolicy(WorkflowIdReusePolicy.WORKFLOW_ID_REUSE_POLICY_UNSPECIFIED)
             .build();
 
-    return workflowClient.newWorkflowStub(AirbyteWorkflow.class, options);
+    return workflowClient.newWorkflowStub(GetSpecWorkflow.class, options);
+  }
+
+  public static DiscoverCatalogWorkflow discoverCatalogWorkflow(WorkflowClient workflowClient, String workflowId) {
+    final WorkflowOptions options = WorkflowOptions.newBuilder()
+            .setTaskQueue(AIRBYTE_WORKFLOW_QUEUE)
+            .setWorkflowId(workflowId)
+//        .setWorkflowIdReusePolicy(WorkflowIdReusePolicy.WORKFLOW_ID_REUSE_POLICY_UNSPECIFIED)
+            .build();
+
+    return workflowClient.newWorkflowStub(DiscoverCatalogWorkflow.class, options);
   }
 
 }

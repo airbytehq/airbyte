@@ -24,14 +24,15 @@
 
 package io.airbyte.scheduler;
 
+import static io.airbyte.workflows.AirbyteWorkflowImpl.*;
+
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.airbyte.activities.DiscoverCatalogActivityImpl;
 import io.airbyte.activities.GetSpecActivityImpl;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.concurrency.GracefulShutdownHandler;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
-import io.airbyte.config.JobGetSpecConfig;
-import io.airbyte.config.StandardGetSpecOutput;
 import io.airbyte.config.helpers.LogHelpers;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -41,11 +42,15 @@ import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
-import io.airbyte.workers.OutputAndStatus;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.KubeProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
+import io.airbyte.workflows.AirbyteWorkflowImpl;
+import io.airbyte.workflows.DiscoverCatalogWorkflowImpl;
+import io.airbyte.workflows.GetSpecWorkflowImpl;
+import io.temporal.worker.Worker;
+import io.temporal.worker.WorkerFactory;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -57,21 +62,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-
-import io.airbyte.workflows.AirbyteWorkflowImpl;
-import io.temporal.activity.ActivityInterface;
-import io.temporal.activity.ActivityOptions;
-import io.temporal.common.RetryOptions;
-import io.temporal.worker.Worker;
-import io.temporal.worker.WorkerFactory;
-import io.temporal.workflow.Workflow;
-import io.temporal.workflow.WorkflowInterface;
-import io.temporal.workflow.WorkflowMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
-
-import static io.airbyte.workflows.AirbyteWorkflowImpl.*;
 
 /**
  * The SchedulerApp is responsible for finding new scheduled jobs that need to be run and to launch
@@ -118,8 +111,8 @@ public class SchedulerApp {
 
     WorkerFactory factory = WorkerFactory.newInstance(WorkerUtils.TEMPORAL_CLIENT);
     Worker worker = factory.newWorker(AIRBYTE_WORKFLOW_QUEUE);
-    worker.registerWorkflowImplementationTypes(AirbyteWorkflowImpl.class);
-    worker.registerActivitiesImplementations(new GetSpecActivityImpl(workspaceRoot, pbf));
+    worker.registerWorkflowImplementationTypes(GetSpecWorkflowImpl.class, DiscoverCatalogWorkflowImpl.class);
+    worker.registerActivitiesImplementations(new GetSpecActivityImpl(workspaceRoot, pbf), new DiscoverCatalogActivityImpl(workspaceRoot, pbf));
     factory.start();
 
     Map<String, String> mdc = MDC.getCopyOfContextMap();
@@ -224,26 +217,30 @@ public class SchedulerApp {
     new SchedulerApp(workspaceRoot, pbf, jobPersistence, configRepository, jobCleaner).start();
   }
 
-//
-//  public static class InitiateMoneyTransfer implements Runnable{
-//    @Override
-//    public void run() {
-//      WorkflowOptions options = WorkflowOptions.newBuilder()
-//              .setTaskQueue(AIRBYTE_WORKFLOW_QUEUE)
-//              // A WorkflowId prevents this it from having duplicate instances, remove it to duplicate.
-//              .setWorkflowId("money-transfer-workflow")
-//              .build();
-//      // WorkflowStubs enable calls to methods as if the Workflow object is local, but actually perform an RPC.
-//      MoneyTransferWorkflow workflow = WorkerUtils.TEMPORAL_CLIENT.newWorkflowStub(MoneyTransferWorkflow.class, options);
-//      String referenceId = UUID.randomUUID().toString();
-//      String fromAccount = "001-001";
-//      String toAccount = "002-002";
-//      double amount = 18.74;
-//      // Asynchronous execution. This process will exit after making this call.
-//      WorkflowExecution we = WorkflowClient.start(workflow::transfer, fromAccount, toAccount, referenceId, amount);
-//      System.out.printf("\nTransfer of $%f from account %s to account %s is processing\n", amount, fromAccount, toAccount);
-//      System.out.printf("\nWorkflowID: %s RunID: %s", we.getWorkflowId(), we.getRunId());
-//    }
-//  }
+  //
+  // public static class InitiateMoneyTransfer implements Runnable{
+  // @Override
+  // public void run() {
+  // WorkflowOptions options = WorkflowOptions.newBuilder()
+  // .setTaskQueue(AIRBYTE_WORKFLOW_QUEUE)
+  // // A WorkflowId prevents this it from having duplicate instances, remove it to duplicate.
+  // .setWorkflowId("money-transfer-workflow")
+  // .build();
+  // // WorkflowStubs enable calls to methods as if the Workflow object is local, but actually perform
+  // an RPC.
+  // MoneyTransferWorkflow workflow =
+  // WorkerUtils.TEMPORAL_CLIENT.newWorkflowStub(MoneyTransferWorkflow.class, options);
+  // String referenceId = UUID.randomUUID().toString();
+  // String fromAccount = "001-001";
+  // String toAccount = "002-002";
+  // double amount = 18.74;
+  // // Asynchronous execution. This process will exit after making this call.
+  // WorkflowExecution we = WorkflowClient.start(workflow::transfer, fromAccount, toAccount,
+  // referenceId, amount);
+  // System.out.printf("\nTransfer of $%f from account %s to account %s is processing\n", amount,
+  // fromAccount, toAccount);
+  // System.out.printf("\nWorkflowID: %s RunID: %s", we.getWorkflowId(), we.getRunId());
+  // }
+  // }
 
 }

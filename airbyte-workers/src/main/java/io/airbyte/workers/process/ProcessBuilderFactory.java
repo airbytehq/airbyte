@@ -32,7 +32,13 @@ public interface ProcessBuilderFactory {
 
   ProcessBuilder create(long jobId, int attempt, final Path jobPath, final String imageName, final String... args) throws WorkerException;
 
+  ProcessBuilder create(String jobId, int attempt, final Path jobPath, final String imageName, final String... args) throws WorkerException;
+
   default ProcessBuilder create(long jobId, int attempt, final Path jobPath, final String imageName, final List<String> args) throws WorkerException {
+    return create(jobId, attempt, jobPath, imageName, args.toArray(new String[0]));
+  }
+
+  default ProcessBuilder create(String jobId, int attempt, final Path jobPath, final String imageName, final List<String> args) throws WorkerException {
     return create(jobId, attempt, jobPath, imageName, args.toArray(new String[0]));
   }
 

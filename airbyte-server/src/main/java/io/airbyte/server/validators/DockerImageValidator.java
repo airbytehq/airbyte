@@ -26,7 +26,6 @@ package io.airbyte.server.validators;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.docker.DockerUtils;
-import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.KnownException;
 import io.temporal.client.WorkflowClient;

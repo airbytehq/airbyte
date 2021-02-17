@@ -26,7 +26,7 @@ package io.airbyte.server.converters;
 
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.workers.WorkerUtils;
-import io.airbyte.workflows.AirbyteWorkflow;
+import io.airbyte.workflows.GetSpecWorkflow;
 import io.temporal.client.WorkflowClient;
 
 public class SpecFetcher {
@@ -39,10 +39,10 @@ public class SpecFetcher {
 
     public ConnectorSpecification execute(String dockerImage) {
         try {
-            final AirbyteWorkflow workflow = WorkerUtils.getWorkflow(workflowClient, "fetch-spec-" + dockerImage);
+            final GetSpecWorkflow workflow = WorkerUtils.getSpecWorkflow(workflowClient, "fetch-spec-" + dockerImage);
             return workflow.getSpec(dockerImage);
         } catch (Exception e) {
-            throw new IllegalArgumentException("no spec output found");
+            throw new IllegalArgumentException("no spec output found", e);
         }
     }
 

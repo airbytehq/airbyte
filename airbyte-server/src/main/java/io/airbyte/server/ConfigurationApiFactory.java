@@ -30,9 +30,8 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.client.CachingSchedulerJobClient;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.apis.ConfigurationApi;
-import java.util.Map;
-
 import io.temporal.client.WorkflowClient;
+import java.util.Map;
 import org.glassfish.hk2.api.Factory;
 import org.slf4j.MDC;
 

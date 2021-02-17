@@ -97,11 +97,10 @@ import io.airbyte.server.handlers.WorkspacesHandler;
 import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
+import io.temporal.client.WorkflowClient;
 import java.io.File;
 import java.io.IOException;
 import javax.validation.Valid;
-
-import io.temporal.client.WorkflowClient;
 import org.eclipse.jetty.http.HttpStatus;
 
 @javax.ws.rs.Path("/v1")

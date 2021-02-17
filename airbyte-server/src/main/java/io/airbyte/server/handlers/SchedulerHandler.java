@@ -26,6 +26,9 @@ package io.airbyte.server.handlers;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.uber.m3.tally.NoopScope;
+import io.airbyte.api.model.AttemptInfoRead;
+import io.airbyte.api.model.AttemptRead;
+import io.airbyte.api.model.AttemptStatus;
 import io.airbyte.api.model.CheckConnectionRead;
 import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.DestinationCoreConfig;
@@ -33,7 +36,11 @@ import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.DestinationDefinitionSpecificationRead;
 import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.DestinationUpdate;
+import io.airbyte.api.model.JobConfigType;
 import io.airbyte.api.model.JobInfoRead;
+import io.airbyte.api.model.JobRead;
+import io.airbyte.api.model.JobStatus;
+import io.airbyte.api.model.LogRead;
 import io.airbyte.api.model.SourceCoreConfig;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
 import io.airbyte.api.model.SourceDefinitionSpecificationRead;
@@ -42,8 +49,10 @@ import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceUpdate;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.commons.io.IOs;
 import io.airbyte.config.AirbyteProtocolConverters;
 import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.Schema;
 import io.airbyte.config.SourceConnection;
@@ -56,6 +65,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.scheduler.Attempt;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.server.converters.ConfigurationUpdate;
@@ -65,18 +75,19 @@ import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.WorkerUtils;
-import io.airbyte.workflows.AirbyteWorkflow;
+import io.airbyte.workflows.DiscoverCatalogWorkflow;
 import io.temporal.api.common.v1.WorkflowExecution;
+import io.temporal.api.enums.v1.WorkflowExecutionStatus;
+import io.temporal.api.history.v1.ActivityTaskCompletedEventAttributes;
+import io.temporal.api.history.v1.ActivityTaskStartedEventAttributes;
 import io.temporal.api.history.v1.HistoryEvent;
-import io.temporal.api.workflow.v1.WorkflowExecutionInfo;
 import io.temporal.client.WorkflowClient;
 import io.temporal.internal.common.WorkflowExecutionUtils;
-import io.temporal.testing.TestWorkflowEnvironment;
-import io.temporal.workflow.Async;
-import io.temporal.workflow.Workflow;
-
 import java.io.IOException;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.UUID;
 
 public class SchedulerHandler {
@@ -95,7 +106,7 @@ public class SchedulerHandler {
         new ConfigurationUpdate(configRepository, new SpecFetcher(workflowClient)),
         new JsonSchemaValidator(),
         new SpecFetcher(workflowClient),
-            workflowClient);
+        workflowClient);
   }
 
   @VisibleForTesting
@@ -190,27 +201,58 @@ public class SchedulerHandler {
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(source.getSourceDefinitionId());
     final String dockerImage = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
 
-    final AirbyteWorkflow workflow = WorkerUtils.getWorkflow(workflowClient, "discover-schema-" + dockerImage);
+    final DiscoverCatalogWorkflow workflow = WorkerUtils.discoverCatalogWorkflow(workflowClient, "discover-schema-" + dockerImage);
     WorkflowExecution we = WorkflowClient.start(workflow::discoverCatalog, dockerImage, source.getConfiguration());
 
-    final AirbyteCatalog catalog = workflow.discoverCatalog(dockerImage, source.getConfiguration()); // can we use reusing connections instead of caching for specs?
+    final AirbyteCatalog catalog = workflow.discoverCatalog(dockerImage, source.getConfiguration()); // can we use reusing connections instead of
+                                                                                                     // caching for specs?
     final Schema schema = AirbyteProtocolConverters.toSchema(catalog);
 
     Iterator<HistoryEvent> history = WorkflowExecutionUtils.getHistory(WorkerUtils.TEMPORAL_SERVICE, "", we, new NoopScope());
-
     System.out.println("we.getWorkflowId() = " + we.getWorkflowId());
     System.out.println("we.getRunId() = " + we.getRunId());
 
+    List<AttemptInfoRead> attemptInfoReads = new ArrayList<>();
+
+    HistoryEvent he = null;
     // todo: reconstruct history
     while (history.hasNext()) {
-      HistoryEvent he = history.next();
+      he = history.next();
+      ActivityTaskStartedEventAttributes attr = he.getActivityTaskStartedEventAttributes();
+      AttemptInfoRead attemptInfoRead = new AttemptInfoRead()
+              .attempt(new AttemptRead()
+                      .id((long) attr.getAttempt())
+                      .status(AttemptStatus.SUCCEEDED) // todo
+                      .createdAt(0L) // todo
+                      .updatedAt(0L) // todo
+                      .endedAt(0L) // todo
+                      .recordsSynced(0L) // todo
+                      .bytesSynced(0L)) // todo
+              .logs(new LogRead().logLines(IOs.getTail(JobConverter.LOG_TAIL_SIZE, Path.of("")))); // todo
+
+      attemptInfoReads.add(attemptInfoRead);
+
       System.out.println("attempt number = " + he.getActivityTaskStartedEventAttributes().getAttempt());
     }
 
+    // todo
+    WorkflowExecutionStatus closeStatus = WorkflowExecutionUtils.getCloseStatus(he);
+    JobStatus jobStatus = closeStatus.equals(WorkflowExecutionStatus.WORKFLOW_EXECUTION_STATUS_COMPLETED) ? JobStatus.SUCCEEDED : JobStatus.FAILED;
 
-    return  new SourceDiscoverSchemaRead()
-            .jobInfo(JobConverter.getJobInfoRead(job))
-            .schema(SchemaConverter.toApiSchema(schema));
+    JobRead jobRead = new JobRead()
+            .id(0L) // todo: need to change the type
+            .configId("configId") // todo:
+            .configType(JobConfigType.DISCOVER_SCHEMA)
+            .createdAt(0L) // todo
+            .updatedAt(0L) // todo
+            .status(jobStatus);
+
+    JobInfoRead jobInfoRead = new JobInfoRead().job(jobRead).attempts(attemptInfoReads);
+
+
+    return new SourceDiscoverSchemaRead()
+        .jobInfo(jobInfoRead)
+        .schema(SchemaConverter.toApiSchema(schema));
 
     // todo: handle error cases like discoverJobToOutput(job);
   }
