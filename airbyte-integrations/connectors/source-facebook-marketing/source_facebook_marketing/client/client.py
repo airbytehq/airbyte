@@ -32,7 +32,7 @@ from facebook_business import FacebookAdsApi
 from facebook_business.adobjects import user as fb_user
 from facebook_business.exceptions import FacebookRequestError
 
-from .api import AdCreativeAPI, AdsAPI, AdSetsAPI, CampaignAPI
+from .api import AdCreativeAPI, AdsAPI, AdSetsAPI, AdsInsightAPI, CampaignAPI
 from .common import FacebookAPIException
 
 
@@ -47,14 +47,14 @@ class Client(BaseClient):
             "adsets": AdSetsAPI(self),
             "ads": AdsAPI(self),
             "adcreatives": AdCreativeAPI(self),
-            # "ads_insights": AdsInsightAPI(self, start_date=self._start_date),
-            # "ads_insights_age_and_gender": AdsInsightAPI(self, start_date=self._start_date, breakdowns=["age", "gender"]),
-            # "ads_insights_country": AdsInsightAPI(self, start_date=self._start_date, breakdowns=["country"]),
-            # "ads_insights_region": AdsInsightAPI(self, start_date=self._start_date, breakdowns=["region"]),
-            # "ads_insights_dma": AdsInsightAPI(self, start_date=self._start_date, breakdowns=["dma"]),
-            # "ads_insights_platform_and_device": AdsInsightAPI(
-            #     self, start_date=self._start_date, breakdowns=["publisher_platform", "platform_position", "impression_device"]
-            # ),
+            "ads_insights": AdsInsightAPI(self, start_date=self._start_date),
+            "ads_insights_age_and_gender": AdsInsightAPI(self, start_date=self._start_date, breakdowns=["age", "gender"]),
+            "ads_insights_country": AdsInsightAPI(self, start_date=self._start_date, breakdowns=["country"]),
+            "ads_insights_region": AdsInsightAPI(self, start_date=self._start_date, breakdowns=["region"]),
+            "ads_insights_dma": AdsInsightAPI(self, start_date=self._start_date, breakdowns=["dma"]),
+            "ads_insights_platform_and_device": AdsInsightAPI(
+                self, start_date=self._start_date, breakdowns=["publisher_platform", "platform_position", "impression_device"]
+            ),
         }
         super().__init__()
 

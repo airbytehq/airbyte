@@ -9,7 +9,7 @@ import useConnection, {
 } from "../../../../../components/hooks/services/useConnectionHook";
 import DeleteBlock from "../../../../../components/DeleteBlock";
 import FrequencyForm from "../../../../../components/FrequencyForm";
-import { SyncSchema } from "../../../../../core/resources/Schema";
+import { SyncSchema } from "../../../../../core/domain/catalog";
 import { equal } from "../../../../../utils/objects";
 import ResetDataModal from "../../../../../components/ResetDataModal";
 import { ModalTypes } from "../../../../../components/ResetDataModal/types";
@@ -104,12 +104,12 @@ const SettingsView: React.FC<IProps> = ({
     const frequencyData = FrequencyConfig.find(
       item => item.value === values.frequency
     );
-    const initialSyncSchema = connection?.syncSchema;
+    const initialSyncSchema = connection?.syncCatalog;
 
     try {
       await updateConnection({
         connectionId: connectionId,
-        syncSchema: values.schema,
+        syncCatalog: values.schema,
         status: connection?.status || "",
         schedule: frequencyData?.config || null,
         withRefreshedCatalog: activeUpdatingSchemaMode
@@ -164,7 +164,7 @@ const SettingsView: React.FC<IProps> = ({
         {!isLoadingConnection && connection ? (
           <FrequencyForm
             isEditMode
-            schema={connection.syncSchema}
+            schema={connection.syncCatalog}
             onSubmit={onSubmitForm}
             onReset={onReset}
             frequencyValue={schedule?.value}

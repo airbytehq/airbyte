@@ -3,7 +3,7 @@
     - Bigquery: JSON_EXTRACT(json_string_expr, json_path_format) -> https://cloud.google.com/bigquery/docs/reference/standard-sql/json_functions
     - Snowflake: JSON_EXTRACT_PATH_TEXT( <column_identifier> , '<path_name>' ) -> https://docs.snowflake.com/en/sql-reference/functions/json_extract_path_text.html
     - Redshift: json_extract_path_text('json_string', 'path_elem' [,'path_elem'[, …] ] [, null_if_invalid ] ) -> https://docs.aws.amazon.com/redshift/latest/dg/JSON_EXTRACT_PATH_TEXT.html
-    - Postgres: json_extract_path_text(<from_json>, 'path' [, 'path' [, ...]]) -> https://www.postgresql.org/docs/12/functions-json.html
+    - Postgres: json_extract_path_text(<from_json>, 'path' [, 'path' [, ...}}) -> https://www.postgresql.org/docs/12/functions-json.html
 #}
 
 {# format_json_path --------------------------------------------------     #}
@@ -38,23 +38,23 @@
 {%- endmacro %}
 
 {% macro default__json_extract(json_column, json_path_list) -%}
-    json_extract({{ adapter.quote_as_configured(json_column, 'identifier')|trim }}, {{ format_json_path(json_path_list) }})
+    json_extract({{ json_column }}, {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
 {% macro bigquery__json_extract(json_column, json_path_list) -%}
-    json_extract({{ adapter.quote_as_configured(json_column, 'identifier')|trim }}, {{ format_json_path(json_path_list) }})
+    json_extract({{ json_column }}, {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
 {% macro postgres__json_extract(json_column, json_path_list) -%}
-    jsonb_extract_path_text({{ adapter.quote_as_configured(json_column, 'identifier')|trim }}, {{ format_json_path(json_path_list) }})
+    jsonb_extract_path({{ json_column }}, {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
 {% macro redshift__json_extract(json_column, json_path_list) -%}
-    case when json_extract_path_text({{ adapter.quote_as_configured(json_column, 'identifier')|trim }}, {{ format_json_path(json_path_list) }}) != '' then json_extract_path_text({{ adapter.quote_as_configured(json_column, 'identifier')|trim }}, {{ format_json_path(json_path_list) }}) end
+    case when json_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }}) != '' then json_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }}) end
 {%- endmacro %}
 
 {% macro snowflake__json_extract(json_column, json_path_list) -%}
-    json_extract_path_text({{ adapter.quote_as_configured(json_column, 'identifier')|trim }}, {{ format_json_path(json_path_list) }})
+    get_path(parse_json({{ json_column }}), {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
 {# json_extract_scalar -------------------------------------------------     #}
@@ -64,23 +64,23 @@
 {%- endmacro %}
 
 {% macro default__json_extract_scalar(json_column, json_path_list) -%}
-    json_extract_scalar({{ adapter.quote_as_configured(json_column, 'identifier')|trim }}, {{ format_json_path(json_path_list) }})
+    json_extract_scalar({{ json_column }}, {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
 {% macro bigquery__json_extract_scalar(json_column, json_path_list) -%}
-    json_extract_scalar({{ adapter.quote_as_configured(json_column, 'identifier')|trim }}, {{ format_json_path(json_path_list) }})
+    json_extract_scalar({{ json_column }}, {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
 {% macro postgres__json_extract_scalar(json_column, json_path_list) -%}
-    jsonb_extract_path_text({{ adapter.quote_as_configured(json_column, 'identifier')|trim }},{{ format_json_path(json_path_list) }})
+    jsonb_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
 {% macro redshift__json_extract_scalar(json_column, json_path_list) -%}
-    case when json_extract_path_text({{ adapter.quote_as_configured(json_column, 'identifier')|trim }}, {{ format_json_path(json_path_list) }}) != '' then json_extract_path_text({{ adapter.quote_as_configured(json_column, 'identifier')|trim }}, {{ format_json_path(json_path_list) }}) end
+    case when json_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }}) != '' then json_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }}) end
 {%- endmacro %}
 
 {% macro snowflake__json_extract_scalar(json_column, json_path_list) -%}
-    json_extract_path_text({{ adapter.quote_as_configured(json_column, 'identifier')|trim }}, {{ format_json_path(json_path_list) }})
+    to_varchar(get_path(parse_json({{ json_column }}), {{ format_json_path(json_path_list) }}))
 {%- endmacro %}
 
 {# json_extract_array -------------------------------------------------     #}
@@ -90,21 +90,21 @@
 {%- endmacro %}
 
 {% macro default__json_extract_array(json_column, json_path_list) -%}
-    json_extract_array({{ adapter.quote_as_configured(json_column, 'identifier')|trim }}, {{ format_json_path(json_path_list) }})
+    json_extract_array({{ json_column }}, {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
 {% macro bigquery__json_extract_array(json_column, json_path_list) -%}
-    json_extract_array({{ adapter.quote_as_configured(json_column, 'identifier')|trim }}, {{ format_json_path(json_path_list) }})
+    json_extract_array({{ json_column }}, {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
 {% macro postgres__json_extract_array(json_column, json_path_list) -%}
-    jsonb_array_elements(jsonb_extract_path({{ adapter.quote_as_configured(json_column, 'identifier')|trim }},{{ format_json_path(json_path_list) }})
+    jsonb_extract_path({{ json_column }}, {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
 {% macro redshift__json_extract_array(json_column, json_path_list) -%}
-    json_extract_path_text({{ adapter.quote_as_configured(json_column, 'identifier')|trim }}, {{ format_json_path(json_path_list) }})
+    json_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
 {% macro snowflake__json_extract_array(json_column, json_path_list) -%}
-    json_extract_path_text({{ adapter.quote_as_configured(json_column, 'identifier')|trim }}, {{ format_json_path(json_path_list) }})
+    get_path(parse_json({{ json_column }}), {{ format_json_path(json_path_list) }})
 {%- endmacro %}

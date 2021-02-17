@@ -1,0 +1,32 @@
+body, html {
+    margin: 0;
+    height: 100%;
+    width: 100%;
+}
+noscript {
+    box-sizing: border-box;
+    background: #F8F8FF;
+    height: 100%;
+    width: 100%;
+    padding: 34px 0 13px;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+.card {
+    width: 100%;
+    max-width: 600px;
+    padding: 50px 10px;
+    background: #FFFFFF;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+    border: 1px solid #E8E8ED;
+    margin-top: 20px;
+    text-align: center;
+    font-style: normal;
+    font-weight: 500;
+    color: #1A1A21;
+    font-size: 18px;
+    line-height: 22px;
+    font-family: Inter, Arial, sans-serif;
+}

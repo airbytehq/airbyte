@@ -70,7 +70,7 @@ export default class JobResource extends BaseResource implements Job {
           jobs: jobsResult.jobs
         };
       },
-      schema: { jobs: [this.asSchema()] }
+      schema: { jobs: [this] }
     };
   }
 
@@ -101,7 +101,7 @@ export default class JobResource extends BaseResource implements Job {
           )
         };
       },
-      schema: this.asSchema()
+      schema: this
     };
   }
 }

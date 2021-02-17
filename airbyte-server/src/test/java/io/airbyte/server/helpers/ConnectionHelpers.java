@@ -24,23 +24,33 @@
 
 package io.airbyte.server.helpers;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
+import io.airbyte.api.model.AirbyteCatalog;
+import io.airbyte.api.model.AirbyteStream;
+import io.airbyte.api.model.AirbyteStreamAndConfiguration;
+import io.airbyte.api.model.AirbyteStreamConfiguration;
 import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.ConnectionSchedule;
 import io.airbyte.api.model.ConnectionStatus;
-import io.airbyte.api.model.SourceSchema;
-import io.airbyte.api.model.SourceSchemaField;
-import io.airbyte.api.model.SourceSchemaStream;
-import io.airbyte.config.DataType;
-import io.airbyte.config.Field;
+import io.airbyte.api.model.SyncMode;
+import io.airbyte.commons.text.Names;
 import io.airbyte.config.Schedule;
-import io.airbyte.config.Schema;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncSchedule;
-import io.airbyte.config.Stream;
+import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 public class ConnectionHelpers {
+
+  private static final String STREAM_NAME = "users-data";
+  private static final String FIELD_NAME = "id";
 
   public static StandardSync generateSyncWithSourceId(UUID sourceId) {
     final UUID connectionId = UUID.randomUUID();
@@ -49,7 +59,7 @@ public class ConnectionHelpers {
         .withConnectionId(connectionId)
         .withName("presto to hudi")
         .withStatus(StandardSync.Status.ACTIVE)
-        .withSchema(generateBasicPersistenceSchema())
+        .withCatalog(generateBasicConfiguredAirbyteCatalog())
         .withSourceId(sourceId)
         .withDestinationId(UUID.randomUUID());
   }
@@ -61,39 +71,9 @@ public class ConnectionHelpers {
         .withConnectionId(connectionId)
         .withName("presto to hudi")
         .withStatus(StandardSync.Status.ACTIVE)
-        .withSchema(generateBasicPersistenceSchema())
+        .withCatalog(generateBasicConfiguredAirbyteCatalog())
         .withSourceId(UUID.randomUUID())
         .withDestinationId(destinationId);
-  }
-
-  public static Schema generateBasicPersistenceSchema() {
-    final Field field = new Field()
-        .withDataType(DataType.STRING)
-        .withName("id")
-        .withSelected(true);
-
-    final Stream stream = new Stream()
-        .withName("users")
-        .withFields(Lists.newArrayList(field))
-        .withSelected(true);
-
-    return new Schema()
-        .withStreams(Lists.newArrayList(stream));
-  }
-
-  public static SourceSchema generateBasicApiSchema() {
-    final SourceSchemaField field = new SourceSchemaField()
-        .dataType(io.airbyte.api.model.DataType.STRING)
-        .name("id")
-        .cleanedName("id")
-        .selected(true);
-
-    final SourceSchemaStream stream = new SourceSchemaStream()
-        .cleanedName("users")
-        .name("users")
-        .fields(Lists.newArrayList(field));
-
-    return new SourceSchema().streams(Lists.newArrayList(stream));
   }
 
   public static ConnectionSchedule generateBasicSchedule() {
@@ -113,7 +93,7 @@ public class ConnectionHelpers {
         .name("presto to hudi")
         .status(ConnectionStatus.ACTIVE)
         .schedule(generateBasicSchedule())
-        .syncSchema(ConnectionHelpers.generateBasicApiSchema());
+        .syncCatalog(ConnectionHelpers.generateBasicApiCatalog());
   }
 
   public static ConnectionRead generateExpectedConnectionRead(StandardSync standardSync) {
@@ -132,6 +112,48 @@ public class ConnectionHelpers {
         .withConnectionId(connectionId)
         .withSchedule(schedule)
         .withManual(false);
+  }
+
+  public static JsonNode generateBasicJsonSchema() {
+    return CatalogHelpers.fieldsToJsonSchema(Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING));
+  }
+
+  public static ConfiguredAirbyteCatalog generateBasicConfiguredAirbyteCatalog() {
+    final ConfiguredAirbyteStream stream = new ConfiguredAirbyteStream()
+        .withStream(generateBasicAirbyteStream())
+        .withCursorField(Lists.newArrayList(FIELD_NAME))
+        .withSyncMode(io.airbyte.protocol.models.SyncMode.INCREMENTAL);
+    return new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(stream));
+  }
+
+  private static io.airbyte.protocol.models.AirbyteStream generateBasicAirbyteStream() {
+    return CatalogHelpers.createAirbyteStream(STREAM_NAME, Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING))
+        .withDefaultCursorField(Lists.newArrayList(FIELD_NAME))
+        .withSourceDefinedCursor(false)
+        .withSupportedSyncModes(List.of(io.airbyte.protocol.models.SyncMode.FULL_REFRESH, io.airbyte.protocol.models.SyncMode.INCREMENTAL));
+  }
+
+  public static AirbyteCatalog generateBasicApiCatalog() {
+    return new AirbyteCatalog().streams(Lists.newArrayList(new AirbyteStreamAndConfiguration()
+        .stream(generateBasicApiStream())
+        .config(generateBasicApiStreamConfig())));
+  }
+
+  private static AirbyteStreamConfiguration generateBasicApiStreamConfig() {
+    return new AirbyteStreamConfiguration()
+        .syncMode(SyncMode.INCREMENTAL)
+        .cursorField(Lists.newArrayList(FIELD_NAME))
+        .aliasName(Names.toAlphanumericAndUnderscore(STREAM_NAME))
+        .selected(true);
+  }
+
+  private static AirbyteStream generateBasicApiStream() {
+    return new AirbyteStream()
+        .name(STREAM_NAME)
+        .jsonSchema(generateBasicJsonSchema())
+        .defaultCursorField(Lists.newArrayList(FIELD_NAME))
+        .sourceDefinedCursor(false)
+        .supportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
   }
 
 }

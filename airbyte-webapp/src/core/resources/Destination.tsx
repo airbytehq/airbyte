@@ -28,14 +28,14 @@ export default class DestinationResource extends BaseResource
   static listShape<T extends typeof Resource>(this: T) {
     return {
       ...super.listShape(),
-      schema: { destinations: [this.asSchema()] }
+      schema: { destinations: [this] }
     };
   }
 
   static detailShape<T extends typeof Resource>(this: T) {
     return {
       ...super.detailShape(),
-      schema: this.asSchema()
+      schema: this
     };
   }
 
@@ -53,7 +53,7 @@ export default class DestinationResource extends BaseResource
         );
         return response;
       },
-      schema: this.asSchema()
+      schema: this
     };
   }
 }
