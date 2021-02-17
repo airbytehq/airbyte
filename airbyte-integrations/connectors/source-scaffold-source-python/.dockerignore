@@ -1,0 +1,6 @@
+*
+!Dockerfile
+!Dockerfile.test
+!source_scaffold_source_python
+!setup.py
+!secrets
