@@ -111,7 +111,7 @@ class GoogleAnalyticsSingerSource(BaseSingerSource):
         with open(credentials, "w") as fh:
             fh.write(raw_config["credentials_json"])
         raw_config["key_file_location"] = credentials
-        if raw_config["custom_reports"].strip() and json.loads(raw_config["custom_reports"]):
+        if raw_config.get("custom_reports", "").strip() and json.loads(raw_config["custom_reports"]):
             custom_reports_data = json.loads(raw_config["custom_reports"])
             if not Draft4Validator(self._custom_reports_schema).is_valid(custom_reports_data):
                 error_messages = []
