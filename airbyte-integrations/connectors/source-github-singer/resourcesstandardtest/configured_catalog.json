@@ -238,7 +238,8 @@
         },
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true
-      }
+      },
+      "sync_mode": "incremental"
     },
     {
       "stream": {
@@ -345,7 +346,8 @@
         },
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true
-      }
+      },
+      "sync_mode": "incremental"
     },
     {
       "stream": {
@@ -542,7 +544,8 @@
         },
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true
-      }
+      },
+      "sync_mode": "incremental"
     },
     {
       "stream": {
@@ -665,7 +668,8 @@
         },
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true
-      }
+      },
+      "sync_mode": "incremental"
     },
     {
       "stream": {
@@ -834,7 +838,8 @@
         },
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true
-      }
+      },
+      "sync_mode": "incremental"
     },
     {
       "stream": {
@@ -894,7 +899,8 @@
         },
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true
-      }
+      },
+      "sync_mode": "incremental"
     },
     {
       "stream": {
@@ -945,7 +951,8 @@
         },
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true
-      }
+      },
+      "sync_mode": "incremental"
     },
     {
       "stream": {
@@ -1006,7 +1013,8 @@
         },
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true
-      }
+      },
+      "sync_mode": "incremental"
     },
     {
       "stream": {
@@ -1042,7 +1050,8 @@
         },
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true
-      }
+      },
+      "sync_mode": "incremental"
     },
     {
       "stream": {
@@ -1223,7 +1232,8 @@
         },
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true
-      }
+      },
+      "sync_mode": "incremental"
     },
     {
       "stream": {
@@ -1877,7 +1887,8 @@
         },
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true
-      }
+      },
+      "sync_mode": "incremental"
     },
     {
       "stream": {
