@@ -22,20 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from setuptools import find_packages, setup
+import sys
 
-setup(
-    name="source_{{snakeCase name}}_singer",
-    description="Source implementation for {{titleCase name}}, built on the Singer tap implementation.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    install_requires=["{{ tap_name }}", "airbyte-protocol", "base-singer", "base-python"],
-    package_data={"": ["*.json"]},
-    setup_requires=["pytest-runner"],
-    tests_require=["pytest"],
-    extras_require={
-        "main": [],
-        "tests": ["airbyte-python-test", "pytest"],
-    },
-)
+from base_python.entrypoint import launch
+from source_scaffold_source_python import SourceScaffoldSourcePython
+
+if __name__ == "__main__":
+    source = SourceScaffoldSourcePython()
+    launch(source, sys.argv[1:])
