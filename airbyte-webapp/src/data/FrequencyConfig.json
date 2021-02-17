@@ -29,7 +29,8 @@
     }
   },
   {
-    "text": "hour",
+    "text": "1 hour",
+    "simpleText": "hour",
     "value": "1h",
     "config": {
       "units": 1,
