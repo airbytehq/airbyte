@@ -48,7 +48,6 @@ class API:
     def __init__(self, domain: str, api_key: str, requests_per_minute: float = None, verify: bool = True, proxies: MutableMapping[str, Any] = None):
         """Basic HTTP interface to read from endpoints"""
         self._api_prefix = f"https://{domain.rstrip('/')}/api/v2/"
-        self._requests_per_minute = requests_per_minute
         self._session = requests.Session()
         self._session.auth = (api_key, "unused_with_api_key")
         self._session.verify = verify
@@ -57,6 +56,9 @@ class API:
             "Content-Type": "application/json",
             "User-Agent": "Airbyte",
         }
+
+        self._requests_per_minute = requests_per_minute
+        self._requests_ts = collections.deque()
 
         if domain.find("freshdesk.com") < 0:
             raise AttributeError("Freshdesk v2 API works only via Freshdesk domains and not via custom CNAMEs")
@@ -115,18 +117,17 @@ class API:
         if not self._requests_per_minute:
             return
         period = 60
-        times = collections.deque()
-        if len(times) >= self._requests_per_minute * period:
-            t0 = times.pop()
+        if len(self._requests_ts) >= self._requests_per_minute:
+            t0 = self._requests_ts.pop()
             t = time.time()
             sleep_time = period - (t - t0)
             if sleep_time > 0:
-                logger.info(f"Reached call limit for this minute, wait for {sleep_time} seconds")
+                logger.trace(f"Reached call limit for this minute, wait for {sleep_time:.2f} seconds")
                 time.sleep(sleep_time)
 
         now = time.time()
         for _ in range(credit):
-            times.appendleft(now)
+            self._requests_ts.appendleft(now)
 
 
 class StreamAPI(ABC):
