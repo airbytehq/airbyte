@@ -18,7 +18,7 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 * 1 new destination connector: [MeiliSearch](https://docs.airbyte.io/integrations/destinations/meilisearch)
 * 2 new sources that support incremental append: [Freshdesk](https://docs.airbyte.io/integrations/sources/freshdesk) and [Sendgrid](https://docs.airbyte.io/integrations/sources/sendgrid)
 * Other fixes:
-  * Thanks to [@nickray](https://github.com/nickray) for contributing an upgrade to the **Shopify** source connector which now provides the landing\_site field containing UTM parameters in the Orders table.
+  * Thanks to [@ns-admetrics](https://github.com/ns-admetrics) for contributing an upgrade to the **Shopify** source connector which now provides the landing\_site field containing UTM parameters in the Orders table.
   * **Sendgrid** source connector supports most available endpoints available in the API
   * **Facebook** Source connector now supports syncing Ad Insights data 
   * **Freshdesk** source connector now supports syncing satisfaction ratings and conversations
@@ -120,7 +120,7 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 
 ## 11/04/2020
 
-**New sources:** [Facebook Ads](), [Google Ads](../integrations/sources/google-adwords.md), [Marketo](../integrations/sources/marketo.md)  
+**New sources:** [Facebook Ads](connectors.md), [Google Ads](../integrations/sources/google-adwords.md), [Marketo](../integrations/sources/marketo.md)  
 **New destination:** [Snowflake](../integrations/destinations/snowflake.md)
 
 ## 10/30/2020
