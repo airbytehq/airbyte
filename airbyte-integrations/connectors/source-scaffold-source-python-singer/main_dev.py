@@ -25,7 +25,6 @@ SOFTWARE.
 import sys
 
 from base_python.entrypoint import launch
-
 from source_scaffold_source_python_singer import SourceScaffoldSourcePythonSinger
 
 if __name__ == "__main__":
