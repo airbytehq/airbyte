@@ -20,7 +20,7 @@
       },
       "requests_per_minute": {
         "type": "integer",
-        "description": "Number of requests per minute that this source allowed to consume."
+        "description": "Number of requests per minute that this source allowed to use."
       }
     }
   }
