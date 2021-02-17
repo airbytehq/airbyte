@@ -22,28 +22,36 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import json
+from pathlib import Path
 
-# TODO uncomment once this issue https://github.com/airbytehq/airbyte/issues/1134 to allow depending on local python packages without inheriting
-#  Docker images. For now this is covered by standard tests.
-# from source_freshdesk.client import Client
+from source_freshdesk.client import Client
 
-
-def test_fake():
-    assert json.loads("{}") == {}
+HERE = Path(__file__).parent.absolute()
 
 
-# def test_client_wrong_domain():
-#     not_freshdesk_domain = "unknownaccount"
-#     expected_error = "Freshdesk v2 API works only via Freshdesk" "domains and not via custom CNAMEs"
-#     with pytest.raises(AttributeError, match=expected_error):
-#         Client(domain=not_freshdesk_domain, api_key="wrong_key")
-#
-#
-# def test_client_wrong_account():
-#     unknown_domain = "unknownaccount.freshdesk.com"
-#     client = Client(domain=unknown_domain, api_key="wrong_key")
-#     alive, error = client.health_check()
-#
-#     assert not alive
-#     assert error == "Freshdesk Request Failed"
+def test_client_backoff_on_limit_reached(requests_mock):
+    """Error once, check that we retry and not fail"""
+    responses = [
+        {"json": {"error": "limit reached"}, "status_code": 429, "headers": {"Retry-After": "0"}},
+        {"json": {"status": "ok"}, "status_code": 200},
+    ]
+    requests_mock.register_uri("GET", "/api/v2/settings/helpdesk", responses)
+    client = Client(domain="someaccount.freshdesk.com", api_key="somekey")
+
+    result = client.settings()
+
+    assert result == {"status": "ok"}
+
+
+def test_client_backoff_on_server_error(requests_mock):
+    """Error once, check that we retry and not fail"""
+    responses = [
+        {"json": {"error": "something bad"}, "status_code": 500},
+        {"json": {"status": "ok"}, "status_code": 200},
+    ]
+    requests_mock.register_uri("GET", "/api/v2/settings/helpdesk", responses)
+    client = Client(domain="someaccount.freshdesk.com", api_key="somekey")
+
+    result = client.settings()
+
+    assert result == {"status": "ok"}
