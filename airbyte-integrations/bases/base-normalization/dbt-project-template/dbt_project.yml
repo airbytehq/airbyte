@@ -41,7 +41,7 @@ models:
   airbyte_utils:
     generated:
       airbyte_views:
-        +materialized: view
+        +materialized: ephemeral
       airbyte_tables:
         +materialized: table
     +materialized: table

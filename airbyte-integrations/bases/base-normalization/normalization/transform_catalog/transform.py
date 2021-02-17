@@ -31,8 +31,7 @@ from typing import Dict, List, Optional, Set
 
 import yaml
 from jinja2 import Template
-
-from .reserved_keywords import is_reserved_keyword
+from normalization.transform_catalog.reserved_keywords import is_reserved_keyword
 
 
 class TransformCatalog:

@@ -26,7 +26,7 @@ from enum import Enum
 
 
 class DestinationType(Enum):
-    bigquery = "bigquery"
-    postgres = "postgres"
-    redshift = "redshift"
-    snowflake = "snowflake"
+    BIGQUERY = "bigquery"
+    POSTGRES = "postgres"
+    REDSHIFT = "redshift"
+    SNOWFLAKE = "snowflake"

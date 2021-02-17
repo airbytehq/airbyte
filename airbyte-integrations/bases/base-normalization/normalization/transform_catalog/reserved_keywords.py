@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from collections import defaultdict
+from normalization import DestinationType
 
 # https://cloud.google.com/bigquery/docs/reference/standard-sql/lexical#reserved_keywords
 BIGQUERY = {
@@ -1203,8 +1203,13 @@ SNOWFLAKE = {
     "WITH",
 }
 
-RESERVED_KEYWORDS = defaultdict(set, {"bigquery": BIGQUERY, "postgres": POSTGRES, "redshift": REDSHIFT, "snowflake": SNOWFLAKE})
+RESERVED_KEYWORDS = {
+    DestinationType.BIGQUERY.value: BIGQUERY,
+    DestinationType.POSTGRES.value: POSTGRES,
+    DestinationType.REDSHIFT.value: REDSHIFT,
+    DestinationType.SNOWFLAKE.value: SNOWFLAKE,
+}
 
 
-def is_reserved_keyword(token: str, integration_type: str) -> bool:
-    return token.upper() in RESERVED_KEYWORDS[integration_type]
+def is_reserved_keyword(token: str, integration_type: DestinationType) -> bool:
+    return token.upper() in RESERVED_KEYWORDS[integration_type.value]

@@ -16,9 +16,8 @@
     {% do exceptions.warn("Undefined macro cross_join_unnest for this destination engine") %}
 {%- endmacro %}
 
-
 {% macro bigquery__cross_join_unnest(table_name, array_col) -%}
-    cross join unnest({{ array_col }}) as _airbyte_data
+    cross join unnest({{ array_col }}) as {{ array_col }}
 {%- endmacro %}
 
 {% macro postgres__cross_join_unnest(table_name, array_col) -%}
@@ -26,7 +25,7 @@
         case jsonb_typeof({{ array_col }})
         when 'array' then {{ array_col }}
         else '[]' end
-    ) as _airbyte_data
+    ) as {{ array_col }}
 {%- endmacro %}
 
 {% macro redshift__cross_join_unnest(table_name, array_col) -%}
@@ -34,7 +33,7 @@
 {%- endmacro %}
 
 {% macro snowflake__cross_join_unnest(table_name, array_col) -%}
-    cross join table(flatten({{ array_col }})) as _airbyte_data
+    cross join table(flatten({{ array_col }})) as {{ array_col }}
 {%- endmacro %}
 
 {# unnested_column_value -------------------------------------------------     #}
