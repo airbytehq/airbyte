@@ -32,7 +32,7 @@ HERE = Path(__file__).parent.absolute()
 def test_client_backoff_on_limit_reached(requests_mock):
     """Error once, check that we retry and not fail"""
     responses = [
-        {"json": {"error": "limit reached"}, "status_code": 429, "headers": {"Retry-After": '0'}},
+        {"json": {"error": "limit reached"}, "status_code": 429, "headers": {"Retry-After": "0"}},
         {"json": {"status": "ok"}, "status_code": 200},
     ]
     requests_mock.register_uri("GET", "/api/v2/settings/helpdesk", responses)
