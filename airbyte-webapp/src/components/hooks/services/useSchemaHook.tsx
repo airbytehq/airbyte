@@ -1,7 +1,8 @@
 import { useEffect, useState, useCallback } from "react";
 import { useFetcher } from "rest-hooks";
 
-import SchemaResource, { SyncSchema } from "../../../core/resources/Schema";
+import { SyncSchema } from "../../../core/domain/catalog";
+import SchemaResource from "../../../core/resources/Schema";
 import { JobInfo } from "../../../core/resources/Scheduler";
 
 export const useDiscoverSchema = (sourceId?: string) => {
@@ -19,7 +20,7 @@ export const useDiscoverSchema = (sourceId?: string) => {
     setSchemaErrorStatus(null);
     try {
       const data = await fetchDiscoverSchema({ sourceId: sourceId || "" });
-      setSchema(data.schema);
+      setSchema(data.catalog);
     } catch (e) {
       setSchemaErrorStatus(e);
     } finally {

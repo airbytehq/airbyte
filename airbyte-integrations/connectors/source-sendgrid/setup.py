@@ -30,11 +30,7 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=[
-        "airbyte-protocol",
-        "base-python",
-        "sendgrid==6.4.7",
-    ],
+    install_requires=["airbyte-protocol", "base-python", "backoff", "requests"],
     package_data={"": ["*.json", "schemas/*.json"]},
     setup_requires=["pytest-runner"],
     tests_require=["pytest"],

@@ -170,7 +170,7 @@ const StyledDropdownList = styled(DropdownList)<{
   }
 `;
 
-const DropDown: React.FC<IProps> = props => {
+export const DropDown: React.FC<IProps> = props => {
   const formatMessage = useIntl().formatMessage;
 
   const className = `${props.className} ${

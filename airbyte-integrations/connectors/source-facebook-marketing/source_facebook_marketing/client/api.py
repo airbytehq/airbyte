@@ -22,13 +22,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import time
 from abc import ABC, abstractmethod
 from typing import Any, Iterator, Sequence
 
 import backoff
 import pendulum as pendulum
 from base_python.entrypoint import logger  # FIXME (Eugene K): register logger as standard python logger
-from facebook_business.exceptions import FacebookRequestError
+from facebook_business.adobjects.adreportrun import AdReportRun
+from facebook_business.exceptions import FacebookBadObjectError, FacebookRequestError
 
 from .common import retry_pattern
 
@@ -225,82 +227,113 @@ class CampaignAPI(IncrementalStreamAPI):
         return self._api.account.get_campaigns(params={**params, **self._state_filter()}, fields=[self.state_pk])
 
 
-#
-# FIXME: Disabled until we populate test account with AdsInsights data to test
-#  https://github.com/airbytehq/airbyte/issues/1709
-#
-# class AdsInsightAPI(IncrementalStreamAPI):
-#     entity_prefix = ""
-#     state_pk = "date_start"
-#
-#     ALL_ACTION_ATTRIBUTION_WINDOWS = [
-#         "1d_click",
-#         "7d_click",
-#         "28d_click",
-#         "1d_view",
-#         "7d_view",
-#         "28d_view",
-#     ]
-#
-#     ALL_ACTION_BREAKDOWNS = [
-#         "action_type",
-#         "action_target_id",
-#         "action_destination",
-#     ]
-#
-#     # Some automatic fields (primary-keys) cannot be used as 'fields' query params.
-#     INVALID_INSIGHT_FIELDS = [
-#         "impression_device",
-#         "publisher_platform",
-#         "platform_position",
-#         "age",
-#         "gender",
-#         "country",
-#         "placement",
-#         "region",
-#         "dma",
-#     ]
-#
-#     MAX_WAIT_TO_START_SECONDS = 2 * 60
-#     MAX_WAIT_TO_FINISH_SECONDS = 30 * 60
-#     MAX_ASYNC_SLEEP_SECONDS = 5 * 60
-#
-#     action_breakdowns = ALL_ACTION_BREAKDOWNS
-#     level = "ad"
-#     action_attribution_windows = ALL_ACTION_ATTRIBUTION_WINDOWS
-#     time_increment = 1
-#     buffer_days = 28
-#
-#     def __init__(self, api, start_date, breakdowns=None):
-#         super().__init__(api=api)
-#         self.start_date = start_date
-#         self._state = start_date
-#         self.breakdowns = breakdowns
-#
-#     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
-#         for params in self._params(fields=fields):
-#             for rec in self.state_filter(obj.export_all_data() for obj in self._get_insights(params)):
-#                 yield rec
-#
-#     def _params(self, fields: Sequence[str] = None) -> Iterator[dict]:
-#         buffered_start_date = self._state.subtract(days=self.buffer_days)
-#         end_date = pendulum.now()
-#
-#         fields = list(set(fields) - set(self.INVALID_INSIGHT_FIELDS))
-#
-#         while buffered_start_date <= end_date:
-#             yield {
-#                 "level": self.level,
-#                 "action_breakdowns": self.action_breakdowns,
-#                 "breakdowns": self.breakdowns,
-#                 "limit": self.result_return_limit,
-#                 "fields": fields,
-#                 "time_increment": self.time_increment,
-#                 "action_attribution_windows": self.action_attribution_windows,
-#                 "time_ranges": [{"since": buffered_start_date.to_date_string(), "until": buffered_start_date.to_date_string()}],
-#             }
-#             buffered_start_date = buffered_start_date.add(days=1)
-#
-#     @backoff_policy
-#     def _get_insights(self, params):
-#         return self._api.account.get_insights(params=params)
+class JobTimeoutException(Exception):
+    pass
+
+
+class AdsInsightAPI(IncrementalStreamAPI):
+    entity_prefix = ""
+    state_pk = "date_start"
+
+    ALL_ACTION_ATTRIBUTION_WINDOWS = [
+        "1d_click",
+        "7d_click",
+        "28d_click",
+        "1d_view",
+        "7d_view",
+        "28d_view",
+    ]
+
+    ALL_ACTION_BREAKDOWNS = [
+        "action_type",
+        "action_target_id",
+        "action_destination",
+    ]
+
+    # Some automatic fields (primary-keys) cannot be used as 'fields' query params.
+    INVALID_INSIGHT_FIELDS = [
+        "impression_device",
+        "publisher_platform",
+        "platform_position",
+        "age",
+        "gender",
+        "country",
+        "placement",
+        "region",
+        "dma",
+    ]
+
+    MAX_WAIT_TO_START_SECONDS = 2 * 60
+    MAX_WAIT_TO_FINISH_SECONDS = 30 * 60
+    MAX_ASYNC_SLEEP_SECONDS = 5 * 60
+
+    action_breakdowns = ALL_ACTION_BREAKDOWNS
+    level = "ad"
+    action_attribution_windows = ALL_ACTION_ATTRIBUTION_WINDOWS
+    time_increment = 1
+    buffer_days = 28
+
+    def __init__(self, api, start_date, breakdowns=None):
+        super().__init__(api=api)
+        self.start_date = start_date
+        self._state = start_date
+        self.breakdowns = breakdowns
+
+    def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
+        for params in self._params(fields=fields):
+            job = self._run_job_until_completion(params)
+            yield from self.state_filter(obj.export_all_data() for obj in job.get_result())
+
+    @retry_pattern(backoff.expo, (FacebookRequestError, JobTimeoutException, FacebookBadObjectError), max_tries=5, factor=4)
+    def _run_job_until_completion(self, params) -> AdReportRun:
+        # TODO parallelize running these jobs
+        job = self._get_insights(params)
+        logger.info(f"Created AdReportRun: {job} to sync insights with breakdown {self.breakdowns}")
+        start_time = pendulum.now()
+        sleep_seconds = 2
+        while True:
+            job = job.api_get()
+            job_progress_pct = job["async_percent_completion"]
+            logger.info(f"ReportRunId {job['report_run_id']} is {job_progress_pct}% complete")
+
+            if job["async_status"] == "Job Completed":
+                return job
+
+            runtime_seconds = (pendulum.now() - start_time).in_seconds()
+            if runtime_seconds > self.MAX_WAIT_TO_START_SECONDS and job_progress_pct == 0:
+                raise JobTimeoutException(
+                    f"AdReportRun {job} did not start after {runtime_seconds} seconds. This is an intermittent error which may be fixed by retrying the job. Aborting."
+                )
+            elif runtime_seconds > self.MAX_WAIT_TO_FINISH_SECONDS:
+                raise JobTimeoutException(
+                    f"AdReportRun {job} did not finish after {runtime_seconds} seconds. This is an intermittent error which may be fixed by retrying the job. Aborting."
+                )
+            logger.info(f"Sleeping {sleep_seconds} seconds while waiting for AdReportRun: {job} to complete")
+            time.sleep(sleep_seconds)
+            if sleep_seconds < self.MAX_ASYNC_SLEEP_SECONDS:
+                sleep_seconds *= 2
+
+    def _params(self, fields: Sequence[str] = None) -> Iterator[dict]:
+        # Facebook freezes insight data 28 days after it was generated, which means that all data
+        # from the past 28 days may have changed since we last emitted it, so we retrieve it again.
+        buffered_start_date = self._state.subtract(days=self.buffer_days)
+        end_date = pendulum.now()
+
+        fields = list(set(fields) - set(self.INVALID_INSIGHT_FIELDS))
+
+        while buffered_start_date <= end_date:
+            yield {
+                "level": self.level,
+                "action_breakdowns": self.action_breakdowns,
+                "breakdowns": self.breakdowns,
+                "limit": self.result_return_limit,
+                "fields": fields,
+                "time_increment": self.time_increment,
+                "action_attribution_windows": self.action_attribution_windows,
+                "time_ranges": [{"since": buffered_start_date.to_date_string(), "until": buffered_start_date.to_date_string()}],
+            }
+            buffered_start_date = buffered_start_date.add(days=1)
+
+    @backoff_policy
+    def _get_insights(self, params) -> AdReportRun:
+        return self._api.account.get_insights(params=params, is_async=True)

@@ -33,6 +33,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
+import io.airbyte.api.model.AirbyteCatalog;
 import io.airbyte.api.model.ConnectionCreate;
 import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.ConnectionRead;
@@ -40,18 +41,17 @@ import io.airbyte.api.model.ConnectionReadList;
 import io.airbyte.api.model.ConnectionSchedule;
 import io.airbyte.api.model.ConnectionStatus;
 import io.airbyte.api.model.ConnectionUpdate;
-import io.airbyte.api.model.SourceSchema;
 import io.airbyte.api.model.SyncMode;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.DataType;
 import io.airbyte.config.Schedule;
-import io.airbyte.config.Schema;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncSchedule;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.server.helpers.ConnectionHelpers;
 import io.airbyte.server.helpers.SourceHelpers;
 import io.airbyte.validation.json.JsonValidationException;
@@ -92,13 +92,15 @@ class ConnectionsHandlerTest {
 
     when(configRepository.getStandardSyncSchedule(standardSyncSchedule.getConnectionId())).thenReturn(standardSyncSchedule);
 
+    final AirbyteCatalog catalog = ConnectionHelpers.generateBasicApiCatalog();
+
     final ConnectionCreate connectionCreate = new ConnectionCreate()
         .sourceId(standardSync.getSourceId())
         .destinationId(standardSync.getDestinationId())
         .name("presto to hudi")
         .status(ConnectionStatus.ACTIVE)
         .schedule(ConnectionHelpers.generateBasicSchedule())
-        .syncSchema(ConnectionHelpers.generateBasicApiSchema());
+        .syncCatalog(catalog);
 
     final ConnectionRead actualConnectionRead = connectionsHandler.createConnection(connectionCreate);
 
@@ -115,18 +117,18 @@ class ConnectionsHandlerTest {
 
   @Test
   void testUpdateConnection() throws JsonValidationException, ConfigNotFoundException, IOException {
-    final SourceSchema newApiSchema = ConnectionHelpers.generateBasicApiSchema();
-    newApiSchema.getStreams().get(0).setName("azkaban_users");
-    newApiSchema.getStreams().get(0).cleanedName("azkaban_users");
+    final AirbyteCatalog catalog = ConnectionHelpers.generateBasicApiCatalog();
+    catalog.getStreams().get(0).getStream().setName("azkaban_users");
+    catalog.getStreams().get(0).getConfig().setAliasName("azkaban_users");
 
     final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
         .connectionId(standardSync.getConnectionId())
         .status(ConnectionStatus.INACTIVE)
         .schedule(null)
-        .syncSchema(newApiSchema);
+        .syncCatalog(catalog);
 
-    final Schema newPersistenceSchema = ConnectionHelpers.generateBasicPersistenceSchema();
-    newPersistenceSchema.getStreams().get(0).withName("azkaban_users");
+    final ConfiguredAirbyteCatalog configuredCatalog = ConnectionHelpers.generateBasicConfiguredAirbyteCatalog();
+    configuredCatalog.getStreams().get(0).getStream().withName("azkaban_users");
 
     final StandardSync updatedStandardSync = new StandardSync()
         .withConnectionId(standardSync.getConnectionId())
@@ -134,7 +136,7 @@ class ConnectionsHandlerTest {
         .withSourceId(standardSync.getSourceId())
         .withDestinationId(standardSync.getDestinationId())
         .withStatus(StandardSync.Status.INACTIVE)
-        .withSchema(newPersistenceSchema);
+        .withCatalog(configuredCatalog);
 
     final StandardSyncSchedule updatedPersistenceSchedule = new StandardSyncSchedule()
         .withConnectionId(standardSyncSchedule.getConnectionId())
@@ -155,7 +157,7 @@ class ConnectionsHandlerTest {
         standardSync.getSourceId(),
         standardSync.getDestinationId())
         .schedule(null)
-        .syncSchema(newApiSchema)
+        .syncCatalog(catalog)
         .status(ConnectionStatus.INACTIVE);
 
     assertEquals(expectedConnectionRead, actualConnectionRead);
@@ -209,7 +211,7 @@ class ConnectionsHandlerTest {
     final ConnectionUpdate expectedConnectionUpdate = new ConnectionUpdate()
         .connectionId(connectionRead.getConnectionId())
         .status(ConnectionStatus.DEPRECATED)
-        .syncSchema(connectionRead.getSyncSchema())
+        .syncCatalog(connectionRead.getSyncCatalog())
         .schedule(connectionRead.getSchedule());
 
     final ConnectionsHandler spiedConnectionsHandler = spy(connectionsHandler);

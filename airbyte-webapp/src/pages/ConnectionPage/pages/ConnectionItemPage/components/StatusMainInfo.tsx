@@ -58,7 +58,7 @@ const StatusMainInfo: React.FC<IProps> = ({ connection, frequencyText }) => {
   const onChangeStatus = async () => {
     await updateConnection({
       connectionId: connection.connectionId,
-      syncSchema: connection.syncSchema,
+      syncCatalog: connection.syncCatalog,
       schedule: connection.schedule,
       status: connection.status === "active" ? "inactive" : "active"
     });

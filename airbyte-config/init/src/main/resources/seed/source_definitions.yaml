@@ -36,7 +36,7 @@
 - sourceDefinitionId: fbb5fbe2-16ad-4cf4-af7d-ff9d9c316c87
   name: Sendgrid
   dockerRepository: airbyte/source-sendgrid
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://hub.docker.com/r/airbyte/source-sendgrid
 - sourceDefinitionId: 9e0556f4-69df-4522-a3fb-03264d36b348
   name: Marketo
@@ -71,12 +71,12 @@
 - sourceDefinitionId: 39f092a6-8c87-4f6f-a8d9-5cef45b7dbe1
   name: Google Analytics
   dockerRepository: airbyte/source-googleanalytics-singer
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.7
   documentationUrl: https://hub.docker.com/r/airbyte/source-googleanalytics-singer
 - sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
   name: Facebook Marketing
   dockerRepository: airbyte/source-facebook-marketing
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   documentationUrl: https://hub.docker.com/r/airbyte/source-facebook-marketing
 - sourceDefinitionId: 57eb1576-8f52-463d-beb6-2e107cdf571d
   name: Hubspot
@@ -106,7 +106,7 @@
 - sourceDefinitionId: ec4b9503-13cb-48ab-a4ab-6ade4be46567
   name: Freshdesk
   dockerRepository: airbyte/source-freshdesk
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://hub.docker.com/r/airbyte/source-freshdesk
 - sourceDefinitionId: 396e4ca3-8a97-4b85-aa4e-c9d8c2d5f992
   name: Braintree
@@ -116,7 +116,7 @@
 - sourceDefinitionId: 41375467-61ae-4204-8e38-e2b8b7365f23
   name: Slack
   dockerRepository: airbyte/source-slack-singer
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.4
   documentationUrl: https://hub.docker.com/repository/docker/airbyte/source-slack-singer
 - sourceDefinitionId: 59f1e50a-331f-4f09-b3e8-2e8d4d355f44
   name: Greenhouse
@@ -151,7 +151,7 @@
 - sourceDefinitionId: eaf50f04-21dd-4620-913b-2a83f5635227
   name: Microsoft teams
   dockerRepository: airbyte/source-microsoft-teams
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://hub.docker.com/r/airbyte/source-microsoft-teams
 - sourceDefinitionId: 445831eb-78db-4b1f-8f1f-0d96ad8739e2
   name: Drift

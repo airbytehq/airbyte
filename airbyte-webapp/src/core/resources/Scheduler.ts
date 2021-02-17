@@ -64,7 +64,7 @@ export default class SchedulerResource extends BaseResource
 
         return result;
       },
-      schema: this.asSchema()
+      schema: this
     };
   }
 
@@ -102,7 +102,7 @@ export default class SchedulerResource extends BaseResource
 
         return result;
       },
-      schema: this.asSchema()
+      schema: this
     };
   }
 }
