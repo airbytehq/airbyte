@@ -45,7 +45,9 @@ from source_freshdesk.utils import retry_after_handler, retry_connection_handler
 
 
 class API:
-    def __init__(self, domain: str, api_key: str, requests_per_minute: float = None, verify: bool = True, proxies: MutableMapping[str, Any] = None):
+    def __init__(
+        self, domain: str, api_key: str, requests_per_minute: float = None, verify: bool = True, proxies: MutableMapping[str, Any] = None
+    ):
         """Basic HTTP interface to read from endpoints"""
         self._api_prefix = f"https://{domain.rstrip('/')}/api/v2/"
         self._session = requests.Session()
