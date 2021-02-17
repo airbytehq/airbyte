@@ -32,8 +32,12 @@ def addScaffoldTask(name, scaffoldParams=[]) {
 
     }
 
-    project(":${outputDir.replace('/', ':')}") {
-        build.dependsOn task
+    // When we only build core, connector projects don't exist, let's make sure we protect ourselves from it.
+    def scaffoldTestProjectPath = ":${outputDir.replace('/', ':')}"
+    if (findProject(scaffoldTestProjectPath) != null) {
+        project(scaffoldTestProjectPath) {
+            build.dependsOn task
+        }
     }
 }
 
