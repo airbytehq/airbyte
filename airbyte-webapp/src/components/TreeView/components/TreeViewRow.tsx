@@ -18,6 +18,7 @@ import { traverseSchemaToField } from "../../../core/domain/catalog/fieldUtil";
 const StyledCell = styled(Cell)`
   overflow: hidden;
   text-overflow: ellipsis;
+  cursor: default;
 `;
 
 type IProps = {
@@ -90,7 +91,7 @@ const TreeViewRow: React.FC<IProps> = ({ streamNode, updateItem }) => {
             isItemOpen={isItemOpen}
           />
           <Cell />
-          <StyledCell>{config.aliasName}</StyledCell>
+          <StyledCell title={config.aliasName}>{config.aliasName}</StyledCell>
           <SyncSettingsCell
             streamNode={streamNode}
             fields={fields}
