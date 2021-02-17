@@ -41,7 +41,9 @@ models:
   airbyte_utils:
     generated:
       airbyte_views:
-        +materialized: ephemeral
+        # see https://docs.getdbt.com/docs/building-a-dbt-project/building-models/materializations/
+        +materialized: ephemeral # Faster but harder to debug
+#        +materialized: view # May be slower on some destinations but generally recommended
       airbyte_tables:
         +materialized: table
     +materialized: table

@@ -49,6 +49,8 @@ class DestinationNameTransformer:
     def normalize_schema_name(self, schema_name: str):
         # We force standard naming for schema names (see issue #1785)
         result = transform_standard_naming(schema_name)
+        if is_reserved_keyword(result, self.integration_type):
+            result = f"_{result}"
         result = self.normalize_identifier_name(result)
         result = self.normalize_identifier_case(result)
         return result
@@ -56,6 +58,8 @@ class DestinationNameTransformer:
     def normalize_table_name(self, table_name: str):
         # We force standard naming for table names (see issue #1785)
         result = transform_standard_naming(table_name)
+        if is_reserved_keyword(result, self.integration_type):
+            result = f"_{result}"
         result = self.normalize_identifier_name(result)
         result = self.normalize_identifier_case(result)
         return result

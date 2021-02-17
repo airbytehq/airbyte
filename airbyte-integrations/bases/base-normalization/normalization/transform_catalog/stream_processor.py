@@ -128,6 +128,7 @@ class StreamProcessor(object):
         self.properties: Dict = properties
 
         self.name_transformer: DestinationNameTransformer = DestinationNameTransformer(integration_type)
+        self.final_table_name = None
         self.parent = None
         self.is_nested_array = False
         self.json_path: List[str] = [stream_name]
@@ -201,7 +202,7 @@ from {{ from_table }}
             unnesting_before_query=self.unnesting_before_query(),
             parent_hash_id=self.parent_hash_id(),
             fields=self.extract_json_columns(),
-            from_table=from_table,
+            from_table=jinja_call(from_table),
             unnesting_after_query=self.unnesting_after_query(),
             sql_table_comment=self.sql_table_comment(),
         )
@@ -246,7 +247,7 @@ from {{ from_table }}
         sql = template.render(
             parent_hash_id=self.parent_hash_id(),
             fields=self.cast_property_types(),
-            from_table=from_table,
+            from_table=jinja_call(from_table),
             sql_table_comment=self.sql_table_comment(),
         )
         return sql
@@ -313,7 +314,7 @@ from {{ from_table }}
             parent_hash_id=self.parent_hash_id(),
             fields=self.safe_cast_to_strings(),
             hash_id=self.hash_id(),
-            from_table=from_table,
+            from_table=jinja_call(from_table),
             sql_table_comment=self.sql_table_comment(),
         )
         return sql
@@ -357,7 +358,7 @@ from {{ from_table }}
             parent_hash_id=self.parent_hash_id(),
             fields=self.list_fields(),
             hash_id=self.hash_id(),
-            from_table=from_table,
+            from_table=jinja_call(from_table),
             sql_table_comment=self.sql_table_comment(),
         )
         return sql
@@ -380,9 +381,9 @@ from {{ from_table }}
 
     def generate_new_table_name(self, table_context: Set[str], is_intermediate: bool, suffix: str):
         """
-        Generates a new table names that is not registered in the schema yet (based on table_name())
+        Generates a new table names that is not registered in the schema yet (based on normalized_stream_name())
         """
-        new_table_name = table_name = self.table_name()
+        new_table_name = table_name = self.normalized_stream_name()
         if not is_intermediate and self.parent is None:
             # Top-level stream has priority on table_names
             if new_table_name in table_context:
@@ -400,14 +401,10 @@ from {{ from_table }}
                     new_table_name = self.name_transformer.normalize_table_name(f"{table_name}_{i}")
                 if new_table_name not in table_context:
                     break
-        self.register_new_table(table_context, new_table_name)
+        if not is_intermediate:
+            self.final_table_name = new_table_name
+        register_new_table(table_context, new_table_name)
         return new_table_name
-
-    def register_new_table(self, table_context: Set[str], table_name: str):
-        if table_name not in table_context:
-            table_context.add(table_name)
-        else:
-            raise KeyError(f"Duplicate table {table_name}")
 
     def get_schema(self, is_intermediate: bool):
         if is_intermediate:
@@ -418,17 +415,31 @@ from {{ from_table }}
     def current_json_path(self) -> str:
         return "/".join(self.json_path)
 
-    def table_name(self) -> str:
+    def normalized_stream_name(self) -> str:
+        """
+        This is the normalized name of this stream to be used as a table (different as referring it as a column).
+        Note that it might not be the actual table name in case of collisions with other streams (see actual_table_name)...
+        """
         return self.name_transformer.normalize_table_name(self.stream_name)
+
+    def actual_table_name(self) -> str:
+        """
+        Record the final actual name of the table for this stream once it is written.
+        (to be used by children stream processors that need to still refer to their actual parent table)
+        """
+        if self.final_table_name:
+            return self.final_table_name
+        else:
+            raise KeyError("Final table name is not determined yet...")
 
     def sql_table_comment(self) -> str:
         if len(self.json_path) > 1:
-            return f"-- {self.table_name()} from {self.current_json_path()}"
+            return f"-- {self.normalized_stream_name()} from {self.current_json_path()}"
         else:
-            return f"-- {self.table_name()}"
+            return f"-- {self.normalized_stream_name()}"
 
     def hash_id(self) -> str:
-        return self.name_transformer.normalize_column_name(f"_airbyte_{self.table_name()}_hashid")
+        return self.name_transformer.normalize_column_name(f"_airbyte_{self.normalized_stream_name()}_hashid")
 
     # Nested Streams
 
@@ -439,9 +450,10 @@ from {{ from_table }}
 
     def unnesting_before_query(self):
         if self.parent and self.is_nested_array:
-            quoted_name = self.name_transformer.normalize_table_name(self.parent.stream_name)
+            parent_table_name = f"'{self.parent.actual_table_name()}'"
+            parent_stream_name = f"'{self.parent.normalized_stream_name()}'"
             quoted_field = self.name_transformer.normalize_column_name(self.stream_name, in_jinja=True)
-            return jinja_call(f"unnest_cte({quoted_name}, {quoted_field})")
+            return jinja_call(f"unnest_cte({parent_table_name}, {parent_stream_name}, {quoted_field})")
         return ""
 
     def unnesting_after_query(self):
@@ -449,9 +461,9 @@ from {{ from_table }}
         if self.parent:
             cross_join = ""
             if self.is_nested_array:
-                quoted_name = f"'{self.name_transformer.normalize_table_name(self.parent.stream_name)}'"
+                parent_stream_name = f"'{self.parent.normalized_stream_name()}'"
                 quoted_field = self.name_transformer.normalize_column_name(self.stream_name, in_jinja=True)
-                cross_join = jinja_call(f"cross_join_unnest({quoted_name}, {quoted_field})")
+                cross_join = jinja_call(f"cross_join_unnest({parent_stream_name}, {quoted_field})")
             column_name = self.name_transformer.normalize_column_name(self.stream_name)
             result = f"""
 {cross_join}
@@ -463,7 +475,7 @@ where {column_name} is not null"""
 
 
 def ref_table(table_name) -> str:
-    return "{{ ref('" + table_name + "') }}"
+    return f"ref('{table_name}')"
 
 
 def output_sql_file(output_dir: str, file: str, json_path: str, header: str, sql: str):
@@ -511,3 +523,10 @@ def find_properties_object(path: List[str], field: str, properties: Dict) -> Dic
                 if child:
                     result.update(child)
     return result
+
+
+def register_new_table(table_context: Set[str], table_name: str):
+    if table_name not in table_context:
+        table_context.add(table_name)
+    else:
+        raise KeyError(f"Duplicate table {table_name}")

@@ -80,7 +80,7 @@ class CatalogProcessor:
             message = f"'json_schema'.'properties' are not defined for stream {stream_name}"
             properties = get_field(get_field(stream_config, "json_schema", message), "properties", message)
 
-            from_table = jinja_call("source('{}', '{}')".format(schema_name, raw_table_name))
+            from_table = "source('{}', '{}')".format(schema_name, raw_table_name)
 
             # Check properties
             if not properties:
