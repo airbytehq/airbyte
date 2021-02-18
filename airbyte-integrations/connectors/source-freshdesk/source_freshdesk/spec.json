@@ -19,6 +19,7 @@
         "airbyte_secret": true
       },
       "requests_per_minute": {
+        "title": "Requests per minute",
         "type": "integer",
         "description": "Number of requests per minute that this source allowed to use."
       }
