@@ -98,7 +98,10 @@ class GoogleAnalyticsSingerSource(BaseSingerSource):
         augmented_config = dict(additional_fields, **config)
         client = GAClient(augmented_config)
         client.fetch_metadata()
-        self._check_custom_reports(config=config)
+        try:
+            self._check_custom_reports(config=config)
+        except Exception as e:
+            raise Exception(f"Custom Reports format is incorrect: {e}")
 
     def discover_cmd(self, logger: AirbyteLogger, config_path: str) -> str:
         self._check_custom_reports(config_path=config_path)
