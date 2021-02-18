@@ -22,8 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import collections
-import time
 from abc import ABC, abstractmethod
 from functools import partial
 from typing import Any, Callable, Iterator, Mapping, MutableMapping, Optional, Sequence
@@ -41,12 +39,12 @@ from source_freshdesk.errors import (
     FreshdeskServerError,
     FreshdeskUnauthorized,
 )
-from source_freshdesk.utils import retry_after_handler, retry_connection_handler
+from source_freshdesk.utils import retry_after_handler, retry_connection_handler, CallCredit
 
 
 class API:
     def __init__(
-        self, domain: str, api_key: str, requests_per_minute: float = None, verify: bool = True, proxies: MutableMapping[str, Any] = None
+        self, domain: str, api_key: str, requests_per_minute: int = None, verify: bool = True, proxies: MutableMapping[str, Any] = None
     ):
         """Basic HTTP interface to read from endpoints"""
         self._api_prefix = f"https://{domain.rstrip('/')}/api/v2/"
@@ -59,8 +57,7 @@ class API:
             "User-Agent": "Airbyte",
         }
 
-        self._requests_per_minute = requests_per_minute
-        self._requests_ts = collections.deque()
+        self._call_credit = CallCredit(balance=requests_per_minute) if requests_per_minute else None
 
         if domain.find("freshdesk.com") < 0:
             raise AttributeError("Freshdesk v2 API works only via Freshdesk domains and not via custom CNAMEs")
@@ -115,21 +112,9 @@ class API:
         return self._parse_and_handle_errors(response)
 
     def consume_credit(self, credit):
-        """Consume call credit, if there is no credit left within this credit will sleep til next period"""
-        if not self._requests_per_minute:
-            return
-        period = 60
-        if len(self._requests_ts) >= self._requests_per_minute:
-            t0 = self._requests_ts.pop()
-            t = time.time()
-            sleep_time = period - (t - t0)
-            if sleep_time > 0:
-                logger.trace(f"Reached call limit for this minute, wait for {sleep_time:.2f} seconds")
-                time.sleep(sleep_time)
-
-        now = time.time()
-        for _ in range(credit):
-            self._requests_ts.appendleft(now)
+        """Consume call credit, if there is no credit left within current window will sleep til next period"""
+        if self._call_credit:
+            self._call_credit.consume(credit)
 
 
 class StreamAPI(ABC):
