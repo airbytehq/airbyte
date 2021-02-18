@@ -35,6 +35,7 @@ from airbyte_protocol import AirbyteStream
 from base_python.entrypoint import logger
 from botocore import UNSIGNED
 from botocore.config import Config
+from functools import partial
 from genson import SchemaBuilder
 from google.cloud.storage import Client as GCSClient
 from google.oauth2 import service_account
@@ -229,11 +230,15 @@ class Client:
             return self._dataset_name
         return f"file_{self._provider['storage']}.{self._reader_format}"
 
-    @staticmethod
-    def load_nested_json_schema(fp) -> dict:
+    def load_nested_json_schema(self, fp) -> dict:
         # Use Genson Library to take JSON objects and generate schemas that describe them,
         builder = SchemaBuilder()
-        builder.add_object(json.load(fp))
+        if self._reader_format == "ndjson":
+            for o in self.read():
+                builder.add_object(o)
+        else:
+            builder.add_object(json.load(fp))
+
         result = builder.to_schema()
         if "items" in result and "properties" in result["items"]:
             result = result["items"]["properties"]
@@ -259,7 +264,8 @@ class Client:
             "csv": pd.read_csv,
             # We can add option to call to pd.normalize_json to normalize semi-structured JSON data into a flat table
             # by asking user to specify how to flatten the nested columns
-            "flat_json": pd.read_json,
+            "json": pd.read_json,
+            "ndjson": partial(pd.read_json, lines=True),
             "html": pd.read_html,
             "excel": pd.read_excel,
             "feather": pd.read_feather,
@@ -309,17 +315,14 @@ class Client:
     def read(self, fields: Iterable = None) -> Iterable[dict]:
         """Read data from the stream"""
         with self.reader.open(binary=self.binary_source) as fp:
-            if self._reader_format == "json":
-                yield from self.load_nested_json(fp)
-            else:
-                for df in self.load_dataframes(fp):
-                    columns = set(fields).intersection(set(df.columns)) if fields else df.columns
-                    df = df.replace(np.nan, "NaN", regex=True)
-                    yield from df[columns].to_dict(orient="records")
+            for df in self.load_dataframes(fp):
+                columns = set(fields).intersection(set(df.columns)) if fields else df.columns
+                df = df.replace(np.nan, "NaN", regex=True)
+                yield from df[columns].to_dict(orient="records")
 
     def _stream_properties(self):
         with self.reader.open(binary=self.binary_source) as fp:
-            if self._reader_format == "json":
+            if self._reader_format == "json" or self._reader_format == "ndjson":
                 return self.load_nested_json_schema(fp)
 
             df_list = self.load_dataframes(fp, skip_data=False)

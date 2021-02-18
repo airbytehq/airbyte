@@ -56,6 +56,9 @@ def test_local_file_read(file_format, extension, expected_columns, expected_rows
     configs = {"dataset_name": "test", "format": file_format, "url": file_path, "provider": {"storage": "local"}}
     check_read(configs, expected_columns, expected_rows)
 
+@pytest.mark.parametrize("file_name, expected_columns, expected_rows", ["multiline.json", 2, 6492], ["multiline_nested.json", 2, 6492])
+def test_ndjson():
+    file_path = str(SAMPLE_DIRECTORY.joinpath())
 
 def run_load_dataframes(config, expected_columns=10, expected_rows=42):
     df_list = SourceFile.load_dataframes(config=config, logger=AirbyteLogger(), skip_data=False)
