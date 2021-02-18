@@ -1,4 +1,13 @@
-import { Method, Resource } from "rest-hooks";
+import {
+  Method,
+  MutateShape,
+  Resource,
+  AbstractInstanceType,
+  ReadShape,
+  schemas,
+  SchemaDetail,
+  SchemaList
+} from "rest-hooks";
 
 // import { authService } from "../auth/authService";
 import config from "../../config";
@@ -62,9 +71,11 @@ export default abstract class BaseResource extends Resource {
     return config.apiUrl;
   }
 
-  static listShape<T extends typeof Resource>(this: T) {
+  static listShape<T extends typeof Resource>(
+    this: T
+  ): ReadShape<SchemaList<AbstractInstanceType<T>>> {
     return {
-      ...super.listShape(),
+      ...(super.listShape() as any),
       getFetchKey: (params: any) =>
         "POST " + this.url(params) + "/list" + JSON.stringify(params),
       fetch: async (
@@ -80,9 +91,11 @@ export default abstract class BaseResource extends Resource {
     };
   }
 
-  static detailShape<T extends typeof Resource>(this: T) {
+  static detailShape<T extends typeof Resource>(
+    this: T
+  ): ReadShape<SchemaDetail<AbstractInstanceType<T>>> {
     return {
-      ...super.detailShape(),
+      ...(super.detailShape() as any),
       getFetchKey: (params: any) =>
         "POST " + this.url(params) + "/get" + JSON.stringify(params),
       fetch: async (
@@ -98,9 +111,11 @@ export default abstract class BaseResource extends Resource {
     };
   }
 
-  static createShape<T extends typeof Resource>(this: T) {
+  static createShape<T extends typeof Resource>(
+    this: T
+  ): MutateShape<SchemaDetail<AbstractInstanceType<T>>> {
     return {
-      ...super.createShape(),
+      ...(super.createShape() as any),
       getFetchKey: (params: any) =>
         "POST " + this.url(params) + "/create" + JSON.stringify(params),
       fetch: async (
@@ -117,9 +132,11 @@ export default abstract class BaseResource extends Resource {
     };
   }
 
-  static deleteShape<T extends typeof Resource>(this: T) {
+  static deleteShape<T extends typeof Resource>(
+    this: T
+  ): MutateShape<schemas.Delete<T>, Readonly<object>, unknown> {
     return {
-      ...super.deleteShape(),
+      ...(super.deleteShape() as any),
       getFetchKey: (params: any) =>
         "POST " + this.url(params) + "/delete" + JSON.stringify(params),
       fetch: async (
@@ -135,9 +152,11 @@ export default abstract class BaseResource extends Resource {
     };
   }
 
-  static partialUpdateShape<T extends typeof Resource>(this: T) {
+  static partialUpdateShape<T extends typeof Resource>(
+    this: T
+  ): MutateShape<SchemaDetail<AbstractInstanceType<T>>> {
     return {
-      ...super.partialUpdateShape(),
+      ...(super.partialUpdateShape() as any),
       getFetchKey: (params: any) =>
         "POST " + this.url(params) + "/partial-update" + JSON.stringify(params),
       fetch: async (

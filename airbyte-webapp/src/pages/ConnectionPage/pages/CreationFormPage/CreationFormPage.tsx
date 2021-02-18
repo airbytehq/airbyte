@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
+import { useResource } from "rest-hooks";
 
 import useRouter from "../../../../components/hooks/useRouterHook";
 import MainPageWithScroll from "../../../../components/MainPageWithScroll";
@@ -12,7 +13,6 @@ import DestinationForm from "./components/DestinationForm";
 import ConnectionBlock from "../../../../components/ConnectionBlock";
 import { Routes } from "../../../routes";
 import CreateConnectionContent from "../../../../components/CreateConnectionContent";
-import { useResource } from "rest-hooks/lib/react-integration/hooks";
 import SourceResource from "../../../../core/resources/Source";
 import DestinationResource from "../../../../core/resources/Destination";
 

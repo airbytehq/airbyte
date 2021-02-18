@@ -4,7 +4,7 @@ import styled from "styled-components";
 
 import TreeView from "../../TreeView";
 import { Cell, Header, LightCell } from "../../SimpleTableComponents";
-import { SyncSchema } from "../../../core/resources/Schema";
+import { SyncSchema } from "../../../core/domain/catalog";
 
 type IProps = {
   schema: SyncSchema;

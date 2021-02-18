@@ -25,12 +25,18 @@ SOFTWARE.
 import json
 import os
 
-from airbyte_protocol import AirbyteConnectionStatus, Status
-from base_singer import AirbyteLogger, SingerSource
+from base_singer import AirbyteLogger, BaseSingerSource
 from tap_google_analytics import GAClient
 
 
-class GoogleAnalyticsSingerSource(SingerSource):
+class GoogleAnalyticsSingerSource(BaseSingerSource):
+    """
+    Google Analytics API Reference: https://developers.google.com/analytics
+    """
+
+    tap_cmd = "tap-google-analytics"
+    tap_name = "Google Analytics API"
+    api_error = Exception
 
     # can be overridden to change an input config
     def configure(self, raw_config: json, temp_dir: str) -> json:
@@ -47,26 +53,11 @@ class GoogleAnalyticsSingerSource(SingerSource):
             "start_date": raw_config["start_date"],
         }
 
-    def check_config(self, logger: AirbyteLogger, config_path: str, config: json) -> AirbyteConnectionStatus:
-        try:
-            # this config is the one specific to GAClient, which does not match the root Singer config
-            with open(config["key_file_location"], "r") as file:
-                contents = file.read()
-            client_secrets = json.loads(contents)
-            additional_fields = {"end_date": "2050-10-01T00:00:00Z", "client_secrets": client_secrets}
-            augmented_config = dict(additional_fields, **config)
-            client = GAClient(augmented_config)
-            client.fetch_metadata()
-        except Exception as e:
-            logger.error(f"Failed check with exception: {e}")
-            return AirbyteConnectionStatus(status=Status.FAILED)
-        else:
-            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
-
-    def discover_cmd(self, logger, config_path) -> str:
-        return f"tap-google-analytics --discover --config {config_path}"
-
-    def read_cmd(self, logger, config_path, catalog_path, state_path=None) -> str:
-        config_option = f"--config {config_path}"
-        state_option = f"--state {state_path}" if state_path else ""
-        return f"tap-google-analytics {config_option} {state_option}"
+    def try_connect(self, logger: AirbyteLogger, config: json):
+        with open(config["key_file_location"], "r") as file:
+            contents = file.read()
+        client_secrets = json.loads(contents)
+        additional_fields = {"end_date": "2050-10-01T00:00:00Z", "client_secrets": client_secrets}
+        augmented_config = dict(additional_fields, **config)
+        client = GAClient(augmented_config)
+        client.fetch_metadata()

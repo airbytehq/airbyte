@@ -25,10 +25,13 @@
 package io.airbyte.server.handlers;
 
 import static java.util.stream.Collectors.toMap;
-import static java.util.stream.Collectors.toSet;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
+import io.airbyte.api.model.AirbyteCatalog;
+import io.airbyte.api.model.AirbyteStream;
+import io.airbyte.api.model.AirbyteStreamAndConfiguration;
+import io.airbyte.api.model.AirbyteStreamConfiguration;
 import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.ConnectionUpdate;
@@ -43,9 +46,6 @@ import io.airbyte.api.model.JobWithAttemptsRead;
 import io.airbyte.api.model.SourceDiscoverSchemaRead;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceRead;
-import io.airbyte.api.model.SourceSchema;
-import io.airbyte.api.model.SourceSchemaField;
-import io.airbyte.api.model.SourceSchemaStream;
 import io.airbyte.api.model.WbConnectionRead;
 import io.airbyte.api.model.WbConnectionReadList;
 import io.airbyte.api.model.WebBackendConnectionRequestBody;
@@ -60,7 +60,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class WebBackendConnectionsHandler {
 
@@ -109,7 +108,7 @@ public class WebBackendConnectionsHandler {
         .sourceId(connectionRead.getSourceId())
         .destinationId(connectionRead.getDestinationId())
         .name(connectionRead.getName())
-        .syncSchema(connectionRead.getSyncSchema())
+        .syncCatalog(connectionRead.getSyncCatalog())
         .status(connectionRead.getStatus())
         .schedule(connectionRead.getSchedule())
         .source(source)
@@ -135,59 +134,55 @@ public class WebBackendConnectionsHandler {
       final SourceIdRequestBody sourceId = new SourceIdRequestBody().sourceId(connection.getSourceId());
       final SourceDiscoverSchemaRead discoverSchema = schedulerHandler.discoverSchemaForSourceFromSourceId(sourceId);
 
-      final SourceSchema original = connection.getSyncSchema();
-      final SourceSchema discovered = discoverSchema.getSchema();
-      final SourceSchema combined = updateSchemaWithDiscovery(original, discovered);
+      final AirbyteCatalog original = connection.getSyncCatalog();
+      final AirbyteCatalog discovered = discoverSchema.getCatalog();
+      final AirbyteCatalog combined = updateSchemaWithDiscovery(original, discovered);
 
-      connection.setSyncSchema(combined);
+      connection.setSyncCatalog(combined);
     }
 
     return buildWbConnectionRead(connection);
   }
 
   @VisibleForTesting
-  protected static SourceSchema updateSchemaWithDiscovery(SourceSchema original, SourceSchema discovered) {
-    final Map<String, SourceSchemaStream> originalStreamsByName = original.getStreams()
+  protected static AirbyteCatalog updateSchemaWithDiscovery(AirbyteCatalog original, AirbyteCatalog discovered) {
+    final Map<String, AirbyteStreamAndConfiguration> originalStreamsByName = original.getStreams()
         .stream()
-        .collect(toMap(SourceSchemaStream::getName, s -> s));
+        .collect(toMap(s -> s.getStream().getName(), s -> s));
 
-    final List<SourceSchemaStream> streams = new ArrayList<>();
+    final List<AirbyteStreamAndConfiguration> streams = new ArrayList<>();
 
-    for (SourceSchemaStream stream : discovered.getStreams()) {
-      final SourceSchemaStream outputStream = Jsons.clone(stream);
-      final SourceSchemaStream originalStream = originalStreamsByName.get(outputStream.getName());
+    for (AirbyteStreamAndConfiguration s : discovered.getStreams()) {
+      final AirbyteStream stream = s.getStream();
+      final AirbyteStreamAndConfiguration originalStream = originalStreamsByName.get(stream.getName());
+      AirbyteStreamConfiguration outputStreamConfig;
 
       if (originalStream != null) {
-        final Set<String> fieldNames = outputStream.getFields().stream().map(SourceSchemaField::getName).collect(toSet());
-        outputStream.setSelected(originalStream.getSelected());
+        final AirbyteStreamConfiguration originalStreamConfig = originalStream.getConfig();
+        final AirbyteStreamConfiguration discoveredStreamConfig = s.getConfig();
+        outputStreamConfig = new AirbyteStreamConfiguration();
 
-        if (outputStream.getSupportedSyncModes().contains(originalStream.getSyncMode())) {
-          outputStream.setSyncMode(originalStream.getSyncMode());
-        }
+        if (stream.getSupportedSyncModes().contains(originalStreamConfig.getSyncMode()))
+          outputStreamConfig.setSyncMode(originalStreamConfig.getSyncMode());
+        else
+          outputStreamConfig.setSyncMode(discoveredStreamConfig.getSyncMode());
 
-        if (originalStream.getCursorField().size() > 0) {
-          final String topLevelField = originalStream.getCursorField().get(0);
-          if (fieldNames.contains(topLevelField)) {
-            outputStream.setCursorField(originalStream.getCursorField());
-          }
-        }
+        if (originalStreamConfig.getCursorField().size() > 0)
+          outputStreamConfig.setCursorField(originalStreamConfig.getCursorField());
+        else
+          outputStreamConfig.setCursorField(discoveredStreamConfig.getCursorField());
 
-        final Map<String, SourceSchemaField> originalFieldsByName = originalStream.getFields()
-            .stream()
-            .collect(toMap(SourceSchemaField::getName, f -> f));
-
-        for (SourceSchemaField field : outputStream.getFields()) {
-          if (originalFieldsByName.containsKey(field.getName())) {
-            SourceSchemaField originalField = originalFieldsByName.get(field.getName());
-            field.setSelected(originalField.getSelected());
-          }
-        }
-
+        outputStreamConfig.setAliasName(originalStreamConfig.getAliasName());
+        outputStreamConfig.setSelected(originalStreamConfig.getSelected());
+      } else {
+        outputStreamConfig = s.getConfig();
       }
+      final AirbyteStreamAndConfiguration outputStream = new AirbyteStreamAndConfiguration()
+          .stream(Jsons.clone(stream))
+          .config(outputStreamConfig);
       streams.add(outputStream);
     }
-
-    return new SourceSchema().streams(streams);
+    return new AirbyteCatalog().streams(streams);
   }
 
   public ConnectionRead webBackendUpdateConnection(WebBackendConnectionUpdate webBackendConnectionUpdate)
@@ -219,7 +214,7 @@ public class WebBackendConnectionsHandler {
     connectionUpdate.setConnectionId(webBackendConnectionUpdate.getConnectionId());
     connectionUpdate.setSchedule(webBackendConnectionUpdate.getSchedule());
     connectionUpdate.setStatus(webBackendConnectionUpdate.getStatus());
-    connectionUpdate.setSyncSchema(webBackendConnectionUpdate.getSyncSchema());
+    connectionUpdate.setSyncCatalog(webBackendConnectionUpdate.getSyncCatalog());
 
     return connectionUpdate;
   }

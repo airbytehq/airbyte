@@ -1,0 +1,39 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "test",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "0": {
+              "type": "number"
+            },
+            "First Name": {
+              "type": "string"
+            },
+            "Last Name": {
+              "type": "string"
+            },
+            "Gender": {
+              "type": "string"
+            },
+            "Country": {
+              "type": "string"
+            },
+            "Age": {
+              "type": "number"
+            },
+            "Date": {
+              "type": "string"
+            },
+            "Id": {
+              "type": "number"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

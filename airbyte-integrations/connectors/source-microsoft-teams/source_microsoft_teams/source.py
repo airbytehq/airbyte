@@ -26,7 +26,6 @@ import json
 from datetime import datetime
 from typing import Dict, Generator
 
-import requests
 from airbyte_protocol import AirbyteCatalog, AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteCatalog, Type
 from base_python import AirbyteLogger, BaseSource
 
@@ -58,12 +57,9 @@ class SourceMicrosoftTeams(BaseSource):
             stream = configured_stream.stream
             if stream.name not in client.ENTITY_MAP.keys():
                 continue
-            try:
-                for record in self._read_record(client=client, stream=stream.name):
-                    yield AirbyteMessage(type=Type.RECORD, record=record)
-            except requests.exceptions.RequestException as e:
-                error = json.loads(e.args[0])["error"]
-                logger.error(f"Get {stream.name} error. Error: {error['code']} {error['message']}")
+            logger.info(f"Syncing {stream.name} stream")
+            for record in self._read_record(client=client, stream=stream.name):
+                yield AirbyteMessage(type=Type.RECORD, record=record)
         logger.info(f"Finished syncing {self.__class__.__name__}")
 
     def _read_record(self, client: Client, stream: str):

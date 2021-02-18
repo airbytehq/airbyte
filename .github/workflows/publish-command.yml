@@ -41,9 +41,47 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: '3.7'
+      - name: Write Integration Test Credentials # TODO DRY this with test-command.yml
+        run: ./tools/bin/ci_credentials.sh
+        env:
+          ADWORDS_INTEGRATION_TEST_CREDS: ${{ secrets.ADWORDS_INTEGRATION_TEST_CREDS }}
+          AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
+          AWS_REDSHIFT_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_REDSHIFT_INTEGRATION_TEST_CREDS }}
+          BIGQUERY_INTEGRATION_TEST_CREDS: ${{ secrets.BIGQUERY_INTEGRATION_TEST_CREDS }}
+          BRAINTREE_TEST_CREDS: ${{ secrets.BRAINTREE_TEST_CREDS }}
+          DRIFT_INTEGRATION_TEST_CREDS: ${{ secrets.DRIFT_INTEGRATION_TEST_CREDS }}
+          FACEBOOK_MARKETING_TEST_INTEGRATION_CREDS: ${{ secrets.FACEBOOK_MARKETING_TEST_INTEGRATION_CREDS }}
+          FACEBOOK_MARKETING_API_TEST_INTEGRATION_CREDS: ${{ secrets.FACEBOOK_MARKETING_API_TEST_INTEGRATION_CREDS }}
+          FRESHDESK_TEST_CREDS: ${{ secrets.FRESHDESK_TEST_CREDS }}
+          GH_INTEGRATION_TEST_CREDS: ${{ secrets.GH_INTEGRATION_TEST_CREDS }}
+          GOOGLE_ANALYTICS_TEST_CREDS: ${{ secrets.GOOGLE_ANALYTICS_TEST_CREDS }}
+          GOOGLE_ANALYTICS_TEST_TRACKING_ID: ${{ secrets.GOOGLE_ANALYTICS_TEST_TRACKING_ID }}
+          GOOGLE_CLOUD_STORAGE_TEST_CREDS: ${{ secrets.GOOGLE_CLOUD_STORAGE_TEST_CREDS }}
+          GREENHOUSE_TEST_CREDS: ${{ secrets.GREENHOUSE_TEST_CREDS }}
+          GSHEETS_INTEGRATION_TESTS_CREDS: ${{ secrets.GSHEETS_INTEGRATION_TESTS_CREDS }}
+          HUBSPOT_INTEGRATION_TESTS_CREDS: ${{ secrets.HUBSPOT_INTEGRATION_TESTS_CREDS }}
+          INTERCOM_INTEGRATION_TEST_CREDS: ${{ secrets.INTERCOM_INTEGRATION_TEST_CREDS }}
+          JIRA_INTEGRATION_TEST_CREDS: ${{ secrets.JIRA_INTEGRATION_TEST_CREDS }}
+          LOOKER_INTEGRATION_TEST_CREDS: ${{ secrets.LOOKER_INTEGRATION_TEST_CREDS }}
+          MAILCHIMP_TEST_CREDS: ${{ secrets.MAILCHIMP_TEST_CREDS }}
+          MICROSOFT_TEAMS_TEST_CREDS: ${{ secrets.MICROSOFT_TEAMS_TEST_CREDS }}
+          MIXPANEL_INTEGRATION_TEST_CREDS: ${{ secrets.MIXPANEL_INTEGRATION_TEST_CREDS }}
+          SALESFORCE_INTEGRATION_TESTS_CREDS: ${{ secrets.SALESFORCE_INTEGRATION_TESTS_CREDS }}
+          SENDGRID_INTEGRATION_TEST_CREDS: ${{ secrets.SENDGRID_INTEGRATION_TEST_CREDS }}
+          SHOPIFY_INTEGRATION_TEST_CREDS: ${{ secrets.SHOPIFY_INTEGRATION_TEST_CREDS }}
+          SLACK_TEST_CREDS: ${{ secrets.SLACK_TEST_CREDS }}
+          SNOWFLAKE_INTEGRATION_TEST_CREDS: ${{ secrets.SNOWFLAKE_INTEGRATION_TEST_CREDS }}
+          SOURCE_MARKETO_SINGER_INTEGRATION_TEST_CONFIG: ${{ secrets.SOURCE_MARKETO_SINGER_INTEGRATION_TEST_CONFIG }}
+          SOURCE_RECURLY_INTEGRATION_TEST_CREDS: ${{ secrets.SOURCE_RECURLY_INTEGRATION_TEST_CREDS }}
+          STRIPE_INTEGRATION_TEST_CREDS: ${{ secrets.STRIPE_INTEGRATION_TEST_CREDS }}
+          TEMPO_INTEGRATION_TEST_CREDS: ${{ secrets.TEMPO_INTEGRATION_TEST_CREDS }}
+          TWILIO_TEST_CREDS: ${{ secrets.TWILIO_TEST_CREDS }}
+          ZENDESK_SECRETS_CREDS: ${{ secrets.ZENDESK_SECRETS_CREDS }}
+          ZOOM_INTEGRATION_TEST_CREDS: ${{ secrets.ZOOM_INTEGRATION_TEST_CREDS }}
+          PLAID_INTEGRATION_TEST_CREDS: ${{ secrets.PLAID_INTEGRATION_TEST_CREDS }}
       - run: |
           docker login -u airbytebot -p ${DOCKER_PASSWORD}
-          SKIP_TESTS=true ./tools/integrations/manage.sh publish airbyte-integrations/${{ github.event.inputs.connector }}
+          ./tools/integrations/manage.sh publish airbyte-integrations/${{ github.event.inputs.connector }}
         name: publish ${{ github.event.inputs.connector }}
         id: publish
         env:
@@ -55,6 +93,12 @@ jobs:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
             > :white_check_mark: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+      - name: Merge Pull Request
+        if: success()
+        uses: ridedott/merge-me-action@v1
+        with:
+          GITHUB_TOKEN: ${{ secrets.SLASH_COMMAND_PAT }}
+          MERGE_METHOD: SQUASH
       - name: Add Failure Comment
         if: github.event.inputs.comment-id && !success()
         uses: peter-evans/create-or-update-comment@v1
@@ -62,4 +106,13 @@ jobs:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
             > :x: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
-            
+      - name: Slack Notification - Failure
+        if: failure()
+        uses: rtCamp/action-slack-notify@master
+        env:
+          SLACK_WEBHOOK: ${{ secrets.BUILD_SLACK_WEBHOOK }}
+          SLACK_USERNAME: Buildozer
+          SLACK_ICON: https://avatars.slack-edge.com/temp/2020-09-01/1342729352468_209b10acd6ff13a649a1.jpg
+          SLACK_COLOR: DC143C
+          SLACK_TITLE: 'Failed to publish connector ${{ github.event.inputs.connector }} from branch ${{ github.ref	 }}'
+          SLACK_FOOTER: ""

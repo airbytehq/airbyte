@@ -291,11 +291,15 @@ public abstract class TestDestination {
       return;
     }
 
+    testIncrementalSync("exchange_rate_messages.txt", "exchange_rate_catalog.json");
+  }
+
+  public void testIncrementalSync(String messagesFilename, String catalogFilename) throws Exception {
     final AirbyteCatalog catalog =
-        Jsons.deserialize(MoreResources.readResource("exchange_rate_catalog.json"), AirbyteCatalog.class);
+        Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
     configuredCatalog.getStreams().forEach(s -> s.withSyncMode(SyncMode.INCREMENTAL));
-    final List<AirbyteMessage> firstSyncMessages = MoreResources.readResource("exchange_rate_messages.txt").lines()
+    final List<AirbyteMessage> firstSyncMessages = MoreResources.readResource(messagesFilename).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
     runSync(getConfig(), firstSyncMessages, configuredCatalog);
 

@@ -1,6 +1,6 @@
 import { FetchOptions, Resource } from "rest-hooks";
 import BaseResource, { NetworkError } from "./BaseResource";
-import { SyncSchema } from "./Schema";
+import { SyncSchema } from "core/domain/catalog";
 
 export type ScheduleProperties = {
   units: number;
@@ -30,7 +30,7 @@ export interface Connection {
   destinationId: string;
   status: string;
   schedule: ScheduleProperties | null;
-  syncSchema: SyncSchema;
+  syncCatalog: SyncSchema;
   source?: SourceInformation;
   destination?: DestinationInformation;
   lastSync?: number | null;
@@ -44,11 +44,12 @@ export default class ConnectionResource extends BaseResource
   readonly sourceId: string = "";
   readonly destinationId: string = "";
   readonly status: string = "";
+  readonly message: string = "";
   readonly schedule: ScheduleProperties | null = null;
   readonly source: SourceInformation | undefined = undefined;
   readonly destination: DestinationInformation | undefined = undefined;
   readonly lastSync: number | undefined | null = null;
-  readonly syncSchema: SyncSchema = { streams: [] };
+  readonly syncCatalog: SyncSchema = { streams: [] };
   readonly isSyncing: boolean = false;
 
   pk() {
@@ -76,7 +77,7 @@ export default class ConnectionResource extends BaseResource
           `${super.rootUrl()}web_backend/connections/get`,
           params
         ),
-      schema: this.asSchema()
+      schema: this
     };
   }
 
@@ -102,14 +103,14 @@ export default class ConnectionResource extends BaseResource
 
         return result;
       },
-      schema: this.asSchema()
+      schema: this
     };
   }
 
   static createShape<T extends typeof Resource>(this: T) {
     return {
       ...super.createShape(),
-      schema: this.asSchema(),
+      schema: this,
       fetch: async (
         params: Readonly<object>,
         body: Readonly<object>
@@ -137,7 +138,7 @@ export default class ConnectionResource extends BaseResource
           `${super.rootUrl()}web_backend/connections/list`,
           params
         ),
-      schema: { connections: [this.asSchema()] }
+      schema: { connections: [this] }
     };
   }
 

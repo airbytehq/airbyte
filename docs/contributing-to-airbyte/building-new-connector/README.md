@@ -43,7 +43,7 @@ npm run generate
 
 and choose the relevant template. This will generate a new connector in the `airbyte-integrations/connectors/<your-connector>` directory.
 
-If you are developing a Python/Singer connector, you may find the [building a Python connector tutorial](../../tutorials/building-a-python-source.md) helpful.  
+If you are developing a Python/Singer connector, you may find the [building a Python connector tutorial](../../tutorials/building-a-python-source.md) helpful.
 
 ### 2. Integration tests
 

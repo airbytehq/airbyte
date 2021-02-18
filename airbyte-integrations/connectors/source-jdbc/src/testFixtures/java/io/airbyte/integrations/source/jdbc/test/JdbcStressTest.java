@@ -30,6 +30,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.stream.MoreStreams;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
@@ -40,6 +41,7 @@ import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
@@ -47,9 +49,9 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -139,13 +141,31 @@ public abstract class JdbcStressTest {
 
   }
 
+  // todo (cgardens) - restructure these tests so that testFullRefresh() and testIncremental() can be
+  // separate tests. current constrained by only wanting to setup the fixture in the database once,
+  // but it is not trivial to move them to @BeforeAll because it is static and we are doing
+  // inheritance. Not impossible, just needs to be done thoughtfully and for all JdbcSources.
   @Test
   public void stressTest() throws Exception {
-    final Stream<AirbyteMessage> read = source.read(config, getConfiguredCatalog(), Jsons.jsonNode(Collections.emptyMap()));
-    final long actualCount = read
+    testFullRefresh();
+    testIncremental();
+  }
+
+  private void testFullRefresh() throws Exception {
+    runTest(getConfiguredCatalogFullRefresh(), "full_refresh");
+  }
+
+  private void testIncremental() throws Exception {
+    runTest(getConfiguredCatalogIncremental(), "incremental");
+  }
+
+  private void runTest(ConfiguredAirbyteCatalog configuredCatalog, String testName) throws Exception {
+    LOGGER.info("running stress test for: " + testName);
+    final Iterator<AirbyteMessage> read = source.read(config, configuredCatalog, Jsons.jsonNode(Collections.emptyMap()));
+    final long actualCount = MoreStreams.toStream(read)
         .filter(m -> m.getType() == Type.RECORD)
         .peek(m -> {
-          if (m.getRecord().getData().get("id").asLong() % 10000 == 0) {
+          if (m.getRecord().getData().get("id").asLong() % 100000 == 0) {
             LOGGER.info("reading batch: " + m.getRecord().getData().get("id").asLong() / 1000);
           }
         })
@@ -155,8 +175,8 @@ public abstract class JdbcStressTest {
     final long expectedRoundedRecordsCount = TOTAL_RECORDS - TOTAL_RECORDS % 1000;
     LOGGER.info("expected records count: " + TOTAL_RECORDS);
     LOGGER.info("actual records count: " + actualCount);
-    assertEquals(expectedRoundedRecordsCount, actualCount);
-    assertEquals(expectedRoundedRecordsCount, bitSet.cardinality());
+    assertEquals(expectedRoundedRecordsCount, actualCount, "testing: " + testName);
+    assertEquals(expectedRoundedRecordsCount, bitSet.cardinality(), "testing: " + testName);
   }
 
   // each is roughly 106 bytes.
@@ -171,8 +191,15 @@ public abstract class JdbcStressTest {
     assertEquals(expectedMessage, actualMessage);
   }
 
-  private static ConfiguredAirbyteCatalog getConfiguredCatalog() {
+  private static ConfiguredAirbyteCatalog getConfiguredCatalogFullRefresh() {
     return CatalogHelpers.toDefaultConfiguredCatalog(getCatalog());
+  }
+
+  private static ConfiguredAirbyteCatalog getConfiguredCatalogIncremental() {
+    return new ConfiguredAirbyteCatalog()
+        .withStreams(Collections.singletonList(new ConfiguredAirbyteStream().withStream(getCatalog().getStreams().get(0))
+            .withCursorField(Collections.singletonList("id"))
+            .withSyncMode(SyncMode.INCREMENTAL)));
   }
 
   private static AirbyteCatalog getCatalog() {

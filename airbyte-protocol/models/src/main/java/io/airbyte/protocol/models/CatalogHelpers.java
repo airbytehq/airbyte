@@ -168,4 +168,12 @@ public class CatalogHelpers {
     return allFieldNames;
   }
 
+  public static Set<String> getStreamNames(ConfiguredAirbyteCatalog catalog) {
+    return catalog.getStreams()
+        .stream()
+        .map(ConfiguredAirbyteStream::getStream)
+        .map(AirbyteStream::getName)
+        .collect(Collectors.toSet());
+  }
+
 }

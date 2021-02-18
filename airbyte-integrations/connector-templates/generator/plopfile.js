@@ -35,7 +35,7 @@ module.exports = function (plop) {
       console.log(getSuccessMessage(answers.name, plopApi.renderString(config.outputPath, answers), config.message));
   });
 
-  plop.setGenerator('Python Source', {
+  plop.setGenerator('source-python', {
     description: 'Generate an Airbyte Source written in Python',
     prompts: [{type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "google-analytics"'}],
     actions: [
@@ -45,15 +45,8 @@ module.exports = function (plop) {
         destination: pythonSourceOutputRoot,
         base: pythonSourceInputRoot,
         templateFiles: `${pythonSourceInputRoot}/**/**`,
-        globOptions: {ignore:'.secrets'}
       },
         // plop doesn't add dotfiles by default so we manually add them
-      {
-        type:'add',
-        abortOnFail: true,
-        templateFile: `${pythonSourceInputRoot}/.secrets/config.json.hbs`,
-        path: `${pythonSourceOutputRoot}/secrets/config.json`
-      },
       {
         type:'add',
         abortOnFail: true,
@@ -69,9 +62,14 @@ module.exports = function (plop) {
       {type: 'emitSuccess', outputPath: pythonSourceOutputRoot, message: "For a checklist of what to do next go to https://docs.airbyte.io/tutorials/building-a-python-source"}]
   });
 
-  plop.setGenerator('Singer-based Python Source', {
+  plop.setGenerator('source-python-singer', {
     description: 'Generate an Airbyte Source written on top of a Singer Tap.',
-    prompts: [{type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "google-analytics"'}],
+    prompts: [
+      {type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "google-analytics"', filter: function (name) {
+        return name.endsWith('-singer') ? name.replace(/-singer$/, '') : name;
+      }},
+      {type: 'input', name: 'tap_name', message: 'Singer tap package'},
+    ],
     actions: [
       {
         abortOnFail: true,
@@ -79,13 +77,6 @@ module.exports = function (plop) {
         destination: singerSourceOutputRoot,
         base: singerSourceInputRoot,
         templateFiles: `${singerSourceInputRoot}/**/**`,
-        globOptions: {ignore:'.secrets'}
-      },
-      {
-        type:'add',
-        abortOnFail: true,
-        templateFile: `${singerSourceInputRoot}/.secrets/config.json.hbs`,
-        path: `${singerSourceOutputRoot}/secrets/config.json`
       },
       {
         type:'add',
@@ -103,7 +94,7 @@ module.exports = function (plop) {
     ]
   });
 
-  plop.setGenerator('Generic Source', {
+  plop.setGenerator('source-generic', {
       description: 'Use if none of the other templates apply to your use case.',
       prompts: [{type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "google-analytics"'}],
       actions: [
@@ -113,7 +104,6 @@ module.exports = function (plop) {
           destination: genericSourceOutputRoot,
           base: genericSourceInputRoot,
           templateFiles: `${genericSourceInputRoot}/**/**`,
-          globOptions: {ignore:'.secrets'}
         },
         {
           type:'add',
@@ -124,6 +114,4 @@ module.exports = function (plop) {
           {type: 'emitSuccess', outputPath: genericSourceOutputRoot}
       ]
     });
-
-
 };

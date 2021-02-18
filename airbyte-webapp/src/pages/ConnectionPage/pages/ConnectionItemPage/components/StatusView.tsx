@@ -18,6 +18,8 @@ import config from "../../../../../config";
 import EmptyResource from "../../../../../components/EmptyResourceBlock";
 import ResetDataModal from "../../../../../components/ResetDataModal";
 import useConnection from "../../../../../components/hooks/services/useConnectionHook";
+import useLoadingStateHook from "../../../../../components/hooks/useLoadingStateHook";
+import LoadingButton from "../../../../../components/Button/LoadingButton";
 
 type IProps = {
   connection: Connection;
@@ -41,17 +43,20 @@ const Title = styled.div`
 `;
 
 const TryArrow = styled(FontAwesomeIcon)`
-  margin-right: 10px;
+  margin: 0 10px -1px 0;
   font-size: 14px;
 `;
 
-const SyncButton = styled(Button)`
+const SyncButton = styled(LoadingButton)`
   padding: 5px 8px;
   margin: -5px 0 -5px 9px;
+  min-width: 101px;
+  min-height: 28px;
 `;
 
 const StatusView: React.FC<IProps> = ({ connection, frequencyText }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { isLoading, showFeedback, startAction } = useLoadingStateHook();
   const { jobs } = useResource(JobResource.listShape(), {
     configId: connection.connectionId,
     configTypes: ["sync", "reset_connection"]
@@ -65,7 +70,7 @@ const StatusView: React.FC<IProps> = ({ connection, frequencyText }) => {
 
   const { resetConnection } = useConnection();
 
-  const onSync = () => {
+  const onSync = async () => {
     AnalyticsService.track("Source - Action", {
       user_id: config.ui.workspaceId,
       action: "Full refresh sync",
@@ -76,7 +81,7 @@ const StatusView: React.FC<IProps> = ({ connection, frequencyText }) => {
         connection.destination?.destinationDefinitionId,
       frequency: frequencyText
     });
-    SyncConnection({
+    await SyncConnection({
       connectionId: connection.connectionId
     });
   };
@@ -97,9 +102,19 @@ const StatusView: React.FC<IProps> = ({ connection, frequencyText }) => {
               <Button onClick={() => setIsModalOpen(true)}>
                 <FormattedMessage id={"connection.resetData"} />
               </Button>
-              <SyncButton onClick={onSync}>
-                <TryArrow icon={faRedoAlt} />
-                <FormattedMessage id={"sources.syncNow"} />
+              <SyncButton
+                isLoading={isLoading}
+                wasActive={showFeedback}
+                onClick={() => startAction({ action: onSync })}
+              >
+                {showFeedback ? (
+                  <FormattedMessage id={"sources.syncingNow"} />
+                ) : (
+                  <>
+                    <TryArrow icon={faRedoAlt} />
+                    <FormattedMessage id={"sources.syncNow"} />
+                  </>
+                )}
               </SyncButton>
             </div>
           </Title>

@@ -1,20 +1,33 @@
 import React, { Suspense, useState } from "react";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
 import LoadingSchema from "../LoadingSchema";
-import CreateConnection from "./components/CreateConnection";
-import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
 import ContentCard from "../ContentCard";
-import { IDataItem } from "../DropDown/components/ListItem";
+import { JobsLogItem } from "../JobItem";
+import FrequencyForm from "../FrequencyForm";
+import { createFormErrorMessage } from "../../utils/errorStatusMessage";
+
+import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
+
+import config from "../../config";
+
 import { AnalyticsService } from "../../core/analytics/AnalyticsService";
 import { Source } from "../../core/resources/Source";
 import { Destination } from "../../core/resources/Destination";
-import { SyncSchema } from "../../core/resources/Schema";
+import { SyncSchema } from "../../core/domain/catalog";
+
 import useConnection from "../hooks/services/useConnectionHook";
 import { useDiscoverSchema } from "../hooks/services/useSchemaHook";
 
-import config from "../../config";
-import { JobsLogItem } from "../JobItem";
+const SkipButton = styled.div`
+  margin-top: 6px;
+
+  & > button {
+    min-width: 239px;
+    margin-left: 9px;
+  }
+`;
 
 type IProps = {
   additionBottomControls?: React.ReactNode;
@@ -40,12 +53,15 @@ const CreateConnectionContent: React.FC<IProps> = ({
 
   const onSubmitConnectionStep = async (values: {
     frequency: string;
-    syncSchema: SyncSchema;
+    schema: SyncSchema;
   }) => {
     setErrorStatusRequest(0);
     try {
       await createConnection({
-        values,
+        values: {
+          frequency: values.frequency,
+          syncCatalog: schema
+        },
         source: source,
         destination: destination,
         sourceDefinition: {
@@ -66,14 +82,14 @@ const CreateConnectionContent: React.FC<IProps> = ({
     }
   };
 
-  const onSelectFrequency = (item: IDataItem) => {
+  const onSelectFrequency = (item: { text: string }) => {
     AnalyticsService.track("New Connection - Action", {
       user_id: config.ui.workspaceId,
       action: "Select a frequency",
       frequency: item?.text,
-      connector_source_definition: source?.name,
+      connector_source_definition: source?.sourceName,
       connector_source_definition_id: source?.sourceDefinitionId,
-      connector_destination_definition: destination?.name,
+      connector_destination_definition: destination?.destinationName,
       connector_destination_definition_id: destination?.destinationDefinitionId
     });
   };
@@ -89,7 +105,10 @@ const CreateConnectionContent: React.FC<IProps> = ({
   if (schemaErrorStatus) {
     return (
       <ContentCard title={<FormattedMessage id="onboarding.setConnection" />}>
-        <TryAfterErrorBlock onClick={onDiscoverSchema} />
+        <TryAfterErrorBlock
+          onClick={onDiscoverSchema}
+          additionControl={<SkipButton>{additionBottomControls}</SkipButton>}
+        />
         <JobsLogItem jobInfo={schemaErrorStatus?.response} />
       </ContentCard>
     );
@@ -98,12 +117,12 @@ const CreateConnectionContent: React.FC<IProps> = ({
   return (
     <ContentCard title={<FormattedMessage id="onboarding.setConnection" />}>
       <Suspense fallback={<LoadingSchema />}>
-        <CreateConnection
+        <FrequencyForm
           additionBottomControls={additionBottomControls}
-          schema={schema}
-          onSelectFrequency={onSelectFrequency}
+          onDropDownSelect={onSelectFrequency}
           onSubmit={onSubmitConnectionStep}
-          errorStatus={errorStatusRequest}
+          errorMessage={createFormErrorMessage({ status: errorStatusRequest })}
+          schema={schema}
         />
       </Suspense>
     </ContentCard>

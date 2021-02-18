@@ -46,10 +46,10 @@ For more information, see the [Facebook Insights API documentation. ](https://de
 ### Rate Limiting & Performance Considerations
 
 {% hint style="info" %}
-Facebook heavily throttles API tokens generated from "Dev" Facebook Apps, making it infeasible to use such a token for syncs with Airbyte. To be able to use this connector, make sure to use an App with at least the "Business Standard" status to generate the API token below.
+Facebook heavily throttles API tokens generated from Facebook Apps by default, making it infeasible to use such a token for syncs with Airbyte. To be able to use this connector without your syncs taking days due to rate limiting follow the instructions in the Setup Guide below to access better rate limits.
 {% endhint %}
 
-See Facebook's [documentation on rate limiting](https://developers.facebook.com/docs/marketing-apis/rate-limiting) for more information.
+See Facebook's [documentation on rate limiting](https://developers.facebook.com/docs/marketing-api/overview/authorization#limits) for more information.
 
 ## Getting started
 
@@ -58,6 +58,7 @@ See Facebook's [documentation on rate limiting](https://developers.facebook.com/
 * A Facebook Ad Account ID  
 * A Facebook App which has the Marketing API enabled
 * A Facebook Marketing API Access Token
+* Request a rate limit increase from Facebook
 
 ### Setup guide
 
@@ -82,6 +83,16 @@ From the App's Dashboard screen \(seen in the screenshot below\) enable the Mark
 In the App Dashboard screen, click Marketing API --&gt; Tools on the left sidebar. Then highlight all the available token permissions \(`ads_management`, `ads_read`, `read_insights`\) and click "Get token". A long string of characters should appear in front of you; **this is the access token.** Copy this string for use in the Airbyte UI later.
 
 ![](../../.gitbook/assets/facebook_access_token.png)
+
+### Request rate limit increase
+
+Facebook [heavily throttles](https://developers.facebook.com/docs/marketing-api/overview/authorization#limits) API tokens generated from Facebook Apps with the "Standard Access" tier \(the default tier for new apps\), making it infeasible to use the token for syncs with Airbyte. You'll need to request an upgrade to Advanced Access for your app on the following permissions:
+
+* Ads Management Standard Access
+* ads\_read
+* ads\_management
+
+See the Facebook [documentation on Authorization](https://developers.facebook.com/docs/marketing-api/overview/authorization/#access-levels) for information about how to request Advanced Access to the relevant permissions.
 
 With the Ad Account ID and API access token, you should be ready to start pulling data from the Facebook Marketing API. Head to the Airbyte UI to setup your source connector!
 

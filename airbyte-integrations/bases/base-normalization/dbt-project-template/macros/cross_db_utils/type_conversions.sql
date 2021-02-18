@@ -12,6 +12,19 @@
     case when {{ boolean_column }} then 'true' else 'false' end
 {%- endmacro %}
 
+{# array_to_varchar -------------------------------------------------     #}
+{% macro array_to_varchar(array_column) -%}
+  {{ adapter.dispatch('array_to_varchar')(array_column) }}
+{%- endmacro %}
+
+{% macro default__array_to_varchar(array_column) -%}
+    {{ array_column }}
+{%- endmacro %}
+
+{% macro bigquery__array_to_varchar(array_column) -%}
+    array_to_string({{ array_column }}, "|", "")
+{%- endmacro %}
+
 {# cast_to_boolean -------------------------------------------------     #}
 {% macro cast_to_boolean(field) -%}
     {{ adapter.dispatch('cast_to_boolean')(field) }}

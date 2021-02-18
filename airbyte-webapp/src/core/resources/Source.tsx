@@ -27,14 +27,14 @@ export default class SourceResource extends BaseResource implements Source {
   static listShape<T extends typeof Resource>(this: T) {
     return {
       ...super.listShape(),
-      schema: { sources: [this.asSchema()] }
+      schema: { sources: [this] }
     };
   }
 
   static detailShape<T extends typeof Resource>(this: T) {
     return {
       ...super.detailShape(),
-      schema: this.asSchema()
+      schema: this
     };
   }
 
@@ -52,7 +52,7 @@ export default class SourceResource extends BaseResource implements Source {
         );
         return response;
       },
-      schema: this.asSchema()
+      schema: this
     };
   }
 }

@@ -1,58 +1,46 @@
-import React, { useCallback } from "react";
+import React from "react";
 import styled from "styled-components";
 
 import { Cell } from "../../SimpleTableComponents";
 import MainInfoCell from "./MainInfoCell";
 
-import { SyncSchemaField } from "../../../core/resources/Schema";
+import { SyncSchemaField } from "../../../core/domain/catalog";
 import ItemRow from "./ItemRow";
 import TreeItem from "./TreeItem";
 
 type IProps = {
-  isChild?: boolean;
+  depth?: number;
   item: SyncSchemaField;
-  updateItem: (a: any) => void;
 };
-
-const ChildItemRow = styled(ItemRow)`
-  margin-left: -64px;
-`;
-
-const ChildTreeItem = styled(TreeItem)`
-  margin-left: 64px;
-`;
 
 const StyledCell = styled(Cell)`
   overflow: hidden;
   text-overflow: ellipsis;
+  cursor: default;
 `;
 
-const ChildRow: React.FC<IProps> = ({ item, updateItem }) => {
-  const onCheckBoxClick = useCallback(
-    () => updateItem({ ...item, selected: !item.selected }),
-    [item, updateItem]
-  );
-
+const ChildRow: React.FC<IProps> = ({ item, depth = 0 }) => {
   // TODO hack for v0.2.0: don't allow checking any of the children aka fields in a stream.
   // hideCheckbox={true} should be removed once it's possible to select these again.
   // https://airbytehq.slack.com/archives/C01CWUQT7UJ/p1603173180066800
   return (
     <>
-      <ChildTreeItem>
-        <ChildItemRow>
+      <TreeItem depth={0}>
+        <ItemRow>
           <MainInfoCell
             hideCheckbox={true}
             label={item.name}
-            onCheckBoxClick={onCheckBoxClick}
-            isItemChecked={item.selected}
-            isItemHasChildren={false}
-            isChild
+            isItemChecked={true}
+            depth={depth}
           />
-          <StyledCell>{item.dataType}</StyledCell>
-          <StyledCell>{item.cleanedName}</StyledCell>
+          <StyledCell>{item.type}</StyledCell>
+          <StyledCell title={item.cleanedName}>{item.cleanedName}</StyledCell>
           <Cell />
-        </ChildItemRow>
-      </ChildTreeItem>
+        </ItemRow>
+      </TreeItem>
+      {item.fields?.map(field => (
+        <ChildRow item={field} depth={depth} />
+      ))}
     </>
   );
 };

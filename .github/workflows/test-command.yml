@@ -85,9 +85,6 @@ jobs:
         id: test
         env:
           ACTION_RUN_ID: ${{github.run_id}}
-          BUILD_STAT_WRITE_KEY: ${{ secrets.BUILD_STAT_WRITE_KEY }}
-          BUILD_STAT_BUCKET: ${{ secrets.BUILD_STAT_BUCKET }}
-          GITHUB_REF: ${{ github.ref }}
       - name: Report Status
         if: github.ref == 'refs/heads/master' && always()
         run: ./tools/status/report.sh ${{ github.event.inputs.connector }} ${{github.repository}} ${{github.run_id}} ${{steps.test.outcome}}

@@ -48,7 +48,7 @@ class SourceShopifySinger(BaseSingerSource):
         }
 
     def try_connect(self, logger: AirbyteLogger, config: dict):
-        session = shopify.Session(f"{config['shop']}.myshopify.com", "2020-10", config["api_key"])
+        session = shopify.Session(f"{config['shop']}.myshopify.com", "2021-01", config["api_key"])
         shopify.ShopifyResource.activate_session(session)
         # try to read the name of the shop, which should be available with any level of permissions
         shopify.GraphQL().execute("{ shop { name id } }")

@@ -45,6 +45,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.destination.NamingConventionTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -107,6 +109,8 @@ class BigQueryDestinationTest {
           io.airbyte.protocol.models.Field
               .of("id", JsonSchemaPrimitive.STRING)),
       CatalogHelpers.createConfiguredAirbyteStream(TASKS_STREAM_NAME, Field.of("goal", JsonSchemaPrimitive.STRING))));
+
+  private static final NamingConventionTransformer NAMING_RESOLVER = new StandardNameTransformer();
 
   private JsonNode config;
 
@@ -202,9 +206,11 @@ class BigQueryDestinationTest {
   void testCheckFailure() {
     ((ObjectNode) config).put(BigQueryDestination.CONFIG_PROJECT_ID, "fake");
     final AirbyteConnectionStatus actual = new BigQueryDestination().check(config);
-    final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.FAILED)
-        .withMessage("Access Denied: Project fake: User does not have bigquery.datasets.create permission in project fake.");
-    assertEquals(expected, actual);
+    final String actualMessage = actual.getMessage();
+    LOGGER.info("Checking expected failure message:" + actualMessage);
+    assertTrue(actualMessage.contains("Access Denied:"));
+    final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage("");
+    assertEquals(expected, actual.withMessage(""));
   }
 
   @Test
@@ -219,12 +225,12 @@ class BigQueryDestinationTest {
     consumer.accept(MESSAGE_STATE);
     consumer.close();
 
-    final List<JsonNode> usersActual = retrieveRecords(destination.getNamingTransformer().getRawTableName(USERS_STREAM_NAME));
+    final List<JsonNode> usersActual = retrieveRecords(NAMING_RESOLVER.getRawTableName(USERS_STREAM_NAME));
     final List<JsonNode> expectedUsersJson = Lists.newArrayList(MESSAGE_USERS1.getRecord().getData(), MESSAGE_USERS2.getRecord().getData());
     assertEquals(expectedUsersJson.size(), usersActual.size());
     assertTrue(expectedUsersJson.containsAll(usersActual) && usersActual.containsAll(expectedUsersJson));
 
-    final List<JsonNode> tasksActual = retrieveRecords(destination.getNamingTransformer().getRawTableName(TASKS_STREAM_NAME));
+    final List<JsonNode> tasksActual = retrieveRecords(NAMING_RESOLVER.getRawTableName(TASKS_STREAM_NAME));
     final List<JsonNode> expectedTasksJson = Lists.newArrayList(MESSAGE_TASKS1.getRecord().getData(), MESSAGE_TASKS2.getRecord().getData());
     assertEquals(expectedTasksJson.size(), tasksActual.size());
     assertTrue(expectedTasksJson.containsAll(tasksActual) && tasksActual.containsAll(expectedTasksJson));

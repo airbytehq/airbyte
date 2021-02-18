@@ -83,7 +83,7 @@ spotless {
     python {
         target createSpotlessTarget('**/*.py')
 
-        licenseHeaderFile createPythonLicenseWith(rootProject.file('LICENSE')), '(from|import|def|# generated)'
+        licenseHeaderFile createPythonLicenseWith(rootProject.file('LICENSE')), '(from|import|def|#)'
     }
     format 'styling', {
         target createSpotlessTarget(['**/*.yaml', '**/*.json'])
@@ -218,7 +218,7 @@ task('generate') {
 task('format') {
     dependsOn generate
     dependsOn spotlessApply
-    dependsOn subprojects.collect { it.getTasksByName('blackFormat', true) }
+    dependsOn subprojects.collect { it.getTasksByName('airbytePythonFormat', true) }
 }
 
 // produce reproducible archives

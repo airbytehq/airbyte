@@ -13,7 +13,7 @@ airbyteStandardSourceTestFile {
 
     // All these input paths must live inside this connector's directory (or subdirectories)
     // TODO update the spec JSON file
-    specPath = "source_{{snakeCase name}}_singer/spec.json"
+    specPath = "source_{{snakeCase name}}/spec.json"
 
     // configPath points to a config file which matches the spec.json supplied above. secrets/ is gitignored by default, so place your config file
     // there (in case it contains any credentials)

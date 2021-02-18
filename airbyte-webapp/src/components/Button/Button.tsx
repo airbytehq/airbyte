@@ -1,14 +1,5 @@
-import React from "react";
 import styled from "styled-components";
-
-type IProps = {
-  full?: boolean;
-  danger?: boolean;
-  secondary?: boolean;
-  iconOnly?: boolean;
-  wasActive?: boolean;
-  clickable?: boolean;
-} & React.ButtonHTMLAttributes<HTMLButtonElement>;
+import { IProps } from "./types";
 
 type IStyleProps = IProps & { theme: any };
 

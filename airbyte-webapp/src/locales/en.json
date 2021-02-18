@@ -110,6 +110,7 @@
   "sources.settings": "Settings",
   "sources.syncHistory": "Sync history",
   "sources.syncNow": "Sync now",
+  "sources.syncingNow": "Syncing now!",
   "sources.source": "Source",
   "sources.noSync": "No sync yet",
   "sources.emptySchema": "Schema is empty",
@@ -207,6 +208,8 @@
   "admin.configuration": "Configuration",
   "admin.exportConfiguration": "Export Configuration",
   "admin.importConfiguration": "Import Configuration",
+  "admin.export": "Export",
+  "admin.import": "Import",
   "admin.newConnector": "+ New connector",
   "admin.manageSource": "Manage your source connectors",
   "admin.availableSource": "Available source connectors",
@@ -231,6 +234,9 @@
   "admin.importConfigurationText": "Upload an archive of all configuration and state data. <b>Warning: This will overwrite all existing configuration!</b>",
   "admin.dropZoneTitle": "Drag 'n' drop file here, or click to select file",
   "admin.dropZoneSubtitle": "Only *.tar and *.gz files will be accepted",
+  "admin.logs": "Logs",
+  "admin.downloadServerLogs": "Download Server Logs",
+  "admin.downloadSchedulerLogs": "Download Scheduler Logs",
 
   "demo.message.title": "This demo is read-only",
   "demo.message.body": "You cannot add or edit any connectors. You will see error messages on purpose if you try to do so."

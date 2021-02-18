@@ -233,6 +233,32 @@ public class JdbcUtils {
     }
   }
 
+  /**
+   * Create a fully qualified table name (including schema) with db-specific quoted syntax. e.g.
+   * "public"."my_table"
+   *
+   * @param connection connection to jdbc database (gives access to proper quotes)
+   * @param schemaName name of schema, if exists (CAN BE NULL)
+   * @param tableName name of the table
+   * @return fully qualified table name, using db-specific quoted syntax
+   * @throws SQLException throws if fails to pull correct quote character.
+   */
+  public static String getFullyQualifiedTableNameWithQuoting(Connection connection, String schemaName, String tableName) throws SQLException {
+    final String quotedTableName = enquoteIdentifier(connection, tableName);
+    return schemaName != null ? enquoteIdentifier(connection, schemaName) + "." + quotedTableName : quotedTableName;
+  }
+
+  /**
+   * Create a fully qualified table name (including schema). e.g. public.my_table
+   *
+   * @param schemaName name of schema, if exists (CAN BE NULL)
+   * @param tableName name of the table
+   * @return fully qualified table name
+   */
+  public static String getFullyQualifiedTableName(String schemaName, String tableName) {
+    return schemaName != null ? schemaName + "." + tableName : tableName;
+  }
+
   @FunctionalInterface
   private interface SQLSupplier<O> {
 

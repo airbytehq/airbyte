@@ -33,7 +33,6 @@ import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
@@ -85,11 +84,6 @@ public class CsvDestination implements Destination {
     return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
   }
 
-  @Override
-  public NamingConventionTransformer getNamingTransformer() {
-    return namingResolver;
-  }
-
   /**
    * @param config - csv destination config.
    * @param catalog - schema of the incoming messages.
@@ -105,8 +99,8 @@ public class CsvDestination implements Destination {
     final Map<String, WriteConfig> writeConfigs = new HashMap<>();
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getStream().getName();
-      final String tableName = getNamingTransformer().getRawTableName(streamName);
-      final String tmpTableName = getNamingTransformer().getTmpTableName(streamName);
+      final String tableName = namingResolver.getRawTableName(streamName);
+      final String tmpTableName = namingResolver.getTmpTableName(streamName);
       final Path tmpPath = destinationDir.resolve(tmpTableName + ".csv");
       final Path finalPath = destinationDir.resolve(tableName + ".csv");
       CSVFormat csvFormat = CSVFormat.DEFAULT.withHeader(JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_EMITTED_AT,

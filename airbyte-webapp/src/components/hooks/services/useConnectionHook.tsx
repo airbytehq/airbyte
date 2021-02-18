@@ -6,7 +6,7 @@ import { AnalyticsService } from "../../../core/analytics/AnalyticsService";
 import ConnectionResource, {
   Connection
 } from "../../../core/resources/Connection";
-import { SyncSchema } from "../../../core/resources/Schema";
+import { SyncSchema } from "../../../core/domain/catalog";
 import { SourceDefinition } from "../../../core/resources/SourceDefinition";
 import FrequencyConfig from "../../../data/FrequencyConfig.json";
 import { Source } from "../../../core/resources/Source";
@@ -17,7 +17,7 @@ import useWorkspace from "./useWorkspaceHook";
 
 type ValuesProps = {
   frequency: string;
-  syncSchema: SyncSchema;
+  syncCatalog: SyncSchema;
   source?: { name: string; sourceId: string };
 };
 
@@ -68,9 +68,9 @@ export const useConnectionLoad = (
 
 const useConnection = () => {
   const { push, history } = useRouter();
+  const { finishOnboarding, workspace } = useWorkspace();
 
   const createConnectionResource = useFetcher(ConnectionResource.createShape());
-  const { finishOnboarding, workspace } = useWorkspace();
   const updateConnectionResource = useFetcher(ConnectionResource.updateShape());
   const updateStateConnectionResource = useFetcher(
     ConnectionResource.updateStateShape()
@@ -108,7 +108,7 @@ const useConnection = () => {
           destinationId: destination?.destinationId,
           schedule: frequencyData?.config,
           status: "active",
-          syncSchema: values.syncSchema
+          syncCatalog: values.syncCatalog
         },
         [
           [
@@ -130,9 +130,9 @@ const useConnection = () => {
         user_id: config.ui.workspaceId,
         action: "Set up connection",
         frequency: frequencyData?.text,
-        connector_source_definition: sourceDefinition?.name,
+        connector_source_definition: source?.sourceName,
         connector_source_definition_id: sourceDefinition?.sourceDefinitionId,
-        connector_destination: destinationDefinition?.name,
+        connector_destination_definition: destination?.destinationName,
         connector_destination_definition_id:
           destinationDefinition?.destinationDefinitionId
       });
@@ -148,13 +148,13 @@ const useConnection = () => {
 
   const updateConnection = async ({
     connectionId,
-    syncSchema,
+    syncCatalog,
     status,
     schedule,
     withRefreshedCatalog
   }: {
     connectionId: string;
-    syncSchema?: SyncSchema;
+    syncCatalog?: SyncSchema;
     status: string;
     schedule: {
       units: number;
@@ -170,7 +170,7 @@ const useConnection = () => {
       {},
       {
         connectionId,
-        syncSchema,
+        syncCatalog,
         status,
         schedule,
         ...withRefreshedCatalogCleaned

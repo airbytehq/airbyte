@@ -1,14 +1,27 @@
 plugins {
     id 'airbyte-python'
     id 'airbyte-docker'
-    id 'airbyte-source-test'
     id 'airbyte-integration-test-java'
+    id 'airbyte-standard-source-test-file'
 }
 
 airbytePython {
     moduleDirectory 'source_freshdesk'
 }
 
+airbyteStandardSourceTestFile {
+    // For more information on standard source tests, see https://docs.airbyte.io/contributing-to-airbyte/building-new-connector/testing-connectors
+    specPath = "source_freshdesk/spec.json"
+    configPath = "secrets/config.json"
+    configuredCatalogPath = "sample_files/configured_catalog.json"
+}
+
 dependencies {
     implementation files(project(':airbyte-integrations:bases:base-python').airbyteDocker.outputs)
 }
+
+task("pythonIntegrationTests", type: PythonTask, dependsOn: installTestReqs) {
+    module = "pytest"
+    command = "-s integration_tests"
+}
+integrationTest.dependsOn("pythonIntegrationTests")
