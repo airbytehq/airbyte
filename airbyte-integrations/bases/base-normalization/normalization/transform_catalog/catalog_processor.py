@@ -30,7 +30,6 @@ import yaml
 from normalization.destination_type import DestinationType
 from normalization.transform_catalog.destination_name_transformer import DestinationNameTransformer
 from normalization.transform_catalog.stream_processor import StreamProcessor
-from normalization.transform_catalog.utils import jinja_call
 
 
 class CatalogProcessor:
@@ -68,13 +67,13 @@ class CatalogProcessor:
         source_tables: Dict[str, Set[str]] = {}
 
         catalog = read_json(catalog_file)
+        print(json.dumps(catalog, separators=(",", ":")))
         substreams = {}
         for configured_stream in get_field(catalog, "streams", "Invalid Catalog: 'streams' is not defined in Catalog"):
             stream_config = get_field(configured_stream, "stream", "Invalid Stream: 'stream' is not defined in Catalog streams")
             schema_name = self.name_transformer.normalize_schema_name(target_schema)
             raw_schema_name = self.name_transformer.normalize_schema_name(f"_airbyte_{target_schema}")
             stream_name = get_field(stream_config, "name", f"Invalid Stream: 'name' is not defined in stream: {str(stream_config)}")
-            # table_name = self.name_transformer.normalize_table_name(stream_name)
             raw_table_name = self.name_transformer.normalize_table_name(f"_airbyte_raw_{stream_name}")
 
             message = f"'json_schema'.'properties' are not defined for stream {stream_name}"
@@ -86,10 +85,9 @@ class CatalogProcessor:
             if not properties:
                 raise EOFError("Invalid Catalog: Unexpected empty properties in catalog")
 
-            register_table_in_schema(source_tables, schema_name, raw_table_name)
+            add_table_to_sources(source_tables, schema_name, raw_table_name)
 
-            print(f"From {from_table}:")
-            stream_processor = StreamProcessor(
+            stream_processor = StreamProcessor().init(
                 stream_name=stream_name,
                 output_directory=self.output_directory,
                 integration_type=self.integration_type,
@@ -97,14 +95,16 @@ class CatalogProcessor:
                 schema=schema_name,
                 json_column_name=f"'{json_column_name}'",
                 properties=properties,
+                tables_registry=tables_registry,
             )
-            results = stream_processor.process(from_table, tables_registry)
-            if results:
-                substreams.update(results)
+            nested_processors = stream_processor.process(from_table)
+            add_table_to_registry(tables_registry, stream_processor)
+            if nested_processors and len(nested_processors) > 0:
+                substreams.update(nested_processors)
         self.write_yaml_sources_file(source_tables)
         self.process_substreams(substreams, tables_registry)
 
-    def process_substreams(self, substreams: Dict, table_registry: Set[str]):
+    def process_substreams(self, substreams: Dict, tables_registry: Set[str]):
         """
         Handle nested stream/substream/children
         """
@@ -112,11 +112,12 @@ class CatalogProcessor:
             children = substreams.copy()
             substreams = {}
             for child in children:
-                print(f" From {child}:")
                 for substream in children[child]:
-                    results = substream.process(child, table_registry)
-                    if results:
-                        substreams.update(results)
+                    substream.tables_registry = tables_registry
+                    nested_processors = substream.process(child)
+                    add_table_to_registry(tables_registry, substream)
+                    if nested_processors:
+                        substreams.update(nested_processors)
 
     def write_yaml_sources_file(self, source_tables: Dict[str, Set[str]]):
         """
@@ -124,7 +125,7 @@ class CatalogProcessor:
         """
         schemas = []
         for schema in source_tables:
-            quoted_schema = self.name_transformer.need_quotes(schema)
+            quoted_schema = self.name_transformer.needs_quotes(schema)
             tables = []
             for source in source_tables[schema]:
                 if quoted_schema:
@@ -171,7 +172,7 @@ def get_field(config: Dict, key: str, message: str):
         raise KeyError(message)
 
 
-def register_table_in_schema(source_tables: Dict[str, Set[str]], schema_name: str, table_name: str):
+def add_table_to_sources(source_tables: Dict[str, Set[str]], schema_name: str, table_name: str):
     """
     Keeps track of source tables used in this catalog to build a source.yaml file for DBT
     """
@@ -181,3 +182,17 @@ def register_table_in_schema(source_tables: Dict[str, Set[str]], schema_name: st
         source_tables[schema_name].add(table_name)
     else:
         raise KeyError(f"Duplicate table {table_name} in {schema_name}")
+
+
+def add_table_to_registry(tables_registry: Set[str], processor: StreamProcessor):
+    """
+    Keeps track of all table names created by this catalog, regardless of their destination schema
+
+    @param tables_registry where all table names are recorded
+    @param processor the processor that created tables as part of its process
+    """
+    for table_name in processor.local_registry:
+        if table_name not in tables_registry:
+            tables_registry.add(table_name)
+        else:
+            raise KeyError(f"Duplicate table {table_name}")

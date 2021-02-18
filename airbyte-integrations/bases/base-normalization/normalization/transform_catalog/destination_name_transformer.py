@@ -29,6 +29,8 @@ from normalization.destination_type import DestinationType
 from normalization.transform_catalog.reserved_keywords import is_reserved_keyword
 from normalization.transform_catalog.utils import jinja_call
 
+# We reserve this many characters from identifier names to be used for prefix/suffix for airbyte
+# before reaching the database name length limit
 TRUNCATE_RESERVED_SIZE: int = 5
 
 
@@ -46,44 +48,12 @@ class DestinationNameTransformer:
         """
         self.integration_type: DestinationType = integration_type
 
-    def normalize_schema_name(self, schema_name: str):
-        # We force standard naming for schema names (see issue #1785)
-        result = transform_standard_naming(schema_name)
-        if is_reserved_keyword(result, self.integration_type):
-            result = f"_{result}"
-        result = self.normalize_identifier_name(result)
-        result = self.normalize_identifier_case(result)
-        return result
+    # Public methods
 
-    def normalize_table_name(self, table_name: str):
-        # We force standard naming for table names (see issue #1785)
-        result = transform_standard_naming(table_name)
-        if is_reserved_keyword(result, self.integration_type):
-            result = f"_{result}"
-        result = self.normalize_identifier_name(result)
-        result = self.normalize_identifier_case(result)
-        return result
-
-    def normalize_column_name(self, column_name: str, in_jinja: bool = False):
+    def needs_quotes(self, input_name: str):
         """
-        @param column_name is the column to normalize
-        @param in_jinja is a boolean to specify if the returned normalized will be used inside a jinja macro or not
+        @param input_name to test if it needs to manipulated with quotes or not
         """
-        result = self.normalize_identifier_name(column_name)
-        if self.need_quotes(result):
-            result = f"adapter.quote('{result}')"
-            result = self.normalize_identifier_case(result, is_quoted=True)
-            if not in_jinja:
-                result = jinja_call(result)
-            in_jinja = False
-        else:
-            result = self.normalize_identifier_case(result, is_quoted=False)
-        if in_jinja:
-            # to refer to columns while already in jinja context, always quote
-            return f"'{result}'"
-        return result
-
-    def need_quotes(self, input_name: str):
         if is_reserved_keyword(input_name, self.integration_type):
             return True
         if self.integration_type.value == DestinationType.BIGQUERY.value:
@@ -92,7 +62,52 @@ class DestinationNameTransformer:
         contains_non_alphanumeric = match(".*[^A-Za-z0-9_].*", input_name)
         return doesnt_start_with_alphaunderscore or contains_non_alphanumeric
 
-    def normalize_identifier_name(self, input_name: str) -> str:
+    def normalize_schema_name(self, schema_name: str, in_jinja: bool = False):
+        """
+        @param schema_name is the schema to normalize
+        @param in_jinja is a boolean to specify if the returned normalized will be used inside a jinja macro or not
+        """
+        return self.__normalize_non_column_identifier_name(schema_name, in_jinja)
+
+    def normalize_table_name(self, table_name: str, in_jinja: bool = False):
+        """
+        @param table_name is the table to normalize
+        @param in_jinja is a boolean to specify if the returned normalized will be used inside a jinja macro or not
+        """
+        return self.__normalize_non_column_identifier_name(table_name, in_jinja)
+
+    def normalize_column_name(self, column_name: str, in_jinja: bool = False):
+        """
+        @param column_name is the column to normalize
+        @param in_jinja is a boolean to specify if the returned normalized will be used inside a jinja macro or not
+        """
+        return self.__normalize_identifier_name(column_name, in_jinja)
+
+    # Private methods
+
+    def __normalize_non_column_identifier_name(self, input_name: str, in_jinja: bool = False) -> str:
+        # We force standard naming for non column names (see issue #1785)
+        result = transform_standard_naming(input_name)
+        result = self.__truncate_identifier_name(result)
+        result = self.__normalize_identifier_case(result, is_quoted=False)
+        return result
+
+    def __normalize_identifier_name(self, column_name: str, in_jinja: bool = False):
+        result = self.__truncate_identifier_name(column_name)
+        if self.needs_quotes(result):
+            result = f"adapter.quote('{result}')"
+            result = self.__normalize_identifier_case(result, is_quoted=True)
+            if not in_jinja:
+                result = jinja_call(result)
+            return result
+        else:
+            result = self.__normalize_identifier_case(result, is_quoted=False)
+        if in_jinja:
+            # to refer to columns while already in jinja context, always quote
+            return f"'{result}'"
+        return result
+
+    def __truncate_identifier_name(self, input_name: str) -> str:
         if self.integration_type.value == DestinationType.BIGQUERY.value:
             if len(input_name) >= (1024 - TRUNCATE_RESERVED_SIZE):
                 # bigquery has limit of 1024 characters
@@ -109,6 +124,9 @@ class DestinationNameTransformer:
         elif self.integration_type.value == DestinationType.POSTGRES.value:
             if len(input_name) >= (63 - TRUNCATE_RESERVED_SIZE):
                 # postgres has limit of 63 characters
+                # BUT postgres with DBT-v18.0.1 has limit of 29 characters
+                # BUT postgres with DBT-v19.0.0 has limit of 51 characters
+                # see https://github.com/fishtown-analytics/dbt/pull/2850
                 input_name = input_name[0 : (63 - TRUNCATE_RESERVED_SIZE)]
         elif self.integration_type.value == DestinationType.SNOWFLAKE.value:
             if len(input_name) >= (255 - TRUNCATE_RESERVED_SIZE):
@@ -118,17 +136,17 @@ class DestinationNameTransformer:
             raise KeyError(f"Unknown integration type {self.integration_type}")
         return input_name
 
-    def normalize_identifier_case(self, input_name: str, is_quoted: bool = False):
+    def __normalize_identifier_case(self, input_name: str, is_quoted: bool = False):
         if self.integration_type.value == DestinationType.BIGQUERY.value:
             pass
         elif self.integration_type.value == DestinationType.REDSHIFT.value:
             # all tables (even quoted ones) are coerced to lowercase.
             input_name = input_name.lower()
         elif self.integration_type.value == DestinationType.POSTGRES.value:
-            if not is_quoted and not self.need_quotes(input_name):
+            if not is_quoted and not self.needs_quotes(input_name):
                 input_name = input_name.lower()
         elif self.integration_type.value == DestinationType.SNOWFLAKE.value:
-            if not is_quoted and not self.need_quotes(input_name):
+            if not is_quoted and not self.needs_quotes(input_name):
                 input_name = input_name.upper()
         else:
             raise KeyError(f"Unknown integration type {self.integration_type}")

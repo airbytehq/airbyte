@@ -30,3 +30,7 @@ class DestinationType(Enum):
     POSTGRES = "postgres"
     REDSHIFT = "redshift"
     SNOWFLAKE = "snowflake"
+
+    @classmethod
+    def from_string(cls, string_value: str):
+        return DestinationType[string_value.upper()]

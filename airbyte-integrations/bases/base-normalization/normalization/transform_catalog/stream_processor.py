@@ -56,24 +56,10 @@ class StreamProcessor(object):
     """
 
     def __init__(self, *args, **kwargs):
-        if "parent" in kwargs:
-            self.initFromParent(
-                parent=kwargs.get("parent"),
-                child_name=kwargs.get("child_name"),
-                json_column_name=kwargs.get("json_column_name"),
-                properties=kwargs.get("properties"),
-                is_nested_array=kwargs.get("is_nested_array"),
-            )
-        else:
-            self.init(
-                stream_name=kwargs.get("stream_name"),
-                output_directory=kwargs.get("output_directory"),
-                integration_type=kwargs.get("integration_type"),
-                raw_schema=kwargs.get("raw_schema"),
-                schema=kwargs.get("schema"),
-                json_column_name=kwargs.get("json_column_name"),
-                properties=kwargs.get("properties"),
-            )
+        self.final_table_name = None
+        self.local_registry = set()
+        self.parent = None
+        self.is_nested_array = False
 
     def initFromParent(self, parent, child_name: str, json_column_name: str, properties: Dict, is_nested_array: bool):
         """
@@ -82,6 +68,8 @@ class StreamProcessor(object):
         @param json_column_name is the name of the column in the parent data table containing the json column to transform
         @param properties is the json schema description of this nested stream
         @param is_nested_array is a boolean flag specifying if the child is a nested array that needs to be extracted
+
+        @param tables_registry is the global context recording all tables created so far
 
         The child stream processor will create a separate table to contain the unnested data.
         """
@@ -93,10 +81,12 @@ class StreamProcessor(object):
             schema=parent.schema,
             json_column_name=json_column_name,
             properties=properties,
+            tables_registry=parent.tables_registry,
         )
         self.parent = parent
         self.is_nested_array = is_nested_array
         self.json_path = parent.json_path + [child_name]
+        return self
 
     def init(
         self,
@@ -107,6 +97,7 @@ class StreamProcessor(object):
         schema: str,
         json_column_name: str,
         properties: Dict,
+        tables_registry: Set[str],
     ):
         """
         @param stream_name of the stream being processed
@@ -118,25 +109,25 @@ class StreamProcessor(object):
 
         @param json_column_name is the name of the column in the raw data table containing the json column to transform
         @param properties is the json schema description of this stream
+
+        @param tables_registry is the global context recording all tables created so far
         """
-        self.stream_name: str = stream_name
-        self.output_directory: str = output_directory
-        self.integration_type: DestinationType = integration_type
-        self.raw_schema: str = raw_schema
-        self.schema: str = schema
-        self.json_column_name: str = json_column_name
-        self.properties: Dict = properties
+        self.stream_name = stream_name
+        self.output_directory = output_directory
+        self.integration_type = integration_type
+        self.raw_schema = raw_schema
+        self.schema = schema
+        self.json_column_name = json_column_name
+        self.properties = properties
+        self.tables_registry = tables_registry
 
-        self.name_transformer: DestinationNameTransformer = DestinationNameTransformer(integration_type)
-        self.final_table_name = None
-        self.parent = None
-        self.is_nested_array = False
-        self.json_path: List[str] = [stream_name]
+        self.name_transformer = DestinationNameTransformer(integration_type)
+        self.json_path = [stream_name]
+        return self
 
-    def process(self, from_table: str, table_context: Set[str]) -> Dict:
+    def process(self, from_table: str) -> Dict:
         """
         @param from_table refers to the raw source table to use to extract data from
-        @param table_context is a global context recording names of tables in all schema
         """
         # Check properties
         if not self.properties:
@@ -144,10 +135,10 @@ class StreamProcessor(object):
             return
 
         # Transformation Pipeline for this stream
-        from_table = self.write_model(table_context, self.generate_json_parsing_model(from_table), is_intermediate=True, suffix="ab1")
-        from_table = self.write_model(table_context, self.generate_column_typing_model(from_table), is_intermediate=True, suffix="ab2")
-        from_table = self.write_model(table_context, self.generate_id_hashing_model(from_table), is_intermediate=True, suffix="ab3")
-        from_table = self.write_model(table_context, self.generate_final_model(from_table), is_intermediate=False)
+        from_table = self.write_model(self.generate_json_parsing_model(from_table), is_intermediate=True, suffix="ab1")
+        from_table = self.write_model(self.generate_column_typing_model(from_table), is_intermediate=True, suffix="ab2")
+        from_table = self.write_model(self.generate_id_hashing_model(from_table), is_intermediate=True, suffix="ab3")
+        from_table = self.write_model(self.generate_final_model(from_table), is_intermediate=False)
         return {from_table: self.find_children_streams()}
 
     def find_children_streams(self) -> List:
@@ -171,7 +162,7 @@ class StreamProcessor(object):
                 json_column_name = f"unnested_column_value({quoted_field})"
             if children_properties:
                 for child_key in children_properties:
-                    stream_processor = StreamProcessor(
+                    stream_processor = StreamProcessor().initFromParent(
                         parent=self,
                         child_name=field,
                         json_column_name=json_column_name,
@@ -366,45 +357,56 @@ from {{ from_table }}
     def list_fields(self):
         return [self.name_transformer.normalize_column_name(field) for field in self.properties.keys() if not is_airbyte_column(field)]
 
-    def write_model(self, table_context: Set[str], sql: str, is_intermediate: bool, suffix: str = "") -> str:
+    def write_model(self, sql: str, is_intermediate: bool, suffix: str = "") -> str:
         if is_intermediate:
             output = os.path.join(self.output_directory, "airbyte_views", self.schema)
         else:
             output = os.path.join(self.output_directory, "airbyte_tables", self.schema)
         schema = self.get_schema(is_intermediate)
-        table_name = self.generate_new_table_name(table_context, is_intermediate, suffix)
+        table_name = self.generate_new_table_name(is_intermediate, suffix)
+        self.add_table_to_local_registry(table_name)
         file = f"{table_name}.sql"
         json_path = self.current_json_path()
         header = "{{ config(schema='" + schema + "') }}\n"
         output_sql_file(output_dir=output, file=file, json_path=json_path, header=header, sql=sql)
         return ref_table(table_name)
 
-    def generate_new_table_name(self, table_context: Set[str], is_intermediate: bool, suffix: str):
+    def generate_new_table_name(self, is_intermediate: bool, suffix: str):
         """
         Generates a new table names that is not registered in the schema yet (based on normalized_stream_name())
         """
+        tables_registry = self.tables_registry.union(self.local_registry)
         new_table_name = table_name = self.normalized_stream_name()
         if not is_intermediate and self.parent is None:
             # Top-level stream has priority on table_names
-            if new_table_name in table_context:
+            if new_table_name in tables_registry:
                 # TODO handle collisions between different schemas (dbt works with only one schema for ref()?)
                 # so filenames should always be different for dbt but the final table can be same as long as schemas are different:
                 # see alias in dbt: https://docs.getdbt.com/docs/building-a-dbt-project/building-models/using-custom-aliases/
                 pass
             pass
         else:
-            # TODO handle collisions between intermediate tables and children
-            for i in range(1, 1000):
-                if suffix:
-                    new_table_name = self.name_transformer.normalize_table_name(f"{table_name}_{i}_{suffix}")
-                else:
-                    new_table_name = self.name_transformer.normalize_table_name(f"{table_name}_{i}")
-                if new_table_name not in table_context:
-                    break
+            if suffix:
+                new_table_name = self.name_transformer.normalize_table_name(f"{table_name}_{suffix}")
+            if new_table_name in tables_registry:
+                # TODO handle collisions between intermediate tables and children
+                for i in range(1, 1000):
+                    if suffix:
+                        new_table_name = self.name_transformer.normalize_table_name(f"{table_name}_{i}_{suffix}")
+                    else:
+                        new_table_name = self.name_transformer.normalize_table_name(f"{table_name}_{i}")
+                    if new_table_name not in tables_registry:
+                        break
         if not is_intermediate:
             self.final_table_name = new_table_name
-        register_new_table(table_context, new_table_name)
         return new_table_name
+
+    def add_table_to_local_registry(self, table_name: str):
+        tables_registry = self.tables_registry.union(self.local_registry)
+        if table_name not in tables_registry:
+            self.local_registry.add(table_name)
+        else:
+            raise KeyError(f"Duplicate table {table_name}")
 
     def get_schema(self, is_intermediate: bool):
         if is_intermediate:
@@ -523,10 +525,3 @@ def find_properties_object(path: List[str], field: str, properties: Dict) -> Dic
                 if child:
                     result.update(child)
     return result
-
-
-def register_new_table(table_context: Set[str], table_name: str):
-    if table_name not in table_context:
-        table_context.add(table_name)
-    else:
-        raise KeyError(f"Duplicate table {table_name}")
