@@ -50,7 +50,7 @@ class DestinationNameTransformer:
 
     # Public methods
 
-    def needs_quotes(self, input_name: str):
+    def needs_quotes(self, input_name: str) -> bool:
         """
         @param input_name to test if it needs to manipulated with quotes or not
         """
@@ -58,8 +58,8 @@ class DestinationNameTransformer:
             return True
         if self.integration_type.value == DestinationType.BIGQUERY.value:
             return False
-        doesnt_start_with_alphaunderscore = match("[^A-Za-z_]", input_name[0])
-        contains_non_alphanumeric = match(".*[^A-Za-z0-9_].*", input_name)
+        doesnt_start_with_alphaunderscore = match("[^A-Za-z_]", input_name[0]) is not None
+        contains_non_alphanumeric = match(".*[^A-Za-z0-9_].*", input_name) is not None
         return doesnt_start_with_alphaunderscore or contains_non_alphanumeric
 
     def normalize_schema_name(self, schema_name: str, in_jinja: bool = False):
@@ -69,14 +69,14 @@ class DestinationNameTransformer:
         """
         return self.__normalize_non_column_identifier_name(schema_name, in_jinja)
 
-    def normalize_table_name(self, table_name: str, in_jinja: bool = False):
+    def normalize_table_name(self, table_name: str, in_jinja: bool = False) -> str:
         """
         @param table_name is the table to normalize
         @param in_jinja is a boolean to specify if the returned normalized will be used inside a jinja macro or not
         """
         return self.__normalize_non_column_identifier_name(table_name, in_jinja)
 
-    def normalize_column_name(self, column_name: str, in_jinja: bool = False):
+    def normalize_column_name(self, column_name: str, in_jinja: bool = False) -> str:
         """
         @param column_name is the column to normalize
         @param in_jinja is a boolean to specify if the returned normalized will be used inside a jinja macro or not
@@ -92,9 +92,11 @@ class DestinationNameTransformer:
         result = self.__normalize_identifier_case(result, is_quoted=False)
         return result
 
-    def __normalize_identifier_name(self, column_name: str, in_jinja: bool = False):
+    def __normalize_identifier_name(self, column_name: str, in_jinja: bool = False) -> str:
         result = self.__truncate_identifier_name(column_name)
         if self.needs_quotes(result):
+            result = result.replace('"', '""')
+            result = result.replace("'", "\\'")
             result = f"adapter.quote('{result}')"
             result = self.__normalize_identifier_case(result, is_quoted=True)
             if not in_jinja:
@@ -136,7 +138,7 @@ class DestinationNameTransformer:
             raise KeyError(f"Unknown integration type {self.integration_type}")
         return input_name
 
-    def __normalize_identifier_case(self, input_name: str, is_quoted: bool = False):
+    def __normalize_identifier_case(self, input_name: str, is_quoted: bool = False) -> str:
         if self.integration_type.value == DestinationType.BIGQUERY.value:
             pass
         elif self.integration_type.value == DestinationType.REDSHIFT.value:
@@ -164,5 +166,5 @@ def transform_standard_naming(input_name: str) -> str:
     return input_name
 
 
-def strip_accents(s):
-    return "".join(c for c in ud.normalize("NFD", s) if ud.category(c) != "Mn")
+def strip_accents(input_name: str) -> str:
+    return "".join(c for c in ud.normalize("NFD", input_name) if ud.category(c) != "Mn")

@@ -26,7 +26,7 @@ from typing import Set
 
 
 def jinja_call(command: str) -> str:
-    return "{{ " + command + "  }}"
+    return "{{ " + command + " }}"
 
 
 def is_string(property_type) -> bool:
