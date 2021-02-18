@@ -39,11 +39,13 @@ from source_freshdesk.errors import (
     FreshdeskServerError,
     FreshdeskUnauthorized,
 )
-from source_freshdesk.utils import retry_after_handler, retry_connection_handler
+from source_freshdesk.utils import CallCredit, retry_after_handler, retry_connection_handler
 
 
 class API:
-    def __init__(self, domain: str, api_key: str, verify: bool = True, proxies: MutableMapping[str, Any] = None):
+    def __init__(
+        self, domain: str, api_key: str, requests_per_minute: int = None, verify: bool = True, proxies: MutableMapping[str, Any] = None
+    ):
         """Basic HTTP interface to read from endpoints"""
         self._api_prefix = f"https://{domain.rstrip('/')}/api/v2/"
         self._session = requests.Session()
@@ -54,6 +56,8 @@ class API:
             "Content-Type": "application/json",
             "User-Agent": "Airbyte",
         }
+
+        self._call_credit = CallCredit(balance=requests_per_minute) if requests_per_minute else None
 
         if domain.find("freshdesk.com") < 0:
             raise AttributeError("Freshdesk v2 API works only via Freshdesk domains and not via custom CNAMEs")
@@ -107,16 +111,27 @@ class API:
         response = self._session.get(self._api_prefix + url, params=params)
         return self._parse_and_handle_errors(response)
 
+    def consume_credit(self, credit):
+        """Consume call credit, if there is no credit left within current window will sleep til next period"""
+        if self._call_credit:
+            self._call_credit.consume(credit)
+
 
 class StreamAPI(ABC):
     """Basic stream API that allows to iterate over entities"""
 
     result_return_limit = 100  # maximum value
     maximum_page = 500  # see https://developers.freshdesk.com/api/#best_practices
+    call_credit = 1  # see https://developers.freshdesk.com/api/#embedding
 
     def __init__(self, api: API, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._api = api
+
+    def _api_get(self, url: str, params: Mapping = None):
+        """Wrapper around API GET method to respect call rate limit"""
+        self._api.consume_credit(self.call_credit)
+        return self._api.get(url, params=params)
 
     @abstractmethod
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
@@ -195,13 +210,13 @@ class ClientIncrementalStreamAPI(IncrementalStreamAPI, ABC):
 class AgentsAPI(ClientIncrementalStreamAPI):
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Iterate over entities"""
-        yield from self.read(partial(self._api.get, url="agents"))
+        yield from self.read(partial(self._api_get, url="agents"))
 
 
 class CompaniesAPI(ClientIncrementalStreamAPI):
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Iterate over entities"""
-        yield from self.read(partial(self._api.get, url="companies"))
+        yield from self.read(partial(self._api_get, url="companies"))
 
 
 class ContactsAPI(IncrementalStreamAPI):
@@ -209,7 +224,7 @@ class ContactsAPI(IncrementalStreamAPI):
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Iterate over entities"""
-        yield from self.read(partial(self._api.get, url="contacts"))
+        yield from self.read(partial(self._api_get, url="contacts"))
 
 
 class GroupsAPI(ClientIncrementalStreamAPI):
@@ -217,7 +232,7 @@ class GroupsAPI(ClientIncrementalStreamAPI):
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Iterate over entities"""
-        yield from self.read(partial(self._api.get, url="groups"))
+        yield from self.read(partial(self._api_get, url="groups"))
 
 
 class RolesAPI(ClientIncrementalStreamAPI):
@@ -225,7 +240,7 @@ class RolesAPI(ClientIncrementalStreamAPI):
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Iterate over entities"""
-        yield from self.read(partial(self._api.get, url="roles"))
+        yield from self.read(partial(self._api_get, url="roles"))
 
 
 class SkillsAPI(ClientIncrementalStreamAPI):
@@ -233,26 +248,28 @@ class SkillsAPI(ClientIncrementalStreamAPI):
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Iterate over entities"""
-        yield from self.read(partial(self._api.get, url="skills"))
+        yield from self.read(partial(self._api_get, url="skills"))
 
 
 class SurveysAPI(ClientIncrementalStreamAPI):
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Iterate over entities"""
-        yield from self.read(partial(self._api.get, url="surveys"))
+        yield from self.read(partial(self._api_get, url="surveys"))
 
 
 class TicketsAPI(IncrementalStreamAPI):
+    call_credit = 3  # each include consumes 2 additional credits
+
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Iterate over entities"""
         params = {"include": "description"}
-        yield from self.read(partial(self._api.get, url="tickets"), params=params)
+        yield from self.read(partial(self._api_get, url="tickets"), params=params)
 
 
 class TimeEntriesAPI(ClientIncrementalStreamAPI):
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Iterate over entities"""
-        yield from self.read(partial(self._api.get, url="time_entries"))
+        yield from self.read(partial(self._api_get, url="time_entries"))
 
 
 class ConversationsAPI(ClientIncrementalStreamAPI):
@@ -265,7 +282,7 @@ class ConversationsAPI(ClientIncrementalStreamAPI):
             tickets.state = self.state
         for ticket in tickets.list():
             url = f"tickets/{ticket['id']}/conversations"
-            yield from self.read(partial(self._api.get, url=url))
+            yield from self.read(partial(self._api_get, url=url))
 
 
 class SatisfactionRatingsAPI(ClientIncrementalStreamAPI):
@@ -273,4 +290,4 @@ class SatisfactionRatingsAPI(ClientIncrementalStreamAPI):
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Iterate over entities"""
-        yield from self.read(partial(self._api.get, url="surveys/satisfaction_ratings"))
+        yield from self.read(partial(self._api_get, url="surveys/satisfaction_ratings"))
