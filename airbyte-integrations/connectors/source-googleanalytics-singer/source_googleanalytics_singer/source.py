@@ -25,6 +25,7 @@ SOFTWARE.
 import json
 import os
 import pkgutil
+from pathlib import Path
 from typing import List
 
 from base_singer import AirbyteLogger, BaseSingerSource
@@ -47,10 +48,6 @@ class GoogleAnalyticsSingerSource(BaseSingerSource):
         with open(credentials, "w") as fh:
             fh.write(raw_config["credentials_json"])
         raw_config["key_file_location"] = credentials
-        if raw_config.get("custom_reports", "").strip() and json.loads(raw_config["custom_reports"]):
-            custom_reports_data = json.loads(raw_config["custom_reports"])
-            self._validate_custom_reports(custom_reports_data)
-            raw_config["reports"] = self._get_reports_file_path(temp_dir, custom_reports_data)
         return super().configure(raw_config, temp_dir)
 
     def _validate_custom_reports(self, custom_reports_data: List[dict]):
@@ -59,7 +56,7 @@ class GoogleAnalyticsSingerSource(BaseSingerSource):
             error_messages = []
             for error in Draft4Validator(custom_reports_schema).iter_errors(custom_reports_data):
                 error_messages.append(error.message)
-            raise Exception("An error occurred during custom_reports data validation:\n" + ";\n".join(error_messages))
+            raise Exception("An error occurred during custom_reports data validation: " + "; ".join(error_messages))
 
     def _get_reports_file_path(self, temp_dir: str, custom_reports_data: List[dict]) -> str:
         report_definition = (
@@ -70,14 +67,27 @@ class GoogleAnalyticsSingerSource(BaseSingerSource):
             file.write(json.dumps(report_definition))
         return custom_reports
 
+    def _check_custom_reports(self, config: dict = None, config_path: str = None):
+        if config_path:
+            config = self.read_config(config_path)
+
+        custom_reports = config.pop("custom_reports")
+        if custom_reports.strip() and json.loads(custom_reports):
+            custom_reports_data = json.loads(custom_reports)
+            self._validate_custom_reports(custom_reports_data)
+            credentials_path = Path(config["key_file_location"])
+            config["reports"] = self._get_reports_file_path(credentials_path.parent, custom_reports_data)
+
+        if config_path:
+            self.write_config(config, config_path)
+
     def transform_config(self, raw_config: json):
         config = {
             "key_file_location": raw_config["key_file_location"],
             "view_id": raw_config["view_id"],
             "start_date": raw_config["start_date"],
+            "custom_reports": raw_config.get("custom_reports", ""),
         }
-        if raw_config.get("reports"):
-            config["reports"] = raw_config["reports"]
         return config
 
     def try_connect(self, logger: AirbyteLogger, config: json):
@@ -88,3 +98,8 @@ class GoogleAnalyticsSingerSource(BaseSingerSource):
         augmented_config = dict(additional_fields, **config)
         client = GAClient(augmented_config)
         client.fetch_metadata()
+        self._check_custom_reports(config=config)
+
+    def discover_cmd(self, logger: AirbyteLogger, config_path: str) -> str:
+        self._check_custom_reports(config_path=config_path)
+        return f"{self.tap_cmd} --config {config_path} --discover"
