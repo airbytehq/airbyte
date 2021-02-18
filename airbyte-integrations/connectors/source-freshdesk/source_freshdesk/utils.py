@@ -98,5 +98,6 @@ class CallCredit:
             sleep_time = self._balance_reload_period - (time.time() - self._current_period_start)
             logger.trace(f"Reached call limit for this minute, wait for {sleep_time:.2f} seconds")
             time.sleep(max(1.0, sleep_time))
+            self.reset_period()
 
         self._credits_consumed += credit
