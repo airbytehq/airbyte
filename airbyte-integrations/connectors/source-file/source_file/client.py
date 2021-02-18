@@ -244,11 +244,17 @@ class Client:
             result = result["items"]["properties"]
         return result
 
-    @staticmethod
-    def load_nested_json(fp) -> list:
-        result = json.load(fp)
-        if not isinstance(result, list):
-            result = [result]
+    def load_nested_json(self, fp) -> list:
+        if self._reader_format == "ndjson":
+            result = []
+            line = fp.readline()
+            while line:
+                result.append(json.loads(line))
+                line = fp.readline()
+        else:
+            result = json.load(fp)
+            if not isinstance(result, list):
+                result = [result]
         return result
 
     def load_dataframes(self, fp, skip_data=False) -> List:
@@ -264,8 +270,7 @@ class Client:
             "csv": pd.read_csv,
             # We can add option to call to pd.normalize_json to normalize semi-structured JSON data into a flat table
             # by asking user to specify how to flatten the nested columns
-            "json": pd.read_json,
-            "ndjson": partial(pd.read_json, lines=True),
+            "flat_json": pd.read_json,
             "html": pd.read_html,
             "excel": pd.read_excel,
             "feather": pd.read_feather,
@@ -315,10 +320,13 @@ class Client:
     def read(self, fields: Iterable = None) -> Iterable[dict]:
         """Read data from the stream"""
         with self.reader.open(binary=self.binary_source) as fp:
-            for df in self.load_dataframes(fp):
-                columns = set(fields).intersection(set(df.columns)) if fields else df.columns
-                df = df.replace(np.nan, "NaN", regex=True)
-                yield from df[columns].to_dict(orient="records")
+            if self._reader_format == "json" or self._reader_format == "ndjson":
+                yield from self.load_nested_json(fp)
+            else:
+                for df in self.load_dataframes(fp):
+                    columns = set(fields).intersection(set(df.columns)) if fields else df.columns
+                    df = df.replace(np.nan, "NaN", regex=True)
+                    yield from df[columns].to_dict(orient="records")
 
     def _stream_properties(self):
         with self.reader.open(binary=self.binary_source) as fp:
