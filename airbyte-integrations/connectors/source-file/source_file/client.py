@@ -232,7 +232,7 @@ class Client:
     def load_nested_json_schema(self, fp) -> dict:
         # Use Genson Library to take JSON objects and generate schemas that describe them,
         builder = SchemaBuilder()
-        if self._reader_format == "ndjson":
+        if self._reader_format == "jsonl":
             for o in self.read():
                 builder.add_object(o)
         else:
@@ -244,7 +244,7 @@ class Client:
         return result
 
     def load_nested_json(self, fp) -> list:
-        if self._reader_format == "ndjson":
+        if self._reader_format == "jsonl":
             result = []
             line = fp.readline()
             while line:
@@ -319,7 +319,7 @@ class Client:
     def read(self, fields: Iterable = None) -> Iterable[dict]:
         """Read data from the stream"""
         with self.reader.open(binary=self.binary_source) as fp:
-            if self._reader_format == "json" or self._reader_format == "ndjson":
+            if self._reader_format == "json" or self._reader_format == "jsonl":
                 yield from self.load_nested_json(fp)
             else:
                 for df in self.load_dataframes(fp):
@@ -329,7 +329,7 @@ class Client:
 
     def _stream_properties(self):
         with self.reader.open(binary=self.binary_source) as fp:
-            if self._reader_format == "json" or self._reader_format == "ndjson":
+            if self._reader_format == "json" or self._reader_format == "jsonl":
                 return self.load_nested_json_schema(fp)
 
             df_list = self.load_dataframes(fp, skip_data=False)

@@ -14,7 +14,7 @@
       },
       "format": {
         "type": "string",
-        "enum": ["csv", "json", "ndjson", "excel", "feather", "parquet"],
+        "enum": ["csv", "json", "jsonl", "excel", "feather", "parquet"],
         "default": "csv",
         "description": "File Format of the file to be replicated (Warning: some format may be experimental, please refer to docs)."
       },

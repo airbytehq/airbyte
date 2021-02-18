@@ -44,8 +44,8 @@ def check_read(config, expected_columns=10, expected_rows=42):
     [
         ("csv", "csv", 8, 5000, "demo"),
         ("json", "json", 2, 1, "demo"),
-        ("ndjson", "ndjson", 2, 10, "ndjson_nested"),
-        ("ndjson", "ndjson", 2, 6492, "ndjson"),
+        ("jsonl", "jsonl", 2, 10, "jsonl_nested"),
+        ("jsonl", "jsonl", 2, 6492, "jsonl"),
         ("excel", "xls", 8, 50, "demo"),
         ("excel", "xlsx", 8, 50, "demo"),
         ("feather", "feather", 9, 3, "demo"),
