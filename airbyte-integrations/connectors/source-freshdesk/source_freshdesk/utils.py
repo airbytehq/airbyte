@@ -78,6 +78,7 @@ def retry_after_handler(**kwargs):
 
 class CallCredit:
     """Class to manage call credit balance"""
+
     def __init__(self, balance: int, reload_period: int = 60):
         self._max_balance = balance
         self._balance_reload_period = reload_period

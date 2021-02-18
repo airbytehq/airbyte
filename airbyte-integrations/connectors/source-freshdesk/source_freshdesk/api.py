@@ -39,7 +39,7 @@ from source_freshdesk.errors import (
     FreshdeskServerError,
     FreshdeskUnauthorized,
 )
-from source_freshdesk.utils import retry_after_handler, retry_connection_handler, CallCredit
+from source_freshdesk.utils import CallCredit, retry_after_handler, retry_connection_handler
 
 
 class API:
