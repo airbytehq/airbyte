@@ -17,7 +17,7 @@ This Google Analytics source wraps the [Pipelinewise Singer Google Analytics Tap
 * `weekly_active_users`
 * `daily_active_users`
 * `devices`
-* Any custom reports you configure. See the section below on custom streams. 
+* Any custom reports you configure. See the section below on custom reports. 
 
 Please reach out to us on Slack or [create an issue](https://github.com/airbytehq/airbyte/issues) if you need to send custom Google Analytics report data with Airbyte.
 
