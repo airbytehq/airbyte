@@ -40,19 +40,21 @@ def check_read(config, expected_columns=10, expected_rows=42):
 
 
 @pytest.mark.parametrize(
-    "file_format, extension, expected_columns, expected_rows",
+    "file_format, extension, expected_columns, expected_rows, filename",
     [
-        ("csv", "csv", 8, 5000),
-        ("json", "json", 2, 1),
-        ("excel", "xls", 8, 50),
-        ("excel", "xlsx", 8, 50),
-        ("feather", "feather", 9, 3),
-        ("parquet", "parquet", 9, 3),
+        ("csv", "csv", 8, 5000, "demo"),
+        ("json", "json", 2, 1, "demo"),
+        ("jsonl", "jsonl", 2, 10, "jsonl_nested"),
+        ("jsonl", "jsonl", 2, 6492, "jsonl"),
+        ("excel", "xls", 8, 50, "demo"),
+        ("excel", "xlsx", 8, 50, "demo"),
+        ("feather", "feather", 9, 3, "demo"),
+        ("parquet", "parquet", 9, 3, "demo"),
     ],
 )
-def test_local_file_read(file_format, extension, expected_columns, expected_rows):
+def test_local_file_read(file_format, extension, expected_columns, expected_rows, filename):
     file_directory = SAMPLE_DIRECTORY.joinpath(file_format)
-    file_path = str(file_directory.joinpath(f"demo.{extension}"))
+    file_path = str(file_directory.joinpath(f"{filename}.{extension}"))
     configs = {"dataset_name": "test", "format": file_format, "url": file_path, "provider": {"storage": "local"}}
     check_read(configs, expected_columns, expected_rows)
 
