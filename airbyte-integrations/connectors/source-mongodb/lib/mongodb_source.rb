@@ -1,0 +1,81 @@
+require_relative './airbyte_protocol.rb'
+
+require_relative './mongodb_logger.rb'
+require_relative './mongodb_stream.rb'
+require_relative './mongodb_reader.rb'
+
+class MongodbSource
+  def spec
+    spec = JSON.parse(File.read(__dir__ + '/spec.json'))
+
+    message =  AirbyteMessage.from_dynamic!({
+      'type' => Type::Spec,
+      'spec' => spec,
+    })
+
+    puts message.to_json
+  end
+
+  def check(config:)
+    @config = JSON.parse(File.read(config))
+
+    result = {'status' => Status::Failed, 'message' => 'Something went wrong.'}
+
+    begin
+      client.collections.first.find.limit(1).first
+      result = {'status' => Status::Succeeded}
+    rescue Mongo::Auth::Unauthorized => e
+      MongodbLogger.log(e.backtrace.join("\n"), Level::Fatal)
+      result = {'status' => Status::Failed, 'message' => 'Authentication failed.'}
+    end
+
+    message =  AirbyteMessage.from_dynamic!({
+      'type' => Type::ConnectionStatus,
+      'connectionStatus' => result,
+    })
+
+    puts message.to_json
+  end
+
+  def discover(config:)
+    @config = JSON.parse(File.read(config))
+
+    streams = client.collections.map do |collection|
+      MongodbStream.new(collection: collection).discover
+    end
+
+    catalog = AirbyteCatalog.from_dynamic!({
+      'streams' => streams,
+    })
+
+    puts AirbyteMessage.from_dynamic!({
+      'type' => Type::Catalog,
+      'catalog' => catalog.to_dynamic
+    }).to_json
+  end
+
+  def read(config:, catalog:, state: nil)
+    @config = JSON.parse(File.read(config))
+    @catalog = JSON.parse(File.read(catalog))
+    @state = JSON.parse(File.read(state)) if state
+
+    MongodbReader.new(client: client, catalog: @catalog, state: @state).read
+  end
+
+  def method_missing(m, *args, &block)
+    MongodbLogger.log("There's no method called #{m}", Level::Fatal)
+  end
+
+  private
+
+  def client
+    if @client
+      @client
+    else
+      uri = "mongodb://#{@config['user']}:#{@config['password']}@#{@config['host']}:#{@config['port']}/#{@config['database']}?authSource=admin"
+      @client = Mongo::Client.new(uri)
+      @client.logger.formatter = MongodbLogger.logger_formatter
+      @client
+    end
+  end
+end

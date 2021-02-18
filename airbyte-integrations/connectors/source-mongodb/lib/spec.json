@@ -1,0 +1,38 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/mongodb",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Mongodb Source Spec",
+    "type": "object",
+    "required": ["host", "port", "database", "username", "password"],
+    "additionalProperties": false,
+    "properties": {
+      "host": {
+        "title": "Host",
+        "type": "string",
+        "description": "Host of a Mongo database to be replicated."
+      },
+      "port": {
+        "title": "Port",
+        "type": "string",
+        "description": "Port of a Mongo database to be replicated."
+      },
+      "database": {
+        "title": "Database name",
+        "type": "string",
+        "description": "Database to be replicated."
+      },
+      "user": {
+        "title": "User",
+        "type": "string",
+        "description": "User"
+      },
+      "password": {
+        "title": "Password",
+        "type": "string",
+        "description": "Password",
+        "airbyte_secret": true
+      }
+    }
+  }
+}
