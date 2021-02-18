@@ -35,7 +35,6 @@ from airbyte_protocol import AirbyteStream
 from base_python.entrypoint import logger
 from botocore import UNSIGNED
 from botocore.config import Config
-from functools import partial
 from genson import SchemaBuilder
 from google.cloud.storage import Client as GCSClient
 from google.oauth2 import service_account
