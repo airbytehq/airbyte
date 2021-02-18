@@ -37,7 +37,7 @@ public class OpenApiConfigHandler {
     try {
       TMP_FILE = File.createTempFile("airbyte", "openapiconfig");
       TMP_FILE.deleteOnExit();
-      Files.writeString(TMP_FILE.toPath(), MoreResources.readResource("openapi/config.yaml"));
+      Files.writeString(TMP_FILE.toPath(), MoreResources.readResource("config.yaml"));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

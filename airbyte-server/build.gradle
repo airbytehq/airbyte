@@ -44,9 +44,3 @@ run {
     environment "DATABASE_PASSWORD", env.DATABASE_PASSWORD
     environment "DATABASE_URL", "jdbc:postgresql://localhost:5432/airbyte"
 }
-
-task copyOpenApiConfig(type: Copy) {
-    from file(rootProject.file("airbyte-api/src/main/openapi/config.yaml"))
-    into file(rootProject.file("airbyte-server/src/main/resources/openapi"))
-}
-compileJava.dependsOn tasks.copyOpenApiConfig
