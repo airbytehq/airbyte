@@ -7,7 +7,6 @@ The Google Analytics source supports Full Refresh syncs. That is, every time a s
 This Google Analytics source wraps the [Pipelinewise Singer Google Analytics Tap](https://github.com/transferwise/pipelinewise-tap-google-analytics).
 
 ### Output streams
-
 * `website_overview`
 * `traffic_sources`
 * `pages`
@@ -58,8 +57,17 @@ Use the service account email address to [add a user](https://support.google.com
 2. Go to the [Google Analytics API dashboard](https://console.developers.google.com/apis/api/analytics.googleapis.com/overview) in the project for your service user. Enable the API for your account.
 
 ### How to generate JSON for custom_reports field
+You can replicate Google Analytics [Custom Reports](https://support.google.com/analytics/answer/1033013?hl=en) using this source. To do this, input a JSON object as a string in the "Custom Reports" field when setting up the connector. The JSON is an array of objects where each object has the following schema: 
 
-You should create an array of objects as shown in the [example](https://github.com/transferwise/pipelinewise-tap-google-analytics//#optional-parameters) (under the reports section).
+```
+{"name": string, "dimensions": [string], "metrics": [string]}
+```
+
+Here is an example input "Custom Reports" field: 
+
+```
+[{"Name": "new_users_per_day"}, {"dimensions": ["ga:date"], "metrics": ["ga:newUsers"]}, {"Name": "users_per_city"}, {"dimensions": ["ga:city"], "metrics": ["ga:users"]}]
+``` 
 
 To create a list of dimensions, you should use the values from the list below 
 (no more than 7 for one object, and the values in the list must be unique):
