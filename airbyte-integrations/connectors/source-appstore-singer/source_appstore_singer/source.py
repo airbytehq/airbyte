@@ -111,4 +111,4 @@ class SourceAppstoreSinger(SingerSource):
 
     def get_sync_mode_overrides(self) -> Dict[str, SyncModeInfo]:
         streams = ["sales_report", "subscriber_report", "subscription_report", "subscription_event_report"]
-        return {s: SyncModeInfo(supported_sync_modes=["incremental"], source_defined_cursor=True) for s in streams}
+        return {s: SyncModeInfo(supported_sync_modes=[SyncMode.incremental], source_defined_cursor=True) for s in streams}
