@@ -12,7 +12,7 @@ class HttpResourceExtract(BaseExtract):
         self.request = self._build_step('request', **kwargs)
         self.decoder = self._build_step('decoder', **kwargs)
         self.selector = self._build_step('selector', **kwargs)
-        self.pagination = self._build_step('pagination', **kwargs)
+        self.pagination = self._build_step('iterator', **kwargs)
         self.state = self._build_step('state', **kwargs)
         self.request = self._build_step('request', **kwargs)
 

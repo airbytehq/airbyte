@@ -1,9 +1,9 @@
 from .base_pagination import BasePagination
 
 
-class SinglePagination(BasePagination):
+class SingleIterator(BasePagination):
     def __init__(self, **kwargs):
-        super(SinglePagination, self).__init__(**kwargs)
+        super(SingleIterator, self).__init__(**kwargs)
 
     def iterate(self, context):
         yield {}

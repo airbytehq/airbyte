@@ -55,13 +55,13 @@ streams:
             - name: base
               value: "{{ config.base }}"
         decoder:
-          strategy: magibyte.operations.decode.Json
+          strategy: magibyte.operations.shaper.Json
         selector:
           strategy: magibyte.operations.select.JsonQuery
           options:
             path: "merge({date: date, base: base}, rates)"
-        pagination:
-          strategy: magibyte.operations.pagination.Datetime
+        iterator:
+          strategy: magibyte.operations.iterator.Datetime
           options:
             start_date: "{{ state.date | default(config.start_date) }}"
             start_inclusive: "{{ state.date | default(true) }}"
@@ -94,15 +94,15 @@ defaults:
         value: "Bearer {{ config.client_secret }}"
   
   decoder: &default_decoder
-    strategy: magibyte.operations.decode.Json
+    strategy: magibyte.operations.shaper.Json
     
   selector: &default_selector
     strategy: magibyte.operations.select.JsonQuery
     options:
       path: "data"
       
-  pagination: &default_pagination
-    strategy: magibyte.operations.pagination.Single
+  iterator: &default_pagination
+    strategy: magibyte.operations.iterator.Single
 
   state: &default_state
     strategy: magibyte.operations.state.Noop
@@ -113,7 +113,7 @@ defaults:
       request: *default_request
       decoder: *default_decoder
       selector: *default_selector
-      pagination: *default_pagination
+      iterator: *default_pagination
       state: *default_state
       
 streams:

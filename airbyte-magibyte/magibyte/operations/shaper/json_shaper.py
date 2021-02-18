@@ -1,6 +1,6 @@
-from .base_decode import BaseDecode
+from .base_shaper import BaseDecode
 
 
-class JsonDecode(BaseDecode):
+class JsonShaper(BaseDecode):
     def decode(self, context):
         return context['response'].json()

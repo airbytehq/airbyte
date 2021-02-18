@@ -7,9 +7,9 @@ import arrow
 from .base_pagination import BasePagination
 
 
-class DatetimePagination(BasePagination):
+class DatetimeIterator(BasePagination):
     def __init__(self, **kwargs):
-        super(DatetimePagination, self).__init__(**kwargs)
+        super(DatetimeIterator, self).__init__(**kwargs)
 
     def iterate(self, context):
         start_date = arrow.get(self.extrapolate(self.options.get('start_date'), context))
