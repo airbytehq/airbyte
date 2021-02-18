@@ -1,4 +1,4 @@
-from magibyte.operations.base_operation import BaseOperation
+from magibyte.strategies.base_operation import BaseOperation
 
 
 class BaseState(BaseOperation):

@@ -1,7 +1,7 @@
-from .base_pagination import BasePagination
+from .base_iterator import BaseIterator
 
 
-class SingleIterator(BasePagination):
+class SingleIterator(BaseIterator):
     def __init__(self, **kwargs):
         super(SingleIterator, self).__init__(**kwargs)
 

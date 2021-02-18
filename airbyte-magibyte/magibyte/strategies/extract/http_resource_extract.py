@@ -11,8 +11,8 @@ class HttpResourceExtract(BaseExtract):
 
         self.request = self._build_step('request', **kwargs)
         self.decoder = self._build_step('decoder', **kwargs)
-        self.selector = self._build_step('selector', **kwargs)
-        self.pagination = self._build_step('iterator', **kwargs)
+        self.shaper = self._build_step('shaper', **kwargs)
+        self.iterator = self._build_step('iterator', **kwargs)
         self.state = self._build_step('state', **kwargs)
         self.request = self._build_step('request', **kwargs)
 
@@ -25,8 +25,8 @@ class HttpResourceExtract(BaseExtract):
 
         state = None
 
-        for page in self.pagination.iterate(context):
-            context['page'] = page
+        for cursor in self.iterator.iterate(context):
+            context['page'] = cursor
 
             context['request'] = self.request.build(context)
             logging.debug(context['request'])
@@ -34,7 +34,7 @@ class HttpResourceExtract(BaseExtract):
             context['decoded_response'] = self.decoder.decode(context)
             logging.debug(context['decoded_response'])
 
-            for record in self.selector.select(context):
+            for record in self.shaper.select(context):
                 logging.debug(record)
                 context['record'] = record
                 state = self.state.get(context)

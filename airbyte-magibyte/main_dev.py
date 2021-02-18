@@ -30,7 +30,7 @@ import yaml
 
 from magibyte.core import strategy_builder
 from magibyte.core.extrapolation import extrapolate
-from magibyte.operations.extract.http_resource_extract import HttpResourceExtract
+from magibyte.strategies.extract.http_resource_extract import HttpResourceExtract
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -40,39 +40,41 @@ config_exchange_rate = yaml.safe_load('''
 config:
   base: USD
   start_date: 2021-01-01
+''')
 
+streams_exchange_rate = yaml.safe_load('''
 streams:
   rates:
     extract:
-      strategy: magibyte.operations.extract.HttpResource
+      strategy: magibyte.strategies.extract.HttpResource
       options:
         request:
-          strategy: magibyte.operations.request.HttpRequest
+          strategy: magibyte.strategies.request.HttpRequest
           options:
-            base_url: "https://api.exchangeratesapi.io/{{ page.current_date.format('YYYY-MM-DD') }}"
+            base_url: "https://api.exchangeratesapi.io/{{ page.current_datetime.format('YYYY-MM-DD') }}"
             method: get
             params:
             - name: base
               value: "{{ config.base }}"
         decoder:
-          strategy: magibyte.operations.shaper.Json
-        selector:
-          strategy: magibyte.operations.select.JsonQuery
+          strategy: magibyte.strategies.decoder.Json
+        shaper:
+          strategy: magibyte.strategies.shaper.JsonQuery
           options:
             path: "merge({date: date, base: base}, rates)"
         iterator:
-          strategy: magibyte.operations.iterator.Datetime
+          strategy: magibyte.strategies.iterator.Datetime
           options:
-            start_date: "{{ state.date | default(config.start_date) }}"
+            start_datetime: "{{ state.date | default(config.start_date) }}"
             start_inclusive: "{{ state.date | default(true) }}"
-            end_date: "{{ now_local() }}"
+            end_datetime: "{{ now_local() }}"
             end_inclusive: true
             step: 1d
         state:
-          strategy: magibyte.operations.state.Context
+          strategy: magibyte.strategies.state.Context
           options:
             name: date
-            value: "{{ page.current_date.format('YYYY-MM-DD') }}"
+            value: "{{ page.current_datetime.format('YYYY-MM-DD') }}"
 ''')
 
 config_stripe = {
@@ -84,7 +86,7 @@ config_stripe = {
 streams_stripe = yaml.safe_load('''
 defaults:
   request: &default_request
-    strategy: magibyte.operations.request.HttpRequest
+    strategy: magibyte.strategies.request.HttpRequest
     options:
       base_url: "https://api.stripe.com{{ vars.path }}"
       method: get
@@ -94,25 +96,25 @@ defaults:
         value: "Bearer {{ config.client_secret }}"
   
   decoder: &default_decoder
-    strategy: magibyte.operations.shaper.Json
+    strategy: magibyte.strategies.decoder.Json
     
-  selector: &default_selector
-    strategy: magibyte.operations.select.JsonQuery
+  shaper: &default_shaper
+    strategy: magibyte.strategies.shaper.JsonQuery
     options:
       path: "data"
       
   iterator: &default_pagination
-    strategy: magibyte.operations.iterator.Single
+    strategy: magibyte.strategies.iterator.Single
 
   state: &default_state
-    strategy: magibyte.operations.state.Noop
+    strategy: magibyte.strategies.state.Noop
     
   extract: &default_extract
-    strategy: magibyte.operations.extract.HttpResource
+    strategy: magibyte.strategies.extract.HttpResource
     options:
       request: *default_request
       decoder: *default_decoder
-      selector: *default_selector
+      shaper: *default_shaper
       iterator: *default_pagination
       state: *default_state
       
@@ -381,17 +383,22 @@ def cleanup():
 
 
 def main():
-    config = config_stripe
-    streams = streams_stripe
+    # config = config_stripe
+    # streams = streams_stripe
+    config = config_exchange_rate
+    streams = streams_exchange_rate
     logging.debug(streams)
 
     for name, stream in streams['streams'].items():
+        # if name != 'customers':
+        #     continue
+
         print(name)
 
         context = {
             'config': config,
             'state': {'date': '2021-01-11'},
-            'vars': stream['vars']
+            'vars': stream.get('vars', {})
         }
 
         extract = HttpResourceExtract(options=stream['extract']['options'],

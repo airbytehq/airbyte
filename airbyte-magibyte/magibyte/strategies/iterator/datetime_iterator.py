@@ -4,31 +4,31 @@ import re
 
 import arrow
 
-from .base_pagination import BasePagination
+from .base_iterator import BaseIterator
 
 
-class DatetimeIterator(BasePagination):
+class DatetimeIterator(BaseIterator):
     def __init__(self, **kwargs):
         super(DatetimeIterator, self).__init__(**kwargs)
 
     def iterate(self, context):
-        start_date = arrow.get(self.extrapolate(self.options.get('start_date'), context))
-        end_date = arrow.get(self.extrapolate(self.options.get('end_date'), context))
+        start_datetime = arrow.get(self.extrapolate(self.options.get('start_datetime'), context))
+        end_datetime = arrow.get(self.extrapolate(self.options.get('end_datetime'), context))
         step = parse_timedelta(self.extrapolate(self.options.get('step'), context))
         start_inclusive = str(self.extrapolate(self.options.get('start_inclusive', True), context)) == 'True'
         end_inclusive = str(self.extrapolate(self.options.get('end_inclusive', True), context)) == 'True'
 
-        current_date = start_date
+        current_datetime = start_datetime
         if not start_inclusive:
-            current_date += step
+            current_datetime += step
 
         comp = operator.le
         if not end_inclusive:
             comp = operator.lt
 
-        while comp(current_date, end_date):
-            yield {'current_date': current_date}
-            current_date = current_date + step
+        while comp(current_datetime, end_datetime):
+            yield {'current_datetime': current_datetime}
+            current_datetime = current_datetime + step
 
 
 timedelta_regex = re.compile(

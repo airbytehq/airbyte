@@ -43,7 +43,7 @@ streams:
       name: name_1
 
     schema:
-      strategy: magibyte.operations.schema.StaticSchema
+      strategy: magibyte.strategies.schema.StaticSchema
       options:
         value:
           title: 'Name 1'
@@ -52,7 +52,7 @@ streams:
 
     state:
       # can come from data element, can come from data response, can come from external system, can come from local system
-      strategy: magibyte.operations.state.
+      strategy: magibyte.strategies.state.
 
 
     extract:

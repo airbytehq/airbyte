@@ -1,4 +1,4 @@
-from magibyte.operations.state.base_state import BaseState
+from magibyte.strategies.state.base_state import BaseState
 
 
 class ContextState(BaseState):
