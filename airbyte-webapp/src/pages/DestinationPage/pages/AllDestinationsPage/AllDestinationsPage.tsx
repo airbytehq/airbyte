@@ -32,7 +32,7 @@ const AllDestinationsPage: React.FC = () => {
       <PageTitle
         title={<FormattedMessage id="admin.destinations" />}
         endComponent={
-          <Button onClick={onCreateDestination}>
+          <Button onClick={onCreateDestination} data-id="new-destination">
             <FormattedMessage id="destination.newDestination" />
           </Button>
         }

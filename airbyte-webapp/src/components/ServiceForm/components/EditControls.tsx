@@ -65,7 +65,7 @@ const EditControls: React.FC<IProps> = ({
       return <Error>{errorMessage}</Error>;
     }
     if (successMessage && !dirty) {
-      return <Success>{successMessage}</Success>;
+      return <Success data-id="success-result">{successMessage}</Success>;
     }
     return null;
   };

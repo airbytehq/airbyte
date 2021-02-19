@@ -11,7 +11,7 @@ describe("Root route", () => {
 
     cy.wait("@getConnectionsList");
 
-    cy.get("button").contains("+ new source").click();
+    cy.get("button[data-id='new-source'").click();
     cy.url().should("eq", `${Cypress.config().baseUrl}/source/new-source`);
 
     cy.get("input[name=name]").type("Test source cypress");
@@ -36,7 +36,7 @@ describe("Root route", () => {
     cy.get("div").contains("Test source cypress").click();
     cy.url().should("include", `${Cypress.config().baseUrl}/source/`);
 
-    cy.get("div").contains("Settings").click();
+    cy.get("div[data-id='settings-step']").click();
 
     cy.get("input[name='connectionConfiguration.start_date']").clear().type("2020-11-11");
     cy.get("button[type=submit]").click();
@@ -45,7 +45,7 @@ describe("Root route", () => {
     cy.wait("@updateSource");
     cy.wait(1000);
 
-    cy.get("span").contains("Your changes were saved!").should("exist");
+    cy.get("span[data-id='success-result']").should("exist");
     cy.get("input[value='2020-11-11']").should("exist");
   });
 
@@ -53,9 +53,9 @@ describe("Root route", () => {
     cy.get("div").contains("Test source cypress").click();
     cy.url().should("include", `${Cypress.config().baseUrl}/source/`);
 
-    cy.get("div").contains("Settings").click();
-    cy.get("button").contains("Delete this source").click();
-    cy.get("button[type=button]").contains("Delete").click();
+    cy.get("div[data-id='settings-step']").click();
+    cy.get("button[data-id='open-delete-modal']").click();
+    cy.get("button[data-id='delete']").click();
 
     cy.visit("/");
     cy.get("div").contains("Test source cypress").should("not.exist");

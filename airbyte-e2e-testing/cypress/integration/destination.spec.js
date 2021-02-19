@@ -11,7 +11,7 @@ describe("Root route", () => {
 
     cy.wait("@getConnectionsList");
 
-    cy.get("button").contains("+ new destination").click();
+    cy.get("button[data-id='new-destination'").click();
     cy.url().should("eq", `${Cypress.config().baseUrl}/destination/new-destination`);
 
     cy.get("input[name=name]").type("Test destination cypress");
@@ -35,7 +35,7 @@ describe("Root route", () => {
     cy.get("div").contains("Test destination cypress").click();
     cy.url().should("include", `${Cypress.config().baseUrl}/destination/`);
 
-    cy.get("div").contains("Settings").click();
+    cy.get("div[data-id='settings-step']").click();
 
     cy.get("input[name='connectionConfiguration.destination_path']").type("/my-json");
     cy.get("button[type=submit]").click();
@@ -44,7 +44,7 @@ describe("Root route", () => {
     cy.wait("@updateDestination");
     cy.wait(1000);
 
-    cy.get("span").contains("Your changes were saved!").should("exist");
+    cy.get("span[data-id='success-result']").should("exist");
     cy.get("input[value='/local/my-json']").should("exist");
   });
 
@@ -52,9 +52,9 @@ describe("Root route", () => {
     cy.get("div").contains("Test destination cypress").click();
     cy.url().should("include", `${Cypress.config().baseUrl}/destination/`);
 
-    cy.get("div").contains("Settings").click();
-    cy.get("button").contains("Delete this destination").click();
-    cy.get("button[type=button]").contains("Delete").click();
+    cy.get("div[data-id='settings-step']").click();
+    cy.get("button[data-id='open-delete-modal']").click();
+    cy.get("button[data-id='delete']").click();
 
     cy.visit("/destination");
     cy.get("div").contains("Test destination cypress").should("not.exist");

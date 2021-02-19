@@ -18,7 +18,7 @@ describe("Root route", () => {
 
     cy.wait("@getConnectionsList");
 
-    cy.get("button").contains("+ new source").click();
+    cy.get("button[data-id='new-source'").click();
 
     cy.get("input[name=name]").type("Test source cypress");
     cy.get("div[role=combobox]").click();
@@ -34,8 +34,8 @@ describe("Root route", () => {
     cy.wait("@createSource");
     cy.wait(3000);
 
-    cy.get("span").contains("add destination").click();
-    cy.get("div").contains("+ add a new destination").click();
+    cy.get("div[role=combobox]").click();
+    cy.get("div[data-id='create-new-item']").click();
     cy.wait("@checkConnectionSource");
 
     cy.get("input[name=name]").type("Test destination cypress");
@@ -53,7 +53,7 @@ describe("Root route", () => {
     cy.wait("@discoverSchema");
 
     cy.get("div[role=combobox]").last().click();
-    cy.get("div").contains("manual").click();
+    cy.get("div[data-id='manual']").click();
     cy.get("button[type=submit]").click();
 
     cy.wait("@createConnection");
@@ -69,15 +69,15 @@ describe("Root route", () => {
     cy.get("div").contains("Test source cypress").click();
     cy.get("div").contains("Test destination cypress").click();
 
-    cy.get("div").contains("Settings").click();
+    cy.get("div[data-id='settings-step']").click();
 
     cy.get("div[role=combobox]").last().click();
-    cy.get("div").contains("Every 5 min").click();
+    cy.get("div[data-id='5m']").click();
     cy.get("button[type=submit]").click();
     cy.wait("@updateConnection");
-    cy.get("span").contains("Your changes were saved!").should("exist");
+    cy.get("span[data-id='success-result']").should("exist");
 
-    cy.get("div").contains("Status").click();
+    cy.get("div[data-id='status-step']").click();
     cy.get("div").contains("5 min").should("exist");
 });
 
@@ -85,21 +85,21 @@ describe("Root route", () => {
     cy.get("div").contains("Test source cypress").click();
     cy.get("div").contains("Test destination cypress").click();
 
-    cy.get("div").contains("Settings").click();
-    cy.get("button").contains("Delete this connection").click();
-    cy.get("button[type=button]").contains("Delete").click();
+    cy.get("div[data-id='settings-step']").click();
+    cy.get("button[data-id='open-delete-modal']").click();
+    cy.get("button[data-id='delete']").click();
 
     cy.visit("/");
 
     cy.get("div").contains("Test source cypress").click();
-    cy.get("div").contains("Settings").click();
-    cy.get("button").contains("Delete this source").click();
-    cy.get("button[type=button]").contains("Delete").click();
+    cy.get("div[data-id='settings-step']").click();
+    cy.get("button[data-id='open-delete-modal']").click();
+    cy.get("button[data-id='delete']").click();
 
     cy.visit("/destination");
     cy.get("div").contains("Test destination cypress").click();
-    cy.get("div").contains("Settings").click();
-    cy.get("button").contains("Delete this destination").click();
-    cy.get("button[type=button]").contains("Delete").click();
+    cy.get("div[data-id='settings-step']").click();
+    cy.get("button[data-id='open-delete-modal']").click();
+    cy.get("button[data-id='delete']").click();
   });
 });

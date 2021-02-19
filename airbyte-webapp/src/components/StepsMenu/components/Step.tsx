@@ -74,6 +74,7 @@ const Step: React.FC<IProps> = ({
 
   return (
     <StepView
+      data-id={`${id.toLowerCase()}-step`}
       nonClickable={!onClick}
       onClick={onItemClickItem}
       isActive={isActive}

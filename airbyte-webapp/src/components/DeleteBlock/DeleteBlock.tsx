@@ -32,7 +32,11 @@ const DeleteBlock: React.FC<IProps> = ({ type, onDelete }) => {
   return (
     <>
       <DeleteBlockComponent>
-        <Button danger onClick={() => setIsModalOpen(true)}>
+        <Button
+          danger
+          onClick={() => setIsModalOpen(true)}
+          data-id="open-delete-modal"
+        >
           <FormattedMessage id={`tables.${type}Delete`} />
         </Button>
         <Text>
