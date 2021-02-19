@@ -23,6 +23,7 @@ SOFTWARE.
 """
 
 import sys
+from typing import Any, MutableMapping, Mapping
 
 import backoff
 from base_python.entrypoint import logger  # FIXME (Eugene K): register logger as standard python logger
@@ -54,3 +55,20 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
         giveup=lambda exc: not should_retry_api_error(exc),
         **wait_gen_kwargs,
     )
+
+
+def deep_merge(a, b):
+    """ Merge two values, with `b` taking precedence over `a`.
+    """
+    if isinstance(a, dict) and isinstance(b, dict):
+        # set of all keys in both dictionaries
+        keys = set(a.keys()) | set(b.keys())
+
+        return {
+            key: deep_merge(a.get(key), b.get(key))
+            for key in keys
+        }
+    elif isinstance(a, list) and isinstance(b, list):
+        return [*a, *b]
+    else:
+        return a if b is None else b

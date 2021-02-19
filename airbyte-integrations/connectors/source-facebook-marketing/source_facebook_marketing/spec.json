@@ -21,6 +21,11 @@
         "type": "string",
         "description": "The value of the access token generated. See the <a href=\"https://docs.airbyte.io/integrations/sources/facebook-marketing\">docs</a> for more information",
         "airbyte_secret": true
+      },
+      "include_deleted": {
+        "type": "boolean",
+        "description": "Include data from deleted campaigns, ads, and adsets.",
+        "default": "true"
       }
     }
   }
