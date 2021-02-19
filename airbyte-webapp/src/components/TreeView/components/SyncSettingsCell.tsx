@@ -28,6 +28,18 @@ type IProps = {
   onSelect: (data: IDataItem) => void;
 };
 
+function traverse(
+  fields: SyncSchemaField[],
+  cb: (field: SyncSchemaField) => any
+) {
+  fields.forEach(field => {
+    cb(field);
+    if (field.fields) {
+      traverse(field.fields, cb);
+    }
+  });
+}
+
 const SyncSettingsCell: React.FC<IProps> = ({
   streamNode,
   fields,
@@ -53,8 +65,8 @@ const SyncSettingsCell: React.FC<IProps> = ({
 
     // If INCREMENTAL is included in the supported sync modes...
     if (isIncrementalSupported) {
+      // If sourceDefinedCursor is true, In the dropdown we should just have one row for incremental
       if (stream.sourceDefinedCursor) {
-        // If sourceDefinedCursor is true, In the dropdown we should just have one row for incremental
         syncData.push({
           text: formatMessage({
             id: "sources.incrementalSourceCursor"
@@ -83,9 +95,10 @@ const SyncSettingsCell: React.FC<IProps> = ({
           });
         }
 
-        // Any column in the stream can be used as the cursor
-        fields?.forEach(field => {
+        // Any column of primitive type in the stream can be used as the cursor
+        traverse(fields, field => {
           if (
+            field.type !== "object" &&
             !syncData.some(dataItem => dataItem.value === field.cleanedName)
           ) {
             syncData.push({
@@ -103,8 +116,7 @@ const SyncSettingsCell: React.FC<IProps> = ({
     }
 
     return syncData;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fields, stream]);
+  }, [fields, stream, formatMessage]);
 
   const currentValue = config.cursorField?.length
     ? stream.sourceDefinedCursor

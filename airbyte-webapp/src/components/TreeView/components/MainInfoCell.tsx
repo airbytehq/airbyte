@@ -3,8 +3,8 @@ import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
 
-import { Cell } from "../../SimpleTableComponents";
-import CheckBox from "../../CheckBox";
+import { Cell } from "components/SimpleTableComponents";
+import { CheckBox } from "components/CheckBox";
 
 type IProps = {
   label: string;

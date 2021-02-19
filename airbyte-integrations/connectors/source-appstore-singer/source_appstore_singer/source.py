@@ -24,11 +24,12 @@ SOFTWARE.
 
 import json
 from datetime import date, timedelta
+from typing import Dict
 
 from airbyte_protocol import AirbyteConnectionStatus
 from appstoreconnect import Api
 from base_python import AirbyteLogger
-from base_singer import SingerSource, Status
+from base_singer import SingerSource, Status, SyncMode, SyncModeInfo
 
 
 class SourceAppstoreSinger(SingerSource):
@@ -107,3 +108,7 @@ class SourceAppstoreSinger(SingerSource):
         del raw_config["private_key"]
 
         return raw_config
+
+    def get_sync_mode_overrides(self) -> Dict[str, SyncModeInfo]:
+        streams = ["sales_report", "subscriber_report", "subscription_report", "subscription_event_report"]
+        return {s: SyncModeInfo(supported_sync_modes=[SyncMode.incremental], source_defined_cursor=True) for s in streams}
