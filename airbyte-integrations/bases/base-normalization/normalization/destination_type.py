@@ -32,5 +32,5 @@ class DestinationType(Enum):
     SNOWFLAKE = "snowflake"
 
     @classmethod
-    def from_string(cls, string_value: str):
+    def from_string(cls, string_value: str) -> "DestinationType":
         return DestinationType[string_value.upper()]

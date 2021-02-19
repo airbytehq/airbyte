@@ -75,40 +75,48 @@ class DestinationNameTransformer:
         contains_non_alphanumeric = match(".*[^A-Za-z0-9_].*", input_name) is not None
         return doesnt_start_with_alphaunderscore or contains_non_alphanumeric
 
-    def normalize_schema_name(self, schema_name: str, in_jinja: bool = False):
+    def normalize_schema_name(self, schema_name: str, in_jinja: bool = False, truncate: bool = True) -> str:
         """
         @param schema_name is the schema to normalize
         @param in_jinja is a boolean to specify if the returned normalized will be used inside a jinja macro or not
+        @param truncate force ignoring truncate operation on resulting normalized name. For example, if we don't
+        control how the name would be normalized
         """
-        return self.__normalize_non_column_identifier_name(schema_name, in_jinja)
+        return self.__normalize_non_column_identifier_name(input_name=schema_name, in_jinja=in_jinja, truncate=truncate)
 
-    def normalize_table_name(self, table_name: str, in_jinja: bool = False) -> str:
+    def normalize_table_name(self, table_name: str, in_jinja: bool = False, truncate: bool = True) -> str:
         """
         @param table_name is the table to normalize
         @param in_jinja is a boolean to specify if the returned normalized will be used inside a jinja macro or not
+        @param truncate force ignoring truncate operation on resulting normalized name. For example, if we don't
+        control how the name would be normalized
         """
-        return self.__normalize_non_column_identifier_name(table_name, in_jinja)
+        return self.__normalize_non_column_identifier_name(input_name=table_name, in_jinja=in_jinja, truncate=truncate)
 
-    def normalize_column_name(self, column_name: str, in_jinja: bool = False) -> str:
+    def normalize_column_name(self, column_name: str, in_jinja: bool = False, truncate: bool = True) -> str:
         """
         @param column_name is the column to normalize
         @param in_jinja is a boolean to specify if the returned normalized will be used inside a jinja macro or not
+        @param truncate force ignoring truncate operation on resulting normalized name. For example, if we don't
+        control how the name would be normalized
         """
-        return self.__normalize_identifier_name(column_name, in_jinja)
+        return self.__normalize_identifier_name(column_name=column_name, in_jinja=in_jinja, truncate=truncate)
 
     # Private methods
 
-    def __normalize_non_column_identifier_name(self, input_name: str, in_jinja: bool = False) -> str:
+    def __normalize_non_column_identifier_name(self, input_name: str, in_jinja: bool = False, truncate: bool = True) -> str:
         # We force standard naming for non column names (see issue #1785)
         result = transform_standard_naming(input_name)
         result = self.__normalize_naming_conventions(result)
-        result = self.__truncate_identifier_name(result)
+        if truncate:
+            result = self.__truncate_identifier_name(result)
         result = self.__normalize_identifier_case(result, is_quoted=False)
         return result
 
-    def __normalize_identifier_name(self, column_name: str, in_jinja: bool = False) -> str:
+    def __normalize_identifier_name(self, column_name: str, in_jinja: bool = False, truncate: bool = True) -> str:
         result = self.__normalize_naming_conventions(column_name)
-        result = self.__truncate_identifier_name(result)
+        if truncate:
+            result = self.__truncate_identifier_name(result)
         if self.needs_quotes(result):
             result = result.replace('"', '""')
             result = result.replace("'", "\\'")
@@ -137,6 +145,7 @@ class DestinationNameTransformer:
         if self.integration_type.value in DESTINATION_SIZE_LIMITS:
             limit = DESTINATION_SIZE_LIMITS[self.integration_type.value]
             limit = limit - TRUNCATE_RESERVED_SIZE - TRUNCATE_DBT_RESERVED_SIZE
+            # TODO smarter truncate (or hash) in the middle to preserve prefix/suffix instead?
             input_name = input_name[0:limit]
         else:
             raise KeyError(f"Unknown integration type {self.integration_type}")

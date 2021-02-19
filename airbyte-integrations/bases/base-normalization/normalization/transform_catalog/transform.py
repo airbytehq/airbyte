@@ -28,7 +28,7 @@ import os
 import yaml
 from normalization.destination_type import DestinationType
 from normalization.transform_catalog.catalog_processor import CatalogProcessor
-
+from typing import Any, Dict
 
 class TransformCatalog:
     """
@@ -80,18 +80,20 @@ python3 main_dev_transform_catalog.py \
             processor.process(catalog_file=catalog_file, json_column_name=json_col, target_schema=schema)
 
 
-def read_profiles_yml(profile_dir: str) -> dict:
+def read_profiles_yml(profile_dir: str) -> Any:
     with open(os.path.join(profile_dir, "profiles.yml"), "r") as file:
         config = yaml.load(file, Loader=yaml.FullLoader)
         obj = config["normalize"]["outputs"]["prod"]
         return obj
 
 
-def extract_schema(profiles_yml: dict) -> str:
+def extract_schema(profiles_yml: Dict) -> str:
     if "dataset" in profiles_yml:
-        return profiles_yml["dataset"]
+        return str(profiles_yml["dataset"])
+    elif "schema" in profiles_yml:
+        return str(profiles_yml["schema"])
     else:
-        return profiles_yml["schema"]
+        raise KeyError("No Dataset/Schema defined in profiles.yml")
 
 
 def main(args=None):

@@ -23,7 +23,7 @@ SOFTWARE.
 """
 
 import os
-from typing import Dict, List, Set
+from typing import Dict, List, Optional, Set, Tuple
 
 from jinja2 import Template
 from normalization.destination_type import DestinationType
@@ -44,21 +44,28 @@ from normalization.transform_catalog.utils import (
 
 class StreamProcessor(object):
     """
-    Takes as input an Airbyte Stream as described in the AirbyteCatalog (stored as Json Schema).
-    Associated input raw data is expected to be stored in a staging area called "raw_schema".
+    Takes as input an Airbyte Stream as described in the (configured) Airbyte Catalog (stored as Json Schema).
+    Associated input raw data is expected to be stored in a staging area table.
 
-    This processor transforms such a stream into a final table in the destination schema.
-    This is done by generating a DBT pipeline of transformations (multiple SQL models files)
-    in the same intermediate schema "raw_schema". The final output is written in "schema".
+    This processor generates SQL models to transform such a stream into a final table in the destination schema.
+    This is done by generating a DBT pipeline of transformations (multiple SQL models queries) that may be materialized
+    in the intermediate schema "raw_schema" (changing the dbt_project.yml settings.
+    The final output data should be written in "schema".
 
-    If any nested columns are discovered in the stream, new StreamProcessor will be
-    spawned for each children substreams.
+    The pipeline includes transformations such as:
+    - Parsing a JSON blob column and extracting each field property in its own SQL column
+    - Casting each SQL column to the proper JSON data type
+    - Generating an artificial (primary key) ID column based on the hashing of the row
+
+    If any nested columns are discovered in the stream, a JSON blob SQL column is created in the top level parent stream
+    and a new StreamProcessor instance will be spawned for each children substreams. These Sub-Stream Processors are then
+    able to generate models to parse and extract recursively from its parent StreamProcessor model into separate SQL tables
+    the content of that JSON blob SQL column.
     """
 
     def __init__(
         self,
         stream_name: str,
-        output_directory: str,
         integration_type: DestinationType,
         raw_schema: str,
         schema: str,
@@ -70,25 +77,27 @@ class StreamProcessor(object):
         """
         See StreamProcessor.create()
         """
-        self.stream_name = stream_name
-        self.output_directory = output_directory
-        self.integration_type = integration_type
-        self.raw_schema = raw_schema
-        self.schema = schema
-        self.json_column_name = json_column_name
-        self.properties = properties
-        self.tables_registry = tables_registry
-        self.from_table = from_table
+        self.stream_name: str = stream_name
+        self.integration_type: DestinationType = integration_type
+        self.raw_schema: str = raw_schema
+        self.schema: str = schema
+        self.json_column_name: str = json_column_name
+        self.properties: Dict = properties
+        self.tables_registry: Set[str] = tables_registry
+        self.from_table: str = from_table
 
-        self.name_transformer = DestinationNameTransformer(integration_type)
-        self.json_path = [stream_name]
-        self.final_table_name = None
-        self.local_registry = set()
-        self.parent = None
-        self.is_nested_array = False
+        self.name_transformer: DestinationNameTransformer = DestinationNameTransformer(integration_type)
+        self.json_path: List[str] = [stream_name]
+        self.final_table_name: str = ""
+        self.sql_outputs: Dict[str, str] = {}
+        self.local_registry: Set[str] = set()
+        self.parent: Optional["StreamProcessor"] = None
+        self.is_nested_array: bool = False
 
     @staticmethod
-    def create_from_parent(parent, child_name: str, json_column_name: str, properties: Dict, is_nested_array: bool, from_table: str):
+    def create_from_parent(
+        parent, child_name: str, json_column_name: str, properties: Dict, is_nested_array: bool, from_table: str
+    ) -> "StreamProcessor":
         """
         @param parent is the Stream Processor that originally created this instance to handle a nested column from that parent table.
 
@@ -103,7 +112,6 @@ class StreamProcessor(object):
         """
         result = StreamProcessor.create(
             stream_name=child_name,
-            output_directory=parent.output_directory,
             integration_type=parent.integration_type,
             raw_schema=parent.raw_schema,
             schema=parent.schema,
@@ -120,7 +128,6 @@ class StreamProcessor(object):
     @staticmethod
     def create(
         stream_name: str,
-        output_directory: str,
         integration_type: DestinationType,
         raw_schema: str,
         schema: str,
@@ -128,11 +135,10 @@ class StreamProcessor(object):
         properties: Dict,
         tables_registry: Set[str],
         from_table: str,
-    ):
+    ) -> "StreamProcessor":
         """
         @param stream_name of the stream being processed
 
-        @param output_directory is the path to the directory where this processor should write the resulting SQL files (DBT models)
         @param integration_type is the destination type of warehouse
         @param raw_schema is the name of the staging intermediate schema where to create internal tables/views
         @param schema is the name of the schema where to store the final tables where to store the transformed data
@@ -145,7 +151,6 @@ class StreamProcessor(object):
         """
         return StreamProcessor(
             stream_name,
-            output_directory,
             integration_type,
             raw_schema,
             schema,
@@ -155,24 +160,56 @@ class StreamProcessor(object):
             from_table,
         )
 
-    def process(self) -> Dict:
+    def process(self) -> List["StreamProcessor"]:
         """
-        @param from_table refers to the raw source table to use to extract data from
+        See description of StreamProcessor class.
+        @return List of StreamProcessor to handle recursively nested columns from this stream
         """
         # Check properties
         if not self.properties:
             print(f"  Ignoring substream '{self.stream_name}' from {self.current_json_path()} because properties list is empty")
-            return
+            return []
+
+        column_names = self.extract_column_names()
 
         from_table = self.from_table
         # Transformation Pipeline for this stream
-        from_table = self.write_model(self.generate_json_parsing_model(from_table), is_intermediate=True, suffix="ab1")
-        from_table = self.write_model(self.generate_column_typing_model(from_table), is_intermediate=True, suffix="ab2")
-        from_table = self.write_model(self.generate_id_hashing_model(from_table), is_intermediate=True, suffix="ab3")
-        from_table = self.write_model(self.generate_final_model(from_table), is_intermediate=False)
-        return {from_table: self.find_children_streams(from_table)}
+        from_table = self.add_to_outputs(self.generate_json_parsing_model(from_table, column_names), is_intermediate=True, suffix="ab1")
+        from_table = self.add_to_outputs(self.generate_column_typing_model(from_table, column_names), is_intermediate=True, suffix="ab2")
+        from_table = self.add_to_outputs(self.generate_id_hashing_model(from_table, column_names), is_intermediate=True, suffix="ab3")
+        from_table = self.add_to_outputs(self.generate_final_model(from_table, column_names), is_intermediate=False)
+        return self.find_children_streams(from_table, column_names)
 
-    def find_children_streams(self, from_table: str) -> List:
+    def extract_column_names(self) -> Dict[str, Tuple[str, str]]:
+        """
+        Generate a mapping of JSON properties to normalized SQL Column names, handling collisions and avoid duplicate names
+
+        The mapped value to a field property is a tuple where:
+         - the first value is the normalized "raw" column name
+         - the second value is the normalized quoted column name to be used in jinja context
+        """
+        fields = [field for field in self.properties.keys() if not is_airbyte_column(field)]
+        result = {}
+        field_names = set()
+        for field in fields:
+            field_name = self.name_transformer.normalize_column_name(field, in_jinja=False)
+            jinja_name = self.name_transformer.normalize_column_name(field, in_jinja=True)
+            if field_name in field_names:
+                # TODO handle column name duplicates or collisions deterministically in this stream
+                for i in range(1, 1000):
+                    field_name = self.name_transformer.normalize_column_name(f"{field}_{i}", in_jinja=False)
+                    jinja_name = self.name_transformer.normalize_column_name(f"{field}_{i}", in_jinja=True)
+                    if field_name not in field_names:
+                        break
+            field_names.add(field_name)
+            result[field] = (field_name, jinja_name)
+        return result
+
+    def find_children_streams(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> List["StreamProcessor"]:
+        """
+        For each complex type properties, generate a new StreamProcessor that is able to process the current stream
+        as a parent and produce separate child pipelines.
+        """
         properties = self.properties
         children: List[StreamProcessor] = []
         for field in properties.keys():
@@ -188,7 +225,7 @@ class StreamProcessor(object):
                 is_nested_array = False
                 json_column_name = f"'{field}'"
             elif is_array(properties[field]["type"]) and "items" in properties[field]:
-                quoted_field = self.name_transformer.normalize_column_name(field, in_jinja=True)
+                quoted_field = column_names[field][1]
                 children_properties = find_properties_object([], field, properties[field]["items"])
                 is_nested_array = True
                 json_column_name = f"unnested_column_value({quoted_field})"
@@ -205,7 +242,7 @@ class StreamProcessor(object):
                     children.append(stream_processor)
         return children
 
-    def generate_json_parsing_model(self, from_table: str) -> str:
+    def generate_json_parsing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
         template = Template(
             """
 {{ unnesting_before_query }}
@@ -225,22 +262,21 @@ from {{ from_table }}
         sql = template.render(
             unnesting_before_query=self.unnesting_before_query(),
             parent_hash_id=self.parent_hash_id(),
-            fields=self.extract_json_columns(),
+            fields=self.extract_json_columns(column_names),
             from_table=jinja_call(from_table),
             unnesting_after_query=self.unnesting_after_query(),
             sql_table_comment=self.sql_table_comment(),
         )
         return sql
 
-    def extract_json_columns(self):
+    def extract_json_columns(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
         return [
-            StreamProcessor.extract_json_column(field, self.json_column_name, self.properties[field], self.name_transformer)
-            for field in self.properties.keys()
-            if not is_airbyte_column(field)
+            StreamProcessor.extract_json_column(field, self.json_column_name, self.properties[field], column_names[field][0])
+            for field in column_names
         ]
 
     @staticmethod
-    def extract_json_column(property_name: str, json_column_name: str, definition: Dict, name_transformer: DestinationNameTransformer):
+    def extract_json_column(property_name: str, json_column_name: str, definition: Dict, column_name: str) -> str:
         json_path = [property_name]
         json_extract = jinja_call(f"json_extract({json_column_name}, {json_path})")
         if "type" in definition:
@@ -250,10 +286,9 @@ from {{ from_table }}
                 json_extract = jinja_call(f"json_extract({json_column_name}, {json_path})")
             elif is_simple_property(definition["type"]):
                 json_extract = jinja_call(f"json_extract_scalar({json_column_name}, {json_path})")
-        column_name = name_transformer.normalize_column_name(property_name)
         return f"{json_extract} as {column_name}"
 
-    def generate_column_typing_model(self, from_table: str) -> str:
+    def generate_column_typing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
         template = Template(
             """
 select
@@ -270,31 +305,29 @@ from {{ from_table }}
         )
         sql = template.render(
             parent_hash_id=self.parent_hash_id(),
-            fields=self.cast_property_types(),
+            fields=self.cast_property_types(column_names),
             from_table=jinja_call(from_table),
             sql_table_comment=self.sql_table_comment(),
         )
         return sql
 
-    def cast_property_types(self):
-        return [self.cast_property_type(field) for field in self.properties.keys() if not is_airbyte_column(field)]
+    def cast_property_types(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
+        return [self.cast_property_type(field, column_names[field][0], column_names[field][1]) for field in column_names]
 
-    def cast_property_type(self, property_name: str):
-        column_name = self.name_transformer.normalize_column_name(property_name)
+    def cast_property_type(self, property_name: str, column_name: str, jinja_column: str) -> str:
         definition = self.properties[property_name]
         if "type" not in definition:
             print(f"WARN: Unknown type for column {property_name} at {self.current_json_path()}")
             return column_name
         elif is_array(definition["type"]):
-            return self.cast_property_type_as_array(property_name)
+            return self.cast_property_type_as_array(property_name, column_name)
         elif is_object(definition["type"]):
-            sql_type = self.cast_property_type_as_object(property_name)
+            sql_type = self.cast_property_type_as_object(property_name, column_name)
         elif is_integer(definition["type"]):
             sql_type = jinja_call("dbt_utils.type_int()")
         elif is_number(definition["type"]):
             sql_type = jinja_call("dbt_utils.type_float()")
         elif is_boolean(definition["type"]):
-            jinja_column = self.name_transformer.normalize_column_name(property_name, in_jinja=True)
             cast_operation = jinja_call(f"cast_to_boolean({jinja_column})")
             return f"{cast_operation} as {column_name}"
         elif is_string(definition["type"]):
@@ -304,20 +337,19 @@ from {{ from_table }}
             return column_name
         return f"cast({column_name} as {sql_type}) as {column_name}"
 
-    def cast_property_type_as_array(self, property_name: str):
-        column_name = self.name_transformer.normalize_column_name(property_name)
+    def cast_property_type_as_array(self, property_name: str, column_name: str) -> str:
         if self.integration_type.value == DestinationType.BIGQUERY.value:
             # TODO build a struct/record type from properties JSON schema
             pass
         return column_name
 
-    def cast_property_type_as_object(self, property_name: str):
+    def cast_property_type_as_object(self, property_name: str, column_name: str) -> str:
         if self.integration_type.value == DestinationType.BIGQUERY.value:
             # TODO build a struct/record type from properties JSON schema
             pass
         return jinja_call("type_json()")
 
-    def generate_id_hashing_model(self, from_table: str) -> str:
+    def generate_id_hashing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
         template = Template(
             """
 select
@@ -336,23 +368,18 @@ from {{ from_table }}
         )
         sql = template.render(
             parent_hash_id=self.parent_hash_id(),
-            fields=self.safe_cast_to_strings(),
+            fields=self.safe_cast_to_strings(column_names),
             hash_id=self.hash_id(),
             from_table=jinja_call(from_table),
             sql_table_comment=self.sql_table_comment(),
         )
         return sql
 
-    def safe_cast_to_strings(self):
-        return [
-            StreamProcessor.safe_cast_to_string(field, self.properties[field], self.name_transformer)
-            for field in self.properties.keys()
-            if not is_airbyte_column(field)
-        ]
+    def safe_cast_to_strings(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
+        return [StreamProcessor.safe_cast_to_string(field, self.properties[field], column_names[field][1]) for field in column_names]
 
     @staticmethod
-    def safe_cast_to_string(property_name: str, definition: Dict, name_transformer: DestinationNameTransformer):
-        column_name = name_transformer.normalize_column_name(property_name, in_jinja=True)
+    def safe_cast_to_string(property_name: str, definition: Dict, column_name: str) -> str:
         if "type" not in definition:
             return column_name
         elif is_boolean(definition["type"]):
@@ -362,7 +389,7 @@ from {{ from_table }}
         else:
             return column_name
 
-    def generate_final_model(self, from_table: str) -> str:
+    def generate_final_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
         template = Template(
             """
 select
@@ -380,32 +407,38 @@ from {{ from_table }}
         )
         sql = template.render(
             parent_hash_id=self.parent_hash_id(),
-            fields=self.list_fields(),
+            fields=self.list_fields(column_names),
             hash_id=self.hash_id(),
             from_table=jinja_call(from_table),
             sql_table_comment=self.sql_table_comment(include_from_table=True),
         )
         return sql
 
-    def list_fields(self):
-        return [self.name_transformer.normalize_column_name(field) for field in self.properties.keys() if not is_airbyte_column(field)]
+    def list_fields(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
+        return [column_names[field][0] for field in column_names]
 
-    def write_model(self, sql: str, is_intermediate: bool, suffix: str = "") -> str:
-        if is_intermediate:
-            output = os.path.join(self.output_directory, "airbyte_views", self.schema)
-        else:
-            output = os.path.join(self.output_directory, "airbyte_tables", self.schema)
+    def add_to_outputs(self, sql: str, is_intermediate: bool, suffix: str = "") -> str:
         schema = self.get_schema(is_intermediate)
         table_name = self.generate_new_table_name(is_intermediate, suffix)
         self.add_table_to_local_registry(table_name)
         file = f"{table_name}.sql"
-        json_path = self.current_json_path()
+        if is_intermediate:
+            output = os.path.join("airbyte_views", self.schema, file)
+        else:
+            output = os.path.join("airbyte_tables", self.schema, file)
         tags = self.get_model_tags(is_intermediate)
         header = jinja_call(f'config(schema="{schema}", tags=[{tags}])')
-        output_sql_file(output_dir=output, file=file, json_path=json_path, header=header, sql=sql)
+        self.sql_outputs[
+            output
+        ] = f"""
+{header}
+{sql}
+"""
+        json_path = self.current_json_path()
+        print(f"  Generating {output} from {json_path}")
         return ref_table(table_name)
 
-    def get_model_tags(self, is_intermediate: bool):
+    def get_model_tags(self, is_intermediate: bool) -> str:
         tags = ""
         if self.parent:
             tags += "nested"
@@ -415,7 +448,7 @@ from {{ from_table }}
             tags += "-intermediate"
         return f'"{tags}"'
 
-    def generate_new_table_name(self, is_intermediate: bool, suffix: str):
+    def generate_new_table_name(self, is_intermediate: bool, suffix: str) -> str:
         """
         Generates a new table names that is not registered in the schema yet (based on normalized_stream_name())
         """
@@ -433,7 +466,7 @@ from {{ from_table }}
             if suffix:
                 new_table_name = self.name_transformer.normalize_table_name(f"{table_name}_{suffix}")
             if new_table_name in tables_registry:
-                # TODO handle collisions between intermediate tables and children
+                # TODO handle collisions deterministically between intermediate tables and children
                 for i in range(1, 1000):
                     if suffix:
                         new_table_name = self.name_transformer.normalize_table_name(f"{table_name}_{i}_{suffix}")
@@ -452,7 +485,7 @@ from {{ from_table }}
         else:
             raise KeyError(f"Duplicate table {table_name}")
 
-    def get_schema(self, is_intermediate: bool):
+    def get_schema(self, is_intermediate: bool) -> str:
         if is_intermediate:
             return self.raw_schema
         else:
@@ -497,7 +530,7 @@ from {{ from_table }}
             return self.parent.hash_id()
         return ""
 
-    def unnesting_before_query(self):
+    def unnesting_before_query(self) -> str:
         if self.parent and self.is_nested_array:
             parent_table_name = f"'{self.parent.actual_table_name()}'"
             parent_stream_name = f"'{self.parent.normalized_stream_name()}'"
@@ -505,7 +538,7 @@ from {{ from_table }}
             return jinja_call(f"unnest_cte({parent_table_name}, {parent_stream_name}, {quoted_field})")
         return ""
 
-    def unnesting_after_query(self):
+    def unnesting_after_query(self) -> str:
         result = ""
         if self.parent:
             cross_join = ""
@@ -527,26 +560,7 @@ def ref_table(table_name) -> str:
     return f"ref('{table_name}')"
 
 
-def output_sql_file(output_dir: str, file: str, json_path: str, header: str, sql: str):
-    """
-    @param output_dir is the path to the file to be written
-    @param file is the filename to be written
-    @param json_path is the json path in the catalog where this stream is originated from
-    @param header is the dbt header to be written in the generated model file
-    @param sql is the dbt sql content to be written in the generated model file
-    """
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-    print(f"  Generating {file} from {json_path}")
-    with open(os.path.join(output_dir, file), "w") as f:
-        f.write(header + "\n")
-        for line in sql.splitlines():
-            if line.strip():
-                f.write(line + "\n")
-        f.write("\n")
-
-
-def find_properties_object(path: List[str], field: str, properties: Dict) -> Dict:
+def find_properties_object(path: List[str], field: str, properties) -> Dict[str, Dict]:
     """
     This function is trying to look for a nested "properties" node under the current JSON node to
     identify all nested objects.
@@ -568,7 +582,7 @@ def find_properties_object(path: List[str], field: str, properties: Dict) -> Dic
             return {current: properties["properties"]}
         elif "type" in properties and is_simple_property(properties["type"]):
             # we found a basic type
-            return {current: None}
+            return {current: {}}
         elif isinstance(properties, dict):
             for key in properties.keys():
                 child = find_properties_object(path=current_path, field=key, properties=properties[key])
