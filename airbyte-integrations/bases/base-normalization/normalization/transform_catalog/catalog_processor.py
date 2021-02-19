@@ -67,7 +67,7 @@ class CatalogProcessor:
         source_tables: Dict[str, Set[str]] = {}
 
         catalog = read_json(catalog_file)
-        print(json.dumps(catalog, separators=(",", ":")))
+        # print(json.dumps(catalog, separators=(",", ":")))
         substreams = {}
         for configured_stream in get_field(catalog, "streams", "Invalid Catalog: 'streams' is not defined in Catalog"):
             stream_config = get_field(configured_stream, "stream", "Invalid Stream: 'stream' is not defined in Catalog streams")
@@ -87,7 +87,7 @@ class CatalogProcessor:
 
             add_table_to_sources(source_tables, schema_name, raw_table_name)
 
-            stream_processor = StreamProcessor().init(
+            stream_processor = StreamProcessor.create(
                 stream_name=stream_name,
                 output_directory=self.output_directory,
                 integration_type=self.integration_type,
@@ -96,8 +96,9 @@ class CatalogProcessor:
                 json_column_name=f"'{json_column_name}'",
                 properties=properties,
                 tables_registry=tables_registry,
+                from_table=from_table
             )
-            nested_processors = stream_processor.process(from_table)
+            nested_processors = stream_processor.process()
             add_table_to_registry(tables_registry, stream_processor)
             if nested_processors and len(nested_processors) > 0:
                 substreams.update(nested_processors)
@@ -114,7 +115,7 @@ class CatalogProcessor:
             for child in children:
                 for substream in children[child]:
                     substream.tables_registry = tables_registry
-                    nested_processors = substream.process(child)
+                    nested_processors = substream.process()
                     add_table_to_registry(tables_registry, substream)
                     if nested_processors:
                         substreams.update(nested_processors)

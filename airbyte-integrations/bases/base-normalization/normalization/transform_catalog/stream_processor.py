@@ -55,40 +55,7 @@ class StreamProcessor(object):
     spawned for each children substreams.
     """
 
-    def __init__(self, *args, **kwargs):
-        self.final_table_name = None
-        self.local_registry = set()
-        self.parent = None
-        self.is_nested_array = False
-
-    def initFromParent(self, parent, child_name: str, json_column_name: str, properties: Dict, is_nested_array: bool):
-        """
-        @param parent is the Stream Processor that originally created this instance to handle a nested column from that parent table.
-
-        @param json_column_name is the name of the column in the parent data table containing the json column to transform
-        @param properties is the json schema description of this nested stream
-        @param is_nested_array is a boolean flag specifying if the child is a nested array that needs to be extracted
-
-        @param tables_registry is the global context recording all tables created so far
-
-        The child stream processor will create a separate table to contain the unnested data.
-        """
-        self.init(
-            stream_name=child_name,
-            output_directory=parent.output_directory,
-            integration_type=parent.integration_type,
-            raw_schema=parent.raw_schema,
-            schema=parent.schema,
-            json_column_name=json_column_name,
-            properties=properties,
-            tables_registry=parent.tables_registry,
-        )
-        self.parent = parent
-        self.is_nested_array = is_nested_array
-        self.json_path = parent.json_path + [child_name]
-        return self
-
-    def init(
+    def __init__(
         self,
         stream_name: str,
         output_directory: str,
@@ -98,6 +65,69 @@ class StreamProcessor(object):
         json_column_name: str,
         properties: Dict,
         tables_registry: Set[str],
+        from_table: str,
+    ):
+        """
+        See StreamProcessor.create()
+        """
+        self.stream_name = stream_name
+        self.output_directory = output_directory
+        self.integration_type = integration_type
+        self.raw_schema = raw_schema
+        self.schema = schema
+        self.json_column_name = json_column_name
+        self.properties = properties
+        self.tables_registry = tables_registry
+        self.from_table = from_table
+
+        self.name_transformer = DestinationNameTransformer(integration_type)
+        self.json_path = [stream_name]
+        self.final_table_name = None
+        self.local_registry = set()
+        self.parent = None
+        self.is_nested_array = False
+
+    @staticmethod
+    def create_from_parent(parent, child_name: str, json_column_name: str, properties: Dict, is_nested_array: bool, from_table: str):
+        """
+        @param parent is the Stream Processor that originally created this instance to handle a nested column from that parent table.
+
+        @param json_column_name is the name of the column in the parent data table containing the json column to transform
+        @param properties is the json schema description of this nested stream
+        @param is_nested_array is a boolean flag specifying if the child is a nested array that needs to be extracted
+
+        @param tables_registry is the global context recording all tables created so far
+        @param from_table is the parent table to extract the nested stream from
+
+        The child stream processor will create a separate table to contain the unnested data.
+        """
+        result = StreamProcessor.create(
+            stream_name=child_name,
+            output_directory=parent.output_directory,
+            integration_type=parent.integration_type,
+            raw_schema=parent.raw_schema,
+            schema=parent.schema,
+            json_column_name=json_column_name,
+            properties=properties,
+            tables_registry=parent.tables_registry,
+            from_table=from_table
+        )
+        result.parent = parent
+        result.is_nested_array = is_nested_array
+        result.json_path = parent.json_path + [child_name]
+        return result
+
+    @staticmethod
+    def create(
+        stream_name: str,
+        output_directory: str,
+        integration_type: DestinationType,
+        raw_schema: str,
+        schema: str,
+        json_column_name: str,
+        properties: Dict,
+        tables_registry: Set[str],
+        from_table: str,
     ):
         """
         @param stream_name of the stream being processed
@@ -111,21 +141,21 @@ class StreamProcessor(object):
         @param properties is the json schema description of this stream
 
         @param tables_registry is the global context recording all tables created so far
+        @param from_table is the table this stream is being extracted from originally
         """
-        self.stream_name = stream_name
-        self.output_directory = output_directory
-        self.integration_type = integration_type
-        self.raw_schema = raw_schema
-        self.schema = schema
-        self.json_column_name = json_column_name
-        self.properties = properties
-        self.tables_registry = tables_registry
+        return StreamProcessor(
+            stream_name,
+            output_directory,
+            integration_type,
+            raw_schema,
+            schema,
+            json_column_name,
+            properties,
+            tables_registry,
+            from_table,
+        )
 
-        self.name_transformer = DestinationNameTransformer(integration_type)
-        self.json_path = [stream_name]
-        return self
-
-    def process(self, from_table: str) -> Dict:
+    def process(self) -> Dict:
         """
         @param from_table refers to the raw source table to use to extract data from
         """
@@ -134,14 +164,15 @@ class StreamProcessor(object):
             print(f"  Ignoring substream '{self.stream_name}' from {self.current_json_path()} because properties list is empty")
             return
 
+        from_table = self.from_table
         # Transformation Pipeline for this stream
         from_table = self.write_model(self.generate_json_parsing_model(from_table), is_intermediate=True, suffix="ab1")
         from_table = self.write_model(self.generate_column_typing_model(from_table), is_intermediate=True, suffix="ab2")
         from_table = self.write_model(self.generate_id_hashing_model(from_table), is_intermediate=True, suffix="ab3")
         from_table = self.write_model(self.generate_final_model(from_table), is_intermediate=False)
-        return {from_table: self.find_children_streams()}
+        return {from_table: self.find_children_streams(from_table)}
 
-    def find_children_streams(self) -> List:
+    def find_children_streams(self, from_table: str) -> List:
         properties = self.properties
         children: List[StreamProcessor] = []
         for field in properties.keys():
@@ -152,6 +183,7 @@ class StreamProcessor(object):
                 # TODO: merge properties of all combinations
                 pass
             elif "type" not in properties[field] or is_object(properties[field]["type"]):
+                # properties without 'type' field are treated like properties with 'type' = 'object'
                 children_properties = find_properties_object([], field, properties[field])
                 is_nested_array = False
                 json_column_name = f"'{field}'"
@@ -162,12 +194,13 @@ class StreamProcessor(object):
                 json_column_name = f"unnested_column_value({quoted_field})"
             if children_properties:
                 for child_key in children_properties:
-                    stream_processor = StreamProcessor().initFromParent(
+                    stream_processor = StreamProcessor.create_from_parent(
                         parent=self,
                         child_name=field,
                         json_column_name=json_column_name,
                         properties=children_properties[child_key],
                         is_nested_array=is_nested_array,
+                        from_table=from_table
                     )
                     children.append(stream_processor)
         return children
@@ -350,7 +383,7 @@ from {{ from_table }}
             fields=self.list_fields(),
             hash_id=self.hash_id(),
             from_table=jinja_call(from_table),
-            sql_table_comment=self.sql_table_comment(),
+            sql_table_comment=self.sql_table_comment(include_from_table=True),
         )
         return sql
 
@@ -367,9 +400,20 @@ from {{ from_table }}
         self.add_table_to_local_registry(table_name)
         file = f"{table_name}.sql"
         json_path = self.current_json_path()
-        header = "{{ config(schema='" + schema + "') }}\n"
+        tags = self.get_model_tags(is_intermediate)
+        header = jinja_call(f'config(schema="{schema}", tags=[{tags}])')
         output_sql_file(output_dir=output, file=file, json_path=json_path, header=header, sql=sql)
         return ref_table(table_name)
+
+    def get_model_tags(self, is_intermediate: bool):
+        tags = ''
+        if self.parent:
+            tags += 'nested'
+        else:
+            tags += 'top-level'
+        if is_intermediate:
+            tags += '-intermediate'
+        return f'"{tags}"'
 
     def generate_new_table_name(self, is_intermediate: bool, suffix: str):
         """
@@ -434,11 +478,14 @@ from {{ from_table }}
         else:
             raise KeyError("Final table name is not determined yet...")
 
-    def sql_table_comment(self) -> str:
+    def sql_table_comment(self, include_from_table: bool = False) -> str:
+        result = f"-- {self.normalized_stream_name()}"
         if len(self.json_path) > 1:
-            return f"-- {self.normalized_stream_name()} from {self.current_json_path()}"
-        else:
-            return f"-- {self.normalized_stream_name()}"
+            result += f" at {self.current_json_path()}"
+        if include_from_table:
+            from_table = jinja_call(self.from_table)
+            result += f" from {from_table}"
+        return result
 
     def hash_id(self) -> str:
         return self.name_transformer.normalize_column_name(f"_airbyte_{self.normalized_stream_name()}_hashid")
@@ -492,7 +539,7 @@ def output_sql_file(output_dir: str, file: str, json_path: str, header: str, sql
         os.makedirs(output_dir)
     print(f"  Generating {file} from {json_path}")
     with open(os.path.join(output_dir, file), "w") as f:
-        f.write(header)
+        f.write(header + "\n")
         for line in sql.splitlines():
             if line.strip():
                 f.write(line + "\n")
@@ -500,6 +547,14 @@ def output_sql_file(output_dir: str, file: str, json_path: str, header: str, sql
 
 
 def find_properties_object(path: List[str], field: str, properties: Dict) -> Dict:
+    """
+    This function is trying to look for a nested "properties" node under the current JSON node to
+    identify all nested objects.
+
+    @param path JSON path traversed so far to arrive to this node
+    @param field is the current field being considered in the Json Tree
+    @param properties is the child tree of properties of the current field being searched
+    """
     result = {}
     current_path = path + [field]
     current = "_".join(current_path)

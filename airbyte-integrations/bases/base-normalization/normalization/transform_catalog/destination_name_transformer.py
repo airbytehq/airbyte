@@ -29,6 +29,19 @@ from normalization.destination_type import DestinationType
 from normalization.transform_catalog.reserved_keywords import is_reserved_keyword
 from normalization.transform_catalog.utils import jinja_call
 
+DESTINATION_SIZE_LIMITS = {
+    DestinationType.BIGQUERY.value: 1024,
+    DestinationType.SNOWFLAKE.value: 255,
+    DestinationType.REDSHIFT.value: 127,
+    DestinationType.POSTGRES.value: 63,
+}
+
+# in DBT Versions < 19.0:
+TRUNCATE_DBT_RESERVED_SIZE = 29
+# in DBT Versions >= 19.0:
+# see https://github.com/fishtown-analytics/dbt/pull/2850
+TRUNCATE_DBT_RESERVED_SIZE_v19 = 12
+
 # We reserve this many characters from identifier names to be used for prefix/suffix for airbyte
 # before reaching the database name length limit
 TRUNCATE_RESERVED_SIZE: int = 5
@@ -88,12 +101,14 @@ class DestinationNameTransformer:
     def __normalize_non_column_identifier_name(self, input_name: str, in_jinja: bool = False) -> str:
         # We force standard naming for non column names (see issue #1785)
         result = transform_standard_naming(input_name)
+        result = self.__normalize_naming_conventions(result)
         result = self.__truncate_identifier_name(result)
         result = self.__normalize_identifier_case(result, is_quoted=False)
         return result
 
     def __normalize_identifier_name(self, column_name: str, in_jinja: bool = False) -> str:
-        result = self.__truncate_identifier_name(column_name)
+        result = self.__normalize_naming_conventions(column_name)
+        result = self.__truncate_identifier_name(result)
         if self.needs_quotes(result):
             result = result.replace('"', '""')
             result = result.replace("'", "\\'")
@@ -109,61 +124,51 @@ class DestinationNameTransformer:
             return f"'{result}'"
         return result
 
-    def __truncate_identifier_name(self, input_name: str) -> str:
+    def __normalize_naming_conventions(self, input_name: str) -> str:
+        result = input_name
         if self.integration_type.value == DestinationType.BIGQUERY.value:
-            if len(input_name) >= (1024 - TRUNCATE_RESERVED_SIZE):
-                # bigquery has limit of 1024 characters
-                input_name = input_name[0 : (1024 - TRUNCATE_RESERVED_SIZE)]
-            input_name = transform_standard_naming(input_name)
-            doesnt_start_with_alphaunderscore = match("[^A-Za-z_]", input_name[0])
+            result = transform_standard_naming(result)
+            doesnt_start_with_alphaunderscore = match("[^A-Za-z_]", result[0]) is not None
             if doesnt_start_with_alphaunderscore:
-                input_name = f"_{input_name}"
-            return input_name
-        elif self.integration_type.value == DestinationType.REDSHIFT.value:
-            if len(input_name) >= (127 - TRUNCATE_RESERVED_SIZE):
-                # redshift has limit of 127 characters
-                input_name = input_name[0 : (127 - TRUNCATE_RESERVED_SIZE)]
-        elif self.integration_type.value == DestinationType.POSTGRES.value:
-            if len(input_name) >= (63 - TRUNCATE_RESERVED_SIZE):
-                # postgres has limit of 63 characters
-                # BUT postgres with DBT-v18.0.1 has limit of 29 characters
-                # BUT postgres with DBT-v19.0.0 has limit of 51 characters
-                # see https://github.com/fishtown-analytics/dbt/pull/2850
-                input_name = input_name[0 : (63 - TRUNCATE_RESERVED_SIZE)]
-        elif self.integration_type.value == DestinationType.SNOWFLAKE.value:
-            if len(input_name) >= (255 - TRUNCATE_RESERVED_SIZE):
-                # snowflake has limit of 255 characters
-                input_name = input_name[0 : (255 - TRUNCATE_RESERVED_SIZE)]
+                result = f"_{result}"
+        return result
+
+    def __truncate_identifier_name(self, input_name: str) -> str:
+        if self.integration_type.value in DESTINATION_SIZE_LIMITS:
+            limit = DESTINATION_SIZE_LIMITS[self.integration_type.value]
+            limit = limit - TRUNCATE_RESERVED_SIZE - TRUNCATE_DBT_RESERVED_SIZE
+            input_name = input_name[0:limit]
         else:
             raise KeyError(f"Unknown integration type {self.integration_type}")
         return input_name
 
     def __normalize_identifier_case(self, input_name: str, is_quoted: bool = False) -> str:
+        result = input_name
         if self.integration_type.value == DestinationType.BIGQUERY.value:
             pass
         elif self.integration_type.value == DestinationType.REDSHIFT.value:
             # all tables (even quoted ones) are coerced to lowercase.
-            input_name = input_name.lower()
+            result = input_name.lower()
         elif self.integration_type.value == DestinationType.POSTGRES.value:
             if not is_quoted and not self.needs_quotes(input_name):
-                input_name = input_name.lower()
+                result = input_name.lower()
         elif self.integration_type.value == DestinationType.SNOWFLAKE.value:
             if not is_quoted and not self.needs_quotes(input_name):
-                input_name = input_name.upper()
+                result = input_name.upper()
         else:
             raise KeyError(f"Unknown integration type {self.integration_type}")
-        return input_name
+        return result
 
 
 # Static Functions
 
 
 def transform_standard_naming(input_name: str) -> str:
-    input_name = input_name.strip()
-    input_name = strip_accents(input_name)
-    input_name = sub(r"\s+", "_", input_name)
-    input_name = sub(r"[^a-zA-Z0-9_]", "_", input_name)
-    return input_name
+    result = input_name.strip()
+    result = strip_accents(result)
+    result = sub(r"\s+", "_", result)
+    result = sub(r"[^a-zA-Z0-9_]", "_", result)
+    return result
 
 
 def strip_accents(input_name: str) -> str:
