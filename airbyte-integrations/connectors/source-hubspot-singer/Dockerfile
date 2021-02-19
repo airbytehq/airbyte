@@ -8,7 +8,7 @@ ENV CODE_PATH="source_hubspot_singer"
 ENV AIRBYTE_IMPL_MODULE="source_hubspot_singer"
 ENV AIRBYTE_IMPL_PATH="SourceHubspotSinger"
 
-LABEL io.airbyte.version=0.1.5
+LABEL io.airbyte.version=0.1.6
 LABEL io.airbyte.name=airbyte/source-hubspot-singer
 
 WORKDIR /airbyte/integration_code

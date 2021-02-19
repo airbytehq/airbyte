@@ -44,7 +44,7 @@
               "client_id": {
                 "description": "Hubspot client_id. See our <a href=\"https://docs.airbyte.io/integrations/sources/hubspot\">docs</a> if you need help finding this id.",
                 "type": "string",
-                "examples": ["123456789000,"]
+                "examples": ["123456789000"]
               },
               "client_secret": {
                 "description": "Hubspot client_secret. See our <a href=\"https://docs.airbyte.io/integrations/sources/hubspot\">docs</a> if you need help finding this secret.",
