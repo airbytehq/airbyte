@@ -3,7 +3,7 @@ require 'mongo'
 require 'slop'
 require_relative './lib/mongodb_source'
 
-require 'byebug'
+# require 'byebug'
 
 parsed = Slop.parse do |o|
   o.string '--config', 'Config file path'

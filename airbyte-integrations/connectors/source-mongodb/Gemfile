@@ -5,4 +5,4 @@ gem 'slop'
 gem 'dry-types'
 gem 'dry-struct'
 
-gem 'byebug'
+# gem 'byebug'
