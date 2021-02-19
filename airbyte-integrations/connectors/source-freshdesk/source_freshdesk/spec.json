@@ -17,6 +17,11 @@
         "type": "string",
         "description": "Freshdesk API Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/freshdesk\">docs</a> for more information on how to obtain this key.",
         "airbyte_secret": true
+      },
+      "requests_per_minute": {
+        "title": "Requests per minute",
+        "type": "integer",
+        "description": "Number of requests per minute that this source allowed to use."
       }
     }
   }

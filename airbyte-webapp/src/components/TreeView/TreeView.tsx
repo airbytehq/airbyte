@@ -2,12 +2,9 @@ import React, { useCallback, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Button } from "../../components";
+import { Button } from "components";
 import TreeViewRow from "./components/TreeViewRow";
-import {
-  SyncSchema,
-  AirbyteStreamConfiguration
-} from "../../core/domain/catalog";
+import { SyncSchema, AirbyteStreamConfiguration } from "core/domain/catalog";
 
 type IProps = {
   schema: SyncSchema;
@@ -28,18 +25,9 @@ function compareByName<T extends { name: string }>(o1: T, o2: T): -1 | 0 | 1 {
 }
 
 const TreeView: React.FC<IProps> = ({ schema, onChangeSchema }) => {
-  const sortedSchema = useMemo(
-    () => ({
-      streams: schema.streams.sort((o1, o2) =>
-        compareByName(o1.stream, o2.stream)
-      )
-    }),
-    [schema.streams]
-  );
-
   const onUpdateItem = useCallback(
     (streamId: string, newStream: Partial<AirbyteStreamConfiguration>) => {
-      const newSchema = sortedSchema.streams.map(streamNode => {
+      const newSchema = schema.streams.map(streamNode => {
         return streamNode.stream.name === streamId
           ? {
               ...streamNode,
@@ -50,18 +38,18 @@ const TreeView: React.FC<IProps> = ({ schema, onChangeSchema }) => {
 
       onChangeSchema({ streams: newSchema });
     },
-    [sortedSchema, onChangeSchema]
+    [schema, onChangeSchema]
   );
 
   const hasSelectedItem = useMemo(
-    () => sortedSchema.streams.some(streamNode => streamNode.config.selected),
-    [sortedSchema.streams]
+    () => schema.streams.some(streamNode => streamNode.config.selected),
+    [schema.streams]
   );
 
   const onCheckAll = useCallback(() => {
     const allSelectedValues = !hasSelectedItem;
 
-    const newSchema = sortedSchema.streams.map(streamNode => {
+    const newSchema = schema.streams.map(streamNode => {
       return {
         ...streamNode,
         config: { ...streamNode.config, selected: allSelectedValues }
@@ -69,7 +57,17 @@ const TreeView: React.FC<IProps> = ({ schema, onChangeSchema }) => {
     });
 
     onChangeSchema({ streams: newSchema });
-  }, [hasSelectedItem, onChangeSchema, sortedSchema.streams]);
+  }, [hasSelectedItem, onChangeSchema, schema.streams]);
+
+  // TODO: there is no need to sort schema everytime. We need to do it only once as streams[].stream is const
+  const sortedSchema = useMemo(
+    () => ({
+      streams: schema.streams.sort((o1, o2) =>
+        compareByName(o1.stream, o2.stream)
+      )
+    }),
+    [schema.streams]
+  );
 
   return (
     <div>
@@ -80,10 +78,10 @@ const TreeView: React.FC<IProps> = ({ schema, onChangeSchema }) => {
           <FormattedMessage id="sources.schemaSelectAll" />
         )}
       </SelectButton>
-      {sortedSchema.streams.map(stream => (
+      {sortedSchema.streams.map(streamNode => (
         <TreeViewRow
-          key={stream.stream.name}
-          streamNode={stream}
+          key={streamNode.stream.name}
+          streamNode={streamNode}
           updateItem={onUpdateItem}
         />
       ))}
