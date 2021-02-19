@@ -74,10 +74,10 @@ const useSource = () => {
     });
 
     try {
-      // await sourceCheckConnectionShape({
-      //   sourceDefinitionId: sourceConnector?.sourceDefinitionId,
-      //   connectionConfiguration: values.connectionConfiguration
-      // });
+      await sourceCheckConnectionShape({
+        sourceDefinitionId: sourceConnector?.sourceDefinitionId,
+        connectionConfiguration: values.connectionConfiguration
+      });
 
       // Try to crete source
       const result = await createSourcesImplementation(

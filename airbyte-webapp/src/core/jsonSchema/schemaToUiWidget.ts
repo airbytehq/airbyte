@@ -71,7 +71,7 @@ export const jsonSchemaToUiWidget = (
       fieldKey: key,
       properties,
       isRequired
-    } as any;
+    };
   }
 
   return {

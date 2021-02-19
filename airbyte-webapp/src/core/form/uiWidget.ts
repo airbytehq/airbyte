@@ -1,5 +1,5 @@
-import { FormBlock, WidgetConfigMap } from "./types";
 import get from "lodash.get";
+import { FormBlock, WidgetConfigMap } from "./types";
 import { buildYupFormForJsonSchema } from "../jsonSchema/schemaToYup";
 
 export const buildPathInitialState = (
@@ -21,16 +21,17 @@ export const buildPathInitialState = (
       case "formCondition":
         const defaultCondition = Object.entries(formItem.conditions).find(
           ([key, subConditionItems]) => {
-            const subPathSchema = buildYupFormForJsonSchema({
-              type: "object",
-              ...(subConditionItems as any).jsonSchema
-            });
             switch (subConditionItems._type) {
               case "formGroup":
                 const selectedValues = get(
                   formValues,
                   subConditionItems.fieldName
                 );
+
+                const subPathSchema = buildYupFormForJsonSchema({
+                  type: "object",
+                  ...subConditionItems.jsonSchema
+                });
 
                 if (subPathSchema.isValidSync(selectedValues)) {
                   return key;
@@ -39,6 +40,8 @@ export const buildPathInitialState = (
               case "formItem":
                 return key;
             }
+
+            return null;
           }
         )?.[0];
 

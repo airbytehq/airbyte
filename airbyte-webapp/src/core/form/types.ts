@@ -13,6 +13,7 @@ export type FormBaseItem = {
 
 type FormGroupItem = {
   _type: "formGroup";
+  jsonSchema: JSONSchema7;
   fieldName: string;
   fieldKey: string;
   isRequired: boolean;
