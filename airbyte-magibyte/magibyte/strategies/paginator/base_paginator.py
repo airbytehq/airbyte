@@ -1,7 +1,7 @@
 from magibyte.strategies.base_operation import BaseOperation
 
 
-class BaseRequest(BaseOperation):
+class BasePaginator(BaseOperation):
 
-    def build(self, context):
+    def paginate(self, context):
         raise NotImplementedError()

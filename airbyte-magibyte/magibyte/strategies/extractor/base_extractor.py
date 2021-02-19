@@ -1,7 +1,7 @@
 from magibyte.strategies.base_operation import BaseOperation
 
 
-class BaseExtract(BaseOperation):
+class BaseExtractor(BaseOperation):
 
     def extract(self, context):
         raise NotImplementedError()

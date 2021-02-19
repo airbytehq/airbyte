@@ -1,6 +1,6 @@
 import unittest
 
-from magibyte.strategies.request import HttpRequest
+from magibyte.strategies.requester import HttpRequest
 
 
 class TestHttpRequest(unittest.TestCase):

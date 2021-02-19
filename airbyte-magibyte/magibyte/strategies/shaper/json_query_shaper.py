@@ -4,7 +4,7 @@ from .base_shaper import BaseSelect
 
 
 class JsonQueryShaper(BaseSelect):
-    def select(self, context):
+    def shape(self, context):
         decoded_data = context['decoded_response']
 
         path = self.extrapolate(self.options.get('path'), context)

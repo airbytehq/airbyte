@@ -1,1 +1,0 @@
-from .http_resource_extract import HttpResourceExtract as HttpResource
