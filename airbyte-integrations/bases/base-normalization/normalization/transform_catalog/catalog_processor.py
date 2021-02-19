@@ -96,7 +96,7 @@ class CatalogProcessor:
                 json_column_name=f"'{json_column_name}'",
                 properties=properties,
                 tables_registry=tables_registry,
-                from_table=from_table
+                from_table=from_table,
             )
             nested_processors = stream_processor.process()
             add_table_to_registry(tables_registry, stream_processor)

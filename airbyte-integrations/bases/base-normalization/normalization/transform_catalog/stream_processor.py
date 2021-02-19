@@ -110,7 +110,7 @@ class StreamProcessor(object):
             json_column_name=json_column_name,
             properties=properties,
             tables_registry=parent.tables_registry,
-            from_table=from_table
+            from_table=from_table,
         )
         result.parent = parent
         result.is_nested_array = is_nested_array
@@ -200,7 +200,7 @@ class StreamProcessor(object):
                         json_column_name=json_column_name,
                         properties=children_properties[child_key],
                         is_nested_array=is_nested_array,
-                        from_table=from_table
+                        from_table=from_table,
                     )
                     children.append(stream_processor)
         return children
@@ -406,13 +406,13 @@ from {{ from_table }}
         return ref_table(table_name)
 
     def get_model_tags(self, is_intermediate: bool):
-        tags = ''
+        tags = ""
         if self.parent:
-            tags += 'nested'
+            tags += "nested"
         else:
-            tags += 'top-level'
+            tags += "top-level"
         if is_intermediate:
-            tags += '-intermediate'
+            tags += "-intermediate"
         return f'"{tags}"'
 
     def generate_new_table_name(self, is_intermediate: bool, suffix: str):
