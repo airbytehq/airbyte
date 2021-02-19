@@ -1,10 +1,10 @@
 import React from "react";
 import styled from "styled-components";
 
-import { Cell } from "../../SimpleTableComponents";
-import MainInfoCell from "./MainInfoCell";
+import { Cell } from "components/SimpleTableComponents";
+import { SyncSchemaField } from "core/domain/catalog";
 
-import { SyncSchemaField } from "../../../core/domain/catalog";
+import MainInfoCell from "./MainInfoCell";
 import ItemRow from "./ItemRow";
 import TreeItem from "./TreeItem";
 
