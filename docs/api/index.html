@@ -205,7 +205,7 @@ font-style: italic;
     <div class="app-desc">More information: <a href="https://openapi-generator.tech">https://openapi-generator.tech</a></div>
     <div class="app-desc">Contact Info: <a href="contact@airbyte.io">contact@airbyte.io</a></div>
     <div class="app-desc">Version: 1.0.0-oas3</div>
-    <div class="app-desc">BasePath:</div>
+    <div class="app-desc">BasePath:/api</div>
     <div class="license-info">MIT</div>
     <div class="license-url">https://opensource.org/licenses/MIT</div>
   <h2>Access</h2>
@@ -266,6 +266,10 @@ font-style: italic;
   <h4><a href="#Logs">Logs</a></h4>
   <ul>
   <li><a href="#getLogs"><code><span class="http-method">post</span> /v1/logs/get</code></a></li>
+  </ul>
+  <h4><a href="#Openapi">Openapi</a></h4>
+  <ul>
+  <li><a href="#getOpenApiSpec"><code><span class="http-method">get</span> /v1/openapi</code></a></li>
   </ul>
   <h4><a href="#Scheduler">Scheduler</a></h4>
   <ul>
@@ -1311,7 +1315,7 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/destinations/get</code></pre></div>
-    <div class="method-summary">get configured destination (<span class="nickname">getDestination</span>)</div>
+    <div class="method-summary">Get configured destination (<span class="nickname">getDestination</span>)</div>
     <div class="method-notes"></div>
 
 
@@ -2095,6 +2099,42 @@ font-style: italic;
     <h4 class="field-label">422</h4>
     Invalid Input
         <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <h1><a name="Openapi">Openapi</a></h1>
+  <div class="method"><a name="getOpenApiSpec"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /v1/openapi</code></pre></div>
+    <div class="method-summary">Returns the openapi specification (<span class="nickname">getOpenApiSpec</span>)</div>
+    <div class="method-notes"></div>
+
+
+
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      
+      File
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>text/plain</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Returns the openapi specification file
+        <a href="#File">File</a>
   </div> <!-- method -->
   <hr/>
   <h1><a name="Scheduler">Scheduler</a></h1>
