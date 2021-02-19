@@ -24,6 +24,7 @@
 
 package io.airbyte.scheduler;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
@@ -40,14 +41,31 @@ public class Job {
 
   public static final Set<ConfigType> REPLICATION_TYPES = EnumSet.of(ConfigType.SYNC, ConfigType.RESET_CONNECTION);
 
+  @JsonProperty("id")
   private final long id;
+
+  @JsonProperty("config_type")
   private final ConfigType configType;
+
+  @JsonProperty("scope")
   private final String scope;
+
+  @JsonProperty("config")
   private final JobConfig config;
+
+  @JsonProperty("status")
   private final JobStatus status;
+
+  @JsonProperty("started_at")
   private final Long startedAtInSecond;
+
+  @JsonProperty("created_at")
   private final long createdAtInSecond;
+
+  @JsonProperty("updated_at")
   private final long updatedAtInSecond;
+
+  @JsonProperty("attempts")
   private final List<Attempt> attempts;
 
   public Job(final long id,

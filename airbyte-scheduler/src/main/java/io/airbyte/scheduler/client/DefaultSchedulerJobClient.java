@@ -123,7 +123,7 @@ public class DefaultSchedulerJobClient implements SchedulerJobClient {
       }
 
       try {
-        Thread.sleep(1000);
+        Thread.sleep(100);
       } catch (InterruptedException e) {
         throw new RuntimeException(e);
       }

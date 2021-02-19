@@ -38,6 +38,9 @@ import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.scheduler.temporal.JobActivityImpl;
+import io.airbyte.scheduler.temporal.JobWorkflow;
+import io.airbyte.scheduler.temporal.JobWorkflowImpl;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.KubeProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
@@ -52,6 +55,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+
+import io.temporal.client.WorkflowClient;
+import io.temporal.client.WorkflowOptions;
+import io.temporal.serviceclient.WorkflowServiceStubs;
+import io.temporal.serviceclient.WorkflowServiceStubsOptions;
+import io.temporal.worker.Worker;
+import io.temporal.worker.WorkerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -71,6 +81,16 @@ public class SchedulerApp {
   private static final Duration SCHEDULING_DELAY = Duration.ofSeconds(5);
   private static final Duration CLEANING_DELAY = Duration.ofHours(2);
   private static final ThreadFactory THREAD_FACTORY = new ThreadFactoryBuilder().setNameFormat("worker-%d").build();
+
+  public static final String AIRBYTE_WORKFLOW_QUEUE = "AIRBYTE_WORKFLOW_QUEUE";
+
+  private static final WorkflowServiceStubsOptions TEMPORAL_OPTIONS = WorkflowServiceStubsOptions.newBuilder()
+          .setTarget("temporal:7233")
+          .build();
+
+  public static final WorkflowServiceStubs TEMPORAL_SERVICE = WorkflowServiceStubs.newInstance(TEMPORAL_OPTIONS);
+
+  public static final WorkflowClient TEMPORAL_CLIENT = WorkflowClient.newInstance(TEMPORAL_SERVICE);
 
   private final Path workspaceRoot;
   private final ProcessBuilderFactory pbf;
@@ -95,9 +115,19 @@ public class SchedulerApp {
     final ScheduledExecutorService scheduledPool = Executors.newSingleThreadScheduledExecutor();
     final WorkerRunFactory workerRunFactory = new WorkerRunFactory(workspaceRoot, pbf);
 
+    final WorkflowOptions workflowOptions = WorkflowOptions.newBuilder()
+            .setTaskQueue(AIRBYTE_WORKFLOW_QUEUE)
+            .build();
+    final JobWorkflow jobWorkflow = TEMPORAL_CLIENT.newWorkflowStub(JobWorkflow.class, workflowOptions);
     final JobRetrier jobRetrier = new JobRetrier(jobPersistence, Instant::now);
     final JobScheduler jobScheduler = new JobScheduler(jobPersistence, configRepository);
-    final JobSubmitter jobSubmitter = new JobSubmitter(workerThreadPool, jobPersistence, configRepository, workerRunFactory);
+    final JobSubmitter jobSubmitter = new JobSubmitter(workerThreadPool, jobPersistence, configRepository, jobWorkflow);
+
+    WorkerFactory factory = WorkerFactory.newInstance(TEMPORAL_CLIENT);
+    Worker worker = factory.newWorker(AIRBYTE_WORKFLOW_QUEUE);
+    worker.registerWorkflowImplementationTypes(JobWorkflowImpl.class);
+    worker.registerActivitiesImplementations(new JobActivityImpl(workerRunFactory, configRepository, jobPersistence));
+    factory.start();
 
     Map<String, String> mdc = MDC.getCopyOfContextMap();
 
@@ -147,6 +177,9 @@ public class SchedulerApp {
   }
 
   public static void main(String[] args) throws IOException, InterruptedException {
+    // todo: wait on temporal startup in a cleaner way
+    Thread.sleep(60000L);
+    System.out.println("starting...");
 
     final Configs configs = new EnvConfigs();
 
@@ -166,7 +199,7 @@ public class SchedulerApp {
 
     final ProcessBuilderFactory pbf = getProcessBuilderFactory(configs);
 
-    final JobPersistence jobPersistence = new DefaultJobPersistence(database);
+    final JobPersistence jobPersistence = new DefaultJobPersistence(database); // todo
     final ConfigPersistence configPersistence = new DefaultConfigPersistence(configRoot);
     final ConfigRepository configRepository = new ConfigRepository(configPersistence);
     final JobCleaner jobCleaner = new JobCleaner(

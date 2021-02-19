@@ -153,6 +153,7 @@ public interface JobPersistence {
 
   Optional<Job> getNextJob() throws IOException;
 
+  // TODO: move all of the archive stuff out of job persistence
   /// ARCHIVE
 
   /**

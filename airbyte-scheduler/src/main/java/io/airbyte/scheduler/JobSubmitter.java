@@ -38,6 +38,7 @@ import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.scheduler.temporal.JobWorkflow;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.WorkerConstants;
 import java.io.IOException;
@@ -58,16 +59,16 @@ public class JobSubmitter implements Runnable {
   private final ExecutorService threadPool;
   private final JobPersistence persistence;
   private final ConfigRepository configRepository;
-  private final WorkerRunFactory workerRunFactory;
+  private final JobWorkflow jobWorkflow;
 
   public JobSubmitter(final ExecutorService threadPool,
                       final JobPersistence persistence,
                       final ConfigRepository configRepository,
-                      final WorkerRunFactory workerRunFactory) {
+                      final JobWorkflow jobWorkflow) {
     this.threadPool = threadPool;
     this.persistence = persistence;
     this.configRepository = configRepository;
-    this.workerRunFactory = workerRunFactory;
+    this.jobWorkflow = jobWorkflow;
   }
 
   @Override
@@ -90,49 +91,8 @@ public class JobSubmitter implements Runnable {
   }
 
   @VisibleForTesting
-  void submitJob(Job job) {
-    final WorkerRun workerRun = workerRunFactory.create(job);
-    // we need to know the attempt number before we begin the job lifecycle. thus we state what the
-    // attempt number should be. if it is not, that the lifecycle will fail. this should not happen as
-    // long as job submission for a single job is single threaded. this is a compromise to allow the job
-    // persistence to control what the attempt number should be while still allowing us to declare it
-    // before the lifecycle begins.
-    final int attemptNumber = job.getAttempts().size();
-    threadPool.submit(new LifecycledCallable.Builder<>(workerRun)
-        .setOnStart(() -> {
-          final Path logFilePath = workerRun.getJobRoot().resolve(WorkerConstants.LOG_FILENAME);
-          final long persistedAttemptId = persistence.createAttempt(job.getId(), logFilePath);
-          assertSameIds(attemptNumber, persistedAttemptId);
-
-          MDC.put("job_id", String.valueOf(job.getId()));
-          MDC.put("job_root", logFilePath.getParent().toString());
-          MDC.put("job_log_filename", logFilePath.getFileName().toString());
-        })
-        .setOnSuccess(output -> {
-          if (output.getOutput().isPresent()) {
-            persistence.writeOutput(job.getId(), attemptNumber, output.getOutput().get());
-          }
-
-          if (output.getStatus() == io.airbyte.workers.JobStatus.SUCCEEDED) {
-            persistence.succeedAttempt(job.getId(), attemptNumber);
-          } else {
-            persistence.failAttempt(job.getId(), attemptNumber);
-          }
-          trackCompletion(job, output.getStatus());
-        })
-        .setOnException(e -> {
-          LOGGER.error("Exception thrown in Job Submission: ", e);
-          persistence.failAttempt(job.getId(), attemptNumber);
-          trackCompletion(job, io.airbyte.workers.JobStatus.FAILED);
-        })
-        .setOnFinish(MDC::clear)
-        .build());
-  }
-
-  private void assertSameIds(long expectedAttemptId, long actualAttemptId) {
-    if (expectedAttemptId != actualAttemptId) {
-      throw new IllegalStateException("Created attempt was not the expected attempt");
-    }
+  public void submitJob(Job job) {
+    jobWorkflow.run(job);
   }
 
   @VisibleForTesting
