@@ -13,21 +13,22 @@ class HttpRequest(BaseRequest):
         self.paginator = self._build_step('paginator', **kwargs)
         self.shaper = self._build_step('shaper', **kwargs)
 
-    def request(self, original_context):
-        context = dict(original_context)
+    def request(self, context):
 
         for page in self.paginator.paginate(context):
             context['page'] = page
 
-            context['requester'] = self._build_request(context)
-            logging.debug(context['requester'])
+            context['request'] = self._build_request(context)
+            logging.debug('request', context['request'])
 
-            context['response'] = requests.request(**context['requester'])
-            context['decoded_response'] = self.decoder.decode(context)
+            context['response'] = requests.request(**context['request'])
+            # logging.debug(context['response'])
 
-            logging.debug(context['decoded_response'])
+            context['decoded_response'] = self.decoder.decode(context.copy())
 
-            for record in self.shaper.shape(context):
+            # logging.debug(context['decoded_response'])
+
+            for record in self.shaper.shape(context.copy()):
                 yield record
 
     def _build_request(self, context):

@@ -1,6 +1,7 @@
 arrow
 jinja2
 jmespath
+pyjq
 pytest
 pyyaml
 requests
