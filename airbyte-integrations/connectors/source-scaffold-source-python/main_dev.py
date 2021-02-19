@@ -22,6 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from .standard_source_test import GithubStandardSourceTest
+import sys
 
-__all__ = ["GithubStandardSourceTest"]
+from base_python.entrypoint import launch
+from source_scaffold_source_python import SourceScaffoldSourcePython
+
+if __name__ == "__main__":
+    source = SourceScaffoldSourcePython()
+    launch(source, sys.argv[1:])

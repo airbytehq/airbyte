@@ -229,21 +229,31 @@ class Client:
             return self._dataset_name
         return f"file_{self._provider['storage']}.{self._reader_format}"
 
-    @staticmethod
-    def load_nested_json_schema(fp) -> dict:
+    def load_nested_json_schema(self, fp) -> dict:
         # Use Genson Library to take JSON objects and generate schemas that describe them,
         builder = SchemaBuilder()
-        builder.add_object(json.load(fp))
+        if self._reader_format == "jsonl":
+            for o in self.read():
+                builder.add_object(o)
+        else:
+            builder.add_object(json.load(fp))
+
         result = builder.to_schema()
         if "items" in result and "properties" in result["items"]:
             result = result["items"]["properties"]
         return result
 
-    @staticmethod
-    def load_nested_json(fp) -> list:
-        result = json.load(fp)
-        if not isinstance(result, list):
-            result = [result]
+    def load_nested_json(self, fp) -> list:
+        if self._reader_format == "jsonl":
+            result = []
+            line = fp.readline()
+            while line:
+                result.append(json.loads(line))
+                line = fp.readline()
+        else:
+            result = json.load(fp)
+            if not isinstance(result, list):
+                result = [result]
         return result
 
     def load_dataframes(self, fp, skip_data=False) -> List:
@@ -309,7 +319,7 @@ class Client:
     def read(self, fields: Iterable = None) -> Iterable[dict]:
         """Read data from the stream"""
         with self.reader.open(binary=self.binary_source) as fp:
-            if self._reader_format == "json":
+            if self._reader_format == "json" or self._reader_format == "jsonl":
                 yield from self.load_nested_json(fp)
             else:
                 for df in self.load_dataframes(fp):
@@ -319,7 +329,7 @@ class Client:
 
     def _stream_properties(self):
         with self.reader.open(binary=self.binary_source) as fp:
-            if self._reader_format == "json":
+            if self._reader_format == "json" or self._reader_format == "jsonl":
                 return self.load_nested_json_schema(fp)
 
             df_list = self.load_dataframes(fp, skip_data=False)

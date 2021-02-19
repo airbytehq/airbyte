@@ -22,6 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from .standard_source_test import SourceFreshdeskStandardTest
+from .source import SourceScaffoldSourcePython
 
-__all__ = ["SourceFreshdeskStandardTest"]
+__all__ = ["SourceScaffoldSourcePython"]

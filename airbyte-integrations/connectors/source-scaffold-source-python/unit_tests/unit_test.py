@@ -22,8 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from base_python_test import DefaultStandardSourceTest
+# format anchor
 
 
-class GithubStandardSourceTest(DefaultStandardSourceTest):
-    pass
+def test_example_method():
+    assert True

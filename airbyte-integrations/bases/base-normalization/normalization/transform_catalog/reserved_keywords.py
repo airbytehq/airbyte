@@ -1131,6 +1131,7 @@ SNOWFLAKE = {
     "CURRENT_TIMESTAMP",
     "CURRENT_USER",
     "DATABASE",
+    "DEFAULT",
     "DELETE",
     "DISTINCT",
     "DROP",

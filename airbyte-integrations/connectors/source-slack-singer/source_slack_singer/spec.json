@@ -15,7 +15,8 @@
       },
       "token": {
         "type": "string",
-        "description": "The Slack API token to interact with your Slack workspace."
+        "description": "The Slack API token to interact with your Slack workspace.",
+        "airbyte_secret": true
       }
     }
   }

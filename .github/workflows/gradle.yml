@@ -65,6 +65,9 @@ jobs:
         with:
           python-version: '3.7'
 
+      - name: Generate Template scaffold
+        run: ./gradlew :airbyte-integrations:connector-templates:generator:testScaffoldTemplates --scan
+
       - name: Format
         run: ./gradlew --no-daemon format --scan
 

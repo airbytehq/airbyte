@@ -13,13 +13,10 @@ type IProps = {
   item: SyncSchemaField;
 };
 
-const ChildItemRow = styled(ItemRow)`
-  margin-left: -64px;
-`;
-
 const StyledCell = styled(Cell)`
   overflow: hidden;
   text-overflow: ellipsis;
+  cursor: default;
 `;
 
 const ChildRow: React.FC<IProps> = ({ item, depth = 0 }) => {
@@ -29,7 +26,7 @@ const ChildRow: React.FC<IProps> = ({ item, depth = 0 }) => {
   return (
     <>
       <TreeItem depth={0}>
-        <ChildItemRow>
+        <ItemRow>
           <MainInfoCell
             hideCheckbox={true}
             label={item.name}
@@ -37,9 +34,9 @@ const ChildRow: React.FC<IProps> = ({ item, depth = 0 }) => {
             depth={depth}
           />
           <StyledCell>{item.type}</StyledCell>
-          <StyledCell>{item.cleanedName}</StyledCell>
+          <StyledCell title={item.cleanedName}>{item.cleanedName}</StyledCell>
           <Cell />
-        </ChildItemRow>
+        </ItemRow>
       </TreeItem>
       {item.fields?.map(field => (
         <ChildRow item={field} depth={depth} />

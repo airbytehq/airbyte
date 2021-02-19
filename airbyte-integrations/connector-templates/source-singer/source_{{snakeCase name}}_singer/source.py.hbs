@@ -30,7 +30,7 @@ from base_singer import SingerSource, Status
 
 
 class Source{{properCase name}}Singer(SingerSource):
-    TAP_CMD = "tap-{{properCase name}}"
+    TAP_CMD = "{{ tap_name }}"
 
     def check_config(self, logger: AirbyteLogger, config_path: str, config: json) -> AirbyteConnectionStatus:
         """

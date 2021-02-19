@@ -47,6 +47,7 @@ const ItemLable = styled.span`
   font-size: 15px;
   line-height: 18px;
   padding-left: 9px;
+  cursor: default;
 `;
 
 const MainInfoCell: React.FC<IProps> = ({
@@ -76,7 +77,7 @@ const MainInfoCell: React.FC<IProps> = ({
         {!hideCheckbox && (
           <CheckBox checked={isItemChecked} onClick={onCheckBoxClick} />
         )}
-        <ItemLable>{label}</ItemLable>
+        <ItemLable title={label}>{label}</ItemLable>
       </Content>
     </MainCell>
   );
