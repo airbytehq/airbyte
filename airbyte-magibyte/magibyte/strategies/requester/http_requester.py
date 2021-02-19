@@ -19,7 +19,7 @@ class HttpRequest(BaseRequest):
             context['page'] = page
 
             context['request'] = self._build_request(context)
-            logging.debug('request', context['request'])
+            # logging.debug(f'request: {context["request"]}')
 
             context['response'] = requests.request(**context['request'])
             # logging.debug(context['response'])
