@@ -10,7 +10,7 @@ type IProps = {
   labelAdditionLength?: number;
 } & InputProps;
 
-const LabeledInput: React.FC<IProps> = props => (
+const LabeledInput: React.FC<IProps> = (props) => (
   <ControlLabels
     error={props.error}
     success={props.success}

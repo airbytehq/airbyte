@@ -31,7 +31,7 @@ const Content = styled.label<{ additionLength?: number | string }>`
 
 const MessageText = styled.span<Pick<IProps, "error" | "success">>`
   white-space: break-spaces;
-  color: ${props =>
+  color: ${(props) =>
     props.error
       ? props.theme.dangerColor
       : props.success
@@ -40,7 +40,7 @@ const MessageText = styled.span<Pick<IProps, "error" | "success">>`
   font-size: 13px;
 `;
 
-const Label: React.FC<IProps> = props => (
+const Label: React.FC<IProps> = (props) => (
   <Content
     additionLength={props.additionLength}
     className={props.className}

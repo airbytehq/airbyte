@@ -4,7 +4,7 @@ enum Status {
   INCOMPLETE = "incomplete",
   FAILED = "failed",
   SUCCEEDED = "succeeded",
-  CANCELLED = "cancelled"
+  CANCELLED = "cancelled",
 }
 
 export default Status;

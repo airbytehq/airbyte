@@ -33,13 +33,13 @@ export const jsonSchemaToUiWidget = (
       fieldKey: key,
       type: "null",
       isRequired,
-      isSecret: false
+      isSecret: false,
     };
   }
 
   if (jsonSchema.oneOf?.length && jsonSchema.oneOf.length > 0) {
     const conditions = Object.fromEntries(
-      jsonSchema.oneOf.map(condition => {
+      jsonSchema.oneOf.map((condition) => {
         if (typeof condition === "boolean") {
           return [];
         }
@@ -52,7 +52,7 @@ export const jsonSchemaToUiWidget = (
       fieldName: path || key,
       fieldKey: key,
       conditions,
-      isRequired
+      isRequired,
     };
   }
 
@@ -69,7 +69,7 @@ export const jsonSchemaToUiWidget = (
       fieldName: path || key,
       fieldKey: key,
       properties,
-      isRequired
+      isRequired,
     };
   }
 
@@ -82,7 +82,7 @@ export const jsonSchemaToUiWidget = (
     isSecret: (jsonSchema as { airbyte_secret: boolean }).airbyte_secret,
     type:
       (Array.isArray(jsonSchema.type) ? jsonSchema.type[0] : jsonSchema.type) ??
-      "null"
+      "null",
   };
 };
 
@@ -92,5 +92,5 @@ const pickDefaultFields = (schema: JSONSchema7): Partial<JSONSchema7> => ({
   description: schema.description,
   pattern: schema.pattern,
   title: schema.title,
-  enum: schema.enum
+  enum: schema.enum,
 });

@@ -33,7 +33,7 @@ const AdditionMessage = styled.span`
   }
 `;
 
-const LabeledToggle: React.FC<IProps> = props => (
+const LabeledToggle: React.FC<IProps> = (props) => (
   <ToggleContainer>
     <Toggle {...props} id={`toggle-${props.name}`} />
     <Label disabled={props.disabled} htmlFor={`toggle-${props.name}`}>

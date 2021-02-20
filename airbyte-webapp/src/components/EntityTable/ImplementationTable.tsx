@@ -34,7 +34,7 @@ type IProps = {
 const ImplementationTable: React.FC<IProps> = ({
   data,
   entity,
-  onClickRow
+  onClickRow,
 }) => {
   const columns = React.useMemo(
     () => [
@@ -45,14 +45,14 @@ const ImplementationTable: React.FC<IProps> = ({
         customWidth: 40,
         Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
           <NameCell value={cell.value} enabled={row.original.enabled} />
-        )
+        ),
       },
       {
         Header: <FormattedMessage id="tables.connector" />,
         accessor: "connectorName",
         Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
           <ConnectorCell value={cell.value} enabled={row.original.enabled} />
-        )
+        ),
       },
       {
         Header: <FormattedMessage id={`tables.${entity}ConnectWith`} />,
@@ -63,7 +63,7 @@ const ImplementationTable: React.FC<IProps> = ({
             entity={entity}
             enabled={row.original.enabled}
           />
-        )
+        ),
       },
       {
         Header: <FormattedMessage id="tables.lastSync" />,
@@ -73,8 +73,8 @@ const ImplementationTable: React.FC<IProps> = ({
             timeInSecond={cell.value}
             enabled={row.original.enabled}
           />
-        )
-      }
+        ),
+      },
     ],
     [entity]
   );

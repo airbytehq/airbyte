@@ -6,7 +6,7 @@ const useLoadingStateHook = () => {
 
   const startAction = async ({
     action,
-    feedbackAction
+    feedbackAction,
   }: {
     action: () => void;
     feedbackAction?: () => void;

@@ -24,11 +24,11 @@ export default class LogsResource extends BaseResource implements Logs {
           "post",
           `${this.url({})}/get`,
           params
-        ).then(res => res.blob());
+        ).then((res) => res.blob());
 
         return { file };
       },
-      schema: this.asSchema()
+      schema: this.asSchema(),
     };
   }
 }

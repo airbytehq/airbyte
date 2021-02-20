@@ -13,7 +13,8 @@ export interface Workspace {
   displaySetupWizard: boolean;
 }
 
-export default class WorkspaceResource extends BaseResource
+export default class WorkspaceResource
+  extends BaseResource
   implements Workspace {
   readonly workspaceId: string = "";
   readonly customerId: string = "";
@@ -34,21 +35,21 @@ export default class WorkspaceResource extends BaseResource
   static listShape<T extends typeof Resource>(this: T) {
     return {
       ...super.listShape(),
-      schema: { workspaces: [this] }
+      schema: { workspaces: [this] },
     };
   }
 
   static detailShape<T extends typeof Resource>(this: T) {
     return {
       ...super.detailShape(),
-      schema: this
+      schema: this,
     };
   }
 
   static updateShape<T extends typeof Resource>(this: T) {
     return {
       ...super.partialUpdateShape(),
-      schema: this
+      schema: this,
     };
   }
 }

@@ -21,22 +21,23 @@ const ConnectionItemPage: React.FC = () => {
 
   const connection = useResource(ConnectionResource.detailShape(), {
     // @ts-ignore
-    connectionId: query.id
+    connectionId: query.id,
   });
 
   const frequency = FrequencyConfig.find(
-    item => JSON.stringify(item.config) === JSON.stringify(connection.schedule)
+    (item) =>
+      JSON.stringify(item.config) === JSON.stringify(connection.schedule)
   );
 
   const steps = [
     {
       id: "status",
-      name: <FormattedMessage id={"sources.status"} />
+      name: <FormattedMessage id={"sources.status"} />,
     },
     {
       id: "settings",
-      name: <FormattedMessage id={"sources.settings"} />
-    }
+      name: <FormattedMessage id={"sources.settings"} />,
+    },
   ];
   const [currentStep, setCurrentStep] = useState("status");
   const onSelectStep = (id: string) => setCurrentStep(id);
@@ -50,7 +51,7 @@ const ConnectionItemPage: React.FC = () => {
       connector_destination: connection.destination?.destinationName,
       connector_destination_definition_id:
         connection.destination?.destinationDefinitionId,
-      frequency: frequency?.text
+      frequency: frequency?.text,
     });
   };
 
@@ -94,7 +95,7 @@ const ConnectionItemPage: React.FC = () => {
               id="connection.fromTo"
               values={{
                 source: linkToSource(),
-                destination: linkToDestination()
+                destination: linkToDestination(),
               }}
             />
           }

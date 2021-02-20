@@ -7,13 +7,13 @@ import { AnalyticsService } from "../../../core/analytics/AnalyticsService";
 const useWorkspace = () => {
   const updateWorkspace = useFetcher(WorkspaceResource.updateShape());
   const workspace = useResource(WorkspaceResource.detailShape(), {
-    workspaceId: config.ui.workspaceId
+    workspaceId: config.ui.workspaceId,
   });
 
   const finishOnboarding = async (skipStep?: string) => {
     if (skipStep) {
       AnalyticsService.track("Skip Onboarding", {
-        step: skipStep
+        step: skipStep,
       });
     }
 
@@ -25,7 +25,7 @@ const useWorkspace = () => {
         anonymousDataCollection: workspace.anonymousDataCollection,
         news: workspace.news,
         securityUpdates: workspace.securityUpdates,
-        displaySetupWizard: false
+        displaySetupWizard: false,
       }
     );
   };
@@ -42,7 +42,7 @@ const useWorkspace = () => {
         workspaceId: config.ui.workspaceId,
         initialSetupComplete: true,
         displaySetupWizard: true,
-        ...data
+        ...data,
       }
     );
   };
@@ -50,7 +50,7 @@ const useWorkspace = () => {
   return {
     workspace,
     finishOnboarding,
-    setInitialSetupConfig
+    setInitialSetupConfig,
   };
 };
 

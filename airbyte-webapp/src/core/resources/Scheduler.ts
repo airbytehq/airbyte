@@ -1,8 +1,9 @@
 import { Resource } from "rest-hooks";
-import BaseResource, { NetworkError } from "./BaseResource";
+import BaseResource from "./BaseResource";
 import { propertiesType } from "./SourceDefinitionSpecification";
 import { Attempt, JobItem } from "./Job";
-import Status from "../statuses";
+import Status from "core/statuses";
+import { NetworkError } from "core/request/NetworkError";
 
 export type JobInfo = {
   job: JobItem;
@@ -18,7 +19,8 @@ export interface Scheduler {
   jobInfo?: JobInfo;
 }
 
-export default class SchedulerResource extends BaseResource
+export default class SchedulerResource
+  extends BaseResource
   implements Scheduler {
   readonly status: string = "";
   readonly message: string = "";
@@ -50,7 +52,7 @@ export default class SchedulerResource extends BaseResource
         if (result.status === Status.FAILED) {
           const jobInfo = {
             ...result.jobInfo,
-            job: { ...result.jobInfo.job, status: result.status }
+            job: { ...result.jobInfo.job, status: result.status },
           };
 
           const e = new NetworkError(result);
@@ -64,7 +66,7 @@ export default class SchedulerResource extends BaseResource
 
         return result;
       },
-      schema: this
+      schema: this,
     };
   }
 
@@ -88,7 +90,7 @@ export default class SchedulerResource extends BaseResource
         if (result.status === Status.FAILED) {
           const jobInfo = {
             ...result.jobInfo,
-            job: { ...result.jobInfo.job, status: result.status }
+            job: { ...result.jobInfo.job, status: result.status },
           };
 
           const e = new NetworkError(result);
@@ -102,7 +104,7 @@ export default class SchedulerResource extends BaseResource
 
         return result;
       },
-      schema: this
+      schema: this,
     };
   }
 }

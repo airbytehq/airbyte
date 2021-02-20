@@ -8,7 +8,8 @@ export interface DestinationDefinition {
   dockerImageTag: string;
 }
 
-export default class DestinationDefinitionResource extends BaseResource
+export default class DestinationDefinitionResource
+  extends BaseResource
   implements DestinationDefinition {
   readonly destinationDefinitionId: string = "";
   readonly name: string = "";
@@ -25,21 +26,21 @@ export default class DestinationDefinitionResource extends BaseResource
   static listShape<T extends typeof Resource>(this: T) {
     return {
       ...super.listShape(),
-      schema: { destinationDefinitions: [this] }
+      schema: { destinationDefinitions: [this] },
     };
   }
 
   static detailShape<T extends typeof Resource>(this: T) {
     return {
       ...super.detailShape(),
-      schema: this
+      schema: this,
     };
   }
 
   static updateShape<T extends typeof Resource>(this: T) {
     return {
       ...super.partialUpdateShape(),
-      schema: this
+      schema: this,
     };
   }
 }

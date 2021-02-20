@@ -19,7 +19,7 @@ const ConnectionPage: React.FC = () => {
         <Route
           path={[
             `${Routes.Source}${Routes.ConnectionNew}`,
-            `${Routes.Destination}${Routes.ConnectionNew}`
+            `${Routes.Destination}${Routes.ConnectionNew}`,
           ]}
         >
           <CreationFormPage
@@ -33,7 +33,7 @@ const ConnectionPage: React.FC = () => {
         <Route
           path={[
             `${Routes.Source}${Routes.Connection}/:id`,
-            `${Routes.Destination}${Routes.Connection}/:id`
+            `${Routes.Destination}${Routes.Connection}/:id`,
           ]}
         >
           <ErrorBoundary fallbackComponent={FallbackRootRedirector}>

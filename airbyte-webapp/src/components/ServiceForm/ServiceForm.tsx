@@ -12,7 +12,7 @@ import {
   useBuildForm,
   FormInitialValues,
   useBuildUiWidgets,
-  useConstructValidationSchema
+  useConstructValidationSchema,
 } from "./useBuildForm";
 import { WidgetInfo, WidgetInfoProvider } from "./uiWidgetContext";
 
@@ -62,7 +62,7 @@ const ServiceForm: React.FC<IProps> = ({
   hasSuccess,
   additionBottomControls,
   isLoading,
-  isEditMode
+  isEditMode,
 }) => {
   const { formFields, initialValues } = useBuildForm(
     formType,
@@ -97,7 +97,7 @@ const ServiceForm: React.FC<IProps> = ({
         validateOnBlur={true}
         validateOnChange={true}
         validationSchema={validationSchema}
-        onSubmit={async values =>
+        onSubmit={async (values) =>
           onSubmit(validationSchema.cast(values, { stripUnknown: true }))
         }
       >
@@ -107,7 +107,7 @@ const ServiceForm: React.FC<IProps> = ({
           dirty,
           resetForm,
           validateForm,
-          values
+          values,
         }) => (
           <FormContainer>
             <FormContent

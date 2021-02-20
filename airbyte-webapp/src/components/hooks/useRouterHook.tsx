@@ -3,7 +3,7 @@ import {
   useHistory,
   useLocation,
   useRouteMatch,
-  useParams
+  useParams,
 } from "react-router";
 
 import queryString from "query-string";
@@ -21,11 +21,11 @@ const useRouter = () => {
       pathname: location.pathname,
       query: {
         ...queryString.parse(location.search), // Convert string to object
-        ...params
+        ...params,
       },
       match,
       location,
-      history
+      history,
     };
   }, [params, match, location, history]);
 };

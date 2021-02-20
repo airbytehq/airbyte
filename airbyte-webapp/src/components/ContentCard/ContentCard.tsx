@@ -40,7 +40,7 @@ const Description = styled.div`
   margin: 5px 0 -10px;
 `;
 
-const ContentCard: React.FC<IProps> = props => (
+const ContentCard: React.FC<IProps> = (props) => (
   <Card className={props.className} onClick={props.onClick}>
     {props.title ? (
       <Title>

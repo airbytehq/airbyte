@@ -24,7 +24,7 @@ type ConfirmationInputProps = InputProps & {
   onDone: () => void;
 };
 
-const ConfirmationInput: React.FC<ConfirmationInputProps> = props => {
+const ConfirmationInput: React.FC<ConfirmationInputProps> = (props) => {
   const inputElement = useRef<HTMLInputElement>(null);
   const { isEditInProgress, showButtons, onStart, onCancel, onDone } = props;
 

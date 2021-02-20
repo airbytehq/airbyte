@@ -22,7 +22,7 @@ export default class DestinationDefinitionSpecificationResource
   readonly documentationUrl: string = "";
   readonly connectionSpecification: specification = {
     properties: {},
-    required: [""]
+    required: [""],
   };
 
   pk() {
@@ -34,7 +34,7 @@ export default class DestinationDefinitionSpecificationResource
   static detailShape<T extends typeof Resource>(this: T) {
     return {
       ...super.detailShape(),
-      schema: this
+      schema: this,
     };
   }
 }

@@ -23,17 +23,17 @@ const CreateSourcePage: React.FC = () => {
   const { sourceDefinitions } = useResource(
     SourceDefinitionResource.listShape(),
     {
-      workspaceId: config.ui.workspaceId
+      workspaceId: config.ui.workspaceId,
     }
   );
   const { createSource } = useSource();
 
   const sourcesDropDownData = useMemo(
     () =>
-      sourceDefinitions.map(item => ({
+      sourceDefinitions.map((item) => ({
         text: item.name,
         value: item.sourceDefinitionId,
-        img: "/default-logo-catalog.svg"
+        img: "/default-logo-catalog.svg",
       })),
     [sourceDefinitions]
   );
@@ -44,7 +44,7 @@ const CreateSourcePage: React.FC = () => {
     connectionConfiguration?: any;
   }) => {
     const connector = sourceDefinitions.find(
-      item => item.sourceDefinitionId === values.serviceType
+      (item) => item.sourceDefinitionId === values.serviceType
     );
     setErrorStatusRequest(null);
     try {

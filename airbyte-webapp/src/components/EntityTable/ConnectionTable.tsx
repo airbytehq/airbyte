@@ -38,7 +38,7 @@ const ConnectionTable: React.FC<IProps> = ({
   entity,
   onClickRow,
   onChangeStatus,
-  onSync
+  onSync,
 }) => {
   const columns = React.useMemo(
     () => [
@@ -49,14 +49,14 @@ const ConnectionTable: React.FC<IProps> = ({
         customWidth: 40,
         Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
           <NameCell value={cell.value} enabled={row.original.enabled} />
-        )
+        ),
       },
       {
         Header: <FormattedMessage id="tables.connector" />,
         accessor: "connectorName",
         Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
           <ConnectorCell value={cell.value} enabled={row.original.enabled} />
-        )
+        ),
       },
 
       {
@@ -64,7 +64,7 @@ const ConnectionTable: React.FC<IProps> = ({
         accessor: "schedule",
         Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
           <FrequencyCell value={cell.value} enabled={row.original.enabled} />
-        )
+        ),
       },
       {
         Header: <FormattedMessage id="tables.lastSync" />,
@@ -74,7 +74,7 @@ const ConnectionTable: React.FC<IProps> = ({
             timeInSecond={cell.value}
             enabled={row.original.enabled}
           />
-        )
+        ),
       },
       {
         Header: <FormattedMessage id="tables.enabled" />,
@@ -88,8 +88,8 @@ const ConnectionTable: React.FC<IProps> = ({
             onChangeStatus={onChangeStatus}
             onSync={onSync}
           />
-        )
-      }
+        ),
+      },
     ],
     [entity, onChangeStatus, onSync]
   );

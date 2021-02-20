@@ -53,7 +53,7 @@ const EditControls: React.FC<IProps> = ({
   resetForm,
   successMessage,
   errorMessage,
-  editSchemeMode
+  editSchemeMode,
 }) => {
   const showStatusMessage = () => {
     if (isSubmitting) {

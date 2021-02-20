@@ -40,17 +40,17 @@ const DestinationStep: React.FC<IProps> = ({
   currentSourceDefinitionId,
   destination,
   jobInfo,
-  afterSelectConnector
+  afterSelectConnector,
 }) => {
   const [destinationDefinitionId, setDestinationDefinitionId] = useState(
     destination?.destinationDefinitionId || ""
   );
   const {
     destinationDefinitionSpecification,
-    isLoading
+    isLoading,
   } = useDestinationDefinitionSpecificationLoad(destinationDefinitionId);
   const currentSource = useResource(SourceDefinitionResource.detailShape(), {
-    sourceDefinitionId: currentSourceDefinitionId
+    sourceDefinitionId: currentSourceDefinitionId,
   });
   const { getDestinationDefinitionById } = usePrepareDropdownLists();
 
@@ -60,7 +60,7 @@ const DestinationStep: React.FC<IProps> = ({
       action: "Select a connector",
       connector_destination: destinationConnector?.name,
       connector_destination_definition_id:
-        destinationConnector?.destinationDefinitionId
+        destinationConnector?.destinationDefinitionId,
     });
 
     if (afterSelectConnector) {
@@ -76,7 +76,7 @@ const DestinationStep: React.FC<IProps> = ({
     await onSubmit({
       ...values,
       destinationDefinitionId:
-        destinationDefinitionSpecification?.destinationDefinitionId
+        destinationDefinitionSpecification?.destinationDefinitionId,
     });
   };
 
@@ -111,7 +111,7 @@ const DestinationStep: React.FC<IProps> = ({
               ? {
                   ...destination.connectionConfiguration,
                   name: destination.name,
-                  serviceType: destination.destinationDefinitionId
+                  serviceType: destination.destinationDefinitionId,
                 }
               : null
           }

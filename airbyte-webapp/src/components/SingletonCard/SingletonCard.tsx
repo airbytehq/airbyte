@@ -42,7 +42,7 @@ const Text = styled.div`
   line-height: 17px;
 `;
 
-const SingletonCard: React.FC<IProps> = props => (
+const SingletonCard: React.FC<IProps> = (props) => (
   <Singleton>
     <Title>{props.title}</Title>
     <Text>{props.text}</Text>

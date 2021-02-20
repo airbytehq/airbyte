@@ -24,7 +24,7 @@ type TryAfterErrorBlockProps = {
 
 const TryAfterErrorBlock: React.FC<TryAfterErrorBlockProps> = ({
   message,
-  onClick
+  onClick,
 }) => (
   <Block>
     <StatusIcon success={false} big />

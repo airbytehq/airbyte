@@ -6,23 +6,13 @@ import {
   ReadShape,
   schemas,
   SchemaDetail,
-  SchemaList
+  SchemaList,
 } from "rest-hooks";
 
-// import { authService } from "../auth/authService";
-import config from "../../config";
+import { NetworkError } from "core/request/NetworkError";
+import { AirbyteRequestService } from "../request/AirbyteRequestService";
 
-export class NetworkError extends Error {
-  status: number;
-  response: Response;
-
-  constructor(response: Response) {
-    super(response.statusText);
-    this.status = response.status;
-    this.response = response;
-  }
-}
-
+// TODO: rename to crud resource after upgrade to rest-hook 5.0.0
 export default abstract class BaseResource extends Resource {
   /** Perform network request and resolve with HTTP Response */
   static async fetchResponse(
@@ -33,8 +23,8 @@ export default abstract class BaseResource extends Resource {
     let options: RequestInit = {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
-      }
+        "Content-Type": "application/json",
+      },
     };
     if (this.fetchOptionsPlugin) options = this.fetchOptionsPlugin(options);
     if (body) options.body = JSON.stringify(body);
@@ -60,15 +50,18 @@ export default abstract class BaseResource extends Resource {
   }
 
   static listUrl<T extends typeof Resource>(this: T): string {
-    return `${config.apiUrl}${this.urlRoot}`;
+    return `${AirbyteRequestService.rootUrl}${this.urlRoot}`;
   }
 
-  static url<T extends typeof Resource>(this: T): string {
-    return `${config.apiUrl}${this.urlRoot}`;
+  static url<T extends typeof Resource>(
+    this: T,
+    _: Readonly<Record<string, any>>
+  ): string {
+    return `${AirbyteRequestService.rootUrl}${this.urlRoot}`;
   }
 
   static rootUrl(): string {
-    return config.apiUrl;
+    return AirbyteRequestService.rootUrl;
   }
 
   static listShape<T extends typeof Resource>(
@@ -87,7 +80,7 @@ export default abstract class BaseResource extends Resource {
           { ...params }
         );
         return response;
-      }
+      },
     };
   }
 
@@ -107,7 +100,7 @@ export default abstract class BaseResource extends Resource {
           params
         );
         return response;
-      }
+      },
     };
   }
 
@@ -128,7 +121,7 @@ export default abstract class BaseResource extends Resource {
           body
         );
         return response;
-      }
+      },
     };
   }
 
@@ -148,7 +141,7 @@ export default abstract class BaseResource extends Resource {
           params
         );
         return response;
-      }
+      },
     };
   }
 
@@ -169,7 +162,7 @@ export default abstract class BaseResource extends Resource {
           body
         );
         return response;
-      }
+      },
     };
   }
 }

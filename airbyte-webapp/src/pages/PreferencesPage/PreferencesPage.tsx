@@ -28,7 +28,7 @@ const PreferencesPage: React.FC = () => {
       email: data.email,
       anonymized: data.anonymousDataCollection,
       subscribed_newsletter: data.news,
-      subscribed_security: data.securityUpdates
+      subscribed_security: data.securityUpdates,
     });
   };
 

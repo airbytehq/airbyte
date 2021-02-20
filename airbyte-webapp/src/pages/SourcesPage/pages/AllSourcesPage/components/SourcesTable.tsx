@@ -17,7 +17,7 @@ const SourcesTable: React.FC<IProps> = ({ sources }) => {
   const { push } = useRouter();
 
   const { connections } = useResource(ConnectionResource.listShape(), {
-    workspaceId: config.ui.workspaceId
+    workspaceId: config.ui.workspaceId,
   });
 
   const data = getEntityTableData(sources, connections, "source");

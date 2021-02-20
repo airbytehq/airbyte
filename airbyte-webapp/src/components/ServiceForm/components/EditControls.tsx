@@ -49,7 +49,7 @@ const EditControls: React.FC<IProps> = ({
   dirty,
   resetForm,
   successMessage,
-  errorMessage
+  errorMessage,
 }) => {
   const { unfinishedSecrets } = useWidgetInfo();
 

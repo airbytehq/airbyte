@@ -74,7 +74,7 @@ const VersionCell: React.FC<IProps> = ({ version, id, onChange, feedback }) => {
     <FormContent>
       <Formik
         initialValues={{
-          version
+          version,
         }}
         onSubmit={async (values, { setSubmitting }) => {
           await onChange({ id, version: values.version });

@@ -32,7 +32,7 @@ const ShowLoadingMessage: React.FC<IProps> = ({ connector }) => {
           <Link target="_blank" href={config.ui.technicalSupport} as="a">
             {lnk}
           </Link>
-        )
+        ),
       }}
     />
   ) : (

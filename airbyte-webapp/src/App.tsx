@@ -2,7 +2,6 @@ import React, { Suspense } from "react";
 import { ThemeProvider } from "styled-components";
 import { IntlProvider } from "react-intl";
 import { CacheProvider } from "rest-hooks";
-import { hot } from "react-hot-loader/root";
 
 import en from "./locales/en.json";
 import GlobalStyle from "./global-styles";
@@ -31,4 +30,4 @@ const App = () => {
   );
 };
 
-export default process.env.NODE_ENV === "development" ? hot(App) : App;
+export default App;

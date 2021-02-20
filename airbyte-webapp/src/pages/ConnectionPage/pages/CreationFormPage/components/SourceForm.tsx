@@ -21,17 +21,17 @@ const SourceFormComponent: React.FC<IProps> = ({ afterSubmit }) => {
   const { sourceDefinitions } = useResource(
     SourceDefinitionResource.listShape(),
     {
-      workspaceId: config.ui.workspaceId
+      workspaceId: config.ui.workspaceId,
     }
   );
   const { createSource } = useSource();
 
   const sourcesDropDownData = useMemo(
     () =>
-      sourceDefinitions.map(item => ({
+      sourceDefinitions.map((item) => ({
         text: item.name,
         value: item.sourceDefinitionId,
-        img: "/default-logo-catalog.svg"
+        img: "/default-logo-catalog.svg",
       })),
     [sourceDefinitions]
   );
@@ -42,7 +42,7 @@ const SourceFormComponent: React.FC<IProps> = ({ afterSubmit }) => {
     connectionConfiguration?: any;
   }) => {
     const connector = sourceDefinitions.find(
-      item => item.sourceDefinitionId === values.serviceType
+      (item) => item.sourceDefinitionId === values.serviceType
     );
     setErrorStatusRequest(null);
     try {
@@ -52,7 +52,7 @@ const SourceFormComponent: React.FC<IProps> = ({ afterSubmit }) => {
         setSuccessRequest(false);
         afterSubmit();
         push({
-          state: { ...location.state, sourceId: result.sourceId }
+          state: { ...location.state, sourceId: result.sourceId },
         });
       }, 2000);
     } catch (e) {

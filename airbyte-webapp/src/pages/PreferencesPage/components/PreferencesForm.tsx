@@ -51,7 +51,7 @@ const Text = styled.div`
 `;
 
 const preferencesValidationSchema = yup.object().shape({
-  email: yup.string().email("form.email.error")
+  email: yup.string().email("form.email.error"),
 });
 
 const PreferencesForm: React.FC<IProps> = ({ onSubmit }) => {
@@ -63,7 +63,7 @@ const PreferencesForm: React.FC<IProps> = ({ onSubmit }) => {
         email: "",
         anonymousDataCollection: false,
         news: false,
-        securityUpdates: false
+        securityUpdates: false,
       }}
       validateOnBlur={true}
       validateOnChange={false}
@@ -82,7 +82,7 @@ const PreferencesForm: React.FC<IProps> = ({ onSubmit }) => {
                   {...field}
                   label={<FormattedMessage id="form.emailOptional" />}
                   placeholder={formatMessage({
-                    id: "form.email.placeholder"
+                    id: "form.email.placeholder",
                   })}
                   type="text"
                   error={!!meta.error && meta.touched}
@@ -91,7 +91,7 @@ const PreferencesForm: React.FC<IProps> = ({ onSubmit }) => {
                     meta.error &&
                     formatMessage({ id: meta.error })
                   }
-                  onChange={event => {
+                  onChange={(event) => {
                     handleChange(event);
                     if (
                       field.value.length === 0 &&
@@ -120,7 +120,7 @@ const PreferencesForm: React.FC<IProps> = ({ onSubmit }) => {
                   <DocsLink target="_blank" href={config.ui.docsLink}>
                     {docs}
                   </DocsLink>
-                )
+                ),
               }}
             />
           </Text>

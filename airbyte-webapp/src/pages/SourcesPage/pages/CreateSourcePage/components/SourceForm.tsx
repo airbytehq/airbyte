@@ -32,7 +32,7 @@ const SourceForm: React.FC<IProps> = ({
   error,
   hasSuccess,
   jobInfo,
-  afterSelectConnector
+  afterSelectConnector,
 }) => {
   const { location }: any = useRouter();
 
@@ -41,12 +41,12 @@ const SourceForm: React.FC<IProps> = ({
   );
   const {
     sourceDefinitionSpecification,
-    isLoading
+    isLoading,
   } = useSourceDefinitionSpecificationLoad(sourceDefinitionId);
   const onDropDownSelect = (sourceDefinitionId: string) => {
     setSourceDefinitionId(sourceDefinitionId);
     const connector = dropDownData.find(
-      item => item.value === sourceDefinitionId
+      (item) => item.value === sourceDefinitionId
     );
 
     if (afterSelectConnector) {
@@ -57,7 +57,7 @@ const SourceForm: React.FC<IProps> = ({
       user_id: config.ui.workspaceId,
       action: "Select a connector",
       connector_source_definition: connector?.text,
-      connector_source_definition_id: sourceDefinitionId
+      connector_source_definition_id: sourceDefinitionId,
     });
   };
 
@@ -67,7 +67,7 @@ const SourceForm: React.FC<IProps> = ({
   }) => {
     await onSubmit({
       ...values,
-      sourceDefinitionId: sourceDefinitionSpecification?.sourceDefinitionId
+      sourceDefinitionId: sourceDefinitionSpecification?.sourceDefinitionId,
     });
   };
 

@@ -19,23 +19,23 @@ const Content = styled.div`
 enum StepsTypes {
   SOURCES = "sources",
   DESTINATIONS = "destinations",
-  CONFIGURATION = "configuration"
+  CONFIGURATION = "configuration",
 }
 
 const AdminPage: React.FC = () => {
   const steps = [
     {
       id: StepsTypes.SOURCES,
-      name: <FormattedMessage id="admin.sources" />
+      name: <FormattedMessage id="admin.sources" />,
     },
     {
       id: StepsTypes.DESTINATIONS,
-      name: <FormattedMessage id="admin.destinations" />
+      name: <FormattedMessage id="admin.destinations" />,
     },
     {
       id: StepsTypes.CONFIGURATION,
-      name: <FormattedMessage id="admin.configuration" />
-    }
+      name: <FormattedMessage id="admin.configuration" />,
+    },
   ];
   const [currentStep, setCurrentStep] = useState<string>(StepsTypes.SOURCES);
   const onSelectStep = (id: string) => setCurrentStep(id);

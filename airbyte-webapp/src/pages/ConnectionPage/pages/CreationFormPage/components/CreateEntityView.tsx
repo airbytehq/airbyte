@@ -32,11 +32,11 @@ const CreateEntityView: React.FC<IProps> = ({ type, afterSuccess }) => {
 
       if (type === "source") {
         await checkSourceConnection({
-          sourceId: `${location.state?.sourceId}`
+          sourceId: `${location.state?.sourceId}`,
         });
       } else {
         await checkDestinationConnection({
-          destinationId: `${location.state?.destinationId}`
+          destinationId: `${location.state?.destinationId}`,
         });
       }
 

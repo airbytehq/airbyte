@@ -16,7 +16,7 @@ const Content = styled.div`
   height: 100%;
 `;
 
-const MainView: React.FC = props => (
+const MainView: React.FC = (props) => (
   <MainContainer>
     <SideBar />
     <Content>{props.children}</Content>

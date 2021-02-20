@@ -4,7 +4,7 @@ import { FormattedMessage } from "react-intl";
 export enum StepsTypes {
   CREATE_SOURCE = "create-source",
   CREATE_DESTINATION = "create-destination",
-  SET_UP_CONNECTION = "set-up-connection"
+  SET_UP_CONNECTION = "set-up-connection",
 }
 
 const UseGetStepsConfig = (
@@ -39,7 +39,7 @@ const UseGetStepsConfig = (
     () => [
       {
         id: StepsTypes.CREATE_SOURCE,
-        name: <FormattedMessage id="onboarding.createSource" />
+        name: <FormattedMessage id="onboarding.createSource" />,
         // don't navigate by steps for now
         // onSelect: hasSources
         //   ? () => updateStep(StepsTypes.CREATE_SOURCE)
@@ -47,7 +47,7 @@ const UseGetStepsConfig = (
       },
       {
         id: StepsTypes.CREATE_DESTINATION,
-        name: <FormattedMessage id="onboarding.createDestination" />
+        name: <FormattedMessage id="onboarding.createDestination" />,
         // don't navigate by steps for now
         // onSelect:
         //   hasSources || hasDestinations
@@ -56,13 +56,13 @@ const UseGetStepsConfig = (
       },
       {
         id: StepsTypes.SET_UP_CONNECTION,
-        name: <FormattedMessage id="onboarding.setUpConnection" />
+        name: <FormattedMessage id="onboarding.setUpConnection" />,
         // don't navigate by steps for now
         // onSelect:
         //   hasSources && hasDestinations
         //     ? () => updateStep(StepsTypes.SET_UP_CONNECTION)
         //     : undefined
-      }
+      },
     ],
     []
   );
@@ -70,7 +70,7 @@ const UseGetStepsConfig = (
   return {
     steps,
     currentStep,
-    setCurrentStep: updateStep
+    setCurrentStep: updateStep,
   };
 };
 

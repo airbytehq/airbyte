@@ -37,13 +37,13 @@ const Modal: React.FC<IProps> = ({ children, title, onClose }) => {
 
   useEffect(() => {
     onClose &&
-      window.addEventListener("keydown", event =>
+      window.addEventListener("keydown", (event) =>
         handleUserKeyPress(event, onClose)
       );
 
     return () => {
       onClose &&
-        window.removeEventListener("keydown", event =>
+        window.removeEventListener("keydown", (event) =>
           handleUserKeyPress(event, onClose)
         );
     };

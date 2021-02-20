@@ -23,17 +23,17 @@ const CreateDestinationPage: React.FC = () => {
   const { destinationDefinitions } = useResource(
     DestinationDefinitionResource.listShape(),
     {
-      workspaceId: config.ui.workspaceId
+      workspaceId: config.ui.workspaceId,
     }
   );
   const { createDestination } = useDestination();
 
   const destinationsDropDownData = useMemo(
     () =>
-      destinationDefinitions.map(item => ({
+      destinationDefinitions.map((item) => ({
         text: item.name,
         value: item.destinationDefinitionId,
-        img: "/default-logo-catalog.svg"
+        img: "/default-logo-catalog.svg",
       })),
     [destinationDefinitions]
   );
@@ -44,13 +44,13 @@ const CreateDestinationPage: React.FC = () => {
     connectionConfiguration?: any;
   }) => {
     const connector = destinationDefinitions.find(
-      item => item.destinationDefinitionId === values.serviceType
+      (item) => item.destinationDefinitionId === values.serviceType
     );
     setErrorStatusRequest(null);
     try {
       const result = await createDestination({
         values,
-        destinationConnector: connector
+        destinationConnector: connector,
       });
       setSuccessRequest(true);
       setTimeout(() => {

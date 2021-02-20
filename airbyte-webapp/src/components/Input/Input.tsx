@@ -27,8 +27,9 @@ const Input = styled.input<InputProps>`
   line-height: 20px;
   font-weight: normal;
   border: 1px solid
-    ${props => (props.error ? props.theme.dangerColor : props.theme.greyColor0)};
-  background: ${props => getBackgroundColor(props)};
+    ${(props) =>
+      props.error ? props.theme.dangerColor : props.theme.greyColor0};
+  background: ${(props) => getBackgroundColor(props)};
   color: ${({ theme }) => theme.textColor};
   caret-color: ${({ theme }) => theme.primaryColor};
 
@@ -39,7 +40,7 @@ const Input = styled.input<InputProps>`
   &:hover {
     background: ${({ theme, light }) =>
       light ? theme.whiteColor : theme.greyColor20};
-    border-color: ${props =>
+    border-color: ${(props) =>
       props.error ? props.theme.dangerColor : props.theme.greyColor20};
   }
 

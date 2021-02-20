@@ -28,7 +28,7 @@ const StatusCell: React.FC<IProps> = ({
   id,
   onChangeStatus,
   isSyncing,
-  onSync
+  onSync,
 }) => {
   const OnLaunch = (event: React.SyntheticEvent) => {
     event.stopPropagation();

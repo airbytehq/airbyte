@@ -18,7 +18,7 @@ const JobsList: React.FC<IProps> = ({ jobs }) => {
 
   return (
     <Content>
-      {sortJobs.map(item => (
+      {sortJobs.map((item) => (
         <JobItem key={item.job.id} job={item.job} attempts={item.attempts} />
       ))}
     </Content>

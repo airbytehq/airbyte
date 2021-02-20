@@ -10,19 +10,19 @@ test("should reformat jsonSchema to internal widget representation", () => {
       host: { type: "string", description: "Hostname of the database." },
       port: {
         type: "integer",
-        description: "Port of the database."
+        description: "Port of the database.",
       },
       user: {
         type: "string",
-        description: "Username to use to access the database."
+        description: "Username to use to access the database.",
       },
       dbname: { type: "string", description: "Name of the database." },
       password: {
         airbyte_secret: true,
         type: "string",
-        description: "Password associated with the username."
-      } as any // Because airbyte_secret is not part of json_schema
-    }
+        description: "Password associated with the username.",
+      } as any, // Because airbyte_secret is not part of json_schema
+    },
   };
 
   const builtSchema = jsonSchemaToUiWidget(schema, "key");
@@ -39,7 +39,7 @@ test("should reformat jsonSchema to internal widget representation", () => {
         fieldName: "key.host",
         fieldKey: "host",
         isRequired: true,
-        type: "string"
+        type: "string",
       },
       {
         _type: "formItem",
@@ -47,7 +47,7 @@ test("should reformat jsonSchema to internal widget representation", () => {
         fieldName: "key.port",
         fieldKey: "port",
         isRequired: true,
-        type: "integer"
+        type: "integer",
       },
       {
         _type: "formItem",
@@ -55,7 +55,7 @@ test("should reformat jsonSchema to internal widget representation", () => {
         fieldName: "key.user",
         fieldKey: "user",
         isRequired: true,
-        type: "string"
+        type: "string",
       },
       {
         _type: "formItem",
@@ -63,7 +63,7 @@ test("should reformat jsonSchema to internal widget representation", () => {
         fieldName: "key.dbname",
         fieldKey: "dbname",
         isRequired: true,
-        type: "string"
+        type: "string",
       },
       {
         _type: "formItem",
@@ -72,9 +72,9 @@ test("should reformat jsonSchema to internal widget representation", () => {
         fieldKey: "password",
         isRequired: false,
         isSecret: true,
-        type: "string"
-      }
-    ]
+        type: "string",
+      },
+    ],
   };
 
   expect(builtSchema).toEqual(expected);
@@ -86,12 +86,12 @@ test("should reformat jsonSchema to internal widget representation with parent s
     title: "Postgres Source Spec",
     required: ["host", "port", "user", "dbname"],
     properties: {
-      host: { type: "string", description: "Hostname of the database." }
-    }
+      host: { type: "string", description: "Hostname of the database." },
+    },
   };
 
   const builtSchema = jsonSchemaToUiWidget(schema, "key", undefined, {
-    required: ["key"]
+    required: ["key"],
   });
 
   const expected = {
@@ -107,9 +107,9 @@ test("should reformat jsonSchema to internal widget representation with parent s
         fieldName: "key.host",
         fieldKey: "host",
         isRequired: true,
-        type: "string"
-      }
-    ]
+        type: "string",
+      },
+    ],
   };
 
   expect(builtSchema).toEqual(expected);
@@ -121,7 +121,7 @@ test("should reformat jsonSchema to internal widget representation when has oneO
     required: ["start_date", "credentials"],
     properties: {
       start_date: {
-        type: "string"
+        type: "string",
       },
       credentials: {
         type: "object",
@@ -131,9 +131,9 @@ test("should reformat jsonSchema to internal widget representation when has oneO
             required: ["api_key"],
             properties: {
               api_key: {
-                type: "string"
-              }
-            }
+                type: "string",
+              },
+            },
           },
           {
             title: "oauth",
@@ -141,17 +141,17 @@ test("should reformat jsonSchema to internal widget representation when has oneO
             properties: {
               redirect_uri: {
                 type: "string",
-                examples: ["https://api.hubspot.com/"]
-              }
-            }
-          }
-        ]
-      }
-    }
+                examples: ["https://api.hubspot.com/"],
+              },
+            },
+          },
+        ],
+      },
+    },
   };
 
   const builtSchema = jsonSchemaToUiWidget(schema, "key", undefined, {
-    required: ["key"]
+    required: ["key"],
   });
 
   const expected = {
@@ -165,7 +165,7 @@ test("should reformat jsonSchema to internal widget representation when has oneO
         fieldKey: "start_date",
         fieldName: "key.start_date",
         isRequired: true,
-        type: "string"
+        type: "string",
       },
       {
         _type: "formCondition",
@@ -182,9 +182,9 @@ test("should reformat jsonSchema to internal widget representation when has oneO
                 fieldKey: "api_key",
                 fieldName: "key.credentials.api_key",
                 isRequired: true,
-                type: "string"
-              }
-            ]
+                type: "string",
+              },
+            ],
           },
           oauth: {
             title: "oauth",
@@ -199,16 +199,16 @@ test("should reformat jsonSchema to internal widget representation when has oneO
                 fieldKey: "redirect_uri",
                 fieldName: "key.credentials.redirect_uri",
                 isRequired: true,
-                type: "string"
-              }
-            ]
-          }
+                type: "string",
+              },
+            ],
+          },
         },
         fieldKey: "credentials",
         fieldName: "key.credentials",
-        isRequired: true
-      }
-    ]
+        isRequired: true,
+      },
+    ],
   };
 
   expect(builtSchema).toEqual(expected);

@@ -9,7 +9,7 @@ import ContentCard from "../../../../../components/ContentCard";
 import Button from "../../../../../components/Button";
 import StatusMainInfo from "./StatusMainInfo";
 import ConnectionResource, {
-  Connection
+  Connection,
 } from "../../../../../core/resources/Connection";
 import JobResource from "../../../../../core/resources/Job";
 import JobsList from "./JobsList";
@@ -59,11 +59,11 @@ const StatusView: React.FC<IProps> = ({ connection, frequencyText }) => {
   const { isLoading, showFeedback, startAction } = useLoadingStateHook();
   const { jobs } = useResource(JobResource.listShape(), {
     configId: connection.connectionId,
-    configTypes: ["sync", "reset_connection"]
+    configTypes: ["sync", "reset_connection"],
   });
   useSubscription(JobResource.listShape(), {
     configId: connection.connectionId,
-    configTypes: ["sync", "reset_connection"]
+    configTypes: ["sync", "reset_connection"],
   });
 
   const SyncConnection = useFetcher(ConnectionResource.syncShape());
@@ -79,16 +79,16 @@ const StatusView: React.FC<IProps> = ({ connection, frequencyText }) => {
       connector_destination: connection.destination?.name,
       connector_destination_definition_id:
         connection.destination?.destinationDefinitionId,
-      frequency: frequencyText
+      frequency: frequencyText,
     });
     await SyncConnection({
-      connectionId: connection.connectionId
+      connectionId: connection.connectionId,
     });
   };
 
   const onReset = useCallback(() => resetConnection(connection.connectionId), [
     resetConnection,
-    connection.connectionId
+    connection.connectionId,
   ]);
 
   return (

@@ -23,10 +23,10 @@ const LinkToInstruction = styled.a`
 const Instruction: React.FC<IProps> = ({
   dropDownData,
   serviceId,
-  documentationUrl
+  documentationUrl,
 }) => {
   const service =
-    dropDownData && dropDownData.find(item => item.value === serviceId);
+    dropDownData && dropDownData.find((item) => item.value === serviceId);
 
   return service && documentationUrl ? (
     <LinkToInstruction href={documentationUrl} target="_blank">

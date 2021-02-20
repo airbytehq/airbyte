@@ -27,7 +27,7 @@ type IProps = {
 
 const DestinationsSettings: React.FC<IProps> = ({
   currentDestination,
-  connectionsWithDestination
+  connectionsWithDestination,
 }) => {
   const [saved, setSaved] = useState(false);
   const [errorStatusRequest, setErrorStatusRequest] = useState<{
@@ -38,7 +38,7 @@ const DestinationsSettings: React.FC<IProps> = ({
   const destinationSpecification = useResource(
     DestinationDefinitionSpecificationResource.detailShape(),
     {
-      destinationDefinitionId: currentDestination.destinationDefinitionId
+      destinationDefinitionId: currentDestination.destinationDefinitionId,
     }
   );
 
@@ -53,7 +53,7 @@ const DestinationsSettings: React.FC<IProps> = ({
     try {
       await updateDestination({
         values,
-        destinationId: currentDestination.destinationId
+        destinationId: currentDestination.destinationId,
       });
 
       setSaved(true);
@@ -67,7 +67,7 @@ const DestinationsSettings: React.FC<IProps> = ({
   const onDelete = async () => {
     await deleteDestination({
       connectionsWithDestination,
-      destination: currentDestination
+      destination: currentDestination,
     });
   };
 
@@ -84,12 +84,12 @@ const DestinationsSettings: React.FC<IProps> = ({
             {
               value: currentDestination.destinationDefinitionId,
               text: currentDestination.destinationName,
-              img: "/default-logo-catalog.svg"
-            }
+              img: "/default-logo-catalog.svg",
+            },
           ]}
           formValues={{
             ...currentDestination,
-            serviceType: currentDestination.destinationDefinitionId
+            serviceType: currentDestination.destinationDefinitionId,
           }}
           specifications={destinationSpecification.connectionSpecification}
           successMessage={saved && <FormattedMessage id="form.changesSaved" />}

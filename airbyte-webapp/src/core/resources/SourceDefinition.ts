@@ -9,7 +9,8 @@ export interface SourceDefinition {
   documentationUrl: string;
 }
 
-export default class SourceDefinitionResource extends BaseResource
+export default class SourceDefinitionResource
+  extends BaseResource
   implements SourceDefinition {
   readonly sourceDefinitionId: string = "";
   readonly name: string = "";
@@ -26,28 +27,28 @@ export default class SourceDefinitionResource extends BaseResource
   static listShape<T extends typeof Resource>(this: T) {
     return {
       ...super.listShape(),
-      schema: { sourceDefinitions: [this] }
+      schema: { sourceDefinitions: [this] },
     };
   }
 
   static detailShape<T extends typeof Resource>(this: T) {
     return {
       ...super.detailShape(),
-      schema: this
+      schema: this,
     };
   }
 
   static updateShape<T extends typeof Resource>(this: T) {
     return {
       ...super.partialUpdateShape(),
-      schema: this
+      schema: this,
     };
   }
 
   static createShape<T extends typeof Resource>(this: T) {
     return {
       ...super.createShape(),
-      schema: this
+      schema: this,
     };
   }
 }

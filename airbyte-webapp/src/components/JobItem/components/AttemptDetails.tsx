@@ -21,7 +21,7 @@ const Details = styled.div`
 const AttemptDetails: React.FC<IProps> = ({
   attempt,
   className,
-  configType
+  configType,
 }) => {
   if (attempt.status !== Status.SUCCEEDED && attempt.status !== Status.FAILED) {
     return (

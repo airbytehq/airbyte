@@ -37,10 +37,10 @@ export default class SchemaResource extends BaseResource implements Schema {
         return {
           catalog: result.catalog,
           jobInfo: result.jobInfo,
-          id: params.sourceId
+          id: params.sourceId,
         };
       },
-      schema: this
+      schema: this,
     };
   }
 }

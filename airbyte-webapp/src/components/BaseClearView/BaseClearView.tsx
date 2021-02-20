@@ -24,7 +24,7 @@ const MainInfo = styled.div`
   flex-direction: column;
 `;
 
-const BaseClearView: React.FC = props => {
+const BaseClearView: React.FC = (props) => {
   return (
     <Content>
       <MainInfo>

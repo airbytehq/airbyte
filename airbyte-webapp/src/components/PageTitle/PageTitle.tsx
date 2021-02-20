@@ -48,7 +48,7 @@ const PageTitle: React.FC<IProps> = ({
   title,
   withLine,
   middleComponent,
-  endComponent
+  endComponent,
 }) => (
   <MainContainer withLine={withLine}>
     <TitleBlock>{title}</TitleBlock>

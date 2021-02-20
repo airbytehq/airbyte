@@ -4,7 +4,7 @@ import FrequencyConfig from "../../data/FrequencyConfig.json";
 import { AnalyticsService } from "../../core/analytics/AnalyticsService";
 import config from "../../config";
 import ConnectionResource, {
-  Connection
+  Connection,
 } from "../../core/resources/Connection";
 import useConnection from "../hooks/services/useConnectionHook";
 
@@ -17,11 +17,11 @@ const useSyncActions = () => {
       connectionId: connection.connectionId,
       syncCatalog: connection.syncCatalog,
       schedule: connection.schedule || null,
-      status: connection.status === "active" ? "inactive" : "active"
+      status: connection.status === "active" ? "inactive" : "active",
     });
 
     const frequency = FrequencyConfig.find(
-      item =>
+      (item) =>
         JSON.stringify(item.config) === JSON.stringify(connection.schedule)
     );
 
@@ -36,7 +36,7 @@ const useSyncActions = () => {
       connector_destination: connection.destination?.destinationName,
       connector_destination_definition_id:
         connection.destination?.destinationDefinitionId,
-      frequency: frequency?.text
+      frequency: frequency?.text,
     });
   };
 
@@ -49,11 +49,11 @@ const useSyncActions = () => {
       connector_destination: connection.destination?.destinationName,
       connector_destination_definition_id:
         connection.destination?.destinationDefinitionId,
-      frequency: "manual" // Only manual connections have this button
+      frequency: "manual", // Only manual connections have this button
     });
 
     SyncConnection({
-      connectionId: connection.connectionId
+      connectionId: connection.connectionId,
     });
   };
 

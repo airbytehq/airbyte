@@ -5,7 +5,7 @@ import StepsMenu from "../StepsMenu";
 
 export enum StepsTypes {
   OVERVIEW = "Overview",
-  SETTINGS = "Settings"
+  SETTINGS = "Settings",
 }
 
 type IProps = {
@@ -17,12 +17,12 @@ const ItemTabs: React.FC<IProps> = ({ currentStep, setCurrentStep }) => {
   const steps = [
     {
       id: StepsTypes.OVERVIEW,
-      name: <FormattedMessage id="tables.overview" />
+      name: <FormattedMessage id="tables.overview" />,
     },
     {
       id: StepsTypes.SETTINGS,
-      name: <FormattedMessage id="tables.settings" />
-    }
+      name: <FormattedMessage id="tables.settings" />,
+    },
   ];
 
   return (

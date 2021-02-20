@@ -32,17 +32,17 @@ const TableItemTitle: React.FC<IProps> = ({ type, dropDownData, onSelect }) => {
         data={[
           {
             text: formatMessage({
-              id: `tables.${type}AddNew`
+              id: `tables.${type}AddNew`,
             }),
             value: "create-new-item",
-            primary: true
+            primary: true,
           },
-          ...dropDownData
+          ...dropDownData,
         ]}
         hasFilter
         withButton
         textButton={formatMessage({
-          id: `tables.${type}Add`
+          id: `tables.${type}Add`,
         })}
       />
     </Content>

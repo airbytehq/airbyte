@@ -23,13 +23,13 @@ export const getEntityTableData = (
         enabled: true,
         connectorName: entityItem[`${type}Name`],
         lastSync: null,
-        connectEntities: []
+        connectEntities: [],
       };
     }
 
     const connectEntities = entityConnections.map((item: any) => ({
       name: item[connectType]?.name || "",
-      connector: item[connectType]?.[`${connectType}Name`] || ""
+      connector: item[connectType]?.[`${connectType}Name`] || "",
     }));
 
     const sortBySync = entityConnections.sort((item1, item2) =>
@@ -42,7 +42,7 @@ export const getEntityTableData = (
       enabled: true,
       connectorName: entityItem[`${type}Name`],
       lastSync: sortBySync?.[0].lastSync,
-      connectEntities: connectEntities
+      connectEntities: connectEntities,
     };
   });
 };
@@ -53,7 +53,7 @@ export const getConnectionTableData = (
 ) => {
   const connectType = type === "source" ? "destination" : "source";
 
-  return connections.map(item => ({
+  return connections.map((item) => ({
     connectionId: item.connectionId,
     entityName: item[connectType]?.name || "",
     // @ts-ignore
@@ -61,6 +61,6 @@ export const getConnectionTableData = (
     lastSync: item.lastSync,
     enabled: item.status === "active",
     schedule: item.schedule,
-    isSyncing: item.isSyncing
+    isSyncing: item.isSyncing,
   }));
 };

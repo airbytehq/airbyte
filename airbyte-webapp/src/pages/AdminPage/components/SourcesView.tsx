@@ -15,13 +15,13 @@ import SourceDefinitionResource from "../../../core/resources/SourceDefinition";
 const SourcesView: React.FC = () => {
   const formatMessage = useIntl().formatMessage;
   const { connections } = useResource(ConnectionResource.listShape(), {
-    workspaceId: config.ui.workspaceId
+    workspaceId: config.ui.workspaceId,
   });
 
   const { sourceDefinitions } = useResource(
     SourceDefinitionResource.listShape(),
     {
-      workspaceId: config.ui.workspaceId
+      workspaceId: config.ui.workspaceId,
     }
   );
 
@@ -37,7 +37,7 @@ const SourcesView: React.FC = () => {
           {},
           {
             sourceDefinitionId: id,
-            dockerImageTag: version
+            dockerImageTag: version,
           }
         );
         setFeedbackList({ ...feedbackList, [id]: "success" });
@@ -45,10 +45,10 @@ const SourcesView: React.FC = () => {
         const message =
           e.status === 422
             ? formatMessage({
-                id: "form.imageCannotFound"
+                id: "form.imageCannotFound",
               })
             : formatMessage({
-                id: "form.someError"
+                id: "form.someError",
               });
         setFeedbackList({ ...feedbackList, [id]: message });
       }
@@ -64,7 +64,7 @@ const SourcesView: React.FC = () => {
         customWidth: 25,
         Cell: ({ cell }: CellProps<{}>) => (
           <ConnectorCell connectorName={cell.value} />
-        )
+        ),
       },
       {
         Header: <FormattedMessage id="admin.image" />,
@@ -75,7 +75,7 @@ const SourcesView: React.FC = () => {
             imageName={cell.value}
             link={row.original.documentationUrl}
           />
-        )
+        ),
       },
       {
         Header: (
@@ -92,16 +92,17 @@ const SourcesView: React.FC = () => {
             onChange={onUpdateVersion}
             feedback={feedbackList[row.original.sourceDefinitionId]}
           />
-        )
-      }
+        ),
+      },
     ],
     [feedbackList, onUpdateVersion]
   );
 
   const usedSources = useMemo(() => {
-    const allSources = connections.map(item => {
+    const allSources = connections.map((item) => {
       const sourceInfo = sourceDefinitions.find(
-        source => source.sourceDefinitionId === item.source?.sourceDefinitionId
+        (source) =>
+          source.sourceDefinitionId === item.source?.sourceDefinitionId
       );
       return {
         name: item.source?.sourceName,
@@ -109,7 +110,7 @@ const SourcesView: React.FC = () => {
         dockerRepository: sourceInfo?.dockerRepository,
         dockerImageTag: sourceInfo?.dockerImageTag,
         documentationUrl: sourceInfo?.documentationUrl,
-        feedback: ""
+        feedback: "",
       };
     });
 

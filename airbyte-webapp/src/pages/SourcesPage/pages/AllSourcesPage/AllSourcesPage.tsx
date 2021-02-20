@@ -21,7 +21,7 @@ const AllSourcesPage: React.FC = () => {
   const { push } = useRouter();
 
   const { sources } = useResource(SourceResource.listShape(), {
-    workspaceId: config.ui.workspaceId
+    workspaceId: config.ui.workspaceId,
   });
 
   const onCreateSource = () => push(`${Routes.Source}${Routes.SourceNew}`);

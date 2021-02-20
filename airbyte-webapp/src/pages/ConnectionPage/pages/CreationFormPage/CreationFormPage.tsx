@@ -22,13 +22,13 @@ type IProps = {
 
 export enum StepsTypes {
   CREATE_ENTITY = "createEntity",
-  CREATE_CONNECTION = "createConnection"
+  CREATE_CONNECTION = "createConnection",
 }
 
 export enum EntityStepsTypes {
   SOURCE = "source",
   DESTINATION = "destination",
-  CONNECTION = "connection"
+  CONNECTION = "connection",
 }
 
 const CreationFormPage: React.FC<IProps> = ({ type }) => {
@@ -37,7 +37,7 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
     SourceResource.detailShape(),
     location.state?.sourceId
       ? {
-          sourceId: location.state.sourceId
+          sourceId: location.state.sourceId,
         }
       : null
   );
@@ -45,7 +45,7 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
     DestinationResource.detailShape(),
     location.state?.destinationId
       ? {
-          destinationId: location.state.destinationId
+          destinationId: location.state.destinationId,
         }
       : null
   );
@@ -58,12 +58,12 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
           <FormattedMessage id={"onboarding.createDestination"} />
         ) : (
           <FormattedMessage id={"onboarding.createSource"} />
-        )
+        ),
     },
     {
       id: StepsTypes.CREATE_CONNECTION,
-      name: <FormattedMessage id={"onboarding.setUpConnection"} />
-    }
+      name: <FormattedMessage id={"onboarding.setUpConnection"} />,
+    },
   ];
   const [currentStep, setCurrentStep] = useState(StepsTypes.CREATE_ENTITY);
   const [currentEntityStep, setCurrentEntityStep] = useState(

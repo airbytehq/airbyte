@@ -133,7 +133,7 @@ const StyledDropdownList = styled(DropdownList)<{
 
   & .withButton,
   &.rw-state-focus .withButton {
-    border: 1px solid ${props => props.theme.primaryColor};
+    border: 1px solid ${(props) => props.theme.primaryColor};
     outline: none;
     border-radius: 4px;
     padding: 5px 10px 6px;
@@ -143,8 +143,8 @@ const StyledDropdownList = styled(DropdownList)<{
     text-align: center;
     letter-spacing: 0.03em;
     cursor: pointer;
-    color: ${props => props.theme.whiteColor};
-    background: ${props => props.theme.primaryColor};
+    color: ${(props) => props.theme.whiteColor};
+    background: ${(props) => props.theme.primaryColor};
     text-decoration: none;
     min-width: 130px;
     height: 28px;
@@ -152,13 +152,13 @@ const StyledDropdownList = styled(DropdownList)<{
     &:hover {
       box-shadow: 0 1px 3px rgba(53, 53, 66, 0.2),
         0 1px 2px rgba(53, 53, 66, 0.12), 0 1px 1px rgba(53, 53, 66, 0.14);
-      background: ${props => props.theme.primaryColor};
-      border: 1px solid ${props => props.theme.primaryColor};
+      background: ${(props) => props.theme.primaryColor};
+      border: 1px solid ${(props) => props.theme.primaryColor};
     }
     & .rw-input,
     & .rw-placeholder {
       padding: 0;
-      color: ${props => props.theme.whiteColor};
+      color: ${(props) => props.theme.whiteColor};
     }
     & .rw-select {
       display: none;
@@ -170,7 +170,7 @@ const StyledDropdownList = styled(DropdownList)<{
   }
 `;
 
-export const DropDown: React.FC<IProps> = props => {
+export const DropDown: React.FC<IProps> = (props) => {
   const formatMessage = useIntl().formatMessage;
 
   const className = `${props.className} ${
@@ -189,8 +189,8 @@ export const DropDown: React.FC<IProps> = props => {
       messages={{
         filterPlaceholder: props.filterPlaceholder || "",
         emptyFilter: formatMessage({
-          id: "form.noResult"
-        })
+          id: "form.noResult",
+        }),
       }}
       textField="text"
       valueField="value"
@@ -205,7 +205,9 @@ export const DropDown: React.FC<IProps> = props => {
           <ValueInput item={item} />
         )
       }
-      itemComponent={item => <ListItem item={item} fullText={props.fullText} />}
+      itemComponent={(item) => (
+        <ListItem item={item} fullText={props.fullText} />
+      )}
       onSelect={props.onSelect}
       // @ts-ignore
       searchIcon=""

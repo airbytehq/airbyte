@@ -21,7 +21,7 @@ const AllDestinationsPage: React.FC = () => {
   const { push } = useRouter();
 
   const { destinations } = useResource(DestinationResource.listShape(), {
-    workspaceId: config.ui.workspaceId
+    workspaceId: config.ui.workspaceId,
   });
 
   const onCreateDestination = () =>

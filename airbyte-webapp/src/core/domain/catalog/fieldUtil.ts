@@ -1,6 +1,6 @@
 import { JSONSchema7Definition } from "json-schema";
 import Status from "core/statuses";
-import { NetworkError } from "core/resources/BaseResource";
+import { NetworkError } from "core/request/NetworkError";
 import { SourceDiscoverSchemaRead } from "./api";
 import { SyncSchemaField } from "./models";
 
@@ -42,8 +42,8 @@ export const traverseSchemaToField = (
       fields,
       type:
         (Array.isArray(jsonSchema.type)
-          ? jsonSchema.type.find(t => t !== "null") ?? jsonSchema.type[0]
-          : jsonSchema.type) ?? "null"
-    }
+          ? jsonSchema.type.find((t) => t !== "null") ?? jsonSchema.type[0]
+          : jsonSchema.type) ?? "null",
+    },
   ];
 };

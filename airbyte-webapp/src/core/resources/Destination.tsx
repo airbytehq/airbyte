@@ -10,7 +10,8 @@ export interface Destination {
   connectionConfiguration: any; // TODO: fix type
 }
 
-export default class DestinationResource extends BaseResource
+export default class DestinationResource
+  extends BaseResource
   implements Destination {
   readonly destinationId: string = "";
   readonly name: string = "";
@@ -28,14 +29,14 @@ export default class DestinationResource extends BaseResource
   static listShape<T extends typeof Resource>(this: T) {
     return {
       ...super.listShape(),
-      schema: { destinations: [this] }
+      schema: { destinations: [this] },
     };
   }
 
   static detailShape<T extends typeof Resource>(this: T) {
     return {
       ...super.detailShape(),
-      schema: this
+      schema: this,
     };
   }
 
@@ -53,7 +54,7 @@ export default class DestinationResource extends BaseResource
         );
         return response;
       },
-      schema: this
+      schema: this,
     };
   }
 }

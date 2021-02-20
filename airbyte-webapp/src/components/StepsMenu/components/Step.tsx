@@ -64,7 +64,7 @@ const Step: React.FC<IProps> = ({
   onClick,
   num,
   lightMode,
-  status
+  status,
 }) => {
   const onItemClickItem = () => {
     if (onClick) {

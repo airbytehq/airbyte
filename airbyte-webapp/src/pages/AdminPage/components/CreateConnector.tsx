@@ -48,15 +48,15 @@ const CreateConnector: React.FC<IProps> = ({ type }) => {
           ) => ({
             sourceDefinitions: [
               ...sourceDefinitionIds.sourceDefinitions,
-              newSourceDefinitionId
-            ]
-          })
-        ]
+              newSourceDefinitionId,
+            ],
+          }),
+        ],
       ]);
 
       push({
         pathname: `${Routes.Source}${Routes.SourceNew}`,
-        state: { sourceDefinitionId: result.sourceDefinitionId }
+        state: { sourceDefinitionId: result.sourceDefinitionId },
       });
     } catch (e) {
       setErrorMessage("form.dockerError");
@@ -82,16 +82,16 @@ const CreateConnector: React.FC<IProps> = ({ type }) => {
             ) => ({
               destinationDefinitions: [
                 ...destinationDefinitionIds.destinationDefinitions,
-                newDestinationDefinitionId
-              ]
-            })
-          ]
+                newDestinationDefinitionId,
+              ],
+            }),
+          ],
         ]
       );
 
       push({
         pathname: `${Routes.Destination}${Routes.DestinationNew}`,
-        state: { destinationDefinitionId: result.destinationDefinitionId }
+        state: { destinationDefinitionId: result.destinationDefinitionId },
       });
     } catch (e) {
       setErrorMessage("form.validationError");

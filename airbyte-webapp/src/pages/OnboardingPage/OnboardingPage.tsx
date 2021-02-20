@@ -79,10 +79,10 @@ const OnboardingPage: React.FC = () => {
   const { createDestination, recreateDestination } = useDestination();
 
   const { sources } = useResource(SourceResource.listShape(), {
-    workspaceId: config.ui.workspaceId
+    workspaceId: config.ui.workspaceId,
   });
   const { destinations } = useResource(DestinationResource.listShape(), {
-    workspaceId: config.ui.workspaceId
+    workspaceId: config.ui.workspaceId,
   });
 
   const [successRequest, setSuccessRequest] = useState(false);
@@ -107,7 +107,7 @@ const OnboardingPage: React.FC = () => {
     sourcesDropDownData,
     destinationsDropDownData,
     getSourceDefinitionById,
-    getDestinationDefinitionById
+    getDestinationDefinitionById,
   } = usePrepareDropdownLists();
 
   const onSubmitSourceStep = async (values: {
@@ -123,7 +123,7 @@ const OnboardingPage: React.FC = () => {
       if (!!sources.length) {
         await recreateSource({
           values,
-          sourceId: sources[0].sourceId
+          sourceId: sources[0].sourceId,
         });
       } else {
         await createSource({ values, sourceConnector });
@@ -154,12 +154,12 @@ const OnboardingPage: React.FC = () => {
       if (!!destinations.length) {
         await recreateDestination({
           values,
-          destinationId: destinations[0].destinationId
+          destinationId: destinations[0].destinationId,
         });
       } else {
         await createDestination({
           values,
-          destinationConnector
+          destinationConnector,
         });
       }
 

@@ -67,7 +67,7 @@ const BottomBlock: React.FC<IProps> = ({
   isValid,
   dirty,
   errorMessage,
-  additionBottomControls
+  additionBottomControls,
 }) => {
   if (isSubmitting) {
     return (

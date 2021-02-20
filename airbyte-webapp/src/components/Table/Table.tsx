@@ -85,17 +85,17 @@ const Table: React.FC<IProps> = ({
   columns,
   data,
   onClickRow,
-  erroredRows
+  erroredRows,
 }) => {
   const {
     getTableProps,
     getTableBodyProps,
     headerGroups,
     rows,
-    prepareRow
+    prepareRow,
   } = useTable({
     columns,
-    data
+    data,
   });
 
   return (
@@ -121,7 +121,7 @@ const Table: React.FC<IProps> = ({
         ))}
       </thead>
       <tbody {...getTableBodyProps()}>
-        {rows.map(row => {
+        {rows.map((row) => {
           prepareRow(row);
           return (
             <>

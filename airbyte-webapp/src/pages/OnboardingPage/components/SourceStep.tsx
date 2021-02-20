@@ -38,14 +38,14 @@ const SourceStep: React.FC<IProps> = ({
   error,
   source,
   jobInfo,
-  afterSelectConnector
+  afterSelectConnector,
 }) => {
   const [sourceDefinitionId, setSourceDefinitionId] = useState(
     source?.sourceDefinitionId || ""
   );
   const {
     sourceDefinitionSpecification,
-    isLoading
+    isLoading,
   } = useSourceDefinitionSpecificationLoad(sourceDefinitionId);
 
   const { getSourceDefinitionById } = usePrepareDropdownLists();
@@ -56,7 +56,7 @@ const SourceStep: React.FC<IProps> = ({
     AnalyticsService.track("New Source - Action", {
       action: "Select a connector",
       connector_source: sourceDefinition?.name,
-      connector_source_id: sourceDefinition?.sourceDefinitionId
+      connector_source_id: sourceDefinition?.sourceDefinitionId,
     });
 
     if (afterSelectConnector) {
@@ -69,7 +69,7 @@ const SourceStep: React.FC<IProps> = ({
   const onSubmitForm = async (values: { name: string; serviceType: string }) =>
     onSubmit({
       ...values,
-      sourceDefinitionId: sourceDefinitionSpecification?.sourceDefinitionId
+      sourceDefinitionId: sourceDefinitionSpecification?.sourceDefinitionId,
     });
 
   const errorMessage = error ? createFormErrorMessage(error) : "";

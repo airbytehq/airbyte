@@ -42,7 +42,7 @@ const EditLaterMessage = styled(Label)`
 `;
 
 const connectionValidationSchema = yup.object().shape({
-  frequency: yup.string().required("form.empty.error")
+  frequency: yup.string().required("form.empty.error"),
 });
 
 const FrequencyForm: React.FC<IProps> = ({
@@ -58,7 +58,7 @@ const FrequencyForm: React.FC<IProps> = ({
   additionBottomControls,
   onCancel,
   editSchemeMode,
-  isLoading
+  isLoading,
 }) => {
   const initialSchema = useInitialSchema(schema);
   const dropdownData = useFrequencyDropdownData();
@@ -70,17 +70,17 @@ const FrequencyForm: React.FC<IProps> = ({
   return (
     <Formik
       initialValues={{
-        frequency: frequencyValue || ""
+        frequency: frequencyValue || "",
       }}
       validateOnBlur={true}
       validateOnChange={true}
       validationSchema={connectionValidationSchema}
-      onSubmit={async values => {
+      onSubmit={async (values) => {
         const requiresReset =
           isEditMode && !equal(initialSchema, newSchema) && !editSchemeMode;
         await onSubmit({
           frequency: values.frequency,
-          schema: newSchema
+          schema: newSchema,
         });
 
         if (requiresReset) {
@@ -101,17 +101,17 @@ const FrequencyForm: React.FC<IProps> = ({
               <ControlLabels
                 // error={!!fieldProps.meta.error && fieldProps.meta.touched}
                 label={formatMessage({
-                  id: "form.frequency"
+                  id: "form.frequency",
                 })}
                 message={formatMessage({
-                  id: "form.frequency.message"
+                  id: "form.frequency.message",
                 })}
                 labelAdditionLength={300}
               >
                 <DropDown
                   {...field}
                   data={dropdownData}
-                  onSelect={item => {
+                  onSelect={(item) => {
                     if (onDropDownSelect) {
                       onDropDownSelect(item);
                     }

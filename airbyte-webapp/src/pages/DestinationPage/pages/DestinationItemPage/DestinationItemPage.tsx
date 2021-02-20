@@ -16,7 +16,7 @@ import DestinationResource from "../../../../core/resources/Destination";
 import {
   ItemTabs,
   StepsTypes,
-  TableItemTitle
+  TableItemTitle,
 } from "../../../../components/SourceAndDestinationsBlocks";
 import DestinationSettings from "./components/DestinationSettings";
 import LoadingPage from "../../../../components/LoadingPage";
@@ -34,16 +34,16 @@ const DestinationItemPage: React.FC = () => {
   const onSelectStep = (id: string) => setCurrentStep(id);
 
   const { sources } = useResource(SourceResource.listShape(), {
-    workspaceId: config.ui.workspaceId
+    workspaceId: config.ui.workspaceId,
   });
 
   const destination = useResource(DestinationResource.detailShape(), {
     // @ts-ignore
-    destinationId: query.id
+    destinationId: query.id,
   });
 
   const { connections } = useResource(ConnectionResource.listShape(), {
-    workspaceId: config.ui.workspaceId
+    workspaceId: config.ui.workspaceId,
   });
 
   const onClickBack = () => push(Routes.Destination);
@@ -51,21 +51,22 @@ const DestinationItemPage: React.FC = () => {
   const breadcrumbsData = [
     {
       name: <FormattedMessage id="admin.destinations" />,
-      onClick: onClickBack
+      onClick: onClickBack,
     },
-    { name: destination.name }
+    { name: destination.name },
   ];
 
   const connectionsWithDestination = connections.filter(
-    connectionItem => connectionItem.destinationId === destination.destinationId
+    (connectionItem) =>
+      connectionItem.destinationId === destination.destinationId
   );
 
   const sourcesDropDownData = useMemo(
     () =>
-      sources.map(item => ({
+      sources.map((item) => ({
         text: item.name,
         value: item.sourceId,
-        img: "/default-logo-catalog.svg"
+        img: "/default-logo-catalog.svg",
       })),
     [sources]
   );
@@ -74,15 +75,15 @@ const DestinationItemPage: React.FC = () => {
     if (data.value === "create-new-item") {
       push({
         pathname: `${Routes.Destination}${Routes.ConnectionNew}`,
-        state: { destinationId: destination.destinationId }
+        state: { destinationId: destination.destinationId },
       });
     } else {
       push({
         pathname: `${Routes.Destination}${Routes.ConnectionNew}`,
         state: {
           sourceId: data.value,
-          destinationId: destination.destinationId
-        }
+          destinationId: destination.destinationId,
+        },
       });
     }
   };

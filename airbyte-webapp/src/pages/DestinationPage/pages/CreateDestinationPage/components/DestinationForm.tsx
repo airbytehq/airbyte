@@ -32,7 +32,7 @@ const DestinationForm: React.FC<IProps> = ({
   error,
   hasSuccess,
   jobInfo,
-  afterSelectConnector
+  afterSelectConnector,
 }) => {
   const { location }: any = useRouter();
 
@@ -41,12 +41,12 @@ const DestinationForm: React.FC<IProps> = ({
   );
   const {
     destinationDefinitionSpecification,
-    isLoading
+    isLoading,
   } = useDestinationDefinitionSpecificationLoad(destinationDefinitionId);
   const onDropDownSelect = (destinationDefinitionId: string) => {
     setDestinationDefinitionId(destinationDefinitionId);
     const connector = dropDownData.find(
-      item => item.value === destinationDefinitionId
+      (item) => item.value === destinationDefinitionId
     );
 
     if (afterSelectConnector) {
@@ -57,7 +57,7 @@ const DestinationForm: React.FC<IProps> = ({
       user_id: config.ui.workspaceId,
       action: "Select a connector",
       connector_destination_definition: connector?.text,
-      connector_destination_definition_id: destinationDefinitionId
+      connector_destination_definition_id: destinationDefinitionId,
     });
   };
 
@@ -68,7 +68,7 @@ const DestinationForm: React.FC<IProps> = ({
     await onSubmit({
       ...values,
       destinationDefinitionId:
-        destinationDefinitionSpecification?.destinationDefinitionId
+        destinationDefinitionSpecification?.destinationDefinitionId,
     });
   };
 

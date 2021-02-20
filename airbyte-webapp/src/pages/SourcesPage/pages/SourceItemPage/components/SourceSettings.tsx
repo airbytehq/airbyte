@@ -26,7 +26,7 @@ type IProps = {
 
 const SourceSettings: React.FC<IProps> = ({
   currentSource,
-  connectionsWithSource
+  connectionsWithSource,
 }) => {
   const [saved, setSaved] = useState(false);
   const [errorStatusRequest, setErrorStatusRequest] = useState<{
@@ -39,7 +39,7 @@ const SourceSettings: React.FC<IProps> = ({
   const sourceDefinitionSpecification = useResource(
     SourceDefinitionSpecificationResource.detailShape(),
     {
-      sourceDefinitionId: currentSource.sourceDefinitionId
+      sourceDefinitionId: currentSource.sourceDefinitionId,
     }
   );
 
@@ -52,7 +52,7 @@ const SourceSettings: React.FC<IProps> = ({
     try {
       await updateSource({
         values,
-        sourceId: currentSource.sourceId
+        sourceId: currentSource.sourceId,
       });
 
       setSaved(true);
@@ -78,14 +78,14 @@ const SourceSettings: React.FC<IProps> = ({
             {
               value: currentSource.sourceDefinitionId || "",
               text: currentSource.sourceName || "",
-              img: "/default-logo-catalog.svg"
-            }
+              img: "/default-logo-catalog.svg",
+            },
           ]}
           successMessage={saved && <FormattedMessage id="form.changesSaved" />}
           errorMessage={errorStatusRequest?.statusMessage}
           formValues={{
             ...currentSource,
-            serviceType: currentSource.sourceDefinitionId
+            serviceType: currentSource.sourceDefinitionId,
           }}
           specifications={
             sourceDefinitionSpecification?.connectionSpecification

@@ -4,11 +4,11 @@ import { useStatefulResource } from "@rest-hooks/legacy";
 
 import config from "../../../config";
 import DestinationResource, {
-  Destination
+  Destination,
 } from "../../../core/resources/Destination";
 import { AnalyticsService } from "../../../core/analytics/AnalyticsService";
 import ConnectionResource, {
-  Connection
+  Connection,
 } from "../../../core/resources/Connection";
 import { Routes } from "../../../pages/routes";
 import useRouter from "../useRouterHook";
@@ -29,12 +29,12 @@ export const useDestinationDefinitionSpecificationLoad = (
   const {
     loading: isLoading,
     error,
-    data: destinationDefinitionSpecification
+    data: destinationDefinitionSpecification,
   } = useStatefulResource(
     DestinationDefinitionSpecificationResource.detailShape(),
     destinationDefinitionId
       ? {
-          destinationDefinitionId
+          destinationDefinitionId,
         }
       : null
   );
@@ -67,7 +67,7 @@ const useDestination = () => {
 
   const createDestination = async ({
     values,
-    destinationConnector
+    destinationConnector,
   }: {
     values: ValuesProps;
     destinationConnector?: ConnectorProps;
@@ -76,13 +76,13 @@ const useDestination = () => {
       action: "Test a connector",
       connector_destination: destinationConnector?.name,
       connector_destination_definition_id:
-        destinationConnector?.destinationDefinitionId
+        destinationConnector?.destinationDefinitionId,
     });
 
     try {
       await destinationCheckConnectionShape({
         destinationDefinitionId: destinationConnector?.destinationDefinitionId,
-        connectionConfiguration: values.connectionConfiguration
+        connectionConfiguration: values.connectionConfiguration,
       });
 
       // Try to crete destination
@@ -93,7 +93,7 @@ const useDestination = () => {
           destinationDefinitionId:
             destinationConnector?.destinationDefinitionId,
           workspaceId: config.ui.workspaceId,
-          connectionConfiguration: values.connectionConfiguration
+          connectionConfiguration: values.connectionConfiguration,
         },
         [
           [
@@ -105,10 +105,10 @@ const useDestination = () => {
             ) => ({
               destinations: [
                 ...(destinationIds?.destinations || []),
-                newdestinationId
-              ]
-            })
-          ]
+                newdestinationId,
+              ],
+            }),
+          ],
         ]
       );
 
@@ -116,7 +116,7 @@ const useDestination = () => {
         action: "Tested connector - success",
         connector_destination: destinationConnector?.name,
         connector_destination_definition_id:
-          destinationConnector?.destinationDefinitionId
+          destinationConnector?.destinationDefinitionId,
       });
 
       return result;
@@ -125,7 +125,7 @@ const useDestination = () => {
         action: "Tested connector - failure",
         connector_destination: destinationConnector?.name,
         connector_destination_definition_id:
-          destinationConnector?.destinationDefinitionId
+          destinationConnector?.destinationDefinitionId,
       });
       throw e;
     }
@@ -133,7 +133,7 @@ const useDestination = () => {
 
   const updateDestination = async ({
     values,
-    destinationId
+    destinationId,
   }: {
     values: ValuesProps;
     destinationId: string;
@@ -141,38 +141,38 @@ const useDestination = () => {
     await destinationCheckConnectionShape({
       connectionConfiguration: values.connectionConfiguration,
       name: values.name,
-      destinationId
+      destinationId,
     });
 
     return await updatedestination(
       {
-        destinationId
+        destinationId,
       },
       {
         name: values.name,
         destinationId,
-        connectionConfiguration: values.connectionConfiguration
+        connectionConfiguration: values.connectionConfiguration,
       }
     );
   };
 
   const recreateDestination = async ({
     values,
-    destinationId
+    destinationId,
   }: {
     values: ValuesProps;
     destinationId: string;
   }) => {
     return await recreatedestination(
       {
-        destinationId
+        destinationId,
       },
       {
         name: values.name,
         destinationId,
         connectionConfiguration: values.connectionConfiguration,
         workspaceId: config.ui.workspaceId,
-        destinationDefinitionId: values.serviceType
+        destinationDefinitionId: values.serviceType,
       },
       // Method used only in onboarding.
       // Replace all destination List to new item in UpdateParams (to change id)
@@ -181,9 +181,9 @@ const useDestination = () => {
           DestinationResource.listShape(),
           { workspaceId: config.ui.workspaceId },
           (newdestinationId: string) => ({
-            destinations: [newdestinationId]
-          })
-        ]
+            destinations: [newdestinationId],
+          }),
+        ],
       ]
     );
   };
@@ -191,7 +191,7 @@ const useDestination = () => {
   const checkDestinationConnection = useCallback(
     async ({ destinationId }: { destinationId: string }) => {
       return await destinationCheckConnectionShape({
-        destinationId: destinationId
+        destinationId: destinationId,
       });
     },
     [destinationCheckConnectionShape]
@@ -199,17 +199,17 @@ const useDestination = () => {
 
   const deleteDestination = async ({
     destination,
-    connectionsWithDestination
+    connectionsWithDestination,
   }: {
     destination: Destination;
     connectionsWithDestination: Connection[];
   }) => {
     await destinationDelete({
-      destinationId: destination.destinationId
+      destinationId: destination.destinationId,
     });
 
     // To delete connections with current source from local store
-    connectionsWithDestination.map(item =>
+    connectionsWithDestination.map((item) =>
       updateConnectionsStore({ connectionId: item.connectionId })
     );
 
@@ -221,7 +221,7 @@ const useDestination = () => {
     updateDestination,
     recreateDestination,
     deleteDestination,
-    checkDestinationConnection
+    checkDestinationConnection,
   };
 };
 

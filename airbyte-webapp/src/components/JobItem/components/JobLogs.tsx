@@ -39,7 +39,7 @@ const JobLogs: React.FC<IProps> = ({ id, jobIsFailed }) => {
         : undefined,
     name: (
       <FormattedMessage id="sources.attemptNum" values={{ number: key + 1 }} />
-    )
+    ),
   }));
 
   const hasLogs = !!job.logsByAttempt[attemptNumber]?.logLines?.length;

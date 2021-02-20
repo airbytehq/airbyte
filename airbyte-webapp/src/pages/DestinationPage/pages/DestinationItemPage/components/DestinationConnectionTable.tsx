@@ -21,7 +21,7 @@ const DestinationConnectionTable: React.FC<IProps> = ({ connections }) => {
   const onChangeStatus = useCallback(
     async (connectionId: string) => {
       const connection = connections.find(
-        item => item.connectionId === connectionId
+        (item) => item.connectionId === connectionId
       );
 
       if (connection) {
@@ -34,7 +34,7 @@ const DestinationConnectionTable: React.FC<IProps> = ({ connections }) => {
   const onSync = useCallback(
     (connectionId: string) => {
       const connection = connections.find(
-        item => item.connectionId === connectionId
+        (item) => item.connectionId === connectionId
       );
       if (connection) {
         syncManualConnection(connection);

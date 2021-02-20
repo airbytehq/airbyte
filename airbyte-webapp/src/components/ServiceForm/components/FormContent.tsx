@@ -81,7 +81,7 @@ const FormRow: React.FC<{ property: FormBaseItem } & IProps> = ({
   formType,
   dropDownData,
   onChangeServiceType,
-  documentationUrl
+  documentationUrl,
 }) => {
   const formatMessage = useIntl().formatMessage;
   const { fieldName, fieldKey, meta } = property;
@@ -93,14 +93,14 @@ const FormRow: React.FC<{ property: FormBaseItem } & IProps> = ({
         // error={!!fieldProps.meta.error && fieldProps.meta.touched}
         label={<FormattedMessage id="form.name" />}
         message={formatMessage({
-          id: `form.${formType}Name.message`
+          id: `form.${formType}Name.message`,
         })}
       >
         <Input
           {...field}
           type="text"
           placeholder={formatMessage({
-            id: `form.${formType}Name.placeholder`
+            id: `form.${formType}Name.placeholder`,
           })}
         />
       </ControlLabels>
@@ -112,7 +112,7 @@ const FormRow: React.FC<{ property: FormBaseItem } & IProps> = ({
       <>
         <DropdownLabels
           label={formatMessage({
-            id: `form.${formType}Type`
+            id: `form.${formType}Type`,
           })}
         >
           <DropDown
@@ -120,13 +120,13 @@ const FormRow: React.FC<{ property: FormBaseItem } & IProps> = ({
             disabled={isEditMode && !allowChangeConnector}
             hasFilter
             placeholder={formatMessage({
-              id: "form.selectConnector"
+              id: "form.selectConnector",
             })}
             filterPlaceholder={formatMessage({
-              id: "form.searchName"
+              id: "form.searchName",
             })}
             data={dropDownData}
-            onSelect={item => {
+            onSelect={(item) => {
               form.setValue(item.value);
               if (onChangeServiceType) {
                 onChangeServiceType(item.value);
@@ -160,14 +160,14 @@ const FormRow: React.FC<{ property: FormBaseItem } & IProps> = ({
   return <Property property={property} />;
 };
 
-const FormContent: React.FC<IProps> = props => {
+const FormContent: React.FC<IProps> = (props) => {
   const {
     schema,
     dropDownData,
     values,
     isLoadingSchema,
     validateForm,
-    formFields
+    formFields,
   } = props;
 
   // Formik doesn't validate values again, when validationSchema was changed on the fly.
@@ -178,7 +178,7 @@ const FormContent: React.FC<IProps> = props => {
   const { widgetsInfo, setUiWidgetsInfo } = useWidgetInfo();
 
   const renderFormMeta = (formMetaFields: FormBlock[]): React.ReactNode => {
-    return formMetaFields.map(formField => {
+    return formMetaFields.map((formField) => {
       if (formField._type === "formGroup") {
         return renderFormMeta(formField.properties);
       }
@@ -194,13 +194,13 @@ const FormContent: React.FC<IProps> = props => {
             <FormItemGroupDropDown key={`form-field-${formField.fieldKey}`}>
               {label ? <GroupLabel>{label}:</GroupLabel> : null}
               <DropDown
-                data={Object.keys(formField.conditions).map(dataItem => ({
+                data={Object.keys(formField.conditions).map((dataItem) => ({
                   text: dataItem,
-                  value: dataItem
+                  value: dataItem,
                 }))}
-                onSelect={selectedItem =>
+                onSelect={(selectedItem) =>
                   setUiWidgetsInfo(formField.fieldName, {
-                    selectedItem: selectedItem.value
+                    selectedItem: selectedItem.value,
                   })
                 }
                 value={currentlySelectedCondition}
@@ -221,7 +221,7 @@ const FormContent: React.FC<IProps> = props => {
 
   const service =
     dropDownData &&
-    dropDownData.find(item => item.value === values.serviceType);
+    dropDownData.find((item) => item.value === values.serviceType);
 
   return (
     <>

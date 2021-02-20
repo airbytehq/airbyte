@@ -73,7 +73,7 @@ const BottomBlock: React.FC<IProps> = ({
   hasSuccess,
   errorMessage,
   isLoadSchema,
-  additionBottomControls
+  additionBottomControls,
 }) => {
   if (hasSuccess) {
     return (

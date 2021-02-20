@@ -17,7 +17,7 @@ import SourceSettings from "./components/SourceSettings";
 import {
   ItemTabs,
   StepsTypes,
-  TableItemTitle
+  TableItemTitle,
 } from "../../../../components/SourceAndDestinationsBlocks";
 import LoadingPage from "../../../../components/LoadingPage";
 import DestinationResource from "../../../../core/resources/Destination";
@@ -34,16 +34,16 @@ const SourceItemPage: React.FC = () => {
   const onSelectStep = (id: string) => setCurrentStep(id);
 
   const { destinations } = useResource(DestinationResource.listShape(), {
-    workspaceId: config.ui.workspaceId
+    workspaceId: config.ui.workspaceId,
   });
 
   const source = useResource(SourceResource.detailShape(), {
     // @ts-ignore
-    sourceId: query.id
+    sourceId: query.id,
   });
 
   const { connections } = useResource(ConnectionResource.listShape(), {
-    workspaceId: config.ui.workspaceId
+    workspaceId: config.ui.workspaceId,
   });
 
   const onClickBack = () => push(Routes.Source);
@@ -51,21 +51,21 @@ const SourceItemPage: React.FC = () => {
   const breadcrumbsData = [
     {
       name: <FormattedMessage id="sidebar.sources" />,
-      onClick: onClickBack
+      onClick: onClickBack,
     },
-    { name: source.name }
+    { name: source.name },
   ];
 
   const connectionsWithSource = connections.filter(
-    connectionItem => connectionItem.sourceId === source.sourceId
+    (connectionItem) => connectionItem.sourceId === source.sourceId
   );
 
   const destinationsDropDownData = useMemo(
     () =>
-      destinations.map(item => ({
+      destinations.map((item) => ({
         text: item.name,
         value: item.destinationId,
-        img: "/default-logo-catalog.svg"
+        img: "/default-logo-catalog.svg",
       })),
     [destinations]
   );
@@ -74,12 +74,12 @@ const SourceItemPage: React.FC = () => {
     if (data.value === "create-new-item") {
       push({
         pathname: `${Routes.Source}${Routes.ConnectionNew}`,
-        state: { sourceId: source.sourceId }
+        state: { sourceId: source.sourceId },
       });
     } else {
       push({
         pathname: `${Routes.Source}${Routes.ConnectionNew}`,
-        state: { destinationId: data.value, sourceId: source.sourceId }
+        state: { destinationId: data.value, sourceId: source.sourceId },
       });
     }
   };

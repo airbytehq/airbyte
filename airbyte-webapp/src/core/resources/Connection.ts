@@ -1,6 +1,7 @@
 import { FetchOptions, Resource } from "rest-hooks";
-import BaseResource, { NetworkError } from "./BaseResource";
+import BaseResource from "./BaseResource";
 import { SyncSchema } from "core/domain/catalog";
+import { NetworkError } from "../request/NetworkError";
 
 export type ScheduleProperties = {
   units: number;
@@ -37,7 +38,8 @@ export interface Connection {
   isSyncing?: boolean;
 }
 
-export default class ConnectionResource extends BaseResource
+export default class ConnectionResource
+  extends BaseResource
   implements Connection {
   readonly connectionId: string = "";
   readonly name: string = "";
@@ -60,7 +62,7 @@ export default class ConnectionResource extends BaseResource
 
   static getFetchOptions(): FetchOptions {
     return {
-      pollFrequency: 2500 // every 2,5 seconds
+      pollFrequency: 2500, // every 2,5 seconds
     };
   }
 
@@ -77,7 +79,7 @@ export default class ConnectionResource extends BaseResource
           `${super.rootUrl()}web_backend/connections/get`,
           params
         ),
-      schema: this
+      schema: this,
     };
   }
 
@@ -103,7 +105,7 @@ export default class ConnectionResource extends BaseResource
 
         return result;
       },
-      schema: this
+      schema: this,
     };
   }
 
@@ -116,12 +118,12 @@ export default class ConnectionResource extends BaseResource
         body: Readonly<object>
       ): Promise<any> =>
         await this.fetch("post", `${this.url(params)}/create`, body).then(
-          response => ({
+          (response) => ({
             ...response,
             // will remove it if BE returns resource in /web_backend/get format
-            ...params
+            ...params,
           })
-        )
+        ),
     };
   }
 
@@ -138,7 +140,7 @@ export default class ConnectionResource extends BaseResource
           `${super.rootUrl()}web_backend/connections/list`,
           params
         ),
-      schema: { connections: [this] }
+      schema: { connections: [this] },
     };
   }
 
@@ -149,7 +151,7 @@ export default class ConnectionResource extends BaseResource
         "POST /app/delete" + JSON.stringify(params),
       fetch: async (): Promise<any> => {
         return null;
-      }
+      },
     };
   }
 
@@ -163,7 +165,7 @@ export default class ConnectionResource extends BaseResource
         body: any
       ): Promise<any> => {
         return { ...params, ...body };
-      }
+      },
     };
   }
 
@@ -177,9 +179,9 @@ export default class ConnectionResource extends BaseResource
       ): Promise<any> => {
         await this.fetch("post", `${this.url(params)}/reset`, params);
         return {
-          connectionId: params.connectionId
+          connectionId: params.connectionId,
         };
-      }
+      },
     };
   }
 
@@ -193,9 +195,9 @@ export default class ConnectionResource extends BaseResource
       ): Promise<any> => {
         await this.fetch("post", `${this.url(params)}/sync`, params);
         return {
-          connectionId: params.connectionId
+          connectionId: params.connectionId,
         };
-      }
+      },
     };
   }
 }

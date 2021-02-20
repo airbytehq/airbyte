@@ -34,7 +34,7 @@ export const buildYupFormForJsonSchema = (
 
   if (jsonSchema.oneOf && uiConfig && propertyPath) {
     const selectedSchema =
-      jsonSchema.oneOf.find(condition => {
+      jsonSchema.oneOf.find((condition) => {
         if (typeof condition !== "boolean") {
           return uiConfig[propertyPath]?.selectedItem === condition.title;
         }
@@ -96,7 +96,7 @@ export const buildYupFormForJsonSchema = (
                       ? `${propertyPath}.${propertyKey}`
                       : propertyKey
                   )
-                : yup.mixed()
+                : yup.mixed(),
             ])
           )
         );
@@ -113,7 +113,7 @@ export const buildYupFormForJsonSchema = (
     !hasDefault &&
     parentSchema &&
     Array.isArray(parentSchema?.required) &&
-    parentSchema.required.find(item => item === propertyKey);
+    parentSchema.required.find((item) => item === propertyKey);
 
   if (isRequired && schema) {
     schema = schema.required("form.empty.error");

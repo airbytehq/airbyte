@@ -16,13 +16,14 @@ export interface SourceDefinitionSpecification {
   connectionSpecification: specification;
 }
 
-export default class SourceDefinitionSpecificationResource extends BaseResource
+export default class SourceDefinitionSpecificationResource
+  extends BaseResource
   implements SourceDefinitionSpecification {
   readonly sourceDefinitionId: string = "";
   readonly documentationUrl: string = "";
   readonly connectionSpecification: specification = {
     properties: {},
-    required: []
+    required: [],
   };
 
   pk() {
@@ -34,7 +35,7 @@ export default class SourceDefinitionSpecificationResource extends BaseResource
   static detailShape<T extends typeof Resource>(this: T) {
     return {
       ...super.detailShape(),
-      schema: this
+      schema: this,
     };
   }
 }

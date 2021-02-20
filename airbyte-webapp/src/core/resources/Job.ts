@@ -39,7 +39,7 @@ export default class JobResource extends BaseResource implements Job {
     createdAt: 0,
     startedAt: 0,
     updatedAt: 0,
-    status: ""
+    status: "",
   };
   readonly attempts: Attempt[] = [];
   readonly logsByAttempt: { [key: string]: Logs } = {};
@@ -52,7 +52,7 @@ export default class JobResource extends BaseResource implements Job {
 
   static getFetchOptions(): FetchOptions {
     return {
-      pollFrequency: 2500 // every 2,5 seconds
+      pollFrequency: 2500, // every 2,5 seconds
     };
   }
 
@@ -67,10 +67,10 @@ export default class JobResource extends BaseResource implements Job {
         );
 
         return {
-          jobs: jobsResult.jobs
+          jobs: jobsResult.jobs,
         };
       },
-      schema: { jobs: [this] }
+      schema: { jobs: [this] },
     };
   }
 
@@ -96,12 +96,12 @@ export default class JobResource extends BaseResource implements Job {
           logsByAttempt: Object.fromEntries(
             jobResult.attempts.map((attemptItem: any) => [
               attemptItem.attempt.id,
-              attemptItem.logs
+              attemptItem.logs,
             ])
-          )
+          ),
         };
       },
-      schema: this
+      schema: this,
     };
   }
 }

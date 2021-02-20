@@ -27,7 +27,7 @@ const JobCurrentLogs: React.FC<IProps> = ({ id, jobIsFailed, attempts }) => {
     status: item.attempt.status,
     name: (
       <FormattedMessage id="sources.attemptNum" values={{ number: key + 1 }} />
-    )
+    ),
   }));
 
   return (
