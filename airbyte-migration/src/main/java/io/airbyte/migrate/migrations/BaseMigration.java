@@ -22,20 +22,28 @@
  * SOFTWARE.
  */
 
-package io.airbyte.migrate;
+package io.airbyte.migrate.migrations;
 
-import com.google.common.collect.ImmutableList;
-import io.airbyte.migrate.migrations.MigrationV0_14_0;
-import io.airbyte.migrate.migrations.MigrationV0_14_3;
-import io.airbyte.migrate.migrations.NoOpMigration;
-import java.util.List;
+import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.migrate.Migration;
+import io.airbyte.migrate.ResourceId;
+import java.util.Map;
 
-public class Migrations {
+/**
+ * By definition, the input schema of a migration should be the output schema of the previous
+ * migration. This base class enforces this rule.
+ */
+public abstract class BaseMigration implements Migration {
 
-  private static final MigrationV0_14_0 MIGRATION_V_0_14_0 = new MigrationV0_14_0();
-  private static final MigrationV0_14_3 MIGRATION_V_0_14_3 = new MigrationV0_14_3(MIGRATION_V_0_14_0);
+  private final Migration previousMigration;
 
-  // all migrations must be added to the list in the order that they should be applied.
-  public static final List<Migration> MIGRATIONS = ImmutableList.of(MIGRATION_V_0_14_0, MIGRATION_V_0_14_3);
+  public BaseMigration(Migration previousMigration) {
+    this.previousMigration = previousMigration;
+  }
+
+  @Override
+  public Map<ResourceId, JsonNode> getInputSchema() {
+    return previousMigration.getOutputSchema();
+  }
 
 }
