@@ -43,10 +43,10 @@ streams_exchange_rate = yaml.safe_load('''
 streams:
   rates:
     extractor:
-      strategy: magibyte.strategies.extractor.SimpleExtractor
+      strategy: simple
       options:
         requester:
-          strategy: magibyte.strategies.requester.HttpRequest
+          strategy: http
           options:
             base_url: "https://api.exchangeratesapi.io/{{ cursor.current_datetime.format('YYYY-MM-DD') }}"
             method: get
@@ -55,15 +55,15 @@ streams:
               value: "{{ config.base }}"
               on_empty: skip
             decoder:
-              strategy: magibyte.strategies.decoder.Json
+              strategy: json
             shaper:
-              strategy: magibyte.strategies.shaper.JMESPath
+              strategy: jq
               options:
-                path: "merge({date: date, base: base}, rates)"
+                script: ".rates + {date: .date, base: .base}"
             paginator:
-              strategy: magibyte.strategies.paginator.Noop
+              strategy: noop
         iterator:
-          strategy: magibyte.strategies.iterator.Datetime
+          strategy: datetime
           options:
             start_datetime: "{{ state.date | default(config.start_date) }}"
             start_inclusive: "{{ state.date | default(true) }}"
@@ -71,7 +71,7 @@ streams:
             end_inclusive: true
             step: 1d
         state:
-          strategy: magibyte.strategies.state.Context
+          strategy: context
           options:
             name: date
             value: "{{ cursor.current_datetime.format('YYYY-MM-DD') }}"

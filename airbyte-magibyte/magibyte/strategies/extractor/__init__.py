@@ -1,1 +1,1 @@
-from .simple_extractor import SimpleExtractor
+from .simple_extractor import SimpleExtractor as simple

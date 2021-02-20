@@ -1,2 +1,2 @@
-from .context_state import ContextState as Context
-from .noop_state import NoopState as Noop
+from .context_state import ContextState as context
+from .noop_state import NoopState as noop

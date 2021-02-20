@@ -1,1 +1,1 @@
-from .noop_auth import NoopAuth as Noop
+from .noop_auth import NoopAuth as noop

@@ -1,3 +1,3 @@
-from .noop_iterator import NoopIterator as Noop
-from .once_iterator import Onceterator as Once
-from .datetime_iterator import DatetimeIterator as Datetime
+from .noop_iterator import NoopIterator as noop
+from .once_iterator import Onceterator as once
+from .datetime_iterator import DatetimeIterator as datetime

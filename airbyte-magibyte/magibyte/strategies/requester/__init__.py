@@ -1,1 +1,1 @@
-from .http_requester import HttpRequest
+from .http_requester import HttpRequest as http

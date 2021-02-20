@@ -1,1 +1,1 @@
-from .noop_retry import NoopRetry
+from .noop_retry import NoopRetry as noop

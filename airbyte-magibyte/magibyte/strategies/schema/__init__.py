@@ -1,2 +1,2 @@
-from .blob_schema import BlobSchema
-from .static_schema import StaticSchema
+from .blob_schema import BlobSchema as blob
+from .static_schema import StaticSchema as static
