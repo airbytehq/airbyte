@@ -34,8 +34,9 @@ public class Migrations {
 
   private static final MigrationV0_14_0 MIGRATION_V_0_14_0 = new MigrationV0_14_0();
   private static final MigrationV0_14_3 MIGRATION_V_0_14_3 = new MigrationV0_14_3(MIGRATION_V_0_14_0);
+  private static final Migration MIGRATION_V_0_15_0 = new NoOpMigration(MIGRATION_V_0_14_3, "0.15.0-alpha");
 
   // all migrations must be added to the list in the order that they should be applied.
-  public static final List<Migration> MIGRATIONS = ImmutableList.of(MIGRATION_V_0_14_0, MIGRATION_V_0_14_3);
+  public static final List<Migration> MIGRATIONS = ImmutableList.of(MIGRATION_V_0_14_0, MIGRATION_V_0_14_3, MIGRATION_V_0_15_0);
 
 }
