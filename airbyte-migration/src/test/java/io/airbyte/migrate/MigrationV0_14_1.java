@@ -29,38 +29,39 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.yaml.Yamls;
-import io.airbyte.migrate.migrations.MigrationV0_11_0;
+import io.airbyte.migrate.migrations.MigrationV0_14_0;
+import io.airbyte.migrate.migrations.MigrationV0_14_0.JobKeys;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-// todo (cgardens) - this migration is just an example. i will not commit it to master.
 /**
- * This migration adds foo field to DestinationConnection and populates it with bar.
+ * This migration is for use in testing. It adds foo field to DestinationConnection and populates it
+ * with bar.
  */
-public class MigrationV0_11_1 implements Migration {
+public class MigrationV0_14_1 implements Migration {
 
-  private static final Path RESOURCE_PATH = Path.of("migrations/migrationV0_11_1");
+  private static final Path RESOURCE_PATH = Path.of("migrations/migrationV0_14_1");
   private static final ResourceId STANDARD_SOURCE_DEFINITION_RESOURCE_ID =
       ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SOURCE_DEFINITION");
-  private static final ResourceId AIRBYTE_METADATA_RESOURCE_ID = ResourceId.fromConstantCase(ResourceType.JOB, "AIRBYTE_METADATA");
+  private static final ResourceId JOB_METADATA_RESOURCE_ID = ResourceId.fromConstantCase(ResourceType.JOB, "JOB");
 
   private final Map<ResourceId, JsonNode> inputSchema;
   private final Map<ResourceId, JsonNode> outputSchema;
 
-  public MigrationV0_11_1() {
-    inputSchema = new MigrationV0_11_0().getOutputSchema();
+  public MigrationV0_14_1() {
+    inputSchema = new MigrationV0_14_0().getOutputSchema();
     outputSchema = new HashMap<>(inputSchema);
     final JsonNode standardSourceDefinitionSchema = Yamls.deserialize(Exceptions
         .toRuntime(() -> MoreResources
             .readResource(RESOURCE_PATH.resolve(ResourceType.CONFIG.getDirectoryName()).resolve("StandardSourceDefinition.yaml").toString())));
-    final JsonNode airbyteMetadataSchema = Yamls.deserialize(Exceptions
+    final JsonNode jobSchema = Yamls.deserialize(Exceptions
         .toRuntime(
-            () -> MoreResources.readResource(RESOURCE_PATH.resolve(ResourceType.JOB.getDirectoryName()).resolve("AirbyteMetadata.yaml").toString())));
+            () -> MoreResources.readResource(RESOURCE_PATH.resolve(ResourceType.JOB.getDirectoryName()).resolve("Jobs.yaml").toString())));
     outputSchema.put(STANDARD_SOURCE_DEFINITION_RESOURCE_ID, standardSourceDefinitionSchema);
-    outputSchema.put(AIRBYTE_METADATA_RESOURCE_ID, airbyteMetadataSchema);
+    outputSchema.put(JOB_METADATA_RESOURCE_ID, jobSchema);
   }
 
   @Override
@@ -84,13 +85,14 @@ public class MigrationV0_11_1 implements Migration {
       final Consumer<JsonNode> recordConsumer = outputData.get(entry.getKey());
 
       entry.getValue().forEach(r -> {
-        if (entry.getKey().equals(STANDARD_SOURCE_DEFINITION_RESOURCE_ID) || entry.getKey().equals(AIRBYTE_METADATA_RESOURCE_ID)) {
+        if (entry.getKey().equals(STANDARD_SOURCE_DEFINITION_RESOURCE_ID) || entry.getKey().equals(JOB_METADATA_RESOURCE_ID)) {
           ((ObjectNode) r).put("foo", "bar");
         }
 
         recordConsumer.accept(r);
       });
     }
+    MigrationUtils.registerMigrationRecord(outputData, JobKeys.AIRBYTE_METADATA.toString(), getVersion());
   }
 
 }

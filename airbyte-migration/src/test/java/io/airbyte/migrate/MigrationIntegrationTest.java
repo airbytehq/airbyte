@@ -38,8 +38,8 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.yaml.Yamls;
-import io.airbyte.migrate.migrations.MigrationV0_11_0;
-import io.airbyte.migrate.migrations.MigrationV0_11_0.ConfigKeys;
+import io.airbyte.migrate.migrations.MigrationV0_14_0;
+import io.airbyte.migrate.migrations.MigrationV0_14_0.ConfigKeys;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -55,9 +55,9 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class MigrateTest {
+class MigrationIntegrationTest {
 
-  private static final List<Migration> TEST_MIGRATIONS = Lists.newArrayList(new MigrationV0_11_0(), new MigrationV0_11_1());
+  private static final List<Migration> TEST_MIGRATIONS = Lists.newArrayList(new MigrationV0_14_0(), new MigrationV0_14_1());
   private Path migrateRoot;
   private Path inputRoot;
   private Path outputRoot;
@@ -78,13 +78,27 @@ class MigrateTest {
       .put("dockerImageTag", "v1.2.0")
       .put("documentationUrl", "airbyte.io")
       .build());
+  private static final JsonNode JOB = Jsons.jsonNode(ImmutableMap.builder()
+      .put("id", UUID1)
+      .put("scope", "telescope")
+      .put("config_type", "sync")
+      .put("config", Collections.emptyMap())
+      .put("status", "pending")
+      .put("created_at", "2020-01-01T00:00:00Z")
+      .put("started_at", "2020-01-01T00:00:00Z")
+      .put("updated_at", "2020-01-01T00:00:00Z")
+      .build());
   private static final JsonNode AIRBYTE_METADATA = Jsons.jsonNode(ImmutableMap.of("key", "server_uuid", "value", UUID1));
 
-  private static final Map<ResourceId, List<JsonNode>> V0_11_0_TEST_RECORDS = ImmutableMap
+  private static final ResourceId SOURCE_DEFINITION_RESOURCE_ID = ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SOURCE_DEFINITION");
+  private static final ResourceId AIRBYTE_METADATA_RESOURCE_ID = ResourceId.fromConstantCase(ResourceType.JOB, "AIRBYTE_METADATA");
+  private static final ResourceId JOB_RESOURCE_ID = ResourceId.fromConstantCase(ResourceType.JOB, "JOB");
+
+  private static final Map<ResourceId, List<JsonNode>> V0_14_0_TEST_RECORDS = ImmutableMap
       .<ResourceId, List<JsonNode>>builder()
-      .put(ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SOURCE_DEFINITION"),
-          ImmutableList.of(STANDARD_SOURCE_DEFINITION1, STANDARD_SOURCE_DEFINITION2))
-      .put(ResourceId.fromConstantCase(ResourceType.JOB, "AIRBYTE_METADATA"), ImmutableList.of(AIRBYTE_METADATA))
+      .put(SOURCE_DEFINITION_RESOURCE_ID, ImmutableList.of(STANDARD_SOURCE_DEFINITION1, STANDARD_SOURCE_DEFINITION2))
+      .put(JOB_RESOURCE_ID, ImmutableList.of(JOB))
+      .put(AIRBYTE_METADATA_RESOURCE_ID, ImmutableList.of(AIRBYTE_METADATA))
       .build();
 
   @BeforeEach
@@ -97,27 +111,26 @@ class MigrateTest {
 
   @Test
   void testMigrate() throws IOException {
-    writeInputArchive(inputRoot, V0_11_0_TEST_RECORDS, TEST_MIGRATIONS.get(0).getVersion());
+    writeInputArchive(inputRoot, V0_14_0_TEST_RECORDS, TEST_MIGRATIONS.get(0).getVersion());
     final String targetVersion = TEST_MIGRATIONS.get(1).getVersion();
 
     final Migrate migrate = new Migrate(migrateRoot, TEST_MIGRATIONS);
     final MigrateConfig config = new MigrateConfig(inputRoot, outputRoot, targetVersion);
     migrate.run(config);
 
-    final Map<ResourceId, List<JsonNode>> expectedRecords = addFooBarToAllRecords(V0_11_0_TEST_RECORDS);
+    final Map<ResourceId, List<JsonNode>> expectedRecords = addFooBarToAllRecordsExceptMetadata(V0_14_0_TEST_RECORDS);
     assertExpectedOutputVersion(outputRoot, targetVersion);
-    assertRecordsInOutput(ResourceType.CONFIG, Enums.valuesAsStrings(MigrationV0_11_0.ConfigKeys.class), expectedRecords);
-    assertRecordsInOutput(ResourceType.JOB, Enums.valuesAsStrings(MigrationV0_11_0.JobKeys.class), expectedRecords);
+    assertRecordsInOutput(expectedRecords, 1);
   }
 
   @Test
   void testMultipleMigrations() throws IOException {
-    writeInputArchive(inputRoot, V0_11_0_TEST_RECORDS, TEST_MIGRATIONS.get(0).getVersion());
+    writeInputArchive(inputRoot, V0_14_0_TEST_RECORDS, TEST_MIGRATIONS.get(0).getVersion());
 
     final List<Migration> migrations = ImmutableList.of(
-        new MigrationV0_11_0(),
-        createNoOpMigrationWithVersion("0.11.1"),
-        createNoOpMigrationWithVersion("0.12.0"),
+        new MigrationV0_14_0(),
+        createNoOpMigrationWithVersion("0.14.1"),
+        createNoOpMigrationWithVersion("0.15.0"),
         createNoOpMigrationWithVersion("1.0.0"));
 
     final String targetVersion = migrations.get(3).getVersion();
@@ -126,14 +139,13 @@ class MigrateTest {
     migrate.run(config);
 
     assertExpectedOutputVersion(outputRoot, targetVersion);
-    assertRecordsInOutput(ResourceType.CONFIG, Enums.valuesAsStrings(MigrationV0_11_0.ConfigKeys.class), V0_11_0_TEST_RECORDS);
-    assertRecordsInOutput(ResourceType.JOB, Enums.valuesAsStrings(MigrationV0_11_0.JobKeys.class), V0_11_0_TEST_RECORDS);
+    assertRecordsInOutput(V0_14_0_TEST_RECORDS, 3);
   }
 
   @Test
   void testInvalidInputRecord() throws IOException {
     // attempt to input records that have foobar added. the input schema does NOT include foobar.
-    final Map<ResourceId, List<JsonNode>> invalidInputRecords = addFooBarToAllRecords(V0_11_0_TEST_RECORDS);
+    final Map<ResourceId, List<JsonNode>> invalidInputRecords = addFooBarToAllRecordsExceptMetadata(V0_14_0_TEST_RECORDS);
     writeInputArchive(inputRoot, invalidInputRecords, TEST_MIGRATIONS.get(0).getVersion());
     final String targetVersion = TEST_MIGRATIONS.get(1).getVersion();
 
@@ -145,7 +157,7 @@ class MigrateTest {
 
   @Test
   void testInvalidOutputRecord() throws IOException {
-    writeInputArchive(inputRoot, V0_11_0_TEST_RECORDS, TEST_MIGRATIONS.get(0).getVersion());
+    writeInputArchive(inputRoot, V0_14_0_TEST_RECORDS, TEST_MIGRATIONS.get(0).getVersion());
 
     // todo randomly generate?
     final String targetVersion = "v7";
@@ -163,17 +175,17 @@ class MigrateTest {
   @Test
   void testMissingRecordResource() throws IOException {
     final Set<String> configResourcesMissingWorkspace = Enums.valuesAsStrings(ConfigKeys.class);
-    configResourcesMissingWorkspace.remove(MigrationV0_11_0.ConfigKeys.STANDARD_WORKSPACE.name());
+    configResourcesMissingWorkspace.remove(MigrationV0_14_0.ConfigKeys.STANDARD_WORKSPACE.name());
     writeInputs(
         ResourceType.CONFIG,
         configResourcesMissingWorkspace,
         inputRoot.resolve(ResourceType.CONFIG.getDirectoryName()),
-        V0_11_0_TEST_RECORDS);
+        V0_14_0_TEST_RECORDS);
     writeInputs(
         ResourceType.CONFIG,
-        Enums.valuesAsStrings(MigrationV0_11_0.JobKeys.class),
+        Enums.valuesAsStrings(MigrationV0_14_0.JobKeys.class),
         inputRoot.resolve(ResourceType.JOB.getDirectoryName()),
-        V0_11_0_TEST_RECORDS);
+        V0_14_0_TEST_RECORDS);
     IOs.writeFile(inputRoot, Migrate.VERSION_FILE_NAME, TEST_MIGRATIONS.get(0).getVersion());
 
     final String targetVersion = TEST_MIGRATIONS.get(1).getVersion();
@@ -192,12 +204,12 @@ class MigrateTest {
         ResourceType.CONFIG,
         configResourcesMissingWorkspace,
         inputRoot.resolve(ResourceType.CONFIG.getDirectoryName()),
-        V0_11_0_TEST_RECORDS);
+        V0_14_0_TEST_RECORDS);
     writeInputs(
         ResourceType.JOB,
-        Enums.valuesAsStrings(MigrationV0_11_0.JobKeys.class),
+        Enums.valuesAsStrings(MigrationV0_14_0.JobKeys.class),
         inputRoot.resolve(ResourceType.JOB.getDirectoryName()),
-        V0_11_0_TEST_RECORDS);
+        V0_14_0_TEST_RECORDS);
     IOs.writeFile(inputRoot, Migrate.VERSION_FILE_NAME, TEST_MIGRATIONS.get(0).getVersion());
 
     final String targetVersion = TEST_MIGRATIONS.get(1).getVersion();
@@ -210,7 +222,7 @@ class MigrateTest {
 
   @Test
   void testInputVersionNotExists() throws IOException {
-    writeInputArchive(inputRoot, V0_11_0_TEST_RECORDS, "not a version");
+    writeInputArchive(inputRoot, V0_14_0_TEST_RECORDS, "not a version");
     final String targetVersion = TEST_MIGRATIONS.get(1).getVersion();
 
     final Migrate migrate = new Migrate(migrateRoot, TEST_MIGRATIONS);
@@ -221,7 +233,7 @@ class MigrateTest {
 
   @Test
   void testOutputVersionNotExists() throws IOException {
-    writeInputArchive(inputRoot, V0_11_0_TEST_RECORDS, TEST_MIGRATIONS.get(0).getVersion());
+    writeInputArchive(inputRoot, V0_14_0_TEST_RECORDS, TEST_MIGRATIONS.get(0).getVersion());
 
     final Migrate migrate = new Migrate(migrateRoot, TEST_MIGRATIONS);
     final MigrateConfig config = new MigrateConfig(inputRoot, outputRoot, "not a version");
@@ -231,7 +243,7 @@ class MigrateTest {
 
   @Test
   void testCannotMigrateBackwards() throws IOException {
-    writeInputArchive(inputRoot, V0_11_0_TEST_RECORDS, TEST_MIGRATIONS.get(1).getVersion());
+    writeInputArchive(inputRoot, V0_14_0_TEST_RECORDS, TEST_MIGRATIONS.get(1).getVersion());
 
     final Migrate migrate = new Migrate(migrateRoot, TEST_MIGRATIONS);
     final MigrateConfig config = new MigrateConfig(inputRoot, outputRoot, TEST_MIGRATIONS.get(0).getVersion());
@@ -241,7 +253,7 @@ class MigrateTest {
 
   @Test
   void testCannotMigrateLaterally() throws IOException {
-    writeInputArchive(inputRoot, V0_11_0_TEST_RECORDS, TEST_MIGRATIONS.get(0).getVersion());
+    writeInputArchive(inputRoot, V0_14_0_TEST_RECORDS, TEST_MIGRATIONS.get(0).getVersion());
 
     final Migrate migrate = new Migrate(migrateRoot, TEST_MIGRATIONS);
     final MigrateConfig config = new MigrateConfig(inputRoot, outputRoot, TEST_MIGRATIONS.get(0).getVersion());
@@ -255,28 +267,47 @@ class MigrateTest {
     assertEquals(version, IOs.readFile(outputVersionFilePath));
   }
 
+  private void assertRecordsInOutput(Map<ResourceId, List<JsonNode>> expectedRecords, int migrationsCount) {
+    assertRecordsInOutput(ResourceType.CONFIG, Enums.valuesAsStrings(MigrationV0_14_0.ConfigKeys.class), expectedRecords, migrationsCount);
+    assertRecordsInOutput(ResourceType.JOB, Enums.valuesAsStrings(MigrationV0_14_0.JobKeys.class), expectedRecords, migrationsCount);
+  }
+
   private void assertRecordsInOutput(ResourceType resourceType,
                                      Set<String> resourceNames,
-                                     Map<ResourceId, List<JsonNode>> expectedResourceIdToRecords) {
+                                     Map<ResourceId, List<JsonNode>> expectedResourceIdToRecords,
+                                     int migrationsCount) {
     resourceNames.forEach(resourceName -> {
       final ResourceId resourceId = ResourceId.fromConstantCase(resourceType, resourceName);
       final Path resourceFileOutputPath = outputRoot.resolve(resourceType.getDirectoryName()).resolve(resourceName + ".yaml");
       assertTrue(Files.exists(resourceFileOutputPath), "expected output file to exist: " + resourceFileOutputPath);
-      final List<JsonNode> actualRecords = Jsons.children(Yamls.deserialize(IOs.readFile(resourceFileOutputPath)));
+      List<JsonNode> actualRecords = Jsons.children(Yamls.deserialize(IOs.readFile(resourceFileOutputPath)));
+
+      if (AIRBYTE_METADATA_RESOURCE_ID.equals(resourceId)) {
+        final Map<Boolean, List<JsonNode>> partitioned = actualRecords
+            .stream()
+            .collect(Collectors.partitioningBy(r -> r.get("key").asText().contains("migrate_to")));
+        final List<JsonNode> migrateRecords = partitioned.get(true);
+
+        assertEquals(migrationsCount, migrateRecords.size());
+        actualRecords = partitioned.get(false);
+      }
+
       final List<JsonNode> expectedRecords = expectedResourceIdToRecords.getOrDefault(resourceId, Collections.emptyList());
 
       assertEquals(expectedRecords, actualRecords, "Records did not match for resource: " + resourceId);
     });
   }
 
-  private static Map<ResourceId, List<JsonNode>> addFooBarToAllRecords(Map<ResourceId, List<JsonNode>> records) {
+  private static Map<ResourceId, List<JsonNode>> addFooBarToAllRecordsExceptMetadata(Map<ResourceId, List<JsonNode>> records) {
     return records.entrySet()
         .stream()
         .collect(Collectors.toMap(Entry::getKey, e -> e.getValue()
             .stream()
             .map(r -> {
               final JsonNode expectedRecord = Jsons.clone(r);
-              ((ObjectNode) expectedRecord).put("foo", "bar");
+              if (!AIRBYTE_METADATA_RESOURCE_ID.equals(e.getKey())) {
+                ((ObjectNode) expectedRecord).put("foo", "bar");
+              }
               return expectedRecord;
             })
             .collect(Collectors.toList())));
@@ -299,23 +330,23 @@ class MigrateTest {
   private static void writeInputArchive(Path archiveRoot, Map<ResourceId, List<JsonNode>> resourceToRecords, String version) throws IOException {
     writeInputs(
         ResourceType.CONFIG,
-        Enums.valuesAsStrings(MigrationV0_11_0.ConfigKeys.class),
+        Enums.valuesAsStrings(MigrationV0_14_0.ConfigKeys.class),
         archiveRoot.resolve(ResourceType.CONFIG.getDirectoryName()),
         resourceToRecords);
     writeInputs(
         ResourceType.JOB,
-        Enums.valuesAsStrings(MigrationV0_11_0.JobKeys.class),
+        Enums.valuesAsStrings(MigrationV0_14_0.JobKeys.class),
         archiveRoot.resolve(ResourceType.JOB.getDirectoryName()),
         resourceToRecords);
     IOs.writeFile(archiveRoot, Migrate.VERSION_FILE_NAME, version);
   }
 
   private static Migration createNoOpMigrationWithVersion(String version) {
-    return new NoOpMigration(version, new MigrationV0_11_0().getOutputSchema(), new MigrationV0_11_0().getOutputSchema());
+    return new NoOpMigration(version, new MigrationV0_14_0().getOutputSchema(), new MigrationV0_14_0().getOutputSchema());
   }
 
   private static Migration createNoOpMigrationWithOutputSchema(String version, Map<ResourceId, JsonNode> outputSchema) {
-    return new NoOpMigration(version, new MigrationV0_11_0().getOutputSchema(), outputSchema);
+    return new NoOpMigration(version, new MigrationV0_14_0().getOutputSchema(), outputSchema);
   }
 
   private static class NoOpMigration implements Migration {
@@ -351,6 +382,7 @@ class MigrateTest {
         final Consumer<JsonNode> recordConsumer = outputData.get(entry.getKey());
         entry.getValue().forEach(recordConsumer);
       }
+      MigrationUtils.registerMigrationRecord(outputData, "AIRBYTE_METADATA", version);
     }
 
   }
