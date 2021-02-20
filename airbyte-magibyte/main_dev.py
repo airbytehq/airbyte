@@ -28,9 +28,7 @@ import sys
 
 import yaml
 
-from magibyte.core import strategy_builder
-from magibyte.core.extrapolation import extrapolate
-from magibyte.strategies.extractor.simple_extractor import SimpleExtractor
+from magibyte.strategies.base_operation import BaseOperation
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -102,7 +100,7 @@ defaults:
     strategy: magibyte.strategies.decoder.Json
       
   object_extractor: &object_extractor
-    strategy: magibyte.strategies.extractor.DefaultExtractor
+    strategy: magibyte.strategies.extractor.SimpleExtractor
     options:
       iterator:
         strategy: magibyte.strategies.iterator.Once
@@ -121,7 +119,7 @@ defaults:
       state: *state
 
   list_extractor: &list_extractor
-    strategy: magibyte.strategies.extractor.DefaultExtractor
+    strategy: magibyte.strategies.extractor.SimpleExtractor
     options:
       iterator:
         strategy: magibyte.strategies.iterator.Once
@@ -462,9 +460,7 @@ def main():
             'vars': stream.get('vars', {})
         }
 
-        extract = SimpleExtractor(options=stream['extractor']['options'],
-                                  extrapolate=extrapolate,
-                                  strategy_builder=strategy_builder.build)
+        extract = BaseOperation.build_strategy('extractor', stream['extractor'])
 
         extracted_result = extract.extract(context)
         logging.debug(extracted_result)

@@ -1,5 +1,5 @@
-import magibyte.strategies.auth.base_auth
+from .base_auth import BaseAuth
 
 
-class NoopAuth(magibyte.operations.auth.base_auth.BaseAuth):
+class NoopAuth(BaseAuth):
     pass

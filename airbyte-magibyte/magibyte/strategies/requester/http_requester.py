@@ -6,12 +6,12 @@ from .base_requester import BaseRequest
 
 
 class HttpRequest(BaseRequest):
-    def __init__(self, **kwargs):
-        super(HttpRequest, self).__init__(**kwargs)
+    def __init__(self, options, **kwargs):
+        super(HttpRequest, self).__init__(options, **kwargs)
 
-        self.decoder = self._build_step('decoder', **kwargs)
-        self.paginator = self._build_step('paginator', **kwargs)
-        self.shaper = self._build_step('shaper', **kwargs)
+        self.decoder = self.build_strategy('decoder', options['decoder'], **kwargs)
+        self.paginator = self.build_strategy('paginator', options['paginator'], **kwargs)
+        self.shaper = self.build_strategy('shaper', options['shaper'], **kwargs)
 
     def request(self, context):
 

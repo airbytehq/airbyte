@@ -8,8 +8,8 @@ from .base_iterator import BaseIterator
 
 
 class DatetimeIterator(BaseIterator):
-    def __init__(self, **kwargs):
-        super(DatetimeIterator, self).__init__(**kwargs)
+    def __init__(self, options, **kwargs):
+        super(DatetimeIterator, self).__init__(options, **kwargs)
 
     def iterate(self, context):
         start_datetime = arrow.get(self.extrapolate(self.options.get('start_datetime'), context))

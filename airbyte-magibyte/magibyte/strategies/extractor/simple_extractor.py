@@ -4,12 +4,12 @@ from .base_extractor import BaseExtractor
 
 
 class SimpleExtractor(BaseExtractor):
-    def __init__(self, **kwargs):
-        super(SimpleExtractor, self).__init__(**kwargs)
+    def __init__(self, options, **kwargs):
+        super(SimpleExtractor, self).__init__(options, **kwargs)
 
-        self.requester = self._build_step('requester', **kwargs)
-        self.iterator = self._build_step('iterator', **kwargs)
-        self.state = self._build_step('state', **kwargs)
+        self.requester = self.build_strategy('requester', options['requester'], **kwargs)
+        self.iterator = self.build_strategy('iterator', options['iterator'], **kwargs)
+        self.state = self.build_strategy('state', options['state'], **kwargs)
 
     def extract(self, context):
         state = None
