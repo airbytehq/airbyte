@@ -13,7 +13,7 @@ import NetworkErrorBoundary from "./components/NetworkErrorBoundary";
 
 const App = () => {
   return (
-    <>
+    <React.StrictMode>
       <ThemeProvider theme={theme}>
         <GlobalStyle />
         <IntlProvider locale={"en"} messages={en}>
@@ -26,7 +26,7 @@ const App = () => {
           </CacheProvider>
         </IntlProvider>
       </ThemeProvider>
-    </>
+    </React.StrictMode>
   );
 };
 

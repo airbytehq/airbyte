@@ -6,8 +6,6 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "format": "prettier --write 'src/**/*.{ts,tsx}'",
-
     "lint": "eslint --ext js,ts,tsx src"
   },
   "dependencies": {

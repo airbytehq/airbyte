@@ -55,7 +55,10 @@ const CreateDestinationPage: React.FC<IProps> = ({ afterSubmit }) => {
         setSuccessRequest(false);
         afterSubmit();
         push({
-          state: { ...location.state, destinationId: result.destinationId },
+          state: {
+            ...(location.state as Record<string, unknown>),
+            destinationId: result.destinationId,
+          },
         });
       }, 2000);
     } catch (e) {

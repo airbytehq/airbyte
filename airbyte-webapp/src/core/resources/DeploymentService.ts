@@ -1,4 +1,4 @@
-import AirbyteRequestService from "./AirbyteRequestService";
+import { AirbyteRequestService } from "core/request/AirbyteRequestService";
 
 export default class DeploymentService extends AirbyteRequestService {
   static path = "deployment";
@@ -23,11 +23,7 @@ export default class DeploymentService extends AirbyteRequestService {
       },
       body: file,
     };
-    console.log(file);
-    const result = await this.fetch(this.getPath(`import`), options);
-
-    console.log(result);
-    console.log(result);
+    await this.fetch(this.getPath(`import`), options);
 
     return;
   }

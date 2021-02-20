@@ -52,7 +52,10 @@ const SourceFormComponent: React.FC<IProps> = ({ afterSubmit }) => {
         setSuccessRequest(false);
         afterSubmit();
         push({
-          state: { ...location.state, sourceId: result.sourceId },
+          state: {
+            ...(location.state as Record<string, unknown>),
+            sourceId: result.sourceId,
+          },
         });
       }, 2000);
     } catch (e) {

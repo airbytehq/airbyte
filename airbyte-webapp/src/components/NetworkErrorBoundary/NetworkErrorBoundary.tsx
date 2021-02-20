@@ -16,6 +16,7 @@ class NetworkErrorBoundary extends React.Component<
     return { unReachServer: error.message === "Failed to fetch" };
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   componentDidCatch() {}
 
   render() {

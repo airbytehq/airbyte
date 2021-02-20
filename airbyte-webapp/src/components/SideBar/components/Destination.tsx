@@ -1,5 +1,3 @@
-import React from "react";
-
 export default ({ color = "currentColor" }) => (
   <svg width="22" height="21" viewBox="0 0 22 21" fill="none">
     <path
