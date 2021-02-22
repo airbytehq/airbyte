@@ -24,14 +24,15 @@
 
 package io.airbyte.workers.process;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import io.airbyte.config.EnvConfigs;
 import io.airbyte.workers.WorkerException;
+import org.junit.jupiter.api.Test;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 // todo (cgardens) - these are not truly "unit" tests as they are check resources on the internet.
 // we should move them to "integration" tests, when we have facility to do so.
