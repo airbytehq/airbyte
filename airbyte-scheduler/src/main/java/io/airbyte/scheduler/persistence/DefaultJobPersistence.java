@@ -399,22 +399,23 @@ public class DefaultJobPersistence implements JobPersistence {
                   getEpoch(attemptRecord, "attempt_updated_at"),
                   Optional.ofNullable(attemptRecord.get("attempt_ended_at"))
                       .map(value -> getEpoch(attemptRecord, "attempt_ended_at"))
-                      .orElse(null));
+                      .orElse(-1L));
             })
                 .sorted(Comparator.comparingLong(Attempt::getId))
                 .collect(Collectors.toList());
           }
           final JobConfig jobConfig = Jsons.deserialize(jobEntry.get("config", String.class), JobConfig.class);
-          return new Job(
-              jobEntry.get("job_id", Long.class),
-              Enums.toEnum(jobEntry.get("config_type", String.class), ConfigType.class).orElseThrow(),
-              jobEntry.get("scope", String.class),
-              jobConfig,
-              attempts,
-              JobStatus.valueOf(jobEntry.get("job_status", String.class).toUpperCase()),
-              Optional.ofNullable(jobEntry.get("job_started_at")).map(value -> getEpoch(jobEntry, "started_at")).orElse(null),
-              getEpoch(jobEntry, "job_created_at"),
-              getEpoch(jobEntry, "job_updated_at"));
+
+            return new Job(
+                    jobEntry.get("job_id", Long.class),
+                    Enums.toEnum(jobEntry.get("config_type", String.class), ConfigType.class).orElseThrow(),
+                    jobEntry.get("scope", String.class),
+                    jobConfig,
+                    attempts,
+                    JobStatus.valueOf(jobEntry.get("job_status", String.class).toUpperCase()),
+                    Optional.ofNullable(jobEntry.get("job_started_at")).map(value -> getEpoch(jobEntry, "started_at")).orElse(-1L),
+                    getEpoch(jobEntry, "job_created_at"),
+                    getEpoch(jobEntry, "job_updated_at"));
         })
         .sorted(Comparator.comparingLong(Job::getCreatedAtInSecond).reversed())
         .collect(Collectors.toList());

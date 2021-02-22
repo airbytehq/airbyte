@@ -32,14 +32,14 @@ import javax.annotation.Nullable;
 
 public class Attempt {
 
-  private final long id;
-  private final long jobId;
-  private final JobOutput output;
-  private final AttemptStatus status;
-  private final Path logPath;
-  private final long updatedAtInSecond;
-  private final long createdAtInSecond;
-  private final Long endedAtInSecond;
+  public long id;
+  public long jobId;
+  public JobOutput output;
+  public AttemptStatus status;
+  public Path logPath;
+  public long updatedAtInSecond;
+  public long createdAtInSecond;
+  public long endedAtInSecond;
 
   public Attempt(final long id,
                  final long jobId,
@@ -48,7 +48,7 @@ public class Attempt {
                  final AttemptStatus status,
                  final long createdAtInSecond,
                  final long updatedAtInSecond,
-                 final @Nullable Long endedAtInSecond) {
+                 final long endedAtInSecond) {
     this.id = id;
     this.jobId = jobId;
     this.output = output;
@@ -67,8 +67,8 @@ public class Attempt {
     return jobId;
   }
 
-  public Optional<JobOutput> getOutput() {
-    return Optional.ofNullable(output);
+  public JobOutput getOutput() {
+    return output;
   }
 
   public AttemptStatus getStatus() {
@@ -79,8 +79,8 @@ public class Attempt {
     return logPath;
   }
 
-  public Optional<Long> getEndedAtInSecond() {
-    return Optional.ofNullable(endedAtInSecond);
+  public long getEndedAtInSecond() {
+    return endedAtInSecond;
   }
 
   public long getCreatedAtInSecond() {

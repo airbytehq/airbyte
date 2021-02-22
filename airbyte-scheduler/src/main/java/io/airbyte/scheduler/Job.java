@@ -24,6 +24,7 @@
 
 package io.airbyte.scheduler;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 import io.airbyte.config.JobConfig;
@@ -41,32 +42,27 @@ public class Job {
 
   public static final Set<ConfigType> REPLICATION_TYPES = EnumSet.of(ConfigType.SYNC, ConfigType.RESET_CONNECTION);
 
-  @JsonProperty("id")
-  private final long id;
+  public long id;
 
-  @JsonProperty("config_type")
-  private final ConfigType configType;
+  public ConfigType configType;
 
-  @JsonProperty("scope")
-  private final String scope;
+  public String scope;
 
-  @JsonProperty("config")
-  private final JobConfig config;
+  public JobConfig config;
 
-  @JsonProperty("status")
-  private final JobStatus status;
+  public JobStatus status;
 
-  @JsonProperty("started_at")
-  private final Long startedAtInSecond;
+  public long startedAtInSecond;
 
-  @JsonProperty("created_at")
-  private final long createdAtInSecond;
+  public long createdAtInSecond;
 
-  @JsonProperty("updated_at")
-  private final long updatedAtInSecond;
+  public long updatedAtInSecond;
 
-  @JsonProperty("attempts")
-  private final List<Attempt> attempts;
+  public List<Attempt> attempts;
+
+  public Job() {
+
+  }
 
   public Job(final long id,
              final ConfigType configType,
@@ -74,7 +70,7 @@ public class Job {
              final JobConfig config,
              final List<Attempt> attempts,
              final JobStatus status,
-             final @Nullable Long startedAtInSecond,
+             final long startedAtInSecond,
              final long createdAtInSecond,
              final long updatedAtInSecond) {
     this.id = id;
@@ -108,6 +104,7 @@ public class Job {
     return attempts;
   }
 
+  @JsonIgnore
   public int getAttemptsCount() {
     return attempts.size();
   }
@@ -116,8 +113,8 @@ public class Job {
     return status;
   }
 
-  public Optional<Long> getStartedAtInSecond() {
-    return Optional.ofNullable(startedAtInSecond);
+  public long getStartedAtInSecond() {
+    return startedAtInSecond;
   }
 
   public long getCreatedAtInSecond() {
@@ -128,6 +125,7 @@ public class Job {
     return updatedAtInSecond;
   }
 
+  @JsonIgnore
   public Optional<Attempt> getSuccessfulAttempt() {
     final List<Attempt> successfulAttempts = getAttempts()
         .stream()
@@ -142,14 +140,17 @@ public class Job {
     }
   }
 
+  @JsonIgnore
   public Optional<JobOutput> getSuccessOutput() {
-    return getSuccessfulAttempt().flatMap(Attempt::getOutput);
+    return getSuccessfulAttempt().flatMap(x -> Optional.ofNullable(x.getOutput()));
   }
 
+  @JsonIgnore
   public boolean hasRunningAttempt() {
     return getAttempts().stream().anyMatch(a -> !Attempt.isAttemptInTerminalState(a));
   }
 
+  @JsonIgnore
   public boolean isJobInTerminalState() {
     return JobStatus.TERMINAL_STATUSES.contains(getStatus());
   }

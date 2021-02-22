@@ -41,6 +41,7 @@ import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.scheduler.Attempt;
 import io.airbyte.scheduler.Job;
 import java.io.IOException;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class JobConverter {
@@ -78,19 +79,19 @@ public class JobConverter {
     return new AttemptRead()
         .id(attempt.getId())
         .status(Enums.convertTo(attempt.getStatus(), AttemptStatus.class))
-        .bytesSynced(attempt.getOutput()
+        .bytesSynced(Optional.ofNullable(attempt.getOutput())
             .map(JobOutput::getSync)
             .map(StandardSyncOutput::getStandardSyncSummary)
             .map(StandardSyncSummary::getBytesSynced)
             .orElse(null))
-        .recordsSynced(attempt.getOutput()
+        .recordsSynced(Optional.ofNullable(attempt.getOutput())
             .map(JobOutput::getSync)
             .map(StandardSyncOutput::getStandardSyncSummary)
             .map(StandardSyncSummary::getRecordsSynced)
             .orElse(null))
         .createdAt(attempt.getCreatedAtInSecond())
         .updatedAt(attempt.getUpdatedAtInSecond())
-        .endedAt(attempt.getEndedAtInSecond().orElse(null));
+        .endedAt(attempt.getEndedAtInSecond());
   }
 
   public static LogRead getLogRead(Attempt attempt) {
