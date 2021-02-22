@@ -30,7 +30,6 @@ import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.yaml.Yamls;
 import io.airbyte.migrate.migrations.MigrationV0_14_0;
-import io.airbyte.migrate.migrations.MigrationV0_14_0.JobKeys;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
