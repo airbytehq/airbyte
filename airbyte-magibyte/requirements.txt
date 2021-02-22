@@ -1,4 +1,5 @@
 arrow
+genson
 jinja2
 jmespath
 pyjq

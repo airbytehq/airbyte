@@ -40,41 +40,49 @@ config_exchange_rate = {
 }
 
 streams_exchange_rate = yaml.safe_load('''
+definitions:
+  extractor: &extractor
+    strategy: simple
+    options:
+      requester:
+        strategy: http
+        options:
+          base_url: "https://api.exchangeratesapi.io/{{ cursor.current_datetime.format('YYYY-MM-DD') }}"
+          method: get
+          params:
+          - name: base
+            value: "{{ config.base }}"
+            on_empty: skip
+          decoder:
+            strategy: json
+          shaper:
+            strategy: jq
+            options:
+              script: ".rates + {date: .date, base: .base}"
+          paginator:
+            strategy: noop
+      iterator:
+        strategy: datetime
+        options:
+          start_datetime: "{{ state.date | default(config.start_date) }}"
+          start_inclusive: "{{ state.date | default(true) }}"
+          end_datetime: "{{ now_local() }}"
+          end_inclusive: true
+          step: 1d
+      state:
+        strategy: context
+        options:
+          name: date
+          value: "{{ cursor.current_datetime.format('YYYY-MM-DD') }}"
+
 streams:
   rates:
-    extractor:
-      strategy: simple
+    schema:
+      strategy: extractor
       options:
-        requester:
-          strategy: http
-          options:
-            base_url: "https://api.exchangeratesapi.io/{{ cursor.current_datetime.format('YYYY-MM-DD') }}"
-            method: get
-            params:
-            - name: base
-              value: "{{ config.base }}"
-              on_empty: skip
-            decoder:
-              strategy: json
-            shaper:
-              strategy: jq
-              options:
-                script: ".rates + {date: .date, base: .base}"
-            paginator:
-              strategy: noop
-        iterator:
-          strategy: datetime
-          options:
-            start_datetime: "{{ state.date | default(config.start_date) }}"
-            start_inclusive: "{{ state.date | default(true) }}"
-            end_datetime: "{{ now_local() }}"
-            end_inclusive: true
-            step: 1d
-        state:
-          strategy: context
-          options:
-            name: date
-            value: "{{ cursor.current_datetime.format('YYYY-MM-DD') }}"
+        extractor: *extractor
+        sample_size: 1
+    extractor: *extractor
 ''')
 
 config_stripe = {
@@ -460,10 +468,14 @@ def main():
             'vars': stream.get('vars', {})
         }
 
-        extract = BaseOperation.build_strategy('extractor', stream['extractor'])
+        schema_strategy = BaseOperation.build_strategy('schema', stream['schema'])
+        schema = schema_strategy.get(context)
+        logging.debug(f"schema {schema}")
 
-        extracted_result = extract.extract(context)
-        logging.debug(extracted_result)
+        extract_strategy = BaseOperation.build_strategy('extractor', stream['extractor'])
+
+        for record in extract_strategy.extract(context):
+            logging.debug(f"record: {record}")
 
     # source = Source()
     #

@@ -28,8 +28,8 @@ class SimpleExtractor(BaseExtractor):
             context['cursor'] = cursor
 
             for record in self.requester.request(context.copy()):
-                logging.debug(f'record: {record}')
                 context['record'] = record
+                yield record
                 state = self.state.get(context.copy())
 
         logging.debug(f"state: {state}")
