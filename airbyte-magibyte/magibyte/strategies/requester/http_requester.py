@@ -3,15 +3,29 @@ import logging
 import requests
 
 from .base_requester import BaseRequest
+from ..decoder.json_decoder import JsonDecoder
+from ..paginator.noop_paginator import NoopPaginator
+from ..shaper.identity_shaper import IdentityShaper
 
 
 class HttpRequest(BaseRequest):
     def __init__(self, options, **kwargs):
         super(HttpRequest, self).__init__(options, **kwargs)
 
-        self.decoder = self.build_strategy('decoder', options['decoder'], **kwargs)
-        self.paginator = self.build_strategy('paginator', options['paginator'], **kwargs)
-        self.shaper = self.build_strategy('shaper', options['shaper'], **kwargs)
+        if 'decoder' not in options:
+            self.decoder = JsonDecoder({}, **kwargs)
+        else:
+            self.decoder = self.build_strategy('decoder', options['decoder'], **kwargs)
+
+        if 'paginator' not in options:
+            self.paginator = NoopPaginator({}, **kwargs)
+        else:
+            self.paginator = self.build_strategy('paginator', options['paginator'], **kwargs)
+
+        if 'shaper' not in options:
+            self.shaper = IdentityShaper({}, **kwargs)
+        else:
+            self.shaper = self.build_strategy('shaper', options['shaper'], **kwargs)
 
     def request(self, context):
 

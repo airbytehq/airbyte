@@ -18,9 +18,9 @@ class BaseOperation(object):
         return klass(strategy_options, **kwargs)
 
     @classmethod
-    def _get_strategy_class(cls, strategy_type: str, strategy_name: str):
-        if '.' not in strategy_name:
-            strategy_name = f"magibyte.strategies.{strategy_type}.{strategy_name}"
+    def _get_strategy_class(cls, strategy_type: str, name: str):
+        if '.' not in name:
+            name = f"magibyte.strategies.{strategy_type}.{name}"
 
-        split = strategy_name.split('.')
+        split = name.split('.')
         return getattr(importlib.import_module('.'.join(split[:-1])), split[-1])

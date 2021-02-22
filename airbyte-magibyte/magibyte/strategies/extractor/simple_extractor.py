@@ -1,6 +1,8 @@
 import logging
 
 from .base_extractor import BaseExtractor
+from ..iterator.once_iterator import OnceIterator
+from ..state.noop_state import NoopState
 
 
 class SimpleExtractor(BaseExtractor):
@@ -8,8 +10,16 @@ class SimpleExtractor(BaseExtractor):
         super(SimpleExtractor, self).__init__(options, **kwargs)
 
         self.requester = self.build_strategy('requester', options['requester'], **kwargs)
-        self.iterator = self.build_strategy('iterator', options['iterator'], **kwargs)
-        self.state = self.build_strategy('state', options['state'], **kwargs)
+
+        if 'iterator' not in options:
+            self.iterator = OnceIterator({}, **kwargs)
+        else:
+            self.iterator = self.build_strategy('iterator', options['iterator'], **kwargs)
+
+        if 'state' not in options:
+            self.state = NoopState({}, **kwargs)
+        else:
+            self.state = self.build_strategy('state', options['state'], **kwargs)
 
     def extract(self, context):
         state = None
