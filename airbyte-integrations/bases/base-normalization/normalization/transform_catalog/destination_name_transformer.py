@@ -36,15 +36,13 @@ DESTINATION_SIZE_LIMITS = {
     DestinationType.POSTGRES.value: 63,
 }
 
-# in DBT Versions < 19.0:
-TRUNCATE_DBT_RESERVED_SIZE = 29
-# in DBT Versions >= 19.0:
-# see https://github.com/fishtown-analytics/dbt/pull/2850
-TRUNCATE_DBT_RESERVED_SIZE_v19 = 12
+# DBT also needs to generate suffix to table names, so we need to make sure it has enough characters to do so...
+TRUNCATE_DBT_RESERVED_SIZE = 12
 
 # We reserve this many characters from identifier names to be used for prefix/suffix for airbyte
 # before reaching the database name length limit
-TRUNCATE_RESERVED_SIZE: int = 5
+# 2 characters for signaling truncate with '__' and 6 others for generating unique strings
+TRUNCATE_RESERVED_SIZE: int = 8
 
 
 class DestinationNameTransformer:
@@ -143,10 +141,16 @@ class DestinationNameTransformer:
 
     def __truncate_identifier_name(self, input_name: str) -> str:
         if self.integration_type.value in DESTINATION_SIZE_LIMITS:
-            limit = DESTINATION_SIZE_LIMITS[self.integration_type.value]
-            limit = limit - TRUNCATE_RESERVED_SIZE - TRUNCATE_DBT_RESERVED_SIZE
-            # TODO smarter truncate (or hash) in the middle to preserve prefix/suffix instead?
-            input_name = input_name[0:limit]
+            destination_limit = DESTINATION_SIZE_LIMITS[self.integration_type.value]
+            limit = destination_limit - TRUNCATE_DBT_RESERVED_SIZE - TRUNCATE_RESERVED_SIZE
+            # Add +2 to the limit for extra characters '__', signaling a truncate in identifier
+            if len(input_name) > (limit + 2 + 1):
+                middle = round(limit / 2)
+                # truncate in the middle to preserve prefix/suffix instead
+                prefix = input_name[:middle]
+                suffix = input_name[-middle:]
+                print(f"Truncating {input_name} (#{len(input_name)}) to {prefix}__{suffix} (#{2 + len(prefix) + len(suffix)})")
+                input_name = f"{prefix}__{suffix}"
         else:
             raise KeyError(f"Unknown integration type {self.integration_type}")
         return input_name

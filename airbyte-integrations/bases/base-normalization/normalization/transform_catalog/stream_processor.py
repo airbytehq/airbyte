@@ -207,8 +207,8 @@ class StreamProcessor(object):
 
     def find_children_streams(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> List["StreamProcessor"]:
         """
-        For each complex type properties, generate a new StreamProcessor that is able to process the current stream
-        as a parent and produce separate child pipelines.
+        For each complex type properties, generate a new child StreamProcessor that produce separate child pipelines.
+        The current stream/table is used as the parent from which to extract data from.
         """
         properties = self.properties
         children: List[StreamProcessor] = []
@@ -223,7 +223,8 @@ class StreamProcessor(object):
                 # properties without 'type' field are treated like properties with 'type' = 'object'
                 children_properties = find_properties_object([], field, properties[field])
                 is_nested_array = False
-                json_column_name = f"'{field}'"
+                # json_column_name = f"'{field}'"
+                json_column_name = column_names[field][1]
             elif is_array(properties[field]["type"]) and "items" in properties[field]:
                 quoted_field = column_names[field][1]
                 children_properties = find_properties_object([], field, properties[field]["items"])

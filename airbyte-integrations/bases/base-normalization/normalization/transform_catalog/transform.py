@@ -24,11 +24,12 @@ SOFTWARE.
 
 import argparse
 import os
+from typing import Any, Dict
 
 import yaml
 from normalization.destination_type import DestinationType
 from normalization.transform_catalog.catalog_processor import CatalogProcessor
-from typing import Any, Dict
+
 
 class TransformCatalog:
     """
