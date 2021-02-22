@@ -29,12 +29,11 @@ from typing import Any, Callable, Iterator, Mapping, MutableMapping, Sequence
 
 import backoff
 import pendulum as pendulum
-
 from base_python.entrypoint import logger  # FIXME (Eugene K): use standard logger
 from facebook_business.adobjects.adreportrun import AdReportRun
 from facebook_business.exceptions import FacebookBadObjectError, FacebookRequestError
 
-from .common import retry_pattern, deep_merge, JobTimeoutException
+from .common import JobTimeoutException, deep_merge, retry_pattern
 
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 
@@ -60,7 +59,7 @@ class StreamAPI(ABC):
         self._include_deleted = include_deleted if self.enable_deleted else False
 
     def _entity_status_filters(self) -> Iterator:
-        """ We split single request into multiple requests with few delivery_info values,
+        """We split single request into multiple requests with few delivery_info values,
         Note: this logic originally taken from singer tap implementation, my guess is that when we
         query entities with all possible delivery_info values the API response time will be slow.
         """
@@ -85,11 +84,7 @@ class StreamAPI(ABC):
         for i in range(0, len(filt_values), sub_list_length):
             yield {
                 "filtering": [
-                    {
-                        "field": f"{self.entity_prefix}.delivery_info",
-                        "operator": "IN",
-                        "value": filt_values[i: i + sub_list_length]
-                    },
+                    {"field": f"{self.entity_prefix}.delivery_info", "operator": "IN", "value": filt_values[i : i + sub_list_length]},
                 ],
             }
 
@@ -128,9 +123,7 @@ class IncrementalStreamAPI(StreamAPI, ABC):
     def state(self, value):
         potentially_new_records_in_the_past = self._include_deleted and not value.get("include_deleted", False)
         if potentially_new_records_in_the_past:
-            logger.info(
-                f"Ignoring bookmark for {self.name} because of enabled `include_deleted` option"
-            )
+            logger.info(f"Ignoring bookmark for {self.name} because of enabled `include_deleted` option")
         else:
             self._state = pendulum.parse(value[self.state_pk])
 
@@ -178,6 +171,7 @@ class AdCreativeAPI(StreamAPI):
     """AdCreative is not an iterable stream as it uses the batch endpoint
     doc: https://developers.facebook.com/docs/marketing-api/reference/adgroup/adcreatives/
     """
+
     entity_prefix = "adcreative"
     BATCH_SIZE = 50
 
@@ -351,8 +345,7 @@ class AdsInsightAPI(IncrementalStreamAPI):
             job = self._run_job_until_completion(params)
             yield from super().read(partial(self._get_job_result, job=job), params)
 
-    @retry_pattern(backoff.expo, (FacebookRequestError, JobTimeoutException,
-                                  FacebookBadObjectError), max_tries=5, factor=4)
+    @retry_pattern(backoff.expo, (FacebookRequestError, JobTimeoutException, FacebookBadObjectError), max_tries=5, factor=4)
     def _run_job_until_completion(self, params) -> AdReportRun:
         # TODO parallelize running these jobs
         job = self._get_insights(params)
@@ -385,7 +378,6 @@ class AdsInsightAPI(IncrementalStreamAPI):
         # Facebook freezes insight data 28 days after it was generated, which means that all data
         # from the past 28 days may have changed since we last emitted it, so we retrieve it again.
         buffered_start_date = self._state.subtract(days=self.buffer_days)
-        print(buffered_start_date)
         end_date = pendulum.now()
 
         fields = list(set(fields) - set(self.INVALID_INSIGHT_FIELDS))
