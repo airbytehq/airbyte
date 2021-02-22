@@ -28,7 +28,6 @@ class HttpRequest(BaseRequest):
             self.shaper = self.build_strategy('shaper', options['shaper'], **kwargs)
 
     def request(self, context):
-
         for page in self.paginator.paginate(context.copy()):
             context['page'] = page
 
