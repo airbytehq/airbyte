@@ -93,7 +93,7 @@ class AirbyteStream < Dry::Struct
       "name"                  => airbyte_stream_name,
       "source_defined_cursor" => source_defined_cursor,
       "supported_sync_modes"  => supported_sync_modes,
-    }
+    }.compact
   end
 
   def to_json(options = nil)
@@ -121,7 +121,7 @@ class AirbyteCatalog < Dry::Struct
   def to_dynamic
     {
       "streams" => streams.map { |x| x.to_dynamic },
-    }
+    }.compact
   end
 
   def to_json(options = nil)
@@ -155,7 +155,7 @@ class AirbyteConnectionStatus < Dry::Struct
     {
       "message" => message,
       "status"  => status,
-    }
+    }.compact
   end
 
   def to_json(options = nil)
@@ -198,7 +198,7 @@ class AirbyteLogMessage < Dry::Struct
     {
       "level"   => level,
       "message" => message,
-    }
+    }.compact
   end
 
   def to_json(options = nil)
@@ -236,7 +236,7 @@ class AirbyteRecordMessage < Dry::Struct
       "data"       => data,
       "emitted_at" => emitted_at,
       "stream"     => stream,
-    }
+    }.compact
   end
 
   def to_json(options = nil)
@@ -276,7 +276,7 @@ class ConnectorSpecification < Dry::Struct
       "connectionSpecification" => connection_specification,
       "documentationUrl"        => documentation_url,
       "supportsIncremental"     => supports_incremental,
-    }
+    }.compact
   end
 
   def to_json(options = nil)
@@ -305,7 +305,7 @@ class AirbyteStateMessage < Dry::Struct
   def to_dynamic
     {
       "data" => data,
-    }
+    }.compact
   end
 
   def to_json(options = nil)
@@ -361,7 +361,7 @@ class AirbyteMessage < Dry::Struct
       "spec"             => spec&.to_dynamic,
       "state"            => state&.to_dynamic,
       "type"             => airbyte_message_type,
-    }
+    }.compact
   end
 
   def to_json(options = nil)
@@ -397,7 +397,7 @@ class ConfiguredAirbyteStream < Dry::Struct
       "cursor_field" => cursor_field,
       "stream"       => stream.to_dynamic,
       "sync_mode"    => sync_mode,
-    }
+    }.compact
   end
 
   def to_json(options = nil)
@@ -423,7 +423,7 @@ class ConfiguredAirbyteCatalog < Dry::Struct
   def to_dynamic
     {
       "streams" => streams.map { |x| x.to_dynamic },
-    }
+    }.compact
   end
 
   def to_json(options = nil)
@@ -452,7 +452,7 @@ class Airbyte < Dry::Struct
     {
       "airbyte_message"            => airbyte_message&.to_dynamic,
       "configured_airbyte_catalog" => configured_airbyte_catalog&.to_dynamic,
-    }
+    }.compact
   end
 
   def to_json(options = nil)

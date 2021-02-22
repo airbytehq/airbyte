@@ -32,7 +32,7 @@ class MongodbReader
     full_count = collection.count
     processed_count = 0
 
-    collection.find.projection(projection_config).batch_size(BATCH_SIZE).each do |item|
+    collection.find.projection(projection_config).batch_size(BATCH_SIZE).limit(1).each do |item|
       item.each_pair do |key, value|
         item[key] = convert_value_to_type(value, stream['json_schema']['properties'][key]['type'])
       end

@@ -56,12 +56,9 @@ public class JsonSchemaValidator {
       .validate(objectJson);
 
     if (!validationMessages.isEmpty()) {
-      System.out.println("VALIDATION ERRORS");
       String str = String.format(
-          "json schema validation failed. \nerrors: %s \nschema: \n%s \nobject: \n%s",
-          Strings.join(validationMessages, ", "),
-          schemaJson.toPrettyString(),
-          objectJson.toPrettyString());
+          "JSON schema validation failed. \nerrors: %s",
+          Strings.join(validationMessages, ", "));
       System.out.println(str);
     }
 
