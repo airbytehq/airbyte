@@ -26,6 +26,7 @@ package io.airbyte.workers.process;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.workers.WorkerException;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -43,7 +44,7 @@ class DockerProcessBuilderFactoryTest {
     Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "pbf");
 
     final DockerProcessBuilderFactory pbf = new DockerProcessBuilderFactory(workspaceRoot, "", "", "");
-    assertTrue(pbf.checkImageExists("airbyte/scheduler:dev"));
+    assertTrue(pbf.checkImageExists("airbyte/scheduler:latest" ));
   }
 
   @Test
