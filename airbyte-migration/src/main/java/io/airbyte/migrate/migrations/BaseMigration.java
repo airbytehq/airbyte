@@ -30,7 +30,7 @@ import io.airbyte.migrate.ResourceId;
 import java.util.Map;
 
 /**
- * By definition, the input schema of a migration should be the output schema of the previous
+ * By default, the input schema of a migration should be the output schema of the previous
  * migration. This base class enforces this rule.
  */
 public abstract class BaseMigration implements Migration {
