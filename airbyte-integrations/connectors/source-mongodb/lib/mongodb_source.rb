@@ -1,6 +1,6 @@
 require_relative './airbyte_protocol.rb'
+require_relative './airbyte_logger.rb'
 
-require_relative './mongodb_logger.rb'
 require_relative './mongodb_stream.rb'
 require_relative './mongodb_reader.rb'
 
@@ -25,7 +25,7 @@ class MongodbSource
       client.collections.first.find.limit(1).first
       result = {'status' => Status::Succeeded}
     rescue Mongo::Auth::Unauthorized => e
-      MongodbLogger.log(e.backtrace.join("\n"), Level::Fatal)
+      AirbyteLogger.log(e.backtrace.join("\n"), Level::Fatal)
       result = {'status' => Status::Failed, 'message' => 'Authentication failed.'}
     end
 
@@ -63,7 +63,7 @@ class MongodbSource
   end
 
   def method_missing(m, *args, &block)
-    MongodbLogger.log("There's no method called #{m}", Level::Fatal)
+    AirbyteLogger.log("There's no method called #{m}", Level::Fatal)
   end
 
   private
@@ -74,7 +74,7 @@ class MongodbSource
     else
       uri = "mongodb://#{@config['user']}:#{@config['password']}@#{@config['host']}:#{@config['port']}/#{@config['database']}?authSource=admin"
       @client = Mongo::Client.new(uri)
-      @client.logger.formatter = MongodbLogger.logger_formatter
+      @client.logger.formatter = AirbyteLogger.logger_formatter
       @client
     end
   end

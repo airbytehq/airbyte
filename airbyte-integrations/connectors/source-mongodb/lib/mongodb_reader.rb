@@ -1,5 +1,6 @@
 require_relative './airbyte_protocol.rb'
-require_relative './mongodb_logger.rb'
+require_relative './airbyte_logger.rb'
+
 require_relative './mongodb_stream.rb'
 
 class MongodbReader
@@ -15,7 +16,7 @@ class MongodbReader
   def read
     @catalog['streams'].each do |stream_object|
       stream = stream_object['stream']
-      MongodbLogger.log("Reading stream #{stream['name']} in #{stream['sync_mode']} mode")
+      AirbyteLogger.log("Reading stream #{stream['name']} in #{stream['sync_mode']} mode")
       read_stream(stream)
     end
   end
@@ -52,11 +53,11 @@ class MongodbReader
 
       processed_count += 1
       if processed_count % LOG_BATCH_SIZE == 0
-        MongodbLogger.log("[#{processed_count}/#{full_count}}] Reading stream #{stream['name']} is in progress")
+        AirbyteLogger.log("[#{processed_count}/#{full_count}}] Reading stream #{stream['name']} is in progress")
       end
     end
 
-    MongodbLogger.log("Stream #{stream['name']} successfully processed!")
+    AirbyteLogger.log("Stream #{stream['name']} successfully processed!")
   end
 
   def convert_value_to_type(value, type)

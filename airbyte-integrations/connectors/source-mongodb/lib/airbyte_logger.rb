@@ -1,6 +1,6 @@
 require_relative './airbyte_protocol.rb'
 
-class MongodbLogger
+class AirbyteLogger
   def self.format_log(text, log_level=Level::Info)
     alm = AirbyteLogMessage.from_dynamic!({
       'level' => log_level,
