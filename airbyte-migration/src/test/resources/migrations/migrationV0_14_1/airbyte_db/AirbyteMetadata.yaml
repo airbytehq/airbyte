@@ -6,6 +6,7 @@ type: object
 required:
   - key
   - value
+  - foo
 additionalProperties: false
 properties:
   key:
