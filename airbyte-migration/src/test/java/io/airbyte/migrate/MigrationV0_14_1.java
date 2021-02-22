@@ -92,7 +92,6 @@ public class MigrationV0_14_1 implements Migration {
         recordConsumer.accept(r);
       });
     }
-    MigrationUtils.registerMigrationRecord(outputData, JobKeys.AIRBYTE_METADATA.toString(), getVersion());
   }
 
 }
