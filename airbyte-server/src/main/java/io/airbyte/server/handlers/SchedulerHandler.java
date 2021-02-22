@@ -109,7 +109,7 @@ public class SchedulerHandler {
     return new CheckConnectionRead()
             .status(Enums.convertTo(status, CheckConnectionRead.StatusEnum.class))
             .message("")
-            .jobInfo(new JobInfoRead());
+            .jobInfo(new JobInfoRead()); // todo
   }
 
   public CheckConnectionRead checkSourceConnectionFromSourceCreate(SourceCoreConfig sourceConfig)
@@ -122,7 +122,7 @@ public class SchedulerHandler {
     return new CheckConnectionRead()
             .status(Enums.convertTo(status, CheckConnectionRead.StatusEnum.class))
             .message("")
-            .jobInfo(new JobInfoRead());
+            .jobInfo(new JobInfoRead()); // todo
   }
 
   public CheckConnectionRead checkSourceConnectionFromSourceIdForUpdate(SourceUpdate sourceUpdate)
@@ -143,20 +143,27 @@ public class SchedulerHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final DestinationConnection destination = configRepository.getDestinationConnection(destinationIdRequestBody.getDestinationId());
     final StandardDestinationDefinition destinationDef = configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId());
-    final String imageName = DockerUtils.getTaggedImageName(destinationDef.getDockerRepository(), destinationDef.getDockerImageTag());
-    return reportConnectionStatus(schedulerJobClient.createDestinationCheckConnectionJob(destination, imageName));
+    final String dockerImage = DockerUtils.getTaggedImageName(destinationDef.getDockerRepository(), destinationDef.getDockerImageTag());
+
+    Status status = TemporalUtils.getCheckConnectionWorkflow().run(destination.getConfiguration(), dockerImage);
+
+    return new CheckConnectionRead()
+            .status(Enums.convertTo(status, CheckConnectionRead.StatusEnum.class))
+            .message("")
+            .jobInfo(new JobInfoRead()); // todo
   }
 
   public CheckConnectionRead checkDestinationConnectionFromDestinationCreate(DestinationCoreConfig destinationConfig)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardDestinationDefinition destDef = configRepository.getStandardDestinationDefinition(destinationConfig.getDestinationDefinitionId());
-    final String imageName = DockerUtils.getTaggedImageName(destDef.getDockerRepository(), destDef.getDockerImageTag());
-    // todo (cgardens) - narrow the struct passed to the client. we are not setting fields that are
-    // technically declared as required.
-    final DestinationConnection destination = new DestinationConnection()
-        .withDestinationDefinitionId(destinationConfig.getDestinationDefinitionId())
-        .withConfiguration(destinationConfig.getConnectionConfiguration());
-    return reportConnectionStatus(schedulerJobClient.createDestinationCheckConnectionJob(destination, imageName));
+    final String dockerImage = DockerUtils.getTaggedImageName(destDef.getDockerRepository(), destDef.getDockerImageTag());
+
+    Status status = TemporalUtils.getCheckConnectionWorkflow().run(destinationConfig.getConnectionConfiguration(), dockerImage);
+
+    return new CheckConnectionRead()
+            .status(Enums.convertTo(status, CheckConnectionRead.StatusEnum.class))
+            .message("")
+            .jobInfo(new JobInfoRead()); // todo
   }
 
   public CheckConnectionRead checkDestinationConnectionFromDestinationIdForUpdate(DestinationUpdate destinationUpdate)
