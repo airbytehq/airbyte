@@ -48,14 +48,14 @@ class Client(BaseClient):
             "campaigns": CampaignAPI(self, include_deleted=include_deleted),
             "adsets": AdSetsAPI(self, include_deleted=include_deleted),
             "ads": AdsAPI(self, include_deleted=include_deleted),
-            "adcreatives": AdCreativeAPI(self, include_deleted=include_deleted),
-            "ads_insights": AdsInsightAPI(self, include_deleted=include_deleted, start_date=self._start_date),
-            "ads_insights_age_and_gender": AdsInsightAPI(self, include_deleted=include_deleted, start_date=self._start_date, breakdowns=["age", "gender"]),
-            "ads_insights_country": AdsInsightAPI(self, include_deleted=include_deleted, start_date=self._start_date, breakdowns=["country"]),
-            "ads_insights_region": AdsInsightAPI(self, include_deleted=include_deleted, start_date=self._start_date, breakdowns=["region"]),
-            "ads_insights_dma": AdsInsightAPI(self, include_deleted=include_deleted, start_date=self._start_date, breakdowns=["dma"]),
+            "adcreatives": AdCreativeAPI(self),
+            "ads_insights": AdsInsightAPI(self, start_date=self._start_date),
+            "ads_insights_age_and_gender": AdsInsightAPI(self, start_date=self._start_date, breakdowns=["age", "gender"]),
+            "ads_insights_country": AdsInsightAPI(self, start_date=self._start_date, breakdowns=["country"]),
+            "ads_insights_region": AdsInsightAPI(self, start_date=self._start_date, breakdowns=["region"]),
+            "ads_insights_dma": AdsInsightAPI(self, start_date=self._start_date, breakdowns=["dma"]),
             "ads_insights_platform_and_device": AdsInsightAPI(
-                self, include_deleted=include_deleted, start_date=self._start_date, breakdowns=["publisher_platform", "platform_position", "impression_device"]
+                self, start_date=self._start_date, breakdowns=["publisher_platform", "platform_position", "impression_device"]
             ),
         }
         super().__init__()

@@ -24,29 +24,27 @@ SOFTWARE.
 
 import time
 from abc import ABC, abstractmethod
+from functools import partial
 from typing import Any, Callable, Iterator, Mapping, MutableMapping, Sequence
 
 import backoff
 import pendulum as pendulum
 
-# FIXME (Eugene K): register logger as standard python logger
-from base_python.entrypoint import logger
+from base_python.entrypoint import logger  # FIXME (Eugene K): use standard logger
 from facebook_business.adobjects.adreportrun import AdReportRun
 from facebook_business.exceptions import FacebookBadObjectError, FacebookRequestError
 
-from .common import retry_pattern, deep_merge
+from .common import retry_pattern, deep_merge, JobTimeoutException
 
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 
 
 class StreamAPI(ABC):
     result_return_limit = 100
-    split_deleted_filter = True
 
-    @property
-    @abstractmethod
-    def entity_prefix(self):
-        """Prefix of fields in filter"""
+    enable_deleted = False
+    split_deleted_filter = True
+    entity_prefix = None
 
     @property
     def name(self):
@@ -56,14 +54,10 @@ class StreamAPI(ABC):
             stream_name = stream_name[:-3]
         return stream_name
 
-    def __init__(self, api, include_deleted: bool = False, **kwargs):
+    def __init__(self, api, include_deleted=False, **kwargs):
         super().__init__(**kwargs)
         self._api = api
-        self._include_deleted = include_deleted
-
-    def _build_params(self, params: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
-        params = params or {}
-        return {"limit": self.result_return_limit, **params}
+        self._include_deleted = include_deleted if self.enable_deleted else False
 
     def _entity_status_filters(self) -> Iterator:
         """ We split single request into multiple requests with few delivery_info values,
@@ -99,19 +93,22 @@ class StreamAPI(ABC):
                 ],
             }
 
-    @abstractmethod
-    def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
-        """Iterate over entities"""
-
     def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
         """Read entities using provided callable"""
         params = params or {}
         if self._include_deleted:
-            status_filters = list(self._entity_status_filters())
-            for status_filter in status_filters:
+            for status_filter in self._entity_status_filters():
                 yield from getter(params=self._build_params(deep_merge(params, status_filter)))
         else:
             yield from getter(params=self._build_params(params))
+
+    def _build_params(self, params: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
+        params = params or {}
+        return {"limit": self.result_return_limit, **params}
+
+    @abstractmethod
+    def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
+        """Iterate over entities"""
 
 
 class IncrementalStreamAPI(StreamAPI, ABC):
@@ -122,15 +119,23 @@ class IncrementalStreamAPI(StreamAPI, ABC):
 
     @property
     def state(self):
-        return {self.state_pk: str(self._state)}
+        return {
+            self.state_pk: str(self._state),
+            "include_deleted": self._include_deleted,
+        }
 
     @state.setter
     def state(self, value):
-        self._state = pendulum.parse(value[self.state_pk])
+        potentially_new_records_in_the_past = self._include_deleted and not value.get("include_deleted", False)
+        if potentially_new_records_in_the_past:
+            logger.info(
+                f"Ignoring bookmark for {self.name} because of enabled `include_deleted` option"
+            )
+        else:
+            self._state = pendulum.parse(value[self.state_pk])
 
-    def __init__(self, *args, include_deleted=False, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._include_deleted = include_deleted
         self._state = None
 
     def _build_params(self, params: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
@@ -173,12 +178,10 @@ class AdCreativeAPI(StreamAPI):
     """AdCreative is not an iterable stream as it uses the batch endpoint
     doc: https://developers.facebook.com/docs/marketing-api/reference/adgroup/adcreatives/
     """
-
+    entity_prefix = "adcreative"
     BATCH_SIZE = 50
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
-        ad_creative = self._get_creatives()
-
         # Create the initial batch
         api_batch = self._api._api.new_batch()
         records = []
@@ -190,7 +193,7 @@ class AdCreativeAPI(StreamAPI):
             raise response.error()
 
         # This loop syncs minimal AdCreative objects
-        for i, creative in enumerate(ad_creative, start=1):
+        for i, creative in enumerate(self.read(getter=self._get_creatives), start=1):
             # Execute and create a new batch for every BATCH_SIZE added
             if i % self.BATCH_SIZE == 0:
                 api_batch.execute()
@@ -206,14 +209,15 @@ class AdCreativeAPI(StreamAPI):
         yield from records
 
     @backoff_policy
-    def _get_creatives(self) -> Iterator:
-        return self._api.account.get_ad_creatives(params=self._build_params())
+    def _get_creatives(self, params: Mapping[str, Any]) -> Iterator:
+        return self._api.account.get_ad_creatives(params=params)
 
 
 class AdsAPI(IncrementalStreamAPI):
     """ doc: https://developers.facebook.com/docs/marketing-api/reference/adgroup """
 
     entity_prefix = "ad"
+    enable_deleted = True
     state_pk = "updated_time"
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
@@ -237,6 +241,7 @@ class AdSetsAPI(IncrementalStreamAPI):
     """ doc: https://developers.facebook.com/docs/marketing-api/reference/ad-campaign """
 
     entity_prefix = "adset"
+    enable_deleted = True
     state_pk = "updated_time"
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
@@ -258,6 +263,7 @@ class AdSetsAPI(IncrementalStreamAPI):
 
 class CampaignAPI(IncrementalStreamAPI):
     entity_prefix = "campaign"
+    enable_deleted = True
     state_pk = "updated_time"
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
@@ -285,10 +291,6 @@ class CampaignAPI(IncrementalStreamAPI):
         a generator, whose calls need decorated with a backoff.
         """
         return self._api.account.get_campaigns(params={**params, **self._state_filter()}, fields=[self.state_pk])
-
-
-class JobTimeoutException(Exception):
-    pass
 
 
 class AdsInsightAPI(IncrementalStreamAPI):
@@ -323,9 +325,9 @@ class AdsInsightAPI(IncrementalStreamAPI):
         "dma",
     ]
 
-    MAX_WAIT_TO_START_SECONDS = 2 * 60
-    MAX_WAIT_TO_FINISH_SECONDS = 30 * 60
-    MAX_ASYNC_SLEEP_SECONDS = 5 * 60
+    MAX_WAIT_TO_START = pendulum.Interval(minutes=2)
+    MAX_WAIT_TO_FINISH = pendulum.Interval(minutes=30)
+    MAX_ASYNC_SLEEP = pendulum.Interval(minutes=5)
 
     action_breakdowns = ALL_ACTION_BREAKDOWNS
     level = "ad"
@@ -339,12 +341,18 @@ class AdsInsightAPI(IncrementalStreamAPI):
         self._state = start_date
         self.breakdowns = breakdowns
 
+    @staticmethod
+    def _get_job_result(job, **params) -> Iterator:
+        for obj in job.get_result():
+            yield from obj.export_all_data()
+
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         for params in self._params(fields=fields):
             job = self._run_job_until_completion(params)
-            yield from self.state_filter(obj.export_all_data() for obj in job.get_result())
+            yield from super().read(partial(self._get_job_result, job=job), params)
 
-    @retry_pattern(backoff.expo, (FacebookRequestError, JobTimeoutException, FacebookBadObjectError), max_tries=5, factor=4)
+    @retry_pattern(backoff.expo, (FacebookRequestError, JobTimeoutException,
+                                  FacebookBadObjectError), max_tries=5, factor=4)
     def _run_job_until_completion(self, params) -> AdReportRun:
         # TODO parallelize running these jobs
         job = self._get_insights(params)
@@ -359,24 +367,25 @@ class AdsInsightAPI(IncrementalStreamAPI):
             if job["async_status"] == "Job Completed":
                 return job
 
-            runtime_seconds = (pendulum.now() - start_time).in_seconds()
-            if runtime_seconds > self.MAX_WAIT_TO_START_SECONDS and job_progress_pct == 0:
+            runtime = pendulum.now() - start_time
+            if runtime > self.MAX_WAIT_TO_START and job_progress_pct == 0:
                 raise JobTimeoutException(
-                    f"AdReportRun {job} did not start after {runtime_seconds} seconds. This is an intermittent error which may be fixed by retrying the job. Aborting."
+                    f"AdReportRun {job} did not start after {runtime.in_seconds()} seconds. This is an intermittent error which may be fixed by retrying the job. Aborting."
                 )
-            elif runtime_seconds > self.MAX_WAIT_TO_FINISH_SECONDS:
+            elif runtime > self.MAX_WAIT_TO_FINISH:
                 raise JobTimeoutException(
-                    f"AdReportRun {job} did not finish after {runtime_seconds} seconds. This is an intermittent error which may be fixed by retrying the job. Aborting."
+                    f"AdReportRun {job} did not finish after {runtime.in_seconds()} seconds. This is an intermittent error which may be fixed by retrying the job. Aborting."
                 )
             logger.info(f"Sleeping {sleep_seconds} seconds while waiting for AdReportRun: {job} to complete")
             time.sleep(sleep_seconds)
-            if sleep_seconds < self.MAX_ASYNC_SLEEP_SECONDS:
+            if sleep_seconds < self.MAX_ASYNC_SLEEP.in_seconds():
                 sleep_seconds *= 2
 
     def _params(self, fields: Sequence[str] = None) -> Iterator[dict]:
         # Facebook freezes insight data 28 days after it was generated, which means that all data
         # from the past 28 days may have changed since we last emitted it, so we retrieve it again.
         buffered_start_date = self._state.subtract(days=self.buffer_days)
+        print(buffered_start_date)
         end_date = pendulum.now()
 
         fields = list(set(fields) - set(self.INVALID_INSIGHT_FIELDS))

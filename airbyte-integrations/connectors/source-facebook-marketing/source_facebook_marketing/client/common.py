@@ -23,7 +23,6 @@ SOFTWARE.
 """
 
 import sys
-from typing import Any, MutableMapping, Mapping
 
 import backoff
 from base_python.entrypoint import logger  # FIXME (Eugene K): register logger as standard python logger
@@ -34,6 +33,10 @@ FACEBOOK_UNKNOWN_ERROR_CODE = 99
 
 class FacebookAPIException(Exception):
     """General class for all API errors"""
+
+
+class JobTimeoutException(Exception):
+    """Scheduled job timed out"""
 
 
 def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
