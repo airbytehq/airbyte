@@ -40,7 +40,6 @@ public class Migrations {
   public static final List<Migration> MIGRATIONS = ImmutableList.of(
       MIGRATION_V_0_14_0,
       MIGRATION_V_0_14_3,
-      MIGRATION_V_0_15_0
-  );
+      MIGRATION_V_0_15_0);
 
 }
