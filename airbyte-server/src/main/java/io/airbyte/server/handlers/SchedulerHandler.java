@@ -25,6 +25,7 @@
 package io.airbyte.server.handlers;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Lists;
 import io.airbyte.api.model.CheckConnectionRead;
 import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.DestinationCoreConfig;
@@ -42,6 +43,7 @@ import io.airbyte.api.model.SourceUpdate;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardCheckConnectionOutput;
@@ -52,8 +54,10 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.Job;
+import io.airbyte.scheduler.TemporalUtils;
 import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.server.converters.CatalogConverter;
 import io.airbyte.server.converters.ConfigurationUpdate;
@@ -98,22 +102,27 @@ public class SchedulerHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final SourceConnection source = configRepository.getSourceConnection(sourceIdRequestBody.getSourceId());
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(source.getSourceDefinitionId());
-    final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
+    final String dockerImage = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
 
-    return reportConnectionStatus(schedulerJobClient.createSourceCheckConnectionJob(source, imageName));
+    Status status = TemporalUtils.getCheckConnectionWorkflow().run(source.getConfiguration(), dockerImage);
+
+    return new CheckConnectionRead()
+            .status(Enums.convertTo(status, CheckConnectionRead.StatusEnum.class))
+            .message("")
+            .jobInfo(new JobInfoRead());
   }
 
   public CheckConnectionRead checkSourceConnectionFromSourceCreate(SourceCoreConfig sourceConfig)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceConfig.getSourceDefinitionId());
-    final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
-    // todo (cgardens) - narrow the struct passed to the client. we are not setting fields that are
-    // technically declared as required.
-    final SourceConnection source = new SourceConnection()
-        .withSourceDefinitionId(sourceConfig.getSourceDefinitionId())
-        .withConfiguration(sourceConfig.getConnectionConfiguration());
+    final String dockerImage = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
 
-    return reportConnectionStatus(schedulerJobClient.createSourceCheckConnectionJob(source, imageName));
+    Status status = TemporalUtils.getCheckConnectionWorkflow().run(sourceConfig.getConnectionConfiguration(), dockerImage);
+
+    return new CheckConnectionRead()
+            .status(Enums.convertTo(status, CheckConnectionRead.StatusEnum.class))
+            .message("")
+            .jobInfo(new JobInfoRead());
   }
 
   public CheckConnectionRead checkSourceConnectionFromSourceIdForUpdate(SourceUpdate sourceUpdate)
@@ -169,9 +178,13 @@ public class SchedulerHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final SourceConnection source = configRepository.getSourceConnection(sourceIdRequestBody.getSourceId());
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(source.getSourceDefinitionId());
-    final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
-    final Job job = schedulerJobClient.createDiscoverSchemaJob(source, imageName);
-    return discoverJobToOutput(job);
+    final String dockerImage = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
+
+    AirbyteCatalog airbyteCatalog = TemporalUtils.getDiscoverWorkflow().run(source.getConfiguration(), dockerImage);
+
+    return new SourceDiscoverSchemaRead()
+            .catalog(CatalogConverter.toApi(airbyteCatalog))
+            .jobInfo(new JobInfoRead());
   }
 
   public SourceDiscoverSchemaRead discoverSchemaForSourceFromSourceCreate(SourceCoreConfig sourceCreate)

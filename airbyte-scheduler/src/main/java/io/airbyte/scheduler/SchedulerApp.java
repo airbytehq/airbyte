@@ -38,6 +38,8 @@ import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.scheduler.temporal.CheckConnectionWorkflow;
+import io.airbyte.scheduler.temporal.DiscoverWorkflow;
 import io.airbyte.scheduler.temporal.JobActivityImpl;
 import io.airbyte.scheduler.temporal.JobWorkflow;
 import io.airbyte.scheduler.temporal.JobWorkflowImpl;
@@ -93,7 +95,7 @@ public class SchedulerApp {
 
   public static void main(String[] args) throws InterruptedException {
     // todo: wait on temporal startup in a cleaner way
-    Thread.sleep(30000L);
+    Thread.sleep(45000L);
     System.out.println("starting...");
 
     final Configs configs = new EnvConfigs();
@@ -128,6 +130,14 @@ public class SchedulerApp {
     Worker specWorker = factory.newWorker(TemporalUtils.SPEC_WORKFLOW_QUEUE);
     specWorker.registerWorkflowImplementationTypes(SpecWorkflow.WorkflowImpl.class);
     specWorker.registerActivitiesImplementations(new SpecWorkflow.SpecActivityImpl(pbf, configs.getWorkspaceRoot()));
+
+    Worker discoverWorker = factory.newWorker(TemporalUtils.DISCOVER_WORKFLOW_QUEUE);
+    discoverWorker.registerWorkflowImplementationTypes(DiscoverWorkflow.WorkflowImpl.class);
+    discoverWorker.registerActivitiesImplementations(new DiscoverWorkflow.DiscoverActivityImpl(pbf, configs.getWorkspaceRoot()));
+
+    Worker checkConnectionWorker = factory.newWorker(TemporalUtils.CHECK_CONNECTION_WORKFLOW_QUEUE);
+    checkConnectionWorker.registerWorkflowImplementationTypes(CheckConnectionWorkflow.WorkflowImpl.class);
+    checkConnectionWorker.registerActivitiesImplementations(new CheckConnectionWorkflow.CheckConnectionActivityImpl(pbf, configs.getWorkspaceRoot()));
 
     factory.start();
   }
