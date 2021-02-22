@@ -40,10 +40,8 @@ import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.temporal.CheckConnectionWorkflow;
 import io.airbyte.scheduler.temporal.DiscoverWorkflow;
-import io.airbyte.scheduler.temporal.JobActivityImpl;
-import io.airbyte.scheduler.temporal.JobWorkflow;
-import io.airbyte.scheduler.temporal.JobWorkflowImpl;
 import io.airbyte.scheduler.temporal.SpecWorkflow;
+import io.airbyte.scheduler.temporal.SyncWorkflow;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.KubeProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
@@ -119,13 +117,8 @@ public class SchedulerApp {
         configRepository);
 
     LOGGER.info("Launching scheduler...");
-    final WorkerRunFactory workerRunFactory = new WorkerRunFactory(workspaceRoot, pbf);
 
     WorkerFactory factory = WorkerFactory.newInstance(TemporalUtils.TEMPORAL_CLIENT);
-
-    Worker jobWorker = factory.newWorker(TemporalUtils.JOB_WORKFLOW_QUEUE);
-    jobWorker.registerWorkflowImplementationTypes(JobWorkflowImpl.class);
-    jobWorker.registerActivitiesImplementations(new JobActivityImpl(workerRunFactory, configRepository));
 
     Worker specWorker = factory.newWorker(TemporalUtils.SPEC_WORKFLOW_QUEUE);
     specWorker.registerWorkflowImplementationTypes(SpecWorkflow.WorkflowImpl.class);
@@ -138,6 +131,10 @@ public class SchedulerApp {
     Worker checkConnectionWorker = factory.newWorker(TemporalUtils.CHECK_CONNECTION_WORKFLOW_QUEUE);
     checkConnectionWorker.registerWorkflowImplementationTypes(CheckConnectionWorkflow.WorkflowImpl.class);
     checkConnectionWorker.registerActivitiesImplementations(new CheckConnectionWorkflow.CheckConnectionActivityImpl(pbf, configs.getWorkspaceRoot()));
+
+    Worker syncWorker = factory.newWorker(TemporalUtils.SYNC_WORKFLOW_QUEUE);
+    syncWorker.registerWorkflowImplementationTypes(SyncWorkflow.WorkflowImpl.class);
+    syncWorker.registerActivitiesImplementations(new SyncWorkflow.SyncActivityImpl(pbf, configs.getWorkspaceRoot()));
 
     factory.start();
   }

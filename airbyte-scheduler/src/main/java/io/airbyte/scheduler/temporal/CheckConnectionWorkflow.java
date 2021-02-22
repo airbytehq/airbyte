@@ -109,10 +109,10 @@ public interface CheckConnectionWorkflow {
                         return Enums.convertTo(status.get().getStatus(), StandardCheckConnectionOutput.Status.class);
                     }
                 } else {
-                    throw new RuntimeException(String.format("Discover job subprocess finished with exit code {}", exitCode));
+                    throw new RuntimeException(String.format("Check connection job subprocess finished with exit code {}", exitCode));
                 }
             } catch (Exception e) {
-                throw new RuntimeException("Discover job failed with an exception", e);
+                throw new RuntimeException("Check connection job failed with an exception", e);
             }
         }
     }

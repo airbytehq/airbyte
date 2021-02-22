@@ -52,6 +52,7 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -261,6 +262,15 @@ public class SchedulerHandler {
     final StandardDestinationDefinition destinationDef = configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId());
     final String destinationImageName = DockerUtils.getTaggedImageName(destinationDef.getDockerRepository(), destinationDef.getDockerImageTag());
 
+    final StandardSyncInput syncInput = new StandardSyncInput()
+            .withSourceConfiguration(source.getConfiguration())
+            .withDestinationConfiguration(destination.getConfiguration())
+            .withCatalog(standardSync.getCatalog())
+            .withState(null); // todo: handle state
+
+    TemporalUtils.getSyncWorkflow().run(syncInput, sourceImageName, destinationImageName);
+
+    // todo: this shouldn't return anything ideally
     final Job job = schedulerJobClient.createOrGetActiveSyncJob(
         source,
         destination,
