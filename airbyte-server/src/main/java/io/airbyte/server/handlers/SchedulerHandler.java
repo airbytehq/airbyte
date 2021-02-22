@@ -76,9 +76,9 @@ public class SchedulerHandler {
     this(
         configRepository,
         schedulerJobClient,
-        new ConfigurationUpdate(configRepository, new SpecFetcher(schedulerJobClient)),
+        new ConfigurationUpdate(configRepository, new SpecFetcher()),
         new JsonSchemaValidator(),
-        new SpecFetcher(schedulerJobClient));
+        new SpecFetcher());
   }
 
   @VisibleForTesting

@@ -37,57 +37,32 @@ public class JobActivityImpl implements  JobActivity{
 
     private final WorkerRunFactory workerRunFactory;
     private final ConfigRepository configRepository;
-    private final JobPersistence persistence;
 
-    public JobActivityImpl(WorkerRunFactory workerRunFactory, ConfigRepository configRepository, JobPersistence persistence) {
+    public JobActivityImpl(WorkerRunFactory workerRunFactory, ConfigRepository configRepository) {
         this.workerRunFactory = workerRunFactory;
         this.configRepository = configRepository;
-        this.persistence = persistence;
     }
 
     @Override
-    public void run(Job job) {
-        // we need to know the attempt number before we begin the job lifecycle. thus we state what the
-        // attempt number should be. if it is not, that the lifecycle will fail. this should not happen as
-        // long as job submission for a single job is single threaded. this is a compromise to allow the job
-        // persistence to control what the attempt number should be while still allowing us to declare it
-        // before the lifecycle begins.
-        final int attemptNumber = job.getAttempts().size();
-
+    public OutputAndStatus<JobOutput> run(Job job) {
         try {
             final WorkerRun workerRun = workerRunFactory.create(job);
 
             final Path logFilePath = workerRun.getJobRoot().resolve(WorkerConstants.LOG_FILENAME);
-            final long persistedAttemptId = persistence.createAttempt(job.getId(), logFilePath);
-            assertSameIds(attemptNumber, persistedAttemptId);
 
             MDC.put("job_id", String.valueOf(job.getId()));
             MDC.put("job_root", logFilePath.getParent().toString());
             MDC.put("job_log_filename", logFilePath.getFileName().toString());
 
             OutputAndStatus<JobOutput> output = workerRun.call();
-            if (output.getOutput().isPresent()) {
-                persistence.writeOutput(job.getId(), attemptNumber, output.getOutput().get());
-            }
-
-            if (output.getStatus() == io.airbyte.workers.JobStatus.SUCCEEDED) {
-                persistence.succeedAttempt(job.getId(), attemptNumber);
-            } else {
-                persistence.failAttempt(job.getId(), attemptNumber);
-            }
             trackCompletion(job, output.getStatus());
+            return output;
         } catch (Exception e) {
-            try {
-                LOGGER.error("Exception thrown in Job Submission: ", e);
-                persistence.failAttempt(job.getId(), attemptNumber);
-            } catch (IOException ioException) {
-                throw new RuntimeException(e);
-            } finally {
-                trackCompletion(job, io.airbyte.workers.JobStatus.FAILED);
-            }
+            trackCompletion(job, io.airbyte.workers.JobStatus.FAILED);
+            throw new RuntimeException(e);
+        } finally {
+            MDC.clear();
         }
-
-        MDC.clear();
     }
 
     @VisibleForTesting

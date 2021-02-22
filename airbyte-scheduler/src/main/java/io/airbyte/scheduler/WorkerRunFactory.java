@@ -177,6 +177,10 @@ public class WorkerRunFactory {
     return new AirbyteIntegrationLauncher(jobId, attempt, image, pbf);
   }
 
+  public static IntegrationLauncher createLauncher(ProcessBuilderFactory pbf, long jobId, int attempt, final String image) {
+    return new AirbyteIntegrationLauncher(jobId, attempt, image, pbf);
+  }
+
   private static StandardCheckConnectionInput getCheckConnectionInput(JobCheckConnectionConfig config) {
     return new StandardCheckConnectionInput().withConnectionConfiguration(config.getConnectionConfiguration());
   }

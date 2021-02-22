@@ -41,6 +41,7 @@ import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.temporal.JobActivityImpl;
 import io.airbyte.scheduler.temporal.JobWorkflow;
 import io.airbyte.scheduler.temporal.JobWorkflowImpl;
+import io.airbyte.scheduler.temporal.SpecWorkflow;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.KubeProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
@@ -76,93 +77,7 @@ public class SchedulerApp {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerApp.class);
 
-  private static final long GRACEFUL_SHUTDOWN_SECONDS = 30;
-  private static final int MAX_WORKERS = 4;
-  private static final Duration SCHEDULING_DELAY = Duration.ofSeconds(5);
-  private static final Duration CLEANING_DELAY = Duration.ofHours(2);
-  private static final ThreadFactory THREAD_FACTORY = new ThreadFactoryBuilder().setNameFormat("worker-%d").build();
 
-  public static final String AIRBYTE_WORKFLOW_QUEUE = "AIRBYTE_WORKFLOW_QUEUE";
-
-  private static final WorkflowServiceStubsOptions TEMPORAL_OPTIONS = WorkflowServiceStubsOptions.newBuilder()
-          .setTarget("temporal:7233")
-          .build();
-
-  public static final WorkflowServiceStubs TEMPORAL_SERVICE = WorkflowServiceStubs.newInstance(TEMPORAL_OPTIONS);
-
-  public static final WorkflowClient TEMPORAL_CLIENT = WorkflowClient.newInstance(TEMPORAL_SERVICE);
-
-  private final Path workspaceRoot;
-  private final ProcessBuilderFactory pbf;
-  private final JobPersistence jobPersistence;
-  private final ConfigRepository configRepository;
-  private final JobCleaner jobCleaner;
-
-  public SchedulerApp(Path workspaceRoot,
-                      ProcessBuilderFactory pbf,
-                      JobPersistence jobPersistence,
-                      ConfigRepository configRepository,
-                      JobCleaner jobCleaner) {
-    this.workspaceRoot = workspaceRoot;
-    this.pbf = pbf;
-    this.jobPersistence = jobPersistence;
-    this.configRepository = configRepository;
-    this.jobCleaner = jobCleaner;
-  }
-
-  public void start() throws IOException {
-    final ExecutorService workerThreadPool = Executors.newFixedThreadPool(MAX_WORKERS, THREAD_FACTORY);
-    final ScheduledExecutorService scheduledPool = Executors.newSingleThreadScheduledExecutor();
-    final WorkerRunFactory workerRunFactory = new WorkerRunFactory(workspaceRoot, pbf);
-
-    final WorkflowOptions workflowOptions = WorkflowOptions.newBuilder()
-            .setTaskQueue(AIRBYTE_WORKFLOW_QUEUE)
-            .build();
-    final JobWorkflow jobWorkflow = TEMPORAL_CLIENT.newWorkflowStub(JobWorkflow.class, workflowOptions);
-    final JobRetrier jobRetrier = new JobRetrier(jobPersistence, Instant::now);
-    final JobScheduler jobScheduler = new JobScheduler(jobPersistence, configRepository);
-    final JobSubmitter jobSubmitter = new JobSubmitter(workerThreadPool, jobPersistence, configRepository, jobWorkflow);
-
-    WorkerFactory factory = WorkerFactory.newInstance(TEMPORAL_CLIENT);
-    Worker worker = factory.newWorker(AIRBYTE_WORKFLOW_QUEUE);
-    worker.registerWorkflowImplementationTypes(JobWorkflowImpl.class);
-    worker.registerActivitiesImplementations(new JobActivityImpl(workerRunFactory, configRepository, jobPersistence));
-    factory.start();
-
-    Map<String, String> mdc = MDC.getCopyOfContextMap();
-
-    // We cancel jobs that where running before the restart. They are not being monitored by the worker
-    // anymore.
-    cleanupZombies(jobPersistence);
-
-    scheduledPool.scheduleWithFixedDelay(
-        () -> {
-          MDC.setContextMap(mdc);
-          jobRetrier.run();
-          jobScheduler.run();
-          jobSubmitter.run();
-        },
-        0L,
-        SCHEDULING_DELAY.toSeconds(),
-        TimeUnit.SECONDS);
-
-    scheduledPool.scheduleWithFixedDelay(
-        () -> {
-          MDC.setContextMap(mdc);
-          jobCleaner.run();
-        },
-        CLEANING_DELAY.toSeconds(),
-        CLEANING_DELAY.toSeconds(),
-        TimeUnit.SECONDS);
-
-    Runtime.getRuntime().addShutdownHook(new GracefulShutdownHandler(Duration.ofSeconds(GRACEFUL_SHUTDOWN_SECONDS), workerThreadPool, scheduledPool));
-  }
-
-  private void cleanupZombies(JobPersistence jobPersistence) throws IOException {
-    for (Job zombieJob : jobPersistence.listJobsWithStatus(JobStatus.RUNNING)) {
-      jobPersistence.cancelJob(zombieJob.getId());
-    }
-  }
 
   private static ProcessBuilderFactory getProcessBuilderFactory(Configs configs) {
     if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
@@ -176,9 +91,9 @@ public class SchedulerApp {
     }
   }
 
-  public static void main(String[] args) throws IOException, InterruptedException {
+  public static void main(String[] args) throws InterruptedException {
     // todo: wait on temporal startup in a cleaner way
-    Thread.sleep(60000L);
+    Thread.sleep(30000L);
     System.out.println("starting...");
 
     final Configs configs = new EnvConfigs();
@@ -191,21 +106,9 @@ public class SchedulerApp {
     final Path workspaceRoot = configs.getWorkspaceRoot();
     LOGGER.info("workspaceRoot = " + workspaceRoot);
 
-    LOGGER.info("Creating DB connection pool...");
-    final Database database = Databases.createPostgresDatabase(
-        configs.getDatabaseUser(),
-        configs.getDatabasePassword(),
-        configs.getDatabaseUrl());
-
     final ProcessBuilderFactory pbf = getProcessBuilderFactory(configs);
-
-    final JobPersistence jobPersistence = new DefaultJobPersistence(database); // todo
     final ConfigPersistence configPersistence = new DefaultConfigPersistence(configRoot);
     final ConfigRepository configRepository = new ConfigRepository(configPersistence);
-    final JobCleaner jobCleaner = new JobCleaner(
-        configs.getWorkspaceRetentionConfig(),
-        workspaceRoot,
-        jobPersistence);
 
     TrackingClientSingleton.initialize(
         configs.getTrackingStrategy(),
@@ -213,22 +116,20 @@ public class SchedulerApp {
         configs.getAirbyteVersion(),
         configRepository);
 
-    Optional<String> airbyteDatabaseVersion = jobPersistence.getVersion();
-    int loopCount = 0;
-    while (airbyteDatabaseVersion.isEmpty() && loopCount < 300) {
-      LOGGER.warn("Waiting for Server to start...");
-      TimeUnit.SECONDS.sleep(1);
-      airbyteDatabaseVersion = jobPersistence.getVersion();
-      loopCount++;
-    }
-    if (airbyteDatabaseVersion.isPresent()) {
-      AirbyteVersion.check(configs.getAirbyteVersion(), airbyteDatabaseVersion.get());
-    } else {
-      throw new IllegalStateException("Unable to retrieve Airbyte Version, aborting...");
-    }
-
     LOGGER.info("Launching scheduler...");
-    new SchedulerApp(workspaceRoot, pbf, jobPersistence, configRepository, jobCleaner).start();
+    final WorkerRunFactory workerRunFactory = new WorkerRunFactory(workspaceRoot, pbf);
+
+    WorkerFactory factory = WorkerFactory.newInstance(TemporalUtils.TEMPORAL_CLIENT);
+
+    Worker jobWorker = factory.newWorker(TemporalUtils.JOB_WORKFLOW_QUEUE);
+    jobWorker.registerWorkflowImplementationTypes(JobWorkflowImpl.class);
+    jobWorker.registerActivitiesImplementations(new JobActivityImpl(workerRunFactory, configRepository));
+
+    Worker specWorker = factory.newWorker(TemporalUtils.SPEC_WORKFLOW_QUEUE);
+    specWorker.registerWorkflowImplementationTypes(SpecWorkflow.WorkflowImpl.class);
+    specWorker.registerActivitiesImplementations(new SpecWorkflow.SpecActivityImpl(pbf, configs.getWorkspaceRoot()));
+
+    factory.start();
   }
 
 }

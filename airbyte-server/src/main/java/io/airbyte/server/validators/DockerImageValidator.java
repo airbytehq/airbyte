@@ -35,7 +35,7 @@ public class DockerImageValidator {
   private final SpecFetcher specFetcher;
 
   public DockerImageValidator(SchedulerJobClient schedulerJobClient) {
-    this(new SpecFetcher(schedulerJobClient));
+    this(new SpecFetcher());
   }
 
   @VisibleForTesting

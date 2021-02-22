@@ -119,7 +119,7 @@ public class DefaultJobCreator implements JobCreator {
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(ConfigType.SYNC)
         .withSync(jobSyncConfig);
-    return jobPersistence.enqueueJob(standardSync.getConnectionId().toString(), jobConfig);
+    return jobPersistence.enqueueJob(standardSync.getConnectionId().toString(), jobConfig); // todo: start job, don't enqueue
   }
 
   // Strategy:

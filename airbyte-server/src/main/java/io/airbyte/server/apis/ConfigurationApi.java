@@ -126,7 +126,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
                           final CachingSchedulerJobClient schedulerJobClient,
                           final Configs configs,
                           final FileTtlManager archiveTtlManager) {
-    final SpecFetcher specFetcher = new SpecFetcher(schedulerJobClient);
+    final SpecFetcher specFetcher = new SpecFetcher();
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
     schedulerHandler = new SchedulerHandler(configRepository, schedulerJobClient);
     workspacesHandler = new WorkspacesHandler(configRepository);

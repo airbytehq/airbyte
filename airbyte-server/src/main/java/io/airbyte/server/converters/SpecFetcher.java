@@ -24,31 +24,24 @@
 
 package io.airbyte.server.converters;
 
+import io.airbyte.config.JobConfig;
+import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.StandardGetSpecOutput;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.Job;
+import io.airbyte.scheduler.TemporalUtils;
 import io.airbyte.scheduler.client.SchedulerJobClient;
 import java.io.IOException;
 
 public class SpecFetcher {
 
-  private final SchedulerJobClient schedulerJobClient;
+  public SpecFetcher() {
 
-  public SpecFetcher(SchedulerJobClient schedulerJobClient) {
-    this.schedulerJobClient = schedulerJobClient;
   }
 
-  public ConnectorSpecification execute(String dockerImage) throws IOException {
-    return getSpecFromJob(schedulerJobClient.createGetSpecJob(dockerImage));
-  }
-
-  private static ConnectorSpecification getSpecFromJob(Job job) {
-    return job
-        .getSuccessOutput()
-        .map(JobOutput::getGetSpec)
-        .map(StandardGetSpecOutput::getSpecification)
-        .orElseThrow(() -> new IllegalArgumentException("no spec output found"));
+  public ConnectorSpecification execute(String dockerImage) {
+    return TemporalUtils.getSpecWorkflow().run(dockerImage);
   }
 
 }
