@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import time
 from abc import ABC, abstractmethod
 from functools import partial
 from typing import Any, Callable, Iterator, Mapping, MutableMapping, Optional, Sequence
@@ -31,103 +30,91 @@ import pendulum
 import requests
 from base_python.entrypoint import logger  # FIXME (Eugene K): use standard logger
 from requests import HTTPError
-
-
-class FreshdeskError(HTTPError):
-    """
-    Base error class.
-    Subclassing HTTPError to avoid breaking existing code that expects only HTTPErrors.
-    """
-
-
-class FreshdeskBadRequest(FreshdeskError):
-    """Most 40X and 501 status codes"""
-
-
-class FreshdeskUnauthorized(FreshdeskError):
-    """401 Unauthorized"""
-
-
-class FreshdeskAccessDenied(FreshdeskError):
-    """403 Forbidden"""
-
-
-class FreshdeskNotFound(FreshdeskError):
-    """404"""
-
-
-class FreshdeskRateLimited(FreshdeskError):
-    """429 Rate Limit Reached"""
-
-
-class FreshdeskServerError(FreshdeskError):
-    """50X errors"""
+from source_freshdesk.errors import (
+    FreshdeskAccessDenied,
+    FreshdeskBadRequest,
+    FreshdeskError,
+    FreshdeskNotFound,
+    FreshdeskRateLimited,
+    FreshdeskServerError,
+    FreshdeskUnauthorized,
+)
+from source_freshdesk.utils import CallCredit, retry_after_handler, retry_connection_handler
 
 
 class API:
-    def __init__(self, domain: str, api_key: str, verify: bool = True, proxies: MutableMapping[str, str] = None):
+    def __init__(
+        self, domain: str, api_key: str, requests_per_minute: int = None, verify: bool = True, proxies: MutableMapping[str, Any] = None
+    ):
         """Basic HTTP interface to read from endpoints"""
         self._api_prefix = f"https://{domain.rstrip('/')}/api/v2/"
         self._session = requests.Session()
         self._session.auth = (api_key, "unused_with_api_key")
         self._session.verify = verify
         self._session.proxies = proxies
-        self._session.headers = {"Content-Type": "application/json"}
+        self._session.headers = {
+            "Content-Type": "application/json",
+            "User-Agent": "Airbyte",
+        }
+
+        self._call_credit = CallCredit(balance=requests_per_minute) if requests_per_minute else None
 
         if domain.find("freshdesk.com") < 0:
             raise AttributeError("Freshdesk v2 API works only via Freshdesk domains and not via custom CNAMEs")
 
     @staticmethod
-    def _parse_and_handle_errors(req):
+    def _parse_and_handle_errors(response):
         try:
-            j = req.json()
+            body = response.json()
         except ValueError:
-            j = {}
+            body = {}
 
         error_message = "Freshdesk Request Failed"
-        if "errors" in j:
-            error_message = "{}: {}".format(j.get("description"), j.get("errors"))
+        if "errors" in body:
+            error_message = f"{body.get('description')}: {body['errors']}"
         # API docs don't mention this clearly, but in the case of bad credentials the returned JSON will have a
         # "message"  field at the top level
-        elif "message" in j:
-            error_message = j["message"]
+        elif "message" in body:
+            error_message = f"{body.get('code')}: {body['message']}"
 
-        if req.status_code == 400:
-            raise FreshdeskBadRequest(error_message)
-        elif req.status_code == 401:
-            raise FreshdeskUnauthorized(error_message)
-        elif req.status_code == 403:
-            raise FreshdeskAccessDenied(error_message)
-        elif req.status_code == 404:
-            raise FreshdeskNotFound(error_message)
-        elif req.status_code == 429:
+        if response.status_code == 400:
+            raise FreshdeskBadRequest(error_message or "Wrong input, check your data", response=response)
+        elif response.status_code == 401:
+            raise FreshdeskUnauthorized(error_message or "Invalid credentials", response=response)
+        elif response.status_code == 403:
+            raise FreshdeskAccessDenied(error_message or "You don't have enough permissions", response=response)
+        elif response.status_code == 404:
+            raise FreshdeskNotFound(error_message or "Resource not found", response=response)
+        elif response.status_code == 429:
+            retry_after = response.headers.get("Retry-After")
             raise FreshdeskRateLimited(
-                "429 Rate Limit Exceeded: API rate-limit has been reached until {} seconds. See "
-                "http://freshdesk.com/api#ratelimit".format(req.headers.get("Retry-After"))
+                f"429 Rate Limit Exceeded: API rate-limit has been reached until {retry_after} seconds."
+                " See http://freshdesk.com/api#ratelimit",
+                response=response,
             )
-        elif 500 <= req.status_code < 600:
-            raise FreshdeskServerError("{}: Server Error".format(req.status_code))
+        elif 500 <= response.status_code < 600:
+            raise FreshdeskServerError(f"{response.status_code}: Server Error", response=response)
 
         # Catch any other errors
         try:
-            req.raise_for_status()
-        except HTTPError as e:
-            raise FreshdeskError("{}: {}".format(e, j))
+            response.raise_for_status()
+        except HTTPError as err:
+            raise FreshdeskError(f"{err}: {body}", response=response) from err
 
-        return j
+        return body
 
+    @retry_connection_handler(max_tries=5, factor=5)
+    @retry_after_handler(max_tries=3)
     def get(self, url: str, params: Mapping = None):
         """Wrapper around request.get() to use the API prefix. Returns a JSON response."""
-        for _ in range(10):
-            params = params or {}
-            response = self._session.get(self._api_prefix + url, params=params)
-            try:
-                return self._parse_and_handle_errors(response)
-            except FreshdeskRateLimited:
-                retry_after = int(response.headers["Retry-After"])
-                logger.info(f"Rate limit reached. Sleeping for {retry_after} seconds")
-                time.sleep(retry_after + 1)  # extra second to cover any fractions of second
-        raise Exception("Max retry limit reached")
+        params = params or {}
+        response = self._session.get(self._api_prefix + url, params=params)
+        return self._parse_and_handle_errors(response)
+
+    def consume_credit(self, credit):
+        """Consume call credit, if there is no credit left within current window will sleep til next period"""
+        if self._call_credit:
+            self._call_credit.consume(credit)
 
 
 class StreamAPI(ABC):
@@ -135,10 +122,16 @@ class StreamAPI(ABC):
 
     result_return_limit = 100  # maximum value
     maximum_page = 500  # see https://developers.freshdesk.com/api/#best_practices
+    call_credit = 1  # see https://developers.freshdesk.com/api/#embedding
 
     def __init__(self, api: API, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._api = api
+
+    def _api_get(self, url: str, params: Mapping = None):
+        """Wrapper around API GET method to respect call rate limit"""
+        self._api.consume_credit(self.call_credit)
+        return self._api.get(url, params=params)
 
     @abstractmethod
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
@@ -217,13 +210,13 @@ class ClientIncrementalStreamAPI(IncrementalStreamAPI, ABC):
 class AgentsAPI(ClientIncrementalStreamAPI):
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Iterate over entities"""
-        yield from self.read(partial(self._api.get, url="agents"))
+        yield from self.read(partial(self._api_get, url="agents"))
 
 
 class CompaniesAPI(ClientIncrementalStreamAPI):
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Iterate over entities"""
-        yield from self.read(partial(self._api.get, url="companies"))
+        yield from self.read(partial(self._api_get, url="companies"))
 
 
 class ContactsAPI(IncrementalStreamAPI):
@@ -231,7 +224,7 @@ class ContactsAPI(IncrementalStreamAPI):
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Iterate over entities"""
-        yield from self.read(partial(self._api.get, url="contacts"))
+        yield from self.read(partial(self._api_get, url="contacts"))
 
 
 class GroupsAPI(ClientIncrementalStreamAPI):
@@ -239,7 +232,7 @@ class GroupsAPI(ClientIncrementalStreamAPI):
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Iterate over entities"""
-        yield from self.read(partial(self._api.get, url="groups"))
+        yield from self.read(partial(self._api_get, url="groups"))
 
 
 class RolesAPI(ClientIncrementalStreamAPI):
@@ -247,7 +240,7 @@ class RolesAPI(ClientIncrementalStreamAPI):
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Iterate over entities"""
-        yield from self.read(partial(self._api.get, url="roles"))
+        yield from self.read(partial(self._api_get, url="roles"))
 
 
 class SkillsAPI(ClientIncrementalStreamAPI):
@@ -255,26 +248,28 @@ class SkillsAPI(ClientIncrementalStreamAPI):
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Iterate over entities"""
-        yield from self.read(partial(self._api.get, url="skills"))
+        yield from self.read(partial(self._api_get, url="skills"))
 
 
 class SurveysAPI(ClientIncrementalStreamAPI):
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Iterate over entities"""
-        yield from self.read(partial(self._api.get, url="surveys"))
+        yield from self.read(partial(self._api_get, url="surveys"))
 
 
 class TicketsAPI(IncrementalStreamAPI):
+    call_credit = 3  # each include consumes 2 additional credits
+
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Iterate over entities"""
         params = {"include": "description"}
-        yield from self.read(partial(self._api.get, url="tickets"), params=params)
+        yield from self.read(partial(self._api_get, url="tickets"), params=params)
 
 
 class TimeEntriesAPI(ClientIncrementalStreamAPI):
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Iterate over entities"""
-        yield from self.read(partial(self._api.get, url="time_entries"))
+        yield from self.read(partial(self._api_get, url="time_entries"))
 
 
 class ConversationsAPI(ClientIncrementalStreamAPI):
@@ -287,7 +282,7 @@ class ConversationsAPI(ClientIncrementalStreamAPI):
             tickets.state = self.state
         for ticket in tickets.list():
             url = f"tickets/{ticket['id']}/conversations"
-            yield from self.read(partial(self._api.get, url=url))
+            yield from self.read(partial(self._api_get, url=url))
 
 
 class SatisfactionRatingsAPI(ClientIncrementalStreamAPI):
@@ -295,4 +290,4 @@ class SatisfactionRatingsAPI(ClientIncrementalStreamAPI):
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Iterate over entities"""
-        yield from self.read(partial(self._api.get, url="surveys/satisfaction_ratings"))
+        yield from self.read(partial(self._api_get, url="surveys/satisfaction_ratings"))

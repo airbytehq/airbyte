@@ -26,14 +26,12 @@ package io.airbyte.migrate;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.commons.set.MoreSets;
 import io.airbyte.commons.stream.MoreStreams;
 import io.airbyte.commons.yaml.Yamls;
-import io.airbyte.migrate.migrations.MigrationV0_11_0;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.BufferedWriter;
@@ -45,7 +43,6 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.stream.BaseStream;
 import java.util.stream.Collectors;
@@ -60,15 +57,12 @@ public class Migrate {
 
   public static final String VERSION_FILE_NAME = "VERSION";
 
-  // all migrations must be added to the list in the order that they should be applied.
-  private static final List<Migration> MIGRATIONS = ImmutableList.of(new MigrationV0_11_0());
-
   private final Path migrateRoot;
   private final JsonSchemaValidator jsonSchemaValidator;
   private final List<Migration> migrations;
 
   public Migrate(Path migrateRoot) {
-    this(migrateRoot, MIGRATIONS);
+    this(migrateRoot, Migrations.MIGRATIONS);
   }
 
   public Migrate(Path migrateRoot, List<Migration> migrations) {
@@ -126,10 +120,10 @@ public class Migrate {
     final Map<ResourceId, RecordConsumer> outputStreams = createOutputStreams(migration, tmpOutputDir);
     // make the java compiler happy (it can't resolve that RecordConsumer is, in fact, a
     // Consumer<JsonNode>).
-    final Map<ResourceId, Consumer<JsonNode>> outputDataWithGenericType = mapRecordConsumerToConsumer(outputStreams);
+    final Map<ResourceId, Consumer<JsonNode>> outputDataWithGenericType = MigrationUtils.mapRecordConsumerToConsumer(outputStreams);
 
     // do the migration.
-    migration.migrate(inputData, outputDataWithGenericType);
+    new MigrateWithMetadata(migration).migrate(inputData, outputDataWithGenericType);
 
     // clean up.
     inputData.values().forEach(BaseStream::close);
@@ -191,12 +185,6 @@ public class Migrate {
     }
 
     return pathToOutputStream;
-  }
-
-  private static Map<ResourceId, Consumer<JsonNode>> mapRecordConsumerToConsumer(Map<ResourceId, RecordConsumer> recordConsumers) {
-    return recordConsumers.entrySet()
-        .stream()
-        .collect(Collectors.toMap(Entry::getKey, e -> (v) -> e.getValue().accept(v)));
   }
 
   private static String getCurrentVersion(Path path) {

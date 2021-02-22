@@ -1,11 +1,19 @@
 plugins {
     id 'airbyte-docker'
     id 'airbyte-python'
-    id 'airbyte-source-test'
+    id 'airbyte-standard-source-test-file'
 }
 
 airbytePython {
     moduleDirectory 'source_github_singer'
+}
+
+
+airbyteStandardSourceTestFile {
+    // For more information on standard source tests, see https://docs.airbyte.io/contributing-to-airbyte/building-new-connector/testing-connectors
+    specPath = "source_github_singer/spec.json"
+    configPath = "secrets/config.json"
+    configuredCatalogPath = "resourcesstandardtest/configured_catalog.json"
 }
 
 // Currently the custom integration test does not run inside a virtualenv which causes tests to fail. Running pytest -m -s standardtest from the
@@ -15,7 +23,7 @@ airbytePython {
 //    // export everything in the venv to the python process. This allows it to spawn bash commands (e.g tap-X) which inherit these env variables
 //    environment "PATH", ".venv/lib;\$PATH"
 //    module = "pytest"
-//    command = "-s standardtest"
+//    command = "-s integration_tests"
 //}
 
 dependencies {

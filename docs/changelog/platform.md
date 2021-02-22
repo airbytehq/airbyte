@@ -8,6 +8,30 @@ This is the changelog for Airbyte core. For our connector changelog, please visi
 
 If you're interested in our progress on the Airbyte platform, please read below!
 
+## [02-12-2021](https://github.com/airbytehq/airbyte/milestone/21?closed=1)
+
+* Front-end changes:
+  * Display Airbyte's version number
+  * Describe schemas using JsonSchema
+  * Better feedback on buttons
+
+## [Beta launch](https://github.com/airbytehq/airbyte/milestone/15?closed=1) - Released 02/02/2021
+
+* Add connector build status dashboard
+* Support Schema Changes in Sources
+* Support Import / Export of Airbyte Data in the Admin section of the UI
+* Bug fixes:
+  * If Airbyte is closed during a sync the running job is not marked as failed
+  * Airbyte should fail when instance version doesn't match data version
+  * Upgrade Airbyte Version without losing existing configuration / data
+
+## [0.12-alpha](https://github.com/airbytehq/airbyte/milestone/14?closed=1) - Released 01/20/2021
+
+* Ability to skip onboarding
+* Miscellaneous bug fixes:
+  * A long discovery request causes a timeout in the UI type/bug
+  * Out of Memory when replicating large table from MySQL
+
 ## 0.11.2-alpha - Released 01/18/2021
 
 * Increase timeout for long running catalog discovery operations from 3 minutes to 30 minutes to avoid prematurely failing long-running operations 

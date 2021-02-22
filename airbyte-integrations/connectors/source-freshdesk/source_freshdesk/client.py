@@ -33,6 +33,8 @@ from .api import (
     ContactsAPI,
     ConversationsAPI,
     FreshdeskError,
+    FreshdeskNotFound,
+    FreshdeskUnauthorized,
     GroupsAPI,
     RolesAPI,
     SatisfactionRatingsAPI,
@@ -44,8 +46,8 @@ from .api import (
 
 
 class Client(BaseClient):
-    def __init__(self, domain, api_key):
-        self._api = API(domain=domain, api_key=api_key)
+    def __init__(self, domain, api_key, requests_per_minute: int = None):
+        self._api = API(domain=domain, api_key=api_key, requests_per_minute=requests_per_minute)
         self._apis = {
             "agents": AgentsAPI(self._api),
             "companies": CompaniesAPI(self._api),
@@ -86,8 +88,11 @@ class Client(BaseClient):
 
         try:
             self.settings()
+        except (FreshdeskUnauthorized, FreshdeskNotFound):
+            alive = False
+            error_msg = "Invalid credentials"
         except FreshdeskError as error:
             alive = False
-            error_msg = str(error)
+            error_msg = repr(error)
 
         return alive, error_msg

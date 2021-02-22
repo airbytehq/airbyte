@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { Row } from "../../SimpleTableComponents";
+import { Row } from "components/SimpleTableComponents";
 
 const ItemRow = styled(Row)`
   height: 100%;
