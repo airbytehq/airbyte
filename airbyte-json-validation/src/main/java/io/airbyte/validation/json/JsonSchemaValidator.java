@@ -52,8 +52,20 @@ public class JsonSchemaValidator {
     Preconditions.checkNotNull(schemaJson);
     Preconditions.checkNotNull(objectJson);
 
-    return jsonSchemaFactory.getSchema(schemaJson, schemaValidatorsConfig)
-        .validate(objectJson);
+    Set<ValidationMessage> validationMessages = jsonSchemaFactory.getSchema(schemaJson, schemaValidatorsConfig)
+      .validate(objectJson);
+
+    if (!validationMessages.isEmpty()) {
+      System.out.println("VALIDATION ERRORS");
+      String str = String.format(
+          "json schema validation failed. \nerrors: %s \nschema: \n%s \nobject: \n%s",
+          Strings.join(validationMessages, ", "),
+          schemaJson.toPrettyString(),
+          objectJson.toPrettyString());
+      System.out.println(str);
+    }
+
+    return validationMessages;
   }
 
   public boolean test(JsonNode schemaJson, JsonNode objectJson) {
