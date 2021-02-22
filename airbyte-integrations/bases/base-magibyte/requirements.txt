@@ -1,0 +1,4 @@
+-e ../../../airbyte-magibyte
+-e ../airbyte-protocol
+-e ../base-python
+-e .

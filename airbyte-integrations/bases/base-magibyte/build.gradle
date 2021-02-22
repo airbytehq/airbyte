@@ -4,7 +4,7 @@ plugins {
 }
 
 airbytePython {
-    moduleDirectory 'base_singer'
+    moduleDirectory 'base_magibyte'
 }
 
 dependencies {
