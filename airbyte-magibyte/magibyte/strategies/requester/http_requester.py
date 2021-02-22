@@ -29,18 +29,20 @@ class HttpRequest(BaseRequest):
 
     def request(self, context):
 
-        for page in self.paginator.paginate(context):
+        for page in self.paginator.paginate(context.copy()):
             context['page'] = page
 
-            context['request'] = self._build_request(context)
-            # logging.debug(f'request: {context["request"]}')
+            request = self._build_request(context)
+            context['request'] = request
+            # logging.debug(f"request: {request}")
 
-            context['response'] = requests.request(**context['request'])
-            # logging.debug(context['response'])
+            response = requests.request(**request)
+            context['response'] = response
+            # logging.debug(f"response: {response}")
 
-            context['decoded_response'] = self.decoder.decode(context.copy())
-
-            # logging.debug(context['decoded_response'])
+            decoded_response = self.decoder.decode(context.copy())
+            context['decoded_response'] = decoded_response
+            # logging.debug(f"decoded_response: {decoded_response}")
 
             for record in self.shaper.shape(context.copy()):
                 yield record
