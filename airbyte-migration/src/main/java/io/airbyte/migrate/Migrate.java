@@ -43,7 +43,6 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.stream.BaseStream;
 import java.util.stream.Collectors;
@@ -121,10 +120,10 @@ public class Migrate {
     final Map<ResourceId, RecordConsumer> outputStreams = createOutputStreams(migration, tmpOutputDir);
     // make the java compiler happy (it can't resolve that RecordConsumer is, in fact, a
     // Consumer<JsonNode>).
-    final Map<ResourceId, Consumer<JsonNode>> outputDataWithGenericType = mapRecordConsumerToConsumer(outputStreams);
+    final Map<ResourceId, Consumer<JsonNode>> outputDataWithGenericType = MigrationUtils.mapRecordConsumerToConsumer(outputStreams);
 
     // do the migration.
-    migration.migrate(inputData, outputDataWithGenericType);
+    new MigrateWithMetadata(migration).migrate(inputData, outputDataWithGenericType);
 
     // clean up.
     inputData.values().forEach(BaseStream::close);
@@ -186,12 +185,6 @@ public class Migrate {
     }
 
     return pathToOutputStream;
-  }
-
-  private static Map<ResourceId, Consumer<JsonNode>> mapRecordConsumerToConsumer(Map<ResourceId, RecordConsumer> recordConsumers) {
-    return recordConsumers.entrySet()
-        .stream()
-        .collect(Collectors.toMap(Entry::getKey, e -> (v) -> e.getValue().accept(v)));
   }
 
   private static String getCurrentVersion(Path path) {

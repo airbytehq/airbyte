@@ -382,7 +382,6 @@ class MigrationIntegrationTest {
         final Consumer<JsonNode> recordConsumer = outputData.get(entry.getKey());
         entry.getValue().forEach(recordConsumer);
       }
-      MigrationUtils.registerMigrationRecord(outputData, "AIRBYTE_METADATA", version);
     }
 
   }
