@@ -35,16 +35,26 @@ import io.airbyte.api.model.ConnectionStatus;
 import io.airbyte.api.model.ConnectionUpdate;
 import io.airbyte.api.model.SyncMode;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
+import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.Schedule;
+import io.airbyte.config.SourceConnection;
+import io.airbyte.config.StandardDestinationDefinition;
+import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncSchedule;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.scheduler.TemporalUtils;
 import io.airbyte.server.converters.CatalogConverter;
 import io.airbyte.validation.json.JsonValidationException;
+import io.temporal.client.WorkflowClient;
+
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -94,6 +104,46 @@ public class ConnectionsHandler {
       standardSyncSchedule
           .withManual(false)
           .withSchedule(schedule);
+
+      final SourceConnection source = configRepository.getSourceConnection(standardSync.getSourceId());
+      final DestinationConnection destination = configRepository.getDestinationConnection(standardSync.getDestinationId());
+
+      final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(source.getSourceDefinitionId());
+      final String sourceImageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
+
+      final StandardDestinationDefinition destinationDef = configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId());
+      final String destinationImageName = DockerUtils.getTaggedImageName(destinationDef.getDockerRepository(), destinationDef.getDockerImageTag());
+
+      final StandardSyncInput syncInput = new StandardSyncInput()
+              .withSourceConfiguration(source.getConfiguration())
+              .withDestinationConfiguration(destination.getConfiguration())
+              .withCatalog(standardSync.getCatalog())
+              .withState(null); // todo: handle state
+
+      long minutes = 0;
+
+      switch (schedule.getTimeUnit()) {
+        case MINUTES -> {
+          minutes = schedule.getUnits();
+        }
+        case HOURS -> {
+          minutes = schedule.getUnits() * 60;
+        }
+        case DAYS -> {
+          minutes = schedule.getUnits() * 60 * 24;
+        }
+        case WEEKS -> {
+          minutes = schedule.getUnits() * 60 * 24 * 7;
+        }
+        case MONTHS -> {
+          minutes = schedule.getUnits() * 60 * 24 * 7 * 4;
+        }
+        default -> throw new IllegalStateException("Unexpected value: " + schedule.getTimeUnit());
+      }
+
+      final String crontabString = "*/" + minutes + " * * * *";
+
+      WorkflowClient.start(TemporalUtils.getSyncWorkflow(crontabString)::run, syncInput, sourceImageName, destinationImageName);
     } else {
       standardSyncSchedule.withManual(true);
     }

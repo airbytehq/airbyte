@@ -9,6 +9,8 @@ import io.temporal.client.WorkflowOptions;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.serviceclient.WorkflowServiceStubsOptions;
 
+import java.util.Optional;
+
 public class TemporalUtils {
     public static final String SPEC_WORKFLOW_QUEUE = "SPEC";
     public static final String DISCOVER_WORKFLOW_QUEUE = "DISCOVER";
@@ -35,10 +37,6 @@ public class TemporalUtils {
             .setTaskQueue(CHECK_CONNECTION_WORKFLOW_QUEUE)
             .build();
 
-    private static final WorkflowOptions SYNC_WORKFLOW_OPTIONS = WorkflowOptions.newBuilder()
-            .setTaskQueue(SYNC_WORKFLOW_QUEUE)
-            .build();
-
     public static SpecWorkflow getSpecWorkflow() {
         return TEMPORAL_CLIENT.newWorkflowStub(SpecWorkflow.class, SPEC_WORKFLOW_OPTIONS);
     }
@@ -52,6 +50,16 @@ public class TemporalUtils {
     }
 
     public static SyncWorkflow getSyncWorkflow() {
-        return TEMPORAL_CLIENT.newWorkflowStub(SyncWorkflow.class, SYNC_WORKFLOW_OPTIONS);
+        return getSyncWorkflow(null);
+    }
+
+    public static SyncWorkflow getSyncWorkflow(String cronSchedule) {
+        WorkflowOptions.Builder optionsBuilder = WorkflowOptions.newBuilder().setTaskQueue(SYNC_WORKFLOW_QUEUE);
+
+        if(cronSchedule != null) {
+            optionsBuilder.setCronSchedule(cronSchedule);
+        }
+
+        return TEMPORAL_CLIENT.newWorkflowStub(SyncWorkflow.class, optionsBuilder.build());
     }
 }

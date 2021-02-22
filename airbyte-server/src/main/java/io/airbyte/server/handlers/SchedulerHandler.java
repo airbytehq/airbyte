@@ -67,6 +67,7 @@ import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.util.Optional;
 import java.util.UUID;
 
 public class SchedulerHandler {
