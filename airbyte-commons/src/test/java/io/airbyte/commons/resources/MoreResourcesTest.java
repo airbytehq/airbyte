@@ -51,7 +51,7 @@ class MoreResourcesTest {
   @Test
   void testListResource() throws IOException {
     assertEquals(
-        Sets.newHashSet("subdir", "resource_test_sub", "resource_test_sub_2"),
+        Sets.newHashSet("subdir", "resource_test_sub", "resource_test_sub_2", "resource_test_a"),
         MoreResources.listResources(MoreResourcesTest.class, "subdir")
             .map(Path::getFileName)
             .map(Path::toString)
