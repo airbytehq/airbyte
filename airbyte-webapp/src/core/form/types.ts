@@ -13,6 +13,7 @@ export type FormBaseItem = {
 
 type FormGroupItem = {
   _type: "formGroup";
+  jsonSchema: JSONSchema7;
   fieldName: string;
   fieldKey: string;
   isRequired: boolean;
@@ -29,8 +30,8 @@ type FormConditionItem = {
   fieldName: string;
   fieldKey: string;
   isRequired: boolean;
-  title?: string;
   conditions: { [key: string]: FormGroupItem | FormBaseItem };
+  title?: string;
 };
 
 export type FormBlock = FormGroupItem | FormBaseItem | FormConditionItem;
