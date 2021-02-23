@@ -25,9 +25,8 @@ SOFTWARE.
 import json
 import os
 
-from normalization import TransformConfig
 from normalization.transform_catalog.transform import extract_schema
-from normalization.transform_config.transform import DestinationType
+from normalization.transform_config.transform import DestinationType, TransformConfig
 
 
 class TestTransformConfig:
