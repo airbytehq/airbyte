@@ -8,33 +8,32 @@
 
 {# cross_join_unnest -------------------------------------------------     #}
 
-{% macro cross_join_unnest(table_name, array_col) -%}
-  {{ adapter.dispatch('cross_join_unnest')(table_name, array_col) }}
+{% macro cross_join_unnest(stream_name, array_col) -%}
+  {{ adapter.dispatch('cross_join_unnest')(stream_name, array_col) }}
 {%- endmacro %}
 
-{% macro default__cross_join_unnest(table_name, array_col) -%}
+{% macro default__cross_join_unnest(stream_name, array_col) -%}
     {% do exceptions.warn("Undefined macro cross_join_unnest for this destination engine") %}
 {%- endmacro %}
 
-
-{% macro bigquery__cross_join_unnest(table_name, array_col) -%}
-    cross join unnest({{ array_col }}) as _airbyte_data
+{% macro bigquery__cross_join_unnest(stream_name, array_col) -%}
+    cross join unnest({{ array_col }}) as {{ array_col }}
 {%- endmacro %}
 
-{% macro postgres__cross_join_unnest(table_name, array_col) -%}
+{% macro postgres__cross_join_unnest(stream_name, array_col) -%}
     cross join jsonb_array_elements(
         case jsonb_typeof({{ array_col }})
         when 'array' then {{ array_col }}
         else '[]' end
-    ) as _airbyte_data
+    ) as {{ array_col }}
 {%- endmacro %}
 
-{% macro redshift__cross_join_unnest(table_name, array_col) -%}
-    left join joined on _airbyte_{{ table_name }}_hashid = joined._airbyte_hashid
+{% macro redshift__cross_join_unnest(stream_name, array_col) -%}
+    left join joined on _airbyte_{{ stream_name }}_hashid = joined._airbyte_hashid
 {%- endmacro %}
 
-{% macro snowflake__cross_join_unnest(table_name, array_col) -%}
-    cross join table(flatten({{ array_col }})) as _airbyte_data
+{% macro snowflake__cross_join_unnest(stream_name, array_col) -%}
+    cross join table(flatten({{ array_col }})) as {{ array_col }}
 {%- endmacro %}
 
 {# unnested_column_value -------------------------------------------------     #}
@@ -57,14 +56,14 @@
 
 {# unnest_cte -------------------------------------------------     #}
 
-{% macro unnest_cte(table_name, column_col) -%}
-  {{ adapter.dispatch('unnest_cte')(table_name, column_col) }}
+{% macro unnest_cte(table_name, stream_name, column_col) -%}
+  {{ adapter.dispatch('unnest_cte')(table_name, stream_name, column_col) }}
 {%- endmacro %}
 
-{% macro default__unnest_cte(table_name, column_col) -%}{%- endmacro %}
+{% macro default__unnest_cte(table_name, stream_name, column_col) -%}{%- endmacro %}
 
 {# -- based on https://blog.getdbt.com/how-to-unnest-arrays-in-redshift/ #}
-{% macro redshift__unnest_cte(table_name, column_col) -%}
+{% macro redshift__unnest_cte(table_name, stream_name, column_col) -%}
     {%- if not execute -%}
         {{ return('') }}
     {% endif %}
@@ -85,7 +84,7 @@ with numbers as (
 ),
 joined as (
     select
-        _airbyte_{{ table_name }}_hashid as _airbyte_hashid,
+        _airbyte_{{ stream_name }}_hashid as _airbyte_hashid,
         json_extract_array_element_text({{ column_col }}, numbers.generated_number::int - 1, true) as _airbyte_data
     from {{ ref(table_name) }}
     cross join numbers
