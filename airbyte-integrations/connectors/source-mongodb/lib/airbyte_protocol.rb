@@ -6,6 +6,7 @@
 #   Plain types only: Disabled
 # 3. Fix module `Types` according to https://dry-rb.org/gems/dry-types/master/built-in-types/
 # 4. Replace all instance variable calls to just method calls (remove all  characters)
+# 4. Add `.compact` call to resulting object in every `to_dynamic` method
 #
 #
 #
