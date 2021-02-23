@@ -24,7 +24,7 @@ SOFTWARE.
 
 import copy
 import json
-from typing import List, Tuple, Set
+from typing import List, Set, Tuple
 
 import pytest
 from airbyte_protocol import AirbyteMessage, ConfiguredAirbyteCatalog, Type
@@ -48,15 +48,9 @@ def config_with_include_deleted_fixture(stream_config):
 @pytest.fixture(scope="session", name="state")
 def state_fixture():
     return {
-        "ads": {
-            "updated_time": "2021-02-19T10:42:40-0800"
-        },
-        "adsets": {
-            "updated_time": "2021-02-19T10:42:40-0800"
-        },
-        "campaigns": {
-            "updated_time": "2021-02-19T10:42:40-0800"
-        },
+        "ads": {"updated_time": "2021-02-19T10:42:40-0800"},
+        "adsets": {"updated_time": "2021-02-19T10:42:40-0800"},
+        "campaigns": {"updated_time": "2021-02-19T10:42:40-0800"},
     }
 
 
@@ -78,8 +72,7 @@ def configured_catalog_fixture():
 class TestFacebookMarketingSource:
     @pytest.mark.skip("No data in insights")
     @pytest.mark.parametrize(
-        "catalog_path",
-        ["sample_files/configured_catalog_adsinsights.json", "sample_files/configured_catalog_adcreatives.json"]
+        "catalog_path", ["sample_files/configured_catalog_adsinsights.json", "sample_files/configured_catalog_adcreatives.json"]
     )
     def test_streams_outputs_records(self, catalog_path, stream_config):
         configured_catalog = ConfiguredAirbyteCatalog.parse_file(catalog_path)
@@ -101,7 +94,7 @@ class TestFacebookMarketingSource:
 
     @pytest.mark.parametrize("stream_name, deleted_num", [("ads", 2), ("campaigns", 3), ("adsets", 1)])
     def test_streams_with_include_deleted_and_state(
-            self, stream_name, deleted_num, stream_config_with_include_deleted, configured_catalog, state
+        self, stream_name, deleted_num, stream_config_with_include_deleted, configured_catalog, state
     ):
         """Should ignore state because of include_deleted enabled"""
         catalog = self.slice_catalog(configured_catalog, {stream_name})
@@ -112,7 +105,7 @@ class TestFacebookMarketingSource:
 
     @pytest.mark.parametrize("stream_name, deleted_num", [("ads", 0), ("campaigns", 0), ("adsets", 0)])
     def test_streams_with_include_deleted_and_state_with_included_deleted(
-            self, stream_name, deleted_num, stream_config_with_include_deleted, configured_catalog, state_with_include_deleted
+        self, stream_name, deleted_num, stream_config_with_include_deleted, configured_catalog, state_with_include_deleted
     ):
         """Should keep state because of include_deleted enabled previously"""
         catalog = self.slice_catalog(configured_catalog, {stream_name})
