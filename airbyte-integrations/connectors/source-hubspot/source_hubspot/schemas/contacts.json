@@ -1,0 +1,7089 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "vid": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "canonical-vid": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "merged-vids": {
+      "type": [
+        "null",
+        "array"
+      ],
+      "items": {
+        "type": [
+          "null",
+          "integer"
+        ]
+      }
+    },
+    "portal-id": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "is-contact": {
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "profile-token": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "profile-url": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "associated-company": {
+      "type": "object",
+      "properties": {
+        "properties": {
+          "type": "object",
+          "properties": {
+            "about_us": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "closedate_timestamp_earliest_value_a2a17e6e": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "facebookfans": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "number",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "first_contact_createdate_timestamp_earliest_value_78b50eea": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "first_conversion_date_timestamp_earliest_value_61f58f2c": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "first_conversion_event_name_timestamp_earliest_value_68ddae0a": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "first_deal_created_date": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "founded_year": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_additional_domains": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_analytics_first_timestamp": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_analytics_first_timestamp_timestamp_earliest_value_11e3a63a": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_analytics_first_touch_converting_campaign": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_analytics_first_touch_converting_campaign_timestamp_earliest_value_4757fe10": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_analytics_first_visit_timestamp": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_analytics_first_visit_timestamp_timestamp_earliest_value_accc17ae": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_analytics_last_timestamp": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_analytics_last_timestamp_timestamp_latest_value_4e16365a": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_analytics_last_touch_converting_campaign": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_analytics_last_touch_converting_campaign_timestamp_latest_value_81a64e30": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_analytics_last_visit_timestamp": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_analytics_last_visit_timestamp_timestamp_latest_value_999a0fce": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_analytics_num_page_views": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "number",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_analytics_num_page_views_cardinality_sum_e46e85b0": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "number",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_analytics_num_visits": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "number",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_analytics_num_visits_cardinality_sum_53d952a6": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "number",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_analytics_source": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_analytics_source_data_1": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_analytics_source_data_1_timestamp_earliest_value_9b2f1fa1": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_analytics_source_data_2": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_analytics_source_data_2_timestamp_earliest_value_9b2f9400": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_analytics_source_timestamp_earliest_value_25a3a52c": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_avatar_filemanager_key": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_created_by_user_id": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "number",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_createdate": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_ideal_customer_profile": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_is_target_account": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "boolean"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_last_booked_meeting_date": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_last_logged_call_date": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_last_open_task_date": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_last_sales_activity_date": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_last_sales_activity_timestamp": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_lastmodifieddate": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_merged_object_ids": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_num_blockers": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "number",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_num_contacts_with_buying_roles": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "number",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_num_decision_makers": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "number",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_num_open_deals": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "number",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_object_id": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "number",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_predictivecontactscore_v2_next_max_max_d4e58c1e": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "number",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_target_account": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_target_account_probability": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "number",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_target_account_recommendation_snooze_time": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_target_account_recommendation_state": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_total_deal_value": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "number",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_updated_by_user_id": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "number",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_user_ids_of_all_owners": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hubspot_owner_assigneddate": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "is_public": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "boolean"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "num_associated_contacts": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "number",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "num_associated_deals": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "number",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "num_conversion_events_cardinality_sum_d095f14b": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "number",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "recent_conversion_date_timestamp_latest_value_72856da1": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "recent_conversion_event_name_timestamp_latest_value_66c820bf": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "recent_deal_amount": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "number",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "recent_deal_close_date": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "timezone": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "total_money_raised": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "total_revenue": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "number",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "name": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "twitterhandle": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "phone": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "twitterbio": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "twitterfollowers": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "number",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "address": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "address2": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "facebook_company_page": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "city": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "linkedin_company_page": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "linkedinbio": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "state": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "googleplus_page": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "engagements_last_meeting_booked": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "engagements_last_meeting_booked_campaign": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "engagements_last_meeting_booked_medium": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "engagements_last_meeting_booked_source": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_latest_meeting_activity": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_sales_email_last_replied": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hubspot_owner_id": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "notes_last_contacted": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "notes_last_updated": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "notes_next_activity_date": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "num_contacted_notes": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "number",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "num_notes": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "number",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "zip": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "country": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hubspot_team_id": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_all_owner_ids": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "website": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "domain": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_all_team_ids": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_all_accessible_team_ids": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "numberofemployees": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "number",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "industry": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "annualrevenue": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "number",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "lifecyclestage": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_lead_status": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_parent_company_id": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "number",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "type": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "description": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "hs_num_child_companies": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "number",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "createdate": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "closedate": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "first_contact_createdate": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "days_to_close": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "number",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            },
+            "web_technologies": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "sourceId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "company-id": {
+          "type": [
+            "null",
+            "integer"
+          ]
+        },
+        "portal-id": {
+          "type": [
+            "null",
+            "integer"
+          ]
+        }
+      }
+    },
+    "identity-profiles": {
+      "type": [
+        "null",
+        "array"
+      ],
+      "items": {
+        "type": [
+          "null",
+          "object"
+        ],
+        "properties": {
+          "deleted-changed-timestamp": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "saved-at-timestamp": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "vid": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "identities": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": [
+                "null",
+                "object"
+              ],
+              "properties": {
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "type": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "value": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "list-memberships": {
+      "type": [
+        "null",
+        "array"
+      ],
+      "items": {
+        "type": [
+          "null",
+          "object"
+        ],
+        "properties": {
+          "internal-list-id": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "is-member": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          },
+          "static-list-id": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "timestamp": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "vid": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          }
+        }
+      }
+    },
+    "form-submissions": {
+      "type": [
+        "null",
+        "array"
+      ],
+      "items": {
+        "type": [
+          "null",
+          "object"
+        ],
+        "properties": {
+          "conversion-id": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "timestamp": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "form-id": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "portal-id": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "page-url": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      }
+    },
+    "merge-audits": {
+      "type": [
+        "null",
+        "array"
+      ],
+      "items": {
+        "type": [
+          "null",
+          "object"
+        ],
+        "properties": {
+          "canonical-vid": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "vid-to-merge": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "timestamp": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "user-id": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "num-properties-moved": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "merged_from_email": {
+            "type": [
+              "null",
+              "object"
+            ],
+            "properties": {
+              "value": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "source-type": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "source-id": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "source-label": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "source-vids": {
+                "type": [
+                  "null",
+                  "array"
+                ],
+                "items": {
+                  "type": [
+                    "null",
+                    "integer"
+                  ]
+                }
+              },
+              "timestamp": {
+                "type": [
+                  "null",
+                  "integer"
+                ]
+              },
+              "selected": {
+                "type": [
+                  "null",
+                  "boolean"
+                ]
+              }
+            }
+          },
+          "merged_to_email": {
+            "type": [
+              "null",
+              "object"
+            ],
+            "properties": {
+              "value": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "source-type": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "source-id": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "source-label": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "timestamp": {
+                "type": [
+                  "null",
+                  "integer"
+                ]
+              },
+              "selected": {
+                "type": [
+                  "null",
+                  "boolean"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "properties": {
+      "type": "object",
+      "properties": {
+        "company_size": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "date_of_birth": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "days_to_close": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "number",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "degree": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "field_of_study": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "first_conversion_date": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "first_conversion_event_name": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "first_deal_created_date": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "gender": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "graduation_date": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_additional_emails": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_all_contact_vids": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_analytics_first_touch_converting_campaign": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_analytics_last_touch_converting_campaign": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_avatar_filemanager_key": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_buying_role": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_calculated_form_submissions": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_calculated_merged_vids": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_calculated_mobile_number": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_calculated_phone_number": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_calculated_phone_number_area_code": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_calculated_phone_number_country_code": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_calculated_phone_number_region_code": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_content_membership_email_confirmed": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "boolean"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_content_membership_notes": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_content_membership_registered_at": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_content_membership_registration_domain_sent_to": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_content_membership_registration_email_sent_at": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_content_membership_status": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_conversations_visitor_email": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_count_is_unworked": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "number",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_count_is_worked": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "number",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_created_by_conversations": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "boolean"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_created_by_user_id": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "number",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_createdate": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_document_last_revisited": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_email_bad_address": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "boolean"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_email_customer_quarantined_reason": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_email_domain": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_email_hard_bounce_reason": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_email_hard_bounce_reason_enum": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_email_quarantined": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "boolean"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_email_quarantined_reason": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_email_sends_since_last_engagement": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "number",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_emailconfirmationstatus": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_facebook_ad_clicked": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "boolean"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_facebook_click_id": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_first_engagement_object_id": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "number",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_google_click_id": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_ip_timezone": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_is_contact": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "boolean"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_is_unworked": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "boolean"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_last_sales_activity_date": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_last_sales_activity_timestamp": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_lastmodifieddate": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_lead_status": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_legal_basis": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_merged_object_ids": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_object_id": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "number",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_sa_first_engagement_date": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_sa_first_engagement_descr": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_sa_first_engagement_object_type": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_sales_email_last_clicked": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_sales_email_last_opened": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_searchable_calculated_international_mobile_number": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_searchable_calculated_international_phone_number": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_searchable_calculated_mobile_number": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_searchable_calculated_phone_number": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_sequences_is_enrolled": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "boolean"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_testpurge": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_testrollback": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_time_to_first_engagement": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "number",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_updated_by_user_id": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "number",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_user_ids_of_all_owners": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hubspot_owner_assigneddate": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "ip_city": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "ip_country": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "ip_country_code": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "ip_latlon": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "ip_state": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "ip_state_code": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "ip_zipcode": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "job_function": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "lastmodifieddate": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "marital_status": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "military_status": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "num_associated_deals": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "number",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "num_conversion_events": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "number",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "num_unique_conversion_events": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "number",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "recent_conversion_date": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "recent_conversion_event_name": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "recent_deal_amount": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "number",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "recent_deal_close_date": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "relationship_status": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "school": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "seniority": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "start_date": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "total_revenue": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "number",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "work_email": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "firstname": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_analytics_first_url": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_email_delivered": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "number",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_email_optout_10798197": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "twitterhandle": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_analytics_last_url": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_email_open": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "number",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "lastname": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_analytics_num_page_views": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "number",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_email_click": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "number",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "salutation": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "email": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_analytics_num_visits": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "number",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_email_bounce": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "number",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_persona": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_analytics_num_event_completions": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "number",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_email_optout": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "boolean"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "mobilephone": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "phone": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "fax": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_analytics_first_timestamp": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_email_last_email_name": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_email_last_send_date": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "address": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "engagements_last_meeting_booked": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "engagements_last_meeting_booked_campaign": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "engagements_last_meeting_booked_medium": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "engagements_last_meeting_booked_source": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_analytics_first_visit_timestamp": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_email_last_open_date": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_latest_meeting_activity": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_sales_email_last_replied": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hubspot_owner_id": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "notes_last_contacted": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "notes_last_updated": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "notes_next_activity_date": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "num_contacted_notes": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "number",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "num_notes": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "number",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "surveymonkeyeventlastupdated": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "number",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "webinareventlastupdated": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "number",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "city": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_analytics_last_timestamp": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_email_last_click_date": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hubspot_team_id": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_all_owner_ids": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_analytics_last_visit_timestamp": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_email_first_send_date": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "state": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_all_team_ids": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_analytics_source": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_email_first_open_date": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "zip": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "country": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_all_accessible_team_ids": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_analytics_source_data_1": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_email_first_click_date": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_analytics_source_data_2": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_email_is_ineligible": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "boolean"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_language": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_analytics_first_referrer": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "jobtitle": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_analytics_last_referrer": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "closedate": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_analytics_average_page_views": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "number",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_analytics_revenue": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "number",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_lifecyclestage_lead_date": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_lifecyclestage_marketingqualifiedlead_date": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_lifecyclestage_opportunity_date": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "lifecyclestage": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_lifecyclestage_salesqualifiedlead_date": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "createdate": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_lifecyclestage_evangelist_date": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_lifecyclestage_customer_date": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hubspotscore": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "number",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "company": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_lifecyclestage_subscriber_date": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "hs_lifecyclestage_other_date": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "website": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "numemployees": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "annualrevenue": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "industry": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "associatedcompanyid": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "number",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        },
+        "associatedcompanylastupdated": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "number",
+                "string"
+              ]
+            },
+            "versions": {
+              "type": [
+                "null",
+                "array"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

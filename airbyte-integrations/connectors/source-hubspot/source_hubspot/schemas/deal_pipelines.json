@@ -1,0 +1,83 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "pipelineId": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "stages": {
+      "type": [
+        "null",
+        "array"
+      ],
+      "items": {
+        "type": "object",
+        "properties": {
+          "stageId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "label": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "probability": {
+            "type": [
+              "null",
+              "number"
+            ]
+          },
+          "active": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          },
+          "displayOrder": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "closedWon": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          }
+        }
+      }
+    },
+    "label": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "active": {
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "displayOrder": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "staticDefault": {
+      "type": [
+        "null",
+        "boolean"
+      ]
+    }
+  }
+}
