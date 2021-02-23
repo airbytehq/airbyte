@@ -52,8 +52,12 @@ public class JsonSchemaValidator {
     Preconditions.checkNotNull(schemaJson);
     Preconditions.checkNotNull(objectJson);
 
-    Set<ValidationMessage> validationMessages = jsonSchemaFactory.getSchema(schemaJson, schemaValidatorsConfig)
+    return jsonSchemaFactory.getSchema(schemaJson, schemaValidatorsConfig)
       .validate(objectJson);
+  }
+
+  public boolean test(JsonNode schemaJson, JsonNode objectJson) {
+    Set<ValidationMessage> validationMessages = validate(schemaJson, objectJson);
 
     if (!validationMessages.isEmpty()) {
       String str = String.format(
@@ -62,11 +66,7 @@ public class JsonSchemaValidator {
       System.out.println(str);
     }
 
-    return validationMessages;
-  }
-
-  public boolean test(JsonNode schemaJson, JsonNode objectJson) {
-    return validate(schemaJson, objectJson).isEmpty();
+    return validationMessages.isEmpty();
   }
 
   public void ensure(JsonNode schemaJson, JsonNode objectJson) throws JsonValidationException {
