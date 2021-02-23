@@ -338,7 +338,7 @@ class AdsInsightAPI(IncrementalStreamAPI):
     @staticmethod
     def _get_job_result(job, **params) -> Iterator:
         for obj in job.get_result():
-            yield from obj.export_all_data()
+            yield obj.export_all_data()
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         for params in self._params(fields=fields):
