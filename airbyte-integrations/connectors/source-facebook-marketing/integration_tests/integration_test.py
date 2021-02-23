@@ -27,7 +27,7 @@ import json
 from typing import List, Set, Tuple
 
 import pytest
-from airbyte_protocol import AirbyteMessage, ConfiguredAirbyteCatalog, Type
+from airbyte_protocol import AirbyteMessage, ConfiguredAirbyteCatalog, SyncMode, Type
 from base_python import AirbyteLogger
 from source_facebook_marketing.source import SourceFacebookMarketing
 
@@ -70,15 +70,16 @@ def configured_catalog_fixture():
 
 
 class TestFacebookMarketingSource:
-    @pytest.mark.skip("No data in insights")
     @pytest.mark.parametrize(
         "catalog_path", ["sample_files/configured_catalog_adsinsights.json", "sample_files/configured_catalog_adcreatives.json"]
     )
     def test_streams_outputs_records(self, catalog_path, stream_config):
         configured_catalog = ConfiguredAirbyteCatalog.parse_file(catalog_path)
         records, states = self._read_records(stream_config, configured_catalog)
+
         assert records, "should have some records returned"
-        assert states, "should have some states returned"
+        if configured_catalog.streams[0].sync_mode == SyncMode.incremental:
+            assert states, "should have some states returned"
 
     @pytest.mark.parametrize("stream_name, deleted_num", [("ads", 2), ("campaigns", 3), ("adsets", 1)])
     def test_streams_with_include_deleted(self, stream_name, deleted_num, stream_config_with_include_deleted, configured_catalog):
