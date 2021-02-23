@@ -67,13 +67,11 @@ class MongodbSource
   private
 
   def client
-    if @client
-      @client
-    else
-      uri = "mongodb://#{@config['user']}:#{@config['password']}@#{@config['host']}:#{@config['port']}/#{@config['database']}?authSource=#{@config['auth_source']}"
-      @client = Mongo::Client.new(uri)
-      @client.logger.formatter = AirbyteLogger.logger_formatter
-      @client
-    end
+    @client ||= begin
+                  uri = "mongodb://#{@config['user']}:#{@config['password']}@#{@config['host']}:#{@config['port']}/#{@config['database']}?authSource=#{@config['auth_source']}"
+                  @client = Mongo::Client.new(uri)
+                  @client.logger.formatter = AirbyteLogger.logger_formatter
+                  @client
+                end
   end
 end
