@@ -15,18 +15,18 @@ class MongodbReader
 
   def read
     @catalog['streams'].each do |stream_object|
-      stream = stream_object['stream']
-      AirbyteLogger.log("Reading stream #{stream['name']} in #{stream['sync_mode']} mode")
-      read_stream(stream)
+      configured_stream = stream_object['stream']
+      AirbyteLogger.log("Reading stream #{configured_stream['name']} in #{configured_stream['sync_mode']} mode")
+      read_stream(configured_stream)
     end
   end
 
   private
 
-  def read_stream(stream)
-    collection = @client[stream['name']]
+  def read_stream(configured_stream)
+    collection = @client[configured_stream['name']]
 
-    projection_config = stream['json_schema']['properties'].keys.each_with_object({}) do |key, obj|
+    projection_config = configured_stream['json_schema']['properties'].keys.each_with_object({}) do |key, obj|
       obj[key] = 1
     end
 
@@ -35,13 +35,13 @@ class MongodbReader
 
     collection.find.projection(projection_config).batch_size(BATCH_SIZE).each do |item|
       item.each_pair do |key, value|
-        item[key] = convert_value_to_type(value, stream['json_schema']['properties'][key]['type'])
+        item[key] = convert_value_to_type(value, configured_stream['json_schema']['properties'][key]['type'])
       end
 
       record = AirbyteRecordMessage.from_dynamic!({
         "data" => item,
         "emitted_at" => Time.now.to_i * 1000,
-        "stream" => stream['name'],
+        "stream" => configured_stream['name'],
       })
 
       message =  AirbyteMessage.from_dynamic!({
@@ -53,11 +53,11 @@ class MongodbReader
 
       processed_count += 1
       if processed_count % LOG_BATCH_SIZE == 0
-        AirbyteLogger.log("[#{processed_count}/#{full_count}}] Reading stream #{stream['name']} is in progress")
+        AirbyteLogger.log("[#{processed_count}/#{full_count}}] Reading stream #{configured_stream['name']} is in progress")
       end
     end
 
-    AirbyteLogger.log("Stream #{stream['name']} successfully processed!")
+    AirbyteLogger.log("Stream #{configured_stream['name']} successfully processed!")
   end
 
   def convert_value_to_type(value, type)
