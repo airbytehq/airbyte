@@ -76,7 +76,7 @@
 - sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
   name: Facebook Marketing
   dockerRepository: airbyte/source-facebook-marketing
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.3
   documentationUrl: https://hub.docker.com/r/airbyte/source-facebook-marketing
 - sourceDefinitionId: 57eb1576-8f52-463d-beb6-2e107cdf571d
   name: Hubspot
