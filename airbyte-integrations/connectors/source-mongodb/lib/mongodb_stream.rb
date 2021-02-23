@@ -25,7 +25,7 @@ class MongodbStream
     TrueClass => AIRBYTE_TYPES[:boolean],
     FalseClass => AIRBYTE_TYPES[:boolean],
     Array => AIRBYTE_TYPES[:array],
-    Hash => AIRBYTE_TYPES[:hash],
+    Hash => AIRBYTE_TYPES[:object],
   }
   FALLBACK_TYPE = AIRBYTE_TYPES[:string]
 
