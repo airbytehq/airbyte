@@ -19,15 +19,13 @@ class MongodbSource
   def check(config:)
     @config = JSON.parse(File.read(config))
 
-    result = {'status' => Status::Failed, 'message' => 'Something went wrong.'}
-
-    begin
-      client.collections.first.find.limit(1).first
-      result = {'status' => Status::Succeeded}
-    rescue Exception => e
-      AirbyteLogger.log(e.backtrace.join("\n"), Level::Fatal)
-      result = {'status' => Status::Failed, 'message' => 'Authentication failed.'}
-    end
+    result = begin
+               client.collections.first.find.limit(1).first
+               {'status' => Status::Succeeded}
+             rescue Exception => e
+               AirbyteLogger.log(e.backtrace.join("\n"), Level::Fatal)
+               {'status' => Status::Failed, 'message' => 'Authentication failed.'}
+             end
 
     message =  AirbyteMessage.from_dynamic!({
       'type' => Type::ConnectionStatus,
