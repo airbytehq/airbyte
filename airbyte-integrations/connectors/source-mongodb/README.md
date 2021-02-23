@@ -38,3 +38,12 @@ It is better to use `sample_analytics` database because there are several differ
 
 #### secrets/fullrefresh_configured_catalog.json
 This config will work as is if you use provided dump and `sample_analytics` database. Adjust the config to your local test setup in any other case.
+
+## Discover phase
+MongoDB does not have anything like table definition, thus we have to define column types from actual attributes and their values. Discover phase have two steps:
+
+### Step 1. Find all unique properties
+Connector runs the map-reduce command which returns all unique document props in the collection. Map-reduce approach should be sufficient even for large clusters.
+
+### Step 2. Determine property types
+For each property found, connector selects 10k documents from the collection where this property is not empty. If all the selected values have the same type - connector will set appropriate type to the property. In all other cases connector will fallback to `string` type.
