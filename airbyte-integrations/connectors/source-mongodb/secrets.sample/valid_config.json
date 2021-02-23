@@ -3,5 +3,6 @@
   "port": "27017",
   "database": "sample_analytics",
   "user": "USER",
-  "password": "PASSWORD"
+  "password": "PASSWORD",
+  "auth_source": "admin"
 }

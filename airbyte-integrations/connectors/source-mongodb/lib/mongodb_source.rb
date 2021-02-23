@@ -70,7 +70,7 @@ class MongodbSource
     if @client
       @client
     else
-      uri = "mongodb://#{@config['user']}:#{@config['password']}@#{@config['host']}:#{@config['port']}/#{@config['database']}?authSource=admin"
+      uri = "mongodb://#{@config['user']}:#{@config['password']}@#{@config['host']}:#{@config['port']}/#{@config['database']}?authSource=#{@config['auth_source']}"
       @client = Mongo::Client.new(uri)
       @client.logger.formatter = AirbyteLogger.logger_formatter
       @client
