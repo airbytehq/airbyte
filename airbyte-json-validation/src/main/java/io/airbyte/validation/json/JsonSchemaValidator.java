@@ -53,7 +53,7 @@ public class JsonSchemaValidator {
     Preconditions.checkNotNull(objectJson);
 
     return jsonSchemaFactory.getSchema(schemaJson, schemaValidatorsConfig)
-      .validate(objectJson);
+        .validate(objectJson);
   }
 
   public boolean test(JsonNode schemaJson, JsonNode objectJson) {
