@@ -3,40 +3,22 @@
   "type": "object",
   "properties": {
     "portalId": {
-      "type": [
-        "null",
-        "integer"
-      ]
+      "type": ["null", "integer"]
     },
     "companyId": {
-      "type": [
-        "null",
-        "integer"
-      ]
+      "type": ["null", "integer"]
     },
     "isDeleted": {
-      "type": [
-        "null",
-        "boolean"
-      ]
+      "type": ["null", "boolean"]
     },
     "additionalDomains": {
-      "type": [
-        "null",
-        "array"
-      ]
+      "type": ["null", "array"]
     },
     "stateChanges": {
-      "type": [
-        "null",
-        "array"
-      ]
+      "type": ["null", "array"]
     },
     "mergeAudits": {
-      "type": [
-        "null",
-        "array"
-      ]
+      "type": ["null", "array"]
     },
     "properties": {
       "type": "object",
@@ -45,41 +27,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -87,42 +51,24 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -130,42 +76,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "number",
-                "string"
-              ]
+              "type": ["null", "number", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -173,42 +100,24 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -216,42 +125,24 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -259,42 +150,24 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -302,42 +175,24 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -345,41 +200,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -387,41 +224,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -429,42 +248,24 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -472,42 +273,24 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -515,41 +298,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -557,42 +322,24 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -600,42 +347,24 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -643,42 +372,24 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -686,42 +397,24 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -729,42 +422,24 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -772,41 +447,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -814,42 +471,24 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -857,42 +496,24 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -900,42 +521,24 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -943,42 +546,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "number",
-                "string"
-              ]
+              "type": ["null", "number", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -986,42 +570,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "number",
-                "string"
-              ]
+              "type": ["null", "number", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -1029,42 +594,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "number",
-                "string"
-              ]
+              "type": ["null", "number", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -1072,42 +618,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "number",
-                "string"
-              ]
+              "type": ["null", "number", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -1115,41 +642,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -1157,41 +666,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -1199,42 +690,24 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -1242,41 +715,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -1284,42 +739,24 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -1327,42 +764,24 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -1370,41 +789,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -1412,42 +813,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "number",
-                "string"
-              ]
+              "type": ["null", "number", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -1455,42 +837,24 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -1498,41 +862,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -1540,41 +886,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -1582,42 +910,24 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -1625,42 +935,24 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -1668,42 +960,24 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -1711,42 +985,24 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -1754,42 +1010,24 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -1797,42 +1035,24 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -1840,41 +1060,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -1882,42 +1084,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "number",
-                "string"
-              ]
+              "type": ["null", "number", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -1925,42 +1108,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "number",
-                "string"
-              ]
+              "type": ["null", "number", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -1968,42 +1132,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "number",
-                "string"
-              ]
+              "type": ["null", "number", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -2011,42 +1156,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "number",
-                "string"
-              ]
+              "type": ["null", "number", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -2054,42 +1180,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "number",
-                "string"
-              ]
+              "type": ["null", "number", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -2097,42 +1204,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "number",
-                "string"
-              ]
+              "type": ["null", "number", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -2140,41 +1228,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -2182,42 +1252,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "number",
-                "string"
-              ]
+              "type": ["null", "number", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -2225,42 +1276,24 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -2268,41 +1301,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -2310,42 +1325,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "number",
-                "string"
-              ]
+              "type": ["null", "number", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -2353,42 +1349,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "number",
-                "string"
-              ]
+              "type": ["null", "number", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -2396,41 +1373,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -2438,42 +1397,24 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -2481,41 +1422,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -2523,42 +1446,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "number",
-                "string"
-              ]
+              "type": ["null", "number", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -2566,42 +1470,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "number",
-                "string"
-              ]
+              "type": ["null", "number", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -2609,42 +1494,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "number",
-                "string"
-              ]
+              "type": ["null", "number", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -2652,42 +1518,24 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -2695,42 +1543,24 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -2738,42 +1568,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "number",
-                "string"
-              ]
+              "type": ["null", "number", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -2781,42 +1592,24 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -2824,41 +1617,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -2866,41 +1641,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -2908,42 +1665,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "number",
-                "string"
-              ]
+              "type": ["null", "number", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -2951,41 +1689,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -2993,41 +1713,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -3035,41 +1737,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -3077,41 +1761,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -3119,42 +1785,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "number",
-                "string"
-              ]
+              "type": ["null", "number", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -3162,41 +1809,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -3204,41 +1833,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -3246,41 +1857,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -3288,41 +1881,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -3330,41 +1905,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -3372,41 +1929,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -3414,41 +1953,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -3456,41 +1977,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -3498,42 +2001,24 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -3541,41 +2026,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -3583,41 +2050,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -3625,41 +2074,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -3667,42 +2098,24 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -3710,42 +2123,24 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -3753,41 +2148,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -3795,42 +2172,24 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -3838,42 +2197,24 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -3881,42 +2222,24 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -3924,42 +2247,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "number",
-                "string"
-              ]
+              "type": ["null", "number", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -3967,42 +2271,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "number",
-                "string"
-              ]
+              "type": ["null", "number", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -4010,41 +2295,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -4052,41 +2319,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -4094,41 +2343,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -4136,41 +2367,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -4178,41 +2391,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -4220,41 +2415,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -4262,41 +2439,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -4304,41 +2463,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -4346,42 +2487,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "number",
-                "string"
-              ]
+              "type": ["null", "number", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -4389,41 +2511,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -4431,42 +2535,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "number",
-                "string"
-              ]
+              "type": ["null", "number", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -4474,41 +2559,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -4516,41 +2583,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -4558,42 +2607,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "number",
-                "string"
-              ]
+              "type": ["null", "number", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -4601,41 +2631,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -4643,41 +2655,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -4685,42 +2679,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "number",
-                "string"
-              ]
+              "type": ["null", "number", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -4728,42 +2703,24 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -4771,42 +2728,24 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -4814,42 +2753,24 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -4857,42 +2778,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "number",
-                "string"
-              ]
+              "type": ["null", "number", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
@@ -4900,41 +2802,23 @@
           "type": "object",
           "properties": {
             "versions": {
-              "type": [
-                "null",
-                "array"
-              ]
+              "type": ["null", "array"]
             },
             "value": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "timestamp": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "source": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sourceId": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "updatedByUserId": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         }

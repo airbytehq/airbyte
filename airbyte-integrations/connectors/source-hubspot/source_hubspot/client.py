@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Tuple, Mapping
+from typing import Mapping, Tuple
 
 from base_python import BaseClient
 
@@ -45,7 +45,7 @@ class Client(BaseClient):
         "quotes": lambda x: x,
         "subscription_changes": lambda x: x,
         "tickets": lambda x: x,
-        "workflows": lambda x: x
+        "workflows": lambda x: x,
     }
 
     def _enumerate_methods(self) -> Mapping[str, callable]:

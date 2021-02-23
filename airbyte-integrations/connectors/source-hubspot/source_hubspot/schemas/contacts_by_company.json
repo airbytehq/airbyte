@@ -3,14 +3,10 @@
   "type": "object",
   "properties": {
     "contact-id": {
-      "type": [
-        "integer"
-      ]
+      "type": ["integer"]
     },
     "company-id": {
-      "type": [
-        "integer"
-      ]
+      "type": ["integer"]
     }
   }
 }
