@@ -28,6 +28,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.segment.analytics.Analytics;
+import com.segment.analytics.messages.AliasMessage;
 import com.segment.analytics.messages.IdentifyMessage;
 import com.segment.analytics.messages.TrackMessage;
 import java.util.Collections;
@@ -77,6 +78,11 @@ public class SegmentTrackingClient implements TrackingClient {
     analytics.enqueue(IdentifyMessage.builder()
         .userId(trackingIdentity.getCustomerId().toString())
         .traits(identityMetadataBuilder.build()));
+  }
+
+  @Override
+  public void alias(String previousCustomerId) {
+    analytics.enqueue(AliasMessage.builder(previousCustomerId).userId(identitySupplier.get().getCustomerId().toString()));
   }
 
   @Override
