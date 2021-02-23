@@ -16,7 +16,7 @@ class MongodbReader
   def read
     @catalog['streams'].each do |configured_stream|
       stream = configured_stream['stream']
-      AirbyteLogger.log("Reading stream #{stream['name']} in #{stream['sync_mode']} mode")
+      AirbyteLogger.log("Reading stream #{stream['name']} in #{configured_stream['sync_mode']} mode")
       read_stream(stream)
     end
   end
