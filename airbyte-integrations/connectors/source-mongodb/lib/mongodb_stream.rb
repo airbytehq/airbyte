@@ -31,12 +31,10 @@ class MongodbStream
 
   def initialize(collection:)
     @collection = collection
-    @property_types = {}
     @properties = {}
   end
 
   def discover
-    discover_property_types
     discover_properties
 
     AirbyteStream.from_dynamic!({
@@ -51,31 +49,36 @@ class MongodbStream
   private
 
 
-  def discover_property_types
-    @collection.find.limit(PROPERTIES_DISCOVERY_LIMIT).each do |item|
-      item.each_pair do |key, value|
-        @property_types[key] ||= Set[]
-        @property_types[key].add value.class
-      end
+  def discover_property_type(property)
+    airbyte_types = Set[]
+
+    @collection.find(property => { "$nin": [nil] }).limit(PROPERTIES_DISCOVERY_LIMIT).each do |item|
+      airbyte_types.add(map_type(item[property].class))
+    end
+
+    if airbyte_types.count == 1 # Can be mapped to specific type
+      airbyte_types.first
+    else
+      FALLBACK_TYPE
     end
   end
 
   def discover_properties
-    @property_types.each_pair do |key, types|
-      airbyte_types = types.map do |type|
-        # Skip nil classes. No impact on actual column type
-        if type != NilClass
-          map_type(type)
-        end
-      end.compact
+    map = "function() { for (var key in this) { emit(key, null); } }"
+    reduce = "function(key, stuff) { return null; }"
 
-      type = if airbyte_types.count == 1 # Can be mapped to specific type
-               airbyte_types.first
-             else
-               FALLBACK_TYPE
-             end
+    opts = {
+      out: {inline: 1},
+      raw: true,
+    }
 
-      @properties[key] = { 'type' => type }
+    view = Mongo::Collection::View.new(@collection)
+    props = view.map_reduce(map, reduce, opts).map do |obj|
+      obj['_id']
+    end
+
+    props.each do |prop|
+      @properties[prop] = { 'type' => discover_property_type(prop) }
     end
   end
 
