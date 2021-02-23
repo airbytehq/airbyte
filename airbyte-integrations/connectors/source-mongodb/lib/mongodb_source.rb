@@ -24,7 +24,7 @@ class MongodbSource
     begin
       client.collections.first.find.limit(1).first
       result = {'status' => Status::Succeeded}
-    rescue Mongo::Auth::Unauthorized => e
+    rescue Exception => e
       AirbyteLogger.log(e.backtrace.join("\n"), Level::Fatal)
       result = {'status' => Status::Failed, 'message' => 'Authentication failed.'}
     end
