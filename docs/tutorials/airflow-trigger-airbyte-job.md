@@ -10,7 +10,7 @@ During this getting started tutorial, we are going to replicate currencies closi
 
 First of all, make sure you have Docker and Docker Compose installed. 
 
-### Start Airbyte
+### **Start Airbyte**
 Then run the following commands:
 
 ```text
@@ -21,7 +21,7 @@ docker-compose up
 
 Once you see an Airbyte banner, the UI is ready to go at [http://localhost:8000/](http://localhost:8000/).
 
-### Airflow
+### **Start Airflow**
 [Quick start Airflow](https://airflow.apache.org/docs/apache-airflow/stable/start/docker.html)
 
 
@@ -31,7 +31,7 @@ Once you see an Airbyte banner, the UI is ready to go at [http://localhost:8000/
 
 You should see an onboarding page. Enter your email if you want updates about Airbyte and continue.
 
-![](../gitbook/assets/airbyte_get-started.png)
+![](../.gitbook/assets/airbyte_get-started.png)
 
 ### **Set up your first connection**
 
@@ -45,7 +45,7 @@ To set it up, just follow the instructions on the screenshot below.
 You might have to wait ~30 seconds before the fields show up because it is the first time you're using Airbyte.
 {% endhint %}
 
-![](..gitbook/assets/demo_source.png)
+![](../.gitbook/assets/demo_source.png)
 
 #### **Create a destination**
 
@@ -59,18 +59,16 @@ To set it up, just follow the instructions on the screenshot below.
 You might have to wait ~30 seconds before the fields show up because it is the first time you're using Airbyte.
 {% endhint %}
 
-![](..gitbook/assets/demo_destination.png)
+![](../.gitbook/assets/demo_destination.png)
 
 #### **Create connection**
 
 When we create the connection, we can select which data stream we want to replicate. We can also select if we want an incremental replication. The replication will run at the specified sync frequency.
 
 To set it up, just follow the instructions on the screenshot below.
+Configure the sync frequency to **manual**
 
-![](..gitbook/assets/demo_connection.png)
-
-Thank you and we hope you enjoy using Airbyte.
-
+![](../.gitbook/assets/demo_connection.png)
 
 ## 3. Create a DAG in Airflow to trigger your Airbyte sync
 
@@ -82,7 +80,23 @@ ou
 (comando bash para criar a conexão)
 
 ### Create a simple DAG in Airflow to run a sync job
-(exemplo da DAG com o AirbyteTriggerSyncOperator)
+Create a file inside the `/dags` directory called `dag_airbyte_example.py`
+```python
+from airflow import DAG
+from airflow.utils.dates import days_ago
+from airflow.providers.airbyte.operator import AirbyteTriggerSyncOperator
+
+with DAG(dag_id='dag_airbyte_example',
+         schedule_interval='* 15 * * *',
+         start_date=days_ago(7)) as dag:
+
+    money_json = AirbyteTriggerSyncOperator(
+        task_id='sync_money_json',
+        airbyte_conn_id='airbyte_local',
+        source_name='Money',
+        dest_name='JSON destination'
+    )
+```
 
 ### Check if the Airflow DAG trigger our sync
 (check in Airbyte if the job was called)
