@@ -98,7 +98,7 @@ public class DatabaseArchiver {
   protected static Path buildTablePath(final Path storageRoot, final String tableName) {
     return storageRoot
         .resolve(DB_FOLDER_NAME)
-        .resolve(String.format("%s.yaml", tableName.toLowerCase()));
+        .resolve(String.format("%s.yaml", tableName.toUpperCase()));
   }
 
   public void checkVersion(final String airbyteVersion) throws IOException {

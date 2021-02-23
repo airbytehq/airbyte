@@ -117,7 +117,7 @@ public class ArchiveHandler {
 
     ImportRead result;
     try {
-      final Path tempFolder = Files.createTempDirectory("airbyte_archive");
+      final Path tempFolder = Files.createTempDirectory(Path.of("/tmp"), "airbyte_archive");
       try {
         Archives.extractArchive(archive.toPath(), tempFolder);
         checkImport(tempFolder);
@@ -134,6 +134,7 @@ public class ArchiveHandler {
       // report that the previous customer id is now superseded by the imported one.
       previousCustomerIdOptional.ifPresent(previousCustomerId -> TrackingClientSingleton.get().alias(previousCustomerId.toString()));
     } catch (IOException | JsonValidationException | ConfigNotFoundException | RuntimeException e) {
+      LOGGER.error("Import failed", e);
       result = new ImportRead().status(StatusEnum.FAILED).reason(e.getMessage());
     }
 

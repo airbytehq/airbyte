@@ -83,6 +83,7 @@ public class Migrate {
 
     LOGGER.info("Starting migrations. Current version: {}, Target version: {}", currentVersion, targetVersion);
 
+    // todo(cgardens) if conforming version, infer migrations.
     final int currentVersionIndex = migrations.stream().map(Migration::getVersion).collect(Collectors.toList()).indexOf(currentVersion);
     Preconditions.checkArgument(currentVersionIndex >= 0, "No migration found for current version: " + currentVersion);
     final int targetVersionIndex = migrations.stream().map(Migration::getVersion).collect(Collectors.toList()).indexOf(targetVersion);
