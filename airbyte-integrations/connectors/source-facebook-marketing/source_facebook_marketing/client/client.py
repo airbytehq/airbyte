@@ -26,6 +26,7 @@ from typing import Any, Mapping, Tuple
 
 import pendulum as pendulum
 from base_python import BaseClient
+
 # FIXME (Eugene K): register logger as standard python logger
 from base_python.entrypoint import logger
 from cached_property import cached_property
