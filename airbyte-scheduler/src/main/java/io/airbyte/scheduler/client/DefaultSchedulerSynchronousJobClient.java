@@ -34,11 +34,11 @@ import io.airbyte.config.StandardGetSpecOutput;
 import io.airbyte.scheduler.Job;
 import java.io.IOException;
 
-public class DefaultSchedulerSyncJobClient implements SchedulerSyncJobClient {
+public class DefaultSchedulerSynchronousJobClient implements SchedulerSynchronousJobClient {
 
   private final SchedulerJobClient schedulerJobClient;
 
-  public DefaultSchedulerSyncJobClient(SchedulerJobClient schedulerJobClient) {
+  public DefaultSchedulerSynchronousJobClient(SchedulerJobClient schedulerJobClient) {
     this.schedulerJobClient = schedulerJobClient;
   }
 

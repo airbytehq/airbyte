@@ -35,7 +35,7 @@ import java.io.IOException;
 /**
  * This client submits a job to the scheduler and waits for it to return synchronously.
  */
-public interface SchedulerSyncJobClient {
+public interface SchedulerSynchronousJobClient {
 
   Either<StandardCheckConnectionOutput, FailureInfo> createSourceCheckConnectionJob(SourceConnection source, String dockerImage) throws IOException;
 
