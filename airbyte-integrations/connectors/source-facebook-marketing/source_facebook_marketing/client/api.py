@@ -24,15 +24,16 @@ SOFTWARE.
 
 import time
 from abc import ABC, abstractmethod
-from typing import Any, Iterator, Sequence
+from functools import partial
+from typing import Any, Callable, Iterator, Mapping, MutableMapping, Sequence
 
 import backoff
 import pendulum as pendulum
-from base_python.entrypoint import logger  # FIXME (Eugene K): register logger as standard python logger
+from base_python.entrypoint import logger  # FIXME (Eugene K): use standard logger
 from facebook_business.adobjects.adreportrun import AdReportRun
 from facebook_business.exceptions import FacebookBadObjectError, FacebookRequestError
 
-from .common import retry_pattern
+from .common import JobTimeoutException, deep_merge, retry_pattern
 
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 
@@ -40,9 +41,65 @@ backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, 
 class StreamAPI(ABC):
     result_return_limit = 100
 
-    def __init__(self, api, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    enable_deleted = False
+    split_deleted_filter = True
+    entity_prefix = None
+
+    @property
+    def name(self):
+        """Name of the stream"""
+        stream_name = self.__class__.__name__
+        if stream_name.endswith("API"):
+            stream_name = stream_name[:-3]
+        return stream_name
+
+    def __init__(self, api, include_deleted=False, **kwargs):
+        super().__init__(**kwargs)
         self._api = api
+        self._include_deleted = include_deleted if self.enable_deleted else False
+
+    def _entity_status_filters(self) -> Iterator:
+        """We split single request into multiple requests with few delivery_info values,
+        Note: this logic originally taken from singer tap implementation, my guess is that when we
+        query entities with all possible delivery_info values the API response time will be slow.
+        """
+        filt_values = [
+            "active",
+            "archived",
+            "completed",
+            "limited",
+            "not_delivering",
+            "deleted",
+            "not_published",
+            "pending_review",
+            "permanently_deleted",
+            "recently_completed",
+            "recently_rejected",
+            "rejected",
+            "scheduled",
+            "inactive",
+        ]
+
+        sub_list_length = 3 if self.split_deleted_filter else len(filt_values)
+        for i in range(0, len(filt_values), sub_list_length):
+            yield {
+                "filtering": [
+                    {"field": f"{self.entity_prefix}.delivery_info", "operator": "IN", "value": filt_values[i : i + sub_list_length]},
+                ],
+            }
+
+    def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
+        """Read entities using provided callable"""
+        params = params or {}
+        if self._include_deleted:
+            for status_filter in self._entity_status_filters():
+                yield from getter(params=self._build_params(deep_merge(params, status_filter)))
+        else:
+            yield from getter(params=self._build_params(params))
+
+    def _build_params(self, params: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
+        params = params or {}
+        return {"limit": self.result_return_limit, **params}
 
     @abstractmethod
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
@@ -52,25 +109,32 @@ class StreamAPI(ABC):
 class IncrementalStreamAPI(StreamAPI, ABC):
     @property
     @abstractmethod
-    def entity_prefix(self):
-        """Prefix of fields in filter"""
-
-    @property
-    @abstractmethod
     def state_pk(self):
         """Name of the field associated with the state"""
 
     @property
     def state(self):
-        return {self.state_pk: str(self._state)}
+        return {
+            self.state_pk: str(self._state),
+            "include_deleted": self._include_deleted,
+        }
 
     @state.setter
     def state(self, value):
-        self._state = pendulum.parse(value[self.state_pk])
+        potentially_new_records_in_the_past = self._include_deleted and not value.get("include_deleted", False)
+        if potentially_new_records_in_the_past:
+            logger.info(f"Ignoring bookmark for {self.name} because of enabled `include_deleted` option")
+        else:
+            self._state = pendulum.parse(value[self.state_pk])
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._state = None
+
+    def _build_params(self, params: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
+        """Build complete params for request"""
+        params = params or {}
+        return deep_merge(super()._build_params(params), self._state_filter())
 
     def _state_filter(self):
         """Additional filters associated with state if any set"""
@@ -87,10 +151,11 @@ class IncrementalStreamAPI(StreamAPI, ABC):
 
         return {}
 
-    def state_filter(self, records: Iterator[dict]) -> Iterator[Any]:
+    def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
         """Apply state filter to set of records, update cursor(state) if necessary in the end"""
+        params = params or {}
         latest_cursor = None
-        for record in records:
+        for record in super().read(getter, params):
             cursor = pendulum.parse(record[self.state_pk])
             if self._state and self._state >= cursor:
                 continue
@@ -98,10 +163,7 @@ class IncrementalStreamAPI(StreamAPI, ABC):
             yield record
 
         if latest_cursor:
-            stream_name = self.__class__.__name__
-            if stream_name.endswith("API"):
-                stream_name = stream_name[:-3]
-            logger.info(f"Advancing bookmark for {stream_name} stream from {self._state} to {latest_cursor}")
+            logger.info(f"Advancing bookmark for {self.name} stream from {self._state} to {latest_cursor}")
             self._state = max(latest_cursor, self._state) if self._state else latest_cursor
 
 
@@ -110,11 +172,10 @@ class AdCreativeAPI(StreamAPI):
     doc: https://developers.facebook.com/docs/marketing-api/reference/adgroup/adcreatives/
     """
 
+    entity_prefix = "adcreative"
     BATCH_SIZE = 50
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
-        ad_creative = self._get_creatives()
-
         # Create the initial batch
         api_batch = self._api._api.new_batch()
         records = []
@@ -126,7 +187,7 @@ class AdCreativeAPI(StreamAPI):
             raise response.error()
 
         # This loop syncs minimal AdCreative objects
-        for i, creative in enumerate(ad_creative, start=1):
+        for i, creative in enumerate(self.read(getter=self._get_creatives), start=1):
             # Execute and create a new batch for every BATCH_SIZE added
             if i % self.BATCH_SIZE == 0:
                 api_batch.execute()
@@ -142,28 +203,28 @@ class AdCreativeAPI(StreamAPI):
         yield from records
 
     @backoff_policy
-    def _get_creatives(self):
-        return self._api.account.get_ad_creatives(params={"limit": self.result_return_limit})
+    def _get_creatives(self, params: Mapping[str, Any]) -> Iterator:
+        return self._api.account.get_ad_creatives(params=params)
 
 
 class AdsAPI(IncrementalStreamAPI):
     """ doc: https://developers.facebook.com/docs/marketing-api/reference/adgroup """
 
     entity_prefix = "ad"
+    enable_deleted = True
     state_pk = "updated_time"
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
-        ads = self._get_ads({"limit": self.result_return_limit})
-        for record in self.state_filter(ads):
+        for record in self.read(getter=self._get_ads):
             yield self._extend_record(record, fields=fields)
 
     @backoff_policy
-    def _get_ads(self, params):
+    def _get_ads(self, params: Mapping[str, Any]):
         """
         This is necessary because the functions that call this endpoint return
         a generator, whose calls need decorated with a backoff.
         """
-        return self._api.account.get_ads(params={**params, **self._state_filter()}, fields=[self.state_pk])
+        return self._api.account.get_ads(params=params, fields=[self.state_pk])
 
     @backoff_policy
     def _extend_record(self, ad, fields):
@@ -174,12 +235,11 @@ class AdSetsAPI(IncrementalStreamAPI):
     """ doc: https://developers.facebook.com/docs/marketing-api/reference/ad-campaign """
 
     entity_prefix = "adset"
+    enable_deleted = True
     state_pk = "updated_time"
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
-        adsets = self._get_ad_sets({"limit": self.result_return_limit})
-
-        for adset in self.state_filter(adsets):
+        for adset in self.read(getter=self._get_ad_sets):
             yield self._extend_record(adset, fields=fields)
 
     @backoff_policy
@@ -197,14 +257,14 @@ class AdSetsAPI(IncrementalStreamAPI):
 
 class CampaignAPI(IncrementalStreamAPI):
     entity_prefix = "campaign"
+    enable_deleted = True
     state_pk = "updated_time"
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Read available campaigns"""
         pull_ads = "ads" in fields
         fields = [k for k in fields if k != "ads"]
-        campaigns = self._get_campaigns({"limit": self.result_return_limit})
-        for campaign in self.state_filter(campaigns):
+        for campaign in self.read(getter=self._get_campaigns):
             yield self._extend_record(campaign, fields=fields, pull_ads=pull_ads)
 
     @backoff_policy
@@ -225,10 +285,6 @@ class CampaignAPI(IncrementalStreamAPI):
         a generator, whose calls need decorated with a backoff.
         """
         return self._api.account.get_campaigns(params={**params, **self._state_filter()}, fields=[self.state_pk])
-
-
-class JobTimeoutException(Exception):
-    pass
 
 
 class AdsInsightAPI(IncrementalStreamAPI):
@@ -263,9 +319,9 @@ class AdsInsightAPI(IncrementalStreamAPI):
         "dma",
     ]
 
-    MAX_WAIT_TO_START_SECONDS = 2 * 60
-    MAX_WAIT_TO_FINISH_SECONDS = 30 * 60
-    MAX_ASYNC_SLEEP_SECONDS = 5 * 60
+    MAX_WAIT_TO_START = pendulum.Interval(minutes=2)
+    MAX_WAIT_TO_FINISH = pendulum.Interval(minutes=30)
+    MAX_ASYNC_SLEEP = pendulum.Interval(minutes=5)
 
     action_breakdowns = ALL_ACTION_BREAKDOWNS
     level = "ad"
@@ -279,10 +335,15 @@ class AdsInsightAPI(IncrementalStreamAPI):
         self._state = start_date
         self.breakdowns = breakdowns
 
+    @staticmethod
+    def _get_job_result(job, **params) -> Iterator:
+        for obj in job.get_result():
+            yield obj.export_all_data()
+
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         for params in self._params(fields=fields):
             job = self._run_job_until_completion(params)
-            yield from self.state_filter(obj.export_all_data() for obj in job.get_result())
+            yield from super().read(partial(self._get_job_result, job=job), params)
 
     @retry_pattern(backoff.expo, (FacebookRequestError, JobTimeoutException, FacebookBadObjectError), max_tries=5, factor=4)
     def _run_job_until_completion(self, params) -> AdReportRun:
@@ -299,18 +360,18 @@ class AdsInsightAPI(IncrementalStreamAPI):
             if job["async_status"] == "Job Completed":
                 return job
 
-            runtime_seconds = (pendulum.now() - start_time).in_seconds()
-            if runtime_seconds > self.MAX_WAIT_TO_START_SECONDS and job_progress_pct == 0:
+            runtime = pendulum.now() - start_time
+            if runtime > self.MAX_WAIT_TO_START and job_progress_pct == 0:
                 raise JobTimeoutException(
-                    f"AdReportRun {job} did not start after {runtime_seconds} seconds. This is an intermittent error which may be fixed by retrying the job. Aborting."
+                    f"AdReportRun {job} did not start after {runtime.in_seconds()} seconds. This is an intermittent error which may be fixed by retrying the job. Aborting."
                 )
-            elif runtime_seconds > self.MAX_WAIT_TO_FINISH_SECONDS:
+            elif runtime > self.MAX_WAIT_TO_FINISH:
                 raise JobTimeoutException(
-                    f"AdReportRun {job} did not finish after {runtime_seconds} seconds. This is an intermittent error which may be fixed by retrying the job. Aborting."
+                    f"AdReportRun {job} did not finish after {runtime.in_seconds()} seconds. This is an intermittent error which may be fixed by retrying the job. Aborting."
                 )
             logger.info(f"Sleeping {sleep_seconds} seconds while waiting for AdReportRun: {job} to complete")
             time.sleep(sleep_seconds)
-            if sleep_seconds < self.MAX_ASYNC_SLEEP_SECONDS:
+            if sleep_seconds < self.MAX_ASYNC_SLEEP.in_seconds():
                 sleep_seconds *= 2
 
     def _params(self, fields: Sequence[str] = None) -> Iterator[dict]:
