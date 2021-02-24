@@ -101,6 +101,10 @@ jobs:
         if: success() && github.ref == 'refs/heads/master'
         run: ./tools/bin/acceptance_test.sh
 
+      - name: Run End-to-End Frontend Tests
+        if: success() && github.ref == 'refs/heads/master'
+        run: ./tools/bin/e2e_test.sh
+
       - name: Push Core Docker Images
         if: success() && github.ref == 'refs/heads/master'
         run: |
