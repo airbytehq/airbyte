@@ -32,10 +32,10 @@ setup(
     packages=find_packages(),
     install_requires=[
         "airbyte-protocol",
-        "appstoreconnect",
+        "appstoreconnect==0.9.0",
         "base-singer",
         "base-python",
-        "pyjwt==1.7.1",
+        "pyjwt==1.6.4", # required by appstore connect
         "tap-appstore @ https://github.com/airbytehq/tap-appstore/tarball/sherif/probe-discover"
     ],
     package_data={"": ["*.json"]},

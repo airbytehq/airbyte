@@ -64,7 +64,7 @@ class SourceAppstoreSinger(SingerSource):
 
             api = Api(config["key_id"], config["key_file"], config["issuer_id"])
             stream_to_error = {}
-            for stream, params in api_fields_to_test:
+            for stream, params in api_fields_to_test.items():
                 test_date = date.today() - timedelta(days=2)
                 report_filters = {"reportDate": test_date.strftime("%Y-%m-%d"), "vendorNumber": f"{config['vendor']}"}
                 report_filters.update(api_fields_to_test[stream])
