@@ -3,6 +3,7 @@ require_relative './airbyte_logger.rb'
 
 require_relative './mongodb_stream.rb'
 require_relative './mongodb_reader.rb'
+require_relative './mongodb_state.rb'
 
 class MongodbSource
   def spec
@@ -55,7 +56,7 @@ class MongodbSource
   def read(config:, catalog:, state: nil)
     @config = JSON.parse(File.read(config))
     @catalog = JSON.parse(File.read(catalog))
-    @state = JSON.parse(File.read(state)) if state
+    @state = MongodbState.new(state_file: state)
 
     MongodbReader.new(client: client, catalog: @catalog, state: @state).read
   end

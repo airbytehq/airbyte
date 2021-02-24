@@ -39,7 +39,7 @@ class MongodbStream
 
     AirbyteStream.from_dynamic!({
       "name" => @collection.name,
-      "supported_sync_modes" => [SyncMode::FullRefresh],
+      "supported_sync_modes" => [SyncMode::FullRefresh, SyncMode::Incremental],
       "json_schema" => {
         "properties": @properties
       }
