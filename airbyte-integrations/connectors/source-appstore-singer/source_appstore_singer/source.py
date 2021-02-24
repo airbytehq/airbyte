@@ -36,8 +36,6 @@ from base_singer import SingerSource, Status, SyncMode, SyncModeInfo
 class SourceAppstoreSinger(SingerSource):
     TAP_CMD = "tap-appstore"
 
-    def _probe_report(self, api: Api):
-
     def check_config(self, logger: AirbyteLogger, config_path: str, config: json) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the integration
