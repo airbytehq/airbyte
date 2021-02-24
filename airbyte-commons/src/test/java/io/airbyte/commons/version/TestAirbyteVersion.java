@@ -22,10 +22,11 @@
  * SOFTWARE.
  */
 
-package io.airbyte.db;
+package io.airbyte.commons.version;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
@@ -48,44 +49,35 @@ public class TestAirbyteVersion {
   }
 
   @Test
-  public void testCompareSameVersionsDifferentLabels() {
-    assertEquals(0, new AirbyteVersion("6.7.8-omega").compareTo(new AirbyteVersion("6.7.8-gamma")));
+  public void testCompatibleVersionCompareTo() {
+    assertEquals(0, new AirbyteVersion("6.7.8-omega").compatibleVersionCompareTo(new AirbyteVersion("6.7.8-gamma")));
+    assertEquals(0, new AirbyteVersion("6.7.8-alpha").compatibleVersionCompareTo(new AirbyteVersion("6.7.9-alpha")));
+    assertTrue(0 < new AirbyteVersion("6.8.0-alpha").compatibleVersionCompareTo(new AirbyteVersion("6.7.8-alpha")));
+    assertTrue(0 > new AirbyteVersion("0.8.0-alpha").compatibleVersionCompareTo(new AirbyteVersion("6.7.8-alpha")));
+    assertEquals(0, new AirbyteVersion("1.2.3-prod").compatibleVersionCompareTo(new AirbyteVersion("dev")));
+    assertEquals(0, new AirbyteVersion("dev").compatibleVersionCompareTo(new AirbyteVersion("1.2.3-prod")));
   }
 
   @Test
-  public void testCompareDifferentPatchVersions() {
-    assertEquals(0, new AirbyteVersion("6.7.8-alpha").compareTo(new AirbyteVersion("6.7.9-alpha")));
+  public void testPatchVersionCompareTo() {
+    assertEquals(0, new AirbyteVersion("6.7.8-omega").patchVersionCompareTo(new AirbyteVersion("6.7.8-gamma")));
+    assertTrue(0 > new AirbyteVersion("6.7.8-alpha").patchVersionCompareTo(new AirbyteVersion("6.7.9-alpha")));
+    assertTrue(0 < new AirbyteVersion("6.8.0-alpha").patchVersionCompareTo(new AirbyteVersion("6.7.8-alpha")));
+    assertTrue(0 > new AirbyteVersion("0.8.0-alpha").patchVersionCompareTo(new AirbyteVersion("6.7.8-alpha")));
+    assertEquals(0, new AirbyteVersion("1.2.3-prod").patchVersionCompareTo(new AirbyteVersion("dev")));
+    assertEquals(0, new AirbyteVersion("dev").patchVersionCompareTo(new AirbyteVersion("1.2.3-prod")));
   }
 
   @Test
-  public void testCompareDifferentMinorVersions() {
-    assertEquals(1, new AirbyteVersion("6.8.0-alpha").compareTo(new AirbyteVersion("6.7.8-alpha")));
-  }
-
-  @Test
-  public void testCompareDifferentVersions() {
-    assertEquals(-6, new AirbyteVersion("0.8.0-alpha").compareTo(new AirbyteVersion("6.7.8-alpha")));
-  }
-
-  @Test
-  public void testCompareDifferentVersionPrecisions() {
-    assertEquals(1, new AirbyteVersion("6.8").compareTo(new AirbyteVersion("6.7.8-alpha")));
-  }
-
-  @Test
-  public void testCompareSameVersionsDifferentPrecisions() {
-    assertEquals(0, new AirbyteVersion("6.8").compareTo(new AirbyteVersion("6.8.3-alpha")));
-  }
-
-  @Test
-  public void testCompareDevVersion() {
-    assertEquals(0, new AirbyteVersion("1.2.3-prod").compareTo(new AirbyteVersion("dev")));
-    assertEquals(0, new AirbyteVersion("dev").compareTo(new AirbyteVersion("1.2.3-prod")));
+  public void testInvalidVersions() {
+    assertThrows(NullPointerException.class, () -> new AirbyteVersion(null));
+    assertThrows(IllegalArgumentException.class, () -> new AirbyteVersion("0.6"));
   }
 
   @Test
   public void testCheckVersion() {
-    assertThrows(IllegalStateException.class, () -> AirbyteVersion.check("1.2.3", "3.2.1"));
+    AirbyteVersion.assertIsCompatible("3.2.1", "3.2.1");
+    assertThrows(IllegalStateException.class, () -> AirbyteVersion.assertIsCompatible("1.2.3", "3.2.1"));
   }
 
 }

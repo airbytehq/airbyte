@@ -25,12 +25,14 @@
 package io.airbyte.migrate;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.commons.set.MoreSets;
 import io.airbyte.commons.stream.MoreStreams;
+import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.commons.yaml.Yamls;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
@@ -79,12 +81,14 @@ public class Migrate {
     final String currentVersion = getCurrentVersion(initialInputPath);
     // detect desired version.
     final String targetVersion = migrateConfig.getTargetVersion();
-    // select migrations to run.
+    Preconditions.checkArgument(!currentVersion.equals("dev"), "Cannot migrate data with version dev.");
+    Preconditions.checkArgument(!targetVersion.equals("dev"), "Cannot migrate data to version dev.");
 
     LOGGER.info("Starting migrations. Current version: {}, Target version: {}", currentVersion, targetVersion);
 
-    // todo(cgardens) if conforming version, infer migrations.
-    final int currentVersionIndex = migrations.stream().map(Migration::getVersion).collect(Collectors.toList()).indexOf(currentVersion);
+    // select migrations to run.
+    final List<AirbyteVersion> migrationVersions = migrations.stream().map(m -> new AirbyteVersion(m.getVersion())).collect(Collectors.toList());
+    final int currentVersionIndex = getPreviousMigration(migrationVersions, new AirbyteVersion(currentVersion));
     Preconditions.checkArgument(currentVersionIndex >= 0, "No migration found for current version: " + currentVersion);
     final int targetVersionIndex = migrations.stream().map(Migration::getVersion).collect(Collectors.toList()).indexOf(targetVersion);
     Preconditions.checkArgument(targetVersionIndex >= 0, "No migration found for target version: " + targetVersion);
@@ -190,6 +194,23 @@ public class Migrate {
 
   private static String getCurrentVersion(Path path) {
     return IOs.readFile(path.resolve(VERSION_FILE_NAME)).trim();
+  }
+
+  @VisibleForTesting
+  static int getPreviousMigration(List<AirbyteVersion> migrationVersions, AirbyteVersion currentVersion) {
+    for (int i = 0; i < migrationVersions.size(); i++) {
+      final AirbyteVersion migrationVersion = migrationVersions.get(i);
+      if (migrationVersion.patchVersionCompareTo(currentVersion) == 0) {
+        return i;
+      }
+      if (migrationVersions.size() > i + 1) {
+        final AirbyteVersion nextVersion = migrationVersions.get(i + 1);
+        if (nextVersion.patchVersionCompareTo(currentVersion) > 0) {
+          return i;
+        }
+      }
+    }
+    return -1;
   }
 
 }
