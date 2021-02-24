@@ -29,7 +29,7 @@ import com.google.common.base.Preconditions;
 /**
  * The AirbyteVersion identifies the version of the database used internally by Airbyte services.
  */
-public class AirbyteVersion implements Comparable<AirbyteVersion> {
+public class AirbyteVersion {
 
   private static final String DEV_VERSION = "dev";
   public static final String AIRBYTE_VERSION_KEY_NAME = "airbyte_version";
@@ -70,11 +70,6 @@ public class AirbyteVersion implements Comparable<AirbyteVersion> {
 
   public String getPatchVersion() {
     return patch;
-  }
-
-  @Override
-  public int compareTo(final AirbyteVersion another) {
-    throw new RuntimeException("not implemented");
   }
 
   /**
