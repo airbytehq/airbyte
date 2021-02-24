@@ -159,12 +159,12 @@ class MigrationIntegrationTest {
   void testInvalidOutputRecord() throws IOException {
     writeInputArchive(inputRoot, V0_14_0_TEST_RECORDS, TEST_MIGRATIONS.get(0).getVersion());
 
-    // todo randomly generate?
     final String targetVersion = "v7";
     // use a migration that does not change the schema of the input, but has an output schema that
     // expects a change. (output schema expects foobar)
-    final List<Migration> migrations =
-        Lists.newArrayList(TEST_MIGRATIONS.get(0), createNoOpMigrationWithOutputSchema(targetVersion, TEST_MIGRATIONS.get(1).getOutputSchema()));
+    final List<Migration> migrations = Lists.newArrayList(
+        TEST_MIGRATIONS.get(0),
+        createNoOpMigrationWithOutputSchema(targetVersion, TEST_MIGRATIONS.get(1).getOutputSchema()));
 
     final Migrate migrate = new Migrate(migrateRoot, migrations);
     final MigrateConfig config = new MigrateConfig(inputRoot, outputRoot, targetVersion);
