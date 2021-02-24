@@ -27,13 +27,13 @@ package io.airbyte.scheduler;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.concurrency.GracefulShutdownHandler;
+import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.helpers.LogHelpers;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DefaultConfigPersistence;
-import io.airbyte.db.AirbyteVersion;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
@@ -189,7 +189,7 @@ public class SchedulerApp {
       loopCount++;
     }
     if (airbyteDatabaseVersion.isPresent()) {
-      AirbyteVersion.check(configs.getAirbyteVersion(), airbyteDatabaseVersion.get());
+      AirbyteVersion.assertIsCompatible(configs.getAirbyteVersion(), airbyteDatabaseVersion.get());
     } else {
       throw new IllegalStateException("Unable to retrieve Airbyte Version, aborting...");
     }
