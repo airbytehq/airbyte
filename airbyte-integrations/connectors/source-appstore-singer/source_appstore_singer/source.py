@@ -28,7 +28,6 @@ from typing import Dict
 
 from airbyte_protocol import AirbyteConnectionStatus
 from appstoreconnect import Api
-from appstoreconnect.api import APIError
 from base_python import AirbyteLogger
 from base_singer import SingerSource, Status, SyncMode, SyncModeInfo
 
@@ -56,10 +55,15 @@ class SourceAppstoreSinger(SingerSource):
             # the account not supporting this kind of report. So to "check connection" we see if any of the reports can be pulled and if so
             # return success. If no reports can be pulled we display the exception messages generated for all reports and return failure.
             api_fields_to_test = {
-                'subscription_event_report': {'reportType': 'SUBSCRIPTION_EVENT', 'frequency': 'DAILY', 'reportSubType': 'SUMMARY', 'version': '1_2'},
-                'subscriber_report': {'reportType': 'SUBSCRIBER', 'frequency': 'DAILY', 'reportSubType': 'DETAILED', 'version': '1_2'},
-                'subscription_report': {'reportType': 'SUBSCRIPTION', 'frequency': 'DAILY', 'reportSubType': 'SUMMARY', 'version': '1_2'},
-                'sales_report': {'reportType': 'SALES', 'frequency': 'DAILY', 'reportSubType': 'SUMMARY', 'version': '1_0'}
+                "subscription_event_report": {
+                    "reportType": "SUBSCRIPTION_EVENT",
+                    "frequency": "DAILY",
+                    "reportSubType": "SUMMARY",
+                    "version": "1_2",
+                },
+                "subscriber_report": {"reportType": "SUBSCRIBER", "frequency": "DAILY", "reportSubType": "DETAILED", "version": "1_2"},
+                "subscription_report": {"reportType": "SUBSCRIPTION", "frequency": "DAILY", "reportSubType": "SUMMARY", "version": "1_2"},
+                "sales_report": {"reportType": "SALES", "frequency": "DAILY", "reportSubType": "SUMMARY", "version": "1_0"},
             }
 
             api = Api(config["key_id"], config["key_file"], config["issuer_id"])

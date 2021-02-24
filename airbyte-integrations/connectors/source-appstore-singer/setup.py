@@ -35,8 +35,8 @@ setup(
         "appstoreconnect==0.9.0",
         "base-singer",
         "base-python",
-        "pyjwt==1.6.4", # required by appstore connect
-        "tap-appstore @ https://github.com/airbytehq/tap-appstore/tarball/sherif/probe-discover"
+        "pyjwt==1.6.4",  # required by appstore connect
+        "tap-appstore @ https://github.com/airbytehq/tap-appstore/tarball/sherif/probe-discover",
     ],
     package_data={"": ["*.json"]},
     setup_requires=["pytest-runner"],
