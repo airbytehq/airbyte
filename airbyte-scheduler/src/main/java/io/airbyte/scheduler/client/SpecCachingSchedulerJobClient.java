@@ -27,6 +27,7 @@ package io.airbyte.scheduler.client;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import io.airbyte.scheduler.Job;
+import io.airbyte.scheduler.JobStatus;
 import io.airbyte.scheduler.persistence.JobCreator;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import java.io.IOException;
@@ -59,7 +60,9 @@ public class SpecCachingSchedulerJobClient extends DefaultSchedulerJobClient imp
     } else {
       LOGGER.debug("cache miss: " + dockerImage);
       final Job job = super.createGetSpecJob(dockerImage);
-      specCache.put(dockerImage, job);
+      if (JobStatus.SUCCEEDED == job.getStatus()) {
+        specCache.put(dockerImage, job);
+      }
       return job;
     }
   }
