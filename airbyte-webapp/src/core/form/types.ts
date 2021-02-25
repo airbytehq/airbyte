@@ -8,6 +8,7 @@ export type FormBaseItem = {
   isRequired: boolean;
   isSecret?: boolean;
   title?: string;
+  multiline?: boolean;
   meta?: { [key: string]: any };
 } & Partial<JSONSchema7>;
 

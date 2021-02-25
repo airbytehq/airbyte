@@ -7,6 +7,7 @@ import ConfirmationInput from "./ConfirmationInput";
 import Input from "../../../Input";
 import { FormBaseItem } from "../../../../core/form/types";
 import { useWidgetInfo } from "../../uiWidgetContext";
+import TextArea from "../../../TextArea";
 
 type IProps = {
   property: FormBaseItem;
@@ -82,6 +83,16 @@ const Control: React.FC<IProps> = ({ property }) => {
             form.setValue(unfinishedSecret.startValue);
           }
         }}
+      />
+    );
+  } else if (property.multiline) {
+    return (
+      <TextArea
+        {...field}
+        placeholder={placeholder}
+        autoComplete="off"
+        value={value ?? ""}
+        rows={3}
       />
     );
   } else {
