@@ -149,7 +149,7 @@ class StreamAPI(ABC):
         params = {**default_params, **params} if params else {**default_params}
 
         while True:
-            response = getter(params)
+            response = getter(params=params)
             if response.get(self.data_path) is None:
                 raise RuntimeError(
                     "Unexpected API response: {} not in {}".format(self.data_path, response.keys())
@@ -179,6 +179,7 @@ class StreamAPI(ABC):
             end_ts = ts + self.chunk_size
             params["startTimestamp"] = ts
             params["endTimestamp"] = end_ts
+            logger.info(f"Reading chunk from {ts} to {end_ts}")
             yield from self.read(getter, params)
 
 
@@ -197,7 +198,6 @@ class CRMObjectsAPI(StreamAPI, ABC):
 
     def list(self, fields) -> Iterable:
         params = {
-            "limit": self.limit,
             "archived": self._include_archived_only
         }
         for record in self.read(partial(self._api.get, url=self.url), params):
@@ -207,12 +207,11 @@ class CRMObjectsAPI(StreamAPI, ABC):
 class CampaignsAPI(StreamAPI):
     more_key = "hasMore"
     data_path = "campaigns"
+    limit = 500
 
     def list(self, fields) -> Iterable:
         url = "/email/public/v1/campaigns/by-id"
-        params = {"limit": 500}
-        # gen_request(STATE, url, params, "campaigns", "hasMore", ["offset"], ["offset"]):
-        for row in self.read(getter=partial(self._api.get, url=url), params=params):
+        for row in self.read(getter=partial(self._api.get, url=url)):
             record = self._api.get(f"/email/public/v1/campaigns/{row['id']}")
             yield record
 
@@ -260,22 +259,22 @@ class DealPipelinesAPI(StreamAPI):
 class EmailEventsAPI(StreamAPI):
     data_path = "events"
     more_key = "hasMore"
+    limit = 1000
 
     def list(self, fields) -> Iterable:
-        params = {"limit": 1000, }
-        url = "/email/public/v1/subscriptions/timeline"
+        url = "/email/public/v1/events"
 
-        yield from self.read_chunked(partial(self._api.get, url=url), params=params)
+        yield from self.read_chunked(partial(self._api.get, url=url))
 
 
 class EngagementsAPI(StreamAPI):
     data_path = "results"
     more_key = "hasMore"
+    limit = 250
 
     def list(self, fields) -> Iterable:
         url = "/engagements/v1/engagements/paged"
-        params = {"limit": 250}
-        for record in self.read(partial(self._api.get, url=url), params):
+        for record in self.read(partial(self._api.get, url=url)):
             record["engagement_id"] = record["engagement"]["id"]
             yield record
 

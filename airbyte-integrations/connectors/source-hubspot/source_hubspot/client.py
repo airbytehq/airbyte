@@ -26,7 +26,7 @@ from typing import Mapping, Tuple
 
 from base_python import BaseClient
 
-from source_hubspot.client import (
+from source_hubspot.api import (
     API, CampaignsAPI, CompaniesAPI, ContactListsAPI, ContactsAPI, ContactsByCompanyAPI,
     DealPipelinesAPI, DealsAPI, EmailEventsAPI,
     EngagementsAPI, FormsAPI, LineItemsAPI, OwnersAPI, ProductsAPI, QuotesAPI,
@@ -40,23 +40,23 @@ class Client(BaseClient):
         self._api = API(credentials=credentials)
 
         self._apis = {
-            "campaigns": CampaignsAPI(api=self._api),
-            "companies": CompaniesAPI(api=self._api),
-            "contact_lists": ContactListsAPI(api=self._api),
-            "contacts": ContactsAPI(api=self._api),
-            "contacts_by_company": ContactsByCompanyAPI(api=self._api),
-            "deal_pipelines": DealPipelinesAPI(api=self._api),
-            "deals": DealsAPI(api=self._api),
-            "email_events": EmailEventsAPI(api=self._api),
-            "engagements": EngagementsAPI(api=self._api),
-            "forms": FormsAPI(api=self._api),
-            "line_items": LineItemsAPI(api=self._api),
-            "owners": OwnersAPI(api=self._api),
-            "products": ProductsAPI(api=self._api),
-            "quotes": QuotesAPI(api=self._api),
-            "subscription_changes": SubscriptionChangesAPI(api=self._api),
-            "tickets": TicketsAPI(api=self._api),
-            "workflows": WorkflowsAPI(api=self._api),
+            "campaigns": CampaignsAPI(api=self._api, start_date=self._start_date),
+            "companies": CompaniesAPI(api=self._api, start_date=self._start_date),
+            "contact_lists": ContactListsAPI(api=self._api, start_date=self._start_date),
+            "contacts": ContactsAPI(api=self._api, start_date=self._start_date),
+            "contacts_by_company": ContactsByCompanyAPI(api=self._api, start_date=self._start_date),
+            "deal_pipelines": DealPipelinesAPI(api=self._api, start_date=self._start_date),
+            "deals": DealsAPI(api=self._api, start_date=self._start_date),
+            "email_events": EmailEventsAPI(api=self._api, start_date=self._start_date),
+            "engagements": EngagementsAPI(api=self._api, start_date=self._start_date),
+            "forms": FormsAPI(api=self._api, start_date=self._start_date),
+            "line_items": LineItemsAPI(api=self._api, start_date=self._start_date),
+            "owners": OwnersAPI(api=self._api, start_date=self._start_date),
+            "products": ProductsAPI(api=self._api, start_date=self._start_date),
+            "quotes": QuotesAPI(api=self._api, start_date=self._start_date),
+            "subscription_changes": SubscriptionChangesAPI(api=self._api, start_date=self._start_date),
+            "tickets": TicketsAPI(api=self._api, start_date=self._start_date),
+            "workflows": WorkflowsAPI(api=self._api, start_date=self._start_date),
         }
 
         super().__init__(**kwargs)
