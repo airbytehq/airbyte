@@ -43,14 +43,15 @@ class CatalogProcessor:
     This is relying on a StreamProcessor to handle the conversion of a stream to a table one at a time.
     """
 
-    def __init__(self, output_directory: str, integration_type: DestinationType):
+    def __init__(self, output_directory: str, destination_type: DestinationType):
         """
         @param output_directory is the path to the directory where this processor should write the resulting SQL files (DBT models)
-        @param integration_type is the destination type of warehouse
+        @param destination_type is the destination type of warehouse
         """
         self.output_directory: str = output_directory
-        self.integration_type: DestinationType = integration_type
-        self.name_transformer: DestinationNameTransformer = DestinationNameTransformer(integration_type)
+        self.destination_type: DestinationType = destination_type
+        self.name_transformer: DestinationNameTransformer = DestinationNameTransformer(destination_type)
+        self.tables_registry: Set[str] = set()
 
     def process(self, catalog_file: str, json_column_name: str, target_schema: str):
         """
@@ -62,7 +63,7 @@ class CatalogProcessor:
         @param target_schema is the final schema where to output the final transformed data to
         """
         # Registry of all tables in all schemas
-        tables_registry: Set[str] = set()
+        self.tables_registry = set()
         # Registry of source tables in each schemas
         schema_to_source_tables: Dict[str, Set[str]] = {}
 
@@ -89,22 +90,22 @@ class CatalogProcessor:
 
             stream_processor = StreamProcessor.create(
                 stream_name=stream_name,
-                integration_type=self.integration_type,
+                destination_type=self.destination_type,
                 raw_schema=raw_schema_name,
                 schema=schema_name,
                 json_column_name=f"'{json_column_name}'",
                 properties=properties,
-                tables_registry=tables_registry,
+                tables_registry=self.tables_registry,
                 from_table=from_table,
             )
             nested_processors = stream_processor.process()
-            add_table_to_registry(tables_registry, stream_processor)
+            add_table_to_registry(self.tables_registry, stream_processor)
             if nested_processors and len(nested_processors) > 0:
                 substreams += nested_processors
             for file in stream_processor.sql_outputs:
                 output_sql_file(os.path.join(self.output_directory, file), stream_processor.sql_outputs[file])
         self.write_yaml_sources_file(schema_to_source_tables)
-        self.process_substreams(substreams, tables_registry)
+        self.process_substreams(substreams, self.tables_registry)
 
     def process_substreams(self, substreams: List[StreamProcessor], tables_registry: Set[str]):
         """
