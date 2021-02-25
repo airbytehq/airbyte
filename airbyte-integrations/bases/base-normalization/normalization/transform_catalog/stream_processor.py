@@ -551,7 +551,6 @@ where {column_name} is not null"""
 
     def lineage_hash(self) -> str:
         lineage_list = get_lineage(self, [])
-        print("lineage_list", lineage_list)
         lineage = "&airbyte&".join(lineage_list)
         h = hashlib.sha1()
         h.update(lineage.encode('utf-8'))
