@@ -1,6 +1,6 @@
 # Mongodb 
 
-The MongoDB source supports Full Refresh only.
+The MongoDB source supports Full Refresh and Incremental sync strategies.
 
 ## Resulting schema 
 MongoDB does not have anything like table definition, thus we have to define column types from actual attributes and their values. The discover phase has two steps:
@@ -16,33 +16,29 @@ For each property found, the connector selects 10k documents from the collection
 | Feature | Supported |
 | :--- | :--- |
 | Full Refresh Sync | Yes |
-| Incremental - Append Sync | No |
+| Incremental - Append Sync | Yes* |
 | Replicate Incremental Deletes | No |
 
+\* - Cursor field can not be nested. Currently only top level document properties are supported.
+
 ## Getting started
-Usually MongoDB is used locally behind the firewall without authentication. This guide describes in details how you can configure MongoDB for integration with Airbyte.
+This guide describes in details how you can configure MongoDB for integration with Airbyte.
 
 ### Create users
 
-Run `mongo` shell, switch to `admin` database and create three users: 
-
-1. ADMIN_USER will be used for database administration (you can skip this user in case you already use authentication for MongoDB access).
-2. APP_USER will be used for authentication inside your application (you can skip this user in case you already use authentication for MongoDB access).
-3. READ_ONLY_USER will be used for Airbyte integration. Please make sure that user has read-only privileges.
+Run `mongo` shell, switch to `admin` database and create a `READ_ONLY_USER`. `READ_ONLY_USER` will be used for Airbyte integration. Please make sure that user has read-only privileges.
 
 ```js
 mongo
 use admin;
-db.createUser({user: "ADMIN_USER", pwd: "ADMIN_PASSWORD", roles: [{role: "dbOwner", db: "admin"}]})
-db.createUser({user: "APP_USER", pwd: "APP_PASSWORD", roles: [{role: "readWrite", db: "APP_DATABASE"}]})
 db.createUser({user: "READ_ONLY_USER", pwd: "READ_ONLY_PASSWORD", roles: [{role: "read", db: "TARGET_DATABASE"}]}
 ```
 
-Make sure all created users have appropriate access levels.
+Make sure the user have appropriate access levels.
 
 ### Configure application
 
-In case your application uses MongoDB without authentication you will have to adjust code base to enable MongoDB authentication. **Otherwise your application will go down once MongoDB authentication will be enabled.**
+In case your application uses MongoDB without authentication you will have to adjust code base and MongoDB config to enable MongoDB authentication. **Otherwise your application might go down once MongoDB authentication will be enabled.**
 
 ### Enable MongoDB authentication
 
