@@ -1,8 +1,4 @@
 describe("Connection main actions", () => {
-  before(() => {
-    require('./utils.js');
-  });
-
   beforeEach(() => {
     cy.visit("/");
   });

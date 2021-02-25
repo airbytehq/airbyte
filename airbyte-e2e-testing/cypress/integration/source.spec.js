@@ -1,8 +1,4 @@
 describe("Source main actions", () => {
-  before(() => {
-    require('./utils.js');
-  });
-
   it("Create new source", () => {
     cy.createTestSource("Test source cypress");
 

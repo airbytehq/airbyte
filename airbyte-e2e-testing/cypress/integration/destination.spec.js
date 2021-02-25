@@ -1,8 +1,4 @@
 describe("Destination main actions", () => {
-  before(() => {
-    require('./utils.js');
-  });
-
   it("Create new destination", () => {
     cy.createTestDestination("Test destination cypress");
 
