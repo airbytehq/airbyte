@@ -10,7 +10,7 @@ If you're interested in our progress on the Airbyte platform, please read below!
 
 ## [02-19-2021](https://github.com/airbytehq/airbyte/milestone/22?closed=1)
 
-* We now handle nested ables with the normalization steps. Check out the video below to see how it works. 
+* We now handle nested tables with the normalization steps. Check out the video below to see how it works. 
 
 {% embed url="https://youtu.be/I4fngMnkJzY" %}
 
