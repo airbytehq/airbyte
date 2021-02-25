@@ -48,4 +48,4 @@ Connector runs the map-reduce command which returns all unique document props in
 For each property found, connector selects 10k documents from the collection where this property is not empty. If all the selected values have the same type - connector will set appropriate type to the property. In all other cases connector will fallback to `string` type.
 
 ## Author
-This connector was authored by [Yury Koleda](github.com/FUT).
+This connector was authored by [Yury Koleda](https://github.com/FUT).
