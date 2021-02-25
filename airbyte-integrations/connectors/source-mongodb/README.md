@@ -12,10 +12,9 @@ docker build . -t airbyte/source-mongodb:dev
 
 ### Integration Tests 
 1. Setup MongoDB on your local machine
-1. Import the dump from `integration_tests` folder to your local MongoDB: 
+1. Import the dump from `integration_tests/dump` folder to your local MongoDB: 
 ```
 mongorestore --archive=integration_tests/dump/analytics.archive
-mongorestore --archive=integration_tests/dump/weatherdata.archive
 ```
 3. Configure credentials as appropriate, described below
 1. From the airbyte project root, run:
