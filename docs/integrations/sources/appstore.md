@@ -2,7 +2,7 @@
 
 ## Sync overview
 
-This source can sync data for the [Appstore API](https://developer.apple.com/documentation/appstoreconnectapi). It supports only Incremental syncs. The Appstore API is available for [many types of services](https://developer.apple.com/documentation/appstoreconnectapi). Currently, this API supports syncing Sales and Trends reports. If you'd like to sync data from other endpoints, please create an issue on Github. 
+This source can sync data for the [Appstore API](https://developer.apple.com/documentation/appstoreconnectapi). It supports only Incremental syncs. The Appstore API is available for [many types of services](https://developer.apple.com/documentation/appstoreconnectapi). Currently, this API supports syncing Sales and Trends reports. If you'd like to sync data from other endpoints, please create an issue on Github.
 
 This Source Connector is based on a [Singer Tap](https://github.com/miroapp/tap-appstore).
 
@@ -15,7 +15,7 @@ This Source is capable of syncing the following "Sales and Trends" Streams:
 * [SUBSCRIPTION\_EVENT](https://help.apple.com/app-store-connect/#/itc0b9b9d5b2)
 * [SUBSCRIBER](https://help.apple.com/app-store-connect/#/itcf20f3392e)
 
-Note that depending on the credentials you enter, you may only be able to sync some of these reports. For example, if your app does not offer subscriptions, then it is not possible to sync subscription related reports. 
+Note that depending on the credentials you enter, you may only be able to sync some of these reports. For example, if your app does not offer subscriptions, then it is not possible to sync subscription related reports.
 
 ### Data type mapping
 
