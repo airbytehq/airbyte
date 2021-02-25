@@ -2,7 +2,7 @@
 
 ![](../.gitbook/assets/slack-history-ui-title.png)
 
-The [Slack free tier](https://slack.com/pricing/paid-vs-free) saves only the last 10K messages. For social Slack instances, it may be impractical to upgrade to a paid plan to retain these messages. Similarly, for an open-source project like Airbyte where we interact with our community through a public Slack instance, the cost of paying for a seat for every Slack member is prohibitive.
+The [Slack free tier](https://slack.com/pricing/paid-vs-free) saves only the last 10K messages. For social Slack instances, it may be impractical to upgrade to a paid plan to retain these messages. Similarly, for an open-source project like [Airbyte](../architecture/catalog.md) where we interact with our community through a public Slack instance, the cost of paying for a seat for every Slack member is prohibitive.
 
 However, searching through old messages can be really helpful. Losing that history feels like some advanced form of memory loss. What was that joke about Java 8 Streams? This contributor question sounds familiar—haven't we seen it before? But you just can't remember!
 
