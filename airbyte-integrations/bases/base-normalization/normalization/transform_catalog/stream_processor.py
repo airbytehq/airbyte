@@ -30,7 +30,6 @@ from jinja2 import Template
 from normalization.destination_type import DestinationType
 from normalization.transform_catalog.destination_name_transformer import (
     DestinationNameTransformer,
-    DESTINATION_SIZE_LIMITS,
 )
 from normalization.transform_catalog.utils import (
     is_airbyte_column,
