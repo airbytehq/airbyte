@@ -25,7 +25,7 @@ Very low / Low / Medium / High / Critical
 Found in the .env file in the root of the project.
 
 ## Connector Version (if applicable)
-Found in the admin page in the UI in the respective Source and Destination tab.
+Found in the admin page in the UI in the respective Source or Destination tab.
 
 ## Additional context
 *Environment, version, integration...*
