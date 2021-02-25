@@ -45,9 +45,13 @@ class MongodbConfiguredStream::Incremental < MongodbConfiguredStream::Base
   def after_item_processed(item)
     super
 
-    converted_cursor = convert_cursor(item[cursor_field])
-    if !@cursor || converted_cursor && converted_cursor > @cursor
-      @cursor = converted_cursor
+    if item[cursor_field]
+      converted_cursor = convert_cursor(item[cursor_field])
+      if !@cursor || converted_cursor && converted_cursor > @cursor
+        @cursor = converted_cursor
+      end
+    else
+      AirbyteLogger.log("Cursor is empty! Incremental sync results might be unpredictable! Item: #{item}", Level::Fatal)
     end
   end
 

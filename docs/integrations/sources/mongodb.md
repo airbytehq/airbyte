@@ -24,6 +24,9 @@ Works as usual full refresh sync.
 
 ### Incremental sync
 Cursor field can not be nested. Currently only top level document properties are supported.
+
+Cursor should **never** be blank. In case cursor is blank - the incremental sync results might be unpredictable and will totally rely on MongoDB comparison algorithm. 
+
 Only `datetime` and `integer` cursor types are supported. Cursor type is determined based on the cursor field name:
 
 * `datetime` - if cursor field name contains a string from: `time`, `date`, `_at`, `timestamp`, `ts`
