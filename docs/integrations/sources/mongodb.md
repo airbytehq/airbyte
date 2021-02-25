@@ -3,7 +3,7 @@
 The MongoDB source supports Full Refresh only.
 
 ## Resulting schema 
-MongoDB does not have anything like table definition, thus we have to define column types from actual attributes and their values. Discover phase have two steps:
+MongoDB does not have anything like table definition, thus we have to define column types from actual attributes and their values. The discover phase has two steps:
 
 ### Step 1. Find all unique properties
 Connector runs the [map-reduce command](https://docs.mongodb.com/manual/core/map-reduce/)  which returns all unique document props in the collection. Map-reduce approach should be sufficient even for large clusters.
