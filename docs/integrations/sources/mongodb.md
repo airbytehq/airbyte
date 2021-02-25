@@ -3,23 +3,31 @@
 The MongoDB source supports Full Refresh and Incremental sync strategies.
 
 ## Resulting schema 
-MongoDB does not have anything like table definition, thus we have to define column types from actual attributes and their values. The discover phase has two steps:
+MongoDB does not have anything like table definition, thus we have to define column types from actual attributes and their values. Discover phase have two steps:
 
 ### Step 1. Find all unique properties
-Connector runs the [map-reduce command](https://docs.mongodb.com/manual/core/map-reduce/)  which returns all unique document props in the collection. Map-reduce approach should be sufficient even for large clusters.
+Connector runs the map-reduce command which returns all unique document props in the collection. Map-reduce approach should be sufficient even for large clusters.
 
 ### Step 2. Determine property types
-For each property found, the connector selects 10k documents from the collection where this property is not empty. If all the selected values have the same type - connector will set appropriate type to the property. In all other cases connector will fallback to `string` type.
+For each property found, connector selects 10k documents from the collection where this property is not empty. If all the selected values have the same type - connector will set appropriate type to the property. In all other cases connector will fallback to `string` type.
 
 ## Features
 
 | Feature | Supported |
 | :--- | :--- |
 | Full Refresh Sync | Yes |
-| Incremental - Append Sync | Yes* |
+| Incremental - Append Sync | Yes |
 | Replicate Incremental Deletes | No |
 
-\* - Cursor field can not be nested. Currently only top level document properties are supported.
+### Full Refresh sync
+Works as usual full refresh sync.
+
+### Incremental sync
+Cursor field can not be nested. Currently only top level document properties are supported.
+Only `datetime` and `integer` cursor types are supported. Cursor type is determined based on the cursor field name:
+
+* `datetime` - if cursor field name contains a string from: `time`, `date`, `_at`, `timestamp`, `ts`
+* `integer` - otherwise
 
 ## Getting started
 This guide describes in details how you can configure MongoDB for integration with Airbyte.
