@@ -24,7 +24,6 @@
 
 package io.airbyte.scheduler.client;
 
-import io.airbyte.commons.tuple.Either;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardCheckConnectionOutput;
@@ -37,13 +36,14 @@ import java.io.IOException;
  */
 public interface SchedulerSynchronousJobClient {
 
-  Either<StandardCheckConnectionOutput, FailureInfo> createSourceCheckConnectionJob(SourceConnection source, String dockerImage) throws IOException;
+  StandardCheckConnectionOutput createSourceCheckConnectionJob(SourceConnection source, String dockerImage)
+      throws IOException, SynchronousJobException;
 
-  Either<StandardCheckConnectionOutput, FailureInfo> createDestinationCheckConnectionJob(DestinationConnection destination, String dockerImage)
-      throws IOException;
+  StandardCheckConnectionOutput createDestinationCheckConnectionJob(DestinationConnection destination, String dockerImage)
+      throws IOException, SynchronousJobException;
 
-  Either<StandardDiscoverCatalogOutput, FailureInfo> createDiscoverSchemaJob(SourceConnection source, String dockerImage) throws IOException;
+  StandardDiscoverCatalogOutput createDiscoverSchemaJob(SourceConnection source, String dockerImage) throws IOException, SynchronousJobException;
 
-  Either<StandardGetSpecOutput, FailureInfo> createGetSpecJob(String dockerImage) throws IOException;
+  StandardGetSpecOutput createGetSpecJob(String dockerImage) throws IOException, SynchronousJobException;
 
 }

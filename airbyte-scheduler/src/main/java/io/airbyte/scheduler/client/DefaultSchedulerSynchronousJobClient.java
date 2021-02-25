@@ -24,7 +24,6 @@
 
 package io.airbyte.scheduler.client;
 
-import io.airbyte.commons.tuple.Either;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.SourceConnection;
@@ -43,37 +42,36 @@ public class DefaultSchedulerSynchronousJobClient implements SchedulerSynchronou
   }
 
   @Override
-  public Either<StandardCheckConnectionOutput, FailureInfo> createSourceCheckConnectionJob(SourceConnection source, String dockerImage)
-      throws IOException {
+  public StandardCheckConnectionOutput createSourceCheckConnectionJob(SourceConnection source, String dockerImage)
+      throws IOException, SynchronousJobException {
     return unwrapCheckConnectionJob(schedulerJobClient.createSourceCheckConnectionJob(source, dockerImage));
   }
 
   @Override
-  public Either<StandardCheckConnectionOutput, FailureInfo> createDestinationCheckConnectionJob(DestinationConnection destination, String dockerImage)
-      throws IOException {
+  public StandardCheckConnectionOutput createDestinationCheckConnectionJob(DestinationConnection destination, String dockerImage)
+      throws IOException, SynchronousJobException {
     return unwrapCheckConnectionJob(schedulerJobClient.createDestinationCheckConnectionJob(destination, dockerImage));
   }
 
-  private static Either<StandardCheckConnectionOutput, FailureInfo> unwrapCheckConnectionJob(Job job) {
-    return Either.from(
-        job.getSuccessOutput().map(JobOutput::getCheckConnection),
-        job.getAttempts().stream().findAny().map(attempt -> new FailureInfo(attempt.getLogPath())));
+  private static StandardCheckConnectionOutput unwrapCheckConnectionJob(Job job) throws SynchronousJobException {
+    return job.getSuccessOutput().map(JobOutput::getCheckConnection).orElseThrow(() -> getExceptionFromJob(job));
   }
 
   @Override
-  public Either<StandardDiscoverCatalogOutput, FailureInfo> createDiscoverSchemaJob(SourceConnection source, String dockerImage) throws IOException {
+  public StandardDiscoverCatalogOutput createDiscoverSchemaJob(SourceConnection source, String dockerImage)
+      throws IOException, SynchronousJobException {
     final Job job = schedulerJobClient.createDiscoverSchemaJob(source, dockerImage);
-    return Either.from(
-        job.getSuccessOutput().map(JobOutput::getDiscoverCatalog),
-        job.getAttempts().stream().findAny().map(attempt -> new FailureInfo(attempt.getLogPath())));
+    return job.getSuccessOutput().map(JobOutput::getDiscoverCatalog).orElseThrow(() -> getExceptionFromJob(job));
   }
 
   @Override
-  public Either<StandardGetSpecOutput, FailureInfo> createGetSpecJob(String dockerImage) throws IOException {
+  public StandardGetSpecOutput createGetSpecJob(String dockerImage) throws IOException, SynchronousJobException {
     final Job job = schedulerJobClient.createGetSpecJob(dockerImage);
-    return Either.from(
-        job.getSuccessOutput().map(JobOutput::getGetSpec),
-        job.getAttempts().stream().findAny().map(attempt -> new FailureInfo(attempt.getLogPath())));
+    return job.getSuccessOutput().map(JobOutput::getGetSpec).orElseThrow(() -> getExceptionFromJob(job));
+  }
+
+  private static SynchronousJobException getExceptionFromJob(Job job) {
+    return new SynchronousJobException(JobMetadatas.fromJob(job));
   }
 
 }

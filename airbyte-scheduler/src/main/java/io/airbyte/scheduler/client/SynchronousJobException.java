@@ -24,18 +24,18 @@
 
 package io.airbyte.scheduler.client;
 
-import java.nio.file.Path;
+import io.airbyte.scheduler.client.JobMetadatas.JobMetadata;
 
-public class FailureInfo {
+public class SynchronousJobException extends Exception {
 
-  private final Path logPath;
+  private final JobMetadata jobMetadata;
 
-  public FailureInfo(Path logPath) {
-    this.logPath = logPath;
+  public SynchronousJobException(JobMetadata jobMetadata) {
+    this.jobMetadata = jobMetadata;
   }
 
-  public Path getLogPath() {
-    return logPath;
+  public JobMetadata getJobMetadata() {
+    return jobMetadata;
   }
 
 }
