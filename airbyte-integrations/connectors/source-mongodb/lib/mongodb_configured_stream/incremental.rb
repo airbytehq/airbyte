@@ -4,11 +4,17 @@ require_relative './base.rb'
 require_relative '../mongodb_types_converter.rb'
 
 class MongodbConfiguredStream::Incremental < MongodbConfiguredStream::Base
+  DATETIME_FIELD_PARTS = %w{time date _at timestamp ts}
+  CURSOR_TYPES = {
+    datetime: 'DATETIME',
+    integer: 'integer',
+  }
+
   def new(configured_stream:, state:)
     super
 
     value = @state.get(stream_name: stream_name, cursor_field: cursor_field)
-    @cursor =  MongodbTypesConverter.convert_value_to_type(value, stream['json_schema']['properties'][cursor_field]['type'])
+    @cursor =  value && convert_cursor(value)
   end
 
   def cursor_field
@@ -16,10 +22,10 @@ class MongodbConfiguredStream::Incremental < MongodbConfiguredStream::Base
   end
 
   def compose_query
-    if converted_cursor
+    if @cursor
       {
         cursor_field => {
-          "$gte": converted_cursor
+          "$gte": @cursor
         }
       }
     else
@@ -39,8 +45,9 @@ class MongodbConfiguredStream::Incremental < MongodbConfiguredStream::Base
   def after_item_processed(item)
     super
 
-    if !@cursor || item[cursor_field] && item[cursor_field] > @cursor
-      @cursor = item[cursor_field]
+    converted_cursor = convert_cursor(item[cursor_field])
+    if !@cursor || converted_cursor && converted_cursor > @cursor
+      @cursor = converted_cursor
     end
   end
 
@@ -50,4 +57,26 @@ class MongodbConfiguredStream::Incremental < MongodbConfiguredStream::Base
     @state.set(stream_name: stream_name, cursor_field: cursor_field, cursor: @cursor)
     @state.dump_state!
   end
+
+  private
+
+  # Rely on a descriptive naming for type definition. It's too expensive to check the cursor type of every document in advance.
+  def cursor_field_type
+    @cursor_field_type ||= if DATETIME_FIELD_PARTS.any? { |part| cursor_field.include? part }
+                             CURSOR_TYPES[:datetime]
+                           else
+                             CURSOR_TYPES[:integer]
+                           end
+  end
+
+  def convert_cursor(value)
+    if cursor_field_type == CURSOR_TYPES[:datetime]
+      Time.parse(value)
+    elsif cursor_field_type == CURSOR_TYPES[:integer]
+      value.to_i
+    else
+      AirbyteLogger.log("Cursor type #{cursor_field_type} is not supported!", Level::Fatal)
+    end
+  end
+
 end

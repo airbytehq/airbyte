@@ -1,11 +1,12 @@
 {
   "streams":[
     {
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
+      "cursor_field":["bucket_end_date"],
       "stream": {
         "name":"transactions",
         "supported_sync_modes": [
-          "full_refresh"
+          "full_refresh", "incremental"
         ],
         "json_schema":{
           "properties":{
@@ -21,6 +22,9 @@
             "bucket_start_date":{
               "type":"string"
             },
+            "bucket_end_date":{
+              "type":"string"
+            },
             "transactions":{
               "type":"array"
             }
@@ -33,7 +37,7 @@
       "stream": {
         "name":"customers",
         "supported_sync_modes": [
-          "full_refresh"
+          "full_refresh", "incremental"
         ],
         "json_schema":{
           "properties":{
