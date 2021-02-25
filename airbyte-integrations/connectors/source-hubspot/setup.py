@@ -24,21 +24,28 @@ SOFTWARE.
 
 from setuptools import find_packages, setup
 
+MAIN_REQUIREMENTS = [
+    "airbyte-protocol",
+    "base-python",
+    "hubspot-api-client==3.7.1",
+    "requests==2.25.1",
+    "pendulum==1.2.0",
+]
+
+TEST_REQUIREMENTS = [
+    "airbyte-python-test",
+    "pytest",
+]
+
 setup(
     name="source_hubspot",
     description="Source implementation for Hubspot.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=["airbyte-protocol", "base-python"],
+    install_requires=MAIN_REQUIREMENTS,
     package_data={"": ["*.json", "schemas/*.json"]},
-    setup_requires=["pytest-runner"],
-    tests_require=["pytest"],
     extras_require={
-        # Dependencies required by the main package but not integration tests should go in main. Deps required by
-        # integration tests but not the main package go in tests. Deps required by both should go in
-        # install_requires.
-        "main": [],
-        "tests": ["airbyte-python-test", "pytest"],
+        "tests": TEST_REQUIREMENTS,
     },
 )
