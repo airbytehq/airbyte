@@ -12,12 +12,12 @@ docker build . -t airbyte/source-mongodb:dev
 
 ### Integration Tests 
 1. Setup MongoDB on your local machine
-1. Download Atlas sample dump for MongoDB [here](https://atlas-education.s3.amazonaws.com/sampledata.archive)
-1. Import the dump to your local MongoDB: 
+1. Import the dump from `integration_tests` folder to your local MongoDB: 
 ```
-mongorestore --archive=sampledata.archive
+mongorestore --archive=integration_tests/dump/analytics.archive
+mongorestore --archive=integration_tests/dump/weatherdata.archive
 ```
-4. Configure credentials as appropriate, described below
+3. Configure credentials as appropriate, described below
 1. From the airbyte project root, run:
 ```
 ./gradlew clean :airbyte-integrations:connectors:source-mongodb:integrationTest

@@ -27,6 +27,15 @@ class MongodbState
 
     AirbyteLogger.log("Saving state:\n#{JSON.pretty_generate(@state)}")
 
-    File.write(state_file, @state.to_json)
+    asm = AirbyteStateMessage.from_dynamic!({
+      'data' => @state,
+    })
+
+    message =  AirbyteMessage.from_dynamic!({
+      'type' => Type::State,
+      'state' => asm.to_dynamic,
+    })
+
+    puts message.to_json
   end
 end
