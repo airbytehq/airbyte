@@ -65,11 +65,11 @@ def test_generating_tables():
             "stream_name",
             "stream_name_4858be_ab1",
             "stream_name_4858be_ab2",
-            "stream_name_4858be_ab3"
+            "stream_name_4858be_ab3",
         }
 
         # for debugging
         for table in catalog_processor.tables_registry:
-            print(f"\"{table}\",")
+            print(f'"{table}",')
 
         assert catalog_processor.tables_registry == expected_table_names

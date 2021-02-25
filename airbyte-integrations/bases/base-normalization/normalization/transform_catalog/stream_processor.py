@@ -468,9 +468,7 @@ from {{ from_table }}
                 pass
             pass
         else:
-            new_table_name = self.name_transformer.normalize_table_name(
-                get_table_name(new_table_name, suffix, self.lineage_hash())
-            )
+            new_table_name = self.name_transformer.normalize_table_name(get_table_name(new_table_name, suffix, self.lineage_hash()))
         if not is_intermediate:
             self.final_table_name = new_table_name
         return new_table_name
@@ -553,11 +551,12 @@ where {column_name} is not null"""
         lineage_list = get_lineage(self, [])
         lineage = "&airbyte&".join(lineage_list)
         h = hashlib.sha1()
-        h.update(lineage.encode('utf-8'))
+        h.update(lineage.encode("utf-8"))
         return h.hexdigest()[:6]
 
 
 # Static Functions
+
 
 def get_lineage(stream_processor: StreamProcessor, current_lineage: List[str]) -> List[str]:
     if stream_processor.parent is not None:
@@ -611,4 +610,3 @@ def get_table_name(base_table_name: str, suffix: str, lineage_hash: str) -> str:
         return f"{base_table_name}_{lineage_hash}"
     else:
         return f"{base_table_name}_{lineage_hash}_{suffix}"
-
