@@ -1382,8 +1382,6 @@ components:
     SourceDiscoverSchemaRead:
       description: Returns the results of a discover catalog job. If the job was not successful, the catalog field will not be present. jobInfo will aways be present and its status be used to determine if the job was successful or not.
       type: object
-      required:
-        - jobInfo
       properties:
         catalog:
           $ref: "#/components/schemas/AirbyteCatalog"
@@ -1847,7 +1845,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AttemptRead"
-
     JobStatus:
       type: string
       enum:
@@ -1944,7 +1941,6 @@ components:
       type: object
       required:
         - status
-        - jobInfo
       properties:
         status:
           type: string

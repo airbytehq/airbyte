@@ -41,8 +41,9 @@ import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceUpdate;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.commons.functional.CheckedSupplier;
+import io.airbyte.commons.tuple.Pair;
 import io.airbyte.config.DestinationConnection;
-import io.airbyte.config.JobOutput;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
@@ -54,10 +55,14 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.Job;
+import io.airbyte.scheduler.client.DefaultSchedulerSynchronousJobClient;
 import io.airbyte.scheduler.client.SchedulerJobClient;
+import io.airbyte.scheduler.client.SchedulerSynchronousJobClient;
+import io.airbyte.scheduler.client.SynchronousJobException;
 import io.airbyte.server.converters.CatalogConverter;
 import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.server.converters.JobConverter;
+import io.airbyte.server.converters.JobMetadataConverter;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
@@ -69,6 +74,7 @@ public class SchedulerHandler {
   private final ConfigRepository configRepository;
   private final SchedulerJobClient schedulerJobClient;
   private final SpecFetcher specFetcher;
+  private final SchedulerSynchronousJobClient schedulerSynchronousJobClient;
   private final ConfigurationUpdate configurationUpdate;
   private final JsonSchemaValidator jsonSchemaValidator;
 
@@ -76,9 +82,10 @@ public class SchedulerHandler {
     this(
         configRepository,
         schedulerJobClient,
-        new ConfigurationUpdate(configRepository, new SpecFetcher(schedulerJobClient)),
+        new ConfigurationUpdate(configRepository, new SpecFetcher(new DefaultSchedulerSynchronousJobClient(schedulerJobClient))),
         new JsonSchemaValidator(),
-        new SpecFetcher(schedulerJobClient));
+        new SpecFetcher(new DefaultSchedulerSynchronousJobClient(schedulerJobClient)),
+        new DefaultSchedulerSynchronousJobClient(schedulerJobClient));
   }
 
   @VisibleForTesting
@@ -86,12 +93,14 @@ public class SchedulerHandler {
                    SchedulerJobClient schedulerJobClient,
                    ConfigurationUpdate configurationUpdate,
                    JsonSchemaValidator jsonSchemaValidator,
-                   SpecFetcher specFetcher) {
+                   SpecFetcher specFetcher,
+                   SchedulerSynchronousJobClient schedulerSynchronousJobClient) {
     this.configRepository = configRepository;
     this.schedulerJobClient = schedulerJobClient;
     this.configurationUpdate = configurationUpdate;
     this.jsonSchemaValidator = jsonSchemaValidator;
     this.specFetcher = specFetcher;
+    this.schedulerSynchronousJobClient = schedulerSynchronousJobClient;
   }
 
   public CheckConnectionRead checkSourceConnectionFromSourceId(SourceIdRequestBody sourceIdRequestBody)
@@ -100,7 +109,9 @@ public class SchedulerHandler {
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(source.getSourceDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
 
-    return reportConnectionStatus(schedulerJobClient.createSourceCheckConnectionJob(source, imageName));
+    final Pair<StandardCheckConnectionOutput, JobInfoRead> output =
+        getJobInfoReadFromSynchronousJob(() -> schedulerSynchronousJobClient.createSourceCheckConnectionJob(source, imageName));
+    return reportConnectionStatus(output);
   }
 
   public CheckConnectionRead checkSourceConnectionFromSourceCreate(SourceCoreConfig sourceConfig)
@@ -113,7 +124,9 @@ public class SchedulerHandler {
         .withSourceDefinitionId(sourceConfig.getSourceDefinitionId())
         .withConfiguration(sourceConfig.getConnectionConfiguration());
 
-    return reportConnectionStatus(schedulerJobClient.createSourceCheckConnectionJob(source, imageName));
+    final Pair<StandardCheckConnectionOutput, JobInfoRead> output =
+        getJobInfoReadFromSynchronousJob(() -> schedulerSynchronousJobClient.createSourceCheckConnectionJob(source, imageName));
+    return reportConnectionStatus(output);
   }
 
   public CheckConnectionRead checkSourceConnectionFromSourceIdForUpdate(SourceUpdate sourceUpdate)
@@ -135,7 +148,9 @@ public class SchedulerHandler {
     final DestinationConnection destination = configRepository.getDestinationConnection(destinationIdRequestBody.getDestinationId());
     final StandardDestinationDefinition destinationDef = configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(destinationDef.getDockerRepository(), destinationDef.getDockerImageTag());
-    return reportConnectionStatus(schedulerJobClient.createDestinationCheckConnectionJob(destination, imageName));
+    final Pair<StandardCheckConnectionOutput, JobInfoRead> output =
+        getJobInfoReadFromSynchronousJob(() -> schedulerSynchronousJobClient.createDestinationCheckConnectionJob(destination, imageName));
+    return reportConnectionStatus(output);
   }
 
   public CheckConnectionRead checkDestinationConnectionFromDestinationCreate(DestinationCoreConfig destinationConfig)
@@ -147,7 +162,9 @@ public class SchedulerHandler {
     final DestinationConnection destination = new DestinationConnection()
         .withDestinationDefinitionId(destinationConfig.getDestinationDefinitionId())
         .withConfiguration(destinationConfig.getConnectionConfiguration());
-    return reportConnectionStatus(schedulerJobClient.createDestinationCheckConnectionJob(destination, imageName));
+    final Pair<StandardCheckConnectionOutput, JobInfoRead> output =
+        getJobInfoReadFromSynchronousJob(() -> schedulerSynchronousJobClient.createDestinationCheckConnectionJob(destination, imageName));
+    return reportConnectionStatus(output);
   }
 
   public CheckConnectionRead checkDestinationConnectionFromDestinationIdForUpdate(DestinationUpdate destinationUpdate)
@@ -170,8 +187,9 @@ public class SchedulerHandler {
     final SourceConnection source = configRepository.getSourceConnection(sourceIdRequestBody.getSourceId());
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(source.getSourceDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
-    final Job job = schedulerJobClient.createDiscoverSchemaJob(source, imageName);
-    return discoverJobToOutput(job);
+    final Pair<StandardDiscoverCatalogOutput, JobInfoRead> output =
+        getJobInfoReadFromSynchronousJob(() -> schedulerSynchronousJobClient.createDiscoverSchemaJob(source, imageName));
+    return discoverJobToOutput(output);
   }
 
   public SourceDiscoverSchemaRead discoverSchemaForSourceFromSourceCreate(SourceCoreConfig sourceCreate)
@@ -183,16 +201,16 @@ public class SchedulerHandler {
     final SourceConnection source = new SourceConnection()
         .withSourceDefinitionId(sourceCreate.getSourceDefinitionId())
         .withConfiguration(sourceCreate.getConnectionConfiguration());
-    final Job job = schedulerJobClient.createDiscoverSchemaJob(source, imageName);
-    return discoverJobToOutput(job);
+    final Pair<StandardDiscoverCatalogOutput, JobInfoRead> output =
+        getJobInfoReadFromSynchronousJob(() -> schedulerSynchronousJobClient.createDiscoverSchemaJob(source, imageName));
+    return discoverJobToOutput(output);
   }
 
-  private static SourceDiscoverSchemaRead discoverJobToOutput(Job job) {
-    final SourceDiscoverSchemaRead sourceDiscoverSchemaRead = new SourceDiscoverSchemaRead()
-        .jobInfo(JobConverter.getJobInfoRead(job));
+  private static SourceDiscoverSchemaRead discoverJobToOutput(Pair<StandardDiscoverCatalogOutput, JobInfoRead> pair) {
+    final SourceDiscoverSchemaRead sourceDiscoverSchemaRead = new SourceDiscoverSchemaRead();
+    pair.getRightOptional().ifPresent(sourceDiscoverSchemaRead::jobInfo);
 
-    job.getSuccessOutput()
-        .map(JobOutput::getDiscoverCatalog)
+    pair.getLeftOptional()
         .map(StandardDiscoverCatalogOutput::getCatalog)
         .ifPresent(catalog -> sourceDiscoverSchemaRead.catalog(CatalogConverter.toApi(catalog)));
 
@@ -266,15 +284,15 @@ public class SchedulerHandler {
     return JobConverter.getJobInfoRead(job);
   }
 
-  private CheckConnectionRead reportConnectionStatus(final Job job) {
-    final StandardCheckConnectionOutput checkConnectionOutput = job.getSuccessOutput().map(JobOutput::getCheckConnection)
+  private CheckConnectionRead reportConnectionStatus(final Pair<StandardCheckConnectionOutput, JobInfoRead> pair) {
+    final StandardCheckConnectionOutput checkConnectionOutput = pair.getLeftOptional()
         // the job should always produce an output, but if it does not, we assume a failure.
         .orElse(new StandardCheckConnectionOutput().withStatus(Status.FAILED));
 
     return new CheckConnectionRead()
         .status(Enums.convertTo(checkConnectionOutput.getStatus(), CheckConnectionRead.StatusEnum.class))
         .message(checkConnectionOutput.getMessage())
-        .jobInfo(JobConverter.getJobInfoRead(job));
+        .jobInfo(pair.getRightOptional().orElse(null));
   }
 
   private ConnectorSpecification getSpecFromSourceDefinitionId(UUID sourceDefId)
@@ -289,6 +307,22 @@ public class SchedulerHandler {
     final StandardDestinationDefinition destinationDef = configRepository.getStandardDestinationDefinition(destDefId);
     final String imageName = DockerUtils.getTaggedImageName(destinationDef.getDockerRepository(), destinationDef.getDockerImageTag());
     return specFetcher.execute(imageName);
+  }
+
+  private static JobInfoRead getJobInfoFromException(SynchronousJobException synchronousJobException) {
+    return JobMetadataConverter.getJobInfoRead(synchronousJobException.getJobMetadata());
+  }
+
+  public static <T> Pair<T, JobInfoRead> getJobInfoReadFromSynchronousJob(CheckedSupplier<T, Exception> supplier) throws IOException {
+    try {
+      return Pair.of(supplier.get(), null);
+    } catch (SynchronousJobException e) {
+      return Pair.of(null, getJobInfoFromException(e));
+    } catch (IOException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
 }

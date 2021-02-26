@@ -31,6 +31,7 @@ import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.JobStatus;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class JobMetadatas {
@@ -42,9 +43,9 @@ public class JobMetadatas {
     private final String scope;
     private final JobStatus status;
 
-    private final Long startedAt;
-    private final long createdAt;
-    private final long updatedAt;
+    private final Long startedAtInSecond;
+    private final long createdAtInSecond;
+    private final long updatedAtInSecond;
 
     private final List<AttemptMetadata> attempts;
 
@@ -52,17 +53,17 @@ public class JobMetadatas {
                        ConfigType configType,
                        String scope,
                        JobStatus status,
-                       Long startedAt,
-                       long createdAt,
-                       long updatedAt,
+                       Long startedAtInSecond,
+                       long createdAtInSecond,
+                       long updatedAtInSecond,
                        List<AttemptMetadata> attempts) {
       this.id = id;
       this.configType = configType;
       this.scope = scope;
       this.status = status;
-      this.startedAt = startedAt;
-      this.createdAt = createdAt;
-      this.updatedAt = updatedAt;
+      this.startedAtInSecond = startedAtInSecond;
+      this.createdAtInSecond = createdAtInSecond;
+      this.updatedAtInSecond = updatedAtInSecond;
       this.attempts = attempts;
     }
 
@@ -82,16 +83,16 @@ public class JobMetadatas {
       return status;
     }
 
-    public Long getStartedAt() {
-      return startedAt;
+    public Optional<Long> getStartedAtInSecond() {
+      return Optional.ofNullable(startedAtInSecond);
     }
 
-    public long getCreatedAt() {
-      return createdAt;
+    public long getCreatedAtInSecond() {
+      return createdAtInSecond;
     }
 
-    public long getUpdatedAt() {
-      return updatedAt;
+    public long getUpdatedAtInSecond() {
+      return updatedAtInSecond;
     }
 
     public List<AttemptMetadata> getAttempts() {
@@ -105,9 +106,9 @@ public class JobMetadatas {
           ", configType=" + configType +
           ", scope='" + scope + '\'' +
           ", status=" + status +
-          ", startedAt=" + startedAt +
-          ", createdAt=" + createdAt +
-          ", updatedAt=" + updatedAt +
+          ", startedAt=" + startedAtInSecond +
+          ", createdAt=" + createdAtInSecond +
+          ", updatedAt=" + updatedAtInSecond +
           ", attempts=" + attempts +
           '}';
     }
@@ -165,8 +166,8 @@ public class JobMetadatas {
       return createdAtInSecond;
     }
 
-    public Long getEndedAtInSecond() {
-      return endedAtInSecond;
+    public Optional<Long> getEndedAtInSecond() {
+      return Optional.ofNullable(endedAtInSecond);
     }
 
     @Override

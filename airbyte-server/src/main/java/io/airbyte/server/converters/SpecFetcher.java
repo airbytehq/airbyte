@@ -24,31 +24,31 @@
 
 package io.airbyte.server.converters;
 
-import io.airbyte.config.JobOutput;
-import io.airbyte.config.StandardGetSpecOutput;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.scheduler.Job;
+import io.airbyte.scheduler.client.DefaultSchedulerSynchronousJobClient;
 import io.airbyte.scheduler.client.SchedulerJobClient;
+import io.airbyte.scheduler.client.SchedulerSynchronousJobClient;
+import io.airbyte.scheduler.client.SynchronousJobException;
 import java.io.IOException;
 
 public class SpecFetcher {
 
-  private final SchedulerJobClient schedulerJobClient;
+  private final SchedulerSynchronousJobClient schedulerJobClient;
 
-  public SpecFetcher(SchedulerJobClient schedulerJobClient) {
+  public SpecFetcher(SchedulerSynchronousJobClient schedulerJobClient) {
     this.schedulerJobClient = schedulerJobClient;
   }
 
-  public ConnectorSpecification execute(String dockerImage) throws IOException {
-    return getSpecFromJob(schedulerJobClient.createGetSpecJob(dockerImage));
+  public SpecFetcher(SchedulerJobClient schedulerJobClient) {
+    this(new DefaultSchedulerSynchronousJobClient(schedulerJobClient));
   }
 
-  private static ConnectorSpecification getSpecFromJob(Job job) {
-    return job
-        .getSuccessOutput()
-        .map(JobOutput::getGetSpec)
-        .map(StandardGetSpecOutput::getSpecification)
-        .orElseThrow(() -> new IllegalArgumentException("no spec output found"));
+  public ConnectorSpecification execute(String dockerImage) throws IOException {
+    try {
+      return schedulerJobClient.createGetSpecJob(dockerImage).getSpecification();
+    } catch (IOException | SynchronousJobException e) {
+      throw new RuntimeException("failed to fetch spec.", e);
+    }
   }
 
 }

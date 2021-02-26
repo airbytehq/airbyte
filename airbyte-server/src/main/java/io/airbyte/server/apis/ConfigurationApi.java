@@ -77,6 +77,8 @@ import io.airbyte.config.Configs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.client.CachingSchedulerJobClient;
+import io.airbyte.scheduler.client.DefaultSchedulerSynchronousJobClient;
+import io.airbyte.scheduler.client.SchedulerSynchronousJobClient;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.KnownException;
@@ -128,7 +130,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
                           final CachingSchedulerJobClient schedulerJobClient,
                           final Configs configs,
                           final FileTtlManager archiveTtlManager) {
-    final SpecFetcher specFetcher = new SpecFetcher(schedulerJobClient);
+    final SchedulerSynchronousJobClient schedulerSynchronousJobClient = new DefaultSchedulerSynchronousJobClient(schedulerJobClient);
+    final SpecFetcher specFetcher = new SpecFetcher(schedulerSynchronousJobClient);
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
     schedulerHandler = new SchedulerHandler(configRepository, schedulerJobClient);
     workspacesHandler = new WorkspacesHandler(configRepository);

@@ -71,6 +71,7 @@ import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.JobStatus;
 import io.airbyte.scheduler.client.SchedulerJobClient;
+import io.airbyte.scheduler.client.SchedulerSynchronousJobClient;
 import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.helpers.ConnectionHelpers;
@@ -121,6 +122,7 @@ class SchedulerHandlerTest {
   private ConfigRepository configRepository;
   private Job completedJob;
   private SchedulerJobClient schedulerJobClient;
+  private SchedulerSynchronousJobClient schedulerSynchronousJobClient;
   private ConfigurationUpdate configurationUpdate;
   private JsonSchemaValidator jsonSchemaValidator;
   private SpecFetcher specFetcher;
@@ -136,9 +138,11 @@ class SchedulerHandlerTest {
     when(completedJob.getScope()).thenReturn("sync:123");
 
     schedulerJobClient = spy(SchedulerJobClient.class);
+    schedulerSynchronousJobClient = spy(SchedulerSynchronousJobClient.class);
     configRepository = mock(ConfigRepository.class);
 
-    schedulerHandler = new SchedulerHandler(configRepository, schedulerJobClient, configurationUpdate, jsonSchemaValidator, specFetcher);
+    schedulerHandler = new SchedulerHandler(configRepository, schedulerJobClient, configurationUpdate, jsonSchemaValidator, specFetcher,
+        schedulerSynchronousJobClient);
   }
 
   @Test
