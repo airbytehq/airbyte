@@ -63,7 +63,7 @@ class CatalogProcessor:
         @param target_schema is the final schema where to output the final transformed data to
         """
         # Registry of all tables in all schemas
-        self.tables_registry = set()
+        tables_registry = set()
         # Registry of source tables in each schemas
         schema_to_source_tables: Dict[str, Set[str]] = {}
 
@@ -76,7 +76,7 @@ class CatalogProcessor:
             target_schema=target_schema,
             name_transformer=self.name_transformer,
             destination_type=self.destination_type,
-            tables_registry=self.tables_registry,
+            tables_registry=tables_registry,
         ):
             # Check properties
             if not stream_processor.properties:
@@ -86,13 +86,13 @@ class CatalogProcessor:
             add_table_to_sources(schema_to_source_tables, stream_processor.schema, raw_table_name)
 
             nested_processors = stream_processor.process()
-            add_table_to_registry(self.tables_registry, stream_processor)
+            add_table_to_registry(tables_registry, stream_processor)
             if nested_processors and len(nested_processors) > 0:
                 substreams += nested_processors
             for file in stream_processor.sql_outputs:
                 output_sql_file(os.path.join(self.output_directory, file), stream_processor.sql_outputs[file])
         self.write_yaml_sources_file(schema_to_source_tables)
-        self.process_substreams(substreams, self.tables_registry)
+        self.process_substreams(substreams, tables_registry)
 
     @staticmethod
     def build_stream_processor(
