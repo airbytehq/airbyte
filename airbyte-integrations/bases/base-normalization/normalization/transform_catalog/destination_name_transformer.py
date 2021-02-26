@@ -146,8 +146,8 @@ class DestinationNameTransformer:
             if limit < len(input_name):
                 middle = round(limit / 2)
                 # truncate in the middle to preserve prefix/suffix instead
-                prefix = input_name[:limit - middle - 1]
-                suffix = input_name[1 - middle:]
+                prefix = input_name[: limit - middle - 1]
+                suffix = input_name[1 - middle :]
                 # Add extra characters '__', signaling a truncate in identifier
                 print(f"Truncating {input_name} (#{len(input_name)}) to {prefix}__{suffix} (#{2 + len(prefix) + len(suffix)})")
                 input_name = f"{prefix}__{suffix}"
