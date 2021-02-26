@@ -28,8 +28,8 @@ import re
 import pytest
 from normalization.destination_type import DestinationType
 from normalization.transform_catalog.catalog_processor import CatalogProcessor, add_table_to_registry, read_json
-from normalization.transform_catalog.stream_processor import get_table_name
 from normalization.transform_catalog.destination_name_transformer import DestinationNameTransformer
+from normalization.transform_catalog.stream_processor import get_table_name
 
 
 @pytest.fixture
@@ -119,8 +119,18 @@ def test_stream_processor_tables_naming(integration_type: str, catalog_file: str
 @pytest.mark.parametrize(
     "root_table, base_table_name, suffix, expected",
     [
-        ("abcdefghijklmnopqrstuvwxyz", "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz", "", "abcdefghij_HSH_abcdefghijklm__nopqrstuvwxyz"),
-        ("abcdefghijklmnopqrstuvwxyz", "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz", "_ab1", "abcdefghij_HSH_abcdefghijk__pqrstuvwxyz_ab1"),
+        (
+            "abcdefghijklmnopqrstuvwxyz",
+            "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz",
+            "",
+            "abcdefghij_HSH_abcdefghijklm__nopqrstuvwxyz",
+        ),
+        (
+            "abcdefghijklmnopqrstuvwxyz",
+            "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz",
+            "_ab1",
+            "abcdefghij_HSH_abcdefghijk__pqrstuvwxyz_ab1",
+        ),
         ("abcde", "fghijk", "_ab1", "abcde_HSH_fghijk_ab1"),
         ("abcde", "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz", "", "abcde_HSH_abcdefghijklmnop__lmnopqrstuvwxyz"),
     ],

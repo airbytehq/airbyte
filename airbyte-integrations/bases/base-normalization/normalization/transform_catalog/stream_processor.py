@@ -28,9 +28,7 @@ from typing import Dict, List, Optional, Set, Tuple
 
 from jinja2 import Template
 from normalization.destination_type import DestinationType
-from normalization.transform_catalog.destination_name_transformer import (
-    DestinationNameTransformer,
-)
+from normalization.transform_catalog.destination_name_transformer import DestinationNameTransformer
 from normalization.transform_catalog.utils import (
     is_airbyte_column,
     is_array,
@@ -557,6 +555,7 @@ where {column_name} is not null"""
 
 # Static Functions
 
+
 def ref_table(table_name) -> str:
     return f"ref('{table_name}')"
 
@@ -597,7 +596,9 @@ def find_properties_object(path: List[str], field: str, properties) -> Dict[str,
     return result
 
 
-def get_table_name(name_transformer: DestinationNameTransformer, root_table: str, base_table_name: str, suffix: str, lineage_hash: str) -> str:
+def get_table_name(
+    name_transformer: DestinationNameTransformer, root_table: str, base_table_name: str, suffix: str, lineage_hash: str
+) -> str:
     prefix = f"{name_transformer.normalize_table_name(root_table)[:10]}_{lineage_hash}_" if root_table else ""
     len_without_base_name = len(render_table_name(prefix, "", suffix))
     truncated_base_name = name_transformer.truncate_identifier_name(base_table_name, len_without_base_name)
