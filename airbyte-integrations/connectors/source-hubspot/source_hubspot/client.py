@@ -25,7 +25,6 @@ SOFTWARE.
 from typing import Mapping, Tuple
 
 from base_python import BaseClient
-from base_python.client import configured_catalog_from_client
 from base_python.entrypoint import logger
 from source_hubspot.api import (
     API,
