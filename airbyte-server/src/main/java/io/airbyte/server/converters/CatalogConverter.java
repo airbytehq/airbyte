@@ -34,9 +34,34 @@ import java.util.stream.Collectors;
  */
 public class CatalogConverter {
 
+  private static io.airbyte.api.model.AirbyteStreamName toApi(final String name, final io.airbyte.protocol.models.AirbyteStreamName streamName) {
+    final io.airbyte.api.model.AirbyteStreamName result = new io.airbyte.api.model.AirbyteStreamName();
+    // Try to use streamName object or default to old name field
+    if (streamName != null) {
+      return result
+          .namespace(streamName.getNamespace())
+          .name(streamName.getName());
+    } else {
+      return result.name(name);
+    }
+  }
+
+  private static io.airbyte.protocol.models.AirbyteStreamName toProtocol(final String name, final io.airbyte.api.model.AirbyteStreamName streamName) {
+    final io.airbyte.protocol.models.AirbyteStreamName result = new io.airbyte.protocol.models.AirbyteStreamName();
+    // Try to use streamName object or default to old name field
+    if (streamName != null) {
+      return result
+          .withNamespace(streamName.getNamespace())
+          .withName(streamName.getName());
+    } else {
+      return result.withName(name);
+    }
+  }
+
   private static io.airbyte.api.model.AirbyteStream toApi(final io.airbyte.protocol.models.AirbyteStream stream) {
     return new io.airbyte.api.model.AirbyteStream()
         .name(stream.getName())
+        .streamName(toApi(stream.getName(), stream.getStreamName()))
         .jsonSchema(stream.getJsonSchema())
         .supportedSyncModes(Enums.convertListTo(stream.getSupportedSyncModes(), io.airbyte.api.model.SyncMode.class))
         .sourceDefinedCursor(stream.getSourceDefinedCursor())
@@ -46,6 +71,7 @@ public class CatalogConverter {
   private static io.airbyte.protocol.models.AirbyteStream toProtocol(final io.airbyte.api.model.AirbyteStream stream) {
     return new io.airbyte.protocol.models.AirbyteStream()
         .withName(stream.getName())
+        .withStreamName(toProtocol(stream.getName(), stream.getStreamName()))
         .withJsonSchema(stream.getJsonSchema())
         .withSupportedSyncModes(Enums.convertListTo(stream.getSupportedSyncModes(), io.airbyte.protocol.models.SyncMode.class))
         .withSourceDefinedCursor(stream.getSourceDefinedCursor())
