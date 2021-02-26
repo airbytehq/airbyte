@@ -1,0 +1,4 @@
+{
+  "type": "object",
+  "properties": { "$ref": "insights.json" }
+}

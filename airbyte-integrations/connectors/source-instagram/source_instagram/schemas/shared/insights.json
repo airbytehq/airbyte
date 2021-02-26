@@ -1,0 +1,32 @@
+{
+  "name": {
+    "type": ["null", "string"]
+  },
+  "period": {
+    "type": ["null", "string"]
+  },
+  "id": {
+    "type": ["null", "string"]
+  },
+  "title": {
+    "type": ["null", "string"]
+  },
+  "description": {
+    "type": ["null", "string"]
+  },
+  "values": {
+    "type": ["null", "array"],
+    "items": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": ["integer", "object"]
+        },
+        "end_time": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}
