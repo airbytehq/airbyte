@@ -160,3 +160,22 @@ def test_normalize_column_name(input_str: str, destination_type: str, expected: 
     t = DestinationType.from_string(destination_type)
     assert DestinationNameTransformer(t).normalize_column_name(input_str, in_jinja=False) == expected
     assert DestinationNameTransformer(t).normalize_column_name(input_str, in_jinja=True) == expected_in_jinja
+
+
+@pytest.mark.parametrize(
+    "input_str, expected",
+    [
+        # below the limit
+        ("Aaaa_Bbbb_Cccc_Dddd_Eeee_Ffff_Gggg_Hhhh", "Aaaa_Bbbb_Cccc_Dddd_Eeee_Ffff_Gggg_Hhhh"),
+        # at the limit
+        ("Aaaa_Bbbb_Cccc_Dddd_Eeee_Ffff_Gggg_Hhhh_Iii", "Aaaa_Bbbb_Cccc_Dddd_Eeee_Ffff_Gggg_Hhhh_Iii"),
+        # over the limit
+        ("Aaaa_Bbbb_Cccc_Dddd_Eeee_Ffff_Gggg_Hhhh_Iiii", "Aaaa_Bbbb_Cccc_Dddd___e_Ffff_Gggg_Hhhh_Iiii"),
+        ("Aaaa_Bbbb_Cccc_Dddd_Eeee_Ffff_Gggg_Hhhh_Iiii_Jjjj_Kkkk", "Aaaa_Bbbb_Cccc_Dddd___g_Hhhh_Iiii_Jjjj_Kkkk"),
+        ("ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz_0123456789", "ABCDEFGHIJKLMNOPQRST__qrstuvwxyz_0123456789"),
+    ],
+)
+def test_truncate_identifier(input_str: str, expected: str):
+    name_transformer = DestinationNameTransformer(DestinationType.POSTGRES)
+    print(f"Truncating from #{len(input_str)} to #{len(expected)}")
+    assert name_transformer._DestinationNameTransformer__truncate_identifier_name(input_str) == expected

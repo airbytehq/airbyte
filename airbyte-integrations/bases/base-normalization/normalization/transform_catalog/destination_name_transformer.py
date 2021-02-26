@@ -143,12 +143,12 @@ class DestinationNameTransformer:
         if self.integration_type.value in DESTINATION_SIZE_LIMITS:
             destination_limit = DESTINATION_SIZE_LIMITS[self.integration_type.value]
             limit = destination_limit - TRUNCATE_DBT_RESERVED_SIZE - TRUNCATE_RESERVED_SIZE
-            # Add +2 to the limit for extra characters '__', signaling a truncate in identifier
-            if len(input_name) > (limit + 2 + 1):
+            if limit < len(input_name):
                 middle = round(limit / 2)
                 # truncate in the middle to preserve prefix/suffix instead
-                prefix = input_name[:middle]
-                suffix = input_name[-middle:]
+                prefix = input_name[: limit - middle - 1]
+                suffix = input_name[1 - middle :]
+                # Add extra characters '__', signaling a truncate in identifier
                 print(f"Truncating {input_name} (#{len(input_name)}) to {prefix}__{suffix} (#{2 + len(prefix) + len(suffix)})")
                 input_name = f"{prefix}__{suffix}"
         else:
