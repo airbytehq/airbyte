@@ -14,9 +14,6 @@
     "counters": {
       "type": ["null", "object"],
       "properties": {
-        "delievered": {
-          "type": ["null", "integer"]
-        },
         "open": {
           "type": ["null", "integer"]
         },

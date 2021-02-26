@@ -27,7 +27,7 @@ from datetime import datetime, timedelta
 import pendulum as pendulum
 from base_python.entrypoint import logger
 from functools import partial
-from typing import Mapping, Iterable, Any, Optional, Iterator, Callable
+from typing import Mapping, Iterable, Any, Optional, Iterator, Callable, List, Union
 
 import requests
 
@@ -115,16 +115,18 @@ class API:
 
         return response.json()
 
-    def get(self, url: str, params=None) -> Mapping[str, Any]:
+    def get(self, url: str, params=None) -> Union[Mapping[str, Any], List[Mapping[str, Any]]]:
         response = self._session.get(self.BASE_URL + url, params=self._add_auth(params))
         return self._parse_and_handle_errors(response)
 
-    def post(self, url: str, data: Mapping[str, Any], params=None) -> Mapping[str, Any]:
+    def post(self, url: str, data: Mapping[str, Any], params=None) -> Union[Mapping[str, Any], List[Mapping[str, Any]]]:
         response = self._session.post(self.BASE_URL + url, params=self._add_auth(params), json=data)
         return self._parse_and_handle_errors(response)
 
 
 class StreamAPI(ABC):
+    entity = None
+
     more_key = None
     data_path = "results"
 
@@ -144,8 +146,10 @@ class StreamAPI(ABC):
 
     def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
         default_params = {
-            "limit": self.limit
+            "limit": self.limit,
+            "properties": ",".join(self.properties.keys())
         }
+
         params = {**default_params, **params} if params else {**default_params}
 
         while True:
@@ -182,15 +186,28 @@ class StreamAPI(ABC):
             logger.info(f"Reading chunk from {ts} to {end_ts}")
             yield from self.read(getter, params)
 
+    @property
+    def properties(self) -> Mapping[str, Any]:
+        if not self.entity:
+            return {}
+
+        props = {}
+        data = self._api.get(f"/properties/v2/{self.entity}/properties")
+        for row in data:
+            props[row["name"]] = {
+                "type": row["type"]
+            }
+
+        return props
+
 
 class CRMObjectsAPI(StreamAPI, ABC):
+    data_path = "results"
+
     @property
     @abstractmethod
     def url(self):
         """Endpoint URL"""
-
-    limit = 100
-    data_path = "results"
 
     def __init__(self, include_archived_only=False, **kwargs):
         super().__init__(**kwargs)
@@ -198,13 +215,14 @@ class CRMObjectsAPI(StreamAPI, ABC):
 
     def list(self, fields) -> Iterable:
         params = {
-            "archived": self._include_archived_only
+            "archived": str(self._include_archived_only).lower(),
         }
         for record in self.read(partial(self._api.get, url=self.url), params):
             yield record
 
 
 class CampaignsAPI(StreamAPI):
+    entity = "campaign"
     more_key = "hasMore"
     data_path = "campaigns"
     limit = 500
@@ -217,20 +235,49 @@ class CampaignsAPI(StreamAPI):
 
 
 class CompaniesAPI(CRMObjectsAPI):
+    entity = "company"
     url = "/crm/v3/objects/companies"
-    limit = 250
 
 
 class ContactListsAPI(CRMObjectsAPI):
-    limit = 250
     url = "/crm/v3/objects/contacts"
+
+
+class ContactsAPI(CRMObjectsAPI):
+    entity = "contact"
+    url = "/crm/v3/objects/contacts"
+
+
+class DealsAPI(CRMObjectsAPI):
+    entity = "deal"
+    url = "/crm/v3/objects/deals"
+
+
+class LineItemsAPI(CRMObjectsAPI):
+    entity = "line_item"
+    url = "/crm/v3/objects/line_items"
+
+
+class ProductsAPI(CRMObjectsAPI):
+    entity = "product"
+    url = "/crm/v3/objects/products"
+
+
+class QuotesAPI(CRMObjectsAPI):
+    entity = "quotes"
+    url = "/crm/v3/objects/quotes"
+
+
+class TicketsAPI(CRMObjectsAPI):
+    entity = "ticket"
+    url = "/crm/v3/objects/tickets"
 
 
 class ContactsByCompanyAPI(StreamAPI):
     def list(self, fields) -> Iterable:
-        companies_api = CompaniesAPI(api=self._api)
+        companies_api = CompaniesAPI(api=self._api, start_date=str(self._start_date))
         for company in companies_api.list(fields={}):
-            yield from self._contacts_by_company(company["companyId"])
+            yield from self._contacts_by_company(company["id"])
 
     def _contacts_by_company(self, company_id):
         url = "/companies/v2/companies/{pk}/vids".format(pk=company_id)
@@ -268,6 +315,7 @@ class EmailEventsAPI(StreamAPI):
 
 
 class EngagementsAPI(StreamAPI):
+    entity = "engagement"
     data_path = "results"
     more_key = "hasMore"
     limit = 250
@@ -280,33 +328,11 @@ class EngagementsAPI(StreamAPI):
 
 
 class FormsAPI(StreamAPI):
+    entity = "form"
+
     def list(self, fields) -> Iterable:
         for row in self._api.get("/forms/v2/forms"):
             yield row
-
-
-class ContactsAPI(CRMObjectsAPI):
-    url = "/crm/v3/objects/contacts"
-
-
-class DealsAPI(CRMObjectsAPI):
-    url = "/crm/v3/objects/deals"
-
-
-class LineItemsAPI(CRMObjectsAPI):
-    url = "/crm/v3/objects/line_items"
-
-
-class ProductsAPI(CRMObjectsAPI):
-    url = "/crm/v3/objects/products"
-
-
-class QuotesAPI(CRMObjectsAPI):
-    url = "crm/v3/objects/quotes"
-
-
-class TicketsAPI(CRMObjectsAPI):
-    url = "/crm/v3/objects/tickets"
 
 
 class OwnersAPI(StreamAPI):
