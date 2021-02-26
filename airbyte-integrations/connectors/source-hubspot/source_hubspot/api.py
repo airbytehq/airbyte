@@ -36,6 +36,27 @@ from base_python.entrypoint import logger
 from source_hubspot.errors import HubspotInvalidAuth, HubspotSourceUnavailable, HubspotRateLimited
 
 
+def retry_connection_handler(**kwargs):
+    """Retry helper, log each attempt"""
+
+    def log_retry_attempt(details):
+        _, exc, _ = sys.exc_info()
+        logger.info(str(exc))
+        logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} more seconds then retrying...")
+
+    def giveup_handler(exc):
+        return exc.response is not None and 400 <= exc.response.status_code < 500
+
+    return backoff.on_exception(
+        backoff.expo,
+        requests.exceptions.RequestException,
+        jitter=None,
+        on_backoff=log_retry_attempt,
+        giveup=giveup_handler,
+        **kwargs,
+    )
+
+
 def retry_after_handler(**kwargs):
     """Retry helper when we hit the call limit, sleeps for specific duration"""
 
@@ -135,6 +156,7 @@ class API:
 
         return response.json()
 
+    @retry_connection_handler(max_tries=5, factor=5)
     @retry_after_handler(max_tries=3)
     def get(self, url: str, params=None) -> Union[Mapping[str, Any], List[Mapping[str, Any]]]:
         response = self._session.get(self.BASE_URL + url, params=self._add_auth(params))
