@@ -33,6 +33,7 @@ write_standard_creds source-googleanalytics-singer "$GOOGLE_ANALYTICS_TEST_CREDS
 write_standard_creds source-googleanalytics-singer "$GOOGLE_ANALYTICS_TEST_TRACKING_ID" "tracker.txt"
 write_standard_creds source-google-sheets "$GSHEETS_INTEGRATION_TESTS_CREDS" "creds.json"
 write_standard_creds source-greenhouse "$GREENHOUSE_TEST_CREDS"
+write_standard_creds source-hubspot "$HUBSPOT_INTEGRATION_TESTS_CREDS"
 write_standard_creds source-hubspot-singer "$HUBSPOT_INTEGRATION_TESTS_CREDS"
 write_standard_creds source-intercom-singer "$INTERCOM_INTEGRATION_TEST_CREDS"
 write_standard_creds source-jira "$JIRA_INTEGRATION_TEST_CREDS"
