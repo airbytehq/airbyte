@@ -51,7 +51,6 @@ class CatalogProcessor:
         self.output_directory: str = output_directory
         self.destination_type: DestinationType = destination_type
         self.name_transformer: DestinationNameTransformer = DestinationNameTransformer(destination_type)
-        self.tables_registry: Set[str] = set()
 
     def process(self, catalog_file: str, json_column_name: str, target_schema: str):
         """
@@ -63,7 +62,7 @@ class CatalogProcessor:
         @param target_schema is the final schema where to output the final transformed data to
         """
         # Registry of all tables in all schemas
-        tables_registry = set()
+        tables_registry: Set[str] = set()
         # Registry of source tables in each schemas
         schema_to_source_tables: Dict[str, Set[str]] = {}
 
