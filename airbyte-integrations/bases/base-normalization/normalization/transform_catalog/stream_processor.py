@@ -466,8 +466,10 @@ from {{ from_table }}
                 # see alias in dbt: https://docs.getdbt.com/docs/building-a-dbt-project/building-models/using-custom-aliases/
                 pass
             pass
+        elif self.parent is None:
+            new_table_name = get_table_name("", new_table_name, suffix, self.lineage_hash())
         else:
-            new_table_name = self.name_transformer.normalize_table_name(get_table_name(new_table_name, suffix, self.lineage_hash()))
+            new_table_name = get_table_name(self.json_path[0], new_table_name, suffix, self.lineage_hash())
         if not is_intermediate:
             self.final_table_name = new_table_name
         return new_table_name
@@ -595,8 +597,11 @@ def find_properties_object(path: List[str], field: str, properties) -> Dict[str,
     return result
 
 
-def get_table_name(base_table_name: str, suffix: str, lineage_hash: str) -> str:
-    if not suffix:
-        return f"{base_table_name}_{lineage_hash}"
+# todo: handle middle truncation of base_table_name
+def get_table_name(root_table: str, base_table_name: str, suffix: str, lineage_hash: str) -> str:
+    prefix = f"{root_table[:10]}_{lineage_hash}_" if root_table else ""
+
+    if suffix:
+        return f"{prefix}{base_table_name}_{suffix}"
     else:
-        return f"{base_table_name}_{lineage_hash}_{suffix}"
+        return f"{prefix}{base_table_name}"
