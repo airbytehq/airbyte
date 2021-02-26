@@ -1,6 +1,6 @@
 {
   "sourceDefinitionId": "36c891d9-4bd9-43ac-bad2-10e12756272c",
-  "name": "Exchange Rates Api",
+  "name": "Hubspot",
   "dockerRepository": "airbyte/source-hubspot",
   "dockerImageTag": "0.1.0",
   "documentationUrl": "https://https://docs.airbyte.io/integrations/sources/hubspot"
