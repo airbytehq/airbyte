@@ -18,6 +18,7 @@ This Google Analytics source wraps the [Pipelinewise Singer Google Analytics Tap
 * `weekly_active_users`
 * `daily_active_users`
 * `devices`
+* Any custom reports you configure. See the section below on custom reports. 
 
 Please reach out to us on Slack or [create an issue](https://github.com/airbytehq/airbyte/issues) if you need to send custom Google Analytics report data with Airbyte.
 
@@ -55,4 +56,59 @@ Use the service account email address to [add a user](https://support.google.com
 
 1. Go to the [Google Analytics Reporting API dashboard](https://console.developers.google.com/apis/api/analyticsreporting.googleapis.com/overview) in the project for your service user. Enable the API for your account. You can set quotas and check usage.
 2. Go to the [Google Analytics API dashboard](https://console.developers.google.com/apis/api/analytics.googleapis.com/overview) in the project for your service user. Enable the API for your account.
+
+### Reading custom reports from Google Analytics
+
+You can replicate Google Analytics [Custom Reports](https://support.google.com/analytics/answer/1033013?hl=en) using this source. To do this, input a JSON object as a string in the "Custom Reports" field when setting up the connector. The JSON is an array of objects where each object has the following schema:
+
+```text
+{"name": string, "dimensions": [string], "metrics": [string]}
+```
+
+Here is an example input "Custom Reports" field:
+
+```text
+[{"Name": "new_users_per_day"}, {"dimensions": ["ga:date"], "metrics": ["ga:newUsers"]}, {"Name": "users_per_city"}, {"dimensions": ["ga:city"], "metrics": ["ga:users"]}]
+```
+
+To create a list of dimensions, you can use default GA dimensions \(listed below\) or custom dimensions if you have some defined. Each report can contain no more than 7 dimensions, and they must all be unique. The default GA dimensions are:
+
+* `ga:browser`
+* `ga:city`
+* `ga:continent`
+* `ga:country`
+* `ga:date`
+* `ga:deviceCategory`
+* `ga:hostname`
+* `ga:medium`
+* `ga:metro`
+* `ga:operatingSystem`
+* `ga:pagePath`
+* `ga:region`
+* `ga:socialNetwork`
+* `ga:source`
+* `ga:subContinent`
+
+To create a list of metrics, use a default GA metric \(values from the list below\) or custom metrics if you have defined them.  
+A custom report can contain no more than 10 unique metrics. The default available GA metrics are:
+
+* `ga:14dayUsers`
+* `ga:1dayUsers`
+* `ga:28dayUsers`
+* `ga:30dayUsers`
+* `ga:7dayUsers`
+* `ga:avgSessionDuration`
+* `ga:avgTimeOnPage`
+* `ga:bounceRate`
+* `ga:entranceRate`
+* `ga:entrances`
+* `ga:exitRate`
+* `ga:exits`
+* `ga:newUsers`
+* `ga:pageviews`
+* `ga:pageviewsPerSession`
+* `ga:sessions`
+* `ga:sessionsPerUser`
+* `ga:uniquePageviews`
+* `ga:users`
 

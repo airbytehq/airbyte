@@ -87,6 +87,7 @@ import io.airbyte.server.handlers.DestinationHandler;
 import io.airbyte.server.handlers.HealthCheckHandler;
 import io.airbyte.server.handlers.JobHistoryHandler;
 import io.airbyte.server.handlers.LogsHandler;
+import io.airbyte.server.handlers.OpenApiConfigHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.handlers.SourceDefinitionsHandler;
 import io.airbyte.server.handlers.SourceHandler;
@@ -119,6 +120,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   private final HealthCheckHandler healthCheckHandler;
   private final ArchiveHandler archiveHandler;
   private final LogsHandler logsHandler;
+  private final OpenApiConfigHandler openApiConfigHandler;
   private final Configs configs;
 
   public ConfigurationApi(final ConfigRepository configRepository,
@@ -144,6 +146,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     healthCheckHandler = new HealthCheckHandler(configRepository);
     archiveHandler = new ArchiveHandler(configs.getAirbyteVersion(), configRepository, jobPersistence, archiveTtlManager);
     logsHandler = new LogsHandler();
+    openApiConfigHandler = new OpenApiConfigHandler();
     this.configs = configs;
   }
 
@@ -378,6 +381,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public File getLogs(@Valid LogsRequestBody logsRequestBody) {
     return execute(() -> logsHandler.getLogs(configs, logsRequestBody));
+  }
+
+  @Override
+  public File getOpenApiSpec() {
+    return execute(openApiConfigHandler::getFile);
   }
 
   // HEALTH

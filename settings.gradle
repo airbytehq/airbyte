@@ -18,6 +18,7 @@ rootProject.name = 'airbyte'
 
 include ':airbyte-analytics'
 include ':airbyte-api'
+include ':airbyte-cli'
 include ':airbyte-commons'
 include ':airbyte-config:models'
 include ':airbyte-config:init'

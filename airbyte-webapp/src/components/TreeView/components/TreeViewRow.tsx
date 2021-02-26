@@ -1,23 +1,25 @@
 import React, { useCallback, useMemo, useState } from "react";
 import styled from "styled-components";
 
-import { Cell } from "../../SimpleTableComponents";
-import MainInfoCell from "./MainInfoCell";
-import SyncSettingsCell from "./SyncSettingsCell";
-import ChildRow from "./ChildRow";
-
 import {
   AirbyteStreamConfiguration,
   SyncSchemaStream
-} from "../../../core/domain/catalog";
+} from "core/domain/catalog";
+import { traverseSchemaToField } from "core/domain/catalog/fieldUtil";
+
+import { IDataItem } from "components/DropDown/components/ListItem";
+import { Cell } from "components/SimpleTableComponents";
+
+import MainInfoCell from "./MainInfoCell";
+import SyncSettingsCell from "./SyncSettingsCell";
+import ChildRow from "./ChildRow";
 import ItemRow from "./ItemRow";
 import TreeItem from "./TreeItem";
-import { IDataItem } from "../../DropDown/components/ListItem";
-import { traverseSchemaToField } from "../../../core/domain/catalog/fieldUtil";
 
 const StyledCell = styled(Cell)`
   overflow: hidden;
   text-overflow: ellipsis;
+  cursor: default;
 `;
 
 type IProps = {
@@ -25,7 +27,7 @@ type IProps = {
   streamNode: SyncSchemaStream;
   updateItem: (
     streamId: string,
-    a: Partial<AirbyteStreamConfiguration>
+    newConfiguration: Partial<AirbyteStreamConfiguration>
   ) => void;
 };
 
@@ -90,7 +92,7 @@ const TreeViewRow: React.FC<IProps> = ({ streamNode, updateItem }) => {
             isItemOpen={isItemOpen}
           />
           <Cell />
-          <StyledCell>{config.aliasName}</StyledCell>
+          <StyledCell title={config.aliasName}>{config.aliasName}</StyledCell>
           <SyncSettingsCell
             streamNode={streamNode}
             fields={fields}
@@ -105,4 +107,4 @@ const TreeViewRow: React.FC<IProps> = ({ streamNode, updateItem }) => {
   );
 };
 
-export default TreeViewRow;
+export default React.memo(TreeViewRow);

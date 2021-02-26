@@ -6,12 +6,13 @@ description: 'Here''s what''s coming in the next few days, weeks, months, and ye
 
 ## Coming within a few days
 
-Check out our [GitHub project](https://github.com/airbytehq/airbyte/projects/1) to see the features we're currently working on or about to. You may also give us insights, by adding your own issues and voting for specific features / integrations.
+Check out our [Roadmap for Core](https://github.com/airbytehq/airbyte/projects/1) and our [Roadmap for Connectors](https://github.com/airbytehq/airbyte/projects/3) on GitHub. You'll see the features we're currently working on or about to. You may also give us insights, by adding your own issues and voting for specific features / integrations.
 
 ## Coming within a few weeks / months
 
 We understand that we're not "production-ready" for a lot of companies yet. In the end, we just got started in July 2020, so we're at the beginning of the journey. Here is a highlight of the main features we are planning on releasing in the next few months:
 
+* CDC \(change data capture\) support 
 * Airflow support \([\#836](https://github.com/airbytehq/airbyte/issues/836)\)
 * Credential and secrets vaulting \([\#837](https://github.com/airbytehq/airbyte/issues/837)\)
 * OAuth support for connector configuration \([\#768](https://github.com/airbytehq/airbyte/issues/768)\)

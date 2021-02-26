@@ -22,6 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import traceback
+
 from airbyte_protocol import AirbyteLogMessage, AirbyteMessage
 
 
@@ -47,6 +49,10 @@ class AirbyteLogger:
 
     def fatal(self, message):
         self.log("FATAL", message)
+
+    def exception(self, message):
+        message = f"{message}\n{traceback.format_exc()}"
+        self.error(message)
 
     def error(self, message):
         self.log("ERROR", message)

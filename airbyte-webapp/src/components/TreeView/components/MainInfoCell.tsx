@@ -3,8 +3,8 @@ import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
 
-import { Cell } from "../../SimpleTableComponents";
-import CheckBox from "../../CheckBox";
+import { Cell } from "components/SimpleTableComponents";
+import { CheckBox } from "components/CheckBox";
 
 type IProps = {
   label: string;
@@ -47,6 +47,7 @@ const ItemLable = styled.span`
   font-size: 15px;
   line-height: 18px;
   padding-left: 9px;
+  cursor: default;
 `;
 
 const MainInfoCell: React.FC<IProps> = ({
@@ -76,7 +77,7 @@ const MainInfoCell: React.FC<IProps> = ({
         {!hideCheckbox && (
           <CheckBox checked={isItemChecked} onClick={onCheckBoxClick} />
         )}
-        <ItemLable>{label}</ItemLable>
+        <ItemLable title={label}>{label}</ItemLable>
       </Content>
     </MainCell>
   );

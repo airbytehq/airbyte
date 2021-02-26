@@ -13,6 +13,40 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 **New sources:** Hive, MongoDB, Mailgun  
 **New destinations:** Panoply, S3, MySQL, Kafka, MongoDB
 
+## 02/22/2021
+
+* Bug fixes:
+  * **Google Analytics:** add the ability to sync custom reports
+  * **Apple Appstore:** bug fix to correctly run incremental syncs
+  * **Exchange rates:** UI now correctly validates input date pattern
+  * **File Source:** Support JSONL \(newline-delimited JSON\) format
+  * **Freshdesk:** Enable controlling how many requests per minute the connector makes to avoid overclocking rate limits
+
+## 02/15/2021
+
+* 1 new destination connector: [MeiliSearch](https://docs.airbyte.io/integrations/destinations/meilisearch)
+* 2 new sources that support incremental append: [Freshdesk](https://docs.airbyte.io/integrations/sources/freshdesk) and [Sendgrid](https://docs.airbyte.io/integrations/sources/sendgrid)
+* Other fixes:
+  * Thanks to [@ns-admetrics](https://github.com/ns-admetrics) for contributing an upgrade to the **Shopify** source connector which now provides the landing\_site field containing UTM parameters in the Orders table.
+  * **Sendgrid** source connector supports most available endpoints available in the API
+  * **Facebook** Source connector now supports syncing Ad Insights data 
+  * **Freshdesk** source connector now supports syncing satisfaction ratings and conversations
+  * **Microsoft Teams** source connector now gracefully handles rate limiting 
+  * Bug fix in **Slack** source where the last few records in a sync were sporadically dropped 
+  * Bug fix in **Google Analytics** source where the last few records in sync were sporadically dropped
+  * In **Redshift source**, support non alpha-numeric table names 
+  * Bug fix in **Github Source** to fix instances where syncs didn’t always fail if there was an error while reading data from the API 
+
+## 02/02/2021
+
+* Sources that we improved reliability for \(and that became “certified”\):
+  * [Certified sources](https://docs.airbyte.io/integrations/connector-health): Files and Shopify
+  * Enhanced continuous testing for Tempo and Looker sources
+* Other fixes / features:
+  * Correctly handle boolean types in the File Source
+  * Add docs for [App Store](https://docs.airbyte.io/integrations/sources/appstore) source 
+  * Fix a bug in Snowflake destination where the connector didn’t check for all needed write permissions, causing some syncs to fail
+
 ## 01/26/2021
 
 * Improved reliability with our best practices on : Google Sheets, Google Ads, Marketo, Tempo
@@ -95,7 +129,7 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 
 ## 11/04/2020
 
-**New sources:** [Facebook Ads](), [Google Ads](../integrations/sources/google-adwords.md), [Marketo](../integrations/sources/marketo.md)  
+**New sources:** [Facebook Ads](connectors.md), [Google Ads](../integrations/sources/google-adwords.md), [Marketo](../integrations/sources/marketo.md)  
 **New destination:** [Snowflake](../integrations/destinations/snowflake.md)
 
 ## 10/30/2020
