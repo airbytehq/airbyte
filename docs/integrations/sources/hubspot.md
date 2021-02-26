@@ -2,19 +2,36 @@
 
 ## Overview
 
-The Hubspot connector can be used to sync your Hubspot data. It supports full refresh and incremental sync. It is based on the [Singer Hubspot Tap](https://github.com/singer-io/tap-hubspot).
+The Hubspot connector can be used to sync your Hubspot data. It supports full refresh sync.
 
 ### Output schema
 
-Several output streams are available from this source \(campaigns, contacts, deals, etc.\) For a comprehensive output schema [look at the Singer tap schema files](https://github.com/singer-io/tap-hubspot/tree/master/tap_hubspot/schemas).
+Several output streams are available from this source:
+* Campaigns
+* Companies
+* Contact Lists
+* Contacts
+* Contacts by Company
+* Deal Pipelines
+* Deals
+* Email Events
+* Engagements
+* Forms
+* Line Items
+* Owners
+* Products
+* Quotes
+* Subscription Changes
+* Tickets
+* Workflows
 
 ### Features
 
 | Feature | Supported? |
 | :--- | :--- |
 | Full Refresh Sync | Yes |
-| Incremental Sync | Yes |
-| Replicate Incremental Deletes | Coming soon |
+| Incremental Sync | No |
+| Replicate Incremental Deletes | No |
 | SSL connection | Yes |
 
 ### Performance considerations
