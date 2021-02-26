@@ -64,10 +64,12 @@ public class DefaultDiscoverCatalogWorkerTest {
 
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
   private static final String STREAM = "users";
+  private static final String STREAM_NAMESPACE = "tests";
   private static final String COLUMN_NAME = "name";
   private static final String COLUMN_AGE = "age";
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog()
       .withStreams(Lists.newArrayList(CatalogHelpers.createAirbyteStream(
+          STREAM_NAMESPACE,
           STREAM,
           Field.of(COLUMN_NAME, JsonSchemaPrimitive.STRING),
           Field.of(COLUMN_AGE, JsonSchemaPrimitive.NUMBER))));

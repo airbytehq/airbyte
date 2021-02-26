@@ -70,6 +70,7 @@ public abstract class JdbcStressTest {
   private static final long TOTAL_RECORDS = 10_000_000L;
   private static final int BATCH_SIZE = 1000;
   private static final String TABLE_NAME = "id_and_name";
+  private static final String STREAM_NAMESPACE = "tests";
 
   private static String streamName;
 
@@ -204,6 +205,7 @@ public abstract class JdbcStressTest {
 
   private static AirbyteCatalog getCatalog() {
     return new AirbyteCatalog().withStreams(Lists.newArrayList(CatalogHelpers.createAirbyteStream(
+        STREAM_NAMESPACE,
         streamName,
         Field.of("id", JsonSchemaPrimitive.NUMBER),
         Field.of("name", JsonSchemaPrimitive.STRING))

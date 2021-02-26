@@ -48,7 +48,7 @@ public class JobOutputDiscoveryWorkerTest {
     DiscoverCatalogWorker discoverWorker = mock(DiscoverCatalogWorker.class);
 
     StandardDiscoverCatalogOutput output = new StandardDiscoverCatalogOutput().withCatalog(
-        CatalogHelpers.createAirbyteCatalog("table"));
+        CatalogHelpers.createAirbyteCatalog("namespace", "table"));
 
     when(discoverWorker.run(input, jobRoot)).thenReturn(new OutputAndStatus<>(JobStatus.SUCCEEDED, output));
     OutputAndStatus<JobOutput> run = new JobOutputDiscoverSchemaWorker(discoverWorker).run(input, jobRoot);

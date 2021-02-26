@@ -134,7 +134,8 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
               Optional.ofNullable(config.get("database")).map(JsonNode::asText),
               Optional.ofNullable(config.get("schema")).map(JsonNode::asText))
                   .stream()
-                  .map(t -> CatalogHelpers.createAirbyteStream(t.getName(), t.getFields())
+                  .map(t -> CatalogHelpers.createAirbyteStream(t.getSchemaName(), t.getName(), t.getFields())
+                      .withName(JdbcUtils.getFullyQualifiedTableName(t.getSchemaName(), t.getName()))
                       .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))
                   .collect(Collectors.toList()));
     }
@@ -289,8 +290,7 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
               .map(f -> Field.of(f.getColumnName(), JdbcUtils.getType(f.getColumnType())))
               .distinct()
               .collect(Collectors.toList());
-
-          return new TableInfo(JdbcUtils.getFullyQualifiedTableName(t.getSchemaName(), t.getName()), fields);
+          return new TableInfo(t.getSchemaName(), t.getName(), fields);
         })
         .collect(Collectors.toList());
   }
@@ -438,12 +438,18 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
 
   protected static class TableInfo {
 
+    private final String schemaName;
     private final String name;
     private final List<Field> fields;
 
-    public TableInfo(String name, List<Field> fields) {
+    public TableInfo(String schemaName, String name, List<Field> fields) {
+      this.schemaName = schemaName;
       this.name = name;
       this.fields = fields;
+    }
+
+    public String getSchemaName() {
+      return schemaName;
     }
 
     public String getName() {

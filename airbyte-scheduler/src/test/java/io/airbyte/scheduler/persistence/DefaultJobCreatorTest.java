@@ -57,6 +57,7 @@ import org.junit.jupiter.api.Test;
 public class DefaultJobCreatorTest {
 
   private static final String STREAM_NAME = "users";
+  private static final String STREAM_NAMESPACE = "tests";
   private static final String FIELD_NAME = "id";
 
   private static final String SOURCE_IMAGE_NAME = "daxtarity/sourceimagename";
@@ -97,7 +98,7 @@ public class DefaultJobCreatorTest {
         .withTombstone(false);
 
     final ConfiguredAirbyteStream stream = new ConfiguredAirbyteStream()
-        .withStream(CatalogHelpers.createAirbyteStream(STREAM_NAME, Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING)));
+        .withStream(CatalogHelpers.createAirbyteStream(STREAM_NAMESPACE, STREAM_NAME, Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING)));
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(stream));
 
     final UUID connectionId = UUID.randomUUID();

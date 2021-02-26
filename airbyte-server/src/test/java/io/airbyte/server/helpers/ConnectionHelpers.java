@@ -30,6 +30,7 @@ import io.airbyte.api.model.AirbyteCatalog;
 import io.airbyte.api.model.AirbyteStream;
 import io.airbyte.api.model.AirbyteStreamAndConfiguration;
 import io.airbyte.api.model.AirbyteStreamConfiguration;
+import io.airbyte.api.model.AirbyteStreamName;
 import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.ConnectionSchedule;
 import io.airbyte.api.model.ConnectionStatus;
@@ -50,6 +51,7 @@ import java.util.UUID;
 public class ConnectionHelpers {
 
   private static final String STREAM_NAME = "users-data";
+  private static final String STREAM_NAMESPACE = "tests";
   private static final String FIELD_NAME = "id";
 
   public static StandardSync generateSyncWithSourceId(UUID sourceId) {
@@ -127,7 +129,7 @@ public class ConnectionHelpers {
   }
 
   private static io.airbyte.protocol.models.AirbyteStream generateBasicAirbyteStream() {
-    return CatalogHelpers.createAirbyteStream(STREAM_NAME, Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING))
+    return CatalogHelpers.createAirbyteStream(STREAM_NAMESPACE, STREAM_NAME, Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING))
         .withDefaultCursorField(Lists.newArrayList(FIELD_NAME))
         .withSourceDefinedCursor(false)
         .withSupportedSyncModes(List.of(io.airbyte.protocol.models.SyncMode.FULL_REFRESH, io.airbyte.protocol.models.SyncMode.INCREMENTAL));
@@ -150,6 +152,7 @@ public class ConnectionHelpers {
   private static AirbyteStream generateBasicApiStream() {
     return new AirbyteStream()
         .name(STREAM_NAME)
+        .streamName(new AirbyteStreamName().name(STREAM_NAME).namespace(STREAM_NAMESPACE))
         .jsonSchema(generateBasicJsonSchema())
         .defaultCursorField(Lists.newArrayList(FIELD_NAME))
         .sourceDefinedCursor(false)

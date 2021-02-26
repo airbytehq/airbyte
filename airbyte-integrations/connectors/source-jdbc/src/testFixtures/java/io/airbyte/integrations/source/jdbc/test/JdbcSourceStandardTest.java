@@ -220,9 +220,10 @@ public abstract class JdbcSourceStandardTest {
     final AirbyteCatalog actual = source.discover(config);
 
     final AirbyteCatalog expected = getCatalog();
-    expected.getStreams().add(CatalogHelpers.createAirbyteStream(JdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME),
+    expected.getStreams().add(CatalogHelpers.createAirbyteStream(SCHEMA_NAME2, TABLE_NAME,
         Field.of("id", JsonSchemaPrimitive.STRING),
         Field.of("name", JsonSchemaPrimitive.STRING))
+        .withName(JdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME))
         .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)));
     // sort streams by name so that we are comparing lists with the same order.
     expected.getStreams().sort(Comparator.comparing(AirbyteStream::getName));
@@ -241,7 +242,8 @@ public abstract class JdbcSourceStandardTest {
 
   @Test
   void testReadOneColumn() throws Exception {
-    final ConfiguredAirbyteCatalog catalog = CatalogHelpers.createConfiguredAirbyteCatalog(streamName, Field.of("id", JsonSchemaPrimitive.NUMBER));
+    final ConfiguredAirbyteCatalog catalog =
+        CatalogHelpers.createConfiguredAirbyteCatalog(SCHEMA_NAME, streamName, Field.of("id", JsonSchemaPrimitive.NUMBER));
 
     final List<AirbyteMessage> actualMessages = MoreIterators.toList(source.read(config, catalog, null));
 
@@ -273,6 +275,7 @@ public abstract class JdbcSourceStandardTest {
             getFullyQualifiedTableName(TABLE_NAME + iFinal)));
       });
       catalog.getStreams().add(CatalogHelpers.createConfiguredAirbyteStream(
+          SCHEMA_NAME,
           streamName2,
           Field.of("id", JsonSchemaPrimitive.NUMBER),
           Field.of("name", JsonSchemaPrimitive.STRING)));
@@ -460,6 +463,7 @@ public abstract class JdbcSourceStandardTest {
 
     final ConfiguredAirbyteCatalog configuredCatalog = getConfiguredCatalog();
     configuredCatalog.getStreams().add(CatalogHelpers.createConfiguredAirbyteStream(
+        SCHEMA_NAME,
         streamName2,
         Field.of("id", JsonSchemaPrimitive.NUMBER),
         Field.of("name", JsonSchemaPrimitive.STRING)));
@@ -577,16 +581,18 @@ public abstract class JdbcSourceStandardTest {
   }
 
   // get catalog and perform a defensive copy.
-  private static ConfiguredAirbyteCatalog getConfiguredCatalog() {
+  private ConfiguredAirbyteCatalog getConfiguredCatalog() {
     return CatalogHelpers.toDefaultConfiguredCatalog(getCatalog());
   }
 
-  private static AirbyteCatalog getCatalog() {
+  private AirbyteCatalog getCatalog() {
     return new AirbyteCatalog().withStreams(Lists.newArrayList(CatalogHelpers.createAirbyteStream(
-        streamName,
+        getDefaultNamespace(),
+        TABLE_NAME,
         Field.of("id", JsonSchemaPrimitive.NUMBER),
         Field.of("name", JsonSchemaPrimitive.STRING),
         Field.of("updated_at", JsonSchemaPrimitive.STRING))
+        .withName(streamName)
         .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))));
   }
 
@@ -619,6 +625,7 @@ public abstract class JdbcSourceStandardTest {
     });
 
     return CatalogHelpers.createConfiguredAirbyteStream(
+        SCHEMA_NAME,
         streamName2,
         Field.of("id", JsonSchemaPrimitive.NUMBER),
         Field.of(lastNameField, JsonSchemaPrimitive.STRING));

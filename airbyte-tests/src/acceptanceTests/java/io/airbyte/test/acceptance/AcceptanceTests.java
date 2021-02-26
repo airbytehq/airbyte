@@ -45,6 +45,7 @@ import io.airbyte.api.client.model.AirbyteCatalog;
 import io.airbyte.api.client.model.AirbyteStream;
 import io.airbyte.api.client.model.AirbyteStreamAndConfiguration;
 import io.airbyte.api.client.model.AirbyteStreamConfiguration;
+import io.airbyte.api.client.model.AirbyteStreamName;
 import io.airbyte.api.client.model.CheckConnectionRead;
 import io.airbyte.api.client.model.ConnectionCreate;
 import io.airbyte.api.client.model.ConnectionIdRequestBody;
@@ -115,7 +116,8 @@ public class AcceptanceTests {
   private static final boolean IS_KUBE = System.getenv().containsKey("KUBE");
 
   private static final String TABLE_NAME = "id_and_name";
-  private static final String STREAM_NAME = "public." + TABLE_NAME;
+  private static final String STREAM_NAMESPACE = "public";
+  private static final String STREAM_NAME = STREAM_NAMESPACE + "." + TABLE_NAME;
   private static final String COLUMN_ID = "id";
   private static final String COLUMN_NAME = "name";
   private static final String COLUMN_NAME_DATA = "_airbyte_data";
@@ -281,6 +283,7 @@ public class AcceptanceTests {
         .build());
     final AirbyteStream stream = new AirbyteStream()
         .name(STREAM_NAME)
+        .streamName(new AirbyteStreamName().namespace(STREAM_NAMESPACE).name(TABLE_NAME))
         .jsonSchema(jsonSchema)
         .defaultCursorField(Collections.emptyList())
         .supportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));

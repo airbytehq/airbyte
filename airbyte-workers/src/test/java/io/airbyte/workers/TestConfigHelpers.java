@@ -45,6 +45,7 @@ public class TestConfigHelpers {
 
   private static final String CONNECTION_NAME = "favorite_color_pipe";
   private static final String STREAM_NAME = "user_preferences";
+  private static final String STREAM_NAMESPACE = "tests";
   private static final String FIELD_NAME = "favorite_color";
   private static final long LAST_SYNC_TIME = 1598565106;
 
@@ -83,7 +84,7 @@ public class TestConfigHelpers {
         .withTombstone(false);
 
     final ConfiguredAirbyteStream stream = new ConfiguredAirbyteStream()
-        .withStream(CatalogHelpers.createAirbyteStream(STREAM_NAME, Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING)));
+        .withStream(CatalogHelpers.createAirbyteStream(STREAM_NAMESPACE, STREAM_NAME, Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING)));
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(stream));
 
     final StandardSync standardSync = new StandardSync()

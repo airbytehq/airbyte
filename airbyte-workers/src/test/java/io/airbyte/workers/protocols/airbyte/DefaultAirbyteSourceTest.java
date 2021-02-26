@@ -42,6 +42,7 @@ import io.airbyte.config.StandardTapConfig;
 import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.AirbyteStreamName;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -68,6 +69,7 @@ class DefaultAirbyteSourceTest {
 
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
   private static final String STREAM_NAME = "user_preferences";
+  private static final String STREAM_NAMESPACE = "tests";
   private static final String FIELD_NAME = "favorite_color";
 
   private static final ConfiguredAirbyteCatalog CATALOG = new ConfiguredAirbyteCatalog()
@@ -75,6 +77,7 @@ class DefaultAirbyteSourceTest {
           new ConfiguredAirbyteStream()
               .withStream(new AirbyteStream()
                   .withName("hudi:latest")
+                  .withStreamName(new AirbyteStreamName().withName("hudi:latest").withNamespace(STREAM_NAMESPACE))
                   .withJsonSchema(CatalogHelpers.fieldsToJsonSchema(new Field(FIELD_NAME, Field.JsonSchemaPrimitive.STRING))))));
 
   private static final StandardTapConfig TAP_CONFIG = new StandardTapConfig()
@@ -82,7 +85,7 @@ class DefaultAirbyteSourceTest {
       .withSourceConnectionConfiguration(Jsons.jsonNode(Map.of(
           "apiKey", "123",
           "region", "us-east")))
-      .withCatalog(CatalogHelpers.createConfiguredAirbyteCatalog("hudi:latest", Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING)));
+      .withCatalog(CatalogHelpers.createConfiguredAirbyteCatalog(STREAM_NAMESPACE, "hudi:latest", Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING)));
 
   private static final List<AirbyteMessage> MESSAGES = Lists.newArrayList(
       AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue"),

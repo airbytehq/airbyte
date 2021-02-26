@@ -49,6 +49,7 @@ public class PostgresSourceStandardTest extends StandardSourceTest {
 
   private static final String STREAM_NAME = "public.id_and_name";
   private static final String STREAM_NAME2 = "public.starships";
+  private static final String STREAM_NAMESPACE = "tests";
 
   private PostgreSQLContainer<?> container;
   private JsonNode config;
@@ -114,6 +115,7 @@ public class PostgresSourceStandardTest extends StandardSourceTest {
             .withSyncMode(SyncMode.INCREMENTAL)
             .withCursorField(Lists.newArrayList("id"))
             .withStream(CatalogHelpers.createAirbyteStream(
+                STREAM_NAMESPACE,
                 STREAM_NAME,
                 Field.of("id", JsonSchemaPrimitive.NUMBER),
                 Field.of("name", JsonSchemaPrimitive.STRING))
@@ -122,6 +124,7 @@ public class PostgresSourceStandardTest extends StandardSourceTest {
             .withSyncMode(SyncMode.INCREMENTAL)
             .withCursorField(Lists.newArrayList("id"))
             .withStream(CatalogHelpers.createAirbyteStream(
+                STREAM_NAMESPACE,
                 STREAM_NAME2,
                 Field.of("id", JsonSchemaPrimitive.NUMBER),
                 Field.of("name", JsonSchemaPrimitive.STRING))
