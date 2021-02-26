@@ -1,12 +1,12 @@
 Cypress.Commands.add("createTestSource", (name) => {
-  cy.intercept("/scheduler/sources/check_connection").as("checkSourceConnection");
+  cy.intercept("/scheduler/sources/check_connection").as("checkSourceUpdateConnection");
   cy.intercept("/sources/create").as("createSource");
 
   cy.openNewSourceForm();
   cy.fillTestExchangeForm(name);
   cy.submit();
 
-  cy.wait("@checkSourceConnection");
+  cy.wait("@checkSourceUpdateConnection");
   cy.wait("@createSource");
 })
 

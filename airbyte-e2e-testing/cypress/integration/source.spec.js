@@ -6,16 +6,18 @@ describe("Source main actions", () => {
   });
 
   it("Update source", () => {
-    cy.updateSource("Test source cypress", "connectionConfiguration.start_date", "2020-11-11");
+    cy.createTestSource("Test source cypress for update");
+    cy.updateSource("Test source cypress for update", "connectionConfiguration.start_date", "2020-11-11");
 
     cy.get("span[data-id='success-result']").should("exist");
     cy.get("input[value='2020-11-11']").should("exist");
   });
 
   it("Delete source", () => {
-    cy.deleteSource("Test source cypress");
+    cy.createTestSource("Test source cypress for delete");
+    cy.deleteSource("Test source cypress for delete");
 
     cy.visit("/");
-    cy.get("div").contains("Test source cypress").should("not.exist");
+    cy.get("div").contains("Test source cypress for delete").should("not.exist");
   });
 });
