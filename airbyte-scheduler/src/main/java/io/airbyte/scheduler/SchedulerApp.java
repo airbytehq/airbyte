@@ -95,9 +95,9 @@ public class SchedulerApp {
     final ScheduledExecutorService scheduledPool = Executors.newSingleThreadScheduledExecutor();
     final WorkerRunFactory workerRunFactory = new WorkerRunFactory(workspaceRoot, pbf);
 
-    final JobRetrier jobRetrier = new JobRetrier(jobPersistence, Instant::now);
     final JobScheduler jobScheduler = new JobScheduler(jobPersistence, configRepository);
-    final JobSubmitter jobSubmitter = new JobSubmitter(workerThreadPool, jobPersistence, configRepository, workerRunFactory);
+    final JobSubmitter jobSubmitter = new JobSubmitter(jobPersistence, new JobTracking(configRepository));
+    final JobListener jobListener = new JobListener(jobPersistence,  new JobTracking(configRepository));
 
     Map<String, String> mdc = MDC.getCopyOfContextMap();
 
@@ -108,9 +108,9 @@ public class SchedulerApp {
     scheduledPool.scheduleWithFixedDelay(
         () -> {
           MDC.setContextMap(mdc);
-          jobRetrier.run();
           jobScheduler.run();
           jobSubmitter.run();
+          jobListener.run();
         },
         0L,
         SCHEDULING_DELAY.toSeconds(),

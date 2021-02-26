@@ -42,6 +42,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.WorkerConstants;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -51,30 +52,28 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
-public class JobSubmitter implements Runnable {
+public class JobListener implements Runnable {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(JobSubmitter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(JobListener.class);
 
   private final JobPersistence persistence;
-  private final JobTracking jobTracker;
+  private final JobTracking jobTracking;
 
-  public JobSubmitter(final JobPersistence persistence, final JobTracking jobTracker) {
+  public JobListener(final JobPersistence persistence, final JobTracking jobTracking) {
     this.persistence = persistence;
-    this.jobTracker = jobTracker;
+    this.jobTracking = jobTracking;
   }
 
   @Override
   public void run() {
     try {
-      LOGGER.info("Running job-submitter...");
+      LOGGER.info("Running job-listener...");
 
-      final Optional<Job> nextJob = persistence.getNextJob();
+      final List<Job> runningJobs = persistence.getRunningJobs();
 
-      nextJob.ifPresent(job -> {
-        jobTracker.trackSubmission(job);
-        submitJob(job);
-        LOGGER.info("Job-Submitter Summary. Submitted job with scope {}", job.getScope());
-      });
+      for(final Job job : runningJobs) {
+        persistProgress(job);
+      }
 
       LOGGER.info("Completed Job-Submitter...");
     } catch (Throwable e) {
@@ -83,12 +82,22 @@ public class JobSubmitter implements Runnable {
   }
 
   @VisibleForTesting
-  void submitJob(Job job) {
-    // temporal submit.
-    // not a great story on how we recover from this submission failing...
-    final UUID temporalId = temporalClient.submit(job); // maybe need to all submit info from workerrunfactory.
-    // get temporal id
-    persistence.writeTemporalId(job.getId(), temporalId);
-    // save temporal id
+  void persistProgress(Job job) {
+    final Object temporalJob = temporalClient.getJob(job.getTemporalId());
+    final List<Object> temporalAttempts = temporalClient.getAttempts(job.getTemporalId());
+
+    for(final Object temporalAttempt : temporalAttempts) {
+      // if we haven't seen the temporal attempt before, add it to our own persistence.
+      if(!job.getAttempts().stream().map(Attempt::getTemporalId).contains(temporalAttempt.getAttemptId())) {
+        persistence.createAttempt(jobId, temporalAttempt.getAttemptId(), temporalAttempt.getLogPath());
+      }
+    }
+
+    final JobStatus jobStatus = mapTemporalStatusToJobStatus(temporalClient.getJobStatus(temporalJob.getStatus()));
+    persistence.setStatus(job.getId(), jobStatus);
+
+    if(JobStatus.TERMINAL_STATUSES.contains(jobStatus)) {
+      jobTracking.trackCompletion(job, jobStatus);
+    }
   }
 }
