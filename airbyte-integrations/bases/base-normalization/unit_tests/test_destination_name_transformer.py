@@ -178,4 +178,4 @@ def test_normalize_column_name(input_str: str, destination_type: str, expected: 
 def test_truncate_identifier(input_str: str, expected: str):
     name_transformer = DestinationNameTransformer(DestinationType.POSTGRES)
     print(f"Truncating from #{len(input_str)} to #{len(expected)}")
-    assert name_transformer._DestinationNameTransformer__truncate_identifier_name(input_str) == expected
+    assert name_transformer.truncate_identifier_name(input_str) == expected
