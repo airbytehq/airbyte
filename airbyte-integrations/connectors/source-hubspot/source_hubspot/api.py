@@ -21,7 +21,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+import sys
+import time
 
+import backoff
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from functools import partial
@@ -30,18 +33,31 @@ from typing import Any, Callable, Iterable, Iterator, List, Mapping, Optional, U
 import pendulum as pendulum
 import requests
 from base_python.entrypoint import logger
+from source_hubspot.errors import HubspotInvalidAuth, HubspotSourceUnavailable, HubspotRateLimited
 
 
-class InvalidAuthException(Exception):
-    pass
+def retry_after_handler(**kwargs):
+    """Retry helper when we hit the call limit, sleeps for specific duration"""
 
+    def sleep_on_ratelimit(_details):
+        _, exc, _ = sys.exc_info()
+        if isinstance(exc, HubspotRateLimited):
+            retry_after = int(exc.response.headers["Retry-After"])
+            logger.info(f"Rate limit reached. Sleeping for {retry_after} seconds")
+            time.sleep(retry_after + 1)  # extra second to cover any fractions of second
 
-class SourceUnavailableException(Exception):
-    pass
+    def log_giveup(_details):
+        logger.error("Max retry limit reached")
 
-
-class DependencyException(Exception):
-    pass
+    return backoff.on_exception(
+        backoff.constant,
+        HubspotRateLimited,
+        jitter=None,
+        on_backoff=sleep_on_ratelimit,
+        on_giveup=log_giveup,
+        interval=0,  # skip waiting part, we will wait in on_backoff handler
+        **kwargs,
+    )
 
 
 class API:
@@ -67,7 +83,7 @@ class API:
 
         resp = requests.post(self.BASE_URL + "/oauth/v1/token", data=payload)
         if resp.status_code == 403:
-            raise InvalidAuthException(resp.content)
+            raise HubspotInvalidAuth(resp.content, response=resp)
 
         resp.raise_for_status()
         auth = resp.json()
@@ -106,12 +122,20 @@ class API:
     def _parse_and_handle_errors(response) -> Mapping[str, Any]:
         """Handle response"""
         if response.status_code == 403:
-            raise SourceUnavailableException(response.content)
+            raise HubspotSourceUnavailable(response.content)
+        elif response.status_code == 429:
+            retry_after = response.headers.get("Retry-After")
+            raise HubspotRateLimited(
+                f"429 Rate Limit Exceeded: API rate-limit has been reached until {retry_after} seconds."
+                " See https://developers.hubspot.com/docs/api/usage-details",
+                response=response,
+            )
         else:
             response.raise_for_status()
 
         return response.json()
 
+    @retry_after_handler(max_tries=3)
     def get(self, url: str, params=None) -> Union[Mapping[str, Any], List[Mapping[str, Any]]]:
         response = self._session.get(self.BASE_URL + url, params=self._add_auth(params))
         return self._parse_and_handle_errors(response)

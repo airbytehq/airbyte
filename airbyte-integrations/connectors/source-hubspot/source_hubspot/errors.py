@@ -22,30 +22,32 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from setuptools import find_packages, setup
+from requests import HTTPError
 
-MAIN_REQUIREMENTS = [
-    "airbyte-protocol",
-    "base-python",
-    "backoff==1.10.0",
-    "pendulum==1.2.0",
-    "requests==2.25.1",
-]
 
-TEST_REQUIREMENTS = [
-    "airbyte-python-test",
-    "pytest",
-]
+class HubspotError(HTTPError):
+    """
+    Base error class.
+    Subclassing HTTPError to avoid breaking existing code that expects only HTTPErrors.
+    """
 
-setup(
-    name="source_hubspot",
-    description="Source implementation for Hubspot.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    install_requires=MAIN_REQUIREMENTS,
-    package_data={"": ["*.json", "schemas/*.json"]},
-    extras_require={
-        "tests": TEST_REQUIREMENTS,
-    },
-)
+
+class HubspotSourceUnavailable(HubspotError):
+    """"""
+
+
+class HubspotBadRequest(HubspotError):
+    """Most 40X and 501 status codes"""
+
+
+class HubspotInvalidAuth(HubspotError):
+    """401 Unauthorized"""
+
+
+class HubspotAccessDenied(HubspotError):
+    """403 Forbidden"""
+
+
+class HubspotRateLimited(HubspotError):
+    """429 Rate Limit Reached"""
+
