@@ -606,6 +606,7 @@ def get_table_name(name_transformer: DestinationNameTransformer, root_table: str
 
 def render_table_name(prefix: str, base_table_name: str, suffix: str):
     if suffix:
-        return f"{prefix}{base_table_name}{suffix}"
+        new_suffix = suffix if suffix[0] == "_" else f"_{suffix}"
+        return f"{prefix}{base_table_name}{new_suffix}"
     else:
         return f"{prefix}{base_table_name}"
