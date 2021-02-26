@@ -110,7 +110,7 @@ public class SchedulerHandler {
     final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
 
     final Pair<StandardCheckConnectionOutput, JobInfoRead> output =
-        getJobInfoReadFromSynchronousJob(() -> schedulerSynchronousJobClient.createSourceCheckConnectionJob(source, imageName));
+        executeSynchronousJob(() -> schedulerSynchronousJobClient.createSourceCheckConnectionJob(source, imageName));
     return reportConnectionStatus(output);
   }
 
@@ -125,7 +125,7 @@ public class SchedulerHandler {
         .withConfiguration(sourceConfig.getConnectionConfiguration());
 
     final Pair<StandardCheckConnectionOutput, JobInfoRead> output =
-        getJobInfoReadFromSynchronousJob(() -> schedulerSynchronousJobClient.createSourceCheckConnectionJob(source, imageName));
+        executeSynchronousJob(() -> schedulerSynchronousJobClient.createSourceCheckConnectionJob(source, imageName));
     return reportConnectionStatus(output);
   }
 
@@ -149,7 +149,7 @@ public class SchedulerHandler {
     final StandardDestinationDefinition destinationDef = configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(destinationDef.getDockerRepository(), destinationDef.getDockerImageTag());
     final Pair<StandardCheckConnectionOutput, JobInfoRead> output =
-        getJobInfoReadFromSynchronousJob(() -> schedulerSynchronousJobClient.createDestinationCheckConnectionJob(destination, imageName));
+        executeSynchronousJob(() -> schedulerSynchronousJobClient.createDestinationCheckConnectionJob(destination, imageName));
     return reportConnectionStatus(output);
   }
 
@@ -163,7 +163,7 @@ public class SchedulerHandler {
         .withDestinationDefinitionId(destinationConfig.getDestinationDefinitionId())
         .withConfiguration(destinationConfig.getConnectionConfiguration());
     final Pair<StandardCheckConnectionOutput, JobInfoRead> output =
-        getJobInfoReadFromSynchronousJob(() -> schedulerSynchronousJobClient.createDestinationCheckConnectionJob(destination, imageName));
+        executeSynchronousJob(() -> schedulerSynchronousJobClient.createDestinationCheckConnectionJob(destination, imageName));
     return reportConnectionStatus(output);
   }
 
@@ -188,7 +188,7 @@ public class SchedulerHandler {
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(source.getSourceDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
     final Pair<StandardDiscoverCatalogOutput, JobInfoRead> output =
-        getJobInfoReadFromSynchronousJob(() -> schedulerSynchronousJobClient.createDiscoverSchemaJob(source, imageName));
+        executeSynchronousJob(() -> schedulerSynchronousJobClient.createDiscoverSchemaJob(source, imageName));
     return discoverJobToOutput(output);
   }
 
@@ -202,7 +202,7 @@ public class SchedulerHandler {
         .withSourceDefinitionId(sourceCreate.getSourceDefinitionId())
         .withConfiguration(sourceCreate.getConnectionConfiguration());
     final Pair<StandardDiscoverCatalogOutput, JobInfoRead> output =
-        getJobInfoReadFromSynchronousJob(() -> schedulerSynchronousJobClient.createDiscoverSchemaJob(source, imageName));
+        executeSynchronousJob(() -> schedulerSynchronousJobClient.createDiscoverSchemaJob(source, imageName));
     return discoverJobToOutput(output);
   }
 
@@ -313,7 +313,7 @@ public class SchedulerHandler {
     return JobMetadataConverter.getJobInfoRead(synchronousJobException.getJobMetadata());
   }
 
-  public static <T> Pair<T, JobInfoRead> getJobInfoReadFromSynchronousJob(CheckedSupplier<T, Exception> supplier) throws IOException {
+  public static <T> Pair<T, JobInfoRead> executeSynchronousJob(CheckedSupplier<T, Exception> supplier) throws IOException {
     try {
       return Pair.of(supplier.get(), null);
     } catch (SynchronousJobException e) {
