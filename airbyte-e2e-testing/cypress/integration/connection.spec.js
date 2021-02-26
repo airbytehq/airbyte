@@ -1,42 +1,19 @@
 describe("Connection main actions", () => {
-  beforeEach(() => {
-    cy.visit("/");
-  });
-
   it("Create new connection", () => {
-    cy.intercept("/api/v1/sources/check_connection").as("checkConnectionSource");
-    cy.intercept("/api/v1/destinations/check_connection").as("checkConnectionDestination");
+    cy.createTestConnection("Test connection source cypress", "Test destination cypress");
 
-    cy.intercept("/api/v1/sources/discover_schema").as("discoverSchema");
-    cy.intercept("/api/v1/connections/create").as("createConnection");
-
-    cy.createTestSource("Test source cypress");
-    cy.createTestDestination("Test destination cypress");
-    cy.wait(3000);
-
-    cy.get("div[role=combobox]").click();
-    cy.get("div").contains("Test source cypress").click();
-    cy.wait("@checkConnectionSource");
-    cy.wait("@checkConnectionDestination");
-
-
-    cy.wait("@discoverSchema");
-
-    cy.get("div[role=combobox]").last().click();
-    cy.get("div[data-id='manual']").click();
-    cy.submit();
-
-    cy.wait("@createConnection");
-
-    cy.get("div").contains("Test source cypress").should("exist");
+    cy.get("div").contains("Test connection source cypress").should("exist");
     cy.get("div").contains("Test destination cypress").should("exist");
   });
 
   it("Update connection", () => {
     cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
 
-    cy.get("div").contains("Test source cypress").click();
-    cy.get("div").contains("Test destination cypress").click();
+    cy.createTestConnection("Test update connection source cypress", "Test update connection destination cypress");
+
+    cy.visit("/");
+    cy.get("div").contains("Test update connection source cypress").click();
+    cy.get("div").contains("Test update connection destination cypress").click();
 
     cy.get("div[data-id='settings-step']").click();
 
@@ -51,14 +28,17 @@ describe("Connection main actions", () => {
 });
 
   it("Delete connection", () => {
-    cy.get("div").contains("Test source cypress").click();
-    cy.get("div").contains("Test destination cypress").click();
+    cy.createTestConnection("Test delete connection source cypress", "Test delete connection destination cypress");
+
+    cy.visit("/");
+    cy.get("div").contains("Test delete connection source cypress").click();
+    cy.get("div").contains("Test delete connection destination cypress").click();
 
     cy.get("div[data-id='settings-step']").click();
 
     cy.deleteEntity();
 
-    cy.deleteSource("Test source cypress");
-    cy.deleteDestination("Test destination cypress");
+    cy.deleteSource("Test delete connection source cypress");
+    cy.deleteDestination("Test delete connection destination cypress");
   });
 });

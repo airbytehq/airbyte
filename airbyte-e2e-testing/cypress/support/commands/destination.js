@@ -11,7 +11,7 @@ Cypress.Commands.add("createTestDestination", (name) => {
 })
 
 Cypress.Commands.add("updateDestination", (name, field, value) => {
-  cy.intercept("/destinations/check_connection_for_update").as("checkDestinationConnection");
+  cy.intercept("/destinations/check_connection_for_update").as("checkDestinationUpdateConnection");
   cy.intercept("/destinations/update").as("updateDestination");
 
   cy.openDestinationPage();
@@ -19,7 +19,7 @@ Cypress.Commands.add("updateDestination", (name, field, value) => {
   cy.updateField(field, value);
   cy.submit();
 
-  cy.wait("@checkDestinationConnection");
+  cy.wait("@checkDestinationUpdateConnection");
   cy.wait("@updateDestination");
 })
 

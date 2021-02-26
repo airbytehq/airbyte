@@ -30,3 +30,4 @@ yarn-error.log*
 
 /cypress/screenshots
 /cypress/videos
+/cypress/fixtures
