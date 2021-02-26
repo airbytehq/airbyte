@@ -113,11 +113,6 @@ def test_stream_processor_tables_naming(integration_type: str, catalog_file: str
         elif DestinationType.REDSHIFT.value == destination_type.value:
             expected_nested = {table.lower() for table in expected_nested}
 
-    table_list = list(tables_registry - expected_top_level)
-    table_list.sort()
-    for table in table_list:
-        print("table =", table)
-
     assert (tables_registry - expected_top_level) == expected_nested
 
 

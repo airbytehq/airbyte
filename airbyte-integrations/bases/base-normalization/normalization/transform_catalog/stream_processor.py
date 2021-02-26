@@ -598,7 +598,7 @@ def find_properties_object(path: List[str], field: str, properties) -> Dict[str,
 
 
 def get_table_name(name_transformer: DestinationNameTransformer, root_table: str, base_table_name: str, suffix: str, lineage_hash: str) -> str:
-    prefix = f"{root_table[:10]}_{lineage_hash}_" if root_table else ""
+    prefix = f"{name_transformer.normalize_table_name(root_table)[:10]}_{lineage_hash}_" if root_table else ""
     len_without_base_name = len(render_table_name(prefix, "", suffix))
     truncated_base_name = name_transformer.truncate_identifier_name(base_table_name, len_without_base_name)
     return render_table_name(prefix, truncated_base_name, suffix)
