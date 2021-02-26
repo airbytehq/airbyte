@@ -127,6 +127,9 @@ definitions:
     properties:
       name:
         type: string
+        description: Stream's name (deprecated, will be replaced by stream_name).
+      stream_name:
+        "$ref": "#/definitions/AirbyteStreamName"
         description: Stream's name.
       json_schema:
         description: Stream schema using Json Schema specs.
@@ -144,6 +147,18 @@ definitions:
         type: array
         items:
           type: string
+  AirbyteStreamName:
+    type: object
+    additionalProperties: false
+    required:
+      - name
+    properties:
+      namespace:
+        type: string
+        description: Stream's namespace.
+      name:
+        type: string
+        description: Stream's name.
   ConfiguredAirbyteCatalog:
     description: Airbyte stream schema catalog
     type: object

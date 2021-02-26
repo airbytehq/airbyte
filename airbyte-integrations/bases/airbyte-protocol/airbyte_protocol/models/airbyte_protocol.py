@@ -79,6 +79,11 @@ class AirbyteConnectionStatus(BaseModel):
     message: Optional[str] = None
 
 
+class AirbyteStreamName(BaseModel):
+    namespace: Optional[str] = Field(None, description="Stream's namespace.")
+    name: str = Field(..., description="Stream's name.")
+
+
 class SyncMode(Enum):
     full_refresh = "full_refresh"
     incremental = "incremental"
@@ -95,7 +100,8 @@ class ConnectorSpecification(BaseModel):
 
 
 class AirbyteStream(BaseModel):
-    name: str = Field(..., description="Stream's name.")
+    name: str = Field(..., description="Stream's name (deprecated, will be replaced by stream_name).")
+    stream_name: Optional[AirbyteStreamName] = Field(None, description="Stream's name.")
     json_schema: Dict[str, Any] = Field(..., description="Stream schema using Json Schema specs.")
     supported_sync_modes: Optional[List[SyncMode]] = None
     source_defined_cursor: Optional[bool] = Field(
