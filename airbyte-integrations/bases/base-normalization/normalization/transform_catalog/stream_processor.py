@@ -421,7 +421,7 @@ from {{ from_table }}
     def list_fields(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
         return [column_names[field][0] for field in column_names]
 
-    def add_to_outputs(self, sql: str, is_intermediate: bool, suffix: str = None) -> str:
+    def add_to_outputs(self, sql: str, is_intermediate: bool, suffix: str = "") -> str:
         schema = self.get_schema(is_intermediate)
         table_name = self.generate_new_table_name(is_intermediate, suffix)
         self.add_table_to_local_registry(table_name)
@@ -547,22 +547,13 @@ where {column_name} is not null"""
         return result
 
     def lineage_hash(self) -> str:
-        lineage_list = get_lineage(self, [])
-        lineage = "&airbyte&".join(lineage_list)
+        lineage = "&airbyte&".join(self.json_path)
         h = hashlib.sha1()
         h.update(lineage.encode("utf-8"))
-        return h.hexdigest()[:6]
+        return h.hexdigest()[:3]
 
 
 # Static Functions
-
-
-def get_lineage(stream_processor: StreamProcessor, current_lineage: List[str]) -> List[str]:
-    if stream_processor.parent is not None:
-        return get_lineage(stream_processor.parent, [stream_processor.stream_name])
-    else:
-        return current_lineage + [stream_processor.stream_name]
-
 
 def ref_table(table_name) -> str:
     return f"ref('{table_name}')"
@@ -605,7 +596,7 @@ def find_properties_object(path: List[str], field: str, properties) -> Dict[str,
 
 
 def get_table_name(base_table_name: str, suffix: str, lineage_hash: str) -> str:
-    if suffix is None:
+    if not suffix:
         return f"{base_table_name}_{lineage_hash}"
     else:
         return f"{base_table_name}_{lineage_hash}_{suffix}"
