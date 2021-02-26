@@ -97,6 +97,9 @@ public class JobListener implements Runnable {
     persistence.setStatus(job.getId(), jobStatus);
 
     if(JobStatus.TERMINAL_STATUSES.contains(jobStatus)) {
+      if(JobStatus.SUCCEEDED == jobStatus) {
+        persistence.writeOutput(job.getId(), tempoarlAttemptIdToAttemptId(temporalJob.getSuccessAttemptId()), temporalClient.getOutput(job.getTemporalId()));
+      }
       jobTracking.trackCompletion(job, jobStatus);
     }
   }
