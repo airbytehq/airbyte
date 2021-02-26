@@ -3,8 +3,10 @@ description: Create a DAG in Airflow to trigger Airbyte sync job
 ---
 
 # Airflow Integration
+![](../.gitbook/assets/airflow_dag.png)
+During this tutorial we are going to update our data warehouse using Airbyte connection and our downstream pipeline with Airflow to split data into train/test and update a machine learning model.
 
-During this tutorial we are going to replicate currencies closing price into a JSON file sync connection in Airbyte and use Airflow to trigger this job.
+During this tutorial we are going to update our currencies closing price into a JSON file sync connection in Airbyte and use Airflow to trigger this job.
 
 ## 1. Set up the tools
 
@@ -21,7 +23,6 @@ docker-compose up
 Once you see an Airbyte banner, the UI is ready to go at [http://localhost:8000/](http://localhost:8000/).
 
 ### **Start Airflow**
-- [ ] Create walkthrough to setup Airflow
 
 [Quick start Airflow](https://airflow.apache.org/docs/apache-airflow/stable/start/docker.html)
 
@@ -86,6 +87,8 @@ Insert data about our connection. We are going to use the Airbyte API to execute
 
 After inserting the information click on Save.
 
+![](../.gitbook/assets/airflow_airbyte_connection.png)
+
 ### Create a simple DAG in Airflow to run a sync job
 Create a file inside the `/dags` directory called `dag_airbyte_example.py`
 ```python
@@ -132,3 +135,5 @@ You can check the job status in Airflow UI.
 This is just the beginning of using Airbyte. We support a large collection of sources and destination. You can even contribute your own.
 
 If you have any questions at all, please reach out to us on [Slack](https://slack.airbyte.io/). We’re still in alpha, so if you see any rough edges or want to request a connector you need, please create an issue on our [Github](https://github.com/airbytehq/airbyte) or leave a thumbs up on an existing issue.
+
+
