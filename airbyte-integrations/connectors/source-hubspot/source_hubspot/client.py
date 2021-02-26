@@ -25,12 +25,25 @@ SOFTWARE.
 from typing import Mapping, Tuple
 
 from base_python import BaseClient
-
 from source_hubspot.api import (
-    API, CampaignsAPI, CompaniesAPI, ContactListsAPI, ContactsAPI, ContactsByCompanyAPI,
-    DealPipelinesAPI, DealsAPI, EmailEventsAPI,
-    EngagementsAPI, FormsAPI, LineItemsAPI, OwnersAPI, ProductsAPI, QuotesAPI,
-    SubscriptionChangesAPI, TicketsAPI, WorkflowsAPI
+    API,
+    CampaignsAPI,
+    CompaniesAPI,
+    ContactListsAPI,
+    ContactsAPI,
+    ContactsByCompanyAPI,
+    DealPipelinesAPI,
+    DealsAPI,
+    EmailEventsAPI,
+    EngagementsAPI,
+    FormsAPI,
+    LineItemsAPI,
+    OwnersAPI,
+    ProductsAPI,
+    QuotesAPI,
+    SubscriptionChangesAPI,
+    TicketsAPI,
+    WorkflowsAPI,
 )
 
 

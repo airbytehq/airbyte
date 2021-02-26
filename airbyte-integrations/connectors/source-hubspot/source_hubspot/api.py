@@ -21,15 +21,15 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-from abc import abstractmethod, ABC
+
+from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
+from functools import partial
+from typing import Any, Callable, Iterable, Iterator, List, Mapping, Optional, Union
 
 import pendulum as pendulum
-from base_python.entrypoint import logger
-from functools import partial
-from typing import Mapping, Iterable, Any, Optional, Iterator, Callable, List, Union
-
 import requests
+from base_python.entrypoint import logger
 
 
 class InvalidAuthException(Exception):
@@ -73,8 +73,7 @@ class API:
         auth = resp.json()
         self._credentials["access_token"] = auth["access_token"]
         self._credentials["refresh_token"] = auth["refresh_token"]
-        self._credentials["token_expires"] = datetime.utcnow() + timedelta(
-            seconds=auth["expires_in"] - 600)
+        self._credentials["token_expires"] = datetime.utcnow() + timedelta(seconds=auth["expires_in"] - 600)
         logger.info("Token refreshed. Expires at %s", self._credentials["token_expires"])
 
     @property
@@ -88,14 +87,12 @@ class API:
         if not self._credentials.get("access_token"):
             return None
 
-        if self._credentials["token_expires"] is None or self._credentials[
-            "token_expires"] < datetime.utcnow():
+        if self._credentials["token_expires"] is None or self._credentials["token_expires"] < datetime.utcnow():
             self._acquire_access_token_from_refresh_token()
         return self._credentials.get("access_token")
 
     def _add_auth(self, params: Mapping[str, Any] = None) -> Mapping[str, Any]:
-        """ Add auth info to request params/header
-        """
+        """Add auth info to request params/header"""
         params = params or {}
 
         if self.api_key:
@@ -145,25 +142,20 @@ class StreamAPI(ABC):
         pass
 
     def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
-        default_params = {
-            "limit": self.limit,
-            "properties": ",".join(self.properties.keys())
-        }
+        default_params = {"limit": self.limit, "properties": ",".join(self.properties.keys())}
 
         params = {**default_params, **params} if params else {**default_params}
 
         while True:
             response = getter(params=params)
             if response.get(self.data_path) is None:
-                raise RuntimeError(
-                    "Unexpected API response: {} not in {}".format(self.data_path, response.keys())
-                )
+                raise RuntimeError("Unexpected API response: {} not in {}".format(self.data_path, response.keys()))
 
             for row in response[self.data_path]:
                 yield row
 
             # pagination
-            if "paging" in response:    # APIv3 pagination
+            if "paging" in response:  # APIv3 pagination
                 if "next" in response["paging"]:
                     params["after"] = response["paging"]["next"]["after"]
                 else:
@@ -194,9 +186,7 @@ class StreamAPI(ABC):
         props = {}
         data = self._api.get(f"/properties/v2/{self.entity}/properties")
         for row in data:
-            props[row["name"]] = {
-                "type": row["type"]
-            }
+            props[row["name"]] = {"type": row["type"]}
 
         return props
 
@@ -287,9 +277,7 @@ class ContactsByCompanyAPI(StreamAPI):
         data = self._api.get(url, params)
 
         if data.get(path) is None:
-            raise RuntimeError(
-                "Unexpected API response: {} not in {}".format(path, data.keys())
-            )
+            raise RuntimeError("Unexpected API response: {} not in {}".format(path, data.keys()))
 
         for row in data[path]:
             yield {
