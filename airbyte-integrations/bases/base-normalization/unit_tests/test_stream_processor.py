@@ -28,6 +28,7 @@ import re
 import pytest
 from normalization.destination_type import DestinationType
 from normalization.transform_catalog.catalog_processor import CatalogProcessor, add_table_to_registry, read_json
+from normalization.transform_catalog.stream_processor import get_table_name
 from normalization.transform_catalog.destination_name_transformer import DestinationNameTransformer
 
 
@@ -118,3 +119,18 @@ def test_stream_processor_tables_naming(integration_type: str, catalog_file: str
         print("table =", table)
 
     assert (tables_registry - expected_top_level) == expected_nested
+
+
+@pytest.mark.parametrize(
+    "root_table, base_table_name, suffix, expected",
+    [
+        ("abcdefghijklmnopqrstuvwxyz", "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz", "", "abcdefghij_HSH_abcdefghijklm__nopqrstuvwxyz"),
+        ("abcdefghijklmnopqrstuvwxyz", "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz", "_ab1", "abcdefghij_HSH_abcdefghijk__pqrstuvwxyz_ab1"),
+        ("abcde", "fghijk", "_ab1", "abcde_HSH_fghijk_ab1"),
+        ("abcde", "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz", "", "abcde_HSH_abcdefghijklmnop__lmnopqrstuvwxyz"),
+    ],
+)
+def test_get_table_name(root_table: str, base_table_name: str, suffix: str, expected: str):
+    name_transformer = DestinationNameTransformer(DestinationType.POSTGRES)
+    name = get_table_name(name_transformer, root_table, base_table_name, suffix, "HSH")
+    assert name == expected
