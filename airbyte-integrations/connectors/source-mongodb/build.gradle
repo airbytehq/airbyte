@@ -6,21 +6,22 @@ plugins {
 }
 
 airbyteStandardSourceTestFile {
-    def dbName = "mongo-test-${System.currentTimeMillis()}"
+    def dbName = "mongo-airbyte-integration-test"
     prehook {
         project.exec {
-            def args = ["docker", "run",
-                        "--rm",
-                        "-v", "${project.path}/bin:/docker-entrypoint-initdb.d",
+            def args = ["docker", "run", "--rm",
                         "--name", dbName,
-                        "mongo:4.0.23"]
+                        "airbyte/mongodb-integration-test-seed"]
+            commandLine args
         }
-        println('HOOOOOHOHOHOHOHOHOOHello')
-        logger.error("HOOOOOHOHOHOHOHOHOOHello")
+
+        
     }
 
     posthook {
-        logger.error("HOOOOOHOHOHOHOHOHOOHello BYEYBYEYBYE")
+        project.exec {
+            commandLine ["docker", "stop", dbName]
+        }
     }
 
     // All these input paths must live inside this connector's directory (or subdirectories)
