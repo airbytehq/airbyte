@@ -6,6 +6,23 @@ plugins {
 }
 
 airbyteStandardSourceTestFile {
+    def dbName = "mongo-test-${System.currentTimeMillis()}"
+    prehook {
+        project.exec {
+            def args = ["docker", "run",
+                        "--rm",
+                        "-v", "${project.path}/bin:/docker-entrypoint-initdb.d",
+                        "--name", dbName,
+                        "mongo:4.0.23"]
+        }
+        println('HOOOOOHOHOHOHOHOHOOHello')
+        logger.error("HOOOOOHOHOHOHOHOHOOHello")
+    }
+
+    posthook {
+        logger.error("HOOOOOHOHOHOHOHOHOOHello BYEYBYEYBYE")
+    }
+
     // All these input paths must live inside this connector's directory (or subdirectories)
     configPath = "secrets/valid_config.json"
     configuredCatalogPath = "secrets/fullrefresh_configured_catalog.json"
