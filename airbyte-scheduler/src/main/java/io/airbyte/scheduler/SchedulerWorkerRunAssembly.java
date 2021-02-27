@@ -24,7 +24,7 @@
 
 package io.airbyte.scheduler;
 
-import io.airbyte.scheduler.worker_run_factories.BaseWorkerRunAssembly;
+import io.airbyte.scheduler.worker_run_factories.WorkerRunAssembly;
 import io.airbyte.scheduler.worker_run_factories.CheckConnectionWorkerRunFactory;
 import io.airbyte.scheduler.worker_run_factories.DiscoverWorkerRunFactory;
 import io.airbyte.scheduler.worker_run_factories.GetSpecWorkerRunFactory;
@@ -60,16 +60,16 @@ public class SchedulerWorkerRunAssembly {
     LOGGER.info("job root: {}", jobRoot);
 
     return switch (job.getConfig().getConfigType()) {
-      case GET_SPEC -> new BaseWorkerRunAssembly<>(workspaceRoot, pbf, new GetSpecWorkerRunFactory()).create(job.getId(), currentAttempt,
-          job.getConfig().getGetSpec());
-      case CHECK_CONNECTION_SOURCE, CHECK_CONNECTION_DESTINATION -> new BaseWorkerRunAssembly<>(workspaceRoot, pbf,
+      case GET_SPEC -> new WorkerRunAssembly<>(workspaceRoot, pbf, new GetSpecWorkerRunFactory())
+          .create(job.getId(), currentAttempt, job.getConfig().getGetSpec());
+      case CHECK_CONNECTION_SOURCE, CHECK_CONNECTION_DESTINATION -> new WorkerRunAssembly<>(workspaceRoot, pbf,
           new CheckConnectionWorkerRunFactory()).create(job.getId(), currentAttempt, job.getConfig().getCheckConnection());
-      case DISCOVER_SCHEMA -> new BaseWorkerRunAssembly<>(workspaceRoot, pbf, new DiscoverWorkerRunFactory()).create(job.getId(), currentAttempt,
-          job.getConfig().getDiscoverCatalog());
-      case SYNC -> new BaseWorkerRunAssembly<>(workspaceRoot, pbf, new SyncWorkerRunFactory()).create(job.getId(), currentAttempt,
-          job.getConfig().getSync());
-      case RESET_CONNECTION -> new BaseWorkerRunAssembly<>(workspaceRoot, pbf, new ResetConnectionWorkerRunFactory()).create(job.getId(),
-          currentAttempt, job.getConfig().getResetConnection());
+      case DISCOVER_SCHEMA -> new WorkerRunAssembly<>(workspaceRoot, pbf, new DiscoverWorkerRunFactory())
+          .create(job.getId(), currentAttempt, job.getConfig().getDiscoverCatalog());
+      case SYNC -> new WorkerRunAssembly<>(workspaceRoot, pbf, new SyncWorkerRunFactory())
+          .create(job.getId(), currentAttempt, job.getConfig().getSync());
+      case RESET_CONNECTION -> new WorkerRunAssembly<>(workspaceRoot, pbf, new ResetConnectionWorkerRunFactory())
+          .create(job.getId(), currentAttempt, job.getConfig().getResetConnection());
     };
   }
 

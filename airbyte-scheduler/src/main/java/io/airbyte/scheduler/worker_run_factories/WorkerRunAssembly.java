@@ -36,15 +36,15 @@ import org.slf4j.LoggerFactory;
  * This class is a runnable that give a job id and db connection figures out how to run the
  * appropriate worker for a given job.
  */
-public class BaseWorkerRunAssembly<T> {
+public class WorkerRunAssembly<T> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BaseWorkerRunAssembly.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(WorkerRunAssembly.class);
 
   private final Path workspaceRoot;
   private final ProcessBuilderFactory pbf;
   private final WorkerRunFactory<T> workerRunFactory;
 
-  public BaseWorkerRunAssembly(final Path workspaceRoot,
+  public WorkerRunAssembly(final Path workspaceRoot,
                                final ProcessBuilderFactory pbf,
                                final WorkerRunFactory<T> workerRunFactory) {
     this.workspaceRoot = workspaceRoot;

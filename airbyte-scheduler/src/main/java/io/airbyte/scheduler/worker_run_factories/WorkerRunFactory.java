@@ -28,8 +28,9 @@ import io.airbyte.scheduler.WorkerRun;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import java.nio.file.Path;
 
-// T must be serializable. the generated json pojos are not serializable, so can't actually enforce
-// serialiable in the compiler.
+// T must be serializable. The generated json pojos do not implement serializable (but they are
+// serializable). It means we can't force Serializable as a constraint in this interface
+// unfortunately.
 public interface WorkerRunFactory<T> {
 
   WorkerRun create(final Path jobRoot,
