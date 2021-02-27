@@ -11,6 +11,11 @@ airbyteStandardSourceTestFile {
         project.exec {
             def args = ["docker", "run", "--rm",
                         "--name", dbName,
+                        "-d",
+                        // assign to a weird port number so we don't conflict with any locally running mongo instances
+                        "-p", "27888:27017",
+                        "-e", "MONGO_INITDB_ROOT_USERNAME=user",
+                        "-e", "MONGO_INITDB_ROOT_PASSWORD=password",
                         "airbyte/mongodb-integration-test-seed:dev"]
             commandLine args
         }
@@ -25,7 +30,7 @@ airbyteStandardSourceTestFile {
     }
 
     // All these input paths must live inside this connector's directory (or subdirectories)
-    configPath = "secrets/valid_config.json"
+    configPath = "secrets.sample/valid_config.json"
     configuredCatalogPath = "secrets/fullrefresh_configured_catalog.json"
     specPath = "lib/spec.json"
 }
