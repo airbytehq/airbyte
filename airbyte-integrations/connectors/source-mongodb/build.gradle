@@ -11,7 +11,7 @@ airbyteStandardSourceTestFile {
         project.exec {
             def args = ["docker", "run", "--rm",
                         "--name", dbName,
-                        "airbyte/mongodb-integration-test-seed"]
+                        "airbyte/mongodb-integration-test-seed:dev"]
             commandLine args
         }
 
