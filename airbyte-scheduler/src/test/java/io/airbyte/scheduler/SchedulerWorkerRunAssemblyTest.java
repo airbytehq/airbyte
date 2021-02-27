@@ -59,7 +59,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.ArgumentCaptor;
 
-class WorkerRunFactoryTest {
+class SchedulerWorkerRunAssemblyTest {
 
   private static final JsonNode CONFIG = Jsons.jsonNode(1);
   private static final JsonNode CONFIG2 = Jsons.jsonNode(2);
@@ -69,9 +69,9 @@ class WorkerRunFactoryTest {
 
   private Job job;
   private Path rootPath;
-  private WorkerRunFactory.Creator creator;
+  private SchedulerWorkerRunAssembly.Creator creator;
 
-  private WorkerRunFactory factory;
+  private SchedulerWorkerRunAssembly factory;
 
   @BeforeEach
   void setUp() throws IOException {
@@ -79,10 +79,10 @@ class WorkerRunFactoryTest {
     when(job.getId()).thenReturn(1L);
     when(job.getAttemptsCount()).thenReturn(2);
 
-    creator = mock(WorkerRunFactory.Creator.class);
+    creator = mock(SchedulerWorkerRunAssembly.Creator.class);
     rootPath = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "test");
 
-    factory = new WorkerRunFactory(rootPath, mock(ProcessBuilderFactory.class), creator);
+    factory = new SchedulerWorkerRunAssembly(rootPath, mock(ProcessBuilderFactory.class), creator);
   }
 
   @SuppressWarnings("unchecked")
