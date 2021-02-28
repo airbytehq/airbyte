@@ -2,7 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 
-import { Button, H4, StatusIcon } from "../../../components";
+import { Button, H4, StatusIcon } from "components";
 
 const Block = styled.div`
   margin: 40px;

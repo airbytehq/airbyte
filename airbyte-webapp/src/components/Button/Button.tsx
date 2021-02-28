@@ -1,7 +1,9 @@
 import styled from "styled-components";
+import { Theme } from "theme";
+
 import { IProps } from "./types";
 
-type IStyleProps = IProps & { theme: any };
+type IStyleProps = IProps & { theme: Theme };
 
 const getBorderColor = (props: IStyleProps) => {
   if ((props.secondary && props.wasActive) || props.iconOnly) {

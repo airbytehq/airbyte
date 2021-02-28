@@ -18,8 +18,8 @@ export default abstract class BaseResource extends Resource {
   static async fetchResponse(
     _: Method,
     url: string,
-    body?: Readonly<object | string>
-  ) {
+    body?: Readonly<Record<string, unknown> | Array<unknown> | string>
+  ): Promise<Response> {
     let options: RequestInit = {
       method: "POST",
       headers: {
@@ -36,8 +36,8 @@ export default abstract class BaseResource extends Resource {
   static async fetch(
     method: Method,
     url: string,
-    body?: Readonly<object | string>
-  ) {
+    body?: Readonly<Record<string, unknown> | Array<unknown> | string>
+  ): Promise<Response> {
     const response = await this.fetchResponse(method, url, body);
 
     if (response.status >= 200 && response.status < 300) {
@@ -55,7 +55,7 @@ export default abstract class BaseResource extends Resource {
 
   static url<T extends typeof Resource>(
     this: T,
-    _: Readonly<Record<string, any>>
+    _: Readonly<Record<string, unknown>>
   ): string {
     return `${AirbyteRequestService.rootUrl}${this.urlRoot}`;
   }
@@ -68,12 +68,12 @@ export default abstract class BaseResource extends Resource {
     this: T
   ): ReadShape<SchemaList<AbstractInstanceType<T>>> {
     return {
-      ...(super.listShape() as any),
-      getFetchKey: (params: any) =>
+      ...super.listShape(),
+      getFetchKey: (params: Readonly<Record<string, unknown>>) =>
         "POST " + this.url(params) + "/list" + JSON.stringify(params),
       fetch: async (
         params: Readonly<Record<string, string | number>>
-      ): Promise<any> => {
+      ): Promise<unknown> => {
         const response = await this.fetch(
           "post",
           `${this.listUrl(params)}/list`,
@@ -88,12 +88,12 @@ export default abstract class BaseResource extends Resource {
     this: T
   ): ReadShape<SchemaDetail<AbstractInstanceType<T>>> {
     return {
-      ...(super.detailShape() as any),
-      getFetchKey: (params: any) =>
+      ...super.detailShape(),
+      getFetchKey: (params: Readonly<Record<string, unknown>>) =>
         "POST " + this.url(params) + "/get" + JSON.stringify(params),
       fetch: async (
         params: Readonly<Record<string, string | number>>
-      ): Promise<any> => {
+      ): Promise<unknown> => {
         const response = await this.fetch(
           "post",
           `${this.url(params)}/get`,
@@ -108,13 +108,13 @@ export default abstract class BaseResource extends Resource {
     this: T
   ): MutateShape<SchemaDetail<AbstractInstanceType<T>>> {
     return {
-      ...(super.createShape() as any),
-      getFetchKey: (params: any) =>
+      ...super.createShape(),
+      getFetchKey: (params: Readonly<Record<string, unknown>>) =>
         "POST " + this.url(params) + "/create" + JSON.stringify(params),
       fetch: async (
         params: Readonly<Record<string, string | number>>,
-        body: Readonly<object>
-      ): Promise<any> => {
+        body: Readonly<Record<string, unknown>>
+      ): Promise<unknown> => {
         const response = await this.fetch(
           "post",
           `${this.listUrl(params)}/create`,
@@ -127,14 +127,18 @@ export default abstract class BaseResource extends Resource {
 
   static deleteShape<T extends typeof Resource>(
     this: T
-  ): MutateShape<schemas.Delete<T>, Readonly<object>, unknown> {
+  ): MutateShape<
+    schemas.Delete<T>,
+    Readonly<Record<string, unknown>>,
+    unknown
+  > {
     return {
-      ...(super.deleteShape() as any),
-      getFetchKey: (params: any) =>
+      ...super.deleteShape(),
+      getFetchKey: (params: Readonly<Record<string, unknown>>) =>
         "POST " + this.url(params) + "/delete" + JSON.stringify(params),
       fetch: async (
         params: Readonly<Record<string, string | number>>
-      ): Promise<any> => {
+      ): Promise<unknown> => {
         const response = await this.fetch(
           "post",
           `${this.url(params)}/delete`,
@@ -149,13 +153,13 @@ export default abstract class BaseResource extends Resource {
     this: T
   ): MutateShape<SchemaDetail<AbstractInstanceType<T>>> {
     return {
-      ...(super.partialUpdateShape() as any),
-      getFetchKey: (params: any) =>
+      ...super.partialUpdateShape(),
+      getFetchKey: (params: Readonly<Record<string, unknown>>) =>
         "POST " + this.url(params) + "/partial-update" + JSON.stringify(params),
       fetch: async (
         params: Readonly<Record<string, string | number>>,
-        body: Readonly<object>
-      ): Promise<any> => {
+        body: Readonly<Record<string, unknown>>
+      ): Promise<unknown> => {
         const response = await this.fetch(
           "post",
           `${this.url(params)}/update`,

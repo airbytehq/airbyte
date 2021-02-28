@@ -3,24 +3,25 @@ import React, { useEffect } from "react";
 import { FormikProps, useField } from "formik";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
+import { ObjectSchema } from "yup";
 
-import { IDataItem } from "../../DropDown/components/ListItem";
+import { IDataItem } from "components/DropDown/components/ListItem";
 import Instruction from "./Instruction";
 import Spinner from "../../Spinner";
 import { Property } from "./Property";
-import { FormBaseItem, FormBlock } from "../../../core/form/types";
+import { FormBaseItem, FormBlock } from "core/form/types";
 import { FormInitialValues } from "../useBuildForm";
-import DropDown from "../../DropDown";
-import { ControlLabels } from "../../LabeledControl";
-import Input from "../../Input";
-import LabeledToggle from "../../LabeledToggle";
-import TextWithHTML from "../../TextWithHTML";
+import DropDown from "components/DropDown";
+import { ControlLabels } from "components/LabeledControl";
+import Input from "components/Input";
+import LabeledToggle from "components/LabeledToggle";
+import TextWithHTML from "components/TextWithHTML";
 import { useWidgetInfo } from "../uiWidgetContext";
 import ShowLoadingMessage from "./ShowLoadingMessage";
-import Label from "../../Label";
+import Label from "components/Label";
 
 type IProps = {
-  schema: any;
+  schema: ObjectSchema;
   formFields: FormBlock[];
   dropDownData: Array<IDataItem>;
   isLoadingSchema?: boolean;
@@ -41,6 +42,7 @@ const FormItemGroupDropDown = styled(FormItem)`
   padding: 0 5px;
   display: inline-block;
   vertical-align: middle;
+
   & > div {
     min-width: 180px;
     display: inline-block;

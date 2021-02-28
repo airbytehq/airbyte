@@ -3,8 +3,8 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import dayjs from "dayjs";
 
-import { Attempt } from "../../../core/resources/Job";
-import Status from "../../../core/statuses";
+import { Attempt } from "core/resources/Job";
+import Status from "core/statuses";
 
 type IProps = {
   className?: string;

@@ -1,7 +1,8 @@
 import React from "react";
 import styled from "styled-components";
+import { Theme } from "theme";
 
-type IStyleProps = InputProps & { theme: any };
+type IStyleProps = InputProps & { theme: Theme };
 
 const getBackgroundColor = (props: IStyleProps) => {
   if (props.error) {
@@ -56,6 +57,5 @@ const Input = styled.input<InputProps>`
   }
 `;
 
-// TODO: figure out problem with prettier
-// export type { InputProps };
 export default Input;
+export { Input };

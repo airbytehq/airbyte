@@ -2,23 +2,23 @@ import React, { Suspense, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import LoadingSchema from "../LoadingSchema";
-import ContentCard from "../ContentCard";
-import { JobsLogItem } from "../JobItem";
-import FrequencyForm from "../FrequencyForm";
-import { createFormErrorMessage } from "../../utils/errorStatusMessage";
+import LoadingSchema from "components/LoadingSchema";
+import ContentCard from "components/ContentCard";
+import { JobsLogItem } from "components/JobItem";
+import FrequencyForm from "components/FrequencyForm";
+import { createFormErrorMessage } from "utils/errorStatusMessage";
 
 import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
 
-import config from "../../config";
+import config from "config";
 
-import { AnalyticsService } from "../../core/analytics/AnalyticsService";
-import { Source } from "../../core/resources/Source";
-import { Destination } from "../../core/resources/Destination";
-import { SyncSchema } from "../../core/domain/catalog";
+import { AnalyticsService } from "core/analytics/AnalyticsService";
+import { Source } from "core/resources/Source";
+import { Destination } from "core/resources/Destination";
+import { SyncSchema } from "core/domain/catalog";
 
-import useConnection from "../hooks/services/useConnectionHook";
-import { useDiscoverSchema } from "../hooks/services/useSchemaHook";
+import useConnection from "components/hooks/services/useConnectionHook";
+import { useDiscoverSchema } from "components/hooks/services/useSchemaHook";
 
 const SkipButton = styled.div`
   margin-top: 6px;

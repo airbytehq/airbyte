@@ -3,7 +3,7 @@ import { Formik, Form } from "formik";
 import styled from "styled-components";
 import { JSONSchema7 } from "json-schema";
 
-import { IDataItem } from "../DropDown/components/ListItem";
+import { IDataItem } from "components/DropDown/components/ListItem";
 import FormContent from "./components/FormContent";
 import BottomBlock from "./components/BottomBlock";
 import EditControls from "./components/EditControls";
@@ -15,6 +15,7 @@ import {
   useConstructValidationSchema,
 } from "./useBuildForm";
 import { WidgetInfo, WidgetInfoProvider } from "./uiWidgetContext";
+import { ConnectionConfiguration } from "core/domain/connection";
 
 const FormContainer = styled(Form)`
   padding: 22px 27px 23px 24px;
@@ -37,7 +38,7 @@ type IProps = {
     name: string;
     serviceType: string;
     frequency?: string;
-    connectionConfiguration?: any;
+    connectionConfiguration?: ConnectionConfiguration;
   }) => void;
   formType: "source" | "destination" | "connection";
   formValues?: Partial<FormInitialValues>;

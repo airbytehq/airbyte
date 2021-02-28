@@ -2,14 +2,14 @@ import React, { useMemo } from "react";
 import styled from "styled-components";
 import { useIntl } from "react-intl";
 
-import { Cell } from "../../SimpleTableComponents";
-import DropDown, { DropDownRow } from "../../DropDown";
-import { IDataItem } from "../../DropDown/components/ListItem";
+import { Cell } from "components/SimpleTableComponents";
+import DropDown, { DropDownRow } from "components/DropDown";
+import { IDataItem } from "components/DropDown/components/ListItem";
 import {
   SyncMode,
   SyncSchemaField,
   SyncSchemaStream,
-} from "../../../core/domain/catalog";
+} from "core/domain/catalog";
 
 const DropDownContainer = styled.div`
   padding-right: 10px;
@@ -30,7 +30,7 @@ type IProps = {
 
 function traverse(
   fields: SyncSchemaField[],
-  cb: (field: SyncSchemaField) => any
+  cb: (field: SyncSchemaField) => void
 ) {
   fields.forEach((field) => {
     cb(field);

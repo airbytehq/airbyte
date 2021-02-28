@@ -1,6 +1,7 @@
 import React from "react";
 import styled from "styled-components";
-import Version from "../Version";
+
+import Version from "components/Version";
 
 const Content = styled.div`
   height: 100%;

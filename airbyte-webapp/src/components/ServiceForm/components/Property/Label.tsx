@@ -2,9 +2,9 @@ import React, { useMemo } from "react";
 import { useField } from "formik";
 import { FormattedMessage } from "react-intl";
 
-import TextWithHTML from "../../../TextWithHTML";
-import { ControlLabels } from "../../../LabeledControl";
-import { FormBaseItem } from "../../../../core/form/types";
+import TextWithHTML from "components/TextWithHTML";
+import { ControlLabels } from "components/LabeledControl";
+import { FormBaseItem } from "core/form/types";
 
 type IProps = {
   property: FormBaseItem;

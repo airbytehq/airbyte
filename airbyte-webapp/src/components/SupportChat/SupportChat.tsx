@@ -1,9 +1,10 @@
 import React, { useEffect } from "react";
 import { Storytime } from "@papercups-io/storytime";
 import styled from "styled-components";
-import Button from "../Button";
 import { faComment } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
+import Button from "components/Button";
 
 type PapercupsConfig = {
   accountId: string;

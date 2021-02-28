@@ -2,25 +2,24 @@ import React, { Suspense, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useResource } from "rest-hooks";
 
-import PageTitle from "../../../../components/PageTitle";
-import useRouter from "../../../../components/hooks/useRouterHook";
-import StepsMenu from "../../../../components/StepsMenu";
+import PageTitle from "components/PageTitle";
+import useRouter from "components/hooks/useRouterHook";
+import StepsMenu from "components/StepsMenu";
 import StatusView from "./components/StatusView";
 import SettingsView from "./components/SettingsView";
-import ConnectionResource from "../../../../core/resources/Connection";
-import LoadingPage from "../../../../components/LoadingPage";
-import MainPageWithScroll from "../../../../components/MainPageWithScroll";
-import config from "../../../../config";
-import { AnalyticsService } from "../../../../core/analytics/AnalyticsService";
-import FrequencyConfig from "../../../../data/FrequencyConfig.json";
-import Link from "../../../../components/Link";
+import ConnectionResource from "core/resources/Connection";
+import LoadingPage from "components/LoadingPage";
+import MainPageWithScroll from "components/MainPageWithScroll";
+import config from "config";
+import { AnalyticsService } from "core/analytics/AnalyticsService";
+import FrequencyConfig from "data/FrequencyConfig.json";
+import Link from "components/Link";
 import { Routes } from "../../../routes";
 
 const ConnectionItemPage: React.FC = () => {
-  const { query } = useRouter();
+  const { query } = useRouter<{ id: string }>();
 
   const connection = useResource(ConnectionResource.detailShape(), {
-    // @ts-ignore
     connectionId: query.id,
   });
 

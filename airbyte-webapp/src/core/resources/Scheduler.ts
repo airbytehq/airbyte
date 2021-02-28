@@ -1,9 +1,9 @@
-import { Resource } from "rest-hooks";
+import { ReadShape, Resource, SchemaDetail } from "rest-hooks";
 import BaseResource from "./BaseResource";
-import { propertiesType } from "./SourceDefinitionSpecification";
 import { Attempt, JobItem } from "./Job";
 import Status from "core/statuses";
 import { NetworkError } from "core/request/NetworkError";
+import { ConnectionSpecification } from "core/domain/connection";
 
 export type JobInfo = {
   job: JobItem;
@@ -26,20 +26,24 @@ export default class SchedulerResource
   readonly message: string = "";
   readonly jobInfo: JobInfo | undefined = undefined;
 
-  pk() {
+  pk(): string {
     return Date.now().toString();
   }
 
   static urlRoot = "scheduler";
 
-  static sourceCheckConnectionShape<T extends typeof Resource>(this: T) {
+  static sourceCheckConnectionShape<T extends typeof Resource>(
+    this: T
+  ): ReadShape<SchemaDetail<Scheduler>> {
     return {
       ...super.detailShape(),
       getFetchKey: (params: {
         sourceDefinitionId: string;
-        connectionConfiguration: propertiesType;
+        connectionConfiguration: ConnectionSpecification;
       }) => `POST /sources/check_connection` + JSON.stringify(params),
-      fetch: async (params: any): Promise<any> => {
+      fetch: async (
+        params: Readonly<Record<string, unknown>>
+      ): Promise<Scheduler> => {
         const url = !params.sourceId
           ? `${this.url(params)}/sources/check_connection`
           : params.connectionConfiguration
@@ -70,14 +74,18 @@ export default class SchedulerResource
     };
   }
 
-  static destinationCheckConnectionShape<T extends typeof Resource>(this: T) {
+  static destinationCheckConnectionShape<T extends typeof Resource>(
+    this: T
+  ): ReadShape<SchemaDetail<Scheduler>> {
     return {
       ...super.detailShape(),
       getFetchKey: (params: {
         destinationDefinitionId: string;
-        connectionConfiguration: propertiesType;
+        connectionConfiguration: ConnectionSpecification;
       }) => `POST /destinations/check_connection` + JSON.stringify(params),
-      fetch: async (params: any): Promise<any> => {
+      fetch: async (
+        params: Readonly<Record<string, unknown>>
+      ): Promise<Scheduler> => {
         const url = !params.destinationId
           ? `${this.url(params)}/destinations/check_connection`
           : params.connectionConfiguration

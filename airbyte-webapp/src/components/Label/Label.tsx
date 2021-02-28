@@ -7,7 +7,7 @@ type IProps = {
   message?: string | React.ReactNode;
   additionLength?: number;
   className?: string;
-  onClick?: (data: any) => void;
+  onClick?: (data: unknown) => void;
 };
 
 const Content = styled.label<{ additionLength?: number | string }>`

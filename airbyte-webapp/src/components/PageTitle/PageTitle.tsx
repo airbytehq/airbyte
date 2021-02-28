@@ -1,7 +1,7 @@
 import React from "react";
 
 import styled from "styled-components";
-import { H3 } from "../Titles";
+import { H3 } from "components/Titles";
 
 type IProps = {
   withLine?: boolean;

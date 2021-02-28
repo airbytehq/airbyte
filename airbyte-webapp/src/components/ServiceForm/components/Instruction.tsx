@@ -2,7 +2,7 @@ import { FormattedMessage } from "react-intl";
 import React from "react";
 import styled from "styled-components";
 
-import { IDataItem } from "../../DropDown/components/ListItem";
+import { IDataItem } from "components/DropDown/components/ListItem";
 
 type IProps = {
   serviceId: string;

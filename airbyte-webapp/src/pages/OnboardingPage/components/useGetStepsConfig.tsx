@@ -11,7 +11,11 @@ const UseGetStepsConfig = (
   hasSources: boolean,
   hasDestinations: boolean,
   afterUpdateStep?: () => void
-) => {
+): {
+  currentStep: StepsTypes;
+  setCurrentStep: (step: StepsTypes) => void;
+  steps: { name: JSX.Element; id: StepsTypes }[];
+} => {
   const getInitialStep = () => {
     if (hasSources) {
       if (hasDestinations) {

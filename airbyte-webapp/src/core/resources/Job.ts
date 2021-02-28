@@ -1,4 +1,4 @@
-import { Resource, FetchOptions } from "rest-hooks";
+import { Resource, FetchOptions, ReadShape, SchemaDetail } from "rest-hooks";
 import BaseResource from "./BaseResource";
 
 export interface JobItem {
@@ -44,7 +44,7 @@ export default class JobResource extends BaseResource implements Job {
   readonly attempts: Attempt[] = [];
   readonly logsByAttempt: { [key: string]: Logs } = {};
 
-  pk() {
+  pk(): string {
     return this.job?.id?.toString();
   }
 
@@ -56,10 +56,14 @@ export default class JobResource extends BaseResource implements Job {
     };
   }
 
-  static listShape<T extends typeof Resource>(this: T) {
+  static listShape<T extends typeof Resource>(
+    this: T
+  ): ReadShape<SchemaDetail<{ jobs: Job[] }>> {
     return {
       ...super.listShape(),
-      fetch: async (params: any): Promise<any> => {
+      fetch: async (
+        params: Readonly<Record<string, string | number>>
+      ): Promise<{ jobs: Job[] }> => {
         const jobsResult = await this.fetch(
           "post",
           `${this.listUrl(params)}/list`,
@@ -74,27 +78,28 @@ export default class JobResource extends BaseResource implements Job {
     };
   }
 
-  static detailShape<T extends typeof Resource>(this: T) {
+  static detailShape<T extends typeof Resource>(
+    this: T
+  ): ReadShape<SchemaDetail<Job>> {
     return {
       ...super.detailShape(),
       fetch: async (
         params: Readonly<Record<string, string | number>>
-      ): Promise<any> => {
-        const jobResult = await this.fetch(
-          "post",
-          `${this.url(params)}/get`,
-          params
-        );
+      ): Promise<Job> => {
+        const jobResult: {
+          job: JobItem;
+          attempts: { attempt: Attempt; logs: Logs }[];
+        } = await this.fetch("post", `${this.url(params)}/get`, params);
 
         const attemptsValue = jobResult.attempts.map(
-          (attemptItem: any) => attemptItem.attempt
+          (attemptItem) => attemptItem.attempt
         );
 
         return {
           job: jobResult.job,
           attempts: attemptsValue,
           logsByAttempt: Object.fromEntries(
-            jobResult.attempts.map((attemptItem: any) => [
+            jobResult.attempts.map((attemptItem) => [
               attemptItem.attempt.id,
               attemptItem.logs,
             ])

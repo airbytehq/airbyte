@@ -21,6 +21,7 @@ test("should reformat jsonSchema to internal widget representation", () => {
         airbyte_secret: true,
         type: "string",
         description: "Password associated with the username.",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any, // Because airbyte_secret is not part of json_schema
     },
   };

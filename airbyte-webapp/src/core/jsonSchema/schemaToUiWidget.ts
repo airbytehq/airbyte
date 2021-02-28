@@ -1,6 +1,6 @@
 import { JSONSchema7, JSONSchema7Definition } from "json-schema";
 
-import { FormBlock } from "../form/types";
+import { FormBlock } from "core/form/types";
 
 /**
  * Returns {@link FormBlock} representation of jsonSchema

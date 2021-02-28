@@ -4,13 +4,13 @@ import { useFetcher, useResource } from "rest-hooks";
 import { CellProps } from "react-table";
 
 import { Block, Title, FormContentTitle } from "./PageComponents";
-import Table from "../../../components/Table";
+import Table from "components/Table";
 import ConnectorCell from "./ConnectorCell";
 import ImageCell from "./ImageCell";
 import VersionCell from "./VersionCell";
-import config from "../../../config";
-import DestinationDefinitionResource from "../../../core/resources/DestinationDefinition";
-import ConnectionResource from "../../../core/resources/Connection";
+import config from "config";
+import DestinationDefinitionResource from "core/resources/DestinationDefinition";
+import ConnectionResource from "core/resources/Connection";
 
 const DestinationsView: React.FC = () => {
   const formatMessage = useIntl().formatMessage;

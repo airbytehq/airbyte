@@ -8,9 +8,9 @@ import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
 
-import { JobItem as JobApiItem, Attempt } from "../../../core/resources/Job";
-import { Row, Cell } from "../../SimpleTableComponents";
-import StatusIcon from "../../StatusIcon";
+import { JobItem as JobApiItem, Attempt } from "core/resources/Job";
+import { Row, Cell } from "components/SimpleTableComponents";
+import StatusIcon from "components/StatusIcon";
 import AttemptDetails from "./AttemptDetails";
 
 type IProps = {

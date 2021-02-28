@@ -6,24 +6,21 @@ import {
   SyncMode,
   SyncSchema,
   SyncSchemaStream,
-} from "../../core/domain/catalog";
-import FrequencyConfig from "../../data/FrequencyConfig.json";
+} from "core/domain/catalog";
+import FrequencyConfig from "data/FrequencyConfig.json";
+import { IDataItem } from "../DropDown/components/ListItem";
 
 // get cursorField if it is empty and syncMode is INCREMENTAL
 function getDefaultCursorField(streamNode: SyncSchemaStream): string[] {
   if (streamNode.stream.defaultCursorField.length) {
     return streamNode.stream.defaultCursorField;
   }
-  // if (stream.fields?.length) {
-  //   return [stream.fields[0].cleanedName];
-  // }
-
   return streamNode.config.cursorField;
 }
 
 // If the value in supportedSyncModes is empty assume the only supported sync mode is FULL_REFRESH.
 // Otherwise it supports whatever sync modes are present.
-const useInitialSchema = (schema: SyncSchema) => {
+const useInitialSchema = (schema: SyncSchema): SyncSchema => {
   const initialSchema = useMemo<SyncSchema>(
     () => ({
       streams: schema.streams.map<SyncSchemaStream>((streamNode) => {
@@ -80,7 +77,7 @@ const useInitialSchema = (schema: SyncSchema) => {
   return initialSchema;
 };
 
-const useFrequencyDropdownData = () => {
+const useFrequencyDropdownData = (): IDataItem[] => {
   const formatMessage = useIntl().formatMessage;
 
   const dropdownData = useMemo(

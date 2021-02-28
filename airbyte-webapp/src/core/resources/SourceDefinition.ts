@@ -1,4 +1,4 @@
-import { Resource } from "rest-hooks";
+import { MutateShape, ReadShape, Resource, SchemaDetail } from "rest-hooks";
 import BaseResource from "./BaseResource";
 
 export interface SourceDefinition {
@@ -18,34 +18,42 @@ export default class SourceDefinitionResource
   readonly dockerImageTag: string = "";
   readonly documentationUrl: string = "";
 
-  pk() {
+  pk(): string {
     return this.sourceDefinitionId?.toString();
   }
 
   static urlRoot = "source_definitions";
 
-  static listShape<T extends typeof Resource>(this: T) {
+  static listShape<T extends typeof Resource>(
+    this: T
+  ): ReadShape<SchemaDetail<{ sourceDefinitions: SourceDefinition[] }>> {
     return {
       ...super.listShape(),
       schema: { sourceDefinitions: [this] },
     };
   }
 
-  static detailShape<T extends typeof Resource>(this: T) {
+  static detailShape<T extends typeof Resource>(
+    this: T
+  ): ReadShape<SchemaDetail<SourceDefinition>> {
     return {
       ...super.detailShape(),
       schema: this,
     };
   }
 
-  static updateShape<T extends typeof Resource>(this: T) {
+  static updateShape<T extends typeof Resource>(
+    this: T
+  ): MutateShape<SchemaDetail<SourceDefinition>> {
     return {
       ...super.partialUpdateShape(),
       schema: this,
     };
   }
 
-  static createShape<T extends typeof Resource>(this: T) {
+  static createShape<T extends typeof Resource>(
+    this: T
+  ): MutateShape<SchemaDetail<SourceDefinition>> {
     return {
       ...super.createShape(),
       schema: this,

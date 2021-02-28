@@ -4,6 +4,7 @@ import { NetworkError } from "core/request/NetworkError";
 import { SourceDiscoverSchemaRead } from "./api";
 import { SyncSchemaField } from "./models";
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function toInnerModel(result: any): SourceDiscoverSchemaRead {
   if (result.jobInfo?.job?.status === Status.FAILED || !result.catalog) {
     const e = new NetworkError(result);

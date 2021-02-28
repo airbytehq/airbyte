@@ -2,19 +2,19 @@ import React, { useCallback, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 
-import ContentCard from "../../../../../components/ContentCard";
-import FrequencyConfig from "../../../../../data/FrequencyConfig.json";
+import ContentCard from "components/ContentCard";
+import FrequencyConfig from "data/FrequencyConfig.json";
 import useConnection, {
   useConnectionLoad,
-} from "../../../../../components/hooks/services/useConnectionHook";
-import DeleteBlock from "../../../../../components/DeleteBlock";
-import FrequencyForm from "../../../../../components/FrequencyForm";
-import { SyncSchema } from "../../../../../core/domain/catalog";
-import { equal } from "../../../../../utils/objects";
-import ResetDataModal from "../../../../../components/ResetDataModal";
-import { ModalTypes } from "../../../../../components/ResetDataModal/types";
-import Button from "../../../../../components/Button";
-import LoadingSchema from "../../../../../components/LoadingSchema";
+} from "components/hooks/services/useConnectionHook";
+import DeleteBlock from "components/DeleteBlock";
+import FrequencyForm from "components/FrequencyForm";
+import { SyncSchema } from "core/domain/catalog";
+import { equal } from "utils/objects";
+import ResetDataModal from "components/ResetDataModal";
+import { ModalTypes } from "components/ResetDataModal/types";
+import Button from "components/Button";
+import LoadingSchema from "components/LoadingSchema";
 
 type IProps = {
   onAfterSaveSchema: () => void;

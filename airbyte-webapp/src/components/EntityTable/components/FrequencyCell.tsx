@@ -1,8 +1,8 @@
 import React from "react";
 import styled from "styled-components";
 
-import FrequencyConfig from "../../../data/FrequencyConfig.json";
-import { ScheduleProperties } from "../../../core/resources/Connection";
+import FrequencyConfig from "data/FrequencyConfig.json";
+import { ScheduleProperties } from "core/resources/Connection";
 
 type IProps = {
   value: ScheduleProperties;

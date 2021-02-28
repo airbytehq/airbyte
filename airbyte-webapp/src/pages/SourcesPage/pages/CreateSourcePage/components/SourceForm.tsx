@@ -1,23 +1,24 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import ContentCard from "../../../../../components/ContentCard";
-import ServiceForm from "../../../../../components/ServiceForm";
-import { AnalyticsService } from "../../../../../core/analytics/AnalyticsService";
-import config from "../../../../../config";
-import useRouter from "../../../../../components/hooks/useRouterHook";
-import { useSourceDefinitionSpecificationLoad } from "../../../../../components/hooks/services/useSourceHook";
-import { IDataItem } from "../../../../../components/DropDown/components/ListItem";
-import { JobInfo } from "../../../../../core/resources/Scheduler";
-import { JobsLogItem } from "../../../../../components/JobItem";
-import { createFormErrorMessage } from "../../../../../utils/errorStatusMessage";
+import ContentCard from "components/ContentCard";
+import ServiceForm from "components/ServiceForm";
+import { AnalyticsService } from "core/analytics/AnalyticsService";
+import config from "config";
+import useRouter from "components/hooks/useRouterHook";
+import { useSourceDefinitionSpecificationLoad } from "components/hooks/services/useSourceHook";
+import { IDataItem } from "components/DropDown/components/ListItem";
+import { JobInfo } from "core/resources/Scheduler";
+import { JobsLogItem } from "components/JobItem";
+import { createFormErrorMessage } from "utils/errorStatusMessage";
+import { ConnectionConfiguration } from "core/domain/connection";
 
 type IProps = {
   onSubmit: (values: {
     name: string;
     serviceType: string;
     sourceDefinitionId?: string;
-    connectionConfiguration?: any;
+    connectionConfiguration?: ConnectionConfiguration;
   }) => void;
   afterSelectConnector?: () => void;
   dropDownData: IDataItem[];
@@ -34,7 +35,7 @@ const SourceForm: React.FC<IProps> = ({
   jobInfo,
   afterSelectConnector,
 }) => {
-  const { location }: any = useRouter();
+  const { location } = useRouter();
 
   const [sourceDefinitionId, setSourceDefinitionId] = useState(
     location.state?.sourceDefinitionId || ""

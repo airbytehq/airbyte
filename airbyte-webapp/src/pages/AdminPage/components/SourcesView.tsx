@@ -3,14 +3,15 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { CellProps } from "react-table";
 import { useFetcher, useResource } from "rest-hooks";
 
-import Table from "../../../components/Table";
+import Table from "components/Table";
 import ConnectorCell from "./ConnectorCell";
 import ImageCell from "./ImageCell";
 import VersionCell from "./VersionCell";
-import ConnectionResource from "../../../core/resources/Connection";
-import config from "../../../config";
+import ConnectionResource from "core/resources/Connection";
+import config from "config";
 import { Block, Title, FormContentTitle } from "./PageComponents";
-import SourceDefinitionResource from "../../../core/resources/SourceDefinition";
+import SourceDefinitionResource from "core/resources/SourceDefinition";
+import { Source } from "core/resources/Source";
 
 const SourcesView: React.FC = () => {
   const formatMessage = useIntl().formatMessage;
@@ -25,7 +26,7 @@ const SourcesView: React.FC = () => {
     }
   );
 
-  const [feedbackList, setFeedbackList] = useState<any>({});
+  const [feedbackList, setFeedbackList] = useState<Record<string, string>>({});
 
   const updateSourceDefinition = useFetcher(
     SourceDefinitionResource.updateShape()
@@ -62,7 +63,7 @@ const SourcesView: React.FC = () => {
         Header: <FormattedMessage id="admin.connectors" />,
         accessor: "name",
         customWidth: 25,
-        Cell: ({ cell }: CellProps<{}>) => (
+        Cell: ({ cell }: CellProps<never>) => (
           <ConnectorCell connectorName={cell.value} />
         ),
       },
@@ -98,7 +99,7 @@ const SourcesView: React.FC = () => {
     [feedbackList, onUpdateVersion]
   );
 
-  const usedSources = useMemo(() => {
+  const usedSources = useMemo<Source[]>(() => {
     const allSources = connections.map((item) => {
       const sourceInfo = sourceDefinitions.find(
         (source) =>

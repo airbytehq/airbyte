@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 
 import { FormattedMessage } from "react-intl";
 
-import config from "../../../config";
-import Link from "../../Link";
+import config from "config";
+import Link from "components/Link";
 
 type IProps = {
   connector?: string;

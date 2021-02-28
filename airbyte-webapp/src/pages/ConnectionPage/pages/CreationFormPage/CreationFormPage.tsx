@@ -2,19 +2,19 @@ import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useResource } from "rest-hooks";
 
-import useRouter from "../../../../components/hooks/useRouterHook";
-import MainPageWithScroll from "../../../../components/MainPageWithScroll";
-import PageTitle from "../../../../components/PageTitle";
-import StepsMenu from "../../../../components/StepsMenu";
-import { FormPageContent } from "../../../../components/SourceAndDestinationsBlocks";
+import useRouter from "components/hooks/useRouterHook";
+import MainPageWithScroll from "components/MainPageWithScroll";
+import PageTitle from "components/PageTitle";
+import StepsMenu from "components/StepsMenu";
+import { FormPageContent } from "components/SourceAndDestinationsBlocks";
 import CreateEntityView from "./components/CreateEntityView";
 import SourceForm from "./components/SourceForm";
 import DestinationForm from "./components/DestinationForm";
-import ConnectionBlock from "../../../../components/ConnectionBlock";
+import ConnectionBlock from "components/ConnectionBlock";
 import { Routes } from "../../../routes";
-import CreateConnectionContent from "../../../../components/CreateConnectionContent";
-import SourceResource from "../../../../core/resources/Source";
-import DestinationResource from "../../../../core/resources/Destination";
+import CreateConnectionContent from "components/CreateConnectionContent";
+import SourceResource from "core/resources/Source";
+import DestinationResource from "core/resources/Destination";
 
 type IProps = {
   type: "source" | "destination";
@@ -32,7 +32,7 @@ export enum EntityStepsTypes {
 }
 
 const CreationFormPage: React.FC<IProps> = ({ type }) => {
-  const { location, push }: any = useRouter();
+  const { location, push } = useRouter();
   const source = useResource(
     SourceResource.detailShape(),
     location.state?.sourceId

@@ -2,15 +2,16 @@ import React, { useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useResource } from "rest-hooks";
 
-import PageTitle from "../../../../components/PageTitle";
+import PageTitle from "components/PageTitle";
 import SourceForm from "./components/SourceForm";
 import { Routes } from "../../../routes";
-import useRouter from "../../../../components/hooks/useRouterHook";
-import config from "../../../../config";
-import SourceDefinitionResource from "../../../../core/resources/SourceDefinition";
-import useSource from "../../../../components/hooks/services/useSourceHook";
-import { FormPageContent } from "../../../../components/SourceAndDestinationsBlocks";
-import { JobInfo } from "../../../../core/resources/Scheduler";
+import useRouter from "components/hooks/useRouterHook";
+import config from "config";
+import SourceDefinitionResource from "core/resources/SourceDefinition";
+import useSource from "components/hooks/services/useSourceHook";
+import { FormPageContent } from "components/SourceAndDestinationsBlocks";
+import { JobInfo } from "core/resources/Scheduler";
+import { ConnectionConfiguration } from "core/domain/connection";
 
 const CreateSourcePage: React.FC = () => {
   const { push } = useRouter();
@@ -41,7 +42,7 @@ const CreateSourcePage: React.FC = () => {
   const onSubmitSourceStep = async (values: {
     name: string;
     serviceType: string;
-    connectionConfiguration?: any;
+    connectionConfiguration?: ConnectionConfiguration;
   }) => {
     const connector = sourceDefinitions.find(
       (item) => item.sourceDefinitionId === values.serviceType

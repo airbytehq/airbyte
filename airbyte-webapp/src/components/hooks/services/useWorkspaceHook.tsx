@@ -1,10 +1,19 @@
 import { useFetcher, useResource } from "rest-hooks";
 
-import config from "../../../config";
-import WorkspaceResource from "../../../core/resources/Workspace";
-import { AnalyticsService } from "../../../core/analytics/AnalyticsService";
+import config from "config";
+import WorkspaceResource, { Workspace } from "core/resources/Workspace";
+import { AnalyticsService } from "core/analytics/AnalyticsService";
 
-const useWorkspace = () => {
+const useWorkspace = (): {
+  workspace: Workspace;
+  setInitialSetupConfig: (data: {
+    email: string;
+    anonymousDataCollection: boolean;
+    news: boolean;
+    securityUpdates: boolean;
+  }) => Promise<void>;
+  finishOnboarding: (skipStep?: string) => Promise<void>;
+} => {
   const updateWorkspace = useFetcher(WorkspaceResource.updateShape());
   const workspace = useResource(WorkspaceResource.detailShape(), {
     workspaceId: config.ui.workspaceId,

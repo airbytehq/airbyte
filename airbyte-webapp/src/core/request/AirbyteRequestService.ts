@@ -7,9 +7,9 @@ abstract class AirbyteRequestService {
   /** Perform network request*/
   static async fetch(
     url: string,
-    body?: Readonly<object | string>,
+    body?: Readonly<Record<string, unknown> | Array<unknown> | string>,
     options?: Partial<RequestInit>
-  ) {
+  ): Promise<Response> {
     const response = await fetch(url, {
       method: "POST",
       body: body ? JSON.stringify(body) : undefined,

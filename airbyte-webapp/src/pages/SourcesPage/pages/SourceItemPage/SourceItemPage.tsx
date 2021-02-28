@@ -3,32 +3,32 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { useResource } from "rest-hooks";
 
-import PageTitle from "../../../../components/PageTitle";
-import useRouter from "../../../../components/hooks/useRouterHook";
-import config from "../../../../config";
-import ContentCard from "../../../../components/ContentCard";
-import EmptyResource from "../../../../components/EmptyResourceBlock";
-import ConnectionResource from "../../../../core/resources/Connection";
-import SourceResource from "../../../../core/resources/Source";
+import PageTitle from "components/PageTitle";
+import useRouter from "components/hooks/useRouterHook";
+import config from "config";
+import ContentCard from "components/ContentCard";
+import EmptyResource from "components/EmptyResourceBlock";
+import ConnectionResource from "core/resources/Connection";
+import SourceResource from "core/resources/Source";
 import { Routes } from "../../../routes";
-import Breadcrumbs from "../../../../components/Breadcrumbs";
+import Breadcrumbs from "components/Breadcrumbs";
 import SourceConnectionTable from "./components/SourceConnectionTable";
 import SourceSettings from "./components/SourceSettings";
 import {
   ItemTabs,
   StepsTypes,
   TableItemTitle,
-} from "../../../../components/SourceAndDestinationsBlocks";
-import LoadingPage from "../../../../components/LoadingPage";
-import DestinationResource from "../../../../core/resources/Destination";
-import MainPageWithScroll from "../../../../components/MainPageWithScroll";
+} from "components/SourceAndDestinationsBlocks";
+import LoadingPage from "components/LoadingPage";
+import DestinationResource from "core/resources/Destination";
+import MainPageWithScroll from "components/MainPageWithScroll";
 
 const Content = styled(ContentCard)`
   margin: 0 32px 0 27px;
 `;
 
 const SourceItemPage: React.FC = () => {
-  const { query, push } = useRouter();
+  const { query, push } = useRouter<{ id: string }>();
 
   const [currentStep, setCurrentStep] = useState<string>(StepsTypes.OVERVIEW);
   const onSelectStep = (id: string) => setCurrentStep(id);
@@ -38,7 +38,6 @@ const SourceItemPage: React.FC = () => {
   });
 
   const source = useResource(SourceResource.detailShape(), {
-    // @ts-ignore
     sourceId: query.id,
   });
 

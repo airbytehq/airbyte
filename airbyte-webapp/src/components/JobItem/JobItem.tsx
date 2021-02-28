@@ -1,12 +1,12 @@
 import React, { Suspense, useState } from "react";
 import styled from "styled-components";
 
-import { JobItem as JobApiItem, Attempt } from "../../core/resources/Job";
+import { JobItem as JobApiItem, Attempt } from "core/resources/Job";
 import Spinner from "../Spinner";
 import JobLogs from "./components/JobLogs";
 import ContentWrapper from "./components/ContentWrapper";
 import MainInfo from "./components/MainInfo";
-import Status from "../../core/statuses";
+import Status from "core/statuses";
 
 type IProps = {
   job: JobApiItem;

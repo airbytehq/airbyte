@@ -1,6 +1,6 @@
 import React, { useContext, useMemo } from "react";
 
-import { WidgetConfigMap } from "../../core/form/types";
+import { WidgetConfigMap } from "core/form/types";
 
 // TODO: We need to refactor ServiceForm and have better support for Context (Jamakase)
 // Currently, we build uiWidgetInfo and provide it via context here
@@ -8,9 +8,9 @@ import { WidgetConfigMap } from "../../core/form/types";
 
 type Context = {
   widgetsInfo: WidgetConfigMap;
-  setUiWidgetsInfo: (path: string, value: object) => void;
-  unfinishedSecrets: Record<string, any>;
-  addUnfinishedSecret: (key: string, info?: Record<string, any>) => void;
+  setUiWidgetsInfo: (path: string, value: Record<string, unknown>) => void;
+  unfinishedSecrets: Record<string, unknown>;
+  addUnfinishedSecret: (key: string, info?: Record<string, unknown>) => void;
   removeUnfinishedSecret: (key: string) => void;
   resetUiFormProgress: () => void;
 };
@@ -18,19 +18,19 @@ type Context = {
 const context: Context = {
   widgetsInfo: {},
   unfinishedSecrets: {},
-  setUiWidgetsInfo: (_path: string, _value: object) => ({}),
-  addUnfinishedSecret: (_key: string, _info?: Record<string, any>) => ({}),
+  setUiWidgetsInfo: (_path: string, _value: Record<string, unknown>) => ({}),
+  addUnfinishedSecret: (_key: string, _info?: Record<string, unknown>) => ({}),
   removeUnfinishedSecret: (_key: string) => ({}),
   resetUiFormProgress: () => ({}),
 };
 
 const FormWidgetContext = React.createContext<Context>(context);
 
-const useWidgetInfo = () => useContext(FormWidgetContext);
+const useWidgetInfo = (): Context => useContext(FormWidgetContext);
 
 const WidgetInfoProvider: React.FC<{
   widgetsInfo: WidgetConfigMap;
-  setUiWidgetsInfo: (path: string, value: object) => void;
+  setUiWidgetsInfo: (path: string, value: Record<string, unknown>) => void;
 }> = ({ children, widgetsInfo, setUiWidgetsInfo }) => {
   const ctx = useMemo<Context>(() => {
     const unfinishedSecrets = widgetsInfo["_common.unfinishedSecrets"] ?? {};
@@ -67,7 +67,7 @@ const WidgetInfo = ({
   children,
 }: {
   children: (widgetInfo: Context) => React.ReactElement;
-}) => {
+}): React.ReactElement => {
   const widgetInfo = useWidgetInfo();
 
   return children(widgetInfo);

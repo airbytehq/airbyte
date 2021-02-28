@@ -2,18 +2,14 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import ContentCard from "../../../../../components/ContentCard";
-import ImageBlock from "../../../../../components/ImageBlock";
-import {
-  Header,
-  Row,
-  Cell,
-} from "../../../../../components/SimpleTableComponents";
-import Toggle from "../../../../../components/Toggle";
-import { Connection } from "../../../../../core/resources/Connection";
-import { AnalyticsService } from "../../../../../core/analytics/AnalyticsService";
-import config from "../../../../../config";
-import useConnection from "../../../../../components/hooks/services/useConnectionHook";
+import ContentCard from "components/ContentCard";
+import ImageBlock from "components/ImageBlock";
+import { Header, Row, Cell } from "components/SimpleTableComponents";
+import Toggle from "components/Toggle";
+import { Connection } from "core/resources/Connection";
+import { AnalyticsService } from "core/analytics/AnalyticsService";
+import config from "config";
+import useConnection from "components/hooks/services/useConnectionHook";
 
 const MainInfo = styled(ContentCard)`
   margin-bottom: 14px;

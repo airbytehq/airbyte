@@ -3,23 +3,26 @@ import React from "react";
 import ServerIsStarting from "./components/ServerIsStarting";
 
 class NetworkErrorBoundary extends React.Component<
-  {},
+  unknown,
   { unReachServer: boolean }
 > {
-  constructor(props: Object) {
+  constructor(props: Record<string, unknown>) {
     super(props);
     this.state = { unReachServer: false };
   }
 
-  static getDerivedStateFromError(error: { message: string; status?: number }) {
+  static getDerivedStateFromError(error: {
+    message: string;
+    status?: number;
+  }): { unReachServer: boolean } {
     // Update state so the next render will show the fallback UI.
     return { unReachServer: error.message === "Failed to fetch" };
   }
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  componentDidCatch() {}
+  componentDidCatch(): void {}
 
-  render() {
+  render(): React.ReactNode {
     if (this.state.unReachServer) {
       return <ServerIsStarting />;
     }

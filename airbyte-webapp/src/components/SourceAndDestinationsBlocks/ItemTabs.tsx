@@ -1,7 +1,7 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
-import StepsMenu from "../StepsMenu";
+import StepsMenu from "components/StepsMenu";
 
 export enum StepsTypes {
   OVERVIEW = "Overview",

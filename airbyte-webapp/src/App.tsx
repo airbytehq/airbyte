@@ -11,12 +11,12 @@ import { Routing } from "./pages/routes";
 import LoadingPage from "./components/LoadingPage";
 import NetworkErrorBoundary from "./components/NetworkErrorBoundary";
 
-const App = () => {
+const App: React.FC = () => {
   return (
     <React.StrictMode>
       <ThemeProvider theme={theme}>
         <GlobalStyle />
-        <IntlProvider locale={"en"} messages={en}>
+        <IntlProvider locale="en" messages={en}>
           <CacheProvider>
             <Suspense fallback={<LoadingPage />}>
               <NetworkErrorBoundary>

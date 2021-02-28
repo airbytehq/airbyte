@@ -1,14 +1,15 @@
 import { useFetcher } from "rest-hooks";
 
-import FrequencyConfig from "../../data/FrequencyConfig.json";
-import { AnalyticsService } from "../../core/analytics/AnalyticsService";
-import config from "../../config";
-import ConnectionResource, {
-  Connection,
-} from "../../core/resources/Connection";
-import useConnection from "../hooks/services/useConnectionHook";
+import config from "config";
+import FrequencyConfig from "data/FrequencyConfig.json";
+import { AnalyticsService } from "core/analytics/AnalyticsService";
+import ConnectionResource, { Connection } from "core/resources/Connection";
+import useConnection from "components/hooks/services/useConnectionHook";
 
-const useSyncActions = () => {
+const useSyncActions = (): {
+  changeStatus: (connection: Connection) => Promise<void>;
+  syncManualConnection: (connection: Connection) => Promise<void>;
+} => {
   const { updateConnection } = useConnection();
   const SyncConnection = useFetcher(ConnectionResource.syncShape());
 
@@ -40,7 +41,7 @@ const useSyncActions = () => {
     });
   };
 
-  const syncManualConnection = (connection: Connection) => {
+  const syncManualConnection = async (connection: Connection) => {
     AnalyticsService.track("Source - Action", {
       user_id: config.ui.workspaceId,
       action: "Full refresh sync",
@@ -59,5 +60,4 @@ const useSyncActions = () => {
 
   return { changeStatus, syncManualConnection };
 };
-
 export default useSyncActions;

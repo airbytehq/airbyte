@@ -1,20 +1,21 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import ContentCard from "../../../components/ContentCard";
-import ServiceForm from "../../../components/ServiceForm";
-import { AnalyticsService } from "../../../core/analytics/AnalyticsService";
-import { Source } from "../../../core/resources/Source";
+import ContentCard from "components/ContentCard";
+import ServiceForm from "components/ServiceForm";
+import { AnalyticsService } from "core/analytics/AnalyticsService";
+import { Source } from "core/resources/Source";
 
-import { useSourceDefinitionSpecificationLoad } from "../../../components/hooks/services/useSourceHook";
+import { useSourceDefinitionSpecificationLoad } from "components/hooks/services/useSourceHook";
 
 import usePrepareDropdownLists from "./usePrepareDropdownLists";
 
-import { IDataItem } from "../../../components/DropDown/components/ListItem";
-import { createFormErrorMessage } from "../../../utils/errorStatusMessage";
-import { JobInfo } from "../../../core/resources/Scheduler";
-import { JobsLogItem } from "../../../components/JobItem";
+import { IDataItem } from "components/DropDown/components/ListItem";
+import { createFormErrorMessage } from "utils/errorStatusMessage";
+import { JobInfo } from "core/resources/Scheduler";
+import { JobsLogItem } from "components/JobItem";
 import SkipOnboardingButton from "./SkipOnboardingButton";
+import { ConnectionConfiguration } from "core/domain/connection";
 
 type IProps = {
   source?: Source;
@@ -22,7 +23,7 @@ type IProps = {
     name: string;
     serviceType: string;
     sourceDefinitionId?: string;
-    connectionConfiguration?: any;
+    connectionConfiguration?: ConnectionConfiguration;
   }) => void;
   dropDownData: IDataItem[];
   hasSuccess?: boolean;

@@ -3,13 +3,13 @@ import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import * as yup from "yup";
 
-import Modal from "../../../components/Modal";
-import Button from "../../../components/Button";
-import Link from "../../../components/Link";
+import Modal from "components/Modal";
+import Button from "components/Button";
+import Link from "components/Link";
 import { Field, FieldProps, Form, Formik } from "formik";
-import LabeledInput from "../../../components/LabeledInput";
-import config from "../../../config";
-import StatusIcon from "../../../components/StatusIcon";
+import LabeledInput from "components/LabeledInput";
+import config from "config";
+import StatusIcon from "components/StatusIcon";
 
 export type IProps = {
   errorMessage?: string;

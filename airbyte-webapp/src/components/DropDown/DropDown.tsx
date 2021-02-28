@@ -16,7 +16,7 @@ export type IProps = {
   placeholder?: string;
   filterPlaceholder?: string;
   value?: string;
-  data: Array<IDataItem>;
+  data: IDataItem[];
   onSelect?: (item: IDataItem) => void;
   withButton?: boolean;
   withBorder?: boolean;
@@ -30,6 +30,7 @@ const StyledDropdownList = styled(DropdownList)<{
   withBorder?: boolean;
 }>`
   text-align: left;
+
   &.rw-state-disabled {
     pointer-events: none;
     cursor: auto;
@@ -37,6 +38,7 @@ const StyledDropdownList = styled(DropdownList)<{
     & .rw-btn {
       opacity: 0;
     }
+
     & .rw-placeholder,
     & .rw-input {
       color: ${({ theme }) => theme.greyColor40};
@@ -120,6 +122,7 @@ const StyledDropdownList = styled(DropdownList)<{
 
   & > .rw-popup-container {
     min-width: 260px;
+
     & .rw-select {
       display: none;
     }
@@ -155,14 +158,17 @@ const StyledDropdownList = styled(DropdownList)<{
       background: ${(props) => props.theme.primaryColor};
       border: 1px solid ${(props) => props.theme.primaryColor};
     }
+
     & .rw-input,
     & .rw-placeholder {
       padding: 0;
       color: ${(props) => props.theme.whiteColor};
     }
+
     & .rw-select {
       display: none;
     }
+
     & ~ .rw-popup-container {
       min-width: 260px;
       left: auto;
@@ -209,7 +215,7 @@ export const DropDown: React.FC<IProps> = (props) => {
         <ListItem item={item} fullText={props.fullText} />
       )}
       onSelect={props.onSelect}
-      // @ts-ignore
+      // @ts-ignore wrong typing
       searchIcon=""
     />
   );

@@ -2,7 +2,7 @@ import React from "react";
 import styled from "styled-components";
 
 import Text from "./Text";
-import ImageBlock from "../../ImageBlock";
+import ImageBlock from "components/ImageBlock";
 
 export type IProps = {
   item: IDataItem;

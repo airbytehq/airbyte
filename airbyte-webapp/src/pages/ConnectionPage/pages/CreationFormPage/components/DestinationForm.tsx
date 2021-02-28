@@ -1,13 +1,14 @@
 import React, { useMemo, useState } from "react";
 import { useResource } from "rest-hooks";
 
-import useRouter from "../../../../../components/hooks/useRouterHook";
-import config from "../../../../../config";
-import DestinationDefinitionResource from "../../../../../core/resources/DestinationDefinition";
-import useDestination from "../../../../../components/hooks/services/useDestinationHook";
+import useRouter from "components/hooks/useRouterHook";
+import config from "config";
+import DestinationDefinitionResource from "core/resources/DestinationDefinition";
+import useDestination from "components/hooks/services/useDestinationHook";
 
 // TODO: create separate component for source and destinations forms
 import DestinationForm from "../../../../DestinationPage/pages/CreateDestinationPage/components/DestinationForm";
+import { ConnectionConfiguration } from "core/domain/connection";
 
 type IProps = {
   afterSubmit: () => void;
@@ -39,7 +40,7 @@ const CreateDestinationPage: React.FC<IProps> = ({ afterSubmit }) => {
   const onSubmitDestinationForm = async (values: {
     name: string;
     serviceType: string;
-    connectionConfiguration?: any;
+    connectionConfiguration?: ConnectionConfiguration;
   }) => {
     const connector = destinationDefinitions.find(
       (item) => item.destinationDefinitionId === values.serviceType

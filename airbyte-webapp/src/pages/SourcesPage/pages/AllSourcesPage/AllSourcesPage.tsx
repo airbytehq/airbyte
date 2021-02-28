@@ -3,15 +3,15 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { useResource } from "rest-hooks";
 
-import Button from "../../../../components/Button";
+import Button from "components/Button";
 import { Routes } from "../../../routes";
-import PageTitle from "../../../../components/PageTitle";
-import useRouter from "../../../../components/hooks/useRouterHook";
+import PageTitle from "components/PageTitle";
+import useRouter from "components/hooks/useRouterHook";
 import SourcesTable from "./components/SourcesTable";
-import config from "../../../../config";
-import ContentCard from "../../../../components/ContentCard";
-import EmptyResource from "../../../../components/EmptyResourceBlock";
-import SourceResource from "../../../../core/resources/Source";
+import config from "config";
+import ContentCard from "components/ContentCard";
+import EmptyResource from "components/EmptyResourceBlock";
+import SourceResource from "core/resources/Source";
 
 const Content = styled(ContentCard)`
   margin: 0 32px 0 27px;

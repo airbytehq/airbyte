@@ -3,12 +3,12 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { useAsyncFn } from "react-use";
 
-import Button from "../../../components/Button";
-import ContentCard from "../../../components/ContentCard";
-import config from "../../../config";
-import Link from "../../../components/Link";
+import Button from "components/Button";
+import ContentCard from "components/ContentCard";
+import config from "config";
+import Link from "components/Link";
 import ImportConfigurationModal from "./ImportConfigurationModal";
-import DeploymentService from "../../../core/resources/DeploymentService";
+import DeploymentService from "core/resources/DeploymentService";
 import LogsContent from "./LogsContent";
 
 const Content = styled.div`

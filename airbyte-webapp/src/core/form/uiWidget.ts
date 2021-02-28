@@ -3,6 +3,7 @@ import at from "lodash.at";
 
 export const buildPathInitialState = (
   formBlock: FormBlock[],
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   formValues: { [key: string]: any },
   widgetState: WidgetConfigMap = {}
 ): { [key: string]: WidgetConfigMap } =>

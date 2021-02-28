@@ -1,3 +1,5 @@
+import { SegmentAnalytics } from "core/analytics/types";
+
 declare global {
   interface Window {
     TRACKING_STRATEGY?: string;
@@ -5,6 +7,7 @@ declare global {
     AIRBYTE_VERSION?: string;
     API_URL?: string;
     IS_DEMO?: string;
+    analytics: SegmentAnalytics;
   }
 }
 

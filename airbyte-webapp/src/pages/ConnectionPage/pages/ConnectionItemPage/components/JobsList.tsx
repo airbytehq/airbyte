@@ -1,8 +1,8 @@
 import React, { useMemo } from "react";
 import styled from "styled-components";
 
-import JobItem from "../../../../../components/JobItem";
-import { Job } from "../../../../../core/resources/Job";
+import JobItem from "components/JobItem";
+import { Job } from "core/resources/Job";
 
 type IProps = {
   jobs: Job[];

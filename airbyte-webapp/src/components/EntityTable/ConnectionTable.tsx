@@ -3,32 +3,23 @@ import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 import { CellProps } from "react-table";
 
-import Table from "../Table";
+import Table from "components/Table";
+
 import LastSyncCell from "./components/LastSyncCell";
 import ConnectorCell from "./components/ConnectorCell";
 import NameCell from "./components/NameCell";
-import { ScheduleProperties } from "../../core/resources/Connection";
 import FrequencyCell from "./components/FrequencyCell";
 import StatusCell from "./components/StatusCell";
+import { ITableDataItem } from "./types";
 
 const Content = styled.div`
   margin: 0 32px 0 27px;
 `;
 
-type ITableDataItem = {
-  connectionId: string;
-  entityName: string;
-  connectorName: string;
-  enabled: boolean;
-  isSyncing?: boolean;
-  lastSync?: number | null;
-  schedule: ScheduleProperties | null;
-};
-
 type IProps = {
   data: ITableDataItem[];
   entity: "source" | "destination";
-  onClickRow?: (data: object) => void;
+  onClickRow?: (data: ITableDataItem) => void;
   onChangeStatus: (id: string) => void;
   onSync: (id: string) => void;
 };

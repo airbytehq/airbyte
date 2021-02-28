@@ -2,30 +2,33 @@ import { useCallback } from "react";
 import { useFetcher } from "rest-hooks";
 import { useStatefulResource } from "@rest-hooks/legacy";
 
-import config from "../../../config";
-import DestinationResource, {
-  Destination,
-} from "../../../core/resources/Destination";
-import { AnalyticsService } from "../../../core/analytics/AnalyticsService";
-import ConnectionResource, {
-  Connection,
-} from "../../../core/resources/Connection";
-import { Routes } from "../../../pages/routes";
+import config from "config";
+import DestinationResource, { Destination } from "core/resources/Destination";
+import { AnalyticsService } from "core/analytics/AnalyticsService";
+import ConnectionResource, { Connection } from "core/resources/Connection";
+import { Routes } from "pages/routes";
 import useRouter from "../useRouterHook";
-import DestinationDefinitionSpecificationResource from "../../../core/resources/DestinationDefinitionSpecification";
-import SchedulerResource from "../../../core/resources/Scheduler";
+import DestinationDefinitionSpecificationResource, {
+  DestinationDefinitionSpecification,
+} from "core/resources/DestinationDefinitionSpecification";
+import SchedulerResource, { Scheduler } from "core/resources/Scheduler";
+import { ConnectionConfiguration } from "core/domain/connection";
 
 type ValuesProps = {
   name: string;
   serviceType?: string;
-  connectionConfiguration?: any;
+  connectionConfiguration?: ConnectionConfiguration;
 };
 
 type ConnectorProps = { name: string; destinationDefinitionId: string };
 
 export const useDestinationDefinitionSpecificationLoad = (
   destinationDefinitionId: string
-) => {
+): {
+  isLoading: boolean;
+  destinationDefinitionSpecification: DestinationDefinitionSpecification;
+  error?: Error;
+} => {
   const {
     loading: isLoading,
     error,
@@ -42,7 +45,43 @@ export const useDestinationDefinitionSpecificationLoad = (
   return { destinationDefinitionSpecification, error, isLoading };
 };
 
-const useDestination = () => {
+type DestinationService = {
+  checkDestinationConnection: ({
+    destinationId,
+  }: {
+    destinationId: string;
+  }) => Promise<Scheduler>;
+  updateDestination: ({
+    values,
+    destinationId,
+  }: {
+    values: ValuesProps;
+    destinationId: string;
+  }) => Promise<Destination>;
+  createDestination: ({
+    values,
+    destinationConnector,
+  }: {
+    values: ValuesProps;
+    destinationConnector?: ConnectorProps;
+  }) => Promise<Destination>;
+  recreateDestination: ({
+    values,
+    destinationId,
+  }: {
+    values: ValuesProps;
+    destinationId: string;
+  }) => Promise<Destination>;
+  deleteDestination: ({
+    destination,
+    connectionsWithDestination,
+  }: {
+    destination: Destination;
+    connectionsWithDestination: Connection[];
+  }) => Promise<void>;
+};
+
+const useDestination = (): DestinationService => {
   const { push } = useRouter();
 
   const createDestinationsImplementation = useFetcher(
@@ -210,7 +249,7 @@ const useDestination = () => {
 
     // To delete connections with current source from local store
     connectionsWithDestination.map((item) =>
-      updateConnectionsStore({ connectionId: item.connectionId })
+      updateConnectionsStore({ connectionId: item.connectionId }, undefined)
     );
 
     push(Routes.Destination);

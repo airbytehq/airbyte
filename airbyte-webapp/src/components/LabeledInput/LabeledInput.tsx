@@ -1,7 +1,7 @@
 import React from "react";
 
-import Input, { InputProps } from "../Input";
-import { ControlLabels } from "../LabeledControl";
+import Input, { InputProps } from "components/Input";
+import { ControlLabels } from "components/LabeledControl";
 
 type IProps = {
   success?: boolean;

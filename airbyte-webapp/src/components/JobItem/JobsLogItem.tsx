@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 
-import { JobInfo } from "../../core/resources/Scheduler";
+import { JobInfo } from "core/resources/Scheduler";
 import ContentWrapper from "./components/ContentWrapper";
 import MainInfo from "./components/MainInfo";
 import JobCurrentLogs from "./components/JobCurrenLogs";
-import Status from "../../core/statuses";
+import Status from "core/statuses";
 
 type IProps = {
   jobInfo?: JobInfo;

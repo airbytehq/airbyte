@@ -2,10 +2,10 @@ import React from "react";
 import { useIntl } from "react-intl";
 import { useField } from "formik";
 
-import DropDown from "../../../DropDown";
+import DropDown from "components/DropDown";
 import ConfirmationInput from "./ConfirmationInput";
-import Input from "../../../Input";
-import { FormBaseItem } from "../../../../core/form/types";
+import Input from "components/Input";
+import { FormBaseItem } from "core/form/types";
 import { useWidgetInfo } from "../../uiWidgetContext";
 
 type IProps = {

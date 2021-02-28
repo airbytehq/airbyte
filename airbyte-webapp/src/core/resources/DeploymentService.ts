@@ -23,7 +23,7 @@ export default class DeploymentService extends AirbyteRequestService {
       },
       body: file,
     };
-    await this.fetch(this.getPath(`import`), options);
+    await this.fetch(this.getPath(`import`), undefined, options);
 
     return;
   }

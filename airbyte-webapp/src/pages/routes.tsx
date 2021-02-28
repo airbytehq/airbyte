@@ -131,7 +131,7 @@ const OnboardingsRoutes = () => {
   );
 };
 
-export const Routing = () => {
+export const Routing: React.FC = () => {
   useSegment(config.segment.token);
 
   const { workspace } = useWorkspace();

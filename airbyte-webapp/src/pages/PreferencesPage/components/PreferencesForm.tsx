@@ -4,11 +4,11 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { Field, FieldProps, Form, Formik } from "formik";
 import * as yup from "yup";
 
-import { BigButton } from "../../../components/CenteredPageComponents";
-import LabeledInput from "../../../components/LabeledInput";
-import Label from "../../../components/Label";
-import LabeledToggle from "../../../components/LabeledToggle";
-import config from "../../../config";
+import { BigButton } from "components/CenteredPageComponents";
+import LabeledInput from "components/LabeledInput";
+import Label from "components/Label";
+import LabeledToggle from "components/LabeledToggle";
+import config from "config";
 
 export type IProps = {
   onSubmit: (data: {

@@ -2,7 +2,7 @@ import React, { useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import styled, { keyframes } from "styled-components";
 
-import ContentCard from "../ContentCard";
+import ContentCard from "components/ContentCard";
 
 export type IProps = {
   title?: string | React.ReactNode;

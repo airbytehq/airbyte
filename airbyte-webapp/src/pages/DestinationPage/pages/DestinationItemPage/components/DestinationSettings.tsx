@@ -3,16 +3,17 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { useResource } from "rest-hooks";
 
-import ContentCard from "../../../../../components/ContentCard";
-import ServiceForm from "../../../../../components/ServiceForm";
-import { Destination } from "../../../../../core/resources/Destination";
-import DestinationDefinitionSpecificationResource from "../../../../../core/resources/DestinationDefinitionSpecification";
-import useDestination from "../../../../../components/hooks/services/useDestinationHook";
-import DeleteBlock from "../../../../../components/DeleteBlock";
-import { Connection } from "../../../../../core/resources/Connection";
-import { JobInfo } from "../../../../../core/resources/Scheduler";
-import { JobsLogItem } from "../../../../../components/JobItem";
-import { createFormErrorMessage } from "../../../../../utils/errorStatusMessage";
+import ContentCard from "components/ContentCard";
+import ServiceForm from "components/ServiceForm";
+import { Destination } from "core/resources/Destination";
+import DestinationDefinitionSpecificationResource from "core/resources/DestinationDefinitionSpecification";
+import useDestination from "components/hooks/services/useDestinationHook";
+import DeleteBlock from "components/DeleteBlock";
+import { Connection } from "core/resources/Connection";
+import { JobInfo } from "core/resources/Scheduler";
+import { JobsLogItem } from "components/JobItem";
+import { createFormErrorMessage } from "utils/errorStatusMessage";
+import { ConnectionConfiguration } from "core/domain/connection";
 
 const Content = styled.div`
   width: 100%;
@@ -47,7 +48,7 @@ const DestinationsSettings: React.FC<IProps> = ({
   const onSubmitForm = async (values: {
     name: string;
     serviceType: string;
-    connectionConfiguration?: any;
+    connectionConfiguration?: ConnectionConfiguration;
   }) => {
     setErrorStatusRequest(null);
     try {

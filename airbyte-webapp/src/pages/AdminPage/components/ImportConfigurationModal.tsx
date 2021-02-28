@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import Modal from "../../../components/Modal";
-import Button from "../../../components/Button";
-import FileDropZone from "../../../components/FileDropZone";
+import Modal from "components/Modal";
+import Button from "components/Button";
+import FileDropZone from "components/FileDropZone";
 
 export type IProps = {
   onClose: () => void;

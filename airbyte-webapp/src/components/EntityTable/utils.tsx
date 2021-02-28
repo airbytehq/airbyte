@@ -1,16 +1,17 @@
-import { Connection } from "../../core/resources/Connection";
-import { Source } from "../../core/resources/Source";
-import { Destination } from "../../core/resources/Destination";
+import { Connection } from "core/resources/Connection";
+import { Source } from "core/resources/Source";
+import { Destination } from "core/resources/Destination";
+import { ITableDataItem, EntityTableDataItem } from "./types";
 
 export const getEntityTableData = (
   entities: Source[] | Destination[],
   connections: Connection[],
   type: "source" | "destination"
-) => {
+): EntityTableDataItem[] => {
   const connectType = type === "source" ? "destination" : "source";
 
   // @ts-ignore
-  return entities.map((entityItem: any) => {
+  const mappedEntities = entities.map((entityItem: any) => {
     const entityConnections = connections.filter(
       (connectionItem: any) =>
         connectionItem[`${type}Id`] === entityItem[`${type}Id`]
@@ -45,22 +46,24 @@ export const getEntityTableData = (
       connectEntities: connectEntities,
     };
   });
+
+  return mappedEntities;
 };
 
 export const getConnectionTableData = (
   connections: Connection[],
   type: "source" | "destination"
-) => {
+): ITableDataItem[] => {
   const connectType = type === "source" ? "destination" : "source";
 
-  return connections.map((item) => ({
-    connectionId: item.connectionId,
-    entityName: item[connectType]?.name || "",
-    // @ts-ignore
-    connectorName: item[connectType]?.[`${connectType}Name`] || "",
-    lastSync: item.lastSync,
-    enabled: item.status === "active",
-    schedule: item.schedule,
-    isSyncing: item.isSyncing,
+  return connections.map((connection) => ({
+    connectionId: connection.connectionId,
+    entityName: connection[connectType]?.name || "",
+    // @ts-ignore conditional types are not supported here
+    connectorName: connection[connectType]?.[`${connectType}Name`] || "",
+    lastSync: connection.lastSync,
+    enabled: connection.status === "active",
+    schedule: connection.schedule,
+    isSyncing: connection.isSyncing,
   }));
 };

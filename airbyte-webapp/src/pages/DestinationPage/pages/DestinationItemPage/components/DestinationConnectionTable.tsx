@@ -1,11 +1,12 @@
 import React, { useCallback } from "react";
 
-import { ConnectionTable } from "../../../../../components/EntityTable";
-import { Routes } from "../../../../routes";
-import useRouter from "../../../../../components/hooks/useRouterHook";
-import { Connection } from "../../../../../core/resources/Connection";
-import useSyncActions from "../../../../../components/EntityTable/hooks";
-import { getConnectionTableData } from "../../../../../components/EntityTable/utils";
+import { ConnectionTable } from "components/EntityTable";
+import { Routes } from "pages/routes";
+import useRouter from "components/hooks/useRouterHook";
+import { Connection } from "core/resources/Connection";
+import useSyncActions from "components/EntityTable/hooks";
+import { getConnectionTableData } from "components/EntityTable/utils";
+import { ITableDataItem } from "../../../../../components/EntityTable/types";
 
 type IProps = {
   connections: Connection[];
@@ -43,7 +44,7 @@ const DestinationConnectionTable: React.FC<IProps> = ({ connections }) => {
     [connections, syncManualConnection]
   );
 
-  const clickRow = (source: any) =>
+  const clickRow = (source: ITableDataItem) =>
     push(`${Routes.Destination}${Routes.Connection}/${source.connectionId}`);
 
   return (

@@ -5,22 +5,23 @@ import { useResource } from "rest-hooks";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlay } from "@fortawesome/free-solid-svg-icons";
 
-import { H2 } from "../../components/Titles";
-import StepsMenu from "../../components/StepsMenu";
+import { H2 } from "components/Titles";
+import StepsMenu from "components/StepsMenu";
 import SourceStep from "./components/SourceStep";
 import DestinationStep from "./components/DestinationStep";
 import ConnectionStep from "./components/ConnectionStep";
-import SourceResource from "../../core/resources/Source";
-import DestinationResource from "../../core/resources/Destination";
-import config from "../../config";
+import SourceResource from "core/resources/Source";
+import DestinationResource from "core/resources/Destination";
+import config from "config";
 import UseGetStepsConfig, { StepsTypes } from "./components/useGetStepsConfig";
 import usePrepareDropdownLists from "./components/usePrepareDropdownLists";
-import { AnalyticsService } from "../../core/analytics/AnalyticsService";
-import useSource from "../../components/hooks/services/useSourceHook";
-import useDestination from "../../components/hooks/services/useDestinationHook";
-import Link from "../../components/Link";
-import Version from "../../components/Version";
-import { JobInfo } from "../../core/resources/Scheduler";
+import { AnalyticsService } from "core/analytics/AnalyticsService";
+import useSource from "components/hooks/services/useSourceHook";
+import useDestination from "components/hooks/services/useDestinationHook";
+import Link from "components/Link";
+import Version from "components/Version";
+import { JobInfo } from "core/resources/Scheduler";
+import { ConnectionConfiguration } from "core/domain/connection";
 
 const Content = styled.div`
   width: 100%;
@@ -114,7 +115,7 @@ const OnboardingPage: React.FC = () => {
     name: string;
     serviceType: string;
     sourceId?: string;
-    connectionConfiguration?: any;
+    connectionConfiguration?: ConnectionConfiguration;
   }) => {
     setErrorStatusRequest(null);
     const sourceConnector = getSourceDefinitionById(values.serviceType);
@@ -143,7 +144,7 @@ const OnboardingPage: React.FC = () => {
     name: string;
     serviceType: string;
     destinationDefinitionId?: string;
-    connectionConfiguration?: any;
+    connectionConfiguration?: ConnectionConfiguration;
   }) => {
     setErrorStatusRequest(null);
     const destinationConnector = getDestinationDefinitionById(

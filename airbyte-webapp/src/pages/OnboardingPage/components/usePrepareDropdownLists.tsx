@@ -1,10 +1,27 @@
 import { useMemo } from "react";
 import { useResource } from "rest-hooks";
 
-import SourceDefinitionResource from "../../../core/resources/SourceDefinition";
-import DestinationDefinitionResource from "../../../core/resources/DestinationDefinition";
+import SourceDefinitionResource, {
+  SourceDefinition,
+} from "core/resources/SourceDefinition";
+import DestinationDefinitionResource, {
+  DestinationDefinition,
+} from "core/resources/DestinationDefinition";
 
-const usePrepareDropdownLists = () => {
+type DropDownItem = {
+  text: string;
+  value: string;
+  img: string;
+};
+
+const usePrepareDropdownLists = (): {
+  sourcesDropDownData: DropDownItem[];
+  destinationsDropDownData: DropDownItem[];
+  getDestinationDefinitionById: (
+    id: string
+  ) => DestinationDefinition | undefined;
+  getSourceDefinitionById: (id: string) => SourceDefinition | undefined;
+} => {
   const { sourceDefinitions } = useResource(
     SourceDefinitionResource.listShape(),
     {}

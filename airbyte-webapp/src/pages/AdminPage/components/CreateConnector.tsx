@@ -2,13 +2,13 @@ import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useFetcher } from "rest-hooks";
 
-import Button from "../../../components/Button";
+import Button from "components/Button";
 import CreateConnectorModal from "./CreateConnectorModal";
-import SourceDefinitionResource from "../../../core/resources/SourceDefinition";
-import config from "../../../config";
-import useRouter from "../../../components/hooks/useRouterHook";
+import SourceDefinitionResource from "core/resources/SourceDefinition";
+import config from "config";
+import useRouter from "components/hooks/useRouterHook";
 import { Routes } from "../../routes";
-import DestinationDefinitionResource from "../../../core/resources/DestinationDefinition";
+import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 
 type IProps = {
   type: string;
