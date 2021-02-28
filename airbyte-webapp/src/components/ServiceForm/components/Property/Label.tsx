@@ -17,6 +17,20 @@ const Label: React.FC<IProps> = ({ property, children }) => {
     property.isRequired ? " *" : ""
   }`;
 
+  const constructExamples = () => {
+    if (!property.examples) {
+      return null;
+    }
+
+    const exampleText = Array.isArray(property.examples)
+      ? property.examples?.join(", ")
+      : property.examples;
+
+    return (
+      <FormattedMessage id="form.examples" values={{ examples: exampleText }} />
+    );
+  };
+
   const displayError = !!meta.error && meta.touched;
 
   const constructMessage = useMemo(() => {
@@ -34,13 +48,20 @@ const Label: React.FC<IProps> = ({ property, children }) => {
 
     return (
       <>
-        {message} {errorMessage}
+        {message} {constructExamples()} {errorMessage}
       </>
     );
-  }, [displayError, meta.error, property.description, property.pattern]);
+  }, [
+    constructExamples,
+    displayError,
+    meta.error,
+    property.description,
+    property.pattern
+  ]);
 
   return (
     <ControlLabels
+      labelAdditionLength={0}
       error={displayError}
       label={label}
       message={constructMessage}

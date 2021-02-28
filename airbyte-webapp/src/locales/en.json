@@ -69,6 +69,7 @@
   "form.dockerError": "Could not find docker image",
   "form.edit": "Edit",
   "form.done": "Done",
+  "form.examples": "(e.g. {examples})",
 
   "preferences.title": "Specify your preferences",
   "preferences.anonymizeUsage": "Anonymize usage data collection",
