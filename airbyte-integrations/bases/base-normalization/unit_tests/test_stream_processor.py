@@ -140,7 +140,5 @@ def test_stream_processor_tables_naming(integration_type: str, catalog_file: str
 def test_get_table_name(root_table: str, base_table_name: str, suffix: str, expected: str):
     name_transformer = DestinationNameTransformer(DestinationType.POSTGRES)
     name = get_table_name(name_transformer, root_table, base_table_name, suffix, ["json", "path"])
-    print("name", name)
-    print("expected", expected)
     assert name == expected
     assert len(name) <= 43  # explicitly check for our max postgres length in case tests are changed in the future
