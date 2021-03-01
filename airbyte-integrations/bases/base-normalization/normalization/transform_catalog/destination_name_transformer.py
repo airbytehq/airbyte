@@ -100,25 +100,30 @@ class DestinationNameTransformer:
         """
         return self.__normalize_identifier_name(column_name=column_name, in_jinja=in_jinja, truncate=truncate)
 
-    def truncate_identifier_name(self, input_name: str, additional_reserved_size: int = 0) -> str:
+    def truncate_identifier_name(self, input_name: str, custom_limit: int = -1) -> str:
         """
         @param input_name is the identifier name to middle truncate
-        @param additional_reserved_size is additional space needed for this identifier if input_name is a partial id
+        @param custom_limit uses a custom length as the max instead of the destination max length
         """
+        limit = custom_limit if custom_limit > 0 else self.get_name_max_length()
+
+        if limit < len(input_name):
+            middle = round(limit / 2)
+            # truncate in the middle to preserve prefix/suffix instead
+            prefix = input_name[: limit - middle - 1]
+            suffix = input_name[1 - middle :]
+            # Add extra characters '__', signaling a truncate in identifier
+            print(f"Truncating {input_name} (#{len(input_name)}) to {prefix}__{suffix} (#{2 + len(prefix) + len(suffix)})")
+            input_name = f"{prefix}__{suffix}"
+
+        return input_name
+
+    def get_name_max_length(self):
         if self.destination_type.value in DESTINATION_SIZE_LIMITS:
             destination_limit = DESTINATION_SIZE_LIMITS[self.destination_type.value]
-            limit = destination_limit - TRUNCATE_DBT_RESERVED_SIZE - TRUNCATE_RESERVED_SIZE - additional_reserved_size
-            if limit < len(input_name):
-                middle = round(limit / 2)
-                # truncate in the middle to preserve prefix/suffix instead
-                prefix = input_name[: limit - middle - 1]
-                suffix = input_name[1 - middle :]
-                # Add extra characters '__', signaling a truncate in identifier
-                print(f"Truncating {input_name} (#{len(input_name)}) to {prefix}__{suffix} (#{2 + len(prefix) + len(suffix)})")
-                input_name = f"{prefix}__{suffix}"
+            return destination_limit - TRUNCATE_DBT_RESERVED_SIZE - TRUNCATE_RESERVED_SIZE
         else:
             raise KeyError(f"Unknown destination type {self.destination_type}")
-        return input_name
 
     # Private methods
 

@@ -113,6 +113,11 @@ def test_stream_processor_tables_naming(integration_type: str, catalog_file: str
         elif DestinationType.REDSHIFT.value == destination_type.value:
             expected_nested = {table.lower() for table in expected_nested}
 
+    table_list = list(tables_registry - expected_top_level)
+    table_list.sort()
+    for table in table_list:
+        print(f'"{table}",')
+
     assert (tables_registry - expected_top_level) == expected_nested
 
 
@@ -123,19 +128,24 @@ def test_stream_processor_tables_naming(integration_type: str, catalog_file: str
             "abcdefghijklmnopqrstuvwxyz",
             "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz",
             "",
-            "abcdefghij_HSH_abcdefghijklm__nopqrstuvwxyz",
+            "abcdefghij_c86_abcdefghijklm__nopqrstuvwxyz",
         ),
         (
             "abcdefghijklmnopqrstuvwxyz",
             "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz",
             "_ab1",
-            "abcdefghij_HSH_abcdefghijk__pqrstuvwxyz_ab1",
+            "abcdefghij_c86_abcdefghijk__pqrstuvwxyz_ab1",
         ),
-        ("abcde", "fghijk", "_ab1", "abcde_HSH_fghijk_ab1"),
-        ("abcde", "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz", "", "abcde_HSH_abcdefghijklmnop__lmnopqrstuvwxyz"),
+        ("abcde", "fghijk", "_ab1", "abcde_c86_fghijk_ab1"),
+        ("abcde", "fghijk", "ab1", "abcde_c86_fghijk_ab1"),
+        ("abcde", "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz", "", "abcde_c86_abcdefghijklmnop__lmnopqrstuvwxyz"),
+        ("", "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz", "", "abcdefghijklmnopqrst__fghijklmnopqrstuvwxyz"),
     ],
 )
 def test_get_table_name(root_table: str, base_table_name: str, suffix: str, expected: str):
     name_transformer = DestinationNameTransformer(DestinationType.POSTGRES)
-    name = get_table_name(name_transformer, root_table, base_table_name, suffix, "HSH")
+    name = get_table_name(name_transformer, root_table, base_table_name, suffix, ["json", "path"])
+    print("name", name)
+    print("expected", expected)
     assert name == expected
+    assert len(name) <= 43  # explicitly check for our max postgres length in case tests are changed in the future
