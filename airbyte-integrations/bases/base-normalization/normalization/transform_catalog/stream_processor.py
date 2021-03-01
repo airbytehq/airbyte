@@ -611,14 +611,14 @@ def get_table_name(name_transformer: DestinationNameTransformer, parent: str, ch
     # no parent
     if not parent:
         return name_transformer.truncate_identifier_name(f"{norm_child}{norm_suffix}")
-    # if everything fits without truncation
+    # if everything fits without truncation, don't truncate anything
     elif (len(norm_parent) + len(norm_child) + len(json_path_hash) + len(norm_suffix)) < max_length:
         return f"{norm_parent}_{json_path_hash}_{norm_child}{norm_suffix}"
-    # if everything fits if the parent is truncated to fit
+    # if everything fits except for the parent, just truncate the parent
     elif (len(norm_child) + len(json_path_hash) + len(norm_suffix)) < (max_length - min_parent_length):
         max_parent_length = max_length - len(norm_child) - len(json_path_hash) - len(norm_suffix)
         return f"{norm_parent[:max_parent_length]}_{json_path_hash}_{norm_child}{norm_suffix}"
-    # otherwise cut parent to minimum and middle truncate child
+    # otherwise first truncate parent to the minimum length and middle truncate the child
     else:
         norm_child_max_length = max_length - min_parent_length - len(json_path_hash) - len(norm_suffix)
         trunc_norm_child = name_transformer.truncate_identifier_name(norm_child, norm_child_max_length)
