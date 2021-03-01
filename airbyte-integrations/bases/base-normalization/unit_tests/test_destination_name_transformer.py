@@ -32,7 +32,7 @@ from normalization.transform_catalog.destination_name_transformer import (
 
 
 @pytest.mark.parametrize(
-    "input_str, integration_type, expected",
+    "input_str, destination_type, expected",
     [
         # Contains Space character
         ("Hello World", "Postgres", True),
@@ -56,8 +56,8 @@ from normalization.transform_catalog.destination_name_transformer import (
         ("post.wall", "Redshift", True),
     ],
 )
-def test_needs_quote(input_str: str, integration_type: str, expected: bool):
-    name_transformer = DestinationNameTransformer(DestinationType.from_string(integration_type))
+def test_needs_quote(input_str: str, destination_type: str, expected: bool):
+    name_transformer = DestinationNameTransformer(DestinationType.from_string(destination_type))
     assert name_transformer.needs_quotes(input_str) == expected
 
 
@@ -95,7 +95,7 @@ def test_transform_standard_naming(input_str: str, expected: str):
 
 
 @pytest.mark.parametrize(
-    "input_str, integration_type, expected, expected_column",
+    "input_str, destination_type, expected, expected_column",
     [
         # Case sensitive names
         ("Identifier Name1", "Postgres", "identifier_name1", "{{ adapter.quote('Identifier Name1') }}"),
@@ -134,15 +134,15 @@ def test_transform_standard_naming(input_str: str, expected: str):
         ('"QuoTed8 IdenTifiER"', "Redshift", "_quoted8_identifier_", '{{ adapter.quote(\'""quoted8 identifier""\') }}'),
     ],
 )
-def test_normalize_name(input_str: str, integration_type: str, expected: str, expected_column: str):
-    t = DestinationType.from_string(integration_type)
+def test_normalize_name(input_str: str, destination_type: str, expected: str, expected_column: str):
+    t = DestinationType.from_string(destination_type)
     assert DestinationNameTransformer(t).normalize_schema_name(input_str) == expected
     assert DestinationNameTransformer(t).normalize_table_name(input_str) == expected
     assert DestinationNameTransformer(t).normalize_column_name(input_str) == expected_column
 
 
 @pytest.mark.parametrize(
-    "input_str, integration_type, expected, expected_in_jinja",
+    "input_str, destination_type, expected, expected_in_jinja",
     [
         # Case sensitive names
         ("Identifier Name", "Postgres", "{{ adapter.quote('Identifier Name') }}", "adapter.quote('Identifier Name')"),
@@ -156,8 +156,8 @@ def test_normalize_name(input_str: str, integration_type: str, expected: str, ex
         ("Groups", "Redshift", "groups", "'groups'"),
     ],
 )
-def test_normalize_column_name(input_str: str, integration_type: str, expected: str, expected_in_jinja: str):
-    t = DestinationType.from_string(integration_type)
+def test_normalize_column_name(input_str: str, destination_type: str, expected: str, expected_in_jinja: str):
+    t = DestinationType.from_string(destination_type)
     assert DestinationNameTransformer(t).normalize_column_name(input_str, in_jinja=False) == expected
     assert DestinationNameTransformer(t).normalize_column_name(input_str, in_jinja=True) == expected_in_jinja
 
@@ -178,4 +178,4 @@ def test_normalize_column_name(input_str: str, integration_type: str, expected: 
 def test_truncate_identifier(input_str: str, expected: str):
     name_transformer = DestinationNameTransformer(DestinationType.POSTGRES)
     print(f"Truncating from #{len(input_str)} to #{len(expected)}")
-    assert name_transformer._DestinationNameTransformer__truncate_identifier_name(input_str) == expected
+    assert name_transformer.truncate_identifier_name(input_str) == expected

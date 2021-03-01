@@ -29,6 +29,7 @@ import pytest
 from normalization.destination_type import DestinationType
 from normalization.transform_catalog.catalog_processor import CatalogProcessor, add_table_to_registry, read_json
 from normalization.transform_catalog.destination_name_transformer import DestinationNameTransformer
+from normalization.transform_catalog.stream_processor import get_table_name
 
 
 @pytest.fixture
@@ -91,7 +92,6 @@ def test_stream_processor_tables_naming(integration_type: str, catalog_file: str
             expected_top_level = {table.upper() for table in expected_top_level}
         elif DestinationType.REDSHIFT.value == destination_type.value:
             expected_top_level = {table.lower() for table in expected_top_level}
-    assert tables_registry == expected_top_level
 
     # process substreams
     while substreams:
@@ -112,4 +112,33 @@ def test_stream_processor_tables_naming(integration_type: str, catalog_file: str
             expected_nested = {table.upper() for table in expected_nested}
         elif DestinationType.REDSHIFT.value == destination_type.value:
             expected_nested = {table.lower() for table in expected_nested}
+
     assert (tables_registry - expected_top_level) == expected_nested
+
+
+@pytest.mark.parametrize(
+    "root_table, base_table_name, suffix, expected",
+    [
+        (
+            "abcdefghijklmnopqrstuvwxyz",
+            "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz",
+            "",
+            "abcdefghij_c86_abcdefghijklm__nopqrstuvwxyz",
+        ),
+        (
+            "abcdefghijklmnopqrstuvwxyz",
+            "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz",
+            "_ab1",
+            "abcdefghij_c86_abcdefghijk__pqrstuvwxyz_ab1",
+        ),
+        ("abcde", "fghijk", "_ab1", "abcde_c86_fghijk_ab1"),
+        ("abcde", "fghijk", "ab1", "abcde_c86_fghijk_ab1"),
+        ("abcde", "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz", "", "abcde_c86_abcdefghijklmnop__lmnopqrstuvwxyz"),
+        ("", "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz", "", "abcdefghijklmnopqrst__fghijklmnopqrstuvwxyz"),
+    ],
+)
+def test_get_table_name(root_table: str, base_table_name: str, suffix: str, expected: str):
+    name_transformer = DestinationNameTransformer(DestinationType.POSTGRES)
+    name = get_table_name(name_transformer, root_table, base_table_name, suffix, ["json", "path"])
+    assert name == expected
+    assert len(name) <= 43  # explicitly check for our max postgres length in case tests are changed in the future
