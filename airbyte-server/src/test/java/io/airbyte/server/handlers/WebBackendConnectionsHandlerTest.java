@@ -26,6 +26,7 @@ package io.airbyte.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -45,6 +46,7 @@ import io.airbyte.api.model.ConnectionUpdate;
 import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.JobConfigType;
+import io.airbyte.api.model.JobIdRequestBody;
 import io.airbyte.api.model.JobInfoRead;
 import io.airbyte.api.model.JobListRequestBody;
 import io.airbyte.api.model.JobRead;
@@ -92,6 +94,7 @@ class WebBackendConnectionsHandlerTest {
   private ConnectionsHandler connectionsHandler;
   private SchedulerHandler schedulerHandler;
   private WebBackendConnectionsHandler wbHandler;
+  private JobHistoryHandler jobHistoryHandler;
 
   private SourceRead sourceRead;
   private DestinationRead destinationRead;
@@ -104,7 +107,7 @@ class WebBackendConnectionsHandlerTest {
     connectionsHandler = mock(ConnectionsHandler.class);
     SourceHandler sourceHandler = mock(SourceHandler.class);
     DestinationHandler destinationHandler = mock(DestinationHandler.class);
-    JobHistoryHandler jobHistoryHandler = mock(JobHistoryHandler.class);
+    jobHistoryHandler = mock(JobHistoryHandler.class);
     schedulerHandler = mock(SchedulerHandler.class);
     wbHandler = new WebBackendConnectionsHandler(connectionsHandler, sourceHandler, destinationHandler, jobHistoryHandler, schedulerHandler);
 
@@ -277,8 +280,8 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
-  void testUpdateConnection() throws JsonValidationException, ConfigNotFoundException, IOException {
-    WebBackendConnectionUpdate updateBody = new WebBackendConnectionUpdate()
+  void testUpdateConnection() throws JsonValidationException, ConfigNotFoundException, IOException, InterruptedException {
+    final WebBackendConnectionUpdate updateBody = new WebBackendConnectionUpdate()
         .connectionId(expected.getConnectionId())
         .schedule(expected.getSchedule())
         .status(expected.getStatus())
@@ -294,7 +297,7 @@ class WebBackendConnectionsHandlerTest {
             .status(expected.getStatus())
             .schedule(expected.getSchedule()));
 
-    ConnectionRead connectionRead = wbHandler.webBackendUpdateConnection(updateBody);
+    final ConnectionRead connectionRead = wbHandler.webBackendUpdateConnection(updateBody);
 
     assertEquals(expected.getSyncCatalog(), connectionRead.getSyncCatalog());
 
@@ -304,8 +307,8 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
-  void testUpdateConnectionWithUpdatedSchema() throws JsonValidationException, ConfigNotFoundException, IOException {
-    WebBackendConnectionUpdate updateBody = new WebBackendConnectionUpdate()
+  void testUpdateConnectionWithUpdatedSchema() throws JsonValidationException, ConfigNotFoundException, IOException, InterruptedException {
+    final WebBackendConnectionUpdate updateBody = new WebBackendConnectionUpdate()
         .connectionId(expected.getConnectionId())
         .schedule(expected.getSchedule())
         .status(expected.getStatus())
@@ -321,6 +324,12 @@ class WebBackendConnectionsHandlerTest {
             .syncCatalog(expectedWithNewSchema.getSyncCatalog())
             .status(expected.getStatus())
             .schedule(expected.getSchedule()));
+
+    final JobInfoRead job = mock(JobInfoRead.class, RETURNS_DEEP_STUBS);
+    when(job.getJob().getId()).thenReturn(1L);
+    when(job.getJob().getStatus()).thenReturn(JobStatus.SUCCEEDED);
+    when(schedulerHandler.resetConnection(new ConnectionIdRequestBody().connectionId(expected.getConnectionId()))).thenReturn(job);
+    when(jobHistoryHandler.getJobInfo(new JobIdRequestBody().id(job.getJob().getId()))).thenReturn(job);
 
     ConnectionRead connectionRead = wbHandler.webBackendUpdateConnection(updateBody);
 

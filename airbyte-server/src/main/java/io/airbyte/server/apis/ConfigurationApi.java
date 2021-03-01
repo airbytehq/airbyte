@@ -445,14 +445,14 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
       throw new KnownException(
           HttpStatus.UNPROCESSABLE_ENTITY_422,
           String.format("The provided configuration does not fulfill the specification. Errors: %s", e.getMessage()), e);
-    } catch (IOException e) {
+    } catch (IOException | InterruptedException e) {
       throw new RuntimeException(e);
     }
   }
 
   private interface HandlerCall<T> {
 
-    T call() throws ConfigNotFoundException, IOException, JsonValidationException;
+    T call() throws ConfigNotFoundException, IOException, JsonValidationException, InterruptedException;
 
   }
 
