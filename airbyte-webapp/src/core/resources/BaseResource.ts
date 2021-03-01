@@ -33,11 +33,11 @@ export default abstract class BaseResource extends Resource {
   }
 
   /** Perform network request and resolve with json body */
-  static async fetch(
+  static async fetch<T extends unknown>(
     method: Method,
     url: string,
     body?: Readonly<Record<string, unknown> | Array<unknown> | string>
-  ): Promise<Response> {
+  ): Promise<T> {
     const response = await this.fetchResponse(method, url, body);
 
     if (response.status >= 200 && response.status < 300) {

@@ -23,7 +23,6 @@ export class AnalyticsService {
   static identify = (
     userId: string,
     traits: Record<string, unknown> = {}
-    // @ts-ignore check if there is an error with props being vice versa
   ): void => AnalyticsService.getAnalytics()?.identify?.(userId, traits);
 
   static group = (

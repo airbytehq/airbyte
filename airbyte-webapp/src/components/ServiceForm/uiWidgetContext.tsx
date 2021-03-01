@@ -9,7 +9,7 @@ import { WidgetConfigMap } from "core/form/types";
 type Context = {
   widgetsInfo: WidgetConfigMap;
   setUiWidgetsInfo: (path: string, value: Record<string, unknown>) => void;
-  unfinishedSecrets: Record<string, unknown>;
+  unfinishedSecrets: Record<string, { startValue: string }>;
   addUnfinishedSecret: (key: string, info?: Record<string, unknown>) => void;
   removeUnfinishedSecret: (key: string) => void;
   resetUiFormProgress: () => void;

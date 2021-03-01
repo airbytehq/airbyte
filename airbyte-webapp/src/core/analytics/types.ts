@@ -3,7 +3,7 @@ interface SegmentAnalytics {
   reset: () => void;
   alias: (newId: string) => void;
   track: (name: string, properties: Record<string, unknown>) => void;
-  identify: (traits: Record<string, unknown>, userId?: string) => void;
+  identify: (userId?: string, traits?: Record<string, unknown>) => void;
   group: (organisationId: string, traits: Record<string, unknown>) => void;
 }
 

@@ -3,34 +3,41 @@ import { Source } from "core/resources/Source";
 import { Destination } from "core/resources/Destination";
 import { ITableDataItem, EntityTableDataItem } from "./types";
 
-export const getEntityTableData = (
-  entities: Source[] | Destination[],
-  connections: Connection[],
-  type: "source" | "destination"
-): EntityTableDataItem[] => {
+// TODO: types in next methods look a bit ugly
+export function getEntityTableData<
+  S extends "source" | "destination",
+  SoD extends S extends "source" ? Source : Destination
+>(entities: SoD[], connections: Connection[], type: S): EntityTableDataItem[] {
   const connectType = type === "source" ? "destination" : "source";
 
-  // @ts-ignore
-  const mappedEntities = entities.map((entityItem: any) => {
+  const mappedEntities = entities.map((entityItem) => {
+    const entitySoDId = (entityItem[
+      `${type}Id` as keyof SoD
+    ] as unknown) as string;
+    const entitySoDName = (entityItem[
+      `${type}Name` as keyof SoD
+    ] as unknown) as string;
     const entityConnections = connections.filter(
-      (connectionItem: any) =>
-        connectionItem[`${type}Id`] === entityItem[`${type}Id`]
+      (connectionItem) =>
+        connectionItem[`${type}Id` as "sourceId" | "destinationId"] ===
+        entitySoDId
     );
 
     if (!entityConnections.length) {
       return {
-        entityId: entityItem[`${type}Id`],
+        entityId: entitySoDId,
         entityName: entityItem.name,
         enabled: true,
-        connectorName: entityItem[`${type}Name`],
+        connectorName: entitySoDName,
         lastSync: null,
         connectEntities: [],
       };
     }
 
-    const connectEntities = entityConnections.map((item: any) => ({
-      name: item[connectType]?.name || "",
-      connector: item[connectType]?.[`${connectType}Name`] || "",
+    const connectEntities = entityConnections.map((connection) => ({
+      name: connection[connectType]?.name || "",
+      // @ts-ignore ts is not that clever to infer such types
+      connector: connection[connectType]?.[`${connectType}Name`] || "",
     }));
 
     const sortBySync = entityConnections.sort((item1, item2) =>
@@ -38,17 +45,17 @@ export const getEntityTableData = (
     );
 
     return {
-      entityId: entityItem[`${type}Id`],
+      entityId: entitySoDId,
       entityName: entityItem.name,
       enabled: true,
-      connectorName: entityItem[`${type}Name`],
+      connectorName: entitySoDName,
       lastSync: sortBySync?.[0].lastSync,
       connectEntities: connectEntities,
     };
   });
 
   return mappedEntities;
-};
+}
 
 export const getConnectionTableData = (
   connections: Connection[],

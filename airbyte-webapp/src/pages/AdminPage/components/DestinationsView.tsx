@@ -24,7 +24,7 @@ const DestinationsView: React.FC = () => {
     workspaceId: config.ui.workspaceId,
   });
 
-  const [feedbackList, setFeedbackList] = useState<any>({});
+  const [feedbackList, setFeedbackList] = useState<Record<string, string>>({});
 
   const updateDestinationDefinition = useFetcher(
     DestinationDefinitionResource.updateShape()
@@ -62,7 +62,7 @@ const DestinationsView: React.FC = () => {
         Header: <FormattedMessage id="admin.connectors" />,
         accessor: "name",
         customWidth: 25,
-        Cell: ({ cell }: CellProps<{}>) => (
+        Cell: ({ cell }: CellProps<never>) => (
           <ConnectorCell connectorName={cell.value} />
         ),
       },

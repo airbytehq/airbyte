@@ -8,10 +8,11 @@ import FileDropZone from "components/FileDropZone";
 
 export type IProps = {
   onClose: () => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onSubmit: (data: any) => void;
   message?: React.ReactNode;
   isLoading?: boolean;
-  error?: any;
+  error?: Error | null | boolean;
   cleanError?: () => void;
 };
 

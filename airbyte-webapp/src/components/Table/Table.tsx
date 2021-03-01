@@ -77,7 +77,9 @@ const Th = styled.th<IThProps>`
 type IProps = {
   columns: Array<IHeaderProps | Column<Record<string, unknown>>>;
   erroredRows?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onClickRow?: (data: any) => void;
 };
 
