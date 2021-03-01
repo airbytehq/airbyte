@@ -2,6 +2,10 @@
   "streams": [
     {
       "name": "exchange_rate",
+      "stream_name": {
+        "namespace": "tests",
+        "name": "exchange_rate"
+      },
       "json_schema": {
         "properties": {
           "date": {

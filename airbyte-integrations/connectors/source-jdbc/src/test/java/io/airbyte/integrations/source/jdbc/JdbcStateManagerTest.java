@@ -31,7 +31,7 @@ import io.airbyte.integrations.source.jdbc.JdbcStateManager.CursorInfo;
 import io.airbyte.integrations.source.jdbc.models.JdbcState;
 import io.airbyte.integrations.source.jdbc.models.JdbcStreamState;
 import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.util.Collections;
@@ -43,6 +43,7 @@ import org.testcontainers.shaded.com.google.common.collect.Lists;
 
 class JdbcStateManagerTest {
 
+  private static final String STREAM_NAMESPACE = "tests";
   private static final String STREAM_NAME1 = "cars";
   private static final String STREAM_NAME2 = "bicycles";
   private static final String STREAM_NAME3 = "stationary_bicycles";
@@ -102,8 +103,7 @@ class JdbcStateManagerTest {
   }
 
   private static Optional<ConfiguredAirbyteStream> getCatalog(String cursorField) {
-    return Optional.of(new ConfiguredAirbyteStream()
-        .withStream(new AirbyteStream().withName(STREAM_NAME1))
+    return Optional.of(CatalogHelpers.createConfiguredAirbyteStream(CatalogHelpers.createAirbyteStreamName(STREAM_NAMESPACE, STREAM_NAME1))
         .withCursorField(cursorField == null ? Collections.emptyList() : Lists.newArrayList(cursorField)));
   }
 
@@ -115,11 +115,9 @@ class JdbcStateManagerTest {
 
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog()
         .withStreams(Lists.newArrayList(
-            new ConfiguredAirbyteStream()
-                .withStream(new AirbyteStream().withName(STREAM_NAME1))
+            CatalogHelpers.createConfiguredAirbyteStream(CatalogHelpers.createAirbyteStreamName(STREAM_NAMESPACE, STREAM_NAME1))
                 .withCursorField(Lists.newArrayList(CURSOR_FIELD1)),
-            new ConfiguredAirbyteStream()
-                .withStream(new AirbyteStream().withName(STREAM_NAME2))));
+            CatalogHelpers.createConfiguredAirbyteStream(CatalogHelpers.createAirbyteStreamName(STREAM_NAMESPACE, STREAM_NAME2))));
 
     final JdbcStateManager stateManager = new JdbcStateManager(state, catalog);
 
@@ -138,14 +136,11 @@ class JdbcStateManagerTest {
   void testToState() {
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog()
         .withStreams(Lists.newArrayList(
-            new ConfiguredAirbyteStream()
-                .withStream(new AirbyteStream().withName(STREAM_NAME1))
+            CatalogHelpers.createConfiguredAirbyteStream(CatalogHelpers.createAirbyteStreamName(STREAM_NAMESPACE, STREAM_NAME1))
                 .withCursorField(Lists.newArrayList(CURSOR_FIELD1)),
-            new ConfiguredAirbyteStream()
-                .withStream(new AirbyteStream().withName(STREAM_NAME2))
+            CatalogHelpers.createConfiguredAirbyteStream(CatalogHelpers.createAirbyteStreamName(STREAM_NAMESPACE, STREAM_NAME2))
                 .withCursorField(Lists.newArrayList(CURSOR_FIELD2)),
-            new ConfiguredAirbyteStream()
-                .withStream(new AirbyteStream().withName(STREAM_NAME3))));
+            CatalogHelpers.createConfiguredAirbyteStream(CatalogHelpers.createAirbyteStreamName(STREAM_NAMESPACE, STREAM_NAME3))));
 
     final JdbcStateManager stateManager = new JdbcStateManager(new JdbcState(), catalog);
 
@@ -172,11 +167,9 @@ class JdbcStateManagerTest {
   void testToStateNullCursorField() {
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog()
         .withStreams(Lists.newArrayList(
-            new ConfiguredAirbyteStream()
-                .withStream(new AirbyteStream().withName(STREAM_NAME1))
+            CatalogHelpers.createConfiguredAirbyteStream(CatalogHelpers.createAirbyteStreamName(STREAM_NAMESPACE, STREAM_NAME1))
                 .withCursorField(Lists.newArrayList(CURSOR_FIELD1)),
-            new ConfiguredAirbyteStream()
-                .withStream(new AirbyteStream().withName(STREAM_NAME2))));
+            CatalogHelpers.createConfiguredAirbyteStream(CatalogHelpers.createAirbyteStreamName(STREAM_NAMESPACE, STREAM_NAME2))));
     final JdbcStateManager stateManager = new JdbcStateManager(new JdbcState(), catalog);
 
     final AirbyteStateMessage expectedFirstEmission = new AirbyteStateMessage()

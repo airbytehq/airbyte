@@ -65,8 +65,7 @@ class PostgresSourceTest {
   private static final String STREAM_NAMESPACE = "tests";
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
       CatalogHelpers.createAirbyteStream(
-          STREAM_NAMESPACE,
-          STREAM_NAME,
+          CatalogHelpers.createAirbyteStreamName(STREAM_NAMESPACE, STREAM_NAME),
           Field.of("id", JsonSchemaPrimitive.NUMBER),
           Field.of("name", JsonSchemaPrimitive.STRING),
           Field.of("power", JsonSchemaPrimitive.NUMBER))

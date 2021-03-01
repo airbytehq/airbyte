@@ -205,8 +205,7 @@ public abstract class JdbcStressTest {
 
   private static AirbyteCatalog getCatalog() {
     return new AirbyteCatalog().withStreams(Lists.newArrayList(CatalogHelpers.createAirbyteStream(
-        STREAM_NAMESPACE,
-        streamName,
+        CatalogHelpers.createAirbyteStreamName(STREAM_NAMESPACE, streamName),
         Field.of("id", JsonSchemaPrimitive.NUMBER),
         Field.of("name", JsonSchemaPrimitive.STRING))
         .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))));

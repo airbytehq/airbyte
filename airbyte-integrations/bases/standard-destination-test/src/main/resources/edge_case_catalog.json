@@ -2,6 +2,10 @@
   "streams": [
     {
       "name": "streamWithCamelCase",
+      "stream_name": {
+        "namespace": "tests",
+        "name": "streamWithCamelCase"
+      },
       "json_schema": {
         "properties": {
           "data": {
@@ -13,6 +17,10 @@
 
     {
       "name": "stream_with_underscores",
+      "stream_name": {
+        "namespace": "tests",
+        "name": "stream_with_underscores"
+      },
       "json_schema": {
         "properties": {
           "data": {
@@ -23,6 +31,10 @@
     },
     {
       "name": "STREAM_WITH_ALL_CAPS",
+      "stream_name": {
+        "namespace": "tests",
+        "name": "STREAM_WITH_ALL_CAPS"
+      },
       "json_schema": {
         "properties": {
           "data": {
@@ -33,6 +45,10 @@
     },
     {
       "name": "stream_with_edge_case_field_names",
+      "stream_name": {
+        "namespace": "tests",
+        "name": "stream_with_edge_case_field_names"
+      },
       "json_schema": {
         "properties": {
           "fieldWithCamelCase": {
@@ -49,6 +65,10 @@
     },
     {
       "name": "stream-with:spécial:character_names",
+      "stream_name": {
+        "namespace": "tests",
+        "name": "stream-with:spécial:character_names"
+      },
       "json_schema": {
         "properties": {
           "field_with_spécial_character": {
@@ -59,6 +79,10 @@
     },
     {
       "name": "CapitalCase",
+      "stream_name": {
+        "namespace": "tests",
+        "name": "CapitalCase"
+      },
       "json_schema": {
         "properties": {
           "deleted": {
@@ -69,6 +93,10 @@
     },
     {
       "name": "reserved_keywords",
+      "stream_name": {
+        "namespace": "tests",
+        "name": "reserved_keywords"
+      },
       "json_schema": {
         "properties": {
           "order": {
@@ -79,6 +107,10 @@
     },
     {
       "name": "groups",
+      "stream_name": {
+        "namespace": "tests",
+        "name": "groups"
+      },
       "json_schema": {
         "properties": {
           "authorization": {
@@ -89,6 +121,10 @@
     },
     {
       "name": "ProperCase",
+      "stream_name": {
+        "namespace": "tests",
+        "name": "ProperCase"
+      },
       "json_schema": {
         "properties": {
           "ProperCase": {

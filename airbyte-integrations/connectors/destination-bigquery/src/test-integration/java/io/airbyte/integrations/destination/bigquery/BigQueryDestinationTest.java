@@ -106,11 +106,13 @@ class BigQueryDestinationTest {
       .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.builder().put("checkpoint", "now!").build())));
 
   private static final ConfiguredAirbyteCatalog CATALOG = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-      CatalogHelpers.createConfiguredAirbyteStream(STREAM_NAMESPACE, USERS_STREAM_NAME,
-          io.airbyte.protocol.models.Field.of("name", JsonSchemaPrimitive.STRING),
-          io.airbyte.protocol.models.Field
-              .of("id", JsonSchemaPrimitive.STRING)),
-      CatalogHelpers.createConfiguredAirbyteStream(STREAM_NAMESPACE, TASKS_STREAM_NAME, Field.of("goal", JsonSchemaPrimitive.STRING))));
+      CatalogHelpers.createConfiguredAirbyteStream(
+          CatalogHelpers.createAirbyteStreamName(STREAM_NAMESPACE, USERS_STREAM_NAME),
+          Field.of("name", JsonSchemaPrimitive.STRING),
+          Field.of("id", JsonSchemaPrimitive.STRING)),
+      CatalogHelpers.createConfiguredAirbyteStream(
+          CatalogHelpers.createAirbyteStreamName(STREAM_NAMESPACE, TASKS_STREAM_NAME),
+          Field.of("goal", JsonSchemaPrimitive.STRING))));
 
   private static final NamingConventionTransformer NAMING_RESOLVER = new StandardNameTransformer();
 

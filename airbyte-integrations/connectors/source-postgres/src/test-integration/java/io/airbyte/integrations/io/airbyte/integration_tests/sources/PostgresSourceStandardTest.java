@@ -115,8 +115,7 @@ public class PostgresSourceStandardTest extends StandardSourceTest {
             .withSyncMode(SyncMode.INCREMENTAL)
             .withCursorField(Lists.newArrayList("id"))
             .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAMESPACE,
-                STREAM_NAME,
+                CatalogHelpers.createAirbyteStreamName(STREAM_NAMESPACE, STREAM_NAME),
                 Field.of("id", JsonSchemaPrimitive.NUMBER),
                 Field.of("name", JsonSchemaPrimitive.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
@@ -124,8 +123,7 @@ public class PostgresSourceStandardTest extends StandardSourceTest {
             .withSyncMode(SyncMode.INCREMENTAL)
             .withCursorField(Lists.newArrayList("id"))
             .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAMESPACE,
-                STREAM_NAME2,
+                CatalogHelpers.createAirbyteStreamName(STREAM_NAMESPACE, STREAM_NAME2),
                 Field.of("id", JsonSchemaPrimitive.NUMBER),
                 Field.of("name", JsonSchemaPrimitive.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));

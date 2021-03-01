@@ -34,7 +34,15 @@ import java.util.stream.Collectors;
  */
 public class CatalogConverter {
 
-  private static io.airbyte.api.model.AirbyteStreamName toApi(final String name, final io.airbyte.protocol.models.AirbyteStreamName streamName) {
+  /**
+   * Convert AirbyteStreamName from protocol to Api object
+   *
+   * @param streamName the protocol StreamName object
+   * @param name (deprecated) this is the old field storing a stream name being replaced by the
+   *        StreamName object instead. Please avoid using this as this should be removed in the future
+   * @return the AirbyteStreamName Api object
+   */
+  private static io.airbyte.api.model.AirbyteStreamName toApi(final io.airbyte.protocol.models.AirbyteStreamName streamName, final String name) {
     final io.airbyte.api.model.AirbyteStreamName result = new io.airbyte.api.model.AirbyteStreamName();
     // Try to use streamName object or default to old name field
     if (streamName != null) {
@@ -46,7 +54,15 @@ public class CatalogConverter {
     }
   }
 
-  private static io.airbyte.protocol.models.AirbyteStreamName toProtocol(final String name, final io.airbyte.api.model.AirbyteStreamName streamName) {
+  /**
+   * Convert AirbyteStreamName from Api to Protocol object
+   *
+   * @param streamName the Api StreamName object
+   * @param name (deprecated) this is the old field storing a stream name being replaced by the
+   *        StreamName object instead. Please avoid using this as this should be removed in the future
+   * @return the AirbyteStreamName Protocol object
+   */
+  private static io.airbyte.protocol.models.AirbyteStreamName toProtocol(final io.airbyte.api.model.AirbyteStreamName streamName, final String name) {
     final io.airbyte.protocol.models.AirbyteStreamName result = new io.airbyte.protocol.models.AirbyteStreamName();
     // Try to use streamName object or default to old name field
     if (streamName != null) {
@@ -60,8 +76,9 @@ public class CatalogConverter {
 
   private static io.airbyte.api.model.AirbyteStream toApi(final io.airbyte.protocol.models.AirbyteStream stream) {
     return new io.airbyte.api.model.AirbyteStream()
+        .streamName(toApi(stream.getStreamName(), stream.getName()))
+        // TODO: Switch fully to StreamName instead of temporarily setName() for backward compatibility
         .name(stream.getName())
-        .streamName(toApi(stream.getName(), stream.getStreamName()))
         .jsonSchema(stream.getJsonSchema())
         .supportedSyncModes(Enums.convertListTo(stream.getSupportedSyncModes(), io.airbyte.api.model.SyncMode.class))
         .sourceDefinedCursor(stream.getSourceDefinedCursor())
@@ -70,8 +87,9 @@ public class CatalogConverter {
 
   private static io.airbyte.protocol.models.AirbyteStream toProtocol(final io.airbyte.api.model.AirbyteStream stream) {
     return new io.airbyte.protocol.models.AirbyteStream()
+        .withStreamName(toProtocol(stream.getStreamName(), stream.getName()))
+        // TODO: Switch fully to StreamName instead of temporarily setName() for backward compatibility
         .withName(stream.getName())
-        .withStreamName(toProtocol(stream.getName(), stream.getStreamName()))
         .withJsonSchema(stream.getJsonSchema())
         .withSupportedSyncModes(Enums.convertListTo(stream.getSupportedSyncModes(), io.airbyte.protocol.models.SyncMode.class))
         .withSourceDefinedCursor(stream.getSourceDefinedCursor())
@@ -89,13 +107,13 @@ public class CatalogConverter {
             .collect(Collectors.toList()));
   }
 
-  private static io.airbyte.api.model.AirbyteStreamConfiguration generateDefaultConfiguration(final io.airbyte.api.model.AirbyteStream s) {
+  private static io.airbyte.api.model.AirbyteStreamConfiguration generateDefaultConfiguration(final io.airbyte.api.model.AirbyteStream stream) {
     io.airbyte.api.model.AirbyteStreamConfiguration result = new io.airbyte.api.model.AirbyteStreamConfiguration()
-        .aliasName(Names.toAlphanumericAndUnderscore(s.getName()))
-        .cursorField(s.getDefaultCursorField())
+        .aliasName(Names.toAlphanumericAndUnderscore(stream.getStreamName().getName()))
+        .cursorField(stream.getDefaultCursorField())
         .selected(true);
-    if (s.getSupportedSyncModes().size() > 0)
-      result.setSyncMode(s.getSupportedSyncModes().get(0));
+    if (stream.getSupportedSyncModes().size() > 0)
+      result.setSyncMode(stream.getSupportedSyncModes().get(0));
     else
       result.setSyncMode(io.airbyte.api.model.SyncMode.INCREMENTAL);
     return result;
@@ -105,10 +123,15 @@ public class CatalogConverter {
     final List<io.airbyte.api.model.AirbyteStreamAndConfiguration> streams = catalog.getStreams()
         .stream()
         .map(configuredStream -> {
+          final String streamName;
+          if (configuredStream.getStream().getStreamName() != null)
+            streamName = configuredStream.getStream().getStreamName().getName();
+          else
+            streamName = configuredStream.getStream().getName();
           final io.airbyte.api.model.AirbyteStreamConfiguration configuration = new io.airbyte.api.model.AirbyteStreamConfiguration()
               .syncMode(Enums.convertTo(configuredStream.getSyncMode(), io.airbyte.api.model.SyncMode.class))
               .cursorField(configuredStream.getCursorField())
-              .aliasName(Names.toAlphanumericAndUnderscore(configuredStream.getStream().getName()))
+              .aliasName(Names.toAlphanumericAndUnderscore(streamName))
               .selected(true);
           return new io.airbyte.api.model.AirbyteStreamAndConfiguration()
               .stream(toApi(configuredStream.getStream()))

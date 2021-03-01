@@ -134,7 +134,8 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
               Optional.ofNullable(config.get("database")).map(JsonNode::asText),
               Optional.ofNullable(config.get("schema")).map(JsonNode::asText))
                   .stream()
-                  .map(t -> CatalogHelpers.createAirbyteStream(t.getSchemaName(), t.getName(), t.getFields())
+                  .map(t -> CatalogHelpers.createAirbyteStream(CatalogHelpers.createAirbyteStreamName(t.getSchemaName(), t.getName()), t.getFields())
+                      // TODO: Switch fully to StreamName instead of temporarily setName() for backward compatibility
                       .withName(JdbcUtils.getFullyQualifiedTableName(t.getSchemaName(), t.getName()))
                       .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))
                   .collect(Collectors.toList()));

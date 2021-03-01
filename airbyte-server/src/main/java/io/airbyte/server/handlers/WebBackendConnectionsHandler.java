@@ -148,13 +148,13 @@ public class WebBackendConnectionsHandler {
   protected static AirbyteCatalog updateSchemaWithDiscovery(AirbyteCatalog original, AirbyteCatalog discovered) {
     final Map<String, AirbyteStreamAndConfiguration> originalStreamsByName = original.getStreams()
         .stream()
-        .collect(toMap(s -> s.getStream().getName(), s -> s));
+        .collect(toMap(s -> s.getStream().getStreamName().toString(), s -> s));
 
     final List<AirbyteStreamAndConfiguration> streams = new ArrayList<>();
 
     for (AirbyteStreamAndConfiguration s : discovered.getStreams()) {
       final AirbyteStream stream = s.getStream();
-      final AirbyteStreamAndConfiguration originalStream = originalStreamsByName.get(stream.getName());
+      final AirbyteStreamAndConfiguration originalStream = originalStreamsByName.get(stream.getStreamName().toString());
       AirbyteStreamConfiguration outputStreamConfig;
 
       if (originalStream != null) {

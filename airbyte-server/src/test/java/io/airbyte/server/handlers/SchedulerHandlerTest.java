@@ -97,6 +97,7 @@ class SchedulerHandlerTest {
   private static final String DESTINATION_DOCKER_IMAGE = DockerUtils.getTaggedImageName(DESTINATION_DOCKER_REPO, DESTINATION_DOCKER_TAG);
 
   private static final String STREAM_NAMESPACE = "tests";
+  private static final String STREAM_NAME = "shoes";
 
   private static final SourceConnection SOURCE = new SourceConnection()
       .withName("my postgres db")
@@ -334,7 +335,9 @@ class SchedulerHandlerTest {
     when(schedulerJobClient.createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE)).thenReturn(completedJob);
     final JobOutput jobOutput = new JobOutput()
         .withDiscoverCatalog(new StandardDiscoverCatalogOutput()
-            .withCatalog(CatalogHelpers.createAirbyteCatalog(STREAM_NAMESPACE, "shoes", Field.of("sku", JsonSchemaPrimitive.STRING))));
+            .withCatalog(CatalogHelpers.createAirbyteCatalog(
+                CatalogHelpers.createAirbyteStreamName(STREAM_NAMESPACE, STREAM_NAME),
+                Field.of("sku", JsonSchemaPrimitive.STRING))));
     when(completedJob.getSuccessOutput()).thenReturn(Optional.of(jobOutput));
 
     final SourceDiscoverSchemaRead actual = schedulerHandler.discoverSchemaForSourceFromSourceId(request);

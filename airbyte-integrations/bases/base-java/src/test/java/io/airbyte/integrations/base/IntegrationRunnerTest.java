@@ -34,7 +34,6 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterators;
@@ -45,7 +44,6 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
@@ -72,10 +70,12 @@ class IntegrationRunnerTest {
   private static final String CONFIG_STRING = "{ \"username\": \"airbyte\" }";
   private static final JsonNode CONFIG = Jsons.deserialize(CONFIG_STRING);
   private static final String STREAM_NAME = "users";
+  private static final String STREAM_NAMESPACE = "tests";
   private static final Long EMITTED_AT = Instant.now().toEpochMilli();
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
 
-  private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(Lists.newArrayList(new AirbyteStream().withName(STREAM_NAME)));
+  private static final AirbyteCatalog CATALOG = CatalogHelpers.createAirbyteCatalog(
+      CatalogHelpers.createAirbyteStreamName(STREAM_NAMESPACE, STREAM_NAME));
   private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
   private static final JsonNode STATE = Jsons.jsonNode(ImmutableMap.of("checkpoint", "05/08/1945"));
 
@@ -160,7 +160,7 @@ class IntegrationRunnerTest {
   @Test
   void testDiscover() throws Exception {
     final IntegrationConfig intConfig = IntegrationConfig.discover(configPath);
-    final AirbyteCatalog output = new AirbyteCatalog().withStreams(Lists.newArrayList(new AirbyteStream().withName("oceans")));
+    final AirbyteCatalog output = CatalogHelpers.createAirbyteCatalog(CatalogHelpers.createAirbyteStreamName(STREAM_NAMESPACE, "oceans"));
 
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
     when(source.discover(CONFIG)).thenReturn(output);

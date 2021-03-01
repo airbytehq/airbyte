@@ -118,7 +118,7 @@ class ConnectionsHandlerTest {
   @Test
   void testUpdateConnection() throws JsonValidationException, ConfigNotFoundException, IOException {
     final AirbyteCatalog catalog = ConnectionHelpers.generateBasicApiCatalog();
-    catalog.getStreams().get(0).getStream().setName("azkaban_users");
+    catalog.getStreams().get(0).getStream().getStreamName().setName("azkaban_users");
     catalog.getStreams().get(0).getConfig().setAliasName("azkaban_users");
 
     final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
@@ -128,7 +128,7 @@ class ConnectionsHandlerTest {
         .syncCatalog(catalog);
 
     final ConfiguredAirbyteCatalog configuredCatalog = ConnectionHelpers.generateBasicConfiguredAirbyteCatalog();
-    configuredCatalog.getStreams().get(0).getStream().withName("azkaban_users");
+    configuredCatalog.getStreams().get(0).getStream().getStreamName().withName("azkaban_users");
 
     final StandardSync updatedStandardSync = new StandardSync()
         .withConnectionId(standardSync.getConnectionId())

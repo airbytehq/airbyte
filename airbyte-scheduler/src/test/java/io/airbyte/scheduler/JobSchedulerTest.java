@@ -67,7 +67,9 @@ class JobSchedulerTest {
     final UUID destinationId = UUID.randomUUID();
 
     final ConfiguredAirbyteStream stream = new ConfiguredAirbyteStream()
-        .withStream(CatalogHelpers.createAirbyteStream(STREAM_NAMESPACE, STREAM_NAME, Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING)));
+        .withStream(CatalogHelpers.createAirbyteStream(
+            CatalogHelpers.createAirbyteStreamName(STREAM_NAMESPACE, STREAM_NAME),
+            Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING)));
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(stream));
 
     final UUID connectionId = UUID.randomUUID();

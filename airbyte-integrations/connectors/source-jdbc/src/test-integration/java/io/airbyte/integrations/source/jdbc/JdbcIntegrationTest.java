@@ -100,8 +100,7 @@ public class JdbcIntegrationTest extends StandardSourceTest {
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
     return CatalogHelpers.createConfiguredAirbyteCatalog(
-        STREAM_NAMESPACE,
-        STREAM_NAME,
+        CatalogHelpers.createAirbyteStreamName(STREAM_NAMESPACE, STREAM_NAME),
         Field.of("id", JsonSchemaPrimitive.NUMBER),
         Field.of("name", JsonSchemaPrimitive.STRING));
   }

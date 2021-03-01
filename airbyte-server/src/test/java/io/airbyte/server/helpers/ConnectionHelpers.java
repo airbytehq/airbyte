@@ -129,7 +129,9 @@ public class ConnectionHelpers {
   }
 
   private static io.airbyte.protocol.models.AirbyteStream generateBasicAirbyteStream() {
-    return CatalogHelpers.createAirbyteStream(STREAM_NAMESPACE, STREAM_NAME, Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING))
+    return CatalogHelpers.createAirbyteStream(
+        CatalogHelpers.createAirbyteStreamName(STREAM_NAMESPACE, STREAM_NAME),
+        Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING))
         .withDefaultCursorField(Lists.newArrayList(FIELD_NAME))
         .withSourceDefinedCursor(false)
         .withSupportedSyncModes(List.of(io.airbyte.protocol.models.SyncMode.FULL_REFRESH, io.airbyte.protocol.models.SyncMode.INCREMENTAL));
@@ -151,12 +153,17 @@ public class ConnectionHelpers {
 
   private static AirbyteStream generateBasicApiStream() {
     return new AirbyteStream()
+        .streamName(generateBasicApiStreamName())
+        // TODO: Switch fully to StreamName instead of temporarily setName() for backward compatibility
         .name(STREAM_NAME)
-        .streamName(new AirbyteStreamName().name(STREAM_NAME).namespace(STREAM_NAMESPACE))
         .jsonSchema(generateBasicJsonSchema())
         .defaultCursorField(Lists.newArrayList(FIELD_NAME))
         .sourceDefinedCursor(false)
         .supportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
+  }
+
+  private static AirbyteStreamName generateBasicApiStreamName() {
+    return new AirbyteStreamName().namespace(STREAM_NAMESPACE).name(STREAM_NAME);
   }
 
 }
