@@ -49,25 +49,41 @@ class SourceAppstoreSinger(SingerSource):
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
         try:
-            # create request fields for testing
+            # If an app on the appstore does not support subscriptions or sales, it cannot pull the relevant reports.
+            # However, the way the Appstore API expresses this is not via clear error messages. Instead it expresses it by throwing an unrelated
+            # error, in this case "invalid vendor ID". There is no way to distinguish if this error is due to invalid credentials or due to
+            # the account not supporting this kind of report. So to "check connection" we see if any of the reports can be pulled and if so
+            # return success. If no reports can be pulled we display the exception messages generated for all reports and return failure.
             api_fields_to_test = {
-                "subscription_report": {"reportType": "SUBSCRIPTION", "frequency": "DAILY", "reportSubType": "SUMMARY", "version": "1_2"}
+                "subscription_event_report": {
+                    "reportType": "SUBSCRIPTION_EVENT",
+                    "frequency": "DAILY",
+                    "reportSubType": "SUMMARY",
+                    "version": "1_2",
+                },
+                "subscriber_report": {"reportType": "SUBSCRIBER", "frequency": "DAILY", "reportSubType": "DETAILED", "version": "1_2"},
+                "subscription_report": {"reportType": "SUBSCRIPTION", "frequency": "DAILY", "reportSubType": "SUMMARY", "version": "1_2"},
+                "sales_report": {"reportType": "SALES", "frequency": "DAILY", "reportSubType": "SUMMARY", "version": "1_0"},
             }
-            test_date = date.today() - timedelta(days=2)
-            report_filters = {"reportDate": test_date.strftime("%Y-%m-%d"), "vendorNumber": "{}".format(config["vendor"])}
 
-            report_filters.update(api_fields_to_test["subscription_report"])
-
-            # fetch data from appstore api
             api = Api(config["key_id"], config["key_file"], config["issuer_id"])
+            stream_to_error = {}
+            for stream, params in api_fields_to_test.items():
+                test_date = date.today() - timedelta(days=2)
+                report_filters = {"reportDate": test_date.strftime("%Y-%m-%d"), "vendorNumber": f"{config['vendor']}"}
+                report_filters.update(api_fields_to_test[stream])
+                try:
+                    rep_tsv = api.download_sales_and_trends_reports(filters=report_filters)
+                    if isinstance(rep_tsv, dict):
+                        raise Exception(f"An exception occurred: Received a JSON response instead of" f" the report: {str(rep_tsv)}")
+                except Exception as e:
+                    logger.warn(f"Unable to download {stream}: {e}")
+                    stream_to_error[stream] = e
 
-            rep_tsv = api.download_sales_and_trends_reports(filters=report_filters)
-
-            if isinstance(rep_tsv, dict):
-                return AirbyteConnectionStatus(
-                    status=Status.FAILED,
-                    message=f"An exception occurred: Received a JSON response instead of" f" the report: {str(rep_tsv)}",
-                )
+            # All streams have failed
+            if len(stream_to_error.keys()) == api_fields_to_test.keys():
+                message = "\n".join([f"Unable to access {stream} due to error: {e}" for stream, e in stream_to_error])
+                return AirbyteConnectionStatus(status=Status.FAILED, message=message)
 
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:

@@ -13,6 +13,15 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 **New sources:** Hive, MongoDB, Mailgun  
 **New destinations:** Panoply, S3, MySQL, Kafka, MongoDB
 
+## 02/22/2021
+
+* Bug fixes:
+  * **Google Analytics:** add the ability to sync custom reports
+  * **Apple Appstore:** bug fix to correctly run incremental syncs
+  * **Exchange rates:** UI now correctly validates input date pattern
+  * **File Source:** Support JSONL \(newline-delimited JSON\) format
+  * **Freshdesk:** Enable controlling how many requests per minute the connector makes to avoid overclocking rate limits
+
 ## 02/15/2021
 
 * 1 new destination connector: [MeiliSearch](https://docs.airbyte.io/integrations/destinations/meilisearch)

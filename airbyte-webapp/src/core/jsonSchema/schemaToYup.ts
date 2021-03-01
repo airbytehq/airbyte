@@ -15,7 +15,7 @@ import { WidgetConfigMap } from "core/form/types";
  * @param uiConfig uiConfig of widget currently selected in form
  * @param parentSchema used in recursive schema building as required fields can be described in parentSchema
  * @param propertyKey used in recursive schema building for building path for uiConfig
- * @param propertyPath constracts path of property
+ * @param propertyPath constructs path of property
  */
 
 export const buildYupFormForJsonSchema = (
@@ -108,6 +108,10 @@ export const buildYupFormForJsonSchema = (
 
   if (schema && hasDefault) {
     schema = schema.default(jsonSchema.default);
+  }
+
+  if (schema && jsonSchema.enum) {
+    schema = schema.oneOf(jsonSchema.enum as any);
   }
 
   const isRequired =

@@ -22,10 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from .transform_catalog.transform import TransformCatalog
-from .transform_config.transform import TransformConfig
+from normalization.destination_type import DestinationType
+from normalization.transform_catalog.transform import TransformCatalog
+from normalization.transform_config.transform import TransformConfig
 
 __all__ = [
+    "DestinationType",
     "TransformCatalog",
     "TransformConfig",
 ]
