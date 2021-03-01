@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import hashlib
 import os
 from typing import Dict, List, Optional, Set, Tuple
 
@@ -41,15 +42,18 @@ from normalization.transform_catalog.utils import (
     jinja_call,
 )
 
+# minimum length of parent name used for nested streams
+MINIMUM_PARENT_LENGTH = 10
+
 
 class StreamProcessor(object):
     """
-    Takes as input an Airbyte Stream as described in the (configured) Airbyte Catalog (stored as Json Schema).
+    Takes as input an Airbyte Stream as described in the (configured) Airbyte Catalog's Json Schema.
     Associated input raw data is expected to be stored in a staging area table.
 
     This processor generates SQL models to transform such a stream into a final table in the destination schema.
     This is done by generating a DBT pipeline of transformations (multiple SQL models queries) that may be materialized
-    in the intermediate schema "raw_schema" (changing the dbt_project.yml settings.
+    in the intermediate schema "raw_schema" (changing the dbt_project.yml settings).
     The final output data should be written in "schema".
 
     The pipeline includes transformations such as:
@@ -66,7 +70,7 @@ class StreamProcessor(object):
     def __init__(
         self,
         stream_name: str,
-        integration_type: DestinationType,
+        destination_type: DestinationType,
         raw_schema: str,
         schema: str,
         json_column_name: str,
@@ -78,7 +82,7 @@ class StreamProcessor(object):
         See StreamProcessor.create()
         """
         self.stream_name: str = stream_name
-        self.integration_type: DestinationType = integration_type
+        self.destination_type: DestinationType = destination_type
         self.raw_schema: str = raw_schema
         self.schema: str = schema
         self.json_column_name: str = json_column_name
@@ -86,7 +90,7 @@ class StreamProcessor(object):
         self.tables_registry: Set[str] = tables_registry
         self.from_table: str = from_table
 
-        self.name_transformer: DestinationNameTransformer = DestinationNameTransformer(integration_type)
+        self.name_transformer: DestinationNameTransformer = DestinationNameTransformer(destination_type)
         self.json_path: List[str] = [stream_name]
         self.final_table_name: str = ""
         self.sql_outputs: Dict[str, str] = {}
@@ -112,7 +116,7 @@ class StreamProcessor(object):
         """
         result = StreamProcessor.create(
             stream_name=child_name,
-            integration_type=parent.integration_type,
+            destination_type=parent.destination_type,
             raw_schema=parent.raw_schema,
             schema=parent.schema,
             json_column_name=json_column_name,
@@ -128,7 +132,7 @@ class StreamProcessor(object):
     @staticmethod
     def create(
         stream_name: str,
-        integration_type: DestinationType,
+        destination_type: DestinationType,
         raw_schema: str,
         schema: str,
         json_column_name: str,
@@ -139,7 +143,7 @@ class StreamProcessor(object):
         """
         @param stream_name of the stream being processed
 
-        @param integration_type is the destination type of warehouse
+        @param destination_type is the destination type of warehouse
         @param raw_schema is the name of the staging intermediate schema where to create internal tables/views
         @param schema is the name of the schema where to store the final tables where to store the transformed data
 
@@ -151,7 +155,7 @@ class StreamProcessor(object):
         """
         return StreamProcessor(
             stream_name,
-            integration_type,
+            destination_type,
             raw_schema,
             schema,
             json_column_name,
@@ -339,13 +343,13 @@ from {{ from_table }}
         return f"cast({column_name} as {sql_type}) as {column_name}"
 
     def cast_property_type_as_array(self, property_name: str, column_name: str) -> str:
-        if self.integration_type.value == DestinationType.BIGQUERY.value:
+        if self.destination_type.value == DestinationType.BIGQUERY.value:
             # TODO build a struct/record type from properties JSON schema
             pass
         return column_name
 
     def cast_property_type_as_object(self, property_name: str, column_name: str) -> str:
-        if self.integration_type.value == DestinationType.BIGQUERY.value:
+        if self.destination_type.value == DestinationType.BIGQUERY.value:
             # TODO build a struct/record type from properties JSON schema
             pass
         return jinja_call("type_json()")
@@ -454,7 +458,7 @@ from {{ from_table }}
         Generates a new table names that is not registered in the schema yet (based on normalized_stream_name())
         """
         tables_registry = self.tables_registry.union(self.local_registry)
-        new_table_name = table_name = self.normalized_stream_name()
+        new_table_name = self.normalized_stream_name()
         if not is_intermediate and self.parent is None:
             # Top-level stream has priority on table_names
             if new_table_name in tables_registry:
@@ -463,18 +467,10 @@ from {{ from_table }}
                 # see alias in dbt: https://docs.getdbt.com/docs/building-a-dbt-project/building-models/using-custom-aliases/
                 pass
             pass
+        elif not self.parent:
+            new_table_name = get_table_name(self.name_transformer, "", new_table_name, suffix, self.json_path)
         else:
-            if suffix:
-                new_table_name = self.name_transformer.normalize_table_name(f"{table_name}_{suffix}")
-            if new_table_name in tables_registry:
-                # TODO handle collisions deterministically between intermediate tables and children
-                for i in range(1, 1000):
-                    if suffix:
-                        new_table_name = self.name_transformer.normalize_table_name(f"{table_name}_{i}_{suffix}")
-                    else:
-                        new_table_name = self.name_transformer.normalize_table_name(f"{table_name}_{i}")
-                    if new_table_name not in tables_registry:
-                        break
+            new_table_name = get_table_name(self.name_transformer, "_".join(self.json_path[:-1]), new_table_name, suffix, self.json_path)
         if not is_intermediate:
             self.final_table_name = new_table_name
         return new_table_name
@@ -595,3 +591,35 @@ def find_properties_object(path: List[str], field: str, properties) -> Dict[str,
                 if child:
                     result.update(child)
     return result
+
+
+def hash_json_path(json_path: List[str]) -> str:
+    lineage = "&airbyte&".join(json_path)
+    h = hashlib.sha1()
+    h.update(lineage.encode("utf-8"))
+    return h.hexdigest()[:3]
+
+
+def get_table_name(name_transformer: DestinationNameTransformer, parent: str, child: str, suffix: str, json_path: List[str]) -> str:
+    max_length = name_transformer.get_name_max_length() - 2  # less two for the underscores
+    json_path_hash = hash_json_path(json_path)
+    norm_suffix = suffix if not suffix or suffix.startswith("_") else f"_{suffix}"
+    norm_parent = parent if not parent else name_transformer.normalize_table_name(parent, False, False)
+    norm_child = name_transformer.normalize_table_name(child, False, False)
+    min_parent_length = min(MINIMUM_PARENT_LENGTH, len(norm_parent))
+
+    # no parent
+    if not parent:
+        return name_transformer.truncate_identifier_name(f"{norm_child}{norm_suffix}")
+    # if everything fits without truncation, don't truncate anything
+    elif (len(norm_parent) + len(norm_child) + len(json_path_hash) + len(norm_suffix)) < max_length:
+        return f"{norm_parent}_{json_path_hash}_{norm_child}{norm_suffix}"
+    # if everything fits except for the parent, just truncate the parent
+    elif (len(norm_child) + len(json_path_hash) + len(norm_suffix)) < (max_length - min_parent_length):
+        max_parent_length = max_length - len(norm_child) - len(json_path_hash) - len(norm_suffix)
+        return f"{norm_parent[:max_parent_length]}_{json_path_hash}_{norm_child}{norm_suffix}"
+    # otherwise first truncate parent to the minimum length and middle truncate the child
+    else:
+        norm_child_max_length = max_length - min_parent_length - len(json_path_hash) - len(norm_suffix)
+        trunc_norm_child = name_transformer.truncate_identifier_name(norm_child, norm_child_max_length)
+        return f"{norm_parent[:min_parent_length]}_{json_path_hash}_{trunc_norm_child}{norm_suffix}"

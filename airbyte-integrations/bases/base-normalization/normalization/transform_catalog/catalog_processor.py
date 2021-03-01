@@ -43,14 +43,14 @@ class CatalogProcessor:
     This is relying on a StreamProcessor to handle the conversion of a stream to a table one at a time.
     """
 
-    def __init__(self, output_directory: str, integration_type: DestinationType):
+    def __init__(self, output_directory: str, destination_type: DestinationType):
         """
         @param output_directory is the path to the directory where this processor should write the resulting SQL files (DBT models)
-        @param integration_type is the destination type of warehouse
+        @param destination_type is the destination type of warehouse
         """
         self.output_directory: str = output_directory
-        self.integration_type: DestinationType = integration_type
-        self.name_transformer: DestinationNameTransformer = DestinationNameTransformer(integration_type)
+        self.destination_type: DestinationType = destination_type
+        self.name_transformer: DestinationNameTransformer = DestinationNameTransformer(destination_type)
 
     def process(self, catalog_file: str, json_column_name: str, target_schema: str):
         """
@@ -74,7 +74,7 @@ class CatalogProcessor:
             json_column_name=json_column_name,
             target_schema=target_schema,
             name_transformer=self.name_transformer,
-            destination_type=self.integration_type,
+            destination_type=self.destination_type,
             tables_registry=tables_registry,
         ):
             # Check properties
@@ -121,7 +121,7 @@ class CatalogProcessor:
 
             stream_processor = StreamProcessor.create(
                 stream_name=stream_name,
-                integration_type=destination_type,
+                destination_type=destination_type,
                 raw_schema=raw_schema_name,
                 schema=schema_name,
                 json_column_name=f"'{json_column_name}'",
