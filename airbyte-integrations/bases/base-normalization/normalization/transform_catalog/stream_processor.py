@@ -467,7 +467,7 @@ from {{ from_table }}
                 # see alias in dbt: https://docs.getdbt.com/docs/building-a-dbt-project/building-models/using-custom-aliases/
                 pass
             pass
-        elif self.parent is None:
+        elif not self.parent:
             new_table_name = get_table_name(self.name_transformer, "", new_table_name, suffix, self.json_path)
         else:
             new_table_name = get_table_name(self.name_transformer, self.json_path[0], new_table_name, suffix, self.json_path)
