@@ -8,7 +8,7 @@ frontend.persistenceMaxQPS:
   - value: 3000
     constraints: {}
 frontend.historyMgrNumConns:
-  - value: 10
+  - value: 30
     constraints: {}
 frontend.throttledLogRPS:
   - value: 20
