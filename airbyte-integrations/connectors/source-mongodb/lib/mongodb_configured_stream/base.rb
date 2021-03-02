@@ -4,9 +4,10 @@ module MongodbConfiguredStream
   class Base
     attr_reader :processed_count, :configured_stream
 
-    def initialize(configured_stream:, state:)
+    def initialize(configured_stream:, state:, client:)
       @configured_stream = configured_stream
       @state = state
+      @client = client
 
       @processed_count = 0
     end

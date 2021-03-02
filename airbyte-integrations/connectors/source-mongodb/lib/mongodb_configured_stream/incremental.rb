@@ -2,16 +2,22 @@ require_relative '../airbyte_logger.rb'
 
 require_relative './base.rb'
 require_relative '../mongodb_types_converter.rb'
+require_relative '../mongodb_types_explorer.rb'
 
 class MongodbConfiguredStream::Incremental < MongodbConfiguredStream::Base
-  DATETIME_FIELD_PARTS = %w{time date _at timestamp ts}
+  DATETIME_TYPES = [Date, Time, DateTime]
   CURSOR_TYPES = {
     datetime: 'DATETIME',
     integer: 'integer',
   }
 
-  def initialize(configured_stream:, state:)
+  attr_reader :cursor_field_type
+
+  def initialize(configured_stream:, state:, client:)
     super
+
+    @cursor_field_type = determine_cursor_field_type
+    AirbyteLogger.log("Cursor type was determined as: #{@cursor_field_type}")
 
     value = @state.get(stream_name: stream_name, cursor_field: cursor_field)
     @cursor = value && convert_cursor(value)
@@ -64,13 +70,16 @@ class MongodbConfiguredStream::Incremental < MongodbConfiguredStream::Base
 
   private
 
-  # Rely on a descriptive naming for type definition. It's too expensive to check the cursor type of every document in advance.
-  def cursor_field_type
-    @cursor_field_type ||= if DATETIME_FIELD_PARTS.any? { |part| cursor_field.include? part }
-                             CURSOR_TYPES[:datetime]
-                           else
-                             CURSOR_TYPES[:integer]
-                           end
+  def determine_cursor_field_type
+    explorer = MongodbTypesExplorer.new(collection: @client[stream_name], field: cursor_field) do |type|
+      if DATETIME_TYPES.include?(type)
+        CURSOR_TYPES[:datetime]
+      else
+        CURSOR_TYPES[:integer]
+      end
+    end
+
+    explorer.field_type
   end
 
   def convert_cursor(value)

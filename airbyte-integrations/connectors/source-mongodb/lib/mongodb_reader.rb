@@ -17,7 +17,7 @@ class MongodbReader
 
   def read
     @catalog['streams'].each do |configured_stream|
-      wrapper = MongodbConfiguredStream::Factory.build(configured_stream: configured_stream, state: @state)
+      wrapper = MongodbConfiguredStream::Factory.build(configured_stream: configured_stream, state: @state, client: @client)
 
       AirbyteLogger.log("Reading stream #{wrapper.stream_name} in #{wrapper.sync_mode} mode")
 
