@@ -82,6 +82,49 @@ services:
       - IS_DEMO=${IS_DEMO:-}
       - PAPERCUPS_STORYTIME=${PAPERCUPS_STORYTIME:-}
       - TRACKING_STRATEGY=${TRACKING_STRATEGY}
+postgresql:
+  container_name: temporal-postgresql
+  environment:
+    POSTGRES_PASSWORD: temporal
+    POSTGRES_USER: temporal
+  image: postgres:9.6
+  ports:
+    - 5432:5432
+  temporal:
+    container_name: temporal
+    depends_on:
+      - postgresql
+    environment:
+      - DB=postgresql
+      - DB_PORT=5432
+      - POSTGRES_USER=temporal
+      - POSTGRES_PWD=temporal
+      - POSTGRES_SEEDS=postgresql
+      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development.yaml
+    image: temporalio/auto-setup:1.6.2
+    ports:
+      - 7233:7233
+    volumes:
+      - ./dynamicconfig:/etc/temporal/config/dynamicconfig
+  temporal-admin-tools:
+    container_name: temporal-admin-tools
+    depends_on:
+      - temporal
+    environment:
+      - TEMPORAL_CLI_ADDRESS=temporal:7233
+    image: temporalio/admin-tools:1.6.2
+    stdin_open: true
+    tty: true
+  temporal-web:
+    container_name: temporal-web
+    depends_on:
+      - temporal
+    environment:
+      - TEMPORAL_GRPC_ENDPOINT=temporal:7233
+      - TEMPORAL_PERMIT_WRITE_API=true
+    image: temporalio/web:1.6.0
+    ports:
+      - 8088:8088
 volumes:
   workspace:
     name: ${WORKSPACE_DOCKER_MOUNT}
