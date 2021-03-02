@@ -9,8 +9,6 @@ node {
 }
 
 
-assemble.dependsOn npm_run_build
-
 task e2etest(type: NpmTask) {
     dependsOn npmInstall
 
