@@ -13,6 +13,11 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 **New sources:** Hive, MongoDB, Mailgun  
 **New destinations:** Panoply, S3, MySQL, Kafka, MongoDB
 
+## 03/01/2021
+
+* **New native Hubspot connector** with schema folder populated
+* Facebook Marketing connector: add option to include deleted records
+
 ## 02/22/2021
 
 * Bug fixes:
