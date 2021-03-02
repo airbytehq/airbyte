@@ -3,9 +3,7 @@ import { Formik, Form, FieldProps, Field } from "formik";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 
-import Input from "../../../components/Input";
-import Button from "../../../components/Button";
-import Spinner from "../../../components/Spinner";
+import { Input, Button, Spinner } from "components";
 import { FormContent } from "./PageComponents";
 
 type IProps = {
@@ -74,7 +72,7 @@ const VersionCell: React.FC<IProps> = ({ version, id, onChange, feedback }) => {
     <FormContent>
       <Formik
         initialValues={{
-          version
+          version,
         }}
         onSubmit={async (values, { setSubmitting }) => {
           await onChange({ id, version: values.version });

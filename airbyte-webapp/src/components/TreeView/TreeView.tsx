@@ -27,11 +27,11 @@ function compareByName<T extends { name: string }>(o1: T, o2: T): -1 | 0 | 1 {
 const TreeView: React.FC<IProps> = ({ schema, onChangeSchema }) => {
   const onUpdateItem = useCallback(
     (streamId: string, newStream: Partial<AirbyteStreamConfiguration>) => {
-      const newSchema = schema.streams.map(streamNode => {
+      const newSchema = schema.streams.map((streamNode) => {
         return streamNode.stream.name === streamId
           ? {
               ...streamNode,
-              config: { ...streamNode.config, ...newStream }
+              config: { ...streamNode.config, ...newStream },
             }
           : streamNode;
       });
@@ -42,17 +42,17 @@ const TreeView: React.FC<IProps> = ({ schema, onChangeSchema }) => {
   );
 
   const hasSelectedItem = useMemo(
-    () => schema.streams.some(streamNode => streamNode.config.selected),
+    () => schema.streams.some((streamNode) => streamNode.config.selected),
     [schema.streams]
   );
 
   const onCheckAll = useCallback(() => {
     const allSelectedValues = !hasSelectedItem;
 
-    const newSchema = schema.streams.map(streamNode => {
+    const newSchema = schema.streams.map((streamNode) => {
       return {
         ...streamNode,
-        config: { ...streamNode.config, selected: allSelectedValues }
+        config: { ...streamNode.config, selected: allSelectedValues },
       };
     });
 
@@ -64,7 +64,7 @@ const TreeView: React.FC<IProps> = ({ schema, onChangeSchema }) => {
     () => ({
       streams: schema.streams.sort((o1, o2) =>
         compareByName(o1.stream, o2.stream)
-      )
+      ),
     }),
     [schema.streams]
   );
@@ -78,7 +78,7 @@ const TreeView: React.FC<IProps> = ({ schema, onChangeSchema }) => {
           <FormattedMessage id="sources.schemaSelectAll" />
         )}
       </SelectButton>
-      {sortedSchema.streams.map(streamNode => (
+      {sortedSchema.streams.map((streamNode) => (
         <TreeViewRow
           key={streamNode.stream.name}
           streamNode={streamNode}

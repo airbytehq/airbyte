@@ -1,7 +1,7 @@
 import { JSONSchema7 } from "json-schema";
 import * as yup from "yup";
 
-import { WidgetConfigMap } from "../form/types";
+import { WidgetConfigMap } from "core/form/types";
 
 /**
  * Returns yup.schema for validation
@@ -24,6 +24,7 @@ export const buildYupFormForJsonSchema = (
   parentSchema?: JSONSchema7,
   propertyKey?: string,
   propertyPath: string | undefined = propertyKey
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): yup.Schema<any> => {
   let schema:
     | yup.NumberSchema
@@ -34,7 +35,7 @@ export const buildYupFormForJsonSchema = (
 
   if (jsonSchema.oneOf && uiConfig && propertyPath) {
     const selectedSchema =
-      jsonSchema.oneOf.find(condition => {
+      jsonSchema.oneOf.find((condition) => {
         if (typeof condition !== "boolean") {
           return uiConfig[propertyPath]?.selectedItem === condition.title;
         }
@@ -74,7 +75,7 @@ export const buildYupFormForJsonSchema = (
       }
 
       if (jsonSchema?.maximum !== undefined) {
-        schema = schema!.max(jsonSchema?.maximum);
+        schema = schema.max(jsonSchema?.maximum);
       }
       break;
     case "object":
@@ -96,7 +97,7 @@ export const buildYupFormForJsonSchema = (
                       ? `${propertyPath}.${propertyKey}`
                       : propertyKey
                   )
-                : yup.mixed()
+                : yup.mixed(),
             ])
           )
         );
@@ -117,7 +118,7 @@ export const buildYupFormForJsonSchema = (
     !hasDefault &&
     parentSchema &&
     Array.isArray(parentSchema?.required) &&
-    parentSchema.required.find(item => item === propertyKey);
+    parentSchema.required.find((item) => item === propertyKey);
 
   if (isRequired && schema) {
     schema = schema.required("form.empty.error");

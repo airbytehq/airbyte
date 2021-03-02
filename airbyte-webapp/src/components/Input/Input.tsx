@@ -1,7 +1,8 @@
 import React from "react";
 import styled from "styled-components";
+import { Theme } from "theme";
 
-type IStyleProps = InputProps & { theme: any };
+type IStyleProps = InputProps & { theme: Theme };
 
 const getBackgroundColor = (props: IStyleProps) => {
   if (props.error) {
@@ -27,8 +28,9 @@ const Input = styled.input<InputProps>`
   line-height: 20px;
   font-weight: normal;
   border: 1px solid
-    ${props => (props.error ? props.theme.dangerColor : props.theme.greyColor0)};
-  background: ${props => getBackgroundColor(props)};
+    ${(props) =>
+      props.error ? props.theme.dangerColor : props.theme.greyColor0};
+  background: ${(props) => getBackgroundColor(props)};
   color: ${({ theme }) => theme.textColor};
   caret-color: ${({ theme }) => theme.primaryColor};
 
@@ -39,7 +41,7 @@ const Input = styled.input<InputProps>`
   &:hover {
     background: ${({ theme, light }) =>
       light ? theme.whiteColor : theme.greyColor20};
-    border-color: ${props =>
+    border-color: ${(props) =>
       props.error ? props.theme.dangerColor : props.theme.greyColor20};
   }
 
@@ -55,6 +57,5 @@ const Input = styled.input<InputProps>`
   }
 `;
 
-// TODO: figure out problem with prettier
-// export type { InputProps };
 export default Input;
+export { Input };

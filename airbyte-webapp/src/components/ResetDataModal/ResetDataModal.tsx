@@ -2,13 +2,13 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import Modal from "../Modal";
-import Button from "../Button";
+import Modal from "components/Modal";
+import Button from "components/Button";
 import { ModalTypes } from "./types";
 
 export type IProps = {
   onClose: () => void;
-  onSubmit: (data: any) => void;
+  onSubmit: (data: unknown) => void;
   modalType?: ModalTypes;
 };
 

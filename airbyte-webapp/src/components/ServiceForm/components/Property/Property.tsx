@@ -2,7 +2,7 @@ import React from "react";
 
 import { Control } from "./Control";
 import { Label } from "./Label";
-import { FormBaseItem } from "../../../../core/form/types";
+import { FormBaseItem } from "core/form/types";
 
 type IProps = {
   property: FormBaseItem;

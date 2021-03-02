@@ -10,8 +10,8 @@ import Link from "../Link";
 import Source from "./components/Source";
 import Version from "../Version";
 import Destination from "./components/Destination";
-import { Routes } from "../../pages/routes";
-import config from "../../config";
+import { Routes } from "pages/routes";
+import config from "config";
 
 const Bar = styled.nav`
   width: 100px;
@@ -133,7 +133,7 @@ const SideBar: React.FC = () => {
       <Menu>
         <li>
           <MenuLinkItem href={config.ui.slackLink} target="_blank">
-            {/*@ts-ignore*/}
+            {/*@ts-ignore slack icon fails here*/}
             <HelpIcon icon={faSlack} />
             <Text>
               <FormattedMessage id="sidebar.slack" />

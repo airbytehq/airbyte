@@ -1,7 +1,7 @@
 import React from "react";
-import styled from "styled-components";
-import Spinner from "../Spinner";
-import { theme } from "../../theme";
+import styled, { useTheme } from "styled-components";
+import Spinner from "components/Spinner";
+import { Theme } from "theme";
 
 type IProps = {
   full?: boolean;
@@ -16,10 +16,13 @@ const Container = styled.div<IProps>`
   align-items: center;
 `;
 
-const LoadingPage: React.FC<IProps> = ({ full }) => (
-  <Container full={full}>
-    <Spinner backgroundColor={theme.greyColor0} />
-  </Container>
-);
+const LoadingPage: React.FC<IProps> = ({ full }) => {
+  const theme = useTheme() as Theme;
+  return (
+    <Container full={full}>
+      <Spinner backgroundColor={theme.greyColor0} />
+    </Container>
+  );
+};
 
 export default LoadingPage;

@@ -69,7 +69,9 @@ const SuccessIcon = styled(FontAwesomeIcon)`
   cursor: pointer;
 `;
 
-const Toggle: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = props => {
+const Toggle: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (
+  props
+) => {
   return (
     <Switch onClick={(event: React.SyntheticEvent) => event.stopPropagation()}>
       <SwitchInput
