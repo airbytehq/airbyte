@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
-import StatusIcon from "../../StatusIcon";
-import Status from "../../../core/statuses";
+import StatusIcon from "components/StatusIcon";
+import Status from "core/statuses";
 
 type IProps = {
   id: string;
@@ -64,7 +64,7 @@ const Step: React.FC<IProps> = ({
   onClick,
   num,
   lightMode,
-  status
+  status,
 }) => {
   const onItemClickItem = () => {
     if (onClick) {

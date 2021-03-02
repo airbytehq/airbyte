@@ -26,16 +26,17 @@ class AirbytePythonPlugin implements Plugin<Project> {
             pip 'pip:20.2'
         }
 
+        project.task('isortFormat', type: PythonTask) {
+            module = "isort"
+            command = ". --settings-file ${project.rootProject.file('tools/python/.isort.cfg').absolutePath}"
+        }
+
         project.task('blackFormat', type: PythonTask) {
             module = "black"
             // the line length should match .isort.cfg
             command = ". --line-length 140"
             dependsOn project.rootProject.spotlessPythonApply
-        }
-
-        project.task('isortFormat', type: PythonTask) {
-            module = "isort"
-            command = ". --settings-file ${project.rootProject.file('tools/python/.isort.cfg').absolutePath}"
+            dependsOn project.isortFormat
         }
 
         project.task('flakeCheck', type: PythonTask, dependsOn: project.blackFormat) {

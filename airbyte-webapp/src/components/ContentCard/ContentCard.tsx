@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-import { H5 } from "../Titles";
+import { H5 } from "components/Titles";
 
 type IProps = {
   title?: string | React.ReactNode;
@@ -40,7 +40,7 @@ const Description = styled.div`
   margin: 5px 0 -10px;
 `;
 
-const ContentCard: React.FC<IProps> = props => (
+const ContentCard: React.FC<IProps> = (props) => (
   <Card className={props.className} onClick={props.onClick}>
     {props.title ? (
       <Title>

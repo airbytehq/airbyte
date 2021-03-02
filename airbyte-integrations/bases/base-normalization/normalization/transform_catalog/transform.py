@@ -71,11 +71,11 @@ python3 main_dev_transform_catalog.py \
         }
 
     def process_catalog(self) -> None:
-        integration_type = DestinationType.from_string(self.config["integration_type"])
+        destination_type = DestinationType.from_string(self.config["integration_type"])
         schema = self.config["schema"]
         output = self.config["output_path"]
         json_col = self.config["json_column"]
-        processor = CatalogProcessor(output_directory=output, integration_type=integration_type)
+        processor = CatalogProcessor(output_directory=output, destination_type=destination_type)
         for catalog_file in self.config["catalog"]:
             print(f"Processing {catalog_file}...")
             processor.process(catalog_file=catalog_file, json_column_name=json_col, target_schema=schema)

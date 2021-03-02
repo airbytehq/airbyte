@@ -3,7 +3,7 @@ import {
   BrowserRouter as Router,
   Redirect,
   Route,
-  Switch
+  Switch,
 } from "react-router-dom";
 
 import SourcesPage from "./SourcesPage";
@@ -33,7 +33,7 @@ export enum Routes {
   SourceNew = "/new-source",
   DestinationNew = "/new-destination",
   Admin = "/admin",
-  Root = "/"
+  Root = "/",
 }
 
 const getPageName = (pathname: string) => {
@@ -131,7 +131,7 @@ const OnboardingsRoutes = () => {
   );
 };
 
-export const Routing = () => {
+export const Routing: React.FC = () => {
   useSegment(config.segment.token);
 
   const { workspace } = useWorkspace();
