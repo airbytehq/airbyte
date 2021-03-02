@@ -12,7 +12,7 @@ type IProps = {
 const Badge = styled.div<IProps>`
   width: ${({ big }) => (big ? 40 : 20)}px;
   height: ${({ big }) => (big ? 40 : 20)}px;
-  background: ${props =>
+  background: ${(props) =>
     props.success ? props.theme.successColor : props.theme.dangerColor};
   box-shadow: 0 1px 2px ${({ theme }) => theme.shadowColor};
   border-radius: 50%;

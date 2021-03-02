@@ -3,13 +3,13 @@ import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import * as yup from "yup";
 
-import Modal from "../../../components/Modal";
-import Button from "../../../components/Button";
-import Link from "../../../components/Link";
+import Modal from "components/Modal";
+import Button from "components/Button";
+import Link from "components/Link";
 import { Field, FieldProps, Form, Formik } from "formik";
-import LabeledInput from "../../../components/LabeledInput";
-import config from "../../../config";
-import StatusIcon from "../../../components/StatusIcon";
+import LabeledInput from "components/LabeledInput";
+import config from "config";
+import StatusIcon from "components/StatusIcon";
 
 export type IProps = {
   errorMessage?: string;
@@ -87,13 +87,13 @@ const validationSchema = yup.object().shape({
   name: yup.string().required("form.empty.error"),
   documentationUrl: yup.string().required("form.empty.error"),
   dockerImageTag: yup.string().required("form.empty.error"),
-  dockerRepository: yup.string().required("form.empty.error")
+  dockerRepository: yup.string().required("form.empty.error"),
 });
 
 const CreateConnectorModal: React.FC<IProps> = ({
   onClose,
   onSubmit,
-  errorMessage
+  errorMessage,
 }) => {
   const formatMessage = useIntl().formatMessage;
 
@@ -111,7 +111,7 @@ const CreateConnectorModal: React.FC<IProps> = ({
                 <DocLink target="_blank" href={config.ui.docsLink} as="a">
                   {lnk}
                 </DocLink>
-              )
+              ),
             }}
           />
         </Subtitle>
@@ -120,7 +120,7 @@ const CreateConnectorModal: React.FC<IProps> = ({
             name: "",
             documentationUrl: "",
             dockerImageTag: "",
-            dockerRepository: ""
+            dockerRepository: "",
           }}
           validateOnBlur={true}
           validateOnChange={true}
@@ -139,7 +139,7 @@ const CreateConnectorModal: React.FC<IProps> = ({
                       {...field}
                       type="text"
                       placeholder={formatMessage({
-                        id: "admin.connectorName.placeholder"
+                        id: "admin.connectorName.placeholder",
                       })}
                       label={
                         <Label>
@@ -158,7 +158,7 @@ const CreateConnectorModal: React.FC<IProps> = ({
                       type="text"
                       autoComplete="off"
                       placeholder={formatMessage({
-                        id: "admin.dockerRepository.placeholder"
+                        id: "admin.dockerRepository.placeholder",
                       })}
                       label={
                         <Label>
@@ -177,7 +177,7 @@ const CreateConnectorModal: React.FC<IProps> = ({
                       type="text"
                       autoComplete="off"
                       placeholder={formatMessage({
-                        id: "admin.dockerImageTag.placeholder"
+                        id: "admin.dockerImageTag.placeholder",
                       })}
                       label={
                         <Label>
@@ -196,7 +196,7 @@ const CreateConnectorModal: React.FC<IProps> = ({
                       type="text"
                       autoComplete="off"
                       placeholder={formatMessage({
-                        id: "admin.documentationUrl.placeholder"
+                        id: "admin.documentationUrl.placeholder",
                       })}
                       label={
                         <Label>

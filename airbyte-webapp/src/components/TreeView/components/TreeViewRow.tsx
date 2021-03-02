@@ -3,7 +3,7 @@ import styled from "styled-components";
 
 import {
   AirbyteStreamConfiguration,
-  SyncSchemaStream
+  SyncSchemaStream,
 } from "core/domain/catalog";
 import { traverseSchemaToField } from "core/domain/catalog/fieldUtil";
 
@@ -36,7 +36,7 @@ const TreeViewRow: React.FC<IProps> = ({ streamNode, updateItem }) => {
   const streamId = stream.name;
   const [expanded, setExpanded] = useState<Array<string>>([]);
   const isItemOpen = useMemo<boolean>(
-    () => expanded.some(expandedItem => expandedItem === streamId),
+    () => expanded.some((expandedItem) => expandedItem === streamId),
     [expanded, streamId]
   );
   const fields = useMemo(
@@ -46,7 +46,7 @@ const TreeViewRow: React.FC<IProps> = ({ streamNode, updateItem }) => {
 
   const onExpand = useCallback(() => {
     const newState = isItemOpen
-      ? expanded.filter(stateItem => stateItem !== streamId)
+      ? expanded.filter((stateItem) => stateItem !== streamId)
       : [...expanded, streamId];
 
     setExpanded(newState);
@@ -57,12 +57,12 @@ const TreeViewRow: React.FC<IProps> = ({ streamNode, updateItem }) => {
       if (data.groupValue) {
         updateItem(streamId, {
           syncMode: data.groupValue,
-          cursorField: [data.value]
+          cursorField: [data.value],
         });
       } else {
         updateItem(streamId, {
           syncMode: data.value,
-          cursorField: []
+          cursorField: [],
         });
       }
     },
@@ -72,7 +72,7 @@ const TreeViewRow: React.FC<IProps> = ({ streamNode, updateItem }) => {
   const onCheckBoxClick = useCallback(
     () =>
       updateItem(streamId, {
-        selected: !config.selected
+        selected: !config.selected,
       }),
     [streamId, config, updateItem]
   );
@@ -102,7 +102,7 @@ const TreeViewRow: React.FC<IProps> = ({ streamNode, updateItem }) => {
       </TreeItem>
       {isItemOpen &&
         hasChildren &&
-        fields?.map(field => <ChildRow item={field} depth={1} />)}
+        fields?.map((field) => <ChildRow item={field} depth={1} />)}
     </>
   );
 };

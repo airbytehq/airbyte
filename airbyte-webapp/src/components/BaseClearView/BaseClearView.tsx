@@ -1,6 +1,7 @@
 import React from "react";
 import styled from "styled-components";
-import Version from "../Version";
+
+import Version from "components/Version";
 
 const Content = styled.div`
   height: 100%;
@@ -24,7 +25,7 @@ const MainInfo = styled.div`
   flex-direction: column;
 `;
 
-const BaseClearView: React.FC = props => {
+const BaseClearView: React.FC = (props) => {
   return (
     <Content>
       <MainInfo>

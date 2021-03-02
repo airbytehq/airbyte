@@ -2,10 +2,10 @@ import React from "react";
 import { useIntl } from "react-intl";
 import { useField } from "formik";
 
-import DropDown from "../../../DropDown";
+import DropDown from "components/DropDown";
 import ConfirmationInput from "./ConfirmationInput";
-import Input from "../../../Input";
-import { FormBaseItem } from "../../../../core/form/types";
+import Input from "components/Input";
+import { FormBaseItem } from "core/form/types";
 import { useWidgetInfo } from "../../uiWidgetContext";
 
 type IProps = {
@@ -19,7 +19,7 @@ const Control: React.FC<IProps> = ({ property }) => {
   const {
     addUnfinishedSecret,
     removeUnfinishedSecret,
-    unfinishedSecrets
+    unfinishedSecrets,
   } = useWidgetInfo();
 
   // TODO: think what to do with other cases
@@ -47,13 +47,13 @@ const Control: React.FC<IProps> = ({ property }) => {
         {...field}
         placeholder={placeholder}
         filterPlaceholder={formatMessage({
-          id: "form.searchName"
+          id: "form.searchName",
         })}
-        data={property.enum.map(dataItem => ({
+        data={property.enum.map((dataItem) => ({
           text: dataItem?.toString() ?? "",
-          value: dataItem?.toString() ?? ""
+          value: dataItem?.toString() ?? "",
         }))}
-        onSelect={selectedItem => form.setValue(selectedItem.value)}
+        onSelect={(selectedItem) => form.setValue(selectedItem.value)}
         value={value}
       />
     );

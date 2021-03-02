@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-import Label from "../Label";
+import Label from "components/Label";
 
 export type ControlLabelsProps = {
   className?: string;
@@ -17,7 +17,7 @@ const ControlContainer = styled.div`
   display: inline-block;
 `;
 
-const ControlLabels: React.FC<ControlLabelsProps> = props => (
+const ControlLabels: React.FC<ControlLabelsProps> = (props) => (
   <ControlContainer className={props.className}>
     <Label
       error={props.error}

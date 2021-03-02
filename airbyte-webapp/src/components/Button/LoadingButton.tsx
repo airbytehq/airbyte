@@ -30,7 +30,7 @@ const ButtonView = styled(Button)<IProps>`
   border-color: transparent;
 `;
 
-const LoadingButton: React.FC<IProps> = props => {
+const LoadingButton: React.FC<IProps> = (props) => {
   if (props.isLoading) {
     return (
       <ButtonView {...props}>
