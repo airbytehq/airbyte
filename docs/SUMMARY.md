@@ -12,6 +12,7 @@
   * [Connecting EL with T using SQL \(part 1/2\)](tutorials/connecting-el-with-t-using-sql.md)
   * [Connecting EL with T using DBT \(part 2/2\)](tutorials/connecting-el-with-t-using-dbt.md)
   * [Save and Search Through Your Slack History on a Free Slack Plan](tutorials/slack-history.md)
+  * [Build a Slack Activity Dashboard](tutorials/build-a-slack-activity-dashboard.md)
 * [Changelog](changelog/README.md)
   * [Platform](changelog/platform.md)
   * [Connectors](changelog/connectors.md)
