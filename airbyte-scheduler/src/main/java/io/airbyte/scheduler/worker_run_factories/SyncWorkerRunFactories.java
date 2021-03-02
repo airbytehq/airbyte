@@ -56,12 +56,12 @@ public class SyncWorkerRunFactories {
           attempt,
           new EmptyAirbyteSource(),
           config.getDestinationDockerImage(),
-          getSyncInputFromResetConfig(config),
+          createSyncInputFromResetConfig(config),
           jobRoot,
           pbf);
     }
 
-    private static StandardSyncInput getSyncInputFromResetConfig(JobResetConnectionConfig config) {
+    private static StandardSyncInput createSyncInputFromResetConfig(JobResetConnectionConfig config) {
       return new StandardSyncInput()
           .withSourceConfiguration(Jsons.emptyObject())
           .withDestinationConfiguration(config.getDestinationConfiguration())
@@ -81,12 +81,12 @@ public class SyncWorkerRunFactories {
           attempt,
           airbyteSource,
           config.getDestinationDockerImage(),
-          getSyncInputSyncConfig(config),
+          createSyncInputSyncConfig(config),
           jobRoot,
           pbf);
     }
 
-    private static StandardSyncInput getSyncInputSyncConfig(JobSyncConfig config) {
+    private static StandardSyncInput createSyncInputSyncConfig(JobSyncConfig config) {
       return new StandardSyncInput()
           .withSourceConfiguration(config.getSourceConfiguration())
           .withDestinationConfiguration(config.getDestinationConfiguration())

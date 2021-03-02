@@ -41,7 +41,7 @@ public class CheckConnectionWorkerRunFactory implements WorkerRunFactory<JobChec
 
   @Override
   public WorkerRun create(Path jobRoot, ProcessBuilderFactory pbf, long jobId, int attempt, JobCheckConnectionConfig config) {
-    final StandardCheckConnectionInput checkConnectionInput = getCheckConnectionInput(config);
+    final StandardCheckConnectionInput checkConnectionInput = createCheckConnectionInput(config);
 
     final IntegrationLauncher launcher = WorkerRunFactoryUtils.createLauncher(jobId, attempt, config.getDockerImage(), pbf);
 
@@ -51,7 +51,7 @@ public class CheckConnectionWorkerRunFactory implements WorkerRunFactory<JobChec
         new JobOutputCheckConnectionWorker(new DefaultCheckConnectionWorker(launcher)));
   }
 
-  private static StandardCheckConnectionInput getCheckConnectionInput(JobCheckConnectionConfig config) {
+  private static StandardCheckConnectionInput createCheckConnectionInput(JobCheckConnectionConfig config) {
     return new StandardCheckConnectionInput().withConnectionConfiguration(config.getConnectionConfiguration());
   }
 

@@ -41,7 +41,7 @@ public class GetSpecWorkerRunFactory implements WorkerRunFactory<JobGetSpecConfi
 
   @Override
   public WorkerRun create(Path jobRoot, ProcessBuilderFactory pbf, long jobId, int attempt, JobGetSpecConfig config) {
-    final IntegrationLauncher launcher = new AirbyteIntegrationLauncher(jobId, attempt, config.getDockerImage(), pbf);
+    final IntegrationLauncher launcher = WorkerRunFactoryUtils.createLauncher(jobId, attempt, config.getDockerImage(), pbf);
 
     return new WorkerRun(
         jobRoot,

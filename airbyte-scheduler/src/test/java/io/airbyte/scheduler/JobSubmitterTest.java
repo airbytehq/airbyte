@@ -68,7 +68,7 @@ public class JobSubmitterTest {
   private static final int ATTEMPT_NUMBER = 12;
 
   private JobPersistence persistence;
-  private SchedulerWorkerRunAssembly schedulerWorkerRunAssembly;
+  private SchedulerWorkerRunWithEnvironmentFactory schedulerWorkerRunWithEnvironmentFactory;
   private WorkerRun workerRun;
   private Job job;
   private Path logPath;
@@ -87,8 +87,8 @@ public class JobSubmitterTest {
     final Path jobRoot = Files.createTempDirectory("test");
     final Path logPath = jobRoot.resolve(WorkerConstants.LOG_FILENAME);
     when(workerRun.getJobRoot()).thenReturn(jobRoot);
-    schedulerWorkerRunAssembly = mock(SchedulerWorkerRunAssembly.class);
-    when(schedulerWorkerRunAssembly.create(job)).thenReturn(workerRun);
+    schedulerWorkerRunWithEnvironmentFactory = mock(SchedulerWorkerRunWithEnvironmentFactory.class);
+    when(schedulerWorkerRunWithEnvironmentFactory.create(job)).thenReturn(workerRun);
 
     persistence = mock(JobPersistence.class);
     this.logPath = jobRoot.resolve(WorkerConstants.LOG_FILENAME);
@@ -99,7 +99,7 @@ public class JobSubmitterTest {
         MoreExecutors.newDirectExecutorService(),
         persistence,
         configRepository,
-        schedulerWorkerRunAssembly));
+        schedulerWorkerRunWithEnvironmentFactory));
 
     // by default, turn off the internals of the tracking code. we will test it separate below.
     doNothing().when(jobSubmitter).trackSubmission(any());
@@ -122,7 +122,7 @@ public class JobSubmitterTest {
 
     jobSubmitter.run();
 
-    verifyNoInteractions(schedulerWorkerRunAssembly);
+    verifyNoInteractions(schedulerWorkerRunWithEnvironmentFactory);
     verify(jobSubmitter, never()).trackSubmission(any());
   }
 

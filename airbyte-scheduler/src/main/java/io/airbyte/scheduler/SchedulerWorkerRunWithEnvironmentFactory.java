@@ -24,7 +24,8 @@
 
 package io.airbyte.scheduler;
 
-import io.airbyte.scheduler.worker_run_factories.WorkerRunAssembly;
+import io.airbyte.scheduler.worker_run_factories.WorkerRunFactory;
+import io.airbyte.scheduler.worker_run_factories.WorkerRunWithEnvironmentFactory;
 import io.airbyte.scheduler.worker_run_factories.CheckConnectionWorkerRunFactory;
 import io.airbyte.scheduler.worker_run_factories.DiscoverWorkerRunFactory;
 import io.airbyte.scheduler.worker_run_factories.GetSpecWorkerRunFactory;
@@ -35,42 +36,50 @@ import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * This class is a runnable that give a job id and db connection figures out how to run the
- * appropriate worker for a given job.
- */
-public class SchedulerWorkerRunAssembly {
+public class SchedulerWorkerRunWithEnvironmentFactory {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerWorkerRunAssembly.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerWorkerRunWithEnvironmentFactory.class);
 
   private final Path workspaceRoot;
   private final ProcessBuilderFactory pbf;
+  private final Creator creator;
 
-  public SchedulerWorkerRunAssembly(final Path workspaceRoot,
-                                    final ProcessBuilderFactory pbf) {
+  public SchedulerWorkerRunWithEnvironmentFactory(final Path workspaceRoot, final ProcessBuilderFactory pbf) {
+    this(workspaceRoot, pbf, SchedulerWorkerRunWithEnvironmentFactory::workRunWithEnvironmentCreate);
+  }
+  public SchedulerWorkerRunWithEnvironmentFactory(final Path workspaceRoot, final ProcessBuilderFactory pbf, Creator creator) {
     this.workspaceRoot = workspaceRoot;
     this.pbf = pbf;
+    this.creator = creator;
   }
 
   public WorkerRun create(final Job job) {
     final int currentAttempt = job.getAttemptsCount();
     LOGGER.info("job id: {} attempt: {} scope: {} type: {}", job.getId(), currentAttempt, job.getScope(), job.getConfig().getConfigType());
 
-    final Path jobRoot = workspaceRoot.resolve(String.valueOf(job.getId())).resolve(String.valueOf(currentAttempt));
-    LOGGER.info("job root: {}", jobRoot);
-
     return switch (job.getConfig().getConfigType()) {
-      case GET_SPEC -> new WorkerRunAssembly<>(workspaceRoot, pbf, new GetSpecWorkerRunFactory())
-          .create(job.getId(), currentAttempt, job.getConfig().getGetSpec());
-      case CHECK_CONNECTION_SOURCE, CHECK_CONNECTION_DESTINATION -> new WorkerRunAssembly<>(workspaceRoot, pbf,
-          new CheckConnectionWorkerRunFactory()).create(job.getId(), currentAttempt, job.getConfig().getCheckConnection());
-      case DISCOVER_SCHEMA -> new WorkerRunAssembly<>(workspaceRoot, pbf, new DiscoverWorkerRunFactory())
-          .create(job.getId(), currentAttempt, job.getConfig().getDiscoverCatalog());
-      case SYNC -> new WorkerRunAssembly<>(workspaceRoot, pbf, new SyncWorkerRunFactory())
-          .create(job.getId(), currentAttempt, job.getConfig().getSync());
-      case RESET_CONNECTION -> new WorkerRunAssembly<>(workspaceRoot, pbf, new ResetConnectionWorkerRunFactory())
-          .create(job.getId(), currentAttempt, job.getConfig().getResetConnection());
+      case GET_SPEC -> creator.create(workspaceRoot, pbf, new GetSpecWorkerRunFactory(), job.getId(), currentAttempt, job.getConfig().getGetSpec());
+      case CHECK_CONNECTION_SOURCE, CHECK_CONNECTION_DESTINATION ->
+          creator.create(workspaceRoot, pbf, new CheckConnectionWorkerRunFactory(), job.getId(), currentAttempt, job.getConfig().getCheckConnection());
+      case DISCOVER_SCHEMA -> creator.create(workspaceRoot, pbf, new DiscoverWorkerRunFactory(), job.getId(), currentAttempt, job.getConfig().getDiscoverCatalog());
+      case SYNC -> creator.create(workspaceRoot, pbf, new SyncWorkerRunFactory(), job.getId(), currentAttempt, job.getConfig().getSync());
+      case RESET_CONNECTION -> creator.create(workspaceRoot, pbf, new ResetConnectionWorkerRunFactory(), job.getId(), currentAttempt, job.getConfig().getResetConnection());
     };
+  }
+
+  public static <T> WorkerRun workRunWithEnvironmentCreate(Path workspaceRoot, ProcessBuilderFactory pbf, WorkerRunFactory<T> workerRunFactory, long jobId, int attempt, T config) {
+    return new WorkerRunWithEnvironmentFactory<>(workspaceRoot, pbf, workerRunFactory)
+        .create(jobId, attempt, config);
+  }
+
+  /*
+   * This class is here to help with the testing
+   */
+  @FunctionalInterface
+  interface Creator {
+
+    <T> WorkerRun create(Path workspaceRoot, ProcessBuilderFactory pbf, WorkerRunFactory<T> workerRunFactory, long jobId, int attempt, T config);
+
   }
 
 }

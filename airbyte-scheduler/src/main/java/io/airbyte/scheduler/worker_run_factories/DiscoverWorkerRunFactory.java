@@ -41,7 +41,7 @@ public class DiscoverWorkerRunFactory implements WorkerRunFactory<JobDiscoverCat
 
   @Override
   public WorkerRun create(Path jobRoot, ProcessBuilderFactory pbf, long jobId, int attempt, JobDiscoverCatalogConfig config) {
-    final StandardDiscoverCatalogInput discoverSchemaInput = getDiscoverCatalogInput(config);
+    final StandardDiscoverCatalogInput discoverSchemaInput = createDiscoverCatalogInput(config);
 
     final IntegrationLauncher launcher = WorkerRunFactoryUtils.createLauncher(jobId, attempt, config.getDockerImage(), pbf);
 
@@ -51,7 +51,7 @@ public class DiscoverWorkerRunFactory implements WorkerRunFactory<JobDiscoverCat
         new JobOutputDiscoverSchemaWorker(new DefaultDiscoverCatalogWorker(launcher)));
   }
 
-  private static StandardDiscoverCatalogInput getDiscoverCatalogInput(JobDiscoverCatalogConfig config) {
+  private static StandardDiscoverCatalogInput createDiscoverCatalogInput(JobDiscoverCatalogConfig config) {
     return new StandardDiscoverCatalogInput().withConnectionConfiguration(config.getConnectionConfiguration());
   }
 

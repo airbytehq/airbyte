@@ -32,19 +32,15 @@ import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * This class is a runnable that give a job id and db connection figures out how to run the
- * appropriate worker for a given job.
- */
-public class WorkerRunAssembly<T> {
+public class WorkerRunWithEnvironmentFactory<T> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(WorkerRunAssembly.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(WorkerRunWithEnvironmentFactory.class);
 
   private final Path workspaceRoot;
   private final ProcessBuilderFactory pbf;
   private final WorkerRunFactory<T> workerRunFactory;
 
-  public WorkerRunAssembly(final Path workspaceRoot,
+  public WorkerRunWithEnvironmentFactory(final Path workspaceRoot,
                                final ProcessBuilderFactory pbf,
                                final WorkerRunFactory<T> workerRunFactory) {
     this.workspaceRoot = workspaceRoot;
