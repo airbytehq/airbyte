@@ -1,0 +1,27 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/corebos",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "CoreBOS Source Spec",
+    "type": "object",
+    "required": ["url","http_method"],
+    "additionalProperties": false,
+    "properties": {
+      "url": {
+        "description": "url for the request, including query params. must start with http:// or https://",
+        "type": "string",
+        "pattern": "^http(s)?:\\/\\/.*$"
+      },
+      "http_method": {
+        "description": "http method to use for the request",
+        "type": "string",
+        "enum": ["GET", "POST"]
+      },
+      "body": {
+        "description": "json body to be included in the request",
+        "type": "string"
+      }
+    }
+  }
+}
+

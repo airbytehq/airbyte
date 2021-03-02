@@ -22,5 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-def test_example_method():
-    assert True
+import sys
+
+from base_python.entrypoint import launch
+from source_charity import SourceCharity
+
+if __name__ == "__main__":
+    source = SourceCharity()
+    launch(source, sys.argv[1:])
