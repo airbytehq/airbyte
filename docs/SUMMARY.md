@@ -6,6 +6,7 @@
   * [Postgres Replication](tutorials/postgres-replication.md)
   * [Building a Python Source](tutorials/building-a-python-source.md)
   * [Building a Toy Connector](tutorials/toy-connector.md)
+  * [Adding Incremental to a Source](tutorials/adding-incremental-sync.md)
   * [Beginner's Guide to the AirbyteCatalog](tutorials/beginners-guide-to-catalog.md)
   * [Upgrading Airbyte](tutorials/upgrading-airbyte.md)
   * [Exploring Airbyte logs folder](tutorials/exploring-workspace-folder.md)
