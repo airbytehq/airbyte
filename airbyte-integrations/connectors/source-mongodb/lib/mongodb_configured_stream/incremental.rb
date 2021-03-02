@@ -10,11 +10,11 @@ class MongodbConfiguredStream::Incremental < MongodbConfiguredStream::Base
     integer: 'integer',
   }
 
-  def new(configured_stream:, state:)
+  def initialize(configured_stream:, state:)
     super
 
     value = @state.get(stream_name: stream_name, cursor_field: cursor_field)
-    @cursor =  value && convert_cursor(value)
+    @cursor = value && convert_cursor(value)
   end
 
   def cursor_field
@@ -25,7 +25,7 @@ class MongodbConfiguredStream::Incremental < MongodbConfiguredStream::Base
     if @cursor
       {
         cursor_field => {
-          "$gte": @cursor
+          "$gt": @cursor
         }
       }
     else

@@ -11,6 +11,8 @@ class MongodbState
              else
                {}
              end
+
+    AirbyteLogger.log("Initialized with state:\n#{JSON.pretty_generate(@state)}")
   end
 
   def get(stream_name:, cursor_field:)

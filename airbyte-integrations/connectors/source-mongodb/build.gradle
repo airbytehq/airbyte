@@ -19,19 +19,17 @@ airbyteStandardSourceTestFile {
                         "airbyte/mongodb-integration-test-seed:dev"]
             commandLine args
         }
-
-        
     }
 
     posthook {
         project.exec {
-            commandLine ["docker", "stop", dbName]
+            commandLine "docker", "stop", dbName
         }
     }
 
     // All these input paths must live inside this connector's directory (or subdirectories)
-    configPath = "secrets.sample/valid_config.json"
-    configuredCatalogPath = "secrets/fullrefresh_configured_catalog.json"
+    configPath = "secrets/valid_config.json"
+    configuredCatalogPath = "secrets/configured_catalog.json"
     specPath = "lib/spec.json"
 }
 
