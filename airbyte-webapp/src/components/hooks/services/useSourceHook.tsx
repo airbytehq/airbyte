@@ -47,36 +47,22 @@ export const useSourceDefinitionSpecificationLoad = (
 };
 
 type SourceService = {
-  recreateSource: ({
-    values,
-    sourceId,
-  }: {
+  recreateSource: (recreateSourcePayload: {
     values: ValuesProps;
     sourceId: string;
   }) => Promise<Source>;
-  checkSourceConnection: ({
-    sourceId,
-  }: {
+  checkSourceConnection: (checkSourceConnectionPayload: {
     sourceId: string;
   }) => Promise<Scheduler>;
-  createSource: ({
-    values,
-    sourceConnector,
-  }: {
+  createSource: (createSourcePayload: {
     values: ValuesProps;
     sourceConnector?: ConnectorProps;
   }) => Promise<Source>;
-  updateSource: ({
-    values,
-    sourceId,
-  }: {
+  updateSource: (updateSourcePayload: {
     values: ValuesProps;
     sourceId: string;
   }) => Promise<Source>;
-  deleteSource: ({
-    source,
-    connectionsWithSource,
-  }: {
+  deleteSource: (deleteSourcePayload: {
     source: Source;
     connectionsWithSource: Connection[];
   }) => Promise<void>;
@@ -101,12 +87,9 @@ const useSource = (): SourceService => {
     ConnectionResource.updateStoreAfterDeleteShape()
   );
 
-  const createSource = async ({
+  const createSource: SourceService["createSource"] = async ({
     values,
     sourceConnector,
-  }: {
-    values: ValuesProps;
-    sourceConnector?: ConnectorProps;
   }) => {
     AnalyticsService.track("New Source - Action", {
       action: "Test a connector",
@@ -156,12 +139,9 @@ const useSource = (): SourceService => {
     }
   };
 
-  const updateSource = async ({
+  const updateSource: SourceService["updateSource"] = async ({
     values,
     sourceId,
-  }: {
-    values: ValuesProps;
-    sourceId: string;
   }) => {
     await sourceCheckConnectionShape({
       name: values.name,
@@ -190,12 +170,9 @@ const useSource = (): SourceService => {
     [sourceCheckConnectionShape]
   );
 
-  const recreateSource = async ({
+  const recreateSource: SourceService["recreateSource"] = async ({
     values,
     sourceId,
-  }: {
-    values: ValuesProps;
-    sourceId: string;
   }) => {
     return await recreatesource(
       {
@@ -222,12 +199,9 @@ const useSource = (): SourceService => {
     );
   };
 
-  const deleteSource = async ({
+  const deleteSource: SourceService["deleteSource"] = async ({
     source,
     connectionsWithSource,
-  }: {
-    source: Source;
-    connectionsWithSource: Connection[];
   }) => {
     await sourceDelete({
       sourceId: source.sourceId,
