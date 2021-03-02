@@ -26,7 +26,7 @@ const StepsMenu: React.FC<IProps> = ({
   data,
   onSelect,
   activeStep,
-  lightMode
+  lightMode,
 }) => {
   return (
     <Content>

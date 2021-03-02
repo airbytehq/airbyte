@@ -2,7 +2,7 @@ import React, { useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import styled, { keyframes } from "styled-components";
 
-import ContentCard from "../ContentCard";
+import ContentCard from "components/ContentCard";
 
 export type IProps = {
   title?: string | React.ReactNode;
@@ -37,13 +37,13 @@ const Modal: React.FC<IProps> = ({ children, title, onClose }) => {
 
   useEffect(() => {
     onClose &&
-      window.addEventListener("keydown", event =>
+      window.addEventListener("keydown", (event) =>
         handleUserKeyPress(event, onClose)
       );
 
     return () => {
       onClose &&
-        window.removeEventListener("keydown", event =>
+        window.removeEventListener("keydown", (event) =>
           handleUserKeyPress(event, onClose)
         );
     };

@@ -1,19 +1,18 @@
 import { useCallback, useEffect, useState } from "react";
 import { useFetcher, useResource } from "rest-hooks";
 
-import config from "../../../config";
-import { AnalyticsService } from "../../../core/analytics/AnalyticsService";
-import ConnectionResource, {
-  Connection
-} from "../../../core/resources/Connection";
-import { SyncSchema } from "../../../core/domain/catalog";
-import { SourceDefinition } from "../../../core/resources/SourceDefinition";
-import FrequencyConfig from "../../../data/FrequencyConfig.json";
-import { Source } from "../../../core/resources/Source";
-import { Routes } from "../../../pages/routes";
+import config from "config";
+import { AnalyticsService } from "core/analytics/AnalyticsService";
+import ConnectionResource, { Connection } from "core/resources/Connection";
+import { SyncSchema } from "core/domain/catalog";
+import { SourceDefinition } from "core/resources/SourceDefinition";
+import FrequencyConfig from "data/FrequencyConfig.json";
+import { Source } from "core/resources/Source";
+import { Routes } from "pages/routes";
 import useRouter from "../useRouterHook";
-import { Destination } from "../../../core/resources/Destination";
+import { Destination } from "core/resources/Destination";
 import useWorkspace from "./useWorkspaceHook";
+import { ConnectionConfiguration } from "core/domain/connection";
 
 type ValuesProps = {
   frequency: string;
@@ -31,17 +30,38 @@ type CreateConnectionProps = {
   destinationDefinition?: { name: string; destinationDefinitionId: string };
 };
 
+type UpdateConnection = {
+  connectionId: string;
+  syncCatalog?: SyncSchema;
+  status: string;
+  schedule: {
+    units: number;
+    timeUnit: string;
+  } | null;
+  withRefreshedCatalog?: boolean;
+};
+
+type UpdateStateConnection = {
+  connection: Connection;
+  sourceName: string;
+  connectionConfiguration: ConnectionConfiguration;
+  schedule: {
+    units: number;
+    timeUnit: string;
+  } | null;
+};
+
 export const useConnectionLoad = (
   connectionId: string,
   withRefresh?: boolean
-) => {
+): { connection: Connection | null; isLoadingConnection: boolean } => {
   const [connection, setConnection] = useState<null | Connection>(null);
   const [isLoadingConnection, setIsLoadingConnection] = useState(false);
 
   // TODO: change to useStatefulResource
   const fetchConnection = useFetcher(ConnectionResource.detailShape(), false);
   const baseConnection = useResource(ConnectionResource.detailShape(), {
-    connectionId
+    connectionId,
   });
 
   useEffect(() => {
@@ -51,7 +71,7 @@ export const useConnectionLoad = (
         setConnection(
           await fetchConnection({
             connectionId,
-            withRefreshedCatalog: withRefresh
+            withRefreshedCatalog: withRefresh,
           })
         );
 
@@ -62,11 +82,17 @@ export const useConnectionLoad = (
 
   return {
     connection: withRefresh ? connection : baseConnection,
-    isLoadingConnection
+    isLoadingConnection,
   };
 };
 
-const useConnection = () => {
+const useConnection = (): {
+  createConnection: (conn: CreateConnectionProps) => Promise<Connection>;
+  updateConnection: (conn: UpdateConnection) => Promise<Connection>;
+  updateStateConnection: (conn: UpdateStateConnection) => Promise<void>;
+  resetConnection: (connId: string) => Promise<void>;
+  deleteConnection: (payload: { connectionId: string }) => Promise<void>;
+} => {
   const { push, history } = useRouter();
   const { finishOnboarding, workspace } = useWorkspace();
 
@@ -83,10 +109,10 @@ const useConnection = () => {
     source,
     destination,
     sourceDefinition,
-    destinationDefinition
+    destinationDefinition,
   }: CreateConnectionProps) => {
     const frequencyData = FrequencyConfig.find(
-      item => item.value === values.frequency
+      (item) => item.value === values.frequency
     );
 
     try {
@@ -95,20 +121,20 @@ const useConnection = () => {
           source: {
             sourceId: source?.sourceId || "",
             sourceName: source?.sourceName || "",
-            name: source?.name || ""
+            name: source?.name || "",
           },
           destination: {
             destinationId: destination?.destinationId || "",
             destinationName: destination?.destinationName || "",
-            name: destination?.name || ""
-          }
+            name: destination?.name || "",
+          },
         },
         {
           sourceId: source?.sourceId,
           destinationId: destination?.destinationId,
           schedule: frequencyData?.config,
           status: "active",
-          syncCatalog: values.syncCatalog
+          syncCatalog: values.syncCatalog,
         },
         [
           [
@@ -120,10 +146,10 @@ const useConnection = () => {
             ) => ({
               connections: [
                 ...(connectionsIds?.connections || []),
-                newConnectionId
-              ]
-            })
-          ]
+                newConnectionId,
+              ],
+            }),
+          ],
         ]
       );
       AnalyticsService.track("New Connection - Action", {
@@ -134,7 +160,7 @@ const useConnection = () => {
         connector_source_definition_id: sourceDefinition?.sourceDefinitionId,
         connector_destination_definition: destination?.destinationName,
         connector_destination_definition_id:
-          destinationDefinition?.destinationDefinitionId
+          destinationDefinition?.destinationDefinitionId,
       });
       if (workspace.displaySetupWizard) {
         await finishOnboarding();
@@ -151,17 +177,8 @@ const useConnection = () => {
     syncCatalog,
     status,
     schedule,
-    withRefreshedCatalog
-  }: {
-    connectionId: string;
-    syncCatalog?: SyncSchema;
-    status: string;
-    schedule: {
-      units: number;
-      timeUnit: string;
-    } | null;
-    withRefreshedCatalog?: boolean;
-  }) => {
+    withRefreshedCatalog,
+  }: UpdateConnection) => {
     const withRefreshedCatalogCleaned = withRefreshedCatalog
       ? { withRefreshedCatalog }
       : null;
@@ -173,7 +190,7 @@ const useConnection = () => {
         syncCatalog,
         status,
         schedule,
-        ...withRefreshedCatalogCleaned
+        ...withRefreshedCatalogCleaned,
       }
     );
   };
@@ -182,16 +199,8 @@ const useConnection = () => {
     connection,
     sourceName,
     connectionConfiguration,
-    schedule
-  }: {
-    connection: Connection;
-    sourceName: string;
-    connectionConfiguration: any;
-    schedule: {
-      units: number;
-      timeUnit: string;
-    } | null;
-  }) => {
+    schedule,
+  }: UpdateStateConnection) => {
     await updateStateConnectionResource(
       {},
       {
@@ -200,14 +209,14 @@ const useConnection = () => {
         source: {
           ...connection.source,
           name: sourceName,
-          connectionConfiguration: connectionConfiguration
-        }
+          connectionConfiguration: connectionConfiguration,
+        },
       }
     );
   };
 
   const deleteConnection = async ({
-    connectionId
+    connectionId,
   }: {
     connectionId: string;
   }) => {
@@ -228,8 +237,7 @@ const useConnection = () => {
     updateConnection,
     updateStateConnection,
     resetConnection,
-    deleteConnection
+    deleteConnection,
   };
 };
-
 export default useConnection;

@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { PageViewContainer } from "../../components/CenteredPageComponents";
-import { H1 } from "../../components/Titles";
+import { H1 } from "components/Titles";
 import PreferencesForm from "./components/PreferencesForm";
 import config from "../../config";
 import { AnalyticsService } from "../../core/analytics/AnalyticsService";
@@ -28,7 +28,7 @@ const PreferencesPage: React.FC = () => {
       email: data.email,
       anonymized: data.anonymousDataCollection,
       subscribed_newsletter: data.news,
-      subscribed_security: data.securityUpdates
+      subscribed_security: data.securityUpdates,
     });
   };
 

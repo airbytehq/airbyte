@@ -2,19 +2,19 @@ import React, { useCallback, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 
-import ContentCard from "../../../../../components/ContentCard";
-import FrequencyConfig from "../../../../../data/FrequencyConfig.json";
+import ContentCard from "components/ContentCard";
+import FrequencyConfig from "data/FrequencyConfig.json";
 import useConnection, {
-  useConnectionLoad
-} from "../../../../../components/hooks/services/useConnectionHook";
-import DeleteBlock from "../../../../../components/DeleteBlock";
-import FrequencyForm from "../../../../../components/FrequencyForm";
-import { SyncSchema } from "../../../../../core/domain/catalog";
-import { equal } from "../../../../../utils/objects";
-import ResetDataModal from "../../../../../components/ResetDataModal";
-import { ModalTypes } from "../../../../../components/ResetDataModal/types";
-import Button from "../../../../../components/Button";
-import LoadingSchema from "../../../../../components/LoadingSchema";
+  useConnectionLoad,
+} from "components/hooks/services/useConnectionHook";
+import DeleteBlock from "components/DeleteBlock";
+import FrequencyForm from "components/FrequencyForm";
+import { SyncSchema } from "core/domain/catalog";
+import { equal } from "utils/objects";
+import ResetDataModal from "components/ResetDataModal";
+import { ModalTypes } from "components/ResetDataModal/types";
+import Button from "components/Button";
+import LoadingSchema from "components/LoadingSchema";
 
 type IProps = {
   onAfterSaveSchema: () => void;
@@ -36,7 +36,7 @@ const TitleContainer = styled.div<{ hasButton: boolean }>`
 
 const SettingsView: React.FC<IProps> = ({
   onAfterSaveSchema,
-  connectionId
+  connectionId,
 }) => {
   const [isModalOpen, setIsUpdateModalOpen] = useState(false);
   const [activeUpdatingSchemaMode, setActiveUpdatingSchemaMode] = useState(
@@ -53,7 +53,7 @@ const SettingsView: React.FC<IProps> = ({
   const {
     updateConnection,
     deleteConnection,
-    resetConnection
+    resetConnection,
   } = useConnection();
 
   const { connection, isLoadingConnection } = useConnectionLoad(
@@ -68,12 +68,12 @@ const SettingsView: React.FC<IProps> = ({
 
   const onReset = useCallback(() => resetConnection(connectionId), [
     resetConnection,
-    connectionId
+    connectionId,
   ]);
 
   const schedule =
     connection &&
-    FrequencyConfig.find(item => equal(connection.schedule, item.config));
+    FrequencyConfig.find((item) => equal(connection.schedule, item.config));
 
   const onSubmitResetModal = async () => {
     if (activeUpdatingSchemaMode) {
@@ -102,7 +102,7 @@ const SettingsView: React.FC<IProps> = ({
   }) => {
     setIsLoading(true);
     const frequencyData = FrequencyConfig.find(
-      item => item.value === values.frequency
+      (item) => item.value === values.frequency
     );
     const initialSyncSchema = connection?.syncCatalog;
 
@@ -112,7 +112,7 @@ const SettingsView: React.FC<IProps> = ({
         syncCatalog: values.schema,
         status: connection?.status || "",
         schedule: frequencyData?.config || null,
-        withRefreshedCatalog: activeUpdatingSchemaMode
+        withRefreshedCatalog: activeUpdatingSchemaMode,
       });
 
       setSaved(true);
@@ -127,7 +127,7 @@ const SettingsView: React.FC<IProps> = ({
       setErrorMessage(
         e.message ||
           formatMessage({
-            id: "form.someError"
+            id: "form.someError",
           })
       );
     } finally {

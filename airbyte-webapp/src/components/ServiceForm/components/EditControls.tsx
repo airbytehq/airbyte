@@ -2,8 +2,8 @@ import React from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 
-import Button from "../../Button";
-import Spinner from "../../Spinner";
+import Button from "components/Button";
+import Spinner from "components/Spinner";
 import { useWidgetInfo } from "../uiWidgetContext";
 
 type IProps = {
@@ -49,7 +49,7 @@ const EditControls: React.FC<IProps> = ({
   dirty,
   resetForm,
   successMessage,
-  errorMessage
+  errorMessage,
 }) => {
   const { unfinishedSecrets } = useWidgetInfo();
 

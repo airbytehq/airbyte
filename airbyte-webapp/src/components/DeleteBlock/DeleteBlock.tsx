@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import ContentCard from "../ContentCard";
-import Button from "../Button";
+import ContentCard from "components/ContentCard";
+import Button from "components/Button";
 import DeleteModal from "./components/DeleteModal";
 
 type IProps = {

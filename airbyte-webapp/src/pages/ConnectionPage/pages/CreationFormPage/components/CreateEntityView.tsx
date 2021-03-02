@@ -1,13 +1,13 @@
 import React, { useEffect, useState, useCallback } from "react";
 
-import useRouter from "../../../../../components/hooks/useRouterHook";
-import ContentCard from "../../../../../components/ContentCard";
+import useRouter from "components/hooks/useRouterHook";
+import ContentCard from "components/ContentCard";
 import CheckConnection from "./CheckConnection";
-import useSource from "../../../../../components/hooks/services/useSourceHook";
+import useSource from "components/hooks/services/useSourceHook";
 import { Routes } from "../../../../routes";
-import useDestination from "../../../../../components/hooks/services/useDestinationHook";
-import { JobsLogItem } from "../../../../../components/JobItem";
-import { JobInfo } from "../../../../../core/resources/Scheduler";
+import useDestination from "components/hooks/services/useDestinationHook";
+import { JobsLogItem } from "components/JobItem";
+import { JobInfo } from "core/resources/Scheduler";
 
 type IProps = {
   type: "source" | "destination";
@@ -15,7 +15,7 @@ type IProps = {
 };
 
 const CreateEntityView: React.FC<IProps> = ({ type, afterSuccess }) => {
-  const { location }: { location: any } = useRouter();
+  const { location } = useRouter();
   const [successRequest, setSuccessRequest] = useState(false);
   const [errorStatusRequest, setErrorStatusRequest] = useState<{
     status: number;
@@ -32,11 +32,11 @@ const CreateEntityView: React.FC<IProps> = ({ type, afterSuccess }) => {
 
       if (type === "source") {
         await checkSourceConnection({
-          sourceId: `${location.state?.sourceId}`
+          sourceId: `${location.state?.sourceId}`,
         });
       } else {
         await checkDestinationConnection({
-          destinationId: `${location.state?.destinationId}`
+          destinationId: `${location.state?.destinationId}`,
         });
       }
 

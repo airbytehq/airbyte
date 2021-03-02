@@ -24,7 +24,7 @@ const DestinationsPage: React.FC = () => {
         <Route
           path={[
             `${Routes.Destination}${Routes.ConnectionNew}`,
-            `${Routes.Destination}${Routes.Connection}/:id`
+            `${Routes.Destination}${Routes.Connection}/:id`,
           ]}
         >
           <ConnectionPage />

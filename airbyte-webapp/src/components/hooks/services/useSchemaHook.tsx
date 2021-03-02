@@ -1,11 +1,18 @@
 import { useEffect, useState, useCallback } from "react";
 import { useFetcher } from "rest-hooks";
 
-import { SyncSchema } from "../../../core/domain/catalog";
-import SchemaResource from "../../../core/resources/Schema";
-import { JobInfo } from "../../../core/resources/Scheduler";
+import { SyncSchema } from "core/domain/catalog";
+import SchemaResource from "core/resources/Schema";
+import { JobInfo } from "core/resources/Scheduler";
 
-export const useDiscoverSchema = (sourceId?: string) => {
+export const useDiscoverSchema = (
+  sourceId?: string
+): {
+  isLoading: boolean;
+  schema: SyncSchema;
+  schemaErrorStatus: { status: number; response: JobInfo } | null;
+  onDiscoverSchema: () => Promise<void>;
+} => {
   const [schema, setSchema] = useState<SyncSchema>({ streams: [] });
   const [isLoading, setIsLoading] = useState(false);
   const [schemaErrorStatus, setSchemaErrorStatus] = useState<{

@@ -3,8 +3,8 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { useFetcher } from "rest-hooks";
 
-import Button from "../../../components/Button";
-import LogsResource from "../../../core/resources/Logs";
+import { Button } from "components";
+import LogsResource from "core/resources/Logs";
 
 const Content = styled.div`
   padding: 29px 0 27px;

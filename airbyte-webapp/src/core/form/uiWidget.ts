@@ -4,6 +4,7 @@ import { buildYupFormForJsonSchema } from "../jsonSchema/schemaToYup";
 
 export const buildPathInitialState = (
   formBlock: FormBlock[],
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   formValues: { [key: string]: any },
   widgetState: WidgetConfigMap = {}
 ): { [key: string]: WidgetConfigMap } =>
@@ -30,7 +31,7 @@ export const buildPathInitialState = (
 
                 const subPathSchema = buildYupFormForJsonSchema({
                   type: "object",
-                  ...subConditionItems.jsonSchema
+                  ...subConditionItems.jsonSchema,
                 });
 
                 if (subPathSchema.isValidSync(selectedValues)) {
@@ -49,7 +50,7 @@ export const buildPathInitialState = (
           defaultCondition ?? Object.keys(formItem.conditions)?.[0];
 
         widgetStateBuilder[formItem.fieldName] = {
-          selectedItem: selectedPath
+          selectedItem: selectedPath,
         };
 
         if (formItem.conditions[selectedPath]) {
