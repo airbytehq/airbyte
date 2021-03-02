@@ -126,4 +126,5 @@ public class MigrationV0_17_0 extends BaseMigration implements Migration {
     }
     return dockerImageTag;
   }
+
 }
