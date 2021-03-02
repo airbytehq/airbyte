@@ -22,31 +22,36 @@
  * SOFTWARE.
  */
 
-package io.airbyte.scheduler.worker_run_factories;
+package io.airbyte.scheduler.worker_run;
 
-import io.airbyte.config.JobGetSpecConfig;
-import io.airbyte.scheduler.WorkerRun;
-import io.airbyte.workers.DefaultGetSpecWorker;
-import io.airbyte.workers.process.AirbyteIntegrationLauncher;
+import io.airbyte.config.JobCheckConnectionConfig;
+import io.airbyte.config.StandardCheckConnectionInput;
+import io.airbyte.workers.DefaultCheckConnectionWorker;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessBuilderFactory;
-import io.airbyte.workers.wrappers.JobOutputGetSpecWorker;
+import io.airbyte.workers.wrappers.JobOutputCheckConnectionWorker;
 import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GetSpecWorkerRunFactory implements WorkerRunFactory<JobGetSpecConfig> {
+public class CheckConnectionWorkerRunFactory implements WorkerRunFactory<JobCheckConnectionConfig> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(GetSpecWorkerRunFactory.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(CheckConnectionWorkerRunFactory.class);
 
   @Override
-  public WorkerRun create(Path jobRoot, ProcessBuilderFactory pbf, long jobId, int attempt, JobGetSpecConfig config) {
+  public WorkerRun create(Path jobRoot, ProcessBuilderFactory pbf, long jobId, int attempt, JobCheckConnectionConfig config) {
+    final StandardCheckConnectionInput checkConnectionInput = createCheckConnectionInput(config);
+
     final IntegrationLauncher launcher = WorkerRunFactoryUtils.createLauncher(jobId, attempt, config.getDockerImage(), pbf);
 
     return new WorkerRun(
         jobRoot,
-        config,
-        new JobOutputGetSpecWorker(new DefaultGetSpecWorker(launcher)));
+        checkConnectionInput,
+        new JobOutputCheckConnectionWorker(new DefaultCheckConnectionWorker(launcher)));
+  }
+
+  private static StandardCheckConnectionInput createCheckConnectionInput(JobCheckConnectionConfig config) {
+    return new StandardCheckConnectionInput().withConnectionConfiguration(config.getConnectionConfiguration());
   }
 
 }

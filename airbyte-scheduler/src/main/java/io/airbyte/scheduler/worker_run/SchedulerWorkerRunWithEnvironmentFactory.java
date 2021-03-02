@@ -22,15 +22,11 @@
  * SOFTWARE.
  */
 
-package io.airbyte.scheduler;
+package io.airbyte.scheduler.worker_run;
 
-import io.airbyte.scheduler.worker_run_factories.WorkerRunFactory;
-import io.airbyte.scheduler.worker_run_factories.WorkerRunWithEnvironmentFactory;
-import io.airbyte.scheduler.worker_run_factories.CheckConnectionWorkerRunFactory;
-import io.airbyte.scheduler.worker_run_factories.DiscoverWorkerRunFactory;
-import io.airbyte.scheduler.worker_run_factories.GetSpecWorkerRunFactory;
-import io.airbyte.scheduler.worker_run_factories.SyncWorkerRunFactories.ResetConnectionWorkerRunFactory;
-import io.airbyte.scheduler.worker_run_factories.SyncWorkerRunFactories.SyncWorkerRunFactory;
+import io.airbyte.scheduler.Job;
+import io.airbyte.scheduler.worker_run.SyncWorkerRunFactories.ResetConnectionWorkerRunFactory;
+import io.airbyte.scheduler.worker_run.SyncWorkerRunFactories.SyncWorkerRunFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import java.nio.file.Path;
 import org.slf4j.Logger;

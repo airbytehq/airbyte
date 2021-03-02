@@ -22,11 +22,10 @@
  * SOFTWARE.
  */
 
-package io.airbyte.scheduler.worker_run_factories;
+package io.airbyte.scheduler.worker_run;
 
 import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.StandardDiscoverCatalogInput;
-import io.airbyte.scheduler.WorkerRun;
 import io.airbyte.workers.DefaultDiscoverCatalogWorker;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessBuilderFactory;

@@ -22,16 +22,29 @@
  * SOFTWARE.
  */
 
-package io.airbyte.scheduler.worker_run_factories;
+package io.airbyte.scheduler.worker_run;
 
-import io.airbyte.workers.process.AirbyteIntegrationLauncher;
+import io.airbyte.config.JobGetSpecConfig;
+import io.airbyte.workers.DefaultGetSpecWorker;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessBuilderFactory;
+import io.airbyte.workers.wrappers.JobOutputGetSpecWorker;
+import java.nio.file.Path;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class WorkerRunFactoryUtils {
+public class GetSpecWorkerRunFactory implements WorkerRunFactory<JobGetSpecConfig> {
 
-  public static IntegrationLauncher createLauncher(long jobId, int attempt, final String image, ProcessBuilderFactory pbf) {
-    return new AirbyteIntegrationLauncher(jobId, attempt, image, pbf);
+  private static final Logger LOGGER = LoggerFactory.getLogger(GetSpecWorkerRunFactory.class);
+
+  @Override
+  public WorkerRun create(Path jobRoot, ProcessBuilderFactory pbf, long jobId, int attempt, JobGetSpecConfig config) {
+    final IntegrationLauncher launcher = WorkerRunFactoryUtils.createLauncher(jobId, attempt, config.getDockerImage(), pbf);
+
+    return new WorkerRun(
+        jobRoot,
+        config,
+        new JobOutputGetSpecWorker(new DefaultGetSpecWorker(launcher)));
   }
 
 }

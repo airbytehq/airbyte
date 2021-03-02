@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.scheduler;
+package io.airbyte.scheduler.worker_run;
 
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.JobOutput;

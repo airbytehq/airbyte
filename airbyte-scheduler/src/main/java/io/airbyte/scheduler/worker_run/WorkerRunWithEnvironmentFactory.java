@@ -22,9 +22,8 @@
  * SOFTWARE.
  */
 
-package io.airbyte.scheduler.worker_run_factories;
+package io.airbyte.scheduler.worker_run;
 
-import io.airbyte.scheduler.WorkerRun;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import java.io.IOException;
 import java.nio.file.Files;

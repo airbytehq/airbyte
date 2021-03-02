@@ -22,13 +22,12 @@
  * SOFTWARE.
  */
 
-package io.airbyte.scheduler.worker_run_factories;
+package io.airbyte.scheduler.worker_run;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.StandardSyncInput;
-import io.airbyte.scheduler.WorkerRun;
 import io.airbyte.workers.DefaultSyncWorker;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.airbyte.workers.process.IntegrationLauncher;
