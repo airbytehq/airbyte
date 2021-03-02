@@ -24,37 +24,47 @@
 
 package io.airbyte.scheduler.worker_run;
 
-import com.google.common.annotations.VisibleForTesting;
-import io.airbyte.config.JobGetSpecConfig;
-import io.airbyte.workers.DefaultGetSpecWorker;
+import io.airbyte.config.JobOutput;
+import io.airbyte.workers.Worker;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessBuilderFactory;
-import io.airbyte.workers.wrappers.JobOutputGetSpecWorker;
 import java.nio.file.Path;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class GetSpecWorkerRunFactory extends BaseWorkerRunFactory<JobGetSpecConfig> implements WorkerRunFactory<JobGetSpecConfig> {
+/**
+ * This classes exists to make testing WorkerRunFactories easier. For testing the extending class
+ * can use the protected constructor to pass in mocks. In production, the public constructor should
+ * be preferred.
+ *
+ * @param <T> Input config type
+ */
+public abstract class BaseWorkerRunFactory<T> implements WorkerRunFactory<T> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(GetSpecWorkerRunFactory.class);
+  final IntegrationLauncherFactory integrationLauncherFactory;
+  final WorkerRunCreator workerRunCreator;
 
-  public GetSpecWorkerRunFactory() {
-    super();
+  public BaseWorkerRunFactory() {
+    this(WorkerRunFactoryUtils::createLauncher, WorkerRun::new);
   }
 
-  @VisibleForTesting
-  GetSpecWorkerRunFactory(IntegrationLauncherFactory integrationLauncherFactory, WorkerRunCreator workerRunCreator) {
-    super(integrationLauncherFactory, workerRunCreator);
+  BaseWorkerRunFactory(IntegrationLauncherFactory integrationLauncherFactory, WorkerRunCreator workerRunCreator) {
+    this.integrationLauncherFactory = integrationLauncherFactory;
+    this.workerRunCreator = workerRunCreator;
   }
 
-  @Override
-  public WorkerRun create(Path jobRoot, ProcessBuilderFactory pbf, long jobId, int attempt, JobGetSpecConfig config) {
-    final IntegrationLauncher launcher = integrationLauncherFactory.create(jobId, attempt, config.getDockerImage(), pbf);
+  // exists to make testing easier.
+  @FunctionalInterface
+  interface IntegrationLauncherFactory {
 
-    return workerRunCreator.create(
-        jobRoot,
-        config,
-        new JobOutputGetSpecWorker(new DefaultGetSpecWorker(launcher)));
+    IntegrationLauncher create(long jobId, int attempt, final String image, ProcessBuilderFactory pbf);
+
+  }
+
+  // exists to make testing easier.
+  @FunctionalInterface
+  interface WorkerRunCreator {
+
+    <T> WorkerRun create(Path jobRoot, T input, Worker<T, JobOutput> worker);
+
   }
 
 }

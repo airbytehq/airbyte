@@ -24,6 +24,7 @@
 
 package io.airbyte.scheduler.worker_run;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
@@ -34,17 +35,27 @@ import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CheckConnectionWorkerRunFactory implements WorkerRunFactory<JobCheckConnectionConfig> {
+public class CheckConnectionWorkerRunFactory extends BaseWorkerRunFactory<JobCheckConnectionConfig>
+    implements WorkerRunFactory<JobCheckConnectionConfig> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CheckConnectionWorkerRunFactory.class);
+
+  public CheckConnectionWorkerRunFactory() {
+    super();
+  }
+
+  @VisibleForTesting
+  CheckConnectionWorkerRunFactory(IntegrationLauncherFactory integrationLauncherFactory, WorkerRunCreator workerRunCreator) {
+    super(integrationLauncherFactory, workerRunCreator);
+  }
 
   @Override
   public WorkerRun create(Path jobRoot, ProcessBuilderFactory pbf, long jobId, int attempt, JobCheckConnectionConfig config) {
     final StandardCheckConnectionInput checkConnectionInput = createCheckConnectionInput(config);
 
-    final IntegrationLauncher launcher = WorkerRunFactoryUtils.createLauncher(jobId, attempt, config.getDockerImage(), pbf);
+    final IntegrationLauncher launcher = integrationLauncherFactory.create(jobId, attempt, config.getDockerImage(), pbf);
 
-    return new WorkerRun(
+    return workerRunCreator.create(
         jobRoot,
         checkConnectionInput,
         new JobOutputCheckConnectionWorker(new DefaultCheckConnectionWorker(launcher)));

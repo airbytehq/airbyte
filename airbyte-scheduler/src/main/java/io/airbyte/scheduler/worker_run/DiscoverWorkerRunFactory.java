@@ -24,6 +24,7 @@
 
 package io.airbyte.scheduler.worker_run;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.workers.DefaultDiscoverCatalogWorker;
@@ -34,17 +35,26 @@ import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DiscoverWorkerRunFactory implements WorkerRunFactory<JobDiscoverCatalogConfig> {
+public class DiscoverWorkerRunFactory extends BaseWorkerRunFactory<JobDiscoverCatalogConfig> implements WorkerRunFactory<JobDiscoverCatalogConfig> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DiscoverWorkerRunFactory.class);
+
+  public DiscoverWorkerRunFactory() {
+    super();
+  }
+
+  @VisibleForTesting
+  DiscoverWorkerRunFactory(IntegrationLauncherFactory integrationLauncherFactory, WorkerRunCreator workerRunCreator) {
+    super(integrationLauncherFactory, workerRunCreator);
+  }
 
   @Override
   public WorkerRun create(Path jobRoot, ProcessBuilderFactory pbf, long jobId, int attempt, JobDiscoverCatalogConfig config) {
     final StandardDiscoverCatalogInput discoverSchemaInput = createDiscoverCatalogInput(config);
 
-    final IntegrationLauncher launcher = WorkerRunFactoryUtils.createLauncher(jobId, attempt, config.getDockerImage(), pbf);
+    final IntegrationLauncher launcher = integrationLauncherFactory.create(jobId, attempt, config.getDockerImage(), pbf);
 
-    return new WorkerRun(
+    return workerRunCreator.create(
         jobRoot,
         discoverSchemaInput,
         new JobOutputDiscoverSchemaWorker(new DefaultDiscoverCatalogWorker(launcher)));

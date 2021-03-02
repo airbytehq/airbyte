@@ -24,10 +24,13 @@
 
 package io.airbyte.scheduler.worker_run;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.StandardSyncInput;
+import io.airbyte.scheduler.worker_run.BaseWorkerRunFactory.IntegrationLauncherFactory;
+import io.airbyte.scheduler.worker_run.BaseWorkerRunFactory.WorkerRunCreator;
 import io.airbyte.workers.DefaultSyncWorker;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.airbyte.workers.process.IntegrationLauncher;
@@ -46,7 +49,17 @@ public class SyncWorkerRunFactories {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SyncWorkerRunFactories.class);
 
-  public static class ResetConnectionWorkerRunFactory implements WorkerRunFactory<JobResetConnectionConfig> {
+  public static class ResetConnectionWorkerRunFactory extends BaseWorkerRunFactory<JobResetConnectionConfig>
+      implements WorkerRunFactory<JobResetConnectionConfig> {
+
+    public ResetConnectionWorkerRunFactory() {
+      super();
+    }
+
+    @VisibleForTesting
+    ResetConnectionWorkerRunFactory(IntegrationLauncherFactory integrationLauncherFactory, WorkerRunCreator workerRunCreator) {
+      super(integrationLauncherFactory, workerRunCreator);
+    }
 
     @Override
     public WorkerRun create(Path jobRoot, ProcessBuilderFactory pbf, long jobId, int attempt, JobResetConnectionConfig config) {
@@ -57,7 +70,9 @@ public class SyncWorkerRunFactories {
           config.getDestinationDockerImage(),
           createSyncInputFromResetConfig(config),
           jobRoot,
-          pbf);
+          pbf,
+          integrationLauncherFactory,
+          workerRunCreator);
     }
 
     private static StandardSyncInput createSyncInputFromResetConfig(JobResetConnectionConfig config) {
@@ -69,12 +84,21 @@ public class SyncWorkerRunFactories {
 
   }
 
-  public static class SyncWorkerRunFactory implements WorkerRunFactory<JobSyncConfig> {
+  public static class SyncWorkerRunFactory extends BaseWorkerRunFactory<JobSyncConfig> implements WorkerRunFactory<JobSyncConfig> {
+
+    public SyncWorkerRunFactory() {
+      super();
+    }
+
+    @VisibleForTesting
+    SyncWorkerRunFactory(IntegrationLauncherFactory integrationLauncherFactory, WorkerRunCreator workerRunCreator) {
+      super(integrationLauncherFactory, workerRunCreator);
+    }
 
     @Override
     public WorkerRun create(Path jobRoot, ProcessBuilderFactory pbf, long jobId, int attempt, JobSyncConfig config) {
       final DefaultAirbyteSource airbyteSource =
-          new DefaultAirbyteSource(WorkerRunFactoryUtils.createLauncher(jobId, attempt, config.getSourceDockerImage(), pbf));
+          new DefaultAirbyteSource(integrationLauncherFactory.create(jobId, attempt, config.getSourceDockerImage(), pbf));
       return createSyncWorker(
           jobId,
           attempt,
@@ -82,7 +106,9 @@ public class SyncWorkerRunFactories {
           config.getDestinationDockerImage(),
           createSyncInputSyncConfig(config),
           jobRoot,
-          pbf);
+          pbf,
+          integrationLauncherFactory,
+          workerRunCreator);
     }
 
     private static StandardSyncInput createSyncInputSyncConfig(JobSyncConfig config) {
@@ -101,12 +127,13 @@ public class SyncWorkerRunFactories {
                                             String destinationDockerImage,
                                             StandardSyncInput syncInput,
                                             Path jobRoot,
-                                            ProcessBuilderFactory pbf
+                                            ProcessBuilderFactory pbf,
+                                            IntegrationLauncherFactory integrationLauncherFactory,
 
-  ) {
-    final IntegrationLauncher destinationLauncher = WorkerRunFactoryUtils.createLauncher(jobId, attempt, destinationDockerImage, pbf);
+                                            WorkerRunCreator workerRunCreator) {
+    final IntegrationLauncher destinationLauncher = integrationLauncherFactory.create(jobId, attempt, destinationDockerImage, pbf);
 
-    return new WorkerRun(
+    return workerRunCreator.create(
         jobRoot,
         syncInput,
         new JobOutputSyncWorker(

@@ -32,6 +32,11 @@ import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Creates WorkerRunFactories for each job type in the context of the Scheduler environment (as
+ * opposed to the Temporal enviornment). When we move to Temporal, we will replace this class with
+ * whatever the necessary Temporal logic is.
+ */
 public class SchedulerWorkerRunWithEnvironmentFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerWorkerRunWithEnvironmentFactory.class);
@@ -76,9 +81,7 @@ public class SchedulerWorkerRunWithEnvironmentFactory {
         .create(jobId, attempt, config);
   }
 
-  /*
-   * This class is here to help with the testing
-   */
+  // exists to make testing easier.
   @FunctionalInterface
   interface Creator {
 

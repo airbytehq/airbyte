@@ -93,7 +93,9 @@ class SchedulerWorkerRunWithEnvironmentFactoryTest {
   @EnumSource(value = JobConfig.ConfigType.class,
               names = {"CHECK_CONNECTION_SOURCE", "CHECK_CONNECTION_DESTINATION"})
   void testConnection(JobConfig.ConfigType value) {
-    final JobCheckConnectionConfig expectedInput = new JobCheckConnectionConfig().withConnectionConfiguration(CONFIG);
+    final JobCheckConnectionConfig expectedInput = new JobCheckConnectionConfig()
+        .withDockerImage("airbyte/source-earth:0.1.0")
+        .withConnectionConfiguration(CONFIG);
     when(job.getConfig().getConfigType()).thenReturn(value);
     when(job.getConfig().getCheckConnection()).thenReturn(expectedInput);
 
@@ -107,7 +109,9 @@ class SchedulerWorkerRunWithEnvironmentFactoryTest {
   @SuppressWarnings("unchecked")
   @Test
   void testSchema() {
-    final JobDiscoverCatalogConfig expectedInput = new JobDiscoverCatalogConfig().withConnectionConfiguration(CONFIG);
+    final JobDiscoverCatalogConfig expectedInput = new JobDiscoverCatalogConfig()
+        .withDockerImage("airbyte/source-earth:0.1.0")
+        .withConnectionConfiguration(CONFIG);
     when(job.getConfig().getConfigType()).thenReturn(JobConfig.ConfigType.DISCOVER_SCHEMA);
     when(job.getConfig().getDiscoverCatalog()).thenReturn(expectedInput);
 
