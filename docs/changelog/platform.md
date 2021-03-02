@@ -43,7 +43,7 @@ If you're interested in our progress on the Airbyte platform, please read below!
   * Describe schemas using JsonSchema
   * Better feedback on buttons
 
-## [Beta launc - 0.13](https://github.com/airbytehq/airbyte/milestone/15?closed=1) - Released 02/02/2021
+## [Beta launch - 0.13](https://github.com/airbytehq/airbyte/milestone/15?closed=1) - Released 02/02/2021
 
 * Add connector build status dashboard
 * Support Schema Changes in Sources
