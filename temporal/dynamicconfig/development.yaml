@@ -19,8 +19,6 @@ history.historyMgrNumConns:
 system.advancedVisibilityWritingMode:
   - value: "off"
     constraints: {}
-system.minRetentionDays:
-  - value: 14
 history.defaultActivityRetryPolicy:
   - value:
       InitialIntervalInSeconds: 1
