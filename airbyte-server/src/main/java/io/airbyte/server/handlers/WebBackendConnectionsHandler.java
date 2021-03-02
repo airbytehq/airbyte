@@ -24,10 +24,12 @@
 
 package io.airbyte.server.handlers;
 
+import static java.lang.Thread.sleep;
 import static java.util.stream.Collectors.toMap;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import io.airbyte.api.model.AirbyteCatalog;
 import io.airbyte.api.model.AirbyteStream;
 import io.airbyte.api.model.AirbyteStreamAndConfiguration;
@@ -38,6 +40,7 @@ import io.airbyte.api.model.ConnectionUpdate;
 import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.JobConfigType;
+import io.airbyte.api.model.JobIdRequestBody;
 import io.airbyte.api.model.JobInfoRead;
 import io.airbyte.api.model.JobListRequestBody;
 import io.airbyte.api.model.JobReadList;
@@ -60,8 +63,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class WebBackendConnectionsHandler {
+
+  private static final Set<JobStatus> TERMINAL_STATUSES = Sets.newHashSet(JobStatus.FAILED, JobStatus.SUCCEEDED, JobStatus.CANCELLED);
 
   private final ConnectionsHandler connectionsHandler;
   private final SourceHandler sourceHandler;
@@ -195,10 +201,6 @@ public class WebBackendConnectionsHandler {
 
       // wait for this to execute
       JobInfoRead resetJob = schedulerHandler.resetConnection(connectionId);
-
-      if (!resetJob.getJob().getStatus().equals(JobStatus.SUCCEEDED)) {
-        throw new RuntimeException("Resetting data after updating the connection failed! Please manually reset your data and launch a manual sync.");
-      }
 
       // just create the job
       schedulerHandler.syncConnection(connectionId);
