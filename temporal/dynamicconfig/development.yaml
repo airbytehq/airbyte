@@ -21,7 +21,6 @@ system.advancedVisibilityWritingMode:
     constraints: {}
 system.minRetentionDays:
   - value: 14
-    constraints: {}
 history.defaultActivityRetryPolicy:
   - value:
       InitialIntervalInSeconds: 1
