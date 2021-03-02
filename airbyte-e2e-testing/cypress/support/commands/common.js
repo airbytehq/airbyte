@@ -2,6 +2,10 @@ Cypress.Commands.add("submit", () => {
   cy.get("button[type=submit]").click();
 })
 
+Cypress.Commands.add("fillEmail", (email) => {
+  cy.get("input[name=email]").type(email);
+})
+
 Cypress.Commands.add("fillTestExchangeForm", (name) => {
   cy.intercept("/source_definition_specifications/get").as("getSourceSpecifications");
 

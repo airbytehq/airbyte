@@ -21,7 +21,12 @@ const SkipOnboardingButton: React.FC<IProps> = ({ step }) => {
   };
 
   return (
-    <ButtonWithMargin onClick={onSkip} secondary type="button">
+    <ButtonWithMargin
+      onClick={onSkip}
+      secondary
+      type="button"
+      data-id="skip-onboarding"
+    >
       <FormattedMessage id="onboarding.skipOnboarding" />
     </ButtonWithMargin>
   );
