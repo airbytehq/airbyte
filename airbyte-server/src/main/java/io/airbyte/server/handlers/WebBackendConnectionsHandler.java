@@ -192,7 +192,7 @@ public class WebBackendConnectionsHandler {
   }
 
   public ConnectionRead webBackendUpdateConnection(WebBackendConnectionUpdate webBackendConnectionUpdate)
-      throws ConfigNotFoundException, IOException, JsonValidationException, InterruptedException {
+      throws ConfigNotFoundException, IOException, JsonValidationException {
     final ConnectionUpdate connectionUpdate = toConnectionUpdate(webBackendConnectionUpdate);
     final ConnectionRead connectionRead = connectionsHandler.updateConnection(connectionUpdate);
 
@@ -201,33 +201,12 @@ public class WebBackendConnectionsHandler {
 
       // wait for this to execute
       JobInfoRead resetJob = schedulerHandler.resetConnection(connectionId);
-      final JobInfoRead completedResetJob = waitForJobToComplete(resetJob.getJob().getId());
-
-      if (!completedResetJob.getJob().getStatus().equals(JobStatus.SUCCEEDED)) {
-        throw new RuntimeException("Resetting data after updating the connection failed! Please manually reset your data and launch a manual sync.");
-      }
 
       // just create the job
       schedulerHandler.syncConnection(connectionId);
     }
 
     return connectionRead;
-  }
-
-  private JobInfoRead waitForJobToComplete(long jobId) throws IOException {
-    while (true) {
-      final JobInfoRead jobInfo = jobHistoryHandler.getJobInfo(new JobIdRequestBody().id(jobId));
-
-      if (TERMINAL_STATUSES.contains(jobInfo.getJob().getStatus())) {
-        return jobInfo;
-      }
-
-      try {
-        sleep(500);
-      } catch (InterruptedException e) {
-        throw new RuntimeException(e);
-      }
-    }
   }
 
   @VisibleForTesting
