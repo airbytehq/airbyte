@@ -43,6 +43,7 @@ public class SchedulerWorkerRunWithEnvironmentFactory {
   public SchedulerWorkerRunWithEnvironmentFactory(final Path workspaceRoot, final ProcessBuilderFactory pbf) {
     this(workspaceRoot, pbf, SchedulerWorkerRunWithEnvironmentFactory::workRunWithEnvironmentCreate);
   }
+
   public SchedulerWorkerRunWithEnvironmentFactory(final Path workspaceRoot, final ProcessBuilderFactory pbf, Creator creator) {
     this.workspaceRoot = workspaceRoot;
     this.pbf = pbf;
@@ -55,15 +56,22 @@ public class SchedulerWorkerRunWithEnvironmentFactory {
 
     return switch (job.getConfig().getConfigType()) {
       case GET_SPEC -> creator.create(workspaceRoot, pbf, new GetSpecWorkerRunFactory(), job.getId(), currentAttempt, job.getConfig().getGetSpec());
-      case CHECK_CONNECTION_SOURCE, CHECK_CONNECTION_DESTINATION ->
-          creator.create(workspaceRoot, pbf, new CheckConnectionWorkerRunFactory(), job.getId(), currentAttempt, job.getConfig().getCheckConnection());
-      case DISCOVER_SCHEMA -> creator.create(workspaceRoot, pbf, new DiscoverWorkerRunFactory(), job.getId(), currentAttempt, job.getConfig().getDiscoverCatalog());
+      case CHECK_CONNECTION_SOURCE, CHECK_CONNECTION_DESTINATION -> creator.create(workspaceRoot, pbf, new CheckConnectionWorkerRunFactory(),
+          job.getId(), currentAttempt, job.getConfig().getCheckConnection());
+      case DISCOVER_SCHEMA -> creator.create(workspaceRoot, pbf, new DiscoverWorkerRunFactory(), job.getId(), currentAttempt,
+          job.getConfig().getDiscoverCatalog());
       case SYNC -> creator.create(workspaceRoot, pbf, new SyncWorkerRunFactory(), job.getId(), currentAttempt, job.getConfig().getSync());
-      case RESET_CONNECTION -> creator.create(workspaceRoot, pbf, new ResetConnectionWorkerRunFactory(), job.getId(), currentAttempt, job.getConfig().getResetConnection());
+      case RESET_CONNECTION -> creator.create(workspaceRoot, pbf, new ResetConnectionWorkerRunFactory(), job.getId(), currentAttempt,
+          job.getConfig().getResetConnection());
     };
   }
 
-  public static <T> WorkerRun workRunWithEnvironmentCreate(Path workspaceRoot, ProcessBuilderFactory pbf, WorkerRunFactory<T> workerRunFactory, long jobId, int attempt, T config) {
+  public static <T> WorkerRun workRunWithEnvironmentCreate(Path workspaceRoot,
+                                                           ProcessBuilderFactory pbf,
+                                                           WorkerRunFactory<T> workerRunFactory,
+                                                           long jobId,
+                                                           int attempt,
+                                                           T config) {
     return new WorkerRunWithEnvironmentFactory<>(workspaceRoot, pbf, workerRunFactory)
         .create(jobId, attempt, config);
   }

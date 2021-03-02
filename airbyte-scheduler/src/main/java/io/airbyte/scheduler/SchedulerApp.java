@@ -94,7 +94,8 @@ public class SchedulerApp {
   public void start() throws IOException {
     final ExecutorService workerThreadPool = Executors.newFixedThreadPool(MAX_WORKERS, THREAD_FACTORY);
     final ScheduledExecutorService scheduledPool = Executors.newSingleThreadScheduledExecutor();
-    final SchedulerWorkerRunWithEnvironmentFactory schedulerWorkerRunWithEnvironmentFactory = new SchedulerWorkerRunWithEnvironmentFactory(workspaceRoot, pbf);
+    final SchedulerWorkerRunWithEnvironmentFactory schedulerWorkerRunWithEnvironmentFactory =
+        new SchedulerWorkerRunWithEnvironmentFactory(workspaceRoot, pbf);
 
     final JobRetrier jobRetrier = new JobRetrier(jobPersistence, Instant::now);
     final JobScheduler jobScheduler = new JobScheduler(jobPersistence, configRepository);

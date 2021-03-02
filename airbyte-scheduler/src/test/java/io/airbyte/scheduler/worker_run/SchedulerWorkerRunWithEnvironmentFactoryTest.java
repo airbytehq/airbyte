@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.scheduler;
+package io.airbyte.scheduler.worker_run;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
@@ -43,13 +43,9 @@ import io.airbyte.config.State;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
-import io.airbyte.scheduler.worker_run.CheckConnectionWorkerRunFactory;
-import io.airbyte.scheduler.worker_run.DiscoverWorkerRunFactory;
-import io.airbyte.scheduler.worker_run.GetSpecWorkerRunFactory;
-import io.airbyte.scheduler.worker_run.SchedulerWorkerRunWithEnvironmentFactory;
+import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.worker_run.SyncWorkerRunFactories.ResetConnectionWorkerRunFactory;
 import io.airbyte.scheduler.worker_run.SyncWorkerRunFactories.SyncWorkerRunFactory;
-import io.airbyte.scheduler.worker_run.WorkerRunFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -137,7 +133,6 @@ class SchedulerWorkerRunWithEnvironmentFactoryTest {
     when(job.getConfig().getSync()).thenReturn(expectedInput);
 
     factory.create(job);
-
 
     final ArgumentCaptor<WorkerRunFactory<JobSyncConfig>> argument = ArgumentCaptor.forClass(WorkerRunFactory.class);
     verify(creator).create(eq(workspaceRoot), eq(pbf), argument.capture(), eq(JOB_ID), eq(ATTEMPT_ID), eq(expectedInput));

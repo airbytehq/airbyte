@@ -22,13 +22,12 @@
  * SOFTWARE.
  */
 
-package io.airbyte.scheduler;
+package io.airbyte.scheduler.worker_run;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 
 import io.airbyte.config.JobOutput;
-import io.airbyte.scheduler.worker_run.WorkerRun;
 import io.airbyte.workers.Worker;
 import java.io.IOException;
 import java.nio.file.Files;

@@ -31,6 +31,15 @@ import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * The constructor takes in information from the environment (e.g. Scheduler versus Temporal) in
+ * which the job will run. This information (e.g. file system roots and pbfs) can be used to create
+ * any job of a certain type. It also takes in a factory for creating a WorkerRun for a specific job
+ * type. The create method takes in the configuration information for a specific instance of a job
+ * run.
+ *
+ * @param <T> type of the input config.
+ */
 public class WorkerRunWithEnvironmentFactory<T> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkerRunWithEnvironmentFactory.class);
@@ -40,8 +49,8 @@ public class WorkerRunWithEnvironmentFactory<T> {
   private final WorkerRunFactory<T> workerRunFactory;
 
   public WorkerRunWithEnvironmentFactory(final Path workspaceRoot,
-                               final ProcessBuilderFactory pbf,
-                               final WorkerRunFactory<T> workerRunFactory) {
+                                         final ProcessBuilderFactory pbf,
+                                         final WorkerRunFactory<T> workerRunFactory) {
     this.workspaceRoot = workspaceRoot;
     this.pbf = pbf;
     this.workerRunFactory = workerRunFactory;
