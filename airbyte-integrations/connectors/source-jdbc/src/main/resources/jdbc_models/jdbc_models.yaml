@@ -10,7 +10,7 @@ properties:
 definitions:
   JdbcState:
     type: object
-    additionalProperties: false
+    additionalProperties: true
     required:
       - streams
     properties:
@@ -21,7 +21,7 @@ definitions:
           "$ref": "#/definitions/JdbcStreamState"
   JdbcStreamState:
     type: object
-    additionalProperties: false
+    additionalProperties: true
     required:
       - stream_name
     properties:
