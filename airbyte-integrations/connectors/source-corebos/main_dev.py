@@ -25,8 +25,8 @@ SOFTWARE.
 import sys
 
 from base_python.entrypoint import launch
-from source_charity import SourceCharity
+from source_corebos import SourceCorebos
 
 if __name__ == "__main__":
-    source = SourceCharity()
+    source = SourceCorebos()
     launch(source, sys.argv[1:])

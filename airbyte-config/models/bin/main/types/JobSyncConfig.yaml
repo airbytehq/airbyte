@@ -1,0 +1,35 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/JobSyncConfig.yaml
+title: JobSyncConfig
+description: job sync config
+type: object
+additionalProperties: false
+required:
+  - sourceConfiguration
+  - destinationConfiguration
+  - configuredAirbyteCatalog
+  - sourceDockerImage
+  - destinationDockerImage
+properties:
+  sourceConfiguration:
+    description: Integration specific blob. Must be a valid JSON string.
+    type: object
+    existingJavaType: com.fasterxml.jackson.databind.JsonNode
+  destinationConfiguration:
+    description: Integration specific blob. Must be a valid JSON string.
+    type: object
+    existingJavaType: com.fasterxml.jackson.databind.JsonNode
+  configuredAirbyteCatalog:
+    description: the configured airbyte catalog
+    type: object
+    existingJavaType: io.airbyte.protocol.models.ConfiguredAirbyteCatalog
+  sourceDockerImage:
+    description: Image name of the source with tag.
+    type: string
+  destinationDockerImage:
+    description: Image name of the destination with tag.
+    type: string
+  state:
+    description: optional state of the previous run. this object is defined per integration.
+    "$ref": State.yaml

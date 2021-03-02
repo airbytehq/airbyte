@@ -1,0 +1,9 @@
+{"type": "RECORD", "record": {"stream": "streamWithCamelCase", "emitted_at": 1602637589000, "data": { "data" : "one" }}}
+{"type": "RECORD", "record": {"stream": "stream_with_underscores", "emitted_at": 1602637589100, "data": { "data" : "one" }}}
+{"type": "RECORD", "record": {"stream": "stream_with_edge_case_field_names", "emitted_at": 1602637589200, "data": { "fieldWithCamelCase" : "one" }}}
+{"type": "RECORD", "record": {"stream": "stream_with_edge_case_field_names", "emitted_at": 1602637589300, "data": { "field_with_underscore" : "one" }}}
+{"type": "RECORD", "record": {"stream": "stream-with:spécial:character_names", "emitted_at": 1602637589400, "data": { "field_with_spécial_character" : "one" }}}
+{"type": "RECORD", "record": {"stream": "CapitalCase", "emitted_at": 1602637589000, "data": { "deleted" : true }}}
+{"type": "RECORD", "record": {"stream": "reserved_keywords", "emitted_at": 1602637589000, "data": { "order" : "ascending" }}}
+{"type": "RECORD", "record": {"stream": "groups", "emitted_at": 1602637589000, "data": { "authorization" : "into" }}}
+{"type": "RECORD", "record": {"stream": "ProperCase", "emitted_at": 1602637589000, "data": { "ProperCase" : true }}}

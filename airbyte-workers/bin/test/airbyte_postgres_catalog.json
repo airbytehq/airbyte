@@ -1,0 +1,21 @@
+{
+  "streams": [
+    {
+      "name": "id_and_name",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": ["null", "integer"],
+            "minimum": -2147483648,
+            "maximum": 2147483647
+          },
+          "name": {
+            "type": ["null", "string"],
+            "maxLength": 200
+          }
+        }
+      }
+    }
+  ]
+}

@@ -25,9 +25,9 @@ SOFTWARE.
 from setuptools import find_packages, setup
 
 setup(
-    name="source_charity",
-    description="Source implementation for Charity.",
-    author="Airbyte",
+    name="source_corebos",
+    description="Source implementation for coreBOS API.",
+    author="Charity",
     author_email="charity.mbisi@axelera.io",
     packages=find_packages(),
     install_requires=["airbyte-protocol", "base-python"],

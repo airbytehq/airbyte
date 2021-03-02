@@ -1,0 +1,21 @@
+{
+  "documentationUrl": "https://www.netflix.com",
+  "changelogUrl": "https://www.hulu.com",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Spec",
+    "type": "object",
+    "required": ["requiredfield1"],
+    "additionalProperties": false,
+    "properties": {
+      "requiredfield1": {
+        "type": "string",
+        "description": "very important field"
+      },
+      "optionalfield": {
+        "type": "string",
+        "description": "less important field"
+      }
+    }
+  }
+}

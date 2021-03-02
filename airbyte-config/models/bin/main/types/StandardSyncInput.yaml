@@ -1,0 +1,27 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/StandardSyncInput.yaml
+title: StandardSyncInput
+description: job sync config
+type: object
+additionalProperties: false
+required:
+  - sourceConfiguration
+  - destinationConfiguration
+  - configuredAirbyteCatalog
+properties:
+  sourceConfiguration:
+    description: Integration specific blob. Must be a valid JSON string.
+    type: object
+    existingJavaType: com.fasterxml.jackson.databind.JsonNode
+  destinationConfiguration:
+    description: Integration specific blob. Must be a valid JSON string.
+    type: object
+    existingJavaType: com.fasterxml.jackson.databind.JsonNode
+  catalog:
+    description: the configured airbyte catalog
+    type: object
+    existingJavaType: io.airbyte.protocol.models.ConfiguredAirbyteCatalog
+  state:
+    description: optional state of the previous run. this object is defined per integration.
+    "$ref": State.yaml

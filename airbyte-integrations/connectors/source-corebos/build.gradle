@@ -5,7 +5,7 @@ plugins {
 }
 
 airbytePython {
-    moduleDirectory 'source_charity'
+    moduleDirectory 'source_corebos'
 }
 
 airbyteStandardSourceTestFile {

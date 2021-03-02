@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="INFO">
+    <Properties>
+        <Property name="default-pattern">%d{yyyy-MM-dd HH:mm:ss}{GMT+0} %highlight{%p} %C{1.}(%M):%L - %X - %m%n</Property>
+        <Property name="default-worker-file-pattern">%d{yyyy-MM-dd HH:mm:ss}{GMT+0} %p (%X{job_root}) %C{1}(%M):%L - %m%n</Property>
+    </Properties>
+
+    <Appenders>
+        <Console name="Default" target="SYSTEM_OUT">
+            <PatternLayout pattern="${default-pattern}"/>
+        </Console>
+        <Routing name="LogSplit">
+            <Routes pattern="$${ctx:job_root}">
+                <!-- Don't split logs if job_root isn't defined -->
+                <Route key="$${ctx:job_root}">
+                    <Null name="/dev/null"/>
+                </Route>
+                <Route>
+                    <File name="${ctx:job_root}" fileName="${ctx:job_root}/${ctx:job_log_filename}">
+                        <PatternLayout pattern="${default-worker-file-pattern}"/>
+                    </File>
+                </Route>
+            </Routes>
+            <IdlePurgePolicy timeToLive="15" timeUnit="minutes"/>
+        </Routing>
+        <Routing name="AppLogSplit">
+            <Routes pattern="$${ctx:workspace_app_root}">
+                <!-- Don't split logs if workspace_app_log_root isn't defined -->
+                <Route key="$${ctx:workspace_app_root}">
+                    <Null name="/dev/null"/>
+                </Route>
+                <Route>
+                    <RollingFile
+                            name="${ctx:workspace_app_root}"
+                            fileName="${ctx:workspace_app_root}/logs.log"
+                            filePattern="${ctx:workspace_app_root}/logs.%i.log.gz"
+                            ignoreExceptions="false">
+                        <PatternLayout>
+                            <Pattern>%d{yyyy-MM-dd HH:mm:ss} %-5p %m%n</Pattern>
+                        </PatternLayout>
+                        <Policies>
+                            <SizeBasedTriggeringPolicy size="100MB" />
+                        </Policies>
+                        <DefaultRolloverStrategy max="3" />
+                    </RollingFile>
+                </Route>
+            </Routes>
+            <IdlePurgePolicy timeToLive="15" timeUnit="minutes"/>
+        </Routing>
+    </Appenders>
+
+    <Loggers>
+        <Root level="DEBUG">
+            <AppenderRef ref="Default"/>
+            <AppenderRef ref="LogSplit"/>
+            <AppenderRef ref="AppLogSplit"/>
+        </Root>
+
+        <Logger name="org.eclipse.jetty" level="INFO" />
+        <Logger name="com.github.dockerjava" level="INFO" />
+        <Logger name="org.apache.hc" level="INFO" />
+        <Logger name="org.jooq" level="INFO" />
+        <logger name="org.jooq.Constants" level="OFF" />
+        <Logger name="com.networknt.schema" level="INFO" />
+        <Logger name="me.andrz.jackson" level="INFO" />
+        <Logger name="com.leansoft.bigqueue" level="INFO" />
+
+    </Loggers>
+
+</Configuration>
