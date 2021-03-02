@@ -28,6 +28,9 @@ import java.util.Map;
 
 public interface TrackingClient {
 
+  String USER_EMAIL_KEY_PLACEHOLDER = "email";
+  String USER_EMAIL_VALUE_PLACEHOLDER = "%user_email%";
+
   void identify();
 
   void alias(String previousCustomerId);
