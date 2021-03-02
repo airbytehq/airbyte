@@ -2,279 +2,628 @@
   "streams": [
     {
       "stream": {
-        "name": "stories",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "caption": {
-              "type": ["null", "string"]
-            },
-            "id": {
-              "type": ["null", "string"]
-            },
-            "ig_id": {
-              "type": ["null", "string"]
-            },
-            "like_count": {
-              "type": ["null", "integer"]
-            },
-            "media_type": {
-              "type": ["null", "string"]
-            },
-            "media_url": {
-              "type": ["null", "string"]
-            },
-            "owner": {
-              "type": ["null", "object"],
+      "name": "media",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "caption": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "comments_count": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "id": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "ig_id": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "is_comment_enabled": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          },
+          "like_count": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "media_type": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "media_url": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "owner": {
+            "type": [
+              "null",
+              "object"
+            ],
+            "properties": {
+              "id": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              }
+            }
+          },
+          "permalink": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "shortcode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "thumbnail_url": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "timestamp": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "username": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "children": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "object",
               "properties": {
                 "id": {
-                  "type": ["null", "string"]
-                }
-              }
-            },
-            "permalink": {
-              "type": ["null", "string"]
-            },
-            "shortcode": {
-              "type": ["null", "string"]
-            },
-            "thumbnail_url": {
-              "type": ["null", "string"]
-            },
-            "timestamp": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "username": {
-              "type": ["null", "string"]
-            }
-          }
-        },
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false
-      }
-    },
-    {
-      "stream": {
-        "name": "users",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": ["null", "string"]
-            },
-            "biography": {
-              "type": ["null", "string"]
-            },
-            "ig_id": {
-              "type": ["null", "integer"]
-            },
-            "followers_count": {
-              "type": ["null", "integer"]
-            },
-            "follows_count": {
-              "type": ["null", "integer"]
-            },
-            "media_count": {
-              "type": ["null", "integer"]
-            },
-            "name": {
-              "type": ["null", "string"]
-            },
-            "profile_picture_url": {
-              "type": ["null", "string"]
-            },
-            "username": {
-              "type": ["null", "string"]
-            },
-            "website": {
-              "type": ["null", "string"]
-            }
-          }
-        },
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false
-      }
-    },
-    {
-      "stream": {
-        "name": "media",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "caption": {
-              "type": ["null", "string"]
-            },
-            "comments_count": {
-              "type": ["null", "integer"]
-            },
-            "id": {
-              "type": ["null", "string"]
-            },
-            "ig_id": {
-              "type": ["null", "string"]
-            },
-            "is_comment_enabled": {
-              "type": ["null", "boolean"]
-            },
-            "like_count": {
-              "type": ["null", "integer"]
-            },
-            "media_type": {
-              "type": ["null", "string"]
-            },
-            "media_url": {
-              "type": ["null", "string"]
-            },
-            "owner": {
-              "type": ["null", "object"],
-              "properties": {
-                "id": {
-                  "type": ["null", "string"]
-                }
-              }
-            },
-            "permalink": {
-              "type": ["null", "string"]
-            },
-            "shortcode": {
-              "type": ["null", "string"]
-            },
-            "thumbnail_url": {
-              "type": ["null", "string"]
-            },
-            "timestamp": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "username": {
-              "type": ["null", "string"]
-            }
-          }
-        },
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false
-      }
-    },
-    {
-      "stream": {
-        "name": "media_insights",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "name": {
-              "type": ["null", "string"]
-            },
-            "period": {
-              "type": ["null", "string"]
-            },
-            "id": {
-              "type": ["null", "string"]
-            },
-            "title": {
-              "type": ["null", "string"]
-            },
-            "description": {
-              "type": ["null", "string"]
-            },
-            "values": {
-              "type": ["null", "array"],
-              "items": {
-                "type": "object",
-                "properties": {
-                  "value": {
-                    "type": "integer"
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "ig_id": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "media_type": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "media_url": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "owner": {
+                  "type": [
+                    "null",
+                    "object"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    }
                   }
+                },
+                "permalink": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "shortcode": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "thumbnail_url": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "timestamp": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "username": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
                 }
               }
             }
           }
-        },
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false
-      }
+        }
+      },
+      "supported_sync_modes": [
+        "full_refresh"
+      ],
+      "source_defined_cursor": false
+    }
     },
     {
       "stream": {
-        "name": "story_insights",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "name": {
-              "type": ["null", "string"]
-            },
-            "period": {
-              "type": ["null", "string"]
-            },
-            "id": {
-              "type": ["null", "string"]
-            },
-            "title": {
-              "type": ["null", "string"]
-            },
-            "description": {
-              "type": ["null", "string"]
-            },
-            "values": {
-              "type": ["null", "array"],
-              "items": {
-                "type": "object",
-                "properties": {
-                  "value": {
-                    "type": "integer"
-                  }
-                }
+      "name": "stories",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "caption": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "id": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "ig_id": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "like_count": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "media_type": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "media_url": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "owner": {
+            "type": [
+              "null",
+              "object"
+            ],
+            "properties": {
+              "id": {
+                "type": [
+                  "null",
+                  "string"
+                ]
               }
             }
+          },
+          "permalink": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "shortcode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "thumbnail_url": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "timestamp": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "username": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
-        },
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false
-      }
+        }
+      },
+      "supported_sync_modes": [
+        "full_refresh"
+      ],
+      "source_defined_cursor": false
+    }
     },
     {
       "stream": {
-        "name": "user_insights",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "name": {
-              "type": ["null", "string"]
-            },
-            "period": {
-              "type": ["null", "string"]
-            },
-            "id": {
-              "type": ["null", "string"]
-            },
-            "title": {
-              "type": ["null", "string"]
-            },
-            "description": {
-              "type": ["null", "string"]
-            },
-            "values": {
-              "type": ["null", "array"],
-              "items": {
-                "type": "object",
-                "properties": {
-                  "value": {
-                    "type": "integer"
-                  }
-                }
-              }
-            }
+      "name": "users",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "biography": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "ig_id": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "followers_count": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "follows_count": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "media_count": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "name": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "profile_picture_url": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "username": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "website": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
-        },
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false
-      }
+        }
+      },
+      "supported_sync_modes": [
+        "full_refresh"
+      ],
+      "source_defined_cursor": false
+    }
+    },
+    {
+      "stream": {
+      "name": "user_lifetime_insights",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "date": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "metric": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "value": {
+            "type": [
+              "integer",
+              "object"
+            ]
+          }
+        }
+      },
+      "supported_sync_modes": [
+        "full_refresh"
+      ],
+      "source_defined_cursor": false
+    }
+    },
+    {
+      "stream": {
+      "name": "user_insights",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "date": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "follower_count": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "get_directions_clicks": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "impressions": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "phone_call_clicks": {
+            "type": [
+              "integer",
+              "integer"
+            ]
+          },
+          "profile_views": {
+            "type": [
+              "integer",
+              "integer"
+            ]
+          },
+          "reach": {
+            "type": [
+              "integer",
+              "integer"
+            ]
+          },
+          "text_message_clicks": {
+            "type": [
+              "integer",
+              "integer"
+            ]
+          },
+          "website_clicks": {
+            "type": [
+              "integer",
+              "integer"
+            ]
+          },
+          "impressions_week": {
+            "type": [
+              "integer",
+              "integer"
+            ]
+          },
+          "reach_week": {
+            "type": [
+              "integer",
+              "integer"
+            ]
+          },
+          "impressions_days_28": {
+            "type": [
+              "integer",
+              "integer"
+            ]
+          },
+          "reach_days_28": {
+            "type": [
+              "integer",
+              "integer"
+            ]
+          }
+        }
+      },
+      "supported_sync_modes": [
+        "full_refresh"
+      ],
+      "source_defined_cursor": false
+    }
+    },
+    {
+      "stream": {
+      "name": "media_insights",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "engagement": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "impressions": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "reach": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "saved": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "video_views": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "carousel_album_engagement": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "carousel_album_impressions": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "carousel_album_reach": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "carousel_album_saved": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          }
+        }
+      },
+      "supported_sync_modes": [
+        "full_refresh"
+      ],
+      "source_defined_cursor": false
+    }
+    },
+    {
+      "stream": {
+      "name": "story_insights",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "exits": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "impressions": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "reach": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "replies": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "taps_forward": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "taps_back": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          }
+        }
+      },
+      "supported_sync_modes": [
+        "full_refresh"
+      ],
+      "source_defined_cursor": false
+    }
     }
   ]
 }
+

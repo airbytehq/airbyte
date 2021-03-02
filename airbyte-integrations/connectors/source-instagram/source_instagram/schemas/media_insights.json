@@ -1,4 +1,35 @@
 {
   "type": "object",
-  "properties": { "$ref": "insights.json" }
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "engagement": {
+      "type": ["null", "integer"]
+    },
+    "impressions": {
+      "type": ["null", "integer"]
+    },
+    "reach": {
+      "type": ["null", "integer"]
+    },
+    "saved": {
+      "type": ["null", "integer"]
+    },
+    "video_views": {
+      "type": ["null", "integer"]
+    },
+    "carousel_album_engagement": {
+      "type": ["null", "integer"]
+    },
+    "carousel_album_impressions": {
+      "type": ["null", "integer"]
+    },
+    "carousel_album_reach": {
+      "type": ["null", "integer"]
+    },
+    "carousel_album_saved": {
+      "type": ["null", "integer"]
+    }
+  }
 }

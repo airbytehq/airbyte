@@ -30,7 +30,7 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=["airbyte-protocol", "base-python", "facebook_business==9.0.1", "cached_property==1.5.2"],
+    install_requires=["airbyte-protocol", "base-python", "facebook_business==9.0.1", "pendulum==1.2.0", "cached_property==1.5.2"],
     package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
     setup_requires=["pytest-runner"],
     tests_require=["pytest"],

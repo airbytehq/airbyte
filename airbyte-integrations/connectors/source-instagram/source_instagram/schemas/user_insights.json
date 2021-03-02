@@ -1,4 +1,48 @@
 {
   "type": "object",
-  "properties": { "$ref": "insights.json" }
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "date": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "follower_count": {
+      "type": ["null", "integer"]
+    },
+    "get_directions_clicks": {
+      "type": ["null", "integer"]
+    },
+    "impressions": {
+      "type": ["null", "integer"]
+    },
+    "phone_call_clicks": {
+      "type": ["integer", "integer"]
+    },
+    "profile_views": {
+      "type": ["integer", "integer"]
+    },
+    "reach": {
+      "type": ["integer", "integer"]
+    },
+    "text_message_clicks": {
+      "type": ["integer", "integer"]
+    },
+    "website_clicks": {
+      "type": ["integer", "integer"]
+    },
+    "impressions_week": {
+      "type": ["integer", "integer"]
+    },
+    "reach_week": {
+      "type": ["integer", "integer"]
+    },
+    "impressions_days_28": {
+      "type": ["integer", "integer"]
+    },
+    "reach_days_28": {
+      "type": ["integer", "integer"]
+    }
+  }
 }

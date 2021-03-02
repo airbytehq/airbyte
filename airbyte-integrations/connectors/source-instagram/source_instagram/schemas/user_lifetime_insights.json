@@ -1,0 +1,18 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "date": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "metric": {
+      "type": ["null", "string"]
+    },
+    "value": {
+      "type": ["integer", "object"]
+    }
+  }
+}

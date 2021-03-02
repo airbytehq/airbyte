@@ -1,4 +1,26 @@
 {
   "type": "object",
-  "properties": { "$ref": "insights.json" }
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "exits": {
+      "type": ["null", "integer"]
+    },
+    "impressions": {
+      "type": ["null", "integer"]
+    },
+    "reach": {
+      "type": ["null", "integer"]
+    },
+    "replies": {
+      "type": ["null", "integer"]
+    },
+    "taps_forward": {
+      "type": ["null", "integer"]
+    },
+    "taps_back": {
+      "type": ["null", "integer"]
+    }
+  }
 }

@@ -24,6 +24,7 @@ SOFTWARE.
 
 from typing import Mapping, Tuple
 
+import pendulum
 from base_python import BaseClient
 from base_python.entrypoint import logger
 from cached_property import cached_property
@@ -33,21 +34,31 @@ from facebook_business.adobjects.iguser import IGUser
 from facebook_business.adobjects.page import Page
 from facebook_business.exceptions import FacebookRequestError
 
-from .api import IgMediaAPI, IgMediaInsightsAPI, IgUserInsightsAPI, IgUsersAPI
+from .api import (
+    IgMediaAPI,
+    IgMediaInsightsAPI,
+    IgStoriesAPI,
+    IgStoriesInsightsAPI,
+    IgUserCustomInsightsAPI,
+    IgUserLifetimeInsightsAPI,
+    IgUsersAPI,
+)
 
 
 class Client(BaseClient):
-    def __init__(self, account_id: str, access_token: str):
+    def __init__(self, account_id: str, access_token: str, start_date: str):
         self._account_id = account_id
+        self._start_date = pendulum.parse(start_date)
 
         self._api = FacebookAdsApi.init(access_token=access_token)
         self._apis = {
-            "media": IgMediaAPI(self, method="get_media"),
-            "stories": IgMediaAPI(self, method="get_stories"),
+            "media": IgMediaAPI(self),
+            "stories": IgStoriesAPI(self),
             "users": IgUsersAPI(self),
-            "user_insights": IgUserInsightsAPI(self),
-            "media_insights": IgMediaInsightsAPI(self, method="get_media"),
-            "story_insights": IgMediaInsightsAPI(self, method="get_stories"),
+            "user_lifetime_insights": IgUserLifetimeInsightsAPI(self),
+            "user_insights": IgUserCustomInsightsAPI(self),
+            "media_insights": IgMediaInsightsAPI(self),
+            "story_insights": IgStoriesInsightsAPI(self),
         }
         super().__init__()
 
