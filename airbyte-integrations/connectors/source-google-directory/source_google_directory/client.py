@@ -22,8 +22,37 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from typing import Any, Mapping, Tuple
+
 from base_python import BaseClient
+
+from .api import API, GroupMembersAPI, GroupsAPI, UsersAPI
 
 
 class Client(BaseClient):
-    pass
+    def __init__(self, credentials_json: str, credentials_pickle: str):
+        self._api = API(credentials_json, credentials_pickle)
+        self._apis = {"users": UsersAPI(self._api), "groups": GroupsAPI(self._api), "group_members": GroupMembersAPI(self._api)}
+        super().__init__()
+
+    def get_stream_state(self, name: str) -> Any:
+        pass
+
+    def set_stream_state(self, name: str, state: Any):
+        pass
+
+    def _enumerate_methods(self) -> Mapping[str, callable]:
+        return {name: api.list for name, api in self._apis.items()}
+
+    def health_check(self) -> Tuple[bool, str]:
+        alive = True
+        error_msg = None
+
+        users = UsersAPI(self._api)
+        try:
+            users.list()
+        except Exception as error:
+            alive = False
+            error_msg = repr(error)
+
+        return alive, error_msg

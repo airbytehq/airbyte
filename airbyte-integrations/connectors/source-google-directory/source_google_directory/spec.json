@@ -4,12 +4,18 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Google Directory Spec",
     "type": "object",
-    "required": ["fix-me"],
+    "required": ["credentials_json", "credentials_pickle"],
     "additionalProperties": false,
     "properties": {
-      "fix-me": {
+      "credentials_json": {
         "type": "string",
-        "description": "describe me"
+        "description": "Path to the JSON credentials file.",
+        "airbyte_secret": true
+      },
+      "credentials_pickle": {
+        "type": "string",
+        "description": "Path to the pickle credentials file.",
+        "airbyte_secret": true
       }
     }
   }

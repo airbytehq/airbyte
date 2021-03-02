@@ -28,4 +28,4 @@ from .client import Client
 
 
 class SourceGoogleDirectory(BaseSource):
-    pass
+    client_class = Client
