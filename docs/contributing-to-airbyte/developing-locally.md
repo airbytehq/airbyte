@@ -8,7 +8,7 @@ The following technologies are required to build Airbyte locally.
 4. `Docker`
 5. `Postgresql`
 6. `Jq`
-7. `CMake`i
+7. `CMake`
 
 {% hint style="info" %}
 Python versioning can get hairy. We recommend using a version manager such as `pyenv`.
