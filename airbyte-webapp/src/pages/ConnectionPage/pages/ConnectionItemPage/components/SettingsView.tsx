@@ -34,6 +34,11 @@ const TitleContainer = styled.div<{ hasButton: boolean }>`
   margin: ${({ hasButton }) => (hasButton ? "-5px 0" : 0)};
 `;
 
+type FormValues = {
+  frequency: string;
+  schema: SyncSchema;
+};
+
 const SettingsView: React.FC<IProps> = ({
   onAfterSaveSchema,
   connectionId,
@@ -45,10 +50,10 @@ const SettingsView: React.FC<IProps> = ({
   const formatMessage = useIntl().formatMessage;
   const [saved, setSaved] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [currentValues, setCurrentValues] = useState<{
-    frequency: string;
-    schema: SyncSchema;
-  }>({ frequency: "", schema: { streams: [] } });
+  const [currentValues, setCurrentValues] = useState<FormValues>({
+    frequency: "",
+    schema: { streams: [] },
+  });
   const [errorMessage, setErrorMessage] = useState("");
   const {
     updateConnection,
@@ -75,31 +80,7 @@ const SettingsView: React.FC<IProps> = ({
     connection &&
     FrequencyConfig.find((item) => equal(connection.schedule, item.config));
 
-  const onSubmitResetModal = async () => {
-    if (activeUpdatingSchemaMode) {
-      setIsUpdateModalOpen(false);
-      await onSubmit(currentValues);
-    } else {
-      onSubmitModal();
-    }
-  };
-
-  const onSubmitForm = async (values: {
-    frequency: string;
-    schema: SyncSchema;
-  }) => {
-    if (activeUpdatingSchemaMode) {
-      setCurrentValues(values);
-      setIsUpdateModalOpen(true);
-    } else {
-      await onSubmit(values);
-    }
-  };
-
-  const onSubmit = async (values: {
-    frequency: string;
-    schema: SyncSchema;
-  }) => {
+  const onSubmit = async (values: FormValues) => {
     setIsLoading(true);
     const frequencyData = FrequencyConfig.find(
       (item) => item.value === values.frequency
@@ -135,20 +116,23 @@ const SettingsView: React.FC<IProps> = ({
     }
   };
 
-  const onSubmitModal = () => {
-    setActiveUpdatingSchemaMode(true);
-    setIsUpdateModalOpen(false);
+  const onSubmitResetModal = async () => {
+    if (activeUpdatingSchemaMode) {
+      setIsUpdateModalOpen(false);
+      await onSubmit(currentValues);
+    } else {
+      setActiveUpdatingSchemaMode(true);
+      setIsUpdateModalOpen(false);
+    }
   };
 
-  const endControl = () => {
-    if (!activeUpdatingSchemaMode) {
-      return (
-        <Button onClick={() => setIsUpdateModalOpen(true)}>
-          <FormattedMessage id="connection.updateSchema" />
-        </Button>
-      );
+  const onSubmitForm = async (values: FormValues) => {
+    if (activeUpdatingSchemaMode) {
+      setCurrentValues(values);
+      setIsUpdateModalOpen(true);
+    } else {
+      await onSubmit(values);
     }
-    return null;
   };
 
   return (
@@ -157,7 +141,11 @@ const SettingsView: React.FC<IProps> = ({
         title={
           <TitleContainer hasButton={!activeUpdatingSchemaMode}>
             <FormattedMessage id="connection.connectionSettings" />{" "}
-            {endControl()}
+            {!activeUpdatingSchemaMode && (
+              <Button onClick={() => setIsUpdateModalOpen(true)}>
+                <FormattedMessage id="connection.updateSchema" />
+              </Button>
+            )}
           </TitleContainer>
         }
       >
