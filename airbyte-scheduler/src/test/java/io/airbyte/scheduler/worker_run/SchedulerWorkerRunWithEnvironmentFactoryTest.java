@@ -44,8 +44,6 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.scheduler.Job;
-import io.airbyte.scheduler.worker_run.SyncWorkerRunFactories.ResetConnectionWorkerRunFactory;
-import io.airbyte.scheduler.worker_run.SyncWorkerRunFactories.SyncWorkerRunFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import java.io.IOException;
 import java.nio.file.Files;

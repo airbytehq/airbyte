@@ -145,7 +145,7 @@ class WorkerRunFactoriesTest {
         .withCatalog(config.getConfiguredAirbyteCatalog())
         .withState(config.getState());
 
-    new SyncWorkerRunFactories.SyncWorkerRunFactory(integrationLauncherFactory, workerRunCreator)
+    new SyncWorkerRunFactory(integrationLauncherFactory, workerRunCreator)
         .create(jobRoot, pbf, JOB_ID, ATTEMPT_ID, config);
 
     final ArgumentCaptor<Worker<StandardSyncInput, JobOutput>> argument = ArgumentCaptor.forClass(Worker.class);
@@ -168,7 +168,7 @@ class WorkerRunFactoriesTest {
         .withDestinationConfiguration(config.getDestinationConfiguration())
         .withCatalog(config.getConfiguredAirbyteCatalog());
 
-    new SyncWorkerRunFactories.ResetConnectionWorkerRunFactory(integrationLauncherFactory, workerRunCreator)
+    new ResetConnectionWorkerRunFactory(integrationLauncherFactory, workerRunCreator)
         .create(jobRoot, pbf, JOB_ID, ATTEMPT_ID, config);
 
     final ArgumentCaptor<Worker<StandardSyncInput, JobOutput>> argument = ArgumentCaptor.forClass(Worker.class);

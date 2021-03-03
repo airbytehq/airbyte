@@ -28,6 +28,7 @@ import io.airbyte.config.JobOutput;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessBuilderFactory;
+import java.io.Serializable;
 import java.nio.file.Path;
 
 /**
@@ -37,7 +38,7 @@ import java.nio.file.Path;
  *
  * @param <T> Input config type
  */
-public abstract class BaseWorkerRunFactory<T> implements WorkerRunFactory<T> {
+public abstract class BaseWorkerRunFactory<T extends Serializable> implements WorkerRunFactory<T> {
 
   final IntegrationLauncherFactory integrationLauncherFactory;
   final WorkerRunCreator workerRunCreator;

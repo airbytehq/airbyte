@@ -26,6 +26,7 @@ package io.airbyte.scheduler.worker_run;
 
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.slf4j.Logger;
@@ -40,7 +41,7 @@ import org.slf4j.LoggerFactory;
  *
  * @param <T> type of the input config.
  */
-public class WorkerRunWithEnvironmentFactory<T> {
+public class WorkerRunWithEnvironmentFactory<T extends Serializable> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkerRunWithEnvironmentFactory.class);
 

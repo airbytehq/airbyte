@@ -25,9 +25,8 @@
 package io.airbyte.scheduler.worker_run;
 
 import io.airbyte.scheduler.Job;
-import io.airbyte.scheduler.worker_run.SyncWorkerRunFactories.ResetConnectionWorkerRunFactory;
-import io.airbyte.scheduler.worker_run.SyncWorkerRunFactories.SyncWorkerRunFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
+import java.io.Serializable;
 import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,12 +70,12 @@ public class SchedulerWorkerRunWithEnvironmentFactory {
     };
   }
 
-  public static <T> WorkerRun workRunWithEnvironmentCreate(Path workspaceRoot,
-                                                           ProcessBuilderFactory pbf,
-                                                           WorkerRunFactory<T> workerRunFactory,
-                                                           long jobId,
-                                                           int attempt,
-                                                           T config) {
+  public static <T extends Serializable> WorkerRun workRunWithEnvironmentCreate(Path workspaceRoot,
+                                                                                ProcessBuilderFactory pbf,
+                                                                                WorkerRunFactory<T> workerRunFactory,
+                                                                                long jobId,
+                                                                                int attempt,
+                                                                                T config) {
     return new WorkerRunWithEnvironmentFactory<>(workspaceRoot, pbf, workerRunFactory)
         .create(jobId, attempt, config);
   }
@@ -85,7 +84,12 @@ public class SchedulerWorkerRunWithEnvironmentFactory {
   @FunctionalInterface
   interface Creator {
 
-    <T> WorkerRun create(Path workspaceRoot, ProcessBuilderFactory pbf, WorkerRunFactory<T> workerRunFactory, long jobId, int attempt, T config);
+    <T extends Serializable> WorkerRun create(Path workspaceRoot,
+                                              ProcessBuilderFactory pbf,
+                                              WorkerRunFactory<T> workerRunFactory,
+                                              long jobId,
+                                              int attempt,
+                                              T config);
 
   }
 
