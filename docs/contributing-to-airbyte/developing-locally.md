@@ -11,7 +11,7 @@ The following technologies are required to build Airbyte locally.
 7. `CMake`
 
 {% hint style="info" %}
-Python versioning can get hairy. We recommend using a version manager such as `pyenv`.
+Manually switching between different language versions can get hairy. We recommend using a version manager such as `pyenv` or `jenv`.
 {% endhint %}
 
 To start contributing:
