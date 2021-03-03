@@ -17,6 +17,7 @@ const useSyncActions = (): {
     await updateConnection({
       connectionId: connection.connectionId,
       syncCatalog: connection.syncCatalog,
+      connectionName: connection.connectionName,
       schedule: connection.schedule || null,
       status: connection.status === "active" ? "inactive" : "active",
     });

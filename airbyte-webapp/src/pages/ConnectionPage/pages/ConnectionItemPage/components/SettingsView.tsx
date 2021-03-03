@@ -47,8 +47,9 @@ const SettingsView: React.FC<IProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [currentValues, setCurrentValues] = useState<{
     frequency: string;
+    connectionName: string;
     schema: SyncSchema;
-  }>({ frequency: "", schema: { streams: [] } });
+  }>({ frequency: "", connectionName: "", schema: { streams: [] } });
   const [errorMessage, setErrorMessage] = useState("");
   const {
     updateConnection,
@@ -86,6 +87,7 @@ const SettingsView: React.FC<IProps> = ({
 
   const onSubmitForm = async (values: {
     frequency: string;
+    connectionName: string;
     schema: SyncSchema;
   }) => {
     if (activeUpdatingSchemaMode) {
@@ -98,6 +100,7 @@ const SettingsView: React.FC<IProps> = ({
 
   const onSubmit = async (values: {
     frequency: string;
+    connectionName: string;
     schema: SyncSchema;
   }) => {
     setIsLoading(true);
@@ -112,6 +115,7 @@ const SettingsView: React.FC<IProps> = ({
         syncCatalog: values.schema,
         status: connection?.status || "",
         schedule: frequencyData?.config || null,
+        connectionName: values.connectionName,
         withRefreshedCatalog: activeUpdatingSchemaMode,
       });
 
@@ -168,6 +172,7 @@ const SettingsView: React.FC<IProps> = ({
             onSubmit={onSubmitForm}
             onReset={onReset}
             frequencyValue={schedule?.value}
+            connectionNameValue={connection.connectionName}
             errorMessage={errorMessage}
             successMessage={
               saved && <FormattedMessage id="form.changesSaved" />

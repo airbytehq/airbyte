@@ -16,6 +16,7 @@ import { ConnectionConfiguration } from "core/domain/connection";
 
 type ValuesProps = {
   frequency: string;
+  connectionName: string;
   syncCatalog: SyncSchema;
   source?: { name: string; sourceId: string };
 };
@@ -34,6 +35,7 @@ type UpdateConnection = {
   connectionId: string;
   syncCatalog?: SyncSchema;
   status: string;
+  connectionName: string;
   schedule: {
     units: number;
     timeUnit: string;
@@ -44,6 +46,7 @@ type UpdateConnection = {
 type UpdateStateConnection = {
   connection: Connection;
   sourceName: string;
+  connectionName: string;
   connectionConfiguration: ConnectionConfiguration;
   schedule: {
     units: number;
@@ -133,6 +136,7 @@ const useConnection = (): {
           sourceId: source?.sourceId,
           destinationId: destination?.destinationId,
           schedule: frequencyData?.config,
+          connectionName: values.connectionName,
           status: "active",
           syncCatalog: values.syncCatalog,
         },
@@ -177,6 +181,7 @@ const useConnection = (): {
     syncCatalog,
     status,
     schedule,
+    connectionName,
     withRefreshedCatalog,
   }: UpdateConnection) => {
     const withRefreshedCatalogCleaned = withRefreshedCatalog
@@ -189,6 +194,7 @@ const useConnection = (): {
         connectionId,
         syncCatalog,
         status,
+        connectionName,
         schedule,
         ...withRefreshedCatalogCleaned,
       }
@@ -200,12 +206,14 @@ const useConnection = (): {
     sourceName,
     connectionConfiguration,
     schedule,
+    connectionName,
   }: UpdateStateConnection) => {
     await updateStateConnectionResource(
       {},
       {
         ...connection,
         schedule,
+        connectionName,
         source: {
           ...connection.source,
           name: sourceName,

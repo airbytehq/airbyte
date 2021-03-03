@@ -16,6 +16,7 @@ import { useFrequencyDropdownData, useInitialSchema } from "./useInitialSchema";
 import { ControlLabels } from "components/LabeledControl";
 import DropDown from "../DropDown";
 import { ModalTypes } from "components/ResetDataModal/types";
+import Input from "components/Input";
 
 type IProps = {
   className?: string;
@@ -23,12 +24,17 @@ type IProps = {
   errorMessage?: React.ReactNode;
   additionBottomControls?: React.ReactNode;
   successMessage?: React.ReactNode;
-  onSubmit: (values: { frequency: string; schema: SyncSchema }) => void;
+  onSubmit: (values: {
+    frequency: string;
+    connectionName: string;
+    schema: SyncSchema;
+  }) => void;
   onReset?: (connectionId?: string) => void;
   onDropDownSelect?: (item: IDataItem) => void;
   onCancel?: () => void;
   editSchemeMode?: boolean;
   frequencyValue?: string;
+  connectionNameValue?: string;
   isEditMode?: boolean;
   isLoading?: boolean;
 };
@@ -41,8 +47,13 @@ const EditLaterMessage = styled(Label)`
   margin: -20px 0 29px;
 `;
 
+const ControlLabelsWithMargin = styled(ControlLabels)`
+  margin-bottom: 29px;
+`;
+
 const connectionValidationSchema = yup.object().shape({
   frequency: yup.string().required("form.empty.error"),
+  connectionName: yup.string().required("form.empty.error"),
 });
 
 const FrequencyForm: React.FC<IProps> = ({
@@ -53,6 +64,7 @@ const FrequencyForm: React.FC<IProps> = ({
   schema,
   onDropDownSelect,
   frequencyValue,
+  connectionNameValue,
   isEditMode,
   successMessage,
   additionBottomControls,
@@ -71,6 +83,7 @@ const FrequencyForm: React.FC<IProps> = ({
     <Formik
       initialValues={{
         frequency: frequencyValue || "",
+        connectionName: connectionNameValue || "",
       }}
       validateOnBlur={true}
       validateOnChange={true}
@@ -80,6 +93,7 @@ const FrequencyForm: React.FC<IProps> = ({
           isEditMode && !equal(initialSchema, newSchema) && !editSchemeMode;
         await onSubmit({
           frequency: values.frequency,
+          connectionName: values.connectionName,
           schema: newSchema,
         });
 
@@ -90,6 +104,26 @@ const FrequencyForm: React.FC<IProps> = ({
     >
       {({ isSubmitting, setFieldValue, isValid, dirty, resetForm }) => (
         <FormContainer className={className}>
+          <Field name="connectionName">
+            {({ field }: FieldProps<string>) => (
+              <ControlLabelsWithMargin
+                label={formatMessage({
+                  id: "form.prefix",
+                })}
+                message={formatMessage({
+                  id: "form.prefix.message",
+                })}
+              >
+                <Input
+                  {...field}
+                  type="text"
+                  placeholder={formatMessage({
+                    id: `form.prefix.placeholder`,
+                  })}
+                />
+              </ControlLabelsWithMargin>
+            )}
+          </Field>
           <SchemaView schema={newSchema} onChangeSchema={setNewSchema} />
           {!isEditMode ? (
             <EditLaterMessage
