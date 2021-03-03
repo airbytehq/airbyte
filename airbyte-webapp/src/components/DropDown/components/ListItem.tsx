@@ -28,7 +28,7 @@ const ItemView = styled.div`
 
 const ListItem: React.FC<IProps> = ({ item, fullText }) => {
   return (
-    <ItemView>
+    <ItemView data-id={item.value}>
       <Text
         primary={item.primary}
         secondary={item.secondary}
