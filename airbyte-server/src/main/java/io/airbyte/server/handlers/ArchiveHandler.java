@@ -147,7 +147,7 @@ public class ArchiveHandler {
     LOGGER.info(String.format("Checking Airbyte Version to import %s", importVersion));
     if (AirbyteVersion.isCompatible(version, importVersion)) {
       throw new IOException(String.format("Imported VERSION (%s) is incompatible with current Airbyte version (%s).\n" +
-          "Please Upgrade your Airbyte Archive, see more at https://docs.airbyte.io/tutorials/tutorials/upgrading-airbyte\n",
+          "Please upgrade your Airbyte Archive, see more at https://docs.airbyte.io/tutorials/upgrading-airbyte\n",
           importVersion, version));
     }
     databaseArchiver.checkVersion(version);
