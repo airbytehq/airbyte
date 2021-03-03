@@ -65,6 +65,7 @@ const FrequencyForm: React.FC<IProps> = ({
 
   const [modalIsOpen, setResetModalIsOpen] = useState(false);
   const formatMessage = useIntl().formatMessage;
+  // TODO: newSchema config should be part of formik schema
   const [newSchema, setNewSchema] = useState(initialSchema);
 
   return (
