@@ -1,6 +1,18 @@
 # Developing Locally
 
-Airbyte uses `java 14` , `node 14` and `docker`
+The following technologies are required to build Airbyte locally.
+
+1. `Java 14`
+2. `Node 14`
+3. `Python 3.7`
+4. `Docker`
+5. `Postgresql`
+6. `Jq`
+7. `CMake`i
+
+{% hint style="info" %}
+Python versioning can get hairy. We recommend using a version manager such as `pyenv`.
+{% endhint %}
 
 To start contributing:
 
