@@ -6,10 +6,14 @@ description: job reset connection config
 type: object
 additionalProperties: false
 required:
+  - connectionName
   - destinationConfiguration
   - configuredAirbyteCatalog
   - destinationDockerImage
 properties:
+  connectionName:
+    description: Name of the connection that will determine where the source data will be written in the destination
+    type: string
   destinationConfiguration:
     description: Integration specific blob. Must be a valid JSON string.
     type: object

@@ -98,6 +98,7 @@ class ConnectionsHandlerTest {
         .sourceId(standardSync.getSourceId())
         .destinationId(standardSync.getDestinationId())
         .name("presto to hudi")
+        .connectionName("presto_to_hudi")
         .status(ConnectionStatus.ACTIVE)
         .schedule(ConnectionHelpers.generateBasicSchedule())
         .syncCatalog(catalog);
@@ -133,6 +134,7 @@ class ConnectionsHandlerTest {
     final StandardSync updatedStandardSync = new StandardSync()
         .withConnectionId(standardSync.getConnectionId())
         .withName("presto to hudi")
+        .withConnectionName("presto_to_hudi")
         .withSourceId(standardSync.getSourceId())
         .withDestinationId(standardSync.getDestinationId())
         .withStatus(StandardSync.Status.INACTIVE)

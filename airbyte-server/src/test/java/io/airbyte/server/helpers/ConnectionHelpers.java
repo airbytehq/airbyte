@@ -58,6 +58,7 @@ public class ConnectionHelpers {
     return new StandardSync()
         .withConnectionId(connectionId)
         .withName("presto to hudi")
+        .withConnectionName("presto_to_hudi")
         .withStatus(StandardSync.Status.ACTIVE)
         .withCatalog(generateBasicConfiguredAirbyteCatalog())
         .withSourceId(sourceId)
@@ -70,6 +71,7 @@ public class ConnectionHelpers {
     return new StandardSync()
         .withConnectionId(connectionId)
         .withName("presto to hudi")
+        .withConnectionName("presto_to_hudi")
         .withStatus(StandardSync.Status.ACTIVE)
         .withCatalog(generateBasicConfiguredAirbyteCatalog())
         .withSourceId(UUID.randomUUID())
@@ -91,6 +93,7 @@ public class ConnectionHelpers {
         .sourceId(sourceId)
         .destinationId(destinationId)
         .name("presto to hudi")
+        .connectionName("presto_to_hudi")
         .status(ConnectionStatus.ACTIVE)
         .schedule(generateBasicSchedule())
         .syncCatalog(ConnectionHelpers.generateBasicApiCatalog());

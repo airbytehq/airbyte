@@ -5,12 +5,15 @@ title: StandardSync
 description: configuration required for sync for ALL taps
 type: object
 required:
+  - connectionName
   - sourceId
   - destinationId
   - name
   - catalog
 additionalProperties: false
 properties:
+  connectionName:
+    type: string
   sourceId:
     type: string
     format: uuid

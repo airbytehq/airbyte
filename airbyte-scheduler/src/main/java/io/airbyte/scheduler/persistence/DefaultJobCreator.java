@@ -107,6 +107,7 @@ public class DefaultJobCreator implements JobCreator {
       throws IOException {
     // reusing this isn't going to quite work.
     final JobSyncConfig jobSyncConfig = new JobSyncConfig()
+        .withConnectionName(standardSync.getConnectionName())
         .withSourceDockerImage(sourceDockerImageName)
         .withSourceConfiguration(source.getConfiguration())
         .withDestinationDockerImage(destinationDockerImageName)
@@ -136,6 +137,7 @@ public class DefaultJobCreator implements JobCreator {
     configuredAirbyteCatalog.getStreams().forEach(configuredAirbyteStream -> configuredAirbyteStream.setSyncMode(SyncMode.FULL_REFRESH));
 
     final JobResetConnectionConfig resetConnectionConfig = new JobResetConnectionConfig()
+        .withConnectionName(standardSync.getConnectionName())
         .withDestinationDockerImage(destinationDockerImage)
         .withDestinationConfiguration(destination.getConfiguration())
         .withConfiguredAirbyteCatalog(configuredAirbyteCatalog);
