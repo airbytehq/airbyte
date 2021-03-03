@@ -26,6 +26,7 @@ package io.airbyte.scheduler.worker_run;
 
 import io.airbyte.config.JobOutput;
 import io.airbyte.workers.Worker;
+import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import java.io.Serializable;
@@ -44,7 +45,7 @@ public abstract class BaseWorkerRunFactory<T extends Serializable> implements Wo
   final WorkerRunCreator workerRunCreator;
 
   public BaseWorkerRunFactory() {
-    this(WorkerRunFactoryUtils::createLauncher, WorkerRun::new);
+    this(AirbyteIntegrationLauncher::new, WorkerRun::new);
   }
 
   BaseWorkerRunFactory(IntegrationLauncherFactory integrationLauncherFactory, WorkerRunCreator workerRunCreator) {
