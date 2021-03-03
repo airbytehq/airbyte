@@ -28,8 +28,8 @@ class AirbyteStandardSourceTestFilePlugin implements Plugin<Project> {
 
         project.task('standardSourceTestFile') {
             doFirst {
-                config.prehook.call()
                 try {
+                    config.prehook.call()
                     project.exec {
                         validateConfig(config)
                         def targetMountDirectory = "/test_input"
