@@ -46,6 +46,8 @@ import com.google.common.util.concurrent.MoreExecutors;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.scheduler.worker_run.SchedulerWorkerRunWithEnvironmentFactory;
+import io.airbyte.scheduler.worker_run.WorkerRun;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
 import io.airbyte.workers.WorkerConstants;
@@ -68,7 +70,7 @@ public class JobSubmitterTest {
   private static final int ATTEMPT_NUMBER = 12;
 
   private JobPersistence persistence;
-  private WorkerRunFactory workerRunFactory;
+  private SchedulerWorkerRunWithEnvironmentFactory schedulerWorkerRunWithEnvironmentFactory;
   private WorkerRun workerRun;
   private Job job;
   private Path logPath;
@@ -87,8 +89,8 @@ public class JobSubmitterTest {
     final Path jobRoot = Files.createTempDirectory("test");
     final Path logPath = jobRoot.resolve(WorkerConstants.LOG_FILENAME);
     when(workerRun.getJobRoot()).thenReturn(jobRoot);
-    workerRunFactory = mock(WorkerRunFactory.class);
-    when(workerRunFactory.create(job)).thenReturn(workerRun);
+    schedulerWorkerRunWithEnvironmentFactory = mock(SchedulerWorkerRunWithEnvironmentFactory.class);
+    when(schedulerWorkerRunWithEnvironmentFactory.create(job)).thenReturn(workerRun);
 
     persistence = mock(JobPersistence.class);
     this.logPath = jobRoot.resolve(WorkerConstants.LOG_FILENAME);
@@ -99,7 +101,7 @@ public class JobSubmitterTest {
         MoreExecutors.newDirectExecutorService(),
         persistence,
         configRepository,
-        workerRunFactory));
+        schedulerWorkerRunWithEnvironmentFactory));
 
     // by default, turn off the internals of the tracking code. we will test it separate below.
     doNothing().when(jobSubmitter).trackSubmission(any());
@@ -122,7 +124,7 @@ public class JobSubmitterTest {
 
     jobSubmitter.run();
 
-    verifyNoInteractions(workerRunFactory);
+    verifyNoInteractions(schedulerWorkerRunWithEnvironmentFactory);
     verify(jobSubmitter, never()).trackSubmission(any());
   }
 
