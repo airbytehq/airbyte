@@ -100,7 +100,7 @@
   * [Data Loading](faq/data-loading.md)
   * [Transformation and Schemas](faq/transformation-and-schemas.md)
   * [Security & Data Audits](faq/security-and-data-audits.md)
-  * [Differences with...](faq/differences-with.../README.md)
+  * [Differences with](faq/differences-with.../README.md)
     * [Fivetran vs Airbyte](faq/differences-with.../fivetran-vs-airbyte.md)
     * [StitchData vs Airbyte](faq/differences-with.../stitchdata-vs-airbyte.md)
     * [Singer vs Airbyte](faq/differences-with.../singer-vs-airbyte.md)

@@ -1,2 +1,2 @@
-# Differences with...
+# Differences with
 
