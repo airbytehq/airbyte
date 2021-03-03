@@ -4,6 +4,8 @@ description: Using Airbyte and Apache Superset
 
 # Build a Slack Activity Dashboard
 
+![](../.gitbook/assets/46.png)
+
 This article will show how to use [Airbyte](http://airbyte.io) and [Apache Superset](https://superset.apache.org/) - a powerful, easy-to-use data exploration platform - in order to build a Slack activity dashboard showing:
 
 * Total number of members of a Slack workspace
@@ -20,9 +22,9 @@ Before we get started, let’s take a high-level look at how we are going to ach
 
 Got it? Now let’s get started.
 
-## Replicating Data from Slack to Postgres with Airbyte
+## 1. Replicating Data from Slack to Postgres with Airbyte
 
-### Deploying Airbyte
+### a. Deploying Airbyte
 
 There are several easy ways to deploy Airbyte, as listed [here](https://docs.airbyte.io/). For this tutorial, I will just use the [Docker Compose method](https://docs.airbyte.io/deploying-airbyte/on-your-workstation) from my workstation: 
 
@@ -37,7 +39,7 @@ The above command will make the Airbyte app available on `localhost:8000`. Visit
 
 If you haven’t set Docker up, follow the [instructions here](https://docs.docker.com/desktop/) to set it up on your machine. 
 
-### Setting Up Airbyte’s Slack Source Connector
+### b. Setting Up Airbyte’s Slack Source Connector
 
 Airbyte’s Slack connector will give us access to the data. So, we are going to kick things off by setting this connector to be our data source in Airbyte’s web app. I am assuming you already have Airbyte and Docker set up on your local machine. We will be using Docker to create our PostgreSQL database container later on.  
   
@@ -103,7 +105,7 @@ Finally, click on the **Set up source** button for Airbyte to set the Slack sour
 
 If the source was set up correctly, you will be taken to the destination section of Airbyte’s dashboard, where you will tell Airbyte where to store the replicated data. 
 
-### Setting Up Airbyte’s Postgres Destination Connector
+### c. Setting Up Airbyte’s Postgres Destination Connector
 
 For our use case, we will be using PostgreSQL as the destination.
 
@@ -138,7 +140,7 @@ With this, we can go back to the Airbyte screen and supply the information neede
 
 Then click on the **Set up destination** button. 
 
-### Setting Up the Replication
+### d. Setting Up the Replication
 
 You should now see the following screen:
 
@@ -176,9 +178,9 @@ docker exec slack-db psql -U postgres -c "SELECT count(*) FROM public.users;"
 
 Now that we have the data from the Slack workspace in our Postgres destination, we will head on to creating the Slack dashboard with Apache Superset.
 
-## Setting Up Apache Superset for the Dashboards
+## 2. Setting Up Apache Superset for the Dashboards
 
-### Installing Apache Superset
+### a. Installing Apache Superset
 
 Apache Superset, or simply Superset, is a modern data exploration and visualization platform. To get started using it, we will be cloning the Superset repo. Navigate to a destination in your terminal where you want to clone the Superset repo to and run:
 
@@ -232,7 +234,7 @@ Enter username: **admin** and Password: **admin** to be taken to your Superset d
 
 Great! You’ve got Superset set up. Now let’s tell Superset about our Postgres Database holding the Slack data from Airbyte.
 
-### Setting Up a Postgres Database in Superset
+### b. Setting Up a Postgres Database in Superset
 
 To do this, on the top menu in your Superset dashboard, hover on the Data dropdown and click on **Databases**.
 
@@ -272,7 +274,7 @@ Afterwards, click on the **ADD** button, and you will see your database on the d
 
 ![](../.gitbook/assets/24.png)
 
-### Importing our dataset
+### c. Importing our dataset
 
 Now that you’ve added the database, you will need to hover over the data menu again; now click on **Datasets**.
 
@@ -305,9 +307,9 @@ Still remember them? Here they are again:
 * Evolution of messages per channel
 * Members per time zone
 
-## Creating Our Dashboards with Superset
+## 3. Creating Our Dashboards with Superset
 
-### Total number of members of a Slack workspace
+### a. Total number of members of a Slack workspace
 
 To get this, we will first click on the users’ dataset of our `slack_db` on the Superset dashboard.
 
@@ -331,7 +333,7 @@ Then, in the **ADD TO DASHBOARD** section, type in “Slack Dashboard”, click 
 
 Great! We have successfully created our first Chart, and we also created the Dashboard. Subsequently, we will be following this flow to add the other charts to the created Slack Dashboard.
 
-### Casting the ts column
+### b. Casting the ts column
 
 Before we proceed with the rest of the charts for our dashboard, if you inspect the **ts** column on either the **messages** table or the **threads** table, you will see it’s of the type `VARCHAR`. We can’t really use this for our charts, so we have to cast both the **messages** and **threads**’ **ts** column as `TIMESTAMP`. Then, we can create our charts from the results of those queries. Let’s do this.
 
@@ -345,7 +347,7 @@ You’re now in the Edit Dataset view. Click the **Lock** button to enable editi
 
 Persist the changes by clicking the Save button.
 
-### The evolution of the number of Slack workspace members
+### c. The evolution of the number of Slack workspace members
 
 In the exploration page, let’s first get the chart showing the evolution of the number of Slack members. To do this, make your settings on this page match the screenshot below:
 
@@ -353,7 +355,7 @@ In the exploration page, let’s first get the chart showing the evolution of th
 
 Save this chart onto the Slack Dashboard.
 
-### Evolution of weekly messages posted
+### d. Evolution of weekly messages posted
 
 Now, we will look at the evolution of weekly messages posted. Let’s configure the chart settings on the same page as the previous one.
 
@@ -361,13 +363,13 @@ Now, we will look at the evolution of weekly messages posted. Let’s configure 
 
 Remember, your visualization will differ based on the data you have.
 
-### Evolution of weekly threads created
+### e. Evolution of weekly threads created
 
 Now, we are finished with creating the message chart. Let's go over to the thread chart. You will recall that we will need to cast the **ts** column as stated earlier. So, do that and get to the exploration page, and make it match the screenshot below to achieve the required visualization:
 
 ![](../.gitbook/assets/38.png)
 
-### Evolution of messages per channel
+### f. Evolution of messages per channel
 
 For this visualization, we will need a more complex SQL query. Here’s the query we used \(as you can see in the screenshot below\): 
 
@@ -386,7 +388,7 @@ Next, click on **EXPLORE** to be taken to the exploration page; make it match th
 
 Save this chart to the dashboard.
 
-### Members per time zone
+### g. Members per time zone
 
 Finally, we will be visualizing members per time zone. To do this, instead of casting in the SQL lab as we’ve previously done, we will explore another method to achieve casting by using Superset’s Virtual calculated column feature. This feature allows us to write SQL queries that customize the appearance and behavior of a specific column.
 
