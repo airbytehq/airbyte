@@ -35,7 +35,7 @@ public interface WorkerRunFactory<T> {
   WorkerRun create(final Path jobRoot,
                    final ProcessBuilderFactory pbf,
                    long jobId,
-                   int attempt,
+                   final int attempt,
                    final T config);
 
 }
