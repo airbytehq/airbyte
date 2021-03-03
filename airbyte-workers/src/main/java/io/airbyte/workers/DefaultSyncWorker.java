@@ -85,6 +85,7 @@ public class DefaultSyncWorker implements SyncWorker {
 
     final StandardTapConfig tapConfig = WorkerUtils.syncToTapConfig(syncInput);
     final StandardTargetConfig targetConfig = WorkerUtils.syncToTargetConfig(syncInput);
+    // TODO Transform Catalog
     targetConfig.getCatalog().getStreams().forEach(s ->
     // Use the connection name as a prefix for the moment to alter the stream name in the destination
     s.getStream().withName(syncInput.getConnectionName() + "_" + s.getStream().getName()));
@@ -96,7 +97,7 @@ public class DefaultSyncWorker implements SyncWorker {
         final Optional<AirbyteMessage> maybeMessage = source.attemptRead();
         if (maybeMessage.isPresent()) {
           final AirbyteMessage message = maybeMessage.get();
-
+          // TODO Transform message
           messageTracker.accept(message);
           destination.accept(message);
         }

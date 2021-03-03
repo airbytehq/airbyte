@@ -244,6 +244,7 @@ class WebBackendConnectionsHandlerTest {
     final ConnectionSchedule schedule = new ConnectionSchedule().units(1L).timeUnit(ConnectionSchedule.TimeUnitEnum.MINUTES);
 
     final WebBackendConnectionUpdate input = new WebBackendConnectionUpdate()
+        .connectionName(standardSync.getConnectionName())
         .connectionId(standardSync.getConnectionId())
         .status(ConnectionStatus.INACTIVE)
         .schedule(schedule)
@@ -251,6 +252,7 @@ class WebBackendConnectionsHandlerTest {
         .withRefreshedCatalog(false);
 
     final ConnectionUpdate expected = new ConnectionUpdate()
+        .connectionName(standardSync.getConnectionName())
         .connectionId(standardSync.getConnectionId())
         .status(ConnectionStatus.INACTIVE)
         .schedule(schedule)
@@ -279,6 +281,7 @@ class WebBackendConnectionsHandlerTest {
   @Test
   void testUpdateConnection() throws JsonValidationException, ConfigNotFoundException, IOException {
     WebBackendConnectionUpdate updateBody = new WebBackendConnectionUpdate()
+        .connectionName(expected.getConnectionName())
         .connectionId(expected.getConnectionId())
         .schedule(expected.getSchedule())
         .status(expected.getStatus())
@@ -290,6 +293,7 @@ class WebBackendConnectionsHandlerTest {
             .sourceId(expected.getSourceId())
             .destinationId(expected.getDestinationId())
             .name(expected.getName())
+            .connectionName(expected.getConnectionName())
             .syncCatalog(expected.getSyncCatalog())
             .status(expected.getStatus())
             .schedule(expected.getSchedule()));
@@ -306,6 +310,7 @@ class WebBackendConnectionsHandlerTest {
   @Test
   void testUpdateConnectionWithUpdatedSchema() throws JsonValidationException, ConfigNotFoundException, IOException {
     WebBackendConnectionUpdate updateBody = new WebBackendConnectionUpdate()
+        .connectionName(expected.getConnectionName())
         .connectionId(expected.getConnectionId())
         .schedule(expected.getSchedule())
         .status(expected.getStatus())
@@ -318,6 +323,7 @@ class WebBackendConnectionsHandlerTest {
             .sourceId(expected.getSourceId())
             .destinationId(expected.getDestinationId())
             .name(expected.getName())
+            .connectionName(expected.getConnectionName())
             .syncCatalog(expectedWithNewSchema.getSyncCatalog())
             .status(expected.getStatus())
             .schedule(expected.getSchedule()));

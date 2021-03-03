@@ -1973,6 +1973,7 @@ components:
       required:
         - connectionId
         - name
+        - connectionName
         - sourceId
         - destinationId
         - syncCatalog
@@ -1984,6 +1985,8 @@ components:
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
         name:
+          type: string
+        connectionName:
           type: string
         sourceId:
           $ref: "#/components/schemas/SourceId"
