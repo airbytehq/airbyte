@@ -26,15 +26,13 @@ package io.airbyte.migrate.migrations;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.version.AirbyteVersion;
-import io.airbyte.commons.yaml.Yamls;
 import io.airbyte.migrate.Migration;
 import io.airbyte.migrate.ResourceId;
 import io.airbyte.migrate.ResourceType;
-import java.io.IOException;
-import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
@@ -56,13 +54,57 @@ public class MigrationV0_17_0 extends BaseMigration implements Migration {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MigrationV0_17_0.class);
 
-  private static final ResourceId STANDARD_SOURCE_DEFINITION_RESOURCE_ID =
+  private static final String MIGRATION_VERSION = "0.17.0-alpha";
+
+  protected static final ResourceId STANDARD_SOURCE_DEFINITION_RESOURCE_ID =
       ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SOURCE_DEFINITION");
-  private static final ResourceId STANDARD_DESTINATION_DEFINITION_RESOURCE_ID =
+  protected static final ResourceId STANDARD_DESTINATION_DEFINITION_RESOURCE_ID =
       ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_DESTINATION_DEFINITION");
 
-  private static final String DESTINATION_SEEDS = "migrations/migrationV0_17_0/airbyte_config/destination_definitions.yaml";
-  private static final String SOURCE_SEEDS = "migrations/migrationV0_17_0/airbyte_config/source_definitions.yaml";
+  private static final Set<String> DESTINATION_DOCKER_IMAGES = Set.of(
+      "airbyte/destination-local-json",
+      "airbyte/destination-csv",
+      "airbyte/destination-postgres",
+      "airbyte/destination-bigquery",
+      "airbyte/destination-snowflake",
+      "airbyte/destination-redshift",
+      "airbyte/destination-meilisearch");
+  private static final Set<String> SOURCE_DOCKER_IMAGES = Set.of(
+      "airbyte/source-exchangeratesapi-singer",
+      "airbyte/source-file",
+      "airbyte/source-google-adwords-singer",
+      "airbyte/source-github-singer",
+      "airbyte/source-mssql",
+      "airbyte/source-postgres",
+      "airbyte/source-recurly",
+      "airbyte/source-sendgrid",
+      "airbyte/source-marketo-singer",
+      "airbyte/source-google-sheets",
+      "airbyte/source-mysql",
+      "airbyte/source-salesforce-singer",
+      "airbyte/source-stripe-singer",
+      "airbyte/source-mailchimp",
+      "airbyte/source-googleanalytics-singer",
+      "airbyte/source-facebook-marketing",
+      "airbyte/source-hubspot-singer",
+      "airbyte/source-shopify-singer",
+      "airbyte/source-http-request",
+      "airbyte/source-redshift",
+      "airbyte/source-twilio-singer",
+      "airbyte/source-freshdesk",
+      "airbyte/source-braintree-singer",
+      "airbyte/source-slack-singer",
+      "airbyte/source-greenhouse",
+      "airbyte/source-zendesk-support-singer",
+      "airbyte/source-intercom-singer",
+      "airbyte/source-jira",
+      "airbyte/source-mixpanel-singer",
+      "airbyte/source-zoom-singer",
+      "airbyte/source-microsoft-teams",
+      "airbyte/source-drift",
+      "airbyte/source-looker",
+      "airbyte/source-plaid",
+      "airbyte/source-appstore-singer");
 
   private final Migration previousMigration;
 
@@ -73,7 +115,7 @@ public class MigrationV0_17_0 extends BaseMigration implements Migration {
 
   @Override
   public String getVersion() {
-    return "0.17.0-alpha";
+    return MIGRATION_VERSION;
   }
 
   @Override
@@ -83,45 +125,38 @@ public class MigrationV0_17_0 extends BaseMigration implements Migration {
 
   @Override
   public void migrate(Map<ResourceId, Stream<JsonNode>> inputData, Map<ResourceId, Consumer<JsonNode>> outputData) {
-    try {
-      final JsonNode sourceConnectors = Yamls.deserialize(MoreResources.readResource(SOURCE_SEEDS));
-      final JsonNode destinationConnectors = Yamls.deserialize(MoreResources.readResource(DESTINATION_SEEDS));
+    for (final Map.Entry<ResourceId, Stream<JsonNode>> entry : inputData.entrySet()) {
+      final Consumer<JsonNode> recordConsumer = outputData.get(entry.getKey());
 
-      for (final Map.Entry<ResourceId, Stream<JsonNode>> entry : inputData.entrySet()) {
-        final Consumer<JsonNode> recordConsumer = outputData.get(entry.getKey());
-
-        entry.getValue().forEach(r -> {
+      entry.getValue().forEach(r -> {
+        if (!r.get("dockerImageTag").isNull()) {
           if (entry.getKey().equals(STANDARD_SOURCE_DEFINITION_RESOURCE_ID)) {
-            ((ObjectNode) r).set("dockerImageTag", getDockerImageTag(sourceConnectors, "sourceDefinitionId", r));
+            ((ObjectNode) r).set("dockerImageTag", getDockerImageTag(SOURCE_DOCKER_IMAGES, r));
           } else if (entry.getKey().equals(STANDARD_DESTINATION_DEFINITION_RESOURCE_ID)) {
-            ((ObjectNode) r).set("dockerImageTag", getDockerImageTag(destinationConnectors, "destinationDefinitionId", r));
+            ((ObjectNode) r).set("dockerImageTag", getDockerImageTag(DESTINATION_DOCKER_IMAGES, r));
           }
-          recordConsumer.accept(r);
-        });
-      }
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+        }
+        recordConsumer.accept(r);
+      });
     }
   }
 
-  private JsonNode getDockerImageTag(final JsonNode connectors, final String definitionId, final JsonNode node) {
-    final JsonNode connectorName = node.get("name");
+  private JsonNode getDockerImageTag(final Set<String> airbyteConnectors, final JsonNode node) {
     final JsonNode dockerImageTag = node.get("dockerImageTag");
-    final JsonNode connectorDefinitionId = node.get(definitionId);
-    final AirbyteVersion connectorVersion = new AirbyteVersion(dockerImageTag.asText());
-
-    final Iterator<JsonNode> it = connectors.elements();
-    while (it.hasNext()) {
-      final JsonNode standardConnector = it.next();
-      if (standardConnector.get(definitionId).equals(connectorDefinitionId)) {
-        final JsonNode requiredDockerTag = standardConnector.get("dockerImageTag");
+    final JsonNode dockerRepository = node.get("dockerRepository");
+    if (dockerRepository != null && !dockerRepository.isNull() && airbyteConnectors.contains(dockerRepository.asText())) {
+      try {
+        final AirbyteVersion connectorVersion = new AirbyteVersion(dockerImageTag.asText());
+        final JsonNode requiredDockerTag = Jsons.jsonNode("0.2.0");
         final AirbyteVersion requiredVersion = new AirbyteVersion(requiredDockerTag.asText());
         if (connectorVersion.patchVersionCompareTo(requiredVersion) >= 0) {
           return dockerImageTag;
         } else {
-          LOGGER.debug(String.format("Bump connector %s version from %s to %s", connectorName, dockerImageTag, requiredDockerTag));
+          LOGGER.debug(String.format("Bump connector %s version from %s to %s", dockerRepository, dockerImageTag, requiredDockerTag));
           return requiredDockerTag;
         }
+      } catch (IllegalArgumentException e) {
+        LOGGER.error(String.format("Failed to recognize connector version %s", node), e);
       }
     }
     return dockerImageTag;
