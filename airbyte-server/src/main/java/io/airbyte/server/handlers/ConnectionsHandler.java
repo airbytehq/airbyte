@@ -25,8 +25,6 @@
 package io.airbyte.server.handlers;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Charsets;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Lists;
@@ -51,8 +49,6 @@ import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.scheduler.Job;
-import io.airbyte.scheduler.JobSubmitter;
 import io.airbyte.server.converters.CatalogConverter;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
