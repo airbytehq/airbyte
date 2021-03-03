@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Creates WorkerRunFactories for each job type in the context of the Scheduler environment (as
- * opposed to the Temporal enviornment). When we move to Temporal, we will replace this class with
+ * opposed to the Temporal environment). When we move to Temporal, we will replace this class with
  * whatever the necessary Temporal logic is.
  */
 public class SchedulerWorkerRunWithEnvironmentFactory {
