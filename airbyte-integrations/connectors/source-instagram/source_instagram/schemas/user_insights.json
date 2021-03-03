@@ -18,31 +18,34 @@
       "type": ["null", "integer"]
     },
     "phone_call_clicks": {
-      "type": ["integer", "integer"]
+      "type": ["null", "integer"]
     },
     "profile_views": {
-      "type": ["integer", "integer"]
+      "type": ["null", "integer"]
     },
     "reach": {
-      "type": ["integer", "integer"]
+      "type": ["null", "integer"]
     },
     "text_message_clicks": {
-      "type": ["integer", "integer"]
+      "type": ["null", "integer"]
     },
     "website_clicks": {
-      "type": ["integer", "integer"]
+      "type": ["null", "integer"]
     },
     "impressions_week": {
-      "type": ["integer", "integer"]
+      "type": ["null", "integer"]
     },
     "reach_week": {
-      "type": ["integer", "integer"]
+      "type": ["null", "integer"]
     },
     "impressions_days_28": {
-      "type": ["integer", "integer"]
+      "type": ["null", "integer"]
     },
     "reach_days_28": {
-      "type": ["integer", "integer"]
+      "type": ["null", "integer"]
+    },
+    "online_followers": {
+      "type": ["null", "object"]
     }
   }
 }

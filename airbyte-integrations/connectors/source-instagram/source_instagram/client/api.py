@@ -23,7 +23,7 @@ SOFTWARE.
 """
 
 from abc import ABC, abstractmethod
-from typing import Iterator, Sequence
+from typing import Any, Dict, Iterator, Sequence
 
 import pendulum
 from base_python.entrypoint import logger
@@ -43,6 +43,35 @@ class StreamAPI(ABC):
         """Iterate over entities"""
 
 
+class IncrementalStreamAPI(StreamAPI, ABC):
+    @property
+    @abstractmethod
+    def state_pk(self):
+        """Name of the field associated with the state"""
+
+    @property
+    def state(self):
+        return {self.state_pk: str(self._state)}
+
+    @state.setter
+    def state(self, value):
+        self._state = pendulum.parse(value[self.state_pk])
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._state = None
+
+    def state_filter(self, record: Dict) -> Iterator[Any]:
+        """Apply state filter to set of records, update cursor(state) if necessary in the end"""
+        cursor = pendulum.parse(record[self.state_pk])
+        stream_name = self.__class__.__name__
+        if stream_name.endswith("API"):
+            stream_name = stream_name[:-3]
+        logger.info(f"Advancing bookmark for {stream_name} stream from {self._state} to {cursor}")
+        self._state = max(cursor, self._state) if self._state else cursor
+        return record
+
+
 class IgUsersAPI(StreamAPI):
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         yield self._extend_record(self._api.account, fields=fields)
@@ -52,39 +81,31 @@ class IgUsersAPI(StreamAPI):
 
 
 class IgUserLifetimeInsightsAPI(StreamAPI):
+    LIFETIME_METRICS = ["audience_city", "audience_country", "audience_gender_age", "audience_locale"]
+    period = "lifetime"
+
     buffer_days = 29
     days_increment = 1
-    period = "lifetime"
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         account_id = self._api.account.get("id")
-        for params in self._params():
-            for insight in self._api.account.get_insights(params=params):
-                yield {
-                    "id": account_id,
-                    "metric": insight.get("name"),
-                    "date": insight.get("values")[0]["end_time"],
-                    "value": insight.get("values")[0]["value"],
-                }
+        for insight in self._get_insight_records(params=self._params()):
+            yield {
+                "id": account_id,
+                "metric": insight.get("name"),
+                "date": insight.get("values")[0]["end_time"],
+                "value": insight.get("values")[0]["value"],
+            }
 
     def _params(self):
+        return {"metric": self.LIFETIME_METRICS, "period": self.period}
 
-        yield {"metric": ["audience_city", "audience_country", "audience_gender_age", "audience_locale"], "period": self.period}
-
-        buffered_start_date = max(self._api._start_date, pendulum.now().subtract(days=self.buffer_days))
-
-        yield {
-            "metric": ["online_followers"],
-            "period": self.period,
-            "since": buffered_start_date.to_datetime_string(),
-            "until": buffered_start_date.add(days=self.days_increment).to_datetime_string(),
-        }
+    def _get_insight_records(self, params):
+        return self._api.account.get_insights(params=params)
 
 
-class IgUserCustomInsightsAPI(StreamAPI):
-    buffer_days = 29
-    days_increment = 1
-    metrics_by_period = {
+class IgUserInsightsAPI(IncrementalStreamAPI):
+    METRICS_BY_PERIOD = {
         "day": [
             "email_contacts",
             "follower_count",
@@ -98,14 +119,27 @@ class IgUserCustomInsightsAPI(StreamAPI):
         ],
         "week": ["impressions", "reach"],
         "days_28": ["impressions", "reach"],
+        "lifetime": ["online_followers"],
     }
+
+    state_pk = "date"
+
+    buffer_days = 29
+    days_increment = 1
+
+    def __init__(self, api):
+        super().__init__(api=api)
+        self._state = api._start_date
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         account_id = self._api.account.get("id")
-        for params in self._params():
+        for params_per_day in self._params():
             insight_list = []
-            for p in params:
-                insight_list += self._get_insight_records(params=p)
+            for params in params_per_day:
+                insight_list += self._get_insight_records(params=params)
+            if not insight_list:
+                continue
+
             insight_record = {"id": account_id}
             for insight in insight_list:
                 key = (
@@ -116,14 +150,15 @@ class IgUserCustomInsightsAPI(StreamAPI):
                 insight_record[key] = insight.get("values")[0]["value"]
                 if not insight_record.get("date"):
                     insight_record["date"] = insight.get("values")[0]["end_time"]
-            yield insight_record
+            yield self.state_filter(insight_record)
 
     def _params(self):
-        buffered_start_date = max(self._api._start_date, pendulum.now().subtract(days=self.buffer_days))
+        buffered_start_date = max(self._state.add(minutes=1), pendulum.now().subtract(days=self.buffer_days))
         end_date = pendulum.now()
+
         while buffered_start_date <= end_date:
             params_list = []
-            for period, metrics in self.metrics_by_period.items():
+            for period, metrics in self.METRICS_BY_PERIOD.items():
                 params_list.append(
                     {
                         "metric": metrics,
@@ -181,8 +216,8 @@ class IgStoriesAPI(StreamAPI):
 
 
 class IgMediaInsightsAPI(IgMediaAPI):
-    media_metrics = ["engagement", "impressions", "reach", "saved"]
-    carousel_album_metrics = ["carousel_album_engagement", "carousel_album_impressions", "carousel_album_reach", "carousel_album_saved"]
+    MEDIA_METRICS = ["engagement", "impressions", "reach", "saved"]
+    CAROUSEL_ALBUM_METRICS = ["carousel_album_engagement", "carousel_album_impressions", "carousel_album_reach", "carousel_album_saved"]
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         media = self._get_media({"limit": self.result_return_limit}, ["media_type"])
@@ -198,11 +233,11 @@ class IgMediaInsightsAPI(IgMediaAPI):
         a generator, whose calls need decorated with a backoff.
         """
         if item.get("media_type") == "VIDEO":
-            metrics = self.media_metrics + ["video_views"]
+            metrics = self.MEDIA_METRICS + ["video_views"]
         elif item.get("media_type") == "CAROUSEL_ALBUM":
-            metrics = self.carousel_album_metrics
+            metrics = self.CAROUSEL_ALBUM_METRICS
         else:
-            metrics = self.media_metrics
+            metrics = self.MEDIA_METRICS
 
         # An error might occur if the media was posted before the most recent time that
         # the user's account was converted to a business account from a personal account
@@ -214,7 +249,7 @@ class IgMediaInsightsAPI(IgMediaAPI):
 
 
 class IgStoriesInsightsAPI(IgStoriesAPI):
-    story_metrics = ["exits", "impressions", "reach", "replies", "taps_forward", "taps_back"]
+    STORY_METRICS = ["exits", "impressions", "reach", "replies", "taps_forward", "taps_back"]
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         stories = self._get_stories({"limit": self.result_return_limit}, fields=[])
@@ -230,6 +265,4 @@ class IgStoriesInsightsAPI(IgStoriesAPI):
         a generator, whose calls need decorated with a backoff.
         """
 
-        # An error might occur if the media was posted before the most recent time that
-        # the user's account was converted to a business account from a personal account
-        return item.get_insights(params={"metric": self.story_metrics})
+        return item.get_insights(params={"metric": self.STORY_METRICS})
