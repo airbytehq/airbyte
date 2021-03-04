@@ -101,8 +101,10 @@ public class JobSubmitter implements Runnable {
     // todo (cgardens) - this conditional goes away when all workers are run in temporal.
     final WorkerRun workerRun;
     if (job.getConfigType() == ConfigType.GET_SPEC) {
+      LOGGER.info("Using temporal runner.");
       workerRun = temporalWorkerRunFactory.create(job);
     } else {
+      LOGGER.info("Using scheduler runner.");
       workerRun = schedulerWorkerRunWithEnvironmentFactory.create(job);
     }
     // we need to know the attempt number before we begin the job lifecycle. thus we state what the

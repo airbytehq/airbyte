@@ -26,6 +26,7 @@ package io.airbyte.scheduler.temporal;
 
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
+import io.airbyte.config.IntegrationLauncherConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.workers.WorkerUtils;
@@ -53,7 +54,7 @@ import org.slf4j.LoggerFactory;
 public interface SpecWorkflow {
 
   @WorkflowMethod
-  ConnectorSpecification run(String dockerImage);
+  ConnectorSpecification run(IntegrationLauncherConfig launcherConfig);
 
   class WorkflowImpl implements SpecWorkflow {
 
@@ -64,8 +65,8 @@ public interface SpecWorkflow {
     private final SpecActivity activity = Workflow.newActivityStub(SpecActivity.class, options);
 
     @Override
-    public ConnectorSpecification run(String dockerImage) {
-      return activity.run(dockerImage);
+    public ConnectorSpecification run(IntegrationLauncherConfig launcherConfig) {
+      return activity.run(launcherConfig);
     }
 
   }
@@ -74,7 +75,7 @@ public interface SpecWorkflow {
   interface SpecActivity {
 
     @ActivityMethod
-    ConnectorSpecification run(String dockerImage);
+    ConnectorSpecification run(IntegrationLauncherConfig launcherConfig);
 
   }
 
@@ -90,14 +91,15 @@ public interface SpecWorkflow {
       this.workspaceRoot = workspaceRoot;
     }
 
-    public ConnectorSpecification run(String dockerImage) {
+    public ConnectorSpecification run(IntegrationLauncherConfig launcherConfig) {
       try {
+        // todo (cgardens) - we need to find a way to standardize log paths sanely across all workflow. right now we have this in temporal workflow.
         final Path jobRoot = workspaceRoot
             .resolve("spec")
-            .resolve(dockerImage.replaceAll("[^A-Za-z0-9]", ""))
+            .resolve(launcherConfig.getDockerImage().replaceAll("[^A-Za-z0-9]", ""))
             .resolve(String.valueOf(Instant.now().getEpochSecond()));
 
-        final IntegrationLauncher integrationLauncher = new AirbyteIntegrationLauncher(0L, 0, dockerImage, pbf);
+        final IntegrationLauncher integrationLauncher = new AirbyteIntegrationLauncher(launcherConfig.getJobId(), launcherConfig.getAttemptId().intValue(), launcherConfig.getDockerImage(), pbf);
         final Process process = integrationLauncher.spec(jobRoot).start();
 
         LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
