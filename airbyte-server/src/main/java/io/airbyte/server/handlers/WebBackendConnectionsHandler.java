@@ -112,6 +112,7 @@ public class WebBackendConnectionsHandler {
         .sourceId(connectionRead.getSourceId())
         .destinationId(connectionRead.getDestinationId())
         .name(connectionRead.getName())
+        .namespaceDefault(connectionRead.getNamespaceDefault())
         .syncCatalog(connectionRead.getSyncCatalog())
         .status(connectionRead.getStatus())
         .schedule(connectionRead.getSchedule())
