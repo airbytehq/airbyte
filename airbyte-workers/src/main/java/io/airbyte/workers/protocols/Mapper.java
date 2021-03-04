@@ -24,18 +24,12 @@
 
 package io.airbyte.workers.protocols;
 
-import io.airbyte.commons.functional.CheckedConsumer;
-import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardTargetConfig;
 
-public interface Mapper<T> extends CheckedConsumer<T, Exception>, AutoCloseable {
+public interface Mapper<T> {
 
-  void start(StandardTargetConfig targetConfig, StandardSyncInput syncInput) throws Exception;
+  StandardTargetConfig apply(StandardTargetConfig targetConfig);
 
-  @Override
-  void accept(T message) throws Exception;
-
-  @Override
-  void close() throws Exception;
+  T apply(T message);
 
 }

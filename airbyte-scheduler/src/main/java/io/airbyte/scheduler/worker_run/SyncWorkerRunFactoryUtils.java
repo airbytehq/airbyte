@@ -34,7 +34,7 @@ import io.airbyte.workers.process.ProcessBuilderFactory;
 import io.airbyte.workers.protocols.airbyte.AirbyteMessageTracker;
 import io.airbyte.workers.protocols.airbyte.AirbyteSource;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteDestination;
-import io.airbyte.workers.protocols.airbyte.DefaultAirbyteMapper;
+import io.airbyte.workers.protocols.airbyte.NamespacingMapper;
 import io.airbyte.workers.wrappers.JobOutputSyncWorker;
 import java.nio.file.Path;
 
@@ -60,7 +60,7 @@ public class SyncWorkerRunFactoryUtils {
                 jobId,
                 attempt,
                 airbyteSource,
-                new DefaultAirbyteMapper(),
+                new NamespacingMapper(syncInput.getNamespaceDefault()),
                 new DefaultAirbyteDestination(destinationLauncher),
                 new AirbyteMessageTracker(),
                 NormalizationRunnerFactory.create(

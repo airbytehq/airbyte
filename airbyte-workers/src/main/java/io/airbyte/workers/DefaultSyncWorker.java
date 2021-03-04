@@ -88,19 +88,17 @@ public class DefaultSyncWorker implements SyncWorker {
         .collect(Collectors.toMap(s -> s.getStream().getName(), s -> s.getSyncMode() != null ? s.getSyncMode() : SyncMode.FULL_REFRESH)));
 
     final StandardTapConfig tapConfig = WorkerUtils.syncToTapConfig(syncInput);
-    final StandardTargetConfig targetConfig = WorkerUtils.syncToTargetConfig(syncInput);
+    final StandardTargetConfig targetConfig = mapper.apply(WorkerUtils.syncToTargetConfig(syncInput));
 
-    try (destination; source; mapper) {
-      mapper.start(targetConfig, syncInput);
+    try (destination; source) {
       destination.start(targetConfig, jobRoot);
       source.start(tapConfig, jobRoot);
 
       while (!cancelled.get() && !source.isFinished()) {
         final Optional<AirbyteMessage> maybeMessage = source.attemptRead();
         if (maybeMessage.isPresent()) {
-          final AirbyteMessage message = maybeMessage.get();
+          final AirbyteMessage message = mapper.apply(maybeMessage.get());
 
-          mapper.accept(message);
           messageTracker.accept(message);
           destination.accept(message);
         }

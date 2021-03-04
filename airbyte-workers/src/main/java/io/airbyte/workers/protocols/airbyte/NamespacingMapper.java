@@ -24,16 +24,11 @@
 
 package io.airbyte.workers.protocols.airbyte;
 
-import com.google.common.base.Preconditions;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardTargetConfig;
-import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.workers.WorkerException;
-import java.io.IOException;
+import io.airbyte.workers.protocols.Mapper;
 
 /**
  * We apply some transformations on the fly on the catalog (same should be done on records too) from
@@ -41,52 +36,40 @@ import java.io.IOException;
  * destination namespace where data will be stored and how to mirror (or not) the namespace used in
  * the source (if any). This is configured in the UI through the syncInput.
  */
-public class DefaultAirbyteMapper implements AirbyteMapper {
+public class NamespacingMapper implements Mapper<AirbyteMessage> {
 
-  private StandardSyncInput syncInput;
+  private final String defaultNamespace;
 
-  public DefaultAirbyteMapper() {}
-
-  @Override
-  public void start(StandardTargetConfig targetConfig, StandardSyncInput syncInput) throws IOException, WorkerException {
-    this.syncInput = syncInput;
-    targetConfig.setCatalog(transformCatalog(targetConfig.getCatalog(), syncInput));
+  public NamespacingMapper(String defaultNamespace) {
+    this.defaultNamespace = defaultNamespace;
   }
 
   @Override
-  public void accept(AirbyteMessage message) throws IOException {
-    Preconditions.checkState(syncInput != null);
+  public StandardTargetConfig apply(final StandardTargetConfig inputConfig) {
+    final StandardTargetConfig config = Jsons.clone(inputConfig);
+    config.getCatalog().getStreams().forEach(s -> mutateStream(s.getStream(), defaultNamespace));
+    return config;
+  }
 
+  @Override
+  public AirbyteMessage apply(final AirbyteMessage inputMessage) {
+    final AirbyteMessage message = Jsons.clone(inputMessage);
     if (message.getCatalog() != null) {
-      message.setCatalog(transformCatalog(message.getCatalog(), syncInput));
+      message.getCatalog().getStreams().forEach(s -> mutateStream(s, defaultNamespace));
     }
     if (message.getRecord() != null) {
-      message.getRecord().setStream(transformStreamName(message.getRecord().getStream(), syncInput));
+      message.getRecord().setStream(transformStreamName(message.getRecord().getStream(), defaultNamespace));
     }
+    return message;
   }
 
-  @Override
-  public void close() throws Exception {}
-
-  private static ConfiguredAirbyteCatalog transformCatalog(final ConfiguredAirbyteCatalog catalog, final StandardSyncInput syncInput) {
-    final ConfiguredAirbyteCatalog newCatalog = Jsons.clone(catalog);
-    newCatalog.getStreams().forEach(s -> mutateStream(s.getStream(), syncInput));
-    return newCatalog;
+  private static void mutateStream(final AirbyteStream stream, final String defaultNamespace) {
+    stream.withName(transformStreamName(stream.getName(), defaultNamespace));
   }
 
-  private static AirbyteCatalog transformCatalog(final AirbyteCatalog catalog, final StandardSyncInput syncInput) {
-    final AirbyteCatalog newCatalog = Jsons.clone(catalog);
-    newCatalog.getStreams().forEach(s -> mutateStream(s, syncInput));
-    return newCatalog;
-  }
-
-  private static void mutateStream(final AirbyteStream stream, final StandardSyncInput syncInput) {
-    stream.withName(transformStreamName(stream.getName(), syncInput));
-  }
-
-  private static String transformStreamName(final String streamName, final StandardSyncInput syncInput) {
+  private static String transformStreamName(final String streamName, final String defaultNamespace) {
     // Use the connection name as a prefix for the moment to alter the stream name in the destination
-    return syncInput.getNamespaceDefault() + "_" + streamName;
+    return defaultNamespace + "_" + streamName;
   }
 
 }

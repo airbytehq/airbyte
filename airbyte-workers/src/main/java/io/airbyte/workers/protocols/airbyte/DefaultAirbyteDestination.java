@@ -65,8 +65,10 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
     IOs.writeFile(jobRoot, WorkerConstants.TARGET_CATALOG_JSON_FILENAME, Jsons.serialize(targetConfig.getCatalog()));
 
     LOGGER.info("Running target...");
-    targetProcess =
-        integrationLauncher.write(jobRoot, WorkerConstants.TARGET_CONFIG_JSON_FILENAME, WorkerConstants.TARGET_CATALOG_JSON_FILENAME).start();
+    targetProcess = integrationLauncher.write(
+        jobRoot,
+        WorkerConstants.TARGET_CONFIG_JSON_FILENAME,
+        WorkerConstants.TARGET_CATALOG_JSON_FILENAME).start();
     LineGobbler.gobble(targetProcess.getInputStream(), LOGGER::info);
     LineGobbler.gobble(targetProcess.getErrorStream(), LOGGER::error);
 

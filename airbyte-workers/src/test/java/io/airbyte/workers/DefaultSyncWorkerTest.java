@@ -46,10 +46,10 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.workers.normalization.NormalizationRunner;
 import io.airbyte.workers.protocols.MessageTracker;
 import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
-import io.airbyte.workers.protocols.airbyte.AirbyteMapper;
 import io.airbyte.workers.protocols.airbyte.AirbyteMessageTracker;
 import io.airbyte.workers.protocols.airbyte.AirbyteMessageUtils;
 import io.airbyte.workers.protocols.airbyte.AirbyteSource;
+import io.airbyte.workers.protocols.airbyte.NamespacingMapper;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -70,7 +70,7 @@ class DefaultSyncWorkerTest {
   private Path jobRoot;
   private Path normalizationRoot;
   private AirbyteSource tap;
-  private AirbyteMapper mapper;
+  private NamespacingMapper mapper;
   private AirbyteDestination target;
   private StandardSyncInput syncInput;
   private StandardTapConfig tapConfig;
@@ -90,7 +90,7 @@ class DefaultSyncWorkerTest {
     targetConfig = WorkerUtils.syncToTargetConfig(syncInput);
 
     tap = mock(AirbyteSource.class);
-    mapper = mock(AirbyteMapper.class);
+    mapper = mock(NamespacingMapper.class);
     target = mock(AirbyteDestination.class);
     normalizationRunner = mock(NormalizationRunner.class);
 

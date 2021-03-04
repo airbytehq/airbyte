@@ -443,8 +443,8 @@ public class AcceptanceTests {
     final Database source = getDatabase(sourceDb);
 
     final Set<String> sourceStreams = listStreams(source);
-    final Set<String> sourceStreamsWithRawPrefix = sourceStreams.stream().map(x ->
-        String.format("_airbyte_raw_%s_%s", OUTPUT_NAMESPACE, x.replace(".", "_"))).collect(Collectors.toSet());
+    final Set<String> sourceStreamsWithRawPrefix =
+        sourceStreams.stream().map(x -> String.format("_airbyte_raw_%s_%s", OUTPUT_NAMESPACE, x.replace(".", "_"))).collect(Collectors.toSet());
     final Database destination = getDatabase(destinationPsql);
     final Set<String> destinationStreams = listDestinationStreams(destination);
     assertEquals(sourceStreamsWithRawPrefix, destinationStreams,
