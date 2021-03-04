@@ -24,13 +24,23 @@
 
 package io.airbyte.scheduler.temporal;
 
+import static java.util.stream.Collectors.toSet;
+
 import io.airbyte.scheduler.temporal.TemporalUtils.TemporalJobType;
 import io.airbyte.workers.process.ProcessBuilderFactory;
+import io.temporal.api.namespace.v1.NamespaceInfo;
+import io.temporal.api.workflowservice.v1.DescribeNamespaceResponse;
+import io.temporal.api.workflowservice.v1.ListNamespacesRequest;
 import io.temporal.worker.Worker;
 import io.temporal.worker.WorkerFactory;
 import java.nio.file.Path;
+import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TemporalPool implements Runnable {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(TemporalPool.class);
 
   private final Path workspaceRoot;
   private final ProcessBuilderFactory pbf;
@@ -42,6 +52,8 @@ public class TemporalPool implements Runnable {
 
   @Override
   public void run() {
+    waitForTemporalServerAndLog();
+
     WorkerFactory factory = WorkerFactory.newInstance(TemporalUtils.TEMPORAL_CLIENT);
 
     final Worker specWorker = factory.newWorker(TemporalJobType.GET_SPEC.name());
@@ -65,6 +77,38 @@ public class TemporalPool implements Runnable {
     // configs.getWorkspaceRoot()));
 
     factory.start();
+  }
+
+  private static void waitForTemporalServerAndLog() {
+    LOGGER.info("Waiting for temporal server...");
+
+    while (!getNamespaces().contains("default")) {
+      LOGGER.warn("Waiting for default namespace to be initialized in temporal...");
+      wait(5);
+    }
+
+    // sometimes it takes a few additional seconds for workflow queue listening to be available
+    wait(5);
+
+    LOGGER.info("Found temporal default namespace!");
+  }
+
+  private static void wait(int seconds) {
+    try {
+      Thread.sleep(seconds * 1000);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private static Set<String> getNamespaces() {
+    return TemporalUtils.TEMPORAL_SERVICE.blockingStub()
+        .listNamespaces(ListNamespacesRequest.newBuilder().build())
+        .getNamespacesList()
+        .stream()
+        .map(DescribeNamespaceResponse::getNamespaceInfo)
+        .map(NamespaceInfo::getName)
+        .collect(toSet());
   }
 
 }
