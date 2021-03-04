@@ -25,6 +25,7 @@
 package io.airbyte.workers.protocols.airbyte;
 
 import com.google.common.base.Preconditions;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardTargetConfig;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -33,8 +34,6 @@ import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.WorkerException;
 import java.io.IOException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * We apply some transformations on the fly on the catalog (same should be done on records too) from
@@ -44,8 +43,6 @@ import org.slf4j.LoggerFactory;
  */
 public class DefaultAirbyteMapper implements AirbyteMapper {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAirbyteMapper.class);
-
   private StandardSyncInput syncInput;
 
   public DefaultAirbyteMapper() {}
@@ -53,7 +50,7 @@ public class DefaultAirbyteMapper implements AirbyteMapper {
   @Override
   public void start(StandardTargetConfig targetConfig, StandardSyncInput syncInput) throws IOException, WorkerException {
     this.syncInput = syncInput;
-    transformConfiguredCatalog(targetConfig.getCatalog(), syncInput);
+    targetConfig.setCatalog(transformCatalog(targetConfig.getCatalog(), syncInput));
   }
 
   @Override
@@ -61,27 +58,33 @@ public class DefaultAirbyteMapper implements AirbyteMapper {
     Preconditions.checkState(syncInput != null);
 
     if (message.getCatalog() != null) {
-      transformCatalog(message.getCatalog(), syncInput);
+      message.setCatalog(transformCatalog(message.getCatalog(), syncInput));
     }
-    message.getRecord().setStream(transformStreamName(message.getRecord().getStream(), syncInput));
+    if (message.getRecord() != null) {
+      message.getRecord().setStream(transformStreamName(message.getRecord().getStream(), syncInput));
+    }
   }
 
   @Override
   public void close() throws Exception {}
 
-  private static void transformConfiguredCatalog(ConfiguredAirbyteCatalog catalog, StandardSyncInput syncInput) {
-    catalog.getStreams().forEach(s -> transformStream(s.getStream(), syncInput));
+  private static ConfiguredAirbyteCatalog transformCatalog(final ConfiguredAirbyteCatalog catalog, final StandardSyncInput syncInput) {
+    final ConfiguredAirbyteCatalog newCatalog = Jsons.clone(catalog);
+    newCatalog.getStreams().forEach(s -> mutateStream(s.getStream(), syncInput));
+    return newCatalog;
   }
 
-  private static void transformCatalog(AirbyteCatalog catalog, StandardSyncInput syncInput) {
-    catalog.getStreams().forEach(s -> transformStream(s, syncInput));
+  private static AirbyteCatalog transformCatalog(final AirbyteCatalog catalog, final StandardSyncInput syncInput) {
+    final AirbyteCatalog newCatalog = Jsons.clone(catalog);
+    newCatalog.getStreams().forEach(s -> mutateStream(s, syncInput));
+    return newCatalog;
   }
 
-  private static AirbyteStream transformStream(AirbyteStream stream, StandardSyncInput syncInput) {
-    return stream.withName(transformStreamName(stream.getName(), syncInput));
+  private static void mutateStream(final AirbyteStream stream, final StandardSyncInput syncInput) {
+    stream.withName(transformStreamName(stream.getName(), syncInput));
   }
 
-  private static String transformStreamName(String streamName, StandardSyncInput syncInput) {
+  private static String transformStreamName(final String streamName, final StandardSyncInput syncInput) {
     // Use the connection name as a prefix for the moment to alter the stream name in the destination
     return syncInput.getNamespaceDefault() + "_" + streamName;
   }

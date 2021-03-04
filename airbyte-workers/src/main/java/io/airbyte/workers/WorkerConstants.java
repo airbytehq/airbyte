@@ -29,7 +29,8 @@ public class WorkerConstants {
   public static final String TAP_CONFIG_JSON_FILENAME = "tap_config.json";
   public static final String TARGET_CONFIG_JSON_FILENAME = "target_config.json";
 
-  public static final String CATALOG_JSON_FILENAME = "catalog.json";
+  public static final String TAP_CATALOG_JSON_FILENAME = "tap_catalog.json";
+  public static final String TARGET_CATALOG_JSON_FILENAME = "target_catalog.json";
   public static final String INPUT_STATE_JSON_FILENAME = "input_state.json";
 
   public static final String LOG_FILENAME = "logs.log";

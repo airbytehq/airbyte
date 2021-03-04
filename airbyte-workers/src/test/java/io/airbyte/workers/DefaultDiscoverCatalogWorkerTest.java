@@ -88,7 +88,7 @@ public class DefaultDiscoverCatalogWorkerTest {
     when(process.getInputStream()).thenReturn(inputStream);
     when(process.getErrorStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
 
-    IOs.writeFile(jobRoot, WorkerConstants.CATALOG_JSON_FILENAME, MoreResources.readResource("airbyte_postgres_catalog.json"));
+    IOs.writeFile(jobRoot, WorkerConstants.TAP_CATALOG_JSON_FILENAME, MoreResources.readResource("airbyte_postgres_catalog.json"));
 
     streamFactory = noop -> Lists.newArrayList(new AirbyteMessage().withType(Type.CATALOG).withCatalog(CATALOG)).stream();
   }

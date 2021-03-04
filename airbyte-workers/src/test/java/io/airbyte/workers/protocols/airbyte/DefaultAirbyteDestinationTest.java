@@ -78,7 +78,7 @@ class DefaultAirbyteDestinationTest {
     when(process.getErrorStream()).thenReturn(new ByteArrayInputStream("error".getBytes(StandardCharsets.UTF_8)));
 
     integrationLauncher = mock(IntegrationLauncher.class, RETURNS_DEEP_STUBS);
-    when(integrationLauncher.write(jobRoot, WorkerConstants.TARGET_CONFIG_JSON_FILENAME, WorkerConstants.CATALOG_JSON_FILENAME).start())
+    when(integrationLauncher.write(jobRoot, WorkerConstants.TARGET_CONFIG_JSON_FILENAME, WorkerConstants.TARGET_CATALOG_JSON_FILENAME).start())
         .thenReturn(process);
   }
 

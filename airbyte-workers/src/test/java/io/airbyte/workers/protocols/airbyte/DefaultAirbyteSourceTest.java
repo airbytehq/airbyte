@@ -103,7 +103,7 @@ class DefaultAirbyteSourceTest {
     when(integrationLauncher.read(
         jobRoot,
         WorkerConstants.TAP_CONFIG_JSON_FILENAME,
-        WorkerConstants.CATALOG_JSON_FILENAME,
+        WorkerConstants.TAP_CATALOG_JSON_FILENAME,
         WorkerConstants.INPUT_STATE_JSON_FILENAME)
         .start()).thenReturn(process);
     when(process.isAlive()).thenReturn(true);
@@ -140,7 +140,7 @@ class DefaultAirbyteSourceTest {
         Jsons.deserialize(IOs.readFile(jobRoot, WorkerConstants.INPUT_STATE_JSON_FILENAME)));
     assertEquals(
         Jsons.jsonNode(CATALOG),
-        Jsons.deserialize(IOs.readFile(jobRoot, WorkerConstants.CATALOG_JSON_FILENAME)));
+        Jsons.deserialize(IOs.readFile(jobRoot, WorkerConstants.TAP_CATALOG_JSON_FILENAME)));
 
     assertEquals(MESSAGES, messages);
 
