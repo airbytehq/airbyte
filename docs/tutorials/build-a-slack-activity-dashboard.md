@@ -6,7 +6,7 @@ description: Using Airbyte and Apache Superset
 
 ![](../.gitbook/assets/46.png)
 
-This article will show how to use [Airbyte](http://airbyte.io) and [Apache Superset](https://superset.apache.org/) - a powerful, easy-to-use data exploration platform - in order to build a Slack activity dashboard showing:
+This article will show how to use [Airbyte](http://airbyte.io) - an open-source data integration platform - and [Apache Superset](https://superset.apache.org/) - an open-source data exploration platform - in order to build a Slack activity dashboard showing:
 
 * Total number of members of a Slack workspace
 * The evolution of the number of Slack workspace members

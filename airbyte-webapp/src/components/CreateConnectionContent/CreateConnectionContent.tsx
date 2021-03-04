@@ -62,7 +62,7 @@ const CreateConnectionContent: React.FC<IProps> = ({
         values: {
           frequency: values.frequency,
           namespaceDefault: values.namespaceDefault,
-          syncCatalog: schema,
+          syncCatalog: values.schema,
         },
         source: source,
         destination: destination,

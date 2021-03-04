@@ -378,7 +378,8 @@ public class AcceptanceTests {
     assertDestinationContains(expectedRecords, STREAM_NAME);
 
     // reset back to no data.
-    apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    final JobInfoRead jobInfoRead = apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    waitForSuccessfulJob(apiClient.getJobsApi(), jobInfoRead.getJob());
     assertDestinationContains(Collections.emptyList(), STREAM_NAME);
 
     // sync one more time. verify it is the equivalent of a full refresh.
