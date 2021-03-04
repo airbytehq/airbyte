@@ -34,15 +34,8 @@ from facebook_business.adobjects.iguser import IGUser
 from facebook_business.adobjects.page import Page
 from facebook_business.exceptions import FacebookRequestError
 
-from .api import (
-    MediaAPI,
-    MediaInsightsAPI,
-    StoriesAPI,
-    StoriesInsightsAPI,
-    UserInsightsAPI,
-    UserLifetimeInsightsAPI,
-    UsersAPI,
-)
+from .api import MediaAPI, MediaInsightsAPI, StoriesAPI, StoriesInsightsAPI, UserInsightsAPI, UserLifetimeInsightsAPI, UsersAPI
+from .common import InstagramAPIException
 
 
 class Client(BaseClient):
@@ -91,16 +84,16 @@ class Client(BaseClient):
                 if page.get("instagram_business_account") and page.get("instagram_business_account").get("id") == account_id:
                     return IGUser(page.get("instagram_business_account").get("id"))
         except FacebookRequestError as exc:
-            raise Exception(f"Error: {exc.api_error_code()}, {exc.api_error_message()}") from exc
+            raise InstagramAPIException(f"Error: {exc.api_error_code()}, {exc.api_error_message()}") from exc
 
-        raise Exception(f"Couldn't find Instagram business account with id {account_id}")
+        raise InstagramAPIException(f"Couldn't find Instagram business account with id {account_id}")
 
     def health_check(self) -> Tuple[bool, str]:
         alive = True
         error_message = None
         try:
             self._find_account(self._account_id)
-        except Exception as exc:
+        except InstagramAPIException as exc:
             logger.error(str(exc))
             alive = False
             error_message = str(exc)

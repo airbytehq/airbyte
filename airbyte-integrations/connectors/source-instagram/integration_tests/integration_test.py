@@ -22,26 +22,33 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from setuptools import find_packages, setup
+import json
 
-setup(
-    name="source_instagram",
-    description="Source implementation for Instagram.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    install_requires=[
-        "airbyte-protocol",
-        "base-python",
-        "facebook_business==10.0.0",
-        "pendulum==1.2.0",
-        "cached_property==1.5.2",
-        "backoff==1.10.0",
-    ],
-    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
-    setup_requires=["pytest-runner"],
-    tests_require=["pytest==6.1.2"],
-    extras_require={
-        "tests": ["airbyte_python_test==0.0.0", "pytest==6.1.2"],
-    },
-)
+from airbyte_protocol import ConfiguredAirbyteCatalog, Type
+from base_python import AirbyteLogger
+from source_instagram.source import SourceInstagram
+
+config = json.loads(open("secrets/config.json", "r").read())
+
+
+class TestInstagramSource:
+    def test_insights_streams_outputs_records(self):
+        catalog = self._read_catalog("sample_files/configured_catalog_insights.json")
+        self._run_sync_test(config, catalog)
+
+    @staticmethod
+    def _read_catalog(path):
+        return ConfiguredAirbyteCatalog.parse_raw(open(path, "r").read())
+
+    @staticmethod
+    def _run_sync_test(conf, catalog):
+        records = []
+        state = []
+        for message in SourceInstagram().read(AirbyteLogger(), conf, catalog):
+            if message.type == Type.RECORD:
+                records.append(message)
+            elif message.type == Type.STATE:
+                state.append(message)
+
+        assert len(records) > 0
+        assert len(state) > 0

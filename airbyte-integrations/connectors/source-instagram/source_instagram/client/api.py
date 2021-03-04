@@ -23,12 +23,17 @@ SOFTWARE.
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Iterator, Sequence, List
+from typing import Any, Dict, Iterator, List, Sequence
 
+import backoff
 import pendulum
 from base_python.entrypoint import logger
 from facebook_business.adobjects.igmedia import IGMedia
 from facebook_business.exceptions import FacebookRequestError
+
+from .common import retry_pattern
+
+backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 
 
 class StreamAPI(ABC):
@@ -76,6 +81,7 @@ class UsersAPI(StreamAPI):
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         yield self._extend_record(self._api.account, fields=fields)
 
+    @backoff_policy
     def _extend_record(self, ig_user, fields) -> Dict:
         return ig_user.api_get(fields=fields).export_all_data()
 
@@ -100,6 +106,7 @@ class UserLifetimeInsightsAPI(StreamAPI):
     def _params(self) -> Dict:
         return {"metric": self.LIFETIME_METRICS, "period": self.period}
 
+    @backoff_policy
     def _get_insight_records(self, params) -> Iterator[Any]:
         return self._api.account.get_insights(params=params)
 
@@ -129,7 +136,7 @@ class UserInsightsAPI(IncrementalStreamAPI):
 
     def __init__(self, api):
         super().__init__(api=api)
-        self._state = api._start_date
+        self._state = max(api._start_date, pendulum.now().subtract(days=self.buffer_days)).add(minutes=1)
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         account_id = self._api.account.get("id")
@@ -153,7 +160,7 @@ class UserInsightsAPI(IncrementalStreamAPI):
             yield self.state_filter(insight_record)
 
     def _params(self) -> Iterator[List]:
-        buffered_start_date = max(self._state.add(minutes=1), pendulum.now().subtract(days=self.buffer_days))
+        buffered_start_date = self._state
         end_date = pendulum.now()
 
         while buffered_start_date <= end_date:
@@ -170,6 +177,7 @@ class UserInsightsAPI(IncrementalStreamAPI):
             yield params_list
             buffered_start_date = buffered_start_date.add(days=self.days_increment)
 
+    @backoff_policy
     def _get_insight_records(self, params):
         return self._api.account.get_insights(params=params)._queue
 
@@ -189,6 +197,7 @@ class MediaAPI(StreamAPI):
                 ]
             yield record_data
 
+    @backoff_policy
     def _get_media(self, params, fields) -> Iterator[Any]:
         """
         This is necessary because the functions that call this endpoint return
@@ -196,6 +205,7 @@ class MediaAPI(StreamAPI):
         """
         return self._api.account.get_media(params=params, fields=fields)
 
+    @backoff_policy
     def _get_single_record(self, media_id, fields) -> IGMedia:
         return IGMedia(media_id).api_get(fields=fields)
 
@@ -207,6 +217,7 @@ class StoriesAPI(StreamAPI):
             record_data = record.export_all_data()
             yield record_data
 
+    @backoff_policy
     def _get_stories(self, params, fields: list) -> Iterator[Any]:
         """
         This is necessary because the functions that call this endpoint return
@@ -227,6 +238,7 @@ class MediaInsightsAPI(MediaAPI):
                 **{record.get("name"): record.get("values")[0]["value"] for record in self._get_insights(ig_media)},
             }
 
+    @backoff_policy
     def _get_insights(self, item) -> Iterator[Any]:
         """
         This is necessary because the functions that call this endpoint return
@@ -259,6 +271,7 @@ class StoriesInsightsAPI(StoriesAPI):
                 **{record.get("name"): record.get("values")[0]["value"] for record in self._get_insights(ig_story)},
             }
 
+    @backoff_policy
     def _get_insights(self, item) -> Iterator[Any]:
         """
         This is necessary because the functions that call this endpoint return
