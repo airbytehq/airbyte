@@ -35,13 +35,13 @@ from facebook_business.adobjects.page import Page
 from facebook_business.exceptions import FacebookRequestError
 
 from .api import (
-    IgMediaAPI,
-    IgMediaInsightsAPI,
-    IgStoriesAPI,
-    IgStoriesInsightsAPI,
-    IgUserInsightsAPI,
-    IgUserLifetimeInsightsAPI,
-    IgUsersAPI,
+    MediaAPI,
+    MediaInsightsAPI,
+    StoriesAPI,
+    StoriesInsightsAPI,
+    UserInsightsAPI,
+    UserLifetimeInsightsAPI,
+    UsersAPI,
 )
 
 
@@ -52,13 +52,13 @@ class Client(BaseClient):
 
         self._api = FacebookAdsApi.init(access_token=access_token)
         self._apis = {
-            "media": IgMediaAPI(self),
-            "stories": IgStoriesAPI(self),
-            "users": IgUsersAPI(self),
-            "user_lifetime_insights": IgUserLifetimeInsightsAPI(self),
-            "user_insights": IgUserInsightsAPI(self),
-            "media_insights": IgMediaInsightsAPI(self),
-            "story_insights": IgStoriesInsightsAPI(self),
+            "media": MediaAPI(self),
+            "stories": StoriesAPI(self),
+            "users": UsersAPI(self),
+            "user_lifetime_insights": UserLifetimeInsightsAPI(self),
+            "user_insights": UserInsightsAPI(self),
+            "media_insights": MediaInsightsAPI(self),
+            "story_insights": StoriesInsightsAPI(self),
         }
         super().__init__()
 

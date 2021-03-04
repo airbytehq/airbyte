@@ -23,7 +23,7 @@ SOFTWARE.
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Iterator, Sequence
+from typing import Any, Dict, Iterator, Sequence, List
 
 import pendulum
 from base_python.entrypoint import logger
@@ -61,7 +61,7 @@ class IncrementalStreamAPI(StreamAPI, ABC):
         super().__init__(*args, **kwargs)
         self._state = None
 
-    def state_filter(self, record: Dict) -> Iterator[Any]:
+    def state_filter(self, record: Dict) -> Dict:
         """Apply state filter to set of records, update cursor(state) if necessary in the end"""
         cursor = pendulum.parse(record[self.state_pk])
         stream_name = self.__class__.__name__
@@ -72,15 +72,15 @@ class IncrementalStreamAPI(StreamAPI, ABC):
         return record
 
 
-class IgUsersAPI(StreamAPI):
+class UsersAPI(StreamAPI):
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         yield self._extend_record(self._api.account, fields=fields)
 
-    def _extend_record(self, ig_user, fields):
+    def _extend_record(self, ig_user, fields) -> Dict:
         return ig_user.api_get(fields=fields).export_all_data()
 
 
-class IgUserLifetimeInsightsAPI(StreamAPI):
+class UserLifetimeInsightsAPI(StreamAPI):
     LIFETIME_METRICS = ["audience_city", "audience_country", "audience_gender_age", "audience_locale"]
     period = "lifetime"
 
@@ -97,14 +97,14 @@ class IgUserLifetimeInsightsAPI(StreamAPI):
                 "value": insight.get("values")[0]["value"],
             }
 
-    def _params(self):
+    def _params(self) -> Dict:
         return {"metric": self.LIFETIME_METRICS, "period": self.period}
 
-    def _get_insight_records(self, params):
+    def _get_insight_records(self, params) -> Iterator[Any]:
         return self._api.account.get_insights(params=params)
 
 
-class IgUserInsightsAPI(IncrementalStreamAPI):
+class UserInsightsAPI(IncrementalStreamAPI):
     METRICS_BY_PERIOD = {
         "day": [
             "email_contacts",
@@ -152,7 +152,7 @@ class IgUserInsightsAPI(IncrementalStreamAPI):
                     insight_record["date"] = insight.get("values")[0]["end_time"]
             yield self.state_filter(insight_record)
 
-    def _params(self):
+    def _params(self) -> Iterator[List]:
         buffered_start_date = max(self._state.add(minutes=1), pendulum.now().subtract(days=self.buffer_days))
         end_date = pendulum.now()
 
@@ -174,7 +174,7 @@ class IgUserInsightsAPI(IncrementalStreamAPI):
         return self._api.account.get_insights(params=params)._queue
 
 
-class IgMediaAPI(StreamAPI):
+class MediaAPI(StreamAPI):
     INVALID_CHILDREN_FIELDS = ["caption", "comments_count", "is_comment_enabled", "like_count", "children"]
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
@@ -189,25 +189,25 @@ class IgMediaAPI(StreamAPI):
                 ]
             yield record_data
 
-    def _get_media(self, params, fields: list):
+    def _get_media(self, params, fields) -> Iterator[Any]:
         """
         This is necessary because the functions that call this endpoint return
         a generator, whose calls need decorated with a backoff.
         """
         return self._api.account.get_media(params=params, fields=fields)
 
-    def _get_single_record(self, media_id, fields):
+    def _get_single_record(self, media_id, fields) -> IGMedia:
         return IGMedia(media_id).api_get(fields=fields)
 
 
-class IgStoriesAPI(StreamAPI):
+class StoriesAPI(StreamAPI):
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         media = self._get_stories({"limit": self.result_return_limit}, fields)
         for record in media:
             record_data = record.export_all_data()
             yield record_data
 
-    def _get_stories(self, params, fields: list):
+    def _get_stories(self, params, fields: list) -> Iterator[Any]:
         """
         This is necessary because the functions that call this endpoint return
         a generator, whose calls need decorated with a backoff.
@@ -215,7 +215,7 @@ class IgStoriesAPI(StreamAPI):
         return self._api.account.get_stories(params=params, fields=fields)
 
 
-class IgMediaInsightsAPI(IgMediaAPI):
+class MediaInsightsAPI(MediaAPI):
     MEDIA_METRICS = ["engagement", "impressions", "reach", "saved"]
     CAROUSEL_ALBUM_METRICS = ["carousel_album_engagement", "carousel_album_impressions", "carousel_album_reach", "carousel_album_saved"]
 
@@ -227,7 +227,7 @@ class IgMediaInsightsAPI(IgMediaAPI):
                 **{record.get("name"): record.get("values")[0]["value"] for record in self._get_insights(ig_media)},
             }
 
-    def _get_insights(self, item):
+    def _get_insights(self, item) -> Iterator[Any]:
         """
         This is necessary because the functions that call this endpoint return
         a generator, whose calls need decorated with a backoff.
@@ -248,7 +248,7 @@ class IgMediaInsightsAPI(IgMediaAPI):
             return []
 
 
-class IgStoriesInsightsAPI(IgStoriesAPI):
+class StoriesInsightsAPI(StoriesAPI):
     STORY_METRICS = ["exits", "impressions", "reach", "replies", "taps_forward", "taps_back"]
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
@@ -259,7 +259,7 @@ class IgStoriesInsightsAPI(IgStoriesAPI):
                 **{record.get("name"): record.get("values")[0]["value"] for record in self._get_insights(ig_story)},
             }
 
-    def _get_insights(self, item):
+    def _get_insights(self, item) -> Iterator[Any]:
         """
         This is necessary because the functions that call this endpoint return
         a generator, whose calls need decorated with a backoff.
