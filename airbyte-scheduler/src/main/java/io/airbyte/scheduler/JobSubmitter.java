@@ -38,6 +38,8 @@ import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.scheduler.worker_run.SchedulerWorkerRunWithEnvironmentFactory;
+import io.airbyte.scheduler.worker_run.WorkerRun;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.WorkerConstants;
 import java.io.IOException;
@@ -58,16 +60,16 @@ public class JobSubmitter implements Runnable {
   private final ExecutorService threadPool;
   private final JobPersistence persistence;
   private final ConfigRepository configRepository;
-  private final WorkerRunFactory workerRunFactory;
+  private final SchedulerWorkerRunWithEnvironmentFactory schedulerWorkerRunWithEnvironmentFactory;
 
   public JobSubmitter(final ExecutorService threadPool,
                       final JobPersistence persistence,
                       final ConfigRepository configRepository,
-                      final WorkerRunFactory workerRunFactory) {
+                      final SchedulerWorkerRunWithEnvironmentFactory schedulerWorkerRunWithEnvironmentFactory) {
     this.threadPool = threadPool;
     this.persistence = persistence;
     this.configRepository = configRepository;
-    this.workerRunFactory = workerRunFactory;
+    this.schedulerWorkerRunWithEnvironmentFactory = schedulerWorkerRunWithEnvironmentFactory;
   }
 
   @Override
@@ -91,7 +93,7 @@ public class JobSubmitter implements Runnable {
 
   @VisibleForTesting
   void submitJob(Job job) {
-    final WorkerRun workerRun = workerRunFactory.create(job);
+    final WorkerRun workerRun = schedulerWorkerRunWithEnvironmentFactory.create(job);
     // we need to know the attempt number before we begin the job lifecycle. thus we state what the
     // attempt number should be. if it is not, that the lifecycle will fail. this should not happen as
     // long as job submission for a single job is single threaded. this is a compromise to allow the job

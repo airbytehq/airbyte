@@ -22,38 +22,18 @@
  * SOFTWARE.
  */
 
-package io.airbyte.scheduler;
+package io.airbyte.scheduler.worker_run;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.verify;
-
-import io.airbyte.config.JobOutput;
-import io.airbyte.workers.Worker;
-import java.io.IOException;
-import java.nio.file.Files;
+import io.airbyte.workers.process.ProcessBuilderFactory;
+import java.io.Serializable;
 import java.nio.file.Path;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
-class WorkerRunTest {
+public interface WorkerRunFactory<T extends Serializable> {
 
-  private Path path;
-  private Worker<Integer, JobOutput> worker;
-
-  @SuppressWarnings("unchecked")
-  @BeforeEach
-  void setUp() throws IOException {
-    path = Files.createTempDirectory("test").resolve("sub").resolve("sub");
-    worker = Mockito.mock(Worker.class);
-  }
-
-  @Test
-  void name() throws Exception {
-    new WorkerRun(path, 1, worker).call();
-
-    assertTrue(Files.exists(path));
-    verify(worker).run(1, path);
-  }
+  WorkerRun create(final Path jobRoot,
+                   final ProcessBuilderFactory pbf,
+                   final long jobId,
+                   final int attempt,
+                   final T config);
 
 }
