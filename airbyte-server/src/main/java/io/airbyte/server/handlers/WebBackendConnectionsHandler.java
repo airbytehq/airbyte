@@ -211,7 +211,7 @@ public class WebBackendConnectionsHandler {
   protected static ConnectionUpdate toConnectionUpdate(WebBackendConnectionUpdate webBackendConnectionUpdate) {
     ConnectionUpdate connectionUpdate = new ConnectionUpdate();
 
-    connectionUpdate.setConnectionName(webBackendConnectionUpdate.getConnectionName());
+    connectionUpdate.setNamespaceDefault(webBackendConnectionUpdate.getNamespaceDefault());
     connectionUpdate.setConnectionId(webBackendConnectionUpdate.getConnectionId());
     connectionUpdate.setSchedule(webBackendConnectionUpdate.getSchedule());
     connectionUpdate.setStatus(webBackendConnectionUpdate.getStatus());

@@ -29,6 +29,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.State;
 import io.airbyte.protocol.models.CatalogHelpers;
@@ -90,9 +91,9 @@ public class TestConfigHelpers {
         .withConnectionId(connectionId)
         .withDestinationId(destinationId)
         .withSourceId(sourceId)
-        .withStatus(StandardSync.Status.ACTIVE)
+        .withStatus(Status.ACTIVE)
         .withName(CONNECTION_NAME)
-        .withConnectionName(CONNECTION_NAME)
+        .withNamespaceDefault(CONNECTION_NAME)
         .withCatalog(catalog);
 
     final String stateValue = Jsons.serialize(Map.of("lastSync", String.valueOf(LAST_SYNC_TIME)));
@@ -100,7 +101,7 @@ public class TestConfigHelpers {
     final State state = new State().withState(Jsons.jsonNode(stateValue));
 
     final StandardSyncInput syncInput = new StandardSyncInput()
-        .withConnectionName(standardSync.getConnectionName())
+        .withNamespaceDefault(standardSync.getNamespaceDefault())
         .withDestinationConfiguration(destinationConnectionConfig.getConfiguration())
         .withCatalog(standardSync.getCatalog())
         .withSourceConfiguration(sourceConnectionConfig.getConfiguration())

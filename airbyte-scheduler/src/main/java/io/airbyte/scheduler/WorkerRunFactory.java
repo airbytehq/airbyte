@@ -187,7 +187,7 @@ public class WorkerRunFactory {
 
   private static StandardSyncInput getSyncInputSyncConfig(JobSyncConfig config) {
     return new StandardSyncInput()
-        .withConnectionName(config.getConnectionName())
+        .withNamespaceDefault(config.getNamespaceDefault())
         .withSourceConfiguration(config.getSourceConfiguration())
         .withDestinationConfiguration(config.getDestinationConfiguration())
         .withCatalog(config.getConfiguredAirbyteCatalog())
@@ -196,7 +196,7 @@ public class WorkerRunFactory {
 
   private static StandardSyncInput getSyncInputFromResetConfig(JobResetConnectionConfig config) {
     return new StandardSyncInput()
-        .withConnectionName(config.getConnectionName())
+        .withNamespaceDefault(config.getNamespaceDefault())
         .withSourceConfiguration(Jsons.emptyObject())
         .withDestinationConfiguration(config.getDestinationConfiguration())
         .withCatalog(config.getConfiguredAirbyteCatalog());

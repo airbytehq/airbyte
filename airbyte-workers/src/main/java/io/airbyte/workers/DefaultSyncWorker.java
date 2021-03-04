@@ -88,7 +88,7 @@ public class DefaultSyncWorker implements SyncWorker {
     // TODO Transform Catalog
     targetConfig.getCatalog().getStreams().forEach(s ->
     // Use the connection name as a prefix for the moment to alter the stream name in the destination
-    s.getStream().withName(syncInput.getConnectionName() + "_" + s.getStream().getName()));
+    s.getStream().withName(syncInput.getNamespaceDefault() + "_" + s.getStream().getName()));
     try (destination; source) {
       destination.start(targetConfig, jobRoot);
       source.start(tapConfig, jobRoot);

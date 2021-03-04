@@ -128,7 +128,7 @@ class WorkerRunFactoryTest {
     factory.create(job);
 
     final StandardSyncInput expectedInput = new StandardSyncInput()
-        .withConnectionName(job.getConfig().getSync().getConnectionName())
+        .withNamespaceDefault(job.getConfig().getSync().getNamespaceDefault())
         .withSourceConfiguration(job.getConfig().getSync().getSourceConfiguration())
         .withDestinationConfiguration(job.getConfig().getSync().getDestinationConfiguration())
         .withCatalog(job.getConfig().getSync().getConfiguredAirbyteCatalog())
@@ -150,7 +150,7 @@ class WorkerRunFactoryTest {
     factory.create(job);
 
     final StandardSyncInput expectedInput = new StandardSyncInput()
-        .withConnectionName(job.getConfig().getSync().getConnectionName())
+        .withNamespaceDefault(job.getConfig().getSync().getNamespaceDefault())
         .withSourceConfiguration(Jsons.emptyObject())
         .withDestinationConfiguration(job.getConfig().getResetConnection().getDestinationConfiguration())
         .withCatalog(job.getConfig().getResetConnection().getConfiguredAirbyteCatalog());

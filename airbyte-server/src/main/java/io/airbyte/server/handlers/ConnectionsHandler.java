@@ -72,7 +72,7 @@ public class ConnectionsHandler {
     final StandardSync standardSync = new StandardSync()
         .withConnectionId(connectionId)
         .withName(connectionCreate.getName() != null ? connectionCreate.getName() : "default")
-        .withConnectionName(connectionCreate.getConnectionName())
+        .withNamespaceDefault(connectionCreate.getNamespaceDefault())
         .withSourceId(connectionCreate.getSourceId())
         .withDestinationId(connectionCreate.getDestinationId())
         .withStatus(toPersistenceStatus(connectionCreate.getStatus()));
@@ -210,7 +210,7 @@ public class ConnectionsHandler {
         .status(toApiStatus(standardSync.getStatus()))
         .schedule(apiSchedule)
         .name(standardSync.getName())
-        .connectionName(standardSync.getConnectionName())
+        .namespaceDefault(standardSync.getNamespaceDefault())
         .syncCatalog(CatalogConverter.toApi(standardSync.getCatalog()));
   }
 
