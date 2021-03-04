@@ -22,9 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Mapping, Tuple
+from typing import Any, Mapping, Tuple
 
 from base_python import BaseClient
+from base_python.client import ResourceSchemaLoader
 from base_python.entrypoint import logger
 from source_hubspot.api import (
     API,
@@ -48,7 +49,44 @@ from source_hubspot.api import (
 )
 
 
+class HubspotResourceSchemaLoader(ResourceSchemaLoader):
+    field_type_schema = {
+        "bool": {"type": ["null", "boolean"]},
+        "datetime": {"type": ["null", "string"], "format": "date-time"},
+        "number": {"type": ["null", "integer"]},
+    }
+
+    def __init__(self, *args, **kwargs):
+        self._apis = None
+        super().__init__(*args, **kwargs)
+
+    def parse_custom_schema(self, properties: Mapping[str, Any]) -> Mapping[str, Mapping]:
+        schema = {}
+        for field_name, field_schema in properties.items():
+            schema[field_name] = self.field_type_schema.get(field_schema["type"], {"type": ["null", "string"]})
+        return schema
+
+    def get_schema(self, name: str) -> dict:
+        schema = super().get_schema(name)
+        if self._apis:
+            if name in self._apis:
+                custom_schema = self.parse_custom_schema(self._apis[name].properties)
+
+                schema["properties"]["properties"] = {
+                    "type": "object",
+                    "properties": custom_schema,
+                }
+
+                custom_schema_top_level = {
+                    f"property_{property_name}": property_schema for property_name, property_schema in custom_schema.items()
+                }
+                schema["properties"].update(custom_schema_top_level)
+        return schema
+
+
 class Client(BaseClient):
+    schema_loader_class = HubspotResourceSchemaLoader
+
     def __init__(self, start_date, credentials, **kwargs):
         self._start_date = start_date
         self._api = API(credentials=credentials)
@@ -74,6 +112,8 @@ class Client(BaseClient):
         }
 
         super().__init__(**kwargs)
+
+        self._schema_loader._apis = self._apis
 
     def _enumerate_methods(self) -> Mapping[str, callable]:
         return {name: api.list for name, api in self._apis.items()}

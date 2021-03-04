@@ -21,19 +21,19 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
 import sys
 import time
-
-import backoff
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from functools import partial
 from typing import Any, Callable, Iterable, Iterator, List, Mapping, Optional, Union
 
+import backoff
 import pendulum as pendulum
 import requests
 from base_python.entrypoint import logger
-from source_hubspot.errors import HubspotInvalidAuth, HubspotSourceUnavailable, HubspotRateLimited
+from source_hubspot.errors import HubspotInvalidAuth, HubspotRateLimited, HubspotSourceUnavailable
 
 
 def retry_connection_handler(**kwargs):
