@@ -6,7 +6,7 @@ ENV CODE_PATH="source_slack_singer"
 ENV AIRBYTE_IMPL_MODULE="source_slack_singer"
 ENV AIRBYTE_IMPL_PATH="SourceSlackSinger"
 
-LABEL io.airbyte.version=0.1.1
+LABEL io.airbyte.version=0.1.4
 LABEL io.airbyte.name=airbyte/source-slack-singer
 
 WORKDIR /airbyte/integration_code

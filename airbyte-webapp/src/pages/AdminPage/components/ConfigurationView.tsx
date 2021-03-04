@@ -1,14 +1,15 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
+import { useAsyncFn } from "react-use";
 
-import Button from "../../../components/Button";
-import { useFetcher } from "rest-hooks";
-import DeploymentResource from "../../../core/resources/Deployment";
-import ContentCard from "../../../components/ContentCard";
-import config from "../../../config";
-import Link from "../../../components/Link";
+import Button from "components/Button";
+import ContentCard from "components/ContentCard";
+import config from "config";
+import Link from "components/Link";
 import ImportConfigurationModal from "./ImportConfigurationModal";
+import DeploymentService from "core/resources/DeploymentService";
+import LogsContent from "./LogsContent";
 
 const Content = styled.div`
   max-width: 813px;
@@ -17,6 +18,9 @@ const Content = styled.div`
 
 const ControlContent = styled(ContentCard)`
   margin-top: 12px;
+`;
+
+const ButtonContent = styled.div`
   padding: 29px 28px 27px;
   display: flex;
   align-items: center;
@@ -42,78 +46,94 @@ const Warning = styled.div`
 
 const ConfigurationView: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
-  const fetchExp = useFetcher(DeploymentResource.exportShape(), true);
-  const fetchImp = useFetcher(DeploymentResource.importShape(), true);
+  const [error, setError] = useState<Error | null>(null);
+
+  const [{ loading }, onImport] = useAsyncFn(async (fileBlob: Blob) => {
+    try {
+      const reader = new FileReader();
+      reader.readAsArrayBuffer(fileBlob);
+
+      return new Promise((resolve, reject) => {
+        reader.onloadend = async (e) => {
+          // setError("");
+          // setIsLoading(true);
+          const file = e?.target?.result;
+          if (!file) {
+            throw new Error("No file");
+          }
+          try {
+            await DeploymentService.importDeployment(file);
+
+            window.location.reload();
+            resolve(true);
+          } catch (e) {
+            reject(e);
+          }
+        };
+      });
+    } catch (e) {
+      setError(e);
+    }
+  });
 
   const onExport = async () => {
-    const { file } = await fetchExp({});
+    const file = await DeploymentService.exportDeployment();
     window.location.assign(file);
-  };
-
-  const onImport = async (file: any) => {
-    const reader = new FileReader();
-    reader.readAsArrayBuffer(file);
-
-    reader.onload = async e => {
-      try {
-        setError("");
-        setIsLoading(true);
-        await fetchImp({}, (e?.target?.result as any) || "");
-        window.location.reload();
-      } catch (e) {
-        setIsLoading(false);
-        setError(e);
-      }
-    };
   };
 
   return (
     <Content>
-      <ControlContent>
-        <Button onClick={onExport}>
-          <FormattedMessage id="admin.exportConfiguration" />
-        </Button>
-        <Text>
-          <FormattedMessage
-            id="admin.exportConfigurationText"
-            values={{
-              lnk: (...lnk: React.ReactNode[]) => (
-                <DocLink
-                  target="_blank"
-                  href={config.ui.configurationArchiveLink}
-                  as="a"
-                >
-                  {lnk}
-                </DocLink>
-              )
-            }}
-          />
-        </Text>
+      <ControlContent title={<FormattedMessage id="admin.export" />}>
+        <ButtonContent>
+          <Button onClick={onExport}>
+            <FormattedMessage id="admin.exportConfiguration" />
+          </Button>
+          <Text>
+            <FormattedMessage
+              id="admin.exportConfigurationText"
+              values={{
+                lnk: (...lnk: React.ReactNode[]) => (
+                  <DocLink
+                    target="_blank"
+                    href={config.ui.configurationArchiveLink}
+                    as="a"
+                  >
+                    {lnk}
+                  </DocLink>
+                ),
+              }}
+            />
+          </Text>
+        </ButtonContent>
       </ControlContent>
 
-      <ControlContent>
-        <Button onClick={() => setIsModalOpen(true)}>
-          <FormattedMessage id="admin.importConfiguration" />
-        </Button>
-        <Text>
-          <FormattedMessage
-            id="admin.importConfigurationText"
-            values={{
-              b: (...b: React.ReactNode[]) => <Warning>{b}</Warning>
-            }}
-          />
-        </Text>
-        {isModalOpen && (
-          <ImportConfigurationModal
-            onClose={() => setIsModalOpen(false)}
-            onSubmit={onImport}
-            isLoading={isLoading}
-            error={error}
-            cleanError={() => setError("")}
-          />
-        )}
+      <ControlContent title={<FormattedMessage id="admin.import" />}>
+        <ButtonContent>
+          <Button onClick={() => setIsModalOpen(true)}>
+            <FormattedMessage id="admin.importConfiguration" />
+          </Button>
+          <Text>
+            <FormattedMessage
+              id="admin.importConfigurationText"
+              values={{
+                b: (...b: React.ReactNode[]) => <Warning>{b}</Warning>,
+              }}
+            />
+          </Text>
+          {isModalOpen && (
+            <ImportConfigurationModal
+              onClose={() => setIsModalOpen(false)}
+              onSubmit={onImport}
+              isLoading={loading}
+              error={error}
+              cleanError={() => setError(null)}
+            />
+          )}
+        </ButtonContent>
+      </ControlContent>
+
+      <ControlContent title={<FormattedMessage id="admin.logs" />}>
+        <LogsContent />
       </ControlContent>
     </Content>
   );

@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 
 // if token is undefined calls to segment will be a no-op.
-const useSegment = (token?: string) => {
+const useSegment = (token?: string): void => {
   useEffect(() => {
     if (token) {
       const script = document.createElement("script");
@@ -12,7 +12,7 @@ const useSegment = (token?: string) => {
       `;
       script.async = true;
 
-      if (typeof window !== "undefined" && !(window as any).analytics) {
+      if (typeof window !== "undefined" && !window.analytics) {
         document.body.appendChild(script);
       }
     }

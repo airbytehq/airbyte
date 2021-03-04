@@ -24,13 +24,23 @@ SOFTWARE.
 
 import json
 import os
+import pkgutil
+from pathlib import Path
+from typing import List
 
-from airbyte_protocol import AirbyteConnectionStatus, Status
-from base_singer import AirbyteLogger, SingerSource
+from base_singer import AirbyteLogger, BaseSingerSource
+from jsonschema.validators import Draft4Validator
 from tap_google_analytics import GAClient
 
 
-class GoogleAnalyticsSingerSource(SingerSource):
+class GoogleAnalyticsSingerSource(BaseSingerSource):
+    """
+    Google Analytics API Reference: https://developers.google.com/analytics
+    """
+
+    tap_cmd = "tap-google-analytics"
+    tap_name = "Google Analytics API"
+    api_error = Exception
 
     # can be overridden to change an input config
     def configure(self, raw_config: json, temp_dir: str) -> json:
@@ -40,33 +50,59 @@ class GoogleAnalyticsSingerSource(SingerSource):
         raw_config["key_file_location"] = credentials
         return super().configure(raw_config, temp_dir)
 
+    def _validate_custom_reports(self, custom_reports_data: List[dict]):
+        custom_reports_schema = json.loads(pkgutil.get_data("source_googleanalytics_singer", "custom_reports_schema.json"))
+        if not Draft4Validator(custom_reports_schema).is_valid(custom_reports_data):
+            error_messages = []
+            for error in Draft4Validator(custom_reports_schema).iter_errors(custom_reports_data):
+                error_messages.append(error.message)
+            raise Exception("An error occurred during custom_reports data validation: " + "; ".join(error_messages))
+
+    def _get_reports_file_path(self, temp_dir: str, custom_reports_data: List[dict]) -> str:
+        report_definition = (
+            json.loads(pkgutil.get_data("tap_google_analytics", "defaults/default_report_definition.json")) + custom_reports_data
+        )
+        custom_reports = os.path.join(temp_dir, "custom_reports.json")
+        with open(custom_reports, "w") as file:
+            file.write(json.dumps(report_definition))
+        return custom_reports
+
+    def _check_custom_reports(self, config: dict = None, config_path: str = None):
+        if config_path:
+            config = self.read_config(config_path)
+
+        custom_reports = config.pop("custom_reports")
+        if custom_reports.strip() and json.loads(custom_reports):
+            custom_reports_data = json.loads(custom_reports)
+            self._validate_custom_reports(custom_reports_data)
+            credentials_path = Path(config["key_file_location"])
+            config["reports"] = self._get_reports_file_path(credentials_path.parent, custom_reports_data)
+
+        if config_path:
+            self.write_config(config, config_path)
+
     def transform_config(self, raw_config: json):
-        return {
+        config = {
             "key_file_location": raw_config["key_file_location"],
             "view_id": raw_config["view_id"],
             "start_date": raw_config["start_date"],
+            "custom_reports": raw_config.get("custom_reports", ""),
         }
+        return config
 
-    def check_config(self, logger: AirbyteLogger, config_path: str, config: json) -> AirbyteConnectionStatus:
+    def try_connect(self, logger: AirbyteLogger, config: json):
+        with open(config["key_file_location"], "r") as file:
+            contents = file.read()
+        client_secrets = json.loads(contents)
+        additional_fields = {"end_date": "2050-10-01T00:00:00Z", "client_secrets": client_secrets}
+        augmented_config = dict(additional_fields, **config)
+        client = GAClient(augmented_config)
+        client.fetch_metadata()
         try:
-            # this config is the one specific to GAClient, which does not match the root Singer config
-            with open(config["key_file_location"], "r") as file:
-                contents = file.read()
-            client_secrets = json.loads(contents)
-            additional_fields = {"end_date": "2050-10-01T00:00:00Z", "client_secrets": client_secrets}
-            augmented_config = dict(additional_fields, **config)
-            client = GAClient(augmented_config)
-            client.fetch_metadata()
+            self._check_custom_reports(config=config)
         except Exception as e:
-            logger.error(f"Failed check with exception: {e}")
-            return AirbyteConnectionStatus(status=Status.FAILED)
-        else:
-            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+            raise Exception(f"Custom Reports format is incorrect: {e}")
 
-    def discover_cmd(self, logger, config_path) -> str:
-        return f"tap-google-analytics --discover --config {config_path}"
-
-    def read_cmd(self, logger, config_path, catalog_path, state_path=None) -> str:
-        config_option = f"--config {config_path}"
-        state_option = f"--state {state_path}" if state_path else ""
-        return f"tap-google-analytics {config_option} {state_option}"
+    def discover_cmd(self, logger: AirbyteLogger, config_path: str) -> str:
+        self._check_custom_reports(config_path=config_path)
+        return f"{self.tap_cmd} --config {config_path} --discover"

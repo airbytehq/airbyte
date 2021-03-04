@@ -34,5 +34,7 @@ export const theme = {
 
   regularFont: "Inter, Arial, sans-serif",
   highlightFont: "Montserrat, Arial, sans-serif",
-  codeFont: "Courier Prime, Arial, sans-serif"
+  codeFont: "Courier Prime, Arial, sans-serif",
 };
+
+export type Theme = typeof theme;

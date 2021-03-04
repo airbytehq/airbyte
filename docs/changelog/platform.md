@@ -8,6 +8,58 @@ This is the changelog for Airbyte core. For our connector changelog, please visi
 
 If you're interested in our progress on the Airbyte platform, please read below!
 
+* We now handle nested tables with the normalization steps. Check out the video below to see how it works. 
+
+## [03-01-2021 - 0.16](https://github.com/airbytehq/airbyte/milestone/22?closed=1)
+
+* We made some progress to address **nested tables in our normalization.**
+
+  Previously, basic normalization would output nested tables as-is and append a number for duplicate tables. For example, Stripe’s nested address fields go from:
+
+  ```text
+  Address
+  address_1
+  ```
+
+  To
+
+  ```text
+  Charges_source_owner_755_address
+  customers_shipping_c70_address
+  ```
+
+  After the change, the parent tables are combined with the name of the nested table to show where the nested table originated. **This is a breaking change for the consumers of nested tables. Consumers will need to update to point at the new tables.**
+
+## [02-19-2021 - 0.15](https://github.com/airbytehq/airbyte/milestone/22?closed=1)
+
+* We now handle nested tables with the normalization steps. Check out the video below to see how it works. 
+
+{% embed url="https://youtu.be/I4fngMnkJzY" caption="" %}
+
+## [02-12-2021 - 0.14](https://github.com/airbytehq/airbyte/milestone/21?closed=1)
+
+* Front-end changes:
+  * Display Airbyte's version number
+  * Describe schemas using JsonSchema
+  * Better feedback on buttons
+
+## [Beta launch - 0.13](https://github.com/airbytehq/airbyte/milestone/15?closed=1) - Released 02/02/2021
+
+* Add connector build status dashboard
+* Support Schema Changes in Sources
+* Support Import / Export of Airbyte Data in the Admin section of the UI
+* Bug fixes:
+  * If Airbyte is closed during a sync the running job is not marked as failed
+  * Airbyte should fail when instance version doesn't match data version
+  * Upgrade Airbyte Version without losing existing configuration / data
+
+## [0.12-alpha](https://github.com/airbytehq/airbyte/milestone/14?closed=1) - Released 01/20/2021
+
+* Ability to skip onboarding
+* Miscellaneous bug fixes:
+  * A long discovery request causes a timeout in the UI type/bug
+  * Out of Memory when replicating large table from MySQL
+
 ## 0.11.2-alpha - Released 01/18/2021
 
 * Increase timeout for long running catalog discovery operations from 3 minutes to 30 minutes to avoid prematurely failing long-running operations 

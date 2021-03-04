@@ -1,11 +1,15 @@
 import React, { useMemo } from "react";
 import styled from "styled-components";
-
-import { Cell } from "../../SimpleTableComponents";
-import DropDown from "../../DropDown";
-import { IDataItem } from "../../DropDown/components/ListItem";
-import { SyncMode, SyncSchemaStream } from "../../../core/resources/Schema";
 import { useIntl } from "react-intl";
+
+import { Cell } from "components/SimpleTableComponents";
+import DropDown, { DropDownRow } from "components/DropDown";
+import { IDataItem } from "components/DropDown/components/ListItem";
+import {
+  SyncMode,
+  SyncSchemaField,
+  SyncSchemaStream,
+} from "core/domain/catalog";
 
 const DropDownContainer = styled.div`
   padding-right: 10px;
@@ -19,70 +23,83 @@ const StyledDropDown = styled(DropDown)`
 `;
 
 type IProps = {
-  item: SyncSchemaStream;
+  streamNode: SyncSchemaStream;
+  fields: SyncSchemaField[];
   onSelect: (data: IDataItem) => void;
 };
 
-const SyncSettingsCell: React.FC<IProps> = ({ item, onSelect }) => {
+function traverse(
+  fields: SyncSchemaField[],
+  cb: (field: SyncSchemaField) => void
+) {
+  fields.forEach((field) => {
+    cb(field);
+    if (field.fields) {
+      traverse(field.fields, cb);
+    }
+  });
+}
+
+const SyncSettingsCell: React.FC<IProps> = ({
+  streamNode,
+  fields,
+  onSelect,
+}) => {
+  const { stream, config } = streamNode;
   const formatMessage = useIntl().formatMessage;
 
   const fullData = useMemo(() => {
-    const syncData: {
-      value: string;
-      text: string;
-      secondary?: boolean;
-      groupValue?: string;
-      groupValueText?: string;
-    }[] = item.supportedSyncModes
-      .filter(mode => mode !== SyncMode.Incremental)
-      .map(mode => ({
+    const syncData: DropDownRow.IDataItem[] = stream.supportedSyncModes
+      .filter((mode) => mode !== SyncMode.Incremental)
+      .map((mode) => ({
         value: mode,
         text: formatMessage({
           id: `sources.${mode}`,
-          defaultMessage: mode
-        })
+          defaultMessage: mode,
+        }),
       }));
 
-    const isIncrementalSupported = item.supportedSyncModes.includes(
+    const isIncrementalSupported = stream.supportedSyncModes.includes(
       SyncMode.Incremental
     );
 
     // If INCREMENTAL is included in the supported sync modes...
     if (isIncrementalSupported) {
-      if (item.sourceDefinedCursor) {
-        // If sourceDefinedCursor is true, In the dropdown we should just have one row for incremental
+      // If sourceDefinedCursor is true, In the dropdown we should just have one row for incremental
+      if (stream.sourceDefinedCursor) {
         syncData.push({
           text: formatMessage({
-            id: "sources.incrementalSourceCursor"
+            id: "sources.incrementalSourceCursor",
           }),
-          value: SyncMode.Incremental
+          value: SyncMode.Incremental,
         });
       } else {
         // If sourceDefinedCursor is false...
 
         // If defaultCursorField is set, then the field specified in there should be at the top of the list
         // and have the word "(default)" next to it
-        if (item.defaultCursorField?.length) {
+        if (stream.defaultCursorField?.length) {
           syncData.push({
             text: formatMessage(
               {
-                id: "sources.incrementalDefault"
+                id: "sources.incrementalDefault",
               },
-              { value: item.defaultCursorField[0] }
+              { value: stream.defaultCursorField[0] }
             ),
-            value: item.defaultCursorField[0],
+            value: stream.defaultCursorField[0],
             secondary: true,
             groupValue: SyncMode.Incremental,
             groupValueText: formatMessage({
-              id: "sources.incremental"
-            })
+              id: "sources.incremental",
+            }),
           });
         }
 
-        // Any column in the stream can be used as the cursor
-        item.fields.forEach(field => {
+        // Any column of primitive type in the stream can be used as the cursor
+        traverse(fields, (field) => {
           if (
-            !syncData.find(dataItem => dataItem.value === field.cleanedName)
+            field.type !== "object" &&
+            !syncData.some((dataItem) => dataItem.value === field.cleanedName)
           ) {
             syncData.push({
               text: field.cleanedName,
@@ -90,8 +107,8 @@ const SyncSettingsCell: React.FC<IProps> = ({ item, onSelect }) => {
               secondary: true,
               groupValue: SyncMode.Incremental,
               groupValueText: formatMessage({
-                id: "sources.incremental"
-              })
+                id: "sources.incremental",
+              }),
             });
           }
         });
@@ -99,14 +116,13 @@ const SyncSettingsCell: React.FC<IProps> = ({ item, onSelect }) => {
     }
 
     return syncData;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [item.supportedSyncModes, item.fields]);
+  }, [fields, stream, formatMessage]);
 
-  const currentValue = item.cursorField?.length
-    ? item.sourceDefinedCursor
+  const currentValue = config.cursorField?.length
+    ? stream.sourceDefinedCursor
       ? SyncMode.Incremental
-      : item.cursorField[0]
-    : item.syncMode || "";
+      : config.cursorField[0]
+    : config.syncMode || "";
 
   return (
     <Cell>
@@ -120,7 +136,7 @@ const SyncSettingsCell: React.FC<IProps> = ({ item, onSelect }) => {
           onSelect={onSelect}
           groupBy="groupValueText"
           filterPlaceholder={formatMessage({
-            id: "sources.searchIncremental"
+            id: "sources.searchIncremental",
           })}
         />
       </DropDownContainer>

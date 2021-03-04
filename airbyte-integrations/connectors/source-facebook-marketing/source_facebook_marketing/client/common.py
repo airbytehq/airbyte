@@ -35,6 +35,10 @@ class FacebookAPIException(Exception):
     """General class for all API errors"""
 
 
+class JobTimeoutException(Exception):
+    """Scheduled job timed out"""
+
+
 def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
     def log_retry_attempt(details):
         _, exc, _ = sys.exc_info()
@@ -54,3 +58,16 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
         giveup=lambda exc: not should_retry_api_error(exc),
         **wait_gen_kwargs,
     )
+
+
+def deep_merge(a, b):
+    """Merge two values, with `b` taking precedence over `a`."""
+    if isinstance(a, dict) and isinstance(b, dict):
+        # set of all keys in both dictionaries
+        keys = set(a.keys()) | set(b.keys())
+
+        return {key: deep_merge(a.get(key), b.get(key)) for key in keys}
+    elif isinstance(a, list) and isinstance(b, list):
+        return [*a, *b]
+    else:
+        return a if b is None else b

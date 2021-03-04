@@ -197,6 +197,219 @@
           }
         }
       }
+    },
+    {
+      "stream": {
+        "name": "segments",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "contact_count": {
+              "type": "integer"
+            },
+            "sample_updated_at": {
+              "type": "string"
+            },
+            "next_sample_update": {
+              "type": "string"
+            },
+            "created_at": {
+              "type": "string"
+            },
+            "updated_at": {
+              "type": "string"
+            },
+            "parent_list_id": {
+              "type": ["string", "null"]
+            }
+          }
+        }
+      }
+    },
+    {
+      "stream": {
+        "name": "templates",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": ["string"]
+            },
+            "name": {
+              "type": ["null", "string"]
+            },
+            "generation": {
+              "type": ["null", "string"]
+            },
+            "updated_at": {
+              "type": ["null", "string"]
+            },
+            "versions": {
+              "type": ["array"]
+            }
+          }
+        }
+      }
+    },
+    {
+      "stream": {
+        "name": "global_suppressions",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "created": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    {
+      "stream": {
+        "name": "suppression_groups",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "is_default": {
+              "type": "boolean"
+            },
+            "unsubscribes": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    },
+    {
+      "stream": {
+        "name": "suppression_group_members",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "email": {
+              "type": "string"
+            },
+            "group_id": {
+              "type": "integer"
+            },
+            "group_name": {
+              "type": "string"
+            },
+            "created_at": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    },
+    {
+      "stream": {
+        "name": "blocks",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "created": {
+              "type": "integer"
+            },
+            "email": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    {
+      "stream": {
+        "name": "bounces",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "created": {
+              "type": "integer"
+            },
+            "email": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    {
+      "stream": {
+        "name": "invalid_emails",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "created": {
+              "type": "integer"
+            },
+            "email": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    {
+      "stream": {
+        "name": "spam_reports",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "created": {
+              "type": "integer"
+            },
+            "email": {
+              "type": "string"
+            },
+            "ip": {
+              "type": "string"
+            }
+          }
+        }
+      }
     }
   ]
 }

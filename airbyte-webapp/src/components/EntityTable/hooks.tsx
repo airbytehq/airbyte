@@ -1,27 +1,28 @@
 import { useFetcher } from "rest-hooks";
 
-import FrequencyConfig from "../../data/FrequencyConfig.json";
-import { AnalyticsService } from "../../core/analytics/AnalyticsService";
-import config from "../../config";
-import ConnectionResource, {
-  Connection
-} from "../../core/resources/Connection";
-import useConnection from "../hooks/services/useConnectionHook";
+import config from "config";
+import FrequencyConfig from "data/FrequencyConfig.json";
+import { AnalyticsService } from "core/analytics/AnalyticsService";
+import ConnectionResource, { Connection } from "core/resources/Connection";
+import useConnection from "components/hooks/services/useConnectionHook";
 
-const useSyncActions = () => {
+const useSyncActions = (): {
+  changeStatus: (connection: Connection) => Promise<void>;
+  syncManualConnection: (connection: Connection) => Promise<void>;
+} => {
   const { updateConnection } = useConnection();
   const SyncConnection = useFetcher(ConnectionResource.syncShape());
 
   const changeStatus = async (connection: Connection) => {
     await updateConnection({
       connectionId: connection.connectionId,
-      syncSchema: connection.syncSchema,
+      syncCatalog: connection.syncCatalog,
       schedule: connection.schedule || null,
-      status: connection.status === "active" ? "inactive" : "active"
+      status: connection.status === "active" ? "inactive" : "active",
     });
 
     const frequency = FrequencyConfig.find(
-      item =>
+      (item) =>
         JSON.stringify(item.config) === JSON.stringify(connection.schedule)
     );
 
@@ -36,11 +37,11 @@ const useSyncActions = () => {
       connector_destination: connection.destination?.destinationName,
       connector_destination_definition_id:
         connection.destination?.destinationDefinitionId,
-      frequency: frequency?.text
+      frequency: frequency?.text,
     });
   };
 
-  const syncManualConnection = (connection: Connection) => {
+  const syncManualConnection = async (connection: Connection) => {
     AnalyticsService.track("Source - Action", {
       user_id: config.ui.workspaceId,
       action: "Full refresh sync",
@@ -49,15 +50,14 @@ const useSyncActions = () => {
       connector_destination: connection.destination?.destinationName,
       connector_destination_definition_id:
         connection.destination?.destinationDefinitionId,
-      frequency: "manual" // Only manual connections have this button
+      frequency: "manual", // Only manual connections have this button
     });
 
     SyncConnection({
-      connectionId: connection.connectionId
+      connectionId: connection.connectionId,
     });
   };
 
   return { changeStatus, syncManualConnection };
 };
-
 export default useSyncActions;

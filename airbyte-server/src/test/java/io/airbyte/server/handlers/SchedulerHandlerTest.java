@@ -337,7 +337,7 @@ class SchedulerHandlerTest {
 
     final SourceDiscoverSchemaRead actual = schedulerHandler.discoverSchemaForSourceFromSourceId(request);
 
-    assertNotNull(actual.getSchema());
+    assertNotNull(actual.getCatalog());
     assertNotNull(actual.getJobInfo());
     assertEquals(io.airbyte.api.model.JobStatus.SUCCEEDED, actual.getJobInfo().getJob().getStatus());
     verify(configRepository).getSourceConnection(source.getSourceId());
@@ -361,7 +361,7 @@ class SchedulerHandlerTest {
 
     final SourceDiscoverSchemaRead actual = schedulerHandler.discoverSchemaForSourceFromSourceId(request);
 
-    assertNull(actual.getSchema());
+    assertNull(actual.getCatalog());
     assertNotNull(actual.getJobInfo());
     assertEquals(io.airbyte.api.model.JobStatus.FAILED, actual.getJobInfo().getJob().getStatus());
     verify(configRepository).getSourceConnection(source.getSourceId());
@@ -391,7 +391,7 @@ class SchedulerHandlerTest {
 
     final SourceDiscoverSchemaRead actual = schedulerHandler.discoverSchemaForSourceFromSourceCreate(sourceCoreConfig);
 
-    assertNotNull(actual.getSchema());
+    assertNotNull(actual.getCatalog());
     assertNotNull(actual.getJobInfo());
     assertEquals(io.airbyte.api.model.JobStatus.SUCCEEDED, actual.getJobInfo().getJob().getStatus());
     verify(schedulerJobClient).createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE);
@@ -418,7 +418,7 @@ class SchedulerHandlerTest {
 
     final SourceDiscoverSchemaRead actual = schedulerHandler.discoverSchemaForSourceFromSourceCreate(sourceCoreConfig);
 
-    assertNull(actual.getSchema());
+    assertNull(actual.getCatalog());
     assertNotNull(actual.getJobInfo());
     assertEquals(io.airbyte.api.model.JobStatus.FAILED, actual.getJobInfo().getJob().getStatus());
     verify(schedulerJobClient).createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE);

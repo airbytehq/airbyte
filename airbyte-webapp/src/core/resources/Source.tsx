@@ -1,5 +1,6 @@
-import { Resource } from "rest-hooks";
+import { ReadShape, Resource, SchemaDetail } from "rest-hooks";
 import BaseResource from "./BaseResource";
+import { ConnectionConfiguration } from "core/domain/connection";
 
 export interface Source {
   sourceId: string;
@@ -7,7 +8,7 @@ export interface Source {
   sourceName: string;
   workspaceId: string;
   sourceDefinitionId: string;
-  connectionConfiguration: any; // TODO: fix type
+  connectionConfiguration: ConnectionConfiguration;
 }
 
 export default class SourceResource extends BaseResource implements Source {
@@ -16,35 +17,41 @@ export default class SourceResource extends BaseResource implements Source {
   readonly sourceName: string = "";
   readonly sourceDefinitionId: string = "";
   readonly workspaceId: string = "";
-  readonly connectionConfiguration: any = [];
+  readonly connectionConfiguration: ConnectionConfiguration = {};
 
-  pk() {
+  pk(): string {
     return this.sourceId?.toString();
   }
 
   static urlRoot = "sources";
 
-  static listShape<T extends typeof Resource>(this: T) {
+  static listShape<T extends typeof Resource>(
+    this: T
+  ): ReadShape<SchemaDetail<{ sources: Source[] }>> {
     return {
       ...super.listShape(),
-      schema: { sources: [this.asSchema()] }
+      schema: { sources: [this] },
     };
   }
 
-  static detailShape<T extends typeof Resource>(this: T) {
+  static detailShape<T extends typeof Resource>(
+    this: T
+  ): ReadShape<SchemaDetail<Source>> {
     return {
       ...super.detailShape(),
-      schema: this.asSchema()
+      schema: this,
     };
   }
 
+  // TODO: fix detailShape here as it is actually createShape
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   static recreateShape<T extends typeof Resource>(this: T) {
     return {
       ...super.detailShape(),
       fetch: async (
         _: Readonly<Record<string, string | number>>,
-        body: Readonly<any>
-      ): Promise<object> => {
+        body: Readonly<Partial<Source>>
+      ): Promise<Source> => {
         const response = await this.fetch(
           "post",
           `${super.rootUrl()}web_backend/sources/recreate`,
@@ -52,7 +59,7 @@ export default class SourceResource extends BaseResource implements Source {
         );
         return response;
       },
-      schema: this.asSchema()
+      schema: this,
     };
   }
 }

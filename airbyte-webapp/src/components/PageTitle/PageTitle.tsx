@@ -1,7 +1,7 @@
 import React from "react";
 
 import styled from "styled-components";
-import { H3 } from "../Titles";
+import { H3 } from "components/Titles";
 
 type IProps = {
   withLine?: boolean;
@@ -48,7 +48,7 @@ const PageTitle: React.FC<IProps> = ({
   title,
   withLine,
   middleComponent,
-  endComponent
+  endComponent,
 }) => (
   <MainContainer withLine={withLine}>
     <TitleBlock>{title}</TitleBlock>

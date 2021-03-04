@@ -21,10 +21,15 @@
 - destinationDefinitionId: 424892c4-daac-4491-b35d-c6688ba547ba
   name: Snowflake
   dockerRepository: airbyte/destination-snowflake
-  dockerImageTag: 0.1.17
+  dockerImageTag: 0.1.18
   documentationUrl: https://docs.airbyte.io/integrations/destinations/snowflake
 - destinationDefinitionId: f7a7d195-377f-cf5b-70a5-be6b819019dc
   name: Redshift
   dockerRepository: airbyte/destination-redshift
   dockerImageTag: 0.1.8
   documentationUrl: https://docs.airbyte.io/integrations/destinations/redshift
+- destinationDefinitionId: af7c921e-5892-4ff2-b6c1-4a5ab258fb7e
+  name: MeiliSearch
+  dockerRepository: airbyte/destination-meilisearch
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/meilisearch

@@ -65,6 +65,9 @@ jobs:
         with:
           python-version: '3.7'
 
+      - name: Generate Template scaffold
+        run: ./gradlew :airbyte-integrations:connector-templates:generator:testScaffoldTemplates --scan
+
       - name: Format
         run: ./gradlew --no-daemon format --scan
 
@@ -72,7 +75,7 @@ jobs:
         run: git status --porcelain && test -z "$(git status --porcelain)"
 
       - name: Build
-        run: ./gradlew --no-daemon build --scan
+        run: CORE_ONLY=true ./gradlew --no-daemon build --scan
 
       - name: Ensure no file change
         run: git status --porcelain && test -z "$(git status --porcelain)"
@@ -81,16 +84,26 @@ jobs:
         if: success() && github.ref == 'refs/heads/master'
         run: ./tools/site/link_checker.sh check_docs
 
+      - name: Get Docker Space
+        run: docker run --rm busybox df -h
+
       - name: Build Core Docker Images
         if: success() && github.ref == 'refs/heads/master'
         run: ./gradlew --no-daemon composeBuild --scan
         env:
           GIT_REVISION: ${{ github.sha }}
 
+      - name: Image Cleanup
+        run: ./tools/bin/clean_images.sh
+
       # make sure these always run before pushing core docker images
       - name: Run End-to-End Acceptance Tests
         if: success() && github.ref == 'refs/heads/master'
         run: ./tools/bin/acceptance_test.sh
+
+      - name: Run End-to-End Frontend Tests
+        if: success() && github.ref == 'refs/heads/master'
+        run: ./tools/bin/e2e_test.sh
 
       - name: Push Core Docker Images
         if: success() && github.ref == 'refs/heads/master'

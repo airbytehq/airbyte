@@ -60,4 +60,4 @@ Follow the instructions in the [documentation](https://docs.airbyte.io/integrati
 in `secrets/config.json`.
 
 ### Airbyte Employee
-Credentials are available in RPass under the secret name `source-google-adwords-singer-integration-test-creds}}`.
+Credentials are available in RPass under the secret name `source-google-adwords-singer-integration-test-creds`.

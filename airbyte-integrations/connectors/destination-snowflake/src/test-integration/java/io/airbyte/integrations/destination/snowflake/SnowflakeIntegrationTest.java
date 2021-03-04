@@ -72,7 +72,7 @@ public class SnowflakeIntegrationTest extends TestDestination {
   protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName))
         .stream()
-        .map(j -> Jsons.deserialize(j.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
+        .map(j -> Jsons.deserialize(j.get(JavaBaseConstants.COLUMN_NAME_DATA.toUpperCase()).asText()))
         .collect(Collectors.toList());
   }
 
@@ -84,10 +84,12 @@ public class SnowflakeIntegrationTest extends TestDestination {
   @Override
   protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv testEnv, String streamName) throws Exception {
     String tableName = namingResolver.getIdentifier(streamName);
-    if (!tableName.startsWith("\"")) {
-      // Currently, Normalization always quote tables identifiers
-      tableName = "\"" + tableName + "\"";
-    }
+    // Temporarily disabling the behavior of the ExtendedNameTransformer, see (issue #1785) so we don't
+    // use quoted names
+    // if (!tableName.startsWith("\"")) {
+    // // Currently, Normalization always quote tables identifiers
+    // tableName = "\"" + tableName + "\"";
+    // }
     return retrieveRecordsFromTable(tableName);
   }
 

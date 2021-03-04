@@ -205,7 +205,7 @@ font-style: italic;
     <div class="app-desc">More information: <a href="https://openapi-generator.tech">https://openapi-generator.tech</a></div>
     <div class="app-desc">Contact Info: <a href="contact@airbyte.io">contact@airbyte.io</a></div>
     <div class="app-desc">Version: 1.0.0-oas3</div>
-    <div class="app-desc">BasePath:</div>
+    <div class="app-desc">BasePath:/api</div>
     <div class="license-info">MIT</div>
     <div class="license-url">https://opensource.org/licenses/MIT</div>
   <h2>Access</h2>
@@ -266,6 +266,10 @@ font-style: italic;
   <h4><a href="#Logs">Logs</a></h4>
   <ul>
   <li><a href="#getLogs"><code><span class="http-method">post</span> /v1/logs/get</code></a></li>
+  </ul>
+  <h4><a href="#Openapi">Openapi</a></h4>
+  <ul>
+  <li><a href="#getOpenApiSpec"><code><span class="http-method">get</span> /v1/openapi</code></a></li>
   </ul>
   <h4><a href="#Scheduler">Scheduler</a></h4>
   <ul>
@@ -353,44 +357,34 @@ font-style: italic;
     "timeUnit" : "minutes"
   },
   "name" : "name",
-  "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-  "syncSchema" : {
+  "syncCatalog" : {
     "streams" : [ {
-      "supportedSyncModes" : [ null, null ],
-      "sourceDefinedCursor" : true,
-      "name" : "name",
-      "cleanedName" : "cleanedName",
-      "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ],
-      "fields" : [ {
+      "stream" : {
+        "supportedSyncModes" : [ null, null ],
+        "sourceDefinedCursor" : true,
         "name" : "name",
-        "cleanedName" : "cleanedName",
+        "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+      },
+      "config" : {
+        "aliasName" : "aliasName",
+        "cursorField" : [ "cursorField", "cursorField" ],
         "selected" : true
-      }, {
-        "name" : "name",
-        "cleanedName" : "cleanedName",
-        "selected" : true
-      } ],
-      "selected" : true,
-      "cursorField" : [ "cursorField", "cursorField" ]
+      }
     }, {
-      "supportedSyncModes" : [ null, null ],
-      "sourceDefinedCursor" : true,
-      "name" : "name",
-      "cleanedName" : "cleanedName",
-      "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ],
-      "fields" : [ {
+      "stream" : {
+        "supportedSyncModes" : [ null, null ],
+        "sourceDefinedCursor" : true,
         "name" : "name",
-        "cleanedName" : "cleanedName",
+        "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+      },
+      "config" : {
+        "aliasName" : "aliasName",
+        "cursorField" : [ "cursorField", "cursorField" ],
         "selected" : true
-      }, {
-        "name" : "name",
-        "cleanedName" : "cleanedName",
-        "selected" : true
-      } ],
-      "selected" : true,
-      "cursorField" : [ "cursorField", "cursorField" ]
+      }
     } ]
   },
+  "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
 
@@ -494,44 +488,34 @@ font-style: italic;
     "timeUnit" : "minutes"
   },
   "name" : "name",
-  "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-  "syncSchema" : {
+  "syncCatalog" : {
     "streams" : [ {
-      "supportedSyncModes" : [ null, null ],
-      "sourceDefinedCursor" : true,
-      "name" : "name",
-      "cleanedName" : "cleanedName",
-      "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ],
-      "fields" : [ {
+      "stream" : {
+        "supportedSyncModes" : [ null, null ],
+        "sourceDefinedCursor" : true,
         "name" : "name",
-        "cleanedName" : "cleanedName",
+        "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+      },
+      "config" : {
+        "aliasName" : "aliasName",
+        "cursorField" : [ "cursorField", "cursorField" ],
         "selected" : true
-      }, {
-        "name" : "name",
-        "cleanedName" : "cleanedName",
-        "selected" : true
-      } ],
-      "selected" : true,
-      "cursorField" : [ "cursorField", "cursorField" ]
+      }
     }, {
-      "supportedSyncModes" : [ null, null ],
-      "sourceDefinedCursor" : true,
-      "name" : "name",
-      "cleanedName" : "cleanedName",
-      "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ],
-      "fields" : [ {
+      "stream" : {
+        "supportedSyncModes" : [ null, null ],
+        "sourceDefinedCursor" : true,
         "name" : "name",
-        "cleanedName" : "cleanedName",
+        "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+      },
+      "config" : {
+        "aliasName" : "aliasName",
+        "cursorField" : [ "cursorField", "cursorField" ],
         "selected" : true
-      }, {
-        "name" : "name",
-        "cleanedName" : "cleanedName",
-        "selected" : true
-      } ],
-      "selected" : true,
-      "cursorField" : [ "cursorField", "cursorField" ]
+      }
     } ]
   },
+  "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
 
@@ -597,44 +581,34 @@ font-style: italic;
       "timeUnit" : "minutes"
     },
     "name" : "name",
-    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-    "syncSchema" : {
+    "syncCatalog" : {
       "streams" : [ {
-        "supportedSyncModes" : [ null, null ],
-        "sourceDefinedCursor" : true,
-        "name" : "name",
-        "cleanedName" : "cleanedName",
-        "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ],
-        "fields" : [ {
+        "stream" : {
+          "supportedSyncModes" : [ null, null ],
+          "sourceDefinedCursor" : true,
           "name" : "name",
-          "cleanedName" : "cleanedName",
+          "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+        },
+        "config" : {
+          "aliasName" : "aliasName",
+          "cursorField" : [ "cursorField", "cursorField" ],
           "selected" : true
-        }, {
-          "name" : "name",
-          "cleanedName" : "cleanedName",
-          "selected" : true
-        } ],
-        "selected" : true,
-        "cursorField" : [ "cursorField", "cursorField" ]
+        }
       }, {
-        "supportedSyncModes" : [ null, null ],
-        "sourceDefinedCursor" : true,
-        "name" : "name",
-        "cleanedName" : "cleanedName",
-        "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ],
-        "fields" : [ {
+        "stream" : {
+          "supportedSyncModes" : [ null, null ],
+          "sourceDefinedCursor" : true,
           "name" : "name",
-          "cleanedName" : "cleanedName",
+          "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+        },
+        "config" : {
+          "aliasName" : "aliasName",
+          "cursorField" : [ "cursorField", "cursorField" ],
           "selected" : true
-        }, {
-          "name" : "name",
-          "cleanedName" : "cleanedName",
-          "selected" : true
-        } ],
-        "selected" : true,
-        "cursorField" : [ "cursorField", "cursorField" ]
+        }
       } ]
     },
+    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   }, {
     "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
@@ -643,44 +617,34 @@ font-style: italic;
       "timeUnit" : "minutes"
     },
     "name" : "name",
-    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-    "syncSchema" : {
+    "syncCatalog" : {
       "streams" : [ {
-        "supportedSyncModes" : [ null, null ],
-        "sourceDefinedCursor" : true,
-        "name" : "name",
-        "cleanedName" : "cleanedName",
-        "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ],
-        "fields" : [ {
+        "stream" : {
+          "supportedSyncModes" : [ null, null ],
+          "sourceDefinedCursor" : true,
           "name" : "name",
-          "cleanedName" : "cleanedName",
+          "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+        },
+        "config" : {
+          "aliasName" : "aliasName",
+          "cursorField" : [ "cursorField", "cursorField" ],
           "selected" : true
-        }, {
-          "name" : "name",
-          "cleanedName" : "cleanedName",
-          "selected" : true
-        } ],
-        "selected" : true,
-        "cursorField" : [ "cursorField", "cursorField" ]
+        }
       }, {
-        "supportedSyncModes" : [ null, null ],
-        "sourceDefinedCursor" : true,
-        "name" : "name",
-        "cleanedName" : "cleanedName",
-        "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ],
-        "fields" : [ {
+        "stream" : {
+          "supportedSyncModes" : [ null, null ],
+          "sourceDefinedCursor" : true,
           "name" : "name",
-          "cleanedName" : "cleanedName",
+          "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+        },
+        "config" : {
+          "aliasName" : "aliasName",
+          "cursorField" : [ "cursorField", "cursorField" ],
           "selected" : true
-        }, {
-          "name" : "name",
-          "cleanedName" : "cleanedName",
-          "selected" : true
-        } ],
-        "selected" : true,
-        "cursorField" : [ "cursorField", "cursorField" ]
+        }
       } ]
     },
+    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   } ]
 }</code></pre>
@@ -922,44 +886,34 @@ font-style: italic;
     "timeUnit" : "minutes"
   },
   "name" : "name",
-  "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-  "syncSchema" : {
+  "syncCatalog" : {
     "streams" : [ {
-      "supportedSyncModes" : [ null, null ],
-      "sourceDefinedCursor" : true,
-      "name" : "name",
-      "cleanedName" : "cleanedName",
-      "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ],
-      "fields" : [ {
+      "stream" : {
+        "supportedSyncModes" : [ null, null ],
+        "sourceDefinedCursor" : true,
         "name" : "name",
-        "cleanedName" : "cleanedName",
+        "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+      },
+      "config" : {
+        "aliasName" : "aliasName",
+        "cursorField" : [ "cursorField", "cursorField" ],
         "selected" : true
-      }, {
-        "name" : "name",
-        "cleanedName" : "cleanedName",
-        "selected" : true
-      } ],
-      "selected" : true,
-      "cursorField" : [ "cursorField", "cursorField" ]
+      }
     }, {
-      "supportedSyncModes" : [ null, null ],
-      "sourceDefinedCursor" : true,
-      "name" : "name",
-      "cleanedName" : "cleanedName",
-      "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ],
-      "fields" : [ {
+      "stream" : {
+        "supportedSyncModes" : [ null, null ],
+        "sourceDefinedCursor" : true,
         "name" : "name",
-        "cleanedName" : "cleanedName",
+        "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+      },
+      "config" : {
+        "aliasName" : "aliasName",
+        "cursorField" : [ "cursorField", "cursorField" ],
         "selected" : true
-      }, {
-        "name" : "name",
-        "cleanedName" : "cleanedName",
-        "selected" : true
-      } ],
-      "selected" : true,
-      "cursorField" : [ "cursorField", "cursorField" ]
+      }
     } ]
   },
+  "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
 
@@ -1361,7 +1315,7 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/destinations/get</code></pre></div>
-    <div class="method-summary">get configured destination (<span class="nickname">getDestination</span>)</div>
+    <div class="method-summary">Get configured destination (<span class="nickname">getDestination</span>)</div>
     <div class="method-notes"></div>
 
 
@@ -2147,6 +2101,42 @@ font-style: italic;
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
+  <h1><a name="Openapi">Openapi</a></h1>
+  <div class="method"><a name="getOpenApiSpec"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /v1/openapi</code></pre></div>
+    <div class="method-summary">Returns the openapi specification (<span class="nickname">getOpenApiSpec</span>)</div>
+    <div class="method-notes"></div>
+
+
+
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      
+      File
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>text/plain</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Returns the openapi specification file
+        <a href="#File">File</a>
+  </div> <!-- method -->
+  <hr/>
   <h1><a name="Scheduler">Scheduler</a></h1>
   <div class="method"><a name="executeDestinationCheckConnection"/>
     <div class="method-path">
@@ -2362,41 +2352,31 @@ font-style: italic;
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
-  "schema" : {
+  "catalog" : {
     "streams" : [ {
-      "supportedSyncModes" : [ null, null ],
-      "sourceDefinedCursor" : true,
-      "name" : "name",
-      "cleanedName" : "cleanedName",
-      "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ],
-      "fields" : [ {
+      "stream" : {
+        "supportedSyncModes" : [ null, null ],
+        "sourceDefinedCursor" : true,
         "name" : "name",
-        "cleanedName" : "cleanedName",
+        "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+      },
+      "config" : {
+        "aliasName" : "aliasName",
+        "cursorField" : [ "cursorField", "cursorField" ],
         "selected" : true
-      }, {
-        "name" : "name",
-        "cleanedName" : "cleanedName",
-        "selected" : true
-      } ],
-      "selected" : true,
-      "cursorField" : [ "cursorField", "cursorField" ]
+      }
     }, {
-      "supportedSyncModes" : [ null, null ],
-      "sourceDefinedCursor" : true,
-      "name" : "name",
-      "cleanedName" : "cleanedName",
-      "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ],
-      "fields" : [ {
+      "stream" : {
+        "supportedSyncModes" : [ null, null ],
+        "sourceDefinedCursor" : true,
         "name" : "name",
-        "cleanedName" : "cleanedName",
+        "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+      },
+      "config" : {
+        "aliasName" : "aliasName",
+        "cursorField" : [ "cursorField", "cursorField" ],
         "selected" : true
-      }, {
-        "name" : "name",
-        "cleanedName" : "cleanedName",
-        "selected" : true
-      } ],
-      "selected" : true,
-      "cursorField" : [ "cursorField", "cursorField" ]
+      }
     } ]
   },
   "jobInfo" : {
@@ -2743,7 +2723,7 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/sources/discover_schema</code></pre></div>
-    <div class="method-summary">Discover the schema of the source (<span class="nickname">discoverSchemaForSource</span>)</div>
+    <div class="method-summary">Discover the schema catalog of the source (<span class="nickname">discoverSchemaForSource</span>)</div>
     <div class="method-notes"></div>
 
 
@@ -2775,41 +2755,31 @@ font-style: italic;
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
-  "schema" : {
+  "catalog" : {
     "streams" : [ {
-      "supportedSyncModes" : [ null, null ],
-      "sourceDefinedCursor" : true,
-      "name" : "name",
-      "cleanedName" : "cleanedName",
-      "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ],
-      "fields" : [ {
+      "stream" : {
+        "supportedSyncModes" : [ null, null ],
+        "sourceDefinedCursor" : true,
         "name" : "name",
-        "cleanedName" : "cleanedName",
+        "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+      },
+      "config" : {
+        "aliasName" : "aliasName",
+        "cursorField" : [ "cursorField", "cursorField" ],
         "selected" : true
-      }, {
-        "name" : "name",
-        "cleanedName" : "cleanedName",
-        "selected" : true
-      } ],
-      "selected" : true,
-      "cursorField" : [ "cursorField", "cursorField" ]
+      }
     }, {
-      "supportedSyncModes" : [ null, null ],
-      "sourceDefinedCursor" : true,
-      "name" : "name",
-      "cleanedName" : "cleanedName",
-      "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ],
-      "fields" : [ {
+      "stream" : {
+        "supportedSyncModes" : [ null, null ],
+        "sourceDefinedCursor" : true,
         "name" : "name",
-        "cleanedName" : "cleanedName",
+        "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+      },
+      "config" : {
+        "aliasName" : "aliasName",
+        "cursorField" : [ "cursorField", "cursorField" ],
         "selected" : true
-      }, {
-        "name" : "name",
-        "cleanedName" : "cleanedName",
-        "selected" : true
-      } ],
-      "selected" : true,
-      "cursorField" : [ "cursorField", "cursorField" ]
+      }
     } ]
   },
   "jobInfo" : {
@@ -3417,6 +3387,33 @@ font-style: italic;
   },
   "lastSync" : 0,
   "name" : "name",
+  "syncCatalog" : {
+    "streams" : [ {
+      "stream" : {
+        "supportedSyncModes" : [ null, null ],
+        "sourceDefinedCursor" : true,
+        "name" : "name",
+        "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+      },
+      "config" : {
+        "aliasName" : "aliasName",
+        "cursorField" : [ "cursorField", "cursorField" ],
+        "selected" : true
+      }
+    }, {
+      "stream" : {
+        "supportedSyncModes" : [ null, null ],
+        "sourceDefinedCursor" : true,
+        "name" : "name",
+        "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+      },
+      "config" : {
+        "aliasName" : "aliasName",
+        "cursorField" : [ "cursorField", "cursorField" ],
+        "selected" : true
+      }
+    } ]
+  },
   "destination" : {
     "connectionConfiguration" : {
       "user" : "charles"
@@ -3429,43 +3426,6 @@ font-style: italic;
   },
   "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "isSyncing" : true,
-  "syncSchema" : {
-    "streams" : [ {
-      "supportedSyncModes" : [ null, null ],
-      "sourceDefinedCursor" : true,
-      "name" : "name",
-      "cleanedName" : "cleanedName",
-      "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ],
-      "fields" : [ {
-        "name" : "name",
-        "cleanedName" : "cleanedName",
-        "selected" : true
-      }, {
-        "name" : "name",
-        "cleanedName" : "cleanedName",
-        "selected" : true
-      } ],
-      "selected" : true,
-      "cursorField" : [ "cursorField", "cursorField" ]
-    }, {
-      "supportedSyncModes" : [ null, null ],
-      "sourceDefinedCursor" : true,
-      "name" : "name",
-      "cleanedName" : "cleanedName",
-      "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ],
-      "fields" : [ {
-        "name" : "name",
-        "cleanedName" : "cleanedName",
-        "selected" : true
-      }, {
-        "name" : "name",
-        "cleanedName" : "cleanedName",
-        "selected" : true
-      } ],
-      "selected" : true,
-      "cursorField" : [ "cursorField", "cursorField" ]
-    } ]
-  },
   "source" : {
     "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "connectionConfiguration" : {
@@ -3542,6 +3502,33 @@ font-style: italic;
     },
     "lastSync" : 0,
     "name" : "name",
+    "syncCatalog" : {
+      "streams" : [ {
+        "stream" : {
+          "supportedSyncModes" : [ null, null ],
+          "sourceDefinedCursor" : true,
+          "name" : "name",
+          "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+        },
+        "config" : {
+          "aliasName" : "aliasName",
+          "cursorField" : [ "cursorField", "cursorField" ],
+          "selected" : true
+        }
+      }, {
+        "stream" : {
+          "supportedSyncModes" : [ null, null ],
+          "sourceDefinedCursor" : true,
+          "name" : "name",
+          "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+        },
+        "config" : {
+          "aliasName" : "aliasName",
+          "cursorField" : [ "cursorField", "cursorField" ],
+          "selected" : true
+        }
+      } ]
+    },
     "destination" : {
       "connectionConfiguration" : {
         "user" : "charles"
@@ -3554,43 +3541,6 @@ font-style: italic;
     },
     "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "isSyncing" : true,
-    "syncSchema" : {
-      "streams" : [ {
-        "supportedSyncModes" : [ null, null ],
-        "sourceDefinedCursor" : true,
-        "name" : "name",
-        "cleanedName" : "cleanedName",
-        "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ],
-        "fields" : [ {
-          "name" : "name",
-          "cleanedName" : "cleanedName",
-          "selected" : true
-        }, {
-          "name" : "name",
-          "cleanedName" : "cleanedName",
-          "selected" : true
-        } ],
-        "selected" : true,
-        "cursorField" : [ "cursorField", "cursorField" ]
-      }, {
-        "supportedSyncModes" : [ null, null ],
-        "sourceDefinedCursor" : true,
-        "name" : "name",
-        "cleanedName" : "cleanedName",
-        "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ],
-        "fields" : [ {
-          "name" : "name",
-          "cleanedName" : "cleanedName",
-          "selected" : true
-        }, {
-          "name" : "name",
-          "cleanedName" : "cleanedName",
-          "selected" : true
-        } ],
-        "selected" : true,
-        "cursorField" : [ "cursorField", "cursorField" ]
-      } ]
-    },
     "source" : {
       "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
       "connectionConfiguration" : {
@@ -3610,6 +3560,33 @@ font-style: italic;
     },
     "lastSync" : 0,
     "name" : "name",
+    "syncCatalog" : {
+      "streams" : [ {
+        "stream" : {
+          "supportedSyncModes" : [ null, null ],
+          "sourceDefinedCursor" : true,
+          "name" : "name",
+          "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+        },
+        "config" : {
+          "aliasName" : "aliasName",
+          "cursorField" : [ "cursorField", "cursorField" ],
+          "selected" : true
+        }
+      }, {
+        "stream" : {
+          "supportedSyncModes" : [ null, null ],
+          "sourceDefinedCursor" : true,
+          "name" : "name",
+          "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+        },
+        "config" : {
+          "aliasName" : "aliasName",
+          "cursorField" : [ "cursorField", "cursorField" ],
+          "selected" : true
+        }
+      } ]
+    },
     "destination" : {
       "connectionConfiguration" : {
         "user" : "charles"
@@ -3622,43 +3599,6 @@ font-style: italic;
     },
     "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "isSyncing" : true,
-    "syncSchema" : {
-      "streams" : [ {
-        "supportedSyncModes" : [ null, null ],
-        "sourceDefinedCursor" : true,
-        "name" : "name",
-        "cleanedName" : "cleanedName",
-        "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ],
-        "fields" : [ {
-          "name" : "name",
-          "cleanedName" : "cleanedName",
-          "selected" : true
-        }, {
-          "name" : "name",
-          "cleanedName" : "cleanedName",
-          "selected" : true
-        } ],
-        "selected" : true,
-        "cursorField" : [ "cursorField", "cursorField" ]
-      }, {
-        "supportedSyncModes" : [ null, null ],
-        "sourceDefinedCursor" : true,
-        "name" : "name",
-        "cleanedName" : "cleanedName",
-        "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ],
-        "fields" : [ {
-          "name" : "name",
-          "cleanedName" : "cleanedName",
-          "selected" : true
-        }, {
-          "name" : "name",
-          "cleanedName" : "cleanedName",
-          "selected" : true
-        } ],
-        "selected" : true,
-        "cursorField" : [ "cursorField", "cursorField" ]
-      } ]
-    },
     "source" : {
       "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
       "connectionConfiguration" : {
@@ -3858,44 +3798,34 @@ font-style: italic;
     "timeUnit" : "minutes"
   },
   "name" : "name",
-  "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-  "syncSchema" : {
+  "syncCatalog" : {
     "streams" : [ {
-      "supportedSyncModes" : [ null, null ],
-      "sourceDefinedCursor" : true,
-      "name" : "name",
-      "cleanedName" : "cleanedName",
-      "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ],
-      "fields" : [ {
+      "stream" : {
+        "supportedSyncModes" : [ null, null ],
+        "sourceDefinedCursor" : true,
         "name" : "name",
-        "cleanedName" : "cleanedName",
+        "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+      },
+      "config" : {
+        "aliasName" : "aliasName",
+        "cursorField" : [ "cursorField", "cursorField" ],
         "selected" : true
-      }, {
-        "name" : "name",
-        "cleanedName" : "cleanedName",
-        "selected" : true
-      } ],
-      "selected" : true,
-      "cursorField" : [ "cursorField", "cursorField" ]
+      }
     }, {
-      "supportedSyncModes" : [ null, null ],
-      "sourceDefinedCursor" : true,
-      "name" : "name",
-      "cleanedName" : "cleanedName",
-      "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ],
-      "fields" : [ {
+      "stream" : {
+        "supportedSyncModes" : [ null, null ],
+        "sourceDefinedCursor" : true,
         "name" : "name",
-        "cleanedName" : "cleanedName",
+        "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+      },
+      "config" : {
+        "aliasName" : "aliasName",
+        "cursorField" : [ "cursorField", "cursorField" ],
         "selected" : true
-      }, {
-        "name" : "name",
-        "cleanedName" : "cleanedName",
-        "selected" : true
-      } ],
-      "selected" : true,
-      "cursorField" : [ "cursorField", "cursorField" ]
+      }
     } ]
   },
+  "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
 
@@ -4120,6 +4050,10 @@ font-style: italic;
 
   <h3>Table of Contents</h3>
   <ol>
+    <li><a href="#AirbyteCatalog"><code>AirbyteCatalog</code> - </a></li>
+    <li><a href="#AirbyteStream"><code>AirbyteStream</code> - </a></li>
+    <li><a href="#AirbyteStreamAndConfiguration"><code>AirbyteStreamAndConfiguration</code> - </a></li>
+    <li><a href="#AirbyteStreamConfiguration"><code>AirbyteStreamConfiguration</code> - </a></li>
     <li><a href="#AttemptInfoRead"><code>AttemptInfoRead</code> - </a></li>
     <li><a href="#AttemptRead"><code>AttemptRead</code> - </a></li>
     <li><a href="#AttemptStatus"><code>AttemptStatus</code> - </a></li>
@@ -4173,9 +4107,6 @@ font-style: italic;
     <li><a href="#SourceRead"><code>SourceRead</code> - </a></li>
     <li><a href="#SourceReadList"><code>SourceReadList</code> - </a></li>
     <li><a href="#SourceRecreate"><code>SourceRecreate</code> - </a></li>
-    <li><a href="#SourceSchema"><code>SourceSchema</code> - </a></li>
-    <li><a href="#SourceSchemaField"><code>SourceSchemaField</code> - </a></li>
-    <li><a href="#SourceSchemaStream"><code>SourceSchemaStream</code> - </a></li>
     <li><a href="#SourceUpdate"><code>SourceUpdate</code> - </a></li>
     <li><a href="#SyncMode"><code>SyncMode</code> - </a></li>
     <li><a href="#WbConnectionRead"><code>WbConnectionRead</code> - </a></li>
@@ -4188,6 +4119,42 @@ font-style: italic;
     <li><a href="#WorkspaceUpdate"><code>WorkspaceUpdate</code> - </a></li>
   </ol>
 
+  <div class="model">
+    <h3><a name="AirbyteCatalog"><code>AirbyteCatalog</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'>describes the available schema (catalog).</div>
+    <div class="field-items">
+      <div class="param">streams </div><div class="param-desc"><span class="param-type"><a href="#AirbyteStreamAndConfiguration">array[AirbyteStreamAndConfiguration]</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="AirbyteStream"><code>AirbyteStream</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'>the immutable schema defined by the source</div>
+    <div class="field-items">
+      <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Stream's name. </div>
+<div class="param">jsonSchema (optional)</div><div class="param-desc"><span class="param-type"><a href="#StreamJsonSchema">StreamJsonSchema</a></span>  </div>
+<div class="param">supportedSyncModes (optional)</div><div class="param-desc"><span class="param-type"><a href="#SyncMode">array[SyncMode]</a></span>  </div>
+<div class="param">sourceDefinedCursor (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> If the source defines the cursor field, then it does any other cursor field inputs will be ignored. If it does not either the user_provided one is used or as a backup the default one is used. </div>
+<div class="param">defaultCursorField (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span> Path to the field that will be used to determine if a record is new or modified since the last sync. If not provided by the source, the end user will have to specify the comparable themselves. </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="AirbyteStreamAndConfiguration"><code>AirbyteStreamAndConfiguration</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'>each stream is split in two parts; the immutable schema from source and mutable configuration for destination</div>
+    <div class="field-items">
+      <div class="param">stream (optional)</div><div class="param-desc"><span class="param-type"><a href="#AirbyteStream">AirbyteStream</a></span>  </div>
+<div class="param">config (optional)</div><div class="param-desc"><span class="param-type"><a href="#AirbyteStreamConfiguration">AirbyteStreamConfiguration</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="AirbyteStreamConfiguration"><code>AirbyteStreamConfiguration</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'>the mutable part of the stream to configure the destination</div>
+    <div class="field-items">
+      <div class="param">syncMode (optional)</div><div class="param-desc"><span class="param-type"><a href="#SyncMode">SyncMode</a></span>  </div>
+<div class="param">cursorField (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span> Path to the field that will be used to determine if a record is new or modified since the last sync. This field is REQUIRED if <code>sync_mode</code> is <code>incremental</code>. Otherwise it is ignored. </div>
+<div class="param">aliasName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Alias name to the stream to be used in the destination </div>
+<div class="param">selected (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
   <div class="model">
     <h3><a name="AttemptInfoRead"><code>AttemptInfoRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
@@ -4233,7 +4200,7 @@ font-style: italic;
       <div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Optional name of the connection </div>
 <div class="param">sourceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">destinationId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
-<div class="param">syncSchema (optional)</div><div class="param-desc"><span class="param-type"><a href="#SourceSchema">SourceSchema</a></span>  </div>
+<div class="param">syncCatalog (optional)</div><div class="param-desc"><span class="param-type"><a href="#AirbyteCatalog">AirbyteCatalog</a></span>  </div>
 <div class="param">schedule (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionSchedule">ConnectionSchedule</a></span>  </div>
 <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
     </div>  <!-- field-items -->
@@ -4253,7 +4220,7 @@ font-style: italic;
 <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">sourceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">destinationId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
-<div class="param">syncSchema </div><div class="param-desc"><span class="param-type"><a href="#SourceSchema">SourceSchema</a></span>  </div>
+<div class="param">syncCatalog </div><div class="param-desc"><span class="param-type"><a href="#AirbyteCatalog">AirbyteCatalog</a></span>  </div>
 <div class="param">schedule (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionSchedule">ConnectionSchedule</a></span>  </div>
 <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
     </div>  <!-- field-items -->
@@ -4286,7 +4253,7 @@ font-style: italic;
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">connectionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
-<div class="param">syncSchema </div><div class="param-desc"><span class="param-type"><a href="#SourceSchema">SourceSchema</a></span>  </div>
+<div class="param">syncCatalog </div><div class="param-desc"><span class="param-type"><a href="#AirbyteCatalog">AirbyteCatalog</a></span>  </div>
 <div class="param">schedule (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionSchedule">ConnectionSchedule</a></span>  </div>
 <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
     </div>  <!-- field-items -->
@@ -4599,9 +4566,9 @@ font-style: italic;
   </div>
   <div class="model">
     <h3><a name="SourceDiscoverSchemaRead"><code>SourceDiscoverSchemaRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
-    <div class='model-description'>Returns the results of a discover schema job. If the job was not successful, the schema field will not be present. jobInfo will aways be present and its status be used to determine if the job was successful or not.</div>
+    <div class='model-description'>Returns the results of a discover catalog job. If the job was not successful, the catalog field will not be present. jobInfo will aways be present and its status be used to determine if the job was successful or not.</div>
     <div class="field-items">
-      <div class="param">schema (optional)</div><div class="param-desc"><span class="param-type"><a href="#SourceSchema">SourceSchema</a></span>  </div>
+      <div class="param">catalog (optional)</div><div class="param-desc"><span class="param-type"><a href="#AirbyteCatalog">AirbyteCatalog</a></span>  </div>
 <div class="param">jobInfo </div><div class="param-desc"><span class="param-type"><a href="#JobInfoRead">JobInfoRead</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
@@ -4643,38 +4610,6 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3><a name="SourceSchema"><code>SourceSchema</code> - </a> <a class="up" href="#__Models">Up</a></h3>
-    <div class='model-description'>describes the available schema.</div>
-    <div class="field-items">
-      <div class="param">streams </div><div class="param-desc"><span class="param-type"><a href="#SourceSchemaStream">array[SourceSchemaStream]</a></span>  </div>
-    </div>  <!-- field-items -->
-  </div>
-  <div class="model">
-    <h3><a name="SourceSchemaField"><code>SourceSchemaField</code> - </a> <a class="up" href="#__Models">Up</a></h3>
-    <div class='model-description'></div>
-    <div class="field-items">
-      <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">cleanedName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">dataType </div><div class="param-desc"><span class="param-type"><a href="#DataType">DataType</a></span>  </div>
-<div class="param">selected </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
-    </div>  <!-- field-items -->
-  </div>
-  <div class="model">
-    <h3><a name="SourceSchemaStream"><code>SourceSchemaStream</code> - </a> <a class="up" href="#__Models">Up</a></h3>
-    <div class='model-description'></div>
-    <div class="field-items">
-      <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">cleanedName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">fields </div><div class="param-desc"><span class="param-type"><a href="#SourceSchemaField">array[SourceSchemaField]</a></span>  </div>
-<div class="param">supportedSyncModes </div><div class="param-desc"><span class="param-type"><a href="#SyncMode">array[SyncMode]</a></span>  </div>
-<div class="param">sourceDefinedCursor (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
-<div class="param">defaultCursorField (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span>  </div>
-<div class="param">selected (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
-<div class="param">syncMode (optional)</div><div class="param-desc"><span class="param-type"><a href="#SyncMode">SyncMode</a></span>  </div>
-<div class="param">cursorField (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span>  </div>
-    </div>  <!-- field-items -->
-  </div>
-  <div class="model">
     <h3><a name="SourceUpdate"><code>SourceUpdate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -4697,7 +4632,7 @@ font-style: italic;
 <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">sourceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">destinationId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
-<div class="param">syncSchema </div><div class="param-desc"><span class="param-type"><a href="#SourceSchema">SourceSchema</a></span>  </div>
+<div class="param">syncCatalog </div><div class="param-desc"><span class="param-type"><a href="#AirbyteCatalog">AirbyteCatalog</a></span>  </div>
 <div class="param">schedule (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionSchedule">ConnectionSchedule</a></span>  </div>
 <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
 <div class="param">source </div><div class="param-desc"><span class="param-type"><a href="#SourceRead">SourceRead</a></span>  </div>
@@ -4726,7 +4661,7 @@ font-style: italic;
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">connectionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
-<div class="param">syncSchema </div><div class="param-desc"><span class="param-type"><a href="#SourceSchema">SourceSchema</a></span>  </div>
+<div class="param">syncCatalog </div><div class="param-desc"><span class="param-type"><a href="#AirbyteCatalog">AirbyteCatalog</a></span>  </div>
 <div class="param">schedule (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionSchedule">ConnectionSchedule</a></span>  </div>
 <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
 <div class="param">withRefreshedCatalog (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>

@@ -30,15 +30,18 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=["airbyte-protocol", "appstoreconnect", "pyjwt==1.7.1", "tap-appstore @ git+https://github.com/miroapp/tap-appstore"],
+    install_requires=[
+        "airbyte-protocol",
+        "appstoreconnect==0.9.0",
+        "base-singer",
+        "base-python",
+        "pyjwt==1.6.4",  # required by appstore connect
+        "tap-appstore @ https://github.com/airbytehq/tap-appstore/tarball/v0.2.1-airbyte",
+    ],
     package_data={"": ["*.json"]},
     setup_requires=["pytest-runner"],
     tests_require=["pytest"],
     extras_require={
-        # Dependencies required by the main package but not tests should go in main. Deps required by
-        # integration tests but not the main package go in tests. Deps required by both should go in
-        # install_requires.
-        "main": ["base-singer", "base-python"],
         "tests": ["airbyte-python-test", "pytest"],
     },
 )

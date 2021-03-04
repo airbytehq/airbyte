@@ -41,13 +41,13 @@ import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceUpdate;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
-import io.airbyte.config.AirbyteProtocolConverters;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.config.StandardDestinationDefinition;
+import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -55,9 +55,9 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.client.SchedulerJobClient;
+import io.airbyte.server.converters.CatalogConverter;
 import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.server.converters.JobConverter;
-import io.airbyte.server.converters.SchemaConverter;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
@@ -193,8 +193,8 @@ public class SchedulerHandler {
 
     job.getSuccessOutput()
         .map(JobOutput::getDiscoverCatalog)
-        .map(discoverOutput -> AirbyteProtocolConverters.toSchema(discoverOutput.getCatalog()))
-        .ifPresent(catalog -> sourceDiscoverSchemaRead.schema(SchemaConverter.toApiSchema(catalog)));
+        .map(StandardDiscoverCatalogOutput::getCatalog)
+        .ifPresent(catalog -> sourceDiscoverSchemaRead.catalog(CatalogConverter.toApi(catalog)));
 
     return sourceDiscoverSchemaRead;
   }

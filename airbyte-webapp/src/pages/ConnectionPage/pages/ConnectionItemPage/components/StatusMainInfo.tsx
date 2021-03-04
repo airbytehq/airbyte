@@ -2,18 +2,14 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import ContentCard from "../../../../../components/ContentCard";
-import ImageBlock from "../../../../../components/ImageBlock";
-import {
-  Header,
-  Row,
-  Cell
-} from "../../../../../components/SimpleTableComponents";
-import Toggle from "../../../../../components/Toggle";
-import { Connection } from "../../../../../core/resources/Connection";
-import { AnalyticsService } from "../../../../../core/analytics/AnalyticsService";
-import config from "../../../../../config";
-import useConnection from "../../../../../components/hooks/services/useConnectionHook";
+import ContentCard from "components/ContentCard";
+import ImageBlock from "components/ImageBlock";
+import { Header, Row, Cell } from "components/SimpleTableComponents";
+import Toggle from "components/Toggle";
+import { Connection } from "core/resources/Connection";
+import { AnalyticsService } from "core/analytics/AnalyticsService";
+import config from "config";
+import useConnection from "components/hooks/services/useConnectionHook";
 
 const MainInfo = styled(ContentCard)`
   margin-bottom: 14px;
@@ -58,9 +54,9 @@ const StatusMainInfo: React.FC<IProps> = ({ connection, frequencyText }) => {
   const onChangeStatus = async () => {
     await updateConnection({
       connectionId: connection.connectionId,
-      syncSchema: connection.syncSchema,
+      syncCatalog: connection.syncCatalog,
       schedule: connection.schedule,
-      status: connection.status === "active" ? "inactive" : "active"
+      status: connection.status === "active" ? "inactive" : "active",
     });
 
     AnalyticsService.track("Source - Action", {
@@ -74,7 +70,7 @@ const StatusMainInfo: React.FC<IProps> = ({ connection, frequencyText }) => {
       connector_destination: connection.destination?.name,
       connector_destination_definition_id:
         connection.destination?.destinationDefinitionId,
-      frequency: frequencyText
+      frequency: frequencyText,
     });
   };
 

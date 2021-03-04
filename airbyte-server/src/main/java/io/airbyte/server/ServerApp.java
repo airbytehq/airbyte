@@ -27,6 +27,7 @@ package io.airbyte.server;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardWorkspace;
@@ -35,7 +36,6 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DefaultConfigPersistence;
 import io.airbyte.config.persistence.PersistenceConstants;
-import io.airbyte.db.AirbyteVersion;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.scheduler.client.SpecCachingSchedulerJobClient;
@@ -196,7 +196,7 @@ public class ServerApp {
       LOGGER.info(String.format("Setting Database version to %s...", airbyteVersion));
       jobPersistence.setVersion(airbyteVersion);
     } else {
-      AirbyteVersion.check(airbyteVersion, airbyteDatabaseVersion.get());
+      AirbyteVersion.assertIsCompatible(airbyteVersion, airbyteDatabaseVersion.get());
     }
 
     LOGGER.info("Starting server...");

@@ -2,10 +2,10 @@ import React, { Suspense, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import MainPageWithScroll from "../../components/MainPageWithScroll";
-import PageTitle from "../../components/PageTitle";
-import StepsMenu from "../../components/StepsMenu";
-import LoadingPage from "../../components/LoadingPage";
+import MainPageWithScroll from "components/MainPageWithScroll";
+import PageTitle from "components/PageTitle";
+import StepsMenu from "components/StepsMenu";
+import LoadingPage from "components/LoadingPage";
 import SourcesView from "./components/SourcesView";
 import DestinationsView from "./components/DestinationsView";
 import CreateConnector from "./components/CreateConnector";
@@ -16,26 +16,27 @@ const Content = styled.div`
   margin: 0 33px 0 27px;
   height: 100%;
 `;
+
 enum StepsTypes {
   SOURCES = "sources",
   DESTINATIONS = "destinations",
-  CONFIGURATION = "configuration"
+  CONFIGURATION = "configuration",
 }
 
 const AdminPage: React.FC = () => {
   const steps = [
     {
       id: StepsTypes.SOURCES,
-      name: <FormattedMessage id="admin.sources" />
+      name: <FormattedMessage id="admin.sources" />,
     },
     {
       id: StepsTypes.DESTINATIONS,
-      name: <FormattedMessage id="admin.destinations" />
+      name: <FormattedMessage id="admin.destinations" />,
     },
     {
       id: StepsTypes.CONFIGURATION,
-      name: <FormattedMessage id="admin.configuration" />
-    }
+      name: <FormattedMessage id="admin.configuration" />,
+    },
   ];
   const [currentStep, setCurrentStep] = useState<string>(StepsTypes.SOURCES);
   const onSelectStep = (id: string) => setCurrentStep(id);

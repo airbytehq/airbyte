@@ -2,9 +2,9 @@ import React from "react";
 import styled from "styled-components";
 import { FormattedMessage, useIntl } from "react-intl";
 
-import { H5 } from "../Titles";
-import DropDown from "../DropDown";
-import { IDataItem } from "../DropDown/components/ListItem";
+import { H5 } from "components/Titles";
+import { DropDown } from "components/DropDown";
+import { IDataItem } from "components/DropDown/components/ListItem";
 
 type IProps = {
   type: "source" | "destination";
@@ -33,17 +33,17 @@ const TableItemTitle: React.FC<IProps> = ({ type, dropDownData, onSelect }) => {
         data={[
           {
             text: formatMessage({
-              id: `tables.${type}AddNew`
+              id: `tables.${type}AddNew`,
             }),
             value: "create-new-item",
-            primary: true
+            primary: true,
           },
-          ...dropDownData
+          ...dropDownData,
         ]}
         hasFilter
         withButton
         textButton={formatMessage({
-          id: `tables.${type}Add`
+          id: `tables.${type}Add`,
         })}
       />
     </Content>

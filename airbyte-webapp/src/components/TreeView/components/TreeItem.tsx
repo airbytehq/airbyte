@@ -1,9 +1,9 @@
 import styled from "styled-components";
 
-const TreeItem = styled.div<{ isChild?: boolean }>`
+const TreeItem = styled.div<{ depth?: number }>`
   height: 40px;
   border-bottom: 1px solid ${({ theme }) => theme.greyColor20};
-  margin-left: ${({ isChild }) => (isChild ? 64 : 0)}px;
+  margin-left: ${({ depth = 0 }) => depth * 64}px;
 `;
 
 export default TreeItem;

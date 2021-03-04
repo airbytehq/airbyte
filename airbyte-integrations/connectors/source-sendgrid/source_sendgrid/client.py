@@ -22,47 +22,117 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import json
-import pkgutil
+from enum import Enum
+from typing import Generator
 
-from airbyte_protocol import AirbyteStream, SyncMode
-from python_http_client import ForbiddenError, UnauthorizedError
-from sendgrid import SendGridAPIClient
+import backoff
+import requests
+from base_python import BaseClient
+from base_python.entrypoint import logger
+from requests.models import Response
+from requests.status_codes import codes as status_codes
+
+PAGE_SIZE = 50
 
 
-class Client:
+class Pagination(Enum):
+    Non_pagination = 0
+    Offset = 1
+    Metadata = 2
+
+
+class TooManyRequests(Exception):
+    """Too many requests"""
+
+
+class Client(BaseClient):
+    BASE_URL = "https://api.sendgrid.com/v3/"
+
     def __init__(self, apikey: str):
-        self._client = SendGridAPIClient(api_key=apikey)
-        self.ENTITY_MAP = {
-            "campaigns": self.campaigns,
-            "lists": self.lists,
-            "contacts": self.contacts,
-            "stats_automations": self.stats_automations,
-        }
+        self._headers = {"Authorization": f"Bearer {apikey}"}
+        super().__init__()
 
     def health_check(self):
-        try:
-            self._client.client.scopes.get()
+        resp_data = requests.get(f"{self.BASE_URL}scopes", headers=self._headers)
+        if resp_data.status_code == status_codes.OK:
             return True, None
-        except (UnauthorizedError, ForbiddenError) as err:
-            return False, err.args[0]
 
-    def get_streams(self):
-        streams = []
-        for schema, method in self.ENTITY_MAP.items():
-            raw_schema = json.loads(pkgutil.get_data(self.__class__.__module__.split(".")[0], f"schemas/{schema}.json"))
-            streams.append(AirbyteStream(name=schema, json_schema=raw_schema, supported_sync_modes=[SyncMode.full_refresh]))
-        return streams
+        return False, resp_data.json()["errors"][0]["message"]
 
-    def lists(self):
-        return json.loads(self._client.client.marketing.lists.get().body)["result"]
+    @backoff.on_exception(backoff.expo, TooManyRequests, max_tries=6)
+    def _request(self, url: str, **kwargs) -> Response:
+        response = requests.get(url, headers=self._headers, **kwargs)
+        if response.status_code == status_codes.TOO_MANY_REQUESTS:
+            msg = f"Rate limit error: {response.json()}"
+            logger.error(msg)
+            raise TooManyRequests(msg)
+        elif response.status_code != status_codes.OK:
+            raise Exception(f"Unable to get data, error during request from url: {url}. Error: {response.json()}")
+        return response
 
-    def campaigns(self):
-        return json.loads(self._client.client.marketing.campaigns.get().body)["result"]
+    def _read_data(self, stream_url: str, pagination: Pagination, key: str = None) -> Generator[dict, None, None]:
+        if pagination == Pagination.Non_pagination:
+            response = self._request(f"{self.BASE_URL}{stream_url}")
+            yield from response.json()[key] if key else response.json()
+        elif pagination == Pagination.Offset:
+            offset = 0
+            while True:
+                response = self._request(f"{self.BASE_URL}{stream_url}?limit={PAGE_SIZE}&offset={offset}")
+                stream_data = response.json()[key] if key else response.json()
+                yield from stream_data
 
-    def contacts(self):
-        return json.loads(self._client.client.marketing.contacts.get().body)["result"]
+                if len(stream_data) < PAGE_SIZE:
+                    return
+                offset += PAGE_SIZE
+        elif pagination == Pagination.Metadata:
+            next_page_url, params = f"{self.BASE_URL}{stream_url}", {"page_size": PAGE_SIZE}
+            while next_page_url:
+                response = self._request(next_page_url, params=params)
+                next_page_url, params = response.json()["_metadata"].get("next", False), {}
 
-    def stats_automations(self):
-        stats_data = json.loads(self._client.client.marketing.stats.automations.get().body)["results"]
-        return stats_data or []
+                # We use the "or []" construction to prevent the script from breaking in one single case:
+                # for the "stats_automations" stream, if there are no records in the response, than "None" arrives,
+                # in all other streams we get an empty list if there are no records.
+                stream_data = (response.json()[key] if key else response.json()) or []
+                yield from stream_data
+        else:
+            raise Exception(f"Unknown pagination type '{pagination.name}'")
+
+    def stream__lists(self, fields):
+        yield from self._read_data("marketing/lists", pagination=Pagination.Metadata, key="result")
+
+    def stream__campaigns(self, fields):
+        yield from self._read_data("marketing/campaigns", pagination=Pagination.Metadata, key="result")
+
+    def stream__contacts(self, fields):
+        yield from self._read_data("marketing/contacts", pagination=Pagination.Non_pagination, key="result")
+
+    def stream__stats_automations(self, fields):
+        yield from self._read_data("marketing/stats/automations", pagination=Pagination.Metadata, key="results")
+
+    def stream__segments(self, fields):
+        yield from self._read_data("marketing/segments", pagination=Pagination.Non_pagination, key="results")
+
+    def stream__templates(self, fields):
+        yield from self._read_data("templates?generations=legacy,dynamic", pagination=Pagination.Metadata, key="result")
+
+    def stream__global_suppressions(self, fields):
+        yield from self._read_data("suppression/unsubscribes", pagination=Pagination.Offset)
+
+    def stream__suppression_groups(self, fields):
+        yield from self._read_data("asm/groups", pagination=Pagination.Non_pagination)
+
+    def stream__suppression_group_members(self, fields):
+        yield from self._read_data("asm/suppressions", pagination=Pagination.Offset)
+
+    def stream__blocks(self, fields):
+        yield from self._read_data("suppression/blocks", pagination=Pagination.Offset)
+
+    def stream__bounces(self, fields):
+        yield from self._read_data("suppression/bounces", pagination=Pagination.Non_pagination)
+
+    def stream__invalid_emails(self, fields):
+        yield from self._read_data("suppression/invalid_emails", pagination=Pagination.Offset)
+
+    def stream__spam_reports(self, fields):
+        yield from self._read_data("suppression/spam_reports", pagination=Pagination.Offset)
