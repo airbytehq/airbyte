@@ -96,6 +96,9 @@ class DefaultSyncWorkerTest {
 
     when(tap.isFinished()).thenReturn(false, false, false, true);
     when(tap.attemptRead()).thenReturn(Optional.of(RECORD_MESSAGE1), Optional.empty(), Optional.of(RECORD_MESSAGE2));
+    when(mapper.apply(targetConfig)).thenReturn(targetConfig);
+    when(mapper.apply(RECORD_MESSAGE1)).thenReturn(RECORD_MESSAGE1);
+    when(mapper.apply(RECORD_MESSAGE2)).thenReturn(RECORD_MESSAGE2);
     when(normalizationRunner.normalize(JOB_ID, JOB_ATTEMPT, normalizationRoot, targetConfig.getDestinationConnectionConfiguration(),
         targetConfig.getCatalog()))
             .thenReturn(true);
