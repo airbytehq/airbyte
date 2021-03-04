@@ -123,6 +123,7 @@ class ConnectionsHandlerTest {
     catalog.getStreams().get(0).getConfig().setAliasName("azkaban_users");
 
     final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
+        .namespaceDefault(standardSync.getNamespaceDefault())
         .connectionId(standardSync.getConnectionId())
         .status(ConnectionStatus.INACTIVE)
         .schedule(null)
@@ -211,6 +212,7 @@ class ConnectionsHandlerTest {
         standardSync.getDestinationId());
 
     final ConnectionUpdate expectedConnectionUpdate = new ConnectionUpdate()
+        .namespaceDefault(connectionRead.getNamespaceDefault())
         .connectionId(connectionRead.getConnectionId())
         .status(ConnectionStatus.DEPRECATED)
         .syncCatalog(connectionRead.getSyncCatalog())
