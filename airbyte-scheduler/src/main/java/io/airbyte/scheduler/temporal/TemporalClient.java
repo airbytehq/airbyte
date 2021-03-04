@@ -22,20 +22,27 @@
  * SOFTWARE.
  */
 
-package io.airbyte.scheduler;
+package io.airbyte.scheduler.temporal;
 
+import io.airbyte.config.JobGetSpecConfig;
+import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.scheduler.temporal.TemporalUtils.TemporalJobType;
 import io.temporal.client.WorkflowClient;
-import io.temporal.serviceclient.WorkflowServiceStubs;
-import io.temporal.serviceclient.WorkflowServiceStubsOptions;
 
-public class TemporalUtils {
+public class TemporalClient {
 
-  private static final WorkflowServiceStubsOptions TEMPORAL_OPTIONS = WorkflowServiceStubsOptions.newBuilder()
-      .setTarget("temporal:7233")
-      .build();
+  private final WorkflowClient client;
 
-  public static final WorkflowServiceStubs TEMPORAL_SERVICE = WorkflowServiceStubs.newInstance(TEMPORAL_OPTIONS);
+  public TemporalClient(WorkflowClient client) {
+    this.client = client;
+  }
 
-  public static final WorkflowClient TEMPORAL_CLIENT = WorkflowClient.newInstance(TEMPORAL_SERVICE);
+  public ConnectorSpecification submitGetSpec(long jobId, int attempt, JobGetSpecConfig config) {
+    return getQueue(SpecWorkflow.class, TemporalJobType.GET_SPEC).run(config.getDockerImage());
+  }
+
+  private <T> T getQueue(Class<T> workflowClass, TemporalJobType jobType) {
+    return client.newWorkflowStub(workflowClass, TemporalUtils.getWorkflowOptions(jobType));
+  }
 
 }
