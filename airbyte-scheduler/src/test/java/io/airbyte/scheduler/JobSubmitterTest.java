@@ -46,6 +46,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.scheduler.temporal.TemporalWorkerRunFactory;
 import io.airbyte.scheduler.worker_run.SchedulerWorkerRunWithEnvironmentFactory;
 import io.airbyte.scheduler.worker_run.WorkerRun;
 import io.airbyte.workers.JobStatus;
@@ -101,7 +102,8 @@ public class JobSubmitterTest {
         MoreExecutors.newDirectExecutorService(),
         persistence,
         configRepository,
-        schedulerWorkerRunWithEnvironmentFactory));
+        schedulerWorkerRunWithEnvironmentFactory,
+        mock(TemporalWorkerRunFactory.class)));
 
     // by default, turn off the internals of the tracking code. we will test it separate below.
     doNothing().when(jobSubmitter).trackSubmission(any());
