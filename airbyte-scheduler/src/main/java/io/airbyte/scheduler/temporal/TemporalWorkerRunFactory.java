@@ -24,8 +24,8 @@
 
 package io.airbyte.scheduler.temporal;
 
-import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.functional.CheckedSupplier;
+import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.StandardGetSpecOutput;
 import io.airbyte.protocol.models.ConnectorSpecification;
@@ -52,15 +52,26 @@ public class TemporalWorkerRunFactory {
   }
 
   public CheckedSupplier<OutputAndStatus<JobOutput>, Exception> createSupplier(Job job, int attemptId) {
-    final TemporalJobType temporalJobType = Enums.convertTo(job.getConfigType(), TemporalJobType.class);
+    final TemporalJobType temporalJobType = toTemporalJobType(job.getConfigType());
     return switch (job.getConfigType()) {
       case GET_SPEC -> () -> {
-        final ConnectorSpecification connectorSpecification = temporalClient
-            .submitGetSpec(job.getId(), attemptId, job.getConfig().getGetSpec());
+        final ConnectorSpecification connectorSpecification = temporalClient.submitGetSpec(job.getId(), attemptId, job.getConfig().getGetSpec());
         final JobOutput jobOutput = new JobOutput().withGetSpec(new StandardGetSpecOutput().withSpecification(connectorSpecification));
         return new OutputAndStatus<>(JobStatus.SUCCEEDED, jobOutput);
       };
+      case CHECK_CONNECTION_SOURCE, CHECK_CONNECTION_DESTINATION -> () -> {
+        return temporalClient.submitCheckConnection(job.getId(), attemptId, job.getConfig().getCheckConnection());
+      };
       default -> throw new IllegalArgumentException("Does not support job type: " + temporalJobType);
+    };
+  }
+
+  private static TemporalJobType toTemporalJobType(ConfigType jobType) {
+    return switch (jobType) {
+      case GET_SPEC -> TemporalJobType.GET_SPEC;
+      case CHECK_CONNECTION_SOURCE, CHECK_CONNECTION_DESTINATION -> TemporalJobType.CHECK_CONNECTION;
+      case DISCOVER_SCHEMA -> TemporalJobType.DISCOVER_SCHEMA;
+      case SYNC, RESET_CONNECTION -> TemporalJobType.SYNC;
     };
   }
 

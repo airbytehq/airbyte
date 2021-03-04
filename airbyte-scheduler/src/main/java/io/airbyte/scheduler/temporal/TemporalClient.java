@@ -25,9 +25,14 @@
 package io.airbyte.scheduler.temporal;
 
 import io.airbyte.config.IntegrationLauncherConfig;
+import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobGetSpecConfig;
+import io.airbyte.config.JobOutput;
+import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.temporal.TemporalUtils.TemporalJobType;
+import io.airbyte.workers.JobStatus;
+import io.airbyte.workers.OutputAndStatus;
 import io.temporal.client.WorkflowClient;
 
 public class TemporalClient {
@@ -39,11 +44,25 @@ public class TemporalClient {
   }
 
   public ConnectorSpecification submitGetSpec(long jobId, int attempt, JobGetSpecConfig config) {
-    final IntegrationLauncherConfig integrationLauncherConfig = new IntegrationLauncherConfig()
+    final IntegrationLauncherConfig launcherConfig = new IntegrationLauncherConfig()
         .withJobId(jobId)
         .withAttemptId((long) attempt)
         .withDockerImage(config.getDockerImage());
-    return getWorkflowStub(SpecWorkflow.class, TemporalJobType.GET_SPEC).run(integrationLauncherConfig);
+    return getWorkflowStub(SpecWorkflow.class, TemporalJobType.GET_SPEC).run(launcherConfig);
+  }
+
+  public OutputAndStatus<JobOutput> submitCheckConnection(long jobId, int attempt, JobCheckConnectionConfig config) {
+    final StandardCheckConnectionInput input = new StandardCheckConnectionInput().withConnectionConfiguration(config.getConnectionConfiguration());
+    final IntegrationLauncherConfig launcherConfig = new IntegrationLauncherConfig()
+        .withJobId(jobId)
+        .withAttemptId((long) attempt)
+        .withDockerImage(config.getDockerImage());
+    try {
+      final JobOutput run = getWorkflowStub(CheckConnectionWorkflow.class, TemporalJobType.CHECK_CONNECTION).run(launcherConfig, input);
+      return new OutputAndStatus<>(JobStatus.SUCCEEDED, run);
+    } catch (TemporalJobException e) {
+      return new OutputAndStatus<>(JobStatus.FAILED);
+    }
   }
 
   private <T> T getWorkflowStub(Class<T> workflowClass, TemporalJobType jobType) {
