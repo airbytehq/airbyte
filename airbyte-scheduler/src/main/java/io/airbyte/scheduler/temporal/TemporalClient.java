@@ -24,6 +24,7 @@
 
 package io.airbyte.scheduler.temporal;
 
+import io.airbyte.config.IntegrationLauncherConfig;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.temporal.TemporalUtils.TemporalJobType;
@@ -38,10 +39,14 @@ public class TemporalClient {
   }
 
   public ConnectorSpecification submitGetSpec(long jobId, int attempt, JobGetSpecConfig config) {
-    return getQueue(SpecWorkflow.class, TemporalJobType.GET_SPEC).run(config.getDockerImage());
+    final IntegrationLauncherConfig integrationLauncherConfig = new IntegrationLauncherConfig()
+        .withJobId(jobId)
+        .withAttemptId((long) attempt)
+        .withDockerImage(config.getDockerImage());
+    return getWorkflowStub(SpecWorkflow.class, TemporalJobType.GET_SPEC).run(integrationLauncherConfig);
   }
 
-  private <T> T getQueue(Class<T> workflowClass, TemporalJobType jobType) {
+  private <T> T getWorkflowStub(Class<T> workflowClass, TemporalJobType jobType) {
     return client.newWorkflowStub(workflowClass, TemporalUtils.getWorkflowOptions(jobType));
   }
 

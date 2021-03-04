@@ -54,14 +54,13 @@ public class TemporalWorkerRunFactory {
   public CheckedSupplier<OutputAndStatus<JobOutput>, Exception> createSupplier(Job job, int attemptId) {
     final TemporalJobType temporalJobType = Enums.convertTo(job.getConfigType(), TemporalJobType.class);
     return switch (job.getConfigType()) {
-      case CHECK_CONNECTION_SOURCE, CHECK_CONNECTION_DESTINATION, DISCOVER_SCHEMA, SYNC, RESET_CONNECTION -> throw new IllegalArgumentException(
-          "Does not support job type: " + temporalJobType);
       case GET_SPEC -> () -> {
         final ConnectorSpecification connectorSpecification = temporalClient
             .submitGetSpec(job.getId(), attemptId, job.getConfig().getGetSpec());
         final JobOutput jobOutput = new JobOutput().withGetSpec(new StandardGetSpecOutput().withSpecification(connectorSpecification));
         return new OutputAndStatus<>(JobStatus.SUCCEEDED, jobOutput);
       };
+      default -> throw new IllegalArgumentException("Does not support job type: " + temporalJobType);
     };
   }
 

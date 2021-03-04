@@ -93,13 +93,15 @@ public interface SpecWorkflow {
 
     public ConnectorSpecification run(IntegrationLauncherConfig launcherConfig) {
       try {
-        // todo (cgardens) - we need to find a way to standardize log paths sanely across all workflow. right now we have this in temporal workflow.
+        // todo (cgardens) - we need to find a way to standardize log paths sanely across all workflow.
+        // right now we have this in temporal workflow.
         final Path jobRoot = workspaceRoot
             .resolve("spec")
             .resolve(launcherConfig.getDockerImage().replaceAll("[^A-Za-z0-9]", ""))
             .resolve(String.valueOf(Instant.now().getEpochSecond()));
 
-        final IntegrationLauncher integrationLauncher = new AirbyteIntegrationLauncher(launcherConfig.getJobId(), launcherConfig.getAttemptId().intValue(), launcherConfig.getDockerImage(), pbf);
+        final IntegrationLauncher integrationLauncher =
+            new AirbyteIntegrationLauncher(launcherConfig.getJobId(), launcherConfig.getAttemptId().intValue(), launcherConfig.getDockerImage(), pbf);
         final Process process = integrationLauncher.spec(jobRoot).start();
 
         LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
