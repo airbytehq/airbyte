@@ -253,10 +253,12 @@ class StoriesInsightsAPI(StoriesAPI):
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         stories = self._get_stories({"limit": self.result_return_limit}, fields=[])
         for ig_story in stories:
-            yield {
-                **{"id": ig_story.get("id")},
-                **{record.get("name"): record.get("values")[0]["value"] for record in self._get_insights(ig_story)},
-            }
+            insights = self._get_insights(ig_story)
+            if insights:
+                yield {
+                    **{"id": ig_story.get("id")},
+                    **{record.get("name"): record.get("values")[0]["value"] for record in insights},
+                }
 
     def _get_insights(self, item) -> Iterator[Any]:
         """
