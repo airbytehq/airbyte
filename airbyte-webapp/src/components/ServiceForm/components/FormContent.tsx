@@ -87,12 +87,12 @@ const FormRow: React.FC<{ property: FormBaseItem } & IProps> = ({
 }) => {
   const formatMessage = useIntl().formatMessage;
   const { fieldName, fieldKey, meta } = property;
-  const [field, , form] = useField(fieldName);
+  const [field, fieldMeta, form] = useField(fieldName);
 
   if (fieldKey === "name") {
     return (
       <ControlLabels
-        // error={!!fieldProps.meta.error && fieldProps.meta.touched}
+        error={!!fieldMeta.error && fieldMeta.touched}
         label={<FormattedMessage id="form.name" />}
         message={formatMessage({
           id: `form.${formType}Name.message`,
@@ -100,6 +100,7 @@ const FormRow: React.FC<{ property: FormBaseItem } & IProps> = ({
       >
         <Input
           {...field}
+          error={!!fieldMeta.error && fieldMeta.touched}
           type="text"
           placeholder={formatMessage({
             id: `form.${formType}Name.placeholder`,
@@ -119,6 +120,7 @@ const FormRow: React.FC<{ property: FormBaseItem } & IProps> = ({
         >
           <DropDown
             {...field}
+            error={!!fieldMeta.error && fieldMeta.touched}
             disabled={isEditMode && !allowChangeConnector}
             hasFilter
             placeholder={formatMessage({

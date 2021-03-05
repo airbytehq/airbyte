@@ -144,8 +144,6 @@ const ServiceForm: React.FC<IProps> = ({
             ) : (
               <BottomBlock
                 isSubmitting={isSubmitting}
-                isValid={isValid}
-                dirty={dirty}
                 errorMessage={errorMessage}
                 isLoadSchema={isLoading}
                 formType={formType}
