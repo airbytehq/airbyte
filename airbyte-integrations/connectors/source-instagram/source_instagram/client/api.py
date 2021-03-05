@@ -84,9 +84,6 @@ class UserLifetimeInsightsAPI(StreamAPI):
     LIFETIME_METRICS = ["audience_city", "audience_country", "audience_gender_age", "audience_locale"]
     period = "lifetime"
 
-    buffer_days = 29
-    days_increment = 1
-
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         account_id = self._api.account.get("id")
         for insight in self._get_insight_records(params=self._params()):
@@ -124,6 +121,8 @@ class UserInsightsAPI(IncrementalStreamAPI):
 
     state_pk = "date"
 
+    # We can only get User Insights data for today and the previous 29 days.
+    # This is Facebook policy
     buffer_days = 29
     days_increment = 1
 
@@ -243,9 +242,9 @@ class MediaInsightsAPI(MediaAPI):
         # the user's account was converted to a business account from a personal account
         try:
             return item.get_insights(params={"metric": metrics})
-        except FacebookRequestError as e:
-            logger.error(f"Insights error: {e.body()}")
-            return []
+        except FacebookRequestError as error:
+            logger.error(f"Insights error: {error.body()}")
+            raise error
 
 
 class StoriesInsightsAPI(StoriesAPI):
@@ -265,4 +264,12 @@ class StoriesInsightsAPI(StoriesAPI):
         a generator, whose calls need decorated with a backoff.
         """
 
-        return item.get_insights(params={"metric": self.STORY_METRICS})
+        # Story IG Media object metrics with values less than 5 will return an error code 10 with the message (#10)
+        # Not enough viewers for the media to show insights.
+        try:
+            return item.get_insights(params={"metric": self.STORY_METRICS})
+        except FacebookRequestError as error:
+            logger.error(f"Insights error: {error.api_error_message()}")
+            if error.api_error_code() == 10:
+                return []
+            raise error
