@@ -46,6 +46,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.http.HttpClient;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
@@ -68,7 +69,8 @@ class DestinationDefinitionsHandlerTest {
     dockerImageValidator = mock(DockerImageValidator.class);
     destination = generateDestination();
     schedulerJobClient = spy(CachingSchedulerJobClient.class);
-    destinationHandler = new DestinationDefinitionsHandler(configRepository, dockerImageValidator, uuidSupplier, schedulerJobClient);
+    destinationHandler = new DestinationDefinitionsHandler(configRepository, dockerImageValidator, uuidSupplier, schedulerJobClient, HttpClient
+        .newHttpClient());
   }
 
   private StandardDestinationDefinition generateDestination() {
