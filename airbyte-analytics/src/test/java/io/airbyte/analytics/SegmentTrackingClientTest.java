@@ -43,7 +43,8 @@ import org.mockito.ArgumentCaptor;
 class SegmentTrackingClientTest {
 
   private static final String AIRBYTE_VERSION = "dev";
-  private static final TrackingIdentity identity = new TrackingIdentity(AIRBYTE_VERSION, UUID.randomUUID(), "a@airbyte.io", false, false, true);
+  private static final String EMAIL = "a@airbyte.io";
+  private static final TrackingIdentity identity = new TrackingIdentity(AIRBYTE_VERSION, UUID.randomUUID(), EMAIL, false, false, true);
 
   private Analytics analytics;
   private SegmentTrackingClient segmentTrackingClient;
@@ -122,6 +123,7 @@ class SegmentTrackingClientTest {
     final ArgumentCaptor<TrackMessage.Builder> mockBuilder = ArgumentCaptor.forClass(TrackMessage.Builder.class);
     final ImmutableMap<String, Object> metadata = ImmutableMap.of(
         "height", "80 meters",
+        "email", EMAIL,
         "airbyte_version", AIRBYTE_VERSION);
 
     segmentTrackingClient.track("jump", metadata);
