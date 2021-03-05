@@ -28,7 +28,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Lists;
-import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.api.model.ConnectionCreate;
 import io.airbyte.api.model.ConnectionIdRequestBody;
@@ -149,8 +148,6 @@ public class ConnectionsHandler {
       frequencyString = intervalInMinutes + " min";
     }
     metadata.put("frequency", frequencyString);
-
-    metadata.put(TrackingClient.USER_EMAIL_KEY_PLACEHOLDER, TrackingClient.USER_EMAIL_VALUE_PLACEHOLDER);
     return metadata;
   }
 
