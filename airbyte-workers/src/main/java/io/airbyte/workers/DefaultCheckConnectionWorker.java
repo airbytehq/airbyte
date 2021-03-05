@@ -70,10 +70,10 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
   public OutputAndStatus<StandardCheckConnectionOutput> run(StandardCheckConnectionInput input, Path jobRoot) {
 
     final JsonNode configDotJson = input.getConnectionConfiguration();
-    IOs.writeFile(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
+    IOs.writeFile(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
 
     try {
-      process = integrationLauncher.check(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME).start();
+      process = integrationLauncher.check(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME).start();
 
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
 
