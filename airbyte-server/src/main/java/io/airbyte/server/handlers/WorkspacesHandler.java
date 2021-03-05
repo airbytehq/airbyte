@@ -129,13 +129,36 @@ public class WorkspacesHandler {
 
   public WorkspaceRead getWorkspace(WorkspaceIdRequestBody workspaceIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    return buildWorkspaceReadFromId(workspaceIdRequestBody.getWorkspaceId());
+    final UUID workspaceId = workspaceIdRequestBody.getWorkspaceId();
+    final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId);
+
+    if (workspace.getTombstone()) {
+      throw new NotFoundException("Could not find workspace");
+    }
+
+    return buildWorkspaceRead(workspace);
   }
 
   @SuppressWarnings("unused")
   public WorkspaceRead getWorkspaceBySlug(SlugRequestBody slugRequestBody) throws JsonValidationException, IOException, ConfigNotFoundException {
     // for now we assume there is one workspace and it has a default uuid.
-    return buildWorkspaceReadFromId(PersistenceConstants.DEFAULT_WORKSPACE_ID);
+    final StandardWorkspace workspace = getWorkspaceBySlug(slugRequestBody.getSlug());
+    return buildWorkspaceRead(workspace);
+  }
+
+  private StandardWorkspace getWorkspaceBySlug(String slug)
+      throws JsonValidationException, IOException, KnownException {
+    for (StandardWorkspace workspace : configRepository.listStandardWorkspaces()) {
+      if (workspace.getTombstone()) {
+        continue;
+      }
+
+      if (workspace.getSlug().equals(slug)) {
+        return workspace;
+      }
+    }
+
+    throw new NotFoundException("Could not find workspace");
   }
 
   public WorkspaceRead updateWorkspace(WorkspaceUpdate workspaceUpdate) throws ConfigNotFoundException, IOException, JsonValidationException {

@@ -173,9 +173,20 @@ class WorkspacesHandlerTest {
   }
 
   @Test
+  void testGetDeletedWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final StandardWorkspace deleted = generateWorkspace().withTombstone(true);
+    when(configRepository.getStandardWorkspace(deleted.getWorkspaceId()))
+        .thenReturn(deleted);
+
+    final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody().workspaceId(workspace.getWorkspaceId());
+
+    assertThrows(NotFoundException.class, () -> workspacesHandler.getWorkspace(workspaceIdRequestBody));
+  }
+
+  @Test
   void testGetWorkspaceBySlug() throws JsonValidationException, ConfigNotFoundException, IOException {
-    when(configRepository.getStandardWorkspace(workspace.getWorkspaceId()))
-        .thenReturn(workspace);
+    when(configRepository.listStandardWorkspaces())
+      .thenReturn(Collections.singletonList(workspace));
 
     final SlugRequestBody slugRequestBody = new SlugRequestBody().slug("default");
 
@@ -191,6 +202,15 @@ class WorkspacesHandlerTest {
         .securityUpdates(false);
 
     assertEquals(workspaceRead, workspacesHandler.getWorkspaceBySlug(slugRequestBody));
+  }
+
+  @Test
+  void testGetDeletedWorkspaceBySlug() throws JsonValidationException, ConfigNotFoundException, IOException {
+    when(configRepository.listStandardWorkspaces())
+      .thenReturn(Collections.singletonList(generateWorkspace().withTombstone(true)));
+
+    final SlugRequestBody slugRequestBody = new SlugRequestBody().slug("default");
+    assertThrows(NotFoundException.class, () -> workspacesHandler.getWorkspaceBySlug(slugRequestBody));
   }
 
   @Test
@@ -214,7 +234,8 @@ class WorkspacesHandlerTest {
         .withSecurityUpdates(false)
         .withNews(false)
         .withInitialSetupComplete(true)
-        .withDisplaySetupWizard(false);
+        .withDisplaySetupWizard(false)
+        .withTombstone(false);
 
     when(configRepository.getStandardWorkspace(workspace.getWorkspaceId()))
         .thenReturn(workspace)
