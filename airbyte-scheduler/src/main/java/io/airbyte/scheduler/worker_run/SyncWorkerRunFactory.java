@@ -60,6 +60,7 @@ public class SyncWorkerRunFactory extends BaseWorkerRunFactory<JobSyncConfig> im
 
   private static StandardSyncInput createSyncInputSyncConfig(JobSyncConfig config) {
     return new StandardSyncInput()
+        .withDefaultNamespace(config.getDefaultNamespace())
         .withSourceConfiguration(config.getSourceConfiguration())
         .withDestinationConfiguration(config.getDestinationConfiguration())
         .withCatalog(config.getConfiguredAirbyteCatalog())
