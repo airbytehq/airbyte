@@ -74,7 +74,8 @@ public class ConfigFileArchiverTest {
         .withEmail("test@airbyte.io")
         .withName("test workspace")
         .withSlug("default")
-        .withInitialSetupComplete(false);
+        .withInitialSetupComplete(false)
+        .withTombstone(false);
   }
 
   @Test

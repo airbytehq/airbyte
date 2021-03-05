@@ -9,6 +9,7 @@ required:
   - name
   - slug
   - initialSetupComplete
+  - tombstone
 additionalProperties: false
 properties:
   workspaceId:
@@ -33,4 +34,9 @@ properties:
   securityUpdates:
     type: boolean
   displaySetupWizard:
+    type: boolean
+  tombstone:
+    description:
+      if not set or false, the configuration is active. if true, then this
+      configuration is permanently off.
     type: boolean
