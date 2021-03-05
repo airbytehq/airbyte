@@ -70,7 +70,7 @@ public class NamespacingMapper implements Mapper<AirbyteMessage> {
     // Use the default namespace as a prefix for the moment to alter the stream name in the destination
     if (defaultNamespace != null && !defaultNamespace.isEmpty()) {
       // TODO chris: use defaultNamespace as a namespace/schema/dataset in destination
-      return defaultNamespace + "_" + streamName;
+      return defaultNamespace + streamName;
     } else {
       // TODO chris: check to make sure that source is providing a namespace, otherwise this should not be
       // allowed (requires PR #2228)
