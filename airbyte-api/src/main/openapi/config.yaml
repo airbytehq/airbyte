@@ -1198,6 +1198,26 @@ components:
     CustomerId:
       type: string
       format: uuid
+    WorkspaceCreate:
+      type: object
+      required:
+        - name
+      properties:
+        email:
+          type: string
+          format: email
+        initialSetupComplete:
+          type: boolean
+        displaySetupWizard:
+          type: boolean
+        anonymousDataCollection:
+          type: boolean
+        name:
+          type: string
+        news:
+          type: boolean
+        securityUpdates:
+          type: boolean
     WorkspaceIdRequestBody:
       type: object
       required:

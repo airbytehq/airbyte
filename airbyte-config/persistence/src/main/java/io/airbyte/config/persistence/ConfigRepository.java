@@ -49,6 +49,10 @@ public class ConfigRepository {
     return persistence.getConfig(ConfigSchema.STANDARD_WORKSPACE, workspaceId.toString(), StandardWorkspace.class);
   }
 
+  public List<StandardWorkspace> listStandardWorkspaces() throws JsonValidationException, IOException {
+    return persistence.listConfigs(ConfigSchema.STANDARD_WORKSPACE, StandardWorkspace.class);
+  }
+
   public void writeStandardWorkspace(final StandardWorkspace workspace) throws JsonValidationException, IOException {
     persistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspace.getWorkspaceId().toString(), workspace);
   }

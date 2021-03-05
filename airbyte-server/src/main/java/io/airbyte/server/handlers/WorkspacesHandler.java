@@ -103,6 +103,28 @@ public class WorkspacesHandler {
     return buildWorkspaceRead(workspace);
   }
 
+  public void deleteWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    // get existing implementation
+    final StandardWorkspace persistedWorkspace = configRepository.getStandardWorkspace(workspaceIdRequestBody.getWorkspaceId());
+
+    // disable all connections associated with this workspace
+    for (ConnectionRead connectionRead : connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody).getConnections()) {
+      connectionsHandler.deleteConnection(connectionRead);
+    }
+
+    // disable all destinations associated with this workspace
+    for (DestinationRead destinationRead : destinationHandler.listDestinationsForWorkspace(workspaceIdRequestBody).getDestinations()) {
+      destinationHandler.deleteDestination(destinationRead);
+    }
+
+    // disable all sources associated with this workspace
+    for (SourceRead sourceRead : sourceHandler.listSourcesForWorkspace(workspaceIdRequestBody).getSources()) {
+      sourceHandler.deleteSource(sourceRead);
+    }
+
+    persistedWorkspace.withTombstone(true);
+    configRepository.writeStandardWorkspace(persistedWorkspace);
   }
 
   public WorkspaceRead getWorkspace(WorkspaceIdRequestBody workspaceIdRequestBody)

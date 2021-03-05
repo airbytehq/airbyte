@@ -32,7 +32,14 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.airbyte.api.model.ConnectionRead;
+import io.airbyte.api.model.ConnectionReadList;
+import io.airbyte.api.model.DestinationRead;
+import io.airbyte.api.model.DestinationReadList;
 import io.airbyte.api.model.SlugRequestBody;
+import io.airbyte.api.model.SourceRead;
+import io.airbyte.api.model.SourceReadList;
+import io.airbyte.api.model.WorkspaceCreate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.api.model.WorkspaceRead;
 import io.airbyte.api.model.WorkspaceUpdate;
@@ -42,13 +49,20 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
+import javax.ws.rs.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class WorkspacesHandlerTest {
 
   private ConfigRepository configRepository;
+  private ConnectionsHandler connectionsHandler;
+  private DestinationHandler destinationHandler;
+  private SourceHandler sourceHandler;
   private StandardWorkspace workspace;
   private WorkspacesHandler workspacesHandler;
 
@@ -107,6 +121,34 @@ class WorkspacesHandlerTest {
     assertFalse(created.getSecurityUpdates());
   }
 
+  @Test
+  void testDeleteWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody().workspaceId(workspace.getWorkspaceId());
+
+    final ConnectionRead connection = new ConnectionRead();
+    final DestinationRead destination = new DestinationRead();
+    final SourceRead source = new SourceRead();
+
+    when(configRepository.getStandardWorkspace(workspace.getWorkspaceId()))
+      .thenReturn(workspace);
+
+    when(configRepository.listStandardWorkspaces())
+      .thenReturn(Collections.singletonList(workspace));
+
+    when(connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody))
+      .thenReturn(new ConnectionReadList().connections(Collections.singletonList(connection)));
+
+    when(destinationHandler.listDestinationsForWorkspace(workspaceIdRequestBody))
+      .thenReturn(new DestinationReadList().destinations(Collections.singletonList(destination)));
+
+    when(sourceHandler.listSourcesForWorkspace(workspaceIdRequestBody))
+      .thenReturn(new SourceReadList().sources(Collections.singletonList(source)));
+
+    workspacesHandler.deleteWorkspace(workspaceIdRequestBody);
+
+    verify(connectionsHandler).deleteConnection(connection);
+    verify(destinationHandler).deleteDestination(destination);
+    verify(sourceHandler).deleteSource(source);
   }
 
   @Test

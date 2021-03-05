@@ -160,6 +160,14 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
+  public void deleteWorkspace(@Valid WorkspaceIdRequestBody workspaceIdRequestBody) {
+    execute(() -> {
+      workspacesHandler.deleteWorkspace(workspaceIdRequestBody);
+      return null;
+    });
+  }
+
+  @Override
   public WorkspaceRead getWorkspace(@Valid WorkspaceIdRequestBody workspaceIdRequestBody) {
     return execute(() -> workspacesHandler.getWorkspace(workspaceIdRequestBody));
   }
