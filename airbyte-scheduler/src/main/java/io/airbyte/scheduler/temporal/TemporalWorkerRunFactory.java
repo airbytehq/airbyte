@@ -27,12 +27,9 @@ package io.airbyte.scheduler.temporal;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
-import io.airbyte.config.StandardGetSpecOutput;
-import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.temporal.TemporalUtils.TemporalJobType;
 import io.airbyte.scheduler.worker_run.WorkerRun;
-import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
 import java.nio.file.Path;
 
@@ -55,9 +52,7 @@ public class TemporalWorkerRunFactory {
     final TemporalJobType temporalJobType = toTemporalJobType(job.getConfigType());
     return switch (job.getConfigType()) {
       case GET_SPEC -> () -> {
-        final ConnectorSpecification connectorSpecification = temporalClient.submitGetSpec(job.getId(), attemptId, job.getConfig().getGetSpec());
-        final JobOutput jobOutput = new JobOutput().withGetSpec(new StandardGetSpecOutput().withSpecification(connectorSpecification));
-        return new OutputAndStatus<>(JobStatus.SUCCEEDED, jobOutput);
+        return temporalClient.submitGetSpec(job.getId(), attemptId, job.getConfig().getGetSpec());
       };
       case CHECK_CONNECTION_SOURCE, CHECK_CONNECTION_DESTINATION -> () -> {
         return temporalClient.submitCheckConnection(job.getId(), attemptId, job.getConfig().getCheckConnection());
