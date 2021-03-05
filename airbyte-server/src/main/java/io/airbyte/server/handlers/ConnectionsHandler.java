@@ -72,7 +72,7 @@ public class ConnectionsHandler {
     final StandardSync standardSync = new StandardSync()
         .withConnectionId(connectionId)
         .withName(connectionCreate.getName() != null ? connectionCreate.getName() : "default")
-        .withNamespaceDefault(connectionCreate.getNamespaceDefault())
+        .withDefaultNamespace(connectionCreate.getDefaultNamespace())
         .withSourceId(connectionCreate.getSourceId())
         .withDestinationId(connectionCreate.getDestinationId())
         .withStatus(toPersistenceStatus(connectionCreate.getStatus()));
@@ -107,7 +107,7 @@ public class ConnectionsHandler {
   public ConnectionRead updateConnection(ConnectionUpdate connectionUpdate) throws ConfigNotFoundException, IOException, JsonValidationException {
     // retrieve sync
     final StandardSync persistedSync = configRepository.getStandardSync(connectionUpdate.getConnectionId())
-        .withNamespaceDefault(connectionUpdate.getNamespaceDefault())
+        .withDefaultNamespace(connectionUpdate.getDefaultNamespace())
         .withCatalog(CatalogConverter.toProtocol(connectionUpdate.getSyncCatalog()))
         .withStatus(toPersistenceStatus(connectionUpdate.getStatus()));
 
@@ -170,7 +170,7 @@ public class ConnectionsHandler {
 
   public void deleteConnection(ConnectionRead connectionRead) throws ConfigNotFoundException, IOException, JsonValidationException {
     final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
-        .namespaceDefault(connectionRead.getNamespaceDefault())
+        .defaultNamespace(connectionRead.getDefaultNamespace())
         .connectionId(connectionRead.getConnectionId())
         .syncCatalog(connectionRead.getSyncCatalog())
         .schedule(connectionRead.getSchedule())
@@ -212,7 +212,7 @@ public class ConnectionsHandler {
         .status(toApiStatus(standardSync.getStatus()))
         .schedule(apiSchedule)
         .name(standardSync.getName())
-        .namespaceDefault(standardSync.getNamespaceDefault())
+        .defaultNamespace(standardSync.getDefaultNamespace())
         .syncCatalog(CatalogConverter.toApi(standardSync.getCatalog()));
   }
 

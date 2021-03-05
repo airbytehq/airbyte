@@ -26,7 +26,7 @@ type IProps = {
   successMessage?: React.ReactNode;
   onSubmit: (values: {
     frequency: string;
-    namespaceDefault: string;
+    defaultNamespace: string;
     schema: SyncSchema;
   }) => void;
   onReset?: (connectionId?: string) => void;
@@ -34,7 +34,7 @@ type IProps = {
   onCancel?: () => void;
   editSchemeMode?: boolean;
   frequencyValue?: string;
-  namespaceDefaultValue?: string;
+  defaultNamespaceValue?: string;
   isEditMode?: boolean;
   isLoading?: boolean;
 };
@@ -53,7 +53,7 @@ const ControlLabelsWithMargin = styled(ControlLabels)`
 
 const connectionValidationSchema = yup.object().shape({
   frequency: yup.string().required("form.empty.error"),
-  namespaceDefault: yup.string().required("form.empty.error"),
+  defaultNamespace: yup.string().required("form.empty.error"),
 });
 
 const FrequencyForm: React.FC<IProps> = ({
@@ -64,7 +64,7 @@ const FrequencyForm: React.FC<IProps> = ({
   schema,
   onDropDownSelect,
   frequencyValue,
-  namespaceDefaultValue,
+  defaultNamespaceValue,
   isEditMode,
   successMessage,
   additionBottomControls,
@@ -84,7 +84,7 @@ const FrequencyForm: React.FC<IProps> = ({
     <Formik
       initialValues={{
         frequency: frequencyValue || "",
-        namespaceDefault: namespaceDefaultValue || "",
+        defaultNamespace: defaultNamespaceValue || "",
       }}
       validateOnBlur={true}
       validateOnChange={true}
@@ -94,7 +94,7 @@ const FrequencyForm: React.FC<IProps> = ({
           isEditMode && !equal(initialSchema, newSchema) && !editSchemeMode;
         await onSubmit({
           frequency: values.frequency,
-          namespaceDefault: values.namespaceDefault,
+          defaultNamespace: values.defaultNamespace,
           schema: newSchema,
         });
 
@@ -105,7 +105,7 @@ const FrequencyForm: React.FC<IProps> = ({
     >
       {({ isSubmitting, setFieldValue, isValid, dirty, resetForm }) => (
         <FormContainer className={className}>
-          <Field name="namespaceDefault">
+          <Field name="defaultNamespace">
             {({ field }: FieldProps<string>) => (
               <ControlLabelsWithMargin
                 label={formatMessage({

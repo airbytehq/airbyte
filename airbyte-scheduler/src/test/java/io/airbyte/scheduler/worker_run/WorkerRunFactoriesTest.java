@@ -140,7 +140,7 @@ class WorkerRunFactoriesTest {
         .withConfiguredAirbyteCatalog(CONFIGURED_CATALOG);
 
     final StandardSyncInput expectedInput = new StandardSyncInput()
-        .withNamespaceDefault(config.getNamespaceDefault())
+        .withDefaultNamespace(config.getDefaultNamespace())
         .withSourceConfiguration(config.getSourceConfiguration())
         .withDestinationConfiguration(config.getDestinationConfiguration())
         .withCatalog(config.getConfiguredAirbyteCatalog())
@@ -160,13 +160,13 @@ class WorkerRunFactoriesTest {
   @Test
   void testResetConnection() {
     final JobResetConnectionConfig config = new JobResetConnectionConfig()
-        .withNamespaceDefault("test")
+        .withDefaultNamespace("test")
         .withDestinationDockerImage("airbyte/destination-moon:0.1.0")
         .withDestinationConfiguration(CONFIG2)
         .withConfiguredAirbyteCatalog(CONFIGURED_CATALOG);
 
     final StandardSyncInput expectedInput = new StandardSyncInput()
-        .withNamespaceDefault(config.getNamespaceDefault())
+        .withDefaultNamespace(config.getDefaultNamespace())
         .withSourceConfiguration(Jsons.emptyObject())
         .withDestinationConfiguration(config.getDestinationConfiguration())
         .withCatalog(config.getConfiguredAirbyteCatalog());

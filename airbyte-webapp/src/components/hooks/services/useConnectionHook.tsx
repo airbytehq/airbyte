@@ -16,7 +16,7 @@ import { ConnectionConfiguration } from "core/domain/connection";
 
 type ValuesProps = {
   frequency: string;
-  namespaceDefault: string;
+  defaultNamespace: string;
   syncCatalog: SyncSchema;
   source?: { name: string; sourceId: string };
 };
@@ -35,7 +35,7 @@ type UpdateConnection = {
   connectionId: string;
   syncCatalog?: SyncSchema;
   status: string;
-  namespaceDefault: string;
+  defaultNamespace: string;
   schedule: {
     units: number;
     timeUnit: string;
@@ -46,7 +46,7 @@ type UpdateConnection = {
 type UpdateStateConnection = {
   connection: Connection;
   sourceName: string;
-  namespaceDefault: string;
+  defaultNamespace: string;
   connectionConfiguration: ConnectionConfiguration;
   schedule: {
     units: number;
@@ -136,7 +136,7 @@ const useConnection = (): {
           sourceId: source?.sourceId,
           destinationId: destination?.destinationId,
           schedule: frequencyData?.config,
-          namespaceDefault: values.namespaceDefault,
+          defaultNamespace: values.defaultNamespace,
           status: "active",
           syncCatalog: values.syncCatalog,
         },
@@ -181,7 +181,7 @@ const useConnection = (): {
     syncCatalog,
     status,
     schedule,
-    namespaceDefault,
+    defaultNamespace,
     withRefreshedCatalog,
   }: UpdateConnection) => {
     const withRefreshedCatalogCleaned = withRefreshedCatalog
@@ -194,7 +194,7 @@ const useConnection = (): {
         connectionId,
         syncCatalog,
         status,
-        namespaceDefault,
+        defaultNamespace,
         schedule,
         ...withRefreshedCatalogCleaned,
       }
@@ -206,14 +206,14 @@ const useConnection = (): {
     sourceName,
     connectionConfiguration,
     schedule,
-    namespaceDefault,
+    defaultNamespace,
   }: UpdateStateConnection) => {
     await updateStateConnectionResource(
       {},
       {
         ...connection,
         schedule,
-        namespaceDefault,
+        defaultNamespace,
         source: {
           ...connection.source,
           name: sourceName,

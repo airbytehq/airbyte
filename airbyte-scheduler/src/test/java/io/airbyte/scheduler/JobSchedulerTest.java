@@ -74,7 +74,7 @@ class JobSchedulerTest {
     STANDARD_SYNC = new StandardSync()
         .withConnectionId(connectionId)
         .withName("presto to hudi")
-        .withNamespaceDefault("presto_to_hudi")
+        .withDefaultNamespace("presto_to_hudi")
         .withStatus(StandardSync.Status.ACTIVE)
         .withCatalog(catalog)
         .withSourceId(sourceId)

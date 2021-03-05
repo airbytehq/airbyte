@@ -60,7 +60,7 @@ public class SyncWorkerRunFactoryUtils {
                 jobId,
                 attempt,
                 airbyteSource,
-                new NamespacingMapper(syncInput.getNamespaceDefault()),
+                new NamespacingMapper(syncInput.getDefaultNamespace()),
                 new DefaultAirbyteDestination(destinationLauncher),
                 new AirbyteMessageTracker(),
                 NormalizationRunnerFactory.create(

@@ -1595,7 +1595,7 @@ components:
     ConnectionCreate:
       type: object
       required:
-        - namespaceDefault
+        - defaultNamespace
         - sourceId
         - destinationId
         - status
@@ -1603,7 +1603,7 @@ components:
         name:
           type: string
           description: Optional name of the connection
-        namespaceDefault:
+        defaultNamespace:
           type: string
           description: Name of the connection that will determine where the source data will be written in the destination
         sourceId:
@@ -1620,13 +1620,13 @@ components:
       type: object
       required:
         - connectionId
-        - namespaceDefault
+        - defaultNamespace
         - syncCatalog
         - status
       properties:
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
-        namespaceDefault:
+        defaultNamespace:
           type: string
           description: Name of the connection that will determine where the source data will be written in the destination
         syncCatalog:
@@ -1647,7 +1647,7 @@ components:
       required:
         - connectionId
         - name
-        - namespaceDefault
+        - defaultNamespace
         - sourceId
         - destinationId
         - syncCatalog
@@ -1657,7 +1657,7 @@ components:
           $ref: "#/components/schemas/ConnectionId"
         name:
           type: string
-        namespaceDefault:
+        defaultNamespace:
           type: string
           description: Name of the connection that will determine where the source data will be written in the destination
         sourceId:
@@ -1973,7 +1973,7 @@ components:
       required:
         - connectionId
         - name
-        - namespaceDefault
+        - defaultNamespace
         - sourceId
         - destinationId
         - syncCatalog
@@ -1986,7 +1986,7 @@ components:
           $ref: "#/components/schemas/ConnectionId"
         name:
           type: string
-        namespaceDefault:
+        defaultNamespace:
           type: string
         sourceId:
           $ref: "#/components/schemas/SourceId"

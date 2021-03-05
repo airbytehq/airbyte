@@ -517,7 +517,7 @@ public class AcceptanceTests {
             .syncCatalog(catalog)
             .schedule(schedule)
             .name(name)
-            .namespaceDefault(OUTPUT_NAMESPACE));
+            .defaultNamespace(OUTPUT_NAMESPACE));
     connectionIds.add(connection.getConnectionId());
     return connection;
   }
@@ -666,7 +666,7 @@ public class AcceptanceTests {
     final ConnectionRead connection = apiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     final ConnectionUpdate connectionUpdate =
         new ConnectionUpdate()
-            .namespaceDefault(connection.getNamespaceDefault())
+            .defaultNamespace(connection.getDefaultNamespace())
             .connectionId(connectionId)
             .status(ConnectionStatus.DEPRECATED)
             .schedule(connection.getSchedule())

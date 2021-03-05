@@ -6,12 +6,12 @@ description: job reset connection config
 type: object
 additionalProperties: false
 required:
-  - namespaceDefault
+  - defaultNamespace
   - destinationConfiguration
   - configuredAirbyteCatalog
   - destinationDockerImage
 properties:
-  namespaceDefault:
+  defaultNamespace:
     description: Name of the connection that will determine where the source data will be written in the destination
     type: string
   destinationConfiguration:
