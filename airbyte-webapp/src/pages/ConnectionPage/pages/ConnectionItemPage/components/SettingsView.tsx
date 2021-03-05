@@ -36,6 +36,7 @@ const TitleContainer = styled.div<{ hasButton: boolean }>`
 
 type FormValues = {
   frequency: string;
+  namespaceDefault: string;
   schema: SyncSchema;
 };
 
@@ -52,6 +53,7 @@ const SettingsView: React.FC<IProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [currentValues, setCurrentValues] = useState<FormValues>({
     frequency: "",
+    namespaceDefault: "",
     schema: { streams: [] },
   });
   const [errorMessage, setErrorMessage] = useState("");
@@ -93,6 +95,7 @@ const SettingsView: React.FC<IProps> = ({
         syncCatalog: values.schema,
         status: connection?.status || "",
         schedule: frequencyData?.config || null,
+        namespaceDefault: values.namespaceDefault,
         withRefreshedCatalog: activeUpdatingSchemaMode,
       });
 
@@ -156,6 +159,7 @@ const SettingsView: React.FC<IProps> = ({
             onSubmit={onSubmitForm}
             onReset={onReset}
             frequencyValue={schedule?.value}
+            namespaceDefaultValue={connection.namespaceDefault}
             errorMessage={errorMessage}
             successMessage={
               saved && <FormattedMessage id="form.changesSaved" />

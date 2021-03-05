@@ -56,6 +56,7 @@ const StatusMainInfo: React.FC<IProps> = ({ connection, frequencyText }) => {
       connectionId: connection.connectionId,
       syncCatalog: connection.syncCatalog,
       schedule: connection.schedule,
+      namespaceDefault: connection.namespaceDefault,
       status: connection.status === "active" ? "inactive" : "active",
     });
 
