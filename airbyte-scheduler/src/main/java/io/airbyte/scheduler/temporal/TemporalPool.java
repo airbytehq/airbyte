@@ -42,11 +42,15 @@ public class TemporalPool implements Runnable {
 
   @Override
   public void run() {
-    WorkerFactory factory = WorkerFactory.newInstance(TemporalUtils.TEMPORAL_CLIENT);
+    final WorkerFactory factory = WorkerFactory.newInstance(TemporalUtils.TEMPORAL_CLIENT);
 
     final Worker specWorker = factory.newWorker(TemporalJobType.GET_SPEC.name());
     specWorker.registerWorkflowImplementationTypes(SpecWorkflow.WorkflowImpl.class);
     specWorker.registerActivitiesImplementations(new SpecWorkflow.SpecActivityImpl(pbf, workspaceRoot));
+
+    final Worker checkConnectionWorker = factory.newWorker(TemporalJobType.CHECK_CONNECTION.name());
+    checkConnectionWorker.registerWorkflowImplementationTypes(CheckConnectionWorkflow.WorkflowImpl.class);
+    checkConnectionWorker.registerActivitiesImplementations(new CheckConnectionWorkflow.CheckConnectionActivityImpl(pbf, workspaceRoot));
 
     // todo (cgardens) - these will come back once we use temporal for these workers.
     // Worker discoverWorker = factory.newWorker(TemporalUtils.DISCOVER_WORKFLOW_QUEUE);
@@ -54,10 +58,6 @@ public class TemporalPool implements Runnable {
     // discoverWorker.registerActivitiesImplementations(new DiscoverWorkflow.DiscoverActivityImpl(pbf,
     // configs.getWorkspaceRoot()));
     //
-    // Worker checkConnectionWorker = factory.newWorker(TemporalUtils.CHECK_CONNECTION_WORKFLOW_QUEUE);
-    // checkConnectionWorker.registerWorkflowImplementationTypes(CheckConnectionWorkflow.WorkflowImpl.class);
-    // checkConnectionWorker.registerActivitiesImplementations(new
-    // CheckConnectionWorkflow.CheckConnectionActivityImpl(pbf, configs.getWorkspaceRoot()));
     //
     // Worker syncWorker = factory.newWorker(TemporalUtils.SYNC_WORKFLOW_QUEUE);
     // syncWorker.registerWorkflowImplementationTypes(SyncWorkflow.WorkflowImpl.class);

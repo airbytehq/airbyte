@@ -16,6 +16,7 @@ import { useFrequencyDropdownData, useInitialSchema } from "./useInitialSchema";
 import { ControlLabels } from "components/LabeledControl";
 import DropDown from "../DropDown";
 import { ModalTypes } from "components/ResetDataModal/types";
+import Input from "components/Input";
 
 type IProps = {
   className?: string;
@@ -23,12 +24,17 @@ type IProps = {
   errorMessage?: React.ReactNode;
   additionBottomControls?: React.ReactNode;
   successMessage?: React.ReactNode;
-  onSubmit: (values: { frequency: string; schema: SyncSchema }) => void;
+  onSubmit: (values: {
+    frequency: string;
+    defaultNamespace: string;
+    schema: SyncSchema;
+  }) => void;
   onReset?: (connectionId?: string) => void;
   onDropDownSelect?: (item: IDataItem) => void;
   onCancel?: () => void;
   editSchemeMode?: boolean;
   frequencyValue?: string;
+  defaultNamespaceValue?: string;
   isEditMode?: boolean;
   isLoading?: boolean;
 };
@@ -41,8 +47,13 @@ const EditLaterMessage = styled(Label)`
   margin: -20px 0 29px;
 `;
 
+const ControlLabelsWithMargin = styled(ControlLabels)`
+  margin-bottom: 29px;
+`;
+
 const connectionValidationSchema = yup.object().shape({
   frequency: yup.string().required("form.empty.error"),
+  defaultNamespace: yup.string().required("form.empty.error"),
 });
 
 const FrequencyForm: React.FC<IProps> = ({
@@ -53,6 +64,7 @@ const FrequencyForm: React.FC<IProps> = ({
   schema,
   onDropDownSelect,
   frequencyValue,
+  defaultNamespaceValue,
   isEditMode,
   successMessage,
   additionBottomControls,
@@ -72,6 +84,7 @@ const FrequencyForm: React.FC<IProps> = ({
     <Formik
       initialValues={{
         frequency: frequencyValue || "",
+        defaultNamespace: defaultNamespaceValue || "",
       }}
       validateOnBlur={true}
       validateOnChange={true}
@@ -81,6 +94,7 @@ const FrequencyForm: React.FC<IProps> = ({
           isEditMode && !equal(initialSchema, newSchema) && !editSchemeMode;
         await onSubmit({
           frequency: values.frequency,
+          defaultNamespace: values.defaultNamespace,
           schema: newSchema,
         });
 
@@ -91,6 +105,26 @@ const FrequencyForm: React.FC<IProps> = ({
     >
       {({ isSubmitting, setFieldValue, isValid, dirty, resetForm }) => (
         <FormContainer className={className}>
+          <Field name="defaultNamespace">
+            {({ field }: FieldProps<string>) => (
+              <ControlLabelsWithMargin
+                label={formatMessage({
+                  id: "form.prefix",
+                })}
+                message={formatMessage({
+                  id: "form.prefix.message",
+                })}
+              >
+                <Input
+                  {...field}
+                  type="text"
+                  placeholder={formatMessage({
+                    id: `form.prefix.placeholder`,
+                  })}
+                />
+              </ControlLabelsWithMargin>
+            )}
+          </Field>
           <SchemaView schema={newSchema} onChangeSchema={setNewSchema} />
           {!isEditMode ? (
             <EditLaterMessage

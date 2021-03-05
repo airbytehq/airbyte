@@ -47,6 +47,8 @@ public class WorkerRun implements Callable<OutputAndStatus<JobOutput>> {
   private final CheckedSupplier<OutputAndStatus<JobOutput>, Exception> workerRun;
 
   public static WorkerRun create(Path workspaceRoot, long jobId, int attempt, CheckedSupplier<OutputAndStatus<JobOutput>, Exception> workerRun) {
+    // todo (cgardens) - there are 2 sources of truth for job path. we need to reduce this down to one,
+    // once we are fully on temporal.
     final Path jobRoot = workspaceRoot.resolve(String.valueOf(jobId)).resolve(String.valueOf(attempt));
     return new WorkerRun(jobRoot, workerRun);
   }
