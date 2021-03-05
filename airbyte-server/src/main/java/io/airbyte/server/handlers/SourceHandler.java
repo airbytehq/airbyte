@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
+import javax.ws.rs.NotFoundException;
 
 public class SourceHandler {
 
@@ -127,7 +128,14 @@ public class SourceHandler {
   }
 
   public SourceRead getSource(SourceIdRequestBody sourceIdRequestBody) throws JsonValidationException, IOException, ConfigNotFoundException {
-    return buildSourceRead(sourceIdRequestBody.getSourceId());
+    final UUID sourceId = sourceIdRequestBody.getSourceId();
+    final SourceConnection sourceConnection = configRepository.getSourceConnection(sourceId);
+
+    if (sourceConnection.getTombstone()) {
+      throw new NotFoundException("Could not find source connection");
+    }
+
+    return buildSourceRead(sourceId);
   }
 
   public SourceReadList listSourcesForWorkspace(WorkspaceIdRequestBody workspaceIdRequestBody)
@@ -151,7 +159,11 @@ public class SourceHandler {
   public void deleteSource(SourceIdRequestBody sourceIdRequestBody) throws JsonValidationException, IOException, ConfigNotFoundException {
     // get existing source
     final SourceRead source = buildSourceRead(sourceIdRequestBody.getSourceId());
+    deleteSource(source);
+  }
 
+  public void deleteSource(SourceRead source)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
     // "delete" all connections associated with source as well.
     // Delete connections first in case it it fails in the middle, source will still be visible
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody().workspaceId(source.getWorkspaceId());

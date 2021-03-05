@@ -25,6 +25,7 @@
 package io.airbyte.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -61,6 +62,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.UUID;
 import java.util.function.Supplier;
+import javax.ws.rs.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -194,6 +196,19 @@ class SourceHandlerTest {
 
     assertEquals(expectedSourceRead, actualSourceRead);
     verify(secretsProcessor).maskSecrets(sourceConnection.getConfiguration(), sourceDefinitionSpecificationRead.getConnectionSpecification());
+  }
+
+  @Test
+  void testGetDeletedSource() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final UUID sourceId = sourceConnection.getSourceId();
+    final SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody().sourceId(sourceId);
+    final SourceConnection deleted = SourceHelpers.generateSource(sourceId, true);
+
+    when(configRepository.getSourceConnection(sourceId))
+        .thenReturn(deleted);
+
+    assertThrows(NotFoundException.class, () ->
+        sourceHandler.getSource(sourceIdRequestBody));
   }
 
   @Test
