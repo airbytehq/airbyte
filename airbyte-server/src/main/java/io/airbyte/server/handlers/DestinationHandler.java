@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
+import javax.ws.rs.NotFoundException;
 
 public class DestinationHandler {
 
@@ -115,6 +116,11 @@ public class DestinationHandler {
     // get existing implementation
     final DestinationRead destination = buildDestinationRead(destinationIdRequestBody.getDestinationId());
 
+    deleteDestination(destination);
+  }
+
+  public void deleteDestination(final DestinationRead destination)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
     // disable all connections associated with this destination
     // Delete connections first in case it it fails in the middle, destination will still be visible
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody().workspaceId(destination.getWorkspaceId());
@@ -162,6 +168,13 @@ public class DestinationHandler {
 
   public DestinationRead getDestination(DestinationIdRequestBody destinationIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
+    final UUID destinationId = destinationIdRequestBody.getDestinationId();
+    final DestinationConnection dci = configRepository.getDestinationConnection(destinationId);
+
+    if (dci.getTombstone()) {
+      throw new NotFoundException("Could not find destination");
+    }
+
     return buildDestinationRead(destinationIdRequestBody.getDestinationId());
   }
 
