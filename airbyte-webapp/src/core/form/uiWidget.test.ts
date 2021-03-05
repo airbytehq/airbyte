@@ -8,6 +8,7 @@ const formItems: FormBlock[] = [
     fieldKey: "key",
     fieldName: "key",
     isRequired: true,
+    jsonSchema: {},
     properties: [
       {
         _type: "formItem",
@@ -28,6 +29,7 @@ const formItems: FormBlock[] = [
             fieldKey: "credentials",
             fieldName: "key.credentials",
             isRequired: false,
+            jsonSchema: {},
             properties: [
               {
                 _type: "formItem",
@@ -44,6 +46,7 @@ const formItems: FormBlock[] = [
             fieldKey: "credentials",
             fieldName: "key.credentials",
             isRequired: false,
+            jsonSchema: {},
             properties: [
               {
                 _type: "formItem",
@@ -109,8 +112,15 @@ test("should select correct key for enum", () => {
     {}
   );
   expect(uiWidgetState).toEqual({
+    "key.dataset_name": {},
+    "key.format": {},
     "key.provider": {
       selectedItem: "GCS: Google Cloud Storage",
     },
+    "key.provider.reader_impl": {},
+    "key.provider.service_account_json": {},
+    "key.provider.storage": {},
+    "key.reader_options": {},
+    "key.url": {},
   });
 });

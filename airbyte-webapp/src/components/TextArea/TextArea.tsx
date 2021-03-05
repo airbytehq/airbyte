@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-export type TextAreaProps = {
+type TextAreaProps = {
   error?: boolean;
   light?: boolean;
 } & React.TextareaHTMLAttributes<HTMLTextAreaElement>;
@@ -16,7 +16,8 @@ const TextArea = styled.textarea<TextAreaProps>`
   line-height: 20px;
   font-weight: normal;
   border: 1px solid
-    ${props => (props.error ? props.theme.dangerColor : props.theme.greyColor0)};
+    ${(props) =>
+      props.error ? props.theme.dangerColor : props.theme.greyColor0};
   background: ${({ theme }) => theme.greyColor0};
   color: ${({ theme }) => theme.textColor};
   caret-color: ${({ theme }) => theme.primaryColor};
@@ -28,7 +29,7 @@ const TextArea = styled.textarea<TextAreaProps>`
   &:hover {
     background: ${({ theme, light }) =>
       light ? theme.whiteColor : theme.greyColor20};
-    border-color: ${props =>
+    border-color: ${(props) =>
       props.error ? props.theme.dangerColor : props.theme.greyColor20};
   }
 
@@ -44,4 +45,5 @@ const TextArea = styled.textarea<TextAreaProps>`
   }
 `;
 
-export default TextArea;
+export { TextArea };
+export type { TextAreaProps };

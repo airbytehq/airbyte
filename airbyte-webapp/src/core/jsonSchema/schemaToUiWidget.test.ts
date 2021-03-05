@@ -33,6 +33,33 @@ test("should reformat jsonSchema to internal widget representation", () => {
     fieldName: "key",
     fieldKey: "key",
     isRequired: false,
+    jsonSchema: {
+      properties: {
+        dbname: {
+          description: "Name of the database.",
+          type: "string",
+        },
+        host: {
+          description: "Hostname of the database.",
+          type: "string",
+        },
+        password: {
+          airbyte_secret: true,
+          description: "Password associated with the username.",
+          type: "string",
+        },
+        port: {
+          description: "Port of the database.",
+          type: "integer",
+        },
+        user: {
+          description: "Username to use to access the database.",
+          type: "string",
+        },
+      },
+      required: ["host", "port", "user", "dbname"],
+      type: "object",
+    },
     properties: [
       {
         _type: "formItem",
