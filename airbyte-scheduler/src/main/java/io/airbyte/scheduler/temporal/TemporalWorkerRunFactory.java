@@ -47,7 +47,7 @@ public class TemporalWorkerRunFactory {
   }
 
   public WorkerRun create(Job job) {
-    final int attemptId = job.getAttempts().size();
+    final int attemptId = job.getAttemptsCount();
     return WorkerRun.create(workspaceRoot, job.getId(), attemptId, createSupplier(job, attemptId));
   }
 
