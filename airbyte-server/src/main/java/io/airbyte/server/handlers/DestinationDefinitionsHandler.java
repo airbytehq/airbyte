@@ -24,7 +24,6 @@
 
 package io.airbyte.server.handlers;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.api.model.DestinationDefinitionCreate;
 import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.DestinationDefinitionRead;
@@ -43,12 +42,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
-import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -61,23 +57,58 @@ public class DestinationDefinitionsHandler {
   private final CachingSchedulerJobClient schedulerJobClient;
 
   public DestinationDefinitionsHandler(final ConfigRepository configRepository,
-                                       DockerImageValidator imageValidator,
-                                       CachingSchedulerJobClient schedulerJobClient) {
+                                       final DockerImageValidator imageValidator,
+                                       final CachingSchedulerJobClient schedulerJobClient) {
     this(configRepository, imageValidator, UUID::randomUUID, schedulerJobClient);
   }
 
   public DestinationDefinitionsHandler(final ConfigRepository configRepository,
-                                       DockerImageValidator imageValidator,
+                                       final DockerImageValidator imageValidator,
                                        final Supplier<UUID> uuidSupplier,
-                                       CachingSchedulerJobClient schedulerJobClient) {
+                                       final CachingSchedulerJobClient schedulerJobClient) {
     this.configRepository = configRepository;
     this.imageValidator = imageValidator;
     this.uuidSupplier = uuidSupplier;
     this.schedulerJobClient = schedulerJobClient;
   }
 
+  private static DestinationDefinitionRead buildDestinationDefinitionRead(
+      final StandardDestinationDefinition standardDestinationDefinition) {
+    try {
+      return new DestinationDefinitionRead()
+          .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
+          .name(standardDestinationDefinition.getName())
+          .dockerRepository(standardDestinationDefinition.getDockerRepository())
+          .dockerImageTag(standardDestinationDefinition.getDockerImageTag())
+          .documentationUrl(new URI(standardDestinationDefinition.getDocumentationUrl()));
+    } catch (final URISyntaxException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static void main(final String[] args) throws IOException, InterruptedException, ExecutionException {
+    final var client = HttpClient.newHttpClient();
+    final var request = HttpRequest.newBuilder(
+        URI.create(
+            "https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-config/init/src/main/resources/seed/destination_definitions.yaml"))
+        .header("accept", "application/json")
+        .build();
+    final var future = client.sendAsync(request, BodyHandlers.ofString());
+    final var stringHttpResponse = future.get();
+    final var body = stringHttpResponse.body();
+    System.out.println(body);
+    final var deserialize = Yamls.deserialize(body);
+    final var elements = deserialize.elements();
+
+    while (elements.hasNext()) {
+      final var element = Jsons.clone(elements.next());
+      System.out.println(element.get("name"));
+    }
+  }
+
   public DestinationDefinitionReadList listDestinationDefinitions() throws ConfigNotFoundException, IOException, JsonValidationException {
-    final List<DestinationDefinitionRead> reads = configRepository.listStandardDestinationDefinitions()
+    final List<DestinationDefinitionRead> reads = configRepository
+        .listStandardDestinationDefinitions()
         .stream()
         .map(DestinationDefinitionsHandler::buildDestinationDefinitionRead)
         .collect(Collectors.toList());
@@ -94,15 +125,19 @@ public class DestinationDefinitionsHandler {
     return null;
   }
 
-  public DestinationDefinitionRead getDestinationDefinition(DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
+  public DestinationDefinitionRead getDestinationDefinition(
+      final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     return buildDestinationDefinitionRead(
-        configRepository.getStandardDestinationDefinition(destinationDefinitionIdRequestBody.getDestinationDefinitionId()));
+        configRepository.getStandardDestinationDefinition(
+            destinationDefinitionIdRequestBody.getDestinationDefinitionId()));
   }
 
-  public DestinationDefinitionRead createDestinationDefinition(DestinationDefinitionCreate destinationDefinitionCreate)
+  public DestinationDefinitionRead createDestinationDefinition(
+      final DestinationDefinitionCreate destinationDefinitionCreate)
       throws JsonValidationException, IOException {
-    imageValidator.assertValidIntegrationImage(destinationDefinitionCreate.getDockerRepository(), destinationDefinitionCreate.getDockerImageTag());
+    imageValidator.assertValidIntegrationImage(destinationDefinitionCreate.getDockerRepository(),
+        destinationDefinitionCreate.getDockerImageTag());
 
     final UUID id = uuidSupplier.get();
     final StandardDestinationDefinition destinationDefinition = new StandardDestinationDefinition()
@@ -117,11 +152,13 @@ public class DestinationDefinitionsHandler {
     return buildDestinationDefinitionRead(destinationDefinition);
   }
 
-  public DestinationDefinitionRead updateDestinationDefinition(DestinationDefinitionUpdate destinationDefinitionUpdate)
+  public DestinationDefinitionRead updateDestinationDefinition(
+      final DestinationDefinitionUpdate destinationDefinitionUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardDestinationDefinition currentDestination = configRepository
         .getStandardDestinationDefinition(destinationDefinitionUpdate.getDestinationDefinitionId());
-    imageValidator.assertValidIntegrationImage(currentDestination.getDockerRepository(), destinationDefinitionUpdate.getDockerImageTag());
+    imageValidator.assertValidIntegrationImage(currentDestination.getDockerRepository(),
+        destinationDefinitionUpdate.getDockerImageTag());
 
     final StandardDestinationDefinition newDestination = new StandardDestinationDefinition()
         .withDestinationDefinitionId(currentDestination.getDestinationDefinitionId())
@@ -135,18 +172,4 @@ public class DestinationDefinitionsHandler {
     schedulerJobClient.resetCache();
     return buildDestinationDefinitionRead(newDestination);
   }
-
-  private static DestinationDefinitionRead buildDestinationDefinitionRead(StandardDestinationDefinition standardDestinationDefinition) {
-    try {
-      return new DestinationDefinitionRead()
-          .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
-          .name(standardDestinationDefinition.getName())
-          .dockerRepository(standardDestinationDefinition.getDockerRepository())
-          .dockerImageTag(standardDestinationDefinition.getDockerImageTag())
-          .documentationUrl(new URI(standardDestinationDefinition.getDocumentationUrl()));
-    } catch (URISyntaxException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
 }

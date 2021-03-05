@@ -82,7 +82,7 @@ public class SeedRepository {
     }
   }
 
-  private static void checkNoDuplicateNames(final Iterator<JsonNode> fileIterator) {
+  public static void checkNoDuplicateNames(final Iterator<JsonNode> fileIterator) {
     final var names = new HashSet<String>();
     while (fileIterator.hasNext()) {
       final var element = Jsons.clone(fileIterator.next());
@@ -94,7 +94,7 @@ public class SeedRepository {
     }
   }
 
-  private static void checkNoDuplicateIds(final Iterator<JsonNode> fileIterator,
+  public static void checkNoDuplicateIds(final Iterator<JsonNode> fileIterator,
       final String idName) {
     final var ids = new HashSet<String>();
     while (fileIterator.hasNext()) {
