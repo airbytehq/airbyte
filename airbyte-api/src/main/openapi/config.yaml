@@ -172,7 +172,22 @@ paths:
       tags:
         - source_definition
       summary: List all of the sourceDefinitions that Airbyte supports
+      description: Not guaranteed to retrieve the latest information on supported sources for performance reasons.
       operationId: listSourceDefinitions
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceDefinitionReadList"
+  /v1/source_definitions/listLatest:
+    post:
+      tags:
+        - source_definition
+      summary: List the latest sourceDefinitions that Airbyte supports
+      description: Guaranteed to retrieve the latest information on supported sources.
+      operationId: listLatestSourceDefinitions
       responses:
         "200":
           description: Successful operation
@@ -183,7 +198,7 @@ paths:
   /v1/source_definitions/get:
     post:
       tags:
-        - source
+        - source_definition
       summary: Get source
       operationId: getSourceDefinition
       requestBody:
@@ -453,7 +468,22 @@ paths:
       tags:
         - destination_definition
       summary: List all of the destinationDefinitions that Airbyte supports
+      description: Not guaranteed to retrieve the latest information on supported destinations for performance reasons.
       operationId: listDestinationDefinitions
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationDefinitionReadList"
+  /v1/destination_definitions/listLatest:
+    post:
+      tags:
+        - destination_definition
+      summary: List the latest destinationDefinitions that Airbyte supports
+      description: Guaranteed to retrieve the latest information on supported destinations.
+      operationId: listLatestDestinationDefinitions
       responses:
         "200":
           description: Successful operation
