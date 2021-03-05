@@ -56,6 +56,46 @@ tags:
     description: Export/Import Airbyte Configuration and Database resources.
 
 paths:
+  /v1/workspaces/create:
+    post:
+      tags:
+        - workspace
+      summary: Creates a workspace
+      operationId: createWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceCreate"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkspaceRead"
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/workspaces/delete:
+    post:
+      tags:
+        - workspace
+      summary: Deletes a workspace
+      operationId: deleteWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdRequestBody"
+        required: true
+      responses:
+        "204":
+          description: The resource was deleted successfully.
+        "404":
+          description: Source not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
   /v1/workspaces/get:
     post:
       tags:

@@ -25,6 +25,9 @@
 package io.airbyte.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -52,8 +55,11 @@ class WorkspacesHandlerTest {
   @BeforeEach
   void setUp() {
     configRepository = mock(ConfigRepository.class);
+    connectionsHandler = mock(ConnectionsHandler.class);
+    destinationHandler = mock(DestinationHandler.class);
+    sourceHandler = mock(SourceHandler.class);
     workspace = generateWorkspace();
-    workspacesHandler = new WorkspacesHandler(configRepository);
+    workspacesHandler = new WorkspacesHandler(configRepository, connectionsHandler, destinationHandler, sourceHandler);
   }
 
   private StandardWorkspace generateWorkspace() {
@@ -69,7 +75,38 @@ class WorkspacesHandlerTest {
         .withDisplaySetupWizard(true)
         .withNews(false)
         .withAnonymousDataCollection(false)
-        .withSecurityUpdates(false);
+        .withSecurityUpdates(false)
+        .withTombstone(false);
+  }
+
+  @Test
+  void testCreateWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
+    when(configRepository.listStandardWorkspaces())
+      .thenReturn(Collections.singletonList(workspace));
+
+    configRepository.writeStandardWorkspace(workspace);
+
+    final WorkspaceCreate workspaceCreate = new WorkspaceCreate()
+      .name("new workspace")
+      .initialSetupComplete(false)
+      .displaySetupWizard(true)
+      .news(false)
+      .anonymousDataCollection(false)
+      .securityUpdates(false);
+
+    final WorkspaceRead created = workspacesHandler.createWorkspace(workspaceCreate);
+
+    assertTrue(created.getWorkspaceId() instanceof UUID);
+    assertTrue(created.getCustomerId() instanceof UUID);
+    assertEquals("new workspace", created.getName());
+    assertEquals("new-workspace", created.getSlug());
+    assertFalse(created.getInitialSetupComplete());
+    assertTrue(created.getDisplaySetupWizard());
+    assertFalse(created.getNews());
+    assertFalse(created.getAnonymousDataCollection());
+    assertFalse(created.getSecurityUpdates());
+  }
+
   }
 
   @Test
