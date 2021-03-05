@@ -102,7 +102,8 @@ public class JobSubmitter implements Runnable {
     final WorkerRun workerRun;
     if (job.getConfigType() == ConfigType.GET_SPEC || job.getConfigType() == ConfigType.CHECK_CONNECTION_SOURCE
         || job.getConfigType() == ConfigType.CHECK_CONNECTION_DESTINATION
-        || job.getConfigType() == ConfigType.DISCOVER_SCHEMA) {
+        || job.getConfigType() == ConfigType.DISCOVER_SCHEMA
+        || job.getConfigType() == ConfigType.SYNC) {
       LOGGER.info("Using temporal runner.");
       workerRun = temporalWorkerRunFactory.create(job);
     } else {
