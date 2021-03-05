@@ -83,12 +83,12 @@ public class DefaultDiscoverCatalogWorkerTest {
     integrationLauncher = mock(IntegrationLauncher.class, RETURNS_DEEP_STUBS);
     process = mock(Process.class);
 
-    when(integrationLauncher.discover(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME).start()).thenReturn(process);
+    when(integrationLauncher.discover(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME).start()).thenReturn(process);
     final InputStream inputStream = mock(InputStream.class);
     when(process.getInputStream()).thenReturn(inputStream);
     when(process.getErrorStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
 
-    IOs.writeFile(jobRoot, WorkerConstants.TAP_CATALOG_JSON_FILENAME, MoreResources.readResource("airbyte_postgres_catalog.json"));
+    IOs.writeFile(jobRoot, WorkerConstants.SOURCE_CATALOG_JSON_FILENAME, MoreResources.readResource("airbyte_postgres_catalog.json"));
 
     streamFactory = noop -> Lists.newArrayList(new AirbyteMessage().withType(Type.CATALOG).withCatalog(CATALOG)).stream();
   }
@@ -107,7 +107,7 @@ public class DefaultDiscoverCatalogWorkerTest {
     // test that config is written to correct location on disk.
     assertEquals(
         Jsons.jsonNode(INPUT.getConnectionConfiguration()),
-        Jsons.deserialize(IOs.readFile(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME)));
+        Jsons.deserialize(IOs.readFile(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME)));
 
     Assertions.assertTimeout(Duration.ofSeconds(5), () -> {
       while (process.getErrorStream().available() != 0) {
@@ -141,7 +141,7 @@ public class DefaultDiscoverCatalogWorkerTest {
 
   @Test
   public void testDiscoverSchemaException() throws WorkerException {
-    when(integrationLauncher.discover(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME))
+    when(integrationLauncher.discover(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME))
         .thenThrow(new RuntimeException());
 
     final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(integrationLauncher, streamFactory);

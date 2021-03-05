@@ -24,12 +24,12 @@
 
 package io.airbyte.workers.protocols;
 
-import io.airbyte.config.StandardTargetConfig;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 
 public interface Mapper<T> {
 
-  StandardTargetConfig apply(StandardTargetConfig targetConfig);
+  ConfiguredAirbyteCatalog mapCatalog(ConfiguredAirbyteCatalog catalog);
 
-  T apply(T message);
+  T mapMessage(T message);
 
 }
