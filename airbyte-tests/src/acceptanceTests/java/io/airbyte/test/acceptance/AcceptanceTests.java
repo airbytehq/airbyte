@@ -114,7 +114,7 @@ public class AcceptanceTests {
   // Skip networking related failures on kube using this flag
   private static final boolean IS_KUBE = System.getenv().containsKey("KUBE");
 
-  private static final String OUTPUT_NAMESPACE = "output";
+  private static final String OUTPUT_NAMESPACE = "output_";
   private static final String TABLE_NAME = "id_and_name";
   private static final String STREAM_NAME = "public." + TABLE_NAME;
   private static final String COLUMN_ID = "id";
@@ -444,7 +444,7 @@ public class AcceptanceTests {
 
     final Set<String> sourceStreams = listStreams(source);
     final Set<String> sourceStreamsWithRawPrefix =
-        sourceStreams.stream().map(x -> String.format("_airbyte_raw_%s_%s", OUTPUT_NAMESPACE, x.replace(".", "_"))).collect(Collectors.toSet());
+        sourceStreams.stream().map(x -> String.format("_airbyte_raw_%s%s", OUTPUT_NAMESPACE, x.replace(".", "_"))).collect(Collectors.toSet());
     final Database destination = getDatabase(destinationPsql);
     final Set<String> destinationStreams = listDestinationStreams(destination);
     assertEquals(sourceStreamsWithRawPrefix, destinationStreams,
@@ -574,7 +574,7 @@ public class AcceptanceTests {
   private List<JsonNode> retrieveDestinationRecords(String streamName) throws Exception {
     Database destination = getDatabase(destinationPsql);
     Set<String> destinationStreams = listDestinationStreams(destination);
-    final String rawStreamName = String.format("_airbyte_raw_%s_%s", OUTPUT_NAMESPACE, streamName.replace(".", "_"));
+    final String rawStreamName = String.format("_airbyte_raw_%s%s", OUTPUT_NAMESPACE, streamName.replace(".", "_"));
     assertTrue(destinationStreams.contains(rawStreamName), "can't find a non-normalized version (raw) of " + streamName);
 
     return retrieveDestinationRecords(destination, rawStreamName);

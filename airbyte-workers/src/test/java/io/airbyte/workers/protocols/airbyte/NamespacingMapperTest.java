@@ -36,7 +36,7 @@ import org.junit.jupiter.api.Test;
 
 class NamespacingMapperTest {
 
-  private static final String OUTPUT_NAMESPACE = "output";
+  private static final String OUTPUT_NAMESPACE = "output_";
   private static final String STREAM_NAME = "user_preferences";
   private static final String FIELD_NAME = "favorite_color";
   private static final ConfiguredAirbyteCatalog CATALOG = CatalogHelpers.createConfiguredAirbyteCatalog(
@@ -50,7 +50,7 @@ class NamespacingMapperTest {
 
     final ConfiguredAirbyteCatalog originalCatalog = Jsons.clone(CATALOG);
     final ConfiguredAirbyteCatalog expectedCatalog = CatalogHelpers.createConfiguredAirbyteCatalog(
-        OUTPUT_NAMESPACE + "_" + STREAM_NAME,
+        OUTPUT_NAMESPACE + STREAM_NAME,
         Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING));
     final ConfiguredAirbyteCatalog actualCatalog = mapper.mapCatalog(CATALOG);
 
@@ -58,7 +58,7 @@ class NamespacingMapperTest {
     assertEquals(expectedCatalog, actualCatalog);
 
     final AirbyteMessage originalMessage = Jsons.clone(RECORD_MESSAGE);
-    final AirbyteMessage expectedMessage = AirbyteMessageUtils.createRecordMessage(OUTPUT_NAMESPACE + "_" + STREAM_NAME, FIELD_NAME, "blue");
+    final AirbyteMessage expectedMessage = AirbyteMessageUtils.createRecordMessage(OUTPUT_NAMESPACE + STREAM_NAME, FIELD_NAME, "blue");
     final AirbyteMessage actualMessage = mapper.mapMessage(RECORD_MESSAGE);
 
     assertEquals(originalMessage, RECORD_MESSAGE);
