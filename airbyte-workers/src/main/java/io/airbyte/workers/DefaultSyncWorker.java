@@ -35,6 +35,7 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.workers.normalization.NormalizationRunner;
 import io.airbyte.workers.protocols.Destination;
+import io.airbyte.workers.protocols.Mapper;
 import io.airbyte.workers.protocols.MessageTracker;
 import io.airbyte.workers.protocols.Source;
 import java.nio.file.Files;
@@ -52,6 +53,7 @@ public class DefaultSyncWorker implements SyncWorker {
   private final long jobId;
   private final int attempt;
   private final Source<AirbyteMessage> source;
+  private final Mapper<AirbyteMessage> mapper;
   private final Destination<AirbyteMessage> destination;
   private final MessageTracker<AirbyteMessage> messageTracker;
   private final NormalizationRunner normalizationRunner;
@@ -62,12 +64,14 @@ public class DefaultSyncWorker implements SyncWorker {
                            final long jobId,
                            final int attempt,
                            final Source<AirbyteMessage> source,
+                           final Mapper<AirbyteMessage> mapper,
                            final Destination<AirbyteMessage> destination,
                            final MessageTracker<AirbyteMessage> messageTracker,
                            final NormalizationRunner normalizationRunner) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.source = source;
+    this.mapper = mapper;
     this.destination = destination;
     this.messageTracker = messageTracker;
     this.normalizationRunner = normalizationRunner;
@@ -85,6 +89,7 @@ public class DefaultSyncWorker implements SyncWorker {
 
     final StandardTapConfig tapConfig = WorkerUtils.syncToTapConfig(syncInput);
     final StandardTargetConfig targetConfig = WorkerUtils.syncToTargetConfig(syncInput);
+    targetConfig.setCatalog(mapper.mapCatalog(targetConfig.getCatalog()));
 
     try (destination; source) {
       destination.start(targetConfig, jobRoot);
@@ -93,7 +98,7 @@ public class DefaultSyncWorker implements SyncWorker {
       while (!cancelled.get() && !source.isFinished()) {
         final Optional<AirbyteMessage> maybeMessage = source.attemptRead();
         if (maybeMessage.isPresent()) {
-          final AirbyteMessage message = maybeMessage.get();
+          final AirbyteMessage message = mapper.mapMessage(maybeMessage.get());
 
           messageTracker.accept(message);
           destination.accept(message);
@@ -110,7 +115,7 @@ public class DefaultSyncWorker implements SyncWorker {
       LOGGER.info("Running normalization.");
       normalizationRunner.start();
       final Path normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"));
-      if (!normalizationRunner.normalize(jobId, attempt, normalizationRoot, syncInput.getDestinationConfiguration(), syncInput.getCatalog())) {
+      if (!normalizationRunner.normalize(jobId, attempt, normalizationRoot, syncInput.getDestinationConfiguration(), targetConfig.getCatalog())) {
         throw new WorkerException("Normalization Failed.");
       }
     } catch (Exception e) {
