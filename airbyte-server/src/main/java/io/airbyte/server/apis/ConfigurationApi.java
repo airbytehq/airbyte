@@ -175,6 +175,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
+  public SourceDefinitionReadList listLatestSourceDefinitions() {
+    return null;
+  }
+
+  @Override
   public SourceDefinitionRead getSourceDefinition(@Valid SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody) {
     return execute(() -> sourceDefinitionsHandler.getSourceDefinition(sourceDefinitionIdRequestBody));
   }
@@ -245,6 +250,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public DestinationDefinitionReadList listDestinationDefinitions() {
     return execute(destinationDefinitionsHandler::listDestinationDefinitions);
+  }
+
+  @Override
+  public DestinationDefinitionReadList listLatestDestinationDefinitions() {
+    return execute(destinationDefinitionsHandler::listLatestDestinationDefinitions);
   }
 
   @Override

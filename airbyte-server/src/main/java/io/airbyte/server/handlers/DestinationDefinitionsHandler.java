@@ -75,6 +75,15 @@ public class DestinationDefinitionsHandler {
     return new DestinationDefinitionReadList().destinationDefinitions(reads);
   }
 
+  public DestinationDefinitionReadList listLatestDestinationDefinitions() throws ConfigNotFoundException, IOException, JsonValidationException {
+    // retrieve file from github
+      // some error handling
+    // convert file to json
+
+//    return new DestinationDefinitionReadList().destinationDefinitions(reads);
+    return null;
+  }
+
   public DestinationDefinitionRead getDestinationDefinition(DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     return buildDestinationDefinitionRead(
