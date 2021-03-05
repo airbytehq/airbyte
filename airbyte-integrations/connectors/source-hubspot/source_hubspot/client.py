@@ -76,11 +76,6 @@ class HubspotResourceSchemaLoader(ResourceSchemaLoader):
                     "type": "object",
                     "properties": custom_schema,
                 }
-
-                custom_schema_top_level = {
-                    f"property_{property_name}": property_schema for property_name, property_schema in custom_schema.items()
-                }
-                schema["properties"].update(custom_schema_top_level)
         return schema
 
 
