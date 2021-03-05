@@ -26,16 +26,18 @@ package io.airbyte.scheduler.temporal;
 
 import com.google.common.base.Preconditions;
 import io.airbyte.config.IntegrationLauncherConfig;
-import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobOutput;
-import io.airbyte.workers.DefaultGetSpecWorker;
+import io.airbyte.config.StandardCheckConnectionInput;
+import io.airbyte.workers.DefaultCheckConnectionWorker;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessBuilderFactory;
-import io.airbyte.workers.wrappers.JobOutputGetSpecWorker;
+import io.airbyte.workers.protocols.airbyte.AirbyteStreamFactory;
+import io.airbyte.workers.protocols.airbyte.DefaultAirbyteStreamFactory;
+import io.airbyte.workers.wrappers.JobOutputCheckConnectionWorker;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
 import io.temporal.activity.ActivityOptions;
@@ -49,47 +51,47 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 @WorkflowInterface
-public interface SpecWorkflow {
+public interface CheckConnectionWorkflow {
 
   @WorkflowMethod
-  JobOutput run(IntegrationLauncherConfig launcherConfig);
+  JobOutput run(IntegrationLauncherConfig launcherConfig, StandardCheckConnectionInput connectionConfiguration) throws TemporalJobException;
 
-  class WorkflowImpl implements SpecWorkflow {
+  class WorkflowImpl implements CheckConnectionWorkflow {
 
     ActivityOptions options = ActivityOptions.newBuilder()
         .setScheduleToCloseTimeout(Duration.ofMinutes(2)) // todo
         .build();
 
-    private final SpecActivity activity = Workflow.newActivityStub(SpecActivity.class, options);
+    private final CheckConnectionActivity activity = Workflow.newActivityStub(CheckConnectionActivity.class, options);
 
     @Override
-    public JobOutput run(IntegrationLauncherConfig launcherConfig) {
-      return activity.run(launcherConfig);
+    public JobOutput run(IntegrationLauncherConfig launcherConfig, StandardCheckConnectionInput connectionConfiguration) throws TemporalJobException {
+      return activity.run(launcherConfig, connectionConfiguration);
     }
 
   }
 
   @ActivityInterface
-  interface SpecActivity {
+  interface CheckConnectionActivity {
 
     @ActivityMethod
-    JobOutput run(IntegrationLauncherConfig launcherConfig);
+    JobOutput run(IntegrationLauncherConfig launcherConfig, StandardCheckConnectionInput connectionConfiguration) throws TemporalJobException;
 
   }
 
-  class SpecActivityImpl implements SpecActivity {
+  class CheckConnectionActivityImpl implements CheckConnectionActivity {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SpecActivityImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CheckConnectionActivityImpl.class);
 
     private final ProcessBuilderFactory pbf;
     private final Path workspaceRoot;
 
-    public SpecActivityImpl(ProcessBuilderFactory pbf, Path workspaceRoot) {
+    public CheckConnectionActivityImpl(ProcessBuilderFactory pbf, Path workspaceRoot) {
       this.pbf = pbf;
       this.workspaceRoot = workspaceRoot;
     }
 
-    public JobOutput run(IntegrationLauncherConfig launcherConfig) {
+    public JobOutput run(IntegrationLauncherConfig launcherConfig, StandardCheckConnectionInput connectionConfiguration) throws TemporalJobException {
       try {
         // todo (cgardens) - there are 2 sources of truth for job path. we need to reduce this down to one,
         // once we are fully on temporal.
@@ -103,18 +105,20 @@ public interface SpecWorkflow {
 
         final IntegrationLauncher integrationLauncher =
             new AirbyteIntegrationLauncher(launcherConfig.getJobId(), launcherConfig.getAttemptId().intValue(), launcherConfig.getDockerImage(), pbf);
-
-        final JobGetSpecConfig jobGetSpecConfig = new JobGetSpecConfig().withDockerImage(launcherConfig.getDockerImage());
-        final OutputAndStatus<JobOutput> run = new JobOutputGetSpecWorker(new DefaultGetSpecWorker(integrationLauncher))
-            .run(jobGetSpecConfig, jobRoot);
+        final AirbyteStreamFactory streamFactory = new DefaultAirbyteStreamFactory();
+        final OutputAndStatus<JobOutput> run =
+            new JobOutputCheckConnectionWorker(new DefaultCheckConnectionWorker(integrationLauncher, streamFactory)).run(connectionConfiguration,
+                jobRoot);
         if (run.getStatus() == JobStatus.SUCCEEDED) {
           Preconditions.checkState(run.getOutput().isPresent());
+          LOGGER.info("job output {}", run.getOutput().get());
           return run.getOutput().get();
         } else {
           throw new TemporalJobException();
         }
+
       } catch (Exception e) {
-        throw new RuntimeException("Spec job failed with an exception", e);
+        throw new RuntimeException("Check connection job failed with an exception", e);
       }
     }
 

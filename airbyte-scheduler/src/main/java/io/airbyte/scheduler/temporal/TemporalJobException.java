@@ -22,19 +22,10 @@
  * SOFTWARE.
  */
 
-package io.airbyte.workers;
+package io.airbyte.scheduler.temporal;
 
-public class WorkerConstants {
+public class TemporalJobException extends Exception {
 
-  public static final String SOURCE_CONFIG_JSON_FILENAME = "source_config.json";
-  public static final String DESTINATION_CONFIG_JSON_FILENAME = "destination_config.json";
-
-  public static final String SOURCE_CATALOG_JSON_FILENAME = "source_catalog.json";
-  public static final String DESTINATION_CATALOG_JSON_FILENAME = "destination_catalog.json";
-  public static final String INPUT_STATE_JSON_FILENAME = "input_state.json";
-
-  public static final String LOG_FILENAME = "logs.log";
-
-  public static final String BASIC_NORMALIZATION_KEY = "basic_normalization";
+  public TemporalJobException() {}
 
 }
