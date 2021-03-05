@@ -24,11 +24,14 @@
 
 package io.airbyte.server.handlers;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.api.model.DestinationDefinitionCreate;
 import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.DestinationDefinitionRead;
 import io.airbyte.api.model.DestinationDefinitionReadList;
 import io.airbyte.api.model.DestinationDefinitionUpdate;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.yaml.Yamls;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -38,8 +41,15 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.http.HttpResponse.BodyHandlers;
+import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -76,11 +86,11 @@ public class DestinationDefinitionsHandler {
   }
 
   public DestinationDefinitionReadList listLatestDestinationDefinitions() throws ConfigNotFoundException, IOException, JsonValidationException {
-    // retrieve file from github
-      // some error handling
+    // retrieve file from github (YAML)
+    // some error handling
     // convert file to json
 
-//    return new DestinationDefinitionReadList().destinationDefinitions(reads);
+    // return new DestinationDefinitionReadList().destinationDefinitions(reads);
     return null;
   }
 
