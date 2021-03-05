@@ -90,9 +90,9 @@ test("should build schema for conditional case", () => {
   );
 
   const expectedSchema = yup.object().shape({
-    start_date: yup.string().required("form.empty.error"),
+    start_date: yup.string().trim().required("form.empty.error"),
     credentials: yup.object().shape({
-      api_key: yup.string().required("form.empty.error"),
+      api_key: yup.string().trim().required("form.empty.error"),
     }),
   });
 
@@ -137,7 +137,7 @@ test("should build schema for conditional case with inner schema and selected ui
 
   const expectedSchema = yup.object().shape({
     credentials: yup.object().shape({
-      redirect_uri: yup.string().required("form.empty.error"),
+      redirect_uri: yup.string().trim().required("form.empty.error"),
     }),
   });
 

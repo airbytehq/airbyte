@@ -1,6 +1,6 @@
 import { FormBlock } from "./types";
 import { buildPathInitialState } from "./uiWidget";
-import { jsonSchemaToUiWidget } from "../jsonSchema/schemaToUiWidget";
+import { jsonSchemaToUiWidget } from "core/jsonSchema/schemaToUiWidget";
 
 const formItems: FormBlock[] = [
   {
@@ -8,7 +8,33 @@ const formItems: FormBlock[] = [
     fieldKey: "key",
     fieldName: "key",
     isRequired: true,
-    jsonSchema: {},
+    jsonSchema: {
+      type: "object",
+      required: ["start_date", "credentials"],
+      properties: {
+        start_date: { type: "string" },
+        credentials: {
+          type: "object",
+          oneOf: [
+            {
+              title: "api key",
+              required: ["api_key"],
+              properties: { api_key: { type: "string" } },
+            },
+            {
+              title: "oauth",
+              required: ["redirect_uri"],
+              properties: {
+                redirect_uri: {
+                  type: "string",
+                  examples: ["https://api.hubspot.com/"],
+                },
+              },
+            },
+          ],
+        },
+      },
+    },
     properties: [
       {
         _type: "formItem",
@@ -29,7 +55,11 @@ const formItems: FormBlock[] = [
             fieldKey: "credentials",
             fieldName: "key.credentials",
             isRequired: false,
-            jsonSchema: {},
+            jsonSchema: {
+              title: "api key",
+              required: ["api_key"],
+              properties: { api_key: { type: "string" } },
+            },
             properties: [
               {
                 _type: "formItem",
@@ -46,7 +76,16 @@ const formItems: FormBlock[] = [
             fieldKey: "credentials",
             fieldName: "key.credentials",
             isRequired: false,
-            jsonSchema: {},
+            jsonSchema: {
+              title: "oauth",
+              required: ["redirect_uri"],
+              properties: {
+                redirect_uri: {
+                  type: "string",
+                  examples: ["https://api.hubspot.com/"],
+                },
+              },
+            },
             properties: [
               {
                 _type: "formItem",
@@ -70,6 +109,8 @@ test("should select first key by default", () => {
     "key.credentials": {
       selectedItem: "api key",
     },
+    "key.credentials.api_key": {},
+    "key.start_date": {},
   });
 });
 
@@ -89,6 +130,8 @@ test("should select key selected in default values", () => {
     "key.credentials": {
       selectedItem: "oauth",
     },
+    "key.credentials.redirect_uri": {},
+    "key.start_date": {},
   });
 });
 
