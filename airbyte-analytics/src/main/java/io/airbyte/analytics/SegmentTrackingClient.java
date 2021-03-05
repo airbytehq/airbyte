@@ -95,6 +95,9 @@ public class SegmentTrackingClient implements TrackingClient {
     final Map<String, Object> mapCopy = new HashMap<>(metadata);
     final TrackingIdentity trackingIdentity = identitySupplier.get();
     mapCopy.put(AIRBYTE_VERSION_KEY, trackingIdentity.getAirbyteVersion());
+    if (!metadata.isEmpty()) {
+      trackingIdentity.getEmail().ifPresent(email -> mapCopy.put("email", email));
+    }
     analytics.enqueue(TrackMessage.builder(action)
         .userId(trackingIdentity.getCustomerId().toString())
         .properties(mapCopy));
