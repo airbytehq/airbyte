@@ -6,7 +6,13 @@
         "json_schema": {
           "type": "object",
           "properties": {
-            "id": {
+            "page_id": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "business_account_id": {
               "type": [
                 "null",
                 "string"
@@ -45,7 +51,13 @@
         "json_schema": {
           "type": "object",
           "properties": {
-            "id": {
+            "page_id": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "business_account_id": {
               "type": [
                 "null",
                 "string"
@@ -151,6 +163,18 @@
         "json_schema": {
           "type": "object",
           "properties": {
+            "business_account_id": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "page_id": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
             "id": {
               "type": [
                 "null",
@@ -225,6 +249,18 @@
         "json_schema": {
           "type": "object",
           "properties": {
+            "business_account_id": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "page_id": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
             "id": {
               "type": [
                 "null",

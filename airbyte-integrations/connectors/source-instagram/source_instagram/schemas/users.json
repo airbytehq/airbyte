@@ -1,6 +1,9 @@
 {
   "type": "object",
   "properties": {
+    "page_id": {
+      "type": ["null", "string"]
+    },
     "id": {
       "type": ["null", "string"]
     },

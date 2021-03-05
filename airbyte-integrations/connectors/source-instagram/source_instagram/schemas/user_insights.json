@@ -1,7 +1,10 @@
 {
   "type": "object",
   "properties": {
-    "id": {
+    "page_id": {
+      "type": ["null", "string"]
+    },
+    "business_account_id": {
       "type": ["null", "string"]
     },
     "date": {

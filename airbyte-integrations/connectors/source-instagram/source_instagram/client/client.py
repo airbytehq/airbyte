@@ -39,8 +39,7 @@ from .common import InstagramAPIException
 
 
 class Client(BaseClient):
-    def __init__(self, account_id: str, access_token: str, start_date: str):
-        self._account_id = account_id
+    def __init__(self, access_token: str, start_date: str):
         self._start_date = pendulum.parse(start_date)
 
         self._api = FacebookAdsApi.init(access_token=access_token)
@@ -72,27 +71,35 @@ class Client(BaseClient):
         self._apis[name].state = state
 
     @cached_property
-    def account(self):
-        return self._find_account(self._account_id)
+    def accounts(self):
+        return self._find_accounts()
 
     @staticmethod
-    def _find_account(account_id: str):
+    def _find_accounts():
         try:
+            instagram_business_accounts = []
             accounts = fb_user.User(fbid="me").get_accounts()
             for account in accounts:
                 page = Page(account.get_id()).api_get(fields=["instagram_business_account"])
-                if page.get("instagram_business_account") and page.get("instagram_business_account").get("id") == account_id:
-                    return IGUser(page.get("instagram_business_account").get("id"))
+                if page.get("instagram_business_account"):
+                    instagram_business_accounts.append(
+                        {
+                            "page_id": account.get_id(),
+                            "instagram_business_account": IGUser(page.get("instagram_business_account").get("id")),
+                        }
+                    )
         except FacebookRequestError as exc:
             raise InstagramAPIException(f"Error: {exc.api_error_code()}, {exc.api_error_message()}") from exc
 
-        raise InstagramAPIException(f"Couldn't find Instagram business account with id {account_id}")
+        if instagram_business_accounts:
+            return instagram_business_accounts
+        raise InstagramAPIException("Couldn't find Instagram business account for current Access Token")
 
     def health_check(self) -> Tuple[bool, str]:
         alive = True
         error_message = None
         try:
-            self._find_account(self._account_id)
+            self._find_accounts()
         except InstagramAPIException as exc:
             logger.error(str(exc))
             alive = False

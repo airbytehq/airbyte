@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import re
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterator, List, Sequence
 
@@ -29,6 +30,7 @@ import backoff
 import pendulum
 from base_python.entrypoint import logger
 from facebook_business.adobjects.igmedia import IGMedia
+from facebook_business.adobjects.iguser import IGUser
 from facebook_business.exceptions import FacebookRequestError
 
 from .common import retry_pattern
@@ -36,8 +38,22 @@ from .common import retry_pattern
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 
 
+# This function removes the _nc_rid parameter from the video url and ccb from profile_picture_url for users.
+# _nc_rid is generated every time a new one and ccb can change its value, and tests fail when checking for identity.
+# This does not spoil the link, it remains correct and by clicking on it you can view the video or see picture.
+def clear_video_url(record_data: dict = None):
+    if record_data.get("media_type") == "VIDEO":
+        end_of_string = record_data["media_url"].find("&_nc_rid=")
+        if end_of_string != -1:
+            record_data["media_url"] = record_data["media_url"][:end_of_string]
+    elif record_data.get("profile_picture_url"):
+        record_data["profile_picture_url"] = "".join(re.split("ccb=.{1,5}&", record_data["profile_picture_url"]))
+    return record_data
+
+
 class StreamAPI(ABC):
     result_return_limit = 100
+    non_object_fields = ["page_id", "business_account_id"]
 
     def __init__(self, api, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -46,6 +62,9 @@ class StreamAPI(ABC):
     @abstractmethod
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Iterate over entities"""
+
+    def filter_input_fields(self, fields: Sequence[str] = None):
+        return list(set(fields) - set(self.non_object_fields))
 
 
 class IncrementalStreamAPI(StreamAPI, ABC):
@@ -66,23 +85,34 @@ class IncrementalStreamAPI(StreamAPI, ABC):
         super().__init__(*args, **kwargs)
         self._state = None
 
-    def state_filter(self, record: Dict) -> Dict:
+    def state_filter(self, records: Iterator[dict]) -> Iterator[Any]:
         """Apply state filter to set of records, update cursor(state) if necessary in the end"""
-        cursor = pendulum.parse(record[self.state_pk])
-        stream_name = self.__class__.__name__
-        if stream_name.endswith("API"):
-            stream_name = stream_name[:-3]
-        logger.info(f"Advancing bookmark for {stream_name} stream from {self._state} to {cursor}")
-        self._state = max(cursor, self._state) if self._state else cursor
-        return record
+        latest_cursor = None
+        for record in records:
+            cursor = pendulum.parse(record[self.state_pk])
+            if self._state and self._state >= cursor:
+                continue
+            latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
+            yield record
+
+        if latest_cursor:
+            stream_name = self.__class__.__name__
+            if stream_name.endswith("API"):
+                stream_name = stream_name[:-3]
+            logger.info(f"Advancing bookmark for {stream_name} stream from {self._state} to {latest_cursor}")
+            self._state = max(latest_cursor, self._state) if self._state else latest_cursor
 
 
 class UsersAPI(StreamAPI):
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
-        yield self._extend_record(self._api.account, fields=fields)
+        for account in self._api.accounts:
+            yield {
+                **{"page_id": account["page_id"]},
+                **clear_video_url(self._extend_record(account["instagram_business_account"], fields=self.filter_input_fields(fields))),
+            }
 
     @backoff_policy
-    def _extend_record(self, ig_user, fields) -> Dict:
+    def _extend_record(self, ig_user: IGUser, fields: Sequence[str] = None) -> Dict:
         return ig_user.api_get(fields=fields).export_all_data()
 
 
@@ -91,21 +121,22 @@ class UserLifetimeInsightsAPI(StreamAPI):
     period = "lifetime"
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
-        account_id = self._api.account.get("id")
-        for insight in self._get_insight_records(params=self._params()):
-            yield {
-                "id": account_id,
-                "metric": insight.get("name"),
-                "date": insight.get("values")[0]["end_time"],
-                "value": insight.get("values")[0]["value"],
-            }
+        for account in self._api.accounts:
+            for insight in self._get_insight_records(account["instagram_business_account"], params=self._params()):
+                yield {
+                    "page_id": account["page_id"],
+                    "business_account_id": account["instagram_business_account"].get("id"),
+                    "metric": insight.get("name"),
+                    "date": insight.get("values")[0]["end_time"],
+                    "value": insight.get("values")[0]["value"],
+                }
 
     def _params(self) -> Dict:
         return {"metric": self.LIFETIME_METRICS, "period": self.period}
 
     @backoff_policy
-    def _get_insight_records(self, params) -> Iterator[Any]:
-        return self._api.account.get_insights(params=params)
+    def _get_insight_records(self, instagram_user: IGUser, params: dict = None) -> Iterator[Any]:
+        return instagram_user.get_insights(params=params)
 
 
 class UserInsightsAPI(IncrementalStreamAPI):
@@ -138,25 +169,27 @@ class UserInsightsAPI(IncrementalStreamAPI):
         self._state = max(api._start_date, pendulum.now().subtract(days=self.buffer_days)).add(minutes=1)
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
-        account_id = self._api.account.get("id")
         for params_per_day in self._params():
-            insight_list = []
-            for params in params_per_day:
-                insight_list += self._get_insight_records(params=params)
-            if not insight_list:
-                continue
+            insights_per_day = []
+            for account in self._api.accounts:
+                insight_list = []
+                for params in params_per_day:
+                    insight_list += self._get_insight_records(account["instagram_business_account"], params=params)
+                if not insight_list:
+                    continue
 
-            insight_record = {"id": account_id}
-            for insight in insight_list:
-                key = (
-                    f"{insight.get('name')}_{insight.get('period')}"
-                    if insight.get("period") in ["week", "days_28"]
-                    else insight.get("name")
-                )
-                insight_record[key] = insight.get("values")[0]["value"]
-                if not insight_record.get("date"):
-                    insight_record["date"] = insight.get("values")[0]["end_time"]
-            yield self.state_filter(insight_record)
+                insight_record = {"page_id": account["page_id"], "business_account_id": account["instagram_business_account"].get("id")}
+                for insight in insight_list:
+                    key = (
+                        f"{insight.get('name')}_{insight.get('period')}"
+                        if insight.get("period") in ["week", "days_28"]
+                        else insight.get("name")
+                    )
+                    insight_record[key] = insight.get("values")[0]["value"]
+                    if not insight_record.get("date"):
+                        insight_record["date"] = insight.get("values")[0]["end_time"]
+                insights_per_day.append(insight_record)
+            yield from self.state_filter(insights_per_day)
 
     def _params(self) -> Iterator[List]:
         buffered_start_date = self._state
@@ -177,52 +210,70 @@ class UserInsightsAPI(IncrementalStreamAPI):
             buffered_start_date = buffered_start_date.add(days=self.days_increment)
 
     @backoff_policy
-    def _get_insight_records(self, params):
-        return self._api.account.get_insights(params=params)._queue
+    def _get_insight_records(self, instagram_user: IGUser, params: dict = None) -> List:
+        return instagram_user.get_insights(params=params)._queue
 
 
 class MediaAPI(StreamAPI):
     INVALID_CHILDREN_FIELDS = ["caption", "comments_count", "is_comment_enabled", "like_count", "children"]
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
-        children_fields = list(set(fields) - set(self.INVALID_CHILDREN_FIELDS))
-        media = self._get_media({"limit": self.result_return_limit}, fields)
-        for record in media:
-            record_data = record.export_all_data()
-            if record_data.get("children"):
-                record_data["children"] = [
-                    self._get_single_record(child_record["id"], children_fields).export_all_data()
-                    for child_record in record.get("children")["data"]
-                ]
-            yield record_data
+        children_fields = self.filter_input_fields(list(set(fields) - set(self.INVALID_CHILDREN_FIELDS)))
+        for account in self._api.accounts:
+            media = self._get_media(
+                account["instagram_business_account"], {"limit": self.result_return_limit}, self.filter_input_fields(fields)
+            )
+            for record in media:
+                record_data = record.export_all_data()
+                if record_data.get("children"):
+                    record_data["children"] = [
+                        clear_video_url(self._get_single_record(child_record["id"], children_fields).export_all_data())
+                        for child_record in record.get("children")["data"]
+                    ]
+                record_data.update(
+                    {
+                        "page_id": account["page_id"],
+                        "business_account_id": account["instagram_business_account"].get("id"),
+                    }
+                )
+                yield clear_video_url(record_data)
 
     @backoff_policy
-    def _get_media(self, params, fields) -> Iterator[Any]:
+    def _get_media(self, instagram_user: IGUser, params: dict = None, fields: Sequence[str] = None) -> Iterator[Any]:
         """
         This is necessary because the functions that call this endpoint return
         a generator, whose calls need decorated with a backoff.
         """
-        return self._api.account.get_media(params=params, fields=fields)
+        return instagram_user.get_media(params=params, fields=fields)
 
     @backoff_policy
-    def _get_single_record(self, media_id, fields) -> IGMedia:
+    def _get_single_record(self, media_id: str, fields: Sequence[str] = None) -> IGMedia:
         return IGMedia(media_id).api_get(fields=fields)
 
 
 class StoriesAPI(StreamAPI):
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
-        media = self._get_stories({"limit": self.result_return_limit}, fields)
-        for record in media:
-            record_data = record.export_all_data()
-            yield record_data
+        for account in self._api.accounts:
+            stories = self._get_stories(
+                account["instagram_business_account"], {"limit": self.result_return_limit}, self.filter_input_fields(fields)
+            )
+            for record in stories:
+                record_data = record.export_all_data()
+                record_data.update(
+                    {
+                        "page_id": account["page_id"],
+                        "business_account_id": account["instagram_business_account"].get("id"),
+                    }
+                )
+                yield clear_video_url(record_data)
 
     @backoff_policy
-    def _get_stories(self, params, fields: list) -> Iterator[Any]:
+    def _get_stories(self, instagram_user: IGUser, params: dict, fields: Sequence[str] = None) -> Iterator[Any]:
         """
         This is necessary because the functions that call this endpoint return
         a generator, whose calls need decorated with a backoff.
         """
-        return self._api.account.get_stories(params=params, fields=fields)
+        return instagram_user.get_stories(params=params, fields=fields)
 
 
 class MediaInsightsAPI(MediaAPI):
@@ -230,12 +281,17 @@ class MediaInsightsAPI(MediaAPI):
     CAROUSEL_ALBUM_METRICS = ["carousel_album_engagement", "carousel_album_impressions", "carousel_album_reach", "carousel_album_saved"]
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
-        media = self._get_media({"limit": self.result_return_limit}, ["media_type"])
-        for ig_media in media:
-            yield {
-                **{"id": ig_media.get("id")},
-                **{record.get("name"): record.get("values")[0]["value"] for record in self._get_insights(ig_media)},
-            }
+        for account in self._api.accounts:
+            media = self._get_media(account["instagram_business_account"], {"limit": self.result_return_limit}, ["media_type"])
+            for ig_media in media:
+                yield {
+                    **{
+                        "id": ig_media.get("id"),
+                        "page_id": account["page_id"],
+                        "business_account_id": account["instagram_business_account"].get("id"),
+                    },
+                    **{record.get("name"): record.get("values")[0]["value"] for record in self._get_insights(ig_media)},
+                }
 
     @backoff_policy
     def _get_insights(self, item) -> Iterator[Any]:
@@ -263,14 +319,19 @@ class StoriesInsightsAPI(StoriesAPI):
     STORY_METRICS = ["exits", "impressions", "reach", "replies", "taps_forward", "taps_back"]
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
-        stories = self._get_stories({"limit": self.result_return_limit}, fields=[])
-        for ig_story in stories:
-            insights = self._get_insights(ig_story)
-            if insights:
-                yield {
-                    **{"id": ig_story.get("id")},
-                    **{record.get("name"): record.get("values")[0]["value"] for record in insights},
-                }
+        for account in self._api.accounts:
+            stories = self._get_stories(account["instagram_business_account"], {"limit": self.result_return_limit}, fields=[])
+            for ig_story in stories:
+                insights = self._get_insights(ig_story)
+                if insights:
+                    yield {
+                        **{
+                            "id": ig_story.get("id"),
+                            "page_id": account["page_id"],
+                            "business_account_id": account["instagram_business_account"].get("id"),
+                        },
+                        **{record.get("name"): record.get("values")[0]["value"] for record in insights},
+                    }
 
     @backoff_policy
     def _get_insights(self, item) -> Iterator[Any]:
