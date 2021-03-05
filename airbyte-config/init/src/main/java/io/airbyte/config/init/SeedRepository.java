@@ -95,7 +95,7 @@ public class SeedRepository {
   }
 
   public static void checkNoDuplicateIds(final Iterator<JsonNode> fileIterator,
-      final String idName) {
+                                         final String idName) {
     final var ids = new HashSet<String>();
     while (fileIterator.hasNext()) {
       final var element = Jsons.clone(fileIterator.next());
@@ -137,4 +137,5 @@ public class SeedRepository {
           Jsons.toPrettyString(element));
     }
   }
+
 }

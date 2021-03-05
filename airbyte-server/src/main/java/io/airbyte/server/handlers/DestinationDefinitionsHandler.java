@@ -72,8 +72,7 @@ public class DestinationDefinitionsHandler {
     this.schedulerJobClient = schedulerJobClient;
   }
 
-  private static DestinationDefinitionRead buildDestinationDefinitionRead(
-      final StandardDestinationDefinition standardDestinationDefinition) {
+  private static DestinationDefinitionRead buildDestinationDefinitionRead(StandardDestinationDefinition standardDestinationDefinition) {
     try {
       return new DestinationDefinitionRead()
           .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
@@ -125,16 +124,14 @@ public class DestinationDefinitionsHandler {
     return null;
   }
 
-  public DestinationDefinitionRead getDestinationDefinition(
-      final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
+  public DestinationDefinitionRead getDestinationDefinition(DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     return buildDestinationDefinitionRead(
         configRepository.getStandardDestinationDefinition(
             destinationDefinitionIdRequestBody.getDestinationDefinitionId()));
   }
 
-  public DestinationDefinitionRead createDestinationDefinition(
-      final DestinationDefinitionCreate destinationDefinitionCreate)
+  public DestinationDefinitionRead createDestinationDefinition(DestinationDefinitionCreate destinationDefinitionCreate)
       throws JsonValidationException, IOException {
     imageValidator.assertValidIntegrationImage(destinationDefinitionCreate.getDockerRepository(),
         destinationDefinitionCreate.getDockerImageTag());
@@ -152,8 +149,7 @@ public class DestinationDefinitionsHandler {
     return buildDestinationDefinitionRead(destinationDefinition);
   }
 
-  public DestinationDefinitionRead updateDestinationDefinition(
-      final DestinationDefinitionUpdate destinationDefinitionUpdate)
+  public DestinationDefinitionRead updateDestinationDefinition(DestinationDefinitionUpdate destinationDefinitionUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardDestinationDefinition currentDestination = configRepository
         .getStandardDestinationDefinition(destinationDefinitionUpdate.getDestinationDefinitionId());
