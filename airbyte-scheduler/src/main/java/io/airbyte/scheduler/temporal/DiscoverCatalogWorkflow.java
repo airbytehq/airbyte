@@ -45,6 +45,8 @@ import io.temporal.workflow.Workflow;
 import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
 import java.nio.file.Path;
+import java.time.Duration;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,7 +58,9 @@ public interface DiscoverCatalogWorkflow {
 
   class WorkflowImpl implements DiscoverCatalogWorkflow {
 
-    private final ActivityOptions options = ActivityOptions.newBuilder().build();
+    final ActivityOptions options = ActivityOptions.newBuilder()
+            .setScheduleToCloseTimeout(Duration.ofHours(2))
+            .build();
     private final DiscoverCatalogActivity activity = Workflow.newActivityStub(DiscoverCatalogActivity.class, options);
 
     @Override

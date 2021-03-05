@@ -43,6 +43,8 @@ import io.temporal.workflow.Workflow;
 import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
 import java.nio.file.Path;
+import java.time.Duration;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,7 +56,9 @@ public interface SpecWorkflow {
 
   class WorkflowImpl implements SpecWorkflow {
 
-    private final ActivityOptions options = ActivityOptions.newBuilder().build();
+    final ActivityOptions options = ActivityOptions.newBuilder()
+            .setScheduleToCloseTimeout(Duration.ofHours(1))
+            .build();
     private final SpecActivity activity = Workflow.newActivityStub(SpecActivity.class, options);
 
     @Override
