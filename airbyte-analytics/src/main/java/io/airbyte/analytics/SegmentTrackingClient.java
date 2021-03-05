@@ -73,7 +73,7 @@ public class SegmentTrackingClient implements TrackingClient {
       identityMetadataBuilder.put(AIRBYTE_ROLE, airbyteRole);
     }
 
-    trackingIdentity.getEmail().ifPresent(email -> identityMetadataBuilder.put(USER_EMAIL_KEY_PLACEHOLDER, email));
+    trackingIdentity.getEmail().ifPresent(email -> identityMetadataBuilder.put("email", email));
 
     analytics.enqueue(IdentifyMessage.builder()
         .userId(trackingIdentity.getCustomerId().toString())
@@ -95,9 +95,7 @@ public class SegmentTrackingClient implements TrackingClient {
     final Map<String, Object> mapCopy = new HashMap<>(metadata);
     final TrackingIdentity trackingIdentity = identitySupplier.get();
     mapCopy.put(AIRBYTE_VERSION_KEY, trackingIdentity.getAirbyteVersion());
-    if (metadata.containsKey(USER_EMAIL_KEY_PLACEHOLDER) && metadata.get(USER_EMAIL_KEY_PLACEHOLDER).equals(USER_EMAIL_VALUE_PLACEHOLDER)) {
-      trackingIdentity.getEmail().ifPresent(email -> mapCopy.replace(USER_EMAIL_KEY_PLACEHOLDER, email));
-    }
+    trackingIdentity.getEmail().ifPresent(email -> mapCopy.put("email", email));
     analytics.enqueue(TrackMessage.builder(action)
         .userId(trackingIdentity.getCustomerId().toString())
         .properties(mapCopy));
