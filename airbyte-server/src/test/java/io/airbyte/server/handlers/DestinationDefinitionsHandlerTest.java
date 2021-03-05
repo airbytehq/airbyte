@@ -50,6 +50,8 @@ import java.net.http.HttpClient;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 class DestinationDefinitionsHandlerTest {
@@ -60,6 +62,7 @@ class DestinationDefinitionsHandlerTest {
   private DestinationDefinitionsHandler destinationHandler;
   private Supplier<UUID> uuidSupplier;
   private CachingSchedulerJobClient schedulerJobClient;
+  private HttpClient httpClient;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -69,8 +72,8 @@ class DestinationDefinitionsHandlerTest {
     dockerImageValidator = mock(DockerImageValidator.class);
     destination = generateDestination();
     schedulerJobClient = spy(CachingSchedulerJobClient.class);
-    destinationHandler = new DestinationDefinitionsHandler(configRepository, dockerImageValidator, uuidSupplier, schedulerJobClient, HttpClient
-        .newHttpClient());
+    httpClient = mock(HttpClient.class);
+    destinationHandler = new DestinationDefinitionsHandler(configRepository, dockerImageValidator, uuidSupplier, schedulerJobClient, httpClient);
   }
 
   private StandardDestinationDefinition generateDestination() {
@@ -83,6 +86,7 @@ class DestinationDefinitionsHandlerTest {
   }
 
   @Test
+  @DisplayName("listDestination should return the right list")
   void testListDestinations() throws JsonValidationException, IOException, ConfigNotFoundException, URISyntaxException {
     final StandardDestinationDefinition destination2 = generateDestination();
 
@@ -110,6 +114,7 @@ class DestinationDefinitionsHandlerTest {
   }
 
   @Test
+  @DisplayName("getDestination should return the right destination")
   void testGetDestination() throws JsonValidationException, ConfigNotFoundException, IOException, URISyntaxException {
     when(configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId()))
         .thenReturn(destination);
@@ -130,6 +135,7 @@ class DestinationDefinitionsHandlerTest {
   }
 
   @Test
+  @DisplayName("createDestinationDefinition should correctly create a destinationDefinition")
   void testCreateDestinationDefinition() throws URISyntaxException, ConfigNotFoundException, IOException, JsonValidationException {
     final StandardDestinationDefinition destination = generateDestination();
     when(uuidSupplier.get()).thenReturn(destination.getDestinationDefinitionId());
@@ -153,6 +159,7 @@ class DestinationDefinitionsHandlerTest {
   }
 
   @Test
+  @DisplayName("updateDestination should correctly update a destinationDefinition")
   void testUpdateDestination() throws ConfigNotFoundException, IOException, JsonValidationException {
     when(configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId())).thenReturn(destination);
     final DestinationDefinitionRead currentDestination = destinationHandler
@@ -168,7 +175,24 @@ class DestinationDefinitionsHandlerTest {
     assertEquals(newDockerImageTag, sourceRead.getDockerImageTag());
     verify(dockerImageValidator).assertValidIntegrationImage(dockerRepository, newDockerImageTag);
     verify(schedulerJobClient).resetCache();
-
   }
 
+  @Nested
+  @DisplayName("listLatest")
+  class listLatest {
+
+    @Test
+    @DisplayName("should return the latest list")
+    void testCorrect() {
+
+    }
+
+    @Test
+    @DisplayName("should fail gracefully if http method times out")
+    void testHttpTimeout() {}
+
+    @Test
+    @DisplayName("should fail gracefully if bad data is received")
+    void testBadFileReceived() {}
+  }
 }
