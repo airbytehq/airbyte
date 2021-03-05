@@ -27,9 +27,11 @@ package io.airbyte.scheduler.temporal;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.IntegrationLauncherConfig;
 import io.airbyte.config.JobCheckConnectionConfig;
+import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.StandardCheckConnectionInput;
+import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.scheduler.temporal.TemporalUtils.TemporalJobType;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
@@ -60,6 +62,16 @@ public class TemporalClient {
         .withDockerImage(config.getDockerImage());
 
     return toOutputAndStatus(() -> getWorkflowStub(CheckConnectionWorkflow.class, TemporalJobType.CHECK_CONNECTION).run(launcherConfig, input));
+  }
+
+  public OutputAndStatus<JobOutput> submitDiscoverSchema(long jobId, int attempt, JobDiscoverCatalogConfig config) {
+    final StandardDiscoverCatalogInput input = new StandardDiscoverCatalogInput().withConnectionConfiguration(config.getConnectionConfiguration());
+    final IntegrationLauncherConfig launcherConfig = new IntegrationLauncherConfig()
+        .withJobId(jobId)
+        .withAttemptId((long) attempt)
+        .withDockerImage(config.getDockerImage());
+
+    return toOutputAndStatus(() -> getWorkflowStub(DiscoverCatalogWorkflow.class, TemporalJobType.DISCOVER_SCHEMA).run(launcherConfig, input));
   }
 
   private OutputAndStatus<JobOutput> toOutputAndStatus(CheckedSupplier<JobOutput, TemporalJobException> supplier) {

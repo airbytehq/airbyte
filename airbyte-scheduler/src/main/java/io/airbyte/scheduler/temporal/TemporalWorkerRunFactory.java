@@ -57,6 +57,9 @@ public class TemporalWorkerRunFactory {
       case CHECK_CONNECTION_SOURCE, CHECK_CONNECTION_DESTINATION -> () -> {
         return temporalClient.submitCheckConnection(job.getId(), attemptId, job.getConfig().getCheckConnection());
       };
+      case DISCOVER_SCHEMA -> () -> {
+        return temporalClient.submitDiscoverSchema(job.getId(), attemptId, job.getConfig().getDiscoverCatalog());
+      };
       default -> throw new IllegalArgumentException("Does not support job type: " + temporalJobType);
     };
   }
