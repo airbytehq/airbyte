@@ -24,37 +24,35 @@
 
 package io.airbyte.scheduler.temporal;
 
-import io.airbyte.commons.io.IOs;
-import io.airbyte.commons.io.LineGobbler;
+import com.google.common.base.Preconditions;
 import io.airbyte.config.IntegrationLauncherConfig;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.workers.WorkerUtils;
+import io.airbyte.config.JobGetSpecConfig;
+import io.airbyte.config.JobOutput;
+import io.airbyte.workers.DefaultGetSpecWorker;
+import io.airbyte.workers.JobStatus;
+import io.airbyte.workers.OutputAndStatus;
+import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessBuilderFactory;
-import io.airbyte.workers.protocols.airbyte.AirbyteStreamFactory;
-import io.airbyte.workers.protocols.airbyte.DefaultAirbyteStreamFactory;
+import io.airbyte.workers.wrappers.JobOutputGetSpecWorker;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
 import io.temporal.activity.ActivityOptions;
 import io.temporal.workflow.Workflow;
 import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
-import java.io.InputStream;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.time.Instant;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 @WorkflowInterface
 public interface SpecWorkflow {
 
   @WorkflowMethod
-  ConnectorSpecification run(IntegrationLauncherConfig launcherConfig);
+  JobOutput run(IntegrationLauncherConfig launcherConfig);
 
   class WorkflowImpl implements SpecWorkflow {
 
@@ -65,7 +63,7 @@ public interface SpecWorkflow {
     private final SpecActivity activity = Workflow.newActivityStub(SpecActivity.class, options);
 
     @Override
-    public ConnectorSpecification run(IntegrationLauncherConfig launcherConfig) {
+    public JobOutput run(IntegrationLauncherConfig launcherConfig) {
       return activity.run(launcherConfig);
     }
 
@@ -75,7 +73,7 @@ public interface SpecWorkflow {
   interface SpecActivity {
 
     @ActivityMethod
-    ConnectorSpecification run(IntegrationLauncherConfig launcherConfig);
+    JobOutput run(IntegrationLauncherConfig launcherConfig);
 
   }
 
@@ -91,46 +89,29 @@ public interface SpecWorkflow {
       this.workspaceRoot = workspaceRoot;
     }
 
-    public ConnectorSpecification run(IntegrationLauncherConfig launcherConfig) {
+    public JobOutput run(IntegrationLauncherConfig launcherConfig) {
       try {
-        // todo (cgardens) - we need to find a way to standardize log paths sanely across all workflow.
-        // right now we have this in temporal workflow.
+        // todo (cgardens) - there are 2 sources of truth for job path. we need to reduce this down to one,
+        // once we are fully on temporal.
         final Path jobRoot = workspaceRoot
-            .resolve("spec")
-            .resolve(launcherConfig.getDockerImage().replaceAll("[^A-Za-z0-9]", ""))
-            .resolve(String.valueOf(Instant.now().getEpochSecond()));
+            .resolve(String.valueOf(launcherConfig.getJobId()))
+            .resolve(String.valueOf(launcherConfig.getAttemptId().intValue()));
+
+        MDC.put("job_id", String.valueOf(launcherConfig.getJobId()));
+        MDC.put("job_root", jobRoot.toString());
+        MDC.put("job_log_filename", WorkerConstants.LOG_FILENAME);
 
         final IntegrationLauncher integrationLauncher =
             new AirbyteIntegrationLauncher(launcherConfig.getJobId(), launcherConfig.getAttemptId().intValue(), launcherConfig.getDockerImage(), pbf);
-        final Process process = integrationLauncher.spec(jobRoot).start();
 
-        LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
-
-        final AirbyteStreamFactory streamFactory = new DefaultAirbyteStreamFactory();
-
-        Optional<ConnectorSpecification> spec;
-        try (InputStream stdout = process.getInputStream()) {
-          spec = streamFactory.create(IOs.newBufferedReader(stdout))
-              .filter(message -> message.getType() == AirbyteMessage.Type.SPEC)
-              .map(AirbyteMessage::getSpec)
-              .findFirst();
-
-          // todo (cgardens) - let's pre-fetch the images outside of the worker so we don't need account for
-          // this.
-          // retrieving spec should generally be instantaneous, but since docker images might not be pulled
-          // it could take a while longer depending on internet conditions as well.
-          WorkerUtils.gentleClose(process, 30, TimeUnit.MINUTES);
-        }
-
-        int exitCode = process.exitValue();
-        if (exitCode == 0) {
-          if (spec.isEmpty()) {
-            throw new RuntimeException("Spec job failed to output a spec struct.");
-          } else {
-            return spec.get();
-          }
+        final JobGetSpecConfig jobGetSpecConfig = new JobGetSpecConfig().withDockerImage(launcherConfig.getDockerImage());
+        final OutputAndStatus<JobOutput> run = new JobOutputGetSpecWorker(new DefaultGetSpecWorker(integrationLauncher))
+            .run(jobGetSpecConfig, jobRoot);
+        if (run.getStatus() == JobStatus.SUCCEEDED) {
+          Preconditions.checkState(run.getOutput().isPresent());
+          return run.getOutput().get();
         } else {
-          throw new RuntimeException(String.format("Spec job subprocess finished with exit code %s", exitCode));
+          throw new TemporalJobException();
         }
       } catch (Exception e) {
         throw new RuntimeException("Spec job failed with an exception", e);

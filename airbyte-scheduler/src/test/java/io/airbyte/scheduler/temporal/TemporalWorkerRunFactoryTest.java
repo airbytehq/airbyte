@@ -37,6 +37,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
@@ -59,6 +60,15 @@ class TemporalWorkerRunFactoryTest {
     job = mock(Job.class, RETURNS_DEEP_STUBS);
     when(job.getId()).thenReturn(JOB_ID);
     when(job.getAttemptsCount()).thenReturn(ATTEMPT_ID);
+  }
+
+  @Test
+  void testGetSpec() throws Exception {
+    when(job.getConfigType()).thenReturn(ConfigType.GET_SPEC);
+    final WorkerRun workerRun = workerRunFactory.create(job);
+    workerRun.call();
+    verify(temporalClient).submitGetSpec(JOB_ID, ATTEMPT_ID, job.getConfig().getGetSpec());
+    assertEquals(jobRoot, workerRun.getJobRoot());
   }
 
   @ParameterizedTest

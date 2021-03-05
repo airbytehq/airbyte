@@ -24,12 +24,12 @@
 
 package io.airbyte.scheduler.temporal;
 
+import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.IntegrationLauncherConfig;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.StandardCheckConnectionInput;
-import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.temporal.TemporalUtils.TemporalJobType;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
@@ -43,12 +43,13 @@ public class TemporalClient {
     this.client = client;
   }
 
-  public ConnectorSpecification submitGetSpec(long jobId, int attempt, JobGetSpecConfig config) {
+  public OutputAndStatus<JobOutput> submitGetSpec(long jobId, int attempt, JobGetSpecConfig config) {
     final IntegrationLauncherConfig launcherConfig = new IntegrationLauncherConfig()
         .withJobId(jobId)
         .withAttemptId((long) attempt)
         .withDockerImage(config.getDockerImage());
-    return getWorkflowStub(SpecWorkflow.class, TemporalJobType.GET_SPEC).run(launcherConfig);
+    return toOutputAndStatus(() -> getWorkflowStub(SpecWorkflow.class, TemporalJobType.GET_SPEC).run(launcherConfig));
+
   }
 
   public OutputAndStatus<JobOutput> submitCheckConnection(long jobId, int attempt, JobCheckConnectionConfig config) {
@@ -57,9 +58,13 @@ public class TemporalClient {
         .withJobId(jobId)
         .withAttemptId((long) attempt)
         .withDockerImage(config.getDockerImage());
+
+    return toOutputAndStatus(() -> getWorkflowStub(CheckConnectionWorkflow.class, TemporalJobType.CHECK_CONNECTION).run(launcherConfig, input));
+  }
+
+  private OutputAndStatus<JobOutput> toOutputAndStatus(CheckedSupplier<JobOutput, TemporalJobException> supplier) {
     try {
-      final JobOutput run = getWorkflowStub(CheckConnectionWorkflow.class, TemporalJobType.CHECK_CONNECTION).run(launcherConfig, input);
-      return new OutputAndStatus<>(JobStatus.SUCCEEDED, run);
+      return new OutputAndStatus<>(JobStatus.SUCCEEDED, supplier.get());
     } catch (TemporalJobException e) {
       return new OutputAndStatus<>(JobStatus.FAILED);
     }
