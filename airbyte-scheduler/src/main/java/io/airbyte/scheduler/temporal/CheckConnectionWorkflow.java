@@ -46,7 +46,6 @@ import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
 import java.nio.file.Path;
 import java.time.Duration;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,8 +58,8 @@ public interface CheckConnectionWorkflow {
   class WorkflowImpl implements CheckConnectionWorkflow {
 
     final ActivityOptions options = ActivityOptions.newBuilder()
-            .setScheduleToCloseTimeout(Duration.ofHours(1))
-            .build();
+        .setScheduleToCloseTimeout(Duration.ofHours(1))
+        .build();
     private final CheckConnectionActivity activity = Workflow.newActivityStub(CheckConnectionActivity.class, options);
 
     @Override

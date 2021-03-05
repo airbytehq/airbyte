@@ -48,7 +48,6 @@ import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
 import java.nio.file.Path;
 import java.time.Duration;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,8 +61,8 @@ public interface SyncWorkflow {
   class WorkflowImpl implements SyncWorkflow {
 
     final ActivityOptions options = ActivityOptions.newBuilder()
-            .setScheduleToCloseTimeout(Duration.ofDays(3))
-            .build();
+        .setScheduleToCloseTimeout(Duration.ofDays(3))
+        .build();
     private final SyncActivity activity = Workflow.newActivityStub(SyncActivity.class, options);
 
     @Override
