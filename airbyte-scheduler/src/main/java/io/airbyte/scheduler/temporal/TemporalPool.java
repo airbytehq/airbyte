@@ -84,7 +84,7 @@ public class TemporalPool implements Runnable {
 
     while (!getNamespaces().contains("default")) {
       LOGGER.warn("Waiting for default namespace to be initialized in temporal...");
-      wait(5);
+      wait(2);
     }
 
     // sometimes it takes a few additional seconds for workflow queue listening to be available
