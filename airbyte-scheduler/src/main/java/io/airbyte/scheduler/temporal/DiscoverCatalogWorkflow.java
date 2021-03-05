@@ -26,16 +26,18 @@ package io.airbyte.scheduler.temporal;
 
 import com.google.common.base.Preconditions;
 import io.airbyte.config.IntegrationLauncherConfig;
-import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobOutput;
-import io.airbyte.workers.DefaultGetSpecWorker;
+import io.airbyte.config.StandardDiscoverCatalogInput;
+import io.airbyte.workers.DefaultDiscoverCatalogWorker;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessBuilderFactory;
-import io.airbyte.workers.wrappers.JobOutputGetSpecWorker;
+import io.airbyte.workers.protocols.airbyte.AirbyteStreamFactory;
+import io.airbyte.workers.protocols.airbyte.DefaultAirbyteStreamFactory;
+import io.airbyte.workers.wrappers.JobOutputDiscoverSchemaWorker;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
 import io.temporal.activity.ActivityOptions;
@@ -48,64 +50,67 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @WorkflowInterface
-public interface SpecWorkflow {
+public interface DiscoverCatalogWorkflow {
 
   @WorkflowMethod
-  JobOutput run(IntegrationLauncherConfig launcherConfig);
+  JobOutput run(IntegrationLauncherConfig launcherConfig, StandardDiscoverCatalogInput config) throws TemporalJobException;
 
-  class WorkflowImpl implements SpecWorkflow {
+  class WorkflowImpl implements DiscoverCatalogWorkflow {
 
     final ActivityOptions options = ActivityOptions.newBuilder()
-        .setScheduleToCloseTimeout(Duration.ofHours(1))
+        .setScheduleToCloseTimeout(Duration.ofHours(2))
         .build();
-    private final SpecActivity activity = Workflow.newActivityStub(SpecActivity.class, options);
+    private final DiscoverCatalogActivity activity = Workflow.newActivityStub(DiscoverCatalogActivity.class, options);
 
     @Override
-    public JobOutput run(IntegrationLauncherConfig launcherConfig) {
-      return activity.run(launcherConfig);
+    public JobOutput run(IntegrationLauncherConfig launcherConfig, StandardDiscoverCatalogInput config) throws TemporalJobException {
+      return activity.run(launcherConfig, config);
     }
 
   }
 
   @ActivityInterface
-  interface SpecActivity {
+  interface DiscoverCatalogActivity {
 
     @ActivityMethod
-    JobOutput run(IntegrationLauncherConfig launcherConfig);
+    JobOutput run(IntegrationLauncherConfig launcherConfig, StandardDiscoverCatalogInput config) throws TemporalJobException;
 
   }
 
-  class SpecActivityImpl implements SpecActivity {
+  class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SpecActivityImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DiscoverCatalogActivityImpl.class);
 
     private final ProcessBuilderFactory pbf;
     private final Path workspaceRoot;
 
-    public SpecActivityImpl(ProcessBuilderFactory pbf, Path workspaceRoot) {
+    public DiscoverCatalogActivityImpl(ProcessBuilderFactory pbf, Path workspaceRoot) {
       this.pbf = pbf;
       this.workspaceRoot = workspaceRoot;
     }
 
-    public JobOutput run(IntegrationLauncherConfig launcherConfig) {
+    public JobOutput run(IntegrationLauncherConfig launcherConfig, StandardDiscoverCatalogInput config) {
       try {
         final Path jobRoot = WorkerUtils.getJobRoot(workspaceRoot, launcherConfig);
         WorkerUtils.setJobMdc(jobRoot, launcherConfig.getJobId());
 
         final IntegrationLauncher integrationLauncher =
             new AirbyteIntegrationLauncher(launcherConfig.getJobId(), launcherConfig.getAttemptId().intValue(), launcherConfig.getDockerImage(), pbf);
+        final AirbyteStreamFactory streamFactory = new DefaultAirbyteStreamFactory();
 
-        final JobGetSpecConfig jobGetSpecConfig = new JobGetSpecConfig().withDockerImage(launcherConfig.getDockerImage());
-        final OutputAndStatus<JobOutput> run = new JobOutputGetSpecWorker(new DefaultGetSpecWorker(integrationLauncher))
-            .run(jobGetSpecConfig, jobRoot);
+        final OutputAndStatus<JobOutput> run =
+            new JobOutputDiscoverSchemaWorker(
+                new DefaultDiscoverCatalogWorker(integrationLauncher, streamFactory)).run(config, jobRoot);
         if (run.getStatus() == JobStatus.SUCCEEDED) {
           Preconditions.checkState(run.getOutput().isPresent());
+          LOGGER.info("job output {}", run.getOutput().get());
           return run.getOutput().get();
         } else {
-          throw new TemporalJobException();
+          throw new RuntimeException("Discover catalog worker completed with a FAILED status.");
         }
+
       } catch (Exception e) {
-        throw new RuntimeException("Spec job failed with an exception", e);
+        throw new RuntimeException("Discover catalog job failed with an exception", e);
       }
     }
 
