@@ -1,4 +1,6 @@
-# On Kubernetes \(Alpha\)
+# On Kubernetes
+
+> :warning: **Alpha Preview**: This is an early preview of Kubernetes that is pinned to Airbyte version 0.16.1. We do not recommend this preview for production use.
 
 ## Support
 
@@ -88,7 +90,7 @@ This would allow you to define custom resources or extend existing resources, ev
 
 ## View Raw Manifests
 
-For a specific overlay, you can run `kubectl kustomize kube/overlays/dev` to view the manifests that Kustomize will apply to your Kubernetes cluster. This is useful for debugging because it will show the exact resources you are defining.
+For a specific overlay, you can run `kubectl kustomize kube/overlays/stable` to view the manifests that Kustomize will apply to your Kubernetes cluster. This is useful for debugging because it will show the exact resources you are defining.
 
 ## Resizing Volumes
 
