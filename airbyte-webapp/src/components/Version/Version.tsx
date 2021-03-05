@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-import config from "../../config";
+import config from "config";
 
 const Content = styled.div<{ primary?: boolean }>`
   color: ${({ theme, primary }) =>

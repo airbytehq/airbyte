@@ -2,7 +2,7 @@ import React from "react";
 import styled from "styled-components";
 
 import Text from "./Text";
-import ImageBlock from "../../ImageBlock";
+import ImageBlock from "components/ImageBlock";
 
 export type IProps = {
   item: IDataItem;
@@ -28,7 +28,7 @@ const ItemView = styled.div`
 
 const ListItem: React.FC<IProps> = ({ item, fullText }) => {
   return (
-    <ItemView>
+    <ItemView data-id={item.value}>
       <Text
         primary={item.primary}
         secondary={item.secondary}

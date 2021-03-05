@@ -2,9 +2,9 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import TreeView from "../../TreeView";
-import { Cell, Header, LightCell } from "../../SimpleTableComponents";
-import { SyncSchema } from "../../../core/domain/catalog";
+import TreeView from "components/TreeView";
+import { Cell, Header, LightCell } from "components/SimpleTableComponents";
+import { SyncSchema } from "core/domain/catalog";
 
 type IProps = {
   schema: SyncSchema;

@@ -14,7 +14,7 @@ const formItems: FormBlock[] = [
         fieldKey: "start_date",
         fieldName: "key.start_date",
         isRequired: true,
-        type: "string"
+        type: "string",
       },
       {
         _type: "formCondition",
@@ -34,9 +34,9 @@ const formItems: FormBlock[] = [
                 fieldKey: "api_key",
                 fieldName: "key.credentials.api_key",
                 isRequired: true,
-                type: "string"
-              }
-            ]
+                type: "string",
+              },
+            ],
           },
           oauth: {
             title: "oauth",
@@ -51,22 +51,22 @@ const formItems: FormBlock[] = [
                 fieldKey: "redirect_uri",
                 fieldName: "key.credentials.redirect_uri",
                 isRequired: true,
-                type: "string"
-              }
-            ]
-          }
-        }
-      }
-    ]
-  }
+                type: "string",
+              },
+            ],
+          },
+        },
+      },
+    ],
+  },
 ];
 
 test("should select first key by default", () => {
   const uiWidgetState = buildPathInitialState(formItems, {});
   expect(uiWidgetState).toEqual({
     "key.credentials": {
-      selectedItem: "api key"
-    }
+      selectedItem: "api key",
+    },
   });
 });
 
@@ -76,16 +76,16 @@ test("should select key selected in default values", () => {
     {
       key: {
         credentials: {
-          redirect_uri: "value"
-        }
-      }
+          redirect_uri: "value",
+        },
+      },
     },
     {}
   );
   expect(uiWidgetState).toEqual({
     "key.credentials": {
-      selectedItem: "oauth"
-    }
+      selectedItem: "oauth",
+    },
   });
 });
 
@@ -102,15 +102,15 @@ test("should select correct key for enum", () => {
     {
       key: {
         provider: {
-          storage: "GCS"
-        }
-      }
+          storage: "GCS",
+        },
+      },
     },
     {}
   );
   expect(uiWidgetState).toEqual({
     "key.provider": {
-      selectedItem: "GCS: Google Cloud Storage"
-    }
+      selectedItem: "GCS: Google Cloud Storage",
+    },
   });
 });

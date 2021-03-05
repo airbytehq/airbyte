@@ -1,13 +1,14 @@
 import React, { useMemo, useState } from "react";
 import { useResource } from "rest-hooks";
 
-import useRouter from "../../../../../components/hooks/useRouterHook";
-import config from "../../../../../config";
-import SourceDefinitionResource from "../../../../../core/resources/SourceDefinition";
-import useSource from "../../../../../components/hooks/services/useSourceHook";
+import useRouter from "components/hooks/useRouterHook";
+import config from "config";
+import SourceDefinitionResource from "core/resources/SourceDefinition";
+import useSource from "components/hooks/services/useSourceHook";
 
 // TODO: create separate component for source and destinations forms
 import SourceForm from "../../../../SourcesPage/pages/CreateSourcePage/components/SourceForm";
+import { ConnectionConfiguration } from "core/domain/connection";
 
 type IProps = {
   afterSubmit: () => void;
@@ -21,17 +22,17 @@ const SourceFormComponent: React.FC<IProps> = ({ afterSubmit }) => {
   const { sourceDefinitions } = useResource(
     SourceDefinitionResource.listShape(),
     {
-      workspaceId: config.ui.workspaceId
+      workspaceId: config.ui.workspaceId,
     }
   );
   const { createSource } = useSource();
 
   const sourcesDropDownData = useMemo(
     () =>
-      sourceDefinitions.map(item => ({
+      sourceDefinitions.map((item) => ({
         text: item.name,
         value: item.sourceDefinitionId,
-        img: "/default-logo-catalog.svg"
+        img: "/default-logo-catalog.svg",
       })),
     [sourceDefinitions]
   );
@@ -39,10 +40,10 @@ const SourceFormComponent: React.FC<IProps> = ({ afterSubmit }) => {
   const onSubmitSourceStep = async (values: {
     name: string;
     serviceType: string;
-    connectionConfiguration?: any;
+    connectionConfiguration?: ConnectionConfiguration;
   }) => {
     const connector = sourceDefinitions.find(
-      item => item.sourceDefinitionId === values.serviceType
+      (item) => item.sourceDefinitionId === values.serviceType
     );
     setErrorStatusRequest(null);
     try {
@@ -52,7 +53,10 @@ const SourceFormComponent: React.FC<IProps> = ({ afterSubmit }) => {
         setSuccessRequest(false);
         afterSubmit();
         push({
-          state: { ...location.state, sourceId: result.sourceId }
+          state: {
+            ...(location.state as Record<string, unknown>),
+            sourceId: result.sourceId,
+          },
         });
       }, 2000);
     } catch (e) {

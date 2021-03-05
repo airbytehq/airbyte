@@ -1,3 +1,7 @@
+---
+description: Using Airbyte and MeiliSearch
+---
+
 # Save and Search Through Your Slack History on a Free Slack Plan
 
 ![](../.gitbook/assets/slack-history-ui-title.png)

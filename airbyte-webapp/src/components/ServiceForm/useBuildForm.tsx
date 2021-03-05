@@ -3,20 +3,17 @@ import { useCallback, useMemo, useState } from "react";
 import { JSONSchema7 } from "json-schema";
 import merge from "lodash.merge";
 
-import {
-  FormBlock,
-  WidgetConfig,
-  WidgetConfigMap
-} from "../../core/form/types";
-import { jsonSchemaToUiWidget } from "../../core/jsonSchema/schemaToUiWidget";
-import { buildYupFormForJsonSchema } from "../../core/jsonSchema/schemaToYup";
-import { buildPathInitialState } from "../../core/form/uiWidget";
+import { FormBlock, WidgetConfig, WidgetConfigMap } from "core/form/types";
+import { jsonSchemaToUiWidget } from "core/jsonSchema/schemaToUiWidget";
+import { buildYupFormForJsonSchema } from "core/jsonSchema/schemaToYup";
+import { buildPathInitialState } from "core/form/uiWidget";
+import { ConnectionConfiguration } from "core/domain/connection";
 
 export type FormInitialValues = {
   name: string;
   serviceType: string;
   frequency?: string;
-  connectionConfiguration?: any;
+  connectionConfiguration?: ConnectionConfiguration;
 };
 
 function useBuildForm(
@@ -37,7 +34,7 @@ function useBuildForm(
 
     const values: FormInitialValues = {
       ...initVals,
-      ...initialValues
+      ...initialValues,
     };
 
     return values;
@@ -50,7 +47,7 @@ function useBuildForm(
         type: "string",
         fieldKey: "name",
         fieldName: "name",
-        isRequired: true
+        isRequired: true,
       },
       {
         _type: "formItem",
@@ -59,9 +56,9 @@ function useBuildForm(
         fieldName: "serviceType",
         // TODO: find better approach and possibly move to UIWidget
         meta: {
-          includeInstruction: formType !== "connection"
+          includeInstruction: formType !== "connection",
         },
-        isRequired: true
+        isRequired: true,
       },
       ...(jsonSchema && !isLoading
         ? [jsonSchemaToUiWidget(jsonSchema, "connectionConfiguration")]
@@ -73,27 +70,28 @@ function useBuildForm(
               fieldKey: "frequency",
               fieldName: "frequency",
               type: "string",
-              isRequired: true
-            }
+              isRequired: true,
+            },
           ]
-        : []) as FormBlock[])
+        : []) as FormBlock[]),
     ];
   }, [jsonSchema, isLoading, formType]);
 
   return {
     initialValues: startValues,
-    formFields
+    formFields,
   };
 }
 
 const useConstructValidationSchema = (
   uiWidgetsInfo: WidgetConfigMap,
   jsonSchema?: JSONSchema7
-) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): yup.ObjectSchema<any> => {
   return useMemo(() => {
-    let validationShape: yup.ObjectSchema<any> = yup.object().shape({
+    let validationShape: yup.ObjectSchema = yup.object().shape({
       name: yup.string().required("form.empty.error"),
-      serviceType: yup.string().required("form.empty.error")
+      serviceType: yup.string().required("form.empty.error"),
     });
 
     // We have additional fields. Lets build schema for them
@@ -104,7 +102,7 @@ const useConstructValidationSchema = (
           uiWidgetsInfo,
           undefined,
           "connectionConfiguration"
-        )
+        ),
       });
     }
 
@@ -115,8 +113,13 @@ const useConstructValidationSchema = (
 const useBuildUiWidgets = (
   formFields: FormBlock[],
   formValues: FormInitialValues
-) => {
-  const [overriddenWidgetState, setUiWidgetsInfo] = useState({});
+): {
+  uiWidgetsInfo: WidgetConfigMap;
+  setUiWidgetsInfo: (widgetId: string, updatedValues: WidgetConfig) => void;
+} => {
+  const [overriddenWidgetState, setUiWidgetsInfo] = useState<WidgetConfigMap>(
+    {}
+  );
 
   // As schema is dynamic, it is possible, that new updated values, will differ from one stored.
   const mergedState = useMemo(
@@ -136,7 +139,7 @@ const useBuildUiWidgets = (
 
   return {
     uiWidgetsInfo: mergedState,
-    setUiWidgetsInfo: setUiWidgetsInfoSubState
+    setUiWidgetsInfo: setUiWidgetsInfoSubState,
   };
 };
 

@@ -5,7 +5,7 @@ import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFileDownload } from "@fortawesome/free-solid-svg-icons";
 
-import Button from "../../Button";
+import Button from "components/Button";
 
 type IProps = {
   logs: string[];
@@ -24,7 +24,7 @@ const DownloadButton: React.FC<IProps> = ({ logs, fileName }) => {
   const downloadFileWithLogs = () => {
     const element = document.createElement("a");
     const file = new Blob([logs.join("\n")], {
-      type: "text/plain;charset=utf-8"
+      type: "text/plain;charset=utf-8",
     });
     element.href = URL.createObjectURL(file);
     element.download = `${fileName}.txt`;
@@ -38,7 +38,7 @@ const DownloadButton: React.FC<IProps> = ({ logs, fileName }) => {
       onClick={downloadFileWithLogs}
       secondary
       title={formatMessage({
-        id: "sources.downloadLogs"
+        id: "sources.downloadLogs",
       })}
     >
       <FontAwesomeIcon icon={faFileDownload} />

@@ -5,35 +5,32 @@ import {
   AirbyteStreamConfiguration,
   SyncMode,
   SyncSchema,
-  SyncSchemaStream
-} from "../../core/domain/catalog";
-import FrequencyConfig from "../../data/FrequencyConfig.json";
+  SyncSchemaStream,
+} from "core/domain/catalog";
+import FrequencyConfig from "data/FrequencyConfig.json";
+import { IDataItem } from "../DropDown/components/ListItem";
 
 // get cursorField if it is empty and syncMode is INCREMENTAL
 function getDefaultCursorField(streamNode: SyncSchemaStream): string[] {
   if (streamNode.stream.defaultCursorField.length) {
     return streamNode.stream.defaultCursorField;
   }
-  // if (stream.fields?.length) {
-  //   return [stream.fields[0].cleanedName];
-  // }
-
   return streamNode.config.cursorField;
 }
 
 // If the value in supportedSyncModes is empty assume the only supported sync mode is FULL_REFRESH.
 // Otherwise it supports whatever sync modes are present.
-const useInitialSchema = (schema: SyncSchema) => {
+const useInitialSchema = (schema: SyncSchema): SyncSchema => {
   const initialSchema = useMemo<SyncSchema>(
     () => ({
-      streams: schema.streams.map<SyncSchemaStream>(streamNode => {
+      streams: schema.streams.map<SyncSchemaStream>((streamNode) => {
         const node = !streamNode.stream.supportedSyncModes?.length
           ? {
               ...streamNode,
               stream: {
                 ...streamNode.stream,
-                supportedSyncModes: [SyncMode.FullRefresh]
-              }
+                supportedSyncModes: [SyncMode.FullRefresh],
+              },
             }
           : streamNode;
 
@@ -46,7 +43,7 @@ const useInitialSchema = (schema: SyncSchema) => {
           config: Partial<AirbyteStreamConfiguration>
         ): SyncSchemaStream => ({
           ...node,
-          config: { ...node.config, ...config }
+          config: { ...node.config, ...config },
         });
 
         const supportedSyncModes = node.stream.supportedSyncModes;
@@ -54,7 +51,7 @@ const useInitialSchema = (schema: SyncSchema) => {
         // If syncMode is null, FULL_REFRESH should be selected by default (if it support FULL_REFRESH).
         if (supportedSyncModes.includes(SyncMode.FullRefresh)) {
           return updateStream({
-            syncMode: SyncMode.FullRefresh
+            syncMode: SyncMode.FullRefresh,
           });
         }
 
@@ -64,15 +61,15 @@ const useInitialSchema = (schema: SyncSchema) => {
             cursorField: streamNode.config.cursorField.length
               ? streamNode.config.cursorField
               : getDefaultCursorField(streamNode),
-            syncMode: SyncMode.Incremental
+            syncMode: SyncMode.Incremental,
           });
         }
 
         // If source don't support INCREMENTAL and FULL_REFRESH - set first value from supportedSyncModes list
         return updateStream({
-          syncMode: streamNode.stream.supportedSyncModes[0]
+          syncMode: streamNode.stream.supportedSyncModes[0],
         });
-      })
+      }),
     }),
     [schema.streams]
   );
@@ -80,24 +77,24 @@ const useInitialSchema = (schema: SyncSchema) => {
   return initialSchema;
 };
 
-const useFrequencyDropdownData = () => {
+const useFrequencyDropdownData = (): IDataItem[] => {
   const formatMessage = useIntl().formatMessage;
 
   const dropdownData = useMemo(
     () =>
-      FrequencyConfig.map(item => ({
+      FrequencyConfig.map((item) => ({
         ...item,
         text:
           item.value === "manual"
             ? item.text
             : formatMessage(
                 {
-                  id: "form.every"
+                  id: "form.every",
                 },
                 {
-                  value: item.simpleText || item.text
+                  value: item.simpleText || item.text,
                 }
-              )
+              ),
       })),
     [formatMessage]
   );

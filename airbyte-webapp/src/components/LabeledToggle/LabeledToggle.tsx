@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-import Toggle from "../Toggle";
+import Toggle from "components/Toggle";
 
 type IProps = {
   message?: React.ReactNode;
@@ -33,7 +33,7 @@ const AdditionMessage = styled.span`
   }
 `;
 
-const LabeledToggle: React.FC<IProps> = props => (
+const LabeledToggle: React.FC<IProps> = (props) => (
   <ToggleContainer>
     <Toggle {...props} id={`toggle-${props.name}`} />
     <Label disabled={props.disabled} htmlFor={`toggle-${props.name}`}>
