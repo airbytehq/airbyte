@@ -87,7 +87,7 @@ public interface SpecWorkflow {
     public JobOutput run(IntegrationLauncherConfig launcherConfig) {
       try {
         final Path jobRoot = WorkerUtils.getJobRoot(workspaceRoot, launcherConfig);
-        WorkerUtils.setJobMdc(jobRoot, launcherConfig);
+        WorkerUtils.setJobMdc(jobRoot, launcherConfig.getJobId());
 
         final IntegrationLauncher integrationLauncher =
             new AirbyteIntegrationLauncher(launcherConfig.getJobId(), launcherConfig.getAttemptId().intValue(), launcherConfig.getDockerImage(), pbf);

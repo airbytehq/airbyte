@@ -60,6 +60,9 @@ public class TemporalWorkerRunFactory {
       case DISCOVER_SCHEMA -> () -> {
         return temporalClient.submitDiscoverSchema(job.getId(), attemptId, job.getConfig().getDiscoverCatalog());
       };
+      case SYNC -> () -> {
+        return temporalClient.submitSync(job.getId(), attemptId, job.getConfig().getSync());
+      };
       default -> throw new IllegalArgumentException("Does not support job type: " + temporalJobType);
     };
   }

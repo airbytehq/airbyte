@@ -30,9 +30,12 @@ import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobOutput;
+import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
+import io.airbyte.config.StandardSyncInput;
 import io.airbyte.scheduler.temporal.TemporalUtils.TemporalJobType;
+import io.airbyte.scheduler.worker_run.SyncWorkerRunFactory;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
 import io.temporal.client.WorkflowClient;
@@ -72,6 +75,16 @@ public class TemporalClient {
         .withDockerImage(config.getDockerImage());
 
     return toOutputAndStatus(() -> getWorkflowStub(DiscoverCatalogWorkflow.class, TemporalJobType.DISCOVER_SCHEMA).run(launcherConfig, input));
+  }
+
+  public OutputAndStatus<JobOutput> submitSync(long jobId, int attempt, JobSyncConfig config) {
+    final StandardSyncInput input = SyncWorkerRunFactory.createSyncInputSyncConfig(config);
+    return toOutputAndStatus(() -> getWorkflowStub(SyncWorkflow.class, TemporalJobType.SYNC).run(
+        jobId,
+        attempt,
+        config.getSourceDockerImage(),
+        config.getDestinationDockerImage(),
+        input));
   }
 
   private OutputAndStatus<JobOutput> toOutputAndStatus(CheckedSupplier<JobOutput, TemporalJobException> supplier) {

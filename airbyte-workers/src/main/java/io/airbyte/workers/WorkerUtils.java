@@ -118,13 +118,17 @@ public class WorkerUtils {
   // todo (cgardens) - there are 2 sources of truth for job path. we need to reduce this down to one,
   // once we are fully on temporal.
   public static Path getJobRoot(Path workspaceRoot, IntegrationLauncherConfig launcherConfig) {
-    return workspaceRoot
-        .resolve(String.valueOf(launcherConfig.getJobId()))
-        .resolve(String.valueOf(launcherConfig.getAttemptId().intValue()));
+    return getJobRoot(workspaceRoot, launcherConfig.getJobId(), launcherConfig.getAttemptId().intValue());
   }
 
-  public static void setJobMdc(Path jobRoot, IntegrationLauncherConfig launcherConfig) {
-    MDC.put("job_id", String.valueOf(launcherConfig.getJobId()));
+  public static Path getJobRoot(Path workspaceRoot, long jobId, long attemptId) {
+    return workspaceRoot
+        .resolve(String.valueOf(jobId))
+        .resolve(String.valueOf(attemptId));
+  }
+
+  public static void setJobMdc(Path jobRoot, long jobId) {
+    MDC.put("job_id", String.valueOf(jobId));
     MDC.put("job_root", jobRoot.toString());
     MDC.put("job_log_filename", WorkerConstants.LOG_FILENAME);
   }

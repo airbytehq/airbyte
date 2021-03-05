@@ -56,11 +56,9 @@ public class TemporalPool implements Runnable {
     discoverWorker.registerWorkflowImplementationTypes(DiscoverCatalogWorkflow.WorkflowImpl.class);
     discoverWorker.registerActivitiesImplementations(new DiscoverCatalogWorkflow.DiscoverCatalogActivityImpl(pbf, workspaceRoot));
 
-    // todo (cgardens) - these will come back once we use temporal for these workers.
-    // Worker syncWorker = factory.newWorker(TemporalUtils.SYNC_WORKFLOW_QUEUE);
-    // syncWorker.registerWorkflowImplementationTypes(SyncWorkflow.WorkflowImpl.class);
-    // syncWorker.registerActivitiesImplementations(new SyncWorkflow.SyncActivityImpl(pbf,
-    // configs.getWorkspaceRoot()));
+    Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name());
+    syncWorker.registerWorkflowImplementationTypes(SyncWorkflow.WorkflowImpl.class);
+    syncWorker.registerActivitiesImplementations(new SyncWorkflow.SyncActivityImpl(pbf, workspaceRoot));
 
     factory.start();
   }
