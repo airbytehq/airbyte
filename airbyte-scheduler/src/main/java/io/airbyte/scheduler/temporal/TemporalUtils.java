@@ -35,7 +35,7 @@ public class TemporalUtils {
 
   private static final WorkflowServiceStubsOptions TEMPORAL_OPTIONS = WorkflowServiceStubsOptions.newBuilder()
       // todo move to env.
-      .setTarget("temporal:7233")
+      .setTarget("airbyte-temporal:7233")
       .build();
 
   public static final WorkflowServiceStubs TEMPORAL_SERVICE = WorkflowServiceStubs.newInstance(TEMPORAL_OPTIONS);
