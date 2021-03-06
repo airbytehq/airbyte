@@ -27,7 +27,9 @@ package io.airbyte.server.handlers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.util.ClassUtil;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import io.airbyte.api.model.DestinationDefinitionCreate;
 import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.DestinationDefinitionRead;
@@ -39,6 +41,7 @@ import io.airbyte.config.init.SeedRepository;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.client.CachingSchedulerJobClient;
+import io.airbyte.server.errors.KnownException;
 import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -60,21 +63,23 @@ import java.util.stream.Collectors;
 public class DestinationDefinitionsHandler {
 
   private static final String DEFAULT_DESTINATION_DEFINITION_ID_NAME = "destinationDefinitionId";
-  private static final String DESTINATION_DEFINITION_LIST_LOCATION =
-      "https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-config/init/src/main/resources/seed/destination_definitions.yaml";
+  private static final String DEFAULT_LATEST_LIST_BASE_URL = "https://raw.githubusercontent.com";
+  private static final String DESTINATION_DEFINITION_LIST_LOCATION_PATH =
+      "/airbytehq/airbyte/master/airbyte-config/init/src/main/resources/seed/destination_definitions.yaml";
 
   private static final ObjectMapper mapper = new ObjectMapper();
+  private static final HttpClient httpClient = HttpClient.newHttpClient();
 
   private final DockerImageValidator imageValidator;
   private final ConfigRepository configRepository;
   private final Supplier<UUID> uuidSupplier;
   private final CachingSchedulerJobClient schedulerJobClient;
-  private final HttpClient client;
+  private final String latestListBaseUrl;
 
   public DestinationDefinitionsHandler(final ConfigRepository configRepository,
                                        final DockerImageValidator imageValidator,
                                        final CachingSchedulerJobClient schedulerJobClient) {
-    this(configRepository, imageValidator, UUID::randomUUID, schedulerJobClient, HttpClient.newHttpClient());
+    this(configRepository, imageValidator, UUID::randomUUID, schedulerJobClient, DEFAULT_LATEST_LIST_BASE_URL);
   }
 
   @VisibleForTesting
@@ -82,12 +87,12 @@ public class DestinationDefinitionsHandler {
                                        final DockerImageValidator imageValidator,
                                        final Supplier<UUID> uuidSupplier,
                                        final CachingSchedulerJobClient schedulerJobClient,
-                                       final HttpClient client) {
+                                       final String latestListBaseUrl) {
     this.configRepository = configRepository;
     this.imageValidator = imageValidator;
     this.uuidSupplier = uuidSupplier;
     this.schedulerJobClient = schedulerJobClient;
-    this.client = client;
+    this.latestListBaseUrl = latestListBaseUrl;
   }
 
   private static DestinationDefinitionRead buildDestinationDefinitionRead(StandardDestinationDefinition standardDestinationDefinition) {
@@ -98,21 +103,21 @@ public class DestinationDefinitionsHandler {
           .dockerRepository(standardDestinationDefinition.getDockerRepository())
           .dockerImageTag(standardDestinationDefinition.getDockerImageTag())
           .documentationUrl(new URI(standardDestinationDefinition.getDocumentationUrl()));
-    } catch (final URISyntaxException e) {
-      throw new RuntimeException(e);
+    } catch (URISyntaxException | NullPointerException e) {
+      throw new KnownException(500, "Unable to process retrieved latest destination definition list", e);
     }
   }
 
   private static List<StandardDestinationDefinition> toStandardDestinationDefinitions(Iterator<JsonNode> iter) {
     Iterable<JsonNode> iterable = () -> iter;
     var destDefList = new ArrayList<StandardDestinationDefinition>();
-    for (JsonNode e : iterable) {
+    for (JsonNode n : iterable) {
       try {
-        var def = mapper.treeToValue(e, StandardDestinationDefinition.class);
+        var def = mapper.treeToValue(n, StandardDestinationDefinition.class);
+        System.out.println(def);
         destDefList.add(def);
-      } catch (JsonProcessingException jsonProcessingException) {
-        jsonProcessingException.printStackTrace();
-        // return 500 if there is an error.
+      } catch (JsonProcessingException e) {
+        throw new KnownException(500, "Unable to process retrieved latest destination definition list", e);
       }
     }
     return destDefList;
@@ -129,30 +134,39 @@ public class DestinationDefinitionsHandler {
   }
 
   public DestinationDefinitionReadList listLatestDestinationDefinitions() throws ConfigNotFoundException, IOException, JsonValidationException {
-    final var body = getLatestDestinationsList();
-    final var deserialize = Yamls.deserialize(body);
-    SeedRepository.checkNoDuplicateNames(deserialize.elements());
-    SeedRepository.checkNoDuplicateIds(deserialize.elements(), DEFAULT_DESTINATION_DEFINITION_ID_NAME);
+    final JsonNode deserialize;
+    try {
+       deserialize = Yamls.deserialize(getLatestDestinationsList());
+       checkYamlIsPresentWithNoDuplicates(deserialize);
+    } catch (RuntimeException e) {
+      throw new KnownException(500, "Error retrieving latest destination definition", e);
+    }
 
     final var destDefs = toStandardDestinationDefinitions(deserialize.elements());
     final var reads = destDefs.stream()
-        .map(DestinationDefinitionsHandler::buildDestinationDefinitionRead)
-        .collect(Collectors.toList());
+        .map(DestinationDefinitionsHandler::buildDestinationDefinitionRead).collect(Collectors.toList());
     return new DestinationDefinitionReadList().destinationDefinitions(reads);
   }
 
   private String getLatestDestinationsList() {
-    final var request = HttpRequest.newBuilder(
-        URI.create(DESTINATION_DEFINITION_LIST_LOCATION))
+    final var request = HttpRequest
+        .newBuilder(URI.create(latestListBaseUrl + DESTINATION_DEFINITION_LIST_LOCATION_PATH))
         .header("accept", "application/json")
         .build();
-    final var future = client.sendAsync(request, BodyHandlers.ofString());
+    final var future = httpClient.sendAsync(request, BodyHandlers.ofString());
     try {
       final var resp = future.get(1, TimeUnit.SECONDS);
       return resp.body();
     } catch (TimeoutException | InterruptedException | ExecutionException e) {
-      throw new RuntimeException(e);
+      throw new KnownException(500, "Request to retrieve latest destination definition failed", e);
     }
+  }
+
+  private void checkYamlIsPresentWithNoDuplicates(JsonNode deserialize) {
+    final var presentDestList = !deserialize.elements().equals(ClassUtil.emptyIterator());
+    Preconditions.checkState(presentDestList, "Destination definition list is empty");
+    SeedRepository.checkNoDuplicateNames(deserialize.elements());
+    SeedRepository.checkNoDuplicateIds(deserialize.elements(), DEFAULT_DESTINATION_DEFINITION_ID_NAME);
   }
 
   public DestinationDefinitionRead getDestinationDefinition(DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
@@ -199,5 +213,4 @@ public class DestinationDefinitionsHandler {
     schedulerJobClient.resetCache();
     return buildDestinationDefinitionRead(newDestination);
   }
-
 }
