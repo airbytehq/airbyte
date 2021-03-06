@@ -25,7 +25,9 @@ dependencies {
     implementation project(':airbyte-scheduler')
 
     testImplementation "org.postgresql:postgresql:42.2.18"
+
     testImplementation 'com.squareup.okhttp3:mockwebserver:4.9.1'
+
     testImplementation "org.testcontainers:postgresql:1.15.1"
 }
 
