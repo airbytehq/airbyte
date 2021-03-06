@@ -165,5 +165,5 @@ Find the install version and set the `JAVA_HOME` environment to point to the JDK
 
 For example:
 ```
-env JAVA_HOME=/usr/lib/jvm/java-15-openjdk ./gradlew  :airbyte-integrations:connectors:source-harvest-singer:build
+env JAVA_HOME=/usr/lib/jvm/java-15-openjdk ./gradlew  :airbyte-integrations:connectors:your-connector-dir:build
 ```
