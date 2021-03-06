@@ -35,7 +35,6 @@ import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.scheduler.temporal.TemporalUtils.TemporalJobType;
-import io.airbyte.scheduler.worker_run.SyncWorkerRunFactory;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
 import io.temporal.client.WorkflowClient;
@@ -78,7 +77,12 @@ public class TemporalClient {
   }
 
   public OutputAndStatus<JobOutput> submitSync(long jobId, int attempt, JobSyncConfig config) {
-    final StandardSyncInput input = SyncWorkerRunFactory.createSyncInputSyncConfig(config);
+    final StandardSyncInput input = new StandardSyncInput()
+        .withDefaultNamespace(config.getDefaultNamespace())
+        .withSourceConfiguration(config.getSourceConfiguration())
+        .withDestinationConfiguration(config.getDestinationConfiguration())
+        .withCatalog(config.getConfiguredAirbyteCatalog())
+        .withState(config.getState());
     return toOutputAndStatus(() -> getWorkflowStub(SyncWorkflow.class, TemporalJobType.SYNC).run(
         jobId,
         attempt,
