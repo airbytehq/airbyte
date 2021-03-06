@@ -24,6 +24,7 @@
 
 package io.airbyte.workers.wrappers;
 
+import io.airbyte.workers.OutputAndStatus;
 import io.airbyte.workers.Worker;
 import java.nio.file.Path;
 import java.util.function.Function;
