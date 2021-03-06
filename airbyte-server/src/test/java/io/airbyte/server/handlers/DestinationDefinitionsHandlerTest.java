@@ -78,7 +78,8 @@ class DestinationDefinitionsHandlerTest {
     destination = generateDestination();
     schedulerJobClient = spy(CachingSchedulerJobClient.class);
     webServer = new MockWebServer();
-    destinationHandler = new DestinationDefinitionsHandler(configRepository, dockerImageValidator, uuidSupplier, schedulerJobClient, webServer.url("/").toString());
+    destinationHandler =
+        new DestinationDefinitionsHandler(configRepository, dockerImageValidator, uuidSupplier, schedulerJobClient, webServer.url("/").toString());
   }
 
   private StandardDestinationDefinition generateDestination() {
@@ -185,6 +186,7 @@ class DestinationDefinitionsHandlerTest {
   @Nested
   @DisplayName("listLatest")
   class listLatest {
+
     private static final String goodYamlString = "- destinationDefinitionId: a625d593-bba5-4a1c-a53d-2d246268a816\n"
         + "  name: Local JSON\n"
         + "  dockerRepository: airbyte/destination-local-json\n"
@@ -251,5 +253,7 @@ class DestinationDefinitionsHandlerTest {
 
       assertThrows(KnownException.class, () -> destinationHandler.listLatestDestinationDefinitions());
     }
+
   }
+
 }

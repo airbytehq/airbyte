@@ -136,8 +136,8 @@ public class DestinationDefinitionsHandler {
   public DestinationDefinitionReadList listLatestDestinationDefinitions() throws ConfigNotFoundException, IOException, JsonValidationException {
     final JsonNode deserialize;
     try {
-       deserialize = Yamls.deserialize(getLatestDestinationsList());
-       checkYamlIsPresentWithNoDuplicates(deserialize);
+      deserialize = Yamls.deserialize(getLatestDestinationsList());
+      checkYamlIsPresentWithNoDuplicates(deserialize);
     } catch (RuntimeException e) {
       throw new KnownException(500, "Error retrieving latest destination definition", e);
     }
@@ -213,4 +213,5 @@ public class DestinationDefinitionsHandler {
     schedulerJobClient.resetCache();
     return buildDestinationDefinitionRead(newDestination);
   }
+
 }
