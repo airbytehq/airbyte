@@ -49,9 +49,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.UUID;
 import javax.ws.rs.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -96,17 +94,17 @@ class WorkspacesHandlerTest {
   @Test
   void testCreateWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(configRepository.listStandardWorkspaces())
-      .thenReturn(Collections.singletonList(workspace));
+        .thenReturn(Collections.singletonList(workspace));
 
     configRepository.writeStandardWorkspace(workspace);
 
     final WorkspaceCreate workspaceCreate = new WorkspaceCreate()
-      .name("new workspace")
-      .initialSetupComplete(false)
-      .displaySetupWizard(true)
-      .news(false)
-      .anonymousDataCollection(false)
-      .securityUpdates(false);
+        .name("new workspace")
+        .initialSetupComplete(false)
+        .displaySetupWizard(true)
+        .news(false)
+        .anonymousDataCollection(false)
+        .securityUpdates(false);
 
     final WorkspaceRead created = workspacesHandler.createWorkspace(workspaceCreate);
 
@@ -130,19 +128,19 @@ class WorkspacesHandlerTest {
     final SourceRead source = new SourceRead();
 
     when(configRepository.getStandardWorkspace(workspace.getWorkspaceId()))
-      .thenReturn(workspace);
+        .thenReturn(workspace);
 
     when(configRepository.listStandardWorkspaces())
-      .thenReturn(Collections.singletonList(workspace));
+        .thenReturn(Collections.singletonList(workspace));
 
     when(connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody))
-      .thenReturn(new ConnectionReadList().connections(Collections.singletonList(connection)));
+        .thenReturn(new ConnectionReadList().connections(Collections.singletonList(connection)));
 
     when(destinationHandler.listDestinationsForWorkspace(workspaceIdRequestBody))
-      .thenReturn(new DestinationReadList().destinations(Collections.singletonList(destination)));
+        .thenReturn(new DestinationReadList().destinations(Collections.singletonList(destination)));
 
     when(sourceHandler.listSourcesForWorkspace(workspaceIdRequestBody))
-      .thenReturn(new SourceReadList().sources(Collections.singletonList(source)));
+        .thenReturn(new SourceReadList().sources(Collections.singletonList(source)));
 
     workspacesHandler.deleteWorkspace(workspaceIdRequestBody);
 
@@ -186,7 +184,7 @@ class WorkspacesHandlerTest {
   @Test
   void testGetWorkspaceBySlug() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(configRepository.listStandardWorkspaces())
-      .thenReturn(Collections.singletonList(workspace));
+        .thenReturn(Collections.singletonList(workspace));
 
     final SlugRequestBody slugRequestBody = new SlugRequestBody().slug("default");
 
@@ -207,7 +205,7 @@ class WorkspacesHandlerTest {
   @Test
   void testGetDeletedWorkspaceBySlug() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(configRepository.listStandardWorkspaces())
-      .thenReturn(Collections.singletonList(generateWorkspace().withTombstone(true)));
+        .thenReturn(Collections.singletonList(generateWorkspace().withTombstone(true)));
 
     final SlugRequestBody slugRequestBody = new SlugRequestBody().slug("default");
     assertThrows(NotFoundException.class, () -> workspacesHandler.getWorkspaceBySlug(slugRequestBody));

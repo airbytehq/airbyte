@@ -207,8 +207,7 @@ class SourceHandlerTest {
     when(configRepository.getSourceConnection(sourceId))
         .thenReturn(deleted);
 
-    assertThrows(NotFoundException.class, () ->
-        sourceHandler.getSource(sourceIdRequestBody));
+    assertThrows(NotFoundException.class, () -> sourceHandler.getSource(sourceIdRequestBody));
   }
 
   @Test

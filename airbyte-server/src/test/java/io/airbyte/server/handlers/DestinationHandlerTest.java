@@ -260,8 +260,7 @@ class DestinationHandlerTest {
     when(configRepository.getDestinationConnection(destinationId))
         .thenReturn(deleted);
 
-    assertThrows(NotFoundException.class, () ->
-        destinationHandler.getDestination(destinationIdRequestBody));
+    assertThrows(NotFoundException.class, () -> destinationHandler.getDestination(destinationIdRequestBody));
   }
 
   @Test
