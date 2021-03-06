@@ -9,6 +9,7 @@ The following technologies are required to build Airbyte locally.
 5. `Postgresql`
 6. `Jq`
 7. `CMake`
+8. `Rust`
 
 {% hint style="info" %}
 Manually switching between different language versions can get hairy. We recommend using a version manager such as `pyenv` or `jenv`.
