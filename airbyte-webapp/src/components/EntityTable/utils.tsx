@@ -1,7 +1,7 @@
 import { Connection } from "core/resources/Connection";
 import { Source } from "core/resources/Source";
 import { Destination } from "core/resources/Destination";
-import { ITableDataItem, EntityTableDataItem } from "./types";
+import { ITableDataItem, EntityTableDataItem, Status } from "./types";
 
 // TODO: types in next methods look a bit ugly
 export function getEntityTableData<
@@ -38,6 +38,7 @@ export function getEntityTableData<
       name: connection[connectType]?.name || "",
       // @ts-ignore ts is not that clever to infer such types
       connector: connection[connectType]?.[`${connectType}Name`] || "",
+      status: connection.status,
     }));
 
     const sortBySync = entityConnections.sort((item1, item2) =>
@@ -69,7 +70,7 @@ export const getConnectionTableData = (
     // @ts-ignore conditional types are not supported here
     connectorName: connection[connectType]?.[`${connectType}Name`] || "",
     lastSync: connection.lastSync,
-    enabled: connection.status === "active",
+    enabled: connection.status === Status.ACTIVE,
     schedule: connection.schedule,
     isSyncing: connection.isSyncing,
   }));

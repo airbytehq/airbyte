@@ -7,6 +7,7 @@ type EntityTableDataItem = {
   connectEntities: {
     name: string;
     connector: string;
+    status: string;
   }[];
   enabled: boolean;
   lastSync?: number | null;
@@ -22,4 +23,10 @@ type ITableDataItem = {
   schedule: ScheduleProperties | null;
 };
 
+enum Status {
+  ACTIVE = "active",
+  INACTIVE = "inactive",
+}
+
 export type { ITableDataItem, EntityTableDataItem };
+export { Status };
