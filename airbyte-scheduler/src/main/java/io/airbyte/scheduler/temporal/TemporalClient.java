@@ -78,7 +78,7 @@ public class TemporalClient {
 
   public OutputAndStatus<JobOutput> submitSync(long jobId, int attempt, JobSyncConfig config) {
     final StandardSyncInput input = new StandardSyncInput()
-        .withDefaultNamespace(config.getDefaultNamespace())
+        .withPrefix(config.getPrefix())
         .withSourceConfiguration(config.getSourceConfiguration())
         .withDestinationConfiguration(config.getDestinationConfiguration())
         .withCatalog(config.getConfiguredAirbyteCatalog())
