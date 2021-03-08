@@ -1595,7 +1595,6 @@ components:
     ConnectionCreate:
       type: object
       required:
-        - prefix
         - sourceId
         - destinationId
         - status
@@ -1605,7 +1604,7 @@ components:
           description: Optional name of the connection
         prefix:
           type: string
-          description: Prefix used along namespace and table names that will determine where the source data will be written in the destination
+          description: Prefix that will be prepended to the name of each stream when it is written to the destination.
         sourceId:
           $ref: "#/components/schemas/SourceId"
         destinationId:
@@ -1620,7 +1619,6 @@ components:
       type: object
       required:
         - connectionId
-        - prefix
         - syncCatalog
         - status
       properties:
@@ -1628,7 +1626,7 @@ components:
           $ref: "#/components/schemas/ConnectionId"
         prefix:
           type: string
-          description: Prefix used along namespace and table names that will determine where the source data will be written in the destination
+          description: Prefix that will be prepended to the name of each stream when it is written to the destination.
         syncCatalog:
           $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
@@ -1647,7 +1645,6 @@ components:
       required:
         - connectionId
         - name
-        - prefix
         - sourceId
         - destinationId
         - syncCatalog
@@ -1973,7 +1970,6 @@ components:
       required:
         - connectionId
         - name
-        - prefix
         - sourceId
         - destinationId
         - syncCatalog
