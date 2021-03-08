@@ -35,7 +35,9 @@ type FormConditionItem = {
   title?: string;
 };
 
-export type FormBlock = FormGroupItem | FormBaseItem | FormConditionItem;
+type FormBlock = FormGroupItem | FormBaseItem | FormConditionItem;
+
+export type { FormBlock, FormConditionItem, FormGroupItem };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type WidgetConfig = { [key: string]: any };

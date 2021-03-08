@@ -1,6 +1,6 @@
 import get from "lodash.get";
 import { FormBlock, WidgetConfigMap } from "./types";
-import { buildYupFormForJsonSchema } from "../jsonSchema/schemaToYup";
+import { buildYupFormForJsonSchema } from "core/jsonSchema/schemaToYup";
 
 export const buildPathInitialState = (
   formBlock: FormBlock[],

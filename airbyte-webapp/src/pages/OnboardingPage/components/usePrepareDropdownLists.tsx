@@ -60,7 +60,7 @@ const usePrepareDropdownLists = (): {
   return {
     sourcesDropDownData,
     destinationsDropDownData,
-    getSourceDefinitionById: getSourceDefinitionById,
+    getSourceDefinitionById,
     getDestinationDefinitionById,
   };
 };
