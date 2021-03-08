@@ -37,8 +37,12 @@ import java.util.Set;
 import me.andrz.jackson.JsonContext;
 import me.andrz.jackson.JsonReferenceException;
 import me.andrz.jackson.JsonReferenceProcessor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JsonSchemaValidator {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(JsonSchemaValidator.class);
 
   private final SchemaValidatorsConfig schemaValidatorsConfig;
   private final JsonSchemaFactory jsonSchemaFactory;
@@ -57,7 +61,13 @@ public class JsonSchemaValidator {
   }
 
   public boolean test(JsonNode schemaJson, JsonNode objectJson) {
-    return validate(schemaJson, objectJson).isEmpty();
+    Set<ValidationMessage> validationMessages = validate(schemaJson, objectJson);
+
+    if (!validationMessages.isEmpty()) {
+      LOGGER.info("JSON schema validation failed. \nerrors: {}", Strings.join(validationMessages, ", "));
+    }
+
+    return validationMessages.isEmpty();
   }
 
   public void ensure(JsonNode schemaJson, JsonNode objectJson) throws JsonValidationException {
