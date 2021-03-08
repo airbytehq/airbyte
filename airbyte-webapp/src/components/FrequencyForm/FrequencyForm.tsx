@@ -53,7 +53,7 @@ const ControlLabelsWithMargin = styled(ControlLabels)`
 
 const connectionValidationSchema = yup.object().shape({
   frequency: yup.string().required("form.empty.error"),
-  prefix: yup.string().required("form.empty.error"),
+  prefix: yup.string(),
 });
 
 const FrequencyForm: React.FC<IProps> = ({
