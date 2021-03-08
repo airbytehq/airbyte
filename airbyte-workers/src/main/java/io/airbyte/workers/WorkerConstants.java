@@ -37,4 +37,6 @@ public class WorkerConstants {
 
   public static final String BASIC_NORMALIZATION_KEY = "basic_normalization";
 
+  public static final String RESET_JOB_SOURCE_DOCKER_IMAGE_STUB = "airbyte_empty";
+
 }

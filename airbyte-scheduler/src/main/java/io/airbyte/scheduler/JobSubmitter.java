@@ -31,7 +31,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.concurrency.LifecycledCallable;
-import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSyncSchedule;
@@ -98,18 +97,7 @@ public class JobSubmitter implements Runnable {
 
   @VisibleForTesting
   void submitJob(Job job) {
-    // todo (cgardens) - this conditional goes away when all workers are run in temporal.
-    final WorkerRun workerRun;
-    if (job.getConfigType() == ConfigType.GET_SPEC || job.getConfigType() == ConfigType.CHECK_CONNECTION_SOURCE
-        || job.getConfigType() == ConfigType.CHECK_CONNECTION_DESTINATION
-        || job.getConfigType() == ConfigType.DISCOVER_SCHEMA
-        || job.getConfigType() == ConfigType.SYNC) {
-      LOGGER.info("Using temporal runner.");
-      workerRun = temporalWorkerRunFactory.create(job);
-    } else {
-      LOGGER.info("Using scheduler runner.");
-      workerRun = schedulerWorkerRunWithEnvironmentFactory.create(job);
-    }
+    final WorkerRun workerRun = temporalWorkerRunFactory.create(job);
     // we need to know the attempt number before we begin the job lifecycle. thus we state what the
     // attempt number should be. if it is not, that the lifecycle will fail. this should not happen as
     // long as job submission for a single job is single threaded. this is a compromise to allow the job

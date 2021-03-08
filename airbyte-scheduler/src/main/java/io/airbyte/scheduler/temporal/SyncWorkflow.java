@@ -30,14 +30,17 @@ import io.airbyte.config.StandardSyncInput;
 import io.airbyte.workers.DefaultSyncWorker;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
+import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import io.airbyte.workers.protocols.airbyte.AirbyteMessageTracker;
+import io.airbyte.workers.protocols.airbyte.AirbyteSource;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteDestination;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteSource;
+import io.airbyte.workers.protocols.airbyte.EmptyAirbyteSource;
 import io.airbyte.workers.protocols.airbyte.NamespacingMapper;
 import io.airbyte.workers.wrappers.JobOutputSyncWorker;
 import io.temporal.activity.ActivityInterface;
@@ -101,12 +104,12 @@ public interface SyncWorkflow {
 
         final int intAttemptId = Math.toIntExact(attemptId);
 
-        final IntegrationLauncher sourceLauncher =
-            new AirbyteIntegrationLauncher(jobId, intAttemptId, sourceDockerImage, pbf);
-        final IntegrationLauncher destinationLauncher =
-            new AirbyteIntegrationLauncher(jobId, intAttemptId, destinationDockerImage, pbf);
+        final IntegrationLauncher sourceLauncher = new AirbyteIntegrationLauncher(jobId, intAttemptId, sourceDockerImage, pbf);
+        final IntegrationLauncher destinationLauncher = new AirbyteIntegrationLauncher(jobId, intAttemptId, destinationDockerImage, pbf);
 
-        final DefaultAirbyteSource airbyteSource = new DefaultAirbyteSource(sourceLauncher);
+        // reset jobs use an empty source to induce resetting all data in destination.
+        final AirbyteSource airbyteSource = sourceDockerImage.equals(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB) ? new EmptyAirbyteSource()
+            : new DefaultAirbyteSource(sourceLauncher);
 
         final OutputAndStatus<JobOutput> run =
             new JobOutputSyncWorker(
