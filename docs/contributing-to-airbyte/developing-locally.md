@@ -38,6 +38,11 @@ This will build all the code and run all the unit tests.
 
 `./gradle build` creates all the necessary artifacts \(Webapp, Jars and Docker images\) so that you can run Airbyte locally.
 
+The `./gradlew build` builds the core Airbyte system, and all the connectors. This can take some time. To compile and build just the core systems:
+```bash
+export CORE_ONLY=1 && ./gradlew build
+```
+
 {% hint style="info" %}
 On Mac, if you run into an error while compiling openssl \(this happens when running pip install\), you may need to explicitly add these flags to your bash profile so that the C compiler can find the appropriate libraries.
 
