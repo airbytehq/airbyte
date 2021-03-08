@@ -71,7 +71,7 @@ public class TemporalWorkerRunFactory {
       case RESET_CONNECTION -> () -> {
         final JobResetConnectionConfig resetConnection = job.getConfig().getResetConnection();
         final JobSyncConfig config = new JobSyncConfig()
-            .withDefaultNamespace(resetConnection.getDefaultNamespace())
+            .withPrefix(resetConnection.getPrefix())
             .withSourceDockerImage(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB)
             .withDestinationDockerImage(resetConnection.getDestinationDockerImage())
             .withSourceConfiguration(Jsons.emptyObject())
