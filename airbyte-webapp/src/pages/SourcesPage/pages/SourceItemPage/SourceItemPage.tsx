@@ -99,6 +99,8 @@ const SourceItemPage: React.FC = () => {
           type="destination"
           dropDownData={destinationsDropDownData}
           onSelect={onSelect}
+          entity={source.sourceName}
+          entityName={source.name}
         />
         {connectionsWithSource.length ? (
           <SourceConnectionTable connections={connectionsWithSource} />
