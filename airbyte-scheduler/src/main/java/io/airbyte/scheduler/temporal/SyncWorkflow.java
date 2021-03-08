@@ -27,6 +27,7 @@ package io.airbyte.scheduler.temporal;
 import com.google.common.base.Preconditions;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.StandardSyncInput;
+import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.workers.DefaultSyncWorker;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
@@ -42,7 +43,6 @@ import io.airbyte.workers.protocols.airbyte.DefaultAirbyteDestination;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteSource;
 import io.airbyte.workers.protocols.airbyte.EmptyAirbyteSource;
 import io.airbyte.workers.protocols.airbyte.NamespacingMapper;
-import io.airbyte.workers.wrappers.JobOutputSyncWorker;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
 import io.temporal.activity.ActivityOptions;
@@ -111,23 +111,21 @@ public interface SyncWorkflow {
         final AirbyteSource airbyteSource = sourceDockerImage.equals(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB) ? new EmptyAirbyteSource()
             : new DefaultAirbyteSource(sourceLauncher);
 
-        final OutputAndStatus<JobOutput> run =
-            new JobOutputSyncWorker(
-                new DefaultSyncWorker(
-                    jobId,
-                    intAttemptId,
-                    airbyteSource,
-                    new NamespacingMapper(syncInput.getPrefix()),
-                    new DefaultAirbyteDestination(destinationLauncher),
-                    new AirbyteMessageTracker(),
-                    NormalizationRunnerFactory.create(
-                        destinationDockerImage,
-                        pbf,
-                        syncInput.getDestinationConfiguration()))).run(syncInput, jobRoot);
+        final OutputAndStatus<StandardSyncOutput> run = new DefaultSyncWorker(
+            jobId,
+            intAttemptId,
+            airbyteSource,
+            new NamespacingMapper(syncInput.getPrefix()),
+            new DefaultAirbyteDestination(destinationLauncher),
+            new AirbyteMessageTracker(),
+            NormalizationRunnerFactory.create(
+                destinationDockerImage,
+                pbf,
+                syncInput.getDestinationConfiguration())).run(syncInput, jobRoot);
         if (run.getStatus() == JobStatus.SUCCEEDED) {
           Preconditions.checkState(run.getOutput().isPresent());
           LOGGER.info("job output {}", run.getOutput().get());
-          return run.getOutput().get();
+          return new JobOutput().withSync(run.getOutput().get());
         } else {
           throw new RuntimeException("Sync worker completed with a FAILED status.");
         }

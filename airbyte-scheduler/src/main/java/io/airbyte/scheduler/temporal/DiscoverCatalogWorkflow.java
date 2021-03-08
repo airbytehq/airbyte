@@ -28,6 +28,7 @@ import com.google.common.base.Preconditions;
 import io.airbyte.config.IntegrationLauncherConfig;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
+import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.workers.DefaultDiscoverCatalogWorker;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
@@ -37,7 +38,6 @@ import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import io.airbyte.workers.protocols.airbyte.AirbyteStreamFactory;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteStreamFactory;
-import io.airbyte.workers.wrappers.JobOutputDiscoverSchemaWorker;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
 import io.temporal.activity.ActivityOptions;
@@ -98,13 +98,12 @@ public interface DiscoverCatalogWorkflow {
             new AirbyteIntegrationLauncher(launcherConfig.getJobId(), launcherConfig.getAttemptId().intValue(), launcherConfig.getDockerImage(), pbf);
         final AirbyteStreamFactory streamFactory = new DefaultAirbyteStreamFactory();
 
-        final OutputAndStatus<JobOutput> run =
-            new JobOutputDiscoverSchemaWorker(
-                new DefaultDiscoverCatalogWorker(integrationLauncher, streamFactory)).run(config, jobRoot);
+        final OutputAndStatus<StandardDiscoverCatalogOutput> run =
+            new DefaultDiscoverCatalogWorker(integrationLauncher, streamFactory).run(config, jobRoot);
         if (run.getStatus() == JobStatus.SUCCEEDED) {
           Preconditions.checkState(run.getOutput().isPresent());
           LOGGER.info("job output {}", run.getOutput().get());
-          return run.getOutput().get();
+          return new JobOutput().withDiscoverCatalog(run.getOutput().get());
         } else {
           throw new RuntimeException("Discover catalog worker completed with a FAILED status.");
         }

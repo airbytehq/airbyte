@@ -39,7 +39,6 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.temporal.TemporalWorkerRunFactory;
-import io.airbyte.scheduler.worker_run.SchedulerWorkerRunWithEnvironmentFactory;
 import io.airbyte.scheduler.worker_run.WorkerRun;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.WorkerConstants;
@@ -61,18 +60,15 @@ public class JobSubmitter implements Runnable {
   private final ExecutorService threadPool;
   private final JobPersistence persistence;
   private final ConfigRepository configRepository;
-  private final SchedulerWorkerRunWithEnvironmentFactory schedulerWorkerRunWithEnvironmentFactory;
   private final TemporalWorkerRunFactory temporalWorkerRunFactory;
 
   public JobSubmitter(final ExecutorService threadPool,
                       final JobPersistence persistence,
                       final ConfigRepository configRepository,
-                      final SchedulerWorkerRunWithEnvironmentFactory schedulerWorkerRunWithEnvironmentFactory,
                       final TemporalWorkerRunFactory temporalWorkerRunFactory) {
     this.threadPool = threadPool;
     this.persistence = persistence;
     this.configRepository = configRepository;
-    this.schedulerWorkerRunWithEnvironmentFactory = schedulerWorkerRunWithEnvironmentFactory;
     this.temporalWorkerRunFactory = temporalWorkerRunFactory;
   }
 
