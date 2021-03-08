@@ -30,6 +30,7 @@ import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.protocols.Mapper;
+import org.apache.logging.log4j.util.Strings;
 
 /**
  * We apply some transformations on the fly on the catalog (same should be done on records too) from
@@ -67,7 +68,7 @@ public class NamespacingMapper implements Mapper<AirbyteMessage> {
   }
 
   private static String transformStreamName(final String streamName, final String prefix) {
-    if (prefix != null && !prefix.isEmpty()) {
+    if (Strings.isNotEmpty(prefix)) {
       return prefix + streamName;
     } else {
       return streamName;

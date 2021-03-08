@@ -1656,7 +1656,7 @@ components:
           type: string
         prefix:
           type: string
-          description: Prefix used along namespace and table names that will determine where the source data will be written in the destination
+          description: Prefix that will be prepended to the name of each stream when it is written to the destination.
         sourceId:
           $ref: "#/components/schemas/SourceId"
         destinationId:
