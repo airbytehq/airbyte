@@ -176,7 +176,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   @Override
   public SourceDefinitionReadList listLatestSourceDefinitions() {
-    return null;
+    return execute(sourceDefinitionsHandler::listLatestSourceDefinitions);
   }
 
   @Override

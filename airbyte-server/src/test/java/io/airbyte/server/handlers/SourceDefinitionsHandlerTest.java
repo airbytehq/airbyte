@@ -69,7 +69,7 @@ class SourceDefinitionsHandlerTest {
     schedulerJobClient = spy(CachingSchedulerJobClient.class);
 
     source = generateSource();
-    sourceHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, uuidSupplier, schedulerJobClient);
+    sourceHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, uuidSupplier, schedulerJobClient, "");
   }
 
   private StandardSourceDefinition generateSource() {

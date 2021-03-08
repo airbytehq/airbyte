@@ -104,7 +104,7 @@ public class DestinationDefinitionsHandler {
           .dockerImageTag(standardDestinationDefinition.getDockerImageTag())
           .documentationUrl(new URI(standardDestinationDefinition.getDocumentationUrl()));
     } catch (URISyntaxException | NullPointerException e) {
-      throw new KnownException(500, "Unable to process retrieved latest destination definition list", e);
+      throw new KnownException(500, "Unable to process retrieved latest destination definitions list", e);
     }
   }
 
@@ -117,7 +117,7 @@ public class DestinationDefinitionsHandler {
         System.out.println(def);
         destDefList.add(def);
       } catch (JsonProcessingException e) {
-        throw new KnownException(500, "Unable to process retrieved latest destination definition list", e);
+        throw new KnownException(500, "Unable to process retrieved latest destination definitions list", e);
       }
     }
     return destDefList;
@@ -136,10 +136,10 @@ public class DestinationDefinitionsHandler {
   public DestinationDefinitionReadList listLatestDestinationDefinitions() throws ConfigNotFoundException, IOException, JsonValidationException {
     final JsonNode deserialize;
     try {
-      deserialize = Yamls.deserialize(getLatestDestinationsList());
+      deserialize = Yamls.deserialize(getLatestDestinations());
       checkYamlIsPresentWithNoDuplicates(deserialize);
     } catch (RuntimeException e) {
-      throw new KnownException(500, "Error retrieving latest destination definition", e);
+      throw new KnownException(500, "Error retrieving latest destination definitions", e);
     }
 
     final var destDefs = toStandardDestinationDefinitions(deserialize.elements());
@@ -148,7 +148,7 @@ public class DestinationDefinitionsHandler {
     return new DestinationDefinitionReadList().destinationDefinitions(reads);
   }
 
-  private String getLatestDestinationsList() {
+  private String getLatestDestinations() {
     final var request = HttpRequest
         .newBuilder(URI.create(latestListBaseUrl + DESTINATION_DEFINITION_LIST_LOCATION_PATH))
         .header("accept", "application/json")
@@ -158,7 +158,7 @@ public class DestinationDefinitionsHandler {
       final var resp = future.get(1, TimeUnit.SECONDS);
       return resp.body();
     } catch (TimeoutException | InterruptedException | ExecutionException e) {
-      throw new KnownException(500, "Request to retrieve latest destination definition failed", e);
+      throw new KnownException(500, "Request to retrieve latest destination definitions failed", e);
     }
   }
 

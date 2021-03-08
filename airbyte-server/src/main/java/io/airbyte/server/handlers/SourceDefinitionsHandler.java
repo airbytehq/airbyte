@@ -24,52 +24,103 @@
 
 package io.airbyte.server.handlers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.util.ClassUtil;
+import com.google.common.base.Preconditions;
 import io.airbyte.api.model.SourceDefinitionCreate;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
 import io.airbyte.api.model.SourceDefinitionRead;
 import io.airbyte.api.model.SourceDefinitionReadList;
 import io.airbyte.api.model.SourceDefinitionUpdate;
+import io.airbyte.commons.yaml.Yamls;
 import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.init.SeedRepository;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.client.CachingSchedulerJobClient;
+import io.airbyte.server.errors.KnownException;
 import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse.BodyHandlers;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class SourceDefinitionsHandler {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SourceDefinitionsHandler.class);
+  private static final String DEFAULT_SOURCE_DEFINITION_ID_NAME = "sourceDefinitionId";
+  private static final String DEFAULT_LATEST_LIST_BASE_URL = "https://raw.githubusercontent.com";
+  private static final String SOURCE_DEFINITION_LIST_LOCATION_PATH =
+      "/airbytehq/airbyte/master/airbyte-config/init/src/main/resources/seed/source_definitions.yaml";
+
+  private static final ObjectMapper mapper = new ObjectMapper();
+  private static final HttpClient httpClient = HttpClient.newHttpClient();
 
   private final DockerImageValidator imageValidator;
   private final ConfigRepository configRepository;
   private final Supplier<UUID> uuidSupplier;
   private final CachingSchedulerJobClient schedulerJobClient;
+  private final String latestListBaseUrl;
 
   public SourceDefinitionsHandler(
                                   final ConfigRepository configRepository,
                                   final DockerImageValidator imageValidator,
                                   final CachingSchedulerJobClient schedulerJobClient) {
-    this(configRepository, imageValidator, UUID::randomUUID, schedulerJobClient);
+    this(configRepository, imageValidator, UUID::randomUUID, schedulerJobClient, DEFAULT_LATEST_LIST_BASE_URL);
   }
 
   public SourceDefinitionsHandler(
                                   final ConfigRepository configRepository,
                                   final DockerImageValidator imageValidator,
                                   final Supplier<UUID> uuidSupplier,
-                                  final CachingSchedulerJobClient schedulerJobClient) {
+                                  final CachingSchedulerJobClient schedulerJobClient,
+                                  final String latestListBaseUrl) {
     this.configRepository = configRepository;
     this.uuidSupplier = uuidSupplier;
     this.imageValidator = imageValidator;
     this.schedulerJobClient = schedulerJobClient;
+    this.latestListBaseUrl = latestListBaseUrl;
+  }
+
+  private static SourceDefinitionRead buildSourceDefinitionRead(StandardSourceDefinition standardSourceDefinition) {
+    try {
+      return new SourceDefinitionRead()
+          .sourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())
+          .name(standardSourceDefinition.getName())
+          .dockerRepository(standardSourceDefinition.getDockerRepository())
+          .dockerImageTag(standardSourceDefinition.getDockerImageTag())
+          .documentationUrl(new URI(standardSourceDefinition.getDocumentationUrl()));
+    } catch (URISyntaxException | NullPointerException e) {
+      throw new KnownException(500, "Unable to process retrieved latest source definitions list", e);
+    }
+  }
+
+  private static List<StandardSourceDefinition> toStandardSourceDefinitions(
+      Iterator<JsonNode> iter) {
+    Iterable<JsonNode> iterable = () -> iter;
+    var sourceDefList = new ArrayList<StandardSourceDefinition>();
+    for (JsonNode n : iterable) {
+      try {
+        var def = mapper.treeToValue(n, StandardSourceDefinition.class);
+        sourceDefList.add(def);
+      } catch (JsonProcessingException e) {
+        throw new KnownException(500, "Unable to process retrieved latest source definitions list", e);
+      }
+    }
+    return sourceDefList;
   }
 
   public SourceDefinitionReadList listSourceDefinitions() throws ConfigNotFoundException, IOException, JsonValidationException {
@@ -78,6 +129,42 @@ public class SourceDefinitionsHandler {
         .map(SourceDefinitionsHandler::buildSourceDefinitionRead)
         .collect(Collectors.toList());
     return new SourceDefinitionReadList().sourceDefinitions(reads);
+  }
+
+  public SourceDefinitionReadList listLatestSourceDefinitions() throws ConfigNotFoundException, IOException, JsonValidationException {
+    final JsonNode deserialize;
+    try {
+      deserialize = Yamls.deserialize(getLatestSources());
+      checkYamlIsPresentWithNoDuplicates(deserialize);
+    } catch (RuntimeException e) {
+      throw new KnownException(500, "Error retrieving latest source definitions", e);
+    }
+
+    final var sourceDefs = toStandardSourceDefinitions(deserialize.elements());
+    final var reads = sourceDefs.stream()
+        .map(SourceDefinitionsHandler::buildSourceDefinitionRead).collect(Collectors.toList());
+    return new SourceDefinitionReadList().sourceDefinitions(reads);
+  }
+
+  private String getLatestSources() {
+    final var request = HttpRequest
+        .newBuilder(URI.create(latestListBaseUrl + SOURCE_DEFINITION_LIST_LOCATION_PATH))
+        .header("accept", "application/json")
+        .build();
+    final var future = httpClient.sendAsync(request, BodyHandlers.ofString());
+    try {
+      final var resp = future.get(1, TimeUnit.SECONDS);
+      return resp.body();
+    } catch (TimeoutException | InterruptedException | ExecutionException e) {
+      throw new KnownException(500, "Request to retrieve latest source definitions failed", e);
+    }
+  }
+
+  private void checkYamlIsPresentWithNoDuplicates(JsonNode deserialize) {
+    final var presentSourceList = !deserialize.elements().equals(ClassUtil.emptyIterator());
+    Preconditions.checkState(presentSourceList, "Source definition list is empty");
+    SeedRepository.checkNoDuplicateNames(deserialize.elements());
+    SeedRepository.checkNoDuplicateIds(deserialize.elements(), DEFAULT_SOURCE_DEFINITION_ID_NAME);
   }
 
   public SourceDefinitionRead getSourceDefinition(SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody)
@@ -118,19 +205,6 @@ public class SourceDefinitionsHandler {
     // we want to re-fetch the spec for updated definitions.
     schedulerJobClient.resetCache();
     return buildSourceDefinitionRead(newSource);
-  }
-
-  private static SourceDefinitionRead buildSourceDefinitionRead(StandardSourceDefinition standardSourceDefinition) {
-    try {
-      return new SourceDefinitionRead()
-          .sourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())
-          .name(standardSourceDefinition.getName())
-          .dockerRepository(standardSourceDefinition.getDockerRepository())
-          .dockerImageTag(standardSourceDefinition.getDockerImageTag())
-          .documentationUrl(new URI(standardSourceDefinition.getDocumentationUrl()));
-    } catch (URISyntaxException e) {
-      throw new RuntimeException(e);
-    }
   }
 
 }
