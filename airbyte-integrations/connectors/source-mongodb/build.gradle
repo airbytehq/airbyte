@@ -28,8 +28,8 @@ airbyteStandardSourceTestFile {
     }
 
     // All these input paths must live inside this connector's directory (or subdirectories)
-    configPath = "secrets/valid_config.json"
-    configuredCatalogPath = "secrets/configured_catalog.json"
+    configPath = "integration_tests/valid_config.json"
+    configuredCatalogPath = "integration_tests/configured_catalog.json"
     specPath = "lib/spec.json"
 }
 
