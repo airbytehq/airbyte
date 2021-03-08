@@ -9,7 +9,7 @@ import ValueInput from "./components/ValueInput";
 import WithButtonItem from "./components/WithButtonItem";
 import GroupHeader from "./components/GroupHeader";
 
-export type IProps = {
+type DropdownProps = {
   disabled?: boolean;
   hasFilter?: boolean;
   fullText?: boolean;
@@ -176,7 +176,7 @@ const StyledDropdownList = styled(DropdownList)<{
   }
 `;
 
-export const DropDown: React.FC<IProps> = (props) => {
+const DropDown: React.FC<DropdownProps> = (props) => {
   const formatMessage = useIntl().formatMessage;
 
   const className = `${props.className} ${
@@ -222,3 +222,5 @@ export const DropDown: React.FC<IProps> = (props) => {
 };
 
 export default DropDown;
+export { DropDown };
+export type { DropdownProps };

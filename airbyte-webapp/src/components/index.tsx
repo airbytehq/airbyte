@@ -4,3 +4,4 @@ export * from "./Spinner";
 export * from "./DropDown";
 export * from "./Titles";
 export * from "./StatusIcon";
+export * from "./TextArea";
