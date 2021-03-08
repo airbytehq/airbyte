@@ -25,14 +25,21 @@
 package io.airbyte.scheduler.temporal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.JobConfig.ConfigType;
+import io.airbyte.config.JobResetConnectionConfig;
+import io.airbyte.config.JobSyncConfig;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.worker_run.WorkerRun;
+import io.airbyte.workers.WorkerConstants;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -40,6 +47,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.mockito.ArgumentCaptor;
 
 class TemporalWorkerRunFactoryTest {
 
@@ -79,6 +87,48 @@ class TemporalWorkerRunFactoryTest {
     final WorkerRun workerRun = workerRunFactory.create(job);
     workerRun.call();
     verify(temporalClient).submitCheckConnection(JOB_ID, ATTEMPT_ID, job.getConfig().getCheckConnection());
+    assertEquals(jobRoot, workerRun.getJobRoot());
+  }
+
+  @Test
+  void testDiscoverCatalog() throws Exception {
+    when(job.getConfigType()).thenReturn(ConfigType.DISCOVER_SCHEMA);
+    final WorkerRun workerRun = workerRunFactory.create(job);
+    workerRun.call();
+    verify(temporalClient).submitDiscoverSchema(JOB_ID, ATTEMPT_ID, job.getConfig().getDiscoverCatalog());
+    assertEquals(jobRoot, workerRun.getJobRoot());
+  }
+
+  @Test
+  void testSync() throws Exception {
+    when(job.getConfigType()).thenReturn(ConfigType.SYNC);
+    final WorkerRun workerRun = workerRunFactory.create(job);
+    workerRun.call();
+    verify(temporalClient).submitSync(JOB_ID, ATTEMPT_ID, job.getConfig().getSync());
+    assertEquals(jobRoot, workerRun.getJobRoot());
+  }
+
+  @Test
+  void testResetConnection() throws Exception {
+    final JobResetConnectionConfig resetConfig = new JobResetConnectionConfig()
+        .withDestinationDockerImage("airbyte/fusion_reactor")
+        .withDestinationConfiguration(Jsons.jsonNode(ImmutableMap.of("a", 1)))
+        .withConfiguredAirbyteCatalog(new ConfiguredAirbyteCatalog());
+    final JobSyncConfig syncConfig = new JobSyncConfig()
+        .withSourceDockerImage(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB)
+        .withDestinationDockerImage(resetConfig.getDestinationDockerImage())
+        .withDestinationConfiguration(resetConfig.getDestinationConfiguration())
+        .withSourceConfiguration(Jsons.emptyObject())
+        .withConfiguredAirbyteCatalog(resetConfig.getConfiguredAirbyteCatalog());
+    when(job.getConfigType()).thenReturn(ConfigType.RESET_CONNECTION);
+    when(job.getConfig().getResetConnection()).thenReturn(resetConfig);
+
+    final WorkerRun workerRun = workerRunFactory.create(job);
+    workerRun.call();
+
+    final ArgumentCaptor<JobSyncConfig> argument = ArgumentCaptor.forClass(JobSyncConfig.class);
+    verify(temporalClient).submitSync(eq(JOB_ID), eq(ATTEMPT_ID), argument.capture());
+    assertEquals(syncConfig, argument.getValue());
     assertEquals(jobRoot, workerRun.getJobRoot());
   }
 

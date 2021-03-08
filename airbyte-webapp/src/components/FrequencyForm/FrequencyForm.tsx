@@ -26,7 +26,7 @@ type IProps = {
   successMessage?: React.ReactNode;
   onSubmit: (values: {
     frequency: string;
-    defaultNamespace: string;
+    prefix: string;
     schema: SyncSchema;
   }) => void;
   onReset?: (connectionId?: string) => void;
@@ -34,7 +34,7 @@ type IProps = {
   onCancel?: () => void;
   editSchemeMode?: boolean;
   frequencyValue?: string;
-  defaultNamespaceValue?: string;
+  prefixValue?: string;
   isEditMode?: boolean;
   isLoading?: boolean;
 };
@@ -53,7 +53,7 @@ const ControlLabelsWithMargin = styled(ControlLabels)`
 
 const connectionValidationSchema = yup.object().shape({
   frequency: yup.string().required("form.empty.error"),
-  defaultNamespace: yup.string().required("form.empty.error"),
+  prefix: yup.string(),
 });
 
 const FrequencyForm: React.FC<IProps> = ({
@@ -64,7 +64,7 @@ const FrequencyForm: React.FC<IProps> = ({
   schema,
   onDropDownSelect,
   frequencyValue,
-  defaultNamespaceValue,
+  prefixValue,
   isEditMode,
   successMessage,
   additionBottomControls,
@@ -84,7 +84,7 @@ const FrequencyForm: React.FC<IProps> = ({
     <Formik
       initialValues={{
         frequency: frequencyValue || "",
-        defaultNamespace: defaultNamespaceValue || "",
+        prefix: prefixValue || "",
       }}
       validateOnBlur={true}
       validateOnChange={true}
@@ -94,7 +94,7 @@ const FrequencyForm: React.FC<IProps> = ({
           isEditMode && !equal(initialSchema, newSchema) && !editSchemeMode;
         await onSubmit({
           frequency: values.frequency,
-          defaultNamespace: values.defaultNamespace,
+          prefix: values.prefix,
           schema: newSchema,
         });
 
@@ -105,7 +105,7 @@ const FrequencyForm: React.FC<IProps> = ({
     >
       {({ isSubmitting, setFieldValue, isValid, dirty, resetForm }) => (
         <FormContainer className={className}>
-          <Field name="defaultNamespace">
+          <Field name="prefix">
             {({ field }: FieldProps<string>) => (
               <ControlLabelsWithMargin
                 label={formatMessage({

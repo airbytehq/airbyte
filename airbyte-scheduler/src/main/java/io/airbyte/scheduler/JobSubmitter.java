@@ -31,7 +31,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.concurrency.LifecycledCallable;
-import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSyncSchedule;
@@ -40,7 +39,6 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.temporal.TemporalWorkerRunFactory;
-import io.airbyte.scheduler.worker_run.SchedulerWorkerRunWithEnvironmentFactory;
 import io.airbyte.scheduler.worker_run.WorkerRun;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.WorkerConstants;
@@ -62,18 +60,15 @@ public class JobSubmitter implements Runnable {
   private final ExecutorService threadPool;
   private final JobPersistence persistence;
   private final ConfigRepository configRepository;
-  private final SchedulerWorkerRunWithEnvironmentFactory schedulerWorkerRunWithEnvironmentFactory;
   private final TemporalWorkerRunFactory temporalWorkerRunFactory;
 
   public JobSubmitter(final ExecutorService threadPool,
                       final JobPersistence persistence,
                       final ConfigRepository configRepository,
-                      final SchedulerWorkerRunWithEnvironmentFactory schedulerWorkerRunWithEnvironmentFactory,
                       final TemporalWorkerRunFactory temporalWorkerRunFactory) {
     this.threadPool = threadPool;
     this.persistence = persistence;
     this.configRepository = configRepository;
-    this.schedulerWorkerRunWithEnvironmentFactory = schedulerWorkerRunWithEnvironmentFactory;
     this.temporalWorkerRunFactory = temporalWorkerRunFactory;
   }
 
@@ -98,16 +93,7 @@ public class JobSubmitter implements Runnable {
 
   @VisibleForTesting
   void submitJob(Job job) {
-    // todo (cgardens) - this conditional goes away when all workers are run in temporal.
-    final WorkerRun workerRun;
-    if (job.getConfigType() == ConfigType.GET_SPEC || job.getConfigType() == ConfigType.CHECK_CONNECTION_SOURCE
-        || job.getConfigType() == ConfigType.CHECK_CONNECTION_DESTINATION) {
-      LOGGER.info("Using temporal runner.");
-      workerRun = temporalWorkerRunFactory.create(job);
-    } else {
-      LOGGER.info("Using scheduler runner.");
-      workerRun = schedulerWorkerRunWithEnvironmentFactory.create(job);
-    }
+    final WorkerRun workerRun = temporalWorkerRunFactory.create(job);
     // we need to know the attempt number before we begin the job lifecycle. thus we state what the
     // attempt number should be. if it is not, that the lifecycle will fail. this should not happen as
     // long as job submission for a single job is single threaded. this is a compromise to allow the job

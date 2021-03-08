@@ -10,6 +10,7 @@ import ConnectorCell from "./components/ConnectorCell";
 import NameCell from "./components/NameCell";
 import ConnectEntitiesCell from "./components/ConnectEntitiesCell";
 import { EntityTableDataItem } from "./types";
+import AllConnectionsStatusCell from "./components/AllConnectionsStatusCell";
 
 const Content = styled.div`
   margin: 0 32px 0 27px;
@@ -63,6 +64,14 @@ const ImplementationTable: React.FC<IProps> = ({
             timeInSecond={cell.value}
             enabled={row.original.enabled}
           />
+        ),
+      },
+      {
+        Header: <FormattedMessage id="sources.status" />,
+        id: "status",
+        accessor: "connectEntities",
+        Cell: ({ cell }: CellProps<EntityTableDataItem>) => (
+          <AllConnectionsStatusCell connectEntities={cell.value} />
         ),
       },
     ],

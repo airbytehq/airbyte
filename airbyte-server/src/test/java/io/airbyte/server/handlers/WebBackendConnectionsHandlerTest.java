@@ -158,7 +158,7 @@ class WebBackendConnectionsHandlerTest {
         .sourceId(connectionRead.getSourceId())
         .destinationId(connectionRead.getDestinationId())
         .name(connectionRead.getName())
-        .defaultNamespace(connectionRead.getDefaultNamespace())
+        .prefix(connectionRead.getPrefix())
         .syncCatalog(connectionRead.getSyncCatalog())
         .status(connectionRead.getStatus())
         .schedule(connectionRead.getSchedule())
@@ -179,7 +179,7 @@ class WebBackendConnectionsHandlerTest {
         .sourceId(expected.getSourceId())
         .destinationId(expected.getDestinationId())
         .name(expected.getName())
-        .defaultNamespace(expected.getDefaultNamespace())
+        .prefix(expected.getPrefix())
         .syncCatalog(modifiedCatalog)
         .status(expected.getStatus())
         .schedule(expected.getSchedule())
@@ -247,7 +247,7 @@ class WebBackendConnectionsHandlerTest {
     final ConnectionSchedule schedule = new ConnectionSchedule().units(1L).timeUnit(TimeUnitEnum.MINUTES);
 
     final WebBackendConnectionUpdate input = new WebBackendConnectionUpdate()
-        .defaultNamespace(standardSync.getDefaultNamespace())
+        .prefix(standardSync.getPrefix())
         .connectionId(standardSync.getConnectionId())
         .status(ConnectionStatus.INACTIVE)
         .schedule(schedule)
@@ -255,7 +255,7 @@ class WebBackendConnectionsHandlerTest {
         .withRefreshedCatalog(false);
 
     final ConnectionUpdate expected = new ConnectionUpdate()
-        .defaultNamespace(standardSync.getDefaultNamespace())
+        .prefix(standardSync.getPrefix())
         .connectionId(standardSync.getConnectionId())
         .status(ConnectionStatus.INACTIVE)
         .schedule(schedule)
@@ -268,7 +268,7 @@ class WebBackendConnectionsHandlerTest {
 
   @Test
   public void testForCompleteness() {
-    final Set<String> handledMethods = Set.of("schedule", "connectionId", "syncCatalog", "defaultNamespace", "status");
+    final Set<String> handledMethods = Set.of("schedule", "connectionId", "syncCatalog", "prefix", "status");
 
     final Set<String> methods = Arrays.stream(ConnectionUpdate.class.getMethods())
         .filter(method -> method.getReturnType() == ConnectionUpdate.class)
@@ -284,7 +284,7 @@ class WebBackendConnectionsHandlerTest {
   @Test
   void testUpdateConnection() throws JsonValidationException, ConfigNotFoundException, IOException {
     WebBackendConnectionUpdate updateBody = new WebBackendConnectionUpdate()
-        .defaultNamespace(expected.getDefaultNamespace())
+        .prefix(expected.getPrefix())
         .connectionId(expected.getConnectionId())
         .schedule(expected.getSchedule())
         .status(expected.getStatus())
@@ -296,7 +296,7 @@ class WebBackendConnectionsHandlerTest {
             .sourceId(expected.getSourceId())
             .destinationId(expected.getDestinationId())
             .name(expected.getName())
-            .defaultNamespace(expected.getDefaultNamespace())
+            .prefix(expected.getPrefix())
             .syncCatalog(expected.getSyncCatalog())
             .status(expected.getStatus())
             .schedule(expected.getSchedule()));
@@ -313,7 +313,7 @@ class WebBackendConnectionsHandlerTest {
   @Test
   void testUpdateConnectionWithUpdatedSchema() throws JsonValidationException, ConfigNotFoundException, IOException {
     WebBackendConnectionUpdate updateBody = new WebBackendConnectionUpdate()
-        .defaultNamespace(expected.getDefaultNamespace())
+        .prefix(expected.getPrefix())
         .connectionId(expected.getConnectionId())
         .schedule(expected.getSchedule())
         .status(expected.getStatus())
@@ -326,7 +326,7 @@ class WebBackendConnectionsHandlerTest {
             .sourceId(expected.getSourceId())
             .destinationId(expected.getDestinationId())
             .name(expected.getName())
-            .defaultNamespace(expected.getDefaultNamespace())
+            .prefix(expected.getPrefix())
             .syncCatalog(expectedWithNewSchema.getSyncCatalog())
             .status(expected.getStatus())
             .schedule(expected.getSchedule()));

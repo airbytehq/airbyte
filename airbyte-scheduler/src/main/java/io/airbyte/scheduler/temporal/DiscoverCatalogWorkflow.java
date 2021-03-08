@@ -27,9 +27,9 @@ package io.airbyte.scheduler.temporal;
 import com.google.common.base.Preconditions;
 import io.airbyte.config.IntegrationLauncherConfig;
 import io.airbyte.config.JobOutput;
-import io.airbyte.config.StandardCheckConnectionInput;
-import io.airbyte.config.StandardCheckConnectionOutput;
-import io.airbyte.workers.DefaultCheckConnectionWorker;
+import io.airbyte.config.StandardDiscoverCatalogInput;
+import io.airbyte.config.StandardDiscoverCatalogOutput;
+import io.airbyte.workers.DefaultDiscoverCatalogWorker;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
 import io.airbyte.workers.WorkerUtils;
@@ -50,46 +50,46 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @WorkflowInterface
-public interface CheckConnectionWorkflow {
+public interface DiscoverCatalogWorkflow {
 
   @WorkflowMethod
-  JobOutput run(IntegrationLauncherConfig launcherConfig, StandardCheckConnectionInput connectionConfiguration) throws TemporalJobException;
+  JobOutput run(IntegrationLauncherConfig launcherConfig, StandardDiscoverCatalogInput config) throws TemporalJobException;
 
-  class WorkflowImpl implements CheckConnectionWorkflow {
+  class WorkflowImpl implements DiscoverCatalogWorkflow {
 
     final ActivityOptions options = ActivityOptions.newBuilder()
-        .setScheduleToCloseTimeout(Duration.ofHours(1))
+        .setScheduleToCloseTimeout(Duration.ofHours(2))
         .build();
-    private final CheckConnectionActivity activity = Workflow.newActivityStub(CheckConnectionActivity.class, options);
+    private final DiscoverCatalogActivity activity = Workflow.newActivityStub(DiscoverCatalogActivity.class, options);
 
     @Override
-    public JobOutput run(IntegrationLauncherConfig launcherConfig, StandardCheckConnectionInput connectionConfiguration) throws TemporalJobException {
-      return activity.run(launcherConfig, connectionConfiguration);
+    public JobOutput run(IntegrationLauncherConfig launcherConfig, StandardDiscoverCatalogInput config) throws TemporalJobException {
+      return activity.run(launcherConfig, config);
     }
 
   }
 
   @ActivityInterface
-  interface CheckConnectionActivity {
+  interface DiscoverCatalogActivity {
 
     @ActivityMethod
-    JobOutput run(IntegrationLauncherConfig launcherConfig, StandardCheckConnectionInput connectionConfiguration) throws TemporalJobException;
+    JobOutput run(IntegrationLauncherConfig launcherConfig, StandardDiscoverCatalogInput config) throws TemporalJobException;
 
   }
 
-  class CheckConnectionActivityImpl implements CheckConnectionActivity {
+  class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CheckConnectionActivityImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DiscoverCatalogActivityImpl.class);
 
     private final ProcessBuilderFactory pbf;
     private final Path workspaceRoot;
 
-    public CheckConnectionActivityImpl(ProcessBuilderFactory pbf, Path workspaceRoot) {
+    public DiscoverCatalogActivityImpl(ProcessBuilderFactory pbf, Path workspaceRoot) {
       this.pbf = pbf;
       this.workspaceRoot = workspaceRoot;
     }
 
-    public JobOutput run(IntegrationLauncherConfig launcherConfig, StandardCheckConnectionInput connectionConfiguration) throws TemporalJobException {
+    public JobOutput run(IntegrationLauncherConfig launcherConfig, StandardDiscoverCatalogInput config) {
       try {
         final Path jobRoot = WorkerUtils.getJobRoot(workspaceRoot, launcherConfig);
         WorkerUtils.setJobMdc(jobRoot, launcherConfig.getJobId());
@@ -97,18 +97,19 @@ public interface CheckConnectionWorkflow {
         final IntegrationLauncher integrationLauncher =
             new AirbyteIntegrationLauncher(launcherConfig.getJobId(), launcherConfig.getAttemptId().intValue(), launcherConfig.getDockerImage(), pbf);
         final AirbyteStreamFactory streamFactory = new DefaultAirbyteStreamFactory();
-        final OutputAndStatus<StandardCheckConnectionOutput> run =
-            new DefaultCheckConnectionWorker(integrationLauncher, streamFactory).run(connectionConfiguration, jobRoot);
+
+        final OutputAndStatus<StandardDiscoverCatalogOutput> run =
+            new DefaultDiscoverCatalogWorker(integrationLauncher, streamFactory).run(config, jobRoot);
         if (run.getStatus() == JobStatus.SUCCEEDED) {
           Preconditions.checkState(run.getOutput().isPresent());
           LOGGER.info("job output {}", run.getOutput().get());
-          return new JobOutput().withCheckConnection(run.getOutput().get());
+          return new JobOutput().withDiscoverCatalog(run.getOutput().get());
         } else {
-          throw new TemporalJobException();
+          throw new RuntimeException("Discover catalog worker completed with a FAILED status.");
         }
 
       } catch (Exception e) {
-        throw new RuntimeException("Check connection job failed with an exception", e);
+        throw new RuntimeException("Discover catalog job failed with an exception", e);
       }
     }
 

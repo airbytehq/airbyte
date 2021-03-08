@@ -2,7 +2,7 @@ import React from "react";
 import { useIntl } from "react-intl";
 import { useField } from "formik";
 
-import { DropDown, Input } from "components";
+import { DropDown, Input, TextArea } from "components";
 import ConfirmationInput from "./ConfirmationInput";
 import { FormBaseItem } from "core/form/types";
 
@@ -83,6 +83,16 @@ const Control: React.FC<IProps> = ({
             form.setValue(unfinishedSecret.startValue);
           }
         }}
+      />
+    );
+  } else if (property.multiline) {
+    return (
+      <TextArea
+        {...field}
+        placeholder={placeholder}
+        autoComplete="off"
+        value={value ?? ""}
+        rows={3}
       />
     );
   } else {

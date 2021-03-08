@@ -25,9 +25,10 @@
 package io.airbyte.scheduler.worker_run;
 
 import io.airbyte.commons.functional.CheckedSupplier;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.JobOutput;
 import io.airbyte.workers.OutputAndStatus;
-import io.airbyte.workers.Worker;
+import io.airbyte.workers.WorkerUtils;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.Callable;
@@ -47,15 +48,8 @@ public class WorkerRun implements Callable<OutputAndStatus<JobOutput>> {
   private final CheckedSupplier<OutputAndStatus<JobOutput>, Exception> workerRun;
 
   public static WorkerRun create(Path workspaceRoot, long jobId, int attempt, CheckedSupplier<OutputAndStatus<JobOutput>, Exception> workerRun) {
-    // todo (cgardens) - there are 2 sources of truth for job path. we need to reduce this down to one,
-    // once we are fully on temporal.
-    final Path jobRoot = workspaceRoot.resolve(String.valueOf(jobId)).resolve(String.valueOf(attempt));
+    final Path jobRoot = WorkerUtils.getJobRoot(workspaceRoot, jobId, attempt);
     return new WorkerRun(jobRoot, workerRun);
-  }
-
-  // todo (cgardens) - remove this once the scheduler worker is dead.
-  public <InputType> WorkerRun(final Path jobRoot, final InputType input, final Worker<InputType, JobOutput> worker) {
-    this(jobRoot, () -> worker.run(input, jobRoot));
   }
 
   public WorkerRun(final Path jobRoot, final CheckedSupplier<OutputAndStatus<JobOutput>, Exception> workerRun) {
@@ -65,7 +59,7 @@ public class WorkerRun implements Callable<OutputAndStatus<JobOutput>> {
 
   @Override
   public OutputAndStatus<JobOutput> call() throws Exception {
-    LOGGER.info("Executing worker wrapper...");
+    LOGGER.info("Executing worker wrapper. Airbyte version: {}", EnvConfigs.AIRBYTE_VERSION);
     Files.createDirectories(jobRoot);
 
     return workerRun.get();

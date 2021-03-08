@@ -5,6 +5,7 @@ import FrequencyConfig from "data/FrequencyConfig.json";
 import { AnalyticsService } from "core/analytics/AnalyticsService";
 import ConnectionResource, { Connection } from "core/resources/Connection";
 import useConnection from "components/hooks/services/useConnectionHook";
+import { Status } from "./types";
 
 const useSyncActions = (): {
   changeStatus: (connection: Connection) => Promise<void>;
@@ -17,9 +18,10 @@ const useSyncActions = (): {
     await updateConnection({
       connectionId: connection.connectionId,
       syncCatalog: connection.syncCatalog,
-      defaultNamespace: connection.defaultNamespace,
+      prefix: connection.prefix,
       schedule: connection.schedule || null,
-      status: connection.status === "active" ? "inactive" : "active",
+      status:
+        connection.status === Status.ACTIVE ? Status.INACTIVE : Status.ACTIVE,
     });
 
     const frequency = FrequencyConfig.find(
