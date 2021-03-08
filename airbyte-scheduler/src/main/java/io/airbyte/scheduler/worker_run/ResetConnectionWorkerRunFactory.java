@@ -60,7 +60,7 @@ public class ResetConnectionWorkerRunFactory extends BaseWorkerRunFactory<JobRes
 
   private static StandardSyncInput createSyncInputFromResetConfig(JobResetConnectionConfig config) {
     return new StandardSyncInput()
-        .withDefaultNamespace(config.getDefaultNamespace())
+        .withPrefix(config.getPrefix())
         .withSourceConfiguration(Jsons.emptyObject())
         .withDestinationConfiguration(config.getDestinationConfiguration())
         .withCatalog(config.getConfiguredAirbyteCatalog());

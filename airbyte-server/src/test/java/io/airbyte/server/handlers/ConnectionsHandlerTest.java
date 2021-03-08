@@ -98,7 +98,7 @@ class ConnectionsHandlerTest {
         .sourceId(standardSync.getSourceId())
         .destinationId(standardSync.getDestinationId())
         .name("presto to hudi")
-        .defaultNamespace("presto_to_hudi")
+        .prefix("presto_to_hudi")
         .status(ConnectionStatus.ACTIVE)
         .schedule(ConnectionHelpers.generateBasicSchedule())
         .syncCatalog(catalog);
@@ -123,7 +123,7 @@ class ConnectionsHandlerTest {
     catalog.getStreams().get(0).getConfig().setAliasName("azkaban_users");
 
     final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
-        .defaultNamespace(standardSync.getDefaultNamespace())
+        .prefix(standardSync.getPrefix())
         .connectionId(standardSync.getConnectionId())
         .status(ConnectionStatus.INACTIVE)
         .schedule(null)
@@ -135,7 +135,7 @@ class ConnectionsHandlerTest {
     final StandardSync updatedStandardSync = new StandardSync()
         .withConnectionId(standardSync.getConnectionId())
         .withName("presto to hudi")
-        .withDefaultNamespace("presto_to_hudi")
+        .withPrefix("presto_to_hudi")
         .withSourceId(standardSync.getSourceId())
         .withDestinationId(standardSync.getDestinationId())
         .withStatus(StandardSync.Status.INACTIVE)
@@ -212,7 +212,7 @@ class ConnectionsHandlerTest {
         standardSync.getDestinationId());
 
     final ConnectionUpdate expectedConnectionUpdate = new ConnectionUpdate()
-        .defaultNamespace(connectionRead.getDefaultNamespace())
+        .prefix(connectionRead.getPrefix())
         .connectionId(connectionRead.getConnectionId())
         .status(ConnectionStatus.DEPRECATED)
         .syncCatalog(connectionRead.getSyncCatalog())
