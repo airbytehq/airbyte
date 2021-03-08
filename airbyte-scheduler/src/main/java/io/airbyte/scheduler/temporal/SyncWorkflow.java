@@ -114,7 +114,7 @@ public interface SyncWorkflow {
                     jobId,
                     intAttemptId,
                     airbyteSource,
-                    new NamespacingMapper(syncInput.getDefaultNamespace()),
+                    new NamespacingMapper(syncInput.getPrefix()),
                     new DefaultAirbyteDestination(destinationLauncher),
                     new AirbyteMessageTracker(),
                     NormalizationRunnerFactory.create(
