@@ -2,10 +2,10 @@ import React from "react";
 import { useIntl } from "react-intl";
 import { useField } from "formik";
 
-import DropDown from "components/DropDown";
-import ConfirmationInput from "./ConfirmationInput";
-import Input from "components/Input";
+import { TextArea, Input, DropDown } from "components";
 import { FormBaseItem } from "core/form/types";
+
+import ConfirmationInput from "./ConfirmationInput";
 import { useWidgetInfo } from "../../uiWidgetContext";
 
 type IProps = {
@@ -82,6 +82,16 @@ const Control: React.FC<IProps> = ({ property }) => {
             form.setValue(unfinishedSecret.startValue);
           }
         }}
+      />
+    );
+  } else if (property.multiline) {
+    return (
+      <TextArea
+        {...field}
+        placeholder={placeholder}
+        autoComplete="off"
+        value={value ?? ""}
+        rows={3}
       />
     );
   } else {
