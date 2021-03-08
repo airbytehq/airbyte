@@ -66,10 +66,10 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
                                                             final Path jobRoot) {
 
     final JsonNode configDotJson = discoverSchemaInput.getConnectionConfiguration();
-    IOs.writeFile(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
+    IOs.writeFile(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
 
     try {
-      process = integrationLauncher.discover(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME)
+      process = integrationLauncher.discover(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME)
           .start();
 
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);

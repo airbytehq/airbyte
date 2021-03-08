@@ -82,4 +82,22 @@ class TemporalWorkerRunFactoryTest {
     assertEquals(jobRoot, workerRun.getJobRoot());
   }
 
+  @Test
+  void testDiscoverCatalog() throws Exception {
+    when(job.getConfigType()).thenReturn(ConfigType.DISCOVER_SCHEMA);
+    final WorkerRun workerRun = workerRunFactory.create(job);
+    workerRun.call();
+    verify(temporalClient).submitDiscoverSchema(JOB_ID, ATTEMPT_ID, job.getConfig().getDiscoverCatalog());
+    assertEquals(jobRoot, workerRun.getJobRoot());
+  }
+
+  @Test
+  void testSync() throws Exception {
+    when(job.getConfigType()).thenReturn(ConfigType.SYNC);
+    final WorkerRun workerRun = workerRunFactory.create(job);
+    workerRun.call();
+    verify(temporalClient).submitSync(JOB_ID, ATTEMPT_ID, job.getConfig().getSync());
+    assertEquals(jobRoot, workerRun.getJobRoot());
+  }
+
 }

@@ -31,7 +31,7 @@ import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
-import io.airbyte.workers.WorkerConstants;
+import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessBuilderFactory;
@@ -48,7 +48,6 @@ import java.nio.file.Path;
 import java.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 @WorkflowInterface
 public interface CheckConnectionWorkflow {
@@ -58,10 +57,9 @@ public interface CheckConnectionWorkflow {
 
   class WorkflowImpl implements CheckConnectionWorkflow {
 
-    ActivityOptions options = ActivityOptions.newBuilder()
-        .setScheduleToCloseTimeout(Duration.ofMinutes(2)) // todo
+    final ActivityOptions options = ActivityOptions.newBuilder()
+        .setScheduleToCloseTimeout(Duration.ofHours(1))
         .build();
-
     private final CheckConnectionActivity activity = Workflow.newActivityStub(CheckConnectionActivity.class, options);
 
     @Override
@@ -93,15 +91,8 @@ public interface CheckConnectionWorkflow {
 
     public JobOutput run(IntegrationLauncherConfig launcherConfig, StandardCheckConnectionInput connectionConfiguration) throws TemporalJobException {
       try {
-        // todo (cgardens) - there are 2 sources of truth for job path. we need to reduce this down to one,
-        // once we are fully on temporal.
-        final Path jobRoot = workspaceRoot
-            .resolve(String.valueOf(launcherConfig.getJobId()))
-            .resolve(String.valueOf(launcherConfig.getAttemptId().intValue()));
-
-        MDC.put("job_id", String.valueOf(launcherConfig.getJobId()));
-        MDC.put("job_root", jobRoot.toString());
-        MDC.put("job_log_filename", WorkerConstants.LOG_FILENAME);
+        final Path jobRoot = WorkerUtils.getJobRoot(workspaceRoot, launcherConfig);
+        WorkerUtils.setJobMdc(jobRoot, launcherConfig.getJobId());
 
         final IntegrationLauncher integrationLauncher =
             new AirbyteIntegrationLauncher(launcherConfig.getJobId(), launcherConfig.getAttemptId().intValue(), launcherConfig.getDockerImage(), pbf);

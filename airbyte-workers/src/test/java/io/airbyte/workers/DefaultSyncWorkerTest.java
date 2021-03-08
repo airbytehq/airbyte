@@ -49,6 +49,7 @@ import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
 import io.airbyte.workers.protocols.airbyte.AirbyteMessageTracker;
 import io.airbyte.workers.protocols.airbyte.AirbyteMessageUtils;
 import io.airbyte.workers.protocols.airbyte.AirbyteSource;
+import io.airbyte.workers.protocols.airbyte.NamespacingMapper;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -69,6 +70,7 @@ class DefaultSyncWorkerTest {
   private Path jobRoot;
   private Path normalizationRoot;
   private AirbyteSource tap;
+  private NamespacingMapper mapper;
   private AirbyteDestination target;
   private StandardSyncInput syncInput;
   private StandardTapConfig tapConfig;
@@ -88,11 +90,15 @@ class DefaultSyncWorkerTest {
     targetConfig = WorkerUtils.syncToTargetConfig(syncInput);
 
     tap = mock(AirbyteSource.class);
+    mapper = mock(NamespacingMapper.class);
     target = mock(AirbyteDestination.class);
     normalizationRunner = mock(NormalizationRunner.class);
 
     when(tap.isFinished()).thenReturn(false, false, false, true);
     when(tap.attemptRead()).thenReturn(Optional.of(RECORD_MESSAGE1), Optional.empty(), Optional.of(RECORD_MESSAGE2));
+    when(mapper.mapCatalog(targetConfig.getCatalog())).thenReturn(targetConfig.getCatalog());
+    when(mapper.mapMessage(RECORD_MESSAGE1)).thenReturn(RECORD_MESSAGE1);
+    when(mapper.mapMessage(RECORD_MESSAGE2)).thenReturn(RECORD_MESSAGE2);
     when(normalizationRunner.normalize(JOB_ID, JOB_ATTEMPT, normalizationRoot, targetConfig.getDestinationConnectionConfiguration(),
         targetConfig.getCatalog()))
             .thenReturn(true);
@@ -101,7 +107,7 @@ class DefaultSyncWorkerTest {
   @Test
   void test() throws Exception {
     final DefaultSyncWorker defaultSyncWorker =
-        new DefaultSyncWorker(JOB_ID, JOB_ATTEMPT, tap, target, new AirbyteMessageTracker(), normalizationRunner);
+        new DefaultSyncWorker(JOB_ID, JOB_ATTEMPT, tap, mapper, target, new AirbyteMessageTracker(), normalizationRunner);
     final OutputAndStatus<StandardSyncOutput> run = defaultSyncWorker.run(syncInput, jobRoot);
 
     assertEquals(JobStatus.SUCCEEDED, run.getStatus());
@@ -127,7 +133,7 @@ class DefaultSyncWorkerTest {
     when(messageTracker.getBytesCount()).thenReturn(100L);
     when(messageTracker.getOutputState()).thenReturn(Optional.of(expectedState));
 
-    final DefaultSyncWorker defaultSyncWorker = new DefaultSyncWorker(JOB_ID, JOB_ATTEMPT, tap, target, messageTracker, normalizationRunner);
+    final DefaultSyncWorker defaultSyncWorker = new DefaultSyncWorker(JOB_ID, JOB_ATTEMPT, tap, mapper, target, messageTracker, normalizationRunner);
     final OutputAndStatus<StandardSyncOutput> actual = defaultSyncWorker.run(syncInput, jobRoot);
     final StandardSyncOutput expectedSyncOutput = new StandardSyncOutput()
         .withStandardSyncSummary(new StandardSyncSummary()
