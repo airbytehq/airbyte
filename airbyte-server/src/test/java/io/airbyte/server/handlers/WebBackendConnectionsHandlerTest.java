@@ -40,6 +40,7 @@ import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.ConnectionReadList;
 import io.airbyte.api.model.ConnectionSchedule;
+import io.airbyte.api.model.ConnectionSchedule.TimeUnitEnum;
 import io.airbyte.api.model.ConnectionStatus;
 import io.airbyte.api.model.ConnectionUpdate;
 import io.airbyte.api.model.DestinationIdRequestBody;
@@ -157,6 +158,7 @@ class WebBackendConnectionsHandlerTest {
         .sourceId(connectionRead.getSourceId())
         .destinationId(connectionRead.getDestinationId())
         .name(connectionRead.getName())
+        .prefix(connectionRead.getPrefix())
         .syncCatalog(connectionRead.getSyncCatalog())
         .status(connectionRead.getStatus())
         .schedule(connectionRead.getSchedule())
@@ -177,6 +179,7 @@ class WebBackendConnectionsHandlerTest {
         .sourceId(expected.getSourceId())
         .destinationId(expected.getDestinationId())
         .name(expected.getName())
+        .prefix(expected.getPrefix())
         .syncCatalog(modifiedCatalog)
         .status(expected.getStatus())
         .schedule(expected.getSchedule())
@@ -241,9 +244,10 @@ class WebBackendConnectionsHandlerTest {
     final AirbyteCatalog catalog = ConnectionHelpers.generateBasicApiCatalog();
     catalog.getStreams().get(0).getStream().setName("azkaban_users");
 
-    final ConnectionSchedule schedule = new ConnectionSchedule().units(1L).timeUnit(ConnectionSchedule.TimeUnitEnum.MINUTES);
+    final ConnectionSchedule schedule = new ConnectionSchedule().units(1L).timeUnit(TimeUnitEnum.MINUTES);
 
     final WebBackendConnectionUpdate input = new WebBackendConnectionUpdate()
+        .prefix(standardSync.getPrefix())
         .connectionId(standardSync.getConnectionId())
         .status(ConnectionStatus.INACTIVE)
         .schedule(schedule)
@@ -251,6 +255,7 @@ class WebBackendConnectionsHandlerTest {
         .withRefreshedCatalog(false);
 
     final ConnectionUpdate expected = new ConnectionUpdate()
+        .prefix(standardSync.getPrefix())
         .connectionId(standardSync.getConnectionId())
         .status(ConnectionStatus.INACTIVE)
         .schedule(schedule)
@@ -263,7 +268,7 @@ class WebBackendConnectionsHandlerTest {
 
   @Test
   public void testForCompleteness() {
-    final Set<String> handledMethods = Set.of("schedule", "connectionId", "syncCatalog", "status");
+    final Set<String> handledMethods = Set.of("schedule", "connectionId", "syncCatalog", "prefix", "status");
 
     final Set<String> methods = Arrays.stream(ConnectionUpdate.class.getMethods())
         .filter(method -> method.getReturnType() == ConnectionUpdate.class)
@@ -279,6 +284,7 @@ class WebBackendConnectionsHandlerTest {
   @Test
   void testUpdateConnection() throws JsonValidationException, ConfigNotFoundException, IOException {
     WebBackendConnectionUpdate updateBody = new WebBackendConnectionUpdate()
+        .prefix(expected.getPrefix())
         .connectionId(expected.getConnectionId())
         .schedule(expected.getSchedule())
         .status(expected.getStatus())
@@ -290,6 +296,7 @@ class WebBackendConnectionsHandlerTest {
             .sourceId(expected.getSourceId())
             .destinationId(expected.getDestinationId())
             .name(expected.getName())
+            .prefix(expected.getPrefix())
             .syncCatalog(expected.getSyncCatalog())
             .status(expected.getStatus())
             .schedule(expected.getSchedule()));
@@ -306,6 +313,7 @@ class WebBackendConnectionsHandlerTest {
   @Test
   void testUpdateConnectionWithUpdatedSchema() throws JsonValidationException, ConfigNotFoundException, IOException {
     WebBackendConnectionUpdate updateBody = new WebBackendConnectionUpdate()
+        .prefix(expected.getPrefix())
         .connectionId(expected.getConnectionId())
         .schedule(expected.getSchedule())
         .status(expected.getStatus())
@@ -318,6 +326,7 @@ class WebBackendConnectionsHandlerTest {
             .sourceId(expected.getSourceId())
             .destinationId(expected.getDestinationId())
             .name(expected.getName())
+            .prefix(expected.getPrefix())
             .syncCatalog(expectedWithNewSchema.getSyncCatalog())
             .status(expected.getStatus())
             .schedule(expected.getSchedule()));

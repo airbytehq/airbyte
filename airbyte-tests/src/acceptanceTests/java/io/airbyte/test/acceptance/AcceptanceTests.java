@@ -114,6 +114,7 @@ public class AcceptanceTests {
   // Skip networking related failures on kube using this flag
   private static final boolean IS_KUBE = System.getenv().containsKey("KUBE");
 
+  private static final String OUTPUT_NAMESPACE = "output_";
   private static final String TABLE_NAME = "id_and_name";
   private static final String STREAM_NAME = "public." + TABLE_NAME;
   private static final String COLUMN_ID = "id";
@@ -442,7 +443,8 @@ public class AcceptanceTests {
     final Database source = getDatabase(sourceDb);
 
     final Set<String> sourceStreams = listStreams(source);
-    final Set<String> sourceStreamsWithRawPrefix = sourceStreams.stream().map(x -> "_airbyte_raw_" + x.replace(".", "_")).collect(Collectors.toSet());
+    final Set<String> sourceStreamsWithRawPrefix =
+        sourceStreams.stream().map(x -> String.format("_airbyte_raw_%s%s", OUTPUT_NAMESPACE, x.replace(".", "_"))).collect(Collectors.toSet());
     final Database destination = getDatabase(destinationPsql);
     final Set<String> destinationStreams = listDestinationStreams(destination);
     assertEquals(sourceStreamsWithRawPrefix, destinationStreams,
@@ -514,7 +516,8 @@ public class AcceptanceTests {
             .destinationId(destinationId)
             .syncCatalog(catalog)
             .schedule(schedule)
-            .name(name));
+            .name(name)
+            .prefix(OUTPUT_NAMESPACE));
     connectionIds.add(connection.getConnectionId());
     return connection;
   }
@@ -571,10 +574,10 @@ public class AcceptanceTests {
   private List<JsonNode> retrieveDestinationRecords(String streamName) throws Exception {
     Database destination = getDatabase(destinationPsql);
     Set<String> destinationStreams = listDestinationStreams(destination);
-    final String normalizedStreamName = "_airbyte_raw_" + streamName.replace(".", "_");
-    assertTrue(destinationStreams.contains(normalizedStreamName), "can't find a normalized version of " + streamName);
+    final String rawStreamName = String.format("_airbyte_raw_%s%s", OUTPUT_NAMESPACE, streamName.replace(".", "_"));
+    assertTrue(destinationStreams.contains(rawStreamName), "can't find a non-normalized version (raw) of " + streamName);
 
-    return retrieveDestinationRecords(destination, normalizedStreamName);
+    return retrieveDestinationRecords(destination, rawStreamName);
   }
 
   private JsonNode getSourceDbConfig() {
@@ -663,6 +666,7 @@ public class AcceptanceTests {
     final ConnectionRead connection = apiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     final ConnectionUpdate connectionUpdate =
         new ConnectionUpdate()
+            .prefix(connection.getPrefix())
             .connectionId(connectionId)
             .status(ConnectionStatus.DEPRECATED)
             .schedule(connection.getSchedule())

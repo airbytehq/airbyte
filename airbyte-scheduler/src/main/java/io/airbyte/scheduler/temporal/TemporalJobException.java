@@ -22,19 +22,10 @@
  * SOFTWARE.
  */
 
-package io.airbyte.workers.wrappers;
+package io.airbyte.scheduler.temporal;
 
-import io.airbyte.config.JobOutput;
-import io.airbyte.config.StandardDiscoverCatalogInput;
-import io.airbyte.config.StandardDiscoverCatalogOutput;
-import io.airbyte.workers.DiscoverCatalogWorker;
+public class TemporalJobException extends Exception {
 
-public class JobOutputDiscoverSchemaWorker extends OutputConvertingWorker<StandardDiscoverCatalogInput, StandardDiscoverCatalogOutput, JobOutput> {
-
-  public JobOutputDiscoverSchemaWorker(DiscoverCatalogWorker innerWorker) {
-    super(
-        innerWorker,
-        output -> new JobOutput().withOutputType(JobOutput.OutputType.DISCOVER_CATALOG).withDiscoverCatalog(output));
-  }
+  public TemporalJobException() {}
 
 }

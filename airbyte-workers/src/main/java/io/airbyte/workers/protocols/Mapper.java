@@ -22,18 +22,14 @@
  * SOFTWARE.
  */
 
-package io.airbyte.scheduler.worker_run;
+package io.airbyte.workers.protocols;
 
-import io.airbyte.workers.process.ProcessBuilderFactory;
-import java.io.Serializable;
-import java.nio.file.Path;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 
-public interface WorkerRunFactory<T extends Serializable> {
+public interface Mapper<T> {
 
-  WorkerRun create(final Path jobRoot,
-                   final ProcessBuilderFactory pbf,
-                   final long jobId,
-                   final int attempt,
-                   final T config);
+  ConfiguredAirbyteCatalog mapCatalog(ConfiguredAirbyteCatalog catalog);
+
+  T mapMessage(T message);
 
 }

@@ -25,35 +25,35 @@
 package io.airbyte.scheduler.worker_run;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.JobOutput;
-import io.airbyte.workers.Worker;
+import io.airbyte.workers.OutputAndStatus;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 class WorkerRunTest {
 
   private Path path;
-  private Worker<Integer, JobOutput> worker;
 
-  @SuppressWarnings("unchecked")
   @BeforeEach
   void setUp() throws IOException {
     path = Files.createTempDirectory("test").resolve("sub").resolve("sub");
-    worker = Mockito.mock(Worker.class);
   }
 
+  @SuppressWarnings("unchecked")
   @Test
-  void name() throws Exception {
-    new WorkerRun(path, 1, worker).call();
+  void test() throws Exception {
+    final CheckedSupplier<OutputAndStatus<JobOutput>, Exception> supplier = mock(CheckedSupplier.class);
+    new WorkerRun(path, supplier).call();
 
     assertTrue(Files.exists(path));
-    verify(worker).run(1, path);
+    verify(supplier).get();
   }
 
 }

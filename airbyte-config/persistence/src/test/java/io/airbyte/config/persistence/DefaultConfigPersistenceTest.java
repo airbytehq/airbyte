@@ -100,6 +100,7 @@ class DefaultConfigPersistenceTest {
   void writeConfigWithJsonSchemaRef() throws JsonValidationException, IOException, ConfigNotFoundException {
     final StandardSync standardSync = new StandardSync()
         .withName("sync")
+        .withPrefix("sync")
         .withConnectionId(UUID_1)
         .withSourceId(UUID.randomUUID())
         .withDestinationId(UUID.randomUUID())

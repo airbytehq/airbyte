@@ -38,7 +38,10 @@ import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
-import io.airbyte.scheduler.worker_run.SchedulerWorkerRunWithEnvironmentFactory;
+import io.airbyte.scheduler.temporal.TemporalClient;
+import io.airbyte.scheduler.temporal.TemporalPool;
+import io.airbyte.scheduler.temporal.TemporalUtils;
+import io.airbyte.scheduler.temporal.TemporalWorkerRunFactory;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.KubeProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
@@ -92,13 +95,21 @@ public class SchedulerApp {
   }
 
   public void start() throws IOException {
+    final TemporalPool temporalPool = new TemporalPool(workspaceRoot, pbf);
+    // todo (cgardens) - i do not need to set up a thread pool for this, right?
+    temporalPool.run();
+    final TemporalClient temporalClient = new TemporalClient(TemporalUtils.TEMPORAL_CLIENT);
+
     final ExecutorService workerThreadPool = Executors.newFixedThreadPool(MAX_WORKERS, THREAD_FACTORY);
     final ScheduledExecutorService scheduledPool = Executors.newSingleThreadScheduledExecutor();
-    final SchedulerWorkerRunWithEnvironmentFactory workerRunWithEnvironmentFactory = new SchedulerWorkerRunWithEnvironmentFactory(workspaceRoot, pbf);
-
+    final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(temporalClient, workspaceRoot);
     final JobRetrier jobRetrier = new JobRetrier(jobPersistence, Instant::now);
     final JobScheduler jobScheduler = new JobScheduler(jobPersistence, configRepository);
-    final JobSubmitter jobSubmitter = new JobSubmitter(workerThreadPool, jobPersistence, configRepository, workerRunWithEnvironmentFactory);
+    final JobSubmitter jobSubmitter = new JobSubmitter(
+        workerThreadPool,
+        jobPersistence,
+        configRepository,
+        temporalWorkerRunFactory);
 
     Map<String, String> mdc = MDC.getCopyOfContextMap();
 

@@ -61,11 +61,14 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
   public void start(StandardTargetConfig targetConfig, Path jobRoot) throws IOException, WorkerException {
     Preconditions.checkState(targetProcess == null);
 
-    IOs.writeFile(jobRoot, WorkerConstants.TARGET_CONFIG_JSON_FILENAME, Jsons.serialize(targetConfig.getDestinationConnectionConfiguration()));
-    IOs.writeFile(jobRoot, WorkerConstants.CATALOG_JSON_FILENAME, Jsons.serialize(targetConfig.getCatalog()));
+    IOs.writeFile(jobRoot, WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME, Jsons.serialize(targetConfig.getDestinationConnectionConfiguration()));
+    IOs.writeFile(jobRoot, WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME, Jsons.serialize(targetConfig.getCatalog()));
 
     LOGGER.info("Running target...");
-    targetProcess = integrationLauncher.write(jobRoot, WorkerConstants.TARGET_CONFIG_JSON_FILENAME, WorkerConstants.CATALOG_JSON_FILENAME).start();
+    targetProcess = integrationLauncher.write(
+        jobRoot,
+        WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
+        WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME).start();
     LineGobbler.gobble(targetProcess.getInputStream(), LOGGER::info);
     LineGobbler.gobble(targetProcess.getErrorStream(), LOGGER::error);
 

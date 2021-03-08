@@ -19,11 +19,7 @@ export const jsonSchemaToUiWidget = (
   path: string = key,
   parentSchema?: JSONSchema7Definition
 ): FormBlock => {
-  const isRequired =
-    (typeof parentSchema !== "boolean" &&
-      Array.isArray(parentSchema?.required) &&
-      parentSchema?.required.includes(key)) ||
-    false;
+  const isRequired = isKeyRequired(key, parentSchema);
 
   // TODO: decide what to do with boolean case
   if (typeof jsonSchema === "boolean") {
@@ -81,11 +77,25 @@ export const jsonSchemaToUiWidget = (
     fieldKey: key,
     isRequired,
     isSecret: (jsonSchema as { airbyte_secret: boolean }).airbyte_secret,
+    multiline: (jsonSchema as { multiline: boolean }).multiline,
     type:
       (Array.isArray(jsonSchema.type) ? jsonSchema.type[0] : jsonSchema.type) ??
       "null",
   };
 };
+
+function isKeyRequired(
+  key: string,
+  parentSchema?: JSONSchema7Definition
+): boolean {
+  const isRequired =
+    (typeof parentSchema !== "boolean" &&
+      Array.isArray(parentSchema?.required) &&
+      parentSchema?.required.includes(key)) ||
+    false;
+
+  return isRequired;
+}
 
 const pickDefaultFields = (schema: JSONSchema7): Partial<JSONSchema7> => ({
   default: schema.default,

@@ -2,8 +2,8 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 
 abstract class AirbyteStandardSourceTestFileConfiguration {
-    Closure prehook
-    Closure posthook
+    Closure prehook = {} // default no-op
+    Closure posthook = {}
     String configPath
     String configuredCatalogPath
     String specPath

@@ -22,20 +22,45 @@
  * SOFTWARE.
  */
 
-package io.airbyte.scheduler;
+package io.airbyte.scheduler.temporal;
 
 import io.temporal.client.WorkflowClient;
+import io.temporal.client.WorkflowOptions;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.serviceclient.WorkflowServiceStubsOptions;
+import java.io.Serializable;
+import java.util.UUID;
 
 public class TemporalUtils {
 
   private static final WorkflowServiceStubsOptions TEMPORAL_OPTIONS = WorkflowServiceStubsOptions.newBuilder()
-      .setTarget("temporal:7233")
+      // todo move to env.
+      .setTarget("airbyte-temporal:7233")
       .build();
 
   public static final WorkflowServiceStubs TEMPORAL_SERVICE = WorkflowServiceStubs.newInstance(TEMPORAL_OPTIONS);
 
   public static final WorkflowClient TEMPORAL_CLIENT = WorkflowClient.newInstance(TEMPORAL_SERVICE);
+
+  @FunctionalInterface
+  public interface TemporalJobCreator<T extends Serializable> {
+
+    UUID create(WorkflowClient workflowClient, long jobId, int attempt, T config);
+
+  }
+
+  static enum TemporalJobType {
+    GET_SPEC,
+    CHECK_CONNECTION,
+    DISCOVER_SCHEMA,
+    SYNC,
+    RESET_CONNECTION
+  }
+
+  public static WorkflowOptions getWorkflowOptions(TemporalJobType jobType) {
+    return WorkflowOptions.newBuilder()
+        .setTaskQueue(jobType.name())
+        .build();
+  }
 
 }
