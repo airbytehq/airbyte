@@ -28,6 +28,7 @@ import com.google.common.base.Preconditions;
 import io.airbyte.config.IntegrationLauncherConfig;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.StandardCheckConnectionInput;
+import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
@@ -37,7 +38,6 @@ import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import io.airbyte.workers.protocols.airbyte.AirbyteStreamFactory;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteStreamFactory;
-import io.airbyte.workers.wrappers.JobOutputCheckConnectionWorker;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
 import io.temporal.activity.ActivityOptions;
@@ -97,13 +97,12 @@ public interface CheckConnectionWorkflow {
         final IntegrationLauncher integrationLauncher =
             new AirbyteIntegrationLauncher(launcherConfig.getJobId(), launcherConfig.getAttemptId().intValue(), launcherConfig.getDockerImage(), pbf);
         final AirbyteStreamFactory streamFactory = new DefaultAirbyteStreamFactory();
-        final OutputAndStatus<JobOutput> run =
-            new JobOutputCheckConnectionWorker(new DefaultCheckConnectionWorker(integrationLauncher, streamFactory)).run(connectionConfiguration,
-                jobRoot);
+        final OutputAndStatus<StandardCheckConnectionOutput> run =
+            new DefaultCheckConnectionWorker(integrationLauncher, streamFactory).run(connectionConfiguration, jobRoot);
         if (run.getStatus() == JobStatus.SUCCEEDED) {
           Preconditions.checkState(run.getOutput().isPresent());
           LOGGER.info("job output {}", run.getOutput().get());
-          return run.getOutput().get();
+          return new JobOutput().withCheckConnection(run.getOutput().get());
         } else {
           throw new TemporalJobException();
         }
