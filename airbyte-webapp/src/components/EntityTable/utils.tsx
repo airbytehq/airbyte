@@ -72,6 +72,7 @@ export const getConnectionTableData = (
     lastSync: connection.lastSync,
     enabled: connection.status === Status.ACTIVE,
     schedule: connection.schedule,
+    status: connection.status,
     isSyncing: connection.isSyncing,
   }));
 };

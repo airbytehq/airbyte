@@ -19,6 +19,7 @@ type ITableDataItem = {
   connectorName: string;
   enabled: boolean;
   isSyncing?: boolean;
+  status?: string;
   lastSync?: number | null;
   schedule: ScheduleProperties | null;
 };
