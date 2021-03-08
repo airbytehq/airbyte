@@ -30,6 +30,7 @@ import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.protocols.Mapper;
+import org.apache.logging.log4j.util.Strings;
 
 /**
  * We apply some transformations on the fly on the catalog (same should be done on records too) from
@@ -39,16 +40,16 @@ import io.airbyte.workers.protocols.Mapper;
  */
 public class NamespacingMapper implements Mapper<AirbyteMessage> {
 
-  private final String defaultNamespace;
+  private final String prefix;
 
-  public NamespacingMapper(String defaultNamespace) {
-    this.defaultNamespace = defaultNamespace;
+  public NamespacingMapper(String prefix) {
+    this.prefix = prefix;
   }
 
   @Override
   public ConfiguredAirbyteCatalog mapCatalog(final ConfiguredAirbyteCatalog inputCatalog) {
     final ConfiguredAirbyteCatalog catalog = Jsons.clone(inputCatalog);
-    catalog.getStreams().forEach(s -> mutateStream(s.getStream(), defaultNamespace));
+    catalog.getStreams().forEach(s -> mutateStream(s.getStream(), prefix));
     return catalog;
   }
 
@@ -56,28 +57,20 @@ public class NamespacingMapper implements Mapper<AirbyteMessage> {
   public AirbyteMessage mapMessage(final AirbyteMessage inputMessage) {
     if (inputMessage.getType() == Type.RECORD) {
       final AirbyteMessage message = Jsons.clone(inputMessage);
-      message.getRecord().setStream(transformStreamName(message.getRecord().getStream(), defaultNamespace));
+      message.getRecord().setStream(transformStreamName(message.getRecord().getStream(), prefix));
       return message;
     }
     return inputMessage;
   }
 
-  private static void mutateStream(final AirbyteStream stream, final String defaultNamespace) {
-    stream.withName(transformStreamName(stream.getName(), defaultNamespace));
+  private static void mutateStream(final AirbyteStream stream, final String prefix) {
+    stream.withName(transformStreamName(stream.getName(), prefix));
   }
 
-  private static String transformStreamName(final String streamName, final String defaultNamespace) {
-    // Use the default namespace as a prefix for the moment to alter the stream name in the destination
-    if (defaultNamespace != null && !defaultNamespace.isEmpty()) {
-      // TODO chris: use defaultNamespace as a namespace/schema/dataset in destination
-      return defaultNamespace + streamName;
+  private static String transformStreamName(final String streamName, final String prefix) {
+    if (Strings.isNotEmpty(prefix)) {
+      return prefix + streamName;
     } else {
-      // TODO chris: check to make sure that source is providing a namespace, otherwise this should not be
-      // allowed (requires PR #2228)
-      // throw new RuntimeException(String.format("Destination Namespace is not defined for %s",
-      // streamName));
-      // For now, since destination still defines a default namespace in their settings, thus it's
-      // acceptable not having one so we can keep the stream name as is.
       return streamName;
     }
   }

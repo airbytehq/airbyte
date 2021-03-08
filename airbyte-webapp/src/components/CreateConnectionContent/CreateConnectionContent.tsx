@@ -53,7 +53,7 @@ const CreateConnectionContent: React.FC<IProps> = ({
 
   const onSubmitConnectionStep = async (values: {
     frequency: string;
-    defaultNamespace: string;
+    prefix: string;
     schema: SyncSchema;
   }) => {
     setErrorStatusRequest(0);
@@ -61,7 +61,7 @@ const CreateConnectionContent: React.FC<IProps> = ({
       await createConnection({
         values: {
           frequency: values.frequency,
-          defaultNamespace: values.defaultNamespace,
+          prefix: values.prefix,
           syncCatalog: values.schema,
         },
         source: source,
