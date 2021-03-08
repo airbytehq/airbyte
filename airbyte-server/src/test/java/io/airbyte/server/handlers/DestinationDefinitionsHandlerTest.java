@@ -92,7 +92,7 @@ class DestinationDefinitionsHandlerTest {
   }
 
   @Test
-  @DisplayName("listDestination should return the right list")
+  @DisplayName("listDestinationDefinition should return the right list")
   void testListDestinations() throws JsonValidationException, IOException, ConfigNotFoundException, URISyntaxException {
     final StandardDestinationDefinition destination2 = generateDestination();
 
@@ -120,7 +120,7 @@ class DestinationDefinitionsHandlerTest {
   }
 
   @Test
-  @DisplayName("getDestination should return the right destination")
+  @DisplayName("getDestinationDefinition should return the right destination")
   void testGetDestination() throws JsonValidationException, ConfigNotFoundException, IOException, URISyntaxException {
     when(configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId()))
         .thenReturn(destination);
@@ -165,7 +165,7 @@ class DestinationDefinitionsHandlerTest {
   }
 
   @Test
-  @DisplayName("updateDestination should correctly update a destinationDefinition")
+  @DisplayName("updateDestinationDefinition should correctly update a destinationDefinition")
   void testUpdateDestination() throws ConfigNotFoundException, IOException, JsonValidationException {
     when(configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId())).thenReturn(destination);
     final DestinationDefinitionRead currentDestination = destinationHandler
