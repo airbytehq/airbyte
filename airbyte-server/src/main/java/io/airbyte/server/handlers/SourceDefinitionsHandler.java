@@ -109,7 +109,7 @@ public class SourceDefinitionsHandler {
   }
 
   private static List<StandardSourceDefinition> toStandardSourceDefinitions(
-      Iterator<JsonNode> iter) {
+                                                                            Iterator<JsonNode> iter) {
     Iterable<JsonNode> iterable = () -> iter;
     var sourceDefList = new ArrayList<StandardSourceDefinition>();
     for (JsonNode n : iterable) {

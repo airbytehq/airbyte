@@ -79,7 +79,8 @@ class SourceDefinitionsHandlerTest {
 
     source = generateSource();
     webServer = new MockWebServer();
-    sourceHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, uuidSupplier, schedulerJobClient, webServer.url("/").toString());
+    sourceHandler =
+        new SourceDefinitionsHandler(configRepository, dockerImageValidator, uuidSupplier, schedulerJobClient, webServer.url("/").toString());
   }
 
   private StandardSourceDefinition generateSource() {
