@@ -25,6 +25,7 @@
 package io.airbyte.scheduler.worker_run;
 
 import io.airbyte.commons.functional.CheckedSupplier;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.JobOutput;
 import io.airbyte.workers.OutputAndStatus;
 import io.airbyte.workers.Worker;
@@ -64,7 +65,7 @@ public class WorkerRun implements Callable<OutputAndStatus<JobOutput>> {
 
   @Override
   public OutputAndStatus<JobOutput> call() throws Exception {
-    LOGGER.info("Executing worker wrapper...");
+    LOGGER.info("Executing worker wrapper. Airbyte version: {}", EnvConfigs.AIRBYTE_VERSION);
     Files.createDirectories(jobRoot);
 
     return workerRun.get();
