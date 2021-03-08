@@ -1,7 +1,9 @@
 import React from "react";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faTimes, faPause } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faTimes } from "@fortawesome/free-solid-svg-icons";
+
+import PauseIcon from "./components/Pause";
 
 type IProps = {
   success?: boolean;
@@ -37,13 +39,14 @@ const Badge = styled.div<IProps>`
   line-height: ${({ big }) => (big ? 33 : 12)}px;
   text-align: center;
   display: inline-block;
+  vertical-align: top;
 `;
 
 const Value = styled.span`
   font-weight: 500;
   font-size: 12px;
   padding-left: 3px;
-  vertical-align: middle;
+  vertical-align: top;
 `;
 
 const StatusIcon: React.FC<IProps> = (props) => (
@@ -51,7 +54,7 @@ const StatusIcon: React.FC<IProps> = (props) => (
     {props.success ? (
       <FontAwesomeIcon icon={faCheck} />
     ) : props.inactive ? (
-      <FontAwesomeIcon icon={faPause} />
+      <PauseIcon />
     ) : (
       <FontAwesomeIcon icon={faTimes} />
     )}
