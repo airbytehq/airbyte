@@ -4,6 +4,9 @@
 title: SourceAcceptanceTestConfig
 type: object
 description: SourceAcceptanceTestConfig
+required:
+  - connector_image
+  - tests
 properties:
   connector_image:
     type: string
@@ -11,6 +14,7 @@ properties:
     type: array
     items:
       $ref: "#/definitions/TestConfiguration"
+    minItems: 1
 
 definitions:
   TestConfiguration:

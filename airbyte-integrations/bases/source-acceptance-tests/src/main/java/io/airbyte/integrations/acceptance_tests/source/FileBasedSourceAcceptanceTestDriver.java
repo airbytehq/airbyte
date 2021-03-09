@@ -1,9 +1,21 @@
 package io.airbyte.integrations.acceptance_tests.source;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.yaml.Yamls;
+import io.airbyte.integrations.acceptance_tests.source.core.CoreAcceptanceTest;
+import io.airbyte.integrations.acceptance_tests.source.core.CoreAcceptanceTestRunner;
+import io.airbyte.integrations.acceptance_tests.source.full_refresh.FullRefreshAcceptanceTestRunner;
+import io.airbyte.integrations.acceptance_tests.source.incremental.IncrementalAcceptanceTestRunner;
+import io.airbyte.integrations.acceptance_tests.source.models.CoreConfig;
+import io.airbyte.integrations.acceptance_tests.source.models.FullRefreshConfig;
+import io.airbyte.integrations.acceptance_tests.source.models.IncrementalConfig;
 import io.airbyte.integrations.acceptance_tests.source.models.SourceAcceptanceTestInputs;
+import io.airbyte.integrations.acceptance_tests.source.models.TestConfiguration;
 import io.airbyte.integrations.acceptance_tests.source.utils.TestRunner;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
@@ -12,10 +24,71 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
+import java.util.List;
 
 public class FileBasedSourceAcceptanceTestDriver {
-  private static SourceAcceptanceTestInputs parseArguments(String[] args) throws IOException {
+
+  private static String readFileContents(String path) throws IOException {
+    return Files.readString(Path.of(path));
+  }
+
+  private static JsonNode deserializeJsonAtPath(String path, String entity) {
+    try {
+      return Jsons.deserialize(readFileContents(path));
+    } catch (Exception e) {
+      throw new RuntimeException("Could not deserialize " + entity + " at path " + path, e);
+    }
+  }
+
+  private static ConfiguredAirbyteCatalog deserializeConfiguredCatalogAtPath(String path) {
+    return deserializeObjectAtPath(path, ConfiguredAirbyteCatalog.class, "configured catalog");
+  }
+
+  private static <T> T deserializeObjectAtPath(String path, Class<T> klass, String entity) {
+    try {
+      return Jsons.deserialize(readFileContents(path), klass);
+    } catch (Exception e) {
+      throw new RuntimeException("Could not deserialize " + entity + " at path " + path, e);
+    }
+  }
+
+  List<Object> readTestInputs(SourceAcceptanceTestInputs testInputs) {
+    Preconditions.checkNotNull(testInputs.getTests(), "Input test suite configurations cannot be empty or null.");
+    Preconditions.checkArgument(testInputs.getTests().size() > 0, "Input test suite configurations cannot be empty or null.");
+    List<Object> testConfigs = Lists.newArrayList();
+    for (TestConfiguration testConfig : testInputs.getTests()) {
+      Object config = switch (testConfig.getType()) {
+        case CORE -> readCoreInputs(testInputs.getConnectorImage(), testConfig.getCore());
+        case FULL_REFRESH -> readFullRefreshInputs(testInputs.getConnectorImage(), testConfig.getFullRefresh());
+        case INCREMENTAL -> readIncrementalInputs(testInputs.getConnectorImage(), testConfig.getIncremental());
+      };
+      testConfigs.add(config);
+    }
+    return testConfigs;
+  }
+
+  IncrementalAcceptanceTestRunner.Config readIncrementalInputs(String connectorImage, IncrementalConfig config) {
+    JsonNode connectorConfig = deserializeJsonAtPath(config.getConnectorConfigPath(), "connector config");
+    var configuredCatalog = deserializeConfiguredCatalogAtPath(config.getConfiguredCatalogPath());
+    return new IncrementalAcceptanceTestRunner.Config(connectorImage, connectorConfig, configuredCatalog);
+  }
+
+  FullRefreshAcceptanceTestRunner.Config readFullRefreshInputs(String connectorImage, FullRefreshConfig config) {
+    JsonNode connectorConfig = deserializeJsonAtPath(config.getConnectorConfigPath(), "connector config");
+    var configuredCatalog = deserializeConfiguredCatalogAtPath(config.getConfiguredCatalogPath());
+    return new FullRefreshAcceptanceTestRunner.Config(connectorImage, connectorConfig, configuredCatalog);
+  }
+
+  CoreAcceptanceTestRunner.Config readCoreInputs(String connectorImage, CoreConfig coreConfig) {
+    var catalog = deserializeConfiguredCatalogAtPath(coreConfig.getConfiguredCatalogPath());
+    JsonNode expectedSpec = deserializeJsonAtPath(coreConfig.getSpecPath(), "specification");
+    JsonNode validConnectorConfig = deserializeJsonAtPath(coreConfig.getValidConnectorConfigPath(), "valid connector config");
+    JsonNode invalidConnectorConfig = deserializeJsonAtPath(coreConfig.getInvalidConnectorConfigPath(), "invalid connector config");
+
+    return new CoreAcceptanceTestRunner.Config(connectorImage, expectedSpec, validConnectorConfig, invalidConnectorConfig, catalog);
+  }
+
+  private SourceAcceptanceTestInputs parseArguments(String[] args) throws IOException {
     ArgumentParser parser = ArgumentParsers.newFor(FileBasedSourceAcceptanceTestDriver.class.getName()).build()
         .defaultHelp(true)
         .description("Run source acceptance tests");
@@ -24,7 +97,7 @@ public class FileBasedSourceAcceptanceTestDriver {
         .required(true)
         .help("Path to the source acceptance test input configuration");
 
-    Namespace ns = null;
+    Namespace ns;
     try {
       ns = parser.parseArgs(args);
     } catch (ArgumentParserException e) {
@@ -32,21 +105,32 @@ public class FileBasedSourceAcceptanceTestDriver {
     }
 
     String testConfigPath = ns.getString("testConfig");
-
     String testConfig = Files.readString(Path.of(testConfigPath));
-    return Jsons.deserialize(testConfig, SourceAcceptanceTestInputs.class);
+    return Yamls.deserialize(testConfig, SourceAcceptanceTestInputs.class);
   }
 
-  public static void main(String[] args) throws IOException {
+  void runTestSuite(String[] args) throws IOException {
     SourceAcceptanceTestInputs testInputs = parseArguments(args);
-    // transform into inputs for the various test classes
-    // run each test class
-    ArrayList<Class<?>> classes =
-        Lists.newArrayList(CoreAcceptanceTestRunner.class, FullRefreshAcceptanceTestRunner.class, IncrementalAcceptanceTestRunner.class);
+    List<Object> testConfigs = readTestInputs(testInputs);
+    for (Object testConfig : testConfigs) {
+      Class<?> klass = testConfig.getClass();
 
-    for (Class<?> aClass : classes) {
-      TestRunner.runTestClass(aClass);
+      if (klass == IncrementalAcceptanceTestRunner.Config.class) {
+        IncrementalAcceptanceTestRunner.CONFIG = (IncrementalAcceptanceTestRunner.Config) testConfig;
+        TestRunner.runTestClass(IncrementalAcceptanceTestRunner.class);
+      } else if (klass == FullRefreshAcceptanceTestRunner.Config.class) {
+        FullRefreshAcceptanceTestRunner.CONFIG = (FullRefreshAcceptanceTestRunner.Config) testConfig;
+        TestRunner.runTestClass(FullRefreshAcceptanceTestRunner.class);
+      } else if (klass == CoreAcceptanceTestRunner.Config.class) {
+        CoreAcceptanceTestRunner.CONFIG = (CoreAcceptanceTestRunner.Config) testConfig;
+        TestRunner.runTestClass(CoreAcceptanceTest.class);
+      } else {
+        throw new RuntimeException("Unrecognized test class " + klass);
+      }
     }
   }
 
+  public static void main(String[] args) throws IOException {
+    new FileBasedSourceAcceptanceTestDriver().runTestSuite(args);
+  }
 }

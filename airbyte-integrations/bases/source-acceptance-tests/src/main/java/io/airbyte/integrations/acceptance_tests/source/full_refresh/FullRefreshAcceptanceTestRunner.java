@@ -1,4 +1,4 @@
-package io.airbyte.integrations.acceptance_tests.source;
+package io.airbyte.integrations.acceptance_tests.source.full_refresh;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;

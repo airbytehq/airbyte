@@ -1,12 +1,34 @@
-package io.airbyte.integrations.acceptance_tests.source;
+package io.airbyte.integrations.acceptance_tests.source.core;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 
-public class CoreAcceptanceTestRunner extends CoreAcceptanceTest{
+public class CoreAcceptanceTestRunner extends CoreAcceptanceTest {
+
+  public static class Config {
+
+    public Config(String connectorImage,
+                  JsonNode expectedSpec,
+                  JsonNode validConfig,
+                  JsonNode invalidConfig,
+                  ConfiguredAirbyteCatalog configuredCatalog) {
+      this.connectorImage = connectorImage;
+      this.expectedSpec = expectedSpec;
+      this.validConfig = validConfig;
+      this.invalidConfig = invalidConfig;
+      this.configuredCatalog = configuredCatalog;
+    }
+
+    String connectorImage;
+    JsonNode expectedSpec;
+    JsonNode validConfig;
+    JsonNode invalidConfig;
+    ConfiguredAirbyteCatalog configuredCatalog;
+  }
+
   public static Config CONFIG;
 
-  protected JsonNode getValidConfig(){
+  protected JsonNode getValidConfig() {
     return CONFIG.validConfig;
   }
 
@@ -14,15 +36,15 @@ public class CoreAcceptanceTestRunner extends CoreAcceptanceTest{
     return CONFIG.invalidConfig;
   }
 
-  protected JsonNode getExpectedSpec(){
+  protected JsonNode getExpectedSpec() {
     return CONFIG.expectedSpec;
   }
 
-  protected String getConnectorImage(){
+  protected String getConnectorImage() {
     return CONFIG.connectorImage;
   }
 
-  protected ConfiguredAirbyteCatalog getConfiguredCatalog(){
+  protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
     return CONFIG.configuredCatalog;
   }
 }
