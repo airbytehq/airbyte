@@ -27,7 +27,7 @@ package io.airbyte.config.init;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.helpers.RawListToStandardXDefinitions;
+import io.airbyte.config.helpers.YamlListToStandardDefinitions;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -86,7 +86,7 @@ public class SeedRepository {
   }
 
   public void run(final String idName, final Path input, final Path output) throws IOException {
-    final var jsonNode = RawListToStandardXDefinitions.verifyAndConvertToJsonNode(idName, IOs.readFile(input));
+    final var jsonNode = YamlListToStandardDefinitions.verifyAndConvertToJsonNode(idName, IOs.readFile(input));
     final var elementsIter = jsonNode.elements();
 
     // clean output directory.

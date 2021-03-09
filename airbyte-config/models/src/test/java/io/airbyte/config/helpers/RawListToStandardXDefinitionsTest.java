@@ -82,7 +82,7 @@ public class RawListToStandardXDefinitionsTest {
     @Test
     @DisplayName("should correctly read yaml file")
     public void correctlyRead() throws JsonProcessingException {
-      var jsonDefs = RawListToStandardXDefinitions.verifyAndConvertToJsonNode(ID_NAME, goodDesDefYaml);
+      var jsonDefs = YamlListToStandardDefinitions.verifyAndConvertToJsonNode(ID_NAME, goodDesDefYaml);
       var defList = mapper.treeToValue(jsonDefs, StandardDestinationDefinition[].class);
       assertEquals(1, defList.length);
       assertEquals("Local JSON", defList[0].getName());
@@ -91,25 +91,25 @@ public class RawListToStandardXDefinitionsTest {
     @Test
     @DisplayName("should error out on duplicate id")
     public void duplicateId() {
-      assertThrows(RuntimeException.class, () -> RawListToStandardXDefinitions.verifyAndConvertToJsonNode(ID_NAME, duplicateId));
+      assertThrows(RuntimeException.class, () -> YamlListToStandardDefinitions.verifyAndConvertToJsonNode(ID_NAME, duplicateId));
     }
 
     @Test
     @DisplayName("should error out on duplicate name")
     public void duplicateName() {
-      assertThrows(RuntimeException.class, () -> RawListToStandardXDefinitions.verifyAndConvertToJsonNode(ID_NAME, duplicateName));
+      assertThrows(RuntimeException.class, () -> YamlListToStandardDefinitions.verifyAndConvertToJsonNode(ID_NAME, duplicateName));
     }
 
     @Test
     @DisplayName("should error out on empty file")
     public void emptyFile() {
-      assertThrows(RuntimeException.class, () -> RawListToStandardXDefinitions.verifyAndConvertToJsonNode(ID_NAME, ""));
+      assertThrows(RuntimeException.class, () -> YamlListToStandardDefinitions.verifyAndConvertToJsonNode(ID_NAME, ""));
     }
 
     @Test
     @DisplayName("should error out on bad data")
     public void badData() {
-      assertThrows(RuntimeException.class, () -> RawListToStandardXDefinitions.verifyAndConvertToJsonNode(ID_NAME, badData));
+      assertThrows(RuntimeException.class, () -> YamlListToStandardDefinitions.verifyAndConvertToJsonNode(ID_NAME, badData));
     }
 
   }
@@ -121,7 +121,7 @@ public class RawListToStandardXDefinitionsTest {
     @Test
     @DisplayName("should correctly read yaml file")
     public void correctlyRead() {
-      var defs = RawListToStandardXDefinitions
+      var defs = YamlListToStandardDefinitions
           .verifyAndConvertToModelList(StandardDestinationDefinition.class, goodDesDefYaml);
       assertEquals(1, defs.size());
       assertEquals("Local JSON", defs.get(0).getName());
@@ -131,28 +131,28 @@ public class RawListToStandardXDefinitionsTest {
     @DisplayName("should error out on duplicate id")
     public void duplicateId() {
       assertThrows(RuntimeException.class,
-          () -> RawListToStandardXDefinitions.verifyAndConvertToModelList(StandardDestinationDefinition.class, duplicateId));
+          () -> YamlListToStandardDefinitions.verifyAndConvertToModelList(StandardDestinationDefinition.class, duplicateId));
     }
 
     @Test
     @DisplayName("should error out on duplicate name")
     public void duplicateName() {
       assertThrows(RuntimeException.class,
-          () -> RawListToStandardXDefinitions.verifyAndConvertToModelList(StandardDestinationDefinition.class, duplicateName));
+          () -> YamlListToStandardDefinitions.verifyAndConvertToModelList(StandardDestinationDefinition.class, duplicateName));
     }
 
     @Test
     @DisplayName("should error out on empty file")
     public void emptyFile() {
       assertThrows(RuntimeException.class,
-          () -> RawListToStandardXDefinitions.verifyAndConvertToModelList(StandardDestinationDefinition.class, ""));
+          () -> YamlListToStandardDefinitions.verifyAndConvertToModelList(StandardDestinationDefinition.class, ""));
     }
 
     @Test
     @DisplayName("should error out on bad data")
     public void badData() {
       assertThrows(RuntimeException.class,
-          () -> RawListToStandardXDefinitions.verifyAndConvertToModelList(StandardDestinationDefinition.class, badData));
+          () -> YamlListToStandardDefinitions.verifyAndConvertToModelList(StandardDestinationDefinition.class, badData));
     }
 
   }

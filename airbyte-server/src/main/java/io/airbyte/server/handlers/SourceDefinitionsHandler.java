@@ -31,7 +31,7 @@ import io.airbyte.api.model.SourceDefinitionRead;
 import io.airbyte.api.model.SourceDefinitionReadList;
 import io.airbyte.api.model.SourceDefinitionUpdate;
 import io.airbyte.config.StandardSourceDefinition;
-import io.airbyte.config.helpers.RawListToStandardXDefinitions;
+import io.airbyte.config.helpers.YamlListToStandardDefinitions;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.client.CachingSchedulerJobClient;
@@ -111,7 +111,7 @@ public class SourceDefinitionsHandler {
   public SourceDefinitionReadList listLatestSourceDefinitions() throws ConfigNotFoundException, IOException, JsonValidationException {
     List<StandardSourceDefinition> sourceDefs;
     try {
-      sourceDefs = RawListToStandardXDefinitions.toStandardSourceDefinitions(getLatestSources());
+      sourceDefs = YamlListToStandardDefinitions.toStandardSourceDefinitions(getLatestSources());
     } catch (RuntimeException e) {
       throw new KnownException(500, "Error retrieving latest source definitions", e);
     }
