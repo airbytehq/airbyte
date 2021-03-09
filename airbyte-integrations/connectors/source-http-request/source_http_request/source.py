@@ -88,9 +88,9 @@ class SourceHttpRequest(Source):
         body = parsed_config.get("body", {})
 
         if http_method == "get":
-            r = requests.get(url, headers=headers, data=body)
+            r = requests.get(url, headers=headers, json=body)
         elif http_method == "post":
-            r = requests.post(url, headers=headers, data=body)
+            r = requests.post(url, headers=headers, json=body)
         else:
             raise Exception(f"Did not recognize http_method: {http_method}")
 

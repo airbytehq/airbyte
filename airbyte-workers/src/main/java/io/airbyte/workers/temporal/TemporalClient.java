@@ -22,21 +22,21 @@
  * SOFTWARE.
  */
 
-package io.airbyte.scheduler.temporal;
+package io.airbyte.workers.temporal;
 
-import io.airbyte.commons.functional.CheckedSupplier;
-import io.airbyte.config.IntegrationLauncherConfig;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
-import io.airbyte.config.JobOutput;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.StandardCheckConnectionInput;
+import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.StandardSyncInput;
-import io.airbyte.scheduler.temporal.TemporalUtils.TemporalJobType;
-import io.airbyte.workers.JobStatus;
-import io.airbyte.workers.OutputAndStatus;
+import io.airbyte.config.StandardSyncOutput;
+import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.scheduler.models.IntegrationLauncherConfig;
+import io.airbyte.scheduler.models.JobRunConfig;
 import io.temporal.client.WorkflowClient;
 
 public class TemporalClient {
@@ -47,56 +47,64 @@ public class TemporalClient {
     this.client = client;
   }
 
-  public OutputAndStatus<JobOutput> submitGetSpec(long jobId, int attempt, JobGetSpecConfig config) {
+  public ConnectorSpecification submitGetSpec(long jobId, int attempt, JobGetSpecConfig config) throws TemporalJobException {
+    final JobRunConfig jobRunConfig = TemporalUtils.createJobRunConfig(jobId, attempt);
+
     final IntegrationLauncherConfig launcherConfig = new IntegrationLauncherConfig()
         .withJobId(jobId)
         .withAttemptId((long) attempt)
         .withDockerImage(config.getDockerImage());
-    return toOutputAndStatus(() -> getWorkflowStub(SpecWorkflow.class, TemporalJobType.GET_SPEC).run(launcherConfig));
+    return getWorkflowStub(SpecWorkflow.class, TemporalJobType.GET_SPEC).run(jobRunConfig, launcherConfig);
 
   }
 
-  public OutputAndStatus<JobOutput> submitCheckConnection(long jobId, int attempt, JobCheckConnectionConfig config) {
+  public StandardCheckConnectionOutput submitCheckConnection(long jobId, int attempt, JobCheckConnectionConfig config) throws TemporalJobException {
+    final JobRunConfig jobRunConfig = TemporalUtils.createJobRunConfig(jobId, attempt);
+    final IntegrationLauncherConfig launcherConfig = new IntegrationLauncherConfig()
+        .withJobId(jobId)
+        .withAttemptId((long) attempt)
+        .withDockerImage(config.getDockerImage());
     final StandardCheckConnectionInput input = new StandardCheckConnectionInput().withConnectionConfiguration(config.getConnectionConfiguration());
+
+    return getWorkflowStub(CheckConnectionWorkflow.class, TemporalJobType.CHECK_CONNECTION).run(jobRunConfig, launcherConfig, input);
+  }
+
+  public AirbyteCatalog submitDiscoverSchema(long jobId, int attempt, JobDiscoverCatalogConfig config) throws TemporalJobException {
+    final JobRunConfig jobRunConfig = TemporalUtils.createJobRunConfig(jobId, attempt);
     final IntegrationLauncherConfig launcherConfig = new IntegrationLauncherConfig()
         .withJobId(jobId)
         .withAttemptId((long) attempt)
         .withDockerImage(config.getDockerImage());
-
-    return toOutputAndStatus(() -> getWorkflowStub(CheckConnectionWorkflow.class, TemporalJobType.CHECK_CONNECTION).run(launcherConfig, input));
-  }
-
-  public OutputAndStatus<JobOutput> submitDiscoverSchema(long jobId, int attempt, JobDiscoverCatalogConfig config) {
     final StandardDiscoverCatalogInput input = new StandardDiscoverCatalogInput().withConnectionConfiguration(config.getConnectionConfiguration());
-    final IntegrationLauncherConfig launcherConfig = new IntegrationLauncherConfig()
-        .withJobId(jobId)
-        .withAttemptId((long) attempt)
-        .withDockerImage(config.getDockerImage());
 
-    return toOutputAndStatus(() -> getWorkflowStub(DiscoverCatalogWorkflow.class, TemporalJobType.DISCOVER_SCHEMA).run(launcherConfig, input));
+    return getWorkflowStub(DiscoverCatalogWorkflow.class, TemporalJobType.DISCOVER_SCHEMA).run(jobRunConfig, launcherConfig, input);
   }
 
-  public OutputAndStatus<JobOutput> submitSync(long jobId, int attempt, JobSyncConfig config) {
+  public StandardSyncOutput submitSync(long jobId, int attempt, JobSyncConfig config) throws TemporalJobException {
+    final JobRunConfig jobRunConfig = TemporalUtils.createJobRunConfig(jobId, attempt);
+
+    final IntegrationLauncherConfig sourceLauncherConfig = new IntegrationLauncherConfig()
+        .withJobId(jobId)
+        .withAttemptId((long) attempt)
+        .withDockerImage(config.getSourceDockerImage());
+
+    final IntegrationLauncherConfig destinationLauncherConfig = new IntegrationLauncherConfig()
+        .withJobId(jobId)
+        .withAttemptId((long) attempt)
+        .withDockerImage(config.getDestinationDockerImage());
+
     final StandardSyncInput input = new StandardSyncInput()
         .withPrefix(config.getPrefix())
         .withSourceConfiguration(config.getSourceConfiguration())
         .withDestinationConfiguration(config.getDestinationConfiguration())
         .withCatalog(config.getConfiguredAirbyteCatalog())
         .withState(config.getState());
-    return toOutputAndStatus(() -> getWorkflowStub(SyncWorkflow.class, TemporalJobType.SYNC).run(
-        jobId,
-        attempt,
-        config.getSourceDockerImage(),
-        config.getDestinationDockerImage(),
-        input));
-  }
 
-  private OutputAndStatus<JobOutput> toOutputAndStatus(CheckedSupplier<JobOutput, TemporalJobException> supplier) {
-    try {
-      return new OutputAndStatus<>(JobStatus.SUCCEEDED, supplier.get());
-    } catch (TemporalJobException e) {
-      return new OutputAndStatus<>(JobStatus.FAILED);
-    }
+    return getWorkflowStub(SyncWorkflow.class, TemporalJobType.SYNC).run(
+        jobRunConfig,
+        sourceLauncherConfig,
+        destinationLauncherConfig,
+        input);
   }
 
   private <T> T getWorkflowStub(Class<T> workflowClass, TemporalJobType jobType) {

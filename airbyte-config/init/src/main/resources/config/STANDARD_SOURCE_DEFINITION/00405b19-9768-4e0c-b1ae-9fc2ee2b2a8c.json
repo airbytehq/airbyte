@@ -2,6 +2,6 @@
   "sourceDefinitionId": "00405b19-9768-4e0c-b1ae-9fc2ee2b2a8c",
   "name": "Looker",
   "dockerRepository": "airbyte/source-looker",
-  "dockerImageTag": "0.1.1",
+  "dockerImageTag": "0.2.0",
   "documentationUrl": "https://hub.docker.com/r/airbyte/source-looker"
 }

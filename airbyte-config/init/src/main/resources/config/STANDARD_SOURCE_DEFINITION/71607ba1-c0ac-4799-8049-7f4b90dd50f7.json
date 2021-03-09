@@ -2,6 +2,6 @@
   "sourceDefinitionId": "71607ba1-c0ac-4799-8049-7f4b90dd50f7",
   "name": "Google Sheets",
   "dockerRepository": "airbyte/source-google-sheets",
-  "dockerImageTag": "0.1.7",
+  "dockerImageTag": "0.2.0",
   "documentationUrl": "https://hub.docker.com/repository/docker/airbyte/source-google-sheets"
 }

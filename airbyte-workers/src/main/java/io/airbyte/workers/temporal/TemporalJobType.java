@@ -22,36 +22,12 @@
  * SOFTWARE.
  */
 
-package io.airbyte.workers.wrappers;
+package io.airbyte.workers.temporal;
 
-import io.airbyte.workers.OutputAndStatus;
-import io.airbyte.workers.Worker;
-import java.nio.file.Path;
-import java.util.function.Function;
-
-class OutputConvertingWorker<InputType, OriginalOutputType, FinalOutputType> implements Worker<InputType, FinalOutputType> {
-
-  private final Worker<InputType, OriginalOutputType> innerWorker;
-  private final Function<OriginalOutputType, FinalOutputType> convertFn;
-
-  public OutputConvertingWorker(Worker<InputType, OriginalOutputType> innerWorker, Function<OriginalOutputType, FinalOutputType> convertFn) {
-    this.innerWorker = innerWorker;
-    this.convertFn = convertFn;
-  }
-
-  @Override
-  public OutputAndStatus<FinalOutputType> run(InputType config, Path jobRoot) {
-    OutputAndStatus<OriginalOutputType> run = innerWorker.run(config, jobRoot);
-    if (run.getOutput().isPresent()) {
-      return new OutputAndStatus<>(run.getStatus(), convertFn.apply(run.getOutput().get()));
-    } else {
-      return new OutputAndStatus<>(run.getStatus());
-    }
-  }
-
-  @Override
-  public void cancel() {
-    innerWorker.cancel();
-  }
-
+public enum TemporalJobType {
+  GET_SPEC,
+  CHECK_CONNECTION,
+  DISCOVER_SCHEMA,
+  SYNC,
+  RESET_CONNECTION
 }
