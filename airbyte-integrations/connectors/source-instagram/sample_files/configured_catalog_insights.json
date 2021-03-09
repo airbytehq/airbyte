@@ -7,16 +7,10 @@
           "type": "object",
           "properties": {
             "page_id": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "business_account_id": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "date": {
               "type": ["null", "string"],
@@ -41,16 +35,10 @@
           "type": "object",
           "properties": {
             "page_id": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "business_account_id": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "date": {
               "type": ["null", "string"],
@@ -109,16 +97,10 @@
           "type": "object",
           "properties": {
             "business_account_id": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "page_id": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "id": {
               "type": ["null", "string"]
@@ -163,16 +145,10 @@
           "type": "object",
           "properties": {
             "business_account_id": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "page_id": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "id": {
               "type": ["null", "string"]
