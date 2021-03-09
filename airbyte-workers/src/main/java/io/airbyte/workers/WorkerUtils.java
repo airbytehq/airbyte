@@ -125,7 +125,7 @@ public class WorkerUtils {
   }
 
   public static Path getJobRoot(Path workspaceRoot, long jobId, long attemptId) {
-    return getJobRoot(workspaceRoot, jobId, attemptId);
+    return getJobRoot(workspaceRoot, jobId, Math.toIntExact(attemptId));
   }
 
   public static Path getJobRoot(Path workspaceRoot, long jobId, int attemptId) {

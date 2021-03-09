@@ -44,4 +44,8 @@ public class TemporalJobException extends Exception {
     this.logPath = logPath;
   }
 
+  public Path getLogPath() {
+    return logPath;
+  }
+
 }

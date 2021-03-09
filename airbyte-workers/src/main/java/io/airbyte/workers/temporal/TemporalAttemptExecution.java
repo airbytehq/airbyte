@@ -24,14 +24,18 @@
 
 package io.airbyte.workers.temporal;
 
+import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerUtils;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.function.BiConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,24 +49,37 @@ public class TemporalAttemptExecution<T> implements CheckedSupplier<T, TemporalJ
   private static final Logger LOGGER = LoggerFactory.getLogger(TemporalAttemptExecution.class);
 
   private final Path jobRoot;
-  private final CheckedFunction<Path, T, Exception> run;
+  private final CheckedFunction<Path, T, Exception> execution;
   private final long jobId;
+  private final BiConsumer<Path, Long> mdcSetter;
+  private final CheckedConsumer<Path, IOException> jobRootDirCreator;
 
-  public TemporalAttemptExecution(Path workspaceRoot, JobRunConfig jobRunConfig, CheckedFunction<Path, T, Exception> run) {
+  @VisibleForTesting
+  TemporalAttemptExecution(Path workspaceRoot, JobRunConfig jobRunConfig, CheckedFunction<Path, T, Exception> execution) {
+    this(workspaceRoot, jobRunConfig, execution, WorkerUtils::setJobMdc, Files::createDirectories);
+  }
+
+  public TemporalAttemptExecution(Path workspaceRoot,
+                                  JobRunConfig jobRunConfig,
+                                  CheckedFunction<Path, T, Exception> execution,
+                                  BiConsumer<Path, Long> mdcSetter,
+                                  CheckedConsumer<Path, IOException> jobRootDirCreator) {
     this.jobRoot = WorkerUtils.getJobRoot(workspaceRoot, jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
-    this.run = run;
+    this.execution = execution;
     this.jobId = jobRunConfig.getJobId();
+    this.mdcSetter = mdcSetter;
+    this.jobRootDirCreator = jobRootDirCreator;
   }
 
   @Override
   public T get() throws TemporalJobException {
     try {
-      WorkerUtils.setJobMdc(jobRoot, jobId);
+      mdcSetter.accept(jobRoot, jobId);
 
       LOGGER.info("Executing worker wrapper. Airbyte version: {}", EnvConfigs.AIRBYTE_VERSION);
-      Files.createDirectories(jobRoot);
+      jobRootDirCreator.accept(jobRoot);
 
-      return run.apply(jobRoot);
+      return execution.apply(jobRoot);
     } catch (TemporalJobException e) {
       throw e;
     } catch (Exception e) {
