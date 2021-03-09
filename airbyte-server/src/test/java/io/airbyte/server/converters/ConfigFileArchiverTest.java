@@ -91,7 +91,7 @@ public class ConfigFileArchiverTest {
     final StandardSyncSchedule syncSchedule = ConnectionHelpers.generateSchedule(sourceSync.getConnectionId());
 
     // Read operations
-    when(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID)).thenReturn(workspace);
+    when(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID, false)).thenReturn(workspace);
     when(configRepository.listStandardSources()).thenReturn(List.of(standardSource));
     when(configRepository.listStandardDestinationDefinitions()).thenReturn(List.of(standardDestination));
     when(configRepository.listSourceConnection()).thenReturn(List.of(sourceConnection1, sourceConnection2));
@@ -127,7 +127,7 @@ public class ConfigFileArchiverTest {
     final StandardSyncSchedule syncSchedule = ConnectionHelpers.generateSchedule(sourceSync.getConnectionId());
 
     // Read operations
-    when(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID)).thenReturn(workspace);
+    when(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID, false)).thenReturn(workspace);
     when(configRepository.listStandardSources()).thenReturn(List.of(standardSource));
     when(configRepository.listStandardDestinationDefinitions()).thenReturn(List.of(standardDestination));
     when(configRepository.listSourceConnection()).thenReturn(List.of(sourceConnection1, sourceConnection2));
