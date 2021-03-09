@@ -22,11 +22,10 @@
  * SOFTWARE.
  */
 
-package io.airbyte.scheduler.temporal;
+package io.airbyte.workers.temporal;
 
 import static java.util.stream.Collectors.toSet;
 
-import io.airbyte.scheduler.temporal.TemporalUtils.TemporalJobType;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import io.temporal.api.namespace.v1.NamespaceInfo;
 import io.temporal.api.workflowservice.v1.DescribeNamespaceResponse;

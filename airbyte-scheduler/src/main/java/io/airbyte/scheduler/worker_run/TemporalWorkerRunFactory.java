@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.scheduler.temporal;
+package io.airbyte.scheduler.worker_run;
 
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.json.Jsons;
@@ -30,11 +30,19 @@ import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
+import io.airbyte.config.StandardCheckConnectionOutput;
+import io.airbyte.config.StandardDiscoverCatalogOutput;
+import io.airbyte.config.StandardGetSpecOutput;
+import io.airbyte.config.StandardSyncOutput;
+import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.Job;
-import io.airbyte.scheduler.temporal.TemporalUtils.TemporalJobType;
-import io.airbyte.scheduler.worker_run.WorkerRun;
+import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
 import io.airbyte.workers.WorkerConstants;
+import io.airbyte.workers.temporal.TemporalClient;
+import io.airbyte.workers.temporal.TemporalJobException;
+import io.airbyte.workers.temporal.TemporalJobType;
 import java.nio.file.Path;
 
 public class TemporalWorkerRunFactory {
@@ -52,33 +60,49 @@ public class TemporalWorkerRunFactory {
     return WorkerRun.create(workspaceRoot, job.getId(), attemptId, createSupplier(job, attemptId));
   }
 
-  @SuppressWarnings("UnnecessaryDefault")
+  @SuppressWarnings({"UnnecessaryDefault", "CodeBlock2Expr"})
   public CheckedSupplier<OutputAndStatus<JobOutput>, Exception> createSupplier(Job job, int attemptId) {
     final TemporalJobType temporalJobType = toTemporalJobType(job.getConfigType());
     return switch (job.getConfigType()) {
       case GET_SPEC -> () -> {
-        return temporalClient.submitGetSpec(job.getId(), attemptId, job.getConfig().getGetSpec());
+        return toOutputAndStatus(() -> {
+          final ConnectorSpecification output = temporalClient.submitGetSpec(job.getId(), attemptId, job.getConfig().getGetSpec());
+          return new JobOutput().withGetSpec(new StandardGetSpecOutput().withSpecification(output));
+        });
       };
       case CHECK_CONNECTION_SOURCE, CHECK_CONNECTION_DESTINATION -> () -> {
-        return temporalClient.submitCheckConnection(job.getId(), attemptId, job.getConfig().getCheckConnection());
+        return toOutputAndStatus(() -> {
+          final StandardCheckConnectionOutput output =
+              temporalClient.submitCheckConnection(job.getId(), attemptId, job.getConfig().getCheckConnection());
+          return new JobOutput().withCheckConnection(output);
+        });
       };
       case DISCOVER_SCHEMA -> () -> {
-        return temporalClient.submitDiscoverSchema(job.getId(), attemptId, job.getConfig().getDiscoverCatalog());
+        return toOutputAndStatus(() -> {
+          final AirbyteCatalog output = temporalClient.submitDiscoverSchema(job.getId(), attemptId, job.getConfig().getDiscoverCatalog());
+          return new JobOutput().withDiscoverCatalog(new StandardDiscoverCatalogOutput().withCatalog(output));
+        });
       };
       case SYNC -> () -> {
-        return temporalClient.submitSync(job.getId(), attemptId, job.getConfig().getSync());
+        return toOutputAndStatus(() -> {
+          final StandardSyncOutput output = temporalClient.submitSync(job.getId(), attemptId, job.getConfig().getSync());
+          return new JobOutput().withSync(output);
+        });
       };
       case RESET_CONNECTION -> () -> {
-        final JobResetConnectionConfig resetConnection = job.getConfig().getResetConnection();
-        final JobSyncConfig config = new JobSyncConfig()
-            .withPrefix(resetConnection.getPrefix())
-            .withSourceDockerImage(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB)
-            .withDestinationDockerImage(resetConnection.getDestinationDockerImage())
-            .withSourceConfiguration(Jsons.emptyObject())
-            .withDestinationConfiguration(resetConnection.getDestinationConfiguration())
-            .withConfiguredAirbyteCatalog(resetConnection.getConfiguredAirbyteCatalog());
+        return toOutputAndStatus(() -> {
+          final JobResetConnectionConfig resetConnection = job.getConfig().getResetConnection();
+          final JobSyncConfig config = new JobSyncConfig()
+              .withPrefix(resetConnection.getPrefix())
+              .withSourceDockerImage(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB)
+              .withDestinationDockerImage(resetConnection.getDestinationDockerImage())
+              .withSourceConfiguration(Jsons.emptyObject())
+              .withDestinationConfiguration(resetConnection.getDestinationConfiguration())
+              .withConfiguredAirbyteCatalog(resetConnection.getConfiguredAirbyteCatalog());
 
-        return temporalClient.submitSync(job.getId(), attemptId, config);
+          final StandardSyncOutput output = temporalClient.submitSync(job.getId(), attemptId, config);
+          return new JobOutput().withSync(output);
+        });
       };
       default -> throw new IllegalArgumentException("Does not support job type: " + temporalJobType);
     };
@@ -91,6 +115,14 @@ public class TemporalWorkerRunFactory {
       case DISCOVER_SCHEMA -> TemporalJobType.DISCOVER_SCHEMA;
       case SYNC, RESET_CONNECTION -> TemporalJobType.SYNC;
     };
+  }
+
+  private OutputAndStatus<JobOutput> toOutputAndStatus(CheckedSupplier<JobOutput, TemporalJobException> supplier) {
+    try {
+      return new OutputAndStatus<>(JobStatus.SUCCEEDED, supplier.get());
+    } catch (TemporalJobException e) {
+      return new OutputAndStatus<>(JobStatus.FAILED);
+    }
   }
 
 }
