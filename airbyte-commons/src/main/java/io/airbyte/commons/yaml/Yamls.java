@@ -55,9 +55,9 @@ public class Yamls {
     }
   }
 
-  public static JsonNode deserialize(final String jsonString) {
+  public static JsonNode deserialize(final String yamlString) {
     try {
-      return OBJECT_MAPPER.readTree(jsonString);
+      return OBJECT_MAPPER.readTree(yamlString);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

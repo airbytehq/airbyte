@@ -24,20 +24,14 @@
 
 package io.airbyte.server.handlers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.util.ClassUtil;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import io.airbyte.api.model.DestinationDefinitionCreate;
 import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.DestinationDefinitionRead;
 import io.airbyte.api.model.DestinationDefinitionReadList;
 import io.airbyte.api.model.DestinationDefinitionUpdate;
-import io.airbyte.commons.yaml.Yamls;
 import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.init.SeedRepository;
+import io.airbyte.config.helpers.ConnectorRegistryToStandardXDefinitions;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.client.CachingSchedulerJobClient;
@@ -50,8 +44,6 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse.BodyHandlers;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
@@ -62,12 +54,10 @@ import java.util.stream.Collectors;
 
 public class DestinationDefinitionsHandler {
 
-  private static final String DEFAULT_DESTINATION_DEFINITION_ID_NAME = "destinationDefinitionId";
   private static final String DEFAULT_LATEST_LIST_BASE_URL = "https://raw.githubusercontent.com";
   private static final String DESTINATION_DEFINITION_LIST_LOCATION_PATH =
       "/airbytehq/airbyte/master/airbyte-config/init/src/main/resources/seed/destination_definitions.yaml";
 
-  private static final ObjectMapper mapper = new ObjectMapper();
   private static final HttpClient httpClient = HttpClient.newHttpClient();
 
   private final DockerImageValidator imageValidator;
@@ -108,21 +98,6 @@ public class DestinationDefinitionsHandler {
     }
   }
 
-  private static List<StandardDestinationDefinition> toStandardDestinationDefinitions(Iterator<JsonNode> iter) {
-    Iterable<JsonNode> iterable = () -> iter;
-    var destDefList = new ArrayList<StandardDestinationDefinition>();
-    for (JsonNode n : iterable) {
-      try {
-        var def = mapper.treeToValue(n, StandardDestinationDefinition.class);
-        System.out.println(def);
-        destDefList.add(def);
-      } catch (JsonProcessingException e) {
-        throw new KnownException(500, "Unable to process retrieved latest destination definitions list", e);
-      }
-    }
-    return destDefList;
-  }
-
   public DestinationDefinitionReadList listDestinationDefinitions() throws ConfigNotFoundException, IOException, JsonValidationException {
     final List<DestinationDefinitionRead> reads = configRepository
         .listStandardDestinationDefinitions()
@@ -134,15 +109,12 @@ public class DestinationDefinitionsHandler {
   }
 
   public DestinationDefinitionReadList listLatestDestinationDefinitions() throws ConfigNotFoundException, IOException, JsonValidationException {
-    final JsonNode deserialize;
+    List<StandardDestinationDefinition> destDefs;
     try {
-      deserialize = Yamls.deserialize(getLatestDestinations());
-      checkYamlIsPresentWithNoDuplicates(deserialize);
+      destDefs = ConnectorRegistryToStandardXDefinitions.toStandardDestinationDefinitions(getLatestDestinations());
     } catch (RuntimeException e) {
       throw new KnownException(500, "Error retrieving latest destination definitions", e);
     }
-
-    final var destDefs = toStandardDestinationDefinitions(deserialize.elements());
     final var reads = destDefs.stream()
         .map(DestinationDefinitionsHandler::buildDestinationDefinitionRead).collect(Collectors.toList());
     return new DestinationDefinitionReadList().destinationDefinitions(reads);
@@ -160,13 +132,6 @@ public class DestinationDefinitionsHandler {
     } catch (TimeoutException | InterruptedException | ExecutionException e) {
       throw new KnownException(500, "Request to retrieve latest destination definitions failed", e);
     }
-  }
-
-  private void checkYamlIsPresentWithNoDuplicates(JsonNode deserialize) {
-    final var presentDestList = !deserialize.elements().equals(ClassUtil.emptyIterator());
-    Preconditions.checkState(presentDestList, "Destination definition list is empty");
-    SeedRepository.checkNoDuplicateNames(deserialize.elements());
-    SeedRepository.checkNoDuplicateIds(deserialize.elements(), DEFAULT_DESTINATION_DEFINITION_ID_NAME);
   }
 
   public DestinationDefinitionRead getDestinationDefinition(DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
