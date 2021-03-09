@@ -21,50 +21,39 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-
-import os
-import pickle
+import json
 from abc import ABC, abstractmethod
 from functools import partial
 from typing import Callable, Dict, Iterator, Sequence
 
+from .errors import GoogleDirectoryQuotaExceeded, GoogleDirectoryRateLimitExceeded
+
 import backoff
-from google.auth.transport.requests import Request
-from google_auth_oauthlib.flow import InstalledAppFlow
+from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError as GoogleApiHttpError
 
-SCOPES = ["https://www.googleapis.com/auth/admin.directory.user", "https://www.googleapis.com/auth/admin.directory.group"]
+SCOPES = ['https://www.googleapis.com/auth/admin.directory.user.readonly', 'https://www.googleapis.com/auth/admin.directory.group.readonly']
 
 
 class API:
-    def __init__(self, credentials_json: str, credentials_pickle: str):
+    def __init__(self, credentials_json: str, email: str):
         self._creds = None
         self._credentials_json = credentials_json
-        self._credentials_pickle = credentials_pickle
+        self._admin_email = email
 
-    def _load_cached_creds(self):
-        if os.path.exists(self._credentials_pickle):
-            with open(self._credentials_pickle, "rb") as token:
-                self._creds = pickle.load(token)
+    def _load_account_info(self):
+        account_info = json.loads(self._credentials_json)
+        return account_info
 
     def _obtain_creds(self):
-        self._load_cached_creds()
-
-        if not self._creds or not self._creds.valid:
-            if self._creds and self._creds.expired and self._creds.refresh_token:
-                self._creds.refresh(Request())
-            else:
-                flow = InstalledAppFlow.from_client_secrets_file(self._credentials_json, SCOPES)
-                creds = flow.run_local_server(port=0)
-                # Save the credentials for the next run
-                if not self._credentials_pickle:
-                    self._credentials_pickle = "token.pickle"
-                with open(self._credentials_pickle, "wb") as token:
-                    pickle.dump(creds, token)
+        account_info = self._load_account_info()
+        creds = service_account.Credentials.from_service_account_info(account_info, scopes=SCOPES)
+        self._creds = creds.with_subject(self._admin_email)
 
     def _get_service(self):
-        self._obtain_creds()
+        if not self._creds:
+            self._obtain_creds()
         service = build("admin", "directory_v1", credentials=self._creds)
         return service
 
@@ -76,6 +65,17 @@ class API:
     def get(self, name: str, params: Dict = None):
         resource = self._get_resource(name)
         response = resource().list(**params).execute()
+        # try:
+        #     response = resource().list(**params).execute()
+        # except GoogleApiHttpError as error:
+        #     reason = error.resp.reason
+        #     status = error.resp.status
+        #     if reason == "quotaExceeded" and status == 403:
+        #         raise GoogleDirectoryQuotaExceeded
+        #     if reason == "rateLimitExceeded" and status == 429:
+        #         raise GoogleDirectoryRateLimitExceeded
+        #     if reason == "Bad Request" and status == 400:
+        #         raise GoogleApiHttpError
         return response
 
 
@@ -116,7 +116,7 @@ class UsersAPI(StreamAPI):
         return response["users"]
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
-        params = {"customer": "my_customer", "orderBy": "email"}
+        params = {"customer": "my_customer"}
         yield from self.read(partial(self._api_get, resource="users"), params=params)
 
 

@@ -22,37 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Any, Mapping, Tuple
-
-from base_python import BaseClient
-
-from .api import API, GroupMembersAPI, GroupsAPI, UsersAPI
+from googleapiclient.errors import HttpError
 
 
-class Client(BaseClient):
-    def __init__(self, credentials_json: str, email: str):
-        self._api = API(credentials_json, email)
-        self._apis = {"users": UsersAPI(self._api), "groups": GroupsAPI(self._api), "group_members": GroupMembersAPI(self._api)}
-        super().__init__()
+class GoogleDirectoryQuotaExceeded(HttpError):
+    """403 Indicates that the limit of concurrent requests for a certain operation has been reached."""
 
-    def get_stream_state(self, name: str) -> Any:
-        pass
 
-    def set_stream_state(self, name: str, state: Any):
-        pass
-
-    def _enumerate_methods(self) -> Mapping[str, callable]:
-        return {name: api.list for name, api in self._apis.items()}
-
-    def health_check(self) -> Tuple[bool, str]:
-        alive = True
-        error_msg = None
-
-        try:
-            params = {"customer": "my_customer23"}
-            self._api.get(name="users", params=params)
-        except Exception as error:
-            alive = False
-            error_msg = repr(error)
-
-        return alive, error_msg
+class GoogleDirectoryRateLimitExceeded(HttpError):
+    """429 Indicates that the limit of concurrent requests for a certain operation has been reached."""
