@@ -24,9 +24,7 @@
 
 package io.airbyte.config.helpers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.ClassUtil;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -58,7 +56,6 @@ public class YamlListToStandardDefinitions {
   private static final Map<String, String> classNameToIdName = Map.ofEntries(
       new SimpleImmutableEntry<>(StandardDestinationDefinition.class.getCanonicalName(), "destinationDefinitionId"),
       new SimpleImmutableEntry<>(StandardSourceDefinition.class.getCanonicalName(), "sourceDefinitionId"));
-  private static final ObjectMapper mapper = new ObjectMapper();
 
   public static List<StandardSourceDefinition> toStandardSourceDefinitions(String yamlStr) throws RuntimeException {
     return verifyAndConvertToModelList(StandardSourceDefinition.class, yamlStr);
@@ -117,12 +114,8 @@ public class YamlListToStandardDefinitions {
     Iterable<JsonNode> iterable = () -> iter;
     var defList = new ArrayList<T>();
     for (JsonNode n : iterable) {
-      try {
-        var def = mapper.treeToValue(n, c);
-        defList.add(def);
-      } catch (JsonProcessingException e) {
-        throw new RuntimeException("Unable to process latest definitions list", e);
-      }
+      var def = Jsons.object(n, c);
+      defList.add(def);
     }
     return defList;
   }
