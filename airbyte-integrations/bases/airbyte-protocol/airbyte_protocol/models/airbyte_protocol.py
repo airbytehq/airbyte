@@ -30,7 +30,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import AnyUrl, BaseModel, Field
+from pydantic import AnyUrl, BaseModel, Extra, Field
 
 
 class Type(Enum):
@@ -43,6 +43,9 @@ class Type(Enum):
 
 
 class AirbyteRecordMessage(BaseModel):
+    class Config:
+        extra = Extra.allow
+
     stream: str = Field(..., description="the name of the stream for this record")
     data: Dict[str, Any] = Field(..., description="the record data")
     emitted_at: int = Field(
@@ -52,6 +55,9 @@ class AirbyteRecordMessage(BaseModel):
 
 
 class AirbyteStateMessage(BaseModel):
+    class Config:
+        extra = Extra.allow
+
     data: Dict[str, Any] = Field(..., description="the state data")
 
 
@@ -65,6 +71,9 @@ class Level(Enum):
 
 
 class AirbyteLogMessage(BaseModel):
+    class Config:
+        extra = Extra.allow
+
     level: Level = Field(..., description="the type of logging")
     message: str = Field(..., description="the log message")
 
@@ -75,6 +84,9 @@ class Status(Enum):
 
 
 class AirbyteConnectionStatus(BaseModel):
+    class Config:
+        extra = Extra.allow
+
     status: Status
     message: Optional[str] = None
 
@@ -85,6 +97,9 @@ class SyncMode(Enum):
 
 
 class ConnectorSpecification(BaseModel):
+    class Config:
+        extra = Extra.allow
+
     documentationUrl: Optional[AnyUrl] = None
     changelogUrl: Optional[AnyUrl] = None
     connectionSpecification: Dict[str, Any] = Field(
@@ -95,6 +110,9 @@ class ConnectorSpecification(BaseModel):
 
 
 class AirbyteStream(BaseModel):
+    class Config:
+        extra = Extra.allow
+
     name: str = Field(..., description="Stream's name.")
     json_schema: Dict[str, Any] = Field(..., description="Stream schema using Json Schema specs.")
     supported_sync_modes: Optional[List[SyncMode]] = None
@@ -109,6 +127,9 @@ class AirbyteStream(BaseModel):
 
 
 class ConfiguredAirbyteStream(BaseModel):
+    class Config:
+        extra = Extra.allow
+
     stream: AirbyteStream
     sync_mode: Optional[SyncMode] = "full_refresh"
     cursor_field: Optional[List[str]] = Field(
@@ -118,14 +139,23 @@ class ConfiguredAirbyteStream(BaseModel):
 
 
 class AirbyteCatalog(BaseModel):
+    class Config:
+        extra = Extra.allow
+
     streams: List[AirbyteStream]
 
 
 class ConfiguredAirbyteCatalog(BaseModel):
+    class Config:
+        extra = Extra.allow
+
     streams: List[ConfiguredAirbyteStream]
 
 
 class AirbyteMessage(BaseModel):
+    class Config:
+        extra = Extra.allow
+
     type: Type = Field(..., description="Message type")
     log: Optional[AirbyteLogMessage] = Field(
         None,

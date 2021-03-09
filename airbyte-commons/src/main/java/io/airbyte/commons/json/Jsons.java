@@ -28,6 +28,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.core.util.Separators;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -45,8 +46,14 @@ import java.util.stream.Collectors;
 public class Jsons {
 
   // Object Mapper is thread-safe
-  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+  private static final ObjectMapper OBJECT_MAPPER = initMapper();
   private static final ObjectWriter OBJECT_WRITER = OBJECT_MAPPER.writer(new JsonPrettyPrinter());
+
+  private static ObjectMapper initMapper() {
+    final ObjectMapper result = new ObjectMapper();
+    result.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    return result;
+  }
 
   public static <T> String serialize(T object) {
     try {
