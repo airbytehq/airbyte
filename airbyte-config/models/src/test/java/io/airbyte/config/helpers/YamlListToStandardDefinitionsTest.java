@@ -34,7 +34,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-public class RawListToStandardXDefinitionsTest {
+public class YamlListToStandardDefinitionsTest {
 
   private static final String goodDesDefYaml =
       "- destinationDefinitionId: a625d593-bba5-4a1c-a53d-2d246268a816\n"
@@ -81,7 +81,7 @@ public class RawListToStandardXDefinitionsTest {
 
     @Test
     @DisplayName("should correctly read yaml file")
-    public void correctlyRead() throws JsonProcessingException {
+    public void correctlyReadTest() throws JsonProcessingException {
       var jsonDefs = YamlListToStandardDefinitions.verifyAndConvertToJsonNode(ID_NAME, goodDesDefYaml);
       var defList = mapper.treeToValue(jsonDefs, StandardDestinationDefinition[].class);
       assertEquals(1, defList.length);
@@ -90,25 +90,25 @@ public class RawListToStandardXDefinitionsTest {
 
     @Test
     @DisplayName("should error out on duplicate id")
-    public void duplicateId() {
+    public void duplicateIdTest() {
       assertThrows(RuntimeException.class, () -> YamlListToStandardDefinitions.verifyAndConvertToJsonNode(ID_NAME, duplicateId));
     }
 
     @Test
     @DisplayName("should error out on duplicate name")
-    public void duplicateName() {
+    public void duplicateNameTest() {
       assertThrows(RuntimeException.class, () -> YamlListToStandardDefinitions.verifyAndConvertToJsonNode(ID_NAME, duplicateName));
     }
 
     @Test
     @DisplayName("should error out on empty file")
-    public void emptyFile() {
+    public void emptyFileTest() {
       assertThrows(RuntimeException.class, () -> YamlListToStandardDefinitions.verifyAndConvertToJsonNode(ID_NAME, ""));
     }
 
     @Test
     @DisplayName("should error out on bad data")
-    public void badData() {
+    public void badDataTest() {
       assertThrows(RuntimeException.class, () -> YamlListToStandardDefinitions.verifyAndConvertToJsonNode(ID_NAME, badData));
     }
 
@@ -120,7 +120,7 @@ public class RawListToStandardXDefinitionsTest {
 
     @Test
     @DisplayName("should correctly read yaml file")
-    public void correctlyRead() {
+    public void correctlyReadTest() {
       var defs = YamlListToStandardDefinitions
           .verifyAndConvertToModelList(StandardDestinationDefinition.class, goodDesDefYaml);
       assertEquals(1, defs.size());
@@ -129,28 +129,28 @@ public class RawListToStandardXDefinitionsTest {
 
     @Test
     @DisplayName("should error out on duplicate id")
-    public void duplicateId() {
+    public void duplicateIdTest() {
       assertThrows(RuntimeException.class,
           () -> YamlListToStandardDefinitions.verifyAndConvertToModelList(StandardDestinationDefinition.class, duplicateId));
     }
 
     @Test
     @DisplayName("should error out on duplicate name")
-    public void duplicateName() {
+    public void duplicateNameTest() {
       assertThrows(RuntimeException.class,
           () -> YamlListToStandardDefinitions.verifyAndConvertToModelList(StandardDestinationDefinition.class, duplicateName));
     }
 
     @Test
     @DisplayName("should error out on empty file")
-    public void emptyFile() {
+    public void emptyFileTest() {
       assertThrows(RuntimeException.class,
           () -> YamlListToStandardDefinitions.verifyAndConvertToModelList(StandardDestinationDefinition.class, ""));
     }
 
     @Test
     @DisplayName("should error out on bad data")
-    public void badData() {
+    public void badDataTest() {
       assertThrows(RuntimeException.class,
           () -> YamlListToStandardDefinitions.verifyAndConvertToModelList(StandardDestinationDefinition.class, badData));
     }
