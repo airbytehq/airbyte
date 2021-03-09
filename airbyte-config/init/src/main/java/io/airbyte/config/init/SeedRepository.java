@@ -52,12 +52,9 @@ import org.apache.commons.cli.ParseException;
 public class SeedRepository {
 
   private static final Options OPTIONS = new Options();
-  private static final Option ID_NAME_OPTION = new Option("id", "id-name", true,
-      "field name of the id");
-  private static final Option INPUT_PATH_OPTION = new Option("i", "input-path", true,
-      "path to input file");
-  private static final Option OUTPUT_PATH_OPTION = new Option("o", "output-path", true,
-      "path to where files will be output");
+  private static final Option ID_NAME_OPTION = new Option("id", "id-name", true, "field name of the id");
+  private static final Option INPUT_PATH_OPTION = new Option("i", "input-path", true, "path to input file");
+  private static final Option OUTPUT_PATH_OPTION = new Option("o", "output-path", true, "path to where files will be output");
 
   static {
     ID_NAME_OPTION.setRequired(true);

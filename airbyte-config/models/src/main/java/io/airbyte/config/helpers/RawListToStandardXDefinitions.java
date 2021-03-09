@@ -41,15 +41,15 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This is a convenience class for the conversion of a list of source/destination definitions from human-friendly yaml to processing friendly formats
- * i.e. Java models or JSON. As this class performs validation, it is recommended to use this class to deal with raw lists. Airbyte's master lists
- * can be seen <a href="{@docRoot}/airbyte-config/init/src/main/resources/seed">here</a>.
+ * This is a convenience class for the conversion of a list of source/destination definitions from
+ * human-friendly yaml to processing friendly formats i.e. Java models or JSON. As this class
+ * performs validation, it is recommended to use this class to deal with raw lists. Airbyte's master
+ * lists can be seen in the resoures folder of the airbyte-config/seed module.
  *
- * In addition to usual read/schema validation, we check:
- * 1) The given list contains no duplicate names.
- * 2) The given list contains no duplicate ids.
+ * In addition to usual deserialization validations, we check: 1) The given list contains no
+ * duplicate names. 2) The given list contains no duplicate ids.
  *
- * Methods in these class throw either Runtime or IllegalArgument exceptions upon validation failure.
+ * Methods in these class throw Runtime exceptions upon validation failure.
  */
 public class RawListToStandardXDefinitions {
 
