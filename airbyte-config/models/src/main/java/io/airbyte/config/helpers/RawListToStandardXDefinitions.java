@@ -28,6 +28,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.ClassUtil;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.yaml.Yamls;
@@ -66,13 +67,14 @@ public class RawListToStandardXDefinitions {
     return verifyAndConvertToModelList(StandardDestinationDefinition.class, yamlStr);
   }
 
-  public static JsonNode verifyAndConvertToJson(String yamlStr, String idName) throws RuntimeException {
+  public static JsonNode verifyAndConvertToJsonNode(String idName, String yamlStr) throws RuntimeException {
     final var jsonNode = Yamls.deserialize(yamlStr);
     checkYamlIsPresentWithNoDuplicates(jsonNode, idName);
     return jsonNode;
   }
 
-  private static <T> List<T> verifyAndConvertToModelList(Class<T> klass, String yamlStr) throws RuntimeException {
+  @VisibleForTesting
+  static <T> List<T> verifyAndConvertToModelList(Class<T> klass, String yamlStr) throws RuntimeException {
     final var jsonNode = Yamls.deserialize(yamlStr);
     final var idName = classNameToIdName.get(klass.getCanonicalName());
     checkYamlIsPresentWithNoDuplicates(jsonNode, idName);

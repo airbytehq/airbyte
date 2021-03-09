@@ -46,8 +46,7 @@ import org.apache.commons.cli.ParseException;
  * as the id-name. It then writes each object to its own file in the specified output directory.
  * Each file's name is the generated uuid. The goal is that a user should be able to add objects to
  * the database seed without having to generate uuids themselves. The output files should be
- * compatible with our file system database (config persistence). It also checks that each name is
- * unique in the set it is outputting to avoid duplicates clobbering each other.
+ * compatible with our file system database (config persistence).
  */
 public class SeedRepository {
 
@@ -87,7 +86,7 @@ public class SeedRepository {
   }
 
   public void run(final String idName, final Path input, final Path output) throws IOException {
-    final var jsonNode = RawListToStandardXDefinitions.verifyAndConvertToJson(IOs.readFile(input), idName);
+    final var jsonNode = RawListToStandardXDefinitions.verifyAndConvertToJsonNode(idName, IOs.readFile(input));
     final var elementsIter = jsonNode.elements();
 
     // clean output directory.
