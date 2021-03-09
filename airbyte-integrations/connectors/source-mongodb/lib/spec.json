@@ -1,0 +1,56 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/mongodb",
+  "changelogUrl": "https://docs.airbyte.io/integrations/sources/mongodb",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Mongodb Source Spec",
+    "type": "object",
+    "required": ["host", "port", "database", "user", "password", "auth_source"],
+    "additionalProperties": false,
+    "properties": {
+      "host": {
+        "title": "Host",
+        "type": "string",
+        "description": "Host of a Mongo database to be replicated.",
+        "order": 0
+      },
+      "port": {
+        "title": "Port",
+        "type": "integer",
+        "description": "Port of a Mongo database to be replicated.",
+        "minimum": 0,
+        "maximum": 65536,
+        "default": 27017,
+        "examples": ["27017"],
+        "order": 1
+      },
+      "database": {
+        "title": "Database name",
+        "type": "string",
+        "description": "Database to be replicated.",
+        "order": 2
+      },
+      "user": {
+        "title": "User",
+        "type": "string",
+        "description": "User",
+        "order": 3
+      },
+      "password": {
+        "title": "Password",
+        "type": "string",
+        "description": "Password",
+        "airbyte_secret": true,
+        "order": 4
+      },
+      "auth_source": {
+        "title": "Authentication source",
+        "type": "string",
+        "description": "Authentication source where user information is stored",
+        "default": "admin",
+        "examples": ["admin"],
+        "order": 5
+      }
+    }
+  }
+}

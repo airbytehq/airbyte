@@ -1623,7 +1623,6 @@ components:
     ConnectionCreate:
       type: object
       required:
-        - defaultNamespace
         - sourceId
         - destinationId
         - status
@@ -1631,9 +1630,9 @@ components:
         name:
           type: string
           description: Optional name of the connection
-        defaultNamespace:
+        prefix:
           type: string
-          description: Name of the connection that will determine where the source data will be written in the destination
+          description: Prefix that will be prepended to the name of each stream when it is written to the destination.
         sourceId:
           $ref: "#/components/schemas/SourceId"
         destinationId:
@@ -1648,15 +1647,14 @@ components:
       type: object
       required:
         - connectionId
-        - defaultNamespace
         - syncCatalog
         - status
       properties:
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
-        defaultNamespace:
+        prefix:
           type: string
-          description: Name of the connection that will determine where the source data will be written in the destination
+          description: Prefix that will be prepended to the name of each stream when it is written to the destination.
         syncCatalog:
           $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
@@ -1675,7 +1673,6 @@ components:
       required:
         - connectionId
         - name
-        - defaultNamespace
         - sourceId
         - destinationId
         - syncCatalog
@@ -1685,9 +1682,9 @@ components:
           $ref: "#/components/schemas/ConnectionId"
         name:
           type: string
-        defaultNamespace:
+        prefix:
           type: string
-          description: Name of the connection that will determine where the source data will be written in the destination
+          description: Prefix that will be prepended to the name of each stream when it is written to the destination.
         sourceId:
           $ref: "#/components/schemas/SourceId"
         destinationId:
@@ -2001,7 +1998,6 @@ components:
       required:
         - connectionId
         - name
-        - defaultNamespace
         - sourceId
         - destinationId
         - syncCatalog
@@ -2014,7 +2010,7 @@ components:
           $ref: "#/components/schemas/ConnectionId"
         name:
           type: string
-        defaultNamespace:
+        prefix:
           type: string
         sourceId:
           $ref: "#/components/schemas/SourceId"

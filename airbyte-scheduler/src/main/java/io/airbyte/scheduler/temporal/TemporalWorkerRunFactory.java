@@ -25,12 +25,16 @@
 package io.airbyte.scheduler.temporal;
 
 import io.airbyte.commons.functional.CheckedSupplier;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
+import io.airbyte.config.JobResetConnectionConfig;
+import io.airbyte.config.JobSyncConfig;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.temporal.TemporalUtils.TemporalJobType;
 import io.airbyte.scheduler.worker_run.WorkerRun;
 import io.airbyte.workers.OutputAndStatus;
+import io.airbyte.workers.WorkerConstants;
 import java.nio.file.Path;
 
 public class TemporalWorkerRunFactory {
@@ -48,6 +52,7 @@ public class TemporalWorkerRunFactory {
     return WorkerRun.create(workspaceRoot, job.getId(), attemptId, createSupplier(job, attemptId));
   }
 
+  @SuppressWarnings("UnnecessaryDefault")
   public CheckedSupplier<OutputAndStatus<JobOutput>, Exception> createSupplier(Job job, int attemptId) {
     final TemporalJobType temporalJobType = toTemporalJobType(job.getConfigType());
     return switch (job.getConfigType()) {
@@ -62,6 +67,18 @@ public class TemporalWorkerRunFactory {
       };
       case SYNC -> () -> {
         return temporalClient.submitSync(job.getId(), attemptId, job.getConfig().getSync());
+      };
+      case RESET_CONNECTION -> () -> {
+        final JobResetConnectionConfig resetConnection = job.getConfig().getResetConnection();
+        final JobSyncConfig config = new JobSyncConfig()
+            .withPrefix(resetConnection.getPrefix())
+            .withSourceDockerImage(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB)
+            .withDestinationDockerImage(resetConnection.getDestinationDockerImage())
+            .withSourceConfiguration(Jsons.emptyObject())
+            .withDestinationConfiguration(resetConnection.getDestinationConfiguration())
+            .withConfiguredAirbyteCatalog(resetConnection.getConfiguredAirbyteCatalog());
+
+        return temporalClient.submitSync(job.getId(), attemptId, config);
       };
       default -> throw new IllegalArgumentException("Does not support job type: " + temporalJobType);
     };

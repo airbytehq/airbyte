@@ -6,13 +6,12 @@ description: job sync config
 type: object
 additionalProperties: false
 required:
-  - defaultNamespace
   - sourceConfiguration
   - destinationConfiguration
   - configuredAirbyteCatalog
 properties:
-  defaultNamespace:
-    description: Name of the connection that will determine where the source data will be written in the destination
+  prefix:
+    description: Prefix that will be prepended to the name of each stream when it is written to the destination.
     type: string
   sourceConfiguration:
     description: Integration specific blob. Must be a valid JSON string.

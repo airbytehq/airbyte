@@ -40,7 +40,7 @@ import java.util.Properties;
 public class SnowflakeDatabase {
 
   private static final Duration NETWORK_TIMEOUT = Duration.ofMinutes(1);
-  private static final Duration QUERY_TIMEOUT = Duration.ofMinutes(5);
+  private static final Duration QUERY_TIMEOUT = Duration.ofMinutes(30);
 
   public static Connection getConnection(JsonNode config) throws SQLException {
     final String connectUrl = String.format("jdbc:snowflake://%s", config.get("host").asText());

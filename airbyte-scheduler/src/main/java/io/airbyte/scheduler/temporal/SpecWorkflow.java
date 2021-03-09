@@ -28,6 +28,7 @@ import com.google.common.base.Preconditions;
 import io.airbyte.config.IntegrationLauncherConfig;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobOutput;
+import io.airbyte.config.StandardGetSpecOutput;
 import io.airbyte.workers.DefaultGetSpecWorker;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
@@ -35,7 +36,6 @@ import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessBuilderFactory;
-import io.airbyte.workers.wrappers.JobOutputGetSpecWorker;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
 import io.temporal.activity.ActivityOptions;
@@ -96,11 +96,10 @@ public interface SpecWorkflow {
             new AirbyteIntegrationLauncher(launcherConfig.getJobId(), launcherConfig.getAttemptId().intValue(), launcherConfig.getDockerImage(), pbf);
 
         final JobGetSpecConfig jobGetSpecConfig = new JobGetSpecConfig().withDockerImage(launcherConfig.getDockerImage());
-        final OutputAndStatus<JobOutput> run = new JobOutputGetSpecWorker(new DefaultGetSpecWorker(integrationLauncher))
-            .run(jobGetSpecConfig, jobRoot);
+        final OutputAndStatus<StandardGetSpecOutput> run = new DefaultGetSpecWorker(integrationLauncher).run(jobGetSpecConfig, jobRoot);
         if (run.getStatus() == JobStatus.SUCCEEDED) {
           Preconditions.checkState(run.getOutput().isPresent());
-          return run.getOutput().get();
+          return new JobOutput().withGetSpec(run.getOutput().get());
         } else {
           throw new TemporalJobException();
         }

@@ -31,7 +31,6 @@ import static org.mockito.Mockito.verify;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.JobOutput;
 import io.airbyte.workers.OutputAndStatus;
-import io.airbyte.workers.Worker;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -49,17 +48,7 @@ class WorkerRunTest {
 
   @SuppressWarnings("unchecked")
   @Test
-  void testWorkerConstructor() throws Exception {
-    Worker<Integer, JobOutput> worker = mock(Worker.class);
-    new WorkerRun(path, 1, worker).call();
-
-    assertTrue(Files.exists(path));
-    verify(worker).run(1, path);
-  }
-
-  @SuppressWarnings("unchecked")
-  @Test
-  void testSupplierConstructor() throws Exception {
+  void test() throws Exception {
     final CheckedSupplier<OutputAndStatus<JobOutput>, Exception> supplier = mock(CheckedSupplier.class);
     new WorkerRun(path, supplier).call();
 

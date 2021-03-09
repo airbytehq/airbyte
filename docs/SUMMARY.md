@@ -42,6 +42,7 @@
     * [Microsoft SQL Server \(MSSQL\)](integrations/sources/mssql.md)
     * [Microsoft Teams](integrations/sources/microsoft-teams.md)
     * [Mixpanel](integrations/sources/mixpanel.md)
+    * [Mongo DB](integrations/sources/mongodb.md)
     * [MySQL](integrations/sources/mysql.md)
     * [Plaid](integrations/sources/plaid.md)
     * [Postgres](integrations/sources/postgres.md)

@@ -33,6 +33,33 @@ test("should reformat jsonSchema to internal widget representation", () => {
     fieldName: "key",
     fieldKey: "key",
     isRequired: false,
+    jsonSchema: {
+      properties: {
+        dbname: {
+          description: "Name of the database.",
+          type: "string",
+        },
+        host: {
+          description: "Hostname of the database.",
+          type: "string",
+        },
+        password: {
+          airbyte_secret: true,
+          description: "Password associated with the username.",
+          type: "string",
+        },
+        port: {
+          description: "Port of the database.",
+          type: "integer",
+        },
+        user: {
+          description: "Username to use to access the database.",
+          type: "string",
+        },
+      },
+      required: ["host", "port", "user", "dbname"],
+      type: "object",
+    },
     properties: [
       {
         _type: "formItem",
@@ -96,21 +123,32 @@ test("should reformat jsonSchema to internal widget representation with parent s
   });
 
   const expected = {
-    title: "Postgres Source Spec",
     _type: "formGroup",
-    fieldName: "key",
     fieldKey: "key",
+    fieldName: "key",
     isRequired: true,
+    jsonSchema: {
+      properties: {
+        host: {
+          description: "Hostname of the database.",
+          type: "string",
+        },
+      },
+      required: ["host", "port", "user", "dbname"],
+      title: "Postgres Source Spec",
+      type: "object",
+    },
     properties: [
       {
         _type: "formItem",
         description: "Hostname of the database.",
-        fieldName: "key.host",
         fieldKey: "host",
+        fieldName: "key.host",
         isRequired: true,
         type: "string",
       },
     ],
+    title: "Postgres Source Spec",
   };
 
   expect(builtSchema).toEqual(expected);
@@ -157,59 +195,101 @@ test("should reformat jsonSchema to internal widget representation when has oneO
 
   const expected = {
     _type: "formGroup",
-    fieldKey: "key",
+    jsonSchema: {
+      type: "object",
+      required: ["start_date", "credentials"],
+      properties: {
+        start_date: { type: "string" },
+        credentials: {
+          type: "object",
+          oneOf: [
+            {
+              title: "api key",
+              required: ["api_key"],
+              properties: { api_key: { type: "string" } },
+            },
+            {
+              title: "oauth",
+              required: ["redirect_uri"],
+              properties: {
+                redirect_uri: {
+                  type: "string",
+                  examples: ["https://api.hubspot.com/"],
+                },
+              },
+            },
+          ],
+        },
+      },
+    },
     fieldName: "key",
-    isRequired: true,
+    fieldKey: "key",
     properties: [
       {
         _type: "formItem",
-        fieldKey: "start_date",
         fieldName: "key.start_date",
+        fieldKey: "start_date",
         isRequired: true,
         type: "string",
       },
       {
         _type: "formCondition",
+        fieldName: "key.credentials",
+        fieldKey: "credentials",
         conditions: {
           "api key": {
             title: "api key",
             _type: "formGroup",
-            fieldKey: "credentials",
+            jsonSchema: {
+              title: "api key",
+              required: ["api_key"],
+              properties: { api_key: { type: "string" } },
+            },
             fieldName: "key.credentials",
-            isRequired: false,
+            fieldKey: "credentials",
             properties: [
               {
                 _type: "formItem",
-                fieldKey: "api_key",
                 fieldName: "key.credentials.api_key",
+                fieldKey: "api_key",
                 isRequired: true,
                 type: "string",
               },
             ],
+            isRequired: false,
           },
           oauth: {
             title: "oauth",
             _type: "formGroup",
-            fieldKey: "credentials",
+            jsonSchema: {
+              title: "oauth",
+              required: ["redirect_uri"],
+              properties: {
+                redirect_uri: {
+                  type: "string",
+                  examples: ["https://api.hubspot.com/"],
+                },
+              },
+            },
             fieldName: "key.credentials",
-            isRequired: false,
+            fieldKey: "credentials",
             properties: [
               {
-                _type: "formItem",
                 examples: ["https://api.hubspot.com/"],
-                fieldKey: "redirect_uri",
+                _type: "formItem",
                 fieldName: "key.credentials.redirect_uri",
+                fieldKey: "redirect_uri",
                 isRequired: true,
                 type: "string",
               },
             ],
+            isRequired: false,
           },
         },
-        fieldKey: "credentials",
-        fieldName: "key.credentials",
         isRequired: true,
       },
     ],
+    isRequired: true,
   };
 
   expect(builtSchema).toEqual(expected);

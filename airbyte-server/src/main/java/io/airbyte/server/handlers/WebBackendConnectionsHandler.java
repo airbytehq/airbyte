@@ -112,7 +112,7 @@ public class WebBackendConnectionsHandler {
         .sourceId(connectionRead.getSourceId())
         .destinationId(connectionRead.getDestinationId())
         .name(connectionRead.getName())
-        .defaultNamespace(connectionRead.getDefaultNamespace())
+        .prefix(connectionRead.getPrefix())
         .syncCatalog(connectionRead.getSyncCatalog())
         .status(connectionRead.getStatus())
         .schedule(connectionRead.getSchedule())
@@ -212,7 +212,7 @@ public class WebBackendConnectionsHandler {
   protected static ConnectionUpdate toConnectionUpdate(WebBackendConnectionUpdate webBackendConnectionUpdate) {
     ConnectionUpdate connectionUpdate = new ConnectionUpdate();
 
-    connectionUpdate.setDefaultNamespace(webBackendConnectionUpdate.getDefaultNamespace());
+    connectionUpdate.setPrefix(webBackendConnectionUpdate.getPrefix());
     connectionUpdate.setConnectionId(webBackendConnectionUpdate.getConnectionId());
     connectionUpdate.setSchedule(webBackendConnectionUpdate.getSchedule());
     connectionUpdate.setStatus(webBackendConnectionUpdate.getStatus());

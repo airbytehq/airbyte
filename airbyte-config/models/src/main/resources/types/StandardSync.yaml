@@ -5,14 +5,14 @@ title: StandardSync
 description: configuration required for sync for ALL taps
 type: object
 required:
-  - defaultNamespace
   - sourceId
   - destinationId
   - name
   - catalog
 additionalProperties: false
 properties:
-  defaultNamespace:
+  prefix:
+    description: Prefix that will be prepended to the name of each stream when it is written to the destination.
     type: string
   sourceId:
     type: string

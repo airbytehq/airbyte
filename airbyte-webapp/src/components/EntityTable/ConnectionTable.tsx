@@ -39,7 +39,11 @@ const ConnectionTable: React.FC<IProps> = ({
         accessor: "entityName",
         customWidth: 40,
         Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
-          <NameCell value={cell.value} enabled={row.original.enabled} />
+          <NameCell
+            value={cell.value}
+            enabled={row.original.enabled}
+            status={row.original.status}
+          />
         ),
       },
       {
