@@ -36,11 +36,11 @@ To compile the code and run unit tests:
 
 This will build all the code and run all the unit tests.
 
-`./gradle build` creates all the necessary artifacts \(Webapp, Jars and Docker images\) so that you can run Airbyte locally.
+`./gradlew build` creates all the necessary artifacts \(Webapp, Jars and Docker images\) so that you can run Airbyte locally. Since this build everything, it can take some time.
 
-The `./gradlew build` builds the core Airbyte system, and all the connectors. This can take some time. To compile and build just the core systems:
+To compile and build just the core systems:
 ```bash
-export CORE_ONLY=1 && ./gradlew build
+CORE_ONLY=1 ./gradlew build
 ```
 
 {% hint style="info" %}

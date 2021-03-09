@@ -53,7 +53,7 @@ def createSpotlessTarget = { pattern ->
         'tools'
     ]
 
-    if(System.getenv().containsKey("CORE_ONLY")) {
+    if (System.getenv().containsKey("CORE_ONLY")) {
         excludes.add("airbyte-integrations/connectors")
     }
 
