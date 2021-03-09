@@ -38,7 +38,7 @@ import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.persistence.JobPersistence;
-import io.airbyte.scheduler.temporal.TemporalWorkerRunFactory;
+import io.airbyte.scheduler.worker_run.TemporalWorkerRunFactory;
 import io.airbyte.scheduler.worker_run.WorkerRun;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.WorkerConstants;

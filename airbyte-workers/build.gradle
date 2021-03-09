@@ -1,5 +1,8 @@
+import org.jsonschema2pojo.SourceType
+
 plugins {
     id 'java-library'
+    id 'com.github.eirnym.js2p' version '1.0'
 }
 
 configurations {
@@ -7,10 +10,12 @@ configurations {
 }
 
 dependencies {
+
     implementation 'org.apache.commons:commons-lang3:3.11'
     implementation 'io.kubernetes:client-java-api:10.0.0'
     implementation 'io.kubernetes:client-java:10.0.0'
     implementation 'io.kubernetes:client-java-extended:10.0.0'
+    implementation 'io.temporal:temporal-sdk:1.0.4'
 
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-db')
@@ -21,4 +26,18 @@ dependencies {
     testImplementation 'org.testcontainers:testcontainers:1.14.3'
     testImplementation 'org.testcontainers:postgresql:1.15.1'
     testImplementation 'org.postgresql:postgresql:42.2.18'
+}
+
+jsonSchema2Pojo {
+    sourceType = SourceType.YAMLSCHEMA
+    source = files("${sourceSets.main.output.resourcesDir}/workers_models")
+    targetDirectory = new File(project.buildDir, 'generated/src/gen/java/')
+    removeOldOutput = true
+
+    targetPackage = 'io.airbyte.scheduler.models'
+
+    useLongIntegers = true
+    generateBuilders = true
+    includeConstructors = false
+    includeSetters = true
 }

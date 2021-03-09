@@ -46,7 +46,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.persistence.JobPersistence;
-import io.airbyte.scheduler.temporal.TemporalWorkerRunFactory;
+import io.airbyte.scheduler.worker_run.TemporalWorkerRunFactory;
 import io.airbyte.scheduler.worker_run.WorkerRun;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;

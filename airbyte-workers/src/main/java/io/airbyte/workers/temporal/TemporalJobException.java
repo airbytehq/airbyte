@@ -22,10 +22,30 @@
  * SOFTWARE.
  */
 
-package io.airbyte.scheduler.temporal;
+package io.airbyte.workers.temporal;
+
+import java.nio.file.Path;
 
 public class TemporalJobException extends Exception {
 
-  public TemporalJobException() {}
+  private final Path logPath;
+
+  public TemporalJobException(Path logPath) {
+    this.logPath = logPath;
+  }
+
+  public TemporalJobException(Path logPath, Throwable cause) {
+    super(cause);
+    this.logPath = logPath;
+  }
+
+  public TemporalJobException(Path logPath, String message, Throwable cause) {
+    super(message, cause);
+    this.logPath = logPath;
+  }
+
+  public Path getLogPath() {
+    return logPath;
+  }
 
 }
