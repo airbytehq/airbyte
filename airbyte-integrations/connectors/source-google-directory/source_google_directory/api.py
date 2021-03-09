@@ -26,12 +26,12 @@ from abc import ABC, abstractmethod
 from functools import partial
 from typing import Callable, Dict, Iterator, Sequence
 
-from .errors import GoogleDirectoryQuotaExceeded, GoogleDirectoryRateLimitExceeded
-
 import backoff
 from google.oauth2 import service_account
-from googleapiclient.discovery import build
+from googleapiclient.discovery import build, Resource
 from googleapiclient.errors import HttpError as GoogleApiHttpError
+
+from .utils import rate_limit_handling
 
 SCOPES = ['https://www.googleapis.com/auth/admin.directory.user.readonly', 'https://www.googleapis.com/auth/admin.directory.group.readonly']
 
@@ -42,40 +42,30 @@ class API:
         self._credentials_json = credentials_json
         self._admin_email = email
 
-    def _load_account_info(self):
+    def _load_account_info(self) -> Dict:
         account_info = json.loads(self._credentials_json)
         return account_info
 
-    def _obtain_creds(self):
+    def _obtain_creds(self) -> service_account.Credentials:
         account_info = self._load_account_info()
         creds = service_account.Credentials.from_service_account_info(account_info, scopes=SCOPES)
         self._creds = creds.with_subject(self._admin_email)
 
-    def _get_service(self):
+    def _construct_resource(self) -> Resource:
         if not self._creds:
             self._obtain_creds()
         service = build("admin", "directory_v1", credentials=self._creds)
         return service
 
     def _get_resource(self, name: str):
-        service = self._get_service()
+        service = self._construct_resource()
+        d = getattr(service, name)
         return getattr(service, name)
 
-    @backoff.on_exception(backoff.expo, GoogleApiHttpError, max_tries=7)
-    def get(self, name: str, params: Dict = None):
+    @backoff.on_exception(backoff.expo, GoogleApiHttpError, max_tries=7, giveup=rate_limit_handling)
+    def get(self, name: str, params: Dict = None) -> Dict:
         resource = self._get_resource(name)
         response = resource().list(**params).execute()
-        # try:
-        #     response = resource().list(**params).execute()
-        # except GoogleApiHttpError as error:
-        #     reason = error.resp.reason
-        #     status = error.resp.status
-        #     if reason == "quotaExceeded" and status == 403:
-        #         raise GoogleDirectoryQuotaExceeded
-        #     if reason == "rateLimitExceeded" and status == 429:
-        #         raise GoogleDirectoryRateLimitExceeded
-        #     if reason == "Bad Request" and status == 400:
-        #         raise GoogleApiHttpError
         return response
 
 

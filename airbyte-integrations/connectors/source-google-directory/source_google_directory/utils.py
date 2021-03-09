@@ -22,12 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from googleapiclient.errors import HttpError
+RETRIED_CASES = [
+    (403, "quotaExceeded"),
+    (429, "rateLimitExceeded"),
+]
 
 
-class GoogleDirectoryQuotaExceeded(HttpError):
-    """403 Indicates that the limit of concurrent requests for a certain operation has been reached."""
+def rate_limit_handling(error):
+    return (error.resp.status, error.resp.reason) not in RETRIED_CASES
 
-
-class GoogleDirectoryRateLimitExceeded(HttpError):
-    """429 Indicates that the limit of concurrent requests for a certain operation has been reached."""

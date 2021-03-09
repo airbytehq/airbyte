@@ -49,7 +49,7 @@ class Client(BaseClient):
         error_msg = None
 
         try:
-            params = {"customer": "my_customer23"}
+            params = {"customer": "my_customer"}
             self._api.get(name="users", params=params)
         except Exception as error:
             alive = False
