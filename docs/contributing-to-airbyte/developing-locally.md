@@ -44,7 +44,12 @@ CORE_ONLY=1 ./gradlew build
 ```
 
 {% hint style="info" %}
-If Gradle uses too much/too little CPU, adjust the `workers.max` property in the `gradle.properties` file accordingly.
+If Gradle uses too much/too little CPU, it helps to tune the number of CPU cores it uses. 
+
+Adjust this by either, 
+1. Setting an env var: `export GRADLE_OPTS="-Dorg.gradle.workers.max=3"`.
+2. Setting a cli option: `./gradlew build --max-workers 3`
+3. Setting the `org.gradle.workers.max` property in the `gradle.properties` file.
 {% endhint %}
 
 {% hint style="info" %}
