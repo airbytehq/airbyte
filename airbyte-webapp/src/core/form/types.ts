@@ -8,6 +8,8 @@ export type FormBaseItem = {
   isRequired: boolean;
   isSecret?: boolean;
   title?: string;
+  multiline?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   meta?: { [key: string]: any };
 } & Partial<JSONSchema7>;
 
@@ -36,5 +38,6 @@ type FormConditionItem = {
 
 export type FormBlock = FormGroupItem | FormBaseItem | FormConditionItem;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type WidgetConfig = { [key: string]: any };
 export type WidgetConfigMap = { [key: string]: WidgetConfig };

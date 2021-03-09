@@ -1,9 +1,10 @@
 import React, { useEffect } from "react";
 import { Storytime } from "@papercups-io/storytime";
 import styled from "styled-components";
-import Button from "../Button";
 import { faComment } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
+import Button from "components/Button";
 
 type PapercupsConfig = {
   accountId: string;
@@ -34,14 +35,14 @@ const ChatButton = styled(Button)`
 const SupportChat: React.FC<IProps> = ({
   papercupsConfig,
   customerId,
-  onClick
+  onClick,
 }) => {
   useEffect(() => {
     if (papercupsConfig.enableStorytime) {
       Storytime.init({
         accountId: papercupsConfig.accountId,
         baseUrl: papercupsConfig.baseUrl,
-        customer: { external_id: customerId }
+        customer: { external_id: customerId },
       });
     }
   }, [customerId, papercupsConfig]);

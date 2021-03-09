@@ -108,7 +108,7 @@ public class DefaultSchedulerJobClient implements SchedulerJobClient {
         ? jobPersistence.getLastReplicationJob(standardSync.getConnectionId()).orElseThrow(() -> new RuntimeException("No job available")).getId()
         : jobIdOptional.get();
 
-    return waitUntilJobIsTerminalOrTimeout(jobId);
+    return jobPersistence.getJob(jobId);
   }
 
   @VisibleForTesting

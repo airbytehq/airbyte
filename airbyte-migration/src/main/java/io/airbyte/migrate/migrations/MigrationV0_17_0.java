@@ -104,7 +104,8 @@ public class MigrationV0_17_0 extends BaseMigration implements Migration {
       "airbyte/source-drift",
       "airbyte/source-looker",
       "airbyte/source-plaid",
-      "airbyte/source-appstore-singer");
+      "airbyte/source-appstore-singer",
+      "airbyte/source-mongodb");
 
   private final Migration previousMigration;
 

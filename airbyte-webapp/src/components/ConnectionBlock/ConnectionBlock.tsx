@@ -32,7 +32,7 @@ const ExtraBlock = styled.div`
   width: 257px;
 `;
 
-const ConnectionBlock: React.FC<IProps> = props => (
+const ConnectionBlock: React.FC<IProps> = (props) => (
   <LightContentCard className={props.className}>
     {props.itemFrom ? <Item {...props.itemFrom} /> : <ExtraBlock />}
     <Arrow icon={faChevronRight} />

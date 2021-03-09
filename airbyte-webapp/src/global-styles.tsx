@@ -1,6 +1,7 @@
-import { createGlobalStyle } from "styled-components";
+import { createGlobalStyle, ThemeProps } from "styled-components";
+import { Theme } from "./theme";
 
-const GlobalStyle = createGlobalStyle<any>`
+const GlobalStyle = createGlobalStyle<ThemeProps<Theme>>`
   #__next,
   html,
   body,

@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "styled-components";
-import SideBar from "../SideBar";
+import SideBar from "components/SideBar";
 
 const MainContainer = styled.div`
   width: 100%;
@@ -16,7 +16,7 @@ const Content = styled.div`
   height: 100%;
 `;
 
-const MainView: React.FC = props => (
+const MainView: React.FC = (props) => (
   <MainContainer>
     <SideBar />
     <Content>{props.children}</Content>

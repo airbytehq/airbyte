@@ -1,6 +1,6 @@
 import { JSONSchema7, JSONSchema7Definition } from "json-schema";
 
-import { FormBlock } from "../form/types";
+import { FormBlock } from "core/form/types";
 
 /**
  * Returns {@link FormBlock} representation of jsonSchema
@@ -19,11 +19,7 @@ export const jsonSchemaToUiWidget = (
   path: string = key,
   parentSchema?: JSONSchema7Definition
 ): FormBlock => {
-  const isRequired =
-    (typeof parentSchema !== "boolean" &&
-      Array.isArray(parentSchema?.required) &&
-      parentSchema?.required.includes(key)) ||
-    false;
+  const isRequired = isKeyRequired(key, parentSchema);
 
   // TODO: decide what to do with boolean case
   if (typeof jsonSchema === "boolean") {
@@ -33,13 +29,13 @@ export const jsonSchemaToUiWidget = (
       fieldKey: key,
       type: "null",
       isRequired,
-      isSecret: false
+      isSecret: false,
     };
   }
 
   if (jsonSchema.oneOf?.length && jsonSchema.oneOf.length > 0) {
     const conditions = Object.fromEntries(
-      jsonSchema.oneOf.map(condition => {
+      jsonSchema.oneOf.map((condition) => {
         if (typeof condition === "boolean") {
           return [];
         }
@@ -52,7 +48,7 @@ export const jsonSchemaToUiWidget = (
       fieldName: path || key,
       fieldKey: key,
       conditions,
-      isRequired
+      isRequired,
     };
   }
 
@@ -70,7 +66,7 @@ export const jsonSchemaToUiWidget = (
       fieldName: path || key,
       fieldKey: key,
       properties,
-      isRequired
+      isRequired,
     };
   }
 
@@ -81,11 +77,25 @@ export const jsonSchemaToUiWidget = (
     fieldKey: key,
     isRequired,
     isSecret: (jsonSchema as { airbyte_secret: boolean }).airbyte_secret,
+    multiline: (jsonSchema as { multiline: boolean }).multiline,
     type:
       (Array.isArray(jsonSchema.type) ? jsonSchema.type[0] : jsonSchema.type) ??
-      "null"
+      "null",
   };
 };
+
+function isKeyRequired(
+  key: string,
+  parentSchema?: JSONSchema7Definition
+): boolean {
+  const isRequired =
+    (typeof parentSchema !== "boolean" &&
+      Array.isArray(parentSchema?.required) &&
+      parentSchema?.required.includes(key)) ||
+    false;
+
+  return isRequired;
+}
 
 const pickDefaultFields = (schema: JSONSchema7): Partial<JSONSchema7> => ({
   default: schema.default,
@@ -93,5 +103,5 @@ const pickDefaultFields = (schema: JSONSchema7): Partial<JSONSchema7> => ({
   description: schema.description,
   pattern: schema.pattern,
   title: schema.title,
-  enum: schema.enum
+  enum: schema.enum,
 });

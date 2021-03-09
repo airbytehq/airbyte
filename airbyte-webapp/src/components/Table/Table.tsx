@@ -12,13 +12,6 @@ type ICellProps = {
   column: IHeaderProps;
 } & Cell;
 
-type IProps = {
-  columns: Array<IHeaderProps | Column>;
-  erroredRows?: boolean;
-  data: any[];
-  onClickRow?: (data: object) => void;
-};
-
 type IThProps = {
   highlighted?: boolean;
   collapse?: boolean;
@@ -81,21 +74,30 @@ const Th = styled.th<IThProps>`
   }
 `;
 
+type IProps = {
+  columns: Array<IHeaderProps | Column<Record<string, unknown>>>;
+  erroredRows?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  data: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onClickRow?: (data: any) => void;
+};
+
 const Table: React.FC<IProps> = ({
   columns,
   data,
   onClickRow,
-  erroredRows
+  erroredRows,
 }) => {
   const {
     getTableProps,
     getTableBodyProps,
     headerGroups,
     rows,
-    prepareRow
+    prepareRow,
   } = useTable({
     columns,
-    data
+    data,
   });
 
   return (
@@ -121,7 +123,7 @@ const Table: React.FC<IProps> = ({
         ))}
       </thead>
       <tbody {...getTableBodyProps()}>
-        {rows.map(row => {
+        {rows.map((row) => {
           prepareRow(row);
           return (
             <>
@@ -129,22 +131,24 @@ const Table: React.FC<IProps> = ({
                 {...row.getRowProps()}
                 key={`table-row-${row.id}`}
                 hasClick={!!onClickRow}
-                onClick={() => onClickRow && onClickRow(row.original)}
-                // @ts-ignore
-                erroredRows={erroredRows && row.original.error}
+                onClick={() => onClickRow?.(row.original)}
+                erroredRows={erroredRows && !!row.original.error}
               >
-                {row.cells.map((cell: ICellProps, key) => {
-                  return (
-                    <Td
-                      {...cell.getCellProps()}
-                      collapse={cell.column.collapse}
-                      customWidth={cell.column.customWidth}
-                      key={`table-cell-${row.id}-${key}`}
-                    >
-                      {cell.render("Cell")}
-                    </Td>
-                  );
-                })}
+                {
+                  // @ts-ignore needs to address proper types for table
+                  row.cells.map((cell: ICellProps, key) => {
+                    return (
+                      <Td
+                        {...cell.getCellProps()}
+                        collapse={cell.column.collapse}
+                        customWidth={cell.column.customWidth}
+                        key={`table-cell-${row.id}-${key}`}
+                      >
+                        {cell.render("Cell")}
+                      </Td>
+                    );
+                  })
+                }
               </Tr>
             </>
           );

@@ -111,7 +111,7 @@ public class AirbyteVersion {
     if (isCompatible(version1, version2)) {
       throw new IllegalStateException(String.format(
           "Version mismatch between %s and %s.\n" +
-              "Please Upgrade or Reset your Airbyte Database, see more at https://docs.airbyte.io/tutorials/tutorials/upgrading-airbyte",
+              "Please upgrade or reset your Airbyte Database, see more at https://docs.airbyte.io/tutorials/upgrading-airbyte",
           cleanVersion1, cleanVersion2));
     }
   }

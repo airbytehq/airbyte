@@ -2,8 +2,8 @@ import React, { useRef } from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 
-import Input, { InputProps } from "../../../Input";
-import Button from "../../../Button";
+import Input, { InputProps } from "components/Input";
+import Button from "components/Button";
 
 const InputContainer = styled.div`
   display: flex;
@@ -24,7 +24,7 @@ type ConfirmationInputProps = InputProps & {
   onDone: () => void;
 };
 
-const ConfirmationInput: React.FC<ConfirmationInputProps> = props => {
+const ConfirmationInput: React.FC<ConfirmationInputProps> = (props) => {
   const inputElement = useRef<HTMLInputElement>(null);
   const { isEditInProgress, showButtons, onStart, onCancel, onDone } = props;
 

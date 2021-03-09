@@ -2,8 +2,8 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import Toggle from "../../Toggle";
-import Button from "../../Button";
+import Toggle from "components/Toggle";
+import Button from "components/Button";
 
 type IProps = {
   enabled?: boolean;
@@ -28,7 +28,7 @@ const StatusCell: React.FC<IProps> = ({
   id,
   onChangeStatus,
   isSyncing,
-  onSync
+  onSync,
 }) => {
   const OnLaunch = (event: React.SyntheticEvent) => {
     event.stopPropagation();

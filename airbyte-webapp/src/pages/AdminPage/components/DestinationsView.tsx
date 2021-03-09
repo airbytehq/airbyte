@@ -1,30 +1,30 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useFetcher, useResource } from "rest-hooks";
+import { CellProps } from "react-table";
 
 import { Block, Title, FormContentTitle } from "./PageComponents";
-import Table from "../../../components/Table";
-import { CellProps } from "react-table";
+import Table from "components/Table";
 import ConnectorCell from "./ConnectorCell";
 import ImageCell from "./ImageCell";
 import VersionCell from "./VersionCell";
-import config from "../../../config";
-import DestinationDefinitionResource from "../../../core/resources/DestinationDefinition";
-import ConnectionResource from "../../../core/resources/Connection";
+import config from "config";
+import DestinationDefinitionResource from "core/resources/DestinationDefinition";
+import ConnectionResource from "core/resources/Connection";
 
 const DestinationsView: React.FC = () => {
   const formatMessage = useIntl().formatMessage;
   const { destinationDefinitions } = useResource(
     DestinationDefinitionResource.listShape(),
     {
-      workspaceId: config.ui.workspaceId
+      workspaceId: config.ui.workspaceId,
     }
   );
   const { connections } = useResource(ConnectionResource.listShape(), {
-    workspaceId: config.ui.workspaceId
+    workspaceId: config.ui.workspaceId,
   });
 
-  const [feedbackList, setFeedbackList] = useState<any>({});
+  const [feedbackList, setFeedbackList] = useState<Record<string, string>>({});
 
   const updateDestinationDefinition = useFetcher(
     DestinationDefinitionResource.updateShape()
@@ -37,7 +37,7 @@ const DestinationsView: React.FC = () => {
           {},
           {
             destinationDefinitionId: id,
-            dockerImageTag: version
+            dockerImageTag: version,
           }
         );
         setFeedbackList({ ...feedbackList, [id]: "success" });
@@ -45,10 +45,10 @@ const DestinationsView: React.FC = () => {
         const message =
           e.status === 422
             ? formatMessage({
-                id: "form.imageCannotFound"
+                id: "form.imageCannotFound",
               })
             : formatMessage({
-                id: "form.someError"
+                id: "form.someError",
               });
         setFeedbackList({ ...feedbackList, [id]: message });
       }
@@ -62,9 +62,9 @@ const DestinationsView: React.FC = () => {
         Header: <FormattedMessage id="admin.connectors" />,
         accessor: "name",
         customWidth: 25,
-        Cell: ({ cell }: CellProps<{}>) => (
+        Cell: ({ cell }: CellProps<never>) => (
           <ConnectorCell connectorName={cell.value} />
-        )
+        ),
       },
       {
         Header: <FormattedMessage id="admin.image" />,
@@ -75,7 +75,7 @@ const DestinationsView: React.FC = () => {
             imageName={cell.value}
             link={row.original.documentationUrl}
           />
-        )
+        ),
       },
       {
         Header: (
@@ -87,7 +87,7 @@ const DestinationsView: React.FC = () => {
         collapse: true,
         Cell: ({
           cell,
-          row
+          row,
         }: CellProps<{ destinationDefinitionId: string }>) => (
           <VersionCell
             version={cell.value}
@@ -95,16 +95,16 @@ const DestinationsView: React.FC = () => {
             onChange={onUpdateVersion}
             feedback={feedbackList[row.original.destinationDefinitionId]}
           />
-        )
-      }
+        ),
+      },
     ],
     [feedbackList, onUpdateVersion]
   );
 
   const usedDestination = useMemo(() => {
-    const allDestination = connections.map(item => {
+    const allDestination = connections.map((item) => {
       const destinationInfo = destinationDefinitions.find(
-        destination =>
+        (destination) =>
           destination.destinationDefinitionId ===
           item.destination?.destinationDefinitionId
       );
@@ -115,7 +115,7 @@ const DestinationsView: React.FC = () => {
         dockerRepository: destinationInfo?.dockerRepository,
         dockerImageTag: destinationInfo?.dockerImageTag,
         documentationUrl: destinationInfo?.documentationUrl,
-        feedback: ""
+        feedback: "",
       };
     });
 
