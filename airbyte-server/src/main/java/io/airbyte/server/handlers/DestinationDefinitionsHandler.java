@@ -31,7 +31,7 @@ import io.airbyte.api.model.DestinationDefinitionRead;
 import io.airbyte.api.model.DestinationDefinitionReadList;
 import io.airbyte.api.model.DestinationDefinitionUpdate;
 import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.helpers.ConnectorRegistryToStandardXDefinitions;
+import io.airbyte.config.helpers.RawListToStandardXDefinitions;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.client.CachingSchedulerJobClient;
@@ -111,7 +111,7 @@ public class DestinationDefinitionsHandler {
   public DestinationDefinitionReadList listLatestDestinationDefinitions() throws ConfigNotFoundException, IOException, JsonValidationException {
     final List<StandardDestinationDefinition> destDefs;
     try {
-      destDefs = ConnectorRegistryToStandardXDefinitions.toStandardDestinationDefinitions(getLatestDestinations());
+      destDefs = RawListToStandardXDefinitions.toStandardDestinationDefinitions(getLatestDestinations());
     } catch (RuntimeException e) {
       throw new KnownException(500, "Error retrieving latest destination definitions", e);
     }

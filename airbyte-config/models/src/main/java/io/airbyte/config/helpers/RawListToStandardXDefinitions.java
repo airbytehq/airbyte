@@ -41,24 +41,32 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This class maps
+ * This is a convenience class for the conversion of a list of source/destination definitions from human-friendly yaml to processing friendly formats
+ * i.e. Java models or JSON. As this class performs validation, it is recommended to use this class to deal with raw lists. Airbyte's master lists
+ * can be seen <a href="{@docRoot}/airbyte-config/init/src/main/resources/seed">here</a>.
+ *
+ * In addition to usual read/schema validation, we check:
+ * 1) The given list contains no duplicate names.
+ * 2) The given list contains no duplicate ids.
+ *
+ * Methods in these class throw either Runtime or IllegalArgument exceptions upon validation failure.
  */
-public class ConnectorRegistryToStandardXDefinitions {
+public class RawListToStandardXDefinitions {
 
   private static final Map<String, String> classNameToIdName = Map.ofEntries(
       new SimpleImmutableEntry<>(StandardDestinationDefinition.class.getCanonicalName(), "destinationDefinitionId"),
       new SimpleImmutableEntry<>(StandardSourceDefinition.class.getCanonicalName(), "sourceDefinitionId"));
   private static final ObjectMapper mapper = new ObjectMapper();
 
-  public static List<StandardSourceDefinition> toStandardSourceDefinitions(String yamlStr) {
+  public static List<StandardSourceDefinition> toStandardSourceDefinitions(String yamlStr) throws RuntimeException {
     return verifyAndConvertToModelList(StandardSourceDefinition.class, yamlStr);
   }
 
-  public static List<StandardDestinationDefinition> toStandardDestinationDefinitions(String yamlStr) {
+  public static List<StandardDestinationDefinition> toStandardDestinationDefinitions(String yamlStr) throws RuntimeException {
     return verifyAndConvertToModelList(StandardDestinationDefinition.class, yamlStr);
   }
 
-  public static JsonNode verifyAndConvertToJson(String yamlStr, String idName) {
+  public static JsonNode verifyAndConvertToJson(String yamlStr, String idName) throws RuntimeException {
     final var jsonNode = Yamls.deserialize(yamlStr);
     checkYamlIsPresentWithNoDuplicates(jsonNode, idName);
     return jsonNode;
@@ -71,7 +79,7 @@ public class ConnectorRegistryToStandardXDefinitions {
     return toStandardXDefinitions(jsonNode.elements(), klass);
   }
 
-  private static void checkYamlIsPresentWithNoDuplicates(JsonNode deserialize, String idName) {
+  private static void checkYamlIsPresentWithNoDuplicates(JsonNode deserialize, String idName) throws RuntimeException {
     final var presentDestList = !deserialize.elements().equals(ClassUtil.emptyIterator());
     Preconditions.checkState(presentDestList, "Definition list is empty");
     checkNoDuplicateNames(deserialize.elements());
