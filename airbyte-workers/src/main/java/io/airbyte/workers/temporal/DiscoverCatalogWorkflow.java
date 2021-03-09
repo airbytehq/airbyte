@@ -22,17 +22,13 @@
  * SOFTWARE.
  */
 
-package io.airbyte.scheduler.temporal;
+package io.airbyte.workers.temporal;
 
-import com.google.common.base.Preconditions;
-import io.airbyte.config.IntegrationLauncherConfig;
-import io.airbyte.config.JobOutput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
-import io.airbyte.config.StandardDiscoverCatalogOutput;
+import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.scheduler.models.IntegrationLauncherConfig;
+import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.DefaultDiscoverCatalogWorker;
-import io.airbyte.workers.JobStatus;
-import io.airbyte.workers.OutputAndStatus;
-import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessBuilderFactory;
@@ -46,14 +42,15 @@ import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
 import java.nio.file.Path;
 import java.time.Duration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @WorkflowInterface
 public interface DiscoverCatalogWorkflow {
 
   @WorkflowMethod
-  JobOutput run(IntegrationLauncherConfig launcherConfig, StandardDiscoverCatalogInput config) throws TemporalJobException;
+  AirbyteCatalog run(JobRunConfig jobRunConfig,
+                     IntegrationLauncherConfig launcherConfig,
+                     StandardDiscoverCatalogInput config)
+      throws TemporalJobException;
 
   class WorkflowImpl implements DiscoverCatalogWorkflow {
 
@@ -63,8 +60,11 @@ public interface DiscoverCatalogWorkflow {
     private final DiscoverCatalogActivity activity = Workflow.newActivityStub(DiscoverCatalogActivity.class, options);
 
     @Override
-    public JobOutput run(IntegrationLauncherConfig launcherConfig, StandardDiscoverCatalogInput config) throws TemporalJobException {
-      return activity.run(launcherConfig, config);
+    public AirbyteCatalog run(JobRunConfig jobRunConfig,
+                              IntegrationLauncherConfig launcherConfig,
+                              StandardDiscoverCatalogInput config)
+        throws TemporalJobException {
+      return activity.run(jobRunConfig, launcherConfig, config);
     }
 
   }
@@ -73,13 +73,14 @@ public interface DiscoverCatalogWorkflow {
   interface DiscoverCatalogActivity {
 
     @ActivityMethod
-    JobOutput run(IntegrationLauncherConfig launcherConfig, StandardDiscoverCatalogInput config) throws TemporalJobException;
+    AirbyteCatalog run(JobRunConfig jobRunConfig,
+                       IntegrationLauncherConfig launcherConfig,
+                       StandardDiscoverCatalogInput config)
+        throws TemporalJobException;
 
   }
 
   class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(DiscoverCatalogActivityImpl.class);
 
     private final ProcessBuilderFactory pbf;
     private final Path workspaceRoot;
@@ -89,28 +90,17 @@ public interface DiscoverCatalogWorkflow {
       this.workspaceRoot = workspaceRoot;
     }
 
-    public JobOutput run(IntegrationLauncherConfig launcherConfig, StandardDiscoverCatalogInput config) {
-      try {
-        final Path jobRoot = WorkerUtils.getJobRoot(workspaceRoot, launcherConfig);
-        WorkerUtils.setJobMdc(jobRoot, launcherConfig.getJobId());
-
+    public AirbyteCatalog run(JobRunConfig jobRunConfig,
+                              IntegrationLauncherConfig launcherConfig,
+                              StandardDiscoverCatalogInput config)
+        throws TemporalJobException {
+      return new TemporalAttemptExecution<>(workspaceRoot, jobRunConfig, (jobRoot) -> {
         final IntegrationLauncher integrationLauncher =
             new AirbyteIntegrationLauncher(launcherConfig.getJobId(), launcherConfig.getAttemptId().intValue(), launcherConfig.getDockerImage(), pbf);
         final AirbyteStreamFactory streamFactory = new DefaultAirbyteStreamFactory();
 
-        final OutputAndStatus<StandardDiscoverCatalogOutput> run =
-            new DefaultDiscoverCatalogWorker(integrationLauncher, streamFactory).run(config, jobRoot);
-        if (run.getStatus() == JobStatus.SUCCEEDED) {
-          Preconditions.checkState(run.getOutput().isPresent());
-          LOGGER.info("job output {}", run.getOutput().get());
-          return new JobOutput().withDiscoverCatalog(run.getOutput().get());
-        } else {
-          throw new RuntimeException("Discover catalog worker completed with a FAILED status.");
-        }
-
-      } catch (Exception e) {
-        throw new RuntimeException("Discover catalog job failed with an exception", e);
-      }
+        return new DefaultDiscoverCatalogWorker(integrationLauncher, streamFactory).run(config, jobRoot);
+      }).get();
     }
 
   }
