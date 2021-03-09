@@ -44,11 +44,9 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -122,13 +120,12 @@ public class DestinationDefinitionsHandler {
   private String getLatestDestinations() {
     final var request = HttpRequest
         .newBuilder(URI.create(latestListBaseUrl + DESTINATION_DEFINITION_LIST_LOCATION_PATH))
+        .timeout(Duration.ofSeconds(1))
         .header("accept", "application/json")
         .build();
-    final var future = httpClient.sendAsync(request, BodyHandlers.ofString());
     try {
-      final var resp = future.get(1, TimeUnit.SECONDS);
-      return resp.body();
-    } catch (TimeoutException | InterruptedException | ExecutionException e) {
+      return httpClient.send(request, BodyHandlers.ofString()).body();
+    } catch (InterruptedException | IOException e) {
       throw new KnownException(500, "Request to retrieve latest destination definitions failed", e);
     }
   }

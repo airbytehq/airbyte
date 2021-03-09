@@ -217,7 +217,8 @@ class DestinationDefinitionsHandlerTest {
           .addHeader("Content-Type", "text/plain; charset=utf-8")
           .addHeader("Cache-Control", "no-cache")
           .setBody(goodYamlString)
-          .throttleBody(10, 2000, TimeUnit.MILLISECONDS);
+          .setHeadersDelay(10, TimeUnit.SECONDS)
+          .setBodyDelay(10, TimeUnit.SECONDS);
       webServer.enqueue(goodResponse);
 
       assertThrows(KnownException.class, () -> destinationHandler.listLatestDestinationDefinitions().getDestinationDefinitions());
