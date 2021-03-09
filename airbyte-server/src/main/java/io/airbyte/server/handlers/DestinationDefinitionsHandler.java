@@ -109,7 +109,7 @@ public class DestinationDefinitionsHandler {
   }
 
   public DestinationDefinitionReadList listLatestDestinationDefinitions() throws ConfigNotFoundException, IOException, JsonValidationException {
-    List<StandardDestinationDefinition> destDefs;
+    final List<StandardDestinationDefinition> destDefs;
     try {
       destDefs = ConnectorRegistryToStandardXDefinitions.toStandardDestinationDefinitions(getLatestDestinations());
     } catch (RuntimeException e) {
@@ -136,8 +136,7 @@ public class DestinationDefinitionsHandler {
   public DestinationDefinitionRead getDestinationDefinition(DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     return buildDestinationDefinitionRead(
-        configRepository.getStandardDestinationDefinition(
-            destinationDefinitionIdRequestBody.getDestinationDefinitionId()));
+        configRepository.getStandardDestinationDefinition(destinationDefinitionIdRequestBody.getDestinationDefinitionId()));
   }
 
   public DestinationDefinitionRead createDestinationDefinition(DestinationDefinitionCreate destinationDefinitionCreate)

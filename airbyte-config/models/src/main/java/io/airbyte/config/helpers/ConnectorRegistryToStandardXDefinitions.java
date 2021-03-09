@@ -50,24 +50,30 @@ public class ConnectorRegistryToStandardXDefinitions {
       new SimpleImmutableEntry<>(StandardSourceDefinition.class.getCanonicalName(), "sourceDefinitionId"));
   private static final ObjectMapper mapper = new ObjectMapper();
 
-  private static <T> List<T> yamlToModelList(Class<T> c, String yamlStr) throws RuntimeException {
-    final var jsonNode = Yamls.deserialize(yamlStr);
-    final var idName = classNameToIdName.get(c.getCanonicalName());
-    checkYamlIsPresentWithNoDuplicates(jsonNode, idName);
-    return toStandardXDefinitions(jsonNode.elements(), c);
-  }
-
   public static List<StandardSourceDefinition> toStandardSourceDefinitions(String yamlStr) {
-    return yamlToModelList(StandardSourceDefinition.class, yamlStr);
+    return verifyAndConvertToModelList(StandardSourceDefinition.class, yamlStr);
   }
 
   public static List<StandardDestinationDefinition> toStandardDestinationDefinitions(String yamlStr) {
-    return yamlToModelList(StandardDestinationDefinition.class, yamlStr);
+    return verifyAndConvertToModelList(StandardDestinationDefinition.class, yamlStr);
+  }
+
+  public static JsonNode verifyAndConvertToJson(String yamlStr, String idName) {
+    final var jsonNode = Yamls.deserialize(yamlStr);
+    checkYamlIsPresentWithNoDuplicates(jsonNode, idName);
+    return jsonNode;
+  }
+
+  private static <T> List<T> verifyAndConvertToModelList(Class<T> klass, String yamlStr) throws RuntimeException {
+    final var jsonNode = Yamls.deserialize(yamlStr);
+    final var idName = classNameToIdName.get(klass.getCanonicalName());
+    checkYamlIsPresentWithNoDuplicates(jsonNode, idName);
+    return toStandardXDefinitions(jsonNode.elements(), klass);
   }
 
   private static void checkYamlIsPresentWithNoDuplicates(JsonNode deserialize, String idName) {
     final var presentDestList = !deserialize.elements().equals(ClassUtil.emptyIterator());
-    Preconditions.checkState(presentDestList, "Destination definition list is empty");
+    Preconditions.checkState(presentDestList, "Definition list is empty");
     checkNoDuplicateNames(deserialize.elements());
     checkNoDuplicateIds(deserialize.elements(), idName);
   }

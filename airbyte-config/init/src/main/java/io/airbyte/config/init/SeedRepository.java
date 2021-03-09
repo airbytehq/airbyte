@@ -27,12 +27,10 @@ package io.airbyte.config.init;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.yaml.Yamls;
+import io.airbyte.config.helpers.ConnectorRegistryToStandardXDefinitions;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.stream.Collectors;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -82,31 +80,6 @@ public class SeedRepository {
     }
   }
 
-  public static void checkNoDuplicateNames(final Iterator<JsonNode> fileIterator) {
-    final var names = new HashSet<String>();
-    while (fileIterator.hasNext()) {
-      final var element = Jsons.clone(fileIterator.next());
-      final var name = element.get("name").asText();
-      if (names.contains(name)) {
-        throw new IllegalArgumentException("Multiple records have the name: " + name);
-      }
-      names.add(name);
-    }
-  }
-
-  public static void checkNoDuplicateIds(final Iterator<JsonNode> fileIterator,
-                                         final String idName) {
-    final var ids = new HashSet<String>();
-    while (fileIterator.hasNext()) {
-      final var element = Jsons.clone(fileIterator.next());
-      final var id = element.get(idName).asText();
-      if (ids.contains(id)) {
-        throw new IllegalArgumentException("Multiple records have the id: " + id);
-      }
-      ids.add(id);
-    }
-  }
-
   public static void main(final String[] args) throws IOException {
     final CommandLine parsed = parse(args);
     final String idName = parsed.getOptionValue(ID_NAME_OPTION.getOpt());
@@ -117,20 +90,17 @@ public class SeedRepository {
   }
 
   public void run(final String idName, final Path input, final Path output) throws IOException {
-    final JsonNode seedList = Yamls.deserialize(IOs.readFile(input));
-    final Iterator<JsonNode> elements = seedList.elements();
+    final var jsonNode = ConnectorRegistryToStandardXDefinitions.verifyAndConvertToJson(IOs.readFile(input), idName);
+    final var elementsIter = jsonNode.elements();
 
     // clean output directory.
     for (final Path file : Files.list(output).collect(Collectors.toList())) {
       Files.delete(file);
     }
 
-    checkNoDuplicateNames(seedList.elements());
-    checkNoDuplicateIds(seedList.elements(), idName);
-
     // write to output directory.
-    while (elements.hasNext()) {
-      final JsonNode element = Jsons.clone(elements.next());
+    while (elementsIter.hasNext()) {
+      final JsonNode element = Jsons.clone(elementsIter.next());
       IOs.writeFile(
           output,
           element.get(idName).asText() + ".json",
