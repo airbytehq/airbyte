@@ -47,9 +47,9 @@ public class Yamls {
     }
   }
 
-  public static <T> T deserialize(final String jsonString, final Class<T> klass) {
+  public static <T> T deserialize(final String yamlString, final Class<T> klass) {
     try {
-      return OBJECT_MAPPER.readValue(jsonString, klass);
+      return OBJECT_MAPPER.readValue(yamlString, klass);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

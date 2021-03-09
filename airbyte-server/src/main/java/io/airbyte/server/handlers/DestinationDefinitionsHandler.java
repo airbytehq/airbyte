@@ -115,8 +115,7 @@ public class DestinationDefinitionsHandler {
     } catch (RuntimeException e) {
       throw new KnownException(500, "Error retrieving latest destination definitions", e);
     }
-    final var reads = destDefs.stream()
-        .map(DestinationDefinitionsHandler::buildDestinationDefinitionRead).collect(Collectors.toList());
+    final var reads = destDefs.stream().map(DestinationDefinitionsHandler::buildDestinationDefinitionRead).collect(Collectors.toList());
     return new DestinationDefinitionReadList().destinationDefinitions(reads);
   }
 

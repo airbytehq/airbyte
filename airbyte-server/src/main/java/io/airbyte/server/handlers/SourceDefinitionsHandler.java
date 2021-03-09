@@ -24,19 +24,14 @@
 
 package io.airbyte.server.handlers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.util.ClassUtil;
-import com.google.common.base.Preconditions;
 import io.airbyte.api.model.SourceDefinitionCreate;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
 import io.airbyte.api.model.SourceDefinitionRead;
 import io.airbyte.api.model.SourceDefinitionReadList;
 import io.airbyte.api.model.SourceDefinitionUpdate;
-import io.airbyte.commons.yaml.Yamls;
 import io.airbyte.config.StandardSourceDefinition;
-import io.airbyte.config.init.SeedRepository;
+import io.airbyte.config.helpers.ConnectorRegistryToStandardXDefinitions;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.client.CachingSchedulerJobClient;
@@ -49,8 +44,6 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse.BodyHandlers;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
@@ -61,7 +54,6 @@ import java.util.stream.Collectors;
 
 public class SourceDefinitionsHandler {
 
-  private static final String DEFAULT_SOURCE_DEFINITION_ID_NAME = "sourceDefinitionId";
   private static final String DEFAULT_LATEST_LIST_BASE_URL = "https://raw.githubusercontent.com";
   private static final String SOURCE_DEFINITION_LIST_LOCATION_PATH =
       "/airbytehq/airbyte/master/airbyte-config/init/src/main/resources/seed/source_definitions.yaml";
@@ -108,20 +100,6 @@ public class SourceDefinitionsHandler {
     }
   }
 
-  private static List<StandardSourceDefinition> toStandardSourceDefinitions(Iterator<JsonNode> iter) {
-    Iterable<JsonNode> iterable = () -> iter;
-    var sourceDefList = new ArrayList<StandardSourceDefinition>();
-    for (JsonNode n : iterable) {
-      try {
-        var def = mapper.treeToValue(n, StandardSourceDefinition.class);
-        sourceDefList.add(def);
-      } catch (JsonProcessingException e) {
-        throw new KnownException(500, "Unable to process retrieved latest source definitions list", e);
-      }
-    }
-    return sourceDefList;
-  }
-
   public SourceDefinitionReadList listSourceDefinitions() throws ConfigNotFoundException, IOException, JsonValidationException {
     final List<SourceDefinitionRead> reads = configRepository.listStandardSources()
         .stream()
@@ -131,17 +109,14 @@ public class SourceDefinitionsHandler {
   }
 
   public SourceDefinitionReadList listLatestSourceDefinitions() throws ConfigNotFoundException, IOException, JsonValidationException {
-    final JsonNode deserialize;
+    List<StandardSourceDefinition> sourceDefs;
     try {
-      deserialize = Yamls.deserialize(getLatestSources());
-      checkYamlIsPresentWithNoDuplicates(deserialize);
+      sourceDefs = ConnectorRegistryToStandardXDefinitions.toStandardSourceDefinitions(getLatestSources());
     } catch (RuntimeException e) {
       throw new KnownException(500, "Error retrieving latest source definitions", e);
     }
 
-    final var sourceDefs = toStandardSourceDefinitions(deserialize.elements());
-    final var reads = sourceDefs.stream()
-        .map(SourceDefinitionsHandler::buildSourceDefinitionRead).collect(Collectors.toList());
+    final var reads = sourceDefs.stream().map(SourceDefinitionsHandler::buildSourceDefinitionRead).collect(Collectors.toList());
     return new SourceDefinitionReadList().sourceDefinitions(reads);
   }
 
@@ -157,13 +132,6 @@ public class SourceDefinitionsHandler {
     } catch (TimeoutException | InterruptedException | ExecutionException e) {
       throw new KnownException(500, "Request to retrieve latest source definitions failed", e);
     }
-  }
-
-  private void checkYamlIsPresentWithNoDuplicates(JsonNode deserialize) {
-    final var presentSourceList = !deserialize.elements().equals(ClassUtil.emptyIterator());
-    Preconditions.checkState(presentSourceList, "Source definition list is empty");
-    SeedRepository.checkNoDuplicateNames(deserialize.elements());
-    SeedRepository.checkNoDuplicateIds(deserialize.elements(), DEFAULT_SOURCE_DEFINITION_ID_NAME);
   }
 
   public SourceDefinitionRead getSourceDefinition(SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody)

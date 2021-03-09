@@ -1,3 +1,27 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2020 Airbyte
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package io.airbyte.config.helpers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -20,10 +44,10 @@ import java.util.Map;
  * This class maps
  */
 public class ConnectorRegistryToStandardXDefinitions {
+
   private static final Map<String, String> classNameToIdName = Map.ofEntries(
       new SimpleImmutableEntry<>(StandardDestinationDefinition.class.getCanonicalName(), "destinationDefinitionId"),
-      new SimpleImmutableEntry<>(StandardSourceDefinition.class.getCanonicalName(), "sourceDefinitionId")
-  );
+      new SimpleImmutableEntry<>(StandardSourceDefinition.class.getCanonicalName(), "sourceDefinitionId"));
   private static final ObjectMapper mapper = new ObjectMapper();
 
   private static <T> List<T> yamlToModelList(Class<T> c, String yamlStr) throws RuntimeException {
@@ -33,8 +57,8 @@ public class ConnectorRegistryToStandardXDefinitions {
     return toStandardXDefinitions(jsonNode.elements(), c);
   }
 
-  public static List<StandardSourceDefinition> toStandardSourceDefinitions () {
-    return yamlToModelList(StandardSourceDefinition.class, "");
+  public static List<StandardSourceDefinition> toStandardSourceDefinitions(String yamlStr) {
+    return yamlToModelList(StandardSourceDefinition.class, yamlStr);
   }
 
   public static List<StandardDestinationDefinition> toStandardDestinationDefinitions(String yamlStr) {
@@ -48,7 +72,7 @@ public class ConnectorRegistryToStandardXDefinitions {
     checkNoDuplicateIds(deserialize.elements(), idName);
   }
 
-  private static void checkNoDuplicateNames(final Iterator<JsonNode> iter) throws IllegalArgumentException{
+  private static void checkNoDuplicateNames(final Iterator<JsonNode> iter) throws IllegalArgumentException {
     final var names = new HashSet<String>();
     while (iter.hasNext()) {
       final var element = Jsons.clone(iter.next());
@@ -60,7 +84,7 @@ public class ConnectorRegistryToStandardXDefinitions {
     }
   }
 
-  private static void checkNoDuplicateIds(final Iterator<JsonNode> fileIterator, final String idName) throws IllegalArgumentException{
+  private static void checkNoDuplicateIds(final Iterator<JsonNode> fileIterator, final String idName) throws IllegalArgumentException {
     final var ids = new HashSet<String>();
     while (fileIterator.hasNext()) {
       final var element = Jsons.clone(fileIterator.next());
