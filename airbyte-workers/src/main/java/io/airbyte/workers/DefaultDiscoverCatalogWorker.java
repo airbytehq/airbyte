@@ -29,7 +29,6 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.StandardDiscoverCatalogInput;
-import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -62,8 +61,7 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
   }
 
   @Override
-  public OutputAndStatus<StandardDiscoverCatalogOutput> run(final StandardDiscoverCatalogInput discoverSchemaInput,
-                                                            final Path jobRoot) {
+  public AirbyteCatalog run(final StandardDiscoverCatalogInput discoverSchemaInput, final Path jobRoot) throws WorkerException {
 
     final JsonNode configDotJson = discoverSchemaInput.getConnectionConfiguration();
     IOs.writeFile(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
@@ -87,21 +85,17 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
       int exitCode = process.exitValue();
       if (exitCode == 0) {
         if (catalog.isEmpty()) {
-          LOGGER.error("Integration failed to output a catalog struct.");
-          return new OutputAndStatus<>(JobStatus.FAILED);
+          throw new WorkerException("Integration failed to output a catalog struct.");
         }
 
-        return new OutputAndStatus<>(
-            JobStatus.SUCCEEDED,
-            new StandardDiscoverCatalogOutput()
-                .withCatalog(catalog.get()));
+        return catalog.get();
       } else {
-        LOGGER.debug("Discover job subprocess finished with exit code {}", exitCode);
-        return new OutputAndStatus<>(JobStatus.FAILED);
+        throw new WorkerException(String.format("Discover job subprocess finished with exit code %s", exitCode));
       }
+    } catch (final WorkerException e) {
+      throw e;
     } catch (final Exception e) {
-      LOGGER.error("Error while discovering schema", e);
-      return new OutputAndStatus<>(JobStatus.FAILED);
+      throw new WorkerException("Error while discovering schema", e);
     }
   }
 
