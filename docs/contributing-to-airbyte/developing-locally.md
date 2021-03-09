@@ -44,7 +44,7 @@ CORE_ONLY=1 ./gradlew build
 ```
 
 {% hint style="info" %}
-If Gradle is using too much/too little CPU, change the `workers.max` property in `gradle.properties` accordingly.
+If Gradle uses too much/too little CPU, adjust the `workers.max` property in the `gradle.properties` file accordingly.
 {% endhint %}
 
 {% hint style="info" %}
