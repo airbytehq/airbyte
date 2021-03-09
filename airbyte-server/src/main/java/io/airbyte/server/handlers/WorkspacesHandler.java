@@ -35,7 +35,6 @@ import io.airbyte.api.model.WorkspaceCreate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.api.model.WorkspaceRead;
 import io.airbyte.api.model.WorkspaceUpdate;
-import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;

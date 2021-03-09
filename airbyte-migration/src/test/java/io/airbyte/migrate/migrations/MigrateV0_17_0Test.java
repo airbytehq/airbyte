@@ -39,7 +39,6 @@ import io.airbyte.migrate.Migrations;
 import io.airbyte.migrate.ResourceId;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 

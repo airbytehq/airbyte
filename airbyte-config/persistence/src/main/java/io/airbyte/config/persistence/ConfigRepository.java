@@ -46,7 +46,8 @@ public class ConfigRepository {
     this.persistence = persistence;
   }
 
-  public StandardWorkspace getStandardWorkspace(final UUID workspaceId, boolean includeTombstone) throws JsonValidationException, IOException, ConfigNotFoundException {
+  public StandardWorkspace getStandardWorkspace(final UUID workspaceId, boolean includeTombstone)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
     StandardWorkspace workspace = persistence.getConfig(ConfigSchema.STANDARD_WORKSPACE, workspaceId.toString(), StandardWorkspace.class);
 
     if (workspace.getTombstone() == includeTombstone) {
