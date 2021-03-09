@@ -96,6 +96,13 @@ class SyncMode(Enum):
     incremental = "incremental"
 
 
+class DestinationSyncMode(Enum):
+    append = "append"
+    overwrite = "overwrite"
+    upsert_dedup = "upsert_dedup"
+    append_dedup = "append_dedup"
+
+
 class ConnectorSpecification(BaseModel):
     class Config:
         extra = Extra.allow
@@ -118,11 +125,19 @@ class AirbyteStream(BaseModel):
     supported_sync_modes: Optional[List[SyncMode]] = None
     source_defined_cursor: Optional[bool] = Field(
         None,
-        description="If the source defines the cursor field, then it does any other cursor field inputs will be ignored. If it does not either the user_provided one is used or as a backup the default one is used.",
+        description="If the source defines the cursor field, then any other cursor field inputs will be ignored. If it does not, either the user_provided one is used, or the default one is used as a backup.",
     )
     default_cursor_field: Optional[List[str]] = Field(
         None,
         description="Path to the field that will be used to determine if a record is new or modified since the last sync. If not provided by the source, the end user will have to specify the comparable themselves.",
+    )
+    source_defined_primary_key: Optional[bool] = Field(
+        None,
+        description="If the source defines the primary key, then any other primary key inputs will be ignored. If it does not, either the user_provided one is used, or the default one is used as a backup.",
+    )
+    default_primary_key: Optional[List[str]] = Field(
+        None,
+        description="Path to the fields that will be used as a primary key. If not provided by the source, the end user will have to specify the primary key themselves.",
     )
 
 
@@ -135,6 +150,11 @@ class ConfiguredAirbyteStream(BaseModel):
     cursor_field: Optional[List[str]] = Field(
         None,
         description="Path to the field that will be used to determine if a record is new or modified since the last sync. This field is REQUIRED if `sync_mode` is `incremental`. Otherwise it is ignored.",
+    )
+    destination_sync_mode: Optional[DestinationSyncMode] = "append"
+    primary_key: Optional[List[str]] = Field(
+        None,
+        description="Path to the field that will be used as primary key. This field is REQUIRED if `destination_sync_mode` is `*_dedup`. Otherwise it is ignored.",
     )
 
 
