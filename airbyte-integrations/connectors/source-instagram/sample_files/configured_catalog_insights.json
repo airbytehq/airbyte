@@ -19,29 +19,18 @@
               ]
             },
             "date": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "metric": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "value": {
-              "type": [
-                "integer",
-                "object"
-              ]
+              "type": ["integer", "object"]
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false
       }
     },
@@ -64,95 +53,51 @@
               ]
             },
             "date": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "follower_count": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "get_directions_clicks": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "impressions": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "phone_call_clicks": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "profile_views": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "reach": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "text_message_clicks": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "website_clicks": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "impressions_week": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "reach_week": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "impressions_days_28": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "reach_days_28": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "online_followers": {
-              "type": [
-                "null",
-                "object"
-              ]
+              "type": ["null", "object"]
             }
           }
         },
-        "supported_sync_modes": [
-          "incremental"
-        ],
+        "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true
       },
       "sync_mode": "incremental"
@@ -176,70 +121,38 @@
               ]
             },
             "id": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "engagement": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "impressions": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "reach": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "saved": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "video_views": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "carousel_album_engagement": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "carousel_album_impressions": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "carousel_album_reach": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "carousel_album_saved": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false
       }
     },
@@ -262,52 +175,29 @@
               ]
             },
             "id": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "exits": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "impressions": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "reach": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "replies": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "taps_forward": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "taps_back": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false
       }
     }

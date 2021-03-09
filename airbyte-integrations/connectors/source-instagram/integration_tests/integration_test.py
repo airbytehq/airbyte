@@ -23,17 +23,19 @@ SOFTWARE.
 """
 
 import json
+from pathlib import Path
 
 from airbyte_protocol import ConfiguredAirbyteCatalog, Type
 from base_python import AirbyteLogger
 from source_instagram.source import SourceInstagram
 
-config = json.loads(open("secrets/config.json", "r").read())
+BASE_DIRECTORY = Path(__file__).resolve().parent.parent
+config = json.loads(open(f"{BASE_DIRECTORY}/secrets/config.json", "r").read())
 
 
 class TestInstagramSource:
     def test_insights_streams_outputs_records(self):
-        catalog = self._read_catalog("sample_files/configured_catalog_insights.json")
+        catalog = self._read_catalog(f"{BASE_DIRECTORY}/sample_files/configured_catalog_insights.json")
         self._run_sync_test(config, catalog)
 
     @staticmethod
