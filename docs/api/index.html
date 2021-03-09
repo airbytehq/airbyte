@@ -248,7 +248,7 @@ font-style: italic;
   <li><a href="#createDestinationDefinition"><code><span class="http-method">post</span> /v1/destination_definitions/create</code></a></li>
   <li><a href="#getDestinationDefinition"><code><span class="http-method">post</span> /v1/destination_definitions/get</code></a></li>
   <li><a href="#listDestinationDefinitions"><code><span class="http-method">post</span> /v1/destination_definitions/list</code></a></li>
-  <li><a href="#listLatestDestinationDefinitions"><code><span class="http-method">post</span> /v1/destination_definitions/listLatest</code></a></li>
+  <li><a href="#listLatestDestinationDefinitions"><code><span class="http-method">post</span> /v1/destination_definitions/list_latest</code></a></li>
   <li><a href="#updateDestinationDefinition"><code><span class="http-method">post</span> /v1/destination_definitions/update</code></a></li>
   </ul>
   <h4><a href="#DestinationDefinitionSpecification">DestinationDefinitionSpecification</a></h4>
@@ -293,7 +293,7 @@ font-style: italic;
   <ul>
   <li><a href="#createSourceDefinition"><code><span class="http-method">post</span> /v1/source_definitions/create</code></a></li>
   <li><a href="#getSourceDefinition"><code><span class="http-method">post</span> /v1/source_definitions/get</code></a></li>
-  <li><a href="#listLatestSourceDefinitions"><code><span class="http-method">post</span> /v1/source_definitions/listLatest</code></a></li>
+  <li><a href="#listLatestSourceDefinitions"><code><span class="http-method">post</span> /v1/source_definitions/list_latest</code></a></li>
   <li><a href="#listSourceDefinitions"><code><span class="http-method">post</span> /v1/source_definitions/list</code></a></li>
   <li><a href="#updateSourceDefinition"><code><span class="http-method">post</span> /v1/source_definitions/update</code></a></li>
   </ul>
@@ -1647,8 +1647,8 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/destination_definitions/list</code></pre></div>
-    <div class="method-summary">List all of the destinationDefinitions that Airbyte supports (<span class="nickname">listDestinationDefinitions</span>)</div>
-    <div class="method-notes">Not guaranteed to retrieve the latest information on supported destinations for performance reasons.</div>
+    <div class="method-summary">List all the destinationDefinitions the current Airbyte deployment is configured to use (<span class="nickname">listDestinationDefinitions</span>)</div>
+    <div class="method-notes"></div>
 
 
 
@@ -1698,8 +1698,8 @@ font-style: italic;
   <div class="method"><a name="listLatestDestinationDefinitions"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
-    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/destination_definitions/listLatest</code></pre></div>
-    <div class="method-summary">List the latest destinationDefinitions that Airbyte supports (<span class="nickname">listLatestDestinationDefinitions</span>)</div>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/destination_definitions/list_latest</code></pre></div>
+    <div class="method-summary">List the latest destinationDefinitions Airbyte supports (<span class="nickname">listLatestDestinationDefinitions</span>)</div>
     <div class="method-notes">Guaranteed to retrieve the latest information on supported destinations.</div>
 
 
@@ -3226,8 +3226,8 @@ font-style: italic;
   <div class="method"><a name="listLatestSourceDefinitions"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
-    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/source_definitions/listLatest</code></pre></div>
-    <div class="method-summary">List the latest sourceDefinitions that Airbyte supports (<span class="nickname">listLatestSourceDefinitions</span>)</div>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/source_definitions/list_latest</code></pre></div>
+    <div class="method-summary">List the latest sourceDefinitions Airbyte supports (<span class="nickname">listLatestSourceDefinitions</span>)</div>
     <div class="method-notes">Guaranteed to retrieve the latest information on supported sources.</div>
 
 
@@ -3279,8 +3279,8 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/source_definitions/list</code></pre></div>
-    <div class="method-summary">List all of the sourceDefinitions that Airbyte supports (<span class="nickname">listSourceDefinitions</span>)</div>
-    <div class="method-notes">Not guaranteed to retrieve the latest information on supported sources for performance reasons.</div>
+    <div class="method-summary">List all the sourceDefinitions the current Airbyte deployment is configured to use (<span class="nickname">listSourceDefinitions</span>)</div>
+    <div class="method-notes"></div>
 
 
 

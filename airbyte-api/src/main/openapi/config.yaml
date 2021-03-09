@@ -171,8 +171,7 @@ paths:
     post:
       tags:
         - source_definition
-      summary: List all of the sourceDefinitions that Airbyte supports
-      description: Not guaranteed to retrieve the latest information on supported sources for performance reasons.
+      summary: List all the sourceDefinitions the current Airbyte deployment is configured to use
       operationId: listSourceDefinitions
       responses:
         "200":
@@ -181,11 +180,11 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SourceDefinitionReadList"
-  /v1/source_definitions/listLatest:
+  /v1/source_definitions/list_latest:
     post:
       tags:
         - source_definition
-      summary: List the latest sourceDefinitions that Airbyte supports
+      summary: List the latest sourceDefinitions Airbyte supports
       description: Guaranteed to retrieve the latest information on supported sources.
       operationId: listLatestSourceDefinitions
       responses:
@@ -467,8 +466,7 @@ paths:
     post:
       tags:
         - destination_definition
-      summary: List all of the destinationDefinitions that Airbyte supports
-      description: Not guaranteed to retrieve the latest information on supported destinations for performance reasons.
+      summary: List all the destinationDefinitions the current Airbyte deployment is configured to use
       operationId: listDestinationDefinitions
       responses:
         "200":
@@ -477,11 +475,11 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DestinationDefinitionReadList"
-  /v1/destination_definitions/listLatest:
+  /v1/destination_definitions/list_latest:
     post:
       tags:
         - destination_definition
-      summary: List the latest destinationDefinitions that Airbyte supports
+      summary: List the latest destinationDefinitions Airbyte supports
       description: Guaranteed to retrieve the latest information on supported destinations.
       operationId: listLatestDestinationDefinitions
       responses:
