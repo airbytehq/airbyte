@@ -23,7 +23,7 @@ SOFTWARE.
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Iterator, Sequence, List
+from typing import Any, Dict, Iterator, List, Sequence
 
 import pendulum
 from base_python.entrypoint import logger
@@ -174,10 +174,16 @@ class UserInsightsAPI(IncrementalStreamAPI):
 
 
 class MediaAPI(StreamAPI):
+    # Children objects can only be of the media_type == "CAROUSEL_ALBUM".
+    # And children object does not support INVALID_CHILDREN_FIELDS fields, so they are excluded when trying to get child objects to avoid the error.
     INVALID_CHILDREN_FIELDS = ["caption", "comments_count", "is_comment_enabled", "like_count", "children"]
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         children_fields = list(set(fields) - set(self.INVALID_CHILDREN_FIELDS))
+
+        # We get the Cursor object with the specified amount of Media (in our case, it is value of result_return_limit).
+        # And we begin to iterate over it, and when the Cursor reaches the last Media and reads it,
+        # then inside the facebook_businness Cursor is implemented in such a way that it pulls up the next {value of result_return_limit} Media (if they exist, of course).
         media = self._get_media({"limit": self.result_return_limit}, fields)
         for record in media:
             record_data = record.export_all_data()

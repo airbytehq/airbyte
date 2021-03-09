@@ -34,15 +34,7 @@ from facebook_business.adobjects.iguser import IGUser
 from facebook_business.adobjects.page import Page
 from facebook_business.exceptions import FacebookRequestError
 
-from .api import (
-    MediaAPI,
-    MediaInsightsAPI,
-    StoriesAPI,
-    StoriesInsightsAPI,
-    UserInsightsAPI,
-    UserLifetimeInsightsAPI,
-    UsersAPI,
-)
+from .api import MediaAPI, MediaInsightsAPI, StoriesAPI, StoriesInsightsAPI, UserInsightsAPI, UserLifetimeInsightsAPI, UsersAPI
 
 
 class Client(BaseClient):
