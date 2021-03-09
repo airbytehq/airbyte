@@ -60,6 +60,8 @@ public class TemporalWorkerRunFactory {
     return WorkerRun.create(workspaceRoot, job.getId(), attemptId, createSupplier(job, attemptId));
   }
 
+  // suppress "CodeBlock2Expr" because in the lambda syntax without a return statement the formatting
+  // makes the switch statement very hard to read.
   @SuppressWarnings({"UnnecessaryDefault", "CodeBlock2Expr"})
   public CheckedSupplier<OutputAndStatus<JobOutput>, Exception> createSupplier(Job job, int attemptId) {
     final TemporalJobType temporalJobType = toTemporalJobType(job.getConfigType());
