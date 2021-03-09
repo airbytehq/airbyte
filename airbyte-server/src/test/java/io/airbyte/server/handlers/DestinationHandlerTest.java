@@ -63,7 +63,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.UUID;
 import java.util.function.Supplier;
-import javax.ws.rs.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -260,7 +259,7 @@ class DestinationHandlerTest {
     when(configRepository.getDestinationConnection(destinationId))
         .thenReturn(deleted);
 
-    assertThrows(NotFoundException.class, () -> destinationHandler.getDestination(destinationIdRequestBody));
+    assertThrows(ConfigNotFoundException.class, () -> destinationHandler.getDestination(destinationIdRequestBody));
   }
 
   @Test

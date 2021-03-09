@@ -34,6 +34,7 @@ import io.airbyte.api.model.SourceReadList;
 import io.airbyte.api.model.SourceUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
+import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -48,7 +49,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
-import javax.ws.rs.NotFoundException;
 
 public class SourceHandler {
 
@@ -132,7 +132,7 @@ public class SourceHandler {
     final SourceConnection sourceConnection = configRepository.getSourceConnection(sourceId);
 
     if (sourceConnection.getTombstone()) {
-      throw new NotFoundException("Could not find source connection");
+      throw new ConfigNotFoundException(ConfigSchema.SOURCE_CONNECTION, sourceId.toString());
     }
 
     return buildSourceRead(sourceId);

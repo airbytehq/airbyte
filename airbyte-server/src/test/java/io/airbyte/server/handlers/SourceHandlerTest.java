@@ -62,7 +62,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.UUID;
 import java.util.function.Supplier;
-import javax.ws.rs.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -207,7 +206,7 @@ class SourceHandlerTest {
     when(configRepository.getSourceConnection(sourceId))
         .thenReturn(deleted);
 
-    assertThrows(NotFoundException.class, () -> sourceHandler.getSource(sourceIdRequestBody));
+    assertThrows(ConfigNotFoundException.class, () -> sourceHandler.getSource(sourceIdRequestBody));
   }
 
   @Test

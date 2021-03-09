@@ -35,6 +35,7 @@ import io.airbyte.api.model.DestinationReadList;
 import io.airbyte.api.model.DestinationUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
+import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -49,7 +50,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
-import javax.ws.rs.NotFoundException;
 
 public class DestinationHandler {
 
@@ -172,7 +172,7 @@ public class DestinationHandler {
     final DestinationConnection dci = configRepository.getDestinationConnection(destinationId);
 
     if (dci.getTombstone()) {
-      throw new NotFoundException("Could not find destination");
+      throw new ConfigNotFoundException(ConfigSchema.DESTINATION_CONNECTION, destinationId.toString());
     }
 
     return buildDestinationRead(destinationIdRequestBody.getDestinationId());
