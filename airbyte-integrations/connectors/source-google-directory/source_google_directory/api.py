@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
 import json
 from abc import ABC, abstractmethod
 from functools import partial
@@ -28,12 +29,12 @@ from typing import Callable, Dict, Iterator, Sequence
 
 import backoff
 from google.oauth2 import service_account
-from googleapiclient.discovery import build, Resource
+from googleapiclient.discovery import Resource, build
 from googleapiclient.errors import HttpError as GoogleApiHttpError
 
 from .utils import rate_limit_handling
 
-SCOPES = ['https://www.googleapis.com/auth/admin.directory.user.readonly', 'https://www.googleapis.com/auth/admin.directory.group.readonly']
+SCOPES = ["https://www.googleapis.com/auth/admin.directory.user.readonly", "https://www.googleapis.com/auth/admin.directory.group.readonly"]
 
 
 class API:
@@ -59,7 +60,6 @@ class API:
 
     def _get_resource(self, name: str):
         service = self._construct_resource()
-        d = getattr(service, name)
         return getattr(service, name)
 
     @backoff.on_exception(backoff.expo, GoogleApiHttpError, max_tries=7, giveup=rate_limit_handling)

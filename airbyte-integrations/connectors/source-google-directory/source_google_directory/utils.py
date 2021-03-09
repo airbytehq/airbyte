@@ -22,12 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-RETRIED_CASES = [
-    (403, "quotaExceeded"),
-    (429, "rateLimitExceeded"),
-]
-
 
 def rate_limit_handling(error):
-    return (error.resp.status, error.resp.reason) not in RETRIED_CASES
+    retried_cases = [
+        (403, "quotaExceeded"),
+        (429, "rateLimitExceeded"),
+    ]
 
+    return (error.resp.status, error.resp.reason) not in retried_cases
