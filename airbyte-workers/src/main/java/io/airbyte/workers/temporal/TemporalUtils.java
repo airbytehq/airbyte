@@ -22,8 +22,9 @@
  * SOFTWARE.
  */
 
-package io.airbyte.scheduler.temporal;
+package io.airbyte.workers.temporal;
 
+import io.airbyte.scheduler.models.JobRunConfig;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowOptions;
 import io.temporal.serviceclient.WorkflowServiceStubs;
@@ -49,18 +50,16 @@ public class TemporalUtils {
 
   }
 
-  static enum TemporalJobType {
-    GET_SPEC,
-    CHECK_CONNECTION,
-    DISCOVER_SCHEMA,
-    SYNC,
-    RESET_CONNECTION
-  }
-
   public static WorkflowOptions getWorkflowOptions(TemporalJobType jobType) {
     return WorkflowOptions.newBuilder()
         .setTaskQueue(jobType.name())
         .build();
+  }
+
+  public static JobRunConfig createJobRunConfig(long jobId, int attemptId) {
+    return new JobRunConfig()
+        .withJobId(jobId)
+        .withAttemptId((long) attemptId);
   }
 
 }

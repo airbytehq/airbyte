@@ -22,17 +22,14 @@
  * SOFTWARE.
  */
 
-package io.airbyte.scheduler.temporal;
+package io.airbyte.workers.temporal;
 
-import com.google.common.base.Preconditions;
-import io.airbyte.config.JobOutput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
+import io.airbyte.scheduler.models.IntegrationLauncherConfig;
+import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.DefaultSyncWorker;
-import io.airbyte.workers.JobStatus;
-import io.airbyte.workers.OutputAndStatus;
 import io.airbyte.workers.WorkerConstants;
-import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
@@ -51,14 +48,15 @@ import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
 import java.nio.file.Path;
 import java.time.Duration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @WorkflowInterface
 public interface SyncWorkflow {
 
   @WorkflowMethod
-  JobOutput run(long jobId, long attemptId, String sourceDockerImage, String destinationDockerImage, StandardSyncInput syncInput)
+  StandardSyncOutput run(JobRunConfig jobRunConfig,
+                         IntegrationLauncherConfig sourceLauncherConfig,
+                         IntegrationLauncherConfig destinationLauncherConfig,
+                         StandardSyncInput syncInput)
       throws TemporalJobException;
 
   class WorkflowImpl implements SyncWorkflow {
@@ -69,9 +67,12 @@ public interface SyncWorkflow {
     private final SyncActivity activity = Workflow.newActivityStub(SyncActivity.class, options);
 
     @Override
-    public JobOutput run(long jobId, long attemptId, String sourceDockerImage, String destinationDockerImage, StandardSyncInput syncInput)
+    public StandardSyncOutput run(JobRunConfig jobRunConfig,
+                                  IntegrationLauncherConfig sourceLauncherConfig,
+                                  IntegrationLauncherConfig destinationLauncherConfig,
+                                  StandardSyncInput syncInput)
         throws TemporalJobException {
-      return activity.run(jobId, attemptId, sourceDockerImage, destinationDockerImage, syncInput);
+      return activity.run(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
     }
 
   }
@@ -80,14 +81,15 @@ public interface SyncWorkflow {
   interface SyncActivity {
 
     @ActivityMethod
-    JobOutput run(long jobId, long attemptId, String sourceDockerImage, String destinationDockerImage, StandardSyncInput syncInput)
+    StandardSyncOutput run(JobRunConfig jobRunConfig,
+                           IntegrationLauncherConfig sourceLauncherConfig,
+                           IntegrationLauncherConfig destinationLauncherConfig,
+                           StandardSyncInput syncInput)
         throws TemporalJobException;
 
   }
 
   class SyncActivityImpl implements SyncActivity {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(SyncActivityImpl.class);
 
     private final ProcessBuilderFactory pbf;
     private final Path workspaceRoot;
@@ -97,42 +99,41 @@ public interface SyncWorkflow {
       this.workspaceRoot = workspaceRoot;
     }
 
-    public JobOutput run(long jobId, long attemptId, String sourceDockerImage, String destinationDockerImage, StandardSyncInput syncInput) {
-      try {
-        final Path jobRoot = WorkerUtils.getJobRoot(workspaceRoot, jobId, attemptId);
-        WorkerUtils.setJobMdc(jobRoot, jobId);
+    public StandardSyncOutput run(JobRunConfig jobRunConfig,
+                                  IntegrationLauncherConfig sourceLauncherConfig,
+                                  IntegrationLauncherConfig destinationLauncherConfig,
+                                  StandardSyncInput syncInput)
+        throws TemporalJobException {
 
-        final int intAttemptId = Math.toIntExact(attemptId);
-
-        final IntegrationLauncher sourceLauncher = new AirbyteIntegrationLauncher(jobId, intAttemptId, sourceDockerImage, pbf);
-        final IntegrationLauncher destinationLauncher = new AirbyteIntegrationLauncher(jobId, intAttemptId, destinationDockerImage, pbf);
+      return new TemporalAttemptExecution<>(workspaceRoot, jobRunConfig, (jobRoot) -> {
+        final IntegrationLauncher sourceLauncher = new AirbyteIntegrationLauncher(
+            sourceLauncherConfig.getJobId(),
+            Math.toIntExact(sourceLauncherConfig.getAttemptId()),
+            sourceLauncherConfig.getDockerImage(),
+            pbf);
+        final IntegrationLauncher destinationLauncher = new AirbyteIntegrationLauncher(
+            destinationLauncherConfig.getJobId(),
+            Math.toIntExact(destinationLauncherConfig.getAttemptId()),
+            destinationLauncherConfig.getDockerImage(),
+            pbf);
 
         // reset jobs use an empty source to induce resetting all data in destination.
-        final AirbyteSource airbyteSource = sourceDockerImage.equals(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB) ? new EmptyAirbyteSource()
-            : new DefaultAirbyteSource(sourceLauncher);
+        final AirbyteSource airbyteSource =
+            sourceLauncherConfig.getDockerImage().equals(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB) ? new EmptyAirbyteSource()
+                : new DefaultAirbyteSource(sourceLauncher);
 
-        final OutputAndStatus<StandardSyncOutput> run = new DefaultSyncWorker(
-            jobId,
-            intAttemptId,
+        return new DefaultSyncWorker(
+            jobRunConfig.getJobId(),
+            Math.toIntExact(jobRunConfig.getAttemptId()),
             airbyteSource,
             new NamespacingMapper(syncInput.getPrefix()),
             new DefaultAirbyteDestination(destinationLauncher),
             new AirbyteMessageTracker(),
             NormalizationRunnerFactory.create(
-                destinationDockerImage,
+                destinationLauncherConfig.getDockerImage(),
                 pbf,
                 syncInput.getDestinationConfiguration())).run(syncInput, jobRoot);
-        if (run.getStatus() == JobStatus.SUCCEEDED) {
-          Preconditions.checkState(run.getOutput().isPresent());
-          LOGGER.info("job output {}", run.getOutput().get());
-          return new JobOutput().withSync(run.getOutput().get());
-        } else {
-          throw new RuntimeException("Sync worker completed with a FAILED status.");
-        }
-
-      } catch (Exception e) {
-        throw new RuntimeException("Sync job failed with an exception", e);
-      }
+      }).get();
     }
 
   }
