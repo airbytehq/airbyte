@@ -26,7 +26,7 @@ package io.airbyte.workers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -96,26 +96,22 @@ public class DefaultCheckConnectionWorkerTest {
   }
 
   @Test
-  public void testSuccessfulConnection() {
+  public void testSuccessfulConnection() throws WorkerException {
     final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(integrationLauncher, successStreamFactory);
-    final OutputAndStatus<StandardCheckConnectionOutput> output = worker.run(input, jobRoot);
+    final StandardCheckConnectionOutput output = worker.run(input, jobRoot);
 
-    assertEquals(JobStatus.SUCCEEDED, output.getStatus());
-    assertTrue(output.getOutput().isPresent());
-    assertEquals(Status.SUCCEEDED, output.getOutput().get().getStatus());
-    assertNull(output.getOutput().get().getMessage());
+    assertEquals(Status.SUCCEEDED, output.getStatus());
+    assertNull(output.getMessage());
 
   }
 
   @Test
-  public void testFailedConnection() {
+  public void testFailedConnection() throws WorkerException {
     final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(integrationLauncher, failureStreamFactory);
-    final OutputAndStatus<StandardCheckConnectionOutput> output = worker.run(input, jobRoot);
+    final StandardCheckConnectionOutput output = worker.run(input, jobRoot);
 
-    assertEquals(JobStatus.SUCCEEDED, output.getStatus());
-    assertTrue(output.getOutput().isPresent());
-    assertEquals(Status.FAILED, output.getOutput().get().getStatus());
-    assertEquals("failed to connect", output.getOutput().get().getMessage());
+    assertEquals(Status.FAILED, output.getStatus());
+    assertEquals("failed to connect", output.getMessage());
   }
 
   @Test
@@ -123,10 +119,7 @@ public class DefaultCheckConnectionWorkerTest {
     when(process.exitValue()).thenReturn(1);
 
     final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(integrationLauncher, failureStreamFactory);
-    final OutputAndStatus<StandardCheckConnectionOutput> output = worker.run(input, jobRoot);
-
-    assertEquals(JobStatus.FAILED, output.getStatus());
-    assertTrue(output.getOutput().isEmpty());
+    assertThrows(WorkerException.class, () -> worker.run(input, jobRoot));
   }
 
   @Test
@@ -134,14 +127,11 @@ public class DefaultCheckConnectionWorkerTest {
     doThrow(new RuntimeException()).when(integrationLauncher).check(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME);
 
     final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(integrationLauncher, failureStreamFactory);
-    final OutputAndStatus<StandardCheckConnectionOutput> output = worker.run(input, jobRoot);
-
-    assertEquals(JobStatus.FAILED, output.getStatus());
-    assertTrue(output.getOutput().isEmpty());
+    assertThrows(WorkerException.class, () -> worker.run(input, jobRoot));
   }
 
   @Test
-  public void testCancel() {
+  public void testCancel() throws WorkerException {
     DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(integrationLauncher, successStreamFactory);
     worker.run(input, jobRoot);
 

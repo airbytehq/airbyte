@@ -80,7 +80,7 @@ public class DefaultSyncWorker implements SyncWorker {
   }
 
   @Override
-  public OutputAndStatus<StandardSyncOutput> run(StandardSyncInput syncInput, Path jobRoot) {
+  public StandardSyncOutput run(StandardSyncInput syncInput, Path jobRoot) throws WorkerException {
     long startTime = System.currentTimeMillis();
 
     LOGGER.info("configured sync modes: {}", syncInput.getCatalog().getStreams()
@@ -106,9 +106,7 @@ public class DefaultSyncWorker implements SyncWorker {
       }
 
     } catch (Exception e) {
-      LOGGER.error("Sync worker failed.", e);
-
-      return new OutputAndStatus<>(JobStatus.FAILED, null);
+      throw new WorkerException("Sync worker failed.", e);
     }
 
     try (normalizationRunner) {
@@ -119,8 +117,7 @@ public class DefaultSyncWorker implements SyncWorker {
         throw new WorkerException("Normalization Failed.");
       }
     } catch (Exception e) {
-      LOGGER.error("Normalization Failed.", e);
-      return new OutputAndStatus<>(JobStatus.FAILED, null);
+      throw new WorkerException("Normalization Failed.", e);
     }
 
     final StandardSyncSummary summary = new StandardSyncSummary()
@@ -132,6 +129,10 @@ public class DefaultSyncWorker implements SyncWorker {
 
     LOGGER.info("sync summary: {}", summary);
 
+    if (cancelled.get()) {
+      throw new WorkerException("Sync was cancelled.");
+    }
+
     final StandardSyncOutput output = new StandardSyncOutput().withStandardSyncSummary(summary);
     messageTracker.getOutputState().ifPresent(capturedState -> {
       final State state = new State()
@@ -139,7 +140,7 @@ public class DefaultSyncWorker implements SyncWorker {
       output.withState(state);
     });
 
-    return new OutputAndStatus<>(cancelled.get() ? JobStatus.FAILED : JobStatus.SUCCEEDED, output);
+    return output;
   }
 
   @Override

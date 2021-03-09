@@ -35,9 +35,9 @@ public class EchoWorker implements Worker<String, String> {
   public EchoWorker() {}
 
   @Override
-  public OutputAndStatus<String> run(String string, Path jobRoot) {
+  public String run(String string, Path jobRoot) {
     LOGGER.info("Hello World. input: {}, workspace root: {}", string, jobRoot);
-    return new OutputAndStatus<>(JobStatus.SUCCEEDED, "echoed");
+    return "echoed";
   }
 
   @Override
