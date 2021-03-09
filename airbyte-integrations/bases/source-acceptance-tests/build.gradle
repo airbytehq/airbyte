@@ -1,0 +1,38 @@
+import org.jsonschema2pojo.SourceType
+
+plugins {
+    id 'application'
+    id 'airbyte-docker'
+    id 'com.github.eirnym.js2p' version '1.0'
+}
+
+dependencies {
+    implementation project(':airbyte-config:models')
+    implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-workers')
+
+    implementation 'javax.validation:validation-api:1.1.0.Final'
+    implementation 'net.sourceforge.argparse4j:argparse4j:0.8.1'
+    implementation 'org.junit.jupiter:junit-jupiter-api:5.4.2'
+    implementation 'org.junit.platform:junit-platform-launcher:1.7.0'
+
+    runtimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.4.2'
+}
+
+jsonSchema2Pojo {
+    sourceType = SourceType.YAMLSCHEMA
+    source = files("${sourceSets.main.output.resourcesDir}/schemas")
+    targetDirectory = new File(project.buildDir, 'generated/src/gen/java/')
+    removeOldOutput = true
+
+    targetPackage = 'io.airbyte.integrations.acceptance_tests.source.models'
+
+    useLongIntegers = true
+    generateBuilders = true
+    includeConstructors = false
+    includeSetters = true
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.acceptance_tests.source.FileBasedSourceAcceptanceTestDriver'
+}
