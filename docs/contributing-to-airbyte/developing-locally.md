@@ -44,6 +44,10 @@ CORE_ONLY=1 ./gradlew build
 ```
 
 {% hint style="info" %}
+If Gradle is using too much/too little CPU, change the `workers.max` property in `gradle.properties` accordingly.
+{% endhint %}
+
+{% hint style="info" %}
 On Mac, if you run into an error while compiling openssl \(this happens when running pip install\), you may need to explicitly add these flags to your bash profile so that the C compiler can find the appropriate libraries.
 
 ```text
