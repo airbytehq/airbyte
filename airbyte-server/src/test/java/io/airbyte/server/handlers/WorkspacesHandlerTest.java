@@ -51,7 +51,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.UUID;
-import javax.ws.rs.NotFoundException;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -61,6 +61,7 @@ class WorkspacesHandlerTest {
   private ConnectionsHandler connectionsHandler;
   private DestinationHandler destinationHandler;
   private SourceHandler sourceHandler;
+  private Supplier<UUID> uuidSupplier;
   private StandardWorkspace workspace;
   private WorkspacesHandler workspacesHandler;
 
@@ -70,8 +71,9 @@ class WorkspacesHandlerTest {
     connectionsHandler = mock(ConnectionsHandler.class);
     destinationHandler = mock(DestinationHandler.class);
     sourceHandler = mock(SourceHandler.class);
+    uuidSupplier = mock(Supplier.class);
     workspace = generateWorkspace();
-    workspacesHandler = new WorkspacesHandler(configRepository, connectionsHandler, destinationHandler, sourceHandler);
+    workspacesHandler = new WorkspacesHandler(configRepository, connectionsHandler, destinationHandler, sourceHandler, uuidSupplier);
   }
 
   private StandardWorkspace generateWorkspace() {
@@ -93,8 +95,11 @@ class WorkspacesHandlerTest {
 
   @Test
   void testCreateWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
-    when(configRepository.listStandardWorkspaces())
+    when(configRepository.listStandardWorkspaces(false))
         .thenReturn(Collections.singletonList(workspace));
+
+    final UUID uuid = UUID.randomUUID();
+    when(uuidSupplier.get()).thenReturn(uuid);
 
     configRepository.writeStandardWorkspace(workspace);
 
@@ -106,17 +111,19 @@ class WorkspacesHandlerTest {
         .anonymousDataCollection(false)
         .securityUpdates(false);
 
-    final WorkspaceRead created = workspacesHandler.createWorkspace(workspaceCreate);
+    final WorkspaceRead actualRead = workspacesHandler.createWorkspace(workspaceCreate);
+    final WorkspaceRead expectedRead = new WorkspaceRead()
+        .workspaceId(uuid)
+        .customerId(uuid)
+        .name("new workspace")
+        .slug("new-workspace")
+        .initialSetupComplete(false)
+        .displaySetupWizard(true)
+        .news(false)
+        .anonymousDataCollection(false)
+        .securityUpdates(false);
 
-    assertTrue(created.getWorkspaceId() instanceof UUID);
-    assertTrue(created.getCustomerId() instanceof UUID);
-    assertEquals("new workspace", created.getName());
-    assertEquals("new-workspace", created.getSlug());
-    assertFalse(created.getInitialSetupComplete());
-    assertTrue(created.getDisplaySetupWizard());
-    assertFalse(created.getNews());
-    assertFalse(created.getAnonymousDataCollection());
-    assertFalse(created.getSecurityUpdates());
+    assertEquals(expectedRead, actualRead);
   }
 
   @Test
@@ -127,10 +134,10 @@ class WorkspacesHandlerTest {
     final DestinationRead destination = new DestinationRead();
     final SourceRead source = new SourceRead();
 
-    when(configRepository.getStandardWorkspace(workspace.getWorkspaceId()))
+    when(configRepository.getStandardWorkspace(workspace.getWorkspaceId(), false))
         .thenReturn(workspace);
 
-    when(configRepository.listStandardWorkspaces())
+    when(configRepository.listStandardWorkspaces(false))
         .thenReturn(Collections.singletonList(workspace));
 
     when(connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody))
@@ -151,7 +158,7 @@ class WorkspacesHandlerTest {
 
   @Test
   void testGetWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
-    when(configRepository.getStandardWorkspace(workspace.getWorkspaceId()))
+    when(configRepository.getStandardWorkspace(workspace.getWorkspaceId(), false))
         .thenReturn(workspace);
 
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody().workspaceId(workspace.getWorkspaceId());
@@ -171,44 +178,23 @@ class WorkspacesHandlerTest {
   }
 
   @Test
-  void testGetDeletedWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
-    final StandardWorkspace deleted = generateWorkspace().withTombstone(true);
-    when(configRepository.getStandardWorkspace(deleted.getWorkspaceId()))
-        .thenReturn(deleted);
-
-    final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody().workspaceId(workspace.getWorkspaceId());
-
-    assertThrows(NotFoundException.class, () -> workspacesHandler.getWorkspace(workspaceIdRequestBody));
-  }
-
-  @Test
   void testGetWorkspaceBySlug() throws JsonValidationException, ConfigNotFoundException, IOException {
-    when(configRepository.listStandardWorkspaces())
-        .thenReturn(Collections.singletonList(workspace));
+    when(configRepository.getWorkspaceBySlug("default", false))
+        .thenReturn(workspace);
 
     final SlugRequestBody slugRequestBody = new SlugRequestBody().slug("default");
-
     final WorkspaceRead workspaceRead = new WorkspaceRead()
         .workspaceId(workspace.getWorkspaceId())
         .customerId(workspace.getCustomerId())
-        .name("test workspace")
-        .slug("default")
-        .initialSetupComplete(false)
-        .displaySetupWizard(true)
-        .news(false)
-        .anonymousDataCollection(false)
-        .securityUpdates(false);
+        .name(workspace.getName())
+        .slug(workspace.getSlug())
+        .initialSetupComplete(workspace.getInitialSetupComplete())
+        .displaySetupWizard(workspace.getDisplaySetupWizard())
+        .news(workspace.getNews())
+        .anonymousDataCollection(workspace.getAnonymousDataCollection())
+        .securityUpdates(workspace.getSecurityUpdates());
 
     assertEquals(workspaceRead, workspacesHandler.getWorkspaceBySlug(slugRequestBody));
-  }
-
-  @Test
-  void testGetDeletedWorkspaceBySlug() throws JsonValidationException, ConfigNotFoundException, IOException {
-    when(configRepository.listStandardWorkspaces())
-        .thenReturn(Collections.singletonList(generateWorkspace().withTombstone(true)));
-
-    final SlugRequestBody slugRequestBody = new SlugRequestBody().slug("default");
-    assertThrows(NotFoundException.class, () -> workspacesHandler.getWorkspaceBySlug(slugRequestBody));
   }
 
   @Test
@@ -235,7 +221,7 @@ class WorkspacesHandlerTest {
         .withDisplaySetupWizard(false)
         .withTombstone(false);
 
-    when(configRepository.getStandardWorkspace(workspace.getWorkspaceId()))
+    when(configRepository.getStandardWorkspace(workspace.getWorkspaceId(), false))
         .thenReturn(workspace)
         .thenReturn(expectedWorkspace);
 

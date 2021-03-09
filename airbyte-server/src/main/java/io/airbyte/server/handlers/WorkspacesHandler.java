@@ -35,6 +35,7 @@ import io.airbyte.api.model.WorkspaceCreate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.api.model.WorkspaceRead;
 import io.airbyte.api.model.WorkspaceUpdate;
+import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -42,7 +43,7 @@ import io.airbyte.server.errors.KnownException;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.UUID;
-import javax.ws.rs.NotFoundException;
+import java.util.function.Supplier;
 import org.eclipse.jetty.http.HttpStatus;
 
 public class WorkspacesHandler {
@@ -51,16 +52,26 @@ public class WorkspacesHandler {
   private final ConnectionsHandler connectionsHandler;
   private final DestinationHandler destinationHandler;
   private final SourceHandler sourceHandler;
+  private final Supplier<UUID> uuidSupplier;
   private final Slugify slugify;
 
   public WorkspacesHandler(final ConfigRepository configRepository,
                            final ConnectionsHandler connectionsHandler,
                            final DestinationHandler destinationHandler,
                            final SourceHandler sourceHandler) {
+    this(configRepository, connectionsHandler, destinationHandler, sourceHandler, UUID::randomUUID);
+  }
+
+  public WorkspacesHandler(final ConfigRepository configRepository,
+                           final ConnectionsHandler connectionsHandler,
+                           final DestinationHandler destinationHandler,
+                           final SourceHandler sourceHandler,
+                           final Supplier<UUID> uuidSupplier) {
     this.configRepository = configRepository;
     this.connectionsHandler = connectionsHandler;
     this.destinationHandler = destinationHandler;
     this.sourceHandler = sourceHandler;
+    this.uuidSupplier = uuidSupplier;
     this.slugify = new Slugify();
   }
 
@@ -75,8 +86,8 @@ public class WorkspacesHandler {
     final Boolean displaySetupWizard = workspaceCreate.getDisplaySetupWizard();
 
     final StandardWorkspace workspace = new StandardWorkspace()
-        .withWorkspaceId(UUID.randomUUID())
-        .withCustomerId(UUID.randomUUID())
+        .withWorkspaceId(uuidSupplier.get())
+        .withCustomerId(uuidSupplier.get())
         .withName(workspaceCreate.getName())
         .withSlug(slugify.slugify(workspaceCreate.getName()))
         .withInitialSetupComplete(initialSetupComplete != null ? initialSetupComplete : false)
@@ -91,11 +102,11 @@ public class WorkspacesHandler {
     }
 
     try {
-      if (getWorkspaceBySlug(workspace.getSlug()) != null) {
+      if (configRepository.getWorkspaceBySlug(workspace.getSlug(), false) != null) {
         throw new KnownException(HttpStatus.CONFLICT_409, "A workspace already exists with the same name");
       }
-    } catch (NotFoundException e) {
-      // if the workspace does not exist, we can create a new one
+    } catch (ConfigNotFoundException e) {
+      // no workspace exists with the slug, lets create ours
     }
 
     configRepository.writeStandardWorkspace(workspace);
@@ -106,7 +117,7 @@ public class WorkspacesHandler {
   public void deleteWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     // get existing implementation
-    final StandardWorkspace persistedWorkspace = configRepository.getStandardWorkspace(workspaceIdRequestBody.getWorkspaceId());
+    final StandardWorkspace persistedWorkspace = configRepository.getStandardWorkspace(workspaceIdRequestBody.getWorkspaceId(), false);
 
     // disable all connections associated with this workspace
     for (ConnectionRead connectionRead : connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody).getConnections()) {
@@ -130,41 +141,21 @@ public class WorkspacesHandler {
   public WorkspaceRead getWorkspace(WorkspaceIdRequestBody workspaceIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final UUID workspaceId = workspaceIdRequestBody.getWorkspaceId();
-    final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId);
-
-    if (workspace.getTombstone()) {
-      throw new NotFoundException("Could not find workspace");
-    }
-
+    final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, false);
     return buildWorkspaceRead(workspace);
   }
 
   @SuppressWarnings("unused")
   public WorkspaceRead getWorkspaceBySlug(SlugRequestBody slugRequestBody) throws JsonValidationException, IOException, ConfigNotFoundException {
     // for now we assume there is one workspace and it has a default uuid.
-    final StandardWorkspace workspace = getWorkspaceBySlug(slugRequestBody.getSlug());
+    final StandardWorkspace workspace = configRepository.getWorkspaceBySlug(slugRequestBody.getSlug(), false);
     return buildWorkspaceRead(workspace);
-  }
-
-  private StandardWorkspace getWorkspaceBySlug(String slug)
-      throws JsonValidationException, IOException, KnownException {
-    for (StandardWorkspace workspace : configRepository.listStandardWorkspaces()) {
-      if (workspace.getTombstone()) {
-        continue;
-      }
-
-      if (workspace.getSlug().equals(slug)) {
-        return workspace;
-      }
-    }
-
-    throw new NotFoundException("Could not find workspace");
   }
 
   public WorkspaceRead updateWorkspace(WorkspaceUpdate workspaceUpdate) throws ConfigNotFoundException, IOException, JsonValidationException {
     final UUID workspaceId = workspaceUpdate.getWorkspaceId();
 
-    final StandardWorkspace persistedWorkspace = configRepository.getStandardWorkspace(workspaceId);
+    final StandardWorkspace persistedWorkspace = configRepository.getStandardWorkspace(workspaceId, false);
 
     if (!Strings.isNullOrEmpty(workspaceUpdate.getEmail())) {
       persistedWorkspace.withEmail(workspaceUpdate.getEmail());
@@ -186,7 +177,7 @@ public class WorkspacesHandler {
   }
 
   private WorkspaceRead buildWorkspaceReadFromId(UUID workspaceId) throws ConfigNotFoundException, IOException, JsonValidationException {
-    final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId);
+    final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, false);
     return buildWorkspaceRead(workspace);
   }
 
