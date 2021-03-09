@@ -38,8 +38,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.apache.commons.io.input.ReversedLinesFileReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class IOs {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(IOs.class);
 
   public static Path writeFile(Path path, String fileName, String contents) {
     final Path filePath = path.resolve(fileName);
@@ -48,6 +52,7 @@ public class IOs {
 
   public static Path writeFile(Path filePath, String contents) {
     try {
+      LOGGER.info("Creating file: " + filePath);
       Files.writeString(filePath, contents, StandardCharsets.UTF_8);
       return filePath;
     } catch (IOException e) {
