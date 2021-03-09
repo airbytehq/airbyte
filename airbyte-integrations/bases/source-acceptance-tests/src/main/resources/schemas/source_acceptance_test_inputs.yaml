@@ -1,0 +1,71 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/bases/source-acceptance-tests/src/main/resources/schemas/source_acceptance_test_inputs.yaml
+title: SourceAcceptanceTestConfig
+type: object
+description: SourceAcceptanceTestConfig
+properties:
+  connector_image:
+    type: string
+  tests:
+    type: array
+    items:
+      $ref: "#/definitions/TestConfiguration"
+
+definitions:
+  TestConfiguration:
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        type: string
+        enum:
+          - CORE
+          - FULL_REFRESH
+          - INCREMENTAL
+      core:
+        $ref: "#/definitions/CoreConfig"
+      fullRefresh:
+        $ref: "#/definitions/FullRefreshConfig"
+      incremental:
+        $ref: "#/definitions/IncrementalConfig"
+  CoreConfig:
+    type: object
+    required:
+      - valid_config_path
+      - invalid_config_path
+      - spec_path
+      - configured_catalog_path
+    properties:
+      valid_connector_config_path:
+        description: "Path to a JSON object representing a valid connector configuration"
+        type: string
+      invalid_connector_config_path:
+        description: "Path to a JSON object representing an invalid connector configuration"
+        type: string
+      spec_path:
+        description: "Path to a JSON object representing the spec expected to be output by this connector"
+        type: string
+      configured_catalog_path:
+        type: string
+  FullRefreshConfig:
+    type: object
+    required:
+      - connector_config_path
+      - configured_catalog_path
+    properties:
+      connector_config_path:
+        type: string
+      configured_catalog_path:
+        type: string
+  IncrementalConfig:
+    type: object
+    required:
+      - connector_config_path
+      - configured_catalog_path
+    properties:
+      connector_config_path:
+        type: string
+      configured_catalog_path:
+        type: string
