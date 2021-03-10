@@ -420,7 +420,8 @@ public class DefaultJobPersistence implements JobPersistence {
         .collect(Collectors.toList());
   }
 
-  public static Optional<Job> getJobFromResult(Result<Record> result) {
+  @VisibleForTesting
+  static Optional<Job> getJobFromResult(Result<Record> result) {
     return getJobsFromResult(result).stream().findFirst();
   }
 
