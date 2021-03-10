@@ -21,21 +21,20 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
 import sys
 import time
-
-import backoff
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
-
 from enum import IntEnum
 from functools import partial
 from typing import Any, Callable, Iterable, Iterator, List, Mapping, Optional, Union
 
+import backoff
 import pendulum as pendulum
 import requests
 from base_python.entrypoint import logger
-from source_hubspot.errors import HubspotInvalidAuth, HubspotSourceUnavailable, HubspotRateLimited
+from source_hubspot.errors import HubspotInvalidAuth, HubspotRateLimited, HubspotSourceUnavailable
 
 
 def retry_connection_handler(**kwargs):
@@ -257,10 +256,10 @@ class Stream(ABC):
 
 
 class CRMObjectStream(Stream):
-    """ Unified stream interface for CRM objects.
-        You need to provide `entity` parameter to read concrete stream, possible values are:
-            company, contact, deal, line_item, owner, product, ticket, quote
-        see https://developers.hubspot.com/docs/api/crm/understanding-the-crm for more details
+    """Unified stream interface for CRM objects.
+    You need to provide `entity` parameter to read concrete stream, possible values are:
+        company, contact, deal, line_item, owner, product, ticket, quote
+    see https://developers.hubspot.com/docs/api/crm/understanding-the-crm for more details
     """
 
     @property
@@ -281,9 +280,10 @@ class CRMObjectStream(Stream):
 
 
 class CompanyStream(CRMObjectStream):
-    """ Company, API v3, see CRMObjectStream for more details
-        Note: Additionally gets list of contact Ids
+    """Company, API v3, see CRMObjectStream for more details
+    Note: Additionally gets list of contact Ids
     """
+
     def __init__(self, **kwargs):
         super().__init__(entity="company", **kwargs)
 
@@ -301,9 +301,10 @@ class CompanyStream(CRMObjectStream):
 
 
 class CRMAssociationStream(Stream):
-    """ CRM Associations - relationships between objects
-        Docs: https://legacydocs.hubspot.com/docs/methods/crm-associations/crm-associations-overview
+    """CRM Associations - relationships between objects
+    Docs: https://legacydocs.hubspot.com/docs/methods/crm-associations/crm-associations-overview
     """
+
     class Direction(IntEnum):
         ContactToCompany = 1
         CompanyToContact = 2
@@ -346,9 +347,10 @@ class CRMAssociationStream(Stream):
 
 
 class CampaignStream(Stream):
-    """ Email campaigns, API v1
-        Docs: https://legacydocs.hubspot.com/docs/methods/email/get_campaign_data
+    """Email campaigns, API v1
+    Docs: https://legacydocs.hubspot.com/docs/methods/email/get_campaign_data
     """
+
     entity = "campaign"
     more_key = "hasMore"
     data_field = "campaigns"
@@ -362,9 +364,10 @@ class CampaignStream(Stream):
 
 
 class ContactListStream(Stream):
-    """ Contact lists, API v1
-        Docs: https://legacydocs.hubspot.com/docs/methods/lists/get_lists
+    """Contact lists, API v1
+    Docs: https://legacydocs.hubspot.com/docs/methods/lists/get_lists
     """
+
     url = "/contacts/v1/lists"
     data_field = "lists"
     more_key = "has-more"
@@ -375,10 +378,11 @@ class ContactListStream(Stream):
 
 
 class DealPipelineStream(Stream):
-    """ Deal pipelines, API v1,
-        This endpoint requires the contacts scope the tickets scope.
-        Docs: https://legacydocs.hubspot.com/docs/methods/pipelines/get_pipelines_for_object_type
+    """Deal pipelines, API v1,
+    This endpoint requires the contacts scope the tickets scope.
+    Docs: https://legacydocs.hubspot.com/docs/methods/pipelines/get_pipelines_for_object_type
     """
+
     url = "/crm-pipelines/v1/pipelines/deals"
 
     def list(self, fields) -> Iterable:
@@ -386,10 +390,11 @@ class DealPipelineStream(Stream):
 
 
 class TicketPipelineStream(Stream):
-    """ Ticket pipelines, API v1
-        This endpoint requires the tickets scope.
-        Docs: https://legacydocs.hubspot.com/docs/methods/pipelines/get_pipelines_for_object_type
+    """Ticket pipelines, API v1
+    This endpoint requires the tickets scope.
+    Docs: https://legacydocs.hubspot.com/docs/methods/pipelines/get_pipelines_for_object_type
     """
+
     url = "/crm-pipelines/v1/pipelines/tickets"
 
     def list(self, fields) -> Iterable:
@@ -397,9 +402,10 @@ class TicketPipelineStream(Stream):
 
 
 class EmailEventStream(Stream):
-    """ Email events, API v1
-        Docs: https://legacydocs.hubspot.com/docs/methods/email/get_events
+    """Email events, API v1
+    Docs: https://legacydocs.hubspot.com/docs/methods/email/get_events
     """
+
     url = "/email/public/v1/events"
     data_field = "events"
     more_key = "hasMore"
@@ -410,9 +416,10 @@ class EmailEventStream(Stream):
 
 
 class EngagementStream(Stream):
-    """ Engagements, API v1
-        Docs: https://legacydocs.hubspot.com/docs/methods/engagements/get-all-engagements
+    """Engagements, API v1
+    Docs: https://legacydocs.hubspot.com/docs/methods/engagements/get-all-engagements
     """
+
     entity = "engagement"
     url = "/engagements/v1/engagements/paged"
     more_key = "hasMore"
@@ -425,10 +432,11 @@ class EngagementStream(Stream):
 
 
 class FormStream(Stream):
-    """ Marketing Forms, API v2
-        by default non-marketing forms are filtered out of this endpoint
-        Docs: https://developers.hubspot.com/docs/api/marketing/forms
+    """Marketing Forms, API v2
+    by default non-marketing forms are filtered out of this endpoint
+    Docs: https://developers.hubspot.com/docs/api/marketing/forms
     """
+
     entity = "form"
     url = "/forms/v2/forms"
 
@@ -437,9 +445,10 @@ class FormStream(Stream):
 
 
 class OwnerStream(Stream):
-    """ Owners, API v3
-        Docs: https://legacydocs.hubspot.com/docs/methods/owners/get_owners
+    """Owners, API v3
+    Docs: https://legacydocs.hubspot.com/docs/methods/owners/get_owners
     """
+
     url = "/crm/v3/owners"
 
     def list(self, fields) -> Iterable:
@@ -447,9 +456,10 @@ class OwnerStream(Stream):
 
 
 class SubscriptionChangeStream(Stream):
-    """ Subscriptions timeline for a portal, API v1
-        Docs: https://legacydocs.hubspot.com/docs/methods/email/get_subscriptions_timeline
+    """Subscriptions timeline for a portal, API v1
+    Docs: https://legacydocs.hubspot.com/docs/methods/email/get_subscriptions_timeline
     """
+
     url = "/email/public/v1/subscriptions/timeline"
     data_field = "timeline"
     more_key = "hasMore"
@@ -460,9 +470,10 @@ class SubscriptionChangeStream(Stream):
 
 
 class WorkflowStream(Stream):
-    """ Workflows, API v3
-        Docs: https://legacydocs.hubspot.com/docs/methods/workflows/v3/get_workflows
+    """Workflows, API v3
+    Docs: https://legacydocs.hubspot.com/docs/methods/workflows/v3/get_workflows
     """
+
     url = "/automation/v3/workflows"
     data_field = "workflows"
 

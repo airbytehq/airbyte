@@ -22,14 +22,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Mapping, Tuple, Iterator
+from typing import Iterator, Mapping, Tuple
 
 from airbyte_protocol import AirbyteStream
 from base_python import BaseClient
 from source_hubspot.api import (
     API,
-    ContactListStream,
     CompanyStream,
+    ContactListStream,
+    CRMObjectStream,
     DealPipelineStream,
     EmailEventStream,
     EngagementStream,
@@ -37,7 +38,6 @@ from source_hubspot.api import (
     OwnerStream,
     SubscriptionChangeStream,
     WorkflowStream,
-    CRMObjectStream,
 )
 from source_hubspot.errors import HubspotError
 
@@ -80,10 +80,7 @@ class Client(BaseClient):
         for stream in super().streams:
             properties = self._apis[stream.name].properties
             if properties:
-                stream.json_schema["properties"]["properties"] = {
-                    "type": "object",
-                    "properties": properties
-                }
+                stream.json_schema["properties"]["properties"] = {"type": "object", "properties": properties}
             yield stream
 
     def health_check(self) -> Tuple[bool, str]:
