@@ -286,17 +286,16 @@ class CompanyStream(CRMObjectStream):
 
     def __init__(self, **kwargs):
         super().__init__(entity="company", **kwargs)
+        self._association_stream = partial(CRMAssociationStream, direction=CRMAssociationStream.Direction.CompanyToContact, **kwargs)
 
     def list(self, fields) -> Iterable:
         for company in super().list(fields):
-            contacts = self._get_contacts(company_id=company["id"]) if "contacts" in fields else []
+            contacts = list(self._get_contacts(company_id=company["id"])) if "contacts" in fields else []
             company["contacts"] = contacts
             yield company
 
     def _get_contacts(self, company_id) -> Iterable:
-        stream = CRMAssociationStream(
-            entity_id=company_id, direction=CRMAssociationStream.Direction.CompanyToContact, api=self._api, start_date=self._start_date
-        )
+        stream = self._association_stream(entity_id=company_id)
         yield from stream.list(fields=[])
 
 
