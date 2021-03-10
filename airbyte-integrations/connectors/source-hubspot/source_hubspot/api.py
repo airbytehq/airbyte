@@ -27,6 +27,8 @@ import time
 import backoff
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
+
+from enum import IntEnum
 from functools import partial
 from typing import Any, Callable, Iterable, Iterator, List, Mapping, Optional, Union
 
@@ -134,10 +136,10 @@ class API:
         """Add auth info to request params/header"""
         params = params or {}
 
-        if self.api_key:
-            params["hapikey"] = self.api_key
-        else:
+        if self.access_token:
             self._session.headers["Authorization"] = f"Bearer {self.access_token}"
+        else:
+            params["hapikey"] = self.api_key
 
         return params
 
@@ -270,6 +272,9 @@ class CRMObjectStream(Stream):
 
 
 class CompanyStream(CRMObjectStream):
+    """ Company, API v3, see CRMObjectStream for more details
+        Note: Additionally gets list of contact Ids
+    """
     def __init__(self, **kwargs):
         super().__init__(entity="company", **kwargs)
 
@@ -280,16 +285,56 @@ class CompanyStream(CRMObjectStream):
             yield company
 
     def _get_contacts(self, company_id) -> Iterable:
-        url = "/companies/v2/companies/{pk}/vids".format(pk=company_id)
-        # FIXME: check if pagination is possible
-        params = {"count": 100}
-        path = "vids"
-        data = self._api.get(url, params)
+        stream = CRMAssociationStream(
+            entity_id=company_id, direction=CRMAssociationStream.Direction.CompanyToContact, api=self._api, start_date=self._start_date
+        )
+        yield from stream.list(fields=[])
 
-        if data.get(path) is None:
-            raise RuntimeError("Unexpected API response: {} not in {}".format(path, data.keys()))
 
-        return data[path]
+class CRMAssociationStream(Stream):
+    """ CRM Associations - relationships between objects
+        Docs: https://legacydocs.hubspot.com/docs/methods/crm-associations/crm-associations-overview
+    """
+    class Direction(IntEnum):
+        ContactToCompany = 1
+        CompanyToContact = 2
+        DealToContact = 3
+        ContactToDeal = 4
+        DealToCompany = 5
+        CompanyToDeal = 6
+        CompanyToEngagement = 7
+        EngagementToCompany = 8
+        ContactToEngagement = 9
+        EngagementToContact = 10
+        DealToEngagement = 11
+        EngagementToDeal = 12
+        ParentCompanyToChildCompany = 13
+        ChildCompanyToParentCompany = 14
+        ContactToTicket = 15
+        TicketToContact = 16
+        TicketToEngagement = 17
+        EngagementToTicket = 18
+        DealToLineItem = 19
+        LineItemToDeal = 20
+        CompanyToTicket = 25
+        TicketToCompany = 26
+        DealToTicket = 27
+        TicketToDeal = 28
+
+    data_field = "results"
+    more_key = "hasMore"
+
+    def __init__(self, entity_id: int, direction: Direction, **kwargs):
+        super().__init__(**kwargs)
+        self.entity_id = entity_id
+        self.direction = direction
+
+    @property
+    def url(self):
+        return f"/crm-associations/v1/associations/{self.entity_id}/HUBSPOT_DEFINED/{self.direction}"
+
+    def list(self, fields) -> Iterable:
+        yield from self.read(partial(self._api.get, url=self.url))
 
 
 class CampaignStream(Stream):
@@ -349,6 +394,10 @@ class EngagementStream(Stream):
 
 
 class FormStream(Stream):
+    """ Marketing Forms, API v2
+        by default non-marketing forms are filtered out of this endpoint
+        Docs: https://developers.hubspot.com/docs/api/marketing/forms
+    """
     entity = "form"
     url = "/forms/v2/forms"
 
