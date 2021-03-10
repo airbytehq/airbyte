@@ -4,6 +4,8 @@ plugins {
 
 dependencies {
     implementation 'commons-cli:commons-cli:1.4'
+
+    implementation project(':airbyte-config:models')
 }
 
 // generate seed for each yaml file.
