@@ -8,7 +8,8 @@ assignees: ''
 ---
 
 ## Tell us about the new integration you’d like to have
-Which source and which destination?
+* Which source and which destination?
+* Do you need a specific version of the underlying data source e.g: you specifically need support for an older version of the API or DB? 
 
 ## Describe the context around this new integration
 * Which team in your company wants this integration, what for? This helps us understand the use case.
