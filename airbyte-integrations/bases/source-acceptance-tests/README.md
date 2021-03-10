@@ -49,7 +49,7 @@ Yes! As long as your connector is packaged in a Docker container, this library c
 **I need to spin up and tear down resources before/after my tests. How can I do this if this library only accepts YAML?**
 
 We recommend: 
-1. Packaging your test resources in a Docker image that you build before invoking this test library and then
+1. Packaging your test resources in a Docker image that you build before invoking this test library
 2. In a bash script, spin up the Docker image, invoke this library, then tear down your resources after running the tests
 
 Alternatively if your connector is written in a JVM language like Java, you can extend the test banks directly (they're just Junit Test cases) and override the `@BeforeEach`/`@BeforeAll` etc.. methods. Go wild.  
