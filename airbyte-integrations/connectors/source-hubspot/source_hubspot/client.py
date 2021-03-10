@@ -60,7 +60,7 @@ class Client(BaseClient):
             "email_events": EmailEventStream(**common_params),
             "engagements": EngagementStream(**common_params),
             "forms": FormStream(**common_params),
-            "line_items": CRMObjectStream(entity="line_time", **common_params),
+            "line_items": CRMObjectStream(entity="line_item", **common_params),
             "owners": OwnerStream(**common_params),
             "products": CRMObjectStream(entity="product", **common_params),
             "quotes": CRMObjectStream(entity="quote", **common_params),
