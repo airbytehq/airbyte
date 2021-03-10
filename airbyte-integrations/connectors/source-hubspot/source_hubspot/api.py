@@ -249,7 +249,7 @@ class Stream(ABC):
 class CRMObjectStream(Stream):
     """ Unified stream interface for CRM objects.
         You need to provide `entity` parameter to read concrete stream, possible values are:
-            campaign, company, contact, deal, line_item, owner, product, ticket, quote
+            company, contact, deal, line_item, owner, product, ticket, quote
         see https://developers.hubspot.com/docs/api/crm/understanding-the-crm for more details
     """
 

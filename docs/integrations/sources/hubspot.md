@@ -7,23 +7,22 @@ The Hubspot connector can be used to sync your Hubspot data. It supports full re
 ### Output schema
 
 Several output streams are available from this source:
-* Campaigns
-* Companies
-* Contact Lists
-* Contacts
-* Contacts by Company
-* Deal Pipelines
-* Deals
-* Email Events
-* Engagements
-* Forms
-* Line Items
-* Owners
-* Products
-* Quotes
-* Subscription Changes
-* Tickets
-* Workflows
+* [Campaigns](https://developers.hubspot.com/docs/methods/email/get_campaign_data)
+* [Companies](https://developers.hubspot.com/docs/api/crm/companies)
+* [Contact Lists](http://developers.hubspot.com/docs/methods/lists/get_lists)
+* [Contacts](https://developers.hubspot.com/docs/methods/contacts/get_contacts)
+* [Deal Pipelines](https://developers.hubspot.com/docs/methods/pipelines/get_pipelines_for_object_type)
+* [Deals](https://developers.hubspot.com/docs/api/crm/deals)
+* [Email Events](https://developers.hubspot.com/docs/methods/email/get_events)
+* [Engagements](https://legacydocs.hubspot.com/docs/methods/engagements/get-all-engagements)
+* [Forms](https://developers.hubspot.com/docs/api/marketing/forms)
+* [Line Items](https://developers.hubspot.com/docs/api/crm/line-items)
+* [Owners](https://developers.hubspot.com/docs/methods/owners/get_owners)
+* [Products](https://developers.hubspot.com/docs/api/crm/products)
+* [Quotes](https://developers.hubspot.com/docs/api/crm/quotes)
+* [Subscription Changes](https://developers.hubspot.com/docs/methods/email/get_subscriptions_timeline)
+* [Tickets](https://developers.hubspot.com/docs/api/crm/tickets)
+* [Workflows](https://legacydocs.hubspot.com/docs/methods/workflows/v3/get_workflows)
 
 ### Features
 
@@ -51,5 +50,5 @@ The connector is restricted by normal Hubspot [rate limitations](https://legacyd
 
 * For api key auth, in Hubspot, for the account to go settings -&gt; integrations \(under the account banner\) -&gt; api key. If you already have an api key you can use that. Otherwise generated a new one.
   * Note: The Hubspot [docs](https://legacydocs.hubspot.com/docs/methods/auth/oauth-overview) recommends that api key auth is only used for testing purposes.
-* For oauth follow the [oauth instruction](https://developers.hubspot.com/docs/api/oauth-quickstart-guide) in Hubspot to get client\_id, client\_secret, redirect\_uri, and refresh\_token.
+* For oauth follow the [oauth instruction](https://developers.hubspot.com/docs/api/oauth-quickstart-guide) in Hubspot to get `client_id`, `client_secret`, `redirect_uri`, and `refresh_token`.
 
