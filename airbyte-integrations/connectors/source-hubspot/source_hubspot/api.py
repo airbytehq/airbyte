@@ -202,22 +202,30 @@ class Stream(ABC):
 
         while True:
             response = getter(params=params)
-            if response.get(self.data_field) is None:
-                raise RuntimeError("Unexpected API response: {} not in {}".format(self.data_field, response.keys()))
+            if isinstance(response, Mapping):
+                if response.get(self.data_field) is None:
+                    raise RuntimeError("Unexpected API response: {} not in {}".format(self.data_field, response.keys()))
 
-            yield from response[self.data_field]
+                yield from response[self.data_field]
 
-            # pagination
-            if "paging" in response:  # APIv3 pagination
-                if "next" in response["paging"]:
-                    params["after"] = response["paging"]["next"]["after"]
+                # pagination
+                if "paging" in response:  # APIv3 pagination
+                    if "next" in response["paging"]:
+                        params["after"] = response["paging"]["next"]["after"]
+                    else:
+                        break
                 else:
-                    break
+                    if not response.get(self.more_key, False):
+                        break
+                    if self.page_field in response:
+                        params[self.page_filter] = response[self.page_field]
             else:
-                if not response.get(self.more_key, False):
+                response = list(response)
+                yield from response
+                if len(response) < self.limit:
                     break
-                if self.page_field in response:
-                    params[self.page_filter] = response[self.page_field]
+                else:
+                    params[self.page_filter] = params.get(self.page_filter, 0) + self.limit
 
     def read_chunked(self, getter: Callable, params: Mapping[str, Any] = None):
         params = {**params} if params else {}
@@ -356,9 +364,12 @@ class ContactListStream(Stream):
         Docs: https://legacydocs.hubspot.com/docs/methods/lists/get_lists
     """
     url = "/contacts/v1/lists"
+    data_field = "lists"
+    more_key = "has-more"
 
     def list(self, fields) -> Iterable:
-        yield from self._api.get(self.url)
+        params = {"count": self.limit}
+        yield from self.read(partial(self._api.get, url=self.url), params)
 
 
 class DealPipelineStream(Stream):
@@ -369,7 +380,7 @@ class DealPipelineStream(Stream):
     url = "/crm-pipelines/v1/pipelines/deals"
 
     def list(self, fields) -> Iterable:
-        yield from self._api.get(url=self.url)
+        yield from self.read(partial(self._api.get, url=self.url))
 
 
 class TicketPipelineStream(Stream):
@@ -420,7 +431,7 @@ class FormStream(Stream):
     url = "/forms/v2/forms"
 
     def list(self, fields) -> Iterable:
-        yield from self._api.get(self.url)
+        yield from self.read(partial(self._api.get, url=self.url))
 
 
 class OwnerStream(Stream):
