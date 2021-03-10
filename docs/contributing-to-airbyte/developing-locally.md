@@ -184,3 +184,14 @@ Sometimes you'll want to reset the data in your local environment. One common ca
    docker-compose --env-file .env.dev -f docker-compose.yaml -f docker-compose.dev.yaml up -V
   ```
 
+## Troubleshooting
+
+### `gradlew Could not target platform: 'Java SE 14' using tool chain: 'JDK 8 (1.8)'.`
+
+Somehow gradle didn't pick up the right java version for some reason.
+Find the install version and set the `JAVA_HOME` environment to point to the JDK folder.
+
+For example:
+```
+env JAVA_HOME=/usr/lib/jvm/java-15-openjdk ./gradlew  :airbyte-integrations:connectors:your-connector-dir:build
+```
