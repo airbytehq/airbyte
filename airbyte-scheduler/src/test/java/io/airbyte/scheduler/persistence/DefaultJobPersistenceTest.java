@@ -812,6 +812,31 @@ class DefaultJobPersistenceTest {
       assertEquals(expected, actual);
     }
 
+    @Test
+    @DisplayName("Should list all jobs with all attempts in descending order")
+    public void testListJobsWithMultipleAttemptsInDescOrder() throws IOException {
+      // create first job with multiple attempts
+      final var jobId1 = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
+      final var job1Attempt1 = jobPersistence.createAttempt(jobId1, LOG_PATH);
+      jobPersistence.failAttempt(jobId1, job1Attempt1);
+      final var job1Attempt2LogPath = LOG_PATH.resolve("2");
+      final int job1Attempt2 = jobPersistence.createAttempt(jobId1, job1Attempt2LogPath);
+      jobPersistence.succeedAttempt(jobId1, job1Attempt2);
+
+      // create second job with multiple attempts
+      final var laterTime = NOW.plusSeconds(1000);
+      when(timeSupplier.get()).thenReturn(laterTime);
+      final var jobId2 = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
+      final var job2Attempt1LogPath = LOG_PATH.resolve("3");
+      final var job2Attempt1 = jobPersistence.createAttempt(jobId2, job2Attempt1LogPath);
+      jobPersistence.succeedAttempt(jobId2, job2Attempt1);
+
+      final List<Job> actualList = jobPersistence.listJobs(SPEC_JOB_CONFIG.getConfigType(), CONNECTION_ID.toString());
+
+      assertEquals(2, actualList.size());
+      assertEquals(jobId2, actualList.get(0).getId());
+    }
+
   }
 
   @Nested
