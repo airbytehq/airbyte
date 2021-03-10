@@ -32,6 +32,9 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.time.Duration;
 
+/**
+ * Convenience class for retrieving files checked into the Airbyte Github repo.
+ */
 public class AirbyteGithubStore {
 
   private static final String GITHUB_BASE_URL = "https://raw.githubusercontent.com";
