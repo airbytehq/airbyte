@@ -116,7 +116,7 @@ class OracleSourceTest {
             config.get("host").asText(),
             config.get("port").asText(),
             config.get("database").asText()),
-        "org.postgresql.Driver",
+        "org.oracle.Driver",
         SQLDialect.DEFAULT);
   }
 
