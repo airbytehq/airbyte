@@ -99,7 +99,6 @@ class SyncMode(Enum):
 class DestinationSyncMode(Enum):
     append = "append"
     overwrite = "overwrite"
-    upsert_dedup = "upsert_dedup"
     append_dedup = "append_dedup"
 
 

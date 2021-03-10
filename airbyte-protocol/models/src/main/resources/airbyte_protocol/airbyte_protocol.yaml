@@ -198,8 +198,8 @@ definitions:
     enum:
       - append
       - overwrite
-      - upsert_dedup
-      - append_dedup
+      #- upsert_dedup # TODO chris: SCD Type 1 can be implemented later
+      - append_dedup # SCD Type 2
   ConnectorSpecification:
     description: Specification of a connector (source/destination)
     type: object
