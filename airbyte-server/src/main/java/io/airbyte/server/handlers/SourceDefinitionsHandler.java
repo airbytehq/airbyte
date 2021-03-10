@@ -24,7 +24,6 @@
 
 package io.airbyte.server.handlers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.api.model.SourceDefinitionCreate;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
 import io.airbyte.api.model.SourceDefinitionRead;
@@ -36,42 +35,30 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.client.CachingSchedulerJobClient;
 import io.airbyte.server.errors.KnownException;
+import io.airbyte.server.services.AirbyteGithubStore;
 import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse.BodyHandlers;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class SourceDefinitionsHandler {
 
-  private static final String DEFAULT_LATEST_LIST_BASE_URL = "https://raw.githubusercontent.com";
-  private static final String SOURCE_DEFINITION_LIST_LOCATION_PATH =
-      "/airbytehq/airbyte/master/airbyte-config/init/src/main/resources/seed/source_definitions.yaml";
-
-  private static final ObjectMapper mapper = new ObjectMapper();
-  private static final HttpClient httpClient = HttpClient.newHttpClient();
-
   private final DockerImageValidator imageValidator;
   private final ConfigRepository configRepository;
   private final Supplier<UUID> uuidSupplier;
   private final CachingSchedulerJobClient schedulerJobClient;
-  private final String latestListBaseUrl;
+  private final AirbyteGithubStore githubStore;
 
   public SourceDefinitionsHandler(
                                   final ConfigRepository configRepository,
                                   final DockerImageValidator imageValidator,
                                   final CachingSchedulerJobClient schedulerJobClient) {
-    this(configRepository, imageValidator, UUID::randomUUID, schedulerJobClient, DEFAULT_LATEST_LIST_BASE_URL);
+    this(configRepository, imageValidator, UUID::randomUUID, schedulerJobClient, AirbyteGithubStore.production());
   }
 
   public SourceDefinitionsHandler(
@@ -79,12 +66,12 @@ public class SourceDefinitionsHandler {
                                   final DockerImageValidator imageValidator,
                                   final Supplier<UUID> uuidSupplier,
                                   final CachingSchedulerJobClient schedulerJobClient,
-                                  final String latestListBaseUrl) {
+                                  final AirbyteGithubStore githubStore) {
     this.configRepository = configRepository;
     this.uuidSupplier = uuidSupplier;
     this.imageValidator = imageValidator;
     this.schedulerJobClient = schedulerJobClient;
-    this.latestListBaseUrl = latestListBaseUrl;
+    this.githubStore = githubStore;
   }
 
   private static SourceDefinitionRead buildSourceDefinitionRead(StandardSourceDefinition standardSourceDefinition) {
@@ -121,15 +108,9 @@ public class SourceDefinitionsHandler {
   }
 
   private String getLatestSources() {
-    final var request = HttpRequest
-        .newBuilder(URI.create(latestListBaseUrl + SOURCE_DEFINITION_LIST_LOCATION_PATH))
-        .header("accept", "application/json")
-        .build();
-    final var future = httpClient.sendAsync(request, BodyHandlers.ofString());
     try {
-      final var resp = future.get(1, TimeUnit.SECONDS);
-      return resp.body();
-    } catch (TimeoutException | InterruptedException | ExecutionException e) {
+      return githubStore.getLatestDestinations();
+    } catch (IOException | InterruptedException e) {
       throw new KnownException(500, "Request to retrieve latest source definitions failed", e);
     }
   }

@@ -43,6 +43,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.client.CachingSchedulerJobClient;
 import io.airbyte.server.errors.KnownException;
+import io.airbyte.server.services.AirbyteGithubStore;
 import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -78,8 +79,10 @@ class DestinationDefinitionsHandlerTest {
     destination = generateDestination();
     schedulerJobClient = spy(CachingSchedulerJobClient.class);
     webServer = new MockWebServer();
+
+    var testGithubStore = AirbyteGithubStore.test(webServer.url("/").toString());
     destinationHandler =
-        new DestinationDefinitionsHandler(configRepository, dockerImageValidator, uuidSupplier, schedulerJobClient, webServer.url("/").toString());
+        new DestinationDefinitionsHandler(configRepository, dockerImageValidator, uuidSupplier, schedulerJobClient, testGithubStore);
   }
 
   private StandardDestinationDefinition generateDestination() {

@@ -43,6 +43,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.client.CachingSchedulerJobClient;
 import io.airbyte.server.errors.KnownException;
+import io.airbyte.server.services.AirbyteGithubStore;
 import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -79,8 +80,9 @@ class SourceDefinitionsHandlerTest {
 
     source = generateSource();
     webServer = new MockWebServer();
+    var testGithubStore = AirbyteGithubStore.test(webServer.url("/").toString());
     sourceHandler =
-        new SourceDefinitionsHandler(configRepository, dockerImageValidator, uuidSupplier, schedulerJobClient, webServer.url("/").toString());
+        new SourceDefinitionsHandler(configRepository, dockerImageValidator, uuidSupplier, schedulerJobClient, testGithubStore);
   }
 
   private StandardSourceDefinition generateSource() {
@@ -219,7 +221,8 @@ class SourceDefinitionsHandlerTest {
           .addHeader("Content-Type", "text/plain; charset=utf-8")
           .addHeader("Cache-Control", "no-cache")
           .setBody(goodYamlString)
-          .throttleBody(10, 2000, TimeUnit.MILLISECONDS);
+          .setHeadersDelay(10, TimeUnit.SECONDS)
+          .setBodyDelay(10, TimeUnit.SECONDS);
       webServer.enqueue(goodResponse);
 
       assertThrows(

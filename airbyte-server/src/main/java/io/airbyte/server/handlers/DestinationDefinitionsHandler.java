@@ -36,15 +36,12 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.client.CachingSchedulerJobClient;
 import io.airbyte.server.errors.KnownException;
+import io.airbyte.server.services.AirbyteGithubStore;
 import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse.BodyHandlers;
-import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -52,22 +49,16 @@ import java.util.stream.Collectors;
 
 public class DestinationDefinitionsHandler {
 
-  private static final String DEFAULT_LATEST_LIST_BASE_URL = "https://raw.githubusercontent.com";
-  private static final String DESTINATION_DEFINITION_LIST_LOCATION_PATH =
-      "/airbytehq/airbyte/master/airbyte-config/init/src/main/resources/seed/destination_definitions.yaml";
-
-  private static final HttpClient httpClient = HttpClient.newHttpClient();
-
   private final DockerImageValidator imageValidator;
   private final ConfigRepository configRepository;
   private final Supplier<UUID> uuidSupplier;
   private final CachingSchedulerJobClient schedulerJobClient;
-  private final String latestListBaseUrl;
+  private final AirbyteGithubStore githubStore;
 
   public DestinationDefinitionsHandler(final ConfigRepository configRepository,
                                        final DockerImageValidator imageValidator,
                                        final CachingSchedulerJobClient schedulerJobClient) {
-    this(configRepository, imageValidator, UUID::randomUUID, schedulerJobClient, DEFAULT_LATEST_LIST_BASE_URL);
+    this(configRepository, imageValidator, UUID::randomUUID, schedulerJobClient, AirbyteGithubStore.production());
   }
 
   @VisibleForTesting
@@ -75,12 +66,12 @@ public class DestinationDefinitionsHandler {
                                        final DockerImageValidator imageValidator,
                                        final Supplier<UUID> uuidSupplier,
                                        final CachingSchedulerJobClient schedulerJobClient,
-                                       final String latestListBaseUrl) {
+                                       final AirbyteGithubStore githubStore) {
     this.configRepository = configRepository;
     this.imageValidator = imageValidator;
     this.uuidSupplier = uuidSupplier;
     this.schedulerJobClient = schedulerJobClient;
-    this.latestListBaseUrl = latestListBaseUrl;
+    this.githubStore = githubStore;
   }
 
   private static DestinationDefinitionRead buildDestinationDefinitionRead(StandardDestinationDefinition standardDestinationDefinition) {
@@ -118,13 +109,8 @@ public class DestinationDefinitionsHandler {
   }
 
   private String getLatestDestinations() {
-    final var request = HttpRequest
-        .newBuilder(URI.create(latestListBaseUrl + DESTINATION_DEFINITION_LIST_LOCATION_PATH))
-        .timeout(Duration.ofSeconds(1))
-        .header("accept", "application/json")
-        .build();
     try {
-      return httpClient.send(request, BodyHandlers.ofString()).body();
+      return githubStore.getLatestDestinations();
     } catch (InterruptedException | IOException e) {
       throw new KnownException(500, "Request to retrieve latest destination definitions failed", e);
     }
