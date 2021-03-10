@@ -20,7 +20,7 @@
     "@rest-hooks/legacy": "^2.0.1",
     "dayjs": "^1.8.35",
     "flat": "^5.0.2",
-    "formik": "2.2.6",
+    "formik": "2.1.5",
     "lodash.at": "^4.6.0",
     "lodash.get": "^4.4.2",
     "lodash.merge": "^4.6.2",
