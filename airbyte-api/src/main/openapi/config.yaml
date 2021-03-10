@@ -1300,7 +1300,7 @@ components:
       type: object
       required:
         - sourceDefinitionId
-        - connectionSpecification
+        - jobInfo
       properties:
         sourceDefinitionId:
           $ref: "#/components/schemas/SourceDefinitionId"
@@ -1308,6 +1308,8 @@ components:
           type: string
         connectionSpecification:
           $ref: "#/components/schemas/SourceDefinitionSpecification"
+        jobInfo:
+          $ref: "#/components/schemas/SynchronousJobRead"
     # SOURCE
     SourceId:
       type: string
@@ -1416,7 +1418,7 @@ components:
         catalog:
           $ref: "#/components/schemas/AirbyteCatalog"
         jobInfo:
-          $ref: "#/components/schemas/JobInfoRead"
+          $ref: "#/components/schemas/SynchronousJobRead"
     # DESTINATION DEFINITION
     DestinationDefinitionId:
       type: string
@@ -1492,7 +1494,7 @@ components:
       type: object
       required:
         - destinationDefinitionId
-        - connectionSpecification
+        - jobInfo
       properties:
         destinationDefinitionId:
           $ref: "#/components/schemas/DestinationDefinitionId"
@@ -1500,6 +1502,8 @@ components:
           type: string
         connectionSpecification:
           $ref: "#/components/schemas/DestinationDefinitionSpecification"
+        jobInfo:
+          $ref: "#/components/schemas/SynchronousJobRead"
     # DESTINATION
     DestinationId:
       type: string
@@ -1901,7 +1905,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AttemptRead"
-
     JobStatus:
       type: string
       enum:
@@ -1985,6 +1988,33 @@ components:
           type: array
           items:
             type: string
+    SynchronousJobRead:
+      type: object
+      required:
+        - id
+        - configType
+        - createdAt
+        - endedAt
+        - succeeded
+      properties:
+        id:
+          type: string
+          format: uuid
+        configType:
+          $ref: "#/components/schemas/JobConfigType"
+        configId:
+          description: only present if a config id was provided.
+          type: string
+        createdAt:
+          type: integer
+          format: int64
+        endedAt:
+          type: integer
+          format: int64
+        succeeded:
+          type: boolean
+        logs:
+          $ref: "#/components/schemas/LogRead"
     # Health
     HealthCheckRead:
       type: object
@@ -2008,7 +2038,7 @@ components:
         message:
           type: string
         jobInfo:
-          $ref: "#/components/schemas/JobInfoRead"
+          $ref: "#/components/schemas/SynchronousJobRead"
     # Web Backend
     WbConnectionRead:
       type: object
