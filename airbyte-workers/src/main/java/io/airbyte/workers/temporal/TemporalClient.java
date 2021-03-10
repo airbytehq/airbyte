@@ -39,8 +39,6 @@ import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.temporal.client.WorkflowClient;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 public class TemporalClient {
 
@@ -74,21 +72,6 @@ public class TemporalClient {
     final StandardCheckConnectionInput input = new StandardCheckConnectionInput().withConnectionConfiguration(config.getConnectionConfiguration());
 
     return getWorkflowStub(CheckConnectionWorkflow.class, TemporalJobType.CHECK_CONNECTION).run(jobRunConfig, launcherConfig, input);
-  }
-
-  private static <T> T execute2(CompletableFuture<T> completableFuture) throws TemporalJobException {
-    try {
-      return completableFuture.get();
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    } catch (ExecutionException e) {
-
-      if (e.getCause() instanceof TemporalJobException) {
-        throw (TemporalJobException) e.getCause();
-      } else {
-        throw new RuntimeException(e);
-      }
-    }
   }
 
   public AirbyteCatalog submitDiscoverSchema(UUID jobId, int attempt, JobDiscoverCatalogConfig config) throws TemporalJobException {
