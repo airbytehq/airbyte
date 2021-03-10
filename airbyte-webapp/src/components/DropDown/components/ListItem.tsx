@@ -41,4 +41,10 @@ const ListItem: React.FC<IProps> = ({ item, fullText }) => {
   );
 };
 
+export const defaultDataItemSort = (a: IDataItem, b: IDataItem): number => {
+  if (a.text < b.text) return -1;
+  if (a.text > b.text) return 1;
+  return 0;
+};
+
 export default ListItem;
