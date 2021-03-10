@@ -62,7 +62,7 @@ def retry_after_handler(**kwargs):
 
     def sleep_on_ratelimit(_details):
         _, exc, _ = sys.exc_info()
-        if isinstance(exc, HubspotRateLimited):
+        if isinstance(exc, HubspotRateLimited) and exc.response.headers.get("Retry-After"):
             retry_after = int(exc.response.headers["Retry-After"])
             logger.info(f"Rate limit reached. Sleeping for {retry_after} seconds")
             time.sleep(retry_after + 1)  # extra second to cover any fractions of second
@@ -82,6 +82,8 @@ def retry_after_handler(**kwargs):
 
 
 class API:
+    """Hubspot API interface, authorize, retrieve and post, supports backoff logic"""
+
     BASE_URL = "https://api.hubapi.com"
     USER_AGENT = "Airbyte"
 
@@ -146,6 +148,8 @@ class API:
             raise HubspotSourceUnavailable(response.content)
         elif response.status_code == 429:
             retry_after = response.headers.get("Retry-After")
+            print(response.headers)
+            print(response.json())
             raise HubspotRateLimited(
                 f"429 Rate Limit Exceeded: API rate-limit has been reached until {retry_after} seconds."
                 " See https://developers.hubspot.com/docs/api/usage-details",
@@ -167,16 +171,18 @@ class API:
         return self._parse_and_handle_errors(response)
 
 
-class StreamAPI(ABC):
+class Stream(ABC):
+    """Base class for all streams. Responsible for data fetching and pagination"""
+
     entity = None
 
     more_key = None
-    data_path = "results"
+    data_field = "results"
 
     page_filter = "offset"
     page_field = "offset"
 
-    chunk_size = 1000 * 60 * 60 * 24  # TODO: use interval
+    chunk_size = pendulum.interval(days=1)
     limit = 100
 
     def __init__(self, api: API, start_date: str = None, **kwargs):
@@ -194,11 +200,10 @@ class StreamAPI(ABC):
 
         while True:
             response = getter(params=params)
-            if response.get(self.data_path) is None:
-                raise RuntimeError("Unexpected API response: {} not in {}".format(self.data_path, response.keys()))
+            if response.get(self.data_field) is None:
+                raise RuntimeError("Unexpected API response: {} not in {}".format(self.data_field, response.keys()))
 
-            for row in response[self.data_path]:
-                yield row
+            yield from response[self.data_field]
 
             # pagination
             if "paging" in response:  # APIv3 pagination
@@ -216,9 +221,10 @@ class StreamAPI(ABC):
         params = {**params} if params else {}
         now_ts = int(pendulum.now().timestamp() * 1000)
         start_ts = int(self._start_date.timestamp() * 1000)
+        chunk_size = int(self.chunk_size.total_seconds() * 1000)
 
-        for ts in range(start_ts, now_ts, self.chunk_size):
-            end_ts = ts + self.chunk_size
+        for ts in range(start_ts, now_ts, chunk_size):
+            end_ts = ts + chunk_size
             params["startTimestamp"] = ts
             params["endTimestamp"] = end_ts
             logger.info(f"Reading chunk from {ts} to {end_ts}")
@@ -226,6 +232,7 @@ class StreamAPI(ABC):
 
     @property
     def properties(self) -> Mapping[str, Any]:
+        """Some entities has dynamic set of properties, so we trying to resolve those at runtime"""
         if not self.entity:
             return {}
 
@@ -237,85 +244,42 @@ class StreamAPI(ABC):
         return props
 
 
-class CRMObjectsAPI(StreamAPI, ABC):
-    data_path = "results"
+class CRMObjectStream(Stream):
+    """ Unified stream interface for CRM objects.
+        You need to provide `entity` parameter to read concrete stream, possible values are:
+            campaign, company, contact, deal, line_item, owner, product, ticket, quote
+        see https://developers.hubspot.com/docs/api/crm/understanding-the-crm for more details
+    """
+    data_field = "results"
 
     @property
-    @abstractmethod
     def url(self):
-        """Endpoint URL"""
+        """Entity URL"""
+        return f"/crm/v3/objects/{self.entity}"
 
-    def __init__(self, include_archived_only=False, **kwargs):
+    def __init__(self, entity: str, include_archived_only: bool = False, **kwargs):
         super().__init__(**kwargs)
+        self.entity = entity
         self._include_archived_only = include_archived_only
 
     def list(self, fields) -> Iterable:
         params = {
             "archived": str(self._include_archived_only).lower(),
         }
-        for record in self.read(partial(self._api.get, url=self.url), params):
-            yield record
+        yield from self.read(partial(self._api.get, url=self.url), params)
 
 
-class CampaignsAPI(StreamAPI):
-    entity = "campaign"
-    more_key = "hasMore"
-    data_path = "campaigns"
-    limit = 500
+class CompanyStream(CRMObjectStream):
+    def __init__(self, **kwargs):
+        super().__init__(entity="company", **kwargs)
 
     def list(self, fields) -> Iterable:
-        url = "/email/public/v1/campaigns/by-id"
-        for row in self.read(getter=partial(self._api.get, url=url)):
-            record = self._api.get(f"/email/public/v1/campaigns/{row['id']}")
-            yield record
+        for company in super().list(fields):
+            contacts = self._get_contacts(company_id=company["id"]) if "contacts" in fields else []
+            company["contacts"] = contacts
+            yield company
 
-
-class CompaniesAPI(CRMObjectsAPI):
-    entity = "company"
-    url = "/crm/v3/objects/companies"
-
-
-class ContactListsAPI(CRMObjectsAPI):
-    url = "/crm/v3/objects/contacts"
-
-
-class ContactsAPI(CRMObjectsAPI):
-    entity = "contact"
-    url = "/crm/v3/objects/contacts"
-
-
-class DealsAPI(CRMObjectsAPI):
-    entity = "deal"
-    url = "/crm/v3/objects/deals"
-
-
-class LineItemsAPI(CRMObjectsAPI):
-    entity = "line_item"
-    url = "/crm/v3/objects/line_items"
-
-
-class ProductsAPI(CRMObjectsAPI):
-    entity = "product"
-    url = "/crm/v3/objects/products"
-
-
-class QuotesAPI(CRMObjectsAPI):
-    entity = "quotes"
-    url = "/crm/v3/objects/quotes"
-
-
-class TicketsAPI(CRMObjectsAPI):
-    entity = "ticket"
-    url = "/crm/v3/objects/tickets"
-
-
-class ContactsByCompanyAPI(StreamAPI):
-    def list(self, fields) -> Iterable:
-        companies_api = CompaniesAPI(api=self._api, start_date=str(self._start_date))
-        for company in companies_api.list(fields={}):
-            yield from self._contacts_by_company(company["id"])
-
-    def _contacts_by_company(self, company_id):
+    def _get_contacts(self, company_id) -> Iterable:
         url = "/companies/v2/companies/{pk}/vids".format(pk=company_id)
         # FIXME: check if pagination is possible
         params = {"count": 100}
@@ -325,61 +289,45 @@ class ContactsByCompanyAPI(StreamAPI):
         if data.get(path) is None:
             raise RuntimeError("Unexpected API response: {} not in {}".format(path, data.keys()))
 
-        for row in data[path]:
-            yield {
-                "company-id": company_id,
-                "contact-id": row,
-            }
+        return data[path]
 
 
-class DealPipelinesAPI(StreamAPI):
-    def list(self, fields) -> Iterable:
-        yield from self._api.get("/deals/v1/pipelines")
-
-
-class EmailEventsAPI(StreamAPI):
-    data_path = "events"
+class CampaignStream(Stream):
+    """ Email campaigns, API v1
+        Docs: https://legacydocs.hubspot.com/docs/methods/email/get_campaign_data
+    """
+    entity = "campaign"
     more_key = "hasMore"
-    limit = 1000
+    data_field = "campaigns"
+    limit = 500
 
     def list(self, fields) -> Iterable:
-        url = "/email/public/v1/events"
-
-        yield from self.read_chunked(partial(self._api.get, url=url))
-
-
-class EngagementsAPI(StreamAPI):
-    entity = "engagement"
-    data_path = "results"
-    more_key = "hasMore"
-    limit = 250
-
-    def list(self, fields) -> Iterable:
-        url = "/engagements/v1/engagements/paged"
-        for record in self.read(partial(self._api.get, url=url)):
-            record["engagement_id"] = record["engagement"]["id"]
+        url = "/email/public/v1/campaigns/by-id"
+        for row in self.read(getter=partial(self._api.get, url=url)):
+            record = self._api.get(f"/email/public/v1/campaigns/{row['id']}")
             yield record
 
 
-class FormsAPI(StreamAPI):
-    entity = "form"
+class ContactListStream(Stream):
+    """ Contact lists, API v1
+        Docs: https://legacydocs.hubspot.com/docs/methods/lists/get_lists
+    """
+    url = "contacts/v1/lists"
 
     def list(self, fields) -> Iterable:
-        for row in self._api.get("/forms/v2/forms"):
-            yield row
+        yield from self._api.get(self.url)
 
 
-class OwnersAPI(StreamAPI):
-    url = "/crm/v3/owners"
-    data_path = "results"
+class DealPipelineStream(Stream):
+    url = "/deals/v1/pipelines"
 
     def list(self, fields) -> Iterable:
-        yield from self.read(partial(self._api.get, url=self.url))
+        yield from self._api.get(url=self.url)
 
 
-class SubscriptionChangesAPI(StreamAPI):
-    url = "/email/public/v1/subscriptions/timeline"
-    data_path = "timeline"
+class EmailEventStream(Stream):
+    url = "/email/public/v1/events"
+    data_field = "events"
     more_key = "hasMore"
     limit = 1000
 
@@ -387,8 +335,48 @@ class SubscriptionChangesAPI(StreamAPI):
         yield from self.read_chunked(partial(self._api.get, url=self.url))
 
 
-class WorkflowsAPI(StreamAPI):
+class EngagementStream(Stream):
+    entity = "engagement"
+    url = "/engagements/v1/engagements/paged"
+    data_field = "results"
+    more_key = "hasMore"
+    limit = 250
+
     def list(self, fields) -> Iterable:
-        data = self._api.get("/automation/v3/workflows")
-        for record in data["workflows"]:
+        for record in self.read(partial(self._api.get, url=self.url)):
+            record["engagement_id"] = record["engagement"]["id"]
             yield record
+
+
+class FormStream(Stream):
+    entity = "form"
+    url = "/forms/v2/forms"
+
+    def list(self, fields) -> Iterable:
+        yield from self._api.get(self.url)
+
+
+class OwnerStream(Stream):
+    url = "/crm/v3/owners"
+    data_field = "results"
+
+    def list(self, fields) -> Iterable:
+        yield from self.read(partial(self._api.get, url=self.url))
+
+
+class SubscriptionChangeStream(Stream):
+    url = "/email/public/v1/subscriptions/timeline"
+    data_field = "timeline"
+    more_key = "hasMore"
+    limit = 1000
+
+    def list(self, fields) -> Iterable:
+        yield from self.read_chunked(partial(self._api.get, url=self.url))
+
+
+class WorkflowStream(Stream):
+    url = "/automation/v3/workflows"
+    data_field = "workflows"
+
+    def list(self, fields) -> Iterable:
+        yield from self.read(partial(self._api.get, url=self.url))
