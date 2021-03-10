@@ -364,7 +364,22 @@ class ContactListStream(Stream):
 
 
 class DealPipelineStream(Stream):
-    url = "/deals/v1/pipelines"
+    """ Deal pipelines, API v1,
+        This endpoint requires the contacts scope the tickets scope.
+        Docs: https://legacydocs.hubspot.com/docs/methods/pipelines/get_pipelines_for_object_type
+    """
+    url = "/crm-pipelines/v1/pipelines/deals"
+
+    def list(self, fields) -> Iterable:
+        yield from self._api.get(url=self.url)
+
+
+class TicketPipelineStream(Stream):
+    """ Ticket pipelines, API v1
+        This endpoint requires the tickets scope.
+        Docs: https://legacydocs.hubspot.com/docs/methods/pipelines/get_pipelines_for_object_type
+    """
+    url = "/crm-pipelines/v1/pipelines/tickets"
 
     def list(self, fields) -> Iterable:
         yield from self._api.get(url=self.url)

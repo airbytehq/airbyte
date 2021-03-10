@@ -2,46 +2,69 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "pipelineId": {
-      "type": ["null", "string"]
+    "label": {
+      "type": "string"
+    },
+    "displayOrder": {
+      "type": "integer"
+    },
+    "active": {
+      "type": "boolean"
     },
     "stages": {
-      "type": ["null", "array"],
+      "type": "array",
       "items": {
         "type": "object",
         "properties": {
-          "stageId": {
-            "type": ["null", "string"]
-          },
           "label": {
-            "type": ["null", "string"]
-          },
-          "probability": {
-            "type": ["null", "number"]
-          },
-          "active": {
-            "type": ["null", "boolean"]
+            "type": "string"
           },
           "displayOrder": {
+            "type": "integer"
+          },
+          "metadata": {
+            "type": "object",
+            "properties": {
+              "isClosed": {
+                "type": "string"
+              },
+              "probability": {
+                "type": "string"
+              }
+            }
+          },
+          "stageId": {
+            "type": "string"
+          },
+          "createdAt": {
             "type": ["null", "integer"]
           },
-          "closedWon": {
-            "type": ["null", "boolean"]
+          "updatedAt": {
+            "type": ["null", "integer"]
+          },
+          "active": {
+            "type": "boolean"
           }
         }
       }
     },
-    "label": {
-      "type": ["null", "string"]
+    "objectType": {
+      "type": "string"
     },
-    "active": {
-      "type": ["null", "boolean"]
+    "objectTypeId": {
+      "type": "string"
     },
-    "displayOrder": {
+    "pipelineId": {
+      "type": "string"
+    },
+    "createdAt": {
+      "type": "integer"
+    },
+    "updatedAt": {
       "type": ["null", "integer"]
     },
-    "staticDefault": {
-      "type": ["null", "boolean"]
+    "default": {
+      "type": "boolean"
     }
   }
 }
