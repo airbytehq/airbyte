@@ -61,14 +61,13 @@ import org.junit.jupiter.api.Test;
 
 class SourceDefinitionsHandlerTest {
 
-  private static MockWebServer webServer;
-
   private ConfigRepository configRepository;
   private DockerImageValidator dockerImageValidator;
   private StandardSourceDefinition source;
   private SourceDefinitionsHandler sourceHandler;
   private Supplier<UUID> uuidSupplier;
   private CachingSchedulerJobClient schedulerJobClient;
+  private AirbyteGithubStore githubStore;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -77,12 +76,11 @@ class SourceDefinitionsHandlerTest {
     uuidSupplier = mock(Supplier.class);
     dockerImageValidator = mock(DockerImageValidator.class);
     schedulerJobClient = spy(CachingSchedulerJobClient.class);
+    githubStore = mock(AirbyteGithubStore.class);
 
     source = generateSource();
-    webServer = new MockWebServer();
-    var testGithubStore = AirbyteGithubStore.test(webServer.url("/").toString());
-    sourceHandler =
-        new SourceDefinitionsHandler(configRepository, dockerImageValidator, uuidSupplier, schedulerJobClient, testGithubStore);
+
+    sourceHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, uuidSupplier, schedulerJobClient, githubStore);
   }
 
   private StandardSourceDefinition generateSource() {
@@ -191,23 +189,17 @@ class SourceDefinitionsHandlerTest {
   @DisplayName("listLatest")
   class listLatest {
 
-    private static final String goodYamlString = "- sourceDefinitionId: a625d593-bba5-4a1c-a53d-2d246268a816\n"
-        + "  name: Local JSON\n"
-        + "  dockerRepository: airbyte/destination-local-json\n"
-        + "  dockerImageTag: 0.1.4\n"
-        + "  documentationUrl: https://docs.airbyte.io/integrations/destinations/local-json";
-
     @Test
     @DisplayName("should return the latest list")
-    void testCorrect() throws JsonValidationException, IOException, ConfigNotFoundException {
-      final var goodResponse = new MockResponse().setResponseCode(200)
-          .addHeader("Content-Type", "text/plain; charset=utf-8")
-          .addHeader("Cache-Control", "no-cache")
-          .setBody(goodYamlString);
-      webServer.enqueue(goodResponse);
+    void testCorrect() throws JsonValidationException, IOException, ConfigNotFoundException, InterruptedException {
+      final var goodYamlString = "- sourceDefinitionId: a625d593-bba5-4a1c-a53d-2d246268a816\n"
+          + "  name: Local JSON\n"
+          + "  dockerRepository: airbyte/destination-local-json\n"
+          + "  dockerImageTag: 0.1.4\n"
+          + "  documentationUrl: https://docs.airbyte.io/integrations/destinations/local-json";
+      when(githubStore.getLatestSources()).thenReturn(goodYamlString);
 
-      final var sourceDefinitionReadList =
-          sourceHandler.listLatestSourceDefinitions().getSourceDefinitions();
+      final var sourceDefinitionReadList = sourceHandler.listLatestSourceDefinitions().getSourceDefinitions();
       assertEquals(1, sourceDefinitionReadList.size());
 
       final var localJsonDefinition = sourceDefinitionReadList.get(0);
@@ -216,47 +208,26 @@ class SourceDefinitionsHandlerTest {
 
     @Test
     @DisplayName("should fail if http method times out")
-    void testHttpTimeout() throws JsonValidationException, IOException, ConfigNotFoundException {
-      final var goodResponse = new MockResponse().setResponseCode(200)
-          .addHeader("Content-Type", "text/plain; charset=utf-8")
-          .addHeader("Cache-Control", "no-cache")
-          .setBody(goodYamlString)
-          .setHeadersDelay(10, TimeUnit.SECONDS)
-          .setBodyDelay(10, TimeUnit.SECONDS);
-      webServer.enqueue(goodResponse);
-
-      assertThrows(
-          KnownException.class, () -> sourceHandler.listLatestSourceDefinitions().getSourceDefinitions());
+    void testHttpTimeout() throws JsonValidationException, IOException, ConfigNotFoundException, InterruptedException {
+      when(githubStore.getLatestSources()).thenThrow(new IOException());
+      assertThrows(KnownException.class, () -> sourceHandler.listLatestSourceDefinitions().getSourceDefinitions());
     }
 
     @Test
     @DisplayName("should fail if no data is received")
-    void testEmptyFileReceived() throws JsonValidationException, IOException, ConfigNotFoundException {
-      final var emptyYamlString = "";
-
-      final var goodResponse = new MockResponse().setResponseCode(200)
-          .addHeader("Content-Type", "text/plain; charset=utf-8")
-          .addHeader("Cache-Control", "no-cache")
-          .setBody(emptyYamlString);
-      webServer.enqueue(goodResponse);
-
+    void testEmptyFileReceived() throws JsonValidationException, IOException, ConfigNotFoundException, InterruptedException {
+      when(githubStore.getLatestSources()).thenReturn("");
       assertThrows(KnownException.class, () -> sourceHandler.listLatestSourceDefinitions());
     }
 
     @Test
     @DisplayName("should fail if bad data is received")
-    void testBadFileReceived() throws JsonValidationException, IOException, ConfigNotFoundException {
-      final var correctYamlString = "- sourceDefinitionid: a625d593-bba5-4a1c-a53d-2d246268a816\n"
+    void testBadFileReceived() throws JsonValidationException, IOException, ConfigNotFoundException, InterruptedException {
+      final var badYamlString = "- sourceDefinitionid: a625d593-bba5-4a1c-a53d-2d246268a816\n"
           + "  name: Local JSON\n"
           + "  dockerRepository: airbyte/destination-local-json\n"
           + "  dockerImage";
-
-      final var goodResponse = new MockResponse().setResponseCode(200)
-          .addHeader("Content-Type", "text/plain; charset=utf-8")
-          .addHeader("Cache-Control", "no-cache")
-          .setBody(correctYamlString);
-      webServer.enqueue(goodResponse);
-
+      when(githubStore.getLatestSources()).thenReturn(badYamlString);
       assertThrows(KnownException.class, () -> sourceHandler.listLatestSourceDefinitions());
     }
 

@@ -109,7 +109,7 @@ public class SourceDefinitionsHandler {
 
   private String getLatestSources() {
     try {
-      return githubStore.getLatestDestinations();
+      return githubStore.getLatestSources();
     } catch (IOException | InterruptedException e) {
       throw new KnownException(500, "Request to retrieve latest source definitions failed", e);
     }
