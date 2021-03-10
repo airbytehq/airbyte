@@ -36,7 +36,23 @@ To compile the code and run unit tests:
 
 This will build all the code and run all the unit tests.
 
-`./gradle build` creates all the necessary artifacts \(Webapp, Jars and Docker images\) so that you can run Airbyte locally.
+`./gradlew build` creates all the necessary artifacts \(Webapp, Jars and Docker images\) so that you can run Airbyte locally. Since this builds everything, it can take some time.
+
+To compile and build just the core systems:
+```bash
+CORE_ONLY=1 ./gradlew build
+```
+
+{% hint style="info" %}
+Gradle will use all CPU cores by default. If Gradle uses too much/too little CPU, tuning the number of CPU cores it uses to better suit a dev's need can help.
+
+Adjust this by either, 
+1. Setting an env var: `export GRADLE_OPTS="-Dorg.gradle.workers.max=3"`.
+2. Setting a cli option: `./gradlew build --max-workers 3`
+3. Setting the `org.gradle.workers.max` property in the `gradle.properties` file.
+
+A good rule of thumb is to set this to (# of cores - 1).
+{% endhint %}
 
 {% hint style="info" %}
 On Mac, if you run into an error while compiling openssl \(this happens when running pip install\), you may need to explicitly add these flags to your bash profile so that the C compiler can find the appropriate libraries.
@@ -168,3 +184,14 @@ Sometimes you'll want to reset the data in your local environment. One common ca
    docker-compose --env-file .env.dev -f docker-compose.yaml -f docker-compose.dev.yaml up -V
   ```
 
+## Troubleshooting
+
+### `gradlew Could not target platform: 'Java SE 14' using tool chain: 'JDK 8 (1.8)'.`
+
+Somehow gradle didn't pick up the right java version for some reason.
+Find the install version and set the `JAVA_HOME` environment to point to the JDK folder.
+
+For example:
+```
+env JAVA_HOME=/usr/lib/jvm/java-14-openjdk ./gradlew  :airbyte-integrations:connectors:your-connector-dir:build
+```

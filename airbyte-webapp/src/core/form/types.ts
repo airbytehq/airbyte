@@ -8,6 +8,7 @@ export type FormBaseItem = {
   isRequired: boolean;
   isSecret?: boolean;
   title?: string;
+  multiline?: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   meta?: { [key: string]: any };
 } & Partial<JSONSchema7>;

@@ -38,14 +38,13 @@ import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
-import io.airbyte.scheduler.temporal.TemporalClient;
-import io.airbyte.scheduler.temporal.TemporalPool;
-import io.airbyte.scheduler.temporal.TemporalUtils;
-import io.airbyte.scheduler.temporal.TemporalWorkerRunFactory;
-import io.airbyte.scheduler.worker_run.SchedulerWorkerRunWithEnvironmentFactory;
+import io.airbyte.scheduler.worker_run.TemporalWorkerRunFactory;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.KubeProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
+import io.airbyte.workers.temporal.TemporalClient;
+import io.airbyte.workers.temporal.TemporalPool;
+import io.airbyte.workers.temporal.TemporalUtils;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -103,7 +102,6 @@ public class SchedulerApp {
 
     final ExecutorService workerThreadPool = Executors.newFixedThreadPool(MAX_WORKERS, THREAD_FACTORY);
     final ScheduledExecutorService scheduledPool = Executors.newSingleThreadScheduledExecutor();
-    final SchedulerWorkerRunWithEnvironmentFactory workerRunWithEnvironmentFactory = new SchedulerWorkerRunWithEnvironmentFactory(workspaceRoot, pbf);
     final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(temporalClient, workspaceRoot);
     final JobRetrier jobRetrier = new JobRetrier(jobPersistence, Instant::now);
     final JobScheduler jobScheduler = new JobScheduler(jobPersistence, configRepository);
@@ -111,7 +109,6 @@ public class SchedulerApp {
         workerThreadPool,
         jobPersistence,
         configRepository,
-        workerRunWithEnvironmentFactory,
         temporalWorkerRunFactory);
 
     Map<String, String> mdc = MDC.getCopyOfContextMap();

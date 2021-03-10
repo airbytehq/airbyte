@@ -105,7 +105,7 @@ public class DefaultJobCreatorTest {
     STANDARD_SYNC = new StandardSync()
         .withConnectionId(connectionId)
         .withName("presto to hudi")
-        .withDefaultNamespace("presto_to_hudi")
+        .withPrefix("presto_to_hudi")
         .withStatus(StandardSync.Status.ACTIVE)
         .withCatalog(catalog)
         .withSourceId(sourceId)
@@ -186,7 +186,7 @@ public class DefaultJobCreatorTest {
   @Test
   void testCreateSyncJob() throws IOException {
     final JobSyncConfig jobSyncConfig = new JobSyncConfig()
-        .withDefaultNamespace(STANDARD_SYNC.getDefaultNamespace())
+        .withPrefix(STANDARD_SYNC.getPrefix())
         .withSourceConfiguration(SOURCE_CONNECTION.getConfiguration())
         .withSourceDockerImage(SOURCE_IMAGE_NAME)
         .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
@@ -212,7 +212,7 @@ public class DefaultJobCreatorTest {
   @Test
   void testCreateSyncJobEnsureNoQueuing() throws IOException {
     final JobSyncConfig jobSyncConfig = new JobSyncConfig()
-        .withDefaultNamespace(STANDARD_SYNC.getDefaultNamespace())
+        .withPrefix(STANDARD_SYNC.getPrefix())
         .withSourceConfiguration(SOURCE_CONNECTION.getConfiguration())
         .withSourceDockerImage(SOURCE_IMAGE_NAME)
         .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
@@ -241,7 +241,7 @@ public class DefaultJobCreatorTest {
         .forEach(configuredAirbyteStream -> configuredAirbyteStream.setSyncMode(io.airbyte.protocol.models.SyncMode.FULL_REFRESH));
 
     final JobResetConnectionConfig JobResetConnectionConfig = new JobResetConnectionConfig()
-        .withDefaultNamespace(STANDARD_SYNC.getDefaultNamespace())
+        .withPrefix(STANDARD_SYNC.getPrefix())
         .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
         .withConfiguredAirbyteCatalog(expectedCatalog);
@@ -267,7 +267,7 @@ public class DefaultJobCreatorTest {
         .forEach(configuredAirbyteStream -> configuredAirbyteStream.setSyncMode(io.airbyte.protocol.models.SyncMode.FULL_REFRESH));
 
     final JobResetConnectionConfig JobResetConnectionConfig = new JobResetConnectionConfig()
-        .withDefaultNamespace(STANDARD_SYNC.getDefaultNamespace())
+        .withPrefix(STANDARD_SYNC.getPrefix())
         .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
         .withConfiguredAirbyteCatalog(expectedCatalog);

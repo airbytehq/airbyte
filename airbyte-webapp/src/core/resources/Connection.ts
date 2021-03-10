@@ -37,7 +37,7 @@ type DestinationInformation = {
 export interface Connection {
   connectionId: string;
   name: string;
-  defaultNamespace: string;
+  prefix: string;
   sourceId: string;
   destinationId: string;
   status: string;
@@ -54,7 +54,7 @@ export default class ConnectionResource
   implements Connection {
   readonly connectionId: string = "";
   readonly name: string = "";
-  readonly defaultNamespace: string = "";
+  readonly prefix: string = "";
   readonly sourceId: string = "";
   readonly destinationId: string = "";
   readonly status: string = "";

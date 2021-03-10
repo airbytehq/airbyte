@@ -50,10 +50,11 @@ def createSpotlessTarget = { pattern ->
         '*.egg-info',
         'build',
         'dbt-project-template',
-        'tools'
+        'tools',
+        'secrets'
     ]
 
-    if(System.getenv().containsKey("CORE_ONLY")) {
+    if (System.getenv().containsKey("CORE_ONLY")) {
         excludes.add("airbyte-integrations/connectors")
     }
 

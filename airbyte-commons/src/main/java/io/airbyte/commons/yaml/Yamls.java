@@ -47,17 +47,17 @@ public class Yamls {
     }
   }
 
-  public static <T> T deserialize(final String jsonString, final Class<T> klass) {
+  public static <T> T deserialize(final String yamlString, final Class<T> klass) {
     try {
-      return OBJECT_MAPPER.readValue(jsonString, klass);
+      return OBJECT_MAPPER.readValue(yamlString, klass);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
 
-  public static JsonNode deserialize(final String jsonString) {
+  public static JsonNode deserialize(final String yamlString) {
     try {
-      return OBJECT_MAPPER.readTree(jsonString);
+      return OBJECT_MAPPER.readTree(yamlString);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
