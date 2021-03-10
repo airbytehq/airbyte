@@ -60,7 +60,15 @@ public class TemporalUtils {
         .build();
   }
 
+  public static JobRunConfig createJobRunConfig(UUID jobId, int attemptId) {
+    return createJobRunConfig(String.valueOf(jobId), attemptId);
+  }
+
   public static JobRunConfig createJobRunConfig(long jobId, int attemptId) {
+    return createJobRunConfig(String.valueOf(jobId), attemptId);
+  }
+
+  public static JobRunConfig createJobRunConfig(String jobId, int attemptId) {
     return new JobRunConfig()
         .withJobId(jobId)
         .withAttemptId((long) attemptId);

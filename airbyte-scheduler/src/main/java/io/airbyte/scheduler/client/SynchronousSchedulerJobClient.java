@@ -22,31 +22,25 @@
  * SOFTWARE.
  */
 
-package io.airbyte.server.converters;
+package io.airbyte.scheduler.client;
 
-import com.google.common.base.Preconditions;
+import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.SourceConnection;
+import io.airbyte.config.StandardCheckConnectionOutput;
+import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.scheduler.client.SynchronousJobResponse;
-import io.airbyte.scheduler.client.SynchronousSchedulerJobClient;
 import java.io.IOException;
 
-public class SpecFetcher {
+public interface SynchronousSchedulerJobClient {
 
-  private final SynchronousSchedulerJobClient schedulerJobClient;
+  SynchronousJobResponse<StandardCheckConnectionOutput> createSourceCheckConnectionJob(SourceConnection source, String dockerImage)
+      throws IOException;
 
-  public SpecFetcher(SynchronousSchedulerJobClient schedulerJobClient) {
-    this.schedulerJobClient = schedulerJobClient;
-  }
+  SynchronousJobResponse<StandardCheckConnectionOutput> createDestinationCheckConnectionJob(DestinationConnection destination, String dockerImage)
+      throws IOException;
 
-  public ConnectorSpecification execute(String dockerImage) throws IOException {
-    return getSpecFromJob(schedulerJobClient.createGetSpecJob(dockerImage));
-  }
+  SynchronousJobResponse<AirbyteCatalog> createDiscoverSchemaJob(SourceConnection source, String dockerImage) throws IOException;
 
-  private static ConnectorSpecification getSpecFromJob(SynchronousJobResponse<ConnectorSpecification> response) {
-    Preconditions.checkState(response.isSuccess(), "Get Spec job failed.");
-    Preconditions.checkNotNull(response.getOutput(), "Get Spec job return null spec");
-
-    return response.getOutput();
-  }
+  SynchronousJobResponse<ConnectorSpecification> createGetSpecJob(String dockerImage) throws IOException;
 
 }

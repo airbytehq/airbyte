@@ -38,30 +38,37 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.temporal.client.WorkflowClient;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 public class TemporalClient {
 
   private final WorkflowClient client;
 
+  public static TemporalClient production() {
+    return new TemporalClient(TemporalUtils.TEMPORAL_CLIENT);
+  }
+
   public TemporalClient(WorkflowClient client) {
     this.client = client;
   }
 
-  public ConnectorSpecification submitGetSpec(long jobId, int attempt, JobGetSpecConfig config) throws TemporalJobException {
+  public ConnectorSpecification submitGetSpec(UUID jobId, int attempt, JobGetSpecConfig config) throws TemporalJobException {
     final JobRunConfig jobRunConfig = TemporalUtils.createJobRunConfig(jobId, attempt);
 
     final IntegrationLauncherConfig launcherConfig = new IntegrationLauncherConfig()
-        .withJobId(jobId)
+        .withJobId(jobId.toString())
         .withAttemptId((long) attempt)
         .withDockerImage(config.getDockerImage());
     return getWorkflowStub(SpecWorkflow.class, TemporalJobType.GET_SPEC).run(jobRunConfig, launcherConfig);
 
   }
 
-  public StandardCheckConnectionOutput submitCheckConnection(long jobId, int attempt, JobCheckConnectionConfig config) throws TemporalJobException {
+  public StandardCheckConnectionOutput submitCheckConnection(UUID jobId, int attempt, JobCheckConnectionConfig config) throws TemporalJobException {
     final JobRunConfig jobRunConfig = TemporalUtils.createJobRunConfig(jobId, attempt);
     final IntegrationLauncherConfig launcherConfig = new IntegrationLauncherConfig()
-        .withJobId(jobId)
+        .withJobId(jobId.toString())
         .withAttemptId((long) attempt)
         .withDockerImage(config.getDockerImage());
     final StandardCheckConnectionInput input = new StandardCheckConnectionInput().withConnectionConfiguration(config.getConnectionConfiguration());
@@ -69,10 +76,25 @@ public class TemporalClient {
     return getWorkflowStub(CheckConnectionWorkflow.class, TemporalJobType.CHECK_CONNECTION).run(jobRunConfig, launcherConfig, input);
   }
 
-  public AirbyteCatalog submitDiscoverSchema(long jobId, int attempt, JobDiscoverCatalogConfig config) throws TemporalJobException {
+  private static <T> T execute2(CompletableFuture<T> completableFuture) throws TemporalJobException {
+    try {
+      return completableFuture.get();
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    } catch (ExecutionException e) {
+
+      if (e.getCause() instanceof TemporalJobException) {
+        throw (TemporalJobException) e.getCause();
+      } else {
+        throw new RuntimeException(e);
+      }
+    }
+  }
+
+  public AirbyteCatalog submitDiscoverSchema(UUID jobId, int attempt, JobDiscoverCatalogConfig config) throws TemporalJobException {
     final JobRunConfig jobRunConfig = TemporalUtils.createJobRunConfig(jobId, attempt);
     final IntegrationLauncherConfig launcherConfig = new IntegrationLauncherConfig()
-        .withJobId(jobId)
+        .withJobId(jobId.toString())
         .withAttemptId((long) attempt)
         .withDockerImage(config.getDockerImage());
     final StandardDiscoverCatalogInput input = new StandardDiscoverCatalogInput().withConnectionConfiguration(config.getConnectionConfiguration());
@@ -84,12 +106,12 @@ public class TemporalClient {
     final JobRunConfig jobRunConfig = TemporalUtils.createJobRunConfig(jobId, attempt);
 
     final IntegrationLauncherConfig sourceLauncherConfig = new IntegrationLauncherConfig()
-        .withJobId(jobId)
+        .withJobId(String.valueOf(jobId))
         .withAttemptId((long) attempt)
         .withDockerImage(config.getSourceDockerImage());
 
     final IntegrationLauncherConfig destinationLauncherConfig = new IntegrationLauncherConfig()
-        .withJobId(jobId)
+        .withJobId(String.valueOf(jobId))
         .withAttemptId((long) attempt)
         .withDockerImage(config.getDestinationDockerImage());
 

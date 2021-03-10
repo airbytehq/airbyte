@@ -10,6 +10,6 @@ required:
   - attemptId
 properties:
   jobId:
-    type: integer
+    type: string
   attemptId:
     type: integer

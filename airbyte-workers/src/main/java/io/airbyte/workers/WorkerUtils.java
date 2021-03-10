@@ -124,18 +124,14 @@ public class WorkerUtils {
     return getJobRoot(workspaceRoot, launcherConfig.getJobId(), Math.toIntExact(launcherConfig.getAttemptId()));
   }
 
-  public static Path getJobRoot(Path workspaceRoot, long jobId, long attemptId) {
+  public static Path getJobRoot(Path workspaceRoot, String jobId, long attemptId) {
     return getJobRoot(workspaceRoot, jobId, Math.toIntExact(attemptId));
   }
 
-  public static Path getJobRoot(Path workspaceRoot, long jobId, int attemptId) {
+  public static Path getJobRoot(Path workspaceRoot, String jobId, int attemptId) {
     return workspaceRoot
         .resolve(String.valueOf(jobId))
         .resolve(String.valueOf(attemptId));
-  }
-
-  public static void setJobMdc(Path jobRoot, long jobId) {
-    setJobMdc(jobRoot, String.valueOf(jobId));
   }
 
   public static void setJobMdc(Path jobRoot, String jobId) {
