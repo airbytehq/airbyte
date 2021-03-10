@@ -252,7 +252,6 @@ class CRMObjectStream(Stream):
             campaign, company, contact, deal, line_item, owner, product, ticket, quote
         see https://developers.hubspot.com/docs/api/crm/understanding-the-crm for more details
     """
-    data_field = "results"
 
     @property
     def url(self):
@@ -321,7 +320,6 @@ class CRMAssociationStream(Stream):
         DealToTicket = 27
         TicketToDeal = 28
 
-    data_field = "results"
     more_key = "hasMore"
 
     def __init__(self, entity_id: int, direction: Direction, **kwargs):
@@ -386,6 +384,9 @@ class TicketPipelineStream(Stream):
 
 
 class EmailEventStream(Stream):
+    """ Email events, API v1
+        Docs: https://legacydocs.hubspot.com/docs/methods/email/get_events
+    """
     url = "/email/public/v1/events"
     data_field = "events"
     more_key = "hasMore"
@@ -396,9 +397,11 @@ class EmailEventStream(Stream):
 
 
 class EngagementStream(Stream):
+    """ Engagements, API v1
+        Docs: https://legacydocs.hubspot.com/docs/methods/engagements/get-all-engagements
+    """
     entity = "engagement"
     url = "/engagements/v1/engagements/paged"
-    data_field = "results"
     more_key = "hasMore"
     limit = 250
 
@@ -421,14 +424,19 @@ class FormStream(Stream):
 
 
 class OwnerStream(Stream):
+    """ Owners, API v3
+        Docs: https://legacydocs.hubspot.com/docs/methods/owners/get_owners
+    """
     url = "/crm/v3/owners"
-    data_field = "results"
 
     def list(self, fields) -> Iterable:
         yield from self.read(partial(self._api.get, url=self.url))
 
 
 class SubscriptionChangeStream(Stream):
+    """ Subscriptions timeline for a portal, API v1
+        Docs: https://legacydocs.hubspot.com/docs/methods/email/get_subscriptions_timeline
+    """
     url = "/email/public/v1/subscriptions/timeline"
     data_field = "timeline"
     more_key = "hasMore"
@@ -439,6 +447,9 @@ class SubscriptionChangeStream(Stream):
 
 
 class WorkflowStream(Stream):
+    """ Workflows, API v3
+        Docs: https://legacydocs.hubspot.com/docs/methods/workflows/v3/get_workflows
+    """
     url = "/automation/v3/workflows"
     data_field = "workflows"
 
