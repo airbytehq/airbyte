@@ -196,6 +196,17 @@ class Stream(ABC):
     def list(self, fields) -> Iterable:
         pass
 
+    def _filter_dynamic_fields(self, records: Iterable) -> Iterable:
+        """ Skip certain fields because they are too dynamic and change every call (timers, etc),
+            see https://github.com/airbytehq/airbyte/issues/2397
+        """
+        for record in records:
+            if isinstance(record, Mapping) and "properties" in record:
+                for key in list(record["properties"].keys()):
+                    if key.startswith("hs_time_in"):
+                        record["properties"].pop(key)
+            yield record
+
     def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
         default_params = {"limit": self.limit, "properties": ",".join(self.properties.keys())}
 
@@ -207,7 +218,7 @@ class Stream(ABC):
                 if response.get(self.data_field) is None:
                     raise RuntimeError("Unexpected API response: {} not in {}".format(self.data_field, response.keys()))
 
-                yield from response[self.data_field]
+                yield from self._filter_dynamic_fields(response[self.data_field])
 
                 # pagination
                 if "paging" in response:  # APIv3 pagination
@@ -222,7 +233,7 @@ class Stream(ABC):
                         params[self.page_filter] = response[self.page_field]
             else:
                 response = list(response)
-                yield from response
+                yield from self._filter_dynamic_fields(response)
                 if len(response) < self.limit:
                     break
                 else:
