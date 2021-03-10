@@ -52,7 +52,7 @@
         "source_defined_cursor": true
       },
       "sync_mode": "incremental",
-      "cursor_field": null
+      "cursor_field": ["report_start_date"]
     },
     {
       "stream": {
@@ -115,7 +115,7 @@
         "source_defined_cursor": true
       },
       "sync_mode": "incremental",
-      "cursor_field": null
+      "cursor_field": ["report_start_date"]
     },
     {
       "stream": {
@@ -169,7 +169,7 @@
         "source_defined_cursor": true
       },
       "sync_mode": "incremental",
-      "cursor_field": null
+      "cursor_field": ["report_start_date"]
     },
     {
       "stream": {
@@ -241,7 +241,7 @@
         "source_defined_cursor": true
       },
       "sync_mode": "incremental",
-      "cursor_field": null
+      "cursor_field": ["report_start_date"]
     },
     {
       "stream": {
@@ -268,7 +268,7 @@
         "source_defined_cursor": true
       },
       "sync_mode": "incremental",
-      "cursor_field": null
+      "cursor_field": ["report_start_date"]
     },
     {
       "stream": {
@@ -295,7 +295,7 @@
         "source_defined_cursor": true
       },
       "sync_mode": "incremental",
-      "cursor_field": null
+      "cursor_field": ["report_start_date"]
     },
     {
       "stream": {
@@ -322,7 +322,7 @@
         "source_defined_cursor": true
       },
       "sync_mode": "incremental",
-      "cursor_field": null
+      "cursor_field": ["report_start_date"]
     },
     {
       "stream": {
@@ -349,7 +349,7 @@
         "source_defined_cursor": true
       },
       "sync_mode": "incremental",
-      "cursor_field": null
+      "cursor_field": ["report_start_date"]
     },
     {
       "stream": {
@@ -376,7 +376,7 @@
         "source_defined_cursor": true
       },
       "sync_mode": "incremental",
-      "cursor_field": null
+      "cursor_field": ["report_start_date"]
     },
     {
       "stream": {
@@ -439,7 +439,7 @@
         "source_defined_cursor": true
       },
       "sync_mode": "incremental",
-      "cursor_field": null
+      "cursor_field": ["report_start_date"]
     },
     {
       "stream": {
@@ -469,7 +469,7 @@
         "source_defined_cursor": true
       },
       "sync_mode": "incremental",
-      "cursor_field": null
+      "cursor_field": ["report_start_date"]
     },
     {
       "stream": {
@@ -505,7 +505,7 @@
         "source_defined_cursor": true
       },
       "sync_mode": "incremental",
-      "cursor_field": null
+      "cursor_field": ["report_start_date"]
     }
   ]
 }
