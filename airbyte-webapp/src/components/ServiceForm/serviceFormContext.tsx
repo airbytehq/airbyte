@@ -1,12 +1,16 @@
 import React, { useContext, useMemo } from "react";
 
+import { DropDownRow } from "components";
 import { WidgetConfigMap } from "core/form/types";
 
-// TODO: We need to refactor ServiceForm and have better support for Context (Jamakase)
-// Currently, we build uiWidgetInfo and provide it via context here
-// Ideally, we should build and provide in same context logic
-
 type Context = {
+  formType: "source" | "destination";
+  isLoadingSchema?: boolean;
+  isEditMode?: boolean;
+  allowChangeConnector?: boolean;
+  onChangeServiceType?: (id: string) => void;
+  dropDownData: DropDownRow.IDataItem[];
+  documentationUrl?: string;
   widgetsInfo: WidgetConfigMap;
   setUiWidgetsInfo: (path: string, value: Record<string, unknown>) => void;
   unfinishedSecrets: Record<string, { startValue: string }>;
@@ -16,6 +20,8 @@ type Context = {
 };
 
 const context: Context = {
+  formType: "source",
+  dropDownData: [],
   widgetsInfo: {},
   unfinishedSecrets: {},
   setUiWidgetsInfo: (_path: string, _value: Record<string, unknown>) => ({}),
@@ -26,17 +32,30 @@ const context: Context = {
 
 const FormWidgetContext = React.createContext<Context>(context);
 
-const useWidgetInfo = (): Context => useContext(FormWidgetContext);
+const useServiceForm = (): Context => useContext(FormWidgetContext);
 
-const WidgetInfoProvider: React.FC<{
+const ServiceFormContextProvider: React.FC<{
   widgetsInfo: WidgetConfigMap;
+  formType: "source" | "destination";
+  isLoadingSchema?: boolean;
+  isEditMode?: boolean;
+  dropDownData: DropDownRow.IDataItem[];
+  documentationUrl?: string;
+  allowChangeConnector?: boolean;
+  onChangeServiceType?: (id: string) => void;
   setUiWidgetsInfo: (path: string, value: Record<string, unknown>) => void;
-}> = ({ children, widgetsInfo, setUiWidgetsInfo }) => {
+}> = ({ children, widgetsInfo, setUiWidgetsInfo, ...props }) => {
   const ctx = useMemo<Context>(() => {
     const unfinishedSecrets = widgetsInfo["_common.unfinishedSecrets"] ?? {};
     return {
       widgetsInfo,
       setUiWidgetsInfo,
+      formType: props.formType,
+      isLoadingSchema: props.isLoadingSchema,
+      isEditMode: props.isEditMode,
+      onChangeServiceType: props.onChangeServiceType,
+      dropDownData: props.dropDownData,
+      documentationUrl: props.documentationUrl,
       unfinishedSecrets,
       addUnfinishedSecret: (path, info) =>
         setUiWidgetsInfo("_common.unfinishedSecrets", {
@@ -54,7 +73,7 @@ const WidgetInfoProvider: React.FC<{
         setUiWidgetsInfo("_common.unfinishedSecrets", {});
       },
     };
-  }, [widgetsInfo, setUiWidgetsInfo]);
+  }, [props, widgetsInfo, setUiWidgetsInfo]);
 
   return (
     <FormWidgetContext.Provider value={ctx}>
@@ -63,14 +82,14 @@ const WidgetInfoProvider: React.FC<{
   );
 };
 
-const WidgetInfo = ({
+const ServiceFormInfo = ({
   children,
 }: {
   children: (widgetInfo: Context) => React.ReactElement;
 }): React.ReactElement => {
-  const widgetInfo = useWidgetInfo();
+  const widgetInfo = useServiceForm();
 
   return children(widgetInfo);
 };
 
-export { useWidgetInfo, WidgetInfoProvider, WidgetInfo };
+export { useServiceForm, ServiceFormContextProvider, ServiceFormInfo };

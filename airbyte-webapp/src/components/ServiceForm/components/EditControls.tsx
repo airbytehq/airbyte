@@ -4,7 +4,7 @@ import { FormattedMessage } from "react-intl";
 
 import Button from "components/Button";
 import Spinner from "components/Spinner";
-import { useWidgetInfo } from "../uiWidgetContext";
+import { useServiceForm } from "../serviceFormContext";
 
 type IProps = {
   isSubmitting: boolean;
@@ -51,7 +51,7 @@ const EditControls: React.FC<IProps> = ({
   successMessage,
   errorMessage,
 }) => {
-  const { unfinishedSecrets } = useWidgetInfo();
+  const { unfinishedSecrets } = useServiceForm();
 
   const showStatusMessage = () => {
     if (isSubmitting) {

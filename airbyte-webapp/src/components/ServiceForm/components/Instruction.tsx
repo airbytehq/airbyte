@@ -2,11 +2,11 @@ import { FormattedMessage } from "react-intl";
 import React from "react";
 import styled from "styled-components";
 
-import { IDataItem } from "components/DropDown/components/ListItem";
+import { DropDownRow } from "components";
 
 type IProps = {
   serviceId: string;
-  dropDownData?: Array<IDataItem>;
+  dropDownData?: Array<DropDownRow.IDataItem>;
   documentationUrl?: string;
 };
 

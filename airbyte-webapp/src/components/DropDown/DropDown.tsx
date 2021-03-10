@@ -20,6 +20,7 @@ type DropdownProps = {
   onSelect?: (item: IDataItem) => void;
   withButton?: boolean;
   withBorder?: boolean;
+  error?: boolean;
   textButton?: string;
   className?: string;
   groupBy?: string;
@@ -28,6 +29,7 @@ type DropdownProps = {
 const StyledDropdownList = styled(DropdownList)<{
   disabled?: boolean;
   withBorder?: boolean;
+  error?: boolean;
 }>`
   text-align: left;
 
@@ -49,13 +51,18 @@ const StyledDropdownList = styled(DropdownList)<{
     height: ${({ withBorder }) => (withBorder ? 31 : 36)}px;
     box-shadow: none;
     border: 1px solid
-      ${({ theme, withBorder }) =>
-        withBorder ? theme.greyColor30 : theme.greyColor0};
+      ${({ theme, withBorder, error }) =>
+        error
+          ? theme.dangerColor
+          : withBorder
+          ? theme.greyColor30
+          : theme.greyColor0};
     background: ${({ theme }) => theme.greyColor0};
     border-radius: 4px;
 
     &:hover {
-      border-color: ${({ theme }) => theme.greyColor20};
+      border-color: ${({ theme, error }) =>
+        error ? theme.dangerColor : theme.greyColor20};
       background: ${({ theme }) => theme.greyColor20};
     }
   }
@@ -185,6 +192,7 @@ const DropDown: React.FC<DropdownProps> = (props) => {
 
   return (
     <StyledDropdownList
+      error={props.error}
       withBorder={props.withBorder}
       containerClassName={className}
       filter={props.hasFilter ? "contains" : false}
