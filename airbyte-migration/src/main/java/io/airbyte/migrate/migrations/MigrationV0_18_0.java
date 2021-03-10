@@ -26,19 +26,12 @@ package io.airbyte.migrate.migrations;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.migrate.Migration;
 import io.airbyte.migrate.ResourceId;
 import io.airbyte.migrate.ResourceType;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -47,6 +40,8 @@ import java.util.stream.Stream;
 public class MigrationV0_18_0 extends BaseMigration implements Migration {
 
   private static final ResourceId STANDARD_WORKSPACE_RESOURCE_ID = ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_WORKSPACE");
+
+  private final Migration previousMigration;
 
   public MigrationV0_18_0(Migration previousMigration) {
     super(previousMigration);
