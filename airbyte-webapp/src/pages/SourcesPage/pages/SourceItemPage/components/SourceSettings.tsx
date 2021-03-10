@@ -77,8 +77,8 @@ const SourceSettings: React.FC<IProps> = ({
           formType="source"
           dropDownData={[
             {
-              value: currentSource.sourceDefinitionId || "",
-              text: currentSource.sourceName || "",
+              value: currentSource.sourceDefinitionId,
+              text: currentSource.sourceName,
               img: "/default-logo-catalog.svg",
             },
           ]}

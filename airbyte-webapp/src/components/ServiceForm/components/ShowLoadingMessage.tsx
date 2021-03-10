@@ -3,15 +3,17 @@ import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import config from "config";
-import Link from "components/Link";
+import { Link } from "components";
 
-type IProps = {
+type ShowLoadingMessageProps = {
   connector?: string;
 };
 
 const TIMEOUT_MS = 10000;
 
-const ShowLoadingMessage: React.FC<IProps> = ({ connector }) => {
+const ShowLoadingMessage: React.FC<ShowLoadingMessageProps> = ({
+  connector,
+}) => {
   const [longLoading, setLongLoading] = useState(false);
 
   useEffect(() => {

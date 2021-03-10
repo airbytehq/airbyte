@@ -2,8 +2,7 @@ import React, { useRef } from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 
-import Input, { InputProps } from "components/Input";
-import Button from "components/Button";
+import { Button, Input, InputProps } from "components";
 
 const InputContainer = styled.div`
   display: flex;
