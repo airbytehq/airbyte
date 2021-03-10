@@ -41,9 +41,7 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
         logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} more seconds then retrying...")
 
     def should_retry_api_error(exc):
-        if isinstance(exc, FacebookRequestError):
-            return exc.http_status() == status_codes.TOO_MANY_REQUESTS
-        raise exc
+        return exc.http_status() == status_codes.TOO_MANY_REQUESTS
 
     return backoff.on_exception(
         backoff_type,
