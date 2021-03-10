@@ -7436,28 +7436,6 @@
     },
     {
       "stream": {
-        "name": "contacts_by_company",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "contact-id": {
-              "type": ["integer"]
-            },
-            "company-id": {
-              "type": ["integer"]
-            }
-          }
-        },
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
-        "default_cursor_field": null
-      },
-      "sync_mode": "full_refresh",
-      "cursor_field": null
-    },
-    {
-      "stream": {
         "name": "deal_pipelines",
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",

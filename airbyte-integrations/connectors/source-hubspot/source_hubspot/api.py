@@ -355,7 +355,7 @@ class ContactListStream(Stream):
     """ Contact lists, API v1
         Docs: https://legacydocs.hubspot.com/docs/methods/lists/get_lists
     """
-    url = "contacts/v1/lists"
+    url = "/contacts/v1/lists"
 
     def list(self, fields) -> Iterable:
         yield from self._api.get(self.url)
