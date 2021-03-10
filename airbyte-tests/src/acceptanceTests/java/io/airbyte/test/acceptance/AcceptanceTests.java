@@ -58,6 +58,7 @@ import io.airbyte.api.client.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.client.model.DestinationDefinitionSpecificationRead;
 import io.airbyte.api.client.model.DestinationIdRequestBody;
 import io.airbyte.api.client.model.DestinationRead;
+import io.airbyte.api.client.model.DestinationSyncMode;
 import io.airbyte.api.client.model.JobIdRequestBody;
 import io.airbyte.api.client.model.JobInfoRead;
 import io.airbyte.api.client.model.JobRead;
@@ -284,10 +285,13 @@ public class AcceptanceTests {
         .name(STREAM_NAME)
         .jsonSchema(jsonSchema)
         .defaultCursorField(Collections.emptyList())
+        .sourceDefinedPrimaryKey(Collections.emptyList())
         .supportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
     final AirbyteStreamConfiguration streamConfig = new AirbyteStreamConfiguration()
         .syncMode(SyncMode.FULL_REFRESH)
         .cursorField(Collections.emptyList())
+        .destinationSyncMode(DestinationSyncMode.APPEND)
+        .primaryKey(Collections.emptyList())
         .aliasName(STREAM_NAME.replace(".", "_"))
         .selected(true);
     final AirbyteCatalog expected = new AirbyteCatalog()
