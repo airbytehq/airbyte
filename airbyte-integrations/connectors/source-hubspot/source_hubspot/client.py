@@ -26,7 +26,6 @@ from typing import Mapping, Tuple, Iterator
 
 from airbyte_protocol import AirbyteStream
 from base_python import BaseClient
-from base_python.entrypoint import logger
 from source_hubspot.api import (
     API,
     ContactListStream,
@@ -40,6 +39,7 @@ from source_hubspot.api import (
     WorkflowStream,
     CRMObjectStream,
 )
+from source_hubspot.errors import HubspotError
 
 
 class Client(BaseClient):
@@ -87,5 +87,13 @@ class Client(BaseClient):
             yield stream
 
     def health_check(self) -> Tuple[bool, str]:
-        logger.error("Health check not implemented")
-        return True, "TODO"
+        alive = True
+        error_msg = None
+
+        try:
+            _ = self._apis["contacts"].properties
+        except HubspotError as error:
+            alive = False
+            error_msg = repr(error)
+
+        return alive, error_msg

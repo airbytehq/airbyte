@@ -47,6 +47,8 @@ def retry_connection_handler(**kwargs):
         logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} more seconds then retrying...")
 
     def giveup_handler(exc):
+        if isinstance(exc, HubspotInvalidAuth):
+            return True
         return exc.response is not None and 400 <= exc.response.status_code < 500
 
     return backoff.on_exception(
@@ -148,10 +150,10 @@ class API:
         """Handle response"""
         if response.status_code == 403:
             raise HubspotSourceUnavailable(response.content)
+        elif response.status_code == 401:
+            raise HubspotInvalidAuth(response.content)
         elif response.status_code == 429:
             retry_after = response.headers.get("Retry-After")
-            print(response.headers)
-            print(response.json())
             raise HubspotRateLimited(
                 f"429 Rate Limit Exceeded: API rate-limit has been reached until {retry_after} seconds."
                 " See https://developers.hubspot.com/docs/api/usage-details",
