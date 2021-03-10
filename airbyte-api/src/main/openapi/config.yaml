@@ -1784,13 +1784,20 @@ components:
           items:
             $ref: "#/components/schemas/SyncMode"
         sourceDefinedCursor:
-          description: If the source defines the cursor field, then it does any other cursor field inputs will be ignored. If it does not either the user_provided one is used or as a backup the default one is used.
+          description: If the source defines the cursor field, then any other cursor field inputs will be ignored. If it does not, either the user_provided one is used, or the default one is used as a backup.
           type: boolean
         defaultCursorField:
           description: Path to the field that will be used to determine if a record is new or modified since the last sync. If not provided by the source, the end user will have to specify the comparable themselves.
           type: array
           items:
             type: string
+        sourceDefinedPrimaryKey:
+          description: If the source defines the primary key, paths to the fields that will be used as a primary key. If not provided by the source, the end user will have to specify the primary key themselves.
+          type: array
+          items:
+            type: array
+            items:
+              type: string
     StreamJsonSchema:
       type: object
     AirbyteStreamConfiguration:
@@ -1806,6 +1813,16 @@ components:
           type: array
           items:
             type: string
+        destinationSyncMode:
+          $ref: "#/components/schemas/DestinationSyncMode"
+          default: append
+        primaryKey:
+          description: Paths to the fields that will be used as primary key. This field is REQUIRED if `destination_sync_mode` is `*_dedup`. Otherwise it is ignored.
+          type: array
+          items:
+            type: array
+            items:
+              type: string
         aliasName:
           description: Alias name to the stream to be used in the destination
           type: string
@@ -2046,6 +2063,13 @@ components:
       enum:
         - full_refresh
         - incremental
+    DestinationSyncMode:
+      type: string
+      enum:
+        - append
+        - overwrite
+        #- upsert_dedup # TODO chris: SCD Type 1 can be implemented later
+        - append_dedup # SCD Type 2
     AirbyteArchive:
       type: string
       format: binary
