@@ -446,8 +446,8 @@ class DefaultJobPersistenceTest {
   }
 
   @Nested
-  @DisplayName("When creating job")
-  class CreateJob {
+  @DisplayName("When enqueueing job")
+  class EnqueueJob {
 
     @Test
     @DisplayName("Should create initial job without attempt")
@@ -460,7 +460,7 @@ class DefaultJobPersistenceTest {
     }
 
     @Test
-    @DisplayName("Should not create a second job under the same scope if a first job already exists")
+    @DisplayName("Should not create a second job if a job under the same scope is in a non-terminal state")
     public void testCreateJobNoQueueing() throws IOException {
       final Optional<Long> jobId1 = jobPersistence.enqueueJob(SCOPE, SYNC_JOB_CONFIG);
       final Optional<Long> jobId2 = jobPersistence.enqueueJob(SCOPE, SYNC_JOB_CONFIG);
@@ -470,6 +470,21 @@ class DefaultJobPersistenceTest {
 
       final Job actual = jobPersistence.getJob(jobId1.get());
       final Job expected = createJob(jobId1.get(), SYNC_JOB_CONFIG, JobStatus.PENDING, Collections.emptyList(), NOW.getEpochSecond());
+      assertEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("Should create a second job if a previous job under the same scope has failed")
+    public void testCreateJobIfPrevJobFailed() throws IOException {
+      final Optional<Long> jobId1 = jobPersistence.enqueueJob(SCOPE, SYNC_JOB_CONFIG);
+      assertTrue(jobId1.isPresent());
+
+      jobPersistence.failJob(jobId1.get());
+      final Optional<Long> jobId2 = jobPersistence.enqueueJob(SCOPE, SYNC_JOB_CONFIG);
+      assertTrue(jobId2.isPresent());
+
+      final Job actual = jobPersistence.getJob(jobId2.get());
+      final Job expected = createJob(jobId2.get(), SYNC_JOB_CONFIG, JobStatus.PENDING, Collections.emptyList(), NOW.getEpochSecond());
       assertEquals(expected, actual);
     }
 
