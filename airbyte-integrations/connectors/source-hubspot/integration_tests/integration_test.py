@@ -66,19 +66,28 @@ def read_stream(generator) -> Tuple[List, List]:
     return records, state
 
 
-def test_deals_read(config, configured_catalog_fixture):
+def erase_dynamic_fields(records) -> List:
+    """Remove fields that too volatile, i.e may change between reads"""
+    for record in records:
+        record.record.data["properties"]["hs_time_in_appointmentscheduled"] = None
+        record.record.data["properties"]["hs_time_in_closedwon"] = None
+        record.record.emitted_at = None
+    return records
+
+
+def test_deals_read(config, configured_catalog):
     """Read should return some records"""
-    records, states = read_stream(SourceHubspot().read(AirbyteLogger(), config, configured_catalog_fixture))
+    records, states = read_stream(SourceHubspot().read(AirbyteLogger(), config, configured_catalog))
 
     assert len(records) > 0
     assert not states
 
 
-def test_second_read(config):
+def test_second_read(config, configured_catalog):
     """Second read should return same records as the first one"""
-    records1, states1 = read_stream(SourceHubspot().read(AirbyteLogger(), config, configured_catalog_fixture))
-    records2, states2 = read_stream(SourceHubspot().read(AirbyteLogger(), config, configured_catalog_fixture))
+    records1, states1 = read_stream(SourceHubspot().read(AirbyteLogger(), config, configured_catalog))
+    records2, states2 = read_stream(SourceHubspot().read(AirbyteLogger(), config, configured_catalog))
 
-    assert records1 == records2
+    assert erase_dynamic_fields(records1) == erase_dynamic_fields(records2), "Expected two full refresh syncs to produce the same records"
     assert states1 == states2
 
