@@ -145,13 +145,12 @@ definitions:
         items:
           type: string
       source_defined_primary_key:
-        description: If the source defines the primary key, then any other primary key inputs will be ignored. If it does not, either the user_provided one is used, or the default one is used as a backup.
-        type: boolean
-      default_primary_key:
-        description: Path to the fields that will be used as a primary key. If not provided by the source, the end user will have to specify the primary key themselves.
+        description: If the source defines the primary key, paths to the fields that will be used as a primary key. If not provided by the source, the end user will have to specify the primary key themselves.
         type: array
         items:
-          type: string
+          type: array
+          items:
+            type: string
   ConfiguredAirbyteCatalog:
     description: Airbyte stream schema catalog
     type: object
@@ -183,10 +182,12 @@ definitions:
         "$ref": "#/definitions/DestinationSyncMode"
         default: append
       primary_key:
-        description: Path to the field that will be used as primary key. This field is REQUIRED if `destination_sync_mode` is `*_dedup`. Otherwise it is ignored.
+        description: Paths to the fields that will be used as primary key. This field is REQUIRED if `destination_sync_mode` is `*_dedup`. Otherwise it is ignored.
         type: array
         items:
-          type: string
+          type: array
+          items:
+            type: string
   SyncMode:
     type: string
     enum:

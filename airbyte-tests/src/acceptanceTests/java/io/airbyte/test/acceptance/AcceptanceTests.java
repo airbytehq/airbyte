@@ -285,7 +285,7 @@ public class AcceptanceTests {
         .name(STREAM_NAME)
         .jsonSchema(jsonSchema)
         .defaultCursorField(Collections.emptyList())
-        .defaultPrimaryKey(Collections.emptyList())
+        .sourceDefinedPrimaryKey(Collections.emptyList())
         .supportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
     final AirbyteStreamConfiguration streamConfig = new AirbyteStreamConfiguration()
         .syncMode(SyncMode.FULL_REFRESH)

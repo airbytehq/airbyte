@@ -131,13 +131,9 @@ class AirbyteStream(BaseModel):
         None,
         description="Path to the field that will be used to determine if a record is new or modified since the last sync. If not provided by the source, the end user will have to specify the comparable themselves.",
     )
-    source_defined_primary_key: Optional[bool] = Field(
+    source_defined_primary_key: Optional[List[str]] = Field(
         None,
-        description="If the source defines the primary key, then any other primary key inputs will be ignored. If it does not, either the user_provided one is used, or the default one is used as a backup.",
-    )
-    default_primary_key: Optional[List[str]] = Field(
-        None,
-        description="Path to the fields that will be used as a primary key. If not provided by the source, the end user will have to specify the primary key themselves.",
+        description="If the source defines the primary key, paths to the fields that will be used as a primary key. If not provided by the source, the end user will have to specify the primary key themselves.",
     )
 
 
@@ -154,7 +150,7 @@ class ConfiguredAirbyteStream(BaseModel):
     destination_sync_mode: Optional[DestinationSyncMode] = "append"
     primary_key: Optional[List[str]] = Field(
         None,
-        description="Path to the field that will be used as primary key. This field is REQUIRED if `destination_sync_mode` is `*_dedup`. Otherwise it is ignored.",
+        description="Paths to the fields that will be used as primary key. This field is REQUIRED if `destination_sync_mode` is `*_dedup`. Otherwise it is ignored.",
     )
 
 
