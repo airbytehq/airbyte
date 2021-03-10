@@ -23,10 +23,23 @@ This library is structured as follows:
 1. **Test Runner**: This is the entry point which invokes the library. Currently, the test runner accepts a YAML configuration which declares which test suites should run and provides the appropriate inputs to them
 
 
-## Cool. I'm in. How can I get started? 
-If you generated your source using one of Airbyte's template generators, you should already have a YAML file in your connector module root called `acceptance_tests.yml`. If not, create one.
+## Cool. I'm in. How can I get started?
+
+### TL;DR 
+1. Configure your tests via `acceptance_tests.yaml`
+2. Create files needed for tests (e.g: Configured Catalog, connector configuration, etc..)
+3. Invoke the test library via Docker, mounting both your `acceptance_tests.yaml` and any files needed for the tests (the ones you created in step 2) into the Docker image
+
+### In more details
+If you generated your source using one of Airbyte's template generators, you should already have a YAML file in your connector module root called `acceptance_tests.yaml`. If not, create one.
 
 `acceptance_tests.yml` should adhere to the schema described by this [YAML file](src/main/resources/schemas/source_acceptance_test_inputs.yaml). See the linked YAML schema for a description of what each field means.
+
+Once the YAML configuration is ready, from your connector module root simply run `docker run -v $(pwd):/test_inputs/ -w /test_inputs/ airbyte/source-acceptance-tests`. This will mount your entire connector module directory into the test runner's filesystem, thereby making available any files you referenced in `acceptance_tests.yaml`. 
+
+That's it. That's the whole thing. 
+
+If your tests fail, follow the information provided by the test output to identify the problems. 
 
 ### FAQ
 **I wrote my connector in language X. Can I use this test suite?**
