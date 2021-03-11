@@ -197,8 +197,8 @@ class Stream(ABC):
         pass
 
     def _filter_dynamic_fields(self, records: Iterable) -> Iterable:
-        """ Skip certain fields because they are too dynamic and change every call (timers, etc),
-            see https://github.com/airbytehq/airbyte/issues/2397
+        """Skip certain fields because they are too dynamic and change every call (timers, etc),
+        see https://github.com/airbytehq/airbyte/issues/2397
         """
         for record in records:
             if isinstance(record, Mapping) and "properties" in record:
@@ -274,6 +274,7 @@ class CRMObjectStream(Stream):
         contacts, tickets, deals, engagements
     see https://developers.hubspot.com/docs/api/crm/understanding-the-crm for more details
     """
+
     entity: Optional[str] = None
     associations: List[str] = []
 
@@ -300,17 +301,17 @@ class CRMObjectStream(Stream):
         yield from self._flat_associations(generator)
 
     def _flat_associations(self, records: Iterable[MutableMapping]) -> Iterable[MutableMapping]:
-        """ When result has associations we prefer to have it flat, so we transform this:
+        """When result has associations we prefer to have it flat, so we transform this:
 
-            "associations": {
-                "contacts": {
-                    "results": [{"id": "201", "type": "company_to_contact"}, {"id": "251", "type": "company_to_contact"}]}
-                }
+        "associations": {
+            "contacts": {
+                "results": [{"id": "201", "type": "company_to_contact"}, {"id": "251", "type": "company_to_contact"}]}
             }
+        }
 
-            to this:
+        to this:
 
-            "contacts": [201, 251]
+        "contacts": [201, 251]
         """
         for record in records:
             if "associations" in record:
