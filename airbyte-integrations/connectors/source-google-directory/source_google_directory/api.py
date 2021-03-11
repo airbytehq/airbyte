@@ -70,7 +70,7 @@ class API:
 
 
 class StreamAPI(ABC):
-    max_results = 10
+    results_per_page = 100
 
     def __init__(self, api: API, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -90,7 +90,7 @@ class StreamAPI(ABC):
     def read(self, getter: Callable, params: Dict = None) -> Iterator:
         """Read using getter"""
         params = params or {}
-        params["maxResults"] = self.max_results
+        params["maxResults"] = self.results_per_page
         while True:
             batch = getter(params={**params})
             yield from self.process_response(batch)

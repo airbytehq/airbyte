@@ -38,7 +38,7 @@ setup(
         "google-auth-oauthlib==0.4.2",
         "backoff==1.10.0",
     ],
-    package_data={"": ["*.json"]},
+    package_data={"": ["*.json", "schemas/*.json"]},
     setup_requires=["pytest-runner"],
     tests_require=["pytest"],
     extras_require={
