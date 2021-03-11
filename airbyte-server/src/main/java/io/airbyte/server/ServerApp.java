@@ -146,7 +146,7 @@ public class ServerApp {
   private static void setCustomerIdIfNotSet(final ConfigRepository configRepository) {
     final StandardWorkspace workspace;
     try {
-      workspace = configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID);
+      workspace = configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID, false);
 
       if (workspace.getCustomerId() == null) {
         final UUID customerId = UUID.randomUUID();

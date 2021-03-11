@@ -72,11 +72,7 @@ public class ConfigFileArchiver {
   }
 
   public void exportConfigsToArchive(final Path storageRoot) throws ConfigNotFoundException, IOException, JsonValidationException {
-    final StandardWorkspace standardWorkspace = configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID);
-    if (standardWorkspace != null)
-      writeConfigsToArchive(storageRoot, ConfigSchema.STANDARD_WORKSPACE, List.of(standardWorkspace));
-    else
-      writeConfigsToArchive(storageRoot, ConfigSchema.STANDARD_WORKSPACE, List.of());
+    writeConfigsToArchive(storageRoot, ConfigSchema.STANDARD_WORKSPACE, configRepository.listStandardWorkspaces(true));
     writeConfigsToArchive(storageRoot, ConfigSchema.STANDARD_SOURCE_DEFINITION, configRepository.listStandardSources());
     writeConfigsToArchive(storageRoot, ConfigSchema.STANDARD_DESTINATION_DEFINITION, configRepository.listStandardDestinationDefinitions());
     writeConfigsToArchive(storageRoot, ConfigSchema.SOURCE_CONNECTION, configRepository.listSourceConnection());
