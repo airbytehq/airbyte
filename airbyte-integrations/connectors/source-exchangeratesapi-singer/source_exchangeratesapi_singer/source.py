@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import time
 import urllib.request
 from typing import Dict
 
@@ -49,5 +50,8 @@ class SourceExchangeRatesApiSinger(SingerSource):
         }
 
     def read_cmd(self, logger, config_path, catalog_path, state_path=None) -> str:
+        while True:
+            print("waiting...")
+            time.sleep(1)  # seconds
         state_option = f"--state {state_path}" if state_path else ""
         return f"tap-exchangeratesapi --config {config_path} {state_option}"
