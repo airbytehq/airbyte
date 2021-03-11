@@ -53,6 +53,8 @@ public class JobTracker {
     FAILED
   }
 
+  public static final String MESSAGE_NAME = "Connector Jobs";
+
   private final ConfigRepository configRepository;
   private final TrackingClient trackingClient;
 
@@ -96,7 +98,7 @@ public class JobTracker {
     });
   }
 
-  // used for tracking all asynchronous jobs.
+  // used for tracking all asynchronous jobs (sync and reset).
   public void trackSync(Job job, JobState jobState) {
     Exceptions.swallow(() -> {
       final ConfigType configType = job.getConfigType();
@@ -108,7 +110,7 @@ public class JobTracker {
 
       final ImmutableMap<String, Object> jobMetadata = generateJobMetadata(String.valueOf(jobId), configType, job.getAttemptsCount());
       final ImmutableMap<String, Object> sourceDefMetadata = generateSourceDefinitionMetadata(sourceDefinitionId);
-      final ImmutableMap<String, Object> destinationDefMetadata = generateSourceDefinitionMetadata(destinationDefinitionId);
+      final ImmutableMap<String, Object> destinationDefMetadata = generateDestinationDefinitionMetadata(destinationDefinitionId);
       final ImmutableMap<String, Object> syncMetadata = generateSyncMetadata(connectionId);
       final ImmutableMap<String, Object> stateMetadata = generateStateMetadata(jobState);
 
@@ -185,12 +187,7 @@ public class JobTracker {
   }
 
   private void track(Map<String, Object> metadata) {
-    // do not track get spec. it is done frequently and not terribly interesting.
-    if (metadata.get("job_type").equals("GET_SPEC")) {
-      return;
-    }
-
-    trackingClient.track("Connector Jobs", metadata);
+    trackingClient.track(MESSAGE_NAME, metadata);
   }
 
 }
