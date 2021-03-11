@@ -33,9 +33,9 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.helpers.YamlListToStandardDefinitions;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.scheduler.client.CachingSchedulerJobClient;
 import io.airbyte.server.errors.KnownException;
 import io.airbyte.server.services.AirbyteGithubStore;
+import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
 import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -51,13 +51,13 @@ public class SourceDefinitionsHandler {
   private final DockerImageValidator imageValidator;
   private final ConfigRepository configRepository;
   private final Supplier<UUID> uuidSupplier;
-  private final CachingSchedulerJobClient schedulerJobClient;
   private final AirbyteGithubStore githubStore;
+  private final CachingSynchronousSchedulerClient schedulerJobClient;
 
   public SourceDefinitionsHandler(
                                   final ConfigRepository configRepository,
                                   final DockerImageValidator imageValidator,
-                                  final CachingSchedulerJobClient schedulerJobClient) {
+                                  final CachingSynchronousSchedulerClient schedulerJobClient) {
     this(configRepository, imageValidator, UUID::randomUUID, schedulerJobClient, AirbyteGithubStore.production());
   }
 
@@ -65,7 +65,7 @@ public class SourceDefinitionsHandler {
                                   final ConfigRepository configRepository,
                                   final DockerImageValidator imageValidator,
                                   final Supplier<UUID> uuidSupplier,
-                                  final CachingSchedulerJobClient schedulerJobClient,
+                                  final CachingSynchronousSchedulerClient schedulerJobClient,
                                   final AirbyteGithubStore githubStore) {
     this.configRepository = configRepository;
     this.uuidSupplier = uuidSupplier;

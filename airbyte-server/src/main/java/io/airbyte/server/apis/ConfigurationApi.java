@@ -76,8 +76,8 @@ import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.config.Configs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.scheduler.client.CachingSchedulerJobClient;
-import io.airbyte.scheduler.client.SynchronousSchedulerClient;
+import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
+import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.KnownException;
@@ -126,8 +126,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   public ConfigurationApi(final ConfigRepository configRepository,
                           final JobPersistence jobPersistence,
-                          final CachingSchedulerJobClient schedulerJobClient,
-                          final SynchronousSchedulerClient synchronousSchedulerClient,
+                          final SchedulerJobClient schedulerJobClient,
+                          final CachingSynchronousSchedulerClient synchronousSchedulerClient,
                           final Configs configs,
                           final FileTtlManager archiveTtlManager) {
     final SpecFetcher specFetcher = new SpecFetcher(synchronousSchedulerClient);
@@ -135,9 +135,9 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     schedulerHandler = new SchedulerHandler(configRepository, schedulerJobClient, synchronousSchedulerClient);
     workspacesHandler = new WorkspacesHandler(configRepository);
     final DockerImageValidator dockerImageValidator = new DockerImageValidator(synchronousSchedulerClient);
-    sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, schedulerJobClient);
+    sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, synchronousSchedulerClient);
     connectionsHandler = new ConnectionsHandler(configRepository);
-    destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, dockerImageValidator, schedulerJobClient);
+    destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, dockerImageValidator, synchronousSchedulerClient);
     destinationHandler = new DestinationHandler(configRepository, schemaValidator, specFetcher, connectionsHandler);
     sourceHandler = new SourceHandler(configRepository, schemaValidator, specFetcher, connectionsHandler);
     jobHistoryHandler = new JobHistoryHandler(jobPersistence);

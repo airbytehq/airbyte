@@ -25,67 +25,71 @@
 package io.airbyte.scheduler.client;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.airbyte.scheduler.Job;
-import io.airbyte.scheduler.JobStatus;
-import io.airbyte.scheduler.persistence.JobCreator;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import java.io.IOException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class SpecCachingSchedulerJobClientTest {
+class SpecCachingSynchronousSchedulerClientTest {
 
-  private static final long JOB_ID = 14L;
   private static final String DOCKER_IMAGE = "airbyte/space_cop";
 
-  private Job job;
-  private JobCreator jobCreator;
-  private CachingSchedulerJobClient client;
+  private SynchronousSchedulerClient decoratedClient;
+  private CachingSynchronousSchedulerClient client;
+  private SynchronousResponse<ConnectorSpecification> response1;
+  private SynchronousResponse<ConnectorSpecification> response2;
 
+  @SuppressWarnings("unchecked")
   @BeforeEach
-  void setup() throws IOException {
-    job = mock(Job.class);
-    jobCreator = mock(JobCreator.class);
-    client = spy(new SpecCachingSchedulerJobClient(null, jobCreator));
-
-    when(jobCreator.createGetSpecJob(DOCKER_IMAGE)).thenReturn(JOB_ID);
-    doReturn(job).when((DefaultSchedulerJobClient) client).waitUntilJobIsTerminalOrTimeout(JOB_ID);
-    when(job.getStatus()).thenReturn(JobStatus.SUCCEEDED);
+  void setup() {
+    response1 = mock(SynchronousResponse.class, RETURNS_DEEP_STUBS);
+    response2 = mock(SynchronousResponse.class, RETURNS_DEEP_STUBS);
+    decoratedClient = mock(SynchronousSchedulerClient.class);
+    client = new SpecCachingSynchronousSchedulerClient(decoratedClient);
   }
 
   @Test
   void testCreateGetSpecJobCacheCacheMiss() throws IOException {
-    assertEquals(job, client.createGetSpecJob(DOCKER_IMAGE));
-    verify(jobCreator, times(1)).createGetSpecJob(DOCKER_IMAGE);
+    when(decoratedClient.createGetSpecJob(DOCKER_IMAGE)).thenReturn(response1);
+    when(response1.isSuccess()).thenReturn(true);
+    assertEquals(response1, client.createGetSpecJob(DOCKER_IMAGE));
+    verify(decoratedClient, times(1)).createGetSpecJob(DOCKER_IMAGE);
   }
 
   @Test
   void testCreateGetSpecJobFails() throws IOException {
-    when(job.getStatus()).thenReturn(JobStatus.FAILED);
+    when(decoratedClient.createGetSpecJob(DOCKER_IMAGE)).thenReturn(response1).thenReturn(response2);
+    when(response1.isSuccess()).thenReturn(false);
+    when(response2.isSuccess()).thenReturn(true);
     client.createGetSpecJob(DOCKER_IMAGE);
-    assertEquals(job, client.createGetSpecJob(DOCKER_IMAGE));
-    verify(jobCreator, times(2)).createGetSpecJob(DOCKER_IMAGE);
+    assertEquals(response2, client.createGetSpecJob(DOCKER_IMAGE));
+    verify(decoratedClient, times(2)).createGetSpecJob(DOCKER_IMAGE);
   }
 
   @Test
   void testCreateGetSpecJobCacheCacheHit() throws IOException {
+    when(decoratedClient.createGetSpecJob(DOCKER_IMAGE)).thenReturn(response1);
+    when(response1.isSuccess()).thenReturn(true);
     client.createGetSpecJob(DOCKER_IMAGE);
-    assertEquals(job, client.createGetSpecJob(DOCKER_IMAGE));
-    verify(jobCreator, times(1)).createGetSpecJob(DOCKER_IMAGE);
+    assertEquals(response1, client.createGetSpecJob(DOCKER_IMAGE));
+    verify(decoratedClient, times(1)).createGetSpecJob(DOCKER_IMAGE);
   }
 
   @Test
   void testInvalidateCache() throws IOException {
+    when(decoratedClient.createGetSpecJob(DOCKER_IMAGE)).thenReturn(response1).thenReturn(response2);
+    when(response1.isSuccess()).thenReturn(true);
+    when(response2.isSuccess()).thenReturn(true);
     client.createGetSpecJob(DOCKER_IMAGE);
     client.resetCache();
-    assertEquals(job, client.createGetSpecJob(DOCKER_IMAGE));
-    verify(jobCreator, times(2)).createGetSpecJob(DOCKER_IMAGE);
+    assertEquals(response2, client.createGetSpecJob(DOCKER_IMAGE));
+    verify(decoratedClient, times(2)).createGetSpecJob(DOCKER_IMAGE);
   }
 
 }

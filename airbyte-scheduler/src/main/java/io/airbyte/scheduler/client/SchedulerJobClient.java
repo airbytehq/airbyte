@@ -36,12 +36,6 @@ import java.io.IOException;
  */
 public interface SchedulerJobClient {
 
-  Job createSourceCheckConnectionJob(SourceConnection source, String dockerImage) throws IOException;
-
-  Job createDestinationCheckConnectionJob(DestinationConnection destination, String dockerImage) throws IOException;
-
-  Job createDiscoverSchemaJob(SourceConnection source, String dockerImage) throws IOException;
-
   Job createGetSpecJob(String dockerImage) throws IOException;
 
   Job createOrGetActiveSyncJob(SourceConnection source,
