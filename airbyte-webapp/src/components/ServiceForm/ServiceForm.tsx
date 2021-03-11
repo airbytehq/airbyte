@@ -56,7 +56,10 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
 
   const onFormSubmit = useCallback(
     async (values) => {
-      return onSubmit(validationSchema.cast(values, { stripUnknown: true }));
+      const valuesToSend = validationSchema.cast(values, {
+        stripUnknown: true,
+      });
+      return onSubmit(valuesToSend);
     },
     [onSubmit, validationSchema]
   );

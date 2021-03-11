@@ -71,16 +71,16 @@ const Control: React.FC<IProps> = ({
   } else if (property.isSecret) {
     const unfinishedSecret = unfinishedSecrets[fieldName];
     const isEditInProgress = !!unfinishedSecret;
+    const isFormInEditMode = !!meta.initialValue;
     return (
       <ConfirmationControl
         component={
-          property.multiline && isEditInProgress ? (
+          property.multiline && (isEditInProgress || !isFormInEditMode) ? (
             <TextArea
               {...field}
-              placeholder={placeholder}
               autoComplete="off"
+              placeholder={placeholder}
               value={value ?? ""}
-              disabled={!isEditInProgress}
               rows={3}
             />
           ) : (
@@ -88,14 +88,12 @@ const Control: React.FC<IProps> = ({
               {...field}
               autoComplete="off"
               placeholder={placeholder}
-              type="password"
-              autoFocus={isEditInProgress}
-              disabled={!isEditInProgress}
               value={value ?? ""}
+              type="password"
             />
           )
         }
-        showButtons={!!meta.initialValue}
+        showButtons={isFormInEditMode}
         isEditInProgress={isEditInProgress}
         onDone={() => removeUnfinishedSecret(fieldName)}
         onStart={() => {

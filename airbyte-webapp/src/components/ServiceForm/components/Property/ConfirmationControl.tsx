@@ -50,6 +50,8 @@ const ConfirmationControl: React.FC<ConfirmationControlProps> = ({
     <ComponentContainer>
       {React.cloneElement(component, {
         ref: controlRef,
+        autoFocus: isEditInProgress,
+        disabled: !isEditInProgress,
       })}
       {isEditInProgress ? (
         <>
