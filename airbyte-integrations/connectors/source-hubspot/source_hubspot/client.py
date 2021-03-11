@@ -28,6 +28,7 @@ from airbyte_protocol import AirbyteStream
 from base_python import BaseClient
 from source_hubspot.api import (
     API,
+    CampaignStream,
     ContactListStream,
     CRMObjectStream,
     DealPipelineStream,
@@ -50,7 +51,7 @@ class Client(BaseClient):
 
         common_params = dict(api=self._api, start_date=self._start_date)
         self._apis = {
-            "campaigns": CRMObjectStream(entity="campaign", **common_params),
+            "campaigns": CampaignStream(**common_params),
             "companies": CRMObjectStream(entity="company", associations=["contacts"], **common_params),
             "contact_lists": ContactListStream(**common_params),
             "contacts": CRMObjectStream(entity="contact", **common_params),

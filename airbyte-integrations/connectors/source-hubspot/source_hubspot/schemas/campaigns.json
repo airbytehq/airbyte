@@ -85,10 +85,7 @@
     "type": {
       "type": ["null", "string"]
     },
-    "createdAt": {
-      "type": "string"
-    },
-    "updatedAt": {
+    "lastUpdatedTime": {
       "type": "string"
     }
   }

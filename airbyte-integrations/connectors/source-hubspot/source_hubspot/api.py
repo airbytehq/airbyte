@@ -208,18 +208,29 @@ class Stream(ABC):
                         record["properties"].pop(key)
             yield record
 
-    def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
-        default_params = {"limit": self.limit, "properties": ",".join(self.properties.keys())}
+    def _filter_old_records(self, records: Iterable) -> Iterable:
+        """Skip records that was updated before our start_date"""
+        for record in records:
+            if self.updated_field:
+                updated_at = record[self.updated_field]
+                if isinstance(updated_at, int):
+                    updated_at = pendulum.from_timestamp(updated_at / 1000.0)
+                elif isinstance(updated_at, str):
+                    updated_at = pendulum.parse(updated_at)
+                else:
+                    raise ValueError(f"Unsupported type of update cursor {type(updated_at)}")
+                if updated_at < self._start_date:
+                    continue
+            yield record
 
-        params = {**default_params, **params} if params else {**default_params}
-
+    def _read(self, getter: Callable, params: MutableMapping[str, Any] = None) -> Iterator:
         while True:
             response = getter(params=params)
             if isinstance(response, Mapping):
                 if response.get(self.data_field) is None:
                     raise RuntimeError("Unexpected API response: {} not in {}".format(self.data_field, response.keys()))
 
-                yield from self._filter_dynamic_fields(response[self.data_field])
+                yield from response[self.data_field]
 
                 # pagination
                 if "paging" in response:  # APIv3 pagination
@@ -234,11 +245,19 @@ class Stream(ABC):
                         params[self.page_filter] = response[self.page_field]
             else:
                 response = list(response)
-                yield from self._filter_dynamic_fields(response)
+                yield from response
+
+                # pagination
                 if len(response) < self.limit:
                     break
                 else:
                     params[self.page_filter] = params.get(self.page_filter, 0) + self.limit
+
+    def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
+        default_params = {"limit": self.limit, "properties": ",".join(self.properties.keys())}
+        params = {**default_params, **params} if params else {**default_params}
+
+        yield from self._filter_dynamic_fields(self._filter_old_records(self._read(getter, params)))
 
     def read_chunked(self, getter: Callable, params: Mapping[str, Any] = None):
         params = {**params} if params else {}
@@ -262,7 +281,10 @@ class Stream(ABC):
         props = {}
         data = self._api.get(f"/properties/v2/{self.entity}/properties")
         for row in data:
-            props[row["name"]] = {"type": row["type"]}
+            field_type = row["type"]
+            if field_type in ["enumeration", "date", "date-time"]:
+                field_type = "string"
+            props[row["name"]] = {"type": field_type}
 
         return props
 
@@ -371,19 +393,20 @@ class CRMAssociationStream(Stream):
 
 class CampaignStream(Stream):
     """Email campaigns, API v1
+    There is some confusion between emails and campaigns in docs, this endpoint returns actual emails
     Docs: https://legacydocs.hubspot.com/docs/methods/email/get_campaign_data
     """
 
-    entity = "campaign"
     more_key = "hasMore"
     data_field = "campaigns"
     limit = 500
+    updated_field = "lastUpdatedTime"
 
     def list(self, fields) -> Iterable:
-        url = "/email/public/v1/campaigns/by-id"
+        url = "/email/public/v1/campaigns"
         for row in self.read(getter=partial(self._api.get, url=url)):
             record = self._api.get(f"/email/public/v1/campaigns/{row['id']}")
-            yield record
+            yield {**row, **record}
 
 
 class ContactListStream(Stream):
