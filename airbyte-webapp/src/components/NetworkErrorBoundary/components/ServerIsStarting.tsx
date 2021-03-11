@@ -9,7 +9,7 @@ import { H4 } from "components/Titles";
 const Content = styled(ContentCard)`
   width: 100%;
   max-width: 600px;
-  padding: 50px 0;
+  padding: 50px 15px;
 `;
 
 const ServerIsStarting: React.FC = () => {
