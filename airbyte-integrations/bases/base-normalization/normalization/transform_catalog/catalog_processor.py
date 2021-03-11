@@ -115,14 +115,14 @@ class CatalogProcessor:
             destination_sync_mode = get_destination_sync_mode(configured_stream, stream_name)
             cursor_field = []
             primary_key = []
-            if source_sync_mode.value == SyncMode.incremental.value or destination_sync_mode in [
-                # DestinationSyncMode.upsert_dedup,
-                DestinationSyncMode.append_dedup,
+            if source_sync_mode.value == SyncMode.incremental.value or destination_sync_mode.value in [
+                # DestinationSyncMode.upsert_dedup.value,
+                DestinationSyncMode.append_dedup.value,
             ]:
                 cursor_field = get_field(configured_stream, "cursor_field", f"Undefined cursor field for stream {stream_name}")
-            if destination_sync_mode in [
-                # DestinationSyncMode.upsert_dedup,
-                DestinationSyncMode.append_dedup
+            if destination_sync_mode.value in [
+                # DestinationSyncMode.upsert_dedup.value,
+                DestinationSyncMode.append_dedup.value
             ]:
                 primary_key = get_field(configured_stream, "primary_key", f"Undefined primary key for stream {stream_name}")
 
@@ -234,7 +234,7 @@ def get_source_sync_mode(stream_config: Dict, stream_name: str) -> SyncMode:
     except ValueError as e:
         # Fallback to default source sync mode value
         result = SyncMode.full_refresh
-        print(f"Source sync mode falling back to {result} for {stream_name}: {e}")
+        print(f"WARN: Source sync mode falling back to {result} for {stream_name}: {e}")
     return result
 
 
@@ -251,7 +251,7 @@ def get_destination_sync_mode(stream_config: Dict, stream_name: str) -> Destinat
     except ValueError as e:
         # Fallback to default destination sync mode value
         result = DestinationSyncMode.append
-        print(f"Destination sync mode falling back to {result} for {stream_name}: {e}")
+        print(f"WARN: Destination sync mode falling back to {result} for {stream_name}: {e}")
     return result
 
 
