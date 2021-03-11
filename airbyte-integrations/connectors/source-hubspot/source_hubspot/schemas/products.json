@@ -13,6 +13,12 @@
     },
     "isDeleted": {
       "type": ["null", "boolean"]
+    },
+    "createdAt": {
+      "type": "string"
+    },
+    "updatedAt": {
+      "type": "string"
     }
   }
 }

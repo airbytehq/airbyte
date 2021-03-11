@@ -2314,6 +2314,12 @@
           }
         }
       }
+    },
+    "createdAt": {
+      "type": "string"
+    },
+    "updatedAt": {
+      "type": "string"
     }
   }
 }

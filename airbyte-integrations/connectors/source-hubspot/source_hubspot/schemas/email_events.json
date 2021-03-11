@@ -32,8 +32,7 @@
       }
     },
     "created": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": "integer"
     },
     "deviceType": {
       "type": ["null", "string"]

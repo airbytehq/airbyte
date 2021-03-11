@@ -6,7 +6,7 @@
       "type": ["null", "integer"]
     },
     "companyId": {
-      "type": ["null", "integer"]
+      "type": "integer"
     },
     "isDeleted": {
       "type": ["null", "boolean"]
@@ -22,6 +22,12 @@
     },
     "contacts": {
       "type": ["null", "array"]
+    },
+    "createdAt": {
+      "type": "string"
+    },
+    "updatedAt": {
+      "type": "string"
     }
   }
 }

@@ -172,12 +172,10 @@
       }
     },
     "createdAt": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": "integer"
     },
     "updatedAt": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": "integer"
     },
     "performableHtml": {
       "type": ["null", "string"]

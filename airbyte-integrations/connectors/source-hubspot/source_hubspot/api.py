@@ -178,6 +178,7 @@ class Stream(ABC):
     """Base class for all streams. Responsible for data fetching and pagination"""
 
     entity = None
+    updated_field = None
 
     more_key = None
     data_field = "results"
@@ -277,6 +278,7 @@ class CRMObjectStream(Stream):
 
     entity: Optional[str] = None
     associations: List[str] = []
+    updated_field = "updatedAt"
 
     @property
     def url(self):
@@ -392,6 +394,7 @@ class ContactListStream(Stream):
     url = "/contacts/v1/lists"
     data_field = "lists"
     more_key = "has-more"
+    updated_field = "updatedAt"
 
     def list(self, fields) -> Iterable:
         params = {"count": self.limit}
@@ -405,6 +408,7 @@ class DealPipelineStream(Stream):
     """
 
     url = "/crm-pipelines/v1/pipelines/deals"
+    updated_field = "updatedAt"
 
     def list(self, fields) -> Iterable:
         yield from self.read(partial(self._api.get, url=self.url))
@@ -417,9 +421,10 @@ class TicketPipelineStream(Stream):
     """
 
     url = "/crm-pipelines/v1/pipelines/tickets"
+    updated_field = "updatedAt"
 
     def list(self, fields) -> Iterable:
-        yield from self._api.get(url=self.url)
+        yield from self.read(partial(self._api.get, url=self.url))
 
 
 class EmailEventStream(Stream):
@@ -431,6 +436,7 @@ class EmailEventStream(Stream):
     data_field = "events"
     more_key = "hasMore"
     limit = 1000
+    updated_field = "created"
 
     def list(self, fields) -> Iterable:
         yield from self.read_chunked(partial(self._api.get, url=self.url))
@@ -445,11 +451,12 @@ class EngagementStream(Stream):
     url = "/engagements/v1/engagements/paged"
     more_key = "hasMore"
     limit = 250
+    updated_field = "lastUpdated"
 
     def list(self, fields) -> Iterable:
         for record in self.read(partial(self._api.get, url=self.url)):
-            record["engagement_id"] = record["engagement"]["id"]
-            yield record
+            # move engagement one level up
+            yield {**record.pop("engagement"), **record}
 
 
 class FormStream(Stream):
@@ -460,6 +467,7 @@ class FormStream(Stream):
 
     entity = "form"
     url = "/forms/v2/forms"
+    updated_field = "updatedAt"
 
     def list(self, fields) -> Iterable:
         yield from self.read(partial(self._api.get, url=self.url))
@@ -471,6 +479,7 @@ class OwnerStream(Stream):
     """
 
     url = "/crm/v3/owners"
+    updated_field = "updatedAt"
 
     def list(self, fields) -> Iterable:
         yield from self.read(partial(self._api.get, url=self.url))
@@ -485,6 +494,7 @@ class SubscriptionChangeStream(Stream):
     data_field = "timeline"
     more_key = "hasMore"
     limit = 1000
+    updated_field = "timestamp"
 
     def list(self, fields) -> Iterable:
         yield from self.read_chunked(partial(self._api.get, url=self.url))
@@ -497,6 +507,7 @@ class WorkflowStream(Stream):
 
     url = "/automation/v3/workflows"
     data_field = "workflows"
+    updated_field = "updatedAt"
 
     def list(self, fields) -> Iterable:
         yield from self.read(partial(self._api.get, url=self.url))

@@ -15,12 +15,10 @@
       "type": ["null", "boolean"]
     },
     "insertedAt": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": "integer"
     },
     "updatedAt": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": "integer"
     },
     "personaTagIds": {
       "type": "array",

@@ -84,6 +84,12 @@
     },
     "type": {
       "type": ["null", "string"]
+    },
+    "createdAt": {
+      "type": "string"
+    },
+    "updatedAt": {
+      "type": "string"
     }
   }
 }
