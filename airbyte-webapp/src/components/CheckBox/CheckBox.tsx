@@ -24,9 +24,9 @@ const CheckBoxContainer = styled.label`
   cursor: pointer;
 `;
 
-const CheckBox: React.FC<React.InputHTMLAttributes<
-  HTMLInputElement
->> = props => {
+const CheckBox: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (
+  props
+) => {
   return (
     <CheckBoxContainer
       onClick={(event: React.SyntheticEvent) => event.stopPropagation()}

@@ -27,7 +27,6 @@ package io.airbyte.commons.json;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -97,7 +96,7 @@ class JsonsTest {
         Jsons.tryDeserialize("{\"str\":\"abc\", \"num\": 999, \"numLong\": 888}", ToClass.class));
 
     assertEquals(
-        Optional.empty(),
+        Optional.of(new ToClass("abc", 999, 0L)),
         Jsons.tryDeserialize("{\"str\":\"abc\", \"num\": 999, \"test\": 888}", ToClass.class));
   }
 
@@ -155,8 +154,9 @@ class JsonsTest {
         Lists.newArrayList(expected),
         Jsons.object(Jsons.jsonNode(Lists.newArrayList(expected)), new TypeReference<List<ToClass>>() {}));
 
-    assertThrows(IllegalArgumentException.class,
-        () -> Jsons.object(Jsons.deserialize("{\"a\":1}"), ToClass.class));
+    assertEquals(
+        new ToClass(),
+        Jsons.object(Jsons.deserialize("{\"a\":1}"), ToClass.class));
   }
 
   @Test
@@ -170,12 +170,13 @@ class JsonsTest {
         Optional.of(expected),
         Jsons.tryObject(Jsons.deserialize("{\"str\":\"abc\",\"num\":999,\"numLong\":888}"), new TypeReference<ToClass>() {}));
 
+    final ToClass emptyExpected = new ToClass();
     assertEquals(
-        Optional.empty(),
+        Optional.of(emptyExpected),
         Jsons.tryObject(Jsons.deserialize("{\"str1\":\"abc\"}"), ToClass.class));
 
     assertEquals(
-        Optional.empty(),
+        Optional.of(emptyExpected),
         Jsons.tryObject(Jsons.deserialize("{\"str1\":\"abc\"}"), new TypeReference<ToClass>() {}));
 
   }

@@ -82,6 +82,20 @@ services:
       - IS_DEMO=${IS_DEMO:-}
       - PAPERCUPS_STORYTIME=${PAPERCUPS_STORYTIME:-}
       - TRACKING_STRATEGY=${TRACKING_STRATEGY}
+  airbyte-temporal:
+    image: temporalio/auto-setup:1.7.0
+    container_name: airbyte-temporal
+    ports:
+      - 7233:7233
+    environment:
+      - DB=postgresql
+      - DB_PORT=5432
+      - POSTGRES_USER=${DATABASE_USER}
+      - POSTGRES_PWD=${DATABASE_PASSWORD}
+      - POSTGRES_SEEDS=db
+      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development.yaml
+    volumes:
+      - ./temporal/dynamicconfig:/etc/temporal/config/dynamicconfig
 volumes:
   workspace:
     name: ${WORKSPACE_DOCKER_MOUNT}

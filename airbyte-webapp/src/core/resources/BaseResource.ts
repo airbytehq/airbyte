@@ -6,35 +6,25 @@ import {
   ReadShape,
   schemas,
   SchemaDetail,
-  SchemaList
+  SchemaList,
 } from "rest-hooks";
 
-// import { authService } from "../auth/authService";
-import config from "../../config";
+import { NetworkError } from "core/request/NetworkError";
+import { AirbyteRequestService } from "../request/AirbyteRequestService";
 
-export class NetworkError extends Error {
-  status: number;
-  response: Response;
-
-  constructor(response: Response) {
-    super(response.statusText);
-    this.status = response.status;
-    this.response = response;
-  }
-}
-
+// TODO: rename to crud resource after upgrade to rest-hook 5.0.0
 export default abstract class BaseResource extends Resource {
   /** Perform network request and resolve with HTTP Response */
   static async fetchResponse(
     _: Method,
     url: string,
-    body?: Readonly<object | string>
-  ) {
+    body?: Readonly<Record<string, unknown> | Array<unknown> | string>
+  ): Promise<Response> {
     let options: RequestInit = {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
-      }
+        "Content-Type": "application/json",
+      },
     };
     if (this.fetchOptionsPlugin) options = this.fetchOptionsPlugin(options);
     if (body) options.body = JSON.stringify(body);
@@ -43,11 +33,11 @@ export default abstract class BaseResource extends Resource {
   }
 
   /** Perform network request and resolve with json body */
-  static async fetch(
+  static async fetch<T extends unknown>(
     method: Method,
     url: string,
-    body?: Readonly<object | string>
-  ) {
+    body?: Readonly<Record<string, unknown> | Array<unknown> | string>
+  ): Promise<T> {
     const response = await this.fetchResponse(method, url, body);
 
     if (response.status >= 200 && response.status < 300) {
@@ -60,34 +50,37 @@ export default abstract class BaseResource extends Resource {
   }
 
   static listUrl<T extends typeof Resource>(this: T): string {
-    return `${config.apiUrl}${this.urlRoot}`;
+    return `${AirbyteRequestService.rootUrl}${this.urlRoot}`;
   }
 
-  static url<T extends typeof Resource>(this: T): string {
-    return `${config.apiUrl}${this.urlRoot}`;
+  static url<T extends typeof Resource>(
+    this: T,
+    _: Readonly<Record<string, unknown>>
+  ): string {
+    return `${AirbyteRequestService.rootUrl}${this.urlRoot}`;
   }
 
   static rootUrl(): string {
-    return config.apiUrl;
+    return AirbyteRequestService.rootUrl;
   }
 
   static listShape<T extends typeof Resource>(
     this: T
   ): ReadShape<SchemaList<AbstractInstanceType<T>>> {
     return {
-      ...(super.listShape() as any),
-      getFetchKey: (params: any) =>
+      ...super.listShape(),
+      getFetchKey: (params: Readonly<Record<string, unknown>>) =>
         "POST " + this.url(params) + "/list" + JSON.stringify(params),
       fetch: async (
         params: Readonly<Record<string, string | number>>
-      ): Promise<any> => {
+      ): Promise<unknown> => {
         const response = await this.fetch(
           "post",
           `${this.listUrl(params)}/list`,
           { ...params }
         );
         return response;
-      }
+      },
     };
   }
 
@@ -95,19 +88,19 @@ export default abstract class BaseResource extends Resource {
     this: T
   ): ReadShape<SchemaDetail<AbstractInstanceType<T>>> {
     return {
-      ...(super.detailShape() as any),
-      getFetchKey: (params: any) =>
+      ...super.detailShape(),
+      getFetchKey: (params: Readonly<Record<string, unknown>>) =>
         "POST " + this.url(params) + "/get" + JSON.stringify(params),
       fetch: async (
         params: Readonly<Record<string, string | number>>
-      ): Promise<any> => {
+      ): Promise<unknown> => {
         const response = await this.fetch(
           "post",
           `${this.url(params)}/get`,
           params
         );
         return response;
-      }
+      },
     };
   }
 
@@ -115,40 +108,44 @@ export default abstract class BaseResource extends Resource {
     this: T
   ): MutateShape<SchemaDetail<AbstractInstanceType<T>>> {
     return {
-      ...(super.createShape() as any),
-      getFetchKey: (params: any) =>
+      ...super.createShape(),
+      getFetchKey: (params: Readonly<Record<string, unknown>>) =>
         "POST " + this.url(params) + "/create" + JSON.stringify(params),
       fetch: async (
         params: Readonly<Record<string, string | number>>,
-        body: Readonly<object>
-      ): Promise<any> => {
+        body: Readonly<Record<string, unknown>>
+      ): Promise<unknown> => {
         const response = await this.fetch(
           "post",
           `${this.listUrl(params)}/create`,
           body
         );
         return response;
-      }
+      },
     };
   }
 
   static deleteShape<T extends typeof Resource>(
     this: T
-  ): MutateShape<schemas.Delete<T>, Readonly<object>, unknown> {
+  ): MutateShape<
+    schemas.Delete<T>,
+    Readonly<Record<string, unknown>>,
+    unknown
+  > {
     return {
-      ...(super.deleteShape() as any),
-      getFetchKey: (params: any) =>
+      ...super.deleteShape(),
+      getFetchKey: (params: Readonly<Record<string, unknown>>) =>
         "POST " + this.url(params) + "/delete" + JSON.stringify(params),
       fetch: async (
         params: Readonly<Record<string, string | number>>
-      ): Promise<any> => {
+      ): Promise<unknown> => {
         const response = await this.fetch(
           "post",
           `${this.url(params)}/delete`,
           params
         );
         return response;
-      }
+      },
     };
   }
 
@@ -156,20 +153,20 @@ export default abstract class BaseResource extends Resource {
     this: T
   ): MutateShape<SchemaDetail<AbstractInstanceType<T>>> {
     return {
-      ...(super.partialUpdateShape() as any),
-      getFetchKey: (params: any) =>
+      ...super.partialUpdateShape(),
+      getFetchKey: (params: Readonly<Record<string, unknown>>) =>
         "POST " + this.url(params) + "/partial-update" + JSON.stringify(params),
       fetch: async (
         params: Readonly<Record<string, string | number>>,
-        body: Readonly<object>
-      ): Promise<any> => {
+        body: Readonly<Record<string, unknown>>
+      ): Promise<unknown> => {
         const response = await this.fetch(
           "post",
           `${this.url(params)}/update`,
           body
         );
         return response;
-      }
+      },
     };
   }
 }

@@ -29,10 +29,10 @@ import io.airbyte.api.model.ImportRead;
 import io.airbyte.api.model.ImportRead.StatusEnum;
 import io.airbyte.commons.io.Archives;
 import io.airbyte.commons.io.FileTtlManager;
+import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.PersistenceConstants;
-import io.airbyte.db.AirbyteVersion;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.converters.ConfigFileArchiver;
 import io.airbyte.server.converters.DatabaseArchiver;
@@ -117,7 +117,7 @@ public class ArchiveHandler {
 
     ImportRead result;
     try {
-      final Path tempFolder = Files.createTempDirectory("airbyte_archive");
+      final Path tempFolder = Files.createTempDirectory(Path.of("/tmp"), "airbyte_archive");
       try {
         Archives.extractArchive(archive.toPath(), tempFolder);
         checkImport(tempFolder);
@@ -134,6 +134,7 @@ public class ArchiveHandler {
       // report that the previous customer id is now superseded by the imported one.
       previousCustomerIdOptional.ifPresent(previousCustomerId -> TrackingClientSingleton.get().alias(previousCustomerId.toString()));
     } catch (IOException | JsonValidationException | ConfigNotFoundException | RuntimeException e) {
+      LOGGER.error("Import failed", e);
       result = new ImportRead().status(StatusEnum.FAILED).reason(e.getMessage());
     }
 
@@ -144,9 +145,9 @@ public class ArchiveHandler {
     final Path versionFile = tempFolder.resolve(VERSION_FILE_NAME);
     final String importVersion = Files.readString(versionFile, Charset.defaultCharset()).replace("\n", "").strip();
     LOGGER.info(String.format("Checking Airbyte Version to import %s", importVersion));
-    if (AirbyteVersion.isInvalid(version, importVersion)) {
+    if (AirbyteVersion.isCompatible(version, importVersion)) {
       throw new IOException(String.format("Imported VERSION (%s) is incompatible with current Airbyte version (%s).\n" +
-          "Please Upgrade your Airbyte Archive, see more at https://docs.airbyte.io/tutorials/tutorials/upgrading-airbyte\n",
+          "Please upgrade your Airbyte Archive, see more at https://docs.airbyte.io/tutorials/upgrading-airbyte\n",
           importVersion, version));
     }
     databaseArchiver.checkVersion(version);

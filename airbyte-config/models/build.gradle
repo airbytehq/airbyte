@@ -21,4 +21,5 @@ jsonSchema2Pojo {
     generateBuilders = true
     includeConstructors = false
     includeSetters = true
+    serializable = true
 }

@@ -2,25 +2,26 @@ import React from "react";
 import { useIntl } from "react-intl";
 import { useField } from "formik";
 
-import DropDown from "../../../DropDown";
+import { DropDown, Input, TextArea } from "components";
 import ConfirmationInput from "./ConfirmationInput";
-import Input from "../../../Input";
-import { FormBaseItem } from "../../../../core/form/types";
-import { useWidgetInfo } from "../../uiWidgetContext";
+import { FormBaseItem } from "core/form/types";
 
 type IProps = {
   property: FormBaseItem;
+  unfinishedSecrets: Record<string, { startValue: string }>;
+  addUnfinishedSecret: (key: string, info?: Record<string, unknown>) => void;
+  removeUnfinishedSecret: (key: string) => void;
 };
 
-const Control: React.FC<IProps> = ({ property }) => {
+const Control: React.FC<IProps> = ({
+  property,
+  addUnfinishedSecret,
+  removeUnfinishedSecret,
+  unfinishedSecrets,
+}) => {
   const formatMessage = useIntl().formatMessage;
   const { fieldName } = property;
   const [field, meta, form] = useField(fieldName);
-  const {
-    addUnfinishedSecret,
-    removeUnfinishedSecret,
-    unfinishedSecrets
-  } = useWidgetInfo();
 
   // TODO: think what to do with other cases
   let placeholder: string | undefined;
@@ -47,13 +48,13 @@ const Control: React.FC<IProps> = ({ property }) => {
         {...field}
         placeholder={placeholder}
         filterPlaceholder={formatMessage({
-          id: "form.searchName"
+          id: "form.searchName",
         })}
-        data={property.enum.map(dataItem => ({
+        data={property.enum.map((dataItem) => ({
           text: dataItem?.toString() ?? "",
-          value: dataItem?.toString() ?? ""
+          value: dataItem?.toString() ?? "",
         }))}
-        onSelect={selectedItem => form.setValue(selectedItem.value)}
+        onSelect={(selectedItem) => form.setValue(selectedItem.value)}
         value={value}
       />
     );
@@ -82,6 +83,16 @@ const Control: React.FC<IProps> = ({ property }) => {
             form.setValue(unfinishedSecret.startValue);
           }
         }}
+      />
+    );
+  } else if (property.multiline) {
+    return (
+      <TextArea
+        {...field}
+        placeholder={placeholder}
+        autoComplete="off"
+        value={value ?? ""}
+        rows={3}
       />
     );
   } else {

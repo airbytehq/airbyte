@@ -1,8 +1,8 @@
-import { Resource } from "rest-hooks";
+import { ReadShape, Resource, SchemaDetail } from "rest-hooks";
 
 import BaseResource from "./BaseResource";
 import { JobInfo } from "./Scheduler";
-import { SyncSchema, SourceDiscoverSchemaRead } from "core/domain/catalog";
+import { SourceDiscoverSchemaRead, SyncSchema } from "core/domain/catalog";
 import { toInnerModel } from "core/domain/catalog/fieldUtil";
 
 export interface Schema extends SourceDiscoverSchemaRead {
@@ -12,20 +12,22 @@ export interface Schema extends SourceDiscoverSchemaRead {
 export default class SchemaResource extends BaseResource implements Schema {
   readonly catalog: SyncSchema = { streams: [] };
   readonly id: string = "";
-  readonly jobInfo: JobInfo | undefined = undefined;
+  readonly jobInfo?: JobInfo = undefined;
 
-  pk() {
+  pk(): string {
     return this.id?.toString();
   }
 
   static urlRoot = "sources";
 
-  static schemaShape<T extends typeof Resource>(this: T) {
+  static schemaShape<T extends typeof Resource>(
+    this: T
+  ): ReadShape<SchemaDetail<Schema>> {
     return {
       ...super.detailShape(),
       getFetchKey: (params: { sourceId: string }) =>
         `POST /sources/discover_schema` + JSON.stringify(params),
-      fetch: async (params: { sourceId: string }): Promise<any> => {
+      fetch: async (params: { sourceId: string }): Promise<Schema> => {
         const response = await this.fetch(
           "post",
           `${this.url(params)}/discover_schema`,
@@ -37,10 +39,10 @@ export default class SchemaResource extends BaseResource implements Schema {
         return {
           catalog: result.catalog,
           jobInfo: result.jobInfo,
-          id: params.sourceId
+          id: params.sourceId,
         };
       },
-      schema: this
+      schema: this,
     };
   }
 }

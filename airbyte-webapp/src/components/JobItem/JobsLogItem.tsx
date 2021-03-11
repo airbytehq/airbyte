@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 
-import { JobInfo } from "../../core/resources/Scheduler";
+import { JobInfo } from "core/resources/Scheduler";
 import ContentWrapper from "./components/ContentWrapper";
 import MainInfo from "./components/MainInfo";
 import JobCurrentLogs from "./components/JobCurrenLogs";
-import Status from "../../core/statuses";
+import Status from "core/statuses";
 
 type IProps = {
   jobInfo?: JobInfo;
@@ -31,7 +31,7 @@ const JobItem: React.FC<IProps> = ({ jobInfo }) => {
 
   const onExpand = () => setIsOpen(!isOpen);
   const isFailed = jobInfo.job.status === Status.FAILED;
-  const attempts = jobInfo.attempts.map(item => item.attempt);
+  const attempts = jobInfo.attempts.map((item) => item.attempt);
 
   return (
     <Item isFailed={isFailed}>

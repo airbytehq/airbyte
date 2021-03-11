@@ -33,6 +33,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.scheduler.Job;
+import io.airbyte.scheduler.JobStatus;
 import io.airbyte.scheduler.persistence.JobCreator;
 import java.io.IOException;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,12 +56,21 @@ class SpecCachingSchedulerJobClientTest {
 
     when(jobCreator.createGetSpecJob(DOCKER_IMAGE)).thenReturn(JOB_ID);
     doReturn(job).when((DefaultSchedulerJobClient) client).waitUntilJobIsTerminalOrTimeout(JOB_ID);
+    when(job.getStatus()).thenReturn(JobStatus.SUCCEEDED);
   }
 
   @Test
   void testCreateGetSpecJobCacheCacheMiss() throws IOException {
     assertEquals(job, client.createGetSpecJob(DOCKER_IMAGE));
     verify(jobCreator, times(1)).createGetSpecJob(DOCKER_IMAGE);
+  }
+
+  @Test
+  void testCreateGetSpecJobFails() throws IOException {
+    when(job.getStatus()).thenReturn(JobStatus.FAILED);
+    client.createGetSpecJob(DOCKER_IMAGE);
+    assertEquals(job, client.createGetSpecJob(DOCKER_IMAGE));
+    verify(jobCreator, times(2)).createGetSpecJob(DOCKER_IMAGE);
   }
 
   @Test

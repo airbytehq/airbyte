@@ -2,7 +2,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import Spinner from "../Spinner";
+import Spinner from "components/Spinner";
 
 const SpinnerBlock = styled.div`
   margin: 40px;

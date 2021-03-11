@@ -24,7 +24,8 @@
 
 package io.airbyte.workers;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
@@ -39,7 +40,6 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.StandardDiscoverCatalogInput;
-import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -83,12 +83,12 @@ public class DefaultDiscoverCatalogWorkerTest {
     integrationLauncher = mock(IntegrationLauncher.class, RETURNS_DEEP_STUBS);
     process = mock(Process.class);
 
-    when(integrationLauncher.discover(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME).start()).thenReturn(process);
+    when(integrationLauncher.discover(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME).start()).thenReturn(process);
     final InputStream inputStream = mock(InputStream.class);
     when(process.getInputStream()).thenReturn(inputStream);
     when(process.getErrorStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
 
-    IOs.writeFile(jobRoot, WorkerConstants.CATALOG_JSON_FILENAME, MoreResources.readResource("airbyte_postgres_catalog.json"));
+    IOs.writeFile(jobRoot, WorkerConstants.SOURCE_CATALOG_JSON_FILENAME, MoreResources.readResource("airbyte_postgres_catalog.json"));
 
     streamFactory = noop -> Lists.newArrayList(new AirbyteMessage().withType(Type.CATALOG).withCatalog(CATALOG)).stream();
   }
@@ -97,17 +97,14 @@ public class DefaultDiscoverCatalogWorkerTest {
   @Test
   public void testDiscoverSchema() throws Exception {
     final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(integrationLauncher, streamFactory);
-    final OutputAndStatus<StandardDiscoverCatalogOutput> output = worker.run(INPUT, jobRoot);
+    final AirbyteCatalog output = worker.run(INPUT, jobRoot);
 
-    final StandardDiscoverCatalogOutput standardDiscoverCatalogOutput = new StandardDiscoverCatalogOutput().withCatalog(CATALOG);
-    final OutputAndStatus<StandardDiscoverCatalogOutput> expectedOutput = new OutputAndStatus<>(JobStatus.SUCCEEDED, standardDiscoverCatalogOutput);
-
-    assertEquals(expectedOutput, output);
+    assertEquals(CATALOG, output);
 
     // test that config is written to correct location on disk.
     assertEquals(
         Jsons.jsonNode(INPUT.getConnectionConfiguration()),
-        Jsons.deserialize(IOs.readFile(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME)));
+        Jsons.deserialize(IOs.readFile(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME)));
 
     Assertions.assertTimeout(Duration.ofSeconds(5), () -> {
       while (process.getErrorStream().available() != 0) {
@@ -124,11 +121,7 @@ public class DefaultDiscoverCatalogWorkerTest {
     when(process.exitValue()).thenReturn(1);
 
     final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(integrationLauncher, streamFactory);
-    final OutputAndStatus<StandardDiscoverCatalogOutput> output = worker.run(INPUT, jobRoot);
-
-    final OutputAndStatus<StandardDiscoverCatalogOutput> expectedOutput = new OutputAndStatus<>(JobStatus.FAILED);
-
-    assertEquals(expectedOutput, output);
+    assertThrows(WorkerException.class, () -> worker.run(INPUT, jobRoot));
 
     Assertions.assertTimeout(Duration.ofSeconds(5), () -> {
       while (process.getErrorStream().available() != 0) {
@@ -141,19 +134,15 @@ public class DefaultDiscoverCatalogWorkerTest {
 
   @Test
   public void testDiscoverSchemaException() throws WorkerException {
-    when(integrationLauncher.discover(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME))
+    when(integrationLauncher.discover(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME))
         .thenThrow(new RuntimeException());
 
     final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(integrationLauncher, streamFactory);
-    final OutputAndStatus<StandardDiscoverCatalogOutput> output = worker.run(INPUT, jobRoot);
-
-    final OutputAndStatus<StandardDiscoverCatalogOutput> expectedOutput = new OutputAndStatus<>(JobStatus.FAILED);
-
-    assertEquals(expectedOutput, output);
+    assertThrows(WorkerException.class, () -> worker.run(INPUT, jobRoot));
   }
 
   @Test
-  public void testCancel() {
+  public void testCancel() throws WorkerException {
     DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(integrationLauncher, streamFactory);
     worker.run(INPUT, jobRoot);
 

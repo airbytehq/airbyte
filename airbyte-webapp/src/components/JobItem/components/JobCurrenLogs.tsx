@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import { Attempt } from "../../../core/resources/Job";
+import { Attempt } from "core/resources/Job";
 import AttemptDetails from "./AttemptDetails";
 import DownloadButton from "./DownloadButton";
 import Logs from "./Logs";
@@ -18,24 +18,27 @@ type IProps = {
 };
 
 const JobCurrentLogs: React.FC<IProps> = ({ id, jobIsFailed, attempts }) => {
-  const [attemptNumber, setAttemptNumber] = useState<any>(
+  const [attemptNumber, setAttemptNumber] = useState<number>(
     attempts.length ? attempts.length - 1 : 0
   );
 
-  const data = attempts.map((item, key: any) => ({
-    id: key,
+  const data = attempts.map((item, index) => ({
+    id: index.toString(),
     status: item.attempt.status,
     name: (
-      <FormattedMessage id="sources.attemptNum" values={{ number: key + 1 }} />
-    )
+      <FormattedMessage
+        id="sources.attemptNum"
+        values={{ number: index + 1 }}
+      />
+    ),
   }));
 
   return (
     <>
       {attempts.length > 1 ? (
         <Tabs
-          activeStep={attemptNumber}
-          onSelect={setAttemptNumber}
+          activeStep={attemptNumber.toString()}
+          onSelect={(at) => setAttemptNumber(parseInt(at))}
           data={data}
           isFailed={jobIsFailed}
         />

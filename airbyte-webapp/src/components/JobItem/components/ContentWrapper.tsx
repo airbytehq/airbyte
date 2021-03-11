@@ -10,13 +10,13 @@ const itemConfig = {
   open: {
     height: "auto",
     opacity: 1,
-    transition: "tween"
+    transition: "tween",
   },
   closed: {
     height: "1px",
     opacity: 0,
-    transition: "tween"
-  }
+    transition: "tween",
+  },
 };
 
 const ContentWrapperElement = pose.div(itemConfig);

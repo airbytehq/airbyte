@@ -24,9 +24,6 @@
 
 package io.airbyte.workers;
 
-import static io.airbyte.workers.JobStatus.FAILED;
-import static io.airbyte.workers.JobStatus.SUCCEEDED;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.io.IOs;
@@ -67,13 +64,13 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
   }
 
   @Override
-  public OutputAndStatus<StandardCheckConnectionOutput> run(StandardCheckConnectionInput input, Path jobRoot) {
+  public StandardCheckConnectionOutput run(StandardCheckConnectionInput input, Path jobRoot) throws WorkerException {
 
     final JsonNode configDotJson = input.getConnectionConfiguration();
-    IOs.writeFile(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
+    IOs.writeFile(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
 
     try {
-      process = integrationLauncher.check(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME).start();
+      process = integrationLauncher.check(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME).start();
 
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
 
@@ -95,14 +92,13 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
 
         LOGGER.debug("Check connection job subprocess finished with exit code {}", exitCode);
         LOGGER.debug("Check connection job received output: {}", output);
-        return new OutputAndStatus<>(SUCCEEDED, output);
+        return output;
       } else {
-        return new OutputAndStatus<>(FAILED);
+        throw new WorkerException("Error while getting checking connection.");
       }
 
     } catch (Exception e) {
-      LOGGER.error("Error while getting checking connection.");
-      return new OutputAndStatus<>(JobStatus.FAILED);
+      throw new WorkerException("Error while getting checking connection.");
     }
   }
 

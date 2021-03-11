@@ -1,71 +1,44 @@
-import React, { useMemo } from "react";
-import { Formik, Form } from "formik";
-import styled from "styled-components";
+import React, { useCallback } from "react";
+import { Formik } from "formik";
 import { JSONSchema7 } from "json-schema";
 
-import { IDataItem } from "../DropDown/components/ListItem";
-import FormContent from "./components/FormContent";
-import BottomBlock from "./components/BottomBlock";
-import EditControls from "./components/EditControls";
+import { DropDownRow } from "components";
 
 import {
   useBuildForm,
-  FormInitialValues,
   useBuildUiWidgets,
-  useConstructValidationSchema
+  useConstructValidationSchema,
+  usePatchFormik,
 } from "./useBuildForm";
-import { WidgetInfo, WidgetInfoProvider } from "./uiWidgetContext";
+import { ServiceFormValues } from "./types";
+import { ServiceFormContextProvider } from "./serviceFormContext";
+import { FormRoot } from "./FormRoot";
 
-const FormContainer = styled(Form)`
-  padding: 22px 27px 23px 24px;
-`;
-
-const defaultDataItemSort = (a: IDataItem, b: IDataItem) => {
-  if (a.text < b.text) return -1;
-  if (a.text > b.text) return 1;
-  return 0;
-};
-
-type IProps = {
-  additionBottomControls?: React.ReactNode;
+type ServiceFormProps = {
+  formType: "source" | "destination";
+  dropDownData: Array<DropDownRow.IDataItem>;
+  onSubmit: (values: ServiceFormValues) => void;
+  specifications?: JSONSchema7;
   isLoading?: boolean;
   isEditMode?: boolean;
-  allowChangeConnector?: boolean;
-  dropDownData: Array<IDataItem>;
   onDropDownSelect?: (id: string) => void;
-  onSubmit: (values: {
-    name: string;
-    serviceType: string;
-    frequency?: string;
-    connectionConfiguration?: any;
-  }) => void;
-  formType: "source" | "destination" | "connection";
-  formValues?: Partial<FormInitialValues>;
+  allowChangeConnector?: boolean;
+  formValues?: Partial<ServiceFormValues>;
   hasSuccess?: boolean;
+  additionBottomControls?: React.ReactNode;
   errorMessage?: React.ReactNode;
   successMessage?: React.ReactNode;
-  specifications?: JSONSchema7;
   documentationUrl?: string;
 };
 
-const ServiceForm: React.FC<IProps> = ({
-  formType,
-  dropDownData,
-  specifications,
-  formValues,
-  onSubmit,
-  onDropDownSelect,
-  successMessage,
-  errorMessage,
-  documentationUrl,
-  allowChangeConnector,
-  hasSuccess,
-  additionBottomControls,
-  isLoading,
-  isEditMode
-}) => {
+const FormikPatch: React.FC = () => {
+  usePatchFormik();
+  return null;
+};
+
+const ServiceForm: React.FC<ServiceFormProps> = (props) => {
+  const { specifications, formValues, onSubmit, isLoading } = props;
   const { formFields, initialValues } = useBuildForm(
-    formType,
     isLoading,
     formValues,
     specifications
@@ -76,86 +49,54 @@ const ServiceForm: React.FC<IProps> = ({
     initialValues
   );
 
-  // As validation schema depends on what path of oneOf is currently selected in jsonschema
   const validationSchema = useConstructValidationSchema(
     uiWidgetsInfo,
     specifications
   );
 
-  const sortedDropDownData = useMemo(
-    () => dropDownData.sort(defaultDataItemSort),
-    [dropDownData]
+  const onFormSubmit = useCallback(
+    async (values) => {
+      return onSubmit(validationSchema.cast(values, { stripUnknown: true }));
+    },
+    [onSubmit, validationSchema]
   );
 
+  //  TODO: dropdownData should be map of entities instead of UI representation
   return (
-    <WidgetInfoProvider
+    <ServiceFormContextProvider
       widgetsInfo={uiWidgetsInfo}
       setUiWidgetsInfo={setUiWidgetsInfo}
+      formType={props.formType}
+      isEditMode={props.isEditMode}
+      allowChangeConnector={props.allowChangeConnector}
+      isLoadingSchema={props.isLoading}
+      onChangeServiceType={props.onDropDownSelect}
+      dropDownData={props.dropDownData}
+      documentationUrl={props.documentationUrl}
     >
       <Formik
-        initialValues={initialValues}
         validateOnBlur={true}
         validateOnChange={true}
+        initialValues={initialValues}
         validationSchema={validationSchema}
-        onSubmit={async values =>
-          onSubmit(validationSchema.cast(values, { stripUnknown: true }))
-        }
+        onSubmit={onFormSubmit}
       >
-        {({
-          isSubmitting,
-          isValid,
-          dirty,
-          resetForm,
-          validateForm,
-          values
-        }) => (
-          <FormContainer>
-            <FormContent
-              values={values}
-              validateForm={validateForm}
-              allowChangeConnector={allowChangeConnector}
-              schema={validationSchema}
-              dropDownData={sortedDropDownData}
-              formType={formType}
+        {({ values }) => (
+          <>
+            <FormikPatch />
+            <FormRoot
+              {...props}
               formFields={formFields}
-              isEditMode={isEditMode}
-              isLoadingSchema={isLoading}
-              onChangeServiceType={onDropDownSelect}
-              documentationUrl={documentationUrl}
+              connector={
+                props.dropDownData?.find(
+                  (item) => item.value === values.serviceType
+                )?.text
+              }
             />
-
-            {isEditMode ? (
-              <WidgetInfo>
-                {({ resetUiFormProgress }) => (
-                  <EditControls
-                    isSubmitting={isSubmitting}
-                    isValid={isValid}
-                    dirty={dirty}
-                    errorMessage={errorMessage}
-                    resetForm={() => {
-                      resetForm();
-                      resetUiFormProgress();
-                    }}
-                    successMessage={successMessage}
-                  />
-                )}
-              </WidgetInfo>
-            ) : (
-              <BottomBlock
-                isSubmitting={isSubmitting}
-                isValid={isValid}
-                dirty={dirty}
-                errorMessage={errorMessage}
-                isLoadSchema={isLoading}
-                formType={formType}
-                additionBottomControls={additionBottomControls}
-                hasSuccess={hasSuccess}
-              />
-            )}
-          </FormContainer>
+          </>
         )}
       </Formik>
-    </WidgetInfoProvider>
+    </ServiceFormContextProvider>
   );
 };
 

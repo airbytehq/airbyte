@@ -248,6 +248,7 @@ font-style: italic;
   <li><a href="#createDestinationDefinition"><code><span class="http-method">post</span> /v1/destination_definitions/create</code></a></li>
   <li><a href="#getDestinationDefinition"><code><span class="http-method">post</span> /v1/destination_definitions/get</code></a></li>
   <li><a href="#listDestinationDefinitions"><code><span class="http-method">post</span> /v1/destination_definitions/list</code></a></li>
+  <li><a href="#listLatestDestinationDefinitions"><code><span class="http-method">post</span> /v1/destination_definitions/list_latest</code></a></li>
   <li><a href="#updateDestinationDefinition"><code><span class="http-method">post</span> /v1/destination_definitions/update</code></a></li>
   </ul>
   <h4><a href="#DestinationDefinitionSpecification">DestinationDefinitionSpecification</a></h4>
@@ -285,13 +286,14 @@ font-style: italic;
   <li><a href="#deleteSource"><code><span class="http-method">post</span> /v1/sources/delete</code></a></li>
   <li><a href="#discoverSchemaForSource"><code><span class="http-method">post</span> /v1/sources/discover_schema</code></a></li>
   <li><a href="#getSource"><code><span class="http-method">post</span> /v1/sources/get</code></a></li>
-  <li><a href="#getSourceDefinition"><code><span class="http-method">post</span> /v1/source_definitions/get</code></a></li>
   <li><a href="#listSourcesForWorkspace"><code><span class="http-method">post</span> /v1/sources/list</code></a></li>
   <li><a href="#updateSource"><code><span class="http-method">post</span> /v1/sources/update</code></a></li>
   </ul>
   <h4><a href="#SourceDefinition">SourceDefinition</a></h4>
   <ul>
   <li><a href="#createSourceDefinition"><code><span class="http-method">post</span> /v1/source_definitions/create</code></a></li>
+  <li><a href="#getSourceDefinition"><code><span class="http-method">post</span> /v1/source_definitions/get</code></a></li>
+  <li><a href="#listLatestSourceDefinitions"><code><span class="http-method">post</span> /v1/source_definitions/list_latest</code></a></li>
   <li><a href="#listSourceDefinitions"><code><span class="http-method">post</span> /v1/source_definitions/list</code></a></li>
   <li><a href="#updateSourceDefinition"><code><span class="http-method">post</span> /v1/source_definitions/update</code></a></li>
   </ul>
@@ -356,10 +358,12 @@ font-style: italic;
     "units" : 0,
     "timeUnit" : "minutes"
   },
+  "prefix" : "prefix",
   "name" : "name",
   "syncCatalog" : {
     "streams" : [ {
       "stream" : {
+        "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
         "supportedSyncModes" : [ null, null ],
         "sourceDefinedCursor" : true,
         "name" : "name",
@@ -368,10 +372,12 @@ font-style: italic;
       "config" : {
         "aliasName" : "aliasName",
         "cursorField" : [ "cursorField", "cursorField" ],
-        "selected" : true
+        "selected" : true,
+        "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
       }
     }, {
       "stream" : {
+        "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
         "supportedSyncModes" : [ null, null ],
         "sourceDefinedCursor" : true,
         "name" : "name",
@@ -380,7 +386,8 @@ font-style: italic;
       "config" : {
         "aliasName" : "aliasName",
         "cursorField" : [ "cursorField", "cursorField" ],
-        "selected" : true
+        "selected" : true,
+        "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
       }
     } ]
   },
@@ -487,10 +494,12 @@ font-style: italic;
     "units" : 0,
     "timeUnit" : "minutes"
   },
+  "prefix" : "prefix",
   "name" : "name",
   "syncCatalog" : {
     "streams" : [ {
       "stream" : {
+        "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
         "supportedSyncModes" : [ null, null ],
         "sourceDefinedCursor" : true,
         "name" : "name",
@@ -499,10 +508,12 @@ font-style: italic;
       "config" : {
         "aliasName" : "aliasName",
         "cursorField" : [ "cursorField", "cursorField" ],
-        "selected" : true
+        "selected" : true,
+        "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
       }
     }, {
       "stream" : {
+        "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
         "supportedSyncModes" : [ null, null ],
         "sourceDefinedCursor" : true,
         "name" : "name",
@@ -511,7 +522,8 @@ font-style: italic;
       "config" : {
         "aliasName" : "aliasName",
         "cursorField" : [ "cursorField", "cursorField" ],
-        "selected" : true
+        "selected" : true,
+        "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
       }
     } ]
   },
@@ -580,10 +592,12 @@ font-style: italic;
       "units" : 0,
       "timeUnit" : "minutes"
     },
+    "prefix" : "prefix",
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
         "stream" : {
+          "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
           "supportedSyncModes" : [ null, null ],
           "sourceDefinedCursor" : true,
           "name" : "name",
@@ -592,10 +606,12 @@ font-style: italic;
         "config" : {
           "aliasName" : "aliasName",
           "cursorField" : [ "cursorField", "cursorField" ],
-          "selected" : true
+          "selected" : true,
+          "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
         }
       }, {
         "stream" : {
+          "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
           "supportedSyncModes" : [ null, null ],
           "sourceDefinedCursor" : true,
           "name" : "name",
@@ -604,7 +620,8 @@ font-style: italic;
         "config" : {
           "aliasName" : "aliasName",
           "cursorField" : [ "cursorField", "cursorField" ],
-          "selected" : true
+          "selected" : true,
+          "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
         }
       } ]
     },
@@ -616,10 +633,12 @@ font-style: italic;
       "units" : 0,
       "timeUnit" : "minutes"
     },
+    "prefix" : "prefix",
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
         "stream" : {
+          "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
           "supportedSyncModes" : [ null, null ],
           "sourceDefinedCursor" : true,
           "name" : "name",
@@ -628,10 +647,12 @@ font-style: italic;
         "config" : {
           "aliasName" : "aliasName",
           "cursorField" : [ "cursorField", "cursorField" ],
-          "selected" : true
+          "selected" : true,
+          "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
         }
       }, {
         "stream" : {
+          "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
           "supportedSyncModes" : [ null, null ],
           "sourceDefinedCursor" : true,
           "name" : "name",
@@ -640,7 +661,8 @@ font-style: italic;
         "config" : {
           "aliasName" : "aliasName",
           "cursorField" : [ "cursorField", "cursorField" ],
-          "selected" : true
+          "selected" : true,
+          "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
         }
       } ]
     },
@@ -885,10 +907,12 @@ font-style: italic;
     "units" : 0,
     "timeUnit" : "minutes"
   },
+  "prefix" : "prefix",
   "name" : "name",
   "syncCatalog" : {
     "streams" : [ {
       "stream" : {
+        "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
         "supportedSyncModes" : [ null, null ],
         "sourceDefinedCursor" : true,
         "name" : "name",
@@ -897,10 +921,12 @@ font-style: italic;
       "config" : {
         "aliasName" : "aliasName",
         "cursorField" : [ "cursorField", "cursorField" ],
-        "selected" : true
+        "selected" : true,
+        "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
       }
     }, {
       "stream" : {
+        "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
         "supportedSyncModes" : [ null, null ],
         "sourceDefinedCursor" : true,
         "name" : "name",
@@ -909,7 +935,8 @@ font-style: italic;
       "config" : {
         "aliasName" : "aliasName",
         "cursorField" : [ "cursorField", "cursorField" ],
-        "selected" : true
+        "selected" : true,
+        "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
       }
     } ]
   },
@@ -1640,8 +1667,60 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/destination_definitions/list</code></pre></div>
-    <div class="method-summary">List all of the destinationDefinitions that Airbyte supports (<span class="nickname">listDestinationDefinitions</span>)</div>
+    <div class="method-summary">List all the destinationDefinitions the current Airbyte deployment is configured to use (<span class="nickname">listDestinationDefinitions</span>)</div>
     <div class="method-notes"></div>
+
+
+
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#DestinationDefinitionReadList">DestinationDefinitionReadList</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "destinationDefinitions" : [ {
+    "documentationUrl" : "https://openapi-generator.tech",
+    "dockerImageTag" : "dockerImageTag",
+    "dockerRepository" : "dockerRepository",
+    "name" : "name",
+    "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  }, {
+    "documentationUrl" : "https://openapi-generator.tech",
+    "dockerImageTag" : "dockerImageTag",
+    "dockerRepository" : "dockerRepository",
+    "name" : "name",
+    "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  } ]
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#DestinationDefinitionReadList">DestinationDefinitionReadList</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="listLatestDestinationDefinitions"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/destination_definitions/list_latest</code></pre></div>
+    <div class="method-summary">List the latest destinationDefinitions Airbyte supports (<span class="nickname">listLatestDestinationDefinitions</span>)</div>
+    <div class="method-notes">Guaranteed to retrieve the latest information on supported destinations.</div>
 
 
 
@@ -2355,6 +2434,7 @@ font-style: italic;
   "catalog" : {
     "streams" : [ {
       "stream" : {
+        "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
         "supportedSyncModes" : [ null, null ],
         "sourceDefinedCursor" : true,
         "name" : "name",
@@ -2363,10 +2443,12 @@ font-style: italic;
       "config" : {
         "aliasName" : "aliasName",
         "cursorField" : [ "cursorField", "cursorField" ],
-        "selected" : true
+        "selected" : true,
+        "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
       }
     }, {
       "stream" : {
+        "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
         "supportedSyncModes" : [ null, null ],
         "sourceDefinedCursor" : true,
         "name" : "name",
@@ -2375,7 +2457,8 @@ font-style: italic;
       "config" : {
         "aliasName" : "aliasName",
         "cursorField" : [ "cursorField", "cursorField" ],
-        "selected" : true
+        "selected" : true,
+        "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
       }
     } ]
   },
@@ -2758,6 +2841,7 @@ font-style: italic;
   "catalog" : {
     "streams" : [ {
       "stream" : {
+        "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
         "supportedSyncModes" : [ null, null ],
         "sourceDefinedCursor" : true,
         "name" : "name",
@@ -2766,10 +2850,12 @@ font-style: italic;
       "config" : {
         "aliasName" : "aliasName",
         "cursorField" : [ "cursorField", "cursorField" ],
-        "selected" : true
+        "selected" : true,
+        "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
       }
     }, {
       "stream" : {
+        "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
         "supportedSyncModes" : [ null, null ],
         "sourceDefinedCursor" : true,
         "name" : "name",
@@ -2778,7 +2864,8 @@ font-style: italic;
       "config" : {
         "aliasName" : "aliasName",
         "cursorField" : [ "cursorField", "cursorField" ],
-        "selected" : true
+        "selected" : true,
+        "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
       }
     } ]
   },
@@ -2895,68 +2982,6 @@ font-style: italic;
         <a href="#SourceRead">SourceRead</a>
     <h4 class="field-label">404</h4>
     Source not found
-        <a href="#"></a>
-    <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
-  </div> <!-- method -->
-  <hr/>
-  <div class="method"><a name="getSourceDefinition"/>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/source_definitions/get</code></pre></div>
-    <div class="method-summary">Get source (<span class="nickname">getSourceDefinition</span>)</div>
-    <div class="method-notes"></div>
-
-
-    <h3 class="field-label">Consumes</h3>
-    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
-    <ul>
-      <li><code>application/json</code></li>
-    </ul>
-
-    <h3 class="field-label">Request body</h3>
-    <div class="field-items">
-      <div class="param">SourceDefinitionIdRequestBody <a href="#SourceDefinitionIdRequestBody">SourceDefinitionIdRequestBody</a> (required)</div>
-
-      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
-
-    </div>  <!-- field-items -->
-
-
-
-
-    <h3 class="field-label">Return type</h3>
-    <div class="return-type">
-      <a href="#SourceDefinitionRead">SourceDefinitionRead</a>
-      
-    </div>
-
-    <!--Todo: process Response Object and its headers, schema, examples -->
-
-    <h3 class="field-label">Example data</h3>
-    <div class="example-data-content-type">Content-Type: application/json</div>
-    <pre class="example"><code>{
-  "documentationUrl" : "https://openapi-generator.tech",
-  "dockerImageTag" : "dockerImageTag",
-  "dockerRepository" : "dockerRepository",
-  "name" : "name",
-  "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
-}</code></pre>
-
-    <h3 class="field-label">Produces</h3>
-    This API call produces the following media types according to the <span class="header">Accept</span> request header;
-    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
-    <ul>
-      <li><code>application/json</code></li>
-    </ul>
-
-    <h3 class="field-label">Responses</h3>
-    <h4 class="field-label">200</h4>
-    Successful operation
-        <a href="#SourceDefinitionRead">SourceDefinitionRead</a>
-    <h4 class="field-label">404</h4>
-    SourceDefinition not found
         <a href="#"></a>
     <h4 class="field-label">422</h4>
     Invalid Input
@@ -3164,11 +3189,125 @@ font-style: italic;
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
+  <div class="method"><a name="getSourceDefinition"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/source_definitions/get</code></pre></div>
+    <div class="method-summary">Get source (<span class="nickname">getSourceDefinition</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">SourceDefinitionIdRequestBody <a href="#SourceDefinitionIdRequestBody">SourceDefinitionIdRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#SourceDefinitionRead">SourceDefinitionRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "documentationUrl" : "https://openapi-generator.tech",
+  "dockerImageTag" : "dockerImageTag",
+  "dockerRepository" : "dockerRepository",
+  "name" : "name",
+  "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#SourceDefinitionRead">SourceDefinitionRead</a>
+    <h4 class="field-label">404</h4>
+    SourceDefinition not found
+        <a href="#"></a>
+    <h4 class="field-label">422</h4>
+    Invalid Input
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="listLatestSourceDefinitions"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/source_definitions/list_latest</code></pre></div>
+    <div class="method-summary">List the latest sourceDefinitions Airbyte supports (<span class="nickname">listLatestSourceDefinitions</span>)</div>
+    <div class="method-notes">Guaranteed to retrieve the latest information on supported sources.</div>
+
+
+
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#SourceDefinitionReadList">SourceDefinitionReadList</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "sourceDefinitions" : [ {
+    "documentationUrl" : "https://openapi-generator.tech",
+    "dockerImageTag" : "dockerImageTag",
+    "dockerRepository" : "dockerRepository",
+    "name" : "name",
+    "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  }, {
+    "documentationUrl" : "https://openapi-generator.tech",
+    "dockerImageTag" : "dockerImageTag",
+    "dockerRepository" : "dockerRepository",
+    "name" : "name",
+    "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  } ]
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#SourceDefinitionReadList">SourceDefinitionReadList</a>
+  </div> <!-- method -->
+  <hr/>
   <div class="method"><a name="listSourceDefinitions"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/source_definitions/list</code></pre></div>
-    <div class="method-summary">List all of the sourceDefinitions that Airbyte supports (<span class="nickname">listSourceDefinitions</span>)</div>
+    <div class="method-summary">List all the sourceDefinitions the current Airbyte deployment is configured to use (<span class="nickname">listSourceDefinitions</span>)</div>
     <div class="method-notes"></div>
 
 
@@ -3386,10 +3525,12 @@ font-style: italic;
     "timeUnit" : "minutes"
   },
   "lastSync" : 0,
+  "prefix" : "prefix",
   "name" : "name",
   "syncCatalog" : {
     "streams" : [ {
       "stream" : {
+        "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
         "supportedSyncModes" : [ null, null ],
         "sourceDefinedCursor" : true,
         "name" : "name",
@@ -3398,10 +3539,12 @@ font-style: italic;
       "config" : {
         "aliasName" : "aliasName",
         "cursorField" : [ "cursorField", "cursorField" ],
-        "selected" : true
+        "selected" : true,
+        "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
       }
     }, {
       "stream" : {
+        "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
         "supportedSyncModes" : [ null, null ],
         "sourceDefinedCursor" : true,
         "name" : "name",
@@ -3410,7 +3553,8 @@ font-style: italic;
       "config" : {
         "aliasName" : "aliasName",
         "cursorField" : [ "cursorField", "cursorField" ],
-        "selected" : true
+        "selected" : true,
+        "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
       }
     } ]
   },
@@ -3501,10 +3645,12 @@ font-style: italic;
       "timeUnit" : "minutes"
     },
     "lastSync" : 0,
+    "prefix" : "prefix",
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
         "stream" : {
+          "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
           "supportedSyncModes" : [ null, null ],
           "sourceDefinedCursor" : true,
           "name" : "name",
@@ -3513,10 +3659,12 @@ font-style: italic;
         "config" : {
           "aliasName" : "aliasName",
           "cursorField" : [ "cursorField", "cursorField" ],
-          "selected" : true
+          "selected" : true,
+          "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
         }
       }, {
         "stream" : {
+          "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
           "supportedSyncModes" : [ null, null ],
           "sourceDefinedCursor" : true,
           "name" : "name",
@@ -3525,7 +3673,8 @@ font-style: italic;
         "config" : {
           "aliasName" : "aliasName",
           "cursorField" : [ "cursorField", "cursorField" ],
-          "selected" : true
+          "selected" : true,
+          "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
         }
       } ]
     },
@@ -3559,10 +3708,12 @@ font-style: italic;
       "timeUnit" : "minutes"
     },
     "lastSync" : 0,
+    "prefix" : "prefix",
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
         "stream" : {
+          "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
           "supportedSyncModes" : [ null, null ],
           "sourceDefinedCursor" : true,
           "name" : "name",
@@ -3571,10 +3722,12 @@ font-style: italic;
         "config" : {
           "aliasName" : "aliasName",
           "cursorField" : [ "cursorField", "cursorField" ],
-          "selected" : true
+          "selected" : true,
+          "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
         }
       }, {
         "stream" : {
+          "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
           "supportedSyncModes" : [ null, null ],
           "sourceDefinedCursor" : true,
           "name" : "name",
@@ -3583,7 +3736,8 @@ font-style: italic;
         "config" : {
           "aliasName" : "aliasName",
           "cursorField" : [ "cursorField", "cursorField" ],
-          "selected" : true
+          "selected" : true,
+          "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
         }
       } ]
     },
@@ -3797,10 +3951,12 @@ font-style: italic;
     "units" : 0,
     "timeUnit" : "minutes"
   },
+  "prefix" : "prefix",
   "name" : "name",
   "syncCatalog" : {
     "streams" : [ {
       "stream" : {
+        "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
         "supportedSyncModes" : [ null, null ],
         "sourceDefinedCursor" : true,
         "name" : "name",
@@ -3809,10 +3965,12 @@ font-style: italic;
       "config" : {
         "aliasName" : "aliasName",
         "cursorField" : [ "cursorField", "cursorField" ],
-        "selected" : true
+        "selected" : true,
+        "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
       }
     }, {
       "stream" : {
+        "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
         "supportedSyncModes" : [ null, null ],
         "sourceDefinedCursor" : true,
         "name" : "name",
@@ -3821,7 +3979,8 @@ font-style: italic;
       "config" : {
         "aliasName" : "aliasName",
         "cursorField" : [ "cursorField", "cursorField" ],
-        "selected" : true
+        "selected" : true,
+        "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
       }
     } ]
   },
@@ -4078,6 +4237,7 @@ font-style: italic;
     <li><a href="#DestinationRead"><code>DestinationRead</code> - </a></li>
     <li><a href="#DestinationReadList"><code>DestinationReadList</code> - </a></li>
     <li><a href="#DestinationRecreate"><code>DestinationRecreate</code> - </a></li>
+    <li><a href="#DestinationSyncMode"><code>DestinationSyncMode</code> - </a></li>
     <li><a href="#DestinationUpdate"><code>DestinationUpdate</code> - </a></li>
     <li><a href="#HealthCheckRead"><code>HealthCheckRead</code> - </a></li>
     <li><a href="#ImportRead"><code>ImportRead</code> - </a></li>
@@ -4133,8 +4293,9 @@ font-style: italic;
       <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Stream's name. </div>
 <div class="param">jsonSchema (optional)</div><div class="param-desc"><span class="param-type"><a href="#StreamJsonSchema">StreamJsonSchema</a></span>  </div>
 <div class="param">supportedSyncModes (optional)</div><div class="param-desc"><span class="param-type"><a href="#SyncMode">array[SyncMode]</a></span>  </div>
-<div class="param">sourceDefinedCursor (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> If the source defines the cursor field, then it does any other cursor field inputs will be ignored. If it does not either the user_provided one is used or as a backup the default one is used. </div>
+<div class="param">sourceDefinedCursor (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> If the source defines the cursor field, then any other cursor field inputs will be ignored. If it does not, either the user_provided one is used, or the default one is used as a backup. </div>
 <div class="param">defaultCursorField (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span> Path to the field that will be used to determine if a record is new or modified since the last sync. If not provided by the source, the end user will have to specify the comparable themselves. </div>
+<div class="param">sourceDefinedPrimaryKey (optional)</div><div class="param-desc"><span class="param-type"><a href="#array">array[array[String]]</a></span> If the source defines the primary key, paths to the fields that will be used as a primary key. If not provided by the source, the end user will have to specify the primary key themselves. </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -4151,6 +4312,8 @@ font-style: italic;
     <div class="field-items">
       <div class="param">syncMode (optional)</div><div class="param-desc"><span class="param-type"><a href="#SyncMode">SyncMode</a></span>  </div>
 <div class="param">cursorField (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span> Path to the field that will be used to determine if a record is new or modified since the last sync. This field is REQUIRED if <code>sync_mode</code> is <code>incremental</code>. Otherwise it is ignored. </div>
+<div class="param">destinationSyncMode (optional)</div><div class="param-desc"><span class="param-type"><a href="#DestinationSyncMode">DestinationSyncMode</a></span>  </div>
+<div class="param">primaryKey (optional)</div><div class="param-desc"><span class="param-type"><a href="#array">array[array[String]]</a></span> Paths to the fields that will be used as primary key. This field is REQUIRED if <code>destination_sync_mode</code> is <code>*_dedup</code>. Otherwise it is ignored. </div>
 <div class="param">aliasName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Alias name to the stream to be used in the destination </div>
 <div class="param">selected (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
     </div>  <!-- field-items -->
@@ -4198,6 +4361,7 @@ font-style: italic;
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Optional name of the connection </div>
+<div class="param">prefix (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Prefix that will be prepended to the name of each stream when it is written to the destination. </div>
 <div class="param">sourceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">destinationId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">syncCatalog (optional)</div><div class="param-desc"><span class="param-type"><a href="#AirbyteCatalog">AirbyteCatalog</a></span>  </div>
@@ -4218,6 +4382,7 @@ font-style: italic;
     <div class="field-items">
       <div class="param">connectionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">prefix (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Prefix that will be prepended to the name of each stream when it is written to the destination. </div>
 <div class="param">sourceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">destinationId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">syncCatalog </div><div class="param-desc"><span class="param-type"><a href="#AirbyteCatalog">AirbyteCatalog</a></span>  </div>
@@ -4253,6 +4418,7 @@ font-style: italic;
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">connectionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">prefix (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Prefix that will be prepended to the name of each stream when it is written to the destination. </div>
 <div class="param">syncCatalog </div><div class="param-desc"><span class="param-type"><a href="#AirbyteCatalog">AirbyteCatalog</a></span>  </div>
 <div class="param">schedule (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionSchedule">ConnectionSchedule</a></span>  </div>
 <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
@@ -4370,6 +4536,12 @@ font-style: italic;
 <div class="param">connectionConfiguration </div><div class="param-desc"><span class="param-type"><a href="#DestinationConfiguration">DestinationConfiguration</a></span>  </div>
 <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
     </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="DestinationSyncMode"><code>DestinationSyncMode</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+          </div>  <!-- field-items -->
   </div>
   <div class="model">
     <h3><a name="DestinationUpdate"><code>DestinationUpdate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
@@ -4630,6 +4802,7 @@ font-style: italic;
     <div class="field-items">
       <div class="param">connectionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">prefix (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">sourceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">destinationId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">syncCatalog </div><div class="param-desc"><span class="param-type"><a href="#AirbyteCatalog">AirbyteCatalog</a></span>  </div>
@@ -4661,6 +4834,7 @@ font-style: italic;
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">connectionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">prefix (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Prefix that will be prepended to the name of each stream when it is written to the destination. </div>
 <div class="param">syncCatalog </div><div class="param-desc"><span class="param-type"><a href="#AirbyteCatalog">AirbyteCatalog</a></span>  </div>
 <div class="param">schedule (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionSchedule">ConnectionSchedule</a></span>  </div>
 <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>

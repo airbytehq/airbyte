@@ -2,11 +2,11 @@ import { FormattedMessage } from "react-intl";
 import React from "react";
 import styled from "styled-components";
 
-import { IDataItem } from "../../DropDown/components/ListItem";
+import { DropDownRow } from "components";
 
 type IProps = {
   serviceId: string;
-  dropDownData?: Array<IDataItem>;
+  dropDownData?: Array<DropDownRow.IDataItem>;
   documentationUrl?: string;
 };
 
@@ -23,10 +23,10 @@ const LinkToInstruction = styled.a`
 const Instruction: React.FC<IProps> = ({
   dropDownData,
   serviceId,
-  documentationUrl
+  documentationUrl,
 }) => {
   const service =
-    dropDownData && dropDownData.find(item => item.value === serviceId);
+    dropDownData && dropDownData.find((item) => item.value === serviceId);
 
   return service && documentationUrl ? (
     <LinkToInstruction href={documentationUrl} target="_blank">
