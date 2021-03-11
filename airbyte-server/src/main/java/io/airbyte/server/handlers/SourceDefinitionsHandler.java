@@ -33,9 +33,9 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.helpers.YamlListToStandardDefinitions;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
 import io.airbyte.server.errors.KnownException;
 import io.airbyte.server.services.AirbyteGithubStore;
-import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
 import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -52,25 +52,25 @@ public class SourceDefinitionsHandler {
   private final ConfigRepository configRepository;
   private final Supplier<UUID> uuidSupplier;
   private final AirbyteGithubStore githubStore;
-  private final CachingSynchronousSchedulerClient schedulerJobClient;
+  private final CachingSynchronousSchedulerClient schedulerSynchronousClient;
 
   public SourceDefinitionsHandler(
                                   final ConfigRepository configRepository,
                                   final DockerImageValidator imageValidator,
-                                  final CachingSynchronousSchedulerClient schedulerJobClient) {
-    this(configRepository, imageValidator, UUID::randomUUID, schedulerJobClient, AirbyteGithubStore.production());
+                                  final CachingSynchronousSchedulerClient schedulerSynchronousClient) {
+    this(configRepository, imageValidator, UUID::randomUUID, schedulerSynchronousClient, AirbyteGithubStore.production());
   }
 
   public SourceDefinitionsHandler(
                                   final ConfigRepository configRepository,
                                   final DockerImageValidator imageValidator,
                                   final Supplier<UUID> uuidSupplier,
-                                  final CachingSynchronousSchedulerClient schedulerJobClient,
+                                  final CachingSynchronousSchedulerClient schedulerSynchronousClient,
                                   final AirbyteGithubStore githubStore) {
     this.configRepository = configRepository;
     this.uuidSupplier = uuidSupplier;
     this.imageValidator = imageValidator;
-    this.schedulerJobClient = schedulerJobClient;
+    this.schedulerSynchronousClient = schedulerSynchronousClient;
     this.githubStore = githubStore;
   }
 
@@ -151,7 +151,7 @@ public class SourceDefinitionsHandler {
 
     configRepository.writeStandardSource(newSource);
     // we want to re-fetch the spec for updated definitions.
-    schedulerJobClient.resetCache();
+    schedulerSynchronousClient.resetCache();
     return buildSourceDefinitionRead(newSource);
   }
 

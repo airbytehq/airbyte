@@ -41,9 +41,9 @@ import io.airbyte.api.model.SourceDefinitionUpdate;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
 import io.airbyte.server.errors.KnownException;
 import io.airbyte.server.services.AirbyteGithubStore;
-import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
 import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -63,7 +63,7 @@ class SourceDefinitionsHandlerTest {
   private StandardSourceDefinition source;
   private SourceDefinitionsHandler sourceHandler;
   private Supplier<UUID> uuidSupplier;
-  private CachingSynchronousSchedulerClient schedulerJobClient;
+  private CachingSynchronousSchedulerClient schedulerSynchronousClient;
   private AirbyteGithubStore githubStore;
 
   @SuppressWarnings("unchecked")
@@ -72,12 +72,12 @@ class SourceDefinitionsHandlerTest {
     configRepository = mock(ConfigRepository.class);
     uuidSupplier = mock(Supplier.class);
     dockerImageValidator = mock(DockerImageValidator.class);
-    schedulerJobClient = spy(CachingSynchronousSchedulerClient.class);
+    schedulerSynchronousClient = spy(CachingSynchronousSchedulerClient.class);
     githubStore = mock(AirbyteGithubStore.class);
 
     source = generateSource();
 
-    sourceHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, uuidSupplier, schedulerJobClient, githubStore);
+    sourceHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, uuidSupplier, schedulerSynchronousClient, githubStore);
   }
 
   private StandardSourceDefinition generateSource() {
@@ -179,7 +179,7 @@ class SourceDefinitionsHandlerTest {
 
     assertEquals(newDockerImageTag, sourceDefinitionRead.getDockerImageTag());
     verify(dockerImageValidator).assertValidIntegrationImage(dockerRepository, newDockerImageTag);
-    verify(schedulerJobClient).resetCache();
+    verify(schedulerSynchronousClient).resetCache();
   }
 
   @Nested
