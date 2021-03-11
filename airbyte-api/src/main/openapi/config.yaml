@@ -2047,6 +2047,10 @@ components:
           description: epoch time of last sync. null if no sync has taken place.
           type: integer
           format: int64
+        lastSyncStatus:
+          description: epoch time of last sync. null if no sync has taken place.
+          type: integer
+          format: int64
         isSyncing:
           type: boolean
     WbConnectionReadList:

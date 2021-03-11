@@ -55,8 +55,11 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+@DisplayName("Job History Handler")
 public class JobHistoryHandlerTest {
 
   private static final long JOB_ID = 100L;
@@ -122,21 +125,29 @@ public class JobHistoryHandlerTest {
     jobHistoryHandler = new JobHistoryHandler(jobPersistence);
   }
 
-  @Test
-  public void testListJobsFor() throws IOException {
-    when(jobPersistence.listJobs(CONFIG_TYPE, JOB_CONFIG_ID)).thenReturn(Collections.singletonList(job));
+  @Nested
+  @DisplayName("When listing jobs")
+  class ListJobs {
 
-    final JobListRequestBody requestBody = new JobListRequestBody()
-        .configTypes(Collections.singletonList(CONFIG_TYPE_FOR_API))
-        .configId(JOB_CONFIG_ID);
-    final JobReadList jobReadList = jobHistoryHandler.listJobsFor(requestBody);
+    @Test
+    @DisplayName("When listing jobs")
+    public void testListJobsFor() throws IOException {
+      when(jobPersistence.listJobs(CONFIG_TYPE, JOB_CONFIG_ID)).thenReturn(Collections.singletonList(job));
 
-    final JobReadList expectedJobReadList = new JobReadList().jobs(Collections.singletonList(JOB_WITH_ATTEMPTS_READ));
+      final JobListRequestBody requestBody = new JobListRequestBody()
+          .configTypes(Collections.singletonList(CONFIG_TYPE_FOR_API))
+          .configId(JOB_CONFIG_ID);
+      final JobReadList jobReadList = jobHistoryHandler.listJobsFor(requestBody);
 
-    assertEquals(expectedJobReadList, jobReadList);
+      final JobReadList expectedJobReadList = new JobReadList().jobs(Collections.singletonList(JOB_WITH_ATTEMPTS_READ));
+      System.out.println(expectedJobReadList);
+      assertEquals(expectedJobReadList, jobReadList);
+    }
+
   }
 
   @Test
+  @DisplayName("Should return the right job info")
   public void testGetJobInfo() throws IOException {
     when(jobPersistence.getJob(JOB_ID)).thenReturn(job);
 
@@ -147,6 +158,7 @@ public class JobHistoryHandlerTest {
   }
 
   @Test
+  @DisplayName("Should have compatible config enums")
   public void testEnumConversion() {
     assertTrue(Enums.isCompatible(JobConfig.ConfigType.class, JobConfigType.class));
   }
