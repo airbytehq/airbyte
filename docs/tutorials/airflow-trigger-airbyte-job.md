@@ -1,47 +1,43 @@
 ---
-description: Create a DAG in Airflow to trigger Airbyte sync job
+description: Create a DAG in Airflow to trigger an Airbyte sync job
 ---
 
 # Airflow Integration 
-Airbyte allows to trigger the syncronization job using Operators in Airflow. This tutorials explain how to configure your DAG in Airflow to do this. 
+Airbyte allows you to trigger synchronization jobs using Airflow Operators. This tutorial explains how to configure your Airflow DAG to do so. 
 
 ## 1. Set up the tools
 
-First of all, make sure you have Docker and Docker Compose installed. 
+First, make sure you have Docker installed. (We'll be using the `docker-compose` command, so your install should contain `docker-compose`.)
 
 ### **Start Airbyte**
-For this tutorial you need have a connection created. If you are starting with Airbyte and want to test the integration, we suggest to you follow the [Getting Started tutorial](../getting-started.md) and use that connection.
+If this is your first time using Airbyte, we suggest first going through our [basic tutorial](../getting-started.md). This tutorial will use the connection set up in the basic tutorial.
 
-The recommendation is to set up the **sync frequency** of your Connection to **manual** because Airflow will become responsible to trigger this process.
-
+The recommendation is to set up the **sync frequency** of your Connection to **manual** because Airflow will be responsible for triggering the job.
 
 ### **Start Airflow**
 
-To setup Airflow we recommend you to follow this [Quick start Airflow](https://airflow.apache.org/docs/apache-airflow/stable/start/docker.html) if you don't have any instances yet.
-
+If you don't have an Airflow instance, we recommend following this [Quick start Airflow tutorial](https://airflow.apache.org/docs/apache-airflow/stable/start/docker.html) to set one up.
 
 ## 2. Create a DAG in Airflow to trigger your Airbyte job
 
-You can access Airflow at [http://localhost:8080/](http://localhost:8080/).
-
-### Create Airbyte connection in Airflow
-After Airflow starts, access the connections page to create our connection with Airbyte.
+### Create an Airbyte connection in Airflow
+Once Airflow starts, navigate to Airflow's `Connections` page. The Airflow UI can be accessed at [http://localhost:8080/](http://localhost:8080/).
 
 ![](../.gitbook/assets/airflow_create_connection.png)
 
-Insert data about our connection. We are going to use the Airbyte API to execute our actions. For this reason we will create an HTTP connection.
+Airflow will use the Airbyte API to execute our actions. For this reason, we will create a HTTP connection. The typical Airbyte set up is hosted at `localhost:8001`. Configure Airflow's HTTP connection accordingly - we've provided a screenshot example.
 
 ![](../.gitbook/assets/airflow_edit_connection.png)
 
-After inserting the information click on Save.
+After inserting the information, don't forget to click save!
 
-### Getting information about your Airbyte connection job
-You can access Airbyte at `localhost:8000`. 
+### Retrieving the Airbyte Connection ID
+We'll need the Airbyte connection id so our Airflow DAG knows which Airbyte connection to trigger.
 ![](../.gitbook/assets/airflow_airbyte_connection.png)
-That code in the url is the `connectionId` used by Airflow to trigger the job. In our example: `1e3b5a72-7bfd-4808-a13c-204505490110`
+This id can be seen in the URL on the connection page in the Airbyte UI.  The Airbyte UI can be accessed at `localhost:8000`
 
-### Create a simple DAG in Airflow to run a sync job
-Create a file inside the `/dags` directory called `dag_airbyte_example.py`
+### Creating a simple Airflow DAG to run an Airbyte Sync Job
+Place the following file inside the `/dags` directory. Name this file `dag_airbyte_example.py`.
 ```python
 from airflow import DAG
 from airflow.utils.dates import days_ago
@@ -62,26 +58,27 @@ with DAG(dag_id='trigger_airbyte_job_example',
         wait_seconds=5
     )
 ```
-About the parameters used in the Operator:
-- `airbyte_conn_id`: the HTTP connection configured above.
-- `connection_id`: The uuid code for the connection job. You can get this in the url path from Airbyte UI.
-- `asynchronous`: this is specific to Airflow DAG execution. Default is `false`. This is useful for submitting long running jobs and         waiting on them asynchronously using the **AirbyteJobSensor**. If you have a very busy Airflow instance this could be handful because after submiting the job you use the sensor to check, and a sensor doesn't occupy a worker slot in Airflow. Later we show how to configure a DAG using this configuration.
-- `timeout`: maximum time to wait to finish the job to complete. This argument is only used when `asynchronous=False`.
-- `wait_seconds`: The amount of time to wait between checks. This argument is only used when `asynchronous=False`.
+The Airbyte Airflow Operator accepts the following parameters:
+- `airbyte_conn_id`: Name of the Airflow HTTP Connection pointing at the Airbyte API. Tells Airflow where the Airbyte API is located.
+- `connection_id`: The ID of the Airbyte Connection to be triggered by Airflow.
+- `asynchronous`: Determines how the Airbyte Operator runs. When true, Airflow will monitor the Airbyte Job using a **AirbyteJobSensor**. Since sensors do not occupy an Airflow worker slot, this is helps reduce Airflow load. Default is `false`.
+- `timeout`: Maximum time Airflow will wait for the Airbyte job to complete. Only valid when `asynchronous=False`.
+- `wait_seconds`: The amount of time to wait between checks. Only valid when `asynchronous=False`.
 
-
-After creating the file our DAG will show up in Airflow UI. Click on the button shown below to actived our DAG. Soon our DAG will be trigger.
+Our DAG will show up in Airflow UI shortly after we place our DAG file and can be activated by clicking the button shown below. Airflow will trigger the DAG shortly after.
 
 ![](../.gitbook/assets/airflow_unpause_dag.png)
 
-
-
-You can check the job got start sync in Airbyte UI.
+Check to see if the job started syncing in the Airbyte UI's Sync History tab!
 
 ![](../.gitbook/assets/airflow_airbyte_trigger_job.png)
 
-### How to create your DAG using the async parameter
-As commented before, if your Airflow instance is limited or already had alot of DAGs running you can you this option to trigger a more performatic DAG.
+Simple like that! 
+
+For more experienced users, the example below can be valuable:
+
+### Using the `asynchronous` parameter
+If your Airflow instance has limited resources and/or is under load, setting the `asynchronous=True` can help.
 
 ```python
 from airflow import DAG
@@ -112,6 +109,6 @@ with DAG(dag_id='airbyte_trigger_job_example_async',
 
 ## That's it!
 
-This is just the beginning of using Airbyte. We support a large collection of sources and destination. You can even contribute your own.
+This is just the beginning of using Airbyte. We support a large collection of sources and destinations. You can even contribute your own.
 
-If you have any questions at all, please reach out to us on [Slack](https://slack.airbyte.io/). We’re still in alpha, so if you see any rough edges or want to request a connector you need, please create an issue on our [Github](https://github.com/airbytehq/airbyte) or leave a thumbs up on an existing issue.
+If you have any questions at all, please reach out to us on [Slack](https://slack.airbyte.io/). We're still in alpha, so if you see any rough edges or want to request a connector you need, please create an issue on our [Github](https://github.com/airbytehq/airbyte) or leave a thumbs up on an existing issue.
