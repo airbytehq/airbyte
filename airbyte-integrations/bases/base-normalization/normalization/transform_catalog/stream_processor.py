@@ -375,7 +375,7 @@ from {{ from_table }}
         elif is_object(definition["type"]):
             sql_type = self.cast_property_type_as_object(property_name, column_name)
         elif is_integer(definition["type"]):
-            sql_type = jinja_call("dbt_utils.type_int()")
+            sql_type = jinja_call("dbt_utils.type_bigint()")
         elif is_number(definition["type"]):
             sql_type = jinja_call("dbt_utils.type_float()")
         elif is_boolean(definition["type"]):
