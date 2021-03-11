@@ -24,7 +24,7 @@
 
 package io.airbyte.server.handlers;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -164,7 +164,7 @@ class WebBackendConnectionsHandlerTest {
         .schedule(connectionRead.getSchedule())
         .source(sourceRead)
         .destination(destinationRead)
-        .lastSync(now.getEpochSecond())
+        .latestSyncJobCreatedAt(now.getEpochSecond())
         .isSyncing(false);
 
     final AirbyteCatalog modifiedCatalog = ConnectionHelpers.generateBasicApiCatalog();
@@ -185,7 +185,7 @@ class WebBackendConnectionsHandlerTest {
         .schedule(expected.getSchedule())
         .source(expected.getSource())
         .destination(expected.getDestination())
-        .lastSync(expected.getLastSync())
+        .latestSyncJobCreatedAt(expected.getLatestSyncJobCreatedAt())
         .isSyncing(expected.getIsSyncing());
 
     when(schedulerHandler.resetConnection(any())).thenReturn(new JobInfoRead().job(new JobRead().status(JobStatus.SUCCEEDED)));

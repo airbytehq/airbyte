@@ -2043,8 +2043,12 @@ components:
           $ref: "#/components/schemas/SourceRead"
         destination:
           $ref: "#/components/schemas/DestinationRead"
-        lastSync:
-          description: epoch time of last sync. null if no sync has taken place.
+        latestSyncJobCreatedAt:
+          description: epoch time of the latest sync job. null if no sync job has taken place.
+          type: integer
+          format: int64
+        latestSyncJobStatus:
+          description: status of the latest sync job, null if no sync job has taken place.
           type: integer
           format: int64
         isSyncing:
