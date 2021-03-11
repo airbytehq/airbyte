@@ -24,7 +24,7 @@ SOFTWARE.
 
 import re
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Iterator, List, Sequence
+from typing import Any, Dict, Iterator, List, Optional, Sequence
 
 import backoff
 import pendulum
@@ -74,33 +74,37 @@ class IncrementalStreamAPI(StreamAPI, ABC):
         """Name of the field associated with the state"""
 
     @property
+    @abstractmethod
+    def account_pk(self):
+        """Name of the field associated with the account_id"""
+
+    @property
     def state(self):
-        return {self.state_pk: str(self._state)}
+        return {f"{self.account_pk}_{account_id}": str(account_state) for account_id, account_state in self._state.items()}
 
     @state.setter
     def state(self, value):
-        self._state = pendulum.parse(value[self.state_pk])
+        self._state = {account_id[len(self.account_pk) + 1 :]: pendulum.parse(account_state) for account_id, account_state in value.items()}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._state = None
 
-    def state_filter(self, records: Iterator[dict]) -> Iterator[Any]:
-        """Apply state filter to set of records, update cursor(state) if necessary in the end"""
-        latest_cursor = None
-        for record in records:
-            cursor = pendulum.parse(record[self.state_pk])
-            if self._state and self._state >= cursor:
-                continue
-            latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
-            yield record
+    def state_filter(self, record: dict) -> Optional[dict]:
+        """Apply state filter to record, update cursor(state)"""
 
-        if latest_cursor:
-            stream_name = self.__class__.__name__
-            if stream_name.endswith("API"):
-                stream_name = stream_name[:-3]
-            logger.info(f"Advancing bookmark for {stream_name} stream from {self._state} to {latest_cursor}")
-            self._state = max(latest_cursor, self._state) if self._state else latest_cursor
+        cursor = pendulum.parse(record[self.state_pk])
+        if self._state[record[self.account_pk]] >= cursor:
+            return
+
+        stream_name = self.__class__.__name__
+        if stream_name.endswith("API"):
+            stream_name = stream_name[:-3]
+        logger.info(
+            f"Advancing bookmark for {stream_name} stream for {self.account_pk} {record[self.account_pk]} from {self._state[record[self.account_pk]]} to {cursor}"
+        )
+        self._state.update({record[self.account_pk]: max(cursor, self._state[record[self.account_pk]])})
+        return record
 
 
 class UsersAPI(StreamAPI):
@@ -158,6 +162,7 @@ class UserInsightsAPI(IncrementalStreamAPI):
     }
 
     state_pk = "date"
+    account_pk = "business_account_id"
 
     # We can only get User Insights data for today and the previous 29 days.
     # This is Facebook policy
@@ -166,19 +171,20 @@ class UserInsightsAPI(IncrementalStreamAPI):
 
     def __init__(self, api):
         super().__init__(api=api)
-        self._state = max(api._start_date, pendulum.now().subtract(days=self.buffer_days)).add(minutes=1)
+        self._state = {}
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
-        for params_per_day in self._params():
-            insights_per_day = []
-            for account in self._api.accounts:
+        for account in self._api.accounts:
+            account_id = account["instagram_business_account"].get("id")
+            self._set_state(account_id)
+            for params_per_day in self._params(account_id):
                 insight_list = []
                 for params in params_per_day:
                     insight_list += self._get_insight_records(account["instagram_business_account"], params=params)
                 if not insight_list:
                     continue
 
-                insight_record = {"page_id": account["page_id"], "business_account_id": account["instagram_business_account"].get("id")}
+                insight_record = {"page_id": account["page_id"], "business_account_id": account_id}
                 for insight in insight_list:
                     key = (
                         f"{insight.get('name')}_{insight.get('period')}"
@@ -188,11 +194,13 @@ class UserInsightsAPI(IncrementalStreamAPI):
                     insight_record[key] = insight.get("values")[0]["value"]
                     if not insight_record.get("date"):
                         insight_record["date"] = insight.get("values")[0]["end_time"]
-                insights_per_day.append(insight_record)
-            yield from self.state_filter(insights_per_day)
 
-    def _params(self) -> Iterator[List]:
-        buffered_start_date = self._state
+                record = self.state_filter(insight_record)
+                if record:
+                    yield record
+
+    def _params(self, account_id: str) -> Iterator[List]:
+        buffered_start_date = self._state[account_id]
         end_date = pendulum.now()
 
         while buffered_start_date <= end_date:
@@ -208,6 +216,10 @@ class UserInsightsAPI(IncrementalStreamAPI):
                 )
             yield params_list
             buffered_start_date = buffered_start_date.add(days=self.days_increment)
+
+    def _set_state(self, account_id: str):
+        start_date = self._state[account_id] if self._state.get(account_id) else self._api._start_date
+        self._state[account_id] = max(start_date, pendulum.now().subtract(days=self.buffer_days))
 
     @backoff_policy
     def _get_insight_records(self, instagram_user: IGUser, params: dict = None) -> List:

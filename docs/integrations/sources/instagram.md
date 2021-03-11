@@ -15,7 +15,7 @@ This Source is capable of syncing the following core Streams:
 * [Stories](https://developers.facebook.com/docs/instagram-api/reference/ig-user/stories/)
   * [Story Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)
 
-For more information, see the [Instagram API ](https://developers.facebook.com/docs/instagram-api/) and [Instagram Insights API documentation](https://developers.facebook.com/docs/instagram-api/guides/insights/).
+For more information, see the [Instagram API](https://developers.facebook.com/docs/instagram-api/) and [Instagram Insights API documentation](https://developers.facebook.com/docs/instagram-api/guides/insights/).
 
 ### Data type mapping
 
@@ -35,7 +35,7 @@ For more information, see the [Instagram API ](https://developers.facebook.com/d
 
 ### Rate Limiting & Performance Considerations
 
-Instagram, like all Facebook services, has a limit on the number of requests.
+Instagram, like all Facebook services, has a limit on the number of requests, but Instagram connector gracefully handles rate limiting.
 
 See Facebook's [documentation on rate limiting](https://developers.facebook.com/docs/graph-api/overview/rate-limiting/#instagram-graph-api) for more information.
 
@@ -43,7 +43,8 @@ See Facebook's [documentation on rate limiting](https://developers.facebook.com/
 
 ### Requirements
 
-* A Facebook App 
+* A Facebook App
+* A Facebook Page
 * An Instagram Business Account
 * A Facebook API Access Token
 
@@ -55,6 +56,10 @@ See Facebook's [documentation on rate limiting](https://developers.facebook.com/
 
 Visit the [Facebook Developers App hub](https://developers.facebook.com/apps/) and create an App and choose "Manage Business Integrations" as the purpose of the app. Fill out the remaining fields to create your app.
 
+### Facebook Page
+
+See the Facebook [support](https://www.facebook.com/business/help/898752960195806) for information about how to add an Instagram Account to your Facebook Page.
+
 ### Instagram Business Account
 
 Follow the [Instagram documentation](https://www.facebook.com/business/help/1492627900875762) for setting up an Instagram business account. We'll need this ID to configure Instagram as a source in Airbyte.
@@ -63,12 +68,12 @@ Follow the [Instagram documentation](https://www.facebook.com/business/help/1492
 
 To work with the Instagram connector, you need to generate an Access Token with the following permissions:
 
-* [instagram_basic](https://developers.facebook.com/docs/permissions/reference#instagram-basic)
-* [instagram_content_publish](https://developers.facebook.com/docs/permissions/reference#instagram-content-publish)
-* [instagram_manage_comments](https://developers.facebook.com/docs/permissions/reference#instagram-manage-comments)
-* [instagram_manage_insights](https://developers.facebook.com/docs/permissions/reference#instagram-manage-insights)
-* [pages_show_list](https://developers.facebook.com/docs/pages/overview#permissions)
-* [pages_read_engagement](https://developers.facebook.com/docs/pages/overview#permissions)
-* [Instagram Public Content Access](https://developers.facebook.com/docs/apps/features-reference#reference-INSTAGRAM_PUBLIC_CONTENT_ACCESS)
+* [instagram_basic](https://developers.facebook.com/docs/permissions/reference/instagram_basic)
+* [instagram_manage_insights](https://developers.facebook.com/docs/permissions/reference/instagram_manage_insights)
+* [pages_show_list](https://developers.facebook.com/docs/permissions/reference/pages_show_list)
+* [pages_read_engagement](https://developers.facebook.com/docs/permissions/reference/pages_read_engagement)
+* [Instagram Public Content Access](https://developers.facebook.com/docs/apps/features-reference/instagram-public-content-access)
+
+More details how to get a User's Access Token you can find in the following docs: [Access Tokens](https://developers.facebook.com/docs/facebook-login/access-tokens/#usertokens) and [User and Page Access Tokens](https://developers.facebook.com/docs/pages/access-tokens)
 
 With the Instagram Account ID and API access token, you should be ready to start pulling data from the Facebook Instagram API. Head to the Airbyte UI to setup your source connector!

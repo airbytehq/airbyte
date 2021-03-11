@@ -26,7 +26,6 @@ import sys
 
 import backoff
 from base_python.entrypoint import logger
-from facebook_business.exceptions import FacebookRequestError
 from requests.status_codes import codes as status_codes
 
 
@@ -41,7 +40,11 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
         logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} more seconds then retrying...")
 
     def should_retry_api_error(exc):
-        return exc.http_status() == status_codes.TOO_MANY_REQUESTS
+        if exc.http_status() == status_codes.TOO_MANY_REQUESTS or (
+            exc.http_status() == status_codes.FORBIDDEN and exc.api_error_message() == "(#4) Application request limit reached"
+        ):
+            return True
+        return False
 
     return backoff.on_exception(
         backoff_type,

@@ -34,6 +34,10 @@ config = json.loads(open(f"{BASE_DIRECTORY}/secrets/config.json", "r").read())
 
 
 class TestInstagramSource:
+    # Using standard tests is unreliable for Inside streams, as the information for them may be updated.
+    # It takes time to collect data on Insights, and during CI tests, a test for testIdenticalFullRefreshes is performed,
+    # and during the execution of tests, a change in Insights may occur and we will not pass the tests.
+    # Therefore, we use this test to test Insight streams.
     def test_insights_streams_outputs_records(self):
         catalog = self._read_catalog(f"{BASE_DIRECTORY}/sample_files/configured_catalog_insights.json")
         self._run_sync_test(config, catalog)
