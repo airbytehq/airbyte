@@ -31,16 +31,16 @@ import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.io.IOException;
 
-public interface SynchronousSchedulerJobClient {
+public interface SynchronousSchedulerClient {
 
-  SynchronousJobResponse<StandardCheckConnectionOutput> createSourceCheckConnectionJob(SourceConnection source, String dockerImage)
+  SynchronousResponse<StandardCheckConnectionOutput> createSourceCheckConnectionJob(SourceConnection source, String dockerImage)
       throws IOException;
 
-  SynchronousJobResponse<StandardCheckConnectionOutput> createDestinationCheckConnectionJob(DestinationConnection destination, String dockerImage)
+  SynchronousResponse<StandardCheckConnectionOutput> createDestinationCheckConnectionJob(DestinationConnection destination, String dockerImage)
       throws IOException;
 
-  SynchronousJobResponse<AirbyteCatalog> createDiscoverSchemaJob(SourceConnection source, String dockerImage) throws IOException;
+  SynchronousResponse<AirbyteCatalog> createDiscoverSchemaJob(SourceConnection source, String dockerImage) throws IOException;
 
-  SynchronousJobResponse<ConnectorSpecification> createGetSpecJob(String dockerImage) throws IOException;
+  SynchronousResponse<ConnectorSpecification> createGetSpecJob(String dockerImage) throws IOException;
 
 }

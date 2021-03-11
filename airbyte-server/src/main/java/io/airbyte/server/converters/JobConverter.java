@@ -41,8 +41,8 @@ import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.scheduler.Attempt;
 import io.airbyte.scheduler.Job;
-import io.airbyte.scheduler.client.SynchronousJobResponse;
-import io.airbyte.scheduler.client.SynchronousJobResponse.SynchronousJobMetadata;
+import io.airbyte.scheduler.client.SynchronousResponse;
+import io.airbyte.scheduler.client.SynchronousResponse.SynchronousJobMetadata;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.stream.Collectors;
@@ -105,7 +105,7 @@ public class JobConverter {
     }
   }
 
-  public static SynchronousJobRead getSynchronousJobRead(SynchronousJobResponse<?> response) {
+  public static SynchronousJobRead getSynchronousJobRead(SynchronousResponse<?> response) {
     return getSynchronousJobRead(response.getMetadata());
   }
 

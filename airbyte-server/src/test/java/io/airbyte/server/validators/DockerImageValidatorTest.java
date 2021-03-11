@@ -32,8 +32,8 @@ import static org.mockito.Mockito.when;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.scheduler.client.SynchronousJobResponse;
-import io.airbyte.scheduler.client.SynchronousSchedulerJobClient;
+import io.airbyte.scheduler.client.SynchronousResponse;
+import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.server.errors.KnownException;
 import java.io.IOException;
 import java.net.URI;
@@ -44,12 +44,12 @@ import org.junit.jupiter.api.Test;
 
 class DockerImageValidatorTest {
 
-  private SynchronousSchedulerJobClient schedulerJobClient;
+  private SynchronousSchedulerClient schedulerJobClient;
   private DockerImageValidator validator;
 
   @BeforeEach
   public void init() {
-    schedulerJobClient = mock(SynchronousSchedulerJobClient.class);
+    schedulerJobClient = mock(SynchronousSchedulerClient.class);
     validator = new DockerImageValidator(schedulerJobClient);
   }
 
@@ -60,7 +60,7 @@ class DockerImageValidatorTest {
     final String tag = "tag";
     final String imageName = DockerUtils.getTaggedImageName(repo, tag);
 
-    final SynchronousJobResponse<ConnectorSpecification> specResponse = mock(SynchronousJobResponse.class);
+    final SynchronousResponse<ConnectorSpecification> specResponse = mock(SynchronousResponse.class);
     final ConnectorSpecification connectorSpecification = new ConnectorSpecification()
         .withDocumentationUrl(new URI("https://google.com"))
         .withChangelogUrl(new URI("https://google.com"))
@@ -78,7 +78,7 @@ class DockerImageValidatorTest {
     final String repo = "repo";
     final String tag = "tag";
     final String imageName = DockerUtils.getTaggedImageName(repo, tag);
-    final SynchronousJobResponse<ConnectorSpecification> specResponse = mock(SynchronousJobResponse.class);
+    final SynchronousResponse<ConnectorSpecification> specResponse = mock(SynchronousResponse.class);
     when(specResponse.isSuccess()).thenReturn(false);
     when(schedulerJobClient.createGetSpecJob(imageName)).thenReturn(specResponse);
 
