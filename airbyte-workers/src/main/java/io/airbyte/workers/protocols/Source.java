@@ -40,4 +40,5 @@ public interface Source<T> extends AutoCloseable {
   void close() throws Exception;
 
   void cancel() throws Exception;
+
 }

@@ -27,13 +27,16 @@ package io.airbyte.workers.temporal;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerConstants;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -51,11 +54,11 @@ class TemporalAttemptExecutionTest {
   private Path jobRoot;
   private TemporalJobException expectedException;
 
-  private CheckedFunction<Path, String, Exception> execution;
+  private CheckedFunction<Path, Worker<String, String>, Exception> execution;
   private BiConsumer<Path, Long> mdcSetter;
   private CheckedConsumer<Path, IOException> jobRootDirCreator;
 
-  private TemporalAttemptExecution<String> attemptExecution;
+  private TemporalAttemptExecution<String, String> attemptExecution;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -68,19 +71,23 @@ class TemporalAttemptExecutionTest {
     mdcSetter = mock(BiConsumer.class);
     jobRootDirCreator = mock(CheckedConsumer.class);
 
-    attemptExecution = new TemporalAttemptExecution<>(workspaceRoot, JOB_RUN_CONFIG, execution, mdcSetter, jobRootDirCreator);
+    attemptExecution = new TemporalAttemptExecution<>(workspaceRoot, JOB_RUN_CONFIG, execution, () -> "", mdcSetter, jobRootDirCreator,
+        mock(CancellationHandler.class));
   }
 
   @Test
   void testGet() throws Exception {
     final String expected = "louis XVI";
-    when(execution.apply(jobRoot)).thenReturn(expected);
+    Worker<String, String> worker = mock(Worker.class);
+    when(worker.run(any(), any())).thenReturn(expected);
+
+    when(execution.apply(jobRoot)).thenReturn(worker);
 
     final String actual = attemptExecution.get();
 
     assertEquals(expected, actual);
     verify(execution).apply(jobRoot);
-    verify(mdcSetter).accept(jobRoot, JOB_ID);
+    verify(mdcSetter, times(3)).accept(jobRoot, JOB_ID);
     verify(jobRootDirCreator).accept(jobRoot);
   }
 

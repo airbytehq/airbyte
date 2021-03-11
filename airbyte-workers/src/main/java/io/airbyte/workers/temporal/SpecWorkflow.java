@@ -80,14 +80,19 @@ public interface SpecWorkflow {
     }
 
     public ConnectorSpecification run(JobRunConfig jobRunConfig, IntegrationLauncherConfig launcherConfig) throws TemporalJobException {
-      return new TemporalAttemptExecution<>(workspaceRoot, jobRunConfig, (jobRoot) -> {
+      return new TemporalAttemptExecution<>(
+          workspaceRoot,
+          jobRunConfig,
+          (jobRoot) -> {
 
-        final IntegrationLauncher integrationLauncher =
-            new AirbyteIntegrationLauncher(launcherConfig.getJobId(), launcherConfig.getAttemptId().intValue(), launcherConfig.getDockerImage(), pbf);
+            final IntegrationLauncher integrationLauncher =
+                new AirbyteIntegrationLauncher(launcherConfig.getJobId(), launcherConfig.getAttemptId().intValue(), launcherConfig.getDockerImage(),
+                    pbf);
 
-        final JobGetSpecConfig jobGetSpecConfig = new JobGetSpecConfig().withDockerImage(launcherConfig.getDockerImage());
-        return new DefaultGetSpecWorker(integrationLauncher).run(jobGetSpecConfig, jobRoot);
-      }).get();
+            return new DefaultGetSpecWorker(integrationLauncher);
+          },
+          () -> new JobGetSpecConfig().withDockerImage(launcherConfig.getDockerImage()),
+          new CancellationHandler.TemporalCancellationHandler()).get();
     }
 
   }

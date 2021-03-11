@@ -94,13 +94,19 @@ public interface DiscoverCatalogWorkflow {
                               IntegrationLauncherConfig launcherConfig,
                               StandardDiscoverCatalogInput config)
         throws TemporalJobException {
-      return new TemporalAttemptExecution<>(workspaceRoot, jobRunConfig, (jobRoot) -> {
-        final IntegrationLauncher integrationLauncher =
-            new AirbyteIntegrationLauncher(launcherConfig.getJobId(), launcherConfig.getAttemptId().intValue(), launcherConfig.getDockerImage(), pbf);
-        final AirbyteStreamFactory streamFactory = new DefaultAirbyteStreamFactory();
+      return new TemporalAttemptExecution<>(
+          workspaceRoot,
+          jobRunConfig,
+          (jobRoot) -> {
+            final IntegrationLauncher integrationLauncher =
+                new AirbyteIntegrationLauncher(launcherConfig.getJobId(), launcherConfig.getAttemptId().intValue(), launcherConfig.getDockerImage(),
+                    pbf);
+            final AirbyteStreamFactory streamFactory = new DefaultAirbyteStreamFactory();
 
-        return new DefaultDiscoverCatalogWorker(integrationLauncher, streamFactory).run(config, jobRoot);
-      }).get();
+            return new DefaultDiscoverCatalogWorker(integrationLauncher, streamFactory);
+          },
+          () -> config,
+          new CancellationHandler.TemporalCancellationHandler()).get();
     }
 
   }
