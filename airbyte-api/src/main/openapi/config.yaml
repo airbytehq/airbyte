@@ -1206,10 +1206,6 @@ components:
         email:
           type: string
           format: email
-        initialSetupComplete:
-          type: boolean
-        displaySetupWizard:
-          type: boolean
         anonymousDataCollection:
           type: boolean
         name:

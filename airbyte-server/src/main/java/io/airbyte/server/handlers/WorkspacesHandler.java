@@ -78,22 +78,20 @@ public class WorkspacesHandler {
       throws JsonValidationException, IOException, ConfigNotFoundException, KnownException {
 
     final String email = workspaceCreate.getEmail();
-    final Boolean initialSetupComplete = workspaceCreate.getInitialSetupComplete();
     final Boolean anonymousDataCollection = workspaceCreate.getAnonymousDataCollection();
     final Boolean news = workspaceCreate.getNews();
     final Boolean securityUpdates = workspaceCreate.getSecurityUpdates();
-    final Boolean displaySetupWizard = workspaceCreate.getDisplaySetupWizard();
 
     final StandardWorkspace workspace = new StandardWorkspace()
         .withWorkspaceId(uuidSupplier.get())
         .withCustomerId(uuidSupplier.get())
         .withName(workspaceCreate.getName())
         .withSlug(slugify.slugify(workspaceCreate.getName()))
-        .withInitialSetupComplete(initialSetupComplete != null ? initialSetupComplete : false)
+        .withInitialSetupComplete(false)
         .withAnonymousDataCollection(anonymousDataCollection != null ? anonymousDataCollection : false)
         .withNews(news != null ? news : false)
         .withSecurityUpdates(securityUpdates != null ? securityUpdates : false)
-        .withDisplaySetupWizard(displaySetupWizard != null ? displaySetupWizard : false)
+        .withDisplaySetupWizard(false)
         .withTombstone(false);
 
     if (!Strings.isNullOrEmpty(email)) {

@@ -102,8 +102,6 @@ class WorkspacesHandlerTest {
 
     final WorkspaceCreate workspaceCreate = new WorkspaceCreate()
         .name("new workspace")
-        .initialSetupComplete(false)
-        .displaySetupWizard(true)
         .news(false)
         .anonymousDataCollection(false)
         .securityUpdates(false);
@@ -115,7 +113,7 @@ class WorkspacesHandlerTest {
         .name("new workspace")
         .slug("new-workspace")
         .initialSetupComplete(false)
-        .displaySetupWizard(true)
+        .displaySetupWizard(false)
         .news(false)
         .anonymousDataCollection(false)
         .securityUpdates(false);
