@@ -26,9 +26,9 @@ package io.airbyte.scheduler.client;
 
 /**
  * This client is meant to be an interface over a cached implementation of
- * {@link SchedulerJobClient}. It exposes functionality to allow invalidating the cache.
+ * {@link SynchronousSchedulerClient}. It exposes functionality to allow invalidating the cache.
  */
-public interface CachingSchedulerJobClient extends SchedulerJobClient {
+public interface CachingSynchronousSchedulerClient extends SynchronousSchedulerClient {
 
   void resetCache();
 

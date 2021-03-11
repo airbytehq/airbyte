@@ -53,24 +53,6 @@ public class DefaultSchedulerJobClient implements SchedulerJobClient {
   }
 
   @Override
-  public Job createSourceCheckConnectionJob(SourceConnection source, String dockerImage) throws IOException {
-    final long jobId = jobCreator.createSourceCheckConnectionJob(source, dockerImage);
-    return waitUntilJobIsTerminalOrTimeout(jobId);
-  }
-
-  @Override
-  public Job createDestinationCheckConnectionJob(DestinationConnection destination, String dockerImage) throws IOException {
-    final long jobId = jobCreator.createDestinationCheckConnectionJob(destination, dockerImage);
-    return waitUntilJobIsTerminalOrTimeout(jobId);
-  }
-
-  @Override
-  public Job createDiscoverSchemaJob(SourceConnection source, String dockerImage) throws IOException {
-    final long jobId = jobCreator.createDiscoverSchemaJob(source, dockerImage);
-    return waitUntilJobIsTerminalOrTimeout(jobId);
-  }
-
-  @Override
   public Job createGetSpecJob(String dockerImage) throws IOException {
     final long jobId = jobCreator.createGetSpecJob(dockerImage);
     return waitUntilJobIsTerminalOrTimeout(jobId);
