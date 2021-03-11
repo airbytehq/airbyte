@@ -41,6 +41,7 @@ import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.JobConfigType;
 import io.airbyte.api.model.JobInfoRead;
 import io.airbyte.api.model.JobListRequestBody;
+import io.airbyte.api.model.JobRead;
 import io.airbyte.api.model.JobReadList;
 import io.airbyte.api.model.JobStatus;
 import io.airbyte.api.model.JobWithAttemptsRead;
@@ -62,6 +63,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 
 public class WebBackendConnectionsHandler {
 
@@ -120,12 +122,14 @@ public class WebBackendConnectionsHandler {
         .destination(destination);
 
     final JobReadList jobReadList = jobHistoryHandler.listJobsFor(jobListRequestBody);
-    wbConnectionRead.setIsSyncing(jobReadList.getJobs()
-        .stream().map(JobWithAttemptsRead::getJob)
-        .anyMatch(job -> job.getStatus() != JobStatus.FAILED && job.getStatus() != JobStatus.SUCCEEDED && job.getStatus() != JobStatus.CANCELLED));
-    jobReadList.getJobs().stream().map(JobWithAttemptsRead::getJob).findFirst()
-        .ifPresent(job -> wbConnectionRead.setLatestSyncJobCreatedAt(job.getCreatedAt()));
+    Predicate<JobRead> hasRunningJob = (JobRead job) -> !TERMINAL_STATUSES.contains(job.getStatus());
+    wbConnectionRead.setIsSyncing(jobReadList.getJobs().stream().map(JobWithAttemptsRead::getJob).anyMatch(hasRunningJob));
 
+    jobReadList.getJobs().stream().map(JobWithAttemptsRead::getJob).findFirst()
+        .ifPresent(job -> {
+          wbConnectionRead.setLatestSyncJobCreatedAt(job.getCreatedAt());
+          wbConnectionRead.setLatestSyncJobStatus(job.getStatus());
+        });
     return wbConnectionRead;
   }
 

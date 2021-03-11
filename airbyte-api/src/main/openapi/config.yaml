@@ -2048,9 +2048,7 @@ components:
           type: integer
           format: int64
         latestSyncJobStatus:
-          description: status of the latest sync job, null if no sync job has taken place.
-          type: integer
-          format: int64
+          $ref: "#/components/schemas/JobStatus"
         isSyncing:
           type: boolean
     WbConnectionReadList:

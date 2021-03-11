@@ -95,7 +95,6 @@ class WebBackendConnectionsHandlerTest {
   private WebBackendConnectionsHandler wbHandler;
 
   private SourceRead sourceRead;
-  private DestinationRead destinationRead;
   private ConnectionRead connectionRead;
   private WbConnectionRead expected;
   private WbConnectionRead expectedWithNewSchema;
@@ -115,7 +114,7 @@ class WebBackendConnectionsHandlerTest {
 
     final StandardDestinationDefinition destinationDefinition = DestinationDefinitionHelpers.generateDestination();
     final DestinationConnection destination = DestinationHelpers.generateDestination(UUID.randomUUID());
-    destinationRead = DestinationHelpers.getDestinationRead(destination, destinationDefinition);
+    DestinationRead destinationRead = DestinationHelpers.getDestinationRead(destination, destinationDefinition);
 
     final StandardSync standardSync = ConnectionHelpers.generateSyncWithSourceId(source.getSourceId());
     connectionRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync);
@@ -165,6 +164,7 @@ class WebBackendConnectionsHandlerTest {
         .source(sourceRead)
         .destination(destinationRead)
         .latestSyncJobCreatedAt(now.getEpochSecond())
+        .latestSyncJobStatus(JobStatus.SUCCEEDED)
         .isSyncing(false);
 
     final AirbyteCatalog modifiedCatalog = ConnectionHelpers.generateBasicApiCatalog();
@@ -186,6 +186,7 @@ class WebBackendConnectionsHandlerTest {
         .source(expected.getSource())
         .destination(expected.getDestination())
         .latestSyncJobCreatedAt(expected.getLatestSyncJobCreatedAt())
+        .latestSyncJobStatus(expected.getLatestSyncJobStatus())
         .isSyncing(expected.getIsSyncing());
 
     when(schedulerHandler.resetConnection(any())).thenReturn(new JobInfoRead().job(new JobRead().status(JobStatus.SUCCEEDED)));
