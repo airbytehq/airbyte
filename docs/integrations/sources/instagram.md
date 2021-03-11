@@ -44,8 +44,8 @@ See Facebook's [documentation on rate limiting](https://developers.facebook.com/
 ### Requirements
 
 * A Facebook App
-* A Facebook Page
 * An Instagram Business Account
+* A Facebook Page linked to your Instagram Business Account
 * A Facebook API Access Token
 
 ### Setup guide
