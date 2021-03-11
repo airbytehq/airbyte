@@ -9,7 +9,6 @@ required:
   - name
   - slug
   - initialSetupComplete
-  - tombstone
 additionalProperties: false
 properties:
   workspaceId:

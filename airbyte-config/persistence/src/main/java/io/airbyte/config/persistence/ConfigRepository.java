@@ -50,7 +50,7 @@ public class ConfigRepository {
       throws JsonValidationException, IOException, ConfigNotFoundException {
     StandardWorkspace workspace = persistence.getConfig(ConfigSchema.STANDARD_WORKSPACE, workspaceId.toString(), StandardWorkspace.class);
 
-    if (workspace.getTombstone() == includeTombstone) {
+    if (workspace.getTombstone() == null || workspace.getTombstone() == includeTombstone) {
       return workspace;
     }
 
@@ -74,7 +74,7 @@ public class ConfigRepository {
     List<StandardWorkspace> workspaces = new ArrayList<StandardWorkspace>();
 
     for (StandardWorkspace workspace : persistence.listConfigs(ConfigSchema.STANDARD_WORKSPACE, StandardWorkspace.class)) {
-      if (!workspace.getTombstone() || workspace.getTombstone() == includeTombstone) {
+      if (workspace.getTombstone() == null || !workspace.getTombstone() || workspace.getTombstone() == includeTombstone) {
         workspaces.add(workspace);
       }
     }
