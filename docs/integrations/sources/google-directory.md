@@ -6,7 +6,7 @@ The Directory source supports Full Refresh syncs. It uses [Google Directory API]
 
 ### Output schema
 
-This Source is capable of syncing the following core Streams:
+This Source is capable of syncing the following Streams:
 
 * [users](https://developers.google.com/admin-sdk/directory/v1/guides/manage-users#get_all_users)
 * [groups](https://developers.google.com/admin-sdk/directory/v1/guides/manage-groups#get_all_domain_groups)
