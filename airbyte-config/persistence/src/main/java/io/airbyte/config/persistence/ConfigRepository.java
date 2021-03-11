@@ -34,6 +34,7 @@ import io.airbyte.config.StandardSyncSchedule;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -45,8 +46,40 @@ public class ConfigRepository {
     this.persistence = persistence;
   }
 
-  public StandardWorkspace getStandardWorkspace(final UUID workspaceId) throws JsonValidationException, IOException, ConfigNotFoundException {
-    return persistence.getConfig(ConfigSchema.STANDARD_WORKSPACE, workspaceId.toString(), StandardWorkspace.class);
+  public StandardWorkspace getStandardWorkspace(final UUID workspaceId, boolean includeTombstone)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    StandardWorkspace workspace = persistence.getConfig(ConfigSchema.STANDARD_WORKSPACE, workspaceId.toString(), StandardWorkspace.class);
+
+    if (workspace.getTombstone() == null || workspace.getTombstone() == includeTombstone) {
+      return workspace;
+    }
+
+    throw new ConfigNotFoundException(ConfigSchema.STANDARD_WORKSPACE, workspaceId.toString());
+  }
+
+  public StandardWorkspace getWorkspaceBySlug(String slug, boolean includeTombstone)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    for (StandardWorkspace workspace : listStandardWorkspaces(includeTombstone)) {
+      if (workspace.getSlug().equals(slug)) {
+        return workspace;
+      }
+    }
+
+    throw new ConfigNotFoundException(ConfigSchema.STANDARD_WORKSPACE, slug);
+  }
+
+  public List<StandardWorkspace> listStandardWorkspaces(boolean includeTombstone)
+      throws JsonValidationException, IOException {
+
+    List<StandardWorkspace> workspaces = new ArrayList<StandardWorkspace>();
+
+    for (StandardWorkspace workspace : persistence.listConfigs(ConfigSchema.STANDARD_WORKSPACE, StandardWorkspace.class)) {
+      if (workspace.getTombstone() == null || !workspace.getTombstone() || workspace.getTombstone() == includeTombstone) {
+        workspaces.add(workspace);
+      }
+    }
+
+    return workspaces;
   }
 
   public void writeStandardWorkspace(final StandardWorkspace workspace) throws JsonValidationException, IOException {

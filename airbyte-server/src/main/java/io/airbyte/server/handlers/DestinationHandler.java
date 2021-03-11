@@ -35,6 +35,7 @@ import io.airbyte.api.model.DestinationReadList;
 import io.airbyte.api.model.DestinationUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
+import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -115,6 +116,11 @@ public class DestinationHandler {
     // get existing implementation
     final DestinationRead destination = buildDestinationRead(destinationIdRequestBody.getDestinationId());
 
+    deleteDestination(destination);
+  }
+
+  public void deleteDestination(final DestinationRead destination)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
     // disable all connections associated with this destination
     // Delete connections first in case it it fails in the middle, destination will still be visible
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody().workspaceId(destination.getWorkspaceId());
@@ -162,6 +168,13 @@ public class DestinationHandler {
 
   public DestinationRead getDestination(DestinationIdRequestBody destinationIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
+    final UUID destinationId = destinationIdRequestBody.getDestinationId();
+    final DestinationConnection dci = configRepository.getDestinationConnection(destinationId);
+
+    if (dci.getTombstone()) {
+      throw new ConfigNotFoundException(ConfigSchema.DESTINATION_CONNECTION, destinationId.toString());
+    }
+
     return buildDestinationRead(destinationIdRequestBody.getDestinationId());
   }
 

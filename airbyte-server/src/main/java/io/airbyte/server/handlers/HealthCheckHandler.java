@@ -44,7 +44,7 @@ public class HealthCheckHandler {
   public HealthCheckRead health() {
     boolean databaseHealth = false;
     try {
-      databaseHealth = configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID) != null;
+      databaseHealth = configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID, true) != null;
     } catch (Exception e) {
       LOGGER.error("database health check failed.");
     }
