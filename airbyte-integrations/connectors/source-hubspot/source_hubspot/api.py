@@ -28,7 +28,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from enum import IntEnum
 from functools import partial
-from typing import Any, Callable, Iterable, Iterator, List, Mapping, Optional, Union
+from typing import Any, Callable, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
 
 import backoff
 import pendulum as pendulum
@@ -270,44 +270,54 @@ class CRMObjectStream(Stream):
     """Unified stream interface for CRM objects.
     You need to provide `entity` parameter to read concrete stream, possible values are:
         company, contact, deal, line_item, owner, product, ticket, quote
+    You can also include associated records (IDs), provide associations parameter - a list of entity names:
+        contacts, tickets, deals, engagements
     see https://developers.hubspot.com/docs/api/crm/understanding-the-crm for more details
     """
+    entity: Optional[str] = None
+    associations: List[str] = []
 
     @property
     def url(self):
         """Entity URL"""
         return f"/crm/v3/objects/{self.entity}"
 
-    def __init__(self, entity: str, include_archived_only: bool = False, **kwargs):
+    def __init__(self, entity: str = None, associations: List[str] = None, include_archived_only: bool = False, **kwargs):
         super().__init__(**kwargs)
-        self.entity = entity
+        self.entity = entity or self.entity
+        self.associations = associations or self.associations
         self._include_archived_only = include_archived_only
+
+        if not self.entity:
+            raise ValueError("Entity must be set either on class or instance level")
 
     def list(self, fields) -> Iterable:
         params = {
             "archived": str(self._include_archived_only).lower(),
+            "associations": self.associations,
         }
-        yield from self.read(partial(self._api.get, url=self.url), params)
+        generator = self.read(partial(self._api.get, url=self.url), params)
+        yield from self._flat_associations(generator)
 
+    def _flat_associations(self, records: Iterable[MutableMapping]) -> Iterable[MutableMapping]:
+        """ When result has associations we prefer to have it flat, so we transform this:
 
-class CompanyStream(CRMObjectStream):
-    """Company, API v3, see CRMObjectStream for more details
-    Note: Additionally gets list of contact Ids
-    """
+            "associations": {
+                "contacts": {
+                    "results": [{"id": "201", "type": "company_to_contact"}, {"id": "251", "type": "company_to_contact"}]}
+                }
+            }
 
-    def __init__(self, **kwargs):
-        super().__init__(entity="company", **kwargs)
-        self._association_stream = partial(CRMAssociationStream, direction=CRMAssociationStream.Direction.CompanyToContact, **kwargs)
+            to this:
 
-    def list(self, fields) -> Iterable:
-        for company in super().list(fields):
-            contacts = list(self._get_contacts(company_id=company["id"])) if "contacts" in fields else []
-            company["contacts"] = contacts
-            yield company
-
-    def _get_contacts(self, company_id) -> Iterable:
-        stream = self._association_stream(entity_id=company_id)
-        yield from stream.list(fields=[])
+            "contacts": [201, 251]
+        """
+        for record in records:
+            if "associations" in record:
+                associations = record.pop("associations")
+                for name, association in associations.items():
+                    record[name] = [row["id"] for row in association.get("results", [])]
+            yield record
 
 
 class CRMAssociationStream(Stream):
