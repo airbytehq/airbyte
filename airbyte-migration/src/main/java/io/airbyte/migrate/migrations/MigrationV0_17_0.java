@@ -130,7 +130,7 @@ public class MigrationV0_17_0 extends BaseMigration implements Migration {
       final Consumer<JsonNode> recordConsumer = outputData.get(entry.getKey());
 
       entry.getValue().forEach(r -> {
-        if (!r.get("dockerImageTag").isNull()) {
+        if (r.get("dockerImageTag") != null) {
           if (entry.getKey().equals(STANDARD_SOURCE_DEFINITION_RESOURCE_ID)) {
             ((ObjectNode) r).set("dockerImageTag", getDockerImageTag(SOURCE_DOCKER_IMAGES, r));
           } else if (entry.getKey().equals(STANDARD_DESTINATION_DEFINITION_RESOURCE_ID)) {
