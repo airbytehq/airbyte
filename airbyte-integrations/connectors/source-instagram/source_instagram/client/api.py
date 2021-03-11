@@ -75,16 +75,21 @@ class IncrementalStreamAPI(StreamAPI, ABC):
 
     @property
     @abstractmethod
-    def account_pk(self):
+    def cursor_field(self):
         """Name of the field associated with the account_id"""
 
     @property
-    def state(self):
-        return {f"{self.account_pk}_{account_id}": str(account_state) for account_id, account_state in self._state.items()}
+    def state(self) -> Dict[str, str]:
+        """
+        State is a dictionary of the format {"account_id" : "cursor_value"}
+        """
+
+        return {account_id: str(account_state) for account_id, account_state in self._state.items()}
 
     @state.setter
     def state(self, value):
-        self._state = {account_id[len(self.account_pk) + 1 :]: pendulum.parse(account_state) for account_id, account_state in value.items()}
+        # Convert State for each account from string to pendulum(datetime format)
+        self._state = {account_id: pendulum.parse(account_state) for account_id, account_state in value.items()}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -94,16 +99,16 @@ class IncrementalStreamAPI(StreamAPI, ABC):
         """Apply state filter to record, update cursor(state)"""
 
         cursor = pendulum.parse(record[self.state_pk])
-        if self._state[record[self.account_pk]] >= cursor:
+        if self._state[record[self.cursor_field]] >= cursor:
             return
 
         stream_name = self.__class__.__name__
         if stream_name.endswith("API"):
             stream_name = stream_name[:-3]
         logger.info(
-            f"Advancing bookmark for {stream_name} stream for {self.account_pk} {record[self.account_pk]} from {self._state[record[self.account_pk]]} to {cursor}"
+            f"Advancing bookmark for {stream_name} stream for {self.cursor_field} {record[self.cursor_field]} from {self._state[record[self.cursor_field]]} to {cursor}"
         )
-        self._state.update({record[self.account_pk]: max(cursor, self._state[record[self.account_pk]])})
+        self._state.update({record[self.cursor_field]: max(cursor, self._state[record[self.cursor_field]])})
         return record
 
 
@@ -162,7 +167,7 @@ class UserInsightsAPI(IncrementalStreamAPI):
     }
 
     state_pk = "date"
-    account_pk = "business_account_id"
+    cursor_field = "business_account_id"
 
     # We can only get User Insights data for today and the previous 29 days.
     # This is Facebook policy
