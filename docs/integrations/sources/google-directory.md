@@ -6,7 +6,7 @@ The Directory source supports Full Refresh syncs. It uses [Google Directory API]
 
 ### Output schema
 
-This Source is capable of syncing the following core Streams:
+This Source is capable of syncing the following Streams:
 
 * [users](https://developers.google.com/admin-sdk/directory/v1/guides/manage-users#get_all_users)
 * [groups](https://developers.google.com/admin-sdk/directory/v1/guides/manage-groups#get_all_domain_groups)
@@ -36,11 +36,16 @@ This connector attempts to back off gracefully when it hits Directory API's rate
 
 ## Getting started
 
-### Authorization Scopes
+### Requirements
+* Credentials to a Google Service Account with delegated Domain Wide Authority
+* Email address of the workspace admin which created the Service Account
 
-Each stream requires the following OAuth scopes
+### Create a Service Account with delegated domain wide authority
+Follow the Google Documentation for performing [Domain Wide Delegation of Authority](https://developers.google.com/admin-sdk/directory/v1/guides/delegation) to create a Service account with delegated domain wide authority. This account must be created by an administrator of the Google Workspace. 
+Please make sure to grant the following OAuth scopes to the service user: 
 
-1. Users https://www.googleapis.com/auth/admin.directory.user.readonly
-2. Groups https://www.googleapis.com/auth/admin.directory.group.readonly
-3. Group members https://www.googleapis.com/auth/admin.directory.group.readonly
+1. `https://www.googleapis.com/auth/admin.directory.user.readonly`
+2. `https://www.googleapis.com/auth/admin.directory.group.readonly`
+3. `https://www.googleapis.com/auth/admin.directory.group.readonly`
 
+At the end of this process, you should have JSON credentials to this Google Service Account. 
