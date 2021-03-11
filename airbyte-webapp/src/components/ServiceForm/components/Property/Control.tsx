@@ -3,7 +3,7 @@ import { useIntl } from "react-intl";
 import { useField } from "formik";
 
 import { DropDown, Input, TextArea } from "components";
-import ConfirmationInput from "./ConfirmationInput";
+import ConfirmationControl from "./ConfirmationControl";
 import { FormBaseItem } from "core/form/types";
 
 type IProps = {
@@ -58,17 +58,43 @@ const Control: React.FC<IProps> = ({
         value={value}
       />
     );
+  } else if (property.multiline && !property.isSecret) {
+    return (
+      <TextArea
+        {...field}
+        placeholder={placeholder}
+        autoComplete="off"
+        value={value ?? ""}
+        rows={3}
+      />
+    );
   } else if (property.isSecret) {
     const unfinishedSecret = unfinishedSecrets[fieldName];
+    const isEditInProgress = !!unfinishedSecret;
+    const isFormInEditMode = !!meta.initialValue;
     return (
-      <ConfirmationInput
-        {...field}
-        autoComplete="off"
-        placeholder={placeholder}
-        type="password"
-        value={value ?? ""}
-        showButtons={!!meta.initialValue}
-        isEditInProgress={!!unfinishedSecret}
+      <ConfirmationControl
+        component={
+          property.multiline && (isEditInProgress || !isFormInEditMode) ? (
+            <TextArea
+              {...field}
+              autoComplete="off"
+              placeholder={placeholder}
+              value={value ?? ""}
+              rows={3}
+            />
+          ) : (
+            <Input
+              {...field}
+              autoComplete="off"
+              placeholder={placeholder}
+              value={value ?? ""}
+              type="password"
+            />
+          )
+        }
+        showButtons={isFormInEditMode}
+        isEditInProgress={isEditInProgress}
         onDone={() => removeUnfinishedSecret(fieldName)}
         onStart={() => {
           addUnfinishedSecret(fieldName, { startValue: field.value });
@@ -83,16 +109,6 @@ const Control: React.FC<IProps> = ({
             form.setValue(unfinishedSecret.startValue);
           }
         }}
-      />
-    );
-  } else if (property.multiline) {
-    return (
-      <TextArea
-        {...field}
-        placeholder={placeholder}
-        autoComplete="off"
-        value={value ?? ""}
-        rows={3}
       />
     );
   } else {
