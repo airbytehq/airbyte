@@ -1,0 +1,21 @@
+{
+  "documentationUrl": "https://docsurl.com",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Google Directory Spec",
+    "type": "object",
+    "required": ["credentials_json", "email"],
+    "additionalProperties": false,
+    "properties": {
+      "credentials_json": {
+        "type": "string",
+        "description": "The contents of the JSON service account key. See the <a href=\"https://developers.google.com/admin-sdk/directory/v1/guides/delegation\">docs</a> for more information on how to generate this key.",
+        "airbyte_secret": true
+      },
+      "email": {
+        "type": "string",
+        "description": "The email of the user, which has permissions to access the Google Workspace Admin APIs."
+      }
+    }
+  }
+}
