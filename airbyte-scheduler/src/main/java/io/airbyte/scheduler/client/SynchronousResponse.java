@@ -24,10 +24,7 @@
 
 package io.airbyte.scheduler.client;
 
-import io.airbyte.config.JobConfig.ConfigType;
-import java.nio.file.Path;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.Objects;
 
 public class SynchronousResponse<T> {
 
@@ -59,64 +56,29 @@ public class SynchronousResponse<T> {
     return metadata;
   }
 
-  public static class SynchronousJobMetadata {
-
-    private final UUID id;
-    private final ConfigType configType;
-    private final UUID configId;
-
-    private final long createdAt;
-    private final long endedAt;
-    private final boolean succeeded;
-
-    private final Path logPath;
-
-    public SynchronousJobMetadata(final UUID id,
-                                  final ConfigType configType,
-                                  final UUID configId,
-                                  final long createdAt,
-                                  final long endedAt,
-                                  final boolean succeeded,
-                                  final Path logPath) {
-      this.id = id;
-      this.configType = configType;
-      this.configId = configId;
-      this.createdAt = createdAt;
-      this.endedAt = endedAt;
-      this.succeeded = succeeded;
-      this.logPath = logPath;
+  @Override
+  public boolean equals(final Object o) {
+    if (this == o) {
+      return true;
     }
-
-    public UUID getId() {
-      return id;
+    if (o == null || getClass() != o.getClass()) {
+      return false;
     }
+    final SynchronousResponse<?> that = (SynchronousResponse<?>) o;
+    return Objects.equals(output, that.output) && Objects.equals(metadata, that.metadata);
+  }
 
-    public ConfigType getConfigType() {
-      return configType;
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hash(output, metadata);
+  }
 
-    public Optional<UUID> getConfigId() {
-      return Optional.ofNullable(configId);
-    }
-
-    public long getCreatedAt() {
-      return createdAt;
-    }
-
-    public long getEndedAt() {
-      return endedAt;
-    }
-
-    public boolean isSucceeded() {
-      return succeeded;
-    }
-
-    // todo (cgardens) - this should always be present.
-    // only present if there was an error.
-    public Optional<Path> getLogPath() {
-      return Optional.ofNullable(logPath);
-    }
-
+  @Override
+  public String toString() {
+    return "SynchronousResponse{" +
+        "output=" + output +
+        ", metadata=" + metadata +
+        '}';
   }
 
 }

@@ -24,6 +24,7 @@
 
 package io.airbyte.scheduler.client;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobCheckConnectionConfig;
@@ -36,7 +37,6 @@ import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.JobTracker;
 import io.airbyte.scheduler.JobTracker.JobState;
-import io.airbyte.scheduler.client.SynchronousResponse.SynchronousJobMetadata;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalJobException;
 import java.io.IOException;
@@ -107,21 +107,25 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
   }
 
   // config id can be empty
-  private <T> SynchronousResponse<T> execute(ConfigType configType,
-                                             UUID configId,
-                                             CheckedFunction<UUID, T, TemporalJobException> executor,
-                                             UUID jobTrackerId) {
+  @VisibleForTesting
+  <T> SynchronousResponse<T> execute(ConfigType configType,
+                                     UUID configId,
+                                     CheckedFunction<UUID, T, TemporalJobException> executor,
+                                     UUID jobTrackerId) {
     final long createdAt = Instant.now().toEpochMilli();
     T value = null;
     TemporalJobException exception = null;
     final UUID jobId = UUID.randomUUID();
-    track(jobId, configType, jobTrackerId, JobState.STARTED);
     try {
+      track(jobId, configType, jobTrackerId, JobState.STARTED);
       value = executor.apply(jobId);
       track(jobId, configType, jobTrackerId, JobState.SUCCEEDED);
     } catch (TemporalJobException e) {
       exception = e;
       track(jobId, configType, jobTrackerId, JobState.FAILED);
+    } catch (Exception e) {
+      track(jobId, configType, jobTrackerId, JobState.FAILED);
+      throw e;
     }
     final long endedAt = Instant.now().toEpochMilli();
 
