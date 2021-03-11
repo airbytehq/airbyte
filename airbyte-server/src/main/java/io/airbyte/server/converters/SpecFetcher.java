@@ -26,15 +26,15 @@ package io.airbyte.server.converters;
 
 import com.google.common.base.Preconditions;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.scheduler.client.SynchronousJobResponse;
-import io.airbyte.scheduler.client.SynchronousSchedulerJobClient;
+import io.airbyte.scheduler.client.SynchronousResponse;
+import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import java.io.IOException;
 
 public class SpecFetcher {
 
-  private final SynchronousSchedulerJobClient schedulerJobClient;
+  private final SynchronousSchedulerClient schedulerJobClient;
 
-  public SpecFetcher(SynchronousSchedulerJobClient schedulerJobClient) {
+  public SpecFetcher(SynchronousSchedulerClient schedulerJobClient) {
     this.schedulerJobClient = schedulerJobClient;
   }
 
@@ -42,7 +42,7 @@ public class SpecFetcher {
     return getSpecFromJob(schedulerJobClient.createGetSpecJob(dockerImage));
   }
 
-  private static ConnectorSpecification getSpecFromJob(SynchronousJobResponse<ConnectorSpecification> response) {
+  private static ConnectorSpecification getSpecFromJob(SynchronousResponse<ConnectorSpecification> response) {
     Preconditions.checkState(response.isSuccess(), "Get Spec job failed.");
     Preconditions.checkNotNull(response.getOutput(), "Get Spec job return null spec");
 

@@ -77,8 +77,7 @@ import io.airbyte.config.Configs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.client.CachingSchedulerJobClient;
-import io.airbyte.scheduler.client.DefaultSynchronousSchedulerJobClient;
-import io.airbyte.scheduler.client.SynchronousSchedulerJobClient;
+import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.KnownException;
@@ -100,7 +99,6 @@ import io.airbyte.server.handlers.WorkspacesHandler;
 import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
-import io.airbyte.workers.temporal.TemporalClient;
 import java.io.File;
 import java.io.IOException;
 import javax.validation.Valid;
@@ -129,14 +127,14 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   public ConfigurationApi(final ConfigRepository configRepository,
                           final JobPersistence jobPersistence,
                           final CachingSchedulerJobClient schedulerJobClient,
+                          final SynchronousSchedulerClient synchronousSchedulerClient,
                           final Configs configs,
                           final FileTtlManager archiveTtlManager) {
-    final SynchronousSchedulerJobClient synchronousSchedulerJobClient = new DefaultSynchronousSchedulerJobClient(TemporalClient.production());
-    final SpecFetcher specFetcher = new SpecFetcher(synchronousSchedulerJobClient);
+    final SpecFetcher specFetcher = new SpecFetcher(synchronousSchedulerClient);
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
-    schedulerHandler = new SchedulerHandler(configRepository, schedulerJobClient, synchronousSchedulerJobClient);
+    schedulerHandler = new SchedulerHandler(configRepository, schedulerJobClient, synchronousSchedulerClient);
     workspacesHandler = new WorkspacesHandler(configRepository);
-    final DockerImageValidator dockerImageValidator = new DockerImageValidator(synchronousSchedulerJobClient);
+    final DockerImageValidator dockerImageValidator = new DockerImageValidator(synchronousSchedulerClient);
     sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, schedulerJobClient);
     connectionsHandler = new ConnectionsHandler(configRepository);
     destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, dockerImageValidator, schedulerJobClient);

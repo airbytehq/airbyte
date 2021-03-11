@@ -29,20 +29,20 @@ import java.nio.file.Path;
 import java.util.Optional;
 import java.util.UUID;
 
-public class SynchronousJobResponse<T> {
+public class SynchronousResponse<T> {
 
   private final T output;
   private final SynchronousJobMetadata metadata;
 
-  public static <T> SynchronousJobResponse<T> error(SynchronousJobMetadata metadata) {
-    return new SynchronousJobResponse<>(null, metadata);
+  public static <T> SynchronousResponse<T> error(SynchronousJobMetadata metadata) {
+    return new SynchronousResponse<>(null, metadata);
   }
 
-  public static <T> SynchronousJobResponse<T> success(T output, SynchronousJobMetadata metadata) {
-    return new SynchronousJobResponse<>(output, metadata);
+  public static <T> SynchronousResponse<T> success(T output, SynchronousJobMetadata metadata) {
+    return new SynchronousResponse<>(output, metadata);
   }
 
-  public SynchronousJobResponse(final T output, final SynchronousJobMetadata metadata) {
+  public SynchronousResponse(final T output, final SynchronousJobMetadata metadata) {
     this.output = output;
     this.metadata = metadata;
   }

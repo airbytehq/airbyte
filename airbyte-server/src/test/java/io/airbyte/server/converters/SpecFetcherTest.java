@@ -32,8 +32,8 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.scheduler.client.SynchronousJobResponse;
-import io.airbyte.scheduler.client.SynchronousSchedulerJobClient;
+import io.airbyte.scheduler.client.SynchronousResponse;
+import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import java.io.IOException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,15 +42,15 @@ class SpecFetcherTest {
 
   private static final String IMAGE_NAME = "foo:bar";
 
-  private SynchronousSchedulerJobClient schedulerJobClient;
-  private SynchronousJobResponse<ConnectorSpecification> response;
+  private SynchronousSchedulerClient schedulerJobClient;
+  private SynchronousResponse<ConnectorSpecification> response;
   private ConnectorSpecification connectorSpecification;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
   void setup() {
-    schedulerJobClient = mock(SynchronousSchedulerJobClient.class);
-    response = mock(SynchronousJobResponse.class);
+    schedulerJobClient = mock(SynchronousSchedulerClient.class);
+    response = mock(SynchronousResponse.class);
     connectorSpecification = new ConnectorSpecification().withConnectionSpecification(Jsons.jsonNode(ImmutableMap.of("foo", "bar")));
   }
 
