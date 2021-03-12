@@ -310,13 +310,18 @@ class IncrementalStream(Stream, ABC):
         """Name of the fields associated with the state"""
 
     @property
-    def state(self):
-        return {self.state_pk: str(self._state)}
+    def state(self) -> Optional[Mapping[str, Any]]:
+        """Current state, if wasn't set return None"""
+        if self._state:
+            return {self.state_pk: str(self._state)}
+        return None
 
     @state.setter
     def state(self, value):
         self._state = pendulum.parse(value[self.state_pk])
+        print("state", int(self._state.timestamp() * 1000))
         self._start_date = max(self._state, self._start_date)
+        print("state", int(self._start_date.timestamp() * 1000))
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

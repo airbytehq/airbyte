@@ -98,7 +98,7 @@ public abstract class StandardSourceTest {
   private Set<String> IMAGES_TO_SKIP_SECOND_INCREMENTAL_READ = Sets.newHashSet(
       "airbyte/source-intercom-singer",
       "airbyte/source-exchangeratesapi-singer",
-      "airbyte/source-hubspot-singer",
+      "airbyte/source-hubspot",
       "airbyte/source-marketo-singer",
       "airbyte/source-twilio-singer",
       "airbyte/source-mixpanel-singer",
@@ -106,8 +106,7 @@ public abstract class StandardSourceTest {
       "airbyte/source-braintree-singer",
       "airbyte/source-salesforce-singer",
       "airbyte/source-stripe-singer",
-      "airbyte/source-github-singer",
-      "airbyte/source-hubspot-singer");
+      "airbyte/source-github-singer");
 
   /**
    * Name of the docker image that the tests will run against.
