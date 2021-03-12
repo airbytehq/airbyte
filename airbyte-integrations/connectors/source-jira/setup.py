@@ -34,11 +34,7 @@ setup(
         "airbyte-protocol",
         "base-python",
         "requests",
+        "pytest==6.1.2"
     ],
-    package_data={"": ["*.json", "schemas/*.json"]},
-    setup_requires=["pytest-runner"],
-    tests_require=["pytest"],
-    extras_require={
-        "tests": ["airbyte_python_test", "pytest"],
-    },
+    package_data={"": ["*.json", "schemas/*.json"]}
 )
