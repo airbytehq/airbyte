@@ -1,53 +1,74 @@
-# HTTP Request Source 
+# Http Request Source 
 
-This is the repository for the HTTP Request source connector, written in Python. 
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/rest-api).
+This is the repository for the Http Request source connector, written in Python. 
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/http-request).
 
 ## Local development
-### Build
-First, build the module by running the following from the `airbyte` project root directory: 
+
+### Prerequisites
+**To iterate on this connector, make sure to complete this prerequisites section.**
+
+#### Build & Activate Virtual Environment and install dependencies
+From this connector directory, create a virtual environment:
 ```
-./gradlew :airbyte-integrations:connectors:source-http-request:build
+python -m venv .venv
 ```
 
-This should generate a virtualenv for this module in `source-http-request/.venv`. Make sure this venv is active in your
-development environment of choice. If you are on the terminal, run the following from the `source-http-request` directory:
+This will generate a virtualenv for this module in `.venv/`. Make sure this venv is active in your
+development environment of choice. To activate it from the terminal, run:
 ```
-cd airbyte-integrations/connectors/source-http-request # cd into the connector directory
 source .venv/bin/activate
+pip install -r requirements.txt
 ```
-If you are in an IDE, follow your IDE's instructions to activate the virtualenv. 
+If you are in an IDE, follow your IDE's instructions to activate the virtualenv.
 
-**All the instructions below assume you have correctly activated the virtualenv.**.
+Note that while we are installing dependencies from `requirements.txt`, you should only edit `setup.py` for your dependencies. `requirements.txt` is
+used for editable installs (`pip install -e`) to pull in Python dependencies from the monorepo and will call `setup.py`.
+If this is mumbo jumbo to you, don't worry about it, just put your deps in `setup.py` but install using `pip install -r requirements.txt` and everything
+should work as you expect.
+
+#### Create credentials
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/http-request)
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_http_request/spec.json` file.
+Note that the `secrets` directory is gitignored by default, so there is no danger of accidentally checking in sensitive information.
+See `sample_files/sample_config.json` for a sample config file.
+
+**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source http-request test creds`
+and place them into `secrets/config.json`.
+
 
 ### Locally running the connector
 ```
 python main_dev.py spec
-python main_dev.py check --config sample_files/test_config.json
-python main_dev.py discover --config sample_files/test_config.json
-python main_dev.py read --config sample_files/test_config.json --catalog sample_files/test_catalog.json
+python main_dev.py check --config secrets/config.json
+python main_dev.py discover --config secrets/config.json
+python main_dev.py read --config secrets/config.json --catalog sample_files/configured_catalog.json
 ```
 
 ### Unit Tests
 To run unit tests locally, from the connector directory run:
 ```
-pytest unit_tests
+python -m pytest unit_tests
 ```
 
 ### Locally running the connector docker image
+
+First, make sure you build the latest Docker image:
 ```
-# in airbyte root directory
-./gradlew :airbyte-integrations:connectors:source-http-request:airbyteDocker
-docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-http-request:/sample_files airbyte/source-http-request:dev spec
-docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-http-request:/sample_files airbyte/source-http-request:dev check --config /sample_files/sample_files/config.json
-docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-http-request:/sample_files airbyte/source-http-request:dev discover --config /sample_files/sample_files/config.json
-docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-http-request:/sample_files airbyte/source-http-request:dev read --config /sample_files/sample_files/config.json --catalog /sample_files/integration_tests/catalog.json
+docker build . -t airbyte/http-request:dev
 ```
 
-### Integration Tests 
-1. Configure credentials as appropriate, described below.
-1. From the airbyte project root, run `./gradlew :airbyte-integrations:connectors:source-http-request:standardSourceTestPython` to run the standard integration test suite.
-1. To run additional integration tests, place your integration tests in the `integration_tests` directory and run them with `pytest integration_tests`.
+Then run any of the connector commands as follows:
+```
+docker run --rm airbyte/source-http-request:dev spec
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-http-request:dev check --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-http-request:dev discover --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/sample_files:/sample_files airbyte/source-http-request:dev read --config /secrets/config.json --catalog /sample_files/configured_catalog.json
+```
+
+### Integration Tests
+1. From the airbyte project root, run `./gradlew :airbyte-integrations:connectors:source-http-request:integrationTest` to run the standard integration test suite.
+1. To run additional integration tests, place your integration tests in a new directory `integration_tests` and run them with `python -m pytest -s integration_tests`.
    Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
 
 ## Dependency Management

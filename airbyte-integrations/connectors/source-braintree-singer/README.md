@@ -1,35 +1,54 @@
-# Braintree Source 
+# Source Braintree Singer
 
-This is the repository for the Braintree source connector, written in Python. 
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/braintree).
+This is the repository for the Braintree source connector, based on a Singer tap.
+For information about how to use this connector within Airbyte, see [the User Documentation](https://docs.airbyte.io/integrations/sources/braintree).
 
 ## Local development
 
 ### Prerequisites
 **To iterate on this connector, make sure to complete this prerequisites section.**
 
-#### Build & Activate Virtual Environment
-First, build the module by running the following from the `airbyte` project root directory: 
+#### Build & Activate Virtual Environment and install dependencies
+From this connector directory, create a virtual environment:
 ```
-./gradlew :airbyte-integrations:connectors:source-braintree-singer:build
+python -m venv .venv
 ```
 
-This will generate a virtualenv for this module in `source-braintree-singer/.venv`. Make sure this venv is active in your
-development environment of choice. To activate the venv from the terminal, run:
+This will generate a virtualenv for this module in `.venv/`. Make sure this venv is active in your
+development environment of choice. To activate it from the terminal, run:
 ```
-cd airbyte-integrations/connectors/source-braintree-singer # cd into the connector directory
 source .venv/bin/activate
+pip install -r requirements.txt
 ```
 If you are in an IDE, follow your IDE's instructions to activate the virtualenv.
+
+Note that while we are installing dependencies from `requirements.txt`, you should only edit `setup.py` for your dependencies. `requirements.txt` is
+used for editable installs (`pip install -e`) to pull in Python dependencies from the monorepo and will call `setup.py`.
+If this is mumbo jumbo to you, don't worry about it, just put your deps in `setup.py` but install using `pip install -r requirements.txt` and everything
+should work as you expect.
 
 #### Create credentials
 **If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/braintree)
 to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_braintree_singer/spec.json` file.
+Note that the `secrets` directory is gitignored by default, so there is no danger of accidentally checking in sensitive information.
 See `sample_files/sample_config.json` for a sample config file.
 
-**If you are an Airbyte core member**, copy the credentials in RPass under the secret name `source-braintree-singer-integration-test-config`
+**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source braintree test creds`
 and place them into `secrets/config.json`.
 
+### Locally running the connector
+```
+python main_dev.py spec
+python main_dev.py check --config secrets/config.json
+python main_dev.py discover --config secrets/config.json
+python main_dev.py read --config secrets/config.json --catalog sample_files/configured_catalog.json
+```
+
+### Unit Tests
+To run unit tests locally, from the connector root run:
+```
+pytest unit_tests
+```
 
 ### Locally running the connector
 ```
@@ -42,22 +61,27 @@ python main_dev.py read --config secrets/config.json --catalog sample_files/conf
 ### Unit Tests
 To run unit tests locally, from the connector directory run:
 ```
-pytest unit_tests
+python -m pytest unit_tests
 ```
 
 ### Locally running the connector docker image
+
+First, make sure you build the latest Docker image:
 ```
-# in airbyte root directory
-./gradlew :airbyte-integrations:connectors:source-braintree-singer:airbyteDocker
+docker build . -t airbyte/braintree-singer:dev
+```
+
+Then run any of the connector commands as follows:
+```
 docker run --rm airbyte/source-braintree-singer:dev spec
-docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-braintree-singer/secrets:/secrets airbyte/source-braintree-singer:dev check --config /secrets/config.json
-docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-braintree-singer/secrets:/secrets airbyte/source-braintree-singer:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-braintree-singer/secrets:/secrets -v $(pwd)/airbyte-integrations/connectors/source-braintree-singer/sample_files:/sample_files airbyte/source-braintree-singer:dev read --config /secrets/config.json --catalog /sample_files/configured_catalog.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-braintree-singer:dev check --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-braintree-singer:dev discover --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/sample_files:/sample_files airbyte/source-braintree-singer:dev read --config /secrets/config.json --catalog /sample_files/configured_catalog.json
 ```
 
 ### Integration Tests
-1. From the airbyte project root, run `./gradlew :airbyte-integrations:connectors:source-braintree-singer:standardSourceTestPython` to run the standard integration test suite.
-1. To run additional integration tests, place your integration tests in the `integration_tests` directory and run them with `pytest integration_tests`.
+1. From the airbyte project root, run `./gradlew :airbyte-integrations:connectors:source-braintree-singer:integrationTest` to run the standard integration test suite.
+1. To run additional integration tests, create a directory `integration_tests` which contain your tests and run them with `pytest integration_tests`.
    Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
 
 ## Dependency Management

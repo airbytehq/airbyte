@@ -1,61 +1,88 @@
-# Hubspot Test Configuration
+# Source Hubspot Singer
 
-This integration wraps the existing singer [tap-hubspot](https://github.com/singer-io/tap-hubspot). In order to test the Hubspot source, you will need api credentials, see the [docs](https://docs.airbyte.io/integrations/sources/hubspot) for details.
+This is the repository for the Hubspot source connector, based on a Singer tap.
+For information about how to use this connector within Airbyte, see [the User Documentation](https://docs.airbyte.io/integrations/sources/hubspot).
 
-## Community Contributor
+## Local development
 
-1. Create a file at `secrets/config.json` with one of the following two format:
-    1. If using an api key:
-        ```
-        {
-          "start_date": "2017-01-01T00:00:00Z",
-          "credentials": {
-            "api_key": "your hubspot api key"
-          }
-        }
-        ```
-   1. If using oauth:
-       ```
-        {
-          "start_date": "2017-01-01T00:00:00Z",
-          "credentials": {
-            "redirect_uri": "<redirect uri>",
-            "client_id": "<hubspot client id>",
-            "client_secret": "<hubspot client secret>",
-            "refresh_token": "<hubspot refresh token>",
-          }
-        }
-       ```
+### Prerequisites
+**To iterate on this connector, make sure to complete this prerequisites section.**
 
-## Airbyte Employee
+#### Build & Activate Virtual Environment and install dependencies
+From this connector directory, create a virtual environment:
+```
+python -m venv .venv
+```
 
-1. Access the api key credentials in the `hubspot-integration-test-api-key` secret on Rippling under the `Engineering` folder
-    1. If we ever need a new api key it can be found in settings -> integrations (under the account banner) -> api key
-1. Access the oauth config in the `hubspot-integration-test-oauth-config` secret on Rippling under the `Engineering` folder
-    1. If we ever need to regenerate the refresh token for auth follow these hubspot [instructions](https://developers.hubspot.com/docs/api/oauth-quickstart-guide). Going to lay out the process because it wasn't 100% clear in their docs.
-    1. Make sure you create or have developer account. I had an account but it wasn't a developer account, which means I couldn't access the oauth info.
-    1. To get to an app (which can be tricky to find) go here https://app.hubspot.com/developer/8665273/applications.
-    1. Then either use the existing app or create a new one.
-    1. Then basic info -> auth will get you the client_id and client_secret
-    1. Then you need to get a refresh token.
-    1. Put this url in a browser https://app.hubspot.com/oauth/authorize?scope=contacts%20social&redirect_uri=https://www.example.com/auth-callback&client_id=<client-id>.
-    1. It will direct you to a page in hubspot. Before you hit authorized on the next page open the developer console network tab. Okay, now hit authorize.
-    1. In the developer console search for example.com and in the url params for the http request example.com there will be a code `https://www.example.com/auth-callback?code=<code>`. Save that code somewhere (I will refer to it as code below).
-    1. Use this javascript snipped to get the refresh token. In the response body will be a refresh token.
-       ```
-       var request = require("request");
-       
-       const formData = {
-         grant_type: 'authorization_code',
-         client_id: '<client-id>',
-         client_secret: '<client-secret>',
-         redirect_uri: 'https://www.example.com/auth-callback',
-         code: '<code>'
-       };
-       
-       request.post('https://api.hubapi.com/oauth/v1/token', { form: formData }, (err, data) => {
-         console.log(data)
-       })
-       ```
-   1. Finally! You have all the pieces you need to do oauth with hubspot (client_id, client_secret, and refresh_token).
+This will generate a virtualenv for this module in `.venv/`. Make sure this venv is active in your
+development environment of choice. To activate it from the terminal, run:
+```
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+If you are in an IDE, follow your IDE's instructions to activate the virtualenv.
 
+Note that while we are installing dependencies from `requirements.txt`, you should only edit `setup.py` for your dependencies. `requirements.txt` is
+used for editable installs (`pip install -e`) to pull in Python dependencies from the monorepo and will call `setup.py`.
+If this is mumbo jumbo to you, don't worry about it, just put your deps in `setup.py` but install using `pip install -r requirements.txt` and everything
+should work as you expect.
+
+#### Create credentials
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/hubspot)
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_hubspot_singer/spec.json` file.
+Note that the `secrets` directory is gitignored by default, so there is no danger of accidentally checking in sensitive information.
+See `sample_files/sample_config.json` for a sample config file.
+
+**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source hubspot test creds`
+and place them into `secrets/config.json`.
+
+### Locally running the connector
+```
+python main_dev.py spec
+python main_dev.py check --config secrets/config.json
+python main_dev.py discover --config secrets/config.json
+python main_dev.py read --config secrets/config.json --catalog sample_files/configured_catalog.json
+```
+
+### Unit Tests
+To run unit tests locally, from the connector root run:
+```
+pytest unit_tests
+```
+
+### Locally running the connector
+```
+python main_dev.py spec
+python main_dev.py check --config secrets/config.json
+python main_dev.py discover --config secrets/config.json
+python main_dev.py read --config secrets/config.json --catalog sample_files/configured_catalog.json
+```
+
+### Unit Tests
+To run unit tests locally, from the connector directory run:
+```
+python -m pytest unit_tests
+```
+
+### Locally running the connector docker image
+
+First, make sure you build the latest Docker image:
+```
+docker build . -t airbyte/hubspot-singer:dev
+```
+
+Then run any of the connector commands as follows:
+```
+docker run --rm airbyte/source-hubspot-singer:dev spec
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-hubspot-singer:dev check --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-hubspot-singer:dev discover --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/sample_files:/sample_files airbyte/source-hubspot-singer:dev read --config /secrets/config.json --catalog /sample_files/configured_catalog.json
+```
+
+### Integration Tests
+1. From the airbyte project root, run `./gradlew :airbyte-integrations:connectors:source-hubspot-singer:integrationTest` to run the standard integration test suite.
+1. To run additional integration tests, create a directory `integration_tests` which contain your tests and run them with `pytest integration_tests`.
+   Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
+
+## Dependency Management
+All of your dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect internal Airbyte dependencies in the monorepo for local development.
