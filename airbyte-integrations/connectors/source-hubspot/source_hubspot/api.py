@@ -285,9 +285,7 @@ class Stream(ABC):
 
 
 class IncrementalStream(Stream, ABC):
-    """Нужно инициализровать start_date with state if any
-    в конце обновить state
-    """
+    """Stream that supports state and incremental read"""
 
     state_pk = "timestamp"
     limit = 1000
