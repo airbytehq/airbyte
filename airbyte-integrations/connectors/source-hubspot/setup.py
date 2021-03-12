@@ -33,7 +33,6 @@ MAIN_REQUIREMENTS = [
 ]
 
 TEST_REQUIREMENTS = [
-    "airbyte-python-test",
     "pytest",
 ]
 
