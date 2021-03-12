@@ -34,6 +34,7 @@ import io.airbyte.api.model.SourceReadList;
 import io.airbyte.api.model.SourceUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
+import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -127,7 +128,14 @@ public class SourceHandler {
   }
 
   public SourceRead getSource(SourceIdRequestBody sourceIdRequestBody) throws JsonValidationException, IOException, ConfigNotFoundException {
-    return buildSourceRead(sourceIdRequestBody.getSourceId());
+    final UUID sourceId = sourceIdRequestBody.getSourceId();
+    final SourceConnection sourceConnection = configRepository.getSourceConnection(sourceId);
+
+    if (sourceConnection.getTombstone()) {
+      throw new ConfigNotFoundException(ConfigSchema.SOURCE_CONNECTION, sourceId.toString());
+    }
+
+    return buildSourceRead(sourceId);
   }
 
   public SourceReadList listSourcesForWorkspace(WorkspaceIdRequestBody workspaceIdRequestBody)
@@ -151,7 +159,11 @@ public class SourceHandler {
   public void deleteSource(SourceIdRequestBody sourceIdRequestBody) throws JsonValidationException, IOException, ConfigNotFoundException {
     // get existing source
     final SourceRead source = buildSourceRead(sourceIdRequestBody.getSourceId());
+    deleteSource(source);
+  }
 
+  public void deleteSource(SourceRead source)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
     // "delete" all connections associated with source as well.
     // Delete connections first in case it it fails in the middle, source will still be visible
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody().workspaceId(source.getWorkspaceId());

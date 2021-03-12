@@ -2,9 +2,9 @@ import React, { useRef } from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 
-import { Button, Input, InputProps } from "components";
+import { Button } from "components";
 
-const InputContainer = styled.div`
+const ComponentContainer = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -15,7 +15,8 @@ const SmallButton = styled(Button)`
   padding: 6px 8px 7px;
 `;
 
-type ConfirmationInputProps = InputProps & {
+type ConfirmationControlProps = {
+  component: React.ReactElement;
   showButtons?: boolean;
   isEditInProgress?: boolean;
   onStart: () => void;
@@ -23,30 +24,35 @@ type ConfirmationInputProps = InputProps & {
   onDone: () => void;
 };
 
-const ConfirmationInput: React.FC<ConfirmationInputProps> = (props) => {
-  const inputElement = useRef<HTMLInputElement>(null);
-  const { isEditInProgress, showButtons, onStart, onCancel, onDone } = props;
+const ConfirmationControl: React.FC<ConfirmationControlProps> = ({
+  isEditInProgress,
+  showButtons,
+  onStart,
+  onCancel,
+  onDone,
+  component,
+}) => {
+  const controlRef = useRef<HTMLElement>(null);
 
   if (!showButtons) {
-    return <Input {...props} />;
+    return <>{component}</>;
   }
 
   const handleStartEdit = () => {
-    if (inputElement && inputElement.current) {
-      inputElement.current.removeAttribute("disabled");
-      inputElement.current.focus();
+    if (controlRef && controlRef.current) {
+      controlRef.current?.removeAttribute?.("disabled");
+      controlRef.current?.focus?.();
     }
     onStart();
   };
 
   return (
-    <InputContainer>
-      <Input
-        {...props}
-        ref={inputElement}
-        autoFocus={isEditInProgress}
-        disabled={!isEditInProgress}
-      />
+    <ComponentContainer>
+      {React.cloneElement(component, {
+        ref: controlRef,
+        autoFocus: isEditInProgress,
+        disabled: !isEditInProgress,
+      })}
       {isEditInProgress ? (
         <>
           <SmallButton onClick={onDone} type="button">
@@ -61,8 +67,8 @@ const ConfirmationInput: React.FC<ConfirmationInputProps> = (props) => {
           <FormattedMessage id="form.edit" />
         </SmallButton>
       )}
-    </InputContainer>
+    </ComponentContainer>
   );
 };
 
-export default ConfirmationInput;
+export default ConfirmationControl;

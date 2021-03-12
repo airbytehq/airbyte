@@ -38,6 +38,10 @@ import java.util.UUID;
 public class SourceHelpers {
 
   public static SourceConnection generateSource(UUID sourceDefinitionId) throws IOException {
+    return generateSource(sourceDefinitionId, false);
+  }
+
+  public static SourceConnection generateSource(UUID sourceDefinitionId, boolean tombstone) throws IOException {
     final UUID workspaceId = UUID.randomUUID();
     final UUID sourceId = UUID.randomUUID();
 
@@ -49,7 +53,7 @@ public class SourceHelpers {
         .withSourceDefinitionId(sourceDefinitionId)
         .withSourceId(sourceId)
         .withConfiguration(implementationJson)
-        .withTombstone(false);
+        .withTombstone(tombstone);
   }
 
   public static JsonNode getTestImplementationJson() throws IOException {

@@ -70,7 +70,7 @@ public class TrackingClientSingleton {
   @VisibleForTesting
   static TrackingIdentity getTrackingIdentity(ConfigRepository configRepository, String airbyteVersion) {
     try {
-      final StandardWorkspace workspace = configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID);
+      final StandardWorkspace workspace = configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID, true);
       String email = null;
       if (workspace.getEmail() != null && workspace.getAnonymousDataCollection() != null && !workspace.getAnonymousDataCollection()) {
         email = workspace.getEmail();
