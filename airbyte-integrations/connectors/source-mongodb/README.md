@@ -13,7 +13,6 @@ While it is _highly_ recommended to use `rbenv`, if you don't want to, just make
 #### Install dependencies
 1. Install the correct `bundle` version (found at the bottom of `Gemfile`). Currently this is `gem install bundle:2.2.3`. 
 2. `bundle install`
-3. 
 
 ### Local iteration
 1. Change code
