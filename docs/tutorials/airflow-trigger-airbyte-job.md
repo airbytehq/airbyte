@@ -60,6 +60,7 @@ with DAG(dag_id='trigger_airbyte_job_example',
 ```
 
 The code will produce the following simple DAG:
+
 ![](../.gitbook/assets/airflow_airbyte_dag.png)
 
 There is only one task that triggers Airbyte Sync Job for this example. You can easily connect more tasks to it, for example: perform data transformations with [dbt](https://www.getdbt.com/), update a machine learning model, etc.
