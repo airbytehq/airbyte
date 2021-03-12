@@ -37,7 +37,9 @@ Don't forget to click save!
 
 ### Retrieving the Airbyte Connection ID
 We'll need the Airbyte Connection ID so our Airflow DAG knows which Airbyte Connection to trigger.
+
 ![](../.gitbook/assets/airflow_airbyte_connection.png)
+
 This ID can be seen in the URL on the connection page in the Airbyte UI.  The Airbyte UI can be accessed at `localhost:8000`.
 
 ### Creating a simple Airflow DAG to run an Airbyte Sync Job
