@@ -30,6 +30,7 @@
     * [GitHub](integrations/sources/github.md)
     * [Google Adwords](integrations/sources/google-adwords.md)
     * [Google Analytics](integrations/sources/googleanalytics.md)
+    * [Google Directory API](integrations/sources/google-directory.md)
     * [Google Sheets](integrations/sources/google-sheets.md)
     * [Greenhouse](integrations/sources/greenhouse.md)
     * [HTTP Request](integrations/sources/http-request.md)
