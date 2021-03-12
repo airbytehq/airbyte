@@ -1,6 +1,12 @@
 {
   "type": "object",
   "properties": {
+    "business_account_id": {
+      "type": ["null", "string"]
+    },
+    "page_id": {
+      "type": ["null", "string"]
+    },
     "id": {
       "type": ["null", "string"]
     },

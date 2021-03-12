@@ -22,8 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Any, Mapping, Tuple
+from typing import Any, List, Mapping, Tuple
 
+import backoff
 import pendulum
 from base_python import BaseClient
 from base_python.entrypoint import logger
@@ -32,14 +33,17 @@ from facebook_business import FacebookAdsApi
 from facebook_business.adobjects import user as fb_user
 from facebook_business.adobjects.iguser import IGUser
 from facebook_business.adobjects.page import Page
+from facebook_business.api import Cursor
 from facebook_business.exceptions import FacebookRequestError
 
 from .api import MediaAPI, MediaInsightsAPI, StoriesAPI, StoriesInsightsAPI, UserInsightsAPI, UserLifetimeInsightsAPI, UsersAPI
+from .common import InstagramAPIException, retry_pattern
+
+backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 
 
 class Client(BaseClient):
-    def __init__(self, account_id: str, access_token: str, start_date: str):
-        self._account_id = account_id
+    def __init__(self, access_token: str, start_date: str):
         self._start_date = pendulum.parse(start_date)
 
         self._api = FacebookAdsApi.init(access_token=access_token)
@@ -71,28 +75,43 @@ class Client(BaseClient):
         self._apis[name].state = state
 
     @cached_property
-    def account(self):
-        return self._find_account(self._account_id)
+    def accounts(self):
+        return self._find_accounts()
 
-    @staticmethod
-    def _find_account(account_id: str):
+    def _find_accounts(self) -> List:
         try:
-            accounts = fb_user.User(fbid="me").get_accounts()
+            instagram_business_accounts = []
+            accounts = self._get_accounts()
             for account in accounts:
                 page = Page(account.get_id()).api_get(fields=["instagram_business_account"])
-                if page.get("instagram_business_account") and page.get("instagram_business_account").get("id") == account_id:
-                    return IGUser(page.get("instagram_business_account").get("id"))
+                if page.get("instagram_business_account"):
+                    instagram_business_accounts.append(
+                        {
+                            "page_id": account.get_id(),
+                            "instagram_business_account": self._get_instagram_user(page),
+                        }
+                    )
         except FacebookRequestError as exc:
-            raise Exception(f"Error: {exc.api_error_code()}, {exc.api_error_message()}") from exc
+            raise InstagramAPIException(f"Error: {exc.api_error_code()}, {exc.api_error_message()}") from exc
 
-        raise Exception(f"Couldn't find Instagram business account with id {account_id}")
+        if instagram_business_accounts:
+            return instagram_business_accounts
+        raise InstagramAPIException("Couldn't find an Instagram business account for current Access Token")
+
+    @backoff_policy
+    def _get_accounts(self) -> Cursor:
+        return fb_user.User(fbid="me").get_accounts()
+
+    @backoff_policy
+    def _get_instagram_user(self, page: Page) -> IGUser:
+        return IGUser(page.get("instagram_business_account").get("id"))
 
     def health_check(self) -> Tuple[bool, str]:
         alive = True
         error_message = None
         try:
-            self._find_account(self._account_id)
-        except Exception as exc:
+            self._find_accounts()
+        except InstagramAPIException as exc:
             logger.error(str(exc))
             alive = False
             error_message = str(exc)

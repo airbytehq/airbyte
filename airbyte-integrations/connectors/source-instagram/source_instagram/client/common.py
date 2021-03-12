@@ -22,26 +22,35 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from setuptools import find_packages, setup
+import sys
 
-setup(
-    name="source_instagram",
-    description="Source implementation for Instagram.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    install_requires=[
-        "airbyte-protocol",
-        "base-python",
-        "facebook_business==10.0.0",
-        "pendulum==1.2.0",
-        "cached_property==1.5.2",
-        "backoff==1.10.0",
-    ],
-    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
-    setup_requires=["pytest-runner"],
-    tests_require=["pytest==6.1.2"],
-    extras_require={
-        "tests": ["airbyte_python_test==0.0.0", "pytest==6.1.2"],
-    },
-)
+import backoff
+from base_python.entrypoint import logger
+from requests.status_codes import codes as status_codes
+
+
+class InstagramAPIException(Exception):
+    """General class for all API errors"""
+
+
+def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
+    def log_retry_attempt(details):
+        _, exc, _ = sys.exc_info()
+        logger.info(str(exc))
+        logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} more seconds then retrying...")
+
+    def should_retry_api_error(exc):
+        if exc.http_status() == status_codes.TOO_MANY_REQUESTS or (
+            exc.http_status() == status_codes.FORBIDDEN and exc.api_error_message() == "(#4) Application request limit reached"
+        ):
+            return True
+        return False
+
+    return backoff.on_exception(
+        backoff_type,
+        exception,
+        jitter=None,
+        on_backoff=log_retry_attempt,
+        giveup=lambda exc: not should_retry_api_error(exc),
+        **wait_gen_kwargs,
+    )
