@@ -13,10 +13,6 @@
         "examples": ["2020-09-25T00:00:00Z"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
       },
-      "account_id": {
-        "type": "string",
-        "description": "The Instagram business account ID to use when pulling data from the Instagram API."
-      },
       "access_token": {
         "type": "string",
         "description": "The value of the access token generated. See the <a href=\"https://docs.airbyte.io/integrations/sources/instagram\">docs</a> for more information",
