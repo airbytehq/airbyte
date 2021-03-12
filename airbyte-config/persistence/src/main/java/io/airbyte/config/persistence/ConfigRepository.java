@@ -24,6 +24,7 @@
 
 package io.airbyte.config.persistence;
 
+import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
@@ -50,7 +51,7 @@ public class ConfigRepository {
       throws JsonValidationException, IOException, ConfigNotFoundException {
     StandardWorkspace workspace = persistence.getConfig(ConfigSchema.STANDARD_WORKSPACE, workspaceId.toString(), StandardWorkspace.class);
 
-    if (workspace.getTombstone() == null || workspace.getTombstone() == includeTombstone) {
+    if (!MoreBooleans.isTruthy(workspace.getTombstone()) || includeTombstone) {
       return workspace;
     }
 
@@ -74,7 +75,7 @@ public class ConfigRepository {
     List<StandardWorkspace> workspaces = new ArrayList<StandardWorkspace>();
 
     for (StandardWorkspace workspace : persistence.listConfigs(ConfigSchema.STANDARD_WORKSPACE, StandardWorkspace.class)) {
-      if (workspace.getTombstone() == null || !workspace.getTombstone() || workspace.getTombstone() == includeTombstone) {
+      if (!MoreBooleans.isTruthy(workspace.getTombstone()) || includeTombstone) {
         workspaces.add(workspace);
       }
     }
