@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Hubspot connector can be used to sync your Hubspot data. It supports full refresh sync.
+The Hubspot connector can be used to sync your Hubspot data. It supports full refresh sync for all streams and incremental sync for Email Events and Subscription Changes streams. 
 
 ### Output schema
 
@@ -13,14 +13,14 @@ Several output streams are available from this source:
 * [Contacts](https://developers.hubspot.com/docs/methods/contacts/get_contacts)
 * [Deal Pipelines](https://developers.hubspot.com/docs/methods/pipelines/get_pipelines_for_object_type)
 * [Deals](https://developers.hubspot.com/docs/api/crm/deals)
-* [Email Events](https://developers.hubspot.com/docs/methods/email/get_events)
+* [Email Events](https://developers.hubspot.com/docs/methods/email/get_events) (Incremental)
 * [Engagements](https://legacydocs.hubspot.com/docs/methods/engagements/get-all-engagements)
 * [Forms](https://developers.hubspot.com/docs/api/marketing/forms)
 * [Line Items](https://developers.hubspot.com/docs/api/crm/line-items)
 * [Owners](https://developers.hubspot.com/docs/methods/owners/get_owners)
 * [Products](https://developers.hubspot.com/docs/api/crm/products)
 * [Quotes](https://developers.hubspot.com/docs/api/crm/quotes)
-* [Subscription Changes](https://developers.hubspot.com/docs/methods/email/get_subscriptions_timeline)
+* [Subscription Changes](https://developers.hubspot.com/docs/methods/email/get_subscriptions_timeline) (Incremental)
 * [Tickets](https://developers.hubspot.com/docs/api/crm/tickets)
 * [Workflows](https://legacydocs.hubspot.com/docs/methods/workflows/v3/get_workflows)
 
@@ -29,7 +29,7 @@ Several output streams are available from this source:
 | Feature | Supported? |
 | :--- | :--- |
 | Full Refresh Sync | Yes |
-| Incremental Sync | No |
+| Incremental Sync | Yes |
 | Replicate Incremental Deletes | No |
 | SSL connection | Yes |
 
