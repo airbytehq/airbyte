@@ -10,6 +10,13 @@ airbytePython {
     moduleDirectory 'source_file'
 }
 
+
+airbyteStandardSourceTestFile {
+    specPath = "source_file/spec.json"
+    configPath = "secrets/config.json"
+    configuredCatalogPath = "integration_tests/configured_catalog.json"
+}
+
 task("customIntegrationTestPython", type: PythonTask, dependsOn: installTestReqs){
     module = "pytest"
     command = "-s integration_tests"

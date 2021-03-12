@@ -35,8 +35,6 @@ setup(
         "tap-exchangeratesapi==0.1.1",
         "base-python",
         "airbyte-protocol",
-    ],
-    setup_requires=["pytest-runner"],
-    tests_require=["pytest"],
-    extras_require={"main": ["base-singer"], "tests": ["airbyte_python_test", "pytest"]},
+        "pytest==6.1.2"
+    ]
 )

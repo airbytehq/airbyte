@@ -1,13 +1,19 @@
 plugins {
     id 'airbyte-python'
     id 'airbyte-docker'
-    id 'airbyte-source-test'
-    id 'airbyte-integration-test-java'
+    id 'airbyte-standard-source-test-file'
 }
 
 airbytePython {
     moduleDirectory 'source_drift'
 }
+
+airbyteStandardSourceTestFile {
+    specPath = "source_drift/spec.json"
+    configPath = "secrets/config.json"
+    configuredCatalogPath = "sample_files/configured_catalog.json"
+}
+
 
 dependencies {
     implementation files(project(':airbyte-integrations:bases:base-python').airbyteDocker.outputs)
