@@ -290,6 +290,7 @@ class IncrementalStream(Stream, ABC):
     """
 
     state_pk = "timestamp"
+    limit = 1000
 
     @property
     def state(self):
@@ -456,12 +457,10 @@ class EmailEventStream(IncrementalStream):
     url = "/email/public/v1/events"
     data_field = "events"
     more_key = "hasMore"
-    limit = 1000
-    state_pk = "timestamp"
     updated_field = "created"
 
     def list(self, fields) -> Iterable:
-        yield from self.read_chunked(partial(self._api.get, url=self.url))
+        yield from self.read(partial(self._api.get, url=self.url))
 
 
 class EngagementStream(Stream):
@@ -515,12 +514,10 @@ class SubscriptionChangeStream(IncrementalStream):
     url = "/email/public/v1/subscriptions/timeline"
     data_field = "timeline"
     more_key = "hasMore"
-    limit = 1000
-    state_pk = "timestamp"
     updated_field = "timestamp"
 
     def list(self, fields) -> Iterable:
-        yield from self.read_chunked(partial(self._api.get, url=self.url))
+        yield from self.read(partial(self._api.get, url=self.url))
 
 
 class WorkflowStream(Stream):
