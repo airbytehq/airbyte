@@ -83,14 +83,14 @@ Therefore, it is possible to extract these SQL files, modify them and run it you
 You would be able to find these at the following location inside the server's docker container:
 
 ```text
-/tmp/workspace/${NORMALIZE_WORKSPACE}/build/run/airbyte_utils/models/generated/<your_table_name>.sql
+/tmp/workspace/${NORMALIZE_WORKSPACE}/build/run/airbyte_utils/models/generated/airbyte_tables/<schema>/<your_table_name>.sql
 ```
 
 In order to extract them, you can run:
 
 ```bash
 docker cp airbyte-server:/tmp/workspace/${NORMALIZE_WORKSPACE}/build/run/airbyte_utils/models/generated/* models/
-ls models
+find models
 ```
 
 Example Output:
