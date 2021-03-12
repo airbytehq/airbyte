@@ -374,13 +374,14 @@ from {{ from_table }}
             return self.cast_property_type_as_array(property_name, column_name)
         elif is_object(definition["type"]):
             sql_type = self.cast_property_type_as_object(property_name, column_name)
-        elif is_integer(definition["type"]):
-            sql_type = jinja_call("dbt_utils.type_int()")
-        elif is_number(definition["type"]):
-            sql_type = jinja_call("dbt_utils.type_float()")
+        # Treat simple types from narrower to wider scope type: boolean < integer < number < string
         elif is_boolean(definition["type"]):
             cast_operation = jinja_call(f"cast_to_boolean({jinja_column})")
             return f"{cast_operation} as {column_name}"
+        elif is_integer(definition["type"]):
+            sql_type = jinja_call("dbt_utils.type_bigint()")
+        elif is_number(definition["type"]):
+            sql_type = jinja_call("dbt_utils.type_float()")
         elif is_string(definition["type"]):
             sql_type = jinja_call("dbt_utils.type_string()")
         else:
