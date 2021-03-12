@@ -14,7 +14,7 @@
   * [Postgres Replication](tutorials/postgres-replication.md)
   * [Save and Search Through Your Slack History on a Free Slack Plan](tutorials/slack-history.md)
   * [Upgrading Airbyte](tutorials/upgrading-airbyte.md)
-  * [Using the Airflow Airbyte Operator](tutorials/adding-incremental-sync.md)
+  * [Using the Airflow Airbyte Operator](tutorials/using-the-airflow-airbyte-operator.md)
 * [Changelog](changelog/README.md)
   * [Platform](changelog/platform.md)
   * [Connectors](changelog/connectors.md)
