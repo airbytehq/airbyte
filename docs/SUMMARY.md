@@ -36,6 +36,7 @@
     * [Greenhouse](integrations/sources/greenhouse.md)
     * [HTTP Request](integrations/sources/http-request.md)
     * [Hubspot](integrations/sources/hubspot.md)
+    * [Instagram](integrations/sources/instagram.md)
     * [Intercom](integrations/sources/intercom.md)
     * [Jira](integrations/sources/jira.md)
     * [Looker](integrations/sources/looker.md)
