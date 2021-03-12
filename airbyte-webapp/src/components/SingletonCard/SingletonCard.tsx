@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-import { H5 } from "../Titles";
+import { H5 } from "components/Titles";
 
 type IProps = {
   title: string | React.ReactNode;
@@ -42,7 +42,7 @@ const Text = styled.div`
   line-height: 17px;
 `;
 
-const SingletonCard: React.FC<IProps> = props => (
+const SingletonCard: React.FC<IProps> = (props) => (
   <Singleton>
     <Title>{props.title}</Title>
     <Text>{props.text}</Text>

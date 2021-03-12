@@ -45,6 +45,10 @@ public class DestinationHelpers {
   }
 
   public static DestinationConnection generateDestination(UUID destinationDefinitionId) throws IOException {
+    return generateDestination(destinationDefinitionId, false);
+  }
+
+  public static DestinationConnection generateDestination(UUID destinationDefinitionId, boolean tombstone) throws IOException {
     final UUID workspaceId = UUID.randomUUID();
     final UUID destinationId = UUID.randomUUID();
 
@@ -56,7 +60,7 @@ public class DestinationHelpers {
         .withDestinationDefinitionId(destinationDefinitionId)
         .withDestinationId(destinationId)
         .withConfiguration(implementationJson)
-        .withTombstone(false);
+        .withTombstone(tombstone);
   }
 
   public static DestinationRead getDestinationRead(DestinationConnection destination, StandardDestinationDefinition standardDestinationDefinition) {

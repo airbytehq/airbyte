@@ -11,5 +11,5 @@ RUN npm install
 
 ENTRYPOINT ["node", "/airbyte/integration_code/source.js"]
 
-LABEL io.airbyte.version=0.1.0
+LABEL io.airbyte.version=0.2.0
 LABEL io.airbyte.name=airbyte/source-plaid

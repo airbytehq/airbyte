@@ -2,9 +2,9 @@ import React from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 
-import Button from "../../Button";
-import Spinner from "../../Spinner";
-import StatusIcon from "../../StatusIcon";
+import Button from "components/Button";
+import Spinner from "components/Spinner";
+import StatusIcon from "components/StatusIcon";
 
 type IProps = {
   isSubmitting: boolean;
@@ -67,7 +67,7 @@ const BottomBlock: React.FC<IProps> = ({
   isValid,
   dirty,
   errorMessage,
-  additionBottomControls
+  additionBottomControls,
 }) => {
   if (isSubmitting) {
     return (

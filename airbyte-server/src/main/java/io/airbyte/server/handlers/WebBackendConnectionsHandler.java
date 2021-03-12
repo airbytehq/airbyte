@@ -28,6 +28,7 @@ import static java.util.stream.Collectors.toMap;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import io.airbyte.api.model.AirbyteCatalog;
 import io.airbyte.api.model.AirbyteStream;
 import io.airbyte.api.model.AirbyteStreamAndConfiguration;
@@ -60,8 +61,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class WebBackendConnectionsHandler {
+
+  private static final Set<JobStatus> TERMINAL_STATUSES = Sets.newHashSet(JobStatus.FAILED, JobStatus.SUCCEEDED, JobStatus.CANCELLED);
 
   private final ConnectionsHandler connectionsHandler;
   private final SourceHandler sourceHandler;
@@ -108,6 +112,7 @@ public class WebBackendConnectionsHandler {
         .sourceId(connectionRead.getSourceId())
         .destinationId(connectionRead.getDestinationId())
         .name(connectionRead.getName())
+        .prefix(connectionRead.getPrefix())
         .syncCatalog(connectionRead.getSyncCatalog())
         .status(connectionRead.getStatus())
         .schedule(connectionRead.getSchedule())
@@ -196,10 +201,6 @@ public class WebBackendConnectionsHandler {
       // wait for this to execute
       JobInfoRead resetJob = schedulerHandler.resetConnection(connectionId);
 
-      if (!resetJob.getJob().getStatus().equals(JobStatus.SUCCEEDED)) {
-        throw new RuntimeException("Resetting data after updating the connection failed! Please manually reset your data and launch a manual sync.");
-      }
-
       // just create the job
       schedulerHandler.syncConnection(connectionId);
     }
@@ -211,6 +212,7 @@ public class WebBackendConnectionsHandler {
   protected static ConnectionUpdate toConnectionUpdate(WebBackendConnectionUpdate webBackendConnectionUpdate) {
     ConnectionUpdate connectionUpdate = new ConnectionUpdate();
 
+    connectionUpdate.setPrefix(webBackendConnectionUpdate.getPrefix());
     connectionUpdate.setConnectionId(webBackendConnectionUpdate.getConnectionId());
     connectionUpdate.setSchedule(webBackendConnectionUpdate.getSchedule());
     connectionUpdate.setStatus(webBackendConnectionUpdate.getStatus());

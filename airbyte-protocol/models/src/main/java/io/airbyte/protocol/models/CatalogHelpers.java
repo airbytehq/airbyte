@@ -29,6 +29,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream.DestinationSyncMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -106,7 +107,9 @@ public class CatalogHelpers {
     return new ConfiguredAirbyteStream()
         .withStream(stream)
         .withSyncMode(SyncMode.FULL_REFRESH)
-        .withCursorField(new ArrayList<>());
+        .withCursorField(new ArrayList<>())
+        .withDestinationSyncMode(DestinationSyncMode.APPEND)
+        .withPrimaryKey(new ArrayList<>());
   }
 
   public static JsonNode fieldsToJsonSchema(Field... fields) {

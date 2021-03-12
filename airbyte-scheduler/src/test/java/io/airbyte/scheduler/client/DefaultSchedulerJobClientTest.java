@@ -134,7 +134,7 @@ class DefaultSchedulerJobClientTest {
     final StandardSync standardSync = mock(StandardSync.class);
     final String destinationDockerImage = "airbyte/spaceport";
     when(jobCreator.createResetConnectionJob(destination, standardSync, destinationDockerImage)).thenReturn(Optional.of(JOB_ID));
-    doReturn(job).when(client).waitUntilJobIsTerminalOrTimeout(JOB_ID);
+    when(jobPersistence.getJob(JOB_ID)).thenReturn(job);
 
     assertEquals(job, client.createOrGetActiveResetConnectionJob(destination, standardSync, destinationDockerImage));
   }
@@ -151,8 +151,7 @@ class DefaultSchedulerJobClientTest {
     final Job currentJob = mock(Job.class);
     when(currentJob.getId()).thenReturn(42L);
     when(jobPersistence.getLastReplicationJob(connectionUuid)).thenReturn(Optional.of(currentJob));
-
-    doReturn(currentJob).when(client).waitUntilJobIsTerminalOrTimeout(42L);
+    when(jobPersistence.getJob(42L)).thenReturn(currentJob);
 
     assertEquals(currentJob, client.createOrGetActiveResetConnectionJob(destination, standardSync, destinationDockerImage));
   }

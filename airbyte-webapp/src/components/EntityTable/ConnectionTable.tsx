@@ -3,32 +3,23 @@ import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 import { CellProps } from "react-table";
 
-import Table from "../Table";
+import Table from "components/Table";
+
 import LastSyncCell from "./components/LastSyncCell";
 import ConnectorCell from "./components/ConnectorCell";
 import NameCell from "./components/NameCell";
-import { ScheduleProperties } from "../../core/resources/Connection";
 import FrequencyCell from "./components/FrequencyCell";
 import StatusCell from "./components/StatusCell";
+import { ITableDataItem } from "./types";
 
 const Content = styled.div`
   margin: 0 32px 0 27px;
 `;
 
-type ITableDataItem = {
-  connectionId: string;
-  entityName: string;
-  connectorName: string;
-  enabled: boolean;
-  isSyncing?: boolean;
-  lastSync?: number | null;
-  schedule: ScheduleProperties | null;
-};
-
 type IProps = {
   data: ITableDataItem[];
   entity: "source" | "destination";
-  onClickRow?: (data: object) => void;
+  onClickRow?: (data: ITableDataItem) => void;
   onChangeStatus: (id: string) => void;
   onSync: (id: string) => void;
 };
@@ -38,7 +29,7 @@ const ConnectionTable: React.FC<IProps> = ({
   entity,
   onClickRow,
   onChangeStatus,
-  onSync
+  onSync,
 }) => {
   const columns = React.useMemo(
     () => [
@@ -48,15 +39,19 @@ const ConnectionTable: React.FC<IProps> = ({
         accessor: "entityName",
         customWidth: 40,
         Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
-          <NameCell value={cell.value} enabled={row.original.enabled} />
-        )
+          <NameCell
+            value={cell.value}
+            enabled={row.original.enabled}
+            status={row.original.status}
+          />
+        ),
       },
       {
         Header: <FormattedMessage id="tables.connector" />,
         accessor: "connectorName",
         Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
           <ConnectorCell value={cell.value} enabled={row.original.enabled} />
-        )
+        ),
       },
 
       {
@@ -64,7 +59,7 @@ const ConnectionTable: React.FC<IProps> = ({
         accessor: "schedule",
         Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
           <FrequencyCell value={cell.value} enabled={row.original.enabled} />
-        )
+        ),
       },
       {
         Header: <FormattedMessage id="tables.lastSync" />,
@@ -74,7 +69,7 @@ const ConnectionTable: React.FC<IProps> = ({
             timeInSecond={cell.value}
             enabled={row.original.enabled}
           />
-        )
+        ),
       },
       {
         Header: <FormattedMessage id="tables.enabled" />,
@@ -88,8 +83,8 @@ const ConnectionTable: React.FC<IProps> = ({
             onChangeStatus={onChangeStatus}
             onSync={onSync}
           />
-        )
-      }
+        ),
+      },
     ],
     [entity, onChangeStatus, onSync]
   );

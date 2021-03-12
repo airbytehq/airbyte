@@ -2,17 +2,15 @@ import React from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 
-import Button from "../../Button";
-import Spinner from "../../Spinner";
-import StatusIcon from "../../StatusIcon";
+import Button from "components/Button";
+import Spinner from "components/Spinner";
+import StatusIcon from "components/StatusIcon";
 
 type IProps = {
   formType: "source" | "destination" | "connection";
   isSubmitting: boolean;
   hasSuccess?: boolean;
   isLoadSchema?: boolean;
-  isValid: boolean;
-  dirty: boolean;
   errorMessage?: React.ReactNode;
   additionBottomControls?: React.ReactNode;
 };
@@ -67,13 +65,11 @@ const ErrorText = styled.div`
 
 const BottomBlock: React.FC<IProps> = ({
   isSubmitting,
-  isValid,
-  dirty,
   formType,
   hasSuccess,
   errorMessage,
   isLoadSchema,
-  additionBottomControls
+  additionBottomControls,
 }) => {
   if (hasSuccess) {
     return (
@@ -110,7 +106,7 @@ const BottomBlock: React.FC<IProps> = ({
       )}
       <div>
         {additionBottomControls || null}
-        <Button type="submit" disabled={!isValid || !dirty || isLoadSchema}>
+        <Button type="submit" disabled={isLoadSchema}>
           <FormattedMessage id={`onboarding.${formType}SetUp.buttonText`} />
         </Button>
       </div>

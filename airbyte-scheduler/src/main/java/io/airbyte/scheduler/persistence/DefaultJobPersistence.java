@@ -35,12 +35,12 @@ import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.text.Names;
 import io.airbyte.commons.text.Sqls;
+import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.State;
-import io.airbyte.db.AirbyteVersion;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.scheduler.Attempt;
@@ -420,7 +420,8 @@ public class DefaultJobPersistence implements JobPersistence {
         .collect(Collectors.toList());
   }
 
-  public static Optional<Job> getJobFromResult(Result<Record> result) {
+  @VisibleForTesting
+  static Optional<Job> getJobFromResult(Result<Record> result) {
     return getJobsFromResult(result).stream().findFirst();
   }
 

@@ -113,6 +113,10 @@ You can find more relevant SQL transformations you might need to do on your data
 
 Note that in **Incremental Append**, the size of the data in your warehouse increases monotonically since an updated record in the source is appended to the destination rather than updated in-place. If you only care about having the latest snapshot of your data, you may want to periodically run cleanup jobs which retain only the latest instance of each record, deduping by primary key.
 
+## Inclusive Cursors
+
+When replicating data incrementally, Airbyte provides an at-least-once delivery guarantee. This means that it is acceptable for sources to re-send some data when run replicating incrementally. One case where this is particularly relevant is when a source's cursor is not very granular. For example, if a cursor field has the granularity of a day \(but not hours, seconds, etc\), then if that source is run twice in the same day, there is no way for the source to know which records that are that date were already replicated earlier that day. By convention, sources should prefer resending data if the cursor field is ambiguous.
+
 ## Known Limitations
 
 When the source's schema changes, for example, when a column is added, renamed or deleted to an existing stream, the current behavior of **Incremental Append** is not able to handle such events yet. Therefore, it is recommended to trigger a [full refresh](full-refresh.md) to recreate at the destination the data with the new metadata included.

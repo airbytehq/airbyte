@@ -2,9 +2,9 @@ import React from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 
-import Button from "../../Button";
-import Spinner from "../../Spinner";
-import { useWidgetInfo } from "../uiWidgetContext";
+import Button from "components/Button";
+import Spinner from "components/Spinner";
+import { useServiceForm } from "../serviceFormContext";
 
 type IProps = {
   isSubmitting: boolean;
@@ -49,9 +49,9 @@ const EditControls: React.FC<IProps> = ({
   dirty,
   resetForm,
   successMessage,
-  errorMessage
+  errorMessage,
 }) => {
-  const { unfinishedSecrets } = useWidgetInfo();
+  const { unfinishedSecrets } = useServiceForm();
 
   const showStatusMessage = () => {
     if (isSubmitting) {
@@ -65,7 +65,7 @@ const EditControls: React.FC<IProps> = ({
       return <Error>{errorMessage}</Error>;
     }
     if (successMessage && !dirty) {
-      return <Success>{successMessage}</Success>;
+      return <Success data-id="success-result">{successMessage}</Success>;
     }
     return null;
   };

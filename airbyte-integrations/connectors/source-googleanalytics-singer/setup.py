@@ -34,7 +34,7 @@ setup(
     # two sets of dependencies: 1) for main 2) for standard test deps. 2 does not have all of the dependencies of 1, which is we cannot use install_requires.
     extras_require={
         "main": [
-            "pipelinewise-tap-google-analytics==1.1.1",
+            "pipelinewise-tap-google-analytics @ https://github.com/airbytehq/pipelinewise-tap-google-analytics/tarball/master#egg=pipelinewise-tap-google-analytics-1.3.0-airbyte",
             "pydantic==1.6.1",
             "base-singer",
             "base-python",

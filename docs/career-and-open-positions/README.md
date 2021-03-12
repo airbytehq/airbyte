@@ -33,7 +33,7 @@ Here are the values we deeply believe in:
 
 ## **Our Investors**
 
-We are just closing a $5M seed round with a top tier VC that will be announced in the next few weeks. Current publicly known investors comprise YCombinator, 8VC, and a few leaders in the data industry.
+We are just closing a $5M seed round with Accel, YCombinator, 8VC, and a few leaders in the data industry \(including the co-founder of Segment, the founder of Liveramp, the former GM of Cloudera\).
 
 We have a lot of capital, but [we're a lean, strong team](../company-handbook/team.md) - so you've got the opportunity to have a huge impact.
 

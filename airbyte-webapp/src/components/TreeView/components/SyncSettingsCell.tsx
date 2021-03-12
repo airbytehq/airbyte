@@ -2,14 +2,14 @@ import React, { useMemo } from "react";
 import styled from "styled-components";
 import { useIntl } from "react-intl";
 
-import { Cell } from "../../SimpleTableComponents";
-import DropDown, { DropDownRow } from "../../DropDown";
-import { IDataItem } from "../../DropDown/components/ListItem";
+import { Cell } from "components/SimpleTableComponents";
+import DropDown, { DropDownRow } from "components/DropDown";
+import { IDataItem } from "components/DropDown/components/ListItem";
 import {
   SyncMode,
   SyncSchemaField,
-  SyncSchemaStream
-} from "../../../core/domain/catalog";
+  SyncSchemaStream,
+} from "core/domain/catalog";
 
 const DropDownContainer = styled.div`
   padding-right: 10px;
@@ -30,9 +30,9 @@ type IProps = {
 
 function traverse(
   fields: SyncSchemaField[],
-  cb: (field: SyncSchemaField) => any
+  cb: (field: SyncSchemaField) => void
 ) {
-  fields.forEach(field => {
+  fields.forEach((field) => {
     cb(field);
     if (field.fields) {
       traverse(field.fields, cb);
@@ -43,20 +43,20 @@ function traverse(
 const SyncSettingsCell: React.FC<IProps> = ({
   streamNode,
   fields,
-  onSelect
+  onSelect,
 }) => {
   const { stream, config } = streamNode;
   const formatMessage = useIntl().formatMessage;
 
   const fullData = useMemo(() => {
     const syncData: DropDownRow.IDataItem[] = stream.supportedSyncModes
-      .filter(mode => mode !== SyncMode.Incremental)
-      .map(mode => ({
+      .filter((mode) => mode !== SyncMode.Incremental)
+      .map((mode) => ({
         value: mode,
         text: formatMessage({
           id: `sources.${mode}`,
-          defaultMessage: mode
-        })
+          defaultMessage: mode,
+        }),
       }));
 
     const isIncrementalSupported = stream.supportedSyncModes.includes(
@@ -69,9 +69,9 @@ const SyncSettingsCell: React.FC<IProps> = ({
       if (stream.sourceDefinedCursor) {
         syncData.push({
           text: formatMessage({
-            id: "sources.incrementalSourceCursor"
+            id: "sources.incrementalSourceCursor",
           }),
-          value: SyncMode.Incremental
+          value: SyncMode.Incremental,
         });
       } else {
         // If sourceDefinedCursor is false...
@@ -82,7 +82,7 @@ const SyncSettingsCell: React.FC<IProps> = ({
           syncData.push({
             text: formatMessage(
               {
-                id: "sources.incrementalDefault"
+                id: "sources.incrementalDefault",
               },
               { value: stream.defaultCursorField[0] }
             ),
@@ -90,16 +90,16 @@ const SyncSettingsCell: React.FC<IProps> = ({
             secondary: true,
             groupValue: SyncMode.Incremental,
             groupValueText: formatMessage({
-              id: "sources.incremental"
-            })
+              id: "sources.incremental",
+            }),
           });
         }
 
         // Any column of primitive type in the stream can be used as the cursor
-        traverse(fields, field => {
+        traverse(fields, (field) => {
           if (
             field.type !== "object" &&
-            !syncData.some(dataItem => dataItem.value === field.cleanedName)
+            !syncData.some((dataItem) => dataItem.value === field.cleanedName)
           ) {
             syncData.push({
               text: field.cleanedName,
@@ -107,8 +107,8 @@ const SyncSettingsCell: React.FC<IProps> = ({
               secondary: true,
               groupValue: SyncMode.Incremental,
               groupValueText: formatMessage({
-                id: "sources.incremental"
-              })
+                id: "sources.incremental",
+              }),
             });
           }
         });
@@ -136,7 +136,7 @@ const SyncSettingsCell: React.FC<IProps> = ({
           onSelect={onSelect}
           groupBy="groupValueText"
           filterPlaceholder={formatMessage({
-            id: "sources.searchIncremental"
+            id: "sources.searchIncremental",
           })}
         />
       </DropDownContainer>

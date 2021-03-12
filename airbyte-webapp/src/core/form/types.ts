@@ -8,11 +8,14 @@ export type FormBaseItem = {
   isRequired: boolean;
   isSecret?: boolean;
   title?: string;
+  multiline?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   meta?: { [key: string]: any };
 } & Partial<JSONSchema7>;
 
 type FormGroupItem = {
   _type: "formGroup";
+  jsonSchema: JSONSchema7;
   fieldName: string;
   fieldKey: string;
   isRequired: boolean;
@@ -29,11 +32,14 @@ type FormConditionItem = {
   fieldName: string;
   fieldKey: string;
   isRequired: boolean;
-  title?: string;
   conditions: { [key: string]: FormGroupItem | FormBaseItem };
+  title?: string;
 };
 
-export type FormBlock = FormGroupItem | FormBaseItem | FormConditionItem;
+type FormBlock = FormGroupItem | FormBaseItem | FormConditionItem;
 
+export type { FormBlock, FormConditionItem, FormGroupItem };
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type WidgetConfig = { [key: string]: any };
 export type WidgetConfigMap = { [key: string]: WidgetConfig };

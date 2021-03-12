@@ -16,7 +16,6 @@ npm_run_build {
 
     outputs.dir project.buildDir
 }
-assemble.dependsOn npm_run_build
 
 task test(type: NpmTask) {
     dependsOn assemble
@@ -26,4 +25,7 @@ task test(type: NpmTask) {
     inputs.file 'package.json'
     inputs.file 'package-lock.json'
 }
+
+assemble.dependsOn npm_run_build
+build.finalizedBy test
 
