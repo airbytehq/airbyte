@@ -185,13 +185,18 @@ class Stream(ABC):
 
     page_filter = "offset"
     page_field = "offset"
-
-    chunk_size = pendulum.interval(days=1)
     limit = 100
 
     def __init__(self, api: API, start_date: str = None, **kwargs):
         self._api: API = api
         self._start_date = pendulum.parse(start_date)
+
+    @property
+    def name(self) -> str:
+        stream_name = self.__class__.__name__
+        if stream_name.endswith("Stream"):
+            stream_name = stream_name[:-len("Stream")]
+        return stream_name
 
     @abstractmethod
     def list(self, fields) -> Iterable:
@@ -208,17 +213,21 @@ class Stream(ABC):
                         record["properties"].pop(key)
             yield record
 
+    @staticmethod
+    def _field_to_datetime(value: Union[int, str]) -> pendulum.datetime:
+        if isinstance(value, int):
+            value = pendulum.from_timestamp(value / 1000.0)
+        elif isinstance(value, str):
+            value = pendulum.parse(value)
+        else:
+            raise ValueError(f"Unsupported type of datetime field {type(value)}")
+        return value
+
     def _filter_old_records(self, records: Iterable) -> Iterable:
         """Skip records that was updated before our start_date"""
         for record in records:
             if self.updated_field:
-                updated_at = record[self.updated_field]
-                if isinstance(updated_at, int):
-                    updated_at = pendulum.from_timestamp(updated_at / 1000.0)
-                elif isinstance(updated_at, str):
-                    updated_at = pendulum.parse(updated_at)
-                else:
-                    raise ValueError(f"Unsupported type of update cursor {type(updated_at)}")
+                updated_at = self._field_to_datetime(record[self.updated_field])
                 if updated_at < self._start_date:
                     continue
             yield record
@@ -259,19 +268,6 @@ class Stream(ABC):
 
         yield from self._filter_dynamic_fields(self._filter_old_records(self._read(getter, params)))
 
-    def read_chunked(self, getter: Callable, params: Mapping[str, Any] = None):
-        params = {**params} if params else {}
-        now_ts = int(pendulum.now().timestamp() * 1000)
-        start_ts = int(self._start_date.timestamp() * 1000)
-        chunk_size = int(self.chunk_size.total_seconds() * 1000)
-
-        for ts in range(start_ts, now_ts, chunk_size):
-            end_ts = ts + chunk_size
-            params["startTimestamp"] = ts
-            params["endTimestamp"] = end_ts
-            logger.info(f"Reading chunk from {ts} to {end_ts}")
-            yield from self.read(getter, params)
-
     @property
     def properties(self) -> Mapping[str, Any]:
         """Some entities has dynamic set of properties, so we trying to resolve those at runtime"""
@@ -287,6 +283,52 @@ class Stream(ABC):
             props[row["name"]] = {"type": field_type}
 
         return props
+
+
+class IncrementalStream(Stream, ABC):
+    """ Нужно инициализровать start_date with state if any
+    в конце обновить state
+    """
+    state_pk = "timestamp"
+
+    @property
+    def state(self):
+        return {self.state_pk: str(self._state)}
+
+    @state.setter
+    def state(self, value):
+        self._state = pendulum.parse(value[self.state_pk])
+        self._start_date = self._state
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._state = None
+
+    def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
+        """Apply state filter to set of records, update cursor(state) if necessary in the end"""
+        latest_cursor = None
+        for record in self.read_chunked(getter, params):
+            yield record
+            cursor = self._field_to_datetime(record[self.updated_field])
+            latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
+
+        if latest_cursor:
+            logger.info(f"Advancing bookmark for {self.name} stream from {self._state} to {latest_cursor}")
+            self._state = max(latest_cursor, self._state) if self._state else latest_cursor
+            self._start_date = self._state
+
+    def read_chunked(self, getter: Callable, params: Mapping[str, Any] = None, chunk_size: pendulum.Interval = pendulum.interval(days=1)) -> Iterator:
+        params = {**params} if params else {}
+        now_ts = int(pendulum.now().timestamp() * 1000)
+        start_ts = int(self._start_date.timestamp() * 1000)
+        chunk_size = int(chunk_size.total_seconds() * 1000)
+
+        for ts in range(start_ts, now_ts, chunk_size):
+            end_ts = ts + chunk_size
+            params["startTimestamp"] = ts
+            params["endTimestamp"] = end_ts
+            logger.info(f"Reading chunk from {ts} to {end_ts}")
+            yield from super().read(getter, params)
 
 
 class CRMObjectStream(Stream):
@@ -343,52 +385,6 @@ class CRMObjectStream(Stream):
                 for name, association in associations.items():
                     record[name] = [row["id"] for row in association.get("results", [])]
             yield record
-
-
-class CRMAssociationStream(Stream):
-    """CRM Associations - relationships between objects
-    Docs: https://legacydocs.hubspot.com/docs/methods/crm-associations/crm-associations-overview
-    """
-
-    class Direction(IntEnum):
-        ContactToCompany = 1
-        CompanyToContact = 2
-        DealToContact = 3
-        ContactToDeal = 4
-        DealToCompany = 5
-        CompanyToDeal = 6
-        CompanyToEngagement = 7
-        EngagementToCompany = 8
-        ContactToEngagement = 9
-        EngagementToContact = 10
-        DealToEngagement = 11
-        EngagementToDeal = 12
-        ParentCompanyToChildCompany = 13
-        ChildCompanyToParentCompany = 14
-        ContactToTicket = 15
-        TicketToContact = 16
-        TicketToEngagement = 17
-        EngagementToTicket = 18
-        DealToLineItem = 19
-        LineItemToDeal = 20
-        CompanyToTicket = 25
-        TicketToCompany = 26
-        DealToTicket = 27
-        TicketToDeal = 28
-
-    more_key = "hasMore"
-
-    def __init__(self, entity_id: int, direction: Direction, **kwargs):
-        super().__init__(**kwargs)
-        self.entity_id = entity_id
-        self.direction = direction
-
-    @property
-    def url(self):
-        return f"/crm-associations/v1/associations/{self.entity_id}/HUBSPOT_DEFINED/{self.direction}"
-
-    def list(self, fields) -> Iterable:
-        yield from self.read(partial(self._api.get, url=self.url))
 
 
 class CampaignStream(Stream):
@@ -450,7 +446,7 @@ class TicketPipelineStream(Stream):
         yield from self.read(partial(self._api.get, url=self.url))
 
 
-class EmailEventStream(Stream):
+class EmailEventStream(IncrementalStream):
     """Email events, API v1
     Docs: https://legacydocs.hubspot.com/docs/methods/email/get_events
     """
@@ -459,6 +455,7 @@ class EmailEventStream(Stream):
     data_field = "events"
     more_key = "hasMore"
     limit = 1000
+    state_pk = "timestamp"
     updated_field = "created"
 
     def list(self, fields) -> Iterable:
@@ -508,7 +505,7 @@ class OwnerStream(Stream):
         yield from self.read(partial(self._api.get, url=self.url))
 
 
-class SubscriptionChangeStream(Stream):
+class SubscriptionChangeStream(IncrementalStream):
     """Subscriptions timeline for a portal, API v1
     Docs: https://legacydocs.hubspot.com/docs/methods/email/get_subscriptions_timeline
     """
@@ -517,6 +514,7 @@ class SubscriptionChangeStream(Stream):
     data_field = "timeline"
     more_key = "hasMore"
     limit = 1000
+    state_pk = "timestamp"
     updated_field = "timestamp"
 
     def list(self, fields) -> Iterable:
