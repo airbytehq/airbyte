@@ -1,5 +1,5 @@
 ---
-description: Create a DAG in Airflow to trigger an Airbyte sync job
+description: Create a DAG in Airflow to trigger an Airbyte Sync Job
 ---
 
 # Airflow Integration 
@@ -54,16 +54,22 @@ with DAG(dag_id='trigger_airbyte_job_example',
         airbyte_conn_id='airbyte_conn_example',
         connection_id='1e3b5a72-7bfd-4808-a13c-204505490110',
         asynchronous=False,
-        timeout=360,
-        wait_seconds=5
+        timeout=3600,
+        wait_seconds=3
     )
 ```
+
+The code will produce the following simple DAG:
+![](../.gitbook/assets/airflow_airbyte_dag.png)
+
+There is only one task that triggers Airbyte Sync Job for this example. You can easily connect more tasks to it, for example: perform data transformations with [dbt](https://www.getdbt.com/), update a machine learning model, etc.
+
 The Airbyte Airflow Operator accepts the following parameters:
 - `airbyte_conn_id`: Name of the Airflow HTTP Connection pointing at the Airbyte API. Tells Airflow where the Airbyte API is located.
 - `connection_id`: The ID of the Airbyte Connection to be triggered by Airflow.
-- `asynchronous`: Determines how the Airbyte Operator runs. When true, Airflow will monitor the Airbyte Job using a **AirbyteJobSensor**. Since sensors do not occupy an Airflow worker slot, this is helps reduce Airflow load. Default is `false`.
-- `timeout`: Maximum time Airflow will wait for the Airbyte job to complete. Only valid when `asynchronous=False`.
-- `wait_seconds`: The amount of time to wait between checks. Only valid when `asynchronous=False`.
+- `asynchronous`: Determines how the Airbyte Operator runs. When true, Airflow will monitor the Airbyte Job using a **AirbyteJobSensor**. Default value is `false`.
+- `timeout`: Maximum time Airflow will wait for the Airbyte job to complete. Only valid when `asynchronous=False`. Default value is `3600` seconds.
+- `wait_seconds`: The amount of time to wait between checks. Only valid when `asynchronous=False`. Default value is `3` seconds.
 
 Our DAG will show up in Airflow UI shortly after we place our DAG file and can be activated by clicking the button shown below. Airflow will trigger the DAG shortly after.
 
@@ -75,10 +81,8 @@ Check to see if the job started syncing in the Airbyte UI's Sync History tab!
 
 Simple like that! 
 
-For more experienced users, the example below can be valuable:
-
 ### Using the `asynchronous` parameter
-If your Airflow instance has limited resources and/or is under load, setting the `asynchronous=True` can help.
+If your Airflow instance has limited resources and/or is under load, setting the `asynchronous=True` can help. Since sensors do not occupy an Airflow worker slot, this is helps reduce Airflow load. 
 
 ```python
 from airflow import DAG
