@@ -46,6 +46,7 @@ Please make sure to grant the following OAuth scopes to the service user:
 
 1. `https://www.googleapis.com/auth/admin.directory.user.readonly`
 2. `https://www.googleapis.com/auth/admin.directory.group.readonly`
-3. `https://www.googleapis.com/auth/admin.directory.group.readonly`
 
 At the end of this process, you should have JSON credentials to this Google Service Account. 
+
+You should now be ready to use the Google Directory connector in Airbyte. 
