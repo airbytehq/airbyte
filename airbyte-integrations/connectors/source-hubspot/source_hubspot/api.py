@@ -319,9 +319,7 @@ class IncrementalStream(Stream, ABC):
     @state.setter
     def state(self, value):
         self._state = pendulum.parse(value[self.state_pk])
-        print("state", int(self._state.timestamp() * 1000))
         self._start_date = max(self._state, self._start_date)
-        print("state", int(self._start_date.timestamp() * 1000))
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
