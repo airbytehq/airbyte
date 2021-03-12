@@ -26,7 +26,6 @@ import sys
 import time
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
-from enum import IntEnum
 from functools import partial
 from typing import Any, Callable, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
 
@@ -195,7 +194,7 @@ class Stream(ABC):
     def name(self) -> str:
         stream_name = self.__class__.__name__
         if stream_name.endswith("Stream"):
-            stream_name = stream_name[:-len("Stream")]
+            stream_name = stream_name[: -len("Stream")]
         return stream_name
 
     @abstractmethod
@@ -286,9 +285,10 @@ class Stream(ABC):
 
 
 class IncrementalStream(Stream, ABC):
-    """ Нужно инициализровать start_date with state if any
+    """Нужно инициализровать start_date with state if any
     в конце обновить state
     """
+
     state_pk = "timestamp"
 
     @property
@@ -317,7 +317,9 @@ class IncrementalStream(Stream, ABC):
             self._state = max(latest_cursor, self._state) if self._state else latest_cursor
             self._start_date = self._state
 
-    def read_chunked(self, getter: Callable, params: Mapping[str, Any] = None, chunk_size: pendulum.Interval = pendulum.interval(days=1)) -> Iterator:
+    def read_chunked(
+        self, getter: Callable, params: Mapping[str, Any] = None, chunk_size: pendulum.Interval = pendulum.interval(days=1)
+    ) -> Iterator:
         params = {**params} if params else {}
         now_ts = int(pendulum.now().timestamp() * 1000)
         start_ts = int(self._start_date.timestamp() * 1000)

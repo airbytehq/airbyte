@@ -90,94 +90,8 @@
             "type": {
               "type": ["null", "string"]
             },
-            "properties": {
-              "type": "object",
-              "properties": {
-                "hs_all_accessible_team_ids": {
-                  "type": "enumeration"
-                },
-                "hs_all_assigned_business_unit_ids": {
-                  "type": "enumeration"
-                },
-                "hs_attribution_enabled": {
-                  "type": "bool"
-                },
-                "hs_budget": {
-                  "type": "string"
-                },
-                "hs_color_hex": {
-                  "type": "string"
-                },
-                "hs_created_at": {
-                  "type": "datetime"
-                },
-                "hs_created_by_user_id": {
-                  "type": "number"
-                },
-                "hs_createdate": {
-                  "type": "datetime"
-                },
-                "hs_end_date": {
-                  "type": "datetime"
-                },
-                "hs_influenced_closed_deal_goal": {
-                  "type": "number"
-                },
-                "hs_influenced_contact_goal": {
-                  "type": "number"
-                },
-                "hs_influenced_revenue": {
-                  "type": "number"
-                },
-                "hs_lastmodifieddate": {
-                  "type": "datetime"
-                },
-                "hs_merged_object_ids": {
-                  "type": "enumeration"
-                },
-                "hs_name": {
-                  "type": "string"
-                },
-                "hs_new_contact_goal": {
-                  "type": "number"
-                },
-                "hs_notes": {
-                  "type": "string"
-                },
-                "hs_object_id": {
-                  "type": "number"
-                },
-                "hs_origin_asset_id": {
-                  "type": "string"
-                },
-                "hs_origin_asset_updated_at": {
-                  "type": "datetime"
-                },
-                "hs_owner": {
-                  "type": "number"
-                },
-                "hs_projected_budget": {
-                  "type": "string"
-                },
-                "hs_revenue": {
-                  "type": "string"
-                },
-                "hs_session_goal": {
-                  "type": "number"
-                },
-                "hs_start_date": {
-                  "type": "datetime"
-                },
-                "hs_updated_by_user_id": {
-                  "type": "number"
-                },
-                "hs_user_ids_of_all_owners": {
-                  "type": "enumeration"
-                },
-                "hs_utm": {
-                  "type": "string"
-                }
-              }
+            "lastUpdatedTime": {
+              "type": "string"
             }
           }
         },
@@ -199,7 +113,7 @@
               "type": ["null", "integer"]
             },
             "companyId": {
-              "type": ["null", "integer"]
+              "type": "integer"
             },
             "isDeleted": {
               "type": ["null", "boolean"]
@@ -215,6 +129,12 @@
             },
             "contacts": {
               "type": ["null", "array"]
+            },
+            "createdAt": {
+              "type": "string"
+            },
+            "updatedAt": {
+              "type": "string"
             },
             "properties": {
               "type": "object",
@@ -250,10 +170,10 @@
                   "type": "string"
                 },
                 "hs_additional_domains": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_all_assigned_business_unit_ids": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_analytics_first_timestamp": {
                   "type": "datetime"
@@ -304,7 +224,7 @@
                   "type": "number"
                 },
                 "hs_analytics_source": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_analytics_source_data_1": {
                   "type": "string"
@@ -331,7 +251,7 @@
                   "type": "datetime"
                 },
                 "hs_ideal_customer_profile": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_is_target_account": {
                   "type": "bool"
@@ -355,7 +275,7 @@
                   "type": "datetime"
                 },
                 "hs_merged_object_ids": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_num_blockers": {
                   "type": "number"
@@ -379,7 +299,7 @@
                   "type": "number"
                 },
                 "hs_target_account": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_target_account_probability": {
                   "type": "number"
@@ -388,7 +308,7 @@
                   "type": "datetime"
                 },
                 "hs_target_account_recommendation_state": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_total_deal_value": {
                   "type": "number"
@@ -397,7 +317,7 @@
                   "type": "number"
                 },
                 "hs_user_ids_of_all_owners": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hubspot_owner_assigneddate": {
                   "type": "datetime"
@@ -502,7 +422,7 @@
                   "type": "datetime"
                 },
                 "hubspot_owner_id": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "notes_last_contacted": {
                   "type": "datetime"
@@ -526,10 +446,10 @@
                   "type": "string"
                 },
                 "hubspot_team_id": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_all_owner_ids": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "website": {
                   "type": "string"
@@ -538,31 +458,31 @@
                   "type": "string"
                 },
                 "hs_all_team_ids": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_all_accessible_team_ids": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "numberofemployees": {
                   "type": "number"
                 },
                 "industry": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "annualrevenue": {
                   "type": "number"
                 },
                 "lifecyclestage": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_lead_status": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_parent_company_id": {
                   "type": "number"
                 },
                 "type": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "description": {
                   "type": "string"
@@ -586,7 +506,7 @@
                   "type": "number"
                 },
                 "web_technologies": {
-                  "type": "enumeration"
+                  "type": "string"
                 }
               }
             }
@@ -673,15 +593,13 @@
               "type": ["null", "integer"]
             },
             "createdAt": {
-              "type": ["null", "string"],
-              "format": "date-time"
+              "type": "integer"
             },
             "listId": {
               "type": ["null", "integer"]
             },
             "updatedAt": {
-              "type": ["null", "string"],
-              "format": "date-time"
+              "type": "integer"
             },
             "internalListId": {
               "type": ["null", "integer"]
@@ -3027,6 +2945,12 @@
                 }
               }
             },
+            "createdAt": {
+              "type": "string"
+            },
+            "updatedAt": {
+              "type": "string"
+            },
             "properties": {
               "type": "object",
               "properties": {
@@ -3061,13 +2985,13 @@
                   "type": "string"
                 },
                 "hs_additional_emails": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_all_assigned_business_unit_ids": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_all_contact_vids": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_analytics_first_touch_converting_campaign": {
                   "type": "string"
@@ -3079,13 +3003,13 @@
                   "type": "string"
                 },
                 "hs_buying_role": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_calculated_form_submissions": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_calculated_merged_vids": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_calculated_mobile_number": {
                   "type": "string"
@@ -3118,7 +3042,7 @@
                   "type": "datetime"
                 },
                 "hs_content_membership_status": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_conversations_visitor_email": {
                   "type": "string"
@@ -3145,7 +3069,7 @@
                   "type": "bool"
                 },
                 "hs_email_customer_quarantined_reason": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_email_domain": {
                   "type": "string"
@@ -3154,13 +3078,13 @@
                   "type": "string"
                 },
                 "hs_email_hard_bounce_reason_enum": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_email_quarantined": {
                   "type": "bool"
                 },
                 "hs_email_quarantined_reason": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_email_recipient_fatigue_recovery_time": {
                   "type": "datetime"
@@ -3169,7 +3093,7 @@
                   "type": "number"
                 },
                 "hs_emailconfirmationstatus": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_facebook_ad_clicked": {
                   "type": "bool"
@@ -3181,7 +3105,7 @@
                   "type": "string"
                 },
                 "hs_feedback_last_nps_rating": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_feedback_last_survey_date": {
                   "type": "datetime"
@@ -3214,13 +3138,13 @@
                   "type": "datetime"
                 },
                 "hs_lead_status": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_legal_basis": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_merged_object_ids": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_object_id": {
                   "type": "number"
@@ -3229,16 +3153,16 @@
                   "type": "number"
                 },
                 "hs_predictivescoringtier": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_sa_first_engagement_date": {
                   "type": "datetime"
                 },
                 "hs_sa_first_engagement_descr": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_sa_first_engagement_object_type": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_sales_email_last_clicked": {
                   "type": "datetime"
@@ -3274,7 +3198,7 @@
                   "type": "number"
                 },
                 "hs_user_ids_of_all_owners": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hubspot_owner_assigneddate": {
                   "type": "datetime"
@@ -3361,19 +3285,19 @@
                   "type": "number"
                 },
                 "hs_email_optout_10798197": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_email_optout_11890603": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_email_optout_11890831": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "twitterhandle": {
                   "type": "string"
                 },
                 "currentlyinworkflow": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_analytics_last_url": {
                   "type": "string"
@@ -3403,7 +3327,7 @@
                   "type": "number"
                 },
                 "hs_persona": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_analytics_num_event_completions": {
                   "type": "number"
@@ -3457,7 +3381,7 @@
                   "type": "datetime"
                 },
                 "hubspot_owner_id": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "notes_last_contacted": {
                   "type": "datetime"
@@ -3490,10 +3414,10 @@
                   "type": "datetime"
                 },
                 "hubspot_team_id": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_all_owner_ids": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_analytics_last_visit_timestamp": {
                   "type": "datetime"
@@ -3505,10 +3429,10 @@
                   "type": "string"
                 },
                 "hs_all_team_ids": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_analytics_source": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_email_first_open_date": {
                   "type": "datetime"
@@ -3520,7 +3444,7 @@
                   "type": "string"
                 },
                 "hs_all_accessible_team_ids": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_analytics_source_data_1": {
                   "type": "string"
@@ -3535,7 +3459,7 @@
                   "type": "bool"
                 },
                 "hs_language": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_analytics_first_referrer": {
                   "type": "string"
@@ -3568,7 +3492,7 @@
                   "type": "datetime"
                 },
                 "lifecyclestage": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_lifecyclestage_salesqualifiedlead_date": {
                   "type": "datetime"
@@ -3598,7 +3522,7 @@
                   "type": "string"
                 },
                 "numemployees": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "annualrevenue": {
                   "type": "string"
@@ -3613,7 +3537,7 @@
                   "type": "number"
                 },
                 "hs_predictivecontactscorebucket": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_predictivecontactscore": {
                   "type": "number"
@@ -3623,397 +3547,6 @@
           }
         },
         "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
-        "default_cursor_field": null
-      },
-      "sync_mode": "full_refresh",
-      "cursor_field": null
-    },
-    {
-      "stream": {
-        "name": "deals",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "portalId": {
-              "type": [
-                "null",
-                "integer"
-              ]
-            },
-            "dealId": {
-              "type": [
-                "null",
-                "integer"
-              ]
-            },
-            "isDeleted": {
-              "type": [
-                "null",
-                "boolean"
-              ]
-            },
-            "associations": {
-              "type": [
-                "null",
-                "object"
-              ],
-              "properties": {
-                "associatedVids": {
-                  "type": [
-                    "null",
-                    "array"
-                  ],
-                  "items": {
-                    "type": [
-                      "null",
-                      "integer"
-                    ]
-                  }
-                },
-                "associatedCompanyIds": {
-                  "type": [
-                    "null",
-                    "array"
-                  ],
-                  "items": {
-                    "type": [
-                      "null",
-                      "integer"
-                    ]
-                  }
-                },
-                "associatedDealIds": {
-                  "type": [
-                    "null",
-                    "array"
-                  ],
-                  "items": {
-                    "type": [
-                      "null",
-                      "integer"
-                    ]
-                  }
-                }
-              }
-            },
-            "imports": {
-              "type": [
-                "null",
-                "array"
-              ]
-            },
-            "stateChanges": {
-              "type": [
-                "null",
-                "array"
-              ]
-            },
-            "properties": {
-              "type": "object",
-              "properties": {
-                "amount_in_home_currency": {
-                  "type": "number"
-                },
-                "days_to_close": {
-                  "type": "number"
-                },
-                "hs_acv": {
-                  "type": "number"
-                },
-                "hs_all_assigned_business_unit_ids": {
-                  "type": "enumeration"
-                },
-                "hs_analytics_source": {
-                  "type": "enumeration"
-                },
-                "hs_analytics_source_data_1": {
-                  "type": "string"
-                },
-                "hs_analytics_source_data_2": {
-                  "type": "string"
-                },
-                "hs_arr": {
-                  "type": "number"
-                },
-                "hs_campaign": {
-                  "type": "string"
-                },
-                "hs_closed_amount": {
-                  "type": "number"
-                },
-                "hs_closed_amount_in_home_currency": {
-                  "type": "number"
-                },
-                "hs_created_by_user_id": {
-                  "type": "number"
-                },
-                "hs_date_entered_9567448": {
-                  "type": "datetime"
-                },
-                "hs_date_entered_9567449": {
-                  "type": "datetime"
-                },
-                "hs_date_entered_appointmentscheduled": {
-                  "type": "datetime"
-                },
-                "hs_date_entered_closedlost": {
-                  "type": "datetime"
-                },
-                "hs_date_entered_closedwon": {
-                  "type": "datetime"
-                },
-                "hs_date_entered_contractsent": {
-                  "type": "datetime"
-                },
-                "hs_date_entered_customclosedwonstage": {
-                  "type": "datetime"
-                },
-                "hs_date_entered_decisionmakerboughtin": {
-                  "type": "datetime"
-                },
-                "hs_date_entered_presentationscheduled": {
-                  "type": "datetime"
-                },
-                "hs_date_entered_qualifiedtobuy": {
-                  "type": "datetime"
-                },
-                "hs_date_exited_9567448": {
-                  "type": "datetime"
-                },
-                "hs_date_exited_9567449": {
-                  "type": "datetime"
-                },
-                "hs_date_exited_appointmentscheduled": {
-                  "type": "datetime"
-                },
-                "hs_date_exited_closedlost": {
-                  "type": "datetime"
-                },
-                "hs_date_exited_closedwon": {
-                  "type": "datetime"
-                },
-                "hs_date_exited_contractsent": {
-                  "type": "datetime"
-                },
-                "hs_date_exited_customclosedwonstage": {
-                  "type": "datetime"
-                },
-                "hs_date_exited_decisionmakerboughtin": {
-                  "type": "datetime"
-                },
-                "hs_date_exited_presentationscheduled": {
-                  "type": "datetime"
-                },
-                "hs_date_exited_qualifiedtobuy": {
-                  "type": "datetime"
-                },
-                "hs_deal_amount_calculation_preference": {
-                  "type": "enumeration"
-                },
-                "hs_deal_stage_probability": {
-                  "type": "number"
-                },
-                "hs_forecast_amount": {
-                  "type": "number"
-                },
-                "hs_forecast_probability": {
-                  "type": "number"
-                },
-                "hs_is_closed": {
-                  "type": "bool"
-                },
-                "hs_lastmodifieddate": {
-                  "type": "datetime"
-                },
-                "hs_likelihood_to_close": {
-                  "type": "number"
-                },
-                "hs_line_item_global_term_hs_discount_percentage": {
-                  "type": "string"
-                },
-                "hs_line_item_global_term_hs_discount_percentage_enabled": {
-                  "type": "bool"
-                },
-                "hs_line_item_global_term_hs_recurring_billing_period": {
-                  "type": "string"
-                },
-                "hs_line_item_global_term_hs_recurring_billing_period_enabled": {
-                  "type": "bool"
-                },
-                "hs_line_item_global_term_hs_recurring_billing_start_date": {
-                  "type": "string"
-                },
-                "hs_line_item_global_term_hs_recurring_billing_start_date_enabled": {
-                  "type": "bool"
-                },
-                "hs_line_item_global_term_recurringbillingfrequency": {
-                  "type": "string"
-                },
-                "hs_line_item_global_term_recurringbillingfrequency_enabled": {
-                  "type": "bool"
-                },
-                "hs_manual_forecast_category": {
-                  "type": "enumeration"
-                },
-                "hs_merged_object_ids": {
-                  "type": "enumeration"
-                },
-                "hs_mrr": {
-                  "type": "number"
-                },
-                "hs_next_step": {
-                  "type": "string"
-                },
-                "hs_object_id": {
-                  "type": "number"
-                },
-                "hs_predicted_amount": {
-                  "type": "number"
-                },
-                "hs_predicted_amount_in_home_currency": {
-                  "type": "number"
-                },
-                "hs_projected_amount": {
-                  "type": "number"
-                },
-                "hs_projected_amount_in_home_currency": {
-                  "type": "number"
-                },
-                "hs_tcv": {
-                  "type": "number"
-                },
-                "hs_time_in_9567448": {
-                  "type": "number"
-                },
-                "hs_time_in_9567449": {
-                  "type": "number"
-                },
-                "hs_time_in_appointmentscheduled": {
-                  "type": "number"
-                },
-                "hs_time_in_closedlost": {
-                  "type": "number"
-                },
-                "hs_time_in_closedwon": {
-                  "type": "number"
-                },
-                "hs_time_in_contractsent": {
-                  "type": "number"
-                },
-                "hs_time_in_customclosedwonstage": {
-                  "type": "number"
-                },
-                "hs_time_in_decisionmakerboughtin": {
-                  "type": "number"
-                },
-                "hs_time_in_presentationscheduled": {
-                  "type": "number"
-                },
-                "hs_time_in_qualifiedtobuy": {
-                  "type": "number"
-                },
-                "hs_updated_by_user_id": {
-                  "type": "number"
-                },
-                "hs_user_ids_of_all_owners": {
-                  "type": "enumeration"
-                },
-                "hubspot_owner_assigneddate": {
-                  "type": "datetime"
-                },
-                "dealname": {
-                  "type": "string"
-                },
-                "amount": {
-                  "type": "number"
-                },
-                "dealstage": {
-                  "type": "enumeration"
-                },
-                "pipeline": {
-                  "type": "enumeration"
-                },
-                "closedate": {
-                  "type": "datetime"
-                },
-                "createdate": {
-                  "type": "datetime"
-                },
-                "engagements_last_meeting_booked": {
-                  "type": "datetime"
-                },
-                "engagements_last_meeting_booked_campaign": {
-                  "type": "string"
-                },
-                "engagements_last_meeting_booked_medium": {
-                  "type": "string"
-                },
-                "engagements_last_meeting_booked_source": {
-                  "type": "string"
-                },
-                "hs_latest_meeting_activity": {
-                  "type": "datetime"
-                },
-                "hs_sales_email_last_replied": {
-                  "type": "datetime"
-                },
-                "hubspot_owner_id": {
-                  "type": "enumeration"
-                },
-                "notes_last_contacted": {
-                  "type": "datetime"
-                },
-                "notes_last_updated": {
-                  "type": "datetime"
-                },
-                "notes_next_activity_date": {
-                  "type": "datetime"
-                },
-                "num_contacted_notes": {
-                  "type": "number"
-                },
-                "num_notes": {
-                  "type": "number"
-                },
-                "hs_createdate": {
-                  "type": "datetime"
-                },
-                "hubspot_team_id": {
-                  "type": "enumeration"
-                },
-                "dealtype": {
-                  "type": "enumeration"
-                },
-                "hs_all_owner_ids": {
-                  "type": "enumeration"
-                },
-                "description": {
-                  "type": "string"
-                },
-                "hs_all_team_ids": {
-                  "type": "enumeration"
-                },
-                "hs_all_accessible_team_ids": {
-                  "type": "enumeration"
-                },
-                "num_associated_contacts": {
-                  "type": "number"
-                },
-                "closed_lost_reason": {
-                  "type": "string"
-                },
-                "closed_won_reason": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
         "source_defined_cursor": false,
         "default_cursor_field": null
       },
@@ -4102,6 +3635,365 @@
     },
     {
       "stream": {
+        "name": "deals",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "portalId": {
+              "type": ["null", "integer"]
+            },
+            "dealId": {
+              "type": ["null", "integer"]
+            },
+            "isDeleted": {
+              "type": ["null", "boolean"]
+            },
+            "associations": {
+              "type": ["null", "object"],
+              "properties": {
+                "associatedVids": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": ["null", "integer"]
+                  }
+                },
+                "associatedCompanyIds": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": ["null", "integer"]
+                  }
+                },
+                "associatedDealIds": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": ["null", "integer"]
+                  }
+                }
+              }
+            },
+            "imports": {
+              "type": ["null", "array"]
+            },
+            "stateChanges": {
+              "type": ["null", "array"]
+            },
+            "createdAt": {
+              "type": "string"
+            },
+            "updatedAt": {
+              "type": "string"
+            },
+            "properties": {
+              "type": "object",
+              "properties": {
+                "amount_in_home_currency": {
+                  "type": "number"
+                },
+                "days_to_close": {
+                  "type": "number"
+                },
+                "hs_acv": {
+                  "type": "number"
+                },
+                "hs_all_assigned_business_unit_ids": {
+                  "type": "string"
+                },
+                "hs_analytics_source": {
+                  "type": "string"
+                },
+                "hs_analytics_source_data_1": {
+                  "type": "string"
+                },
+                "hs_analytics_source_data_2": {
+                  "type": "string"
+                },
+                "hs_arr": {
+                  "type": "number"
+                },
+                "hs_campaign": {
+                  "type": "string"
+                },
+                "hs_closed_amount": {
+                  "type": "number"
+                },
+                "hs_closed_amount_in_home_currency": {
+                  "type": "number"
+                },
+                "hs_created_by_user_id": {
+                  "type": "number"
+                },
+                "hs_date_entered_9567448": {
+                  "type": "datetime"
+                },
+                "hs_date_entered_9567449": {
+                  "type": "datetime"
+                },
+                "hs_date_entered_appointmentscheduled": {
+                  "type": "datetime"
+                },
+                "hs_date_entered_closedlost": {
+                  "type": "datetime"
+                },
+                "hs_date_entered_closedwon": {
+                  "type": "datetime"
+                },
+                "hs_date_entered_contractsent": {
+                  "type": "datetime"
+                },
+                "hs_date_entered_customclosedwonstage": {
+                  "type": "datetime"
+                },
+                "hs_date_entered_decisionmakerboughtin": {
+                  "type": "datetime"
+                },
+                "hs_date_entered_presentationscheduled": {
+                  "type": "datetime"
+                },
+                "hs_date_entered_qualifiedtobuy": {
+                  "type": "datetime"
+                },
+                "hs_date_exited_9567448": {
+                  "type": "datetime"
+                },
+                "hs_date_exited_9567449": {
+                  "type": "datetime"
+                },
+                "hs_date_exited_appointmentscheduled": {
+                  "type": "datetime"
+                },
+                "hs_date_exited_closedlost": {
+                  "type": "datetime"
+                },
+                "hs_date_exited_closedwon": {
+                  "type": "datetime"
+                },
+                "hs_date_exited_contractsent": {
+                  "type": "datetime"
+                },
+                "hs_date_exited_customclosedwonstage": {
+                  "type": "datetime"
+                },
+                "hs_date_exited_decisionmakerboughtin": {
+                  "type": "datetime"
+                },
+                "hs_date_exited_presentationscheduled": {
+                  "type": "datetime"
+                },
+                "hs_date_exited_qualifiedtobuy": {
+                  "type": "datetime"
+                },
+                "hs_deal_amount_calculation_preference": {
+                  "type": "string"
+                },
+                "hs_deal_stage_probability": {
+                  "type": "number"
+                },
+                "hs_forecast_amount": {
+                  "type": "number"
+                },
+                "hs_forecast_probability": {
+                  "type": "number"
+                },
+                "hs_is_closed": {
+                  "type": "bool"
+                },
+                "hs_lastmodifieddate": {
+                  "type": "datetime"
+                },
+                "hs_likelihood_to_close": {
+                  "type": "number"
+                },
+                "hs_line_item_global_term_hs_discount_percentage": {
+                  "type": "string"
+                },
+                "hs_line_item_global_term_hs_discount_percentage_enabled": {
+                  "type": "bool"
+                },
+                "hs_line_item_global_term_hs_recurring_billing_period": {
+                  "type": "string"
+                },
+                "hs_line_item_global_term_hs_recurring_billing_period_enabled": {
+                  "type": "bool"
+                },
+                "hs_line_item_global_term_hs_recurring_billing_start_date": {
+                  "type": "string"
+                },
+                "hs_line_item_global_term_hs_recurring_billing_start_date_enabled": {
+                  "type": "bool"
+                },
+                "hs_line_item_global_term_recurringbillingfrequency": {
+                  "type": "string"
+                },
+                "hs_line_item_global_term_recurringbillingfrequency_enabled": {
+                  "type": "bool"
+                },
+                "hs_manual_forecast_category": {
+                  "type": "string"
+                },
+                "hs_merged_object_ids": {
+                  "type": "string"
+                },
+                "hs_mrr": {
+                  "type": "number"
+                },
+                "hs_next_step": {
+                  "type": "string"
+                },
+                "hs_object_id": {
+                  "type": "number"
+                },
+                "hs_predicted_amount": {
+                  "type": "number"
+                },
+                "hs_predicted_amount_in_home_currency": {
+                  "type": "number"
+                },
+                "hs_projected_amount": {
+                  "type": "number"
+                },
+                "hs_projected_amount_in_home_currency": {
+                  "type": "number"
+                },
+                "hs_tcv": {
+                  "type": "number"
+                },
+                "hs_time_in_9567448": {
+                  "type": "number"
+                },
+                "hs_time_in_9567449": {
+                  "type": "number"
+                },
+                "hs_time_in_appointmentscheduled": {
+                  "type": "number"
+                },
+                "hs_time_in_closedlost": {
+                  "type": "number"
+                },
+                "hs_time_in_closedwon": {
+                  "type": "number"
+                },
+                "hs_time_in_contractsent": {
+                  "type": "number"
+                },
+                "hs_time_in_customclosedwonstage": {
+                  "type": "number"
+                },
+                "hs_time_in_decisionmakerboughtin": {
+                  "type": "number"
+                },
+                "hs_time_in_presentationscheduled": {
+                  "type": "number"
+                },
+                "hs_time_in_qualifiedtobuy": {
+                  "type": "number"
+                },
+                "hs_updated_by_user_id": {
+                  "type": "number"
+                },
+                "hs_user_ids_of_all_owners": {
+                  "type": "string"
+                },
+                "hubspot_owner_assigneddate": {
+                  "type": "datetime"
+                },
+                "dealname": {
+                  "type": "string"
+                },
+                "amount": {
+                  "type": "number"
+                },
+                "dealstage": {
+                  "type": "string"
+                },
+                "pipeline": {
+                  "type": "string"
+                },
+                "closedate": {
+                  "type": "datetime"
+                },
+                "createdate": {
+                  "type": "datetime"
+                },
+                "engagements_last_meeting_booked": {
+                  "type": "datetime"
+                },
+                "engagements_last_meeting_booked_campaign": {
+                  "type": "string"
+                },
+                "engagements_last_meeting_booked_medium": {
+                  "type": "string"
+                },
+                "engagements_last_meeting_booked_source": {
+                  "type": "string"
+                },
+                "hs_latest_meeting_activity": {
+                  "type": "datetime"
+                },
+                "hs_sales_email_last_replied": {
+                  "type": "datetime"
+                },
+                "hubspot_owner_id": {
+                  "type": "string"
+                },
+                "notes_last_contacted": {
+                  "type": "datetime"
+                },
+                "notes_last_updated": {
+                  "type": "datetime"
+                },
+                "notes_next_activity_date": {
+                  "type": "datetime"
+                },
+                "num_contacted_notes": {
+                  "type": "number"
+                },
+                "num_notes": {
+                  "type": "number"
+                },
+                "hs_createdate": {
+                  "type": "datetime"
+                },
+                "hubspot_team_id": {
+                  "type": "string"
+                },
+                "dealtype": {
+                  "type": "string"
+                },
+                "hs_all_owner_ids": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "hs_all_team_ids": {
+                  "type": "string"
+                },
+                "hs_all_accessible_team_ids": {
+                  "type": "string"
+                },
+                "num_associated_contacts": {
+                  "type": "number"
+                },
+                "closed_lost_reason": {
+                  "type": "string"
+                },
+                "closed_won_reason": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "default_cursor_field": null
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": null
+    },
+    {
+      "stream": {
         "name": "email_events",
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
@@ -4137,8 +4029,7 @@
               }
             },
             "created": {
-              "type": ["null", "string"],
-              "format": "date-time"
+              "type": "integer"
             },
             "deviceType": {
               "type": ["null", "string"]
@@ -4222,11 +4113,11 @@
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
         "default_cursor_field": null
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "cursor_field": null
     },
     {
@@ -4236,40 +4127,30 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
-            "engagement_id": {
+            "id": {
               "type": "integer"
             },
-            "engagement": {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "integer"
-                },
-                "portalId": {
-                  "type": "integer"
-                },
-                "active": {
-                  "type": "boolean"
-                },
-                "createdAt": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
-                },
-                "lastUpdated": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
-                },
-                "ownerId": {
-                  "type": "integer"
-                },
-                "type": {
-                  "type": "string"
-                },
-                "timestamp": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
-                }
-              }
+            "portalId": {
+              "type": "integer"
+            },
+            "active": {
+              "type": "boolean"
+            },
+            "createdAt": {
+              "type": "integer"
+            },
+            "lastUpdated": {
+              "type": "integer"
+            },
+            "ownerId": {
+              "type": "integer"
+            },
+            "type": {
+              "type": "string"
+            },
+            "timestamp": {
+              "type": ["null", "string"],
+              "format": "date-time"
             },
             "associations": {
               "type": ["null", "object"],
@@ -4410,16 +4291,16 @@
               "type": "object",
               "properties": {
                 "hs_activity_type": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_all_assigned_business_unit_ids": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_at_mentioned_owner_ids": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_attachment_ids": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_body_preview": {
                   "type": "string"
@@ -4443,10 +4324,10 @@
                   "type": "number"
                 },
                 "hs_call_callee_object_type": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_call_disposition": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_call_duration": {
                   "type": "number"
@@ -4467,10 +4348,10 @@
                   "type": "string"
                 },
                 "hs_call_source": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_call_status": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_call_title": {
                   "type": "string"
@@ -4512,7 +4393,7 @@
                   "type": "datetime"
                 },
                 "hs_conversation_session_source": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_conversation_session_thread_id": {
                   "type": "number"
@@ -4530,7 +4411,7 @@
                   "type": "number"
                 },
                 "hs_created_by": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_created_by_user_id": {
                   "type": "number"
@@ -4554,31 +4435,31 @@
                   "type": "bool"
                 },
                 "hs_email_bcc_email": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_email_bcc_firstname": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_email_bcc_lastname": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_email_bcc_raw": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_email_cc_email": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_email_cc_firstname": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_email_cc_lastname": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_email_cc_raw": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_email_direction": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_email_encoded_email_associations_request": {
                   "type": "string"
@@ -4590,16 +4471,16 @@
                   "type": "string"
                 },
                 "hs_email_from_email": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_email_from_firstname": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_email_from_lastname": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_email_from_raw": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_email_headers": {
                   "type": "json"
@@ -4608,10 +4489,10 @@
                   "type": "string"
                 },
                 "hs_email_logged_from": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_email_media_processing_status": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_email_member_of_forwarded_subthread": {
                   "type": "bool"
@@ -4620,7 +4501,7 @@
                   "type": "string"
                 },
                 "hs_email_post_send_status": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_email_recipient_drop_reasons": {
                   "type": "json"
@@ -4632,22 +4513,22 @@
                   "type": "datetime"
                 },
                 "hs_email_sender_email": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_email_sender_firstname": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_email_sender_lastname": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_email_sender_raw": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_email_sent_via": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_email_status": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_email_subject": {
                   "type": "string"
@@ -4659,22 +4540,22 @@
                   "type": "string"
                 },
                 "hs_email_to_email": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_email_to_firstname": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_email_to_lastname": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_email_to_raw": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_email_tracker_key": {
                   "type": "string"
                 },
                 "hs_email_validation_skipped": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_engagement_source": {
                   "type": "string"
@@ -4683,7 +4564,7 @@
                   "type": "string"
                 },
                 "hs_engagement_type": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_follow_up_action": {
                   "type": "string"
@@ -4713,13 +4594,13 @@
                   "type": "string"
                 },
                 "hs_meeting_outcome": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_meeting_pre_meeting_prospect_reminders": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_meeting_source": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_meeting_source_id": {
                   "type": "string"
@@ -4734,10 +4615,10 @@
                   "type": "string"
                 },
                 "hs_merged_object_ids": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_modified_by": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_note_body": {
                   "type": "string"
@@ -4770,7 +4651,7 @@
                   "type": "string"
                 },
                 "hs_publishing_task_category": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_publishing_task_category_id": {
                   "type": "number"
@@ -4782,10 +4663,10 @@
                   "type": "string"
                 },
                 "hs_publishing_task_state": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_queue_membership_ids": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_scheduled_tasks": {
                   "type": "json"
@@ -4797,7 +4678,7 @@
                   "type": "datetime"
                 },
                 "hs_task_for_object_type": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_task_is_all_day": {
                   "type": "bool"
@@ -4809,13 +4690,13 @@
                   "type": "datetime"
                 },
                 "hs_task_priority": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_task_probability_to_complete": {
                   "type": "number"
                 },
                 "hs_task_reminders": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_task_repeat_interval": {
                   "type": "string"
@@ -4833,7 +4714,7 @@
                   "type": "number"
                 },
                 "hs_task_status": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_task_subject": {
                   "type": "string"
@@ -4842,7 +4723,7 @@
                   "type": "number"
                 },
                 "hs_task_type": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_timestamp": {
                   "type": "datetime"
@@ -4857,25 +4738,25 @@
                   "type": "number"
                 },
                 "hs_user_ids_of_all_owners": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hubspot_owner_assigneddate": {
                   "type": "datetime"
                 },
                 "hubspot_owner_id": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hubspot_team_id": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_all_owner_ids": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_all_team_ids": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_all_accessible_team_ids": {
-                  "type": "enumeration"
+                  "type": "string"
                 }
               }
             }
@@ -5065,12 +4946,10 @@
               }
             },
             "createdAt": {
-              "type": ["null", "string"],
-              "format": "date-time"
+              "type": "integer"
             },
             "updatedAt": {
-              "type": ["null", "string"],
-              "format": "date-time"
+              "type": "integer"
             },
             "performableHtml": {
               "type": ["null", "string"]
@@ -5123,13 +5002,13 @@
               "type": "object",
               "properties": {
                 "hs_all_accessible_team_ids": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_all_assigned_business_unit_ids": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_asset_subtype": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_created_at": {
                   "type": "datetime"
@@ -5144,7 +5023,7 @@
                   "type": "datetime"
                 },
                 "hs_merged_object_ids": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_name": {
                   "type": "string"
@@ -5156,7 +5035,7 @@
                   "type": "string"
                 },
                 "hs_publish_status": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_published_at": {
                   "type": "datetime"
@@ -5165,7 +5044,7 @@
                   "type": "number"
                 },
                 "hs_user_ids_of_all_owners": {
-                  "type": "enumeration"
+                  "type": "string"
                 }
               }
             }
@@ -5197,6 +5076,12 @@
             "isDeleted": {
               "type": ["null", "boolean"]
             },
+            "createdAt": {
+              "type": "string"
+            },
+            "updatedAt": {
+              "type": "string"
+            },
             "properties": {
               "type": "object",
               "properties": {
@@ -5216,10 +5101,10 @@
                   "type": "number"
                 },
                 "hs_all_accessible_team_ids": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_all_assigned_business_unit_ids": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_arr": {
                   "type": "number"
@@ -5243,7 +5128,7 @@
                   "type": "datetime"
                 },
                 "hs_line_item_currency_code": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_margin": {
                   "type": "number"
@@ -5261,7 +5146,7 @@
                   "type": "number"
                 },
                 "hs_merged_object_ids": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_mrr": {
                   "type": "number"
@@ -5276,13 +5161,13 @@
                   "type": "number"
                 },
                 "hs_recurring_billing_end_date": {
-                  "type": "date"
+                  "type": "string"
                 },
                 "hs_recurring_billing_period": {
                   "type": "string"
                 },
                 "hs_recurring_billing_start_date": {
-                  "type": "date"
+                  "type": "string"
                 },
                 "hs_sku": {
                   "type": "string"
@@ -5303,7 +5188,7 @@
                   "type": "string"
                 },
                 "hs_user_ids_of_all_owners": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "name": {
                   "type": "string"
@@ -5315,7 +5200,7 @@
                   "type": "number"
                 },
                 "recurringbillingfrequency": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "tax": {
                   "type": "number"
@@ -5433,6 +5318,12 @@
             "isDeleted": {
               "type": ["null", "boolean"]
             },
+            "createdAt": {
+              "type": "string"
+            },
+            "updatedAt": {
+              "type": "string"
+            },
             "properties": {
               "type": "object",
               "properties": {
@@ -5449,10 +5340,10 @@
                   "type": "number"
                 },
                 "hs_all_accessible_team_ids": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_all_assigned_business_unit_ids": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_avatar_filemanager_key": {
                   "type": "string"
@@ -5479,7 +5370,7 @@
                   "type": "datetime"
                 },
                 "hs_merged_object_ids": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_object_id": {
                   "type": "number"
@@ -5488,7 +5379,7 @@
                   "type": "string"
                 },
                 "hs_recurring_billing_start_date": {
-                  "type": "date"
+                  "type": "string"
                 },
                 "hs_sku": {
                   "type": "string"
@@ -5500,7 +5391,7 @@
                   "type": "string"
                 },
                 "hs_user_ids_of_all_owners": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "name": {
                   "type": "string"
@@ -5512,7 +5403,7 @@
                   "type": "number"
                 },
                 "recurringbillingfrequency": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "tax": {
                   "type": "number"
@@ -5557,10 +5448,10 @@
               "type": "object",
               "properties": {
                 "hs_all_assigned_business_unit_ids": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_approver_id": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_created_by_user_id": {
                   "type": "number"
@@ -5611,7 +5502,7 @@
                   "type": "bool"
                 },
                 "hs_merged_object_ids": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_object_id": {
                   "type": "number"
@@ -5629,13 +5520,13 @@
                   "type": "string"
                 },
                 "hs_template_type": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_updated_by_user_id": {
                   "type": "number"
                 },
                 "hs_user_ids_of_all_owners": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hubspot_owner_assigneddate": {
                   "type": "datetime"
@@ -5704,7 +5595,7 @@
                   "type": "bool"
                 },
                 "hubspot_owner_id": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "notes_last_contacted": {
                   "type": "datetime"
@@ -5728,10 +5619,10 @@
                   "type": "string"
                 },
                 "hubspot_team_id": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_all_owner_ids": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_sender_company_image_url": {
                   "type": "string"
@@ -5740,13 +5631,13 @@
                   "type": "string"
                 },
                 "hs_all_team_ids": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_payment_enabled": {
                   "type": "bool"
                 },
                 "hs_all_accessible_team_ids": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_esign_enabled": {
                   "type": "bool"
@@ -5758,7 +5649,7 @@
                   "type": "number"
                 },
                 "hs_template": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_esign_num_signers_completed": {
                   "type": "number"
@@ -5767,7 +5658,7 @@
                   "type": "number"
                 },
                 "hs_status": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_quote_number": {
                   "type": "string"
@@ -5844,11 +5735,11 @@
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
         "default_cursor_field": null
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "cursor_field": null
     },
     {
@@ -5870,6 +5761,12 @@
             "isDeleted": {
               "type": ["null", "boolean"]
             },
+            "createdAt": {
+              "type": "string"
+            },
+            "updatedAt": {
+              "type": "string"
+            },
             "properties": {
               "type": "object",
               "properties": {
@@ -5886,7 +5783,7 @@
                   "type": "datetime"
                 },
                 "hs_all_assigned_business_unit_ids": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_conversations_originating_message_id": {
                   "type": "string"
@@ -5928,13 +5825,13 @@
                   "type": "datetime"
                 },
                 "hs_external_object_ids": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_feedback_last_ces_follow_up": {
                   "type": "string"
                 },
                 "hs_feedback_last_ces_rating": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_feedback_last_survey_date": {
                   "type": "datetime"
@@ -5943,7 +5840,7 @@
                   "type": "string"
                 },
                 "hs_last_email_activity": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_last_email_date": {
                   "type": "datetime"
@@ -5958,7 +5855,7 @@
                   "type": "datetime"
                 },
                 "hs_merged_object_ids": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_nextactivitydate": {
                   "type": "datetime"
@@ -5976,22 +5873,22 @@
                   "type": "number"
                 },
                 "hs_pipeline": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_pipeline_stage": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_resolution": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_ticket_category": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_ticket_id": {
                   "type": "number"
                 },
                 "hs_ticket_priority": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_time_in_1": {
                   "type": "number"
@@ -6009,7 +5906,7 @@
                   "type": "number"
                 },
                 "hs_user_ids_of_all_owners": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hubspot_owner_assigneddate": {
                   "type": "datetime"
@@ -6027,7 +5924,7 @@
                   "type": "number"
                 },
                 "nps_score": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "source_thread_id": {
                   "type": "string"
@@ -6045,19 +5942,19 @@
                   "type": "string"
                 },
                 "source_type": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "source_ref": {
                   "type": "string"
                 },
                 "tags": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_sales_email_last_replied": {
                   "type": "datetime"
                 },
                 "hubspot_owner_id": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "notes_last_contacted": {
                   "type": "datetime"
@@ -6075,16 +5972,16 @@
                   "type": "number"
                 },
                 "hubspot_team_id": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_all_owner_ids": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_all_team_ids": {
-                  "type": "enumeration"
+                  "type": "string"
                 },
                 "hs_all_accessible_team_ids": {
-                  "type": "enumeration"
+                  "type": "string"
                 }
               }
             }
@@ -6117,12 +6014,10 @@
               "type": ["null", "boolean"]
             },
             "insertedAt": {
-              "type": ["null", "string"],
-              "format": "date-time"
+              "type": "integer"
             },
             "updatedAt": {
-              "type": ["null", "string"],
-              "format": "date-time"
+              "type": "integer"
             },
             "personaTagIds": {
               "type": "array",
