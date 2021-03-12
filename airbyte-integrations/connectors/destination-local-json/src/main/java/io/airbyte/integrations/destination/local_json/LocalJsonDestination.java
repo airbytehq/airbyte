@@ -40,8 +40,8 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream.DestinationSyncMode;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.protocol.models.SyncMode;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
@@ -102,7 +102,7 @@ public class LocalJsonDestination implements Destination {
       final Path finalPath = destinationDir.resolve(namingResolver.getRawTableName(streamName) + ".jsonl");
       final Path tmpPath = destinationDir.resolve(namingResolver.getTmpTableName(streamName) + ".jsonl");
 
-      final boolean isIncremental = stream.getSyncMode() == SyncMode.INCREMENTAL;
+      final boolean isIncremental = stream.getDestinationSyncMode() != DestinationSyncMode.OVERWRITE;
       if (isIncremental && finalPath.toFile().exists()) {
         Files.copy(finalPath, tmpPath, StandardCopyOption.REPLACE_EXISTING);
       }
