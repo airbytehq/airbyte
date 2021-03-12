@@ -603,6 +603,7 @@ from {{ from_table }}
             new_table_name = get_table_name(self.name_transformer, "", new_table_name, suffix, self.json_path)
         else:
             new_table_name = get_table_name(self.name_transformer, "_".join(self.json_path[:-1]), new_table_name, suffix, self.json_path)
+        new_table_name = self.name_transformer.normalize_table_name(new_table_name, False, False)
         if not is_intermediate:
             self.final_table_name = new_table_name
         return new_table_name
