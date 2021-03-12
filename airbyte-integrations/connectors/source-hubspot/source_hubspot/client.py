@@ -26,7 +26,6 @@ from typing import Any, Iterator, Mapping, Tuple
 
 from airbyte_protocol import AirbyteStream
 from base_python import BaseClient
-from base_python.client import configured_catalog_from_client
 from source_hubspot.api import (
     API,
     CampaignStream,
@@ -71,7 +70,6 @@ class Client(BaseClient):
         }
 
         super().__init__(**kwargs)
-        print(configured_catalog_from_client(self).json())
 
     def _enumerate_methods(self) -> Mapping[str, callable]:
         return {name: api.list for name, api in self._apis.items()}
