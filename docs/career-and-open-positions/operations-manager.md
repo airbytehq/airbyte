@@ -23,7 +23,7 @@ Examples of such experiments would be building the equivalent of [Segment’s Re
 
 * Lead efforts on growth experimentations
 * Help with day-to-day operations \(contracts, compliance, creating sandbox accounts for our connector teams, customer calls, etc.\) 
-* Help on the creation of content with the community \(case studies, etc.\)
+* Help with community content creation \(case studies, etc.\)
 * Help set up internal tools \(community dashboards, etc\)
 * Be a force in the community!
 
