@@ -73,6 +73,9 @@
   "form.prefix": "Namespace Prefix",
   "form.prefix.message": "Where to replicate your data to in your destination",
   "form.prefix.placeholder": "/configured-setting",
+  "form.reports": "{count, plural, =0 {No custom reports} one {# report} other {# reports}}",
+  "form.addReport": "+ Add report",
+  "form.customReports": "Custom reports",
 
   "preferences.title": "Specify your preferences",
   "preferences.anonymizeUsage": "Anonymize usage data collection",
