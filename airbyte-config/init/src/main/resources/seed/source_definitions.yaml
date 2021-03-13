@@ -71,12 +71,12 @@
 - sourceDefinitionId: 39f092a6-8c87-4f6f-a8d9-5cef45b7dbe1
   name: Google Analytics
   dockerRepository: airbyte/source-googleanalytics-singer
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.2
   documentationUrl: https://hub.docker.com/r/airbyte/source-googleanalytics-singer
 - sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
   name: Facebook Marketing
   dockerRepository: airbyte/source-facebook-marketing
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   documentationUrl: https://hub.docker.com/r/airbyte/source-facebook-marketing
 - sourceDefinitionId: 57eb1576-8f52-463d-beb6-2e107cdf571d
   name: Hubspot
@@ -136,7 +136,7 @@
 - sourceDefinitionId: 68e63de2-bb83-4c7e-93fa-a8a9051e3993
   name: Jira
   dockerRepository: airbyte/source-jira
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   documentationUrl: https://hub.docker.com/r/airbyte/source-jira
 - sourceDefinitionId: 859e501d-2b67-471f-91bb-1c801414d28f
   name: Mixpanel
@@ -178,3 +178,13 @@
   dockerRepository: airbyte/source-mongodb
   dockerImageTag: 0.2.0
   documentationUrl: https://hub.docker.com/r/airbyte/source-mongodb
+- sourceDefinitionId: d19ae824-e289-4b14-995a-0632eb46d246
+  name: Google Directory
+  dockerRepository: airbyte/source-google-directory
+  dockerImageTag: 0.1.0
+  documentationUrl: https://hub.docker.com/r/airbyte/source-google-directory
+- sourceDefinitionId: 6acf6b55-4f1e-4fca-944e-1a3caef8aba8
+  name: Instagram
+  dockerRepository: airbyte/source-instagram
+  dockerImageTag: 0.1.0
+  documentationUrl: https://hub.docker.com/r/airbyte/source-instagram

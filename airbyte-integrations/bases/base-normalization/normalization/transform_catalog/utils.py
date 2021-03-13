@@ -33,15 +33,24 @@ def is_string(property_type) -> bool:
     return property_type == "string" or "string" in property_type
 
 
-def is_integer(property_type) -> bool:
-    return property_type == "integer" or "integer" in property_type
-
-
 def is_number(property_type) -> bool:
+    if is_string(property_type):
+        # Handle union type, give priority to wider scope types
+        return False
     return property_type == "number" or "number" in property_type
 
 
+def is_integer(property_type) -> bool:
+    if is_string(property_type) or is_number(property_type):
+        # Handle union type, give priority to wider scope types
+        return False
+    return property_type == "integer" or "integer" in property_type
+
+
 def is_boolean(property_type) -> bool:
+    if is_string(property_type) or is_number(property_type) or is_integer(property_type):
+        # Handle union type, give priority to wider scope types
+        return False
     return property_type == "boolean" or "boolean" in property_type
 
 
