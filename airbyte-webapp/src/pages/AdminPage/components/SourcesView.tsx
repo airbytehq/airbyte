@@ -63,8 +63,11 @@ const SourcesView: React.FC = () => {
         Header: <FormattedMessage id="admin.connectors" />,
         accessor: "name",
         customWidth: 25,
-        Cell: ({ cell }: CellProps<never>) => (
-          <ConnectorCell connectorName={cell.value} />
+        Cell: ({ cell, row }: CellProps<{ hasUpdate: boolean }>) => (
+          <ConnectorCell
+            connectorName={cell.value}
+            hasUpdate={row.original.hasUpdate}
+          />
         ),
       },
       {
@@ -112,6 +115,7 @@ const SourcesView: React.FC = () => {
         dockerImageTag: sourceInfo?.dockerImageTag,
         documentationUrl: sourceInfo?.documentationUrl,
         feedback: "",
+        hasUpdate: false, // TODO: add real data
       };
     });
 

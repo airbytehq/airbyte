@@ -12,6 +12,7 @@ import Version from "../Version";
 import Destination from "./components/Destination";
 import { Routes } from "pages/routes";
 import config from "config";
+import Indicator from "../Indicator";
 
 const Bar = styled.nav`
   width: 100px;
@@ -46,6 +47,7 @@ const MenuItem = styled(NavLink)`
   line-height: 15px;
   margin-top: 7px;
   text-decoration: none;
+  position: relative;
 
   &.active {
     color: ${({ theme }) => theme.whiteColor};
@@ -88,7 +90,15 @@ const AdminIcon = styled(FontAwesomeIcon)`
   line-height: 15px;
 `;
 
+const Notification = styled(Indicator)`
+  position: absolute;
+  top: 11px;
+  right: 23px;
+`;
+
 const SideBar: React.FC = () => {
+  const hasUpdate = false; // TODO: add real data
+
   return (
     <Bar>
       <div>
@@ -122,6 +132,7 @@ const SideBar: React.FC = () => {
           </li>
           <li>
             <MenuItem to={Routes.Admin} activeClassName="active">
+              {hasUpdate ? <Notification /> : null}
               <AdminIcon icon={faCog} />
               <Text>
                 <FormattedMessage id="sidebar.admin" />

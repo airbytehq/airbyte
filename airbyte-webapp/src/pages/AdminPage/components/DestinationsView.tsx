@@ -62,8 +62,11 @@ const DestinationsView: React.FC = () => {
         Header: <FormattedMessage id="admin.connectors" />,
         accessor: "name",
         customWidth: 25,
-        Cell: ({ cell }: CellProps<never>) => (
-          <ConnectorCell connectorName={cell.value} />
+        Cell: ({ cell, row }: CellProps<{ hasUpdate: boolean }>) => (
+          <ConnectorCell
+            connectorName={cell.value}
+            hasUpdate={row.original.hasUpdate}
+          />
         ),
       },
       {
@@ -116,6 +119,7 @@ const DestinationsView: React.FC = () => {
         dockerImageTag: destinationInfo?.dockerImageTag,
         documentationUrl: destinationInfo?.documentationUrl,
         feedback: "",
+        hasUpdate: false, // TODO: add real data
       };
     });
 
