@@ -31,5 +31,5 @@ setup(
     author_email="contact@airbyte.io",
     install_requires=["tap-twilio==0.0.1", "twilio==6.48.0", "airbyte-protocol", "base-singer", "base-python"],
     packages=find_packages(),
-    package_data={"": ["*.json"]}
+    package_data={"": ["*.json"]},
 )

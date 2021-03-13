@@ -31,5 +31,5 @@ setup(
     author_email="contact@airbyte.io",
     packages=find_packages(),
     install_requires=["airbyte-protocol", "base-python", "base-singer", "tap-mixpanel==1.2.0", "pytest==6.1.2"],
-    package_data={"": ["*.json"]}
+    package_data={"": ["*.json"]},
 )

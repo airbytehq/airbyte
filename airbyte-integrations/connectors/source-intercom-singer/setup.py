@@ -31,5 +31,5 @@ setup(
     author_email="contact@airbyte.io",
     packages=find_packages(),
     install_requires=["airbyte-protocol", "base-python", "base-singer", "tap-intercom==1.1.1", "pytest==6.1.2"],
-    package_data={"": ["*.json"]}
+    package_data={"": ["*.json"]},
 )

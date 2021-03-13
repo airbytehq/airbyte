@@ -30,11 +30,6 @@ setup(
     author="Thomas van Latum",
     author_email="thomas@gcompany.nl",
     packages=find_packages(),
-    install_requires=[
-        "airbyte-protocol",
-        "base-python",
-        "requests",
-        "pytest==6.1.2"
-    ],
-    package_data={"": ["*.json", "schemas/*.json"]}
+    install_requires=["airbyte-protocol", "base-python", "requests", "pytest==6.1.2"],
+    package_data={"": ["*.json", "schemas/*.json"]},
 )

@@ -31,5 +31,5 @@ setup(
     author_email="contact@airbyte.io",
     install_requires=["tap-slack==1.0.0", "slack-sdk==3.0.0", "airbyte-protocol", "base-singer", "base-python"],
     packages=find_packages(),
-    package_data={"": ["*.json"]}
+    package_data={"": ["*.json"]},
 )
