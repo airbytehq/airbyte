@@ -119,5 +119,6 @@
 * [Career & Open Positions](career-and-open-positions/README.md)
   * [Founding Developer Advocate](career-and-open-positions/founding-developer-evangelist.md)
   * [Senior Software Engineer](career-and-open-positions/senior-software-engineer.md)
+  * [Operations Manager](career-and-open-positions/operations-manager.md)
 * [License](license.md)
 
