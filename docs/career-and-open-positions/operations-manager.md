@@ -21,7 +21,7 @@ Examples of such experiments would be building the equivalent of [Segment’s Re
 
 ## **Responsibilities**
 
-* Lead efforts on growth experimentations
+* Lead efforts on growth experimentation
 * Help with day-to-day operations \(contracts, compliance, creating sandbox accounts for our connector teams, customer calls, etc.\) 
 * Help with community content creation \(case studies, etc.\)
 * Help set up internal tools \(community dashboards, etc\)
