@@ -22,7 +22,7 @@ Examples of such experiments would be building the equivalent of [Segment’s Re
 ## **Responsibilities**
 
 * Lead efforts on growth experimentations
-* Help on day-to-day operations \(contracts, compliance, creating sanbox accounts for our connector teams, customer calls, etc.\) 
+* Help with day-to-day operations \(contracts, compliance, creating sandbox accounts for our connector teams, customer calls, etc.\) 
 * Help on the creation of content with the community \(case studies, etc.\)
 * Help set up internal tools \(community dashboards, etc\)
 * Be a force in the community!
@@ -52,4 +52,3 @@ Remote
 Email us at [join-us@airbyte.io](mailto:join-us@airbyte.io) with a link to your LinkedIn / Resume / GitHub \(optional\).
 
 You don't need to include a cover letter, but just a paragraph how you found us and what makes you a great person to join our founding team!
-
