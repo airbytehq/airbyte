@@ -13,6 +13,7 @@ import Destination from "./components/Destination";
 import { Routes } from "pages/routes";
 import config from "config";
 import Indicator from "../Indicator";
+import useNotification from "../hooks/services/useNotification";
 
 const Bar = styled.nav`
   width: 100px;
@@ -97,7 +98,7 @@ const Notification = styled(Indicator)`
 `;
 
 const SideBar: React.FC = () => {
-  const hasUpdate = false; // TODO: add real data
+  const { hasNewVersions } = useNotification();
 
   return (
     <Bar>
@@ -132,7 +133,7 @@ const SideBar: React.FC = () => {
           </li>
           <li>
             <MenuItem to={Routes.Admin} activeClassName="active">
-              {hasUpdate ? <Notification /> : null}
+              {hasNewVersions() ? <Notification /> : null}
               <AdminIcon icon={faCog} />
               <Text>
                 <FormattedMessage id="sidebar.admin" />
