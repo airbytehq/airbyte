@@ -15,11 +15,11 @@ export type FormBaseItem = {
 
 type FormGroupItem = {
   _type: "formGroup";
-  jsonSchema: JSONSchema7;
   fieldName: string;
   fieldKey: string;
   isRequired: boolean;
   title?: string;
+  jsonSchema: JSONSchema7;
   properties: FormBlock[];
   isLoading?: boolean;
   description?: string;
@@ -32,13 +32,31 @@ type FormConditionItem = {
   fieldName: string;
   fieldKey: string;
   isRequired: boolean;
-  conditions: { [key: string]: FormGroupItem | FormBaseItem };
   title?: string;
+  conditions: { [key: string]: FormGroupItem | FormBaseItem };
 };
 
-type FormBlock = FormGroupItem | FormBaseItem | FormConditionItem;
+type FormObjectArrayItem = {
+  _type: "objectArray";
+  fieldName: string;
+  fieldKey: string;
+  isRequired: boolean;
+  title?: string;
+  properties: FormBlock;
+};
 
-export type { FormBlock, FormConditionItem, FormGroupItem };
+type FormBlock =
+  | FormGroupItem
+  | FormBaseItem
+  | FormConditionItem
+  | FormObjectArrayItem;
+
+export type {
+  FormBlock,
+  FormConditionItem,
+  FormGroupItem,
+  FormObjectArrayItem,
+};
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type WidgetConfig = { [key: string]: any };

@@ -1,14 +1,18 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 
 import { DropDown, Label, VariableInput } from "components";
-import { FormBlock, FormConditionItem } from "core/form/types";
-import { Property } from "./Property";
+import {
+  FormBlock,
+  FormConditionItem,
+  FormObjectArrayItem,
+} from "core/form/types";
+import { PropertySection } from "./PropertySection";
 import { useServiceForm } from "../serviceFormContext";
 import GroupControls from "./Property/GroupControls";
 
-const ItemSection = styled.div`
+const ItemContainer = styled.div`
   margin-bottom: 27px;
 `;
 
@@ -62,47 +66,65 @@ const ConditionSection: React.FC<{ formField: FormConditionItem }> = ({
   );
 };
 
-// TODO: fix form in component
-const VariableSection: React.FC<{ formField?: FormConditionItem }> = ({
+const ArraySection: React.FC<{ formField: FormObjectArrayItem }> = ({
   formField,
 }) => {
+  const [editingItem, setItemEdit] = useState<number | null>(null);
+  // const { addUnfinishedFlow, removeUnfinishedFlow } = useServiceForm();
+
   return (
     <GroupControls
       key={`form-variable-fields-${formField?.fieldKey}`}
       title={<FormattedMessage id="form.customReports" />}
     >
-      <ItemSection>
-        <VariableInput items={[]}>FORM IS HERE</VariableInput>
-      </ItemSection>
+      <ItemContainer>
+        <VariableInput
+          isEditMode={editingItem !== null}
+          onStartEdit={(n) => setItemEdit(n)}
+          onDone={() => setItemEdit(null)}
+          onCancelEdit={() => setItemEdit(null)}
+          items={[]}
+        >
+          <FormSection blocks={[formField.properties]} />
+        </VariableInput>
+      </ItemContainer>
     </GroupControls>
   );
 };
 
-const FormSection: React.FC<{ blocks: FormBlock[] }> = (props) => {
-  const { blocks } = props;
-
+const FormSection: React.FC<{ blocks: FormBlock[] }> = ({ blocks }) => {
   return (
     <>
       {blocks.map((formField) => {
         if (formField._type === "formGroup") {
-          return <FormSection blocks={formField.properties} />;
+          return (
+            <FormSection
+              key={formField.fieldName}
+              blocks={formField.properties}
+            />
+          );
         }
 
         if (formField._type === "formCondition") {
-          return <ConditionSection formField={formField} />;
+          return (
+            <ConditionSection key={formField.fieldName} formField={formField} />
+          );
+        }
+
+        if (formField._type === "objectArray") {
+          return (
+            <ArraySection key={formField.fieldName} formField={formField} />
+          );
         }
 
         return (
-          <ItemSection key={`form-field-${formField.fieldKey}`}>
-            <Property property={formField} />
-          </ItemSection>
+          <ItemContainer key={`form-field-${formField.fieldKey}`}>
+            <PropertySection property={formField} />
+          </ItemContainer>
         );
       })}
     </>
   );
-
-  // TODO: return in right condition
-  return <VariableSection />;
 };
 
 export { FormSection };

@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { FormattedMessage } from "react-intl";
 
-import Button from "../../Button";
+import { Button } from "components/Button";
 
 const Content = styled.div`
   display: flex;
@@ -35,9 +35,10 @@ const Delete = styled(FontAwesomeIcon)`
 type FormItemProps = {
   name: string;
   onEdit: () => void;
+  onRemove: () => void;
 };
 
-const FormItem: React.FC<FormItemProps> = ({ name, onEdit }) => {
+const FormItem: React.FC<FormItemProps> = ({ name, onEdit, onRemove }) => {
   return (
     <Content>
       <div>{name}</div>
@@ -45,7 +46,7 @@ const FormItem: React.FC<FormItemProps> = ({ name, onEdit }) => {
         <Button secondary onClick={onEdit}>
           <FormattedMessage id="form.edit" />
         </Button>
-        <Delete icon={faTimes} />
+        <Delete icon={faTimes} onClick={onRemove} />
       </div>
     </Content>
   );

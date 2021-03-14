@@ -24,7 +24,6 @@ const FormGroup = styled.div`
 
 type GroupControlsProps = {
   title: React.ReactNode;
-  children?: React.ReactNode;
 };
 
 const GroupControls: React.FC<GroupControlsProps> = ({ title, children }) => {

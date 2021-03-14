@@ -22,7 +22,7 @@ const DropdownLabels = styled(ControlLabels)`
   max-width: 202px;
 `;
 
-const ServiceTypeProperty: React.FC<{ property: FormBaseItem }> = ({
+const ServiceTypeDropdown: React.FC<{ property: FormBaseItem }> = ({
   property,
 }) => {
   const formatMessage = useIntl().formatMessage;
@@ -81,39 +81,52 @@ const ServiceTypeProperty: React.FC<{ property: FormBaseItem }> = ({
   );
 };
 
-const Property: React.FC<{ property: FormBaseItem }> = ({ property }) => {
+const ConnectorNameInput: React.FC<{ property: FormBaseItem }> = ({
+  property,
+}) => {
   const formatMessage = useIntl().formatMessage;
-  const { fieldName, fieldKey } = property;
+  const { fieldName } = property;
   const [field, fieldMeta] = useField(fieldName);
+  const { formType } = useServiceForm();
+
+  return (
+    <ControlLabels
+      error={!!fieldMeta.error && fieldMeta.touched}
+      label={<FormattedMessage id="form.name" />}
+      message={formatMessage({
+        id: `form.${formType}Name.message`,
+      })}
+    >
+      <Input
+        {...field}
+        error={!!fieldMeta.error && fieldMeta.touched}
+        type="text"
+        placeholder={formatMessage({
+          id: `form.${formType}Name.placeholder`,
+        })}
+      />
+    </ControlLabels>
+  );
+};
+
+const PropertySection: React.FC<{ property: FormBaseItem }> = ({
+  property,
+}) => {
+  const [field] = useField(property.fieldName);
   const {
-    addUnfinishedSecret,
-    removeUnfinishedSecret,
-    unfinishedSecrets,
-    formType,
+    addUnfinishedFlow,
+    removeUnfinishedFlow,
+    unfinishedFlows,
   } = useServiceForm();
 
-  if (fieldKey === "name") {
-    return (
-      <ControlLabels
-        error={!!fieldMeta.error && fieldMeta.touched}
-        label={<FormattedMessage id="form.name" />}
-        message={formatMessage({
-          id: `form.${formType}Name.message`,
-        })}
-      >
-        <Input
-          {...field}
-          error={!!fieldMeta.error && fieldMeta.touched}
-          type="text"
-          placeholder={formatMessage({
-            id: `form.${formType}Name.placeholder`,
-          })}
-        />
-      </ControlLabels>
-    );
-  } else if (fieldKey === "serviceType") {
-    return <ServiceTypeProperty property={property} />;
-  } else if (property.type === "boolean") {
+  if (property.fieldKey === "name") {
+    return <ConnectorNameInput property={property} />;
+  }
+  if (property.fieldKey === "serviceType") {
+    return <ServiceTypeDropdown property={property} />;
+  }
+
+  if (property.type === "boolean") {
     return (
       <LabeledToggle
         {...field}
@@ -128,12 +141,12 @@ const Property: React.FC<{ property: FormBaseItem }> = ({ property }) => {
     <Label property={property}>
       <Control
         property={property}
-        addUnfinishedSecret={addUnfinishedSecret}
-        removeUnfinishedSecret={removeUnfinishedSecret}
-        unfinishedSecrets={unfinishedSecrets}
+        addUnfinishedFlow={addUnfinishedFlow}
+        removeUnfinishedFlow={removeUnfinishedFlow}
+        unfinishedFlows={unfinishedFlows}
       />
     </Label>
   );
 };
 
-export { Property };
+export { PropertySection };

@@ -8,16 +8,16 @@ import { FormBaseItem } from "core/form/types";
 
 type IProps = {
   property: FormBaseItem;
-  unfinishedSecrets: Record<string, { startValue: string }>;
-  addUnfinishedSecret: (key: string, info?: Record<string, unknown>) => void;
-  removeUnfinishedSecret: (key: string) => void;
+  unfinishedFlows: Record<string, { startValue: string }>;
+  addUnfinishedFlow: (key: string, info?: Record<string, unknown>) => void;
+  removeUnfinishedFlow: (key: string) => void;
 };
 
 const Control: React.FC<IProps> = ({
   property,
-  addUnfinishedSecret,
-  removeUnfinishedSecret,
-  unfinishedSecrets,
+  addUnfinishedFlow,
+  removeUnfinishedFlow,
+  unfinishedFlows,
 }) => {
   const formatMessage = useIntl().formatMessage;
   const { fieldName } = property;
@@ -69,7 +69,7 @@ const Control: React.FC<IProps> = ({
       />
     );
   } else if (property.isSecret) {
-    const unfinishedSecret = unfinishedSecrets[fieldName];
+    const unfinishedSecret = unfinishedFlows[fieldName];
     const isEditInProgress = !!unfinishedSecret;
     const isFormInEditMode = !!meta.initialValue;
     return (
@@ -95,13 +95,13 @@ const Control: React.FC<IProps> = ({
         }
         showButtons={isFormInEditMode}
         isEditInProgress={isEditInProgress}
-        onDone={() => removeUnfinishedSecret(fieldName)}
+        onDone={() => removeUnfinishedFlow(fieldName)}
         onStart={() => {
-          addUnfinishedSecret(fieldName, { startValue: field.value });
+          addUnfinishedFlow(fieldName, { startValue: field.value });
           form.setValue("");
         }}
         onCancel={() => {
-          removeUnfinishedSecret(fieldName);
+          removeUnfinishedFlow(fieldName);
           if (
             unfinishedSecret &&
             unfinishedSecret.hasOwnProperty("startValue")
@@ -112,7 +112,7 @@ const Control: React.FC<IProps> = ({
       />
     );
   } else {
-    const inputType: string = property.type === "integer" ? "number" : "text";
+    const inputType = property.type === "integer" ? "number" : "text";
 
     return (
       <Input

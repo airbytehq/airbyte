@@ -2,7 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 
-import Button from "../../Button";
+import { Button } from "components/Button";
 
 const Content = styled.div`
   display: flex;
@@ -18,15 +18,15 @@ const Content = styled.div`
 
 type FormHeaderProps = {
   itemsCount: number;
-  onAddReport: () => void;
+  onAddItem: () => void;
 };
 
-const FormHeader: React.FC<FormHeaderProps> = ({ itemsCount, onAddReport }) => {
+const FormHeader: React.FC<FormHeaderProps> = ({ itemsCount, onAddItem }) => {
   return (
     <Content>
-      <FormattedMessage id="form.reports" values={{ count: itemsCount }} />
-      <Button secondary type="button" onClick={onAddReport}>
-        <FormattedMessage id="form.addReport" />
+      <FormattedMessage id="form.items" values={{ count: itemsCount }} />
+      <Button secondary type="button" onClick={onAddItem}>
+        <FormattedMessage id="form.addItems" />
       </Button>
     </Content>
   );

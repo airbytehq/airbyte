@@ -52,6 +52,20 @@ export const jsonSchemaToUiWidget = (
     };
   }
 
+  if (
+    jsonSchema.type === "array" &&
+    (jsonSchema.items as any).type === "object"
+  ) {
+    return {
+      ...pickDefaultFields(jsonSchema),
+      _type: "objectArray",
+      fieldName: path || key,
+      fieldKey: key,
+      properties: jsonSchemaToUiWidget(jsonSchema.items as any, key, path),
+      isRequired,
+    };
+  }
+
   if (jsonSchema.properties) {
     const properties = Object.entries(
       jsonSchema.properties

@@ -2,8 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 
-import Button from "components/Button";
-import Spinner from "components/Spinner";
+import { Button, Spinner } from "components";
 import { useServiceForm } from "../serviceFormContext";
 
 type IProps = {
@@ -51,7 +50,7 @@ const EditControls: React.FC<IProps> = ({
   successMessage,
   errorMessage,
 }) => {
-  const { unfinishedSecrets } = useServiceForm();
+  const { unfinishedFlows } = useServiceForm();
 
   const showStatusMessage = () => {
     if (isSubmitting) {
@@ -78,7 +77,7 @@ const EditControls: React.FC<IProps> = ({
           isSubmitting ||
           !isValid ||
           !dirty ||
-          Object.keys(unfinishedSecrets).length > 0
+          Object.keys(unfinishedFlows).length > 0
         }
       >
         <FormattedMessage id="form.saveChanges" />
