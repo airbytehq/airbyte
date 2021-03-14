@@ -8,6 +8,7 @@ import { FormContent } from "./PageComponents";
 
 type IProps = {
   version: string;
+  currentVersion: string;
   id: string;
   onChange: ({ version, id }: { version: string; id: string }) => void;
   feedback?: "success" | string;
@@ -16,6 +17,10 @@ type IProps = {
 const VersionInput = styled(Input)`
   max-width: 145px;
   margin-right: 19px;
+  &:before {
+    contain: "TEST";
+    display: block;
+  }
 `;
 
 const SuccessMessage = styled.div`
@@ -25,7 +30,7 @@ const SuccessMessage = styled.div`
   position: absolute;
   text-align: right;
   width: 205px;
-  left: -218px;
+  left: -208px;
   height: 100%;
   display: flex;
   align-items: center;
@@ -39,7 +44,13 @@ const ErrorMessage = styled(SuccessMessage)`
   line-height: 14px;
 `;
 
-const VersionCell: React.FC<IProps> = ({ version, id, onChange, feedback }) => {
+const VersionCell: React.FC<IProps> = ({
+  version,
+  id,
+  onChange,
+  feedback,
+  currentVersion,
+}) => {
   const renderFeedback = (
     dirty: boolean,
     isSubmitting: boolean,
@@ -87,7 +98,10 @@ const VersionCell: React.FC<IProps> = ({ version, id, onChange, feedback }) => {
                 <VersionInput {...field} type="text" autoComplete="off" />
               )}
             </Field>
-            <Button type="submit" disabled={isSubmitting || !dirty}>
+            <Button
+              type="submit"
+              disabled={(isSubmitting || !dirty) && currentVersion === version}
+            >
               <FormattedMessage id="form.change" />
             </Button>
           </Form>

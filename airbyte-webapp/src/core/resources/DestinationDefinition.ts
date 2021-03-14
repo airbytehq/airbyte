@@ -6,6 +6,7 @@ export interface DestinationDefinition {
   name: string;
   dockerRepository: string;
   dockerImageTag: string;
+  latestDockerImageTag: string;
   documentationUrl: string;
 }
 
@@ -16,6 +17,7 @@ export default class DestinationDefinitionResource
   readonly name: string = "";
   readonly dockerRepository: string = "";
   readonly dockerImageTag: string = "";
+  readonly latestDockerImageTag: string = "";
   readonly documentationUrl: string = "";
 
   pk(): string {
@@ -31,6 +33,37 @@ export default class DestinationDefinitionResource
   > {
     return {
       ...super.listShape(),
+      fetch: async (
+        params: Readonly<Record<string, string | number>>
+      ): Promise<{ destinationDefinitions: DestinationDefinition[] }> => {
+        const definition = await this.fetch(
+          "post",
+          `${this.url(params)}/list`,
+          params
+        );
+        const latestDefinition = await this.fetch(
+          "post",
+          `${this.url(params)}/list_latest`,
+          params
+        );
+
+        const result: DestinationDefinition[] = definition.destinationDefinitions.map(
+          (destination: DestinationDefinition) => {
+            const withLatest = latestDefinition.destinationDefinitions.find(
+              (latestDestination: DestinationDefinition) =>
+                latestDestination.destinationDefinitionId ===
+                destination.destinationDefinitionId
+            );
+
+            return {
+              ...destination,
+              latestDockerImageTag: withLatest?.dockerImageTag,
+            };
+          }
+        );
+
+        return { destinationDefinitions: result };
+      },
       schema: { destinationDefinitions: [this] },
     };
   }
