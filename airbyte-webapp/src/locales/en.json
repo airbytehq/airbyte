@@ -226,6 +226,7 @@
   "admin.codeSource": "Code source",
   "admin.tag": "Tag",
   "admin.changeTo": "Change to",
+  "admin.latestNote": " (latest)",
   "admin.addNewConnector": "Add new connector",
   "admin.connectorName": "Connector display name",
   "admin.connectorName.placeholder": "Connector name",

@@ -1,7 +1,7 @@
 import React from "react";
 import { Formik, Form, FieldProps, Field } from "formik";
 import styled from "styled-components";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 
 import { Input, Button, Spinner } from "components";
 import { FormContent } from "./PageComponents";
@@ -17,9 +17,24 @@ type IProps = {
 const VersionInput = styled(Input)`
   max-width: 145px;
   margin-right: 19px;
+`;
+
+const InputField = styled.div<{ showNote?: boolean }>`
+  display: inline-block;
+  position: relative;
+  background: ${({ theme }) => theme.whiteColor};
+
   &:before {
-    contain: "TEST";
-    display: block;
+    position: absolute;
+    display: ${({ showNote }) => (showNote ? "block" : "none")};
+    content: attr(data-before);
+    color: ${({ theme }) => theme.greyColor40};
+    top: 10px;
+    right: 22px;
+    z-index: 3;
+  }
+  &:focus-within:before {
+    display: none;
   }
 `;
 
@@ -51,6 +66,8 @@ const VersionCell: React.FC<IProps> = ({
   feedback,
   currentVersion,
 }) => {
+  const formatMessage = useIntl().formatMessage;
+
   const renderFeedback = (
     dirty: boolean,
     isSubmitting: boolean,
@@ -95,7 +112,14 @@ const VersionCell: React.FC<IProps> = ({
             {renderFeedback(dirty, isSubmitting, feedback)}
             <Field name="version">
               {({ field }: FieldProps<string>) => (
-                <VersionInput {...field} type="text" autoComplete="off" />
+                <InputField
+                  showNote={version === field.value}
+                  data-before={formatMessage({
+                    id: "admin.latestNote",
+                  })}
+                >
+                  <VersionInput {...field} type="text" autoComplete="off" />
+                </InputField>
               )}
             </Field>
             <Button
