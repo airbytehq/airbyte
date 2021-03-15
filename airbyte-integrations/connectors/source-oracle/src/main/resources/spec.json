@@ -21,9 +21,8 @@
         "default": 1521,
         "examples": ["1521"]
       },
-      "database": {
-        "title": "DB Name",
-        "description": "Name of the database.",
+      "sid": {
+        "title": "SID (Oracle System Identifier)",
         "type": "string"
       },
       "username": {

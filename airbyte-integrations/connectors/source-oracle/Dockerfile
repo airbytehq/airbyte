@@ -2,7 +2,7 @@ FROM airbyte/integration-base-java:dev
 
 WORKDIR /airbyte
 
-ENV APPLICATION source-postgres
+ENV APPLICATION source-oracle
 
 COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
 
