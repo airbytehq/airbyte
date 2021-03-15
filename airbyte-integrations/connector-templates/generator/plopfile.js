@@ -39,32 +39,26 @@ module.exports = function (plop) {
     description: 'Generate an Airbyte Source written in Python',
     prompts: [{type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "google-analytics"'}],
     actions: [
-      //   {
-      //   abortOnFail: true,
-      //   type:'addMany',
-      //   destination: pythonSourceOutputRoot,
-      //   base: pythonSourceInputRoot,
-      //   templateFiles: `${pythonSourceInputRoot}/**/**`,
-      // },
-      //   // plop doesn't add dotfiles by default so we manually add them
-      // {
-      //   type:'add',
-      //   abortOnFail: true,
-      //   templateFile: `${pythonSourceInputRoot}/.gitignore.hbs`,
-      //   path: `${pythonSourceOutputRoot}/.gitignore`
-      // },
-      // {
-      //   type:'add',
-      //   abortOnFail: true,
-      //   templateFile: `${pythonSourceInputRoot}/.dockerignore.hbs`,
-      //   path: `${pythonSourceOutputRoot}/.dockerignore`
-      // },
-      {
-        type:'add',
-        force: true,
-        templateFile: `${pythonSourceInputRoot}/README.md.hbs`,
-        path: `${pythonSourceOutputRoot}/README.md`
-      },
+         {
+         abortOnFail: true,
+         type:'addMany',
+         destination: pythonSourceOutputRoot,
+         base: pythonSourceInputRoot,
+         templateFiles: `${pythonSourceInputRoot}/**/**`,
+       },
+         // plop doesn't add dotfiles by default so we manually add them
+       {
+         type:'add',
+         abortOnFail: true,
+         templateFile: `${pythonSourceInputRoot}/.gitignore.hbs`,
+         path: `${pythonSourceOutputRoot}/.gitignore`
+       },
+       {
+         type:'add',
+         abortOnFail: true,
+         templateFile: `${pythonSourceInputRoot}/.dockerignore.hbs`,
+         path: `${pythonSourceOutputRoot}/.dockerignore`
+       },
       {type: 'emitSuccess', outputPath: pythonSourceOutputRoot, message: "For a checklist of what to do next go to https://docs.airbyte.io/tutorials/building-a-python-source"}]
   });
 
@@ -74,34 +68,28 @@ module.exports = function (plop) {
       {type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "google-analytics"', filter: function (name) {
         return name.endsWith('-singer') ? name.replace(/-singer$/, '') : name;
       }},
-      // {type: 'input', name: 'tap_name', message: 'Singer tap package'},
+       {type: 'input', name: 'tap_name', message: 'Singer tap package'},
     ],
     actions: [
-      // {
-      //   abortOnFail: true,
-      //   type:'addMany',
-      //   destination: singerSourceOutputRoot,
-      //   base: singerSourceInputRoot,
-      //   templateFiles: `${singerSourceInputRoot}/**/**`,
-      // },
-      // {
-      //   type:'add',
-      //   abortOnFail: true,
-      //   templateFile: `${singerSourceInputRoot}/.gitignore.hbs`,
-      //   path: `${singerSourceOutputRoot}/.gitignore`
-      // },
-      // {
-      //   type:'add',
-      //   abortOnFail: true,
-      //   templateFile: `${singerSourceInputRoot}/.dockerignore.hbs`,
-      //   path: `${singerSourceOutputRoot}/.dockerignore`
-      // },
-      {
-        type:'add',
-        force: true,
-        templateFile: `${singerSourceInputRoot}/README.md.hbs`,
-        path: `${singerSourceOutputRoot}/README.md`
-      },
+       {
+         abortOnFail: true,
+         type:'addMany',
+         destination: singerSourceOutputRoot,
+         base: singerSourceInputRoot,
+         templateFiles: `${singerSourceInputRoot}/**/**`,
+       },
+       {
+         type:'add',
+         abortOnFail: true,
+         templateFile: `${singerSourceInputRoot}/.gitignore.hbs`,
+         path: `${singerSourceOutputRoot}/.gitignore`
+       },
+       {
+         type:'add',
+         abortOnFail: true,
+         templateFile: `${singerSourceInputRoot}/.dockerignore.hbs`,
+         path: `${singerSourceOutputRoot}/.dockerignore`
+       },
         {type: 'emitSuccess', outputPath: singerSourceOutputRoot},
     ]
   });
