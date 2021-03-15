@@ -27,13 +27,12 @@ package io.airbyte.integrations.source.oracle;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.jdbc.OracleJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcStressTest;
-import io.airbyte.test.utils.OracleContainerHelper;
+
 import java.util.Optional;
 import java.util.Set;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -44,7 +43,6 @@ import org.junit.jupiter.api.Disabled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.OracleContainer;
-import org.testcontainers.utility.MountableFile;
 
 /**
  * Runs the stress tests in the source-jdbc test module. We want this module to run these tests
@@ -76,11 +74,6 @@ class OracleStressTest extends JdbcStressTest {
         .put("password", ORACLE_DB.getPassword())
         .build());
 
-    System.out.println("config = " + config);
-
-    final String initScriptName = "init_" + dbName.concat(".sql");
-    MoreResources.writeResource(initScriptName, "CREATE DATABASE " + dbName + ";");
-    OracleContainerHelper.runSqlScript(MountableFile.forClasspathResource(initScriptName), ORACLE_DB);
 
     super.setup();
   }

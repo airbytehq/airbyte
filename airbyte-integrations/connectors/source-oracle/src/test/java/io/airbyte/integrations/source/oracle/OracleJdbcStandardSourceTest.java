@@ -27,23 +27,15 @@ package io.airbyte.integrations.source.oracle;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceStandardTest;
-import io.airbyte.test.utils.OracleContainerHelper;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import java.sql.DriverManager;
-import java.sql.Connection;
-import java.sql.ResultSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import static org.junit.Assert.assertEquals;
 
 import org.testcontainers.containers.OracleContainer;
-import org.testcontainers.utility.MountableFile;
 
 class OracleJdbcStandardSourceTest extends JdbcSourceStandardTest {
   private static final Logger LOGGER = LoggerFactory.getLogger(OracleSource.class);
