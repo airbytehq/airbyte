@@ -74,7 +74,7 @@
   * [On AWS \(EC2\)](deploying-airbyte/on-aws-ec2.md)
   * [On GCP \(Compute Engine\)](deploying-airbyte/on-gcp-compute-engine.md)
   * [On Kubernetes \(Alpha\)](deploying-airbyte/on-kubernetes.md)
-* [API documentation](api-documentation.md)
+* [API documentation](api/api-documentation.md)
 * [Architecture](architecture/README.md)
   * [AirbyteCatalog & ConfiguredAirbyteCatalog](architecture/catalog.md)
   * [Airbyte Specification](architecture/airbyte-specification.md)
