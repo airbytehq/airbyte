@@ -37,18 +37,10 @@ class SourceGithubSinger(SingerSource):
     def _check_with_catalog(logger: AirbyteLogger, streams: List, config: json):
         repositories = config["repository"].split(" ")
         for repository in repositories:
-            org = repository.split("/")[0]
             # requests for checking streams permissions
             # first is for checking if user has access to Collaborators API
             # if user is not one of the collaborators, request will return 403 error
-            # third is for checking access and permission to Teams API
-            # Teams API is only available to authenticated members of the team's organization,
-            # in another case it will return 404 error
-            # if user doesn't have permission, it will return 401 error
-            check_streams = {
-                "collaborators": f"https://api.github.com/repos/{repository}/collaborators",
-                "teams": f"https://api.github.com/orgs/{org}/teams?sort=created_at&direction=desc",
-            }
+            check_streams = {"collaborators": f"https://api.github.com/repos/{repository}/collaborators"}
             for stream in streams:
                 if stream in check_streams:
                     response = requests.get(check_streams[stream], auth=(config["access_token"], ""))
