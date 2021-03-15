@@ -27,6 +27,12 @@ used for editable installs (`pip install -e`) to pull in Python dependencies fro
 If this is mumbo jumbo to you, don't worry about it, just put your deps in `setup.py` but install using `pip install -r requirements.txt` and everything
 should work as you expect.
 
+#### Building via Gradle
+From the Airbyte repository root, run:
+```
+./gradlew :airbyte-integrations:connectors:source-marketo:build
+```
+
 #### Create credentials
 **If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/marketo)
 to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_marketo_singer/spec.json` file.
@@ -66,11 +72,20 @@ python -m pytest unit_tests
 
 ### Locally running the connector docker image
 
+#### Build
 First, make sure you build the latest Docker image:
 ```
 docker build . -t airbyte/marketo-singer:dev
 ```
 
+You can also build the connector image via Gradle:
+```
+./gradlew :airbyte-integrations:connectors:source-marketo:airbyteDocker
+```
+When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
+the Dockerfile.
+
+#### Run
 Then run any of the connector commands as follows:
 ```
 docker run --rm airbyte/source-marketo-singer:dev spec
@@ -86,3 +101,11 @@ docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/sample_files:/sample_files 
 
 ## Dependency Management
 All of your dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect internal Airbyte dependencies in the monorepo for local development.
+
+### Publishing a new version of the connector
+You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
+1. Make sure your changes are passing unit and integration tests
+1. Bump the connector version in `Dockerfile` -- just increment the value of the `LABEL io.airbyte.version` appropriately (we use SemVer).
+1. Create a Pull Request
+1. Pat yourself on the back for being an awesome contributor
+1. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master
