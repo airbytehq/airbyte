@@ -30,12 +30,6 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=["airbyte-protocol", "base-python", "tap-zoom==0.0.3"],
+    install_requires=["airbyte-protocol", "base-python", "base-singer", "tap-zoom==0.0.3", "pytest==6.1.2"],
     package_data={"": ["*.json"]},
-    setup_requires=["pytest-runner"],
-    tests_require=["pytest"],
-    extras_require={
-        "main": ["base-singer"],
-        "tests": ["airbyte_python_test", "pytest"],
-    },
 )

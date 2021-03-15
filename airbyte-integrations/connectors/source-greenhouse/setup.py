@@ -30,16 +30,6 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=[
-        "airbyte-protocol",
-        "base-python",
-        "six==1.15.0",
-        "grnhse-api==0.1.1",
-    ],
+    install_requires=["airbyte-protocol", "base-python", "six==1.15.0", "grnhse-api==0.1.1", "pytest==6.1.2"],
     package_data={"": ["*.json", "schemas/*.json"]},
-    setup_requires=["pytest-runner"],
-    tests_require=["pytest"],
-    extras_require={
-        "tests": ["airbyte_python_test", "pytest"],
-    },
 )
