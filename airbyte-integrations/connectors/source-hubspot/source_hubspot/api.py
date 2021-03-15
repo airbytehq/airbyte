@@ -334,12 +334,14 @@ class IncrementalStream(Stream, ABC):
             latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
 
         if latest_cursor:
-            logger.info(f"Advancing bookmark for {self.name} stream from {self._state} to {latest_cursor}")
-            self._state = max(latest_cursor, self._state) if self._state else latest_cursor
-            self._start_date = self._state
+            new_state = max(latest_cursor, self._state) if self._state else latest_cursor
+            if new_state != self._state:
+                logger.info(f"Advancing bookmark for {self.name} stream from {self._state} to {latest_cursor}")
+                self._state = new_state
+                self._start_date = self._state
 
     def read_chunked(
-        self, getter: Callable, params: Mapping[str, Any] = None, chunk_size: pendulum.Interval = pendulum.interval(days=1)
+            self, getter: Callable, params: Mapping[str, Any] = None, chunk_size: pendulum.Interval = pendulum.interval(days=1)
     ) -> Iterator:
         params = {**params} if params else {}
         now_ts = int(pendulum.now().timestamp() * 1000)
@@ -350,7 +352,8 @@ class IncrementalStream(Stream, ABC):
             end_ts = ts + chunk_size
             params["startTimestamp"] = ts
             params["endTimestamp"] = end_ts
-            logger.info(f"Reading chunk from {ts} to {end_ts}")
+            logger.info(
+                f"Reading chunk from stream {self.name} between {pendulum.from_timestamp(ts / 1000)} and {pendulum.from_timestamp(end_ts / 1000)}")
             yield from super().read(getter, params)
 
 
