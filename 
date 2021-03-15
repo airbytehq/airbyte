@@ -25,11 +25,16 @@ SOFTWARE.
 from setuptools import find_packages, setup
 
 setup(
-    name="source_scaffold_source_python",
-    description="Source implementation for Scaffold Source Python.",
+    name="source_google_adwords_singer",
+    description="Source implementation for Google Adwords, built on the Singer tap implementation.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=["airbyte-protocol", "base-python", "pytest==6.1.2"],
+    install_requires=[
+        "airbyte-protocol",
+        "base-singer",
+        "base-python",
+        "pytest==6.1.2"
+    ],
     package_data={"": ["*.json"]}
 )
