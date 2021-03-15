@@ -341,7 +341,7 @@ class IncrementalStream(Stream, ABC):
                 self._start_date = self._state
 
     def read_chunked(
-            self, getter: Callable, params: Mapping[str, Any] = None, chunk_size: pendulum.Interval = pendulum.interval(days=1)
+        self, getter: Callable, params: Mapping[str, Any] = None, chunk_size: pendulum.Interval = pendulum.interval(days=1)
     ) -> Iterator:
         params = {**params} if params else {}
         now_ts = int(pendulum.now().timestamp() * 1000)
@@ -353,7 +353,8 @@ class IncrementalStream(Stream, ABC):
             params["startTimestamp"] = ts
             params["endTimestamp"] = end_ts
             logger.info(
-                f"Reading chunk from stream {self.name} between {pendulum.from_timestamp(ts / 1000)} and {pendulum.from_timestamp(end_ts / 1000)}")
+                f"Reading chunk from stream {self.name} between {pendulum.from_timestamp(ts / 1000)} and {pendulum.from_timestamp(end_ts / 1000)}"
+            )
             yield from super().read(getter, params)
 
 
