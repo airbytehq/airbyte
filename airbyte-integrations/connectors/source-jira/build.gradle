@@ -9,7 +9,7 @@ airbytePython {
 }
 
 airbyteStandardSourceTestFile {
-    specPath = "source_facebook_marketing/spec.json"
+    specPath = "source_jira/spec.json"
     configPath = "secrets/config.json"
     configuredCatalogPath = "sample_files/configured_catalog.json"
 }
