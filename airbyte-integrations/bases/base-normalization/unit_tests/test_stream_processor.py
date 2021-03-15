@@ -26,10 +26,11 @@ import os
 import re
 
 import pytest
+from airbyte_protocol.models.airbyte_protocol import DestinationSyncMode, SyncMode
 from normalization.destination_type import DestinationType
 from normalization.transform_catalog.catalog_processor import CatalogProcessor, add_table_to_registry, read_json
 from normalization.transform_catalog.destination_name_transformer import DestinationNameTransformer
-from normalization.transform_catalog.stream_processor import get_table_name
+from normalization.transform_catalog.stream_processor import StreamProcessor, get_table_name
 
 
 @pytest.fixture
@@ -142,3 +143,69 @@ def test_get_table_name(root_table: str, base_table_name: str, suffix: str, expe
     name = get_table_name(name_transformer, root_table, base_table_name, suffix, ["json", "path"])
     assert name == expected
     assert len(name) <= 43  # explicitly check for our max postgres length in case tests are changed in the future
+
+
+@pytest.mark.parametrize(
+    "stream_name, is_intermediate, suffix, expected, expected_final_name",
+    [
+        ("stream_name", False, "", "stream_name", "stream_name"),
+        ("stream_name", False, "suffix", "stream_name_suffix", "stream_name_suffix"),
+        ("stream_name", False, "_suffix", "stream_name_suffix", "stream_name_suffix"),
+        ("stream_name", True, "suffix", "stream_name_suffix", ""),
+        ("stream_name", True, "_suffix", "stream_name_suffix", ""),
+    ],
+)
+def test_generate_new_table_name(stream_name: str, is_intermediate: bool, suffix: str, expected: str, expected_final_name: str):
+    stream_processor = StreamProcessor.create(
+        stream_name=stream_name,
+        destination_type=DestinationType.POSTGRES,
+        raw_schema="raw_schema",
+        schema="schema_name",
+        source_sync_mode=SyncMode.full_refresh,
+        destination_sync_mode=DestinationSyncMode.append_dedup,
+        cursor_field=[],
+        primary_key=[],
+        json_column_name="json_column_name",
+        properties=[],
+        tables_registry=set(),
+        from_table="",
+    )
+    assert stream_processor.generate_new_table_name(is_intermediate=is_intermediate, suffix=suffix) == expected
+    assert stream_processor.final_table_name == expected_final_name
+
+
+@pytest.mark.parametrize(
+    "stream_name, is_intermediate, suffix, expected, expected_final_name",
+    [
+        ("stream_name", False, "", "stream_name_b00_child_stream", "stream_name_b00_child_stream"),
+        ("stream_name", False, "suffix", "stream_name_b00_child_stream_suffix", "stream_name_b00_child_stream_suffix"),
+        ("stream_name", False, "_suffix", "stream_name_b00_child_stream_suffix", "stream_name_b00_child_stream_suffix"),
+        ("stream_name", True, "suffix", "stream_name_b00_child_stream_suffix", ""),
+        ("stream_name", True, "_suffix", "stream_name_b00_child_stream_suffix", ""),
+    ],
+)
+def test_nested_generate_new_table_name(stream_name: str, is_intermediate: bool, suffix: str, expected: str, expected_final_name: str):
+    stream_processor = StreamProcessor.create(
+        stream_name=stream_name,
+        destination_type=DestinationType.POSTGRES,
+        raw_schema="raw_schema",
+        schema="schema_name",
+        source_sync_mode=SyncMode.full_refresh,
+        destination_sync_mode=DestinationSyncMode.append_dedup,
+        cursor_field=[],
+        primary_key=[],
+        json_column_name="json_column_name",
+        properties=[],
+        tables_registry=set(),
+        from_table="",
+    )
+    nested_stream_processor = StreamProcessor.create_from_parent(
+        parent=stream_processor,
+        child_name="child_stream",
+        json_column_name="json_column_name",
+        properties=[],
+        is_nested_array=False,
+        from_table="",
+    )
+    assert nested_stream_processor.generate_new_table_name(is_intermediate=is_intermediate, suffix=suffix) == expected
+    assert nested_stream_processor.final_table_name == expected_final_name

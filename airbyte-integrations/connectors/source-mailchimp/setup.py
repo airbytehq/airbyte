@@ -30,6 +30,13 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=["airbyte-protocol", "base-python", "pydantic==1.6.1", "mailchimp3==3.0.14", "python-dateutil==2.8.1", "pytest==6.1.2"],
+    install_requires=[
+        "airbyte-protocol",
+        "base-python",
+        "pydantic==1.6.1",
+        "mailchimp3==3.0.14",
+        "python-dateutil==2.8.1",
+        "pytest==6.1.2",
+    ],
     package_data={"": ["*.json", "schemas/*.json"]}
 )

@@ -26,13 +26,13 @@ There are a few key differentiating aspects to our strategy:
 
 ## **Our financing strategy**
 
-### **Seed in Q2 2020**
+### **Seed Q1 2021**
 
-We raised $1.8M in a seed round that gives us a runway until mid 2022. We will focus on the community edition until the Series-A. The metrics we will display to investors will be on adoption, deployments, and external contributions.
+We raised $5.2M in a seed round with Accel, YCombinator, and some prominent business angels (co-founder of Segment, of LiveRamp, former GM at Cloudera, etc.). It gives us a runway until enf of 2022. We will focus on the community edition until the Series-A. The metrics we will display to investors will be on adoption, deployments, and external contributions.
 
 It is completely fine for us not to present any revenues before the Series-A.
 
-### **Series-A by Q1 2022**
+### **Series-A Q1 2022**
 
 We will build out and release the enterprise edition only after the Series-A. It is paramount that we continue to support the community edition so it:
 
@@ -41,7 +41,7 @@ We will build out and release the enterprise edition only after the Series-A. It
 
 ## **Our hiring strategy**
 
-Our team is composed of 5 engineering leaders, all from one of the highest-growing data companies in the world. We have already built 1,000+ integrations in the past on high-scale volume projects. This is why we can afford our ambitious technological goals.
+Our team is composed of 7 engineering leaders, most from one of the highest-growing data companies in the world. We have already built 1,000+ integrations in the past on high-scale volume projects. This is why we can afford our ambitious technological goals.
 
 We are working closely with contractors on the frontend side and to help us ramp up the number of connectors. We are doing all the UI design specs in-house for the moment though.
 

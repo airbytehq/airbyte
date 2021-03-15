@@ -10,7 +10,7 @@ airbytePython {
 
 airbyteStandardSourceTestFile {
     specPath = "source_exchangeratesapi_singer/spec.json"
-    configPath = "secrets/config.json"
+    configPath = "sample_files/config.json"
     configuredCatalogPath = "sample_files/configured_catalog.json"
 }
 

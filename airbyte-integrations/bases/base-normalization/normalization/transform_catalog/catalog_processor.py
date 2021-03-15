@@ -27,6 +27,7 @@ import os
 from typing import Any, Dict, List, Set
 
 import yaml
+from airbyte_protocol.models.airbyte_protocol import DestinationSyncMode, SyncMode
 from normalization.destination_type import DestinationType
 from normalization.transform_catalog.destination_name_transformer import DestinationNameTransformer
 from normalization.transform_catalog.stream_processor import StreamProcessor
@@ -110,6 +111,21 @@ class CatalogProcessor:
             stream_name = get_field(stream_config, "name", f"Invalid Stream: 'name' is not defined in stream: {str(stream_config)}")
             raw_table_name = name_transformer.normalize_table_name(f"_airbyte_raw_{stream_name}", truncate=False)
 
+            source_sync_mode = get_source_sync_mode(configured_stream, stream_name)
+            destination_sync_mode = get_destination_sync_mode(configured_stream, stream_name)
+            cursor_field = []
+            primary_key = []
+            if source_sync_mode.value == SyncMode.incremental.value or destination_sync_mode.value in [
+                # DestinationSyncMode.upsert_dedup.value,
+                DestinationSyncMode.append_dedup.value,
+            ]:
+                cursor_field = get_field(configured_stream, "cursor_field", f"Undefined cursor field for stream {stream_name}")
+            if destination_sync_mode.value in [
+                # DestinationSyncMode.upsert_dedup.value,
+                DestinationSyncMode.append_dedup.value
+            ]:
+                primary_key = get_field(configured_stream, "primary_key", f"Undefined primary key for stream {stream_name}")
+
             message = f"'json_schema'.'properties' are not defined for stream {stream_name}"
             properties = get_field(get_field(stream_config, "json_schema", message), "properties", message)
 
@@ -124,6 +140,10 @@ class CatalogProcessor:
                 destination_type=destination_type,
                 raw_schema=raw_schema_name,
                 schema=schema_name,
+                source_sync_mode=source_sync_mode,
+                destination_sync_mode=destination_sync_mode,
+                cursor_field=cursor_field,
+                primary_key=primary_key,
                 json_column_name=f"'{json_column_name}'",
                 properties=properties,
                 tables_registry=tables_registry,
@@ -199,6 +219,40 @@ def get_field(config: Dict, key: str, message: str):
         return config[key]
     else:
         raise KeyError(message)
+
+
+def get_source_sync_mode(stream_config: Dict, stream_name: str) -> SyncMode:
+    """
+    Read the source sync_mode field from config or return a default value if not found
+    """
+    if "sync_mode" in stream_config:
+        sync_mode = get_field(stream_config, "sync_mode", "")
+    else:
+        sync_mode = ""
+    try:
+        result = SyncMode(sync_mode)
+    except ValueError as e:
+        # Fallback to default source sync mode value
+        result = SyncMode.full_refresh
+        print(f"WARN: Source sync mode falling back to {result} for {stream_name}: {e}")
+    return result
+
+
+def get_destination_sync_mode(stream_config: Dict, stream_name: str) -> DestinationSyncMode:
+    """
+    Read the destination_sync_mode field from config or return a default value if not found
+    """
+    if "destination_sync_mode" in stream_config:
+        dest_sync_mode = get_field(stream_config, "destination_sync_mode", "")
+    else:
+        dest_sync_mode = ""
+    try:
+        result = DestinationSyncMode(dest_sync_mode)
+    except ValueError as e:
+        # Fallback to default destination sync mode value
+        result = DestinationSyncMode.append
+        print(f"WARN: Destination sync mode falling back to {result} for {stream_name}: {e}")
+    return result
 
 
 def add_table_to_sources(schema_to_source_tables: Dict[str, Set[str]], schema_name: str, table_name: str):

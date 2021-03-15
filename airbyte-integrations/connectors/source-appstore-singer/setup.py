@@ -41,3 +41,4 @@ setup(
     ],
     package_data={"": ["*.json"]}
 )
+

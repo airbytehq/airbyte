@@ -36,6 +36,7 @@
     * [Greenhouse](integrations/sources/greenhouse.md)
     * [HTTP Request](integrations/sources/http-request.md)
     * [Hubspot](integrations/sources/hubspot.md)
+    * [Instagram](integrations/sources/instagram.md)
     * [Intercom](integrations/sources/intercom.md)
     * [Jira](integrations/sources/jira.md)
     * [Looker](integrations/sources/looker.md)
@@ -73,7 +74,7 @@
   * [On AWS \(EC2\)](deploying-airbyte/on-aws-ec2.md)
   * [On GCP \(Compute Engine\)](deploying-airbyte/on-gcp-compute-engine.md)
   * [On Kubernetes \(Alpha\)](deploying-airbyte/on-kubernetes.md)
-* [API documentation](api-documentation.md)
+* [API documentation](api/api-documentation.md)
 * [Architecture](architecture/README.md)
   * [AirbyteCatalog & ConfiguredAirbyteCatalog](architecture/catalog.md)
   * [Airbyte Specification](architecture/airbyte-specification.md)
@@ -118,5 +119,6 @@
 * [Career & Open Positions](career-and-open-positions/README.md)
   * [Founding Developer Advocate](career-and-open-positions/founding-developer-evangelist.md)
   * [Senior Software Engineer](career-and-open-positions/senior-software-engineer.md)
+  * [Operations Manager](career-and-open-positions/operations-manager.md)
 * [License](license.md)
 
