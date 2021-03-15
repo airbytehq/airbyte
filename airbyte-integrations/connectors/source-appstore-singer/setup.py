@@ -39,5 +39,5 @@ setup(
         "pytest==6.1.2",
         "tap-appstore @ https://github.com/airbytehq/tap-appstore/tarball/v0.2.1-airbyte",
     ],
-    package_data={"": ["*.json"]}
+    package_data={"": ["*.json"]},
 )

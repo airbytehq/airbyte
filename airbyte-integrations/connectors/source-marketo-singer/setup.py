@@ -31,6 +31,5 @@ setup(
     author_email="contact@airbyte.io",
     packages=find_packages(),
     install_requires=["airbyte-protocol", "base-singer", "base-python", "tap-marketo==2.4.1", "pytest==6.1.2"],
-    package_data={"": ["*.json"]}
+    package_data={"": ["*.json"]},
 )
-
