@@ -38,5 +38,5 @@ setup(
         "python-dateutil==2.8.1",
         "pytest==6.1.2",
     ],
-    package_data={"": ["*.json", "schemas/*.json"]}
+    package_data={"": ["*.json", "schemas/*.json"]},
 )

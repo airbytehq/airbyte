@@ -37,7 +37,7 @@ setup(
         "backoff==1.10.0",
         "pendulum==1.2.0",
         "cached_property==1.5.2",
-        "pytest==6.1.2"
+        "pytest==6.1.2",
     ],
-    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]}
+    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
 )

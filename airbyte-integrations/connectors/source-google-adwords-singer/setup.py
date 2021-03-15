@@ -30,11 +30,6 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=[
-        "airbyte-protocol",
-        "base-singer",
-        "base-python",
-        "pytest==6.1.2"
-    ],
-    package_data={"": ["*.json"]}
+    install_requires=["airbyte-protocol", "base-singer", "base-python", "pytest==6.1.2"],
+    package_data={"": ["*.json"]},
 )

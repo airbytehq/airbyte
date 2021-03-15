@@ -39,7 +39,7 @@ setup(
         "google-api-python-client",
         "PyYAML==5.3.1",
         "pydantic==1.6.1",
-        "pytest==6.1.2"
+        "pytest==6.1.2",
     ],
     package_data={"": ["*.json"]},
     extras_require={

@@ -38,5 +38,5 @@ setup(
         "pytest==6.1.2",
         "requests",
         "tap-salesforce==1.4.34",
-    ]
+    ],
 )
