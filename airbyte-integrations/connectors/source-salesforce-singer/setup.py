@@ -35,7 +35,8 @@ setup(
         "airbyte-protocol",
         "base-python",
         "base-singer",
-        "pytest==6.1.2" "requests",
+        "pytest==6.1.2",
+        "requests",
         "tap-salesforce==1.4.34",
     ],
 )
