@@ -69,12 +69,12 @@ public class OracleSourceStandardTest extends StandardSourceTest {
     final Database database = Databases.createDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
-        String.format("jdbc:oracle://%s:%s/%s",
+        String.format("jdbc:oracle:thin://%s:%s/%s",
             config.get("host").asText(),
             config.get("port").asText(),
             config.get("database").asText()),
         "org.oracle.Driver",
-        SQLDialect.POSTGRES);
+        SQLDialect.DEFAULT);
 
     database.query(ctx -> {
       ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");

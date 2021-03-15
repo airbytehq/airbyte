@@ -35,14 +35,22 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import java.sql.DriverManager;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import static org.junit.Assert.assertEquals;
+
 import org.testcontainers.containers.OracleContainer;
 import org.testcontainers.utility.MountableFile;
 
 class OracleJdbcStandardSourceTest extends JdbcSourceStandardTest {
-
+  private static final Logger LOGGER = LoggerFactory.getLogger(OracleSource.class);
   private static OracleContainer ORACLE_DB;
 
   private JsonNode config;
+  private static final String SCHEMA_NAME = "SYSTEM";
 
   @BeforeAll
   static void init() {
@@ -50,28 +58,23 @@ class OracleJdbcStandardSourceTest extends JdbcSourceStandardTest {
     ORACLE_DB.start();
   }
 
-  @BeforeEach
+  @BeforeAll
   public void setup() throws Exception {
-    final String dbName = "db_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", ORACLE_DB.getHost())
-        .put("port", ORACLE_DB.getFirstMappedPort())
-        .put("database", dbName)
-        .put("username", ORACLE_DB.getUsername())
-        .put("password", ORACLE_DB.getPassword())
-        .build());
-
-    final String initScriptName = "init_" + dbName.concat(".sql");
-    MoreResources.writeResource(initScriptName, "CREATE DATABASE " + dbName + ";");
-    OracleContainerHelper.runSqlScript(MountableFile.forClasspathResource(initScriptName), ORACLE_DB);
+            .put("host", ORACLE_DB.getHost())
+            .put("port", ORACLE_DB.getFirstMappedPort())
+            .put("sid", ORACLE_DB.getSid())
+            .put("username", ORACLE_DB.getUsername())
+            .put("password", ORACLE_DB.getPassword())
+            .build());
 
     super.setup();
   }
 
   @Override
   public boolean supportsSchemas() {
-    return true;
+    return false;
   }
 
   @Override

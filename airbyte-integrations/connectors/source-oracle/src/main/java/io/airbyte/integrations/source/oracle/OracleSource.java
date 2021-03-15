@@ -27,32 +27,35 @@ package io.airbyte.integrations.source.oracle;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.jdbc.PostgresJdbcStreamingQueryConfiguration;
+import io.airbyte.db.jdbc.OracleJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.sql.DriverManager;
 
 public class OracleSource extends AbstractJdbcSource implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(OracleSource.class);
 
-  static final String DRIVER_CLASS = "org.oracle.Driver";
+
+  static final String DRIVER_CLASS = "oracle.jdbc.OracleDriver";
 
   public OracleSource() {
-    super(DRIVER_CLASS, new PostgresJdbcStreamingQueryConfiguration());
+    super(DRIVER_CLASS, new OracleJdbcStreamingQueryConfiguration());
   }
 
   @Override
   public JsonNode toJdbcConfig(JsonNode config) {
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put("username", config.get("username").asText())
-        .put("jdbc_url", String.format("jdbc:oracle://%s:%s/%s",
+        .put("jdbc_url", String.format("jdbc:oracle:thin:@//%s:%s/xe",
             config.get("host").asText(),
             config.get("port").asText(),
-            config.get("database").asText()));
+            config.get("sid").asText())
+        );
 
     if (config.has("password")) {
       configBuilder.put("password", config.get("password").asText());
@@ -63,7 +66,7 @@ public class OracleSource extends AbstractJdbcSource implements Source {
 
   @Override
   public Set<String> getExcludedInternalSchemas() {
-    return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");
+    return Set.of("SYS", "pg_catalog", "pg_internal", "catalog_history");
   }
 
   public static void main(String[] args) throws Exception {

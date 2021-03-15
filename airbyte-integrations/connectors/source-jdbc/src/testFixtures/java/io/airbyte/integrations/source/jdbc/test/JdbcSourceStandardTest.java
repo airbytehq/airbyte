@@ -141,14 +141,25 @@ public abstract class JdbcSourceStandardTest {
     if (supportsSchemas()) {
       createSchemas();
     }
+
+    try {
+      database.execute(connection -> {
+        connection.createStatement().execute(String.format("CREATE TABLE %s(id NUMERIC(20, 10), name VARCHAR(200), updated_at VARCHAR(200))", getFullyQualifiedTableName(TABLE_NAME)));
+      });
+    } finally {
+      System.out.println("Table already created.");
+    };
+
     database.execute(connection -> {
 
-      connection.createStatement()
-          .execute(String.format("CREATE TABLE %s(id INTEGER, name VARCHAR(200), updated_at DATE);", getFullyQualifiedTableName(TABLE_NAME)));
+//      connection.createStatement()
+//          .execute(String.format("CREATE TABLE %s(id INTEGER, name VARCHAR(200), updated_at DATE)", getFullyQualifiedTableName(TABLE_NAME)));
       connection.createStatement().execute(
-          String.format(
-              "INSERT INTO %s(id, name, updated_at) VALUES (1,'picard', '2004-10-19'),  (2, 'crusher', '2005-10-19'), (3, 'vash', '2006-10-19');",
-              getFullyQualifiedTableName(TABLE_NAME)));
+          String.format("INSERT INTO %s(id, name, updated_at) VALUES (1,'picard', '2004-10-19')", getFullyQualifiedTableName(TABLE_NAME)));
+      connection.createStatement().execute(
+              String.format("INSERT INTO %s(id, name, updated_at) VALUES (2, 'crusher', '2005-10-19')", getFullyQualifiedTableName(TABLE_NAME)));
+      connection.createStatement().execute(
+              String.format("INSERT INTO %s(id, name, updated_at) VALUES (3, 'vash', '2006-10-19')", getFullyQualifiedTableName(TABLE_NAME)));
     });
   }
 
@@ -208,12 +219,15 @@ public abstract class JdbcSourceStandardTest {
     if (getDriverClass().toLowerCase().contains("mysql")) {
       return;
     }
+    if (getDriverClass().toLowerCase().contains("oracle")) {
+      return;
+    }
 
     // add table and data to a separate schema.
     database.execute(connection -> {
       connection.createStatement().execute(
-          String.format("CREATE TABLE %s(id VARCHAR(200), name VARCHAR(200));", JdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
-      connection.createStatement().execute(String.format("INSERT INTO %s(id, name) VALUES ('1','picard'),  ('2', 'crusher'), ('3', 'vash');",
+          String.format("CREATE TABLE %s(id VARCHAR(200), name VARCHAR(200))", JdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
+      connection.createStatement().execute(String.format("INSERT INTO %s(id, name) VALUES ('1','picard'),  ('2', 'crusher'), ('3', 'vash')",
           JdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
     });
 
@@ -268,10 +282,15 @@ public abstract class JdbcSourceStandardTest {
       final String streamName2 = streamName + i;
       database.execute(connection -> {
         connection.createStatement()
-            .execute(String.format("CREATE TABLE %s(id INTEGER, name VARCHAR(200));", getFullyQualifiedTableName(TABLE_NAME + iFinal)));
-        connection.createStatement().execute(String.format("INSERT INTO %s(id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');",
+            .execute(String.format("CREATE TABLE %s(id INTEGER, name VARCHAR(200))", getFullyQualifiedTableName(TABLE_NAME + iFinal)));
+        connection.createStatement().execute(String.format("INSERT INTO %s(id, name) VALUES (1,'picard')",
             getFullyQualifiedTableName(TABLE_NAME + iFinal)));
+        connection.createStatement().execute(String.format("INSERT INTO %s(id, name) VALUES (2, 'crusher')",
+                getFullyQualifiedTableName(TABLE_NAME + iFinal)));
+        connection.createStatement().execute(String.format("INSERT INTO %s(id, name) VALUES (3, 'vash')",
+                getFullyQualifiedTableName(TABLE_NAME + iFinal)));
       });
+
       catalog.getStreams().add(CatalogHelpers.createConfiguredAirbyteStream(
           streamName2,
           Field.of("id", JsonSchemaPrimitive.NUMBER),
@@ -419,9 +438,12 @@ public abstract class JdbcSourceStandardTest {
     final Optional<AirbyteMessage> stateAfterFirstSyncOptional = actualMessagesFirstSync.stream().filter(r -> r.getType() == Type.STATE).findFirst();
     assertTrue(stateAfterFirstSyncOptional.isPresent());
 
-    database.execute(connection -> connection.createStatement()
-        .execute(String.format("INSERT INTO %s(id, name, updated_at) VALUES (4,'riker', '2006-10-19'),  (5, 'data', '2006-10-19');",
-            getFullyQualifiedTableName(TABLE_NAME))));
+    database.execute(connection -> {
+      connection.createStatement().execute(
+              String.format("INSERT INTO %s(id, name, updated_at) VALUES (4,'riker', '2006-10-19')", getFullyQualifiedTableName(TABLE_NAME)));
+      connection.createStatement().execute(
+              String.format("INSERT INTO %s(id, name, updated_at) VALUES (5, 'data', '2006-10-19')", getFullyQualifiedTableName(TABLE_NAME)));
+    });
 
     final List<AirbyteMessage> actualMessagesSecondSync = MoreIterators
         .toList(source.read(config, configuredCatalog, stateAfterFirstSyncOptional.get().getState().getData()));
@@ -453,9 +475,13 @@ public abstract class JdbcSourceStandardTest {
     final String tableName2 = TABLE_NAME + 2;
     final String streamName2 = streamName + 2;
     database.execute(ctx -> {
-      ctx.createStatement().execute(String.format("CREATE TABLE %s(id INTEGER, name VARCHAR(200));", getFullyQualifiedTableName(tableName2)));
+      ctx.createStatement().execute(String.format("CREATE TABLE %s(id INTEGER, name VARCHAR(200))", getFullyQualifiedTableName(tableName2)));
       ctx.createStatement().execute(
-          String.format("INSERT INTO %s(id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');", getFullyQualifiedTableName(tableName2)));
+          String.format("INSERT INTO %s(id, name) VALUES (1,'picard')", getFullyQualifiedTableName(tableName2)));
+      ctx.createStatement().execute(
+              String.format("INSERT INTO %s(id, name) VALUES (2, 'crusher')", getFullyQualifiedTableName(tableName2)));
+      ctx.createStatement().execute(
+              String.format("INSERT INTO %s(id, name) VALUES (3, 'vash')", getFullyQualifiedTableName(tableName2)));
     });
 
     final ConfiguredAirbyteCatalog configuredCatalog = getConfiguredCatalog();
@@ -610,12 +636,18 @@ public abstract class JdbcSourceStandardTest {
     // test column name with space.
     final String lastNameField = "last name";
     database.execute(connection -> {
-      connection.createStatement().execute(String.format("CREATE TABLE %s(id INTEGER, %s VARCHAR(200));",
+      connection.createStatement().execute(String.format("CREATE TABLE %s(id INTEGER, %s VARCHAR(200))",
           getFullyQualifiedTableName(JdbcUtils.enquoteIdentifier(connection, tableNameWithSpaces)),
           JdbcUtils.enquoteIdentifier(connection, lastNameField)));
-      connection.createStatement().execute(String.format("INSERT INTO %s(id, %s) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');",
+      connection.createStatement().execute(String.format("INSERT INTO %s(id, %s) VALUES (1,'picard')",
           getFullyQualifiedTableName(JdbcUtils.enquoteIdentifier(connection, tableNameWithSpaces)),
           JdbcUtils.enquoteIdentifier(connection, lastNameField)));
+      connection.createStatement().execute(String.format("INSERT INTO %s(id, %s) VALUES (2, 'crusher')",
+              getFullyQualifiedTableName(JdbcUtils.enquoteIdentifier(connection, tableNameWithSpaces)),
+              JdbcUtils.enquoteIdentifier(connection, lastNameField)));
+      connection.createStatement().execute(String.format("INSERT INTO %s(id, %s) VALUES (3, 'vash')",
+              getFullyQualifiedTableName(JdbcUtils.enquoteIdentifier(connection, tableNameWithSpaces)),
+              JdbcUtils.enquoteIdentifier(connection, lastNameField)));
     });
 
     return CatalogHelpers.createConfiguredAirbyteStream(

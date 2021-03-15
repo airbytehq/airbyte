@@ -31,10 +31,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
+import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -49,40 +49,35 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
-import io.airbyte.test.utils.OracleContainerHelper;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.jooq.SQLDialect;
+import org.testcontainers.containers.OracleContainer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.OracleContainer;
-import org.testcontainers.utility.MountableFile;
+
 
 class OracleSourceTest {
 
-  private static final String STREAM_NAME = "public.id_and_name";
+  private static final String STREAM_NAME = "SYSTEM.ID_AND_NAME";
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
       CatalogHelpers.createAirbyteStream(
           STREAM_NAME,
-          Field.of("id", JsonSchemaPrimitive.NUMBER),
-          Field.of("name", JsonSchemaPrimitive.STRING),
-          Field.of("power", JsonSchemaPrimitive.NUMBER))
+          Field.of("ID", JsonSchemaPrimitive.NUMBER),
+          Field.of("NAME", JsonSchemaPrimitive.STRING),
+          Field.of("POWER", JsonSchemaPrimitive.NUMBER))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))));
   private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
   private static final Set<AirbyteMessage> ASCII_MESSAGES = Sets.newHashSet(
-      createRecord(STREAM_NAME, map("id", new BigDecimal("1.0"), "name", "goku", "power", null)),
-      createRecord(STREAM_NAME, map("id", new BigDecimal("2.0"), "name", "vegeta", "power", 9000.1)),
-      createRecord(STREAM_NAME, map("id", null, "name", "piccolo", "power", null)));
-
-  private static final Set<AirbyteMessage> UTF8_MESSAGES = Sets.newHashSet(
-      createRecord(STREAM_NAME, ImmutableMap.of("id", 1, "name", "\u2013 someutfstring")),
-      createRecord(STREAM_NAME, ImmutableMap.of("id", 2, "name", "\u2215")));
+      createRecord(STREAM_NAME, map("ID", new BigDecimal("2.0"), "NAME", "vegeta", "POWER", "9000.1")),
+          createRecord(STREAM_NAME, map( "NAME", "piccolo", "POWER", "-Infinity")),
+      createRecord(STREAM_NAME, map("ID", new BigDecimal("1.0"), "NAME", "goku", "POWER", "Infinity")));
 
   private static OracleContainer ORACLE_DB;
 
-  private String dbName;
+  private static OracleContainer container;
+  private static JsonNode config;
 
   @BeforeAll
   static void init() {
@@ -92,73 +87,55 @@ class OracleSourceTest {
 
   @BeforeEach
   void setup() throws Exception {
-    dbName = "db_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
+    config = Jsons.jsonNode(ImmutableMap.builder()
+            .put("host", ORACLE_DB.getHost())
+            .put("port", ORACLE_DB.getFirstMappedPort())
+            .put("sid", ORACLE_DB.getSid())
+            .put("username", ORACLE_DB.getUsername())
+            .put("password", ORACLE_DB.getPassword())
+            .build());
 
-    final String initScriptName = "init_" + dbName.concat(".sql");
-    MoreResources.writeResource(initScriptName, "CREATE DATABASE " + dbName + ";");
-    OracleContainerHelper.runSqlScript(MountableFile.forClasspathResource(initScriptName), ORACLE_DB);
+    JdbcDatabase database = Databases.createJdbcDatabase(config.get("username").asText(),
+            config.get("password").asText(),
+            String.format("jdbc:oracle:thin:@//%s:%s/%s",
+                    config.get("host").asText(),
+                    config.get("port").asText(),
+                    config.get("sid").asText()),
+            "oracle.jdbc.driver.OracleDriver");
 
-    final JsonNode config = getConfig(ORACLE_DB, dbName);
-    final Database database = getDatabaseFromConfig(config);
-    database.query(ctx -> {
-      ctx.fetch("CREATE TABLE id_and_name(id NUMERIC(20, 10), name VARCHAR(200), power double precision);");
-      ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
-      return null;
+    database.execute(connection -> {
+      connection.createStatement().execute("CREATE TABLE id_and_name(id NUMERIC(20, 10), name VARCHAR(200), power BINARY_DOUBLE)");
+      connection.createStatement().execute("INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', BINARY_DOUBLE_INFINITY)");
+      connection.createStatement().execute("INSERT INTO id_and_name (id, name, power) VALUES (2, 'vegeta', 9000.1)");
+      connection.createStatement().execute("INSERT INTO id_and_name (id, name, power) VALUES (NULL, 'piccolo', -BINARY_DOUBLE_INFINITY)");
     });
+
     database.close();
   }
 
-  private Database getDatabaseFromConfig(JsonNode config) {
-    return Databases.createDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:oracle://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()),
-        "org.oracle.Driver",
-        SQLDialect.DEFAULT);
-  }
-
-  private JsonNode getConfig(OracleContainer oracleDb, String dbName) {
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", oracleDb.getHost())
-        .put("port", oracleDb.getFirstMappedPort())
-        .put("database", dbName)
-        .put("username", oracleDb.getUsername())
-        .put("password", oracleDb.getPassword())
-        .build());
+  private JdbcDatabase getDatabaseFromConfig(JsonNode config) {
+    return Databases.createJdbcDatabase(config.get("username").asText(),
+            config.get("password").asText(),
+            String.format("jdbc:oracle:thin:@//%s:%s/%s",
+                    config.get("host").asText(),
+                    config.get("port").asText(),
+                    config.get("sid").asText()),
+            "oracle.jdbc.driver.OracleDriver");
   }
 
   private JsonNode getConfig(OracleContainer oracleDb) {
-    return getConfig(oracleDb, oracleDb.getDatabaseName());
+    return Jsons.jsonNode(ImmutableMap.builder()
+            .put("host", oracleDb.getHost())
+            .put("port", oracleDb.getFirstMappedPort())
+            .put("sid", oracleDb.getSid())
+            .put("username", oracleDb.getUsername())
+            .put("password", oracleDb.getPassword())
+            .build());
   }
 
   @AfterAll
   static void cleanUp() {
     ORACLE_DB.close();
-  }
-
-  @Test
-  public void testCanReadUtf8() throws Exception {
-    // force the db server to start with sql_ascii encoding to verify the tap can read UTF8 even when
-    // default settings are in another encoding
-    try (OracleContainer db = new OracleContainer("epiclabs/docker-oracle-xe-11g").withCommand("postgres -c client_encoding=sql_ascii")) {
-      db.start();
-      final JsonNode config = getConfig(db);
-      try (final Database database = getDatabaseFromConfig(config)) {
-        database.query(ctx -> {
-          ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
-          ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,E'\\u2013 someutfstring'),  (2, E'\\u2215');");
-          return null;
-        });
-      }
-
-      final Set<AirbyteMessage> actualMessages = MoreIterators.toSet(new OracleSource().read(config, CONFIGURED_CATALOG, null));
-      setEmittedAtToNull(actualMessages);
-
-      assertEquals(UTF8_MESSAGES, actualMessages);
-    }
   }
 
   private static void setEmittedAtToNull(Iterable<AirbyteMessage> messages) {
@@ -170,8 +147,8 @@ class OracleSourceTest {
   }
 
   @Test
-  void testReadSuccess() throws Exception {
-    final Set<AirbyteMessage> actualMessages = MoreIterators.toSet(new OracleSource().read(getConfig(ORACLE_DB, dbName), CONFIGURED_CATALOG, null));
+  void  testReadSuccess() throws Exception {
+    final Set<AirbyteMessage> actualMessages = MoreIterators.toSet(new OracleSource().read(getConfig(ORACLE_DB), CONFIGURED_CATALOG, null));
     setEmittedAtToNull(actualMessages);
 
     assertEquals(ASCII_MESSAGES, actualMessages);
