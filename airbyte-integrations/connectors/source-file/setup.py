@@ -43,7 +43,6 @@ MAIN_REQUIREMENTS = [
 ]
 
 TEST_REQUIREMENTS = [
-    "airbyte-python-test",
     "boto3==1.16.57",
     "pytest==6.1.2",
     "pytest-docker==0.10.1",
