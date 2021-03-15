@@ -30,6 +30,8 @@ This Source is capable of syncing the following core Streams:
 * [Transcriptions](https://www.twilio.com/docs/voice/api/recording-transcription?code-sample=code-read-list-all-transcriptions&code-language=curl&code-sdk-version=json#read-multiple-transcription-resources)
 * [Queues](https://www.twilio.com/docs/voice/api/queue-resource#read-multiple-queue-resources)
 * [Message media](https://www.twilio.com/docs/sms/api/media-resource#read-multiple-media-resources)
+* [Messages](https://www.twilio.com/docs/sms/api/message-resource#read-multiple-message-resources) 
+  (stream data can only be received for the last 400 days)
 * [Usage records](https://www.twilio.com/docs/usage/api/usage-record#read-multiple-usagerecord-resources)
 * [Usage triggers](https://www.twilio.com/docs/usage/api/usage-trigger#read-multiple-usagetrigger-resources)
 * [Alerts](https://www.twilio.com/docs/usage/monitor-alert#read-multiple-alert-resources)
