@@ -26,7 +26,9 @@ export const useDestinationDefinitionSpecificationLoad = (
   destinationDefinitionId: string
 ): {
   isLoading: boolean;
-  destinationDefinitionSpecification: DestinationDefinitionSpecification;
+  destinationDefinitionSpecification:
+    | DestinationDefinitionSpecification
+    | undefined;
   error?: Error;
 } => {
   const {
