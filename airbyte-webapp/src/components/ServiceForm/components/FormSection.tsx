@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import React from "react";
 import styled from "styled-components";
-import { FormattedMessage } from "react-intl";
 
 import { DropDown, Label, VariableInput } from "components";
 import {
@@ -11,8 +10,9 @@ import {
 import { PropertySection } from "./PropertySection";
 import { useServiceForm } from "../serviceFormContext";
 import GroupControls from "./Property/GroupControls";
+import { FieldArray, useField } from "formik";
 
-const ItemContainer = styled.div`
+const SectionContainer = styled.div`
   margin-bottom: 27px;
 `;
 
@@ -26,13 +26,13 @@ const ConditionControls = styled.div`
   padding-top: 25px;
 `;
 
-const ConditionSection: React.FC<{ formField: FormConditionItem }> = ({
-  formField,
-}) => {
+const ConditionSection: React.FC<{
+  formField: FormConditionItem;
+  path?: string;
+}> = ({ formField }) => {
   const { widgetsInfo, setUiWidgetsInfo } = useServiceForm();
 
-  const currentlySelectedCondition =
-    widgetsInfo[formField.fieldName]?.selectedItem;
+  const currentlySelectedCondition = widgetsInfo[formField.path]?.selectedItem;
 
   const label = formField.title || formField.fieldKey;
 
@@ -48,7 +48,7 @@ const ConditionSection: React.FC<{ formField: FormConditionItem }> = ({
               value: dataItem,
             }))}
             onSelect={(selectedItem) =>
-              setUiWidgetsInfo(formField.fieldName, {
+              setUiWidgetsInfo(formField.path, {
                 selectedItem: selectedItem.value,
               })
             }
@@ -59,68 +59,119 @@ const ConditionSection: React.FC<{ formField: FormConditionItem }> = ({
     >
       <ConditionControls>
         <FormSection
-          blocks={[formField.conditions[currentlySelectedCondition]]}
+          blocks={formField.conditions[currentlySelectedCondition]}
         />
       </ConditionControls>
     </GroupControls>
   );
 };
 
-const ArraySection: React.FC<{ formField: FormObjectArrayItem }> = ({
-  formField,
-}) => {
-  const [editingItem, setItemEdit] = useState<number | null>(null);
-  // const { addUnfinishedFlow, removeUnfinishedFlow } = useServiceForm();
+const ArraySection: React.FC<{
+  formField: FormObjectArrayItem;
+  path: string;
+}> = ({ formField, path }) => {
+  const {
+    addUnfinishedFlow,
+    removeUnfinishedFlow,
+    unfinishedFlows,
+  } = useServiceForm();
+  const [field, , form] = useField(path);
+
+  const items = field.value ?? [];
+  const flow = unfinishedFlows[path];
 
   return (
     <GroupControls
       key={`form-variable-fields-${formField?.fieldKey}`}
-      title={<FormattedMessage id="form.customReports" />}
+      title={formField.title || formField.fieldKey}
     >
-      <ItemContainer>
-        <VariableInput
-          isEditMode={editingItem !== null}
-          onStartEdit={(n) => setItemEdit(n)}
-          onDone={() => setItemEdit(null)}
-          onCancelEdit={() => setItemEdit(null)}
-          items={[]}
-        >
-          <FormSection blocks={[formField.properties]} />
-        </VariableInput>
-      </ItemContainer>
+      <SectionContainer>
+        <FieldArray
+          name={path}
+          render={(arrayHelpers) => (
+            <VariableInput
+              isEditMode={!!flow}
+              onStartEdit={(index) =>
+                addUnfinishedFlow(path, {
+                  id: index,
+                  startValue: index < items.length ? items[index] : null,
+                })
+              }
+              onDone={() => removeUnfinishedFlow(path)}
+              onCancelEdit={() => {
+                removeUnfinishedFlow(path);
+
+                if (flow.startValue) {
+                  form.setValue(flow.startValue);
+                }
+              }}
+              onRemove={arrayHelpers.remove}
+              items={items}
+            >
+              {() => (
+                <FormSection
+                  blocks={formField.properties}
+                  path={`${path}.${flow.id}`}
+                  skipAppend
+                />
+              )}
+            </VariableInput>
+          )}
+        />
+      </SectionContainer>
     </GroupControls>
   );
 };
 
-const FormSection: React.FC<{ blocks: FormBlock[] }> = ({ blocks }) => {
+const FormSection: React.FC<{
+  blocks: FormBlock[] | FormBlock;
+  path?: string;
+  skipAppend?: boolean;
+}> = ({ blocks, path, skipAppend }) => {
+  const sections = Array.isArray(blocks) ? blocks : [blocks];
   return (
     <>
-      {blocks.map((formField) => {
+      {sections.map((formField) => {
+        const sectionPath = path
+          ? skipAppend
+            ? path
+            : `${path}.${formField.fieldKey}`
+          : formField.fieldKey;
+
         if (formField._type === "formGroup") {
           return (
             <FormSection
-              key={formField.fieldName}
+              key={sectionPath}
               blocks={formField.properties}
+              path={sectionPath}
             />
           );
         }
 
         if (formField._type === "formCondition") {
           return (
-            <ConditionSection key={formField.fieldName} formField={formField} />
+            <ConditionSection
+              key={sectionPath}
+              formField={formField}
+              path={sectionPath}
+            />
           );
         }
 
         if (formField._type === "objectArray") {
           return (
-            <ArraySection key={formField.fieldName} formField={formField} />
+            <ArraySection
+              key={sectionPath}
+              formField={formField}
+              path={sectionPath}
+            />
           );
         }
 
         return (
-          <ItemContainer key={`form-field-${formField.fieldKey}`}>
-            <PropertySection property={formField} />
-          </ItemContainer>
+          <SectionContainer key={`form-field-${formField.fieldKey}`}>
+            <PropertySection property={formField} path={sectionPath} />
+          </SectionContainer>
         );
       })}
     </>

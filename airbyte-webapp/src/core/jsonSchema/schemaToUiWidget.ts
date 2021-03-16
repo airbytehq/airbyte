@@ -15,7 +15,7 @@ import { FormBlock } from "core/form/types";
  */
 export const jsonSchemaToUiWidget = (
   jsonSchema: JSONSchema7Definition,
-  key: string,
+  key = "",
   path: string = key,
   parentSchema?: JSONSchema7Definition
 ): FormBlock => {
@@ -25,7 +25,7 @@ export const jsonSchemaToUiWidget = (
   if (typeof jsonSchema === "boolean") {
     return {
       _type: "formItem",
-      fieldName: key,
+      path: key,
       fieldKey: key,
       type: "null",
       isRequired,
@@ -45,7 +45,7 @@ export const jsonSchemaToUiWidget = (
 
     return {
       _type: "formCondition",
-      fieldName: path || key,
+      path: path || key,
       fieldKey: key,
       conditions,
       isRequired,
@@ -59,7 +59,7 @@ export const jsonSchemaToUiWidget = (
     return {
       ...pickDefaultFields(jsonSchema),
       _type: "objectArray",
-      fieldName: path || key,
+      path: path || key,
       fieldKey: key,
       properties: jsonSchemaToUiWidget(jsonSchema.items as any, key, path),
       isRequired,
@@ -70,14 +70,14 @@ export const jsonSchemaToUiWidget = (
     const properties = Object.entries(
       jsonSchema.properties
     ).map(([k, schema]) =>
-      jsonSchemaToUiWidget(schema, k, `${path}.${k}`, jsonSchema)
+      jsonSchemaToUiWidget(schema, k, path ? `${path}.${k}` : k, jsonSchema)
     );
 
     return {
       ...pickDefaultFields(jsonSchema),
       _type: "formGroup",
       jsonSchema,
-      fieldName: path || key,
+      path: path || key,
       fieldKey: key,
       properties,
       isRequired,
@@ -87,7 +87,7 @@ export const jsonSchemaToUiWidget = (
   return {
     ...pickDefaultFields(jsonSchema),
     _type: "formItem",
-    fieldName: path || key,
+    path: path || key,
     fieldKey: key,
     isRequired,
     isSecret: (jsonSchema as { airbyte_secret: boolean }).airbyte_secret,

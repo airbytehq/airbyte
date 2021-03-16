@@ -2,12 +2,14 @@ import React from "react";
 import { useIntl } from "react-intl";
 import { useField } from "formik";
 
-import { DropDown, Input, TextArea } from "components";
+import { DropDown, Input, TextArea, Multiselect } from "components";
 import ConfirmationControl from "./ConfirmationControl";
 import { FormBaseItem } from "core/form/types";
+import TagInput from "../../../base/TagInput/TagInput";
 
 type IProps = {
   property: FormBaseItem;
+  name: string;
   unfinishedFlows: Record<string, { startValue: string }>;
   addUnfinishedFlow: (key: string, info?: Record<string, unknown>) => void;
   removeUnfinishedFlow: (key: string) => void;
@@ -15,13 +17,13 @@ type IProps = {
 
 const Control: React.FC<IProps> = ({
   property,
+  name,
   addUnfinishedFlow,
   removeUnfinishedFlow,
   unfinishedFlows,
 }) => {
   const formatMessage = useIntl().formatMessage;
-  const { fieldName } = property;
-  const [field, meta, form] = useField(fieldName);
+  const [field, meta, form] = useField(name);
 
   // TODO: think what to do with other cases
   let placeholder: string | undefined;
@@ -41,6 +43,50 @@ const Control: React.FC<IProps> = ({
   }
 
   const value = field.value ?? property.default;
+
+  if (property.type === "array" && property.enum) {
+    return (
+      <Multiselect
+        {...field}
+        allowCreate={true}
+        placeholder={placeholder}
+        data={property.enum as string[]}
+      />
+    );
+  }
+
+  if (property.type === "array" && !property.enum) {
+    return (
+      <TagInput
+        inputProps={{
+          ...field,
+          placeholder: formatMessage({
+            id: "welcome.inviteEmail.placeholder",
+          }),
+          onChange: (props) => {
+            field.onChange(props);
+          },
+        }}
+        value={[{ id: "1", value: "test" }]}
+        onEnter={() => {
+          // addTag(value);
+          // resetForm({});
+        }}
+        onDelete={
+          () => ({})
+          // onError={() =>
+          // setFieldError(
+          //   "newEmail",
+          //   formatMessage({
+          //     id: "form.email.error",
+          //   })
+          // )
+        }
+        // addOnBlur
+        // error={meta.error}
+      />
+    );
+  }
 
   if (property.enum) {
     return (
@@ -69,7 +115,7 @@ const Control: React.FC<IProps> = ({
       />
     );
   } else if (property.isSecret) {
-    const unfinishedSecret = unfinishedFlows[fieldName];
+    const unfinishedSecret = unfinishedFlows[name];
     const isEditInProgress = !!unfinishedSecret;
     const isFormInEditMode = !!meta.initialValue;
     return (
@@ -95,13 +141,13 @@ const Control: React.FC<IProps> = ({
         }
         showButtons={isFormInEditMode}
         isEditInProgress={isEditInProgress}
-        onDone={() => removeUnfinishedFlow(fieldName)}
+        onDone={() => removeUnfinishedFlow(name)}
         onStart={() => {
-          addUnfinishedFlow(fieldName, { startValue: field.value });
+          addUnfinishedFlow(name, { startValue: field.value });
           form.setValue("");
         }}
         onCancel={() => {
-          removeUnfinishedFlow(fieldName);
+          removeUnfinishedFlow(name);
           if (
             unfinishedSecret &&
             unfinishedSecret.hasOwnProperty("startValue")

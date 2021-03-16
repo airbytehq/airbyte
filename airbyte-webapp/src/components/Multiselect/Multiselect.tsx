@@ -1,6 +1,7 @@
 import React from "react";
 import { Multiselect as ReactMultiselect } from "react-widgets";
 import styled from "styled-components";
+import { MultiselectProps } from "react-widgets/lib/Multiselect";
 
 const StyledMultiselect = styled(ReactMultiselect)<{
   disabled?: boolean;
@@ -135,7 +136,7 @@ export type IProps = {
   data: string[]; // TODO: check props
 };
 
-const Multiselect: React.FC<IProps> = ({
+const Multiselect: React.FC<IProps & MultiselectProps> = ({
   disabled,
   error,
   placeholder,

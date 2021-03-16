@@ -4,18 +4,16 @@ export type FormBaseItem = {
   _type: "formItem";
   type: JSONSchema7TypeName;
   fieldKey: string;
-  fieldName: string;
+  path: string;
   isRequired: boolean;
   isSecret?: boolean;
   title?: string;
   multiline?: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  meta?: { [key: string]: any };
 } & Partial<JSONSchema7>;
 
 type FormGroupItem = {
   _type: "formGroup";
-  fieldName: string;
+  path: string;
   fieldKey: string;
   isRequired: boolean;
   title?: string;
@@ -29,7 +27,7 @@ type FormGroupItem = {
 
 type FormConditionItem = {
   _type: "formCondition";
-  fieldName: string;
+  path: string;
   fieldKey: string;
   isRequired: boolean;
   title?: string;
@@ -38,7 +36,7 @@ type FormConditionItem = {
 
 type FormObjectArrayItem = {
   _type: "objectArray";
-  fieldName: string;
+  path: string;
   fieldKey: string;
   isRequired: boolean;
   title?: string;

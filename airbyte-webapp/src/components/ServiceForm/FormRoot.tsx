@@ -30,7 +30,7 @@ const FormRoot: React.FC<{
   additionBottomControls?: React.ReactNode;
   errorMessage?: React.ReactNode;
   successMessage?: React.ReactNode;
-  formFields: FormBlock[];
+  formFields: FormBlock;
   connector?: string;
 }> = ({
   formFields,

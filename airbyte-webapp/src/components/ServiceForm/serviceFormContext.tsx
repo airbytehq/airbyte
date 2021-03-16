@@ -13,7 +13,7 @@ type Context = {
   documentationUrl?: string;
   widgetsInfo: WidgetConfigMap;
   setUiWidgetsInfo: (path: string, value: Record<string, unknown>) => void;
-  unfinishedFlows: Record<string, { startValue: string }>;
+  unfinishedFlows: Record<string, { startValue: string; id: number | string }>;
   addUnfinishedFlow: (key: string, info?: Record<string, unknown>) => void;
   removeUnfinishedFlow: (key: string) => void;
   resetUiFormProgress: () => void;
