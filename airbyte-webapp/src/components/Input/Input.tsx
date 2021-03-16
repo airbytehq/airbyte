@@ -66,7 +66,7 @@ const Container = styled.div`
   position: relative;
 `;
 
-const ShowPasswordButton = styled(Button)`
+const VisibilityButton = styled(Button)`
   position: absolute;
   right: 2px;
   top: 7px;
@@ -83,13 +83,13 @@ const Input: React.FC<InputProps> = (props) => {
           type={isContentVisible ? "text" : "password"}
         />
         {props.disabled ? null : (
-          <ShowPasswordButton
+          <VisibilityButton
             iconOnly
             onClick={() => setIsContentVisible(!isContentVisible)}
             type="button"
           >
             <FontAwesomeIcon icon={isContentVisible ? faEyeSlash : faEye} />
-          </ShowPasswordButton>
+          </VisibilityButton>
         )}
       </Container>
     );
