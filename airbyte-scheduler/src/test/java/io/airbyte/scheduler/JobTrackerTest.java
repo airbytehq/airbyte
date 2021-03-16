@@ -186,6 +186,7 @@ class JobTrackerTest {
 
   private void assertCheckConnCorrectMessageForEachState(BiConsumer<JobState, StandardCheckConnectionOutput> jobStateConsumer,
                                                          Map<String, Object> metadata) {
+    // Output does not exist when job has started.
     jobStateConsumer.accept(JobState.STARTED, null);
     assertCorrectMessageForStartedState(metadata);
 
@@ -201,6 +202,7 @@ class JobTrackerTest {
     ImmutableMap<String, Object> checkConnFailureMetadata = ImmutableMap.of("check_connection_outcome", "failed");
     assertCorrectMessageForSucceededState(MoreMaps.merge(metadata, checkConnFailureMetadata));
 
+    // Failure implies the job threw an exception which almost always meant no output.
     jobStateConsumer.accept(JobState.FAILED, null);
     assertCorrectMessageForFailedState(metadata);
   }
