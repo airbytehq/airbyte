@@ -244,7 +244,7 @@ public class BigQueryDestination implements Destination {
 
   private static WriteDisposition getWriteDisposition(DestinationSyncMode syncMode) {
     if (syncMode == null) {
-      return WriteDisposition.WRITE_APPEND;
+      throw new IllegalStateException("Undefined destination sync mode");
     }
     switch (syncMode) {
       case OVERWRITE -> {
@@ -253,7 +253,7 @@ public class BigQueryDestination implements Destination {
       case APPEND, APPEND_DEDUP -> {
         return WriteDisposition.WRITE_APPEND;
       }
-      default -> throw new IllegalStateException("Unrecognized sync mode: " + syncMode);
+      default -> throw new IllegalStateException("Unrecognized destination sync mode: " + syncMode);
     }
   }
 

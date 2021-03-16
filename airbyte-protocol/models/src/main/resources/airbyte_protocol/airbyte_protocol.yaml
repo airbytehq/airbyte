@@ -167,6 +167,8 @@ definitions:
     additionalProperties: true
     required:
       - stream
+      - sync_mode
+      - destination_sync_mode
     properties:
       stream:
         "$ref": "#/definitions/AirbyteStream"
@@ -199,7 +201,7 @@ definitions:
       - append
       - overwrite
       #- upsert_dedup # TODO chris: SCD Type 1 can be implemented later
-      - append_dedup # SCD Type 2
+      - append_dedup # SCD Type 1 & 2
   ConnectorSpecification:
     description: Specification of a connector (source/destination)
     type: object

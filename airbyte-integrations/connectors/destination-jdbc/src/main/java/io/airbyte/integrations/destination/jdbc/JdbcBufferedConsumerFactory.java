@@ -84,7 +84,10 @@ public class JdbcBufferedConsumerFactory {
       final String schemaName = namingResolver.getIdentifier(config.get("schema").asText());
       final String tableName = Names.concatQuotedNames("_airbyte_raw_", namingResolver.getIdentifier(streamName));
       final String tmpTableName = Names.concatQuotedNames("_airbyte_" + now.toEpochMilli() + "_", tableName);
-      final DestinationSyncMode syncMode = stream.getDestinationSyncMode() != null ? stream.getDestinationSyncMode() : DestinationSyncMode.APPEND;
+      final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
+      if (syncMode == null) {
+        throw new IllegalStateException("Undefined destination sync mode");
+      }
       return new WriteConfig(streamName, schemaName, tmpTableName, tableName, syncMode);
     }).collect(Collectors.toList());
   }

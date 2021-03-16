@@ -119,8 +119,11 @@ public class MeiliSearchDestination extends BaseConnector implements Destination
     final Map<String, Index> map = new HashMap<>();
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final String indexName = getIndexName(stream);
-
-      if (stream.getDestinationSyncMode() == DestinationSyncMode.OVERWRITE && indexExists(client, indexName)) {
+      final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
+      if (syncMode == null) {
+        throw new IllegalStateException("Undefined destination sync mode");
+      }
+      if (syncMode == DestinationSyncMode.OVERWRITE && indexExists(client, indexName)) {
         client.deleteIndex(indexName);
       }
 
