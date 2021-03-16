@@ -328,6 +328,9 @@ class IncrementalStream(Stream, ABC):
     def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
         """Apply state filter to set of records, update cursor(state) if necessary in the end"""
         latest_cursor = None
+        # to track state, there is no guarantee that returned records sorted in ascending order. Having exact 
+        # boundary we could always ensure we don't miss records between states. In the future, if we would 
+        # like to save the state more often we can do this every batch
         for record in self.read_chunked(getter, params):
             yield record
             cursor = self._field_to_datetime(self._record_bookmark(record))
