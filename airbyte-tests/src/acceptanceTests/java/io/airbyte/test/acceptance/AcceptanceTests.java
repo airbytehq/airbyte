@@ -385,12 +385,12 @@ public class AcceptanceTests {
     final JobInfoRead connectionSyncRead2 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead2.getJob());
-    assertDestinationContains(expectedRecords, STREAM_NAME);
+    assertRawDestinationContains(expectedRecords, STREAM_NAME);
 
     // reset back to no data.
     final JobInfoRead jobInfoRead = apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), jobInfoRead.getJob());
-    assertDestinationContains(Collections.emptyList(), STREAM_NAME);
+    assertRawDestinationContains(Collections.emptyList(), STREAM_NAME);
 
     // sync one more time. verify it is the equivalent of a full refresh.
     final JobInfoRead connectionSyncRead3 = apiClient.getConnectionApi()
@@ -439,11 +439,6 @@ public class AcceptanceTests {
         .primaryKey(List.of(List.of(COLUMN_NAME))));
     final UUID connectionId = createConnection(connectionName, sourceId, destinationId, catalog, null, syncMode).getConnectionId();
 
-    // reset back to no data.
-    final JobInfoRead jobInfoRead = apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    waitForSuccessfulJob(apiClient.getJobsApi(), jobInfoRead.getJob());
-    assertDestinationContains(Collections.emptyList(), STREAM_NAME);
-
     // sync from start
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
@@ -453,20 +448,22 @@ public class AcceptanceTests {
 
     // add new records and run again.
     final Database source = getDatabase(sourcePsql);
-    final List<JsonNode> expectedRecords = retrieveSourceRecords(source, STREAM_NAME);
-    expectedRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, "sherif").build()));
-    expectedRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 7).put(COLUMN_NAME, "chris").build()));
+    final List<JsonNode> expectedRawRecords = retrieveSourceRecords(source, STREAM_NAME);
+    expectedRawRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, "sherif").build()));
+    expectedRawRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 7).put(COLUMN_NAME, "chris").build()));
     source.query(ctx -> ctx.execute("UPDATE id_and_name SET id=6 WHERE name='sherif'"));
     source.query(ctx -> ctx.execute("INSERT INTO id_and_name(id, name) VALUES(7, 'chris')"));
-    final List<JsonNode> sourceRecords = retrieveSourceRecords(source, STREAM_NAME);
+    // retrieve latest snapshot of source records after modifications; the deduplicated table in
+    // destination should mirror this latest state of records
+    final List<JsonNode> expectedNormalizedRecords = retrieveSourceRecords(source, STREAM_NAME);
     source.close();
 
     final JobInfoRead connectionSyncRead2 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead2.getJob());
 
-    assertDestinationContains(expectedRecords, STREAM_NAME);
-    assertFinalDestinationContains(sourceRecords);
+    assertRawDestinationContains(expectedRawRecords, STREAM_NAME);
+    assertNormalizedDestinationContains(expectedNormalizedRecords);
   }
 
   @Test
@@ -552,7 +549,7 @@ public class AcceptanceTests {
         .collect(Collectors.toSet());
   }
 
-  private void assertDestinationContains(List<JsonNode> sourceRecords, String streamName) throws Exception {
+  private void assertRawDestinationContains(List<JsonNode> sourceRecords, String streamName) throws Exception {
     final Set<JsonNode> destinationRecords = new HashSet<>(retrieveDestinationRecords(streamName));
 
     assertEquals(sourceRecords.size(), destinationRecords.size(),
@@ -564,7 +561,7 @@ public class AcceptanceTests {
     }
   }
 
-  private void assertFinalDestinationContains(final List<JsonNode> sourceRecords) throws Exception {
+  private void assertNormalizedDestinationContains(final List<JsonNode> sourceRecords) throws Exception {
     final Database destination = getDatabase(destinationPsql);
     final String finalDestinationTable = String.format("%s%s", OUTPUT_NAMESPACE, STREAM_NAME.replace(".", "_"));
     final List<JsonNode> destinationRecords = retrieveSourceRecords(destination, finalDestinationTable);
@@ -583,7 +580,7 @@ public class AcceptanceTests {
 
   private void assertStreamsEquivalent(Database source, String table) throws Exception {
     final List<JsonNode> sourceRecords = retrieveSourceRecords(source, table);
-    assertDestinationContains(sourceRecords, table);
+    assertRawDestinationContains(sourceRecords, table);
   }
 
   private ConnectionRead createConnection(String name,

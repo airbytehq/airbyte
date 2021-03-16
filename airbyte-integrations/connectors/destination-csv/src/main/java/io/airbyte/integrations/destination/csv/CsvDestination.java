@@ -105,12 +105,12 @@ public class CsvDestination implements Destination {
       final Path finalPath = destinationDir.resolve(tableName + ".csv");
       CSVFormat csvFormat = CSVFormat.DEFAULT.withHeader(JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
           JavaBaseConstants.COLUMN_NAME_DATA);
-      final boolean isIncremental = stream.getDestinationSyncMode() != DestinationSyncMode.OVERWRITE;
-      if (isIncremental && finalPath.toFile().exists()) {
+      final boolean isAppendMode = stream.getDestinationSyncMode() != DestinationSyncMode.OVERWRITE;
+      if (isAppendMode && finalPath.toFile().exists()) {
         Files.copy(finalPath, tmpPath, StandardCopyOption.REPLACE_EXISTING);
         csvFormat = csvFormat.withSkipHeaderRecord();
       }
-      final FileWriter fileWriter = new FileWriter(tmpPath.toFile(), isIncremental);
+      final FileWriter fileWriter = new FileWriter(tmpPath.toFile(), isAppendMode);
       final CSVPrinter printer = new CSVPrinter(fileWriter, csvFormat);
       writeConfigs.put(stream.getStream().getName(), new WriteConfig(printer, tmpPath, finalPath));
     }

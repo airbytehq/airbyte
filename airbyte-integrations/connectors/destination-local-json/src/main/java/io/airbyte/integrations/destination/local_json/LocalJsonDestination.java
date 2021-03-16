@@ -102,12 +102,12 @@ public class LocalJsonDestination implements Destination {
       final Path finalPath = destinationDir.resolve(namingResolver.getRawTableName(streamName) + ".jsonl");
       final Path tmpPath = destinationDir.resolve(namingResolver.getTmpTableName(streamName) + ".jsonl");
 
-      final boolean isIncremental = stream.getDestinationSyncMode() != DestinationSyncMode.OVERWRITE;
-      if (isIncremental && finalPath.toFile().exists()) {
+      final boolean isAppendMode = stream.getDestinationSyncMode() != DestinationSyncMode.OVERWRITE;
+      if (isAppendMode && finalPath.toFile().exists()) {
         Files.copy(finalPath, tmpPath, StandardCopyOption.REPLACE_EXISTING);
       }
 
-      final Writer writer = new FileWriter(tmpPath.toFile(), isIncremental);
+      final Writer writer = new FileWriter(tmpPath.toFile(), isAppendMode);
       writeConfigs.put(stream.getStream().getName(), new WriteConfig(writer, tmpPath, finalPath));
     }
 
