@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Source Instagram",
     "type": "object",
-    "required": ["account_id", "access_token"],
+    "required": ["start_date", "access_token"],
     "additionalProperties": false,
     "properties": {
       "start_date": {
