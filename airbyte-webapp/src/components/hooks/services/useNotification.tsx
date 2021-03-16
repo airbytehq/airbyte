@@ -1,11 +1,12 @@
 import { useResource } from "rest-hooks";
 import config from "config";
+import { useMemo } from "react";
 
 import SourceDefinitionResource from "../../../core/resources/SourceDefinition";
 import DestinationDefinitionResource from "../../../core/resources/DestinationDefinition";
 
 type NotificationService = {
-  hasNewVersions: () => boolean;
+  hasNewVersions: boolean;
 };
 
 const useNotification = (): NotificationService => {
@@ -22,19 +23,18 @@ const useNotification = (): NotificationService => {
     }
   );
 
-  const hasNewVersions = () => {
-    const hasNewSouceVersion = sourceDefinitions.find(
+  const hasNewVersions = useMemo(() => {
+    const hasNewSourceVersion = sourceDefinitions.some(
       (source) => source.latestDockerImageTag !== source.dockerImageTag
     );
 
-    return (
-      !!hasNewSouceVersion ||
-      !!destinationDefinitions.find(
-        (destination) =>
-          destination.latestDockerImageTag !== destination.dockerImageTag
-      )
+    const hasNewDestinationVersion = destinationDefinitions.some(
+      (destination) =>
+        destination.latestDockerImageTag !== destination.dockerImageTag
     );
-  };
+
+    return hasNewSourceVersion || hasNewDestinationVersion;
+  }, [sourceDefinitions, destinationDefinitions]);
 
   return {
     hasNewVersions,

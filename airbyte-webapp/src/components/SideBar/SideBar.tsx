@@ -133,7 +133,7 @@ const SideBar: React.FC = () => {
           </li>
           <li>
             <MenuItem to={Routes.Admin} activeClassName="active">
-              {hasNewVersions() ? <Notification /> : null}
+              {hasNewVersions ? <Notification /> : null}
               <AdminIcon icon={faCog} />
               <Text>
                 <FormattedMessage id="sidebar.admin" />
