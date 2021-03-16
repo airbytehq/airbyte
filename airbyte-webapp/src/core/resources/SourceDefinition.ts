@@ -6,6 +6,7 @@ export interface SourceDefinition {
   name: string;
   dockerRepository: string;
   dockerImageTag: string;
+  latestDockerImageTag: string;
   documentationUrl: string;
 }
 
@@ -16,6 +17,7 @@ export default class SourceDefinitionResource
   readonly name: string = "";
   readonly dockerRepository: string = "";
   readonly dockerImageTag: string = "";
+  readonly latestDockerImageTag: string = "";
   readonly documentationUrl: string = "";
 
   pk(): string {
@@ -29,6 +31,36 @@ export default class SourceDefinitionResource
   ): ReadShape<SchemaDetail<{ sourceDefinitions: SourceDefinition[] }>> {
     return {
       ...super.listShape(),
+      fetch: async (
+        params: Readonly<Record<string, string | number>>
+      ): Promise<{ sourceDefinitions: SourceDefinition[] }> => {
+        const definition = await this.fetch(
+          "post",
+          `${this.url(params)}/list`,
+          params
+        );
+        const latestDefinition = await this.fetch(
+          "post",
+          `${this.url(params)}/list_latest`,
+          params
+        );
+
+        const result: SourceDefinition[] = definition.sourceDefinitions.map(
+          (source: SourceDefinition) => {
+            const withLatest = latestDefinition.sourceDefinitions.find(
+              (latestSource: SourceDefinition) =>
+                latestSource.sourceDefinitionId === source.sourceDefinitionId
+            );
+
+            return {
+              ...source,
+              latestDockerImageTag: withLatest?.dockerImageTag,
+            };
+          }
+        );
+
+        return { sourceDefinitions: result };
+      },
       schema: { sourceDefinitions: [this] },
     };
   }
