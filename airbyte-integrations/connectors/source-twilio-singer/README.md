@@ -56,7 +56,7 @@ docker run --rm -v $(pwd)/airbyte-integrations/connectors/source-twilio-singer/s
 ```
 
 ### Integration Tests
-1. From the airbyte project root, run `./gradlew :airbyte-integrations:connectors:source-twilio-singer:standardSourceTest` to run the standard integration test suite.
+1. From the airbyte project root, run `./gradlew :airbyte-integrations:connectors:source-twilio-singer:integrationTest` to run the standard integration test suite.
 1. To run additional integration tests, place your integration tests in the `integration_tests` directory and run them with `pytest integration_tests`.
    Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
 
