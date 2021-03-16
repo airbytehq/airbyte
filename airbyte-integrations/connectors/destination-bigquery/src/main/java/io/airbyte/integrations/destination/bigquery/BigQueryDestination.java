@@ -243,6 +243,9 @@ public class BigQueryDestination implements Destination {
   }
 
   private static WriteDisposition getWriteDisposition(DestinationSyncMode syncMode) {
+    if (syncMode == null) {
+      return WriteDisposition.WRITE_APPEND;
+    }
     switch (syncMode) {
       case OVERWRITE -> {
         return WriteDisposition.WRITE_TRUNCATE;
