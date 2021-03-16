@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Iterator, Mapping, Tuple
+from typing import Any, Iterator, Mapping, Tuple
 
 from airbyte_protocol import AirbyteStream
 from base_python import BaseClient
@@ -82,6 +82,18 @@ class Client(BaseClient):
             if properties:
                 stream.json_schema["properties"]["properties"] = {"type": "object", "properties": properties}
             yield stream
+
+    def stream_has_state(self, name: str) -> bool:
+        """Tell if stream supports incremental sync"""
+        return hasattr(self._apis[name], "state")
+
+    def get_stream_state(self, name: str) -> Any:
+        """Get state of stream with corresponding name"""
+        return self._apis[name].state
+
+    def set_stream_state(self, name: str, state: Any):
+        """Set state of stream with corresponding name"""
+        self._apis[name].state = state
 
     def health_check(self) -> Tuple[bool, str]:
         alive = True
