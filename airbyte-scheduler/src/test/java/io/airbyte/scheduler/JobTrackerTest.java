@@ -34,6 +34,8 @@ import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.Schedule;
 import io.airbyte.config.Schedule.TimeUnit;
+import io.airbyte.config.StandardCheckConnectionOutput;
+import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSyncSchedule;
@@ -44,6 +46,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -92,7 +95,24 @@ class JobTrackerTest {
     when(configRepository.getStandardSourceDefinition(UUID1))
         .thenReturn(new StandardSourceDefinition().withSourceDefinitionId(UUID1).withName(SOURCE_DEF_NAME));
 
-    assertCorrectMessageForEachState((jobState) -> jobTracker.trackCheckConnectionSource(JOB_ID, UUID1, jobState), metadata);
+    assertCheckConnCorrectMessageForEachState((jobState, output) -> jobTracker.trackCheckConnectionSource(JOB_ID, UUID1, jobState, output), metadata);
+  }
+
+  @Test
+  void testTrackCheckConnectionDestination() throws ConfigNotFoundException, IOException, JsonValidationException {
+    final ImmutableMap<String, Object> metadata = ImmutableMap.<String, Object>builder()
+        .put("job_type", ConfigType.CHECK_CONNECTION_DESTINATION)
+        .put("job_id", JOB_ID.toString())
+        .put("attempt_id", 0)
+        .put("connector_destination", DESTINATION_DEF_NAME)
+        .put("connector_destination_definition_id", UUID2)
+        .build();
+
+    when(configRepository.getStandardDestinationDefinition(UUID2))
+        .thenReturn(new StandardDestinationDefinition().withDestinationDefinitionId(UUID2).withName(DESTINATION_DEF_NAME));
+
+    assertCheckConnCorrectMessageForEachState((jobState, output) -> jobTracker.trackCheckConnectionDestination(JOB_ID, UUID2, jobState, output),
+        metadata);
   }
 
   @Test
@@ -109,22 +129,6 @@ class JobTrackerTest {
         .thenReturn(new StandardSourceDefinition().withSourceDefinitionId(UUID1).withName(SOURCE_DEF_NAME));
 
     assertCorrectMessageForEachState((jobState) -> jobTracker.trackDiscover(JOB_ID, UUID1, jobState), metadata);
-  }
-
-  @Test
-  void testTrackCheckConnectionDestination() throws ConfigNotFoundException, IOException, JsonValidationException {
-    final ImmutableMap<String, Object> metadata = ImmutableMap.<String, Object>builder()
-        .put("job_type", ConfigType.CHECK_CONNECTION_DESTINATION)
-        .put("job_id", JOB_ID.toString())
-        .put("attempt_id", 0)
-        .put("connector_destination", DESTINATION_DEF_NAME)
-        .put("connector_destination_definition_id", UUID2)
-        .build();
-
-    when(configRepository.getStandardDestinationDefinition(UUID2))
-        .thenReturn(new StandardDestinationDefinition().withDestinationDefinitionId(UUID2).withName(DESTINATION_DEF_NAME));
-
-    assertCorrectMessageForEachState((jobState) -> jobTracker.trackCheckConnectionDestination(JOB_ID, UUID2, jobState), metadata);
   }
 
   @Test
@@ -178,6 +182,29 @@ class JobTrackerTest {
         .thenReturn(new StandardSyncSchedule().withManual(false).withSchedule(new Schedule().withUnits(1L).withTimeUnit(TimeUnit.MINUTES)));
     final Map<String, Object> scheduledMetadata = MoreMaps.merge(metadata, ImmutableMap.of("frequency", "1 min"));
     assertCorrectMessageForEachState((jobState) -> jobTracker.trackSync(job, jobState), scheduledMetadata);
+  }
+
+  private void assertCheckConnCorrectMessageForEachState(BiConsumer<JobState, StandardCheckConnectionOutput> jobStateConsumer,
+                                                         Map<String, Object> metadata) {
+    // Output does not exist when job has started.
+    jobStateConsumer.accept(JobState.STARTED, null);
+    assertCorrectMessageForStartedState(metadata);
+
+    final var successOutput = new StandardCheckConnectionOutput();
+    successOutput.setStatus(Status.SUCCEEDED);
+    jobStateConsumer.accept(JobState.SUCCEEDED, successOutput);
+    ImmutableMap<String, Object> checkConnSuccessMetadata = ImmutableMap.of("check_connection_outcome", "succeeded");
+    assertCorrectMessageForSucceededState(MoreMaps.merge(metadata, checkConnSuccessMetadata));
+
+    final var failureOutput = new StandardCheckConnectionOutput();
+    failureOutput.setStatus(Status.FAILED);
+    jobStateConsumer.accept(JobState.SUCCEEDED, failureOutput);
+    ImmutableMap<String, Object> checkConnFailureMetadata = ImmutableMap.of("check_connection_outcome", "failed");
+    assertCorrectMessageForSucceededState(MoreMaps.merge(metadata, checkConnFailureMetadata));
+
+    // Failure implies the job threw an exception which almost always meant no output.
+    jobStateConsumer.accept(JobState.FAILED, null);
+    assertCorrectMessageForFailedState(metadata);
   }
 
   private void assertCorrectMessageForEachState(Consumer<JobState> jobStateConsumer, Map<String, Object> metadata) {

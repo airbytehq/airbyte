@@ -46,7 +46,7 @@ public class SpecCachingSynchronousSchedulerClient implements CachingSynchronous
   private static final Logger LOGGER = LoggerFactory.getLogger(SpecCachingSynchronousSchedulerClient.class);
 
   private final Cache<String, SynchronousResponse<ConnectorSpecification>> specCache;
-  private SynchronousSchedulerClient decoratedClient;
+  private final SynchronousSchedulerClient decoratedClient;
 
   public SpecCachingSynchronousSchedulerClient(SynchronousSchedulerClient decoratedClient) {
     this.decoratedClient = decoratedClient;

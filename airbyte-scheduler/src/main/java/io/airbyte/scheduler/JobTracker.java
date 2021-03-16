@@ -33,6 +33,7 @@ import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.config.JobConfig.ConfigType;
+import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSyncSchedule;
@@ -68,23 +69,25 @@ public class JobTracker {
     this.trackingClient = trackingClient;
   }
 
-  public void trackCheckConnectionSource(UUID jobId, UUID sourceDefinitionId, JobState jobState) {
+  public void trackCheckConnectionSource(UUID jobId, UUID sourceDefinitionId, JobState jobState, StandardCheckConnectionOutput output) {
     Exceptions.swallow(() -> {
+      final ImmutableMap<String, Object> checkConnMetadata = generateCheckConnectionMetadata(output);
       final ImmutableMap<String, Object> jobMetadata = generateJobMetadata(jobId.toString(), ConfigType.CHECK_CONNECTION_SOURCE);
       final ImmutableMap<String, Object> sourceDefMetadata = generateSourceDefinitionMetadata(sourceDefinitionId);
       final ImmutableMap<String, Object> stateMetadata = generateStateMetadata(jobState);
 
-      track(MoreMaps.merge(jobMetadata, sourceDefMetadata, stateMetadata));
+      track(MoreMaps.merge(checkConnMetadata, jobMetadata, sourceDefMetadata, stateMetadata));
     });
   }
 
-  public void trackCheckConnectionDestination(UUID jobId, UUID destinationDefinitionId, JobState jobState) {
+  public void trackCheckConnectionDestination(UUID jobId, UUID destinationDefinitionId, JobState jobState, StandardCheckConnectionOutput output) {
     Exceptions.swallow(() -> {
+      final ImmutableMap<String, Object> checkConnMetadata = generateCheckConnectionMetadata(output);
       final ImmutableMap<String, Object> jobMetadata = generateJobMetadata(jobId.toString(), ConfigType.CHECK_CONNECTION_DESTINATION);
       final ImmutableMap<String, Object> destinationDefinitionMetadata = generateDestinationDefinitionMetadata(destinationDefinitionId);
       final ImmutableMap<String, Object> stateMetadata = generateStateMetadata(jobState);
 
-      track(MoreMaps.merge(jobMetadata, destinationDefinitionMetadata, stateMetadata));
+      track(MoreMaps.merge(checkConnMetadata, jobMetadata, destinationDefinitionMetadata, stateMetadata));
     });
   }
 
@@ -151,7 +154,22 @@ public class JobTracker {
     return metadata.build();
   }
 
-  public ImmutableMap<String, Object> generateDestinationDefinitionMetadata(UUID destinationDefinitionId)
+  /**
+   * The CheckConnection jobs (both source and destination) of the
+   * {@link io.airbyte.scheduler.client.SynchronousSchedulerClient} interface can have a successful
+   * job with a failed check. Because of this, tracking just the job attempt status does not capture
+   * the whole picture. The `check_connection_outcome` field tracks this.
+   */
+  private ImmutableMap<String, Object> generateCheckConnectionMetadata(StandardCheckConnectionOutput output) {
+    if (output == null) {
+      return ImmutableMap.of();
+    }
+    Builder<String, Object> metadata = ImmutableMap.builder();
+    metadata.put("check_connection_outcome", output.getStatus().toString());
+    return metadata.build();
+  }
+
+  private ImmutableMap<String, Object> generateDestinationDefinitionMetadata(UUID destinationDefinitionId)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final Builder<String, Object> metadata = ImmutableMap.builder();
 
@@ -162,7 +180,7 @@ public class JobTracker {
     return metadata.build();
   }
 
-  public ImmutableMap<String, Object> generateSourceDefinitionMetadata(UUID sourceDefinitionId)
+  private ImmutableMap<String, Object> generateSourceDefinitionMetadata(UUID sourceDefinitionId)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final Builder<String, Object> metadata = ImmutableMap.builder();
 
