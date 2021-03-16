@@ -1,6 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import { Theme } from "theme";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye, faEyeSlash } from "@fortawesome/free-regular-svg-icons";
+
+import Button from "../Button";
 
 type IStyleProps = InputProps & { theme: Theme };
 
@@ -19,10 +23,10 @@ export type InputProps = {
   light?: boolean;
 } & React.InputHTMLAttributes<HTMLInputElement>;
 
-const Input = styled.input<InputProps>`
+const InputComponent = styled.input<InputProps>`
   outline: none;
   width: 100%;
-  padding: 7px 8px;
+  padding: 7px 18px 7px 8px;
   border-radius: 4px;
   font-size: 14px;
   line-height: 20px;
@@ -56,6 +60,43 @@ const Input = styled.input<InputProps>`
     color: ${({ theme }) => theme.greyColor55};
   }
 `;
+
+const Container = styled.div`
+  width: 100%;
+  position: relative;
+`;
+
+const VisibilityButton = styled(Button)`
+  position: absolute;
+  right: 2px;
+  top: 7px;
+`;
+
+const Input: React.FC<InputProps> = (props) => {
+  const [isContentVisible, setIsContentVisible] = useState(false);
+
+  if (props.type === "password") {
+    return (
+      <Container>
+        <InputComponent
+          {...props}
+          type={isContentVisible ? "text" : "password"}
+        />
+        {props.disabled ? null : (
+          <VisibilityButton
+            iconOnly
+            onClick={() => setIsContentVisible(!isContentVisible)}
+            type="button"
+          >
+            <FontAwesomeIcon icon={isContentVisible ? faEyeSlash : faEye} />
+          </VisibilityButton>
+        )}
+      </Container>
+    );
+  }
+
+  return <InputComponent {...props} />;
+};
 
 export default Input;
 export { Input };
