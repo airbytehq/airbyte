@@ -50,7 +50,7 @@
     </Appenders>
 
     <Loggers>
-        <Root level="DEBUG">
+        <Root level="INFO">
             <AppenderRef ref="Default"/>
             <AppenderRef ref="LogSplit"/>
             <AppenderRef ref="AppLogSplit"/>
