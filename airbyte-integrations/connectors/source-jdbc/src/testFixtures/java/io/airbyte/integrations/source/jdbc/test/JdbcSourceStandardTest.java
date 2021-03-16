@@ -144,7 +144,8 @@ public abstract class JdbcSourceStandardTest {
     database.execute(connection -> {
 
       connection.createStatement()
-          .execute(String.format("CREATE TABLE %s(id INTEGER, name VARCHAR(200), updated_at DATE);", getFullyQualifiedTableName(TABLE_NAME)));
+          .execute(String.format("CREATE TABLE %s(id INTEGER, name VARCHAR(200), updated_at DATE, PRIMARY KEY (id));",
+              getFullyQualifiedTableName(TABLE_NAME)));
       connection.createStatement().execute(
           String.format(
               "INSERT INTO %s(id, name, updated_at) VALUES (1,'picard', '2004-10-19'),  (2, 'crusher', '2005-10-19'), (3, 'vash', '2006-10-19');",
@@ -587,7 +588,8 @@ public abstract class JdbcSourceStandardTest {
         Field.of("id", JsonSchemaPrimitive.NUMBER),
         Field.of("name", JsonSchemaPrimitive.STRING),
         Field.of("updated_at", JsonSchemaPrimitive.STRING))
-        .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))));
+        .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+        .withSourceDefinedPrimaryKey(List.of(List.of("id")))));
   }
 
   private static List<AirbyteMessage> getTestMessages() {

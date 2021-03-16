@@ -68,7 +68,8 @@ class PostgresSourceTest {
           Field.of("id", JsonSchemaPrimitive.NUMBER),
           Field.of("name", JsonSchemaPrimitive.STRING),
           Field.of("power", JsonSchemaPrimitive.NUMBER))
-          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))));
+          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+          .withSourceDefinedPrimaryKey(List.of(List.of("id")))));
   private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
   private static final Set<AirbyteMessage> ASCII_MESSAGES = Sets.newHashSet(
       createRecord(STREAM_NAME, map("id", new BigDecimal("1.0"), "name", "goku", "power", null)),
@@ -100,7 +101,8 @@ class PostgresSourceTest {
     final JsonNode config = getConfig(PSQL_DB, dbName);
     final Database database = getDatabaseFromConfig(config);
     database.query(ctx -> {
-      ctx.fetch("CREATE TABLE id_and_name(id NUMERIC(20, 10), name VARCHAR(200), power double precision);");
+      ctx.fetch("CREATE TABLE id_and_name(id NUMERIC(20, 10), name VARCHAR(200), power double precision, PRIMARY KEY (id));");
+      ctx.fetch("CREATE INDEX i1 ON id_and_name (id);");
       ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
       return null;
     });
@@ -166,6 +168,12 @@ class PostgresSourceTest {
         actualMessage.getRecord().setEmittedAt(null);
       }
     }
+  }
+
+  @Test
+  void testDiscoverWithPk() throws Exception {
+    final AirbyteCatalog actual = new PostgresSource().discover(getConfig(PSQL_DB, dbName));
+    assertEquals(CATALOG, actual);
   }
 
   @Test
