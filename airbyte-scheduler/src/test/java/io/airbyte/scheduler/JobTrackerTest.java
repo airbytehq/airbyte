@@ -92,7 +92,7 @@ class JobTrackerTest {
     when(configRepository.getStandardSourceDefinition(UUID1))
         .thenReturn(new StandardSourceDefinition().withSourceDefinitionId(UUID1).withName(SOURCE_DEF_NAME));
 
-    assertCorrectMessageForEachState((jobState) -> jobTracker.trackCheckConnectionSource(JOB_ID, UUID1, jobState), metadata);
+    assertCorrectMessageForEachState((jobState) -> jobTracker.trackCheckConnectionSource(JOB_ID, UUID1, jobState, null), metadata);
   }
 
   @Test
@@ -124,7 +124,7 @@ class JobTrackerTest {
     when(configRepository.getStandardDestinationDefinition(UUID2))
         .thenReturn(new StandardDestinationDefinition().withDestinationDefinitionId(UUID2).withName(DESTINATION_DEF_NAME));
 
-    assertCorrectMessageForEachState((jobState) -> jobTracker.trackCheckConnectionDestination(JOB_ID, UUID2, jobState), metadata);
+    assertCorrectMessageForEachState((jobState) -> jobTracker.trackCheckConnectionDestination(JOB_ID, UUID2, jobState, null), metadata);
   }
 
   @Test
