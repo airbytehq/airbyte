@@ -18,6 +18,7 @@ type ServiceFormProps = {
   formType: "source" | "destination";
   dropDownData: Array<DropDownRow.IDataItem>;
   onSubmit: (values: ServiceFormValues) => void;
+  onRetest?: (values: ServiceFormValues) => void;
   specifications?: JSONSchema7;
   isLoading?: boolean;
   isEditMode?: boolean;
@@ -37,7 +38,7 @@ const FormikPatch: React.FC = () => {
 };
 
 const ServiceForm: React.FC<ServiceFormProps> = (props) => {
-  const { specifications, formValues, onSubmit, isLoading } = props;
+  const { specifications, formValues, onSubmit, isLoading, onRetest } = props;
   const { formFields, initialValues } = useBuildForm(
     isLoading,
     formValues,
@@ -62,6 +63,19 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
       return onSubmit(valuesToSend);
     },
     [onSubmit, validationSchema]
+  );
+
+  const onRetestForm = useCallback(
+    async (values) => {
+      if (!onRetest) {
+        return null;
+      }
+      const valuesToSend = validationSchema.cast(values, {
+        stripUnknown: true,
+      });
+      return onRetest(valuesToSend);
+    },
+    [validationSchema, onRetest]
   );
 
   //  TODO: dropdownData should be map of entities instead of UI representation
@@ -89,6 +103,7 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
             <FormikPatch />
             <FormRoot
               {...props}
+              onRetest={() => onRetestForm(values)}
               formFields={formFields}
               connector={
                 props.dropDownData?.find(
