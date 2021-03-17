@@ -95,7 +95,7 @@ public class TemporalAttemptExecution<INPUT, T> implements CheckedSupplier<T, Te
     try {
       mdcSetter.accept(jobRoot, jobId);
 
-      LOGGER.info("Executing worker wrapper. Airbyte version: {}", EnvConfigs.AIRBYTE_VERSION);
+      LOGGER.info("Executing worker wrapper. Airbyte version: {}", new EnvConfigs().getAirbyteVersionOrWarning());
       jobRootDirCreator.accept(jobRoot);
 
       final CompletableFuture<T> outputFuture = new CompletableFuture<>();

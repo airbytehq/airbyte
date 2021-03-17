@@ -1,4 +1,4 @@
-import org.openapitools.generator.gradle.plugin.tasks.GenerateTask;
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 plugins {
     id "org.openapi.generator" version "5.0.0-beta"
@@ -73,8 +73,6 @@ task generateApiClient(type: GenerateTask) {
 }
 compileJava.dependsOn tasks.generateApiClient
 
-import org.openapitools.generator.gradle.plugin.tasks.GenerateTask;
-
 task generateApiDocs(type: GenerateTask) {
     def docsOutputDir = "$buildDir/generated/api/docs"
 
@@ -103,7 +101,7 @@ task generateApiDocs(type: GenerateTask) {
     ]
 
     doLast {
-        def target = file(rootProject.file("docs/api"))
+        def target = file(rootProject.file("docs/api/generated-api-html"))
         delete target
         mkdir target
         copy {

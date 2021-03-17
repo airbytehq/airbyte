@@ -67,6 +67,7 @@ public interface SyncWorkflow {
     private final ActivityOptions options = ActivityOptions.newBuilder()
         .setScheduleToCloseTimeout(Duration.ofDays(3))
         .setCancellationType(ActivityCancellationType.WAIT_CANCELLATION_COMPLETED)
+        .setRetryOptions(TemporalUtils.NO_RETRY)
         .build();
 
     private final SyncActivity activity = Workflow.newActivityStub(SyncActivity.class, options);

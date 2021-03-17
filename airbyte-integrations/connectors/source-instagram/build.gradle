@@ -1,0 +1,27 @@
+plugins {
+    id 'airbyte-python'
+    id 'airbyte-docker'
+    id 'airbyte-standard-source-test-file'
+}
+
+airbytePython {
+    moduleDirectory 'source_instagram'
+}
+
+airbyteStandardSourceTestFile {
+    specPath = "source_instagram/spec.json"
+    configPath = "secrets/config.json"
+    configuredCatalogPath = "sample_files/configured_catalog.json"
+}
+
+task("pythonIntegrationTests", type: PythonTask, dependsOn: installTestReqs) {
+    module = "pytest"
+    command = "-s integration_tests"
+}
+
+integrationTest.dependsOn("pythonIntegrationTests")
+
+dependencies {
+    implementation files(project(':airbyte-integrations:bases:base-standard-source-test-file').airbyteDocker.outputs)
+    implementation files(project(':airbyte-integrations:bases:base-python').airbyteDocker.outputs)
+}

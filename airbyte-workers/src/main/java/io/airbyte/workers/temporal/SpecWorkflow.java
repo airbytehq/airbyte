@@ -51,6 +51,7 @@ public interface SpecWorkflow {
 
     final ActivityOptions options = ActivityOptions.newBuilder()
         .setScheduleToCloseTimeout(Duration.ofHours(1))
+        .setRetryOptions(TemporalUtils.NO_RETRY)
         .build();
     private final SpecActivity activity = Workflow.newActivityStub(SpecActivity.class, options);
 

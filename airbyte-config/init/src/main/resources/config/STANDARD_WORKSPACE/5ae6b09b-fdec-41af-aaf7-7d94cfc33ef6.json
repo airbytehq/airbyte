@@ -3,5 +3,6 @@
   "name": "default",
   "slug": "default",
   "initialSetupComplete": false,
-  "displaySetupWizard": true
+  "displaySetupWizard": true,
+  "tombstone": false
 }

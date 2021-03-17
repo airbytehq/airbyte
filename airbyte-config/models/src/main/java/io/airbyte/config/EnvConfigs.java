@@ -26,6 +26,7 @@ package io.airbyte.config;
 
 import com.google.common.base.Preconditions;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,6 +76,11 @@ public class EnvConfigs implements Configs {
   @Override
   public String getAirbyteVersion() {
     return getEnsureEnv(AIRBYTE_VERSION);
+  }
+
+  @Override
+  public String getAirbyteVersionOrWarning() {
+    return Optional.ofNullable(getEnv(AIRBYTE_VERSION)).orElse("version not set");
   }
 
   @Override

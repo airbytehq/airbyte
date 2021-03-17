@@ -63,8 +63,19 @@ const SourcesView: React.FC = () => {
         Header: <FormattedMessage id="admin.connectors" />,
         accessor: "name",
         customWidth: 25,
-        Cell: ({ cell }: CellProps<never>) => (
-          <ConnectorCell connectorName={cell.value} />
+        Cell: ({
+          cell,
+          row,
+        }: CellProps<{
+          latestDockerImageTag: string;
+          dockerImageTag: string;
+        }>) => (
+          <ConnectorCell
+            connectorName={cell.value}
+            hasUpdate={
+              row.original.latestDockerImageTag !== row.original.dockerImageTag
+            }
+          />
         ),
       },
       {
@@ -79,19 +90,31 @@ const SourcesView: React.FC = () => {
         ),
       },
       {
+        Header: <FormattedMessage id="admin.currentVersion" />,
+        accessor: "dockerImageTag",
+        customWidth: 10,
+      },
+      {
         Header: (
           <FormContentTitle>
-            <FormattedMessage id="admin.tag" />
+            <FormattedMessage id="admin.changeTo" />
           </FormContentTitle>
         ),
-        accessor: "dockerImageTag",
+        accessor: "latestDockerImageTag",
         collapse: true,
-        Cell: ({ cell, row }: CellProps<{ sourceDefinitionId: string }>) => (
+        Cell: ({
+          cell,
+          row,
+        }: CellProps<{
+          sourceDefinitionId: string;
+          dockerImageTag: string;
+        }>) => (
           <VersionCell
             version={cell.value}
             id={row.original.sourceDefinitionId}
             onChange={onUpdateVersion}
             feedback={feedbackList[row.original.sourceDefinitionId]}
+            currentVersion={row.original.dockerImageTag}
           />
         ),
       },
@@ -110,6 +133,7 @@ const SourcesView: React.FC = () => {
         sourceDefinitionId: item.source?.sourceDefinitionId || "",
         dockerRepository: sourceInfo?.dockerRepository,
         dockerImageTag: sourceInfo?.dockerImageTag,
+        latestDockerImageTag: sourceInfo?.latestDockerImageTag,
         documentationUrl: sourceInfo?.documentationUrl,
         feedback: "",
       };

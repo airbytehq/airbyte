@@ -511,7 +511,9 @@
         "default_cursor_field": ["created"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["created"]
+      "cursor_field": ["created"],
+      "destination_sync_mode": "append_dedup",
+      "primary_key": [["id"]]
     },
     {
       "stream": {
