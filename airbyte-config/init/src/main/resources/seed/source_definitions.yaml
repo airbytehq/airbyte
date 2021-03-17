@@ -101,7 +101,7 @@
 - sourceDefinitionId: 932e6363-d006-4464-a9f5-102b82e07c06
   name: Twilio
   dockerRepository: airbyte/source-twilio-singer
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   documentationUrl: https://hub.docker.com/r/airbyte/source-twilio-singer
 - sourceDefinitionId: ec4b9503-13cb-48ab-a4ab-6ade4be46567
   name: Freshdesk
@@ -186,5 +186,5 @@
 - sourceDefinitionId: 6acf6b55-4f1e-4fca-944e-1a3caef8aba8
   name: Instagram
   dockerRepository: airbyte/source-instagram
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://hub.docker.com/r/airbyte/source-instagram

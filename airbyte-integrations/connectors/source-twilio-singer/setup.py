@@ -29,7 +29,13 @@ setup(
     description="Source implementation for Twilio API, built on the Singer tap implementation",
     author="Airbyte",
     author_email="contact@airbyte.io",
-    install_requires=["tap-twilio==0.0.1", "twilio==6.48.0", "airbyte-protocol", "base-singer", "base-python"],
+    install_requires=[
+        "pipelinewise-tap-twilio @ https://github.com/airbytehq/pipelinewise-tap-twilio/tarball/master#egg=pipelinewise-tap-twilio-1.1.2-airbyte",
+        "twilio==6.48.0",
+        "airbyte-protocol",
+        "base-singer",
+        "base-python",
+    ],
     packages=find_packages(),
     package_data={"": ["*.json"]},
 )
