@@ -69,6 +69,7 @@ import io.airbyte.api.model.WbConnectionRead;
 import io.airbyte.api.model.WbConnectionReadList;
 import io.airbyte.api.model.WebBackendConnectionRequestBody;
 import io.airbyte.api.model.WebBackendConnectionUpdate;
+import io.airbyte.api.model.WorkspaceCreate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.api.model.WorkspaceRead;
 import io.airbyte.api.model.WorkspaceUpdate;
@@ -131,13 +132,14 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     final SpecFetcher specFetcher = new SpecFetcher(schedulerJobClient);
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
     schedulerHandler = new SchedulerHandler(configRepository, schedulerJobClient);
-    workspacesHandler = new WorkspacesHandler(configRepository);
     final DockerImageValidator dockerImageValidator = new DockerImageValidator(schedulerJobClient);
     sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, schedulerJobClient);
     connectionsHandler = new ConnectionsHandler(configRepository);
     destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, dockerImageValidator, schedulerJobClient);
     destinationHandler = new DestinationHandler(configRepository, schemaValidator, specFetcher, connectionsHandler);
     sourceHandler = new SourceHandler(configRepository, schemaValidator, specFetcher, connectionsHandler);
+    workspacesHandler =
+        new WorkspacesHandler(configRepository, connectionsHandler, destinationHandler, sourceHandler);
     jobHistoryHandler = new JobHistoryHandler(jobPersistence);
     webBackendConnectionsHandler =
         new WebBackendConnectionsHandler(connectionsHandler, sourceHandler, destinationHandler, jobHistoryHandler, schedulerHandler);
@@ -151,6 +153,19 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   // WORKSPACE
+
+  @Override
+  public WorkspaceRead createWorkspace(@Valid WorkspaceCreate workspaceCreate) {
+    return execute(() -> workspacesHandler.createWorkspace(workspaceCreate));
+  }
+
+  @Override
+  public void deleteWorkspace(@Valid WorkspaceIdRequestBody workspaceIdRequestBody) {
+    execute(() -> {
+      workspacesHandler.deleteWorkspace(workspaceIdRequestBody);
+      return null;
+    });
+  }
 
   @Override
   public WorkspaceRead getWorkspace(@Valid WorkspaceIdRequestBody workspaceIdRequestBody) {

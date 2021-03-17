@@ -29,12 +29,7 @@ setup(
     description="Source implementation for Slack API, built on the Singer tap implementation",
     author="Airbyte",
     author_email="contact@airbyte.io",
+    install_requires=["tap-slack==1.0.0", "slack-sdk==3.0.0", "airbyte-protocol", "base-singer", "base-python"],
     packages=find_packages(),
     package_data={"": ["*.json"]},
-    setup_requires=["pytest-runner"],
-    tests_require=["pytest"],
-    extras_require={
-        "main": ["tap-slack==1.0.0", "slack-sdk==3.0.0", "airbyte-protocol", "base-singer", "base-python"],
-        "standardtest": ["airbyte_python_test"],
-    },
 )

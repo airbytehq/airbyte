@@ -7,6 +7,7 @@ airbytePython {
     moduleDirectory 'base_python_test'
 }
 
+
 dependencies {
     implementation files(project(':airbyte-integrations:bases:base-python').airbyteDocker.outputs)
 }

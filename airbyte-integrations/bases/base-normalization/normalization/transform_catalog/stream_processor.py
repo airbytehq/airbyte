@@ -26,6 +26,7 @@ import hashlib
 import os
 from typing import Dict, List, Optional, Set, Tuple
 
+from airbyte_protocol.models.airbyte_protocol import DestinationSyncMode, SyncMode
 from jinja2 import Template
 from normalization.destination_type import DestinationType
 from normalization.transform_catalog.destination_name_transformer import DestinationNameTransformer
@@ -73,6 +74,10 @@ class StreamProcessor(object):
         destination_type: DestinationType,
         raw_schema: str,
         schema: str,
+        source_sync_mode: SyncMode,
+        destination_sync_mode: DestinationSyncMode,
+        cursor_field: List[str],
+        primary_key: List[List[str]],
         json_column_name: str,
         properties: Dict,
         tables_registry: Set[str],
@@ -85,6 +90,10 @@ class StreamProcessor(object):
         self.destination_type: DestinationType = destination_type
         self.raw_schema: str = raw_schema
         self.schema: str = schema
+        self.source_sync_mode: SyncMode = source_sync_mode
+        self.destination_sync_mode: DestinationSyncMode = destination_sync_mode
+        self.cursor_field: List[str] = cursor_field
+        self.primary_key: List[List[str]] = primary_key
         self.json_column_name: str = json_column_name
         self.properties: Dict = properties
         self.tables_registry: Set[str] = tables_registry
@@ -119,6 +128,11 @@ class StreamProcessor(object):
             destination_type=parent.destination_type,
             raw_schema=parent.raw_schema,
             schema=parent.schema,
+            # Nested Streams don't inherit parents sync modes?
+            source_sync_mode=SyncMode.full_refresh,
+            destination_sync_mode=DestinationSyncMode.append,
+            cursor_field=[],
+            primary_key=[],
             json_column_name=json_column_name,
             properties=properties,
             tables_registry=parent.tables_registry,
@@ -135,6 +149,10 @@ class StreamProcessor(object):
         destination_type: DestinationType,
         raw_schema: str,
         schema: str,
+        source_sync_mode: SyncMode,
+        destination_sync_mode: DestinationSyncMode,
+        cursor_field: List[str],
+        primary_key: List[List[str]],
         json_column_name: str,
         properties: Dict,
         tables_registry: Set[str],
@@ -147,6 +165,11 @@ class StreamProcessor(object):
         @param raw_schema is the name of the staging intermediate schema where to create internal tables/views
         @param schema is the name of the schema where to store the final tables where to store the transformed data
 
+        @param source_sync_mode is describing how source are producing data
+        @param destination_sync_mode is describing how destination should handle the new data batch
+        @param cursor_field is the field to use to determine order of records
+        @param primary_key is a list of fields to use as a (composite) primary key
+
         @param json_column_name is the name of the column in the raw data table containing the json column to transform
         @param properties is the json schema description of this stream
 
@@ -158,6 +181,10 @@ class StreamProcessor(object):
             destination_type,
             raw_schema,
             schema,
+            source_sync_mode,
+            destination_sync_mode,
+            cursor_field,
+            primary_key,
             json_column_name,
             properties,
             tables_registry,
@@ -181,7 +208,17 @@ class StreamProcessor(object):
         from_table = self.add_to_outputs(self.generate_json_parsing_model(from_table, column_names), is_intermediate=True, suffix="ab1")
         from_table = self.add_to_outputs(self.generate_column_typing_model(from_table, column_names), is_intermediate=True, suffix="ab2")
         from_table = self.add_to_outputs(self.generate_id_hashing_model(from_table, column_names), is_intermediate=True, suffix="ab3")
-        from_table = self.add_to_outputs(self.generate_final_model(from_table, column_names), is_intermediate=False)
+        if self.destination_sync_mode.value == DestinationSyncMode.append_dedup.value:
+            from_table = self.add_to_outputs(self.generate_dedup_record_model(from_table, column_names), is_intermediate=True, suffix="ab4")
+            where_clause = "\nwhere _airbyte_row_num = 1"
+            from_table = self.add_to_outputs(
+                self.generate_scd_type_2_model(from_table, column_names) + where_clause, is_intermediate=False, suffix="scd"
+            )
+            where_clause = "\nwhere _airbyte_active_row = True"
+            from_table = self.add_to_outputs(self.generate_final_model(from_table, column_names) + where_clause, is_intermediate=False)
+            # TODO generate yaml file to dbt test final table where primary keys should be unique
+        else:
+            from_table = self.add_to_outputs(self.generate_final_model(from_table, column_names), is_intermediate=False)
         return self.find_children_streams(from_table, column_names)
 
     def extract_column_names(self) -> Dict[str, Tuple[str, str]]:
@@ -192,7 +229,15 @@ class StreamProcessor(object):
          - the first value is the normalized "raw" column name
          - the second value is the normalized quoted column name to be used in jinja context
         """
-        fields = [field for field in self.properties.keys() if not is_airbyte_column(field)]
+        fields = []
+        for field in self.properties.keys():
+            if not is_airbyte_column(field):
+                fields.append(field)
+            if self.destination_sync_mode.value == DestinationSyncMode.append_dedup.value:
+                # When deduping, some airbyte columns could be used as special cursor or primary key columns
+                if field in self.cursor_field[0] or field in [f[0] for f in self.primary_key if len(f) == 1]:
+                    if field not in fields:
+                        fields.append(field)
         result = {}
         field_names = set()
         for field in fields:
@@ -227,7 +272,6 @@ class StreamProcessor(object):
                 # properties without 'type' field are treated like properties with 'type' = 'object'
                 children_properties = find_properties_object([], field, properties[field])
                 is_nested_array = False
-                # json_column_name = f"'{field}'"
                 json_column_name = column_names[field][1]
             elif is_array(properties[field]["type"]) and "items" in properties[field]:
                 quoted_field = column_names[field][1]
@@ -250,6 +294,7 @@ class StreamProcessor(object):
     def generate_json_parsing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
         template = Template(
             """
+-- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
 {{ unnesting_before_query }}
 select
   {%- if parent_hash_id %}
@@ -296,6 +341,7 @@ from {{ from_table }}
     def generate_column_typing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
         template = Template(
             """
+-- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
 select
   {%- if parent_hash_id %}
     {{ parent_hash_id }},
@@ -328,13 +374,14 @@ from {{ from_table }}
             return self.cast_property_type_as_array(property_name, column_name)
         elif is_object(definition["type"]):
             sql_type = self.cast_property_type_as_object(property_name, column_name)
-        elif is_integer(definition["type"]):
-            sql_type = jinja_call("dbt_utils.type_int()")
-        elif is_number(definition["type"]):
-            sql_type = jinja_call("dbt_utils.type_float()")
+        # Treat simple types from narrower to wider scope type: boolean < integer < number < string
         elif is_boolean(definition["type"]):
             cast_operation = jinja_call(f"cast_to_boolean({jinja_column})")
             return f"{cast_operation} as {column_name}"
+        elif is_integer(definition["type"]):
+            sql_type = jinja_call("dbt_utils.type_bigint()")
+        elif is_number(definition["type"]):
+            sql_type = jinja_call("dbt_utils.type_float()")
         elif is_string(definition["type"]):
             sql_type = jinja_call("dbt_utils.type_string()")
         else:
@@ -357,6 +404,7 @@ from {{ from_table }}
     def generate_id_hashing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
         template = Template(
             """
+-- SQL model to build a hash column based on the values of this record
 select
     *,
     {{ '{{' }} dbt_utils.surrogate_key([
@@ -394,9 +442,92 @@ from {{ from_table }}
         else:
             return column_name
 
+    def generate_dedup_record_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
+        template = Template(
+            """
+-- SQL model to prepare for deduplicating records based on the hash record column
+select
+  *,
+  row_number() over (
+    partition by {{ hash_id }}
+    order by _airbyte_emitted_at asc
+  ) as _airbyte_row_num
+from {{ from_table }}
+{{ sql_table_comment }}
+        """
+        )
+        sql = template.render(
+            hash_id=self.hash_id(),
+            from_table=jinja_call(from_table),
+            sql_table_comment=self.sql_table_comment(include_from_table=True),
+        )
+        return sql
+
+    def generate_scd_type_2_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
+        template = Template(
+            """
+-- SQL model to build a Type 2 Slowly Changing Dimension (SCD) table for each record identified by their primary key
+select
+  {%- if parent_hash_id %}
+    {{ parent_hash_id }},
+  {%- endif %}
+  {%- for field in fields %}
+    {{ field }},
+  {%- endfor %}
+    {{ cursor_field }} as _airbyte_start_at,
+    lag({{ cursor_field }}) over (
+        partition by {{ primary_key }}
+        order by {{ cursor_field }} desc, _airbyte_emitted_at desc
+    ) as _airbyte_end_at,
+    lag({{ cursor_field }}) over (
+        partition by {{ primary_key }}
+        order by {{ cursor_field }} desc, _airbyte_emitted_at desc
+    ) is null as _airbyte_active_row,
+    _airbyte_emitted_at,
+    {{ hash_id }}
+from {{ from_table }}
+{{ sql_table_comment }}
+        """
+        )
+        sql = template.render(
+            parent_hash_id=self.parent_hash_id(),
+            fields=self.list_fields(column_names),
+            cursor_field=self.get_cursor_field(column_names),
+            primary_key=self.get_primary_key(column_names),
+            hash_id=self.hash_id(),
+            from_table=jinja_call(from_table),
+            sql_table_comment=self.sql_table_comment(include_from_table=True),
+        )
+        return sql
+
+    def get_cursor_field(self, column_names: Dict[str, Tuple[str, str]]) -> str:
+        if self.cursor_field and len(self.cursor_field) == 1:
+            return column_names[self.cursor_field[0]][0]
+        else:
+            if self.cursor_field:
+                raise ValueError(f"Unsupported nested cursor field {'.'.join(self.cursor_field)} for stream {self.stream_name}")
+            else:
+                raise ValueError(f"No cursor field specified for stream {self.stream_name}")
+
+    def get_primary_key(self, column_names: Dict[str, Tuple[str, str]]) -> str:
+        if self.primary_key and len(self.primary_key) > 0:
+            return ", ".join([self.get_primary_key_from_path(column_names, path) for path in self.primary_key])
+        else:
+            raise ValueError(f"No primary key specified for stream {self.stream_name}")
+
+    def get_primary_key_from_path(self, column_names: Dict[str, Tuple[str, str]], path: List[str]) -> str:
+        if path and len(path) == 1:
+            return column_names[path[0]][0]
+        else:
+            if path:
+                raise ValueError(f"Unsupported nested path {'.'.join(path)} for stream {self.stream_name}")
+            else:
+                raise ValueError(f"No path specified for stream {self.stream_name}")
+
     def generate_final_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
         template = Template(
             """
+-- Final base SQL model
 select
   {%- if parent_hash_id %}
     {{ parent_hash_id }},
@@ -460,17 +591,20 @@ from {{ from_table }}
         tables_registry = self.tables_registry.union(self.local_registry)
         new_table_name = self.normalized_stream_name()
         if not is_intermediate and self.parent is None:
+            if suffix:
+                norm_suffix = suffix if not suffix or suffix.startswith("_") else f"_{suffix}"
+                new_table_name = new_table_name + norm_suffix
             # Top-level stream has priority on table_names
             if new_table_name in tables_registry:
                 # TODO handle collisions between different schemas (dbt works with only one schema for ref()?)
                 # so filenames should always be different for dbt but the final table can be same as long as schemas are different:
                 # see alias in dbt: https://docs.getdbt.com/docs/building-a-dbt-project/building-models/using-custom-aliases/
-                pass
-            pass
+                raise ValueError(f"Conflict: Table name {new_table_name} already exists!")
         elif not self.parent:
             new_table_name = get_table_name(self.name_transformer, "", new_table_name, suffix, self.json_path)
         else:
             new_table_name = get_table_name(self.name_transformer, "_".join(self.json_path[:-1]), new_table_name, suffix, self.json_path)
+        new_table_name = self.name_transformer.normalize_table_name(new_table_name, False, False)
         if not is_intermediate:
             self.final_table_name = new_table_name
         return new_table_name

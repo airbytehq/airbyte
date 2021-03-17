@@ -30,15 +30,13 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=["airbyte-protocol", "base-python", "pydantic==1.6.1", "mailchimp3==3.0.14", "python-dateutil==2.8.1"],
+    install_requires=[
+        "airbyte-protocol",
+        "base-python",
+        "pydantic==1.6.1",
+        "mailchimp3==3.0.14",
+        "python-dateutil==2.8.1",
+        "pytest==6.1.2",
+    ],
     package_data={"": ["*.json", "schemas/*.json"]},
-    setup_requires=["pytest-runner"],
-    tests_require=["pytest"],
-    extras_require={
-        # Dependencies required by the main package but not integration tests should go in main. Deps required by
-        # integration tests but not the main package go in integration_tests. Deps required by both should go in
-        # install_requires.
-        "main": [],
-        "tests": ["airbyte_python_test", "pytest"],
-    },
 )

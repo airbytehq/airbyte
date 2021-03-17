@@ -56,6 +56,7 @@ public interface DiscoverCatalogWorkflow {
 
     final ActivityOptions options = ActivityOptions.newBuilder()
         .setScheduleToCloseTimeout(Duration.ofHours(2))
+        .setRetryOptions(TemporalUtils.NO_RETRY)
         .build();
     private final DiscoverCatalogActivity activity = Workflow.newActivityStub(DiscoverCatalogActivity.class, options);
 
