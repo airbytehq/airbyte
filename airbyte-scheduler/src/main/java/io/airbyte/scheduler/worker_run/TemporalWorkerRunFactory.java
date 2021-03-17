@@ -24,11 +24,8 @@
 
 package io.airbyte.scheduler.worker_run;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.Configs;
-import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.JobResetConnectionConfig;
@@ -59,14 +56,9 @@ public class TemporalWorkerRunFactory {
     this.workspaceRoot = workspaceRoot;
   }
 
-  @VisibleForTesting
-  public WorkerRun create(Job job, Configs configs) {
-    final int attemptId = job.getAttemptsCount();
-    return WorkerRun.create(workspaceRoot, job.getId(), attemptId, createSupplier(job, attemptId), configs);
-  }
-
   public WorkerRun create(Job job) {
-    return create(job, new EnvConfigs());
+    final int attemptId = job.getAttemptsCount();
+    return WorkerRun.create(workspaceRoot, job.getId(), attemptId, createSupplier(job, attemptId));
   }
 
   // suppress "CodeBlock2Expr" because in the lambda syntax without a return statement the formatting
