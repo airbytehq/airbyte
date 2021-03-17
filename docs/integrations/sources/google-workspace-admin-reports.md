@@ -29,7 +29,6 @@ This Source is capable of syncing the following Streams:
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
 | Incremental Sync | No |  |
-| Replicate Incremental Deletes | Coming soon |  |
 | SSL connection | Yes |  |
 
 ### Performance considerations
