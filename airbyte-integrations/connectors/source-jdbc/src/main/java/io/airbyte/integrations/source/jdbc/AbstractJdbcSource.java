@@ -320,7 +320,7 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
                                                    final Optional<String> schemaOptional)
       throws Exception {
     final Set<String> internalSchemas = new HashSet<>(getExcludedInternalSchemas());
-    return database.bufferedResultSetQuery(
+    final List<TableInfoInternal> result = database.bufferedResultSetQuery(
         conn -> conn.getMetaData().getColumns(databaseOptional.orElse(null), schemaOptional.orElse(null), null, null),
         resultSet -> Jsons.jsonNode(ImmutableMap.<String, Object>builder()
             // we always want a namespace, if we cannot get a schema, use db name.
@@ -357,17 +357,18 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
                   return new ColumnInfo(f.get(INTERNAL_COLUMN_NAME).asText(), jdbcType);
                 })
                 .collect(Collectors.toList())))
-        .peek(t -> {
-          try {
-            final List<String> primaryKeys = database.bufferedResultSetQuery(
-                conn -> conn.getMetaData().getPrimaryKeys(databaseOptional.orElse(null), t.getSchemaName(), t.getName()),
-                resultSet -> resultSet.getString(JDBC_COLUMN_COLUMN_NAME));
-            t.addPrimaryKeys(primaryKeys);
-          } catch (SQLException e) {
-            LOGGER.warn(String.format("Could not find primary keys for %s.%s: %s", t.getSchemaName(), t.getName(), e));
-          }
-        })
         .collect(Collectors.toList());
+    result.forEach(t -> {
+      try {
+        final List<String> primaryKeys = database.bufferedResultSetQuery(
+            conn -> conn.getMetaData().getPrimaryKeys(databaseOptional.orElse(null), t.getSchemaName(), t.getName()),
+            resultSet -> resultSet.getString(JDBC_COLUMN_COLUMN_NAME));
+        t.addPrimaryKeys(primaryKeys);
+      } catch (SQLException e) {
+        LOGGER.warn(String.format("Could not find primary keys for %s.%s: %s", t.getSchemaName(), t.getName(), e));
+      }
+    });
+    return result;
   }
 
   private static AutoCloseableIterator<AirbyteMessage> getMessageIterator(AutoCloseableIterator<JsonNode> recordIterator,
