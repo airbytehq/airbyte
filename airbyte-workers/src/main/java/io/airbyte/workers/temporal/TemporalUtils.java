@@ -27,6 +27,7 @@ package io.airbyte.workers.temporal;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowOptions;
+import io.temporal.common.RetryOptions;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.serviceclient.WorkflowServiceStubsOptions;
 import java.io.Serializable;
@@ -43,6 +44,8 @@ public class TemporalUtils {
 
   public static final WorkflowClient TEMPORAL_CLIENT = WorkflowClient.newInstance(TEMPORAL_SERVICE);
 
+  public static final RetryOptions NO_RETRY = RetryOptions.newBuilder().setMaximumAttempts(1).build();
+
   @FunctionalInterface
   public interface TemporalJobCreator<T extends Serializable> {
 
@@ -52,6 +55,7 @@ public class TemporalUtils {
 
   public static WorkflowOptions getWorkflowOptions(TemporalJobType jobType) {
     return WorkflowOptions.newBuilder()
+        .setRetryOptions(NO_RETRY)
         .setTaskQueue(jobType.name())
         .build();
   }
