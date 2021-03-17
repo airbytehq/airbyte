@@ -25,7 +25,7 @@
 package io.airbyte.scheduler.worker_run;
 
 import io.airbyte.commons.functional.CheckedSupplier;
-import io.airbyte.config.EnvConfigs;
+import io.airbyte.config.Configs;
 import io.airbyte.config.JobOutput;
 import io.airbyte.workers.OutputAndStatus;
 import io.airbyte.workers.WorkerUtils;
@@ -46,20 +46,26 @@ public class WorkerRun implements Callable<OutputAndStatus<JobOutput>> {
 
   private final Path jobRoot;
   private final CheckedSupplier<OutputAndStatus<JobOutput>, Exception> workerRun;
+  private final Configs configs;
 
-  public static WorkerRun create(Path workspaceRoot, long jobId, int attempt, CheckedSupplier<OutputAndStatus<JobOutput>, Exception> workerRun) {
+  public static WorkerRun create(Path workspaceRoot,
+                                 long jobId,
+                                 int attempt,
+                                 CheckedSupplier<OutputAndStatus<JobOutput>, Exception> workerRun,
+                                 Configs configs) {
     final Path jobRoot = WorkerUtils.getJobRoot(workspaceRoot, jobId, attempt);
-    return new WorkerRun(jobRoot, workerRun);
+    return new WorkerRun(jobRoot, workerRun, configs);
   }
 
-  public WorkerRun(final Path jobRoot, final CheckedSupplier<OutputAndStatus<JobOutput>, Exception> workerRun) {
+  public WorkerRun(final Path jobRoot, final CheckedSupplier<OutputAndStatus<JobOutput>, Exception> workerRun, Configs configs) {
     this.jobRoot = jobRoot;
     this.workerRun = workerRun;
+    this.configs = configs;
   }
 
   @Override
   public OutputAndStatus<JobOutput> call() throws Exception {
-    LOGGER.info("Executing worker wrapper. Airbyte version: {}", new EnvConfigs().getAirbyteVersion());
+    LOGGER.info("Executing worker wrapper. Airbyte version: {}", configs.getAirbyteVersion());
     Files.createDirectories(jobRoot);
 
     return workerRun.get();

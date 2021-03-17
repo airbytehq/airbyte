@@ -33,6 +33,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.Configs;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
@@ -60,6 +61,7 @@ class TemporalWorkerRunFactoryTest {
   private TemporalClient temporalClient;
   private TemporalWorkerRunFactory workerRunFactory;
   private Job job;
+  private Configs configs;
 
   @BeforeEach
   void setup() throws IOException {
@@ -70,12 +72,15 @@ class TemporalWorkerRunFactoryTest {
     job = mock(Job.class, RETURNS_DEEP_STUBS);
     when(job.getId()).thenReturn(JOB_ID);
     when(job.getAttemptsCount()).thenReturn(ATTEMPT_ID);
+
+    configs = mock(Configs.class);
+    when(configs.getAirbyteVersion()).thenReturn("dev");
   }
 
   @Test
   void testGetSpec() throws Exception {
     when(job.getConfigType()).thenReturn(ConfigType.GET_SPEC);
-    final WorkerRun workerRun = workerRunFactory.create(job);
+    final WorkerRun workerRun = workerRunFactory.create(job, configs);
     workerRun.call();
     verify(temporalClient).submitGetSpec(JOB_ID, ATTEMPT_ID, job.getConfig().getGetSpec());
     assertEquals(jobRoot, workerRun.getJobRoot());
@@ -86,7 +91,7 @@ class TemporalWorkerRunFactoryTest {
               names = {"CHECK_CONNECTION_SOURCE", "CHECK_CONNECTION_DESTINATION"})
   void testCheckConnection(ConfigType value) throws Exception {
     when(job.getConfigType()).thenReturn(value);
-    final WorkerRun workerRun = workerRunFactory.create(job);
+    final WorkerRun workerRun = workerRunFactory.create(job, configs);
     workerRun.call();
     verify(temporalClient).submitCheckConnection(JOB_ID, ATTEMPT_ID, job.getConfig().getCheckConnection());
     assertEquals(jobRoot, workerRun.getJobRoot());
@@ -95,7 +100,7 @@ class TemporalWorkerRunFactoryTest {
   @Test
   void testDiscoverCatalog() throws Exception {
     when(job.getConfigType()).thenReturn(ConfigType.DISCOVER_SCHEMA);
-    final WorkerRun workerRun = workerRunFactory.create(job);
+    final WorkerRun workerRun = workerRunFactory.create(job, configs);
     workerRun.call();
     verify(temporalClient).submitDiscoverSchema(JOB_ID, ATTEMPT_ID, job.getConfig().getDiscoverCatalog());
     assertEquals(jobRoot, workerRun.getJobRoot());
@@ -104,7 +109,7 @@ class TemporalWorkerRunFactoryTest {
   @Test
   void testSync() throws Exception {
     when(job.getConfigType()).thenReturn(ConfigType.SYNC);
-    final WorkerRun workerRun = workerRunFactory.create(job);
+    final WorkerRun workerRun = workerRunFactory.create(job, configs);
     workerRun.call();
     verify(temporalClient).submitSync(JOB_ID, ATTEMPT_ID, job.getConfig().getSync());
     assertEquals(jobRoot, workerRun.getJobRoot());
@@ -125,7 +130,7 @@ class TemporalWorkerRunFactoryTest {
     when(job.getConfigType()).thenReturn(ConfigType.RESET_CONNECTION);
     when(job.getConfig().getResetConnection()).thenReturn(resetConfig);
 
-    final WorkerRun workerRun = workerRunFactory.create(job);
+    final WorkerRun workerRun = workerRunFactory.create(job, configs);
     workerRun.call();
 
     final ArgumentCaptor<JobSyncConfig> argument = ArgumentCaptor.forClass(JobSyncConfig.class);

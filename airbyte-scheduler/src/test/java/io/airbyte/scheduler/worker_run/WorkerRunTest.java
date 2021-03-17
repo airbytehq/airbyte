@@ -27,8 +27,10 @@ package io.airbyte.scheduler.worker_run;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import io.airbyte.commons.functional.CheckedSupplier;
+import io.airbyte.config.Configs;
 import io.airbyte.config.JobOutput;
 import io.airbyte.workers.OutputAndStatus;
 import java.io.IOException;
@@ -50,7 +52,10 @@ class WorkerRunTest {
   @Test
   void test() throws Exception {
     final CheckedSupplier<OutputAndStatus<JobOutput>, Exception> supplier = mock(CheckedSupplier.class);
-    new WorkerRun(path, supplier).call();
+    final Configs configs = mock(Configs.class);
+    when(configs.getAirbyteVersion()).thenReturn("dev");
+
+    new WorkerRun(path, supplier, configs).call();
 
     assertTrue(Files.exists(path));
     verify(supplier).get();
