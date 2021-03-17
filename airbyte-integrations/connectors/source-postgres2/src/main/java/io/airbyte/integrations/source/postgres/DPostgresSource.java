@@ -27,7 +27,7 @@ public class DPostgresSource {
     props.setProperty("plugin.name", "pgoutput");
     props.setProperty("connector.class", "io.debezium.connector.postgresql.PostgresConnector");
     props.setProperty("offset.storage", "org.apache.kafka.connect.storage.FileOffsetBackingStore");
-    props.setProperty("offset.storage.file.filename", "/tmp/offsets.dat");
+    props.setProperty("offset.storage.file.filename", "/tmp/offsets2.dat");
     props.setProperty("offset.flush.interval.ms", "60000");
     /* begin connector properties */
 //        .with("database.server.name", "orders")
@@ -37,6 +37,15 @@ public class DPostgresSource {
 //        .with("database.password", "postgres")
 //        .with("database.dbname", "demo")
 //        .with("table.whitelist", "public.orders")
+
+    // https://debezium.io/documentation/reference/configuration/avro.html
+    props.setProperty("key.converter.schemas.enable", "false");
+    props.setProperty("value.converter.schemas.enable", "false");
+
+    // https://debezium.io/documentation/reference/configuration/event-flattening.html
+    props.setProperty("delete.handling.mode", "rewrite");
+    props.setProperty("drop.tombstones", "false");
+    props.setProperty("transforms.unwrap.type", "io.debezium.transforms.ExtractNewRecordState");
 
     props.setProperty("table.whitelist", "public.*");
     props.setProperty("name", "orders-postgres-connector");
