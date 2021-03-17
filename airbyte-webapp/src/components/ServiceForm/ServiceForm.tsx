@@ -98,12 +98,16 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
         validationSchema={validationSchema}
         onSubmit={onFormSubmit}
       >
-        {({ values }) => (
+        {({ values, setSubmitting }) => (
           <>
             <FormikPatch />
             <FormRoot
               {...props}
-              onRetest={() => onRetestForm(values)}
+              onRetest={async () => {
+                setSubmitting(true);
+                await onRetestForm(values);
+                setSubmitting(false);
+              }}
               formFields={formFields}
               connector={
                 props.dropDownData?.find(
