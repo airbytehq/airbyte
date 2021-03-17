@@ -59,7 +59,7 @@ public class WorkerRun implements Callable<OutputAndStatus<JobOutput>> {
 
   @Override
   public OutputAndStatus<JobOutput> call() throws Exception {
-    LOGGER.info("Executing worker wrapper. Airbyte version: {}", new EnvConfigs().getAirbyteVersion());
+    LOGGER.info("Executing worker wrapper. Airbyte version: {}", new EnvConfigs().getAirbyteVersionOrWarning());
     Files.createDirectories(jobRoot);
 
     return workerRun.get();
