@@ -56,6 +56,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -135,7 +136,9 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
               Optional.ofNullable(config.get("schema")).map(JsonNode::asText))
                   .stream()
                   .map(t -> CatalogHelpers.createAirbyteStream(t.getName(), t.getFields())
-                      .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))
+                      .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+                      .withSourceDefinedPrimaryKey(
+                          t.getPrimaryKeys().stream().filter(Objects::nonNull).map(Collections::singletonList).collect(Collectors.toList())))
                   .collect(Collectors.toList()));
     }
   }
@@ -290,7 +293,7 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
               .distinct()
               .collect(Collectors.toList());
 
-          return new TableInfo(JdbcUtils.getFullyQualifiedTableName(t.getSchemaName(), t.getName()), fields);
+          return new TableInfo(JdbcUtils.getFullyQualifiedTableName(t.getSchemaName(), t.getName()), fields, t.getPrimaryKeys());
         })
         .collect(Collectors.toList());
   }
@@ -317,7 +320,7 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
                                                    final Optional<String> schemaOptional)
       throws Exception {
     final Set<String> internalSchemas = new HashSet<>(getExcludedInternalSchemas());
-    return database.bufferedResultSetQuery(
+    final List<TableInfoInternal> result = database.bufferedResultSetQuery(
         conn -> conn.getMetaData().getColumns(databaseOptional.orElse(null), schemaOptional.orElse(null), null, null),
         resultSet -> Jsons.jsonNode(ImmutableMap.<String, Object>builder()
             // we always want a namespace, if we cannot get a schema, use db name.
@@ -355,6 +358,17 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
                 })
                 .collect(Collectors.toList())))
         .collect(Collectors.toList());
+    result.forEach(t -> {
+      try {
+        final List<String> primaryKeys = database.bufferedResultSetQuery(
+            conn -> conn.getMetaData().getPrimaryKeys(databaseOptional.orElse(null), t.getSchemaName(), t.getName()),
+            resultSet -> resultSet.getString(JDBC_COLUMN_COLUMN_NAME));
+        t.addPrimaryKeys(primaryKeys);
+      } catch (SQLException e) {
+        LOGGER.warn(String.format("Could not find primary keys for %s.%s: %s", t.getSchemaName(), t.getName(), e));
+      }
+    });
+    return result;
   }
 
   private static AutoCloseableIterator<AirbyteMessage> getMessageIterator(AutoCloseableIterator<JsonNode> recordIterator,
@@ -440,10 +454,12 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
 
     private final String name;
     private final List<Field> fields;
+    private final List<String> primaryKeys;
 
-    public TableInfo(String name, List<Field> fields) {
+    public TableInfo(String name, List<Field> fields, List<String> primaryKeys) {
       this.name = name;
       this.fields = fields;
+      this.primaryKeys = primaryKeys;
     }
 
     public String getName() {
@@ -454,6 +470,10 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
       return fields;
     }
 
+    public List<String> getPrimaryKeys() {
+      return primaryKeys;
+    }
+
   }
 
   protected static class TableInfoInternal {
@@ -461,11 +481,13 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
     private final String schemaName;
     private final String name;
     private final List<ColumnInfo> fields;
+    private final List<String> primaryKeys;
 
     public TableInfoInternal(String schemaName, String tableName, List<ColumnInfo> fields) {
       this.schemaName = schemaName;
       this.name = tableName;
       this.fields = fields;
+      this.primaryKeys = new ArrayList<>();
     }
 
     public String getSchemaName() {
@@ -478,6 +500,14 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
 
     public List<ColumnInfo> getFields() {
       return fields;
+    }
+
+    public void addPrimaryKeys(List<String> primaryKeys) {
+      this.primaryKeys.addAll(primaryKeys);
+    }
+
+    public List<String> getPrimaryKeys() {
+      return primaryKeys;
     }
 
   }
