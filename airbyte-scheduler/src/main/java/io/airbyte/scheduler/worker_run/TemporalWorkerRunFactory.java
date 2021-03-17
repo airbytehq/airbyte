@@ -43,6 +43,7 @@ import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalJobException;
 import io.airbyte.workers.temporal.TemporalJobType;
+import io.temporal.failure.TemporalException;
 import java.nio.file.Path;
 
 public class TemporalWorkerRunFactory {
@@ -122,7 +123,11 @@ public class TemporalWorkerRunFactory {
   private OutputAndStatus<JobOutput> toOutputAndStatus(CheckedSupplier<JobOutput, TemporalJobException> supplier) {
     try {
       return new OutputAndStatus<>(JobStatus.SUCCEEDED, supplier.get());
-    } catch (TemporalJobException e) {
+    } catch (TemporalJobException | TemporalException e) {
+      // while from within the temporal activity we throw TemporalJobException, Temporal wraps any
+      // exception thrown by an activity in an ApplicationFailure exception, which gets wrapped in
+      // ActivityFailure exception which get wrapped in a WorkflowFailedException. We will need to unwrap
+      // these later, but for now we just catch the parent.
       return new OutputAndStatus<>(JobStatus.FAILED);
     }
   }
