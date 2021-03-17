@@ -40,10 +40,10 @@ On the other hand, if you don't mind losing your current Airbyte configuration o
 Here's an example of what might look like with the values filled in. It assumes that the downloaded `airbyte_archive.tar.gz` is in `/tmp`.
 
 ```bash
-docker run --rm -v /tmp:/config airbyte/migration:0.17.1-alpha --\
+docker run --rm -v /tmp:/config airbyte/migration:0.17.2-alpha --\
   --input /config/airbyte_archive.tar.gz\
   --output /config/airbyte_archive_migrated.tar.gz\
-  --target-version 0.17.1-alpha
+  --target-version 0.17.2-alpha
 ```
 
 {% hint style="info" %}
