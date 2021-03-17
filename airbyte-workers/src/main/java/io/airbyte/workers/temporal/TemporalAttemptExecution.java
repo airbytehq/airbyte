@@ -76,7 +76,7 @@ public class TemporalAttemptExecution<T> implements CheckedSupplier<T, TemporalJ
     try {
       mdcSetter.accept(jobRoot, jobId);
 
-      LOGGER.info("Executing worker wrapper. Airbyte version: {}", EnvConfigs.AIRBYTE_VERSION);
+      LOGGER.info("Executing worker wrapper. Airbyte version: {}", new EnvConfigs().getAirbyteVersionOrWarning());
       jobRootDirCreator.accept(jobRoot);
 
       return execution.apply(jobRoot);
