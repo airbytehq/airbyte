@@ -99,6 +99,10 @@ Now let's verify that this worked. Let's output the contents of the destination 
 docker exec airbyte-destination psql -U postgres -c "SELECT * FROM public.public_users;"
 ```
 
+{% hint style="info" %}
+Don't worry about the awkward `public_users` name for now; we are currently working on an update to allow users to configure their destination table names!
+{% endhint %}
+
 You should see the rows from the source database inside the destination database!
 
 And there you have it. You've taken data from one database and replicated it to another. All of the actual configuration for this replication only took place in the UI.
