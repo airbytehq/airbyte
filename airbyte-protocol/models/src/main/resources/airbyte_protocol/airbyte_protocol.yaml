@@ -52,26 +52,24 @@ definitions:
       - emitted_at
     properties:
       stream:
-        description: "the name of the stream for this record"
+        description: Name of the stream for this record
         type: string
       data:
-        description: "the record data"
+        description: The data
         type: object
         existingJavaType: com.fasterxml.jackson.databind.JsonNode
       emitted_at:
-        description: "when the data was emitted from the source. epoch in millisecond."
+        description: When the data was emitted from the source. (epoch in milliseconds)
         type: integer
-      replication_batch_id:
-        description: "Identifies which sync job replicated the record"
-      cdc_deleted_at:
-        description: "Timestamp when the record was deleted. null or unset if it has not been deleted. Only present for streams syncing data using CDC"
-        type: integer
-      cdc_updated_at:
-        description: "Timestamp when the record was updated. Only present for streams syncing data using CDC."
-        type: integer
-      cdc_lsn:
-        description: "Identifiers the transaction that produced the contained record. Only present for streams syncing data using CDC."
-        type: string
+      metadata:
+        description: "Map of metadata fields. Keys and values must both be strings. Below are some well-known fields.\n
+         replication_batch_id: Identifies which sync job replicated the record\n
+         cdc_deleted_at: Timestamp when the record was deleted. null or unset if it has not been deleted. Only present for streams syncing data using CDC. (epoch in milliseconds)\n
+         cdc_updated_at: Timestamp when the record was updated. Only present for streams syncing data using CDC. (epoch in milliseconds)\n
+         cdc_lsn: Identifies the transaction that produced the contained record. Only present for streams syncing data using CDC.\n
+         "
+        type: object
+        additionaProperties: true
   AirbyteStateMessage:
     type: object
     additionalProperties: true

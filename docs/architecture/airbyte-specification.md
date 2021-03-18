@@ -216,7 +216,7 @@ For the sake of brevity, we will not re-describe `spec` and `check`. They are ex
 ## The Airbyte Protocol
 
 * All messages passed to and from connectors must be wrapped in an `AirbyteMesage` envelope and serialized as JSON. The JsonSchema specification for these messages can be found [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_protocol.yaml).
-* Even if a record is wrapped in an `AirbyteMessage` it will only be processed if it appropriate for the given command. e.g. If a source `read` action includes AirbyteMessages in its stream of type Catalog for instance, these messages will be ignored as the `read` interface only expects `AirbyteRecordMessage`s and `AirbyteStateMessage`s. The appropriate `AirbyteMessage` types have been described in each command above.
+* Even if a record is wrapped in an `AirbyteMessage` it will only be processed if it is appropriate for the given command. e.g. If a source `read` action includes AirbyteMessages in its stream of type Catalog for instance, these messages will be ignored as the `read` interface only expects `AirbyteRecordMessage`s and `AirbyteStateMessage`s. The appropriate `AirbyteMessage` types have been described in each command above.
 * **ALL** actions are allowed to return `AirbyteLogMessage`s on stdout. For brevity, we have not mentioned these log messages in the description of each action, but they are always allowed. An `AirbyteLogMessage` wraps any useful logging that the connector wants to provide. These logs will be written to Airbyte's log files and output to the console.
 * I/O:
   * Connectors receive arguments on the command line via JSON files. `e.g. --catalog catalog.json`
@@ -225,6 +225,20 @@ For the sake of brevity, we will not re-describe `spec` and `check`. They are ex
 * Messages not wrapped in the `AirbyteMessage` will be ignored.
 * Each message must be on its own line. Multiple messages _cannot_ be sent on the same line.
 * Each message must but serialize to a JSON object that is exactly 1 line. The JSON objects cannot be serialized across multiple lines.
+
+### AirbyteRecordMessage
+
+The `AirbyteRecordMessage` contains 4 fields:
+* `stream` - This field contains the name of the stream with which the record is associated. If the record is from the "users" table, then the value for `stream` will be "users".
+* `emitted_at` - The time at which the record was emitted from the source. The source is responsible for setting this field.
+* `data` - The actual data associated with the record.
+* `metadata` - String-to-string map of metadata. There are a handful of wellknown metadata fields, which we describe below. Any step in a replication can mutate this map. A destination should write each metadata field as its own column with `_ab_` prepended to the key name. e.g. if `replication_batch_id` is in the metadata object, in the destination we would expect to see a column `ab_rebplication_batch_id`. All metadata fields are assumed to be optional.
+
+Well Known Metadata Fields:
+* `replication_batch_id` - this field denotes a batch identifier for records. In the Airbyte implementation of replication, the Airbyte Worker sets this field. This field is helpful for retaining the data lineage for any piece of data.
+* `cdc_deleted_at` - Timestamp when the record was deleted. `null` or unset if it has not been deleted. Only present for streams syncing data using CDC. This field, if set, should be set in the source. (epoch in milliseconds)
+* `cdc_updated_at` - Timestamp when the record was updated. Only present for streams syncing data using CDC.  This field, if set, should be set in the source. (epoch in milliseconds)
+* `cdc_lsn` - Identifies the transaction that produced the contained record. Only present for streams syncing data using CDC. This field, if set, should be set in the source.
 
 ## Recognition
 
