@@ -70,7 +70,7 @@ class API:
 
 
 class StreamAPI(ABC):
-    results_per_page = 100
+    results_per_page = 200
 
     def __init__(self, api: API, *args, **kwargs):
         super().__init__(*args, **kwargs)
