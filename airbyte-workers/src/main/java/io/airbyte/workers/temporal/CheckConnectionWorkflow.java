@@ -54,6 +54,7 @@ public interface CheckConnectionWorkflow {
 
     final ActivityOptions options = ActivityOptions.newBuilder()
         .setScheduleToCloseTimeout(Duration.ofHours(1))
+        .setRetryOptions(TemporalUtils.NO_RETRY)
         .build();
     private final CheckConnectionActivity activity = Workflow.newActivityStub(CheckConnectionActivity.class, options);
 
