@@ -61,6 +61,17 @@ definitions:
       emitted_at:
         description: "when the data was emitted from the source. epoch in millisecond."
         type: integer
+      replication_batch_id:
+        description: "Identifies which sync job replicated the record"
+      cdc_deleted_at:
+        description: "Timestamp when the record was deleted. null or unset if it has not been deleted. Only present for streams syncing data using CDC"
+        type: integer
+      cdc_updated_at:
+        description: "Timestamp when the record was updated. Only present for streams syncing data using CDC."
+        type: integer
+      cdc_lsn:
+        description: "Identifiers the transaction that produced the contained record. Only present for streams syncing data using CDC."
+        type: string
   AirbyteStateMessage:
     type: object
     additionalProperties: true
