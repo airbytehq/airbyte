@@ -44,6 +44,7 @@ import java.nio.file.Path;
 import java.util.function.BiConsumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.stubbing.Answer;
 
 class TemporalAttemptExecutionTest {
 
@@ -81,7 +82,11 @@ class TemporalAttemptExecutionTest {
     Worker<String, String> worker = mock(Worker.class);
     when(worker.run(any(), any())).thenReturn(expected);
 
-    when(execution.get()).thenReturn(worker);
+    when(execution.get()).thenAnswer((Answer<Worker<String, String>>) invocation -> {
+      // sleep to make sure the scheduled thread has time to start and execute
+      Thread.sleep(100);
+      return worker;
+    });
 
     final String actual = attemptExecution.get();
 
