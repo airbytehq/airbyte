@@ -92,6 +92,7 @@ public class MigrationV0_18_0 extends BaseMigration implements Migration {
         .stream()
         .map(stream -> {
           final JsonNode airbyteStream = stream.get("stream");
+          assert airbyteStream != null;
           JsonNode syncMode = stream.get("sync_mode");
           if (syncMode == null) {
             syncMode = Jsons.jsonNode(SyncMode.FULL_REFRESH.toString());
@@ -123,7 +124,7 @@ public class MigrationV0_18_0 extends BaseMigration implements Migration {
           return (Map<String, JsonNode>) ImmutableMap.<String, JsonNode>builder()
               .put("stream", airbyteStream)
               .put("sync_mode", syncMode)
-              .put("cursor_field", stream.get("cursor_field"))
+              .put("cursor_field", stream.get("cursor_field") != null ? stream.get("cursor_field") : Jsons.jsonNode(Collections.emptyList()))
               .put("destination_sync_mode", destinationSyncMode)
               .put("primary_key", primaryKey)
               .build();

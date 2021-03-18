@@ -60,8 +60,7 @@
         "source_defined_cursor": false,
         "default_cursor_field": []
       },
-      "sync_mode": "full_refresh",
-      "cursor_field": []
+      "sync_mode": "full_refresh"
     },
     {
       "stream": {
