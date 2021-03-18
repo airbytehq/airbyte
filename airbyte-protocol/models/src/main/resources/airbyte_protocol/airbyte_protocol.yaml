@@ -62,14 +62,17 @@ definitions:
         description: When the data was emitted from the source. (epoch in milliseconds)
         type: integer
       metadata:
-        description: "Map of metadata fields. Keys and values must both be strings. Below are some well-known fields.\n
-         replication_batch_id: Identifies which sync job replicated the record\n
-         cdc_deleted_at: Timestamp when the record was deleted. null or unset if it has not been deleted. Only present for streams syncing data using CDC. (epoch in milliseconds)\n
-         cdc_updated_at: Timestamp when the record was updated. Only present for streams syncing data using CDC. (epoch in milliseconds)\n
-         cdc_lsn: Identifies the transaction that produced the contained record. Only present for streams syncing data using CDC.\n
-         "
-        type: object
-        additionaProperties: true
+        "$ref": "#/definitions/AirbyteRecordMessageMetadata"
+  AirbyteRecordMessageMetadata:
+    description: "Map of metadata fields. Keys and values must both be strings. Below are some well-known fields.\n
+     replication_batch_id: Identifies which sync job replicated the record\n
+     cdc_deleted_at: Timestamp when the record was deleted. null or unset if it has not been deleted. Only present for streams syncing data using CDC. (epoch in milliseconds)\n
+     cdc_updated_at: Timestamp when the record was updated. Only present for streams syncing data using CDC. (epoch in milliseconds)\n
+     cdc_lsn: Identifies the transaction that produced the contained record. Only present for streams syncing data using CDC.\n
+     "
+    type: object
+    additionaProperties:
+      type: string
   AirbyteStateMessage:
     type: object
     additionalProperties: true
