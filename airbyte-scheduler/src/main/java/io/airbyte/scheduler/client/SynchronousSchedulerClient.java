@@ -31,6 +31,10 @@ import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.io.IOException;
 
+/**
+ * Exposes a way of executing short-lived jobs as RPC calls. Blocks until the job completes. No
+ * metadata will be stored in the Jobs table for jobs triggered via this client.
+ */
 public interface SynchronousSchedulerClient {
 
   SynchronousResponse<StandardCheckConnectionOutput> createSourceCheckConnectionJob(SourceConnection source, String dockerImage)

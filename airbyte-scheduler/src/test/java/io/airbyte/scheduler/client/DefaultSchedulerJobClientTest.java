@@ -27,15 +27,12 @@ package io.airbyte.scheduler.client;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
 import io.airbyte.scheduler.Job;
-import io.airbyte.scheduler.JobStatus;
 import io.airbyte.scheduler.persistence.JobCreator;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import java.io.IOException;
@@ -118,19 +115,6 @@ class DefaultSchedulerJobClientTest {
     when(jobPersistence.getJob(42L)).thenReturn(currentJob);
 
     assertEquals(currentJob, client.createOrGetActiveResetConnectionJob(destination, standardSync, destinationDockerImage));
-  }
-
-  @Test
-  void testWaitUntilJobIsTerminalOrTimeout() throws IOException {
-    when(jobPersistence.getJob(JOB_ID)).thenReturn(job);
-    when(job.getStatus())
-        .thenReturn(JobStatus.PENDING)
-        .thenReturn(JobStatus.RUNNING)
-        .thenReturn(JobStatus.SUCCEEDED);
-
-    assertEquals(job, client.waitUntilJobIsTerminalOrTimeout(JOB_ID));
-
-    verify(jobPersistence, times(3)).getJob(JOB_ID);
   }
 
 }
