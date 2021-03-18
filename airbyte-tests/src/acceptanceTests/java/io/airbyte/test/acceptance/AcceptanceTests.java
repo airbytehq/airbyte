@@ -766,7 +766,7 @@ public class AcceptanceTests {
   private static void waitForSuccessfulJob(JobsApi jobsApi, JobRead originalJob) throws InterruptedException, ApiException {
     JobRead job = originalJob;
     int count = 0;
-    while (count < 15 && (job.getStatus() == JobStatus.PENDING || job.getStatus() == JobStatus.RUNNING)) {
+    while (count < 60 && (job.getStatus() == JobStatus.PENDING || job.getStatus() == JobStatus.RUNNING)) {
       Thread.sleep(1000);
       count++;
 
