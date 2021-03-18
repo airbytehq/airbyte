@@ -36,7 +36,6 @@ import io.airbyte.commons.lang.CloseableConsumer;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
@@ -94,6 +93,7 @@ public class Yamls {
           }
           return endOfData();
         }
+
       };
 
       return AutoCloseableIterators.fromIterator(iterator, parser::close);
@@ -109,7 +109,7 @@ public class Yamls {
    * Creates a consumer that writes list items to the writer in a streaming fashion.
    *
    * @param writer writer to write to
-   * @param <T>    type of items being written
+   * @param <T> type of items being written
    * @return consumer that is able to write element to a list element by element. must be closed!
    */
   public static <T> CloseableConsumer<T> listWriter(Writer writer) {

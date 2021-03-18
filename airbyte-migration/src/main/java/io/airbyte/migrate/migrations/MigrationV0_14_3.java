@@ -34,7 +34,6 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.migrate.Migration;
 import io.airbyte.migrate.ResourceId;
 import io.airbyte.migrate.ResourceType;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;

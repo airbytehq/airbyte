@@ -24,6 +24,11 @@
 
 package io.airbyte.commons.yaml;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
@@ -32,8 +37,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.CloseableConsumer;
 import io.airbyte.commons.stream.MoreStreams;
 import io.airbyte.commons.util.AutoCloseableIterator;
-import org.junit.jupiter.api.Test;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -41,11 +44,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
+import org.junit.jupiter.api.Test;
 
 class YamlsTest {
 
