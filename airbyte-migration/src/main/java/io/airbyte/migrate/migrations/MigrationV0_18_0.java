@@ -99,11 +99,11 @@ public class MigrationV0_18_0 extends BaseMigration implements Migration {
           }
           JsonNode destinationSyncMode = stream.get("destination_sync_mode");
           if (destinationSyncMode == null) {
-            if (syncMode != null && SyncMode.fromValue(syncMode.asText()) == SyncMode.FULL_REFRESH) {
+            if (SyncMode.fromValue(syncMode.asText()) == SyncMode.FULL_REFRESH) {
               destinationSyncMode = Jsons.jsonNode(DestinationSyncMode.OVERWRITE.toString());
               LOGGER.debug("Migrating {} to source sync_mode: {} destination_sync_mode: {}", airbyteStream.get("name"), syncMode,
                   destinationSyncMode);
-            } else if (syncMode != null && SyncMode.fromValue(syncMode.asText()) == SyncMode.INCREMENTAL) {
+            } else if (SyncMode.fromValue(syncMode.asText()) == SyncMode.INCREMENTAL) {
               destinationSyncMode = Jsons.jsonNode(DestinationSyncMode.APPEND.toString());
               LOGGER.debug("Migrating {} to source sync_mode: {} destination_sync_mode: {}", airbyteStream.get("name"), syncMode,
                   destinationSyncMode);
@@ -116,10 +116,8 @@ public class MigrationV0_18_0 extends BaseMigration implements Migration {
           }
           JsonNode primaryKey = stream.get("primary_key");
           if (primaryKey == null) {
-            primaryKey = airbyteStream.get("source_defined_primary_key");
-            if (primaryKey == null) {
-              primaryKey = Jsons.jsonNode(Collections.emptyList());
-            }
+            JsonNode sourceDefinedPrimaryKey = airbyteStream.get("source_defined_primary_key");
+            primaryKey = sourceDefinedPrimaryKey != null ? sourceDefinedPrimaryKey : Jsons.jsonNode(Collections.emptyList());
           }
           // configured catalog fields
           return (Map<String, JsonNode>) ImmutableMap.<String, JsonNode>builder()
