@@ -51,13 +51,13 @@ import org.slf4j.LoggerFactory;
  * outputs are passed to the selected worker. It also makes sures that the outputs of the worker are
  * persisted to the db.
  */
-public class TemporalAttemptExecution<INPUT, T> implements CheckedSupplier<T, TemporalJobException> {
+public class TemporalAttemptExecution<INPUT, OUTPUT> implements CheckedSupplier<OUTPUT, TemporalJobException> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TemporalAttemptExecution.class);
   private static final Duration HEARTBEAT_INTERVAL = Duration.ofSeconds(10);
 
   private final Path jobRoot;
-  private final CheckedSupplier<Worker<INPUT, T>, Exception> workerSupplier;
+  private final CheckedSupplier<Worker<INPUT, OUTPUT>, Exception> workerSupplier;
   private final Supplier<INPUT> inputSupplier;
   private final long jobId;
   private final BiConsumer<Path, Long> mdcSetter;
@@ -66,7 +66,7 @@ public class TemporalAttemptExecution<INPUT, T> implements CheckedSupplier<T, Te
 
   public TemporalAttemptExecution(Path workspaceRoot,
                                   JobRunConfig jobRunConfig,
-                                  CheckedSupplier<Worker<INPUT, T>, Exception> workerSupplier,
+                                  CheckedSupplier<Worker<INPUT, OUTPUT>, Exception> workerSupplier,
                                   Supplier<INPUT> inputSupplier,
                                   CancellationHandler cancellationHandler) {
     this(workspaceRoot, jobRunConfig, workerSupplier, inputSupplier, WorkerUtils::setJobMdc, Files::createDirectories, cancellationHandler);
@@ -75,7 +75,7 @@ public class TemporalAttemptExecution<INPUT, T> implements CheckedSupplier<T, Te
   @VisibleForTesting
   TemporalAttemptExecution(Path workspaceRoot,
                            JobRunConfig jobRunConfig,
-                           CheckedSupplier<Worker<INPUT, T>, Exception> workerSupplier,
+                           CheckedSupplier<Worker<INPUT, OUTPUT>, Exception> workerSupplier,
                            Supplier<INPUT> inputSupplier,
                            BiConsumer<Path, Long> mdcSetter,
                            CheckedConsumer<Path, IOException> jobRootDirCreator,
@@ -90,15 +90,15 @@ public class TemporalAttemptExecution<INPUT, T> implements CheckedSupplier<T, Te
   }
 
   @Override
-  public T get() throws TemporalJobException {
+  public OUTPUT get() throws TemporalJobException {
     try {
       mdcSetter.accept(jobRoot, jobId);
 
       LOGGER.info("Executing worker wrapper. Airbyte version: {}", new EnvConfigs().getAirbyteVersionOrWarning());
       jobRootDirCreator.accept(jobRoot);
 
-      final Worker<INPUT, T> worker = workerSupplier.get();
-      final CompletableFuture<T> outputFuture = new CompletableFuture<>();
+      final Worker<INPUT, OUTPUT> worker = workerSupplier.get();
+      final CompletableFuture<OUTPUT> outputFuture = new CompletableFuture<>();
       final Thread workerThread = getWorkerThread(worker, outputFuture);
       final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
       final Runnable cancellationChecker = getCancellationChecker(worker, workerThread, outputFuture);
@@ -120,12 +120,12 @@ public class TemporalAttemptExecution<INPUT, T> implements CheckedSupplier<T, Te
     }
   }
 
-  private Thread getWorkerThread(Worker<INPUT, T> worker, CompletableFuture<T> outputFuture) {
+  private Thread getWorkerThread(Worker<INPUT, OUTPUT> worker, CompletableFuture<OUTPUT> outputFuture) {
     return new Thread(() -> {
       mdcSetter.accept(jobRoot, jobId);
 
       try {
-        final T output = worker.run(inputSupplier.get(), jobRoot);
+        final OUTPUT output = worker.run(inputSupplier.get(), jobRoot);
         outputFuture.complete(output);
       } catch (Throwable e) {
         LOGGER.info("Completing future exceptionally...", e);
@@ -134,7 +134,7 @@ public class TemporalAttemptExecution<INPUT, T> implements CheckedSupplier<T, Te
     });
   }
 
-  private Runnable getCancellationChecker(Worker<INPUT, T> worker, Thread workerThread, CompletableFuture<T> outputFuture) {
+  private Runnable getCancellationChecker(Worker<INPUT, OUTPUT> worker, Thread workerThread, CompletableFuture<OUTPUT> outputFuture) {
     return () -> {
       try {
         mdcSetter.accept(jobRoot, jobId);
