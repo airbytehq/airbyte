@@ -128,7 +128,7 @@ public class BufferedStreamConsumer extends FailureTrackingConsumer<AirbyteMessa
 
     onStart.call();
 
-    writerPool.scheduleAtFixedRate(
+    writerPool.scheduleWithFixedDelay(
         () -> writeStreamsWithNRecords(MIN_RECORDS, streamNames, writeBuffers, recordWriter),
         THREAD_DELAY_MILLIS,
         THREAD_DELAY_MILLIS,

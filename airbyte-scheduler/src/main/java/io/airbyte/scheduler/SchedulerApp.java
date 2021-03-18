@@ -117,7 +117,7 @@ public class SchedulerApp {
     // anymore.
     cleanupZombies(jobPersistence);
 
-    scheduledPool.scheduleAtFixedRate(
+    scheduledPool.scheduleWithFixedDelay(
         () -> {
           MDC.setContextMap(mdc);
           jobRetrier.run();
@@ -128,7 +128,7 @@ public class SchedulerApp {
         SCHEDULING_DELAY.toSeconds(),
         TimeUnit.SECONDS);
 
-    scheduledPool.scheduleAtFixedRate(
+    scheduledPool.scheduleWithFixedDelay(
         () -> {
           MDC.setContextMap(mdc);
           jobCleaner.run();
