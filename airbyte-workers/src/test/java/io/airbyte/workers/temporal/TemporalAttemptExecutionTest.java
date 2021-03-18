@@ -84,7 +84,7 @@ class TemporalAttemptExecutionTest {
 
     when(execution.get()).thenAnswer((Answer<Worker<String, String>>) invocation -> {
       // sleep to make sure the scheduled thread has time to start and execute
-      Thread.sleep(100);
+      Thread.sleep(1000);
       return worker;
     });
 
