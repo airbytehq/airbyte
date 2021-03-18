@@ -40,18 +40,26 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.temporal.client.WorkflowClient;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class TemporalClientTest {
 
+  private static final UUID JOB_UUID = UUID.randomUUID();
   private static final long JOB_ID = 11L;
   private static final int ATTEMPT_ID = 21;
-  private static final JobRunConfig JOB_RUN_CONFIG = new JobRunConfig().withJobId(JOB_ID).withAttemptId((long) ATTEMPT_ID);
+  private static final JobRunConfig JOB_RUN_CONFIG = new JobRunConfig()
+      .withJobId(String.valueOf(JOB_ID))
+      .withAttemptId((long) ATTEMPT_ID);
   private static final String IMAGE_NAME1 = "hms invincible";
   private static final String IMAGE_NAME2 = "hms defiant";
+  private static final IntegrationLauncherConfig UUID_LAUNCHER_CONFIG = new IntegrationLauncherConfig()
+      .withJobId(String.valueOf(JOB_UUID))
+      .withAttemptId((long) ATTEMPT_ID)
+      .withDockerImage(IMAGE_NAME1);
   private static final IntegrationLauncherConfig LAUNCHER_CONFIG = new IntegrationLauncherConfig()
-      .withJobId(JOB_ID)
+      .withJobId(String.valueOf(JOB_ID))
       .withAttemptId((long) ATTEMPT_ID)
       .withDockerImage(IMAGE_NAME1);
 
@@ -70,8 +78,8 @@ class TemporalClientTest {
     when(workflowClient.newWorkflowStub(SpecWorkflow.class, TemporalUtils.getWorkflowOptions(TemporalJobType.GET_SPEC))).thenReturn(specWorkflow);
     final JobGetSpecConfig getSpecConfig = new JobGetSpecConfig().withDockerImage(IMAGE_NAME1);
 
-    temporalClient.submitGetSpec(JOB_ID, ATTEMPT_ID, getSpecConfig);
-    specWorkflow.run(JOB_RUN_CONFIG, LAUNCHER_CONFIG);
+    temporalClient.submitGetSpec(JOB_UUID, ATTEMPT_ID, getSpecConfig);
+    specWorkflow.run(JOB_RUN_CONFIG, UUID_LAUNCHER_CONFIG);
     verify(workflowClient).newWorkflowStub(SpecWorkflow.class, TemporalUtils.getWorkflowOptions(TemporalJobType.GET_SPEC));
   }
 
@@ -86,8 +94,8 @@ class TemporalClientTest {
     final StandardCheckConnectionInput input = new StandardCheckConnectionInput()
         .withConnectionConfiguration(checkConnectionConfig.getConnectionConfiguration());
 
-    temporalClient.submitCheckConnection(JOB_ID, ATTEMPT_ID, checkConnectionConfig);
-    checkConnectionWorkflow.run(JOB_RUN_CONFIG, LAUNCHER_CONFIG, input);
+    temporalClient.submitCheckConnection(JOB_UUID, ATTEMPT_ID, checkConnectionConfig);
+    checkConnectionWorkflow.run(JOB_RUN_CONFIG, UUID_LAUNCHER_CONFIG, input);
     verify(workflowClient).newWorkflowStub(CheckConnectionWorkflow.class, TemporalUtils.getWorkflowOptions(TemporalJobType.CHECK_CONNECTION));
   }
 
@@ -102,8 +110,8 @@ class TemporalClientTest {
     final StandardDiscoverCatalogInput input = new StandardDiscoverCatalogInput()
         .withConnectionConfiguration(checkConnectionConfig.getConnectionConfiguration());
 
-    temporalClient.submitDiscoverSchema(JOB_ID, ATTEMPT_ID, checkConnectionConfig);
-    discoverCatalogWorkflow.run(JOB_RUN_CONFIG, LAUNCHER_CONFIG, input);
+    temporalClient.submitDiscoverSchema(JOB_UUID, ATTEMPT_ID, checkConnectionConfig);
+    discoverCatalogWorkflow.run(JOB_RUN_CONFIG, UUID_LAUNCHER_CONFIG, input);
     verify(workflowClient).newWorkflowStub(DiscoverCatalogWorkflow.class, TemporalUtils.getWorkflowOptions(TemporalJobType.DISCOVER_SCHEMA));
   }
 
@@ -126,7 +134,7 @@ class TemporalClientTest {
         .withState(syncConfig.getState());
 
     final IntegrationLauncherConfig destinationLauncherConfig = new IntegrationLauncherConfig()
-        .withJobId(JOB_ID)
+        .withJobId(String.valueOf(JOB_ID))
         .withAttemptId((long) ATTEMPT_ID)
         .withDockerImage(IMAGE_NAME2);
 

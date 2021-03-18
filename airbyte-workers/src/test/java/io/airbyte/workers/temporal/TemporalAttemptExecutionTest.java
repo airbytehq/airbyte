@@ -44,7 +44,7 @@ import org.junit.jupiter.api.Test;
 
 class TemporalAttemptExecutionTest {
 
-  private static final long JOB_ID = 11L;
+  private static final String JOB_ID = "11";
   private static final int ATTEMPT_ID = 21;
   private static final JobRunConfig JOB_RUN_CONFIG = new JobRunConfig().withJobId(JOB_ID).withAttemptId((long) ATTEMPT_ID);
 
@@ -52,7 +52,7 @@ class TemporalAttemptExecutionTest {
   private TemporalJobException expectedException;
 
   private CheckedFunction<Path, String, Exception> execution;
-  private BiConsumer<Path, Long> mdcSetter;
+  private BiConsumer<Path, String> mdcSetter;
   private CheckedConsumer<Path, IOException> jobRootDirCreator;
 
   private TemporalAttemptExecution<String> attemptExecution;
