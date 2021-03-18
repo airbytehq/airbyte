@@ -24,6 +24,7 @@
 
 package io.airbyte.scheduler.client;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.config.DestinationConnection;
@@ -39,11 +40,20 @@ import io.airbyte.scheduler.JobTracker;
 import io.airbyte.scheduler.JobTracker.JobState;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalJobException;
+import io.temporal.api.common.v1.Payloads;
+import io.temporal.common.converter.DataConverter;
+import io.temporal.common.converter.EncodedValues;
+import io.temporal.failure.ApplicationFailure;
+import io.temporal.failure.TemporalException;
 import java.io.IOException;
 import java.time.Instant;
+import java.util.Map;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerClient {
+  private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSynchronousSchedulerClient.class);
 
   private final TemporalClient temporalClient;
   private final JobTracker jobTracker;
@@ -54,8 +64,7 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
   }
 
   @Override
-  public SynchronousResponse<StandardCheckConnectionOutput> createSourceCheckConnectionJob(final SourceConnection source, final String dockerImage)
-      throws IOException {
+  public SynchronousResponse<StandardCheckConnectionOutput> createSourceCheckConnectionJob(final SourceConnection source, final String dockerImage) {
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
         .withConnectionConfiguration(source.getConfiguration())
         .withDockerImage(dockerImage);
@@ -69,8 +78,7 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
 
   @Override
   public SynchronousResponse<StandardCheckConnectionOutput> createDestinationCheckConnectionJob(final DestinationConnection destination,
-                                                                                                final String dockerImage)
-      throws IOException {
+                                                                                                final String dockerImage) {
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
         .withConnectionConfiguration(destination.getConfiguration())
         .withDockerImage(dockerImage);
@@ -83,7 +91,7 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
   }
 
   @Override
-  public SynchronousResponse<AirbyteCatalog> createDiscoverSchemaJob(final SourceConnection source, final String dockerImage) throws IOException {
+  public SynchronousResponse<AirbyteCatalog> createDiscoverSchemaJob(final SourceConnection source, final String dockerImage) {
     final JobDiscoverCatalogConfig jobDiscoverCatalogConfig = new JobDiscoverCatalogConfig()
         .withConnectionConfiguration(source.getConfiguration())
         .withDockerImage(dockerImage);
@@ -106,6 +114,22 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
         null);
   }
 
+  void attemptDeserialize(ApplicationFailure e) {
+    DataConverter converter = DataConverter.getDefaultInstance();
+    LOGGER.info("e.getType() " + e.getType());
+    LOGGER.info("e.getDetails() " + e.getDetails());
+    LOGGER.info("e.getDetails().get(TemporalJobException.class); " + e.getDetails().get(TemporalJobException.class));
+    LOGGER.info("e.getDetails().get(0, TemporalJobException.class); " + e.getDetails().get(0, TemporalJobException.class));
+    final EncodedValues details = (EncodedValues) e.getDetails();
+    LOGGER.info("details " + details);
+
+    final Payloads detailsAsPayload = details.toPayloads().get();
+    LOGGER.info("detailsAsPayload: " + detailsAsPayload);
+
+    final TemporalJobException t = converter.fromPayload(detailsAsPayload.getPayloads(0), TemporalJobException.class, TemporalJobException.class);
+    LOGGER.info("TemporalJobException " + t);
+  }
+
   // config id can be empty
   @VisibleForTesting
   <T> SynchronousResponse<T> execute(ConfigType configType,
@@ -119,11 +143,29 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
     try {
       track(jobId, configType, jobTrackerId, JobState.STARTED, null);
       operationOutput = executor.apply(jobId);
+      LOGGER.info("check job before execute");
       track(jobId, configType, jobTrackerId, JobState.SUCCEEDED, operationOutput);
-    } catch (TemporalJobException e) {
-      exception = e;
+      LOGGER.info("check job after execute");
+    } catch (TemporalException | TemporalJobException e) {
+      LOGGER.info("check job caught TemporalException | TemporalJobException");
+      Throwable tempE = e;
+      while(null != tempE && !(tempE instanceof TemporalJobException)) {
+        LOGGER.info("check job tempE.getCause() = " + tempE.getCause());
+        if(tempE instanceof ApplicationFailure) {
+          attemptDeserialize((ApplicationFailure) tempE);
+        }
+        tempE = tempE.getCause();
+      }
+      // todo weird.
+      exception = null != tempE ? ((TemporalJobException) tempE) : null;
       track(jobId, configType, jobTrackerId, JobState.FAILED, operationOutput);
+
+      if(null == tempE) {
+        // todo fix.
+        throw (TemporalException)e;
+      }
     } catch (Exception e) {
+      LOGGER.info("check job caught Exception");
       track(jobId, configType, jobTrackerId, JobState.FAILED, operationOutput);
       throw e;
     }

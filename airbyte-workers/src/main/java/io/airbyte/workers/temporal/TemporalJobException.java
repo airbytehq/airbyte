@@ -24,28 +24,45 @@
 
 package io.airbyte.workers.temporal;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.collect.Maps;
+import io.airbyte.commons.json.Jsons;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 
 public class TemporalJobException extends Exception {
 
-  private final Path logPath;
+  private final String logPath;
+
+  public TemporalJobException() {
+    super();
+    this.logPath = null;
+  }
+
+//  @JsonCreator
+  public TemporalJobException(String logPath) {
+    this.logPath = logPath;
+  }
 
   public TemporalJobException(Path logPath) {
-    this.logPath = logPath;
+    this.logPath = logPath.toString();
   }
 
   public TemporalJobException(Path logPath, Throwable cause) {
     super(cause);
-    this.logPath = logPath;
+    this.logPath = logPath.toString();
   }
 
   public TemporalJobException(Path logPath, String message, Throwable cause) {
     super(message, cause);
-    this.logPath = logPath;
+    this.logPath = logPath.toString();
   }
 
   public Path getLogPath() {
-    return logPath;
+    return Path.of(logPath);
   }
 
 }

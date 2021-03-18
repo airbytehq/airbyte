@@ -39,8 +39,12 @@ import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.temporal.client.WorkflowClient;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TemporalClient {
+  private static final Logger LOGGER = LoggerFactory.getLogger(TemporalClient.class);
+
 
   private final WorkflowClient client;
 
@@ -71,7 +75,11 @@ public class TemporalClient {
         .withDockerImage(config.getDockerImage());
     final StandardCheckConnectionInput input = new StandardCheckConnectionInput().withConnectionConfiguration(config.getConnectionConfiguration());
 
-    return getWorkflowStub(CheckConnectionWorkflow.class, TemporalJobType.CHECK_CONNECTION).run(jobRunConfig, launcherConfig, input);
+    LOGGER.info("submitting check job!");
+    final StandardCheckConnectionOutput run = getWorkflowStub(CheckConnectionWorkflow.class, TemporalJobType.CHECK_CONNECTION)
+        .run(jobRunConfig, launcherConfig, input);
+    LOGGER.info("received response from check job!");
+    return run;
   }
 
   public AirbyteCatalog submitDiscoverSchema(UUID jobId, int attempt, JobDiscoverCatalogConfig config) throws TemporalJobException {

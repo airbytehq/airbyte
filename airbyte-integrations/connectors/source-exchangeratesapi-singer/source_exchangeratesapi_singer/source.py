@@ -22,21 +22,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import urllib.request
+import sys
 from typing import Dict
 
-from airbyte_protocol import AirbyteConnectionStatus, Status, SyncMode
+from airbyte_protocol import AirbyteConnectionStatus, SyncMode
 from base_singer import SingerSource, SyncModeInfo
 
 
 class SourceExchangeRatesApiSinger(SingerSource):
     def check(self, logger, config_path) -> AirbyteConnectionStatus:
-        try:
-            code = urllib.request.urlopen("https://api.exchangeratesapi.io/").getcode()
-            logger.info(f"Ping response code: {code}")
-            return AirbyteConnectionStatus(status=Status.SUCCEEDED if (code == 200) else Status.FAILED)
-        except Exception as e:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"{str(e)}")
+        sys.exit(200)
 
     def discover_cmd(self, logger, config_path) -> str:
         return 'tap-exchangeratesapi | grep \'"type": "SCHEMA"\' | head -1 | jq -c \'{"streams":[{"stream": .stream, "schema": .schema}]}\''

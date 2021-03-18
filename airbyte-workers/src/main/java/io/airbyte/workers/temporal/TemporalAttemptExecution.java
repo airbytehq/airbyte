@@ -32,6 +32,7 @@ import io.airbyte.config.EnvConfigs;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerUtils;
+import io.temporal.activity.Activity;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -81,9 +82,9 @@ public class TemporalAttemptExecution<T> implements CheckedSupplier<T, TemporalJ
 
       return execution.apply(jobRoot);
     } catch (TemporalJobException e) {
-      throw e;
+      throw Activity.wrap(e);
     } catch (Exception e) {
-      throw new TemporalJobException(jobRoot.resolve(WorkerConstants.LOG_FILENAME), e);
+      throw Activity.wrap(new TemporalJobException(jobRoot.resolve(WorkerConstants.LOG_FILENAME), e));
     }
   }
 
