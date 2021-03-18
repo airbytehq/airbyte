@@ -31,6 +31,7 @@ import com.google.common.collect.Maps;
 import io.airbyte.commons.iterator.MoreIterators;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.migrate.Migration;
 import io.airbyte.migrate.ResourceId;
 import io.airbyte.migrate.ResourceType;
