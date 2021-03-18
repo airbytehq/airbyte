@@ -9,12 +9,13 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
 
 import { JobItem as JobApiItem, Attempt } from "core/resources/Job";
+import { JobInfo } from "core/resources/Scheduler";
 import { Row, Cell } from "components/SimpleTableComponents";
 import StatusIcon from "components/StatusIcon";
 import AttemptDetails from "./AttemptDetails";
 
 type IProps = {
-  job: JobApiItem;
+  job: JobApiItem | JobInfo;
   attempts: Attempt[];
   isOpen?: boolean;
   onExpand: () => void;

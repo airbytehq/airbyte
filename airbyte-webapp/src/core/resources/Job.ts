@@ -2,7 +2,7 @@ import { Resource, FetchOptions, ReadShape, SchemaDetail } from "rest-hooks";
 import BaseResource from "./BaseResource";
 
 export interface JobItem {
-  id: number;
+  id: number | string;
   configType: string;
   configId: string;
   createdAt: number;
