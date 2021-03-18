@@ -96,8 +96,12 @@ One of biggest problems we've seen in tools like Fivetran is the lack of visibil
 Now let's verify that this worked. Let's output the contents of the destination db:
 
 ```text
-docker exec airbyte-destination psql -U postgres -c "SELECT * FROM public.users;"
+docker exec airbyte-destination psql -U postgres -c "SELECT * FROM public.public_users;"
 ```
+
+{% hint style="info" %}
+Don't worry about the awkward `public_users` name for now; we are currently working on an update to allow users to configure their destination table names!
+{% endhint %}
 
 You should see the rows from the source database inside the destination database!
 
