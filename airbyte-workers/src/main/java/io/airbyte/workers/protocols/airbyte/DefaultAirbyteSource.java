@@ -115,14 +115,14 @@ public class DefaultAirbyteSource implements AirbyteSource {
 
   @Override
   public void cancel() throws Exception {
-    if (tapProcess == null) {
-      return;
-    }
+    LOGGER.info("Attempting to cancel source process...");
 
-    LOGGER.debug("Cancelling tap process");
-    WorkerUtils.gentleClose(tapProcess, 5, TimeUnit.SECONDS);
-    if (tapProcess.isAlive() || tapProcess.exitValue() != 0) {
-      throw new WorkerException("Tap process wasn't successful");
+    if (tapProcess == null) {
+      LOGGER.info("Source process no longer exists, cancellation is a no-op.");
+    } else {
+      LOGGER.info("Source process exists, cancelling...");
+      WorkerUtils.cancelProcess(tapProcess);
+      LOGGER.info("Cancelled source process!");
     }
   }
 

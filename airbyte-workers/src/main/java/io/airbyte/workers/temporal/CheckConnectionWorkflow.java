@@ -24,11 +24,13 @@
 
 package io.airbyte.workers.temporal;
 
+import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
+import io.airbyte.workers.Worker;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessBuilderFactory;
@@ -40,6 +42,7 @@ import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.function.Supplier;
 
 @WorkflowInterface
 public interface CheckConnectionWorkflow {
@@ -93,20 +96,30 @@ public interface CheckConnectionWorkflow {
                                              IntegrationLauncherConfig launcherConfig,
                                              StandardCheckConnectionInput connectionConfiguration)
         throws TemporalJobException {
-      return new TemporalAttemptExecution<>(
-          workspaceRoot,
-          jobRunConfig,
-          (jobRoot) -> {
-            final IntegrationLauncher integrationLauncher = new AirbyteIntegrationLauncher(
-                launcherConfig.getJobId(),
-                Math.toIntExact(launcherConfig.getAttemptId()),
-                launcherConfig.getDockerImage(),
-                pbf);
 
-            return new DefaultCheckConnectionWorker(integrationLauncher);
-          },
-          () -> connectionConfiguration,
-          new CancellationHandler.TemporalCancellationHandler()).get();
+      final Supplier<StandardCheckConnectionInput> inputSupplier = () -> connectionConfiguration;
+
+      final TemporalAttemptExecution<StandardCheckConnectionInput, StandardCheckConnectionOutput> temporalAttemptExecution =
+          new TemporalAttemptExecution<>(
+              workspaceRoot,
+              jobRunConfig,
+              getWorkerFactory(launcherConfig),
+              inputSupplier,
+              new CancellationHandler.TemporalCancellationHandler());
+
+      return temporalAttemptExecution.get();
+    }
+
+    private CheckedSupplier<Worker<StandardCheckConnectionInput, StandardCheckConnectionOutput>, Exception> getWorkerFactory(IntegrationLauncherConfig launcherConfig) {
+      return () -> {
+        final IntegrationLauncher integrationLauncher = new AirbyteIntegrationLauncher(
+            launcherConfig.getJobId(),
+            Math.toIntExact(launcherConfig.getAttemptId()),
+            launcherConfig.getDockerImage(),
+            pbf);
+
+        return new DefaultCheckConnectionWorker(integrationLauncher);
+      };
     }
 
   }

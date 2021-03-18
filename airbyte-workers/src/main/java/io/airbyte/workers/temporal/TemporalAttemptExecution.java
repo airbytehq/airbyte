@@ -26,7 +26,6 @@ package io.airbyte.workers.temporal;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.functional.CheckedConsumer;
-import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.scheduler.models.JobRunConfig;
@@ -58,29 +57,29 @@ public class TemporalAttemptExecution<INPUT, T> implements CheckedSupplier<T, Te
   private static final Duration HEARTBEAT_INTERVAL = Duration.ofSeconds(10);
 
   private final Path jobRoot;
-  private final CheckedFunction<Path, Worker<INPUT, T>, Exception> workerSupplier;
+  private final CheckedSupplier<Worker<INPUT, T>, Exception> workerSupplier;
   private final Supplier<INPUT> inputSupplier;
   private final long jobId;
   private final BiConsumer<Path, Long> mdcSetter;
   private final CheckedConsumer<Path, IOException> jobRootDirCreator;
   private final CancellationHandler cancellationHandler;
 
-  @VisibleForTesting
-  TemporalAttemptExecution(Path workspaceRoot,
-                           JobRunConfig jobRunConfig,
-                           CheckedFunction<Path, Worker<INPUT, T>, Exception> workerSupplier,
-                           Supplier<INPUT> inputSupplier,
-                           CancellationHandler cancellationHandler) {
+  public TemporalAttemptExecution(Path workspaceRoot,
+                                  JobRunConfig jobRunConfig,
+                                  CheckedSupplier<Worker<INPUT, T>, Exception> workerSupplier,
+                                  Supplier<INPUT> inputSupplier,
+                                  CancellationHandler cancellationHandler) {
     this(workspaceRoot, jobRunConfig, workerSupplier, inputSupplier, WorkerUtils::setJobMdc, Files::createDirectories, cancellationHandler);
   }
 
-  public TemporalAttemptExecution(Path workspaceRoot,
-                                  JobRunConfig jobRunConfig,
-                                  CheckedFunction<Path, Worker<INPUT, T>, Exception> workerSupplier,
-                                  Supplier<INPUT> inputSupplier,
-                                  BiConsumer<Path, Long> mdcSetter,
-                                  CheckedConsumer<Path, IOException> jobRootDirCreator,
-                                  CancellationHandler cancellationHandler) {
+  @VisibleForTesting
+  TemporalAttemptExecution(Path workspaceRoot,
+                           JobRunConfig jobRunConfig,
+                           CheckedSupplier<Worker<INPUT, T>, Exception> workerSupplier,
+                           Supplier<INPUT> inputSupplier,
+                           BiConsumer<Path, Long> mdcSetter,
+                           CheckedConsumer<Path, IOException> jobRootDirCreator,
+                           CancellationHandler cancellationHandler) {
     this.jobRoot = WorkerUtils.getJobRoot(workspaceRoot, jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
     this.workerSupplier = workerSupplier;
     this.inputSupplier = inputSupplier;
@@ -98,48 +97,20 @@ public class TemporalAttemptExecution<INPUT, T> implements CheckedSupplier<T, Te
       LOGGER.info("Executing worker wrapper. Airbyte version: {}", new EnvConfigs().getAirbyteVersionOrWarning());
       jobRootDirCreator.accept(jobRoot);
 
+      final Worker<INPUT, T> worker = workerSupplier.get();
       final CompletableFuture<T> outputFuture = new CompletableFuture<>();
-
-      final Worker<INPUT, T> worker = workerSupplier.apply(jobRoot);
-
-      final Thread workerThread = new Thread(() -> {
-        mdcSetter.accept(jobRoot, jobId);
-
-        try {
-          final T output = worker.run(inputSupplier.get(), jobRoot);
-          outputFuture.complete(output);
-        } catch (Throwable e) {
-          LOGGER.info("Completing future exceptionally...", e);
-          outputFuture.completeExceptionally(e);
-        }
-      });
+      final Thread workerThread = getWorkerThread(worker, outputFuture);
+      final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
+      final Runnable cancellationChecker = getCancellationChecker(worker, workerThread, outputFuture);
 
       workerThread.start();
-
-      ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
-      scheduledExecutor.scheduleAtFixedRate(() -> {
-        try {
-          mdcSetter.accept(jobRoot, jobId);
-
-          cancellationHandler.heartbeat(() -> {
-            LOGGER.info("Running sync worker cancellation...");
-            worker.cancel();
-
-            LOGGER.info("Interrupting worker thread...");
-            workerThread.interrupt();
-
-            LOGGER.info("Cancelling completable future...");
-            outputFuture.cancel(false);
-          });
-        } catch (WorkerException e) {
-          LOGGER.error("Heartbeat Exception", e);
-        }
-      }, 0, HEARTBEAT_INTERVAL.toSeconds(), TimeUnit.SECONDS);
+      scheduledExecutor.scheduleAtFixedRate(cancellationChecker, 0, HEARTBEAT_INTERVAL.toSeconds(), TimeUnit.SECONDS);
 
       try {
+        // block and wait for the output
         return outputFuture.get();
       } finally {
-        LOGGER.info("Stopping heartbeat scheduling...");
+        LOGGER.info("Stopping cancellation check scheduling...");
         scheduledExecutor.shutdown();
       }
     } catch (TemporalJobException e) {
@@ -147,6 +118,43 @@ public class TemporalAttemptExecution<INPUT, T> implements CheckedSupplier<T, Te
     } catch (Exception e) {
       throw new TemporalJobException(jobRoot.resolve(WorkerConstants.LOG_FILENAME), e);
     }
+  }
+
+  private Thread getWorkerThread(Worker<INPUT, T> worker, CompletableFuture<T> outputFuture) {
+    return new Thread(() -> {
+      mdcSetter.accept(jobRoot, jobId);
+
+      try {
+        final T output = worker.run(inputSupplier.get(), jobRoot);
+        outputFuture.complete(output);
+      } catch (Throwable e) {
+        LOGGER.info("Completing future exceptionally...", e);
+        outputFuture.completeExceptionally(e);
+      }
+    });
+  }
+
+  private Runnable getCancellationChecker(Worker<INPUT, T> worker, Thread workerThread, CompletableFuture<T> outputFuture) {
+    return () -> {
+      try {
+        mdcSetter.accept(jobRoot, jobId);
+
+        final Runnable onCancellationCallback = () -> {
+          LOGGER.info("Running sync worker cancellation...");
+          worker.cancel();
+
+          LOGGER.info("Interrupting worker thread...");
+          workerThread.interrupt();
+
+          LOGGER.info("Cancelling completable future...");
+          outputFuture.cancel(false);
+        };
+
+        cancellationHandler.checkAndHandleCancellation(onCancellationCallback);
+      } catch (WorkerException e) {
+        LOGGER.error("Cancellation checker exception", e);
+      }
+    };
   }
 
 }
