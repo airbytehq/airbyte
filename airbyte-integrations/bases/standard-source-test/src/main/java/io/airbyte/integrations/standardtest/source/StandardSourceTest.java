@@ -106,6 +106,7 @@ public abstract class StandardSourceTest {
       "airbyte/source-salesforce-singer",
       "airbyte/source-stripe-singer",
       "airbyte/source-github-singer",
+      "airbyte/source-gitlab-singer",
       "airbyte/source-hubspot-singer");
 
   /**
