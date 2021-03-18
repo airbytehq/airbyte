@@ -47,8 +47,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.ArgumentCaptor;
 
 class TemporalWorkerRunFactoryTest {
@@ -70,35 +68,6 @@ class TemporalWorkerRunFactoryTest {
     job = mock(Job.class, RETURNS_DEEP_STUBS);
     when(job.getId()).thenReturn(JOB_ID);
     when(job.getAttemptsCount()).thenReturn(ATTEMPT_ID);
-  }
-
-  @Test
-  void testGetSpec() throws Exception {
-    when(job.getConfigType()).thenReturn(ConfigType.GET_SPEC);
-    final WorkerRun workerRun = workerRunFactory.create(job);
-    workerRun.call();
-    verify(temporalClient).submitGetSpec(JOB_ID, ATTEMPT_ID, job.getConfig().getGetSpec());
-    assertEquals(jobRoot, workerRun.getJobRoot());
-  }
-
-  @ParameterizedTest
-  @EnumSource(value = ConfigType.class,
-              names = {"CHECK_CONNECTION_SOURCE", "CHECK_CONNECTION_DESTINATION"})
-  void testCheckConnection(ConfigType value) throws Exception {
-    when(job.getConfigType()).thenReturn(value);
-    final WorkerRun workerRun = workerRunFactory.create(job);
-    workerRun.call();
-    verify(temporalClient).submitCheckConnection(JOB_ID, ATTEMPT_ID, job.getConfig().getCheckConnection());
-    assertEquals(jobRoot, workerRun.getJobRoot());
-  }
-
-  @Test
-  void testDiscoverCatalog() throws Exception {
-    when(job.getConfigType()).thenReturn(ConfigType.DISCOVER_SCHEMA);
-    final WorkerRun workerRun = workerRunFactory.create(job);
-    workerRun.call();
-    verify(temporalClient).submitDiscoverSchema(JOB_ID, ATTEMPT_ID, job.getConfig().getDiscoverCatalog());
-    assertEquals(jobRoot, workerRun.getJobRoot());
   }
 
   @Test
