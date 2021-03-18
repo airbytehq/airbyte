@@ -43,7 +43,11 @@ const DestinationsSettings: React.FC<IProps> = ({
     }
   );
 
-  const { updateDestination, deleteDestination } = useDestination();
+  const {
+    updateDestination,
+    deleteDestination,
+    checkDestinationConnection,
+  } = useDestination();
 
   const onSubmitForm = async (values: {
     name: string;
@@ -65,6 +69,25 @@ const DestinationsSettings: React.FC<IProps> = ({
     }
   };
 
+  const onRetest = async (values: {
+    name: string;
+    serviceType: string;
+    connectionConfiguration?: ConnectionConfiguration;
+  }) => {
+    setErrorStatusRequest(null);
+    try {
+      await checkDestinationConnection({
+        values,
+        destinationId: currentDestination.destinationId,
+      });
+      setSaved(true);
+    } catch (e) {
+      const errorStatusMessage = createFormErrorMessage(e);
+
+      setErrorStatusRequest({ ...e, statusMessage: errorStatusMessage });
+    }
+  };
+
   const onDelete = async () => {
     await deleteDestination({
       connectionsWithDestination,
@@ -78,6 +101,7 @@ const DestinationsSettings: React.FC<IProps> = ({
         title={<FormattedMessage id="destination.destinationSettings" />}
       >
         <ServiceForm
+          onRetest={onRetest}
           isEditMode
           onSubmit={onSubmitForm}
           formType="destination"
