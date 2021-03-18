@@ -1,11 +1,10 @@
 import React from "react";
 import { useIntl } from "react-intl";
-import { useField } from "formik";
+import { FieldArray, useField } from "formik";
 
-import { DropDown, Input, TextArea, Multiselect } from "components";
+import { DropDown, Input, Multiselect, TextArea, TagInput } from "components";
 import ConfirmationControl from "./ConfirmationControl";
 import { FormBaseItem } from "core/form/types";
-import TagInput from "../../../base/TagInput/TagInput";
 
 type IProps = {
   property: FormBaseItem;
@@ -42,52 +41,42 @@ const Control: React.FC<IProps> = ({
       break;
   }
 
-  const value = field.value ?? property.default;
-
-  if (property.type === "array" && property.enum) {
-    return (
-      <Multiselect
-        {...field}
-        allowCreate={true}
-        placeholder={placeholder}
-        data={property.enum as string[]}
-      />
-    );
-  }
-
   if (property.type === "array" && !property.enum) {
     return (
-      <TagInput
-        inputProps={{
-          ...field,
-          placeholder: formatMessage({
-            id: "welcome.inviteEmail.placeholder",
-          }),
-          onChange: (props) => {
-            field.onChange(props);
-          },
-        }}
-        value={[{ id: "1", value: "test" }]}
-        onEnter={() => {
-          // addTag(value);
-          // resetForm({});
-        }}
-        onDelete={
-          () => ({})
-          // onError={() =>
-          // setFieldError(
-          //   "newEmail",
-          //   formatMessage({
-          //     id: "form.email.error",
-          //   })
-          // )
-        }
-        // addOnBlur
-        // error={meta.error}
+      <FieldArray
+        name={name}
+        render={(arrayHelpers) => (
+          <TagInput
+            value={(field.value || []).map((value: string, id: number) => ({
+              id,
+              value,
+            }))}
+            onEnter={(newItem) => arrayHelpers.push(newItem)}
+            onDelete={(item) => arrayHelpers.remove(Number.parseInt(item))}
+            addOnBlur
+            error={!!meta.error}
+          />
+        )}
       />
     );
   }
 
+  if (property.type === "array" && property.enum) {
+    const data =
+      property.enum?.length && typeof property.enum[0] !== "object"
+        ? (property.enum as string[] | number[])
+        : undefined;
+    return (
+      <Multiselect
+        placeholder={placeholder}
+        data={data}
+        onChange={(dataItems) => form.setValue(dataItems)}
+        value={field.value}
+      />
+    );
+  }
+
+  const value = field.value ?? property.default;
   if (property.enum) {
     return (
       <DropDown

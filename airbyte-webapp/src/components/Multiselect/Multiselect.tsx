@@ -1,12 +1,13 @@
-import React from "react";
 import { Multiselect as ReactMultiselect } from "react-widgets";
 import styled from "styled-components";
-import { MultiselectProps } from "react-widgets/lib/Multiselect";
+import { MultiselectProps as WidgetMultiselectProps } from "react-widgets/lib/Multiselect";
 
-const StyledMultiselect = styled(ReactMultiselect)<{
+type MultiselectProps = {
   disabled?: boolean;
   error?: boolean;
-}>`
+} & WidgetMultiselectProps;
+
+const Multiselect = styled(ReactMultiselect)<MultiselectProps>`
   box-shadow: none;
   padding: 0;
   margin: 0;
@@ -49,6 +50,7 @@ const StyledMultiselect = styled(ReactMultiselect)<{
       border: none;
     }
   }
+
   & .rw-widget-container {
     box-shadow: none;
     outline: none;
@@ -96,6 +98,7 @@ const StyledMultiselect = styled(ReactMultiselect)<{
 
       & .rw-multiselect-tag {
         background: ${({ theme }) => theme.mediumPrimaryColor};
+        border-color: ${({ theme }) => theme.mediumPrimaryColor};
         color: ${({ theme }) => theme.whiteColor};
         border-radius: 4px;
         font-weight: 500;
@@ -129,28 +132,5 @@ const StyledMultiselect = styled(ReactMultiselect)<{
   }
 `;
 
-export type IProps = {
-  disabled?: boolean;
-  error?: boolean;
-  placeholder?: string;
-  data: string[]; // TODO: check props
-};
-
-const Multiselect: React.FC<IProps & MultiselectProps> = ({
-  disabled,
-  error,
-  placeholder,
-  data,
-}) => {
-  return (
-    <StyledMultiselect
-      disabled={disabled}
-      error={error}
-      placeholder={placeholder}
-      allowCreate
-      data={data}
-    />
-  );
-};
-
-export default Multiselect;
+export { Multiselect };
+export type { MultiselectProps };

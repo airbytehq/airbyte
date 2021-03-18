@@ -6,7 +6,6 @@ import TagItem, { IItemProps } from "./TagItem";
 const MainContainer = styled.div<{ error?: boolean }>`
   width: 100%;
   min-height: 36px;
-  background: ${({ theme }) => theme.whiteColor};
   border-radius: 4px;
   padding: 6px 6px 0;
   cursor: text;
@@ -17,7 +16,23 @@ const MainContainer = styled.div<{ error?: boolean }>`
   flex-wrap: wrap;
   align-self: stretch;
   border: 1px solid
-    ${({ theme, error }) => (error ? theme.dangerColor : theme.whiteColor)};
+    ${(props) =>
+      props.error ? props.theme.dangerColor : props.theme.greyColor0};
+  background: ${(props) =>
+    props.error ? props.theme.greyColor10 : props.theme.greyColor0};
+  caret-color: ${({ theme }) => theme.primaryColor};
+
+  &:hover {
+    background: ${({ theme }) => theme.greyColor20};
+    border-color: ${(props) =>
+      props.error ? props.theme.dangerColor : props.theme.greyColor20};
+  }
+
+  &:focus,
+  &:focus-within {
+    background: ${({ theme }) => theme.primaryColor12};
+    border-color: ${({ theme }) => theme.primaryColor};
+  }
 `;
 
 const InputElement = styled.input`
@@ -29,25 +44,28 @@ const InputElement = styled.input`
   font-weight: normal;
   color: ${({ theme }) => theme.textColor};
   flex: 1 1 auto;
+  background: rgba(0, 0, 0, 0);
+
   &::placeholder {
     color: ${({ theme }) => theme.greyColor40};
   }
 `;
 
-type IProps = {
-  inputProps: React.InputHTMLAttributes<HTMLInputElement>;
-  value: Array<IItemProps>;
+type TagInputProps = {
+  inputProps?: React.InputHTMLAttributes<HTMLInputElement>;
+  value: IItemProps[];
   className?: string;
   validationRegex?: RegExp;
   error?: boolean;
   addOnBlur?: boolean;
+  disabled?: boolean;
 
   onEnter: (value?: string | number | readonly string[]) => void;
   onDelete: (value: string) => void;
   onError?: () => void;
 };
 
-const TagInput: React.FC<IProps> = ({
+const TagInput: React.FC<TagInputProps> = ({
   inputProps,
   onEnter,
   value,
@@ -55,13 +73,15 @@ const TagInput: React.FC<IProps> = ({
   onDelete,
   validationRegex,
   error,
+  disabled,
   onError,
   addOnBlur,
 }) => {
   const inputElement = useRef<HTMLInputElement | null>(null);
-  const [selectedElement, setSelectedElement] = useState("");
+  const [selectedElementId, setSelectedElementId] = useState("");
+  const [currentInputValue, setCurrentInputValue] = useState("");
 
-  const handleContainerBlur = () => setSelectedElement("");
+  const handleContainerBlur = () => setSelectedElementId("");
   const handleContainerClick = () => {
     if (inputElement.current !== null) {
       inputElement.current.focus();
@@ -69,7 +89,7 @@ const TagInput: React.FC<IProps> = ({
   };
 
   const onAddValue = () => {
-    if (inputElement.current?.value) {
+    if (!inputElement.current?.value) {
       return;
     }
 
@@ -78,7 +98,8 @@ const TagInput: React.FC<IProps> = ({
       : true;
 
     if (isValid) {
-      onEnter(inputProps.value);
+      onEnter(currentInputValue);
+      setCurrentInputValue("");
     } else if (onError) {
       onError();
     }
@@ -94,13 +115,13 @@ const TagInput: React.FC<IProps> = ({
       onAddValue();
 
       // on DELETE or BACKSPACE click when input is empty (select or delete last tag in valuesList)
-    } else if ((keyCode === 46 || keyCode === 8) && inputProps.value === "") {
-      if (selectedElement) {
+    } else if ((keyCode === 46 || keyCode === 8) && currentInputValue === "") {
+      if (selectedElementId !== "") {
         const nextId = value.length - 1 > 0 ? value[value.length - 2].id : "";
-        onDelete(selectedElement);
-        setSelectedElement(nextId);
+        onDelete(selectedElementId);
+        setSelectedElementId(nextId);
       } else if (value.length) {
-        setSelectedElement(value[value.length - 1].id);
+        setSelectedElementId(value[value.length - 1].id);
       }
     }
   };
@@ -112,7 +133,7 @@ const TagInput: React.FC<IProps> = ({
   };
 
   const inputPlaceholder =
-    !value.length && inputProps.placeholder ? inputProps.placeholder : "";
+    !value.length && inputProps?.placeholder ? inputProps.placeholder : "";
 
   return (
     <MainContainer
@@ -123,27 +144,30 @@ const TagInput: React.FC<IProps> = ({
     >
       {value.map((item, key) => (
         <TagItem
-          disabled={inputProps.disabled}
+          disabled={disabled}
           key={`tag-${key}`}
           item={item}
           onDeleteTag={onDelete}
-          isSelected={item.id === selectedElement}
+          isSelected={item.id === selectedElementId}
         />
       ))}
       <InputElement
         {...inputProps}
+        disabled={disabled}
         autoComplete={"off"}
         placeholder={inputPlaceholder}
         ref={inputElement}
         onBlur={handleInputBlur}
         onKeyDown={handleInputKeyDown}
+        value={currentInputValue}
         onChange={(event) => {
-          setSelectedElement("");
-          inputProps?.onChange?.(event);
+          setSelectedElementId("");
+          setCurrentInputValue(event.target.value);
         }}
       />
     </MainContainer>
   );
 };
 
-export default TagInput;
+export { TagInput };
+export type { TagInputProps };

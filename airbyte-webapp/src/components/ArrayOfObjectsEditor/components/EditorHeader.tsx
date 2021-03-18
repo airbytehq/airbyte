@@ -16,12 +16,15 @@ const Content = styled.div`
   margin: 5px 0;
 `;
 
-type FormHeaderProps = {
+type EditorHeaderProps = {
   itemsCount: number;
   onAddItem: () => void;
 };
 
-const FormHeader: React.FC<FormHeaderProps> = ({ itemsCount, onAddItem }) => {
+const EditorHeader: React.FC<EditorHeaderProps> = ({
+  itemsCount,
+  onAddItem,
+}) => {
   return (
     <Content>
       <FormattedMessage id="form.items" values={{ count: itemsCount }} />
@@ -32,4 +35,4 @@ const FormHeader: React.FC<FormHeaderProps> = ({ itemsCount, onAddItem }) => {
   );
 };
 
-export default FormHeader;
+export { EditorHeader };

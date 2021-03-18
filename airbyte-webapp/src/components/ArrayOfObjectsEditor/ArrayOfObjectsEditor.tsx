@@ -3,8 +3,8 @@ import styled from "styled-components";
 
 import { Button } from "components/Button";
 
-import FormHeader from "./components/FormHeader";
-import FormItem from "./components/FormItem";
+import { EditorHeader } from "./components/EditorHeader";
+import { EditorRow } from "./components/EditorRow";
 import { FormattedMessage } from "react-intl";
 
 const ItemsList = styled.div`
@@ -22,7 +22,7 @@ const SmallButton = styled(Button)`
   padding: 6px 8px 7px;
 `;
 
-type VariableInputProps = {
+type ArrayOfObjectsEditorProps = {
   items: { name: string }[];
   children?: React.ReactNode;
   onStartEdit: (n: number) => void;
@@ -32,7 +32,7 @@ type VariableInputProps = {
   isEditMode: boolean;
 };
 
-const VariableInput: React.FC<VariableInputProps> = ({
+const ArrayOfObjectsEditor: React.FC<ArrayOfObjectsEditorProps> = ({
   onStartEdit,
   onDone,
   onRemove,
@@ -41,6 +41,19 @@ const VariableInput: React.FC<VariableInputProps> = ({
   items,
   children,
 }) => {
+  const onAddItem = React.useCallback(() => onStartEdit(items.length), [
+    onStartEdit,
+    items,
+  ]);
+  const handleRemove = React.useCallback((idx: number) => onRemove(idx), [
+    onRemove,
+    items,
+  ]);
+  const handleEdit = React.useCallback((idx: number) => onStartEdit(idx), [
+    onStartEdit,
+    items,
+  ]);
+
   if (isEditMode) {
     return (
       <>
@@ -59,18 +72,16 @@ const VariableInput: React.FC<VariableInputProps> = ({
 
   return (
     <>
-      <FormHeader
-        itemsCount={items.length}
-        onAddItem={() => onStartEdit(items.length)}
-      />
+      <EditorHeader itemsCount={items.length} onAddItem={onAddItem} />
       {items.length ? (
         <ItemsList>
           {items.map((item, key) => (
-            <FormItem
+            <EditorRow
               key={`form-item-${key}`}
               name={item.name}
-              onEdit={() => onStartEdit(key)}
-              onRemove={() => onRemove(key)}
+              id={key}
+              onEdit={handleEdit}
+              onRemove={handleRemove}
             />
           ))}
         </ItemsList>
@@ -79,4 +90,5 @@ const VariableInput: React.FC<VariableInputProps> = ({
   );
 };
 
-export { VariableInput };
+export { ArrayOfObjectsEditor };
+export type { ArrayOfObjectsEditorProps };

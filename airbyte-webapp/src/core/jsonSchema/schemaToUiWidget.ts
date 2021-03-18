@@ -54,14 +54,16 @@ export const jsonSchemaToUiWidget = (
 
   if (
     jsonSchema.type === "array" &&
-    (jsonSchema.items as any).type === "object"
+    typeof jsonSchema.items === "object" &&
+    !Array.isArray(jsonSchema.items) &&
+    jsonSchema.items.type === "object"
   ) {
     return {
       ...pickDefaultFields(jsonSchema),
       _type: "objectArray",
       path: path || key,
       fieldKey: key,
-      properties: jsonSchemaToUiWidget(jsonSchema.items as any, key, path),
+      properties: jsonSchemaToUiWidget(jsonSchema.items, key, path),
       isRequired,
     };
   }
@@ -117,5 +119,10 @@ const pickDefaultFields = (schema: JSONSchema7): Partial<JSONSchema7> => ({
   description: schema.description,
   pattern: schema.pattern,
   title: schema.title,
-  enum: schema.enum,
+  enum:
+    typeof schema.items === "object" &&
+    !Array.isArray(schema.items) &&
+    schema.items.enum
+      ? schema.items.enum
+      : schema.enum,
 });

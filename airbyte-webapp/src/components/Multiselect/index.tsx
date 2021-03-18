@@ -1,4 +1,1 @@
-import Multiselect from "./Multiselect";
-
-export default Multiselect;
-export { Multiselect };
+export * from "./Multiselect";

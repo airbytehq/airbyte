@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-import { DropDown, Label, VariableInput } from "components";
+import { DropDown, Label, ArrayOfObjectsEditor } from "components";
 import {
   FormBlock,
   FormConditionItem,
@@ -89,7 +89,7 @@ const ArraySection: React.FC<{
         <FieldArray
           name={path}
           render={(arrayHelpers) => (
-            <VariableInput
+            <ArrayOfObjectsEditor
               isEditMode={!!flow}
               onStartEdit={(index) =>
                 addUnfinishedFlow(path, {
@@ -115,7 +115,7 @@ const ArraySection: React.FC<{
                   skipAppend
                 />
               )}
-            </VariableInput>
+            </ArrayOfObjectsEditor>
           )}
         />
       </SectionContainer>

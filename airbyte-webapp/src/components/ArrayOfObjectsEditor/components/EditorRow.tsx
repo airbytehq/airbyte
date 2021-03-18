@@ -32,24 +32,30 @@ const Delete = styled(FontAwesomeIcon)`
   cursor: pointer;
 `;
 
-type FormItemProps = {
+type EditorRowProps = {
   name: string;
-  onEdit: () => void;
-  onRemove: () => void;
+  id: number;
+  onEdit: (id: number) => void;
+  onRemove: (id: number) => void;
 };
 
-const FormItem: React.FC<FormItemProps> = ({ name, onEdit, onRemove }) => {
+const EditorRow: React.FC<EditorRowProps> = ({
+  name,
+  id,
+  onEdit,
+  onRemove,
+}) => {
   return (
     <Content>
-      <div>{name}</div>
+      <div>{name || id}</div>
       <div>
-        <Button secondary onClick={onEdit}>
+        <Button secondary onClick={() => onEdit(id)}>
           <FormattedMessage id="form.edit" />
         </Button>
-        <Delete icon={faTimes} onClick={onRemove} />
+        <Delete icon={faTimes} onClick={() => onRemove(id)} />
       </div>
     </Content>
   );
 };
 
-export default FormItem;
+export { EditorRow };
