@@ -28,6 +28,7 @@ import com.google.common.base.Charsets;
 import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -88,6 +89,14 @@ public class IOs {
       Collections.reverse(lines);
 
       return lines;
+    }
+  }
+
+  public static InputStream inputStream(final Path path) {
+    try {
+      return Files.newInputStream(path);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 
