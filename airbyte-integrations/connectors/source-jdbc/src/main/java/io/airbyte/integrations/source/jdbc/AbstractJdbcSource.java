@@ -55,6 +55,7 @@ import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -284,10 +285,9 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
                                     final Optional<String> databaseOptional,
                                     final Optional<String> schemaOptional)
       throws Exception {
-    // Try to get all primary keys without specifying a target table name (this may or may not work on
-    // all databases)
-    final Map<String, List<String>> tablePrimaryKeys = discoverPrimaryKeys(database, databaseOptional, schemaOptional, null);
-    return discoverInternal(database, databaseOptional, schemaOptional).stream()
+    final List<TableInfoInternal> tableInfos = discoverInternal(database, databaseOptional, schemaOptional);
+    final Map<String, List<String>> tablePrimaryKeys = discoverPrimaryKeys(database, databaseOptional, schemaOptional, tableInfos);
+    return tableInfos.stream()
         .map(t -> {
           // some databases return multiple copies of the same record for a column (e.g. redshift) because
           // they have at least once delivery guarantees. we want to dedupe these, but first we check that the
@@ -299,15 +299,7 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
               .distinct()
               .collect(Collectors.toList());
           final String streamName = JdbcUtils.getFullyQualifiedTableName(t.getSchemaName(), t.getName());
-          final List<String> primaryKeys;
-          if (tablePrimaryKeys.isEmpty()) {
-            // Some database can't return primary keys without specifying a target table name, retrying while
-            // being more specific
-            primaryKeys = discoverPrimaryKeys(database, databaseOptional, Optional.of(t.getSchemaName()), t.getName())
-                .getOrDefault(streamName, Collections.emptyList());
-          } else {
-            primaryKeys = tablePrimaryKeys.getOrDefault(streamName, Collections.emptyList());
-          }
+          final List<String> primaryKeys = tablePrimaryKeys.getOrDefault(streamName, Collections.emptyList());
           return new TableInfo(streamName, fields, primaryKeys);
         })
         .collect(Collectors.toList());
@@ -317,36 +309,63 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
    * Discover Primary keys for each table and @return a map of schema.table name to their associated
    * list of primary key fields.
    *
-   * If @param tableName is not specified, this function may fail on some databases (for example
-   * MySql) but works on others (for instance Postgres)
+   * When invoking the conn.getMetaData().getPrimaryKeys() function without a table name, it may fail
+   * on some databases (for example MySql) but works on others (for instance Postgres). To avoid
+   * making repeated queries to the DB, we try to get all primary keys without specifying a table
+   * first, if it doesn't work, we retry one table at a time.
    */
   private Map<String, List<String>> discoverPrimaryKeys(JdbcDatabase database,
                                                         Optional<String> databaseOptional,
                                                         Optional<String> schemaOptional,
-                                                        String tableName) {
-    final Map<String, List<String>> tablePrimaryKeys = new HashMap<>();
+                                                        List<TableInfoInternal> tableInfos) {
     try {
-      database.bufferedResultSetQuery(
-          conn -> conn.getMetaData().getPrimaryKeys(databaseOptional.orElse(null), schemaOptional.orElse(null), tableName),
+      // Get all primary keys without specifying a table name
+      final Map<String, List<String>> tablePrimaryKeys = aggregatePrimateKeys(database.bufferedResultSetQuery(
+          conn -> conn.getMetaData().getPrimaryKeys(databaseOptional.orElse(null), schemaOptional.orElse(null), null),
           r -> {
             final String schemaName =
                 r.getObject(JDBC_COLUMN_SCHEMA_NAME) != null ? r.getString(JDBC_COLUMN_SCHEMA_NAME) : r.getString(JDBC_COLUMN_DATABASE_NAME);
             final String streamName = JdbcUtils.getFullyQualifiedTableName(schemaName, r.getString(JDBC_COLUMN_TABLE_NAME));
             final String primaryKey = r.getString(JDBC_COLUMN_COLUMN_NAME);
-            if (!tablePrimaryKeys.containsKey(streamName)) {
-              tablePrimaryKeys.put(streamName, new ArrayList<>());
-            }
-            tablePrimaryKeys.get(streamName).add(primaryKey);
-            return primaryKey;
-          });
-    } catch (SQLException e) {
-      if (tableName == null) {
-        LOGGER.debug(String.format("Could not retrieve primary keys without a table name, please try again: %s", e));
-      } else {
-        LOGGER.warn(String.format("Could not retrieve primary keys for table %s: %s", tableName, e));
+            return new SimpleImmutableEntry<>(streamName, primaryKey);
+          }));
+      if (!tablePrimaryKeys.isEmpty()) {
+        return tablePrimaryKeys;
       }
+    } catch (SQLException e) {
+      LOGGER.debug(String.format("Could not retrieve primary keys without a table name (%s), retrying", e));
     }
-    return tablePrimaryKeys;
+    // Get primary keys one table at a time
+    return tableInfos.stream()
+        .collect(Collectors.toMap(
+            tableInfo -> JdbcUtils.getFullyQualifiedTableName(tableInfo.getSchemaName(), tableInfo.getName()),
+            tableInfo -> {
+              final String streamName = JdbcUtils.getFullyQualifiedTableName(tableInfo.getSchemaName(), tableInfo.getName());
+              try {
+                final Map<String, List<String>> primaryKeys = aggregatePrimateKeys(database.bufferedResultSetQuery(
+                    conn -> conn.getMetaData().getPrimaryKeys(databaseOptional.orElse(null), tableInfo.getSchemaName(), tableInfo.getName()),
+                    r -> new SimpleImmutableEntry<>(streamName, r.getString(JDBC_COLUMN_COLUMN_NAME))));
+                return primaryKeys.getOrDefault(streamName, Collections.emptyList());
+              } catch (SQLException e) {
+                LOGGER.error(String.format("Could not retrieve primary keys for %s: %s", streamName, e));
+                return Collections.emptyList();
+              }
+            }));
+  }
+
+  /**
+   * Aggregate list of @param entries of StreamName and PrimaryKey and
+   * @return a map by StreamName to associated list of primary keys
+   */
+  private static Map<String, List<String>> aggregatePrimateKeys(List<SimpleImmutableEntry<String, String>> entries) {
+    final Map<String, List<String>> result = new HashMap<>();
+    entries.forEach(entry -> {
+      if (!result.containsKey(entry.getKey())) {
+        result.put(entry.getKey(), new ArrayList<>());
+      }
+      result.get(entry.getKey()).add(entry.getValue());
+    });
+    return result;
   }
 
   private static void assertColumnsWithSameNameAreSame(String schemaName, String tableName, List<ColumnInfo> columns) {
