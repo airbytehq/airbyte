@@ -22,24 +22,14 @@
  * SOFTWARE.
  */
 
-package io.airbyte.commons.map;
+package io.airbyte.scheduler.client;
 
-import com.google.common.base.Preconditions;
-import java.util.HashMap;
-import java.util.Map;
+/**
+ * This client is meant to be an interface over a cached implementation of
+ * {@link SynchronousSchedulerClient}. It exposes functionality to allow invalidating the cache.
+ */
+public interface CachingSynchronousSchedulerClient extends SynchronousSchedulerClient {
 
-public class MoreMaps {
-
-  @SafeVarargs
-  public static <K, V> Map<K, V> merge(Map<K, V>... maps) {
-    final Map<K, V> outputMap = new HashMap<>();
-
-    for (Map<K, V> map : maps) {
-      Preconditions.checkNotNull(map);
-      outputMap.putAll(map);
-    }
-
-    return outputMap;
-  }
+  void resetCache();
 
 }

@@ -26,8 +26,12 @@ package io.airbyte.commons.lang;
 
 import java.util.concurrent.Callable;
 import java.util.function.Function;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Exceptions {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(Exceptions.class);
 
   /**
    * Catch a checked exception and rethrow as a {@link RuntimeException}
@@ -70,6 +74,14 @@ public class Exceptions {
       throw e;
     } catch (Exception e) {
       throw exceptionFactory.apply(e);
+    }
+  }
+
+  public static void swallow(Procedure procedure) {
+    try {
+      procedure.call();
+    } catch (Exception e) {
+      LOGGER.error("Swallowed error.", e);
     }
   }
 

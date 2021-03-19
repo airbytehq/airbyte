@@ -59,8 +59,8 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements CheckedSupplier<
   private final Path jobRoot;
   private final CheckedSupplier<Worker<INPUT, OUTPUT>, Exception> workerSupplier;
   private final Supplier<INPUT> inputSupplier;
-  private final long jobId;
-  private final BiConsumer<Path, Long> mdcSetter;
+  private final String jobId;
+  private final BiConsumer<Path, String> mdcSetter;
   private final CheckedConsumer<Path, IOException> jobRootDirCreator;
   private final CancellationHandler cancellationHandler;
 
@@ -77,7 +77,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements CheckedSupplier<
                            JobRunConfig jobRunConfig,
                            CheckedSupplier<Worker<INPUT, OUTPUT>, Exception> workerSupplier,
                            Supplier<INPUT> inputSupplier,
-                           BiConsumer<Path, Long> mdcSetter,
+                           BiConsumer<Path, String> mdcSetter,
                            CheckedConsumer<Path, IOException> jobRootDirCreator,
                            CancellationHandler cancellationHandler) {
     this.jobRoot = WorkerUtils.getJobRoot(workspaceRoot, jobRunConfig.getJobId(), jobRunConfig.getAttemptId());

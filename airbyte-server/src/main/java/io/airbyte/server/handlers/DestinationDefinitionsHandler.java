@@ -34,7 +34,7 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.helpers.YamlListToStandardDefinitions;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.scheduler.client.CachingSchedulerJobClient;
+import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
 import io.airbyte.server.errors.KnownException;
 import io.airbyte.server.services.AirbyteGithubStore;
 import io.airbyte.server.validators.DockerImageValidator;
@@ -52,25 +52,25 @@ public class DestinationDefinitionsHandler {
   private final DockerImageValidator imageValidator;
   private final ConfigRepository configRepository;
   private final Supplier<UUID> uuidSupplier;
-  private final CachingSchedulerJobClient schedulerJobClient;
+  private final CachingSynchronousSchedulerClient schedulerSynchronousClient;
   private final AirbyteGithubStore githubStore;
 
   public DestinationDefinitionsHandler(final ConfigRepository configRepository,
                                        final DockerImageValidator imageValidator,
-                                       final CachingSchedulerJobClient schedulerJobClient) {
-    this(configRepository, imageValidator, UUID::randomUUID, schedulerJobClient, AirbyteGithubStore.production());
+                                       final CachingSynchronousSchedulerClient schedulerSynchronousClient) {
+    this(configRepository, imageValidator, UUID::randomUUID, schedulerSynchronousClient, AirbyteGithubStore.production());
   }
 
   @VisibleForTesting
   public DestinationDefinitionsHandler(final ConfigRepository configRepository,
                                        final DockerImageValidator imageValidator,
                                        final Supplier<UUID> uuidSupplier,
-                                       final CachingSchedulerJobClient schedulerJobClient,
+                                       final CachingSynchronousSchedulerClient schedulerSynchronousClient,
                                        final AirbyteGithubStore githubStore) {
     this.configRepository = configRepository;
     this.imageValidator = imageValidator;
     this.uuidSupplier = uuidSupplier;
-    this.schedulerJobClient = schedulerJobClient;
+    this.schedulerSynchronousClient = schedulerSynchronousClient;
     this.githubStore = githubStore;
   }
 
@@ -156,7 +156,7 @@ public class DestinationDefinitionsHandler {
 
     configRepository.writeStandardDestinationDefinition(newDestination);
     // we want to re-fetch the spec for updated definitions.
-    schedulerJobClient.resetCache();
+    schedulerSynchronousClient.resetCache();
     return buildDestinationDefinitionRead(newDestination);
   }
 

@@ -11,7 +11,7 @@ import CenteredDetails from "./CenteredDetails";
 import Status from "core/statuses";
 
 type IProps = {
-  id: number;
+  id: number | string;
   jobIsFailed?: boolean;
 };
 

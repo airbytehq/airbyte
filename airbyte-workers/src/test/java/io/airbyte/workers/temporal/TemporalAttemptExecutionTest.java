@@ -48,7 +48,7 @@ import org.mockito.stubbing.Answer;
 
 class TemporalAttemptExecutionTest {
 
-  private static final long JOB_ID = 11L;
+  private static final String JOB_ID = "11";
   private static final int ATTEMPT_ID = 21;
   private static final JobRunConfig JOB_RUN_CONFIG = new JobRunConfig().withJobId(JOB_ID).withAttemptId((long) ATTEMPT_ID);
 
@@ -56,7 +56,7 @@ class TemporalAttemptExecutionTest {
   private TemporalJobException expectedException;
 
   private CheckedSupplier<Worker<String, String>, Exception> execution;
-  private BiConsumer<Path, Long> mdcSetter;
+  private BiConsumer<Path, String> mdcSetter;
   private CheckedConsumer<Path, IOException> jobRootDirCreator;
 
   private TemporalAttemptExecution<String, String> attemptExecution;
@@ -65,7 +65,7 @@ class TemporalAttemptExecutionTest {
   @BeforeEach
   void setup() throws IOException {
     final Path workspaceRoot = Files.createTempDirectory(Path.of("/tmp"), "temporal_attempt_execution_test");
-    jobRoot = workspaceRoot.resolve(String.valueOf(JOB_ID)).resolve(String.valueOf(ATTEMPT_ID));
+    jobRoot = workspaceRoot.resolve(JOB_ID).resolve(String.valueOf(ATTEMPT_ID));
     expectedException = new TemporalJobException(jobRoot.resolve(WorkerConstants.LOG_FILENAME));
 
     execution = mock(CheckedSupplier.class);

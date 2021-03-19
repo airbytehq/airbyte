@@ -24,12 +24,27 @@
 
 package io.airbyte.scheduler.client;
 
-/**
- * This client is meant to be an interface over a cached implementation of
- * {@link SchedulerJobClient}. It exposes functionality to allow invalidating the cache.
- */
-public interface CachingSchedulerJobClient extends SchedulerJobClient {
+import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.SourceConnection;
+import io.airbyte.config.StandardCheckConnectionOutput;
+import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.ConnectorSpecification;
+import java.io.IOException;
 
-  void resetCache();
+/**
+ * Exposes a way of executing short-lived jobs as RPC calls. Blocks until the job completes. No
+ * metadata will be stored in the Jobs table for jobs triggered via this client.
+ */
+public interface SynchronousSchedulerClient {
+
+  SynchronousResponse<StandardCheckConnectionOutput> createSourceCheckConnectionJob(SourceConnection source, String dockerImage)
+      throws IOException;
+
+  SynchronousResponse<StandardCheckConnectionOutput> createDestinationCheckConnectionJob(DestinationConnection destination, String dockerImage)
+      throws IOException;
+
+  SynchronousResponse<AirbyteCatalog> createDiscoverSchemaJob(SourceConnection source, String dockerImage) throws IOException;
+
+  SynchronousResponse<ConnectorSpecification> createGetSpecJob(String dockerImage) throws IOException;
 
 }
