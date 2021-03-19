@@ -39,5 +39,5 @@ setup(
         "google-auth-oauthlib==0.4.3",
         "backoff==1.10.0",
     ],
-    package_data={"": ["*.json"]},
+    package_data={"": ["*.json", "schemas/*.json"]},
 )
