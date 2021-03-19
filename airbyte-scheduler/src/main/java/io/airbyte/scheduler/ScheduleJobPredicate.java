@@ -75,7 +75,7 @@ public class ScheduleJobPredicate implements BiPredicate<Optional<Job>, Standard
 
     // if there is an active job, do not start a new one.
     if (!JobStatus.TERMINAL_STATUSES.contains(previousJob.getStatus())) {
-        return false;
+      return false;
     }
 
     long prevRunStart = previousJob.getStartedAtInSecond().orElse(previousJob.getCreatedAtInSecond());
