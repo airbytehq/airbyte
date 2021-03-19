@@ -31,18 +31,11 @@ import io.airbyte.scheduler.Job;
 import java.io.IOException;
 
 /**
- * This client submits a job to the scheduler and then waits for it to complete. It returns the full
- * job object after it has reached a terminal status.
+ * Exposes a way of executing short-lived jobs as RPC calls. If it returns successfully, it
+ * guarantees a job was submitted. It does not wait for that job to complete. Jobs submitted in by
+ * this client are persisted in the Jobs table. It returns the full job object.
  */
 public interface SchedulerJobClient {
-
-  Job createSourceCheckConnectionJob(SourceConnection source, String dockerImage) throws IOException;
-
-  Job createDestinationCheckConnectionJob(DestinationConnection destination, String dockerImage) throws IOException;
-
-  Job createDiscoverSchemaJob(SourceConnection source, String dockerImage) throws IOException;
-
-  Job createGetSpecJob(String dockerImage) throws IOException;
 
   Job createOrGetActiveSyncJob(SourceConnection source,
                                DestinationConnection destination,

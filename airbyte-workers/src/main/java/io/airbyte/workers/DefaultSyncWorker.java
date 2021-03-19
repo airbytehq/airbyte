@@ -49,7 +49,7 @@ public class DefaultSyncWorker implements SyncWorker {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSyncWorker.class);
 
-  private final long jobId;
+  private final String jobId;
   private final int attempt;
   private final Source<AirbyteMessage> source;
   private final Mapper<AirbyteMessage> mapper;
@@ -60,7 +60,7 @@ public class DefaultSyncWorker implements SyncWorker {
   private final AtomicBoolean cancelled;
 
   public DefaultSyncWorker(
-                           final long jobId,
+                           final String jobId,
                            final int attempt,
                            final Source<AirbyteMessage> source,
                            final Mapper<AirbyteMessage> mapper,

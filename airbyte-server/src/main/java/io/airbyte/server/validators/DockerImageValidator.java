@@ -26,7 +26,7 @@ package io.airbyte.server.validators;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.docker.DockerUtils;
-import io.airbyte.scheduler.client.SchedulerJobClient;
+import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.KnownException;
 
@@ -34,7 +34,7 @@ public class DockerImageValidator {
 
   private final SpecFetcher specFetcher;
 
-  public DockerImageValidator(SchedulerJobClient schedulerJobClient) {
+  public DockerImageValidator(SynchronousSchedulerClient schedulerJobClient) {
     this(new SpecFetcher(schedulerJobClient));
   }
 

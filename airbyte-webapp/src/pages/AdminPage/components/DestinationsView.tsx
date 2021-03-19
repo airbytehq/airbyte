@@ -10,7 +10,8 @@ import ImageCell from "./ImageCell";
 import VersionCell from "./VersionCell";
 import config from "config";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
-import ConnectionResource from "core/resources/Connection";
+import { DestinationResource } from "core/resources/Destination";
+import { DestinationDefinition } from "core/resources/DestinationDefinition";
 
 const DestinationsView: React.FC = () => {
   const formatMessage = useIntl().formatMessage;
@@ -20,7 +21,7 @@ const DestinationsView: React.FC = () => {
       workspaceId: config.ui.workspaceId,
     }
   );
-  const { connections } = useResource(ConnectionResource.listShape(), {
+  const { destinations } = useResource(DestinationResource.listShape(), {
     workspaceId: config.ui.workspaceId,
   });
 
@@ -42,15 +43,12 @@ const DestinationsView: React.FC = () => {
         );
         setFeedbackList({ ...feedbackList, [id]: "success" });
       } catch (e) {
-        const message =
-          e.status === 422
-            ? formatMessage({
-                id: "form.imageCannotFound",
-              })
-            : formatMessage({
-                id: "form.someError",
-              });
-        setFeedbackList({ ...feedbackList, [id]: message });
+        const messageId =
+          e.status === 422 ? "form.imageCannotFound" : "form.someError";
+        setFeedbackList({
+          ...feedbackList,
+          [id]: formatMessage({ id: messageId }),
+        });
       }
     },
     [feedbackList, formatMessage, updateDestinationDefinition]
@@ -105,14 +103,14 @@ const DestinationsView: React.FC = () => {
           cell,
           row,
         }: CellProps<{
-          sourceDefinitionId: string;
+          destinationDefinitionId: string;
           dockerImageTag: string;
         }>) => (
           <VersionCell
             version={cell.value}
-            id={row.original.sourceDefinitionId}
+            id={row.original.destinationDefinitionId}
             onChange={onUpdateVersion}
-            feedback={feedbackList[row.original.sourceDefinitionId]}
+            feedback={feedbackList[row.original.destinationDefinitionId]}
             currentVersion={row.original.dockerImageTag}
           />
         ),
@@ -121,41 +119,36 @@ const DestinationsView: React.FC = () => {
     [feedbackList, onUpdateVersion]
   );
 
-  const usedDestination = useMemo(() => {
-    const allDestination = connections.map((item) => {
-      const destinationInfo = destinationDefinitions.find(
-        (destination) =>
-          destination.destinationDefinitionId ===
-          item.destination?.destinationDefinitionId
+  const usedDestinationDefinitions = useMemo<DestinationDefinition[]>(() => {
+    const destinationDefinitionMap = new Map<string, DestinationDefinition>();
+    destinations.forEach((destination) => {
+      const destinationDefinition = destinationDefinitions.find(
+        (destinationDefinition) =>
+          destinationDefinition.destinationDefinitionId ===
+          destination.destinationDefinitionId
       );
-      return {
-        name: item.destination?.destinationName,
-        destinationDefinitionId:
-          item.destination?.destinationDefinitionId || "",
-        dockerRepository: destinationInfo?.dockerRepository,
-        dockerImageTag: destinationInfo?.dockerImageTag,
-        latestDockerImageTag: destinationInfo?.latestDockerImageTag,
-        documentationUrl: destinationInfo?.documentationUrl,
-        feedback: "",
-      };
+
+      if (destinationDefinition) {
+        destinationDefinitionMap.set(
+          destinationDefinition.destinationDefinitionId,
+          destinationDefinition
+        );
+      }
     });
 
-    const uniqDestination = allDestination.reduce(
-      (map, item) => ({ ...map, [item.destinationDefinitionId]: item }),
-      {}
-    );
-
-    return Object.values(uniqDestination);
-  }, [connections, destinationDefinitions]);
+    return Array.from(destinationDefinitionMap.values());
+  }, [destinations, destinationDefinitions]);
 
   return (
     <>
-      <Block>
-        <Title bold>
-          <FormattedMessage id="admin.manageDestination" />
-        </Title>
-        <Table columns={columns} data={usedDestination} />
-      </Block>
+      {usedDestinationDefinitions.length ? (
+        <Block>
+          <Title bold>
+            <FormattedMessage id="admin.manageDestination" />
+          </Title>
+          <Table columns={columns} data={usedDestinationDefinitions} />
+        </Block>
+      ) : null}
 
       <Block>
         <Title bold>

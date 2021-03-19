@@ -58,7 +58,7 @@ import org.junit.jupiter.api.Test;
 
 class DefaultSyncWorkerTest {
 
-  private static final long JOB_ID = 0L;
+  private static final String JOB_ID = "0";
   private static final int JOB_ATTEMPT = 0;
   private static final Path WORKSPACE_ROOT = Path.of("workspaces/10");
   private static final String STREAM_NAME = "user_preferences";

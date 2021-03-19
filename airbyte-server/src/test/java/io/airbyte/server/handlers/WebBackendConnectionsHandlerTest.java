@@ -57,6 +57,7 @@ import io.airbyte.api.model.SourceDiscoverSchemaRead;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.SyncMode;
+import io.airbyte.api.model.SynchronousJobRead;
 import io.airbyte.api.model.WbConnectionRead;
 import io.airbyte.api.model.WbConnectionReadList;
 import io.airbyte.api.model.WebBackendConnectionRequestBody;
@@ -172,7 +173,7 @@ class WebBackendConnectionsHandlerTest {
 
     when(schedulerHandler.discoverSchemaForSourceFromSourceId(sourceIdRequestBody)).thenReturn(
         new SourceDiscoverSchemaRead()
-            .jobInfo(mock(JobInfoRead.class))
+            .jobInfo(mock(SynchronousJobRead.class))
             .catalog(modifiedCatalog));
 
     expectedWithNewSchema = new WbConnectionRead()
