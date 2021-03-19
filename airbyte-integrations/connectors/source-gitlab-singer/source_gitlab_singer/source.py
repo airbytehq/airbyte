@@ -43,5 +43,5 @@ class SourceGitlabSinger(BaseSingerSource):
     def try_connect(self, logger: AirbyteLogger, config: dict):
         if not config["projects"] and not config["groups"]:
             raise Exception("Either groups or projects need to be provided for connect to Gitlab API")
-        response = requests.get(f"{config['api_url']}/projects?private_token={config['private_token']}")
+        response = requests.get(f"{config['api_url']}api/v4/projects", params={"private_token": config["private_token"]})
         response.raise_for_status()
