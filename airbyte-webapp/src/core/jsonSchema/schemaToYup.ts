@@ -80,17 +80,22 @@ export const buildYupFormForJsonSchema = (
       }
       break;
     case "array":
-      schema = yup
-        .array()
-        .of(
-          buildYupFormForJsonSchema(
-            jsonSchema.items as any,
-            uiConfig,
-            jsonSchema,
-            propertyKey,
-            propertyPath ? `${propertyPath}.${propertyKey}` : propertyKey
-          )
-        );
+      if (
+        typeof jsonSchema.items === "object" &&
+        !Array.isArray(jsonSchema.items)
+      ) {
+        schema = yup
+          .array()
+          .of(
+            buildYupFormForJsonSchema(
+              jsonSchema.items,
+              uiConfig,
+              jsonSchema,
+              propertyKey,
+              propertyPath ? `${propertyPath}.${propertyKey}` : propertyKey
+            )
+          );
+      }
       break;
     case "object":
       schema = yup
