@@ -101,8 +101,11 @@ public class LocalJsonDestination implements Destination {
       final String streamName = stream.getStream().getName();
       final Path finalPath = destinationDir.resolve(namingResolver.getRawTableName(streamName) + ".jsonl");
       final Path tmpPath = destinationDir.resolve(namingResolver.getTmpTableName(streamName) + ".jsonl");
-
-      final boolean isAppendMode = stream.getDestinationSyncMode() != DestinationSyncMode.OVERWRITE;
+      final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
+      if (syncMode == null) {
+        throw new IllegalStateException("Undefined destination sync mode");
+      }
+      final boolean isAppendMode = syncMode != DestinationSyncMode.OVERWRITE;
       if (isAppendMode && finalPath.toFile().exists()) {
         Files.copy(finalPath, tmpPath, StandardCopyOption.REPLACE_EXISTING);
       }

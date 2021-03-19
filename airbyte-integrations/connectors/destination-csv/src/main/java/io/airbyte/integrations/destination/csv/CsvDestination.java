@@ -105,7 +105,11 @@ public class CsvDestination implements Destination {
       final Path finalPath = destinationDir.resolve(tableName + ".csv");
       CSVFormat csvFormat = CSVFormat.DEFAULT.withHeader(JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
           JavaBaseConstants.COLUMN_NAME_DATA);
-      final boolean isAppendMode = stream.getDestinationSyncMode() != DestinationSyncMode.OVERWRITE;
+      final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
+      if (syncMode == null) {
+        throw new IllegalStateException("Undefined destination sync mode");
+      }
+      final boolean isAppendMode = syncMode != DestinationSyncMode.OVERWRITE;
       if (isAppendMode && finalPath.toFile().exists()) {
         Files.copy(finalPath, tmpPath, StandardCopyOption.REPLACE_EXISTING);
         csvFormat = csvFormat.withSkipHeaderRecord();
