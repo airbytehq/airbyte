@@ -22,16 +22,15 @@ const Item = styled.div<{ isFailed: boolean }>`
   }
 `;
 
-const JobItem: React.FC<IProps> = ({ jobInfo }) => {
+const JobsLogItem: React.FC<IProps> = ({ jobInfo }) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  if (!jobInfo || !jobInfo?.attempts?.length) {
+  if (!jobInfo) {
     return null;
   }
 
   const onExpand = () => setIsOpen(!isOpen);
-  const isFailed = jobInfo.job.status === Status.FAILED;
-  const attempts = jobInfo.attempts.map((item) => item.attempt);
+  const isFailed = jobInfo.status === Status.FAILED;
 
   return (
     <Item isFailed={isFailed}>
@@ -40,16 +39,17 @@ const JobItem: React.FC<IProps> = ({ jobInfo }) => {
         isOpen={isOpen}
         isFailed={isFailed}
         onExpand={onExpand}
-        job={jobInfo.job}
-        attempts={attempts}
+        job={jobInfo}
+        attempts={[]}
       />
       <ContentWrapper isOpen={isOpen}>
         <div>
           {isOpen && (
             <JobCurrentLogs
-              id={jobInfo.job.id}
+              id={jobInfo.id}
               jobIsFailed={isFailed}
-              attempts={jobInfo.attempts}
+              attempts={[]}
+              logs={jobInfo.logs}
             />
           )}
         </div>
@@ -58,4 +58,4 @@ const JobItem: React.FC<IProps> = ({ jobInfo }) => {
   );
 };
 
-export default JobItem;
+export default JobsLogItem;

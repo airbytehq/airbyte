@@ -44,7 +44,6 @@ import io.airbyte.workers.process.KubeProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalPool;
-import io.airbyte.workers.temporal.TemporalUtils;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -96,20 +95,18 @@ public class SchedulerApp {
 
   public void start() throws IOException {
     final TemporalPool temporalPool = new TemporalPool(workspaceRoot, pbf);
-    // todo (cgardens) - i do not need to set up a thread pool for this, right?
     temporalPool.run();
-    final TemporalClient temporalClient = new TemporalClient(TemporalUtils.TEMPORAL_CLIENT);
 
     final ExecutorService workerThreadPool = Executors.newFixedThreadPool(MAX_WORKERS, THREAD_FACTORY);
     final ScheduledExecutorService scheduledPool = Executors.newSingleThreadScheduledExecutor();
-    final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(temporalClient, workspaceRoot);
+    final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(TemporalClient.production(), workspaceRoot);
     final JobRetrier jobRetrier = new JobRetrier(jobPersistence, Instant::now);
     final JobScheduler jobScheduler = new JobScheduler(jobPersistence, configRepository);
     final JobSubmitter jobSubmitter = new JobSubmitter(
         workerThreadPool,
         jobPersistence,
-        configRepository,
-        temporalWorkerRunFactory);
+        temporalWorkerRunFactory,
+        new JobTracker(configRepository));
 
     Map<String, String> mdc = MDC.getCopyOfContextMap();
 

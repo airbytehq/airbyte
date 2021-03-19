@@ -48,8 +48,10 @@ export const useDestinationDefinitionSpecificationLoad = (
 type DestinationService = {
   checkDestinationConnection: ({
     destinationId,
+    values,
   }: {
     destinationId: string;
+    values?: ValuesProps;
   }) => Promise<Scheduler>;
   updateDestination: ({
     values,
@@ -228,7 +230,20 @@ const useDestination = (): DestinationService => {
   };
 
   const checkDestinationConnection = useCallback(
-    async ({ destinationId }: { destinationId: string }) => {
+    async ({
+      destinationId,
+      values,
+    }: {
+      destinationId: string;
+      values?: ValuesProps;
+    }) => {
+      if (values) {
+        return await destinationCheckConnectionShape({
+          connectionConfiguration: values.connectionConfiguration,
+          name: values.name,
+          destinationId: destinationId,
+        });
+      }
       return await destinationCheckConnectionShape({
         destinationId: destinationId,
       });

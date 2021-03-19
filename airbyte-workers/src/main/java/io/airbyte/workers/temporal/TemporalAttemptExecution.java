@@ -50,8 +50,8 @@ public class TemporalAttemptExecution<T> implements CheckedSupplier<T, TemporalJ
 
   private final Path jobRoot;
   private final CheckedFunction<Path, T, Exception> execution;
-  private final long jobId;
-  private final BiConsumer<Path, Long> mdcSetter;
+  private final String jobId;
+  private final BiConsumer<Path, String> mdcSetter;
   private final CheckedConsumer<Path, IOException> jobRootDirCreator;
 
   @VisibleForTesting
@@ -62,7 +62,7 @@ public class TemporalAttemptExecution<T> implements CheckedSupplier<T, TemporalJ
   public TemporalAttemptExecution(Path workspaceRoot,
                                   JobRunConfig jobRunConfig,
                                   CheckedFunction<Path, T, Exception> execution,
-                                  BiConsumer<Path, Long> mdcSetter,
+                                  BiConsumer<Path, String> mdcSetter,
                                   CheckedConsumer<Path, IOException> jobRootDirCreator) {
     this.jobRoot = WorkerUtils.getJobRoot(workspaceRoot, jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
     this.execution = execution;
