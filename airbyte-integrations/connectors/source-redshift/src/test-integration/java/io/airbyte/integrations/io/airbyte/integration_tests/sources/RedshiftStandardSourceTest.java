@@ -57,7 +57,7 @@ public class RedshiftStandardSourceTest extends StandardSourceTest {
 
   @Override
   protected void setup(TestDestinationEnv testEnv) throws Exception {
-    schemaName = ("integration_test_" + RandomStringUtils.randomAlphanumeric(5));
+    schemaName = ("integration_test_" + RandomStringUtils.randomAlphanumeric(5)).toLowerCase();
     final String createSchemaQuery = String.format("CREATE SCHEMA %s", schemaName);
     streamName = schemaName + ".customer";
     config = getStaticConfig();
