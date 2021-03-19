@@ -1,15 +1,12 @@
-import { Resource } from "rest-hooks";
-import BaseResource, { NetworkError } from "./BaseResource";
-import { propertiesType } from "./SourceDefinitionSpecification";
-import { Attempt, JobItem } from "./Job";
-import Status from "../statuses";
+import { ReadShape, Resource, SchemaDetail } from "rest-hooks";
+import BaseResource from "./BaseResource";
+import Status from "core/statuses";
+import { NetworkError } from "core/request/NetworkError";
+import { ConnectionSpecification } from "core/domain/connection";
+import { Logs, JobItem } from "core/resources/Job";
 
-export type JobInfo = {
-  job: JobItem;
-  attempts: {
-    attempt: Attempt;
-    logs: { logLines: string[] };
-  }[];
+export type JobInfo = JobItem & {
+  logs: Logs;
 };
 
 export interface Scheduler {
@@ -18,26 +15,31 @@ export interface Scheduler {
   jobInfo?: JobInfo;
 }
 
-export default class SchedulerResource extends BaseResource
+export default class SchedulerResource
+  extends BaseResource
   implements Scheduler {
   readonly status: string = "";
   readonly message: string = "";
   readonly jobInfo: JobInfo | undefined = undefined;
 
-  pk() {
+  pk(): string {
     return Date.now().toString();
   }
 
   static urlRoot = "scheduler";
 
-  static sourceCheckConnectionShape<T extends typeof Resource>(this: T) {
+  static sourceCheckConnectionShape<T extends typeof Resource>(
+    this: T
+  ): ReadShape<SchemaDetail<Scheduler>> {
     return {
       ...super.detailShape(),
       getFetchKey: (params: {
         sourceDefinitionId: string;
-        connectionConfiguration: propertiesType;
+        connectionConfiguration: ConnectionSpecification;
       }) => `POST /sources/check_connection` + JSON.stringify(params),
-      fetch: async (params: any): Promise<any> => {
+      fetch: async (
+        params: Readonly<Record<string, unknown>>
+      ): Promise<Scheduler> => {
         const url = !params.sourceId
           ? `${this.url(params)}/sources/check_connection`
           : params.connectionConfiguration
@@ -50,7 +52,7 @@ export default class SchedulerResource extends BaseResource
         if (result.status === Status.FAILED) {
           const jobInfo = {
             ...result.jobInfo,
-            job: { ...result.jobInfo.job, status: result.status }
+            status: result.status,
           };
 
           const e = new NetworkError(result);
@@ -64,18 +66,22 @@ export default class SchedulerResource extends BaseResource
 
         return result;
       },
-      schema: this
+      schema: this,
     };
   }
 
-  static destinationCheckConnectionShape<T extends typeof Resource>(this: T) {
+  static destinationCheckConnectionShape<T extends typeof Resource>(
+    this: T
+  ): ReadShape<SchemaDetail<Scheduler>> {
     return {
       ...super.detailShape(),
       getFetchKey: (params: {
         destinationDefinitionId: string;
-        connectionConfiguration: propertiesType;
+        connectionConfiguration: ConnectionSpecification;
       }) => `POST /destinations/check_connection` + JSON.stringify(params),
-      fetch: async (params: any): Promise<any> => {
+      fetch: async (
+        params: Readonly<Record<string, unknown>>
+      ): Promise<Scheduler> => {
         const url = !params.destinationId
           ? `${this.url(params)}/destinations/check_connection`
           : params.connectionConfiguration
@@ -88,7 +94,7 @@ export default class SchedulerResource extends BaseResource
         if (result.status === Status.FAILED) {
           const jobInfo = {
             ...result.jobInfo,
-            job: { ...result.jobInfo.job, status: result.status }
+            status: result.status,
           };
 
           const e = new NetworkError(result);
@@ -102,7 +108,7 @@ export default class SchedulerResource extends BaseResource
 
         return result;
       },
-      schema: this
+      schema: this,
     };
   }
 }

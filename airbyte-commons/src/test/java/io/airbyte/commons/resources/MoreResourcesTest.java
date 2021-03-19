@@ -43,9 +43,15 @@ class MoreResourcesTest {
   }
 
   @Test
+  void testResourceReadDuplicateName() throws IOException {
+    assertEquals("content1\n", MoreResources.readResource("resource_test_a"));
+    assertEquals("content2\n", MoreResources.readResource("subdir/resource_test_a"));
+  }
+
+  @Test
   void testListResource() throws IOException {
     assertEquals(
-        Sets.newHashSet("subdir", "resource_test_sub", "resource_test_sub_2"),
+        Sets.newHashSet("subdir", "resource_test_sub", "resource_test_sub_2", "resource_test_a"),
         MoreResources.listResources(MoreResourcesTest.class, "subdir")
             .map(Path::getFileName)
             .map(Path::toString)

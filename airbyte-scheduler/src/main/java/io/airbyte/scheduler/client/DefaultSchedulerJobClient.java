@@ -24,17 +24,14 @@
 
 package io.airbyte.scheduler.client;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
 import io.airbyte.scheduler.Job;
-import io.airbyte.scheduler.JobStatus;
 import io.airbyte.scheduler.persistence.JobCreator;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import java.io.IOException;
 import java.time.Duration;
-import java.time.Instant;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,30 +47,6 @@ public class DefaultSchedulerJobClient implements SchedulerJobClient {
   public DefaultSchedulerJobClient(JobPersistence jobPersistence, JobCreator jobCreator) {
     this.jobPersistence = jobPersistence;
     this.jobCreator = jobCreator;
-  }
-
-  @Override
-  public Job createSourceCheckConnectionJob(SourceConnection source, String dockerImage) throws IOException {
-    final long jobId = jobCreator.createSourceCheckConnectionJob(source, dockerImage);
-    return waitUntilJobIsTerminalOrTimeout(jobId);
-  }
-
-  @Override
-  public Job createDestinationCheckConnectionJob(DestinationConnection destination, String dockerImage) throws IOException {
-    final long jobId = jobCreator.createDestinationCheckConnectionJob(destination, dockerImage);
-    return waitUntilJobIsTerminalOrTimeout(jobId);
-  }
-
-  @Override
-  public Job createDiscoverSchemaJob(SourceConnection source, String dockerImage) throws IOException {
-    final long jobId = jobCreator.createDiscoverSchemaJob(source, dockerImage);
-    return waitUntilJobIsTerminalOrTimeout(jobId);
-  }
-
-  @Override
-  public Job createGetSpecJob(String dockerImage) throws IOException {
-    final long jobId = jobCreator.createGetSpecJob(dockerImage);
-    return waitUntilJobIsTerminalOrTimeout(jobId);
   }
 
   @Override
@@ -108,28 +81,7 @@ public class DefaultSchedulerJobClient implements SchedulerJobClient {
         ? jobPersistence.getLastReplicationJob(standardSync.getConnectionId()).orElseThrow(() -> new RuntimeException("No job available")).getId()
         : jobIdOptional.get();
 
-    return waitUntilJobIsTerminalOrTimeout(jobId);
-  }
-
-  @VisibleForTesting
-  Job waitUntilJobIsTerminalOrTimeout(final long jobId) throws IOException {
-    Instant timeoutInstant = Instant.now().plus(REQUEST_TIMEOUT);
-    LOGGER.info("Waiting for job id: " + jobId);
-    while (Instant.now().isBefore(timeoutInstant)) {
-      final Job job = jobPersistence.getJob(jobId);
-
-      if (JobStatus.TERMINAL_STATUSES.contains(job.getStatus())) {
-        return job;
-      }
-
-      try {
-        Thread.sleep(1000);
-      } catch (InterruptedException e) {
-        throw new RuntimeException(e);
-      }
-    }
-
-    throw new RuntimeException("Job " + jobId + "  did not complete.");
+    return jobPersistence.getJob(jobId);
   }
 
 }

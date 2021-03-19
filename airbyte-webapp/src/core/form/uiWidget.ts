@@ -1,8 +1,10 @@
+import get from "lodash.get";
 import { FormBlock, WidgetConfigMap } from "./types";
-import at from "lodash.at";
+import { buildYupFormForJsonSchema } from "core/jsonSchema/schemaToYup";
 
 export const buildPathInitialState = (
   formBlock: FormBlock[],
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   formValues: { [key: string]: any },
   widgetState: WidgetConfigMap = {}
 ): { [key: string]: WidgetConfigMap } =>
@@ -19,28 +21,38 @@ export const buildPathInitialState = (
         return widgetStateBuilder;
       case "formCondition":
         const defaultCondition = Object.entries(formItem.conditions).find(
-          ([, subConditionItems]) => {
+          ([key, subConditionItems]) => {
             switch (subConditionItems._type) {
               case "formGroup":
-                const fieldPath = subConditionItems.properties.map(
-                  property => property.fieldName
+                const selectedValues = get(
+                  formValues,
+                  subConditionItems.fieldName
                 );
-                return (
-                  at(formValues, fieldPath).filter(value => value !== undefined)
-                    .length === fieldPath.length
-                );
+
+                const subPathSchema = buildYupFormForJsonSchema({
+                  type: "object",
+                  ...subConditionItems.jsonSchema,
+                });
+
+                if (subPathSchema.isValidSync(selectedValues)) {
+                  return key;
+                }
+                return null;
               case "formItem":
-                return at(formValues, subConditionItems.fieldName)[0];
+                return key;
             }
-            return false;
+
+            return null;
           }
         )?.[0];
 
         const selectedPath =
           defaultCondition ?? Object.keys(formItem.conditions)?.[0];
+
         widgetStateBuilder[formItem.fieldName] = {
-          selectedItem: selectedPath
+          selectedItem: selectedPath,
         };
+
         if (formItem.conditions[selectedPath]) {
           return buildPathInitialState(
             [formItem.conditions[selectedPath]],

@@ -29,8 +29,8 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.lang.CloseableConsumer;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.stream.MoreStreams;
+import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.commons.yaml.Yamls;
-import io.airbyte.db.AirbyteVersion;
 import io.airbyte.scheduler.persistence.DatabaseSchema;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.validation.json.JsonSchemaValidator;
@@ -98,12 +98,12 @@ public class DatabaseArchiver {
   protected static Path buildTablePath(final Path storageRoot, final String tableName) {
     return storageRoot
         .resolve(DB_FOLDER_NAME)
-        .resolve(String.format("%s.yaml", tableName.toLowerCase()));
+        .resolve(String.format("%s.yaml", tableName.toUpperCase()));
   }
 
   public void checkVersion(final String airbyteVersion) throws IOException {
     final Optional<String> airbyteDatabaseVersion = persistence.getVersion();
-    airbyteDatabaseVersion.ifPresent(dbversion -> AirbyteVersion.check(airbyteVersion, dbversion));
+    airbyteDatabaseVersion.ifPresent(dbversion -> AirbyteVersion.assertIsCompatible(airbyteVersion, dbversion));
   }
 
   /**

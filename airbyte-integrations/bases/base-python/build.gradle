@@ -13,3 +13,6 @@ dependencies {
 }
 
 installReqs.dependsOn(":airbyte-integrations:bases:airbyte-protocol:installReqs")
+
+// no-op integration test task to allow build script to succeed. TODO fix build script to not require a task with this name.
+task("integrationTest")

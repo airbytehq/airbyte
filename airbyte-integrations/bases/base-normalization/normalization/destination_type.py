@@ -26,7 +26,11 @@ from enum import Enum
 
 
 class DestinationType(Enum):
-    bigquery = "bigquery"
-    postgres = "postgres"
-    redshift = "redshift"
-    snowflake = "snowflake"
+    BIGQUERY = "bigquery"
+    POSTGRES = "postgres"
+    REDSHIFT = "redshift"
+    SNOWFLAKE = "snowflake"
+
+    @classmethod
+    def from_string(cls, string_value: str) -> "DestinationType":
+        return DestinationType[string_value.upper()]

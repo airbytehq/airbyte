@@ -2,8 +2,8 @@ import React from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 
-import Button from "../../Button";
-import Spinner from "../../Spinner";
+import Button from "components/Button";
+import Spinner from "components/Spinner";
 
 type IProps = {
   isSubmitting: boolean;
@@ -53,7 +53,7 @@ const EditControls: React.FC<IProps> = ({
   resetForm,
   successMessage,
   errorMessage,
-  editSchemeMode
+  editSchemeMode,
 }) => {
   const showStatusMessage = () => {
     if (isSubmitting) {
@@ -67,7 +67,7 @@ const EditControls: React.FC<IProps> = ({
       return <Error>{errorMessage}</Error>;
     }
     if (successMessage && !dirty) {
-      return <Success>{successMessage}</Success>;
+      return <Success data-id="success-result">{successMessage}</Success>;
     }
     return null;
   };

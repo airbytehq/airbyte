@@ -27,9 +27,15 @@ package io.airbyte.workers;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardTapConfig;
 import io.airbyte.config.StandardTargetConfig;
+import io.airbyte.scheduler.models.IntegrationLauncherConfig;
+import io.airbyte.workers.process.AirbyteIntegrationLauncher;
+import io.airbyte.workers.process.IntegrationLauncher;
+import io.airbyte.workers.process.ProcessBuilderFactory;
+import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 public class WorkerUtils {
 
@@ -110,6 +116,34 @@ public class WorkerUtils {
         .withDestinationConnectionConfiguration(sync.getDestinationConfiguration())
         .withCatalog(sync.getCatalog())
         .withState(sync.getState());
+  }
+
+  // todo (cgardens) - there are 2 sources of truth for job path. we need to reduce this down to one,
+  // once we are fully on temporal.
+  public static Path getJobRoot(Path workspaceRoot, IntegrationLauncherConfig launcherConfig) {
+    return getJobRoot(workspaceRoot, launcherConfig.getJobId(), Math.toIntExact(launcherConfig.getAttemptId()));
+  }
+
+  public static Path getJobRoot(Path workspaceRoot, String jobId, long attemptId) {
+    return getJobRoot(workspaceRoot, jobId, Math.toIntExact(attemptId));
+  }
+
+  public static Path getJobRoot(Path workspaceRoot, String jobId, int attemptId) {
+    return workspaceRoot
+        .resolve(String.valueOf(jobId))
+        .resolve(String.valueOf(attemptId));
+  }
+
+  public static void setJobMdc(Path jobRoot, String jobId) {
+    MDC.put("job_id", jobId);
+    MDC.put("job_root", jobRoot.toString());
+    MDC.put("job_log_filename", WorkerConstants.LOG_FILENAME);
+  }
+
+  // todo (cgardens) can we get this down to just passing pbf and docker image and not job id and
+  // attempt
+  public static IntegrationLauncher getIntegrationLauncher(IntegrationLauncherConfig config, ProcessBuilderFactory pbf) {
+    return new AirbyteIntegrationLauncher(config.getJobId(), Math.toIntExact(config.getAttemptId()), config.getDockerImage(), pbf);
   }
 
 }

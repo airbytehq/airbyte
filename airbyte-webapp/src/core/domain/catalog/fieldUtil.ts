@@ -1,14 +1,19 @@
 import { JSONSchema7Definition } from "json-schema";
 import Status from "core/statuses";
-import { NetworkError } from "core/resources/BaseResource";
+import { NetworkError } from "core/request/NetworkError";
 import { SourceDiscoverSchemaRead } from "./api";
 import { SyncSchemaField } from "./models";
 
-export function toInnerModel(result: any): SourceDiscoverSchemaRead {
-  if (result.jobInfo?.job?.status === Status.FAILED || !result.catalog) {
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export function toInnerModel(
+  result: SourceDiscoverSchemaRead
+): SourceDiscoverSchemaRead {
+  if (result.jobInfo?.status === Status.FAILED || !result.catalog) {
+    // @ts-ignore address this case
     const e = new NetworkError(result);
     // Generate error with failed status and received logs
     e.status = 400;
+    // @ts-ignore address this case
     e.response = result.jobInfo;
     throw e;
   }
@@ -42,8 +47,8 @@ export const traverseSchemaToField = (
       fields,
       type:
         (Array.isArray(jsonSchema.type)
-          ? jsonSchema.type.find(t => t !== "null") ?? jsonSchema.type[0]
-          : jsonSchema.type) ?? "null"
-    }
+          ? jsonSchema.type.find((t) => t !== "null") ?? jsonSchema.type[0]
+          : jsonSchema.type) ?? "null",
+    },
   ];
 };

@@ -9,13 +9,14 @@ import Label from "../Label";
 import SchemaView from "./components/SchemaView";
 import { IDataItem } from "../DropDown/components/ListItem";
 import EditControls from "./components/EditControls";
-import { SyncSchema } from "../../core/domain/catalog";
+import { SyncSchema } from "core/domain/catalog";
 import ResetDataModal from "../ResetDataModal";
-import { equal } from "../../utils/objects";
+import { equal } from "utils/objects";
 import { useFrequencyDropdownData, useInitialSchema } from "./useInitialSchema";
-import { ControlLabels } from "../LabeledControl";
+import { ControlLabels } from "components/LabeledControl";
 import DropDown from "../DropDown";
-import { ModalTypes } from "../ResetDataModal/types";
+import { ModalTypes } from "components/ResetDataModal/types";
+import Input from "components/Input";
 
 type IProps = {
   className?: string;
@@ -23,12 +24,17 @@ type IProps = {
   errorMessage?: React.ReactNode;
   additionBottomControls?: React.ReactNode;
   successMessage?: React.ReactNode;
-  onSubmit: (values: { frequency: string; schema: SyncSchema }) => void;
+  onSubmit: (values: {
+    frequency: string;
+    prefix: string;
+    schema: SyncSchema;
+  }) => void;
   onReset?: (connectionId?: string) => void;
   onDropDownSelect?: (item: IDataItem) => void;
   onCancel?: () => void;
   editSchemeMode?: boolean;
   frequencyValue?: string;
+  prefixValue?: string;
   isEditMode?: boolean;
   isLoading?: boolean;
 };
@@ -41,8 +47,13 @@ const EditLaterMessage = styled(Label)`
   margin: -20px 0 29px;
 `;
 
+const ControlLabelsWithMargin = styled(ControlLabels)`
+  margin-bottom: 29px;
+`;
+
 const connectionValidationSchema = yup.object().shape({
-  frequency: yup.string().required("form.empty.error")
+  frequency: yup.string().required("form.empty.error"),
+  prefix: yup.string(),
 });
 
 const FrequencyForm: React.FC<IProps> = ({
@@ -53,34 +64,38 @@ const FrequencyForm: React.FC<IProps> = ({
   schema,
   onDropDownSelect,
   frequencyValue,
+  prefixValue,
   isEditMode,
   successMessage,
   additionBottomControls,
   onCancel,
   editSchemeMode,
-  isLoading
+  isLoading,
 }) => {
   const initialSchema = useInitialSchema(schema);
   const dropdownData = useFrequencyDropdownData();
 
   const [modalIsOpen, setResetModalIsOpen] = useState(false);
   const formatMessage = useIntl().formatMessage;
+  // TODO: newSchema config should be part of formik schema
   const [newSchema, setNewSchema] = useState(initialSchema);
 
   return (
     <Formik
       initialValues={{
-        frequency: frequencyValue || ""
+        frequency: frequencyValue || "",
+        prefix: prefixValue || "",
       }}
       validateOnBlur={true}
       validateOnChange={true}
       validationSchema={connectionValidationSchema}
-      onSubmit={async values => {
+      onSubmit={async (values) => {
         const requiresReset =
           isEditMode && !equal(initialSchema, newSchema) && !editSchemeMode;
         await onSubmit({
           frequency: values.frequency,
-          schema: newSchema
+          prefix: values.prefix,
+          schema: newSchema,
         });
 
         if (requiresReset) {
@@ -90,6 +105,26 @@ const FrequencyForm: React.FC<IProps> = ({
     >
       {({ isSubmitting, setFieldValue, isValid, dirty, resetForm }) => (
         <FormContainer className={className}>
+          <Field name="prefix">
+            {({ field }: FieldProps<string>) => (
+              <ControlLabelsWithMargin
+                label={formatMessage({
+                  id: "form.prefix",
+                })}
+                message={formatMessage({
+                  id: "form.prefix.message",
+                })}
+              >
+                <Input
+                  {...field}
+                  type="text"
+                  placeholder={formatMessage({
+                    id: `form.prefix.placeholder`,
+                  })}
+                />
+              </ControlLabelsWithMargin>
+            )}
+          </Field>
           <SchemaView schema={newSchema} onChangeSchema={setNewSchema} />
           {!isEditMode ? (
             <EditLaterMessage
@@ -101,17 +136,17 @@ const FrequencyForm: React.FC<IProps> = ({
               <ControlLabels
                 // error={!!fieldProps.meta.error && fieldProps.meta.touched}
                 label={formatMessage({
-                  id: "form.frequency"
+                  id: "form.frequency",
                 })}
                 message={formatMessage({
-                  id: "form.frequency.message"
+                  id: "form.frequency.message",
                 })}
                 labelAdditionLength={300}
               >
                 <DropDown
                   {...field}
                   data={dropdownData}
-                  onSelect={item => {
+                  onSelect={(item) => {
                     if (onDropDownSelect) {
                       onDropDownSelect(item);
                     }

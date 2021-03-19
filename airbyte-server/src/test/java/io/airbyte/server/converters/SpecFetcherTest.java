@@ -31,13 +31,10 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.JobOutput;
-import io.airbyte.config.StandardGetSpecOutput;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.scheduler.Job;
-import io.airbyte.scheduler.client.SchedulerJobClient;
+import io.airbyte.scheduler.client.SynchronousResponse;
+import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import java.io.IOException;
-import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -45,28 +42,23 @@ class SpecFetcherTest {
 
   private static final String IMAGE_NAME = "foo:bar";
 
-  private SchedulerJobClient schedulerJobClient;
-  private Job job;
-  private JobOutput jobOutput;
+  private SynchronousSchedulerClient schedulerJobClient;
+  private SynchronousResponse<ConnectorSpecification> response;
   private ConnectorSpecification connectorSpecification;
-  private StandardGetSpecOutput specOutput;
 
+  @SuppressWarnings("unchecked")
   @BeforeEach
   void setup() {
-    schedulerJobClient = mock(SchedulerJobClient.class);
-    job = mock(Job.class);
-    jobOutput = mock(JobOutput.class);
+    schedulerJobClient = mock(SynchronousSchedulerClient.class);
+    response = mock(SynchronousResponse.class);
     connectorSpecification = new ConnectorSpecification().withConnectionSpecification(Jsons.jsonNode(ImmutableMap.of("foo", "bar")));
-    specOutput = new StandardGetSpecOutput().withSpecification(connectorSpecification);
-
-    when(job.getSuccessOutput()).thenReturn(Optional.ofNullable(jobOutput));
-
   }
 
   @Test
   void testFetch() throws IOException {
-    when(schedulerJobClient.createGetSpecJob(IMAGE_NAME)).thenReturn(job);
-    when(jobOutput.getGetSpec()).thenReturn(specOutput);
+    when(schedulerJobClient.createGetSpecJob(IMAGE_NAME)).thenReturn(response);
+    when(response.isSuccess()).thenReturn(true);
+    when(response.getOutput()).thenReturn(connectorSpecification);
 
     final SpecFetcher specFetcher = new SpecFetcher(schedulerJobClient);
     assertEquals(connectorSpecification, specFetcher.execute(IMAGE_NAME));
@@ -74,11 +66,11 @@ class SpecFetcherTest {
 
   @Test
   void testFetchEmpty() throws IOException {
-    when(schedulerJobClient.createGetSpecJob(IMAGE_NAME)).thenReturn(job);
-    when(job.getSuccessOutput()).thenReturn(Optional.empty());
+    when(schedulerJobClient.createGetSpecJob(IMAGE_NAME)).thenReturn(response);
+    when(response.isSuccess()).thenReturn(false);
 
     final SpecFetcher specFetcher = new SpecFetcher(schedulerJobClient);
-    assertThrows(IllegalArgumentException.class, () -> specFetcher.execute(IMAGE_NAME));
+    assertThrows(IllegalStateException.class, () -> specFetcher.execute(IMAGE_NAME));
   }
 
 }

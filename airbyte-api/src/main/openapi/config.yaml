@@ -56,6 +56,46 @@ tags:
     description: Export/Import Airbyte Configuration and Database resources.
 
 paths:
+  /v1/workspaces/create:
+    post:
+      tags:
+        - workspace
+      summary: Creates a workspace
+      operationId: createWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceCreate"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkspaceRead"
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/workspaces/delete:
+    post:
+      tags:
+        - workspace
+      summary: Deletes a workspace
+      operationId: deleteWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdRequestBody"
+        required: true
+      responses:
+        "204":
+          description: The resource was deleted successfully.
+        "404":
+          description: Source not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
   /v1/workspaces/get:
     post:
       tags:
@@ -171,8 +211,22 @@ paths:
     post:
       tags:
         - source_definition
-      summary: List all of the sourceDefinitions that Airbyte supports
+      summary: List all the sourceDefinitions the current Airbyte deployment is configured to use
       operationId: listSourceDefinitions
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceDefinitionReadList"
+  /v1/source_definitions/list_latest:
+    post:
+      tags:
+        - source_definition
+      summary: List the latest sourceDefinitions Airbyte supports
+      description: Guaranteed to retrieve the latest information on supported sources.
+      operationId: listLatestSourceDefinitions
       responses:
         "200":
           description: Successful operation
@@ -183,7 +237,7 @@ paths:
   /v1/source_definitions/get:
     post:
       tags:
-        - source
+        - source_definition
       summary: Get source
       operationId: getSourceDefinition
       requestBody:
@@ -452,8 +506,22 @@ paths:
     post:
       tags:
         - destination_definition
-      summary: List all of the destinationDefinitions that Airbyte supports
+      summary: List all the destinationDefinitions the current Airbyte deployment is configured to use
       operationId: listDestinationDefinitions
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationDefinitionReadList"
+  /v1/destination_definitions/list_latest:
+    post:
+      tags:
+        - destination_definition
+      summary: List the latest destinationDefinitions Airbyte supports
+      description: Guaranteed to retrieve the latest information on supported destinations.
+      operationId: listLatestDestinationDefinitions
       responses:
         "200":
           description: Successful operation
@@ -1130,6 +1198,22 @@ components:
     CustomerId:
       type: string
       format: uuid
+    WorkspaceCreate:
+      type: object
+      required:
+        - name
+      properties:
+        email:
+          type: string
+          format: email
+        anonymousDataCollection:
+          type: boolean
+        name:
+          type: string
+        news:
+          type: boolean
+        securityUpdates:
+          type: boolean
     WorkspaceIdRequestBody:
       type: object
       required:
@@ -1272,7 +1356,7 @@ components:
       type: object
       required:
         - sourceDefinitionId
-        - connectionSpecification
+        - jobInfo
       properties:
         sourceDefinitionId:
           $ref: "#/components/schemas/SourceDefinitionId"
@@ -1280,6 +1364,8 @@ components:
           type: string
         connectionSpecification:
           $ref: "#/components/schemas/SourceDefinitionSpecification"
+        jobInfo:
+          $ref: "#/components/schemas/SynchronousJobRead"
     # SOURCE
     SourceId:
       type: string
@@ -1388,7 +1474,7 @@ components:
         catalog:
           $ref: "#/components/schemas/AirbyteCatalog"
         jobInfo:
-          $ref: "#/components/schemas/JobInfoRead"
+          $ref: "#/components/schemas/SynchronousJobRead"
     # DESTINATION DEFINITION
     DestinationDefinitionId:
       type: string
@@ -1464,7 +1550,7 @@ components:
       type: object
       required:
         - destinationDefinitionId
-        - connectionSpecification
+        - jobInfo
       properties:
         destinationDefinitionId:
           $ref: "#/components/schemas/DestinationDefinitionId"
@@ -1472,6 +1558,8 @@ components:
           type: string
         connectionSpecification:
           $ref: "#/components/schemas/DestinationDefinitionSpecification"
+        jobInfo:
+          $ref: "#/components/schemas/SynchronousJobRead"
     # DESTINATION
     DestinationId:
       type: string
@@ -1602,6 +1690,9 @@ components:
         name:
           type: string
           description: Optional name of the connection
+        prefix:
+          type: string
+          description: Prefix that will be prepended to the name of each stream when it is written to the destination.
         sourceId:
           $ref: "#/components/schemas/SourceId"
         destinationId:
@@ -1621,6 +1712,9 @@ components:
       properties:
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
+        prefix:
+          type: string
+          description: Prefix that will be prepended to the name of each stream when it is written to the destination.
         syncCatalog:
           $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
@@ -1648,6 +1742,9 @@ components:
           $ref: "#/components/schemas/ConnectionId"
         name:
           type: string
+        prefix:
+          type: string
+          description: Prefix that will be prepended to the name of each stream when it is written to the destination.
         sourceId:
           $ref: "#/components/schemas/SourceId"
         destinationId:
@@ -1747,13 +1844,20 @@ components:
           items:
             $ref: "#/components/schemas/SyncMode"
         sourceDefinedCursor:
-          description: If the source defines the cursor field, then it does any other cursor field inputs will be ignored. If it does not either the user_provided one is used or as a backup the default one is used.
+          description: If the source defines the cursor field, then any other cursor field inputs will be ignored. If it does not, either the user_provided one is used, or the default one is used as a backup.
           type: boolean
         defaultCursorField:
           description: Path to the field that will be used to determine if a record is new or modified since the last sync. If not provided by the source, the end user will have to specify the comparable themselves.
           type: array
           items:
             type: string
+        sourceDefinedPrimaryKey:
+          description: If the source defines the primary key, paths to the fields that will be used as a primary key. If not provided by the source, the end user will have to specify the primary key themselves.
+          type: array
+          items:
+            type: array
+            items:
+              type: string
     StreamJsonSchema:
       type: object
     AirbyteStreamConfiguration:
@@ -1769,6 +1873,16 @@ components:
           type: array
           items:
             type: string
+        destinationSyncMode:
+          $ref: "#/components/schemas/DestinationSyncMode"
+          default: append
+        primaryKey:
+          description: Paths to the fields that will be used as primary key. This field is REQUIRED if `destination_sync_mode` is `*_dedup`. Otherwise it is ignored.
+          type: array
+          items:
+            type: array
+            items:
+              type: string
         aliasName:
           description: Alias name to the stream to be used in the destination
           type: string
@@ -1847,7 +1961,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AttemptRead"
-
     JobStatus:
       type: string
       enum:
@@ -1931,6 +2044,33 @@ components:
           type: array
           items:
             type: string
+    SynchronousJobRead:
+      type: object
+      required:
+        - id
+        - configType
+        - createdAt
+        - endedAt
+        - succeeded
+      properties:
+        id:
+          type: string
+          format: uuid
+        configType:
+          $ref: "#/components/schemas/JobConfigType"
+        configId:
+          description: only present if a config id was provided.
+          type: string
+        createdAt:
+          type: integer
+          format: int64
+        endedAt:
+          type: integer
+          format: int64
+        succeeded:
+          type: boolean
+        logs:
+          $ref: "#/components/schemas/LogRead"
     # Health
     HealthCheckRead:
       type: object
@@ -1954,7 +2094,7 @@ components:
         message:
           type: string
         jobInfo:
-          $ref: "#/components/schemas/JobInfoRead"
+          $ref: "#/components/schemas/SynchronousJobRead"
     # Web Backend
     WbConnectionRead:
       type: object
@@ -1972,6 +2112,8 @@ components:
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
         name:
+          type: string
+        prefix:
           type: string
         sourceId:
           $ref: "#/components/schemas/SourceId"
@@ -2007,6 +2149,13 @@ components:
       enum:
         - full_refresh
         - incremental
+    DestinationSyncMode:
+      type: string
+      enum:
+        - append
+        - overwrite
+        #- upsert_dedup # TODO chris: SCD Type 1 can be implemented later
+        - append_dedup # SCD Type 2
     AirbyteArchive:
       type: string
       format: binary

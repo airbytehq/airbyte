@@ -10,8 +10,35 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 
 ## Currently under construction
 
-**New sources:** Hive, MongoDB, Mailgun  
-**New destinations:** Panoply, S3, MySQL, Kafka, MongoDB
+Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/3) to see what we're currently working on
+
+## 03/15/2021
+
+* 2 new source connectors: **[Instagram](https://docs.airbyte.io/integrations/sources/instagram)** and **[Google Directory](https://docs.airbyte.io/integrations/sources/google-directory)**
+* **Facebook Marketing**: support of API v10
+* **Google Analytics**: support incremental sync
+* **Jira**: bug fix to consistently pull all tickets
+* **HTTP Source**: bug fix to correctly parse JSON responses consistently
+
+## 03/08/2021
+
+* 1 new source connector: **[MongoDB](https://docs.airbyte.io/integrations/sources/mongodb)**
+* **Google Analytics**: Support chunked syncs to avoid sampling
+* **AppStore**: fix bug where the catalog was displayed incorrectly
+
+## 03/01/2021
+
+* **New native Hubspot connector** with schema folder populated
+* Facebook Marketing connector: add option to include deleted records
+
+## 02/22/2021
+
+* Bug fixes:
+  * **Google Analytics:** add the ability to sync custom reports
+  * **Apple Appstore:** bug fix to correctly run incremental syncs
+  * **Exchange rates:** UI now correctly validates input date pattern
+  * **File Source:** Support JSONL \(newline-delimited JSON\) format
+  * **Freshdesk:** Enable controlling how many requests per minute the connector makes to avoid overclocking rate limits
 
 ## 02/15/2021
 

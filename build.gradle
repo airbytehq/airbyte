@@ -50,10 +50,11 @@ def createSpotlessTarget = { pattern ->
         '*.egg-info',
         'build',
         'dbt-project-template',
-        'tools'
+        'tools',
+        'secrets'
     ]
 
-    if(System.getenv().containsKey("CORE_ONLY")) {
+    if (System.getenv().containsKey("CORE_ONLY")) {
         excludes.add("airbyte-integrations/connectors")
     }
 
@@ -125,7 +126,7 @@ allprojects {
 // Java projects common configurations
 subprojects {
 
-    if (project.name == 'airbyte-webapp') {
+    if (project.name == 'airbyte-webapp' || project.name == 'airbyte-e2e-testing') {
         return
     }
 

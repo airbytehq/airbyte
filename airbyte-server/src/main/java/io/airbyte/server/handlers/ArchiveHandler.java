@@ -24,13 +24,15 @@
 
 package io.airbyte.server.handlers;
 
+import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.api.model.ImportRead;
 import io.airbyte.api.model.ImportRead.StatusEnum;
 import io.airbyte.commons.io.Archives;
 import io.airbyte.commons.io.FileTtlManager;
+import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.db.AirbyteVersion;
+import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.converters.ConfigFileArchiver;
 import io.airbyte.server.converters.DatabaseArchiver;
@@ -40,6 +42,8 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
+import java.util.UUID;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +55,7 @@ public class ArchiveHandler {
   private static final String VERSION_FILE_NAME = "VERSION";
 
   private final String version;
+  private final ConfigRepository configRepository;
   private final ConfigFileArchiver configFileArchiver;
   private final DatabaseArchiver databaseArchiver;
   private final FileTtlManager fileTtlManager;
@@ -60,6 +65,7 @@ public class ArchiveHandler {
                         final JobPersistence persistence,
                         final FileTtlManager fileTtlManager) {
     this.version = version;
+    this.configRepository = configRepository;
     configFileArchiver = new ConfigFileArchiver(configRepository);
     databaseArchiver = new DatabaseArchiver(persistence);
     this.fileTtlManager = fileTtlManager;
@@ -106,9 +112,12 @@ public class ArchiveHandler {
    * @return a status object describing if import was successful or not.
    */
   public ImportRead importData(File archive) {
+    // customerId before import happens.
+    final Optional<UUID> previousCustomerIdOptional = getCurrentCustomerId();
+
     ImportRead result;
     try {
-      final Path tempFolder = Files.createTempDirectory("airbyte_archive");
+      final Path tempFolder = Files.createTempDirectory(Path.of("/tmp"), "airbyte_archive");
       try {
         Archives.extractArchive(archive.toPath(), tempFolder);
         checkImport(tempFolder);
@@ -119,9 +128,16 @@ public class ArchiveHandler {
         FileUtils.deleteDirectory(tempFolder.toFile());
         FileUtils.deleteQuietly(archive);
       }
+
+      // identify this instance as the new customer id.
+      TrackingClientSingleton.get().identify();
+      // report that the previous customer id is now superseded by the imported one.
+      previousCustomerIdOptional.ifPresent(previousCustomerId -> TrackingClientSingleton.get().alias(previousCustomerId.toString()));
     } catch (IOException | JsonValidationException | ConfigNotFoundException | RuntimeException e) {
+      LOGGER.error("Import failed", e);
       result = new ImportRead().status(StatusEnum.FAILED).reason(e.getMessage());
     }
+
     return result;
   }
 
@@ -129,14 +145,24 @@ public class ArchiveHandler {
     final Path versionFile = tempFolder.resolve(VERSION_FILE_NAME);
     final String importVersion = Files.readString(versionFile, Charset.defaultCharset()).replace("\n", "").strip();
     LOGGER.info(String.format("Checking Airbyte Version to import %s", importVersion));
-    if (AirbyteVersion.isInvalid(version, importVersion)) {
+    if (AirbyteVersion.isCompatible(version, importVersion)) {
       throw new IOException(String.format("Imported VERSION (%s) is incompatible with current Airbyte version (%s).\n" +
-          "Please Upgrade your Airbyte Archive, see more at https://docs.airbyte.io/tutorials/tutorials/upgrading-airbyte\n",
+          "Please upgrade your Airbyte Archive, see more at https://docs.airbyte.io/tutorials/upgrading-airbyte\n",
           importVersion, version));
     }
     databaseArchiver.checkVersion(version);
     // Check if all files to import are valid and with expected airbyte version
     configFileArchiver.importConfigsFromArchive(tempFolder, true);
+  }
+
+  private Optional<UUID> getCurrentCustomerId() {
+    try {
+      return Optional.of(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID, true).getCustomerId());
+    } catch (Exception e) {
+      // because this is used for tracking we prefer to log instead of killing the import.
+      LOGGER.error("failed to fetch current customerId.", e);
+      return Optional.empty();
+    }
   }
 
 }

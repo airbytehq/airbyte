@@ -10,7 +10,7 @@ export type SchemaFields = JSONSchema7;
 
 export enum SyncMode {
   Incremental = "incremental",
-  FullRefresh = "full_refresh"
+  FullRefresh = "full_refresh",
 }
 
 export type SyncSchemaStream = {

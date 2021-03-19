@@ -1,40 +1,35 @@
-import { Resource } from "rest-hooks";
+import { ReadShape, Resource, SchemaDetail } from "rest-hooks";
 import BaseResource from "./BaseResource";
+import { ConnectionSpecification } from "core/domain/connection";
 
 export interface DestinationDefinitionSpecification {
   destinationDefinitionId: string;
-  connectionSpecification: {
-    properties: any;
-    required: [string];
-  };
+  connectionSpecification: ConnectionSpecification;
   documentationUrl: string;
 }
-
-export type specification = {
-  properties: any;
-  required: [string];
-};
 
 export default class DestinationDefinitionSpecificationResource
   extends BaseResource
   implements DestinationDefinitionSpecification {
   readonly destinationDefinitionId: string = "";
   readonly documentationUrl: string = "";
-  readonly connectionSpecification: specification = {
+  readonly connectionSpecification: ConnectionSpecification = {
     properties: {},
-    required: [""]
+    required: [""],
   };
 
-  pk() {
+  pk(): string {
     return this.destinationDefinitionId?.toString();
   }
 
   static urlRoot = "destination_definition_specifications";
 
-  static detailShape<T extends typeof Resource>(this: T) {
+  static detailShape<T extends typeof Resource>(
+    this: T
+  ): ReadShape<SchemaDetail<DestinationDefinitionSpecification>> {
     return {
       ...super.detailShape(),
-      schema: this
+      schema: this,
     };
   }
 }

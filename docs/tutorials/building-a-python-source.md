@@ -196,6 +196,8 @@ The template fills in most of the information for the readme for you. Unless the
 
 Open the following file: `airbyte-config/init/src/main/resources/seed/source_definitions.yaml`. You'll find a list of all the connectors that Airbyte displays in the UI. Pattern match to add your own connector. Make sure to generate a new _unique_ UUIDv4 for the `sourceDefinitionId` field. You can get one [here](https://www.uuidgenerator.net/). After you do, run `./gradlew :airbyte-config:init:build` \(this command generates some necessary configuration files\).
 
+Note that for simple and quick testing use cases, you can also do this step [using the UI](../integrations/custom-connectors.md#adding-your-connectors-in-the-ui).
+
 #### Step 12: Add docs
 
 Each connector has its own documentation page. By convention, that page should have the following path: in `docs/integrations/sources/<source-name>.md`. For the documentation to get packaged with the docs, make sure to add a link to it in `docs/SUMMARY.md`. You can pattern match doing that from existing connectors.

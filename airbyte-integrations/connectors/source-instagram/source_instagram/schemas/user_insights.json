@@ -1,0 +1,54 @@
+{
+  "type": "object",
+  "properties": {
+    "page_id": {
+      "type": ["null", "string"]
+    },
+    "business_account_id": {
+      "type": ["null", "string"]
+    },
+    "date": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "follower_count": {
+      "type": ["null", "integer"]
+    },
+    "get_directions_clicks": {
+      "type": ["null", "integer"]
+    },
+    "impressions": {
+      "type": ["null", "integer"]
+    },
+    "phone_call_clicks": {
+      "type": ["null", "integer"]
+    },
+    "profile_views": {
+      "type": ["null", "integer"]
+    },
+    "reach": {
+      "type": ["null", "integer"]
+    },
+    "text_message_clicks": {
+      "type": ["null", "integer"]
+    },
+    "website_clicks": {
+      "type": ["null", "integer"]
+    },
+    "impressions_week": {
+      "type": ["null", "integer"]
+    },
+    "reach_week": {
+      "type": ["null", "integer"]
+    },
+    "impressions_days_28": {
+      "type": ["null", "integer"]
+    },
+    "reach_days_28": {
+      "type": ["null", "integer"]
+    },
+    "online_followers": {
+      "type": ["null", "object"]
+    }
+  }
+}

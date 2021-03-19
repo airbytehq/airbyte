@@ -58,7 +58,7 @@ const MainInfoCell: React.FC<IProps> = ({
   onCheckBoxClick,
   label,
   hideCheckbox,
-  depth
+  depth,
 }) => {
   return (
     <MainCell flex={2}>

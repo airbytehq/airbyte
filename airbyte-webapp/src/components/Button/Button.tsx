@@ -1,7 +1,9 @@
 import styled from "styled-components";
+import { Theme } from "theme";
+
 import { IProps } from "./types";
 
-type IStyleProps = IProps & { theme: any };
+type IStyleProps = IProps & { theme: Theme };
 
 const getBorderColor = (props: IStyleProps) => {
   if ((props.secondary && props.wasActive) || props.iconOnly) {
@@ -78,38 +80,38 @@ const getShadowOnHover = (props: IStyleProps) => {
 };
 
 const Button = styled.button<IProps>`
-  width: ${props => (props.full ? "100%" : "auto")};
-  display: ${props => (props.full ? "block" : "inline-block")};
-  border: 1px solid ${props => getBorderColor(props)};
+  width: ${(props) => (props.full ? "100%" : "auto")};
+  display: ${(props) => (props.full ? "block" : "inline-block")};
+  border: 1px solid ${(props) => getBorderColor(props)};
   outline: none;
   border-radius: 4px;
-  padding: ${props => (props.iconOnly ? "1.5px 3px" : "5px 16px 6px")};
+  padding: ${(props) => (props.iconOnly ? "1.5px 3px" : "5px 16px 6px")};
   font-weight: 500;
-  font-size: ${props => (props.iconOnly ? 14 : 12)}px;
+  font-size: ${(props) => (props.iconOnly ? 14 : 12)}px;
   line-height: 15px;
   text-align: center;
   letter-spacing: 0.03em;
   cursor: pointer;
-  pointer-events: ${props =>
+  pointer-events: ${(props) =>
     props.wasActive && !props.clickable ? "none" : "all"};
-  color: ${props => getTextColor(props)};
-  background: ${props => getBackgroundColor(props)};
+  color: ${(props) => getTextColor(props)};
+  background: ${(props) => getBackgroundColor(props)};
   text-decoration: none;
 
   &:disabled {
-    opacity: ${props => getDisabledOpacity(props)};
-    background: ${props => props.danger && "transparent"};
-    border: ${props => props.danger && "none"};
-    color: ${props => getDisabledTextColor(props)};
+    opacity: ${(props) => getDisabledOpacity(props)};
+    background: ${(props) => props.danger && "transparent"};
+    border: ${(props) => props.danger && "none"};
+    color: ${(props) => getDisabledTextColor(props)};
     pointer-events: none;
   }
 
   &:hover {
-    box-shadow: ${props => getShadowOnHover(props)};
-    border-color: ${props =>
+    box-shadow: ${(props) => getShadowOnHover(props)};
+    border-color: ${(props) =>
       (props.secondary && props.theme.greyColor40) ||
       (props.iconOnly && props.theme.greyColor20)};
-    color: ${props =>
+    color: ${(props) =>
       (props.secondary || props.iconOnly) && props.theme.textColor};
   }
 `;

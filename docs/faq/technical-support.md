@@ -4,6 +4,17 @@ description: Common issues and their workarounds
 
 # Technical Support
 
+## `docker.errors.DockerException: Error while fetching server API version`
+
+If you see the following error:
+```
+docker.errors.DockerException: Error while fetching server API
+version: ('Connection aborted.', FileNotFoundError(2, 'No such file or
+directory'))
+```
+
+It usually means that Docker isn't running on your machine (and a running Docker daemon is required to run Airbyte). An easy way to verify this is to run `docker ps`, which will show `Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?` if the Docker daemon is not running on your machine.
+
 ## Airbyte is stuck while loading required configuration parameters for my connector
 
 Example of the issue:

@@ -22,5 +22,6 @@ task("pythonIntegrationTests", type: PythonTask, dependsOn: installTestReqs) {
 integrationTest.dependsOn("pythonIntegrationTests")
 
 dependencies {
+    implementation files(project(':airbyte-integrations:bases:base-standard-source-test-file').airbyteDocker.outputs)
     implementation files(project(':airbyte-integrations:bases:base-python').airbyteDocker.outputs)
 }

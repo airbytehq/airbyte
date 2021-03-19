@@ -2,19 +2,20 @@ import React from "react";
 import {
   FormattedMessage,
   FormattedDateParts,
-  FormattedTimeParts
+  FormattedTimeParts,
 } from "react-intl";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
 
-import { JobItem as JobApiItem, Attempt } from "../../../core/resources/Job";
-import { Row, Cell } from "../../SimpleTableComponents";
-import StatusIcon from "../../StatusIcon";
+import { JobItem as JobApiItem, Attempt } from "core/resources/Job";
+import { JobInfo } from "core/resources/Scheduler";
+import { Row, Cell } from "components/SimpleTableComponents";
+import StatusIcon from "components/StatusIcon";
 import AttemptDetails from "./AttemptDetails";
 
 type IProps = {
-  job: JobApiItem;
+  job: JobApiItem | JobInfo;
   attempts: Attempt[];
   isOpen?: boolean;
   onExpand: () => void;
@@ -84,7 +85,7 @@ const MainInfo: React.FC<IProps> = ({
   isOpen,
   onExpand,
   isFailed,
-  shortInfo
+  shortInfo,
 }) => {
   return (
     <MainView isOpen={isOpen} isFailed={isFailed} onClick={onExpand}>
@@ -107,7 +108,7 @@ const MainInfo: React.FC<IProps> = ({
           hour="numeric"
           minute="2-digit"
         >
-          {parts => (
+          {(parts) => (
             <span>{`${parts[0].value}:${parts[2].value}${parts[4].value} `}</span>
           )}
         </FormattedTimeParts>
@@ -116,7 +117,7 @@ const MainInfo: React.FC<IProps> = ({
           month="2-digit"
           day="2-digit"
         >
-          {parts => <span>{`${parts[0].value}/${parts[2].value}`}</span>}
+          {(parts) => <span>{`${parts[0].value}/${parts[2].value}`}</span>}
         </FormattedDateParts>
         {attempts.length > 1 ? (
           <AttemptCount>

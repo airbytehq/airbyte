@@ -2,21 +2,22 @@ import { useCallback } from "react";
 import { useFetcher } from "rest-hooks";
 import { useStatefulResource } from "@rest-hooks/legacy";
 
-import config from "../../../config";
-import SourceResource, { Source } from "../../../core/resources/Source";
-import { AnalyticsService } from "../../../core/analytics/AnalyticsService";
-import { Routes } from "../../../pages/routes";
+import config from "config";
+import SourceResource, { Source } from "core/resources/Source";
+import { AnalyticsService } from "core/analytics/AnalyticsService";
+import { Routes } from "pages/routes";
 import useRouter from "../useRouterHook";
-import ConnectionResource, {
-  Connection
-} from "../../../core/resources/Connection";
-import SourceDefinitionSpecificationResource from "../../../core/resources/SourceDefinitionSpecification";
-import SchedulerResource from "../../../core/resources/Scheduler";
+import ConnectionResource, { Connection } from "core/resources/Connection";
+import SourceDefinitionSpecificationResource, {
+  SourceDefinitionSpecification,
+} from "core/resources/SourceDefinitionSpecification";
+import SchedulerResource, { Scheduler } from "core/resources/Scheduler";
+import { ConnectionConfiguration } from "core/domain/connection";
 
 type ValuesProps = {
   name: string;
   serviceType?: string;
-  connectionConfiguration?: any;
+  connectionConfiguration?: ConnectionConfiguration;
   frequency?: string;
 };
 
@@ -24,16 +25,20 @@ type ConnectorProps = { name: string; sourceDefinitionId: string };
 
 export const useSourceDefinitionSpecificationLoad = (
   sourceDefinitionId: string
-) => {
+): {
+  isLoading: boolean;
+  error?: Error;
+  sourceDefinitionSpecification: SourceDefinitionSpecification;
+} => {
   const {
     loading: isLoading,
     error,
-    data: sourceDefinitionSpecification
+    data: sourceDefinitionSpecification,
   } = useStatefulResource(
     SourceDefinitionSpecificationResource.detailShape(),
     sourceDefinitionId
       ? {
-          sourceDefinitionId
+          sourceDefinitionId,
         }
       : null
   );
@@ -41,7 +46,30 @@ export const useSourceDefinitionSpecificationLoad = (
   return { sourceDefinitionSpecification, error, isLoading };
 };
 
-const useSource = () => {
+type SourceService = {
+  recreateSource: (recreateSourcePayload: {
+    values: ValuesProps;
+    sourceId: string;
+  }) => Promise<Source>;
+  checkSourceConnection: (checkSourceConnectionPayload: {
+    sourceId: string;
+    values?: ValuesProps;
+  }) => Promise<Scheduler>;
+  createSource: (createSourcePayload: {
+    values: ValuesProps;
+    sourceConnector?: ConnectorProps;
+  }) => Promise<Source>;
+  updateSource: (updateSourcePayload: {
+    values: ValuesProps;
+    sourceId: string;
+  }) => Promise<Source>;
+  deleteSource: (deleteSourcePayload: {
+    source: Source;
+    connectionsWithSource: Connection[];
+  }) => Promise<void>;
+};
+
+const useSource = (): SourceService => {
   const { push } = useRouter();
 
   const createSourcesImplementation = useFetcher(SourceResource.createShape());
@@ -60,23 +88,20 @@ const useSource = () => {
     ConnectionResource.updateStoreAfterDeleteShape()
   );
 
-  const createSource = async ({
+  const createSource: SourceService["createSource"] = async ({
     values,
-    sourceConnector
-  }: {
-    values: ValuesProps;
-    sourceConnector?: ConnectorProps;
+    sourceConnector,
   }) => {
     AnalyticsService.track("New Source - Action", {
       action: "Test a connector",
       connector_source: sourceConnector?.name,
-      connector_source_id: sourceConnector?.sourceDefinitionId
+      connector_source_id: sourceConnector?.sourceDefinitionId,
     });
 
     try {
       await sourceCheckConnectionShape({
         sourceDefinitionId: sourceConnector?.sourceDefinitionId,
-        connectionConfiguration: values.connectionConfiguration
+        connectionConfiguration: values.connectionConfiguration,
       });
 
       // Try to crete source
@@ -86,22 +111,22 @@ const useSource = () => {
           name: values.name,
           sourceDefinitionId: sourceConnector?.sourceDefinitionId,
           workspaceId: config.ui.workspaceId,
-          connectionConfiguration: values.connectionConfiguration
+          connectionConfiguration: values.connectionConfiguration,
         },
         [
           [
             SourceResource.listShape(),
             { workspaceId: config.ui.workspaceId },
             (newsourceId: string, sourceIds: { sources: string[] }) => ({
-              sources: [...(sourceIds?.sources || []), newsourceId]
-            })
-          ]
+              sources: [...(sourceIds?.sources || []), newsourceId],
+            }),
+          ],
         ]
       );
       AnalyticsService.track("New Source - Action", {
         action: "Tested connector - success",
         connector_source: sourceConnector?.name,
-        connector_source_id: sourceConnector?.sourceDefinitionId
+        connector_source_id: sourceConnector?.sourceDefinitionId,
       });
 
       return result;
@@ -109,63 +134,70 @@ const useSource = () => {
       AnalyticsService.track("New Source - Action", {
         action: "Tested connector - failure",
         connector_source: sourceConnector?.name,
-        connector_source_id: sourceConnector?.sourceDefinitionId
+        connector_source_id: sourceConnector?.sourceDefinitionId,
       });
       throw e;
     }
   };
 
-  const updateSource = async ({
+  const updateSource: SourceService["updateSource"] = async ({
     values,
-    sourceId
-  }: {
-    values: ValuesProps;
-    sourceId: string;
+    sourceId,
   }) => {
     await sourceCheckConnectionShape({
       name: values.name,
       sourceId,
-      connectionConfiguration: values.connectionConfiguration
+      connectionConfiguration: values.connectionConfiguration,
     });
 
     return await updatesource(
       {
-        sourceId: sourceId
+        sourceId: sourceId,
       },
       {
         name: values.name,
         sourceId,
-        connectionConfiguration: values.connectionConfiguration
+        connectionConfiguration: values.connectionConfiguration,
       }
     );
   };
 
   const checkSourceConnection = useCallback(
-    async ({ sourceId }: { sourceId: string }) => {
+    async ({
+      sourceId,
+      values,
+    }: {
+      sourceId: string;
+      values?: ValuesProps;
+    }) => {
+      if (values) {
+        return await sourceCheckConnectionShape({
+          connectionConfiguration: values.connectionConfiguration,
+          name: values.name,
+          sourceId: sourceId,
+        });
+      }
       return await sourceCheckConnectionShape({
-        sourceId
+        sourceId,
       });
     },
     [sourceCheckConnectionShape]
   );
 
-  const recreateSource = async ({
+  const recreateSource: SourceService["recreateSource"] = async ({
     values,
-    sourceId
-  }: {
-    values: ValuesProps;
-    sourceId: string;
+    sourceId,
   }) => {
     return await recreatesource(
       {
-        sourceId: sourceId
+        sourceId: sourceId,
       },
       {
         name: values.name,
         sourceId,
         connectionConfiguration: values.connectionConfiguration,
         workspaceId: config.ui.workspaceId,
-        sourceDefinitionId: values.serviceType
+        sourceDefinitionId: values.serviceType,
       },
       // Method used only in onboarding.
       // Replace all source List to new item in UpdateParams (to change id)
@@ -174,33 +206,30 @@ const useSource = () => {
           SourceResource.listShape(),
           { workspaceId: config.ui.workspaceId },
           (newsourceId: string) => ({
-            sources: [newsourceId]
-          })
-        ]
+            sources: [newsourceId],
+          }),
+        ],
       ]
     );
   };
 
-  const deleteSource = async ({
+  const deleteSource: SourceService["deleteSource"] = async ({
     source,
-    connectionsWithSource
-  }: {
-    source: Source;
-    connectionsWithSource: Connection[];
+    connectionsWithSource,
   }) => {
     await sourceDelete({
-      sourceId: source.sourceId
+      sourceId: source.sourceId,
     });
 
     AnalyticsService.track("Source - Action", {
       action: "Delete source",
       connector_source: source.sourceName,
-      connector_source_id: source.sourceDefinitionId
+      connector_source_id: source.sourceDefinitionId,
     });
 
     // To delete connections with current source from local store
-    connectionsWithSource.map(item =>
-      updateConnectionsStore({ connectionId: item.connectionId })
+    connectionsWithSource.map((item) =>
+      updateConnectionsStore({ connectionId: item.connectionId }, undefined)
     );
 
     push(Routes.Root);
@@ -211,8 +240,7 @@ const useSource = () => {
     updateSource,
     recreateSource,
     deleteSource,
-    checkSourceConnection
+    checkSourceConnection,
   };
 };
-
 export default useSource;

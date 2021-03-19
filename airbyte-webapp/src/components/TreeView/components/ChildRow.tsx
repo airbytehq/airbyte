@@ -38,7 +38,7 @@ const ChildRow: React.FC<IProps> = ({ item, depth = 0 }) => {
           <Cell />
         </ItemRow>
       </TreeItem>
-      {item.fields?.map(field => (
+      {item.fields?.map((field) => (
         <ChildRow item={field} depth={depth} />
       ))}
     </>

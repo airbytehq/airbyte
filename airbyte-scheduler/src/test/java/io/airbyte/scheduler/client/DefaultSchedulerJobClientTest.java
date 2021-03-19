@@ -25,18 +25,14 @@
 package io.airbyte.scheduler.client;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
 import io.airbyte.scheduler.Job;
-import io.airbyte.scheduler.JobStatus;
 import io.airbyte.scheduler.persistence.JobCreator;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import java.io.IOException;
@@ -61,41 +57,6 @@ class DefaultSchedulerJobClientTest {
     jobCreator = mock(JobCreator.class);
     job = mock(Job.class);
     client = spy(new DefaultSchedulerJobClient(jobPersistence, jobCreator));
-  }
-
-  @Test
-  void testCreateSourceCheckConnectionJob() throws IOException {
-    final SourceConnection source = mock(SourceConnection.class);
-    when(jobCreator.createSourceCheckConnectionJob(source, DOCKER_IMAGE)).thenReturn(JOB_ID);
-    doReturn(job).when(client).waitUntilJobIsTerminalOrTimeout(JOB_ID);
-
-    assertEquals(job, client.createSourceCheckConnectionJob(source, DOCKER_IMAGE));
-  }
-
-  @Test
-  void testCreateDestinationCheckConnectionJob() throws IOException {
-    final DestinationConnection destination = mock(DestinationConnection.class);
-    when(jobCreator.createDestinationCheckConnectionJob(destination, DOCKER_IMAGE)).thenReturn(JOB_ID);
-    doReturn(job).when(client).waitUntilJobIsTerminalOrTimeout(JOB_ID);
-
-    assertEquals(job, client.createDestinationCheckConnectionJob(destination, DOCKER_IMAGE));
-  }
-
-  @Test
-  void testCreateDiscoverSchemaJob() throws IOException {
-    final SourceConnection source = mock(SourceConnection.class);
-    when(jobCreator.createDiscoverSchemaJob(source, DOCKER_IMAGE)).thenReturn(JOB_ID);
-    doReturn(job).when(client).waitUntilJobIsTerminalOrTimeout(JOB_ID);
-
-    assertEquals(job, client.createDiscoverSchemaJob(source, DOCKER_IMAGE));
-  }
-
-  @Test
-  void testCreateGetSpecJob() throws IOException {
-    when(jobCreator.createGetSpecJob(DOCKER_IMAGE)).thenReturn(JOB_ID);
-    doReturn(job).when(client).waitUntilJobIsTerminalOrTimeout(JOB_ID);
-
-    assertEquals(job, client.createGetSpecJob(DOCKER_IMAGE));
   }
 
   @Test
@@ -134,7 +95,7 @@ class DefaultSchedulerJobClientTest {
     final StandardSync standardSync = mock(StandardSync.class);
     final String destinationDockerImage = "airbyte/spaceport";
     when(jobCreator.createResetConnectionJob(destination, standardSync, destinationDockerImage)).thenReturn(Optional.of(JOB_ID));
-    doReturn(job).when(client).waitUntilJobIsTerminalOrTimeout(JOB_ID);
+    when(jobPersistence.getJob(JOB_ID)).thenReturn(job);
 
     assertEquals(job, client.createOrGetActiveResetConnectionJob(destination, standardSync, destinationDockerImage));
   }
@@ -151,23 +112,9 @@ class DefaultSchedulerJobClientTest {
     final Job currentJob = mock(Job.class);
     when(currentJob.getId()).thenReturn(42L);
     when(jobPersistence.getLastReplicationJob(connectionUuid)).thenReturn(Optional.of(currentJob));
-
-    doReturn(currentJob).when(client).waitUntilJobIsTerminalOrTimeout(42L);
+    when(jobPersistence.getJob(42L)).thenReturn(currentJob);
 
     assertEquals(currentJob, client.createOrGetActiveResetConnectionJob(destination, standardSync, destinationDockerImage));
-  }
-
-  @Test
-  void testWaitUntilJobIsTerminalOrTimeout() throws IOException {
-    when(jobPersistence.getJob(JOB_ID)).thenReturn(job);
-    when(job.getStatus())
-        .thenReturn(JobStatus.PENDING)
-        .thenReturn(JobStatus.RUNNING)
-        .thenReturn(JobStatus.SUCCEEDED);
-
-    assertEquals(job, client.waitUntilJobIsTerminalOrTimeout(JOB_ID));
-
-    verify(jobPersistence, times(3)).getJob(JOB_ID);
   }
 
 }

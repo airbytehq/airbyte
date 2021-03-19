@@ -8,14 +8,59 @@ This is the changelog for Airbyte core. For our connector changelog, please visi
 
 If you're interested in our progress on the Airbyte platform, please read below!
 
-## [02-12-2021](https://github.com/airbytehq/airbyte/milestone/21?closed=1)
+* We now handle nested tables with the normalization steps. Check out the video below to see how it works. 
+
+## [03-15-2021 - 0.17.1](https://github.com/airbytehq/airbyte/releases/tag/v0.17.1-alpha)
+
+* **Creating and deleting multiple workspaces** is now supported via the API. Thanks to [@Samuel Gordalina](https://github.com/gordalina) for contributing this feature!
+* Normalization now supports numeric types with precision greater than 32 bits
+* Normalization now supports union data types
+* Support longform text inputs in the UI for cases where you need to preserve formatting on connector inputs like .pem keys
+* Expose the latest available connector versions in the API
+* Airflow: published a new [tutorial](https://docs.airbyte.io/tutorials/using-the-airflow-airbyte-operator) for how to use the Airbyte operator. Thanks [@Marcos Marx](https://github.com/marcosmarxm) for writing the tutorial! 
+* Connector Contributions: All connectors now describe how to contribute to them without having to touch Airbyte’s monorepo build system -- just work on the connector in your favorite dev setup!
+
+
+## [03-08-2021 - 0.17](https://github.com/airbytehq/airbyte/releases/tag/v0.17.0-alpha)
+
+* Integration with Airflow is here. Thanks to @Marcos Marx, you can now run Airbyte jobs from Airflow directly. A tutorial is on the way and should be coming this week!
+* Add a prefix for tables, so that tables with the same name don't clobber each other in the destination
+
+
+## [03-01-2021 - 0.16](https://github.com/airbytehq/airbyte/milestone/22?closed=1)
+
+* We made some progress to address **nested tables in our normalization.**
+
+  Previously, basic normalization would output nested tables as-is and append a number for duplicate tables. For example, Stripe’s nested address fields go from:
+
+  ```text
+  Address
+  address_1
+  ```
+
+  To
+
+  ```text
+  Charges_source_owner_755_address
+  customers_shipping_c70_address
+  ```
+
+  After the change, the parent tables are combined with the name of the nested table to show where the nested table originated. **This is a breaking change for the consumers of nested tables. Consumers will need to update to point at the new tables.**
+
+## [02-19-2021 - 0.15](https://github.com/airbytehq/airbyte/milestone/22?closed=1)
+
+* We now handle nested tables with the normalization steps. Check out the video below to see how it works. 
+
+{% embed url="https://youtu.be/I4fngMnkJzY" caption="" %}
+
+## [02-12-2021 - 0.14](https://github.com/airbytehq/airbyte/milestone/21?closed=1)
 
 * Front-end changes:
   * Display Airbyte's version number
   * Describe schemas using JsonSchema
   * Better feedback on buttons
 
-## [Beta launch](https://github.com/airbytehq/airbyte/milestone/15?closed=1) - Released 02/02/2021
+## [Beta launch - 0.13](https://github.com/airbytehq/airbyte/milestone/15?closed=1) - Released 02/02/2021
 
 * Add connector build status dashboard
 * Support Schema Changes in Sources

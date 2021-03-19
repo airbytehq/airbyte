@@ -10,8 +10,10 @@ import Link from "../Link";
 import Source from "./components/Source";
 import Version from "../Version";
 import Destination from "./components/Destination";
-import { Routes } from "../../pages/routes";
-import config from "../../config";
+import { Routes } from "pages/routes";
+import config from "config";
+import Indicator from "../Indicator";
+import useNotification from "../hooks/services/useNotification";
 
 const Bar = styled.nav`
   width: 100px;
@@ -46,6 +48,7 @@ const MenuItem = styled(NavLink)`
   line-height: 15px;
   margin-top: 7px;
   text-decoration: none;
+  position: relative;
 
   &.active {
     color: ${({ theme }) => theme.whiteColor};
@@ -88,7 +91,15 @@ const AdminIcon = styled(FontAwesomeIcon)`
   line-height: 15px;
 `;
 
+const Notification = styled(Indicator)`
+  position: absolute;
+  top: 11px;
+  right: 23px;
+`;
+
 const SideBar: React.FC = () => {
+  const { hasNewVersions } = useNotification();
+
   return (
     <Bar>
       <div>
@@ -122,6 +133,7 @@ const SideBar: React.FC = () => {
           </li>
           <li>
             <MenuItem to={Routes.Admin} activeClassName="active">
+              {hasNewVersions ? <Notification /> : null}
               <AdminIcon icon={faCog} />
               <Text>
                 <FormattedMessage id="sidebar.admin" />
@@ -133,7 +145,7 @@ const SideBar: React.FC = () => {
       <Menu>
         <li>
           <MenuLinkItem href={config.ui.slackLink} target="_blank">
-            {/*@ts-ignore*/}
+            {/*@ts-ignore slack icon fails here*/}
             <HelpIcon icon={faSlack} />
             <Text>
               <FormattedMessage id="sidebar.slack" />

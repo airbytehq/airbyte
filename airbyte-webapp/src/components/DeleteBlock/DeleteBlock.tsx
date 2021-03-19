@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import ContentCard from "../ContentCard";
-import Button from "../Button";
+import ContentCard from "components/ContentCard";
+import Button from "components/Button";
 import DeleteModal from "./components/DeleteModal";
 
 type IProps = {
@@ -32,7 +32,11 @@ const DeleteBlock: React.FC<IProps> = ({ type, onDelete }) => {
   return (
     <>
       <DeleteBlockComponent>
-        <Button danger onClick={() => setIsModalOpen(true)}>
+        <Button
+          danger
+          onClick={() => setIsModalOpen(true)}
+          data-id="open-delete-modal"
+        >
           <FormattedMessage id={`tables.${type}Delete`} />
         </Button>
         <Text>

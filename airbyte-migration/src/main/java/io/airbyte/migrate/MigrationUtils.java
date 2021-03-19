@@ -35,8 +35,10 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 
 public class MigrationUtils {
@@ -97,6 +99,12 @@ public class MigrationUtils {
 
   public static String current_timestamp() {
     return ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+  }
+
+  public static Map<ResourceId, Consumer<JsonNode>> mapRecordConsumerToConsumer(Map<ResourceId, ? extends Consumer<JsonNode>> recordConsumers) {
+    return recordConsumers.entrySet()
+        .stream()
+        .collect(Collectors.toMap(Entry::getKey, e -> (v) -> e.getValue().accept(v)));
   }
 
 }

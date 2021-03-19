@@ -28,6 +28,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.segment.analytics.Analytics;
+import com.segment.analytics.messages.AliasMessage;
 import com.segment.analytics.messages.IdentifyMessage;
 import com.segment.analytics.messages.TrackMessage;
 import java.util.Collections;
@@ -80,6 +81,11 @@ public class SegmentTrackingClient implements TrackingClient {
   }
 
   @Override
+  public void alias(String previousCustomerId) {
+    analytics.enqueue(AliasMessage.builder(previousCustomerId).userId(identitySupplier.get().getCustomerId().toString()));
+  }
+
+  @Override
   public void track(String action) {
     track(action, Collections.emptyMap());
   }
@@ -89,6 +95,9 @@ public class SegmentTrackingClient implements TrackingClient {
     final Map<String, Object> mapCopy = new HashMap<>(metadata);
     final TrackingIdentity trackingIdentity = identitySupplier.get();
     mapCopy.put(AIRBYTE_VERSION_KEY, trackingIdentity.getAirbyteVersion());
+    if (!metadata.isEmpty()) {
+      trackingIdentity.getEmail().ifPresent(email -> mapCopy.put("email", email));
+    }
     analytics.enqueue(TrackMessage.builder(action)
         .userId(trackingIdentity.getCustomerId().toString())
         .properties(mapCopy));

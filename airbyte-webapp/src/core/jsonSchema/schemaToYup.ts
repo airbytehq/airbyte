@@ -1,7 +1,7 @@
 import { JSONSchema7 } from "json-schema";
 import * as yup from "yup";
 
-import { WidgetConfigMap } from "../form/types";
+import { WidgetConfigMap } from "core/form/types";
 
 /**
  * Returns yup.schema for validation
@@ -15,7 +15,7 @@ import { WidgetConfigMap } from "../form/types";
  * @param uiConfig uiConfig of widget currently selected in form
  * @param parentSchema used in recursive schema building as required fields can be described in parentSchema
  * @param propertyKey used in recursive schema building for building path for uiConfig
- * @param propertyPath constracts path of property
+ * @param propertyPath constructs path of property
  */
 
 export const buildYupFormForJsonSchema = (
@@ -24,6 +24,7 @@ export const buildYupFormForJsonSchema = (
   parentSchema?: JSONSchema7,
   propertyKey?: string,
   propertyPath: string | undefined = propertyKey
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): yup.Schema<any> => {
   let schema:
     | yup.NumberSchema
@@ -34,7 +35,7 @@ export const buildYupFormForJsonSchema = (
 
   if (jsonSchema.oneOf && uiConfig && propertyPath) {
     const selectedSchema =
-      jsonSchema.oneOf.find(condition => {
+      jsonSchema.oneOf.find((condition) => {
         if (typeof condition !== "boolean") {
           return uiConfig[propertyPath]?.selectedItem === condition.title;
         }
@@ -74,7 +75,7 @@ export const buildYupFormForJsonSchema = (
       }
 
       if (jsonSchema?.maximum !== undefined) {
-        schema = schema!.max(jsonSchema?.maximum);
+        schema = schema.max(jsonSchema?.maximum);
       }
       break;
     case "object":
@@ -96,7 +97,7 @@ export const buildYupFormForJsonSchema = (
                       ? `${propertyPath}.${propertyKey}`
                       : propertyKey
                   )
-                : yup.mixed()
+                : yup.mixed(),
             ])
           )
         );
@@ -109,11 +110,15 @@ export const buildYupFormForJsonSchema = (
     schema = schema.default(jsonSchema.default);
   }
 
+  if (schema && jsonSchema.enum) {
+    schema = schema.oneOf(jsonSchema.enum as any);
+  }
+
   const isRequired =
     !hasDefault &&
     parentSchema &&
     Array.isArray(parentSchema?.required) &&
-    parentSchema.required.find(item => item === propertyKey);
+    parentSchema.required.find((item) => item === propertyKey);
 
   if (isRequired && schema) {
     schema = schema.required("form.empty.error");
