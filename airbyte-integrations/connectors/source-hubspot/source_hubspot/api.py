@@ -183,7 +183,8 @@ class Stream(ABC):
     """Base class for all streams. Responsible for data fetching and pagination"""
 
     entity: str = None
-    updated_at_fields: List[str] = []
+    updated_at_field: str = None
+    created_at_field: str = None
 
     more_key: str = None
     data_field = "results"
@@ -224,7 +225,11 @@ class Stream(ABC):
             yield record
 
     def _transform(self, records: Iterable) -> Iterable:
-        yield from records
+        """Preprocess record before emitting"""
+        for record in records:
+            if self.created_at_field and self.updated_at_field and record.get(self.updated_at_field) is None:
+                record[self.updated_at_field] = record[self.created_at_field]
+            yield record
 
     @staticmethod
     def _field_to_datetime(value: Union[int, str]) -> pendulum.datetime:
@@ -239,17 +244,12 @@ class Stream(ABC):
     def _filter_old_records(self, records: Iterable) -> Iterable:
         """Skip records that was updated before our start_date"""
         for record in records:
-            updated_at = self._record_bookmark(record)
+            updated_at = record[self.updated_at_field]
             if updated_at:
                 updated_at = self._field_to_datetime(updated_at)
                 if updated_at < self._start_date:
                     continue
             yield record
-
-    def _record_bookmark(self, record: Mapping[str, Any]) -> Any:
-        for field_name in self.updated_at_fields:
-            if record.get(field_name) is not None:
-                return record.get(field_name)
 
     def _read(self, getter: Callable, params: MutableMapping[str, Any] = None) -> Iterator:
         while True:
@@ -312,8 +312,8 @@ class IncrementalStream(Stream, ABC):
 
     @property
     @abstractmethod
-    def updated_at_fields(self):
-        """Name of the fields associated with the state"""
+    def updated_at_field(self):
+        """Name of the field associated with the state"""
 
     @property
     def state(self) -> Optional[Mapping[str, Any]]:
@@ -339,7 +339,7 @@ class IncrementalStream(Stream, ABC):
         # like to save the state more often we can do this every batch
         for record in self.read_chunked(getter, params):
             yield record
-            cursor = self._field_to_datetime(self._record_bookmark(record))
+            cursor = self._field_to_datetime(record[self.updated_at_field])
             latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
 
         if latest_cursor:
@@ -378,7 +378,8 @@ class CRMObjectStream(Stream):
 
     entity: Optional[str] = None
     associations: List[str] = []
-    updated_at_fields = ["updatedAt", "createdAt"]
+    updated_at_field = "updatedAt"
+    created_at_field = "createdAt"
 
     @property
     def url(self):
@@ -433,7 +434,7 @@ class CampaignStream(Stream):
     more_key = "hasMore"
     data_field = "campaigns"
     limit = 500
-    updated_at_field = ["lastUpdatedTime"]
+    updated_at_field = "lastUpdatedTime"
 
     def list(self, fields) -> Iterable:
         for row in self.read(getter=partial(self._api.get, url=self.url)):
@@ -449,7 +450,8 @@ class ContactListStream(Stream):
     url = "/contacts/v1/lists"
     data_field = "lists"
     more_key = "has-more"
-    updated_at_fields = ["updatedAt", "createdAt"]
+    updated_at_field = "updatedAt"
+    created_at_field = "createdAt"
     limit_field = "count"
 
 
@@ -460,7 +462,8 @@ class DealPipelineStream(Stream):
     """
 
     url = "/crm-pipelines/v1/pipelines/deals"
-    updated_at_fields = ["updatedAt", "createdAt"]
+    updated_at_field = "updatedAt"
+    created_at_field = "createdAt"
 
 
 class TicketPipelineStream(Stream):
@@ -470,7 +473,8 @@ class TicketPipelineStream(Stream):
     """
 
     url = "/crm-pipelines/v1/pipelines/tickets"
-    updated_at_fields = ["updatedAt", "createdAt"]
+    updated_at_field = "updatedAt"
+    created_at_field = "createdAt"
 
 
 class EmailEventStream(IncrementalStream):
@@ -481,7 +485,8 @@ class EmailEventStream(IncrementalStream):
     url = "/email/public/v1/events"
     data_field = "events"
     more_key = "hasMore"
-    updated_at_fields = ["created"]
+    updated_at_field = "created"
+    created_at_field = "created"
 
 
 class EngagementStream(Stream):
@@ -493,11 +498,11 @@ class EngagementStream(Stream):
     url = "/engagements/v1/engagements/paged"
     more_key = "hasMore"
     limit = 250
-    updated_at_fields = ["lastUpdated", "createdAt"]
+    updated_at_field = "lastUpdated"
+    created_at_field = "createdAt"
 
     def _transform(self, records: Iterable) -> Iterable:
-        for record in records:
-            yield {**record.pop("engagement"), **record}
+        yield from super()._transform({**record.pop("engagement"), **record} for record in records)
 
 
 class FormStream(Stream):
@@ -508,7 +513,8 @@ class FormStream(Stream):
 
     entity = "form"
     url = "/forms/v2/forms"
-    updated_at_fields = ["updatedAt", "createdAt"]
+    updated_at_field = "updatedAt"
+    created_at_field = "createdAt"
 
 
 class OwnerStream(Stream):
@@ -517,7 +523,8 @@ class OwnerStream(Stream):
     """
 
     url = "/crm/v3/owners"
-    updated_at_fields = ["updatedAt", "createdAt"]
+    updated_at_field = "updatedAt"
+    created_at_field = "createdAt"
 
 
 class SubscriptionChangeStream(IncrementalStream):
@@ -528,7 +535,7 @@ class SubscriptionChangeStream(IncrementalStream):
     url = "/email/public/v1/subscriptions/timeline"
     data_field = "timeline"
     more_key = "hasMore"
-    updated_at_fields = ["timestamp"]
+    updated_at_field = "timestamp"
 
 
 class WorkflowStream(Stream):
@@ -538,4 +545,5 @@ class WorkflowStream(Stream):
 
     url = "/automation/v3/workflows"
     data_field = "workflows"
-    updated_at_fields = ["updatedAt", "createdAt"]
+    updated_at_field = "updatedAt"
+    created_at_field = "insertedAt"

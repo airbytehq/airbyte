@@ -4115,10 +4115,10 @@
         },
         "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
-        "default_cursor_field": null
+        "default_cursor_field": ["created"]
       },
       "sync_mode": "incremental",
-      "cursor_field": null
+      "cursor_field": ["created"]
     },
     {
       "stream": {
@@ -5737,10 +5737,10 @@
         },
         "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
-        "default_cursor_field": null
+        "default_cursor_field": ["timestamp"]
       },
       "sync_mode": "incremental",
-      "cursor_field": null
+      "cursor_field": ["timestamp"]
     },
     {
       "stream": {
