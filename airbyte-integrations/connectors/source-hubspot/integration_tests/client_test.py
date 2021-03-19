@@ -24,39 +24,28 @@ SOFTWARE.
 
 import pytest
 from source_hubspot.client import Client
+from source_hubspot.errors import HubspotInvalidAuth
 
 
-@pytest.fixture(name="some_credentials")
-def some_credentials_fixture():
+@pytest.fixture(name="wrong_credentials")
+def wrong_credentials_fixture():
     return {"api_key": "wrong_key"}
 
 
-def test_client_backoff_on_limit_reached(requests_mock, some_credentials):
-    """Error once, check that we retry and not fail"""
-    responses = [
-        {"json": {"error": "limit reached"}, "status_code": 429, "headers": {"Retry-After": "0"}},
-        {"json": [], "status_code": 200},
-    ]
-
-    requests_mock.register_uri("GET", "/properties/v2/contact/properties", responses)
-    client = Client(start_date="2021-02-01T00:00:00Z", credentials=some_credentials)
-
+def test__health_check_with_wrong_token(wrong_credentials):
+    client = Client(start_date="2021-02-01T00:00:00Z", credentials=wrong_credentials)
     alive, error = client.health_check()
 
-    assert alive
-    assert not error
+    assert not alive
+    assert (
+        error
+        == "HubspotInvalidAuth('The API key provided is invalid. View or manage your API key here: https://app.hubspot.com/l/api-key/')"
+    )
 
 
-def test_client_backoff_on_server_error(requests_mock, some_credentials):
-    """Error once, check that we retry and not fail"""
-    responses = [
-        {"json": {"error": "something bad"}, "status_code": 500},
-        {"json": [], "status_code": 200},
-    ]
-    requests_mock.register_uri("GET", "/properties/v2/contact/properties", responses)
-    client = Client(start_date="2021-02-01T00:00:00Z", credentials=some_credentials)
-
-    alive, error = client.health_check()
-
-    assert alive
-    assert not error
+def test__stream_iterator_with_wrong_token(wrong_credentials):
+    client = Client(start_date="2021-02-01T00:00:00Z", credentials=wrong_credentials)
+    with pytest.raises(
+        HubspotInvalidAuth, match="The API key provided is invalid. View or manage your API key here: https://app.hubspot.com/l/api-key/"
+    ):
+        _ = list(client.streams)

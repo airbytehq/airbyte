@@ -147,7 +147,7 @@ class API:
     def _parse_and_handle_errors(response) -> Union[MutableMapping[str, Any], List[MutableMapping[str, Any]]]:
         """Handle response"""
         message = "Unknown error"
-        if response.headers.get("content-type") == "application/json;charset=utf-8":
+        if response.headers.get("content-type") == "application/json;charset=utf-8" and response.status_code != 200:
             message = response.json().get("message")
 
         if response.status_code == 403:
