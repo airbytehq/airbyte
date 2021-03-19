@@ -32,12 +32,12 @@ class HubspotError(HTTPError):
     """
 
 
-class HubspotSourceUnavailable(HubspotError):
-    """"""
-
-
-class HubspotBadRequest(HubspotError):
-    """Most 40X and 501 status codes"""
+class HubspotTimeout(HubspotError):
+    """ 502/504 HubSpot has processing limits in place to prevent a single client from causing degraded performance,
+        and these responses indicate that those limits have been hit. You'll normally only see these timeout responses
+        when making a large number of requests over a sustained period. If you get one of these responses,
+        you should pause your requests for a few seconds, then retry.
+    """
 
 
 class HubspotInvalidAuth(HubspotError):

@@ -33,7 +33,7 @@ import backoff
 import pendulum as pendulum
 import requests
 from base_python.entrypoint import logger
-from source_hubspot.errors import HubspotInvalidAuth, HubspotRateLimited, HubspotSourceUnavailable
+from source_hubspot.errors import HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout, HubspotAccessDenied
 
 
 def retry_connection_handler(**kwargs):
@@ -45,7 +45,7 @@ def retry_connection_handler(**kwargs):
         logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} more seconds then retrying...")
 
     def giveup_handler(exc):
-        if isinstance(exc, HubspotInvalidAuth):
+        if isinstance(exc, (HubspotInvalidAuth, HubspotAccessDenied)):
             return True
         return exc.response is not None and 400 <= exc.response.status_code < 500
 
@@ -146,10 +146,14 @@ class API:
     @staticmethod
     def _parse_and_handle_errors(response) -> Union[MutableMapping[str, Any], List[MutableMapping[str, Any]]]:
         """Handle response"""
+        message = "Unknown error"
+        if response.headers.get('content-type') == 'application/json;charset=utf-8':
+            message = response.json().get("message")
+
         if response.status_code == 403:
-            raise HubspotSourceUnavailable(response.content)
+            raise HubspotAccessDenied(message, response=response)
         elif response.status_code == 401:
-            raise HubspotInvalidAuth(response.content)
+            raise HubspotInvalidAuth(message, response=response)
         elif response.status_code == 429:
             retry_after = response.headers.get("Retry-After")
             raise HubspotRateLimited(
@@ -157,6 +161,8 @@ class API:
                 " See https://developers.hubspot.com/docs/api/usage-details",
                 response=response,
             )
+        elif response.status_code in (502, 504):
+            raise HubspotTimeout(message, response=response)
         else:
             response.raise_for_status()
 
