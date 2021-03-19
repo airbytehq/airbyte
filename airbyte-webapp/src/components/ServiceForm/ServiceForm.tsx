@@ -17,6 +17,7 @@ import { FormRoot } from "./FormRoot";
 type ServiceFormProps = {
   formType: "source" | "destination";
   onSubmit: (values: ServiceFormValues) => void;
+  onRetest?: (values: ServiceFormValues) => void;
   specifications?: JSONSchema7;
   isLoading?: boolean;
   isEditMode?: boolean;
@@ -37,7 +38,7 @@ const FormikPatch: React.FC = () => {
 };
 
 const ServiceForm: React.FC<ServiceFormProps> = (props) => {
-  const { specifications, formValues, onSubmit, isLoading } = props;
+  const { specifications, formValues, onSubmit, isLoading, onRetest } = props;
   const jsonSchema: JSONSchema7 = useMemo(
     () => ({
       type: "object",
@@ -77,6 +78,19 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
     [onSubmit, validationSchema]
   );
 
+  const onRetestForm = useCallback(
+    async (values) => {
+      if (!onRetest) {
+        return null;
+      }
+      const valuesToSend = validationSchema.cast(values, {
+        stripUnknown: true,
+      });
+      return onRetest(valuesToSend);
+    },
+    [validationSchema, onRetest]
+  );
+
   //  TODO: dropdownData should be map of entities instead of UI representation
   return (
     <ServiceFormContextProvider
@@ -97,11 +111,16 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
         validationSchema={validationSchema}
         onSubmit={onFormSubmit}
       >
-        {({ values }) => (
+        {({ values, setSubmitting }) => (
           <>
             <FormikPatch />
             <FormRoot
               {...props}
+              onRetest={async () => {
+                setSubmitting(true);
+                await onRetestForm(values);
+                setSubmitting(false);
+              }}
               formFields={formFields}
               connector={
                 props.dropDownData?.find(

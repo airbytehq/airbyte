@@ -29,10 +29,7 @@ setup(
     description="Source implementation for Braintree.",
     author="Airbyte",
     author_email="contact@airbyte.io",
+    install_requires=["tap-braintree==0.9.1", "python-dateutil==2.8.1", "airbyte-protocol", "base-singer", "base-python", "pytest==6.1.2"],
     packages=find_packages(),
     package_data={"": ["*.json"]},
-    extras_require={
-        "main": ["tap-braintree==0.9.1", "python-dateutil==2.8.1", "airbyte-protocol", "base-singer", "base-python"],
-        "standardtest": ["airbyte_python_test"],
-    },
 )

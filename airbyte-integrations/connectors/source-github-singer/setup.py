@@ -38,8 +38,4 @@ setup(
         "base-python",
     ],
     package_data={"": ["*.json"]},
-    # two sets of dependencies: 1) for main 2) for standard test deps. 2 does not have all of the dependencies of 1, which is we cannot use install_requires.
-    extras_require={
-        "standardtest": ["airbyte_python_test"],
-    },
 )

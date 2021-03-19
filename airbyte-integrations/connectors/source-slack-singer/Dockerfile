@@ -1,4 +1,4 @@
-FROM airbyte/integration-base-singer:dev
+FROM airbyte/integration-base-singer:0.1.0
 
 RUN apt-get update && apt-get install -y bash gcc && rm -rf /var/lib/apt/lists/*
 
@@ -12,7 +12,7 @@ LABEL io.airbyte.name=airbyte/source-slack-singer
 WORKDIR /airbyte/integration_code
 COPY $CODE_PATH ./$CODE_PATH
 COPY setup.py ./
-RUN pip install ".[main]"
+RUN pip install .
 
 WORKDIR /airbyte
 

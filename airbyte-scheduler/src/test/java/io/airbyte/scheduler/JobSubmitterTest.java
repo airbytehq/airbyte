@@ -44,7 +44,7 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.airbyte.config.JobOutput;
-import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.scheduler.JobTracker.JobState;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.worker_run.TemporalWorkerRunFactory;
 import io.airbyte.scheduler.worker_run.WorkerRun;
@@ -76,14 +76,14 @@ public class JobSubmitterTest {
   private Path logPath;
 
   private JobSubmitter jobSubmitter;
+  private JobTracker jobTracker;
 
   @BeforeEach
   public void setup() throws IOException {
     job = mock(Job.class, RETURNS_DEEP_STUBS);
+    jobTracker = mock(JobTracker.class);
     when(job.getId()).thenReturn(JOB_ID);
     when(job.getAttempts().size()).thenReturn(ATTEMPT_NUMBER);
-
-    final ConfigRepository configRepository = mock(ConfigRepository.class);
 
     workerRun = mock(WorkerRun.class);
     final Path jobRoot = Files.createTempDirectory("test");
@@ -100,12 +100,8 @@ public class JobSubmitterTest {
     jobSubmitter = spy(new JobSubmitter(
         MoreExecutors.newDirectExecutorService(),
         persistence,
-        configRepository,
-        workerRunFactory));
-
-    // by default, turn off the internals of the tracking code. we will test it separate below.
-    doNothing().when(jobSubmitter).trackSubmission(any());
-    doNothing().when(jobSubmitter).trackCompletion(any(), any());
+        workerRunFactory,
+        jobTracker));
   }
 
   @Test
@@ -114,7 +110,7 @@ public class JobSubmitterTest {
 
     jobSubmitter.run();
 
-    verify(jobSubmitter).trackSubmission(job);
+    verify(jobTracker).trackSync(job, JobState.STARTED);
     verify(jobSubmitter).submitJob(job);
   }
 
@@ -125,7 +121,7 @@ public class JobSubmitterTest {
     jobSubmitter.run();
 
     verifyNoInteractions(workerRunFactory);
-    verify(jobSubmitter, never()).trackSubmission(any());
+    verify(jobTracker, never()).trackSync(any(), any());
   }
 
   @Test
@@ -138,7 +134,7 @@ public class JobSubmitterTest {
     inOrder.verify(persistence).createAttempt(JOB_ID, logPath);
     inOrder.verify(persistence).writeOutput(JOB_ID, ATTEMPT_NUMBER, new JobOutput());
     inOrder.verify(persistence).succeedAttempt(JOB_ID, ATTEMPT_NUMBER);
-    inOrder.verify(jobSubmitter).trackCompletion(job, JobStatus.SUCCEEDED);
+    verify(jobTracker).trackSync(job, JobState.SUCCEEDED);
     inOrder.verifyNoMoreInteractions();
   }
 
@@ -151,7 +147,7 @@ public class JobSubmitterTest {
     InOrder inOrder = inOrder(persistence, jobSubmitter);
     inOrder.verify(persistence).createAttempt(JOB_ID, logPath);
     inOrder.verify(persistence).failAttempt(JOB_ID, ATTEMPT_NUMBER);
-    inOrder.verify(jobSubmitter).trackCompletion(job, JobStatus.FAILED);
+    verify(jobTracker).trackSync(job, JobState.FAILED);
     inOrder.verifyNoMoreInteractions();
   }
 
@@ -161,10 +157,10 @@ public class JobSubmitterTest {
 
     jobSubmitter.run();
 
-    InOrder inOrder = inOrder(persistence, jobSubmitter);
+    InOrder inOrder = inOrder(persistence, jobTracker);
     inOrder.verify(persistence).createAttempt(JOB_ID, logPath);
     inOrder.verify(persistence).failAttempt(JOB_ID, ATTEMPT_NUMBER);
-    inOrder.verify(jobSubmitter).trackCompletion(job, JobStatus.FAILED);
+    inOrder.verify(jobTracker).trackSync(job, JobState.FAILED);
     inOrder.verifyNoMoreInteractions();
   }
 
@@ -174,10 +170,10 @@ public class JobSubmitterTest {
 
     jobSubmitter.run();
 
-    InOrder inOrder = inOrder(persistence, jobSubmitter);
+    InOrder inOrder = inOrder(persistence, jobTracker);
     inOrder.verify(persistence).createAttempt(JOB_ID, logPath);
     inOrder.verify(persistence).failAttempt(JOB_ID, ATTEMPT_NUMBER);
-    inOrder.verify(jobSubmitter).trackCompletion(job, JobStatus.FAILED);
+    inOrder.verify(jobTracker).trackSync(job, JobState.FAILED);
     inOrder.verifyNoMoreInteractions();
   }
 
@@ -187,10 +183,10 @@ public class JobSubmitterTest {
 
     jobSubmitter.run();
 
-    InOrder inOrder = inOrder(persistence, jobSubmitter);
+    InOrder inOrder = inOrder(persistence, jobTracker);
     inOrder.verify(persistence).createAttempt(JOB_ID, logPath);
     inOrder.verify(persistence).failAttempt(JOB_ID, ATTEMPT_NUMBER);
-    inOrder.verify(jobSubmitter).trackCompletion(job, JobStatus.FAILED);
+    inOrder.verify(jobTracker).trackSync(job, JobState.FAILED);
     inOrder.verifyNoMoreInteractions();
   }
 
@@ -201,10 +197,10 @@ public class JobSubmitterTest {
 
     jobSubmitter.run();
 
-    InOrder inOrder = inOrder(persistence, jobSubmitter);
+    InOrder inOrder = inOrder(persistence, jobTracker);
     inOrder.verify(persistence).createAttempt(JOB_ID, logPath);
     inOrder.verify(persistence).failAttempt(JOB_ID, ATTEMPT_NUMBER);
-    inOrder.verify(jobSubmitter).trackCompletion(job, JobStatus.FAILED);
+    inOrder.verify(jobTracker).trackSync(job, JobState.FAILED);
     inOrder.verifyNoMoreInteractions();
   }
 

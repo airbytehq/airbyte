@@ -36,12 +36,8 @@ setup(
         "base-singer",
         "base-python",
         "pyjwt==1.6.4",  # required by appstore connect
+        "pytest==6.1.2",
         "tap-appstore @ https://github.com/airbytehq/tap-appstore/tarball/v0.2.1-airbyte",
     ],
     package_data={"": ["*.json"]},
-    setup_requires=["pytest-runner"],
-    tests_require=["pytest"],
-    extras_require={
-        "tests": ["airbyte-python-test", "pytest"],
-    },
 )

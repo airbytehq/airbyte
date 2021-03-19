@@ -56,14 +56,14 @@ public interface NormalizationRunner extends AutoCloseable {
    * @throws Exception - any exception thrown from normalization will be handled gracefully by the
    *         caller.
    */
-  boolean normalize(long jobId, int attempt, Path jobRoot, JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception;
+  boolean normalize(String jobId, int attempt, Path jobRoot, JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception;
 
   class NoOpNormalizationRunner implements NormalizationRunner {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NoOpNormalizationRunner.class);
 
     @Override
-    public boolean normalize(long jobId, int attempt, Path jobRoot, JsonNode config, ConfiguredAirbyteCatalog catalog) {
+    public boolean normalize(String jobId, int attempt, Path jobRoot, JsonNode config, ConfiguredAirbyteCatalog catalog) {
       LOGGER.info("Running no op logger");
       return true;
     }

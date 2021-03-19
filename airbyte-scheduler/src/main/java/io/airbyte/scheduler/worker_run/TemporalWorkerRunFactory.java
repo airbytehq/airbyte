@@ -30,12 +30,7 @@ import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
-import io.airbyte.config.StandardCheckConnectionOutput;
-import io.airbyte.config.StandardDiscoverCatalogOutput;
-import io.airbyte.config.StandardGetSpecOutput;
 import io.airbyte.config.StandardSyncOutput;
-import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.Job;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
@@ -43,6 +38,7 @@ import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalJobException;
 import io.airbyte.workers.temporal.TemporalJobType;
+import io.temporal.failure.TemporalException;
 import java.nio.file.Path;
 
 public class TemporalWorkerRunFactory {
@@ -62,29 +58,10 @@ public class TemporalWorkerRunFactory {
 
   // suppress "CodeBlock2Expr" because in the lambda syntax without a return statement the formatting
   // makes the switch statement very hard to read.
-  @SuppressWarnings({"UnnecessaryDefault", "CodeBlock2Expr"})
+  @SuppressWarnings({"CodeBlock2Expr"})
   public CheckedSupplier<OutputAndStatus<JobOutput>, Exception> createSupplier(Job job, int attemptId) {
     final TemporalJobType temporalJobType = toTemporalJobType(job.getConfigType());
     return switch (job.getConfigType()) {
-      case GET_SPEC -> () -> {
-        return toOutputAndStatus(() -> {
-          final ConnectorSpecification output = temporalClient.submitGetSpec(job.getId(), attemptId, job.getConfig().getGetSpec());
-          return new JobOutput().withGetSpec(new StandardGetSpecOutput().withSpecification(output));
-        });
-      };
-      case CHECK_CONNECTION_SOURCE, CHECK_CONNECTION_DESTINATION -> () -> {
-        return toOutputAndStatus(() -> {
-          final StandardCheckConnectionOutput output =
-              temporalClient.submitCheckConnection(job.getId(), attemptId, job.getConfig().getCheckConnection());
-          return new JobOutput().withCheckConnection(output);
-        });
-      };
-      case DISCOVER_SCHEMA -> () -> {
-        return toOutputAndStatus(() -> {
-          final AirbyteCatalog output = temporalClient.submitDiscoverSchema(job.getId(), attemptId, job.getConfig().getDiscoverCatalog());
-          return new JobOutput().withDiscoverCatalog(new StandardDiscoverCatalogOutput().withCatalog(output));
-        });
-      };
       case SYNC -> () -> {
         return toOutputAndStatus(() -> {
           final StandardSyncOutput output = temporalClient.submitSync(job.getId(), attemptId, job.getConfig().getSync());
@@ -122,7 +99,11 @@ public class TemporalWorkerRunFactory {
   private OutputAndStatus<JobOutput> toOutputAndStatus(CheckedSupplier<JobOutput, TemporalJobException> supplier) {
     try {
       return new OutputAndStatus<>(JobStatus.SUCCEEDED, supplier.get());
-    } catch (TemporalJobException e) {
+    } catch (TemporalJobException | TemporalException e) {
+      // while from within the temporal activity we throw TemporalJobException, Temporal wraps any
+      // exception thrown by an activity in an ApplicationFailure exception, which gets wrapped in
+      // ActivityFailure exception which get wrapped in a WorkflowFailedException. We will need to unwrap
+      // these later, but for now we just catch the parent.
       return new OutputAndStatus<>(JobStatus.FAILED);
     }
   }

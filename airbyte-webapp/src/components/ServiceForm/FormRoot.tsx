@@ -32,7 +32,9 @@ const FormRoot: React.FC<{
   successMessage?: React.ReactNode;
   formFields: FormBlock;
   connector?: string;
+  onRetest?: () => void;
 }> = ({
+  onRetest,
   formFields,
   connector,
   successMessage,
@@ -70,6 +72,8 @@ const FormRoot: React.FC<{
         <EditControls
           isSubmitting={isSubmitting}
           errorMessage={errorMessage}
+          formType={formType}
+          onRetest={onRetest}
           isValid={isValid}
           dirty={dirty}
           resetForm={() => {
