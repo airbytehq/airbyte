@@ -62,8 +62,7 @@ public interface SyncWorkflow {
   StandardSyncOutput run(JobRunConfig jobRunConfig,
                          IntegrationLauncherConfig sourceLauncherConfig,
                          IntegrationLauncherConfig destinationLauncherConfig,
-                         StandardSyncInput syncInput)
-      throws TemporalJobException;
+                         StandardSyncInput syncInput);
 
   class WorkflowImpl implements SyncWorkflow {
 
@@ -79,8 +78,7 @@ public interface SyncWorkflow {
     public StandardSyncOutput run(JobRunConfig jobRunConfig,
                                   IntegrationLauncherConfig sourceLauncherConfig,
                                   IntegrationLauncherConfig destinationLauncherConfig,
-                                  StandardSyncInput syncInput)
-        throws TemporalJobException {
+                                  StandardSyncInput syncInput) {
       return activity.run(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
     }
 
@@ -93,8 +91,7 @@ public interface SyncWorkflow {
     StandardSyncOutput run(JobRunConfig jobRunConfig,
                            IntegrationLauncherConfig sourceLauncherConfig,
                            IntegrationLauncherConfig destinationLauncherConfig,
-                           StandardSyncInput syncInput)
-        throws TemporalJobException;
+                           StandardSyncInput syncInput);
 
   }
 
@@ -113,8 +110,7 @@ public interface SyncWorkflow {
     public StandardSyncOutput run(JobRunConfig jobRunConfig,
                                   IntegrationLauncherConfig sourceLauncherConfig,
                                   IntegrationLauncherConfig destinationLauncherConfig,
-                                  StandardSyncInput syncInput)
-        throws TemporalJobException {
+                                  StandardSyncInput syncInput) {
 
       final Supplier<StandardSyncInput> inputSupplier = () -> syncInput;
 
