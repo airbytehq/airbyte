@@ -24,13 +24,12 @@ SOFTWARE.
 
 import json
 from pathlib import Path
-from typing import List, Tuple, Any, MutableMapping, Mapping, Iterable
+from typing import Any, Iterable, List, Mapping, MutableMapping, Tuple
 
-from airbyte_protocol import ConfiguredAirbyteCatalog, Type, SyncMode
+import pytest
+from airbyte_protocol import ConfiguredAirbyteCatalog, SyncMode, Type
 from base_python import AirbyteLogger
 from source_hubspot.source import SourceHubspot
-import pytest
-
 
 HERE = Path(__file__).parent.absolute()
 
@@ -67,7 +66,9 @@ def configured_catalog_with_incremental(configured_catalog) -> ConfiguredAirbyte
     return configured_catalog
 
 
-def read_stream(source: SourceHubspot, config: Mapping, catalog: ConfiguredAirbyteCatalog, state: MutableMapping = None) -> Tuple[Mapping, List]:
+def read_stream(
+    source: SourceHubspot, config: Mapping, catalog: ConfiguredAirbyteCatalog, state: MutableMapping = None
+) -> Tuple[Mapping, List]:
     records = {}
     states = []
     for message in source.read(AirbyteLogger(), config, catalog, state):

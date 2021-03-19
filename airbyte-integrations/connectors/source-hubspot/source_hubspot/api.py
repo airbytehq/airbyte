@@ -33,7 +33,7 @@ import backoff
 import pendulum as pendulum
 import requests
 from base_python.entrypoint import logger
-from source_hubspot.errors import HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout, HubspotAccessDenied
+from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout
 
 
 def retry_connection_handler(**kwargs):
@@ -147,7 +147,7 @@ class API:
     def _parse_and_handle_errors(response) -> Union[MutableMapping[str, Any], List[MutableMapping[str, Any]]]:
         """Handle response"""
         message = "Unknown error"
-        if response.headers.get('content-type') == 'application/json;charset=utf-8':
+        if response.headers.get("content-type") == "application/json;charset=utf-8":
             message = response.json().get("message")
 
         if response.status_code == 403:
@@ -334,8 +334,8 @@ class IncrementalStream(Stream, ABC):
     def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
         """Apply state filter to set of records, update cursor(state) if necessary in the end"""
         latest_cursor = None
-        # to track state, there is no guarantee that returned records sorted in ascending order. Having exact 
-        # boundary we could always ensure we don't miss records between states. In the future, if we would 
+        # to track state, there is no guarantee that returned records sorted in ascending order. Having exact
+        # boundary we could always ensure we don't miss records between states. In the future, if we would
         # like to save the state more often we can do this every batch
         for record in self.read_chunked(getter, params):
             yield record

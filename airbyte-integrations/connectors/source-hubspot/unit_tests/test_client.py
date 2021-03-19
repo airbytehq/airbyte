@@ -37,12 +37,17 @@ def test__heal_check_with_wrong_token(wrong_credentials):
     alive, error = client.health_check()
 
     assert not alive
-    assert error == "HubspotInvalidAuth('The API key provided is invalid. View or manage your API key here: https://app.hubspot.com/l/api-key/')"
+    assert (
+        error
+        == "HubspotInvalidAuth('The API key provided is invalid. View or manage your API key here: https://app.hubspot.com/l/api-key/')"
+    )
 
 
 def test__stream_iterator_with_wrong_token(wrong_credentials):
     client = Client(start_date="2021-02-01T00:00:00Z", credentials=wrong_credentials)
-    with pytest.raises(HubspotInvalidAuth, match="The API key provided is invalid. View or manage your API key here: https://app.hubspot.com/l/api-key/"):
+    with pytest.raises(
+        HubspotInvalidAuth, match="The API key provided is invalid. View or manage your API key here: https://app.hubspot.com/l/api-key/"
+    ):
         _ = list(client.streams)
 
 
