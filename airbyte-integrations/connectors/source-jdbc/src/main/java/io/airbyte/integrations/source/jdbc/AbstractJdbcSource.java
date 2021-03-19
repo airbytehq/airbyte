@@ -355,6 +355,7 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
 
   /**
    * Aggregate list of @param entries of StreamName and PrimaryKey and
+   *
    * @return a map by StreamName to associated list of primary keys
    */
   private static Map<String, List<String>> aggregatePrimateKeys(List<SimpleImmutableEntry<String, String>> entries) {
