@@ -24,19 +24,18 @@ SOFTWARE.
 
 import json
 from pathlib import Path
-from typing import List, Tuple, Any, MutableMapping, Mapping, Iterable
+from typing import Any, Iterable, List, Mapping, MutableMapping, Tuple
 
-from airbyte_protocol import ConfiguredAirbyteCatalog, Type, SyncMode
+import pytest
+from airbyte_protocol import ConfiguredAirbyteCatalog, SyncMode, Type
 from base_python import AirbyteLogger
 from source_hubspot.source import SourceHubspot
-import pytest
-
 
 HERE = Path(__file__).parent.absolute()
 
 
-@pytest.fixture(scope="session")
-def config() -> Mapping[str, Any]:
+@pytest.fixture(scope="session", name="config")
+def config_fixture() -> Mapping[str, Any]:
     config_filename = HERE.parent / "secrets" / "config.json"
 
     if not config_filename.exists():
@@ -67,35 +66,42 @@ def configured_catalog_with_incremental(configured_catalog) -> ConfiguredAirbyte
     return configured_catalog
 
 
-def read_stream(source: SourceHubspot, config: Mapping, catalog: ConfiguredAirbyteCatalog, state: MutableMapping = None) -> Tuple[List, List]:
-    records = []
+def read_stream(
+    source: SourceHubspot, config: Mapping, catalog: ConfiguredAirbyteCatalog, state: MutableMapping = None
+) -> Tuple[Mapping, List]:
+    records = {}
     states = []
     for message in source.read(AirbyteLogger(), config, catalog, state):
         if message.type == Type.RECORD:
-            records.append(message.record)
+            records.setdefault(message.record.stream, [])
+            records[message.record.stream].append(message.record)
         elif message.type == Type.STATE:
             states.append(message.state)
-            print(message.state.data)
 
     return records, states
 
 
-def records_older(records: Iterable, than: int) -> Iterable:
+def records_older(records: Iterable, than: int, cursor_field: str) -> Iterable:
     for record in records:
-        if record.data["created"] < than:
+        if record.data.get(cursor_field) < than:
             yield record
 
 
 class TestIncrementalSync:
     def test_sync_with_latest_state(self, config, configured_catalog_with_incremental):
         """Sync first time, save the state and sync second time with saved state from previous sync"""
+        streams = {stream.stream.name: stream for stream in configured_catalog_with_incremental.streams}
         records1, states1 = read_stream(SourceHubspot(), config, configured_catalog_with_incremental)
 
         assert states1, "should have at least one state emitted"
-        assert records1, "should have at lest few records emitted"
+        assert records1, "should have at least few records emitted"
 
         records2, states2 = read_stream(SourceHubspot(), config, configured_catalog_with_incremental, states1[-1].data)
 
-        assert states1 == states2
-        assert list(records_older(records1, than=records2[0].data["created"])), "should have older records from the first read"
-        assert not list(records_older(records2, than=records2[0].data["created"])), "should not have older records from the second read"
+        assert states1[-1] == states2[-1], "final states should be the same"
+        for stream_name, state in states2[-1].data.items():
+            cursor_field = streams[stream_name].cursor_field[0]
+            old_records1 = records_older(records1[stream_name], than=records2[stream_name][0].data[cursor_field], cursor_field=cursor_field)
+            old_records2 = records_older(records2[stream_name], than=records2[stream_name][0].data[cursor_field], cursor_field=cursor_field)
+            assert list(old_records1), "should have older records from the first read"
+            assert not list(old_records2), "should not have older records from the second read"
