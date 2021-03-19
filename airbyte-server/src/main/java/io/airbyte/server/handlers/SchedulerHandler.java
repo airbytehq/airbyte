@@ -32,6 +32,7 @@ import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.DestinationDefinitionSpecificationRead;
 import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.DestinationUpdate;
+import io.airbyte.api.model.JobIdRequestBody;
 import io.airbyte.api.model.JobInfoRead;
 import io.airbyte.api.model.SourceCoreConfig;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
@@ -41,6 +42,7 @@ import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceUpdate;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.commons.io.IOs;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.SourceConnection;
@@ -55,13 +57,20 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.client.SchedulerJobClient;
+import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.converters.CatalogConverter;
 import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.server.converters.JobConverter;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.temporal.TemporalAttemptExecution;
+import io.airbyte.workers.temporal.TemporalUtils;
+import io.temporal.api.common.v1.WorkflowExecution;
+import io.temporal.api.workflowservice.v1.RequestCancelWorkflowExecutionRequest;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.UUID;
 
 public class SchedulerHandler {
@@ -71,14 +80,21 @@ public class SchedulerHandler {
   private final SpecFetcher specFetcher;
   private final ConfigurationUpdate configurationUpdate;
   private final JsonSchemaValidator jsonSchemaValidator;
+  private final JobPersistence jobPersistence;
+  private final Path workspaceRoot;
 
-  public SchedulerHandler(ConfigRepository configRepository, SchedulerJobClient schedulerJobClient) {
+  public SchedulerHandler(ConfigRepository configRepository,
+                          SchedulerJobClient schedulerJobClient,
+                          JobPersistence jobPersistence,
+                          Path workspaceRoot) {
     this(
         configRepository,
         schedulerJobClient,
         new ConfigurationUpdate(configRepository, new SpecFetcher(schedulerJobClient)),
         new JsonSchemaValidator(),
-        new SpecFetcher(schedulerJobClient));
+        new SpecFetcher(schedulerJobClient),
+        jobPersistence,
+        workspaceRoot);
   }
 
   @VisibleForTesting
@@ -86,12 +102,16 @@ public class SchedulerHandler {
                    SchedulerJobClient schedulerJobClient,
                    ConfigurationUpdate configurationUpdate,
                    JsonSchemaValidator jsonSchemaValidator,
-                   SpecFetcher specFetcher) {
+                   SpecFetcher specFetcher,
+                   JobPersistence jobPersistence,
+                   Path workspaceRoot) {
     this.configRepository = configRepository;
     this.schedulerJobClient = schedulerJobClient;
     this.configurationUpdate = configurationUpdate;
     this.jsonSchemaValidator = jsonSchemaValidator;
     this.specFetcher = specFetcher;
+    this.jobPersistence = jobPersistence;
+    this.workspaceRoot = workspaceRoot;
   }
 
   public CheckConnectionRead checkSourceConnectionFromSourceId(SourceIdRequestBody sourceIdRequestBody)
@@ -264,6 +284,27 @@ public class SchedulerHandler {
     final Job job = schedulerJobClient.createOrGetActiveResetConnectionJob(destination, standardSync, destinationImageName);
 
     return JobConverter.getJobInfoRead(job);
+  }
+
+  public JobInfoRead cancelJob(JobIdRequestBody jobIdRequestBody) throws IOException {
+    final long jobId = jobIdRequestBody.getId();
+
+    // first prevent this job from being scheduled again
+    jobPersistence.cancelJob(jobId);
+
+    // second cancel the temporal execution
+    final Path attemptParentDir = WorkerUtils.getJobRoot(workspaceRoot, jobId, 0L).getParent();
+    final String workflowId = IOs.readFile(attemptParentDir, TemporalAttemptExecution.WORKFLOW_ID_FILENAME);
+    final WorkflowExecution workflowExecution = WorkflowExecution.newBuilder()
+        .setWorkflowId(workflowId)
+        .build();
+    final RequestCancelWorkflowExecutionRequest cancelRequest = RequestCancelWorkflowExecutionRequest.newBuilder()
+        .setWorkflowExecution(workflowExecution)
+        .build();
+
+    TemporalUtils.TEMPORAL_SERVICE.blockingStub().requestCancelWorkflowExecution(cancelRequest);
+
+    return JobConverter.getJobInfoRead(jobPersistence.getJob(jobId));
   }
 
   private CheckConnectionRead reportConnectionStatus(final Job job) {

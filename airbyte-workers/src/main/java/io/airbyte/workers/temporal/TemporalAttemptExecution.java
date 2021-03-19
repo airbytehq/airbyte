@@ -28,10 +28,12 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.functional.CheckedSupplier;
+import io.airbyte.commons.io.IOs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerUtils;
+import io.temporal.activity.Activity;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -47,6 +49,8 @@ import org.slf4j.LoggerFactory;
 public class TemporalAttemptExecution<T> implements CheckedSupplier<T, TemporalJobException> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TemporalAttemptExecution.class);
+
+  public static String WORKFLOW_ID_FILENAME = "WORKFLOW_ID";
 
   private final Path jobRoot;
   private final CheckedFunction<Path, T, Exception> execution;
@@ -78,6 +82,9 @@ public class TemporalAttemptExecution<T> implements CheckedSupplier<T, TemporalJ
 
       LOGGER.info("Executing worker wrapper. Airbyte version: {}", new EnvConfigs().getAirbyteVersionOrWarning());
       jobRootDirCreator.accept(jobRoot);
+
+      final String workflowId = Activity.getExecutionContext().getInfo().getWorkflowId();
+      IOs.writeFile(jobRoot.getParent().resolve(WORKFLOW_ID_FILENAME), workflowId);
 
       return execution.apply(jobRoot);
     } catch (TemporalJobException e) {
