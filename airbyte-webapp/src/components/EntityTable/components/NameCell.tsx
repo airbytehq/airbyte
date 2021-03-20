@@ -7,7 +7,7 @@ import { Status } from "../types";
 type IProps = {
   value: string;
   enabled?: boolean;
-  status?: string;
+  status?: string | null;
 };
 
 const Content = styled.div`

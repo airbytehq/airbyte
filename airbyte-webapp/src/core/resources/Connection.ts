@@ -45,8 +45,9 @@ export interface Connection {
   syncCatalog: SyncSchema;
   source?: SourceInformation;
   destination?: DestinationInformation;
-  lastSync?: number | null;
+  latestSyncJobCreatedAt?: number | null;
   isSyncing?: boolean;
+  latestSyncJobStatus: string | null;
 }
 
 export default class ConnectionResource
@@ -62,7 +63,8 @@ export default class ConnectionResource
   readonly schedule: ScheduleProperties | null = null;
   readonly source: SourceInformation | undefined = undefined;
   readonly destination: DestinationInformation | undefined = undefined;
-  readonly lastSync: number | undefined | null = null;
+  readonly latestSyncJobCreatedAt: number | undefined | null = null;
+  readonly latestSyncJobStatus: string | null = null;
   readonly syncCatalog: SyncSchema = { streams: [] };
   readonly isSyncing: boolean = false;
 
