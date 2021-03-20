@@ -188,3 +188,8 @@
   dockerRepository: airbyte/source-instagram
   dockerImageTag: 0.1.1
   documentationUrl: https://hub.docker.com/r/airbyte/source-instagram
+- sourceDefinitionId: 99e4c196-89bc-11eb-8dcd-0242ac130003
+  name: Appsflyer
+  dockerRepository: airbyte/source-appsflyer-singer
+  dockerImageTag: 0.1.0
+  documentationUrl: https://hub.docker.com/r/airbyte/source-appsflyer-singer
