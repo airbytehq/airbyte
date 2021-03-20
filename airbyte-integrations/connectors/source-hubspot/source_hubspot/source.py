@@ -22,14 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from setuptools import find_packages, setup
+from base_python import BaseSource
 
-setup(
-    name="source_github_singer",
-    description="Source implementation for Github.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    install_requires=["tap-hubspot==2.8.1", "requests", "airbyte-protocol", "base-singer"],
-    packages=find_packages(),
-    package_data={"": ["*.json"]},
-)
+from .client import Client
+
+
+class SourceHubspot(BaseSource):
+    client_class = Client

@@ -1,0 +1,70 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "label": {
+      "type": "string"
+    },
+    "displayOrder": {
+      "type": "integer"
+    },
+    "active": {
+      "type": "boolean"
+    },
+    "stages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "displayOrder": {
+            "type": "integer"
+          },
+          "metadata": {
+            "type": "object",
+            "properties": {
+              "isClosed": {
+                "type": "string"
+              },
+              "probability": {
+                "type": "string"
+              }
+            }
+          },
+          "stageId": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": ["null", "integer"]
+          },
+          "updatedAt": {
+            "type": ["null", "integer"]
+          },
+          "active": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "objectType": {
+      "type": "string"
+    },
+    "objectTypeId": {
+      "type": "string"
+    },
+    "pipelineId": {
+      "type": "string"
+    },
+    "createdAt": {
+      "type": "integer"
+    },
+    "updatedAt": {
+      "type": ["null", "integer"]
+    },
+    "default": {
+      "type": "boolean"
+    }
+  }
+}
