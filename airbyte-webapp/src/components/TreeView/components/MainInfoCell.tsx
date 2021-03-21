@@ -18,8 +18,8 @@ type IProps = {
 };
 
 const ArrowContainer = styled.span`
-  padding: 0 19px 0 18px;
-  width: 10px;
+  padding: 0 9px;
+  width: 30px;
   display: inline-block;
 `;
 
@@ -39,7 +39,7 @@ const MainCell = styled(Cell)`
 const Content = styled.div<{ depth?: number }>`
   overflow: hidden;
   text-overflow: ellipsis;
-  padding-left: ${({ depth = 0 }) => depth * 58}px;
+  padding-left: ${({ depth = 0 }) => depth * 50}px;
 `;
 
 const ItemLable = styled.span`

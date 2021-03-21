@@ -15,6 +15,7 @@ import SyncSettingsCell from "./SyncSettingsCell";
 import ChildRow from "./ChildRow";
 import ItemRow from "./ItemRow";
 import TreeItem from "./TreeItem";
+import ExpandFieldCell from "./ExpandFieldCell";
 
 const StyledCell = styled(Cell)`
   overflow: hidden;
@@ -93,6 +94,16 @@ const TreeViewRow: React.FC<IProps> = ({ streamNode, updateItem }) => {
           />
           <Cell />
           <StyledCell title={config.aliasName}>{config.aliasName}</StyledCell>
+          <StyledCell>
+            <ExpandFieldCell onExpand={onExpand} isItemOpen={isItemOpen}>
+              PK HERE
+            </ExpandFieldCell>
+          </StyledCell>
+          <StyledCell>
+            <ExpandFieldCell onExpand={onExpand} isItemOpen={isItemOpen}>
+              Cursor Field HERE
+            </ExpandFieldCell>
+          </StyledCell>
           <SyncSettingsCell
             streamNode={streamNode}
             fields={fields}

@@ -32,6 +32,8 @@
   "form.dataType": "Data type",
   "form.cleanedName": "Cleaned name",
   "form.syncSettings": "Sync settings",
+  "form.primaryKey": "Primary key",
+  "form.cursorField": "Cursor field",
   "form.dataSync": "Select the data you want to sync",
   "form.dataSync.message": "Don’t worry! You’ll be able to change this later on.",
   "form.cancel": "Cancel",

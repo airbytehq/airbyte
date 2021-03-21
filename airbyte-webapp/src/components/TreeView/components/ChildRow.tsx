@@ -2,6 +2,7 @@ import React from "react";
 import styled from "styled-components";
 
 import { Cell } from "components/SimpleTableComponents";
+import { RadioButton, CheckBox } from "components";
 import { SyncSchemaField } from "core/domain/catalog";
 
 import MainInfoCell from "./MainInfoCell";
@@ -17,6 +18,10 @@ const StyledCell = styled(Cell)`
   overflow: hidden;
   text-overflow: ellipsis;
   cursor: default;
+`;
+
+const StyledRadioButton = styled(RadioButton)`
+  vertical-align: middle;
 `;
 
 const ChildRow: React.FC<IProps> = ({ item, depth = 0 }) => {
@@ -35,6 +40,12 @@ const ChildRow: React.FC<IProps> = ({ item, depth = 0 }) => {
           />
           <StyledCell>{item.type}</StyledCell>
           <StyledCell title={item.cleanedName}>{item.cleanedName}</StyledCell>
+          <StyledCell>
+            <CheckBox />
+          </StyledCell>
+          <Cell>
+            <StyledRadioButton />
+          </Cell>
           <Cell />
         </ItemRow>
       </TreeItem>
