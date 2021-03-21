@@ -70,9 +70,9 @@ class OracleSourceTest {
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))));
   private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
   private static final Set<AirbyteMessage> ASCII_MESSAGES = Sets.newHashSet(
-      createRecord(STREAM_NAME, map("ID", new BigDecimal("2.0"), "NAME", "vegeta", "POWER", "9000.1")),
+          createRecord(STREAM_NAME, map("ID", new BigDecimal("2.0"), "NAME", "vegeta", "POWER", "9000.1")),
           createRecord(STREAM_NAME, map( "NAME", "piccolo", "POWER", "-Infinity")),
-      createRecord(STREAM_NAME, map("ID", new BigDecimal("1.0"), "NAME", "goku", "POWER", "Infinity")));
+          createRecord(STREAM_NAME, map("ID", new BigDecimal("1.0"), "NAME", "goku", "POWER", "Infinity")));
 
   private static OracleContainer ORACLE_DB;
 

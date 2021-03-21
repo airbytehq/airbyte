@@ -191,7 +191,7 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
     final List<String> selectedDatabaseFields = table.getFields()
         .stream()
         .map(ColumnInfo::getColumnName)
-        .filter(selectedFieldsInCatalog::contains)
+//        .filter(selectedFieldsInCatalog::contains)
         .collect(Collectors.toList());
 
     final AutoCloseableIterator<AirbyteMessage> iterator;

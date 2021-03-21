@@ -67,20 +67,19 @@ class OracleStressTest extends JdbcStressTest {
     final String dbName = "db_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", ORACLE_DB.getHost())
-        .put("port", ORACLE_DB.getFirstMappedPort())
-        .put("database", dbName)
-        .put("username", ORACLE_DB.getUsername())
-        .put("password", ORACLE_DB.getPassword())
-        .build());
-
+            .put("host", ORACLE_DB.getHost())
+            .put("port", ORACLE_DB.getFirstMappedPort())
+            .put("sid", ORACLE_DB.getSid())
+            .put("username", ORACLE_DB.getUsername())
+            .put("password", ORACLE_DB.getPassword())
+            .build());
 
     super.setup();
   }
 
   @Override
   public Optional<String> getDefaultSchemaName() {
-    return Optional.of("public");
+    return Optional.of("SYSTEM");
   }
 
   @Override
@@ -107,7 +106,7 @@ class OracleStressTest extends JdbcStressTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OracleTestSource.class);
 
-    static final String DRIVER_CLASS = "org.oracle.Driver";
+    static final String DRIVER_CLASS = "oracle.jdbc.OracleDriver";
 
     public OracleTestSource() {
       super(DRIVER_CLASS, new OracleJdbcStreamingQueryConfiguration());
@@ -115,12 +114,13 @@ class OracleStressTest extends JdbcStressTest {
 
     @Override
     public JsonNode toJdbcConfig(JsonNode config) {
-      ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-          .put("username", config.get("username").asText())
-          .put("jdbc_url", String.format("jdbc:oracle://%s:%s/%s",
-              config.get("host").asText(),
-              config.get("port").asText(),
-              config.get("database").asText()));
+      final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
+              .put("username", config.get("username").asText())
+              .put("jdbc_url", String.format("jdbc:oracle:thin:@//%s:%s/xe",
+                      config.get("host").asText(),
+                      config.get("port").asText(),
+                      config.get("sid").asText())
+              );
 
       if (config.has("password")) {
         configBuilder.put("password", config.get("password").asText());
@@ -131,7 +131,8 @@ class OracleStressTest extends JdbcStressTest {
 
     @Override
     public Set<String> getExcludedInternalSchemas() {
-      return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");
+      // need to add SYSTEM too but for that need create another user when creating the container.
+      return Set.of("APEX_040000", "CTXSYS", "FLOWS_FILES", "HR", "MDSYS", "OUTLN", "SYS", "XDB");
     }
 
     public static void main(String[] args) throws Exception {

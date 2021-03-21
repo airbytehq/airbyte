@@ -31,11 +31,15 @@ import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceStandardTest;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import static org.junit.Assert.assertEquals;
 
 import org.testcontainers.containers.OracleContainer;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
 
 class OracleJdbcStandardSourceTest extends JdbcSourceStandardTest {
   private static final Logger LOGGER = LoggerFactory.getLogger(OracleSource.class);
@@ -50,7 +54,7 @@ class OracleJdbcStandardSourceTest extends JdbcSourceStandardTest {
     ORACLE_DB.start();
   }
 
-  @BeforeAll
+  @BeforeEach
   public void setup() throws Exception {
 
     config = Jsons.jsonNode(ImmutableMap.builder()

@@ -124,7 +124,7 @@ public abstract class JdbcStressTest {
         jdbcConfig.get("jdbc_url").asText(),
         getDriverClass());
 
-    database.execute(connection -> connection.createStatement().execute("CREATE TABLE id_and_name(id BIGINT, name VARCHAR(200));"));
+    database.execute(connection -> connection.createStatement().execute("CREATE TABLE id_and_name(id BIGINT, name VARCHAR(200))"));
     final long batchCount = TOTAL_RECORDS / BATCH_SIZE;
     LOGGER.info("writing {} batches of {}", batchCount, BATCH_SIZE);
     for (int i = 0; i < batchCount; i++) {
@@ -135,7 +135,7 @@ public abstract class JdbcStressTest {
         int recordNumber = (i * BATCH_SIZE) + j;
         insert.add(String.format("(%s,'picard-%s')", recordNumber, recordNumber));
       }
-      final String sql = String.format("INSERT INTO id_and_name (id, name) VALUES %s;", Strings.join(insert, ", "));
+      final String sql = String.format("INSERT INTO id_and_name (id, name) VALUES %s", Strings.join(insert, ", "));
       database.execute(connection -> connection.createStatement().execute(sql));
     }
 

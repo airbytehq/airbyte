@@ -29,8 +29,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
+import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.standardtest.source.StandardSourceTest;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -42,13 +42,12 @@ import io.airbyte.protocol.models.SyncMode;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import org.jooq.SQLDialect;
 import org.testcontainers.containers.OracleContainer;
 
 public class OracleSourceStandardTest extends StandardSourceTest {
 
-  private static final String STREAM_NAME = "public.id_and_name";
-  private static final String STREAM_NAME2 = "public.starships";
+  private static final String STREAM_NAME = "SYSTEM.ID_AND_NAME";
+  private static final String STREAM_NAME2 = "SYSTEM.STARSHIPS";
 
   private OracleContainer container;
   private JsonNode config;
@@ -59,29 +58,30 @@ public class OracleSourceStandardTest extends StandardSourceTest {
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
-        .put("port", container.getFirstMappedPort())
-        .put("database", container.getDatabaseName())
-        .put("username", container.getUsername())
-        .put("password", container.getPassword())
-        .build());
+            .put("host", container.getHost())
+            .put("port", container.getFirstMappedPort())
+            .put("sid", container.getSid())
+            .put("username", container.getUsername())
+            .put("password", container.getPassword())
+            .build());
 
-    final Database database = Databases.createDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:oracle:thin://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()),
-        "org.oracle.Driver",
-        SQLDialect.DEFAULT);
+    JdbcDatabase database = Databases.createJdbcDatabase(config.get("username").asText(),
+            config.get("password").asText(),
+            String.format("jdbc:oracle:thin:@//%s:%s/%s",
+                    config.get("host").asText(),
+                    config.get("port").asText(),
+                    config.get("sid").asText()),
+            "oracle.jdbc.driver.OracleDriver");
 
-    database.query(ctx -> {
-      ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
-      ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
-      ctx.fetch("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
-      ctx.fetch("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
-      return null;
+    database.execute(connection -> {
+//      connection.createStatement().execute("CREATE TABLE id_and_name(id NUMERIC(20, 10), name VARCHAR(200), power BINARY_DOUBLE)");
+//      connection.createStatement().execute("INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', BINARY_DOUBLE_INFINITY)");
+//      connection.createStatement().execute("INSERT INTO id_and_name (id, name, power) VALUES (2, 'vegeta', 9000.1)");
+//      connection.createStatement().execute("INSERT INTO id_and_name (id, name, power) VALUES (NULL, 'piccolo', -BINARY_DOUBLE_INFINITY)");
+      connection.createStatement().execute("CREATE TABLE starships(id INTEGER, name VARCHAR(200))");
+      connection.createStatement().execute("INSERT INTO starships (id, name) VALUES (1,'enterprise-d')");
+      connection.createStatement().execute("INSERT INTO starships (id, name) VALUES (2, 'defiant')");
+      connection.createStatement().execute("INSERT INTO starships (id, name) VALUES (3, 'yamato')");
     });
 
     database.close();
@@ -109,24 +109,30 @@ public class OracleSourceStandardTest extends StandardSourceTest {
 
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
-    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
-            .withCursorField(Lists.newArrayList("id"))
-            .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME,
-                Field.of("id", JsonSchemaPrimitive.NUMBER),
-                Field.of("name", JsonSchemaPrimitive.STRING))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
-            .withCursorField(Lists.newArrayList("id"))
-            .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME2,
-                Field.of("id", JsonSchemaPrimitive.NUMBER),
-                Field.of("name", JsonSchemaPrimitive.STRING))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
+    return CatalogHelpers.createConfiguredAirbyteCatalog(
+            STREAM_NAME2,
+            Field.of("ID", JsonSchemaPrimitive.NUMBER),
+            Field.of("NAME", JsonSchemaPrimitive.STRING));
   }
+//    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
+//        new ConfiguredAirbyteStream()
+//            .withSyncMode(SyncMode.INCREMENTAL)
+//            .withCursorField(Lists.newArrayList("ID"))
+//            .withStream(CatalogHelpers.createAirbyteStream(
+//                STREAM_NAME,
+//                Field.of("ID", JsonSchemaPrimitive.NUMBER),
+//                Field.of("NAME", JsonSchemaPrimitive.STRING),
+//                    Field.of("POWER", JsonSchemaPrimitive.NUMBER))
+//                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
+//        new ConfiguredAirbyteStream()
+//            .withSyncMode(SyncMode.INCREMENTAL)
+//            .withCursorField(Lists.newArrayList("ID"))
+//            .withStream(CatalogHelpers.createAirbyteStream(
+//                STREAM_NAME2,
+//                Field.of("ID", JsonSchemaPrimitive.NUMBER),
+//                Field.of("NAME", JsonSchemaPrimitive.STRING))
+//                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
+//  }
 
   @Override
   protected List<String> getRegexTests() {
