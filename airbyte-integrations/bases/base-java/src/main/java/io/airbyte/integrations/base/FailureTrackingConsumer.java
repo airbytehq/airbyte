@@ -28,14 +28,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Minimal abstract class intended to provide a consistent structure to classes seeking to implement the {@link DestinationConsumer} interface. The original
- * interface methods are wrapped in generic exception handlers - any exception is caught and logged.
+ * Minimal abstract class intended to provide a consistent structure to classes seeking to implement
+ * the {@link DestinationConsumer} interface. The original interface methods are wrapped in generic
+ * exception handlers - any exception is caught and logged.
  *
- * Two methods are intended for extension:
- * - startTracked: Wraps set up of necessary infrastructure/configuration before message consumption.
- * - acceptTracked: Wraps actual processing of each {@link io.airbyte.protocol.models.AirbyteMessage}.
+ * Two methods are intended for extension: - startTracked: Wraps set up of necessary
+ * infrastructure/configuration before message consumption. - acceptTracked: Wraps actual processing
+ * of each {@link io.airbyte.protocol.models.AirbyteMessage}.
  *
- * Though not necessary, we highly encourage using this class when implementing destinations. See child classes for examples.
+ * Though not necessary, we highly encourage using this class when implementing destinations. See
+ * child classes for examples.
  */
 public abstract class FailureTrackingConsumer<T> implements DestinationConsumer<T> {
 

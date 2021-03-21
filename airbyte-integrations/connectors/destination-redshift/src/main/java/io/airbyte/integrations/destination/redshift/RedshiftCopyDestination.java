@@ -42,7 +42,6 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
@@ -58,6 +57,8 @@ import java.util.Map;
  * now.
  */
 public class RedshiftCopyDestination implements Destination {
+
+  // TODO: figure out a way to consistently randomise this bucket
   public static String DEFAULT_AIRBYTE_STAGING_S3_BUCKET = "airbyte.staging";
   private static final StandardNameTransformer namingResolver = new StandardNameTransformer();
 
@@ -112,8 +113,9 @@ public class RedshiftCopyDestination implements Destination {
   }
 
   /**
-   * Redshift urls are of the form <cluster-name>.<cluster-id>.<region>.redshift.amazon.com. Extracting region from the url
-   * is currently the simplest way to figure out a cluster's region. Although unlikely, might break if the url schema changes.
+   * Redshift urls are of the form <cluster-name>.<cluster-id>.<region>.redshift.amazon.com.
+   * Extracting region from the url is currently the simplest way to figure out a cluster's region.
+   * Although unlikely, might break if the url schema changes.
    */
   @VisibleForTesting
   static String extractRegionFromRedshiftUrl(String url) {
@@ -130,7 +132,7 @@ public class RedshiftCopyDestination implements Destination {
       client.createBucket(createBucketRequest);
     }
   }
-  
+
   private static class RedshiftCopyDestinationConsumer extends FailureTrackingConsumer<AirbyteMessage> {
 
     private final AmazonS3 client;
@@ -149,7 +151,7 @@ public class RedshiftCopyDestination implements Destination {
       createS3StagingBucketIfNeeded(client, redshiftRegion);
 
       // write to bucket
-      for (var stream: catalog.getStreams()) {
+      for (var stream : catalog.getStreams()) {
         var streamName = stream.getStream().getName();
         var tableName = namingResolver.getRawTableName(streamName);
         var tmpTableName = namingResolver.getTmpTableName(streamName);
@@ -177,9 +179,11 @@ public class RedshiftCopyDestination implements Destination {
         copier.close(hasFailed);
       }
     }
+
   }
 
   public static void main(String[] args) throws Exception {
     new IntegrationRunner(new RedshiftCopyDestination()).run(args);
   }
+
 }
