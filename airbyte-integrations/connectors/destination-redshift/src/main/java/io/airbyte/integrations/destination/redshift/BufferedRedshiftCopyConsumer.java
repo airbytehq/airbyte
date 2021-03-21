@@ -13,7 +13,6 @@ import java.nio.file.Paths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-<<<<<<< HEAD:airbyte-integrations/connectors/destination-redshift/src/main/java/io/airbyte/integrations/destination/redshift/RedshiftCopier.java
 public class RedshiftCopier {
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftCopier.class);
 
@@ -32,9 +31,6 @@ public class RedshiftCopier {
     // delete tmp table
     // delete staging file
   }
-=======
-public class BufferedRedshiftCopyConsumerFactory {
->>>>>>> 63f2d0cb (Add visible for testing annotation.):airbyte-integrations/connectors/destination-redshift/src/main/java/io/airbyte/integrations/destination/redshift/BufferedRedshiftCopyConsumer.java
 
   public static void main(String[] args) throws IOException {
     var awsCreds = new BasicAWSCredentials("", "");

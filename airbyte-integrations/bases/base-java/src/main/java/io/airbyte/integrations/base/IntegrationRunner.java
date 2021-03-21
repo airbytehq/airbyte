@@ -120,6 +120,7 @@ public class IntegrationRunner {
     LOGGER.info("Completed integration: {}", integration.getClass().getName());
   }
 
+  @VisibleForTesting
   static void consumeWriteStream(DestinationConsumer<AirbyteMessage> consumer) throws Exception {
     final Scanner input = new Scanner(System.in);
     try (consumer) {

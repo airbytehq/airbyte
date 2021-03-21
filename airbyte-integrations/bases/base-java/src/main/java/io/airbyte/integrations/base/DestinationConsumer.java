@@ -26,12 +26,21 @@ package io.airbyte.integrations.base;
 
 import io.airbyte.commons.functional.CheckedConsumer;
 
-// Lifecycle:
-// 1. Instantiate consumer.
-// 2. start() to initialize any resources that need to be created BEFORE the consumer consumes any
-// messages.
-// 2. consumes ALL records via {@link DestinationConsumer#accept(T)}
-// 3. Always (on success or failure) finalize by calling {@link DestinationConsumer#close()}
+/**
+ * Interface for the destination's consumption of incoming records wrapped in an {@link io.airbyte.protocol.models.AirbyteMessage}.
+ *
+ * This is via the accept method, which commonly handles parsing, validation, batching and writing of the transformed data to the final
+ * destination i.e. the technical system data is being written to.
+ *
+ * Lifecycle:
+ * 1. Instantiate consumer.
+ * 2. start() to initialize any resources that need to be created BEFORE the consumer consumes any
+ *    messages.
+ * 3. Consumes ALL records via {@link DestinationConsumer#accept(T)}
+ * 4. Always (on success or failure) finalize by calling {@link DestinationConsumer#close()}
+ *
+ * We encourage implementing this interface using the {@link FailureTrackingConsumer} class.
+ */
 public interface DestinationConsumer<T> extends CheckedConsumer<T, Exception>, AutoCloseable {
 
   void start() throws Exception;

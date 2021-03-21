@@ -42,6 +42,7 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
@@ -58,8 +59,7 @@ import java.util.Map;
  */
 public class RedshiftCopyDestination implements Destination {
   public static String DEFAULT_AIRBYTE_STAGING_S3_BUCKET = "airbyte.staging";
-  private static StandardNameTransformer namingResolver = new StandardNameTransformer();
-
+  private static final StandardNameTransformer namingResolver = new StandardNameTransformer();
 
   /**
    * This flow does not currently let users configure a staging bucket.
@@ -130,7 +130,7 @@ public class RedshiftCopyDestination implements Destination {
       client.createBucket(createBucketRequest);
     }
   }
-
+  
   private static class RedshiftCopyDestinationConsumer extends FailureTrackingConsumer<AirbyteMessage> {
 
     private final AmazonS3 client;
