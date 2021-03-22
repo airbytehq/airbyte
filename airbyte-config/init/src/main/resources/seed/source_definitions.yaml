@@ -188,3 +188,8 @@
   dockerRepository: airbyte/source-instagram
   dockerImageTag: 0.1.1
   documentationUrl: https://hub.docker.com/r/airbyte/source-instagram
+- sourceDefinitionId: 5e6175e5-68e1-4c17-bff9-56103bbb0d80
+  name: Gitlab
+  dockerRepository: airbyte/source-gitlab-singer
+  dockerImageTag: 0.1.0
+  documentationUrl: https://hub.docker.com/r/airbyte/source-gitlab-singer
