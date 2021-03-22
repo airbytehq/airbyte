@@ -164,7 +164,7 @@ public abstract class JdbcSourceStandardTest {
 
     database.execute(connection -> {
      connection.createStatement()
-          .execute(String.format("CREATE TABLE %s(id INTEGER, name VARCHAR(200), updated_at VARCHAR(200))", getFullyQualifiedTableName(TABLE_NAME)));
+          .execute(String.format("CREATE TABLE %s(ID INTEGER, NAME VARCHAR(200), UPDATED_AT VARCHAR(12))", getFullyQualifiedTableName(TABLE_NAME)));
       connection.createStatement().execute(
           String.format("INSERT INTO %s(id, name, updated_at) VALUES (1,'picard', '2004-10-19')", getFullyQualifiedTableName(TABLE_NAME)));
       connection.createStatement().execute(
@@ -323,6 +323,14 @@ public abstract class JdbcSourceStandardTest {
     final List<AirbyteMessage> actualMessages = MoreIterators.toList(source.read(config, catalog, null));
 
     setEmittedAtToNull(actualMessages);
+
+    AirbyteMessage firstExpectedMsg = expectedMessages.get(0);
+    AirbyteMessage firstActualMsg = actualMessages.get(0);
+
+    boolean checkFirstAreEqual = firstExpectedMsg.equals(firstExpectedMsg);
+    int hashFirstExpected = firstExpectedMsg.hashCode();
+    int hashFirstActual = firstActualMsg.hashCode();
+    boolean hashAreEqual =  hashFirstExpected == hashFirstActual;
 
 
     assertEquals(expectedMessages, actualMessages);
