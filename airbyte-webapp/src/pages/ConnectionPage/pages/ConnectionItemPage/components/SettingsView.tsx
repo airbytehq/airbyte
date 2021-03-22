@@ -17,10 +17,12 @@ import ResetDataModal from "components/ResetDataModal";
 import { ModalTypes } from "components/ResetDataModal/types";
 import Button from "components/Button";
 import LoadingSchema from "components/LoadingSchema";
+import EnabledControl from "./EnabledControl";
 
 type IProps = {
   onAfterSaveSchema: () => void;
   connectionId: string;
+  frequencyText?: string;
 };
 
 const Content = styled.div`
@@ -42,6 +44,12 @@ const TryArrow = styled(FontAwesomeIcon)`
   font-size: 14px;
 `;
 
+const Title = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
 type FormValues = {
   frequency: string;
   prefix: string;
@@ -51,6 +59,7 @@ type FormValues = {
 const SettingsView: React.FC<IProps> = ({
   onAfterSaveSchema,
   connectionId,
+  frequencyText,
 }) => {
   const [isModalOpen, setIsUpdateModalOpen] = useState(false);
   const [activeUpdatingSchemaMode, setActiveUpdatingSchemaMode] = useState(
@@ -162,9 +171,17 @@ const SettingsView: React.FC<IProps> = ({
     <Content>
       <ContentCard
         title={
-          <TitleContainer hasButton={!activeUpdatingSchemaMode}>
-            <FormattedMessage id="connection.connectionSettings" />{" "}
-          </TitleContainer>
+          <Title>
+            <TitleContainer hasButton={!activeUpdatingSchemaMode}>
+              <FormattedMessage id="connection.connectionSettings" />{" "}
+            </TitleContainer>
+            {!connection ? null : (
+              <EnabledControl
+                connection={connection}
+                frequencyText={frequencyText}
+              />
+            )}
+          </Title>
         }
       >
         {!isLoadingConnection && connection ? (
