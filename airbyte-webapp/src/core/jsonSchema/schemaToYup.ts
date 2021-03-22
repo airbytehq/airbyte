@@ -30,6 +30,7 @@ export const buildYupFormForJsonSchema = (
     | yup.NumberSchema
     | yup.StringSchema
     | yup.ObjectSchema
+    | yup.ArraySchema<unknown>
     | yup.BooleanSchema
     | null = null;
 
@@ -76,6 +77,24 @@ export const buildYupFormForJsonSchema = (
 
       if (jsonSchema?.maximum !== undefined) {
         schema = schema.max(jsonSchema?.maximum);
+      }
+      break;
+    case "array":
+      if (
+        typeof jsonSchema.items === "object" &&
+        !Array.isArray(jsonSchema.items)
+      ) {
+        schema = yup
+          .array()
+          .of(
+            buildYupFormForJsonSchema(
+              jsonSchema.items,
+              uiConfig,
+              jsonSchema,
+              propertyKey,
+              propertyPath ? `${propertyPath}.${propertyKey}` : propertyKey
+            )
+          );
       }
       break;
     case "object":

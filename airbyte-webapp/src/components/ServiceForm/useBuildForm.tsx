@@ -5,51 +5,40 @@ import { JSONSchema7 } from "json-schema";
 import flatten from "flat";
 import merge from "lodash.merge";
 
-import { FormBlock, WidgetConfig, WidgetConfigMap } from "core/form/types";
+import {
+  FormBaseItem,
+  FormBlock,
+  WidgetConfig,
+  WidgetConfigMap,
+} from "core/form/types";
 import { jsonSchemaToUiWidget } from "core/jsonSchema/schemaToUiWidget";
 import { buildYupFormForJsonSchema } from "core/jsonSchema/schemaToYup";
 import { buildPathInitialState } from "core/form/uiWidget";
 import { ServiceFormValues } from "./types";
+import { ConnectorNameControl } from "./components/Controls/ConnectorNameControl";
+import { ConnectorServiceTypeControl } from "./components/Controls/ConnectorServiceTypeControl";
 
 function useBuildForm(
-  isLoadingConnectionConfiguration?: boolean,
-  initialValues?: Partial<ServiceFormValues>,
-  jsonSchema?: JSONSchema7
+  jsonSchema: JSONSchema7,
+  initialValues?: Partial<ServiceFormValues>
 ): {
   initialValues: ServiceFormValues;
-  formFields: FormBlock[];
+  formFields: FormBlock;
 } {
-  const startValues = useMemo<ServiceFormValues>(() => {
-    const values: ServiceFormValues = {
+  const startValues = useMemo<ServiceFormValues>(
+    () => ({
       name: "",
       serviceType: "",
+      connectionConfiguration: {},
       ...initialValues,
-    };
+    }),
+    [initialValues]
+  );
 
-    return values;
-  }, [initialValues]);
-
-  const formFields = useMemo<FormBlock[]>(() => {
-    return [
-      {
-        _type: "formItem",
-        type: "string",
-        fieldKey: "name",
-        fieldName: "name",
-        isRequired: true,
-      },
-      {
-        _type: "formItem",
-        type: "string",
-        fieldKey: "serviceType",
-        fieldName: "serviceType",
-        isRequired: true,
-      },
-      ...(jsonSchema && !isLoadingConnectionConfiguration
-        ? [jsonSchemaToUiWidget(jsonSchema, "connectionConfiguration")]
-        : []),
-    ];
-  }, [jsonSchema, isLoadingConnectionConfiguration]);
+  const formFields = useMemo<FormBlock>(
+    () => jsonSchemaToUiWidget(jsonSchema),
+    [jsonSchema]
+  );
 
   return {
     initialValues: startValues,
@@ -58,21 +47,37 @@ function useBuildForm(
 }
 
 const useBuildUiWidgets = (
-  formFields: FormBlock[],
+  formFields: FormBlock[] | FormBlock,
   formValues: ServiceFormValues
 ): {
   uiWidgetsInfo: WidgetConfigMap;
   setUiWidgetsInfo: (widgetId: string, updatedValues: WidgetConfig) => void;
 } => {
+  const uiOverrides = {
+    name: {
+      component: (property: FormBaseItem) => (
+        <ConnectorNameControl property={property} />
+      ),
+    },
+    serviceType: {
+      component: (property: FormBaseItem) => (
+        <ConnectorServiceTypeControl property={property} />
+      ),
+    },
+  };
+
   const [overriddenWidgetState, setUiWidgetsInfo] = useState<WidgetConfigMap>(
-    {}
+    uiOverrides
   );
 
   // As schema is dynamic, it is possible, that new updated values, will differ from one stored.
   const mergedState = useMemo(
     () =>
       merge(
-        buildPathInitialState(formFields, formValues),
+        buildPathInitialState(
+          Array.isArray(formFields) ? formFields : [formFields],
+          formValues
+        ),
         overriddenWidgetState
       ),
     [formFields, formValues, overriddenWidgetState]
@@ -93,30 +98,12 @@ const useBuildUiWidgets = (
 // As validation schema depends on what path of oneOf is currently selected in jsonschema
 const useConstructValidationSchema = (
   uiWidgetsInfo: WidgetConfigMap,
-  jsonSchema?: JSONSchema7
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): yup.ObjectSchema<any> => {
-  return useMemo(() => {
-    let validationShape: yup.ObjectSchema = yup.object().shape({
-      name: yup.string().required("form.empty.error"),
-      serviceType: yup.string().required("form.empty.error"),
-    });
-
-    // We have additional fields. Lets build schema for them
-    if (jsonSchema?.properties) {
-      validationShape = validationShape.shape({
-        connectionConfiguration: buildYupFormForJsonSchema(
-          jsonSchema,
-          uiWidgetsInfo,
-          undefined,
-          "connectionConfiguration"
-        ),
-      });
-    }
-
-    return validationShape;
-  }, [uiWidgetsInfo, jsonSchema]);
-};
+  jsonSchema: JSONSchema7
+): yup.Schema<ServiceFormValues> =>
+  useMemo(() => buildYupFormForJsonSchema(jsonSchema, uiWidgetsInfo), [
+    uiWidgetsInfo,
+    jsonSchema,
+  ]);
 
 const usePatchFormik = (): void => {
   const {
