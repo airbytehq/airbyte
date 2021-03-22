@@ -267,7 +267,7 @@ public abstract class JdbcSourceStandardTest {
 
   @Test
   void testReadOneColumn() throws Exception {
-    final ConfiguredAirbyteCatalog catalog = CatalogHelpers.createConfiguredAirbyteCatalog(streamName, Field.of("id", JsonSchemaPrimitive.NUMBER));
+    final ConfiguredAirbyteCatalog catalog = CatalogHelpers.createConfiguredAirbyteCatalog(streamName, Field.of("ID", JsonSchemaPrimitive.NUMBER));
 
     final List<AirbyteMessage> actualMessages = MoreIterators.toList(source.read(config, catalog, null));
 
@@ -276,8 +276,8 @@ public abstract class JdbcSourceStandardTest {
     final List<AirbyteMessage> expectedMessages = getTestMessages().stream()
         .map(Jsons::clone)
         .peek(m -> {
-          ((ObjectNode) m.getRecord().getData()).remove("name");
-          ((ObjectNode) m.getRecord().getData()).remove("updated_at");
+          ((ObjectNode) m.getRecord().getData()).remove("NAME");
+          ((ObjectNode) m.getRecord().getData()).remove("UPDATED_AT");
         })
         .collect(Collectors.toList());
     assertEquals(expectedMessages, actualMessages);
@@ -342,8 +342,8 @@ public abstract class JdbcSourceStandardTest {
         .map(Jsons::clone)
         .peek(m -> {
           m.getRecord().setStream(streamForTableWithSpaces.getStream().getName());
-          ((ObjectNode) m.getRecord().getData()).set("last name", ((ObjectNode) m.getRecord().getData()).remove("name"));
-          ((ObjectNode) m.getRecord().getData()).remove("updated_at");
+          ((ObjectNode) m.getRecord().getData()).set("LAST NAME", ((ObjectNode) m.getRecord().getData()).remove("NAME"));
+          ((ObjectNode) m.getRecord().getData()).remove("UPDATED_AT");
         })
         .collect(Collectors.toList());
     final List<AirbyteMessage> expectedMessages = new ArrayList<>(getTestMessages());
@@ -365,7 +365,7 @@ public abstract class JdbcSourceStandardTest {
   @Test
   void testIncrementalNoPreviousState() throws Exception {
     incrementalCursorCheck(
-        "id",
+        "ID",
         null,
         "3",
         Lists.newArrayList(getTestMessages()));
@@ -374,7 +374,7 @@ public abstract class JdbcSourceStandardTest {
   @Test
   void testIncrementalIntCheckCursor() throws Exception {
     incrementalCursorCheck(
-        "id",
+        "ID",
         "2",
         "3",
         Lists.newArrayList(getTestMessages().get(2)));
@@ -383,7 +383,7 @@ public abstract class JdbcSourceStandardTest {
   @Test
   void testIncrementalStringCheckCursor() throws Exception {
     incrementalCursorCheck(
-        "name",
+        "NAME",
         "patent",
         "vash",
         Lists.newArrayList(getTestMessages().get(0), getTestMessages().get(2)));
@@ -395,19 +395,19 @@ public abstract class JdbcSourceStandardTest {
 
     final AirbyteMessage firstMessage = getTestMessages().get(0);
     firstMessage.getRecord().setStream(streamWithSpaces.getStream().getName());
-    ((ObjectNode) firstMessage.getRecord().getData()).remove("updated_at");
-    ((ObjectNode) firstMessage.getRecord().getData()).set("last name", ((ObjectNode) firstMessage.getRecord().getData()).remove("name"));
+    ((ObjectNode) firstMessage.getRecord().getData()).remove("UPDATED_AT");
+    ((ObjectNode) firstMessage.getRecord().getData()).set("LAST NAME", ((ObjectNode) firstMessage.getRecord().getData()).remove("NAME"));
 
     final AirbyteMessage secondMessage = getTestMessages().get(2);
     secondMessage.getRecord().setStream(streamWithSpaces.getStream().getName());
-    ((ObjectNode) secondMessage.getRecord().getData()).remove("updated_at");
-    ((ObjectNode) secondMessage.getRecord().getData()).set("last name", ((ObjectNode) secondMessage.getRecord().getData()).remove("name"));
+    ((ObjectNode) secondMessage.getRecord().getData()).remove("UPDATED_AT");
+    ((ObjectNode) secondMessage.getRecord().getData()).set("LAST NAME", ((ObjectNode) secondMessage.getRecord().getData()).remove("NAME"));
 
     Lists.newArrayList(getTestMessages().get(0), getTestMessages().get(2));
 
     incrementalCursorCheck(
-        "last name",
-        "last name",
+        "LAST NAME",
+        "LAST NAME",
         "patent",
         "vash",
         Lists.newArrayList(firstMessage, secondMessage),
@@ -417,17 +417,17 @@ public abstract class JdbcSourceStandardTest {
   @Test
   void testIncrementalTimestampCheckCursor() throws Exception {
     incrementalCursorCheck(
-        "updated_at",
-        "2005-10-18T00:00:00Z",
-        "2006-10-19T00:00:00Z",
+        "UPDATED_AT",
+        "2005-10-18",
+        "2006-10-19",
         Lists.newArrayList(getTestMessages().get(1), getTestMessages().get(2)));
   }
 
   @Test
   void testIncrementalCursorChanges() throws Exception {
     incrementalCursorCheck(
-        "id",
-        "name",
+        "ID",
+        "NAME",
         // cheesing this value a little bit. in the correct implementation this initial cursor value should
         // be ignored because the cursor field changed. setting it to a value that if used, will cause
         // records to (incorrectly) be filtered out.
@@ -441,7 +441,7 @@ public abstract class JdbcSourceStandardTest {
     final ConfiguredAirbyteCatalog configuredCatalog = getConfiguredCatalog();
     configuredCatalog.getStreams().forEach(airbyteStream -> {
       airbyteStream.setSyncMode(SyncMode.INCREMENTAL);
-      airbyteStream.setCursorField(Lists.newArrayList("id"));
+      airbyteStream.setCursorField(Lists.newArrayList("ID"));
     });
 
     final JdbcState state = new JdbcState().withStreams(Lists.newArrayList(new JdbcStreamState().withStreamName(streamName)));
@@ -464,17 +464,17 @@ public abstract class JdbcSourceStandardTest {
     final List<AirbyteMessage> expectedMessages = new ArrayList<>();
     expectedMessages.add(new AirbyteMessage().withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage().withStream(streamName)
-            .withData(Jsons.jsonNode(ImmutableMap.of("id", 4, "name", "riker", "updated_at", "2006-10-19T00:00:00Z")))));
+            .withData(Jsons.jsonNode(ImmutableMap.of("ID", 4, "NAME", "riker", "UPDATED_AT", "2006-10-19T00:00:00Z")))));
     expectedMessages.add(new AirbyteMessage().withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage().withStream(streamName)
-            .withData(Jsons.jsonNode(ImmutableMap.of("id", 5, "name", "data", "updated_at", "2006-10-19T00:00:00Z")))));
+            .withData(Jsons.jsonNode(ImmutableMap.of("ID", 5, "NAME", "data", "UPDATED_AT", "2006-10-19T00:00:00Z")))));
     expectedMessages.add(new AirbyteMessage()
         .withType(Type.STATE)
         .withState(new AirbyteStateMessage()
             .withData(Jsons.jsonNode(new JdbcState()
                 .withStreams(Lists.newArrayList(new JdbcStreamState()
                     .withStreamName(streamName)
-                    .withCursorField(ImmutableList.of("id"))
+                    .withCursorField(ImmutableList.of("ID"))
                     .withCursor("5")))))));
 
     setEmittedAtToNull(actualMessagesSecondSync);
@@ -484,7 +484,7 @@ public abstract class JdbcSourceStandardTest {
 
   @Test
   void testReadMultipleTablesIncrementally() throws Exception {
-    final String tableName2 = TABLE_NAME + 2;
+    final String tableName2 = TABLE_NAME + 20;
     final String streamName2 = streamName + 2;
     database.execute(ctx -> {
       ctx.createStatement().execute(String.format("CREATE TABLE %s(id INTEGER, name VARCHAR(200))", getFullyQualifiedTableName(tableName2)));
@@ -499,11 +499,11 @@ public abstract class JdbcSourceStandardTest {
     final ConfiguredAirbyteCatalog configuredCatalog = getConfiguredCatalog();
     configuredCatalog.getStreams().add(CatalogHelpers.createConfiguredAirbyteStream(
         streamName2,
-        Field.of("id", JsonSchemaPrimitive.NUMBER),
-        Field.of("name", JsonSchemaPrimitive.STRING)));
+        Field.of("ID", JsonSchemaPrimitive.NUMBER),
+        Field.of("NAME", JsonSchemaPrimitive.STRING)));
     configuredCatalog.getStreams().forEach(airbyteStream -> {
       airbyteStream.setSyncMode(SyncMode.INCREMENTAL);
-      airbyteStream.setCursorField(Lists.newArrayList("id"));
+      airbyteStream.setCursorField(Lists.newArrayList("ID"));
     });
 
     final JdbcState state = new JdbcState().withStreams(Lists.newArrayList(new JdbcStreamState().withStreamName(streamName)));
@@ -522,7 +522,7 @@ public abstract class JdbcSourceStandardTest {
         .map(Jsons::clone)
         .peek(m -> {
           m.getRecord().setStream(streamName2);
-          ((ObjectNode) m.getRecord().getData()).remove("updated_at");
+          ((ObjectNode) m.getRecord().getData()).remove("UPDATED_AT");
         })
         .collect(Collectors.toList());
     final List<AirbyteMessage> expectedMessagesFirstSync = new ArrayList<>(getTestMessages());
@@ -533,11 +533,11 @@ public abstract class JdbcSourceStandardTest {
                 .withStreams(Lists.newArrayList(
                     new JdbcStreamState()
                         .withStreamName(streamName)
-                        .withCursorField(ImmutableList.of("id"))
+                        .withCursorField(ImmutableList.of("ID"))
                         .withCursor("3"),
                     new JdbcStreamState()
                         .withStreamName(streamName2)
-                        .withCursorField(ImmutableList.of("id"))))))));
+                        .withCursorField(ImmutableList.of("ID"))))))));
     expectedMessagesFirstSync.addAll(secondStreamExpectedMessages);
     expectedMessagesFirstSync.add(new AirbyteMessage()
         .withType(Type.STATE)
@@ -546,11 +546,11 @@ public abstract class JdbcSourceStandardTest {
                 .withStreams(Lists.newArrayList(
                     new JdbcStreamState()
                         .withStreamName(streamName)
-                        .withCursorField(ImmutableList.of("id"))
+                        .withCursorField(ImmutableList.of("ID"))
                         .withCursor("3"),
                     new JdbcStreamState()
                         .withStreamName(streamName2)
-                        .withCursorField(ImmutableList.of("id"))
+                        .withCursorField(ImmutableList.of("ID"))
                         .withCursor("3")))))));
     setEmittedAtToNull(actualMessagesFirstSync);
 
@@ -622,9 +622,9 @@ public abstract class JdbcSourceStandardTest {
   private static AirbyteCatalog getCatalog() {
     return new AirbyteCatalog().withStreams(Lists.newArrayList(CatalogHelpers.createAirbyteStream(
         streamName,
-        Field.of("id", JsonSchemaPrimitive.NUMBER),
-        Field.of("name", JsonSchemaPrimitive.STRING),
-        Field.of("updated_at", JsonSchemaPrimitive.STRING))
+        Field.of("ID", JsonSchemaPrimitive.NUMBER),
+        Field.of("NAME", JsonSchemaPrimitive.STRING),
+        Field.of("UPDATED_AT", JsonSchemaPrimitive.STRING))
         .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))));
   }
 

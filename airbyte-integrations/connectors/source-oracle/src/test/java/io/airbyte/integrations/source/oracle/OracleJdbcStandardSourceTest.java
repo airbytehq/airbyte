@@ -46,7 +46,6 @@ class OracleJdbcStandardSourceTest extends JdbcSourceStandardTest {
   private static OracleContainer ORACLE_DB;
 
   private JsonNode config;
-  private static final String SCHEMA_NAME = "SYSTEM";
 
   @BeforeAll
   static void init() {
