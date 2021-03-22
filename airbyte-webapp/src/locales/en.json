@@ -40,6 +40,9 @@
   "form.change": "Change",
   "form.add": "Add",
   "form.saveChanges": "Save changes",
+  "form.saveChangesAndTest": "Save changes and test",
+  "form.sourceRetest": "Retest source",
+  "form.destinationRetest": "Retest destination",
   "form.discardChanges": "Discard changes",
   "form.every": "Every {value}",
   "form.testingConnection": "Testing connection...",
@@ -73,6 +76,8 @@
   "form.prefix": "Namespace Prefix",
   "form.prefix.message": "Where to replicate your data to in your destination",
   "form.prefix.placeholder": "/configured-setting",
+  "form.addItems": "Add",
+  "form.items": "Items",
 
   "preferences.title": "Specify your preferences",
   "preferences.anonymizeUsage": "Anonymize usage data collection",

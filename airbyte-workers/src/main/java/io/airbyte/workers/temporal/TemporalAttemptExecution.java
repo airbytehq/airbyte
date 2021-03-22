@@ -55,8 +55,8 @@ public class TemporalAttemptExecution<T> implements CheckedSupplier<T, TemporalJ
 
   private final Path jobRoot;
   private final CheckedFunction<Path, T, Exception> execution;
-  private final long jobId;
-  private final BiConsumer<Path, Long> mdcSetter;
+  private final String jobId;
+  private final BiConsumer<Path, String> mdcSetter;
   private final CheckedConsumer<Path, IOException> jobRootDirCreator;
   private final Supplier<String> workflowIdProvider;
 
@@ -69,15 +69,15 @@ public class TemporalAttemptExecution<T> implements CheckedSupplier<T, TemporalJ
   public TemporalAttemptExecution(Path workspaceRoot,
                                   JobRunConfig jobRunConfig,
                                   CheckedFunction<Path, T, Exception> execution,
-                                  BiConsumer<Path, Long> mdcSetter,
+                                  BiConsumer<Path, String> mdcSetter,
                                   CheckedConsumer<Path, IOException> jobRootDirCreator,
                                   Supplier<String> workflowIdProvider) {
-    this.workflowIdProvider = workflowIdProvider;
-    this.jobRoot = WorkerUtils.getJobRoot(workspaceRoot, jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
+    this.jobRoot = WorkerUtils.getJobRoot(workspaceRoot, String.valueOf(jobRunConfig.getJobId()), jobRunConfig.getAttemptId());
     this.execution = execution;
-    this.jobId = jobRunConfig.getJobId();
+    this.jobId = String.valueOf(jobRunConfig.getJobId());
     this.mdcSetter = mdcSetter;
     this.jobRootDirCreator = jobRootDirCreator;
+    this.workflowIdProvider = workflowIdProvider;
   }
 
   @Override
