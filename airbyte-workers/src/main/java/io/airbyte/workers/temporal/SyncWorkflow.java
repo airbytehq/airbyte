@@ -24,11 +24,13 @@
 
 package io.airbyte.workers.temporal;
 
+import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.DefaultSyncWorker;
+import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
@@ -40,6 +42,7 @@ import io.airbyte.workers.protocols.airbyte.DefaultAirbyteDestination;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteSource;
 import io.airbyte.workers.protocols.airbyte.EmptyAirbyteSource;
 import io.airbyte.workers.protocols.airbyte.NamespacingMapper;
+import io.temporal.activity.ActivityCancellationType;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
 import io.temporal.activity.ActivityOptions;
@@ -48,6 +51,9 @@ import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.function.Supplier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @WorkflowInterface
 public interface SyncWorkflow {
@@ -61,10 +67,12 @@ public interface SyncWorkflow {
 
   class WorkflowImpl implements SyncWorkflow {
 
-    final ActivityOptions options = ActivityOptions.newBuilder()
+    private final ActivityOptions options = ActivityOptions.newBuilder()
         .setScheduleToCloseTimeout(Duration.ofDays(3))
+        .setCancellationType(ActivityCancellationType.WAIT_CANCELLATION_COMPLETED)
         .setRetryOptions(TemporalUtils.NO_RETRY)
         .build();
+
     private final SyncActivity activity = Workflow.newActivityStub(SyncActivity.class, options);
 
     @Override
@@ -92,6 +100,8 @@ public interface SyncWorkflow {
 
   class SyncActivityImpl implements SyncActivity {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(SyncActivityImpl.class);
+
     private final ProcessBuilderFactory pbf;
     private final Path workspaceRoot;
 
@@ -106,7 +116,24 @@ public interface SyncWorkflow {
                                   StandardSyncInput syncInput)
         throws TemporalJobException {
 
-      return new TemporalAttemptExecution<>(workspaceRoot, jobRunConfig, (jobRoot) -> {
+      final Supplier<StandardSyncInput> inputSupplier = () -> syncInput;
+
+      final TemporalAttemptExecution<StandardSyncInput, StandardSyncOutput> temporalAttemptExecution = new TemporalAttemptExecution<>(
+          workspaceRoot,
+          jobRunConfig,
+          getWorkerFactory(sourceLauncherConfig, destinationLauncherConfig, jobRunConfig, syncInput),
+          inputSupplier,
+          new CancellationHandler.TemporalCancellationHandler());
+
+      return temporalAttemptExecution.get();
+    }
+
+    private CheckedSupplier<Worker<StandardSyncInput, StandardSyncOutput>, Exception> getWorkerFactory(
+                                                                                                       IntegrationLauncherConfig sourceLauncherConfig,
+                                                                                                       IntegrationLauncherConfig destinationLauncherConfig,
+                                                                                                       JobRunConfig jobRunConfig,
+                                                                                                       StandardSyncInput syncInput) {
+      return () -> {
         final IntegrationLauncher sourceLauncher = new AirbyteIntegrationLauncher(
             sourceLauncherConfig.getJobId(),
             Math.toIntExact(sourceLauncherConfig.getAttemptId()),
@@ -133,8 +160,8 @@ public interface SyncWorkflow {
             NormalizationRunnerFactory.create(
                 destinationLauncherConfig.getDockerImage(),
                 pbf,
-                syncInput.getDestinationConfiguration())).run(syncInput, jobRoot);
-      }).get();
+                syncInput.getDestinationConfiguration()));
+      };
     }
 
   }
