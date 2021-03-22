@@ -40,13 +40,9 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.MySQLContainer;
 
 class MySqlJdbcStandardTest extends JdbcSourceStandardTest {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(MySqlJdbcStandardTest.class);
 
   private static final String TEST_USER = "test";
   private static final String TEST_PASSWORD = "test";
@@ -93,8 +89,6 @@ class MySqlJdbcStandardTest extends JdbcSourceStandardTest {
     });
     database.close();
 
-    container.getEnv().forEach(
-        s -> LOGGER.info("Env: {}", s));
     super.setup();
   }
 
