@@ -94,16 +94,16 @@ const TreeViewRow: React.FC<IProps> = ({ streamNode, updateItem }) => {
           />
           <Cell />
           <StyledCell title={config.aliasName}>{config.aliasName}</StyledCell>
-          <StyledCell>
+          <Cell>
             <ExpandFieldCell onExpand={onExpand} isItemOpen={isItemOpen}>
               PK HERE
             </ExpandFieldCell>
-          </StyledCell>
-          <StyledCell>
+          </Cell>
+          <Cell>
             <ExpandFieldCell onExpand={onExpand} isItemOpen={isItemOpen}>
               Cursor Field HERE
             </ExpandFieldCell>
-          </StyledCell>
+          </Cell>
           <SyncSettingsCell
             streamNode={streamNode}
             fields={fields}

@@ -78,6 +78,7 @@
   "form.prefix": "Namespace Prefix",
   "form.prefix.message": "Where to replicate your data to in your destination",
   "form.prefix.placeholder": "/configured-setting",
+  "form.searchName": "Search name",
 
   "preferences.title": "Specify your preferences",
   "preferences.anonymizeUsage": "Anonymize usage data collection",

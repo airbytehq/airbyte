@@ -35,6 +35,11 @@ const Content = styled.div`
   min-height: 100%;
 `;
 
+const Main = styled.div`
+  width: 100%;
+  overflow: hidden;
+`;
+
 const Img = styled.img`
   text-align: center;
   width: 100%;
@@ -216,7 +221,7 @@ const OnboardingPage: React.FC = () => {
 
   return (
     <Content>
-      <div>
+      <Main>
         <Img src="/welcome.svg" height={132} />
         <MainTitle center>
           <FormattedMessage id="onboarding.title" />
@@ -237,7 +242,7 @@ const OnboardingPage: React.FC = () => {
           <PlayIcon icon={faPlay} />
           <FormattedMessage id="onboarding.tutorial" />
         </TutorialLink>
-      </div>
+      </Main>
       <Version />
     </Content>
   );

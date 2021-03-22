@@ -1,5 +1,5 @@
 import React from "react";
-// import { FormattedMessage } from "react-intl";
+import { useIntl } from "react-intl";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
@@ -8,6 +8,7 @@ import { CheckBox, Input } from "components";
 
 type IProps = {
   onCheckAll: () => void;
+  onSearch: (value: string) => void;
   hasSelectedItem: boolean;
 };
 
@@ -39,13 +40,24 @@ const SearchContent = styled.div`
   }
 `;
 
-const Search: React.FC<IProps> = ({ onCheckAll, hasSelectedItem }) => {
+const Search: React.FC<IProps> = ({
+  onCheckAll,
+  hasSelectedItem,
+  onSearch,
+}) => {
+  const formatMessage = useIntl().formatMessage;
+
   return (
     <Content>
       <CheckBox onClick={onCheckAll} checked={hasSelectedItem} />
       <SearchContent>
         <SearchIcon icon={faSearch} />
-        <SearchInput />
+        <SearchInput
+          placeholder={formatMessage({
+            id: `form.searchName`,
+          })}
+          onChange={(e) => onSearch(e.target.value)}
+        />
       </SearchContent>
     </Content>
   );

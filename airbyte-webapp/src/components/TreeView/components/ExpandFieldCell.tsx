@@ -2,12 +2,14 @@ import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCaretDown } from "@fortawesome/free-solid-svg-icons";
 import styled from "styled-components";
+import Tooltip from "./Tooltip";
 
 const Content = styled.div`
   font-style: normal;
   font-weight: normal;
   font-size: 10px;
   cursor: pointer;
+  position: relative;
 `;
 
 const Arrow = styled(FontAwesomeIcon)<{ isOpen?: boolean }>`
@@ -23,16 +25,21 @@ type IProps = {
   isItemOpen?: boolean;
   children?: React.ReactNode;
   onExpand?: () => void;
+  tooltipItems?: string[];
 };
 
 const ExpandFieldCell: React.FC<IProps> = ({
   onExpand,
   children,
   isItemOpen,
+  tooltipItems,
 }) => {
   return (
     <Content onClick={onExpand}>
       {children} <Arrow icon={faCaretDown} isOpen={isItemOpen} />
+      {tooltipItems && tooltipItems.length ? (
+        <Tooltip items={tooltipItems} />
+      ) : null}
     </Content>
   );
 };

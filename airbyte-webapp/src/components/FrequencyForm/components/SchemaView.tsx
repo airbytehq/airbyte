@@ -43,11 +43,25 @@ const SchemaView: React.FC<IProps> = ({ schema, onChangeSchema }) => {
     onChangeSchema({ streams: newSchema });
   }, [hasSelectedItem, onChangeSchema, schema.streams]);
 
+  const onSearch = useCallback((value: string) => {
+    // TODO: add search func
+    console.log(value);
+    // setCurrentSchema({
+    //   streams: schema.streams.filter((stream) =>
+    //     stream.stream.name.toLowerCase().includes(value.toLowerCase())
+    //   ),
+    // });
+  }, []);
+
   return (
     <>
       <SchemaHeader>
         <Cell flex={2}>
-          <Search onCheckAll={onCheckAll} hasSelectedItem={hasSelectedItem} />
+          <Search
+            onCheckAll={onCheckAll}
+            onSearch={onSearch}
+            hasSelectedItem={hasSelectedItem}
+          />
         </Cell>
         <LightCell>
           <FormattedMessage id="form.dataType" />
