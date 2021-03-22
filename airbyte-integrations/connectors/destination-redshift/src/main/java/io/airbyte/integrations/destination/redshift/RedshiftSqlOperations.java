@@ -90,8 +90,6 @@ public class RedshiftSqlOperations extends DefaultSqlOperations implements SqlOp
         s3KeyId, s3Key,
         s3Region);
 
-    System.out.println(copyQuery);
-
     database.execute(copyQuery);
   }
 

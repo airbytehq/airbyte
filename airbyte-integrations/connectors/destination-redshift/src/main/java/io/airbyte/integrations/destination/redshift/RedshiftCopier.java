@@ -58,6 +58,7 @@ public class RedshiftCopier {
   // per table with a 10MB part size limit.
   private static final int PART_SIZE_MB = 10;
 
+  private final String s3BucketName;
   private final String runFolder;
   private final SyncMode syncMode;
   private final String schemaName;
@@ -72,7 +73,8 @@ public class RedshiftCopier {
   private final MultiPartOutputStream outputStream;
   private final CSVPrinter csvPrinter;
 
-  public RedshiftCopier(String runFolder,
+  public RedshiftCopier(
+                        String runFolder,
                         SyncMode syncMode,
                         String schema,
                         String streamName,
@@ -82,6 +84,24 @@ public class RedshiftCopier {
                         String s3key,
                         String s3Region)
       throws IOException {
+    this(RedshiftCopyDestination.DEFAULT_AIRBYTE_STAGING_S3_BUCKET, runFolder, syncMode, schema, streamName, client, database, s3KeyId, s3key,
+        s3Region);
+  }
+
+  @VisibleForTesting
+  public RedshiftCopier(
+                        String s3BucketName,
+                        String runFolder,
+                        SyncMode syncMode,
+                        String schema,
+                        String streamName,
+                        AmazonS3 client,
+                        JdbcDatabase database,
+                        String s3KeyId,
+                        String s3key,
+                        String s3Region)
+      throws IOException {
+    this.s3BucketName = s3BucketName;
     this.runFolder = runFolder;
     this.syncMode = syncMode;
     this.schemaName = schema;
@@ -100,7 +120,7 @@ public class RedshiftCopier {
     // configured part size.
     // Memory consumption is queue capacity * part size = 10 * 10 = 100 MB at current configurations.
     this.multipartUploadManager =
-        new StreamTransferManager(RedshiftCopyDestination.DEFAULT_AIRBYTE_STAGING_S3_BUCKET, getPath(runFolder, streamName), client)
+        new StreamTransferManager(s3BucketName, getPath(runFolder, streamName), client)
             .numUploadThreads(DEFAULT_UPLOAD_THREADS)
             .queueCapacity(DEFAULT_QUEUE_CAPACITY)
             .partSize(PART_SIZE_MB);
@@ -138,14 +158,12 @@ public class RedshiftCopier {
     }
   }
 
-  @VisibleForTesting
-  static String getPath(String runFolder, String key) {
+  private static String getPath(String runFolder, String key) {
     return String.join("/", runFolder, key);
   }
 
-  @VisibleForTesting
-  static String getFullS3Path(String runFolder, String key) {
-    return String.join("/", "s3:/", RedshiftCopyDestination.DEFAULT_AIRBYTE_STAGING_S3_BUCKET, runFolder, key);
+  private static String getFullS3Path(String s3BucketName, String runFolder, String key) {
+    return String.join("/", "s3:/", s3BucketName, runFolder, key);
   }
 
   private void closeS3WriteStreamAndUpload() throws IOException {
@@ -160,7 +178,7 @@ public class RedshiftCopier {
     LOGGER.info("Preparing tmp table in destination for stream {}. tmp table name: {}.", streamName, tmpTableName);
     sqlOp.createTableIfNotExists(database, schemaName, tmpTableName);
     LOGGER.info("Starting copy to tmp table {} in destination for stream {} .", tmpTableName, streamName);
-    sqlOp.copyS3CsvFileIntoTable(database, getFullS3Path(runFolder, streamName), schemaName, tmpTableName, s3KeyId, s3Key, s3Region);
+    sqlOp.copyS3CsvFileIntoTable(database, getFullS3Path(s3BucketName, runFolder, streamName), schemaName, tmpTableName, s3KeyId, s3Key, s3Region);
     LOGGER.info("Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);
   }
 
@@ -184,15 +202,12 @@ public class RedshiftCopier {
   private void removeS3FileAndDropTmpTable(String tmpTableName, SqlOperations sqlOp) throws Exception {
     var s3StagingFile = getPath(runFolder, streamName);
     LOGGER.info("Begin cleaning s3 staging file {}.", s3StagingFile);
-    s3Client.deleteObject(RedshiftCopyDestination.DEFAULT_AIRBYTE_STAGING_S3_BUCKET, getPath(runFolder, streamName));
+    s3Client.deleteObject(s3BucketName, getPath(runFolder, streamName));
     LOGGER.info("S3 staging file {} cleaned.", s3StagingFile);
 
     LOGGER.info("Begin cleaning {} tmp table in destination.", tmpTableName);
     sqlOp.dropTableIfExists(database, schemaName, tmpTableName);
     LOGGER.info("{} tmp table in destination cleaned.", tmpTableName);
-  }
-
-  public static void main(String[] args) throws IOException {
   }
 
 }

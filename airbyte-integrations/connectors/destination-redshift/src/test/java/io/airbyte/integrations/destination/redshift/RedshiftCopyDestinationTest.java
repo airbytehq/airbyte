@@ -27,12 +27,7 @@ package io.airbyte.integrations.destination.redshift;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.AnonymousAWSCredentials;
-import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import io.findify.s3mock.S3Mock;
 import java.io.IOException;
 import java.net.ServerSocket;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,23 +45,9 @@ public class RedshiftCopyDestinationTest {
 
   @BeforeEach
   void setUp() {
-    s3Port = findFreeLocalPort();
-    S3Mock api = new S3Mock.Builder().withPort(s3Port).withInMemoryBackend().build();
-    api.start();
-
-    var endpoint = new EndpointConfiguration("http://localhost:" + s3Port, DEFAULT_REGION);
-    client = AmazonS3ClientBuilder
-        .standard()
-        // required to overcome S3 default DNS-based bucket access scheme resulting in attempts to connect
-        // to addresses like "bucketname.localhost"
-        // which requires specific DNS setup.
-        .withPathStyleAccessEnabled(true)
-        .withEndpointConfiguration(endpoint)
-        // this mock implementation ignores authentication/permissions
-        .withCredentials(new AWSStaticCredentialsProvider(new AnonymousAWSCredentials()))
-        .build();
+    s3Port = InMemLocalS3.setUpLocalS3AndGetPort();
+    client = InMemLocalS3.getLocalS3Client(s3Port, DEFAULT_REGION);
   }
-
 
   @Nested
   @DisplayName("When creating staging bucket")
