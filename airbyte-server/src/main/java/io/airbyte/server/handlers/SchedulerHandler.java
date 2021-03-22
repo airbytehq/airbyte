@@ -304,7 +304,7 @@ public class SchedulerHandler {
     // second cancel the temporal execution
     // TODO: this is hacky, resolve https://github.com/airbytehq/airbyte/issues/2564 to avoid this
     // behavior
-    final Path attemptParentDir = WorkerUtils.getJobRoot(workspaceRoot, jobId, 0L).getParent();
+    final Path attemptParentDir = WorkerUtils.getJobRoot(workspaceRoot, String.valueOf(jobId), 0L).getParent();
     final String workflowId = IOs.readFile(attemptParentDir, TemporalAttemptExecution.WORKFLOW_ID_FILENAME);
     final WorkflowExecution workflowExecution = WorkflowExecution.newBuilder()
         .setWorkflowId(workflowId)
