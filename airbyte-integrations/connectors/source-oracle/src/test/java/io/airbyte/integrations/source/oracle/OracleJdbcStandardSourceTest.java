@@ -51,6 +51,10 @@ class OracleJdbcStandardSourceTest extends JdbcSourceStandardTest {
   static void init() {
     ORACLE_DB = new OracleContainer("epiclabs/docker-oracle-xe-11g");
     ORACLE_DB.start();
+
+
+    // alter session to receive date yyyy-mm-dd
+    // create user public to insert data
   }
 
   @BeforeEach
