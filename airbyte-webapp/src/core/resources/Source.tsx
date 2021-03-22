@@ -11,7 +11,7 @@ export interface Source {
   connectionConfiguration: ConnectionConfiguration;
 }
 
-export default class SourceResource extends BaseResource implements Source {
+export class SourceResource extends BaseResource implements Source {
   readonly sourceId: string = "";
   readonly name: string = "";
   readonly sourceName: string = "";
@@ -63,3 +63,5 @@ export default class SourceResource extends BaseResource implements Source {
     };
   }
 }
+
+export default SourceResource;

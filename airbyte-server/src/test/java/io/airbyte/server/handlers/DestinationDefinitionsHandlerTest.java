@@ -41,7 +41,7 @@ import io.airbyte.api.model.DestinationDefinitionUpdate;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.scheduler.client.CachingSchedulerJobClient;
+import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
 import io.airbyte.server.errors.KnownException;
 import io.airbyte.server.services.AirbyteGithubStore;
 import io.airbyte.server.validators.DockerImageValidator;
@@ -63,7 +63,7 @@ class DestinationDefinitionsHandlerTest {
   private StandardDestinationDefinition destination;
   private DestinationDefinitionsHandler destinationHandler;
   private Supplier<UUID> uuidSupplier;
-  private CachingSchedulerJobClient schedulerJobClient;
+  private CachingSynchronousSchedulerClient schedulerSynchronousClient;
   private AirbyteGithubStore githubStore;
 
   @SuppressWarnings("unchecked")
@@ -73,10 +73,11 @@ class DestinationDefinitionsHandlerTest {
     uuidSupplier = mock(Supplier.class);
     dockerImageValidator = mock(DockerImageValidator.class);
     destination = generateDestination();
-    schedulerJobClient = spy(CachingSchedulerJobClient.class);
+    schedulerSynchronousClient = spy(CachingSynchronousSchedulerClient.class);
     githubStore = mock(AirbyteGithubStore.class);
 
-    destinationHandler = new DestinationDefinitionsHandler(configRepository, dockerImageValidator, uuidSupplier, schedulerJobClient, githubStore);
+    destinationHandler =
+        new DestinationDefinitionsHandler(configRepository, dockerImageValidator, uuidSupplier, schedulerSynchronousClient, githubStore);
   }
 
   private StandardDestinationDefinition generateDestination() {
@@ -177,7 +178,7 @@ class DestinationDefinitionsHandlerTest {
 
     assertEquals(newDockerImageTag, sourceRead.getDockerImageTag());
     verify(dockerImageValidator).assertValidIntegrationImage(dockerRepository, newDockerImageTag);
-    verify(schedulerJobClient).resetCache();
+    verify(schedulerSynchronousClient).resetCache();
   }
 
   @Nested

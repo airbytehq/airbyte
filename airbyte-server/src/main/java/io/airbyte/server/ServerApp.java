@@ -38,7 +38,10 @@ import io.airbyte.config.persistence.DefaultConfigPersistence;
 import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
-import io.airbyte.scheduler.client.SpecCachingSchedulerJobClient;
+import io.airbyte.scheduler.JobTracker;
+import io.airbyte.scheduler.client.DefaultSchedulerJobClient;
+import io.airbyte.scheduler.client.DefaultSynchronousSchedulerClient;
+import io.airbyte.scheduler.client.SpecCachingSynchronousSchedulerClient;
 import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
@@ -50,6 +53,7 @@ import io.airbyte.server.errors.KnownExceptionMapper;
 import io.airbyte.server.errors.NotFoundExceptionMapper;
 import io.airbyte.server.errors.UncaughtExceptionMapper;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.temporal.TemporalClient;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
@@ -93,7 +97,10 @@ public class ServerApp {
 
     Map<String, String> mdc = MDC.getCopyOfContextMap();
 
-    ConfigurationApiFactory.setSchedulerJobClient(new SpecCachingSchedulerJobClient(jobPersistence, new DefaultJobCreator(jobPersistence)));
+    ConfigurationApiFactory.setSchedulerJobClient(new DefaultSchedulerJobClient(jobPersistence, new DefaultJobCreator(jobPersistence)));
+    final JobTracker jobTracker = new JobTracker(configRepository);
+    ConfigurationApiFactory.setSynchronousSchedulerClient(
+        new SpecCachingSynchronousSchedulerClient(new DefaultSynchronousSchedulerClient(TemporalClient.production(), jobTracker)));
     ConfigurationApiFactory.setConfigRepository(configRepository);
     ConfigurationApiFactory.setJobPersistence(jobPersistence);
     ConfigurationApiFactory.setConfigs(configs);
@@ -146,7 +153,7 @@ public class ServerApp {
   private static void setCustomerIdIfNotSet(final ConfigRepository configRepository) {
     final StandardWorkspace workspace;
     try {
-      workspace = configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID);
+      workspace = configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID, true);
 
       if (workspace.getCustomerId() == null) {
         final UUID customerId = UUID.randomUUID();

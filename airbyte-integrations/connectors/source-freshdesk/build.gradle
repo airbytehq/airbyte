@@ -16,7 +16,9 @@ airbyteStandardSourceTestFile {
     configuredCatalogPath = "sample_files/configured_catalog.json"
 }
 
+
 dependencies {
+    implementation files(project(':airbyte-integrations:bases:base-standard-source-test-file').airbyteDocker.outputs)
     implementation files(project(':airbyte-integrations:bases:base-python').airbyteDocker.outputs)
 }
 

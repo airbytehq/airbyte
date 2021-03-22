@@ -12,9 +12,7 @@ export interface Destination {
   connectionConfiguration: ConnectionConfiguration;
 }
 
-export default class DestinationResource
-  extends BaseResource
-  implements Destination {
+export class DestinationResource extends BaseResource implements Destination {
   readonly destinationId: string = "";
   readonly name: string = "";
   readonly destinationName: string = "";
@@ -66,3 +64,5 @@ export default class DestinationResource
     };
   }
 }
+
+export default DestinationResource;
