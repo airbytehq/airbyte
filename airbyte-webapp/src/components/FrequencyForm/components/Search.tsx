@@ -54,7 +54,7 @@ const Search: React.FC<IProps> = ({
         <SearchIcon icon={faSearch} />
         <SearchInput
           placeholder={formatMessage({
-            id: `form.searchName`,
+            id: `form.nameSearch`,
           })}
           onChange={(e) => onSearch(e.target.value)}
         />

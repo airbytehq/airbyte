@@ -9,29 +9,14 @@ import {
 
 import { SyncSchema } from "core/domain/catalog";
 import { NetworkError } from "core/request/NetworkError";
-import { ConnectionConfiguration } from "core/domain/connection";
+import { Source } from "./Source";
+import { Destination } from "./Destination";
 
 import BaseResource from "./BaseResource";
 
 export type ScheduleProperties = {
   units: number;
   timeUnit: string;
-};
-
-type SourceInformation = {
-  sourceDefinitionId: string;
-  sourceName: string;
-  sourceId: string;
-  name: string;
-  connectionConfiguration: ConnectionConfiguration;
-};
-
-type DestinationInformation = {
-  destinationDefinitionId: string;
-  destinationName: string;
-  destinationId: string;
-  name: string;
-  connectionConfiguration: ConnectionConfiguration;
 };
 
 export interface Connection {
@@ -43,8 +28,8 @@ export interface Connection {
   status: string;
   schedule: ScheduleProperties | null;
   syncCatalog: SyncSchema;
-  source?: SourceInformation;
-  destination?: DestinationInformation;
+  source?: Source;
+  destination?: Destination;
   lastSync?: number | null;
   isSyncing?: boolean;
 }
@@ -60,8 +45,8 @@ export default class ConnectionResource
   readonly status: string = "";
   readonly message: string = "";
   readonly schedule: ScheduleProperties | null = null;
-  readonly source: SourceInformation | undefined = undefined;
-  readonly destination: DestinationInformation | undefined = undefined;
+  readonly source: Source | undefined = undefined;
+  readonly destination: Destination | undefined = undefined;
   readonly lastSync: number | undefined | null = null;
   readonly syncCatalog: SyncSchema = { streams: [] };
   readonly isSyncing: boolean = false;

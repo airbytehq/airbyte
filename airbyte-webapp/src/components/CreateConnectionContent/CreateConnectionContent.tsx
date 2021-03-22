@@ -125,6 +125,8 @@ const CreateConnectionContent: React.FC<IProps> = ({
           onSubmit={onSubmitConnectionStep}
           errorMessage={createFormErrorMessage({ status: errorStatusRequest })}
           schema={schema}
+          source={source}
+          destination={destination}
         />
       </Suspense>
     </ContentCard>

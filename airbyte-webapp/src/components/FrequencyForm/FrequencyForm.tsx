@@ -5,6 +5,7 @@ import * as yup from "yup";
 import { Field, FieldProps, Form, Formik } from "formik";
 
 import BottomBlock from "./components/BottomBlock";
+import Connector from "./components/Connector";
 import Label from "../Label";
 import SchemaView from "./components/SchemaView";
 import { IDataItem } from "../DropDown/components/ListItem";
@@ -17,9 +18,13 @@ import { ControlLabels } from "components/LabeledControl";
 import DropDown from "../DropDown";
 import { ModalTypes } from "components/ResetDataModal/types";
 import Input from "components/Input";
+import { Source } from "core/resources/Source";
+import { Destination } from "core/resources/Destination";
 
 type IProps = {
   className?: string;
+  source?: Source;
+  destination?: Destination;
   schema: SyncSchema;
   errorMessage?: React.ReactNode;
   additionBottomControls?: React.ReactNode;
@@ -52,6 +57,12 @@ const ControlLabelsWithMargin = styled(ControlLabels)`
   margin-bottom: 29px;
 `;
 
+const ConnectorLabel = styled(ControlLabels)`
+  max-width: 247px;
+  margin-right: 20px;
+  vertical-align: top;
+`;
+
 const connectionValidationSchema = yup.object().shape({
   frequency: yup.string().required("form.empty.error"),
   prefix: yup.string(),
@@ -73,6 +84,8 @@ const FrequencyForm: React.FC<IProps> = ({
   editSchemeMode,
   isLoading,
   additionalSchemaControl,
+  source,
+  destination,
 }) => {
   const initialSchema = useInitialSchema(schema);
   const dropdownData = useFrequencyDropdownData();
@@ -107,6 +120,43 @@ const FrequencyForm: React.FC<IProps> = ({
     >
       {({ isSubmitting, setFieldValue, isValid, dirty, resetForm }) => (
         <FormContainer className={className}>
+          <ControlLabelsWithMargin>
+            <ConnectorLabel
+              label={formatMessage({
+                id: "form.sourceConnector",
+              })}
+            >
+              <Connector name={source?.name || ""} />
+            </ConnectorLabel>
+            <ConnectorLabel
+              label={formatMessage({
+                id: "form.destinationConnector",
+              })}
+            >
+              <Connector name={destination?.name || ""} />
+            </ConnectorLabel>
+            <Field name="frequency">
+              {({ field }: FieldProps<string>) => (
+                <ConnectorLabel
+                  // error={!!fieldProps.meta.error && fieldProps.meta.touched}
+                  label={formatMessage({
+                    id: "form.frequency",
+                  })}
+                >
+                  <DropDown
+                    {...field}
+                    data={dropdownData}
+                    onSelect={(item) => {
+                      if (onDropDownSelect) {
+                        onDropDownSelect(item);
+                      }
+                      setFieldValue("frequency", item.value);
+                    }}
+                  />
+                </ConnectorLabel>
+              )}
+            </Field>
+          </ControlLabelsWithMargin>
           <Field name="prefix">
             {({ field }: FieldProps<string>) => (
               <ControlLabelsWithMargin
@@ -137,31 +187,6 @@ const FrequencyForm: React.FC<IProps> = ({
               message={<FormattedMessage id="form.dataSync.message" />}
             />
           ) : null}
-          <Field name="frequency">
-            {({ field }: FieldProps<string>) => (
-              <ControlLabels
-                // error={!!fieldProps.meta.error && fieldProps.meta.touched}
-                label={formatMessage({
-                  id: "form.frequency",
-                })}
-                message={formatMessage({
-                  id: "form.frequency.message",
-                })}
-                labelAdditionLength={300}
-              >
-                <DropDown
-                  {...field}
-                  data={dropdownData}
-                  onSelect={(item) => {
-                    if (onDropDownSelect) {
-                      onDropDownSelect(item);
-                    }
-                    setFieldValue("frequency", item.value);
-                  }}
-                />
-              </ControlLabels>
-            )}
-          </Field>
           {isEditMode ? (
             <>
               <EditControls

@@ -183,6 +183,8 @@ const SettingsView: React.FC<IProps> = ({
             editSchemeMode={activeUpdatingSchemaMode}
             isLoading={isLoading}
             additionalSchemaControl={UpdateSchemaButton()}
+            source={connection.source}
+            destination={connection.destination}
           />
         ) : (
           <LoadingSchema />
