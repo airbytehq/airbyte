@@ -1,7 +1,7 @@
 FROM airbyte/integration-base-singer:0.1.0
 
 # Bash is installed for more convenient debugging.
-RUN apt-get update && apt-get install -y bash -y git -y gcc && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y bash -y gcc && rm -rf /var/lib/apt/lists/*
 
 ENV CODE_PATH="source_gitlab_singer"
 ENV AIRBYTE_IMPL_MODULE="source_gitlab_singer"

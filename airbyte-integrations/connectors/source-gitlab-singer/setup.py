@@ -31,7 +31,7 @@ setup(
     author_email="contact@airbyte.io",
     packages=find_packages(),
     install_requires=[
-        "tap-gitlab @ git+https://gitlab.com/meltano/tap-gitlab.git",
+        "tap-gitlab @ https://gitlab.com/meltano/tap-gitlab/-/archive/v0.9.14/tap-gitlab-v0.9.14.tar",
         "airbyte-protocol",
         "base-singer",
         "base-python",
