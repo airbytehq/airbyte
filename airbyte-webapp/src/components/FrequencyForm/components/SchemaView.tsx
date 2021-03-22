@@ -8,6 +8,7 @@ import { SyncSchema } from "core/domain/catalog";
 import Search from "./Search";
 
 type IProps = {
+  additionalControl?: React.ReactNode;
   schema: SyncSchema;
   onChangeSchema: (schema: SyncSchema) => void;
 };
@@ -24,7 +25,19 @@ const SchemaHeader = styled(Header)`
   margin-bottom: 5px;
 `;
 
-const SchemaView: React.FC<IProps> = ({ schema, onChangeSchema }) => {
+const SchemaTitle = styled.div`
+  display: inline-block;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 17px;
+  margin: 0 11px 13px 0;
+`;
+
+const SchemaView: React.FC<IProps> = ({
+  schema,
+  onChangeSchema,
+  additionalControl,
+}) => {
   const hasSelectedItem = useMemo(
     () => schema.streams.some((streamNode) => streamNode.config.selected),
     [schema.streams]
@@ -55,6 +68,12 @@ const SchemaView: React.FC<IProps> = ({ schema, onChangeSchema }) => {
 
   return (
     <>
+      <div>
+        <SchemaTitle>
+          <FormattedMessage id="form.dataSync" />
+        </SchemaTitle>
+        {additionalControl}
+      </div>
       <SchemaHeader>
         <Cell flex={2}>
           <Search

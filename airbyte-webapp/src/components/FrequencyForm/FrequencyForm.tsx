@@ -37,6 +37,7 @@ type IProps = {
   prefixValue?: string;
   isEditMode?: boolean;
   isLoading?: boolean;
+  additionalSchemaControl?: React.ReactNode;
 };
 
 const FormContainer = styled(Form)`
@@ -71,6 +72,7 @@ const FrequencyForm: React.FC<IProps> = ({
   onCancel,
   editSchemeMode,
   isLoading,
+  additionalSchemaControl,
 }) => {
   const initialSchema = useInitialSchema(schema);
   const dropdownData = useFrequencyDropdownData();
@@ -125,7 +127,11 @@ const FrequencyForm: React.FC<IProps> = ({
               </ControlLabelsWithMargin>
             )}
           </Field>
-          <SchemaView schema={newSchema} onChangeSchema={setNewSchema} />
+          <SchemaView
+            schema={newSchema}
+            onChangeSchema={setNewSchema}
+            additionalControl={additionalSchemaControl}
+          />
           {!isEditMode ? (
             <EditLaterMessage
               message={<FormattedMessage id="form.dataSync.message" />}

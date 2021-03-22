@@ -23,9 +23,9 @@ import Version from "components/Version";
 import { JobInfo } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
 
-const Content = styled.div`
+const Content = styled.div<{ big?: boolean }>`
   width: 100%;
-  max-width: 813px;
+  max-width: ${({ big }) => (big ? 1140 : 813)}px;
   margin: 0 auto;
   padding: 33px 0 13px;
   display: flex;
@@ -220,7 +220,7 @@ const OnboardingPage: React.FC = () => {
   };
 
   return (
-    <Content>
+    <Content big={currentStep === StepsTypes.SET_UP_CONNECTION}>
       <Main>
         <Img src="/welcome.svg" height={132} />
         <MainTitle center>

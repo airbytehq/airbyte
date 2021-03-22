@@ -1,6 +1,8 @@
 import React, { useCallback, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
 
 import ContentCard from "components/ContentCard";
 import FrequencyConfig from "data/FrequencyConfig.json";
@@ -23,6 +25,7 @@ type IProps = {
 
 const Content = styled.div`
   max-width: 1140px;
+  overflow-x: hidden;
   margin: 18px auto;
 `;
 
@@ -32,6 +35,11 @@ const TitleContainer = styled.div<{ hasButton: boolean }>`
   justify-content: space-between;
   align-items: center;
   margin: ${({ hasButton }) => (hasButton ? "-5px 0" : 0)};
+`;
+
+const TryArrow = styled(FontAwesomeIcon)`
+  margin: 0 10px -1px 0;
+  font-size: 14px;
 `;
 
 type FormValues = {
@@ -138,17 +146,24 @@ const SettingsView: React.FC<IProps> = ({
     }
   };
 
+  const UpdateSchemaButton = () => {
+    if (!activeUpdatingSchemaMode) {
+      return (
+        <Button onClick={() => setIsUpdateModalOpen(true)}>
+          <TryArrow icon={faRedoAlt} />
+          <FormattedMessage id="connection.updateSchema" />
+        </Button>
+      );
+    }
+    return null;
+  };
+
   return (
     <Content>
       <ContentCard
         title={
           <TitleContainer hasButton={!activeUpdatingSchemaMode}>
             <FormattedMessage id="connection.connectionSettings" />{" "}
-            {!activeUpdatingSchemaMode && (
-              <Button onClick={() => setIsUpdateModalOpen(true)}>
-                <FormattedMessage id="connection.updateSchema" />
-              </Button>
-            )}
           </TitleContainer>
         }
       >
@@ -167,6 +182,7 @@ const SettingsView: React.FC<IProps> = ({
             onCancel={() => setActiveUpdatingSchemaMode(false)}
             editSchemeMode={activeUpdatingSchemaMode}
             isLoading={isLoading}
+            additionalSchemaControl={UpdateSchemaButton()}
           />
         ) : (
           <LoadingSchema />

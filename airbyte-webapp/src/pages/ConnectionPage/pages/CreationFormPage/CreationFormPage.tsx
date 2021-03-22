@@ -150,7 +150,7 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
         />
       }
     >
-      <FormPageContent>
+      <FormPageContent big={currentStep === StepsTypes.CREATE_CONNECTION}>
         <ConnectionBlock
           itemFrom={source ? { name: source.name } : undefined}
           itemTo={destination ? { name: destination.name } : undefined}
