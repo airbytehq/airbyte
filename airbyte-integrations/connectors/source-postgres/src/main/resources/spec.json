@@ -10,7 +10,8 @@
       "host": {
         "title": "Host",
         "description": "Hostname of the database.",
-        "type": "string"
+        "type": "string",
+        "order": 0
       },
       "port": {
         "title": "Port",
@@ -19,23 +20,33 @@
         "minimum": 0,
         "maximum": 65536,
         "default": 5432,
-        "examples": ["5432"]
+        "examples": ["5432"],
+        "order": 1
       },
       "database": {
         "title": "DB Name",
         "description": "Name of the database.",
-        "type": "string"
+        "type": "string",
+        "order": 2
       },
       "username": {
         "title": "User",
         "description": "Username to use to access the database.",
-        "type": "string"
+        "type": "string",
+        "order": 3
       },
       "password": {
         "title": "Password",
         "description": "Password associated with the username.",
         "type": "string",
-        "airbyte_secret": true
+        "airbyte_secret": true,
+        "order": 4
+      },
+      "replication_slot": {
+        "title": "Logical Replication Slot",
+        "description": "A pgoutput replication slot to configure Airbyte for logical replication (CDC) that can detect deletes by reading the write-ahead log (WAL). Only available on Postgres 10 and above. Read the <a href=\"https://docs.airbyte.io/integrations/sources/postgres\">Postgres Source docs</a> for more information.",
+        "type": "string",
+        "order": 5
       }
     }
   }

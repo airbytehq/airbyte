@@ -26,8 +26,10 @@ package io.airbyte.integrations.source.jdbc;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.util.AutoCloseableIterator;
@@ -56,13 +58,16 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -113,8 +118,9 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
   @Override
   public AirbyteConnectionStatus check(JsonNode config) {
     try (final JdbcDatabase database = createDatabase(config)) {
-      // attempt to get metadata from the database as a cheap way of seeing if we can connect.
-      database.bufferedResultSetQuery(conn -> conn.getMetaData().getCatalogs(), JdbcUtils::rowToJson);
+      for (CheckedConsumer<JdbcDatabase, Exception> checkOperation : getCheckOperations(config)) {
+        checkOperation.accept(database);
+      }
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (Exception e) {
@@ -123,6 +129,18 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
           .withStatus(Status.FAILED)
           .withMessage("Could not connect with provided configuration.");
     }
+  }
+
+  /**
+   * Configures a list of operations that can be used to check the connection to the source.
+   *
+   * @return list of consumers that run queries for the check command.
+   */
+  public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(JsonNode config) throws Exception {
+    return ImmutableList.of(database -> {
+      LOGGER.info("Attempting to get metadata from the database to see if we can connect.");
+      database.bufferedResultSetQuery(conn -> conn.getMetaData().getCatalogs(), JdbcUtils::rowToJson);
+    });
   }
 
   @Override

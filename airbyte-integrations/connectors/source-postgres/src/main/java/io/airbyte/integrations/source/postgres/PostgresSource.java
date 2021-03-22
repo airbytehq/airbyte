@@ -26,12 +26,23 @@ package io.airbyte.integrations.source.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.PostgresJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
+
+import java.sql.PreparedStatement;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
+
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,6 +75,34 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   @Override
   public Set<String> getExcludedInternalSchemas() {
     return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");
+  }
+
+  @Override
+  public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(JsonNode config) throws Exception {
+    final List<CheckedConsumer<JdbcDatabase, Exception>> checkOperations = new ArrayList<>(super.getCheckOperations(config));
+
+    if(!config.get("replication_slot").isNull()) {
+      checkOperations.add(database -> database.query(connection -> {
+        LOGGER.info("Attempting to find the named replication slot.");
+        final String sql = String.format("SELECT slot_name, plugin, database FROM pg_replication_slots WHERE slot_name = %s AND plugin = %s AND database = %s",
+                JdbcUtils.enquoteIdentifier(connection, config.get("replication_slot").asText()),
+                JdbcUtils.enquoteIdentifier(connection, "pgoutput"),
+                JdbcUtils.enquoteIdentifier(connection, config.get("database").asText()));
+
+        return connection.prepareStatement(sql);
+      }, JdbcUtils::rowToJson));
+    }
+
+    return checkOperations;
+  }
+
+  @Override
+  public AutoCloseableIterator<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception {
+    if(config.get("replication_slot").isNull()) {
+      return super.read(config, catalog, state);
+    } else {
+      throw new RuntimeException("todo: implement cdc. Easy!");
+    }
   }
 
   public static void main(String[] args) throws Exception {

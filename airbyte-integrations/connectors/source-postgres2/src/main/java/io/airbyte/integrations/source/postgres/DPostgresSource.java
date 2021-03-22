@@ -47,9 +47,8 @@ public class DPostgresSource {
     props.setProperty("drop.tombstones", "false");
     props.setProperty("transforms.unwrap.type", "io.debezium.transforms.ExtractNewRecordState");
 
-    props.setProperty("table.whitelist", "public.*");
+    props.setProperty("table.include.list", "public.*");
     props.setProperty("name", "orders-postgres-connector");
-    props.setProperty("INCLUDE_SCHEMA_CHANGES", "true");
     props.setProperty("include_schema_changes", "true");
     props.setProperty("database.server.name", "orders");
     props.setProperty("database.hostname", "localhost");
@@ -57,8 +56,17 @@ public class DPostgresSource {
     props.setProperty("database.user", "postgres");
     props.setProperty("database.password", "");
     props.setProperty("database.dbname", "debezium_test");
-    props.setProperty("database.history", "io.debezium.relational.history.FileDatabaseHistory");
+    props.setProperty("database.history", "io.debezium.relational.history.FileDatabaseHistory"); // todo: any reason not to use in memory version and reload from
     props.setProperty("database.history.file.filename", "/tmp/debezium/dbhistory.dat");
+
+    props.setProperty("slot.name", "debezium");
+
+    // can set value.converter.schemas.enabled to false if we want to save space/effort for records
+
+    // https://debezium.io/documentation/reference/1.0/connectors/postgresql.html#discrepance-between-plugins
+
+    // https://debezium.io/blog/2020/02/25/lessons-learned-running-debezium-with-postgresql-on-rds/
+
 
 // Create the engine with this configuration ...
     try (DebeziumEngine<ChangeEvent<String, String>> engine = DebeziumEngine.create(Json.class)
