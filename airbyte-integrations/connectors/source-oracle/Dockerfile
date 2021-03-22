@@ -6,7 +6,6 @@ ENV APPLICATION source-oracle
 ENV TZ UTC
 
 COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
-RUN ln -sf /usr/share/zoneinfo/America/Phoenix /etc/localtime
 
 RUN tar xf ${APPLICATION}.tar --strip-components=1
 
