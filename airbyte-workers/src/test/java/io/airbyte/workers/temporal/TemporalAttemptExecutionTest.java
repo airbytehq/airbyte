@@ -82,11 +82,7 @@ class TemporalAttemptExecutionTest {
     Worker<String, String> worker = mock(Worker.class);
     when(worker.run(any(), any())).thenReturn(expected);
 
-    when(execution.get()).thenAnswer((Answer<Worker<String, String>>) invocation -> {
-      // sleep to make sure the scheduled thread has time to start and execute
-      Thread.sleep(2000);
-      return worker;
-    });
+    when(execution.get()).thenAnswer((Answer<Worker<String, String>>) invocation -> worker);
 
     final String actual = attemptExecution.get();
 
