@@ -18,7 +18,7 @@ To add a new connector you need to:
 
 1. Implement & Package your connector in an Airbyte Protocol compliant Docker image
 2. Add integration tests for your connector. At a minimum, all connectors must pass [Airbyte's standard test suite](testing-connectors.md), but you can also add your own tests. 
-3. Add the appropriate Gradle tasks to build the image within the Airbyte monorepo and CI
+3. Document how to build & test your connector
 
 Each requirement has a subsection below.
 
@@ -48,15 +48,22 @@ If you are developing a Python/Singer connector, you may find the [building a Py
 
 At a minimum, your connector must implement the standard tests described in [Testing Connectors](testing-connectors.md)
 
-### 3. Integrating with Gradle
+### 3. Document building & testing your connector
+To merge your connector, Airbyte needs to know how to build & test it. If you're writing in Python or Java, skip this section -- it is provided
+automatically. 
 
-Generated templates provide the following Gradle tasks:
+If you're writing in another language, please document the commands needed to: 
+1. Build your connector docker image (usually this is just `docker build .` but let us know if there are necessary flags, gotchas, etc..)
+2. Run any unit or integration tests _in a Docker image_. 
 
+Your integration and unit tests must be runnable entirely within a Docker image. This is important to guarantee consistent build environments. 
+
+When you submit a PR to Airbyte with your connector, the reviewer will use the commands you provide to integrate your connector into Airbyte's build 
+system as follows: 
 1. `:airbyte-integrations:connectors:source-<name>:build` should run unit tests and build the integration's Docker image
 2. `:airbyte-integrations:connectors:source-<name>:integrationTest` should run integration tests including Airbyte's Standard test suite.
 
 ### Best practices
-
 Make sure to review the [Best Practices for Connector Development](best-practices.md) guide. Following best practices is **not** a requirement for merging your contribution to Airbyte, but it certainly doesn't hurt ;\)
 
 ## Updating a connector
