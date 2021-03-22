@@ -48,7 +48,7 @@ public class WorkerRun implements Callable<OutputAndStatus<JobOutput>> {
   private final CheckedSupplier<OutputAndStatus<JobOutput>, Exception> workerRun;
 
   public static WorkerRun create(Path workspaceRoot, long jobId, int attempt, CheckedSupplier<OutputAndStatus<JobOutput>, Exception> workerRun) {
-    final Path jobRoot = WorkerUtils.getJobRoot(workspaceRoot, jobId, attempt);
+    final Path jobRoot = WorkerUtils.getJobRoot(workspaceRoot, String.valueOf(jobId), attempt);
     return new WorkerRun(jobRoot, workerRun);
   }
 
@@ -59,7 +59,7 @@ public class WorkerRun implements Callable<OutputAndStatus<JobOutput>> {
 
   @Override
   public OutputAndStatus<JobOutput> call() throws Exception {
-    LOGGER.info("Executing worker wrapper. Airbyte version: {}", EnvConfigs.AIRBYTE_VERSION);
+    LOGGER.info("Executing worker wrapper. Airbyte version: {}", new EnvConfigs().getAirbyteVersionOrWarning());
     Files.createDirectories(jobRoot);
 
     return workerRun.get();

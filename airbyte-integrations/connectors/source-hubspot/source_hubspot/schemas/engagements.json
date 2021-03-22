@@ -1,0 +1,166 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "portalId": {
+      "type": "integer"
+    },
+    "active": {
+      "type": "boolean"
+    },
+    "createdAt": {
+      "type": "integer"
+    },
+    "lastUpdated": {
+      "type": "integer"
+    },
+    "ownerId": {
+      "type": "integer"
+    },
+    "type": {
+      "type": "string"
+    },
+    "timestamp": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "associations": {
+      "type": ["null", "object"],
+      "properties": {
+        "contactIds": {
+          "type": ["null", "array"],
+          "items": {
+            "type": "integer"
+          }
+        },
+        "companyIds": {
+          "type": ["null", "array"],
+          "items": {
+            "type": "integer"
+          }
+        },
+        "dealIds": {
+          "type": ["null", "array"],
+          "items": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    "attachments": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    "metadata": {
+      "type": ["null", "object"],
+      "properties": {
+        "body": {
+          "type": ["null", "string"]
+        },
+        "from": {
+          "type": ["null", "object"],
+          "properties": {
+            "email": {
+              "type": "string"
+            },
+            "firstName": {
+              "type": "string"
+            },
+            "lastName": {
+              "type": "string"
+            }
+          }
+        },
+        "to": {
+          "type": ["null", "array"],
+          "items": {
+            "type": "object",
+            "properties": {
+              "email": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "cc": {
+          "type": ["null", "array"],
+          "items": {
+            "type": "object",
+            "properties": {
+              "email": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "bcc": {
+          "type": ["null", "array"],
+          "items": {
+            "type": "object",
+            "properties": {
+              "email": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "subject": {
+          "type": ["null", "string"]
+        },
+        "html": {
+          "type": ["null", "string"]
+        },
+        "text": {
+          "type": ["null", "string"]
+        },
+        "status": {
+          "type": ["null", "string"]
+        },
+        "forObjectType": {
+          "type": ["null", "string"]
+        },
+        "startTime": {
+          "type": ["null", "integer"]
+        },
+        "endTime": {
+          "type": ["null", "integer"]
+        },
+        "title": {
+          "type": ["null", "string"]
+        },
+        "toNumber": {
+          "type": ["null", "string"]
+        },
+        "fromNumber": {
+          "type": ["null", "string"]
+        },
+        "externalId": {
+          "type": ["null", "string"]
+        },
+        "durationMilliseconds": {
+          "type": ["null", "integer"]
+        },
+        "externalAccountId": {
+          "type": ["null", "string"]
+        },
+        "recordingUrl": {
+          "type": ["null", "string"],
+          "format": "uri"
+        },
+        "disposition": {
+          "type": ["null", "string"]
+        }
+      }
+    }
+  }
+}

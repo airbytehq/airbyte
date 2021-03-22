@@ -24,18 +24,17 @@
 
 package io.airbyte.server.converters;
 
-import io.airbyte.config.JobOutput;
-import io.airbyte.config.StandardGetSpecOutput;
+import com.google.common.base.Preconditions;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.scheduler.Job;
-import io.airbyte.scheduler.client.SchedulerJobClient;
+import io.airbyte.scheduler.client.SynchronousResponse;
+import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import java.io.IOException;
 
 public class SpecFetcher {
 
-  private final SchedulerJobClient schedulerJobClient;
+  private final SynchronousSchedulerClient schedulerJobClient;
 
-  public SpecFetcher(SchedulerJobClient schedulerJobClient) {
+  public SpecFetcher(SynchronousSchedulerClient schedulerJobClient) {
     this.schedulerJobClient = schedulerJobClient;
   }
 
@@ -43,12 +42,11 @@ public class SpecFetcher {
     return getSpecFromJob(schedulerJobClient.createGetSpecJob(dockerImage));
   }
 
-  private static ConnectorSpecification getSpecFromJob(Job job) {
-    return job
-        .getSuccessOutput()
-        .map(JobOutput::getGetSpec)
-        .map(StandardGetSpecOutput::getSpecification)
-        .orElseThrow(() -> new IllegalArgumentException("no spec output found"));
+  private static ConnectorSpecification getSpecFromJob(SynchronousResponse<ConnectorSpecification> response) {
+    Preconditions.checkState(response.isSuccess(), "Get Spec job failed.");
+    Preconditions.checkNotNull(response.getOutput(), "Get Spec job return null spec");
+
+    return response.getOutput();
   }
 
 }

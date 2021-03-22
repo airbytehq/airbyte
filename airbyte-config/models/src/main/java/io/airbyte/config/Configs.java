@@ -32,6 +32,8 @@ public interface Configs {
 
   String getAirbyteVersion();
 
+  String getAirbyteVersionOrWarning();
+
   Path getConfigRoot();
 
   Path getWorkspaceRoot();
