@@ -55,7 +55,7 @@ class SourceAppsflyerSinger(SingerSource):
             test_endpoint = "/export/{}/installs_report/v5".format(config["app_id"])
 
             url = base_url + test_endpoint
-            
+
             logger.info("GET {}".format(url))
             resp = requests.get(url, params=params)
 
