@@ -43,7 +43,6 @@ public interface JdbcDatabase extends AutoCloseable {
    *
    * @param query the query to execute against the database.
    * @throws SQLException SQL related exceptions.
-   * @return
    */
   void execute(CheckedConsumer<Connection, SQLException> query) throws SQLException;
 
