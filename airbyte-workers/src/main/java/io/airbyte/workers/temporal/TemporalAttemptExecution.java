@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.BiConsumer;
+import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,17 +58,21 @@ public class TemporalAttemptExecution<T> implements CheckedSupplier<T, TemporalJ
   private final long jobId;
   private final BiConsumer<Path, Long> mdcSetter;
   private final CheckedConsumer<Path, IOException> jobRootDirCreator;
+  private final Supplier<String> workflowIdProvider;
 
   @VisibleForTesting
   TemporalAttemptExecution(Path workspaceRoot, JobRunConfig jobRunConfig, CheckedFunction<Path, T, Exception> execution) {
-    this(workspaceRoot, jobRunConfig, execution, WorkerUtils::setJobMdc, Files::createDirectories);
+    this(workspaceRoot, jobRunConfig, execution, WorkerUtils::setJobMdc, Files::createDirectories,
+        () -> Activity.getExecutionContext().getInfo().getWorkflowId());
   }
 
   public TemporalAttemptExecution(Path workspaceRoot,
                                   JobRunConfig jobRunConfig,
                                   CheckedFunction<Path, T, Exception> execution,
                                   BiConsumer<Path, Long> mdcSetter,
-                                  CheckedConsumer<Path, IOException> jobRootDirCreator) {
+                                  CheckedConsumer<Path, IOException> jobRootDirCreator,
+                                  Supplier<String> workflowIdProvider) {
+    this.workflowIdProvider = workflowIdProvider;
     this.jobRoot = WorkerUtils.getJobRoot(workspaceRoot, jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
     this.execution = execution;
     this.jobId = jobRunConfig.getJobId();
@@ -83,8 +88,9 @@ public class TemporalAttemptExecution<T> implements CheckedSupplier<T, TemporalJ
       LOGGER.info("Executing worker wrapper. Airbyte version: {}", new EnvConfigs().getAirbyteVersionOrWarning());
       jobRootDirCreator.accept(jobRoot);
 
-      final String workflowId = Activity.getExecutionContext().getInfo().getWorkflowId();
-      IOs.writeFile(jobRoot.getParent().resolve(WORKFLOW_ID_FILENAME), workflowId);
+      final String workflowId = workflowIdProvider.get();
+      final Path workflowIdFile = jobRoot.getParent().resolve(WORKFLOW_ID_FILENAME);
+      IOs.writeFile(workflowIdFile, workflowId);
 
       return execution.apply(jobRoot);
     } catch (TemporalJobException e) {
