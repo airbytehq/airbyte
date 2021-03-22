@@ -27,13 +27,16 @@ package io.airbyte.workers.temporal;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.commons.functional.CheckedConsumer;
-import io.airbyte.commons.functional.CheckedFunction;
+import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerConstants;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -41,6 +44,7 @@ import java.nio.file.Path;
 import java.util.function.BiConsumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.stubbing.Answer;
 
 class TemporalAttemptExecutionTest {
 
@@ -51,72 +55,77 @@ class TemporalAttemptExecutionTest {
   private Path jobRoot;
   private TemporalJobException expectedException;
 
-  private CheckedFunction<Path, String, Exception> execution;
+  private CheckedSupplier<Worker<String, String>, Exception> execution;
   private BiConsumer<Path, String> mdcSetter;
   private CheckedConsumer<Path, IOException> jobRootDirCreator;
 
-  private TemporalAttemptExecution<String> attemptExecution;
+  private TemporalAttemptExecution<String, String> attemptExecution;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
   void setup() throws IOException {
     final Path workspaceRoot = Files.createTempDirectory(Path.of("/tmp"), "temporal_attempt_execution_test");
-    jobRoot = workspaceRoot.resolve(String.valueOf(JOB_ID)).resolve(String.valueOf(ATTEMPT_ID));
+    jobRoot = workspaceRoot.resolve(JOB_ID).resolve(String.valueOf(ATTEMPT_ID));
     expectedException = new TemporalJobException(jobRoot.resolve(WorkerConstants.LOG_FILENAME));
 
-    execution = mock(CheckedFunction.class);
+    execution = mock(CheckedSupplier.class);
     mdcSetter = mock(BiConsumer.class);
     jobRootDirCreator = Files::createDirectories;
 
-    attemptExecution = new TemporalAttemptExecution<>(workspaceRoot, JOB_RUN_CONFIG, execution, mdcSetter, jobRootDirCreator, () -> "workflow_id");
+    attemptExecution = new TemporalAttemptExecution<>(workspaceRoot, JOB_RUN_CONFIG, execution, () -> "", mdcSetter, jobRootDirCreator,
+        mock(CancellationHandler.class), () -> "workflow_id");
   }
 
   @Test
-  void testGet() throws Exception {
+  void testSuccessfulSupplierRun() throws Exception {
     final String expected = "louis XVI";
-    when(execution.apply(jobRoot)).thenReturn(expected);
+    Worker<String, String> worker = mock(Worker.class);
+    when(worker.run(any(), any())).thenReturn(expected);
+
+    when(execution.get()).thenAnswer((Answer<Worker<String, String>>) invocation -> worker);
 
     final String actual = attemptExecution.get();
 
     assertEquals(expected, actual);
-    verify(execution).apply(jobRoot);
-    verify(mdcSetter).accept(jobRoot, JOB_ID);
+
+    verify(execution).get();
+    verify(mdcSetter, atLeast(2)).accept(jobRoot, JOB_ID);
   }
 
   @Test
   void testThrowsCheckedException() throws Exception {
-    when(execution.apply(jobRoot)).thenThrow(new IOException());
+    when(execution.get()).thenThrow(new IOException());
 
     final TemporalJobException actualException = assertThrows(TemporalJobException.class, () -> attemptExecution.get());
     assertEquals(expectedException.getLogPath(), actualException.getLogPath());
     assertEquals(IOException.class, actualException.getCause().getClass());
 
-    verify(execution).apply(jobRoot);
+    verify(execution).get();
     verify(mdcSetter).accept(jobRoot, JOB_ID);
   }
 
   @Test
   void testThrowsUnCheckedException() throws Exception {
-    when(execution.apply(jobRoot)).thenThrow(new IllegalArgumentException());
+    when(execution.get()).thenThrow(new IllegalArgumentException());
 
     final TemporalJobException actualException = assertThrows(TemporalJobException.class, () -> attemptExecution.get());
     assertEquals(expectedException.getLogPath(), actualException.getLogPath());
     assertEquals(IllegalArgumentException.class, actualException.getCause().getClass());
 
-    verify(execution).apply(jobRoot);
+    verify(execution).get();
     verify(mdcSetter).accept(jobRoot, JOB_ID);
   }
 
   @Test
   void testThrowsTemporalJobExceptionException() throws Exception {
     final Path otherFilePath = jobRoot.resolve("other file path");
-    when(execution.apply(jobRoot)).thenThrow(new TemporalJobException(otherFilePath));
+    when(execution.get()).thenThrow(new TemporalJobException(otherFilePath));
 
     final TemporalJobException actualException = assertThrows(TemporalJobException.class, () -> attemptExecution.get());
     assertEquals(otherFilePath, actualException.getLogPath());
     assertNull(actualException.getCause());
 
-    verify(execution).apply(jobRoot);
+    verify(execution).get();
     verify(mdcSetter).accept(jobRoot, JOB_ID);
   }
 
