@@ -24,7 +24,6 @@
 
 package io.airbyte.integrations.destination.redshift;
 
-import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
@@ -42,7 +41,6 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 /**
@@ -79,12 +77,14 @@ public class RedshiftCopyDestination implements Destination {
 
   @Override
   public ConnectorSpecification spec() throws Exception {
+    // TODO: implement
     // this returns the spec
     return null;
   }
 
   @Override
   public AirbyteConnectionStatus check(JsonNode config) throws Exception {
+    // TODO: implement
     // this should check the config is correct;
     // 1. S3 credentials are present
     // - should be able to create and destroy bucket
@@ -93,23 +93,6 @@ public class RedshiftCopyDestination implements Destination {
     // - should be able to create, rename and delete table
     // - should be able to write records
     return null;
-  }
-
-  @VisibleForTesting
-  static void multipartUpload(String bucket, String key, AmazonS3 client) {
-    var manager = new StreamTransferManager(bucket, key, client)
-        .numUploadThreads(20)
-        .queueCapacity(20)
-        .partSize(10);
-    var writeStream = manager.getMultiPartOutputStreams().get(0);
-
-    // Stream read from table
-    String line = null;
-    writeStream.write(line.getBytes(StandardCharsets.UTF_8));
-
-    // Finishing off
-    writeStream.close();
-    manager.complete();
   }
 
   /**

@@ -41,7 +41,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 @DisplayName("Redshift Desintation Efficient Upload")
-public class RedshiftDestinationEfficientUploadTest {
+public class RedshiftCopyDestinationTest {
 
   private final static String DEFAULT_REGION = "us-west-2";
 
@@ -67,10 +67,6 @@ public class RedshiftDestinationEfficientUploadTest {
         .build();
   }
 
-  @Test
-  void multipartUploadTest() {
-
-  }
 
   @Nested
   @DisplayName("When creating staging bucket")

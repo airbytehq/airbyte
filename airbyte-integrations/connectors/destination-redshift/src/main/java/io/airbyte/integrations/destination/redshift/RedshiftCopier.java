@@ -97,8 +97,8 @@ public class RedshiftCopier {
     // The alternative is first writing the entire output to disk before loading into S3. This is not
     // feasible with large tables.
     // Data is chunked into parts. A part is sent off to a queue to be uploaded once it has reached it's
-    // configured part size. Memory consumption
-    // is queue capacity * part size = 10 * 10 = 100 MB at current configurations.
+    // configured part size.
+    // Memory consumption is queue capacity * part size = 10 * 10 = 100 MB at current configurations.
     this.multipartUploadManager =
         new StreamTransferManager(RedshiftCopyDestination.DEFAULT_AIRBYTE_STAGING_S3_BUCKET, getPath(runFolder, streamName), client)
             .numUploadThreads(DEFAULT_UPLOAD_THREADS)
