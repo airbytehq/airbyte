@@ -29,7 +29,7 @@ from source_hubspot.errors import HubspotInvalidAuth
 
 @pytest.fixture(name="wrong_credentials")
 def wrong_credentials_fixture():
-    return {"api_key": "wrong_key"}
+    return {"api_key": "wrongkey-key1-key2-key3-wrongkey1234"}
 
 
 def test__health_check_with_wrong_token(wrong_credentials):
