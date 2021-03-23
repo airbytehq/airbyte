@@ -27,6 +27,7 @@ import time
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from functools import partial
+from http import HTTPStatus
 from typing import Any, Callable, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
 
 import backoff
@@ -34,8 +35,6 @@ import pendulum as pendulum
 import requests
 from base_python.entrypoint import logger
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout
-from http import HTTPStatus
-
 
 # we got this when provided API Token has incorrect format
 CLOUDFLARE_ORIGIN_DNS_ERROR = 530
