@@ -106,7 +106,7 @@ public class SchedulerApp {
         workerThreadPool,
         jobPersistence,
         temporalWorkerRunFactory,
-        new JobTracker(configRepository));
+        new JobTracker(configRepository, jobPersistence));
 
     Map<String, String> mdc = MDC.getCopyOfContextMap();
 
