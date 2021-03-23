@@ -92,7 +92,7 @@
   * [Developing Connectors](contributing-to-airbyte/building-new-connector/README.md)
     * [Best Practices](contributing-to-airbyte/building-new-connector/best-practices.md)
     * [Java Connectors](contributing-to-airbyte/building-new-connector/java-connectors.md)
-    * [Python Connectors](contributing-to-airbyte/building-new-connector/python-connectors.md)
+    * [Monorepo Python Development](contributing-to-airbyte/building-new-connector/monorepo-python-development.md)
     * [Testing Connectors](contributing-to-airbyte/building-new-connector/testing-connectors.md)
     * [Standard Source Test Suite](contributing-to-airbyte/building-new-connector/standard-source-tests.md)
   * [Code Style](contributing-to-airbyte/code-style.md)
