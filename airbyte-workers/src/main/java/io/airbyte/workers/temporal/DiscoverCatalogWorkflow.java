@@ -24,11 +24,13 @@
 
 package io.airbyte.workers.temporal;
 
+import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.DefaultDiscoverCatalogWorker;
+import io.airbyte.workers.Worker;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessBuilderFactory;
@@ -42,6 +44,7 @@ import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.function.Supplier;
 
 @WorkflowInterface
 public interface DiscoverCatalogWorkflow {
@@ -95,13 +98,27 @@ public interface DiscoverCatalogWorkflow {
                               IntegrationLauncherConfig launcherConfig,
                               StandardDiscoverCatalogInput config)
         throws TemporalJobException {
-      return new TemporalAttemptExecution<>(workspaceRoot, jobRunConfig, (jobRoot) -> {
+      final Supplier<StandardDiscoverCatalogInput> inputSupplier = () -> config;
+
+      final TemporalAttemptExecution<StandardDiscoverCatalogInput, AirbyteCatalog> temporalAttemptExecution = new TemporalAttemptExecution<>(
+          workspaceRoot,
+          jobRunConfig,
+          getWorkerFactory(launcherConfig),
+          inputSupplier,
+          new CancellationHandler.TemporalCancellationHandler());
+
+      return temporalAttemptExecution.get();
+    }
+
+    private CheckedSupplier<Worker<StandardDiscoverCatalogInput, AirbyteCatalog>, Exception> getWorkerFactory(IntegrationLauncherConfig launcherConfig) {
+      return () -> {
         final IntegrationLauncher integrationLauncher =
-            new AirbyteIntegrationLauncher(launcherConfig.getJobId(), launcherConfig.getAttemptId().intValue(), launcherConfig.getDockerImage(), pbf);
+            new AirbyteIntegrationLauncher(launcherConfig.getJobId(), launcherConfig.getAttemptId().intValue(), launcherConfig.getDockerImage(),
+                pbf);
         final AirbyteStreamFactory streamFactory = new DefaultAirbyteStreamFactory();
 
-        return new DefaultDiscoverCatalogWorker(integrationLauncher, streamFactory).run(config, jobRoot);
-      }).get();
+        return new DefaultDiscoverCatalogWorker(integrationLauncher, streamFactory);
+      };
     }
 
   }

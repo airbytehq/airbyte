@@ -22,6 +22,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from .standard_source_test import SourceFileStandardTest
+from setuptools import find_packages, setup
 
-__all__ = ["SourceFileStandardTest"]
+setup(
+    name="source_gitlab_singer",
+    description="Source implementation for Gitlab, built on the Singer tap implementation.",
+    author="Airbyte",
+    author_email="contact@airbyte.io",
+    packages=find_packages(),
+    install_requires=[
+        "tap-gitlab @ https://gitlab.com/meltano/tap-gitlab/-/archive/v0.9.14/tap-gitlab-v0.9.14.tar",
+        "airbyte-protocol",
+        "base-singer",
+        "base-python",
+        "pytest==6.1.2",
+    ],
+    package_data={"": ["*.json"]},
+)

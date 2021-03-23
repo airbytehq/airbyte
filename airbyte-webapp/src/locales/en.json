@@ -81,6 +81,8 @@
   "form.nameSearch": "Search name",
   "form.sourceConnector": "Source connector",
   "form.destinationConnector": "Destination connector",
+  "form.addItems": "Add",
+  "form.items": "Items",
 
   "preferences.title": "Specify your preferences",
   "preferences.anonymizeUsage": "Anonymize usage data collection",

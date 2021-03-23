@@ -56,4 +56,9 @@ public class EmptyAirbyteSource implements AirbyteSource {
     // no op.
   }
 
+  @Override
+  public void cancel() throws Exception {
+    // no op.
+  }
+
 }

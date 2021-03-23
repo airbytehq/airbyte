@@ -81,7 +81,7 @@
 - sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   name: Hubspot
   dockerRepository: airbyte/source-hubspot
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://https://docs.airbyte.io/integrations/sources/hubspot
 - sourceDefinitionId: b1892b11-788d-44bd-b9ec-3a436f7b54ce
   name: Shopify
@@ -188,3 +188,8 @@
   dockerRepository: airbyte/source-instagram
   dockerImageTag: 0.1.1
   documentationUrl: https://hub.docker.com/r/airbyte/source-instagram
+- sourceDefinitionId: 5e6175e5-68e1-4c17-bff9-56103bbb0d80
+  name: Gitlab
+  dockerRepository: airbyte/source-gitlab-singer
+  dockerImageTag: 0.1.0
+  documentationUrl: https://hub.docker.com/r/airbyte/source-gitlab-singer
