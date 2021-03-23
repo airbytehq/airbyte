@@ -52,8 +52,7 @@ public interface DiscoverCatalogWorkflow {
   @WorkflowMethod
   AirbyteCatalog run(JobRunConfig jobRunConfig,
                      IntegrationLauncherConfig launcherConfig,
-                     StandardDiscoverCatalogInput config)
-      throws TemporalJobException;
+                     StandardDiscoverCatalogInput config);
 
   class WorkflowImpl implements DiscoverCatalogWorkflow {
 
@@ -66,8 +65,7 @@ public interface DiscoverCatalogWorkflow {
     @Override
     public AirbyteCatalog run(JobRunConfig jobRunConfig,
                               IntegrationLauncherConfig launcherConfig,
-                              StandardDiscoverCatalogInput config)
-        throws TemporalJobException {
+                              StandardDiscoverCatalogInput config) {
       return activity.run(jobRunConfig, launcherConfig, config);
     }
 
@@ -79,8 +77,7 @@ public interface DiscoverCatalogWorkflow {
     @ActivityMethod
     AirbyteCatalog run(JobRunConfig jobRunConfig,
                        IntegrationLauncherConfig launcherConfig,
-                       StandardDiscoverCatalogInput config)
-        throws TemporalJobException;
+                       StandardDiscoverCatalogInput config);
 
   }
 
@@ -96,8 +93,7 @@ public interface DiscoverCatalogWorkflow {
 
     public AirbyteCatalog run(JobRunConfig jobRunConfig,
                               IntegrationLauncherConfig launcherConfig,
-                              StandardDiscoverCatalogInput config)
-        throws TemporalJobException {
+                              StandardDiscoverCatalogInput config) {
       final Supplier<StandardDiscoverCatalogInput> inputSupplier = () -> config;
 
       final TemporalAttemptExecution<StandardDiscoverCatalogInput, AirbyteCatalog> temporalAttemptExecution = new TemporalAttemptExecution<>(
