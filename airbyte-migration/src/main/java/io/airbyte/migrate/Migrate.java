@@ -50,6 +50,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,7 +83,7 @@ public class Migrate {
     // detect desired version.
     final String targetVersion = migrateConfig.getTargetVersion();
     Preconditions.checkArgument(!currentVersion.equals("dev"), "Cannot migrate data with version dev.");
-    Preconditions.checkArgument(!targetVersion.equals("dev"), "Cannot migrate data to version dev.");
+    Preconditions.checkArgument(targetVersion == null || !targetVersion.equals("dev"), "Cannot migrate data to version dev.");
 
     LOGGER.info("Starting migrations. Current version: {}, Target version: {}", currentVersion, targetVersion);
 
@@ -90,7 +91,13 @@ public class Migrate {
     final List<AirbyteVersion> migrationVersions = migrations.stream().map(m -> new AirbyteVersion(m.getVersion())).collect(Collectors.toList());
     final int currentVersionIndex = getPreviousMigration(migrationVersions, new AirbyteVersion(currentVersion));
     Preconditions.checkArgument(currentVersionIndex >= 0, "No migration found for current version: " + currentVersion);
-    final int targetVersionIndex = migrations.stream().map(Migration::getVersion).collect(Collectors.toList()).indexOf(targetVersion);
+    final int targetVersionIndex;
+    if (Strings.isNotEmpty(targetVersion)) {
+      targetVersionIndex = migrations.stream().map(Migration::getVersion).collect(Collectors.toList()).indexOf(targetVersion);
+    } else {
+      targetVersionIndex = migrations.size() - 1;
+    }
+
     Preconditions.checkArgument(targetVersionIndex >= 0, "No migration found for target version: " + targetVersion);
     Preconditions.checkArgument(currentVersionIndex < targetVersionIndex, String.format(
         "Target version is not greater than the current version. current version: %s, target version: %s. Note migration order is determined by membership in migrations list, not any canonical sorting of the version string itself.",
