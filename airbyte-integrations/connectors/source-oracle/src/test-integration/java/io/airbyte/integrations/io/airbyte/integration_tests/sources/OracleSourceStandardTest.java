@@ -75,16 +75,14 @@ public class OracleSourceStandardTest extends StandardSourceTest {
 
     database.execute(connection -> {
       connection.createStatement().execute("CREATE USER JDBC_SPACE IDENTIFIED BY JDBC_SPACE DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS");
-
-//      connection.createStatement().execute("CREATE TABLE id_and_name(id NUMERIC(20, 10), name VARCHAR(200), power BINARY_DOUBLE)");
-//      connection.createStatement().execute("INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', BINARY_DOUBLE_INFINITY)");
-//      connection.createStatement().execute("INSERT INTO id_and_name (id, name, power) VALUES (2, 'vegeta', 9000.1)");
-//      connection.createStatement().execute("INSERT INTO id_and_name (id, name, power) VALUES (NULL, 'piccolo', -BINARY_DOUBLE_INFINITY)");
-
-      connection.createStatement().execute("CREATE TABLE JDBC_SPACE.starships(id INTEGER, name VARCHAR(200))");
-      connection.createStatement().execute("INSERT INTO JDBC_SPACE.starships (id, name) VALUES (1,'enterprise-d')");
-      connection.createStatement().execute("INSERT INTO JDBC_SPACE.starships (id, name) VALUES (2, 'defiant')");
-      connection.createStatement().execute("INSERT INTO JDBC_SPACE.starships (id, name) VALUES (3, 'yamato')");
+      connection.createStatement().execute("CREATE TABLE jdbc_space.id_and_name(id NUMERIC(20, 10), name VARCHAR(200), power BINARY_DOUBLE)");
+      connection.createStatement().execute("INSERT INTO jdbc_space.id_and_name (id, name, power) VALUES (1,'goku', BINARY_DOUBLE_INFINITY)");
+      connection.createStatement().execute("INSERT INTO jdbc_space.id_and_name (id, name, power) VALUES (2, 'vegeta', 9000.1)");
+      connection.createStatement().execute("INSERT INTO jdbc_space.id_and_name (id, name, power) VALUES (NULL, 'piccolo', -BINARY_DOUBLE_INFINITY)");
+      connection.createStatement().execute("CREATE TABLE jdbc_space.starships(id INTEGER, name VARCHAR(200))");
+      connection.createStatement().execute("INSERT INTO jdbc_space.starships (id, name) VALUES (1,'enterprise-d')");
+      connection.createStatement().execute("INSERT INTO jdbc_space.starships (id, name) VALUES (2, 'defiant')");
+      connection.createStatement().execute("INSERT INTO jdbc_space.starships (id, name) VALUES (3, 'yamato')");
     });
 
     database.close();
@@ -112,30 +110,25 @@ public class OracleSourceStandardTest extends StandardSourceTest {
 
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
-    return CatalogHelpers.createConfiguredAirbyteCatalog(
-            STREAM_NAME2,
-            Field.of("ID", JsonSchemaPrimitive.NUMBER),
-            Field.of("NAME", JsonSchemaPrimitive.STRING));
+    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.INCREMENTAL)
+            .withCursorField(Lists.newArrayList("ID"))
+            .withStream(CatalogHelpers.createAirbyteStream(
+                STREAM_NAME,
+                Field.of("ID", JsonSchemaPrimitive.NUMBER),
+                Field.of("NAME", JsonSchemaPrimitive.STRING),
+                    Field.of("POWER", JsonSchemaPrimitive.NUMBER))
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.INCREMENTAL)
+            .withCursorField(Lists.newArrayList("ID"))
+            .withStream(CatalogHelpers.createAirbyteStream(
+                STREAM_NAME2,
+                Field.of("ID", JsonSchemaPrimitive.NUMBER),
+                Field.of("NAME", JsonSchemaPrimitive.STRING))
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
-//    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-//        new ConfiguredAirbyteStream()
-//            .withSyncMode(SyncMode.INCREMENTAL)
-//            .withCursorField(Lists.newArrayList("ID"))
-//            .withStream(CatalogHelpers.createAirbyteStream(
-//                STREAM_NAME,
-//                Field.of("ID", JsonSchemaPrimitive.NUMBER),
-//                Field.of("NAME", JsonSchemaPrimitive.STRING),
-//                    Field.of("POWER", JsonSchemaPrimitive.NUMBER))
-//                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
-//        new ConfiguredAirbyteStream()
-//            .withSyncMode(SyncMode.INCREMENTAL)
-//            .withCursorField(Lists.newArrayList("ID"))
-//            .withStream(CatalogHelpers.createAirbyteStream(
-//                STREAM_NAME2,
-//                Field.of("ID", JsonSchemaPrimitive.NUMBER),
-//                Field.of("NAME", JsonSchemaPrimitive.STRING))
-//                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
-//  }
 
   @Override
   protected List<String> getRegexTests() {

@@ -150,18 +150,7 @@ public abstract class JdbcSourceStandardTest {
     }
 
     if (getDriverClass().toLowerCase().contains("oracle")) {
-      Connection conn = DriverManager.getConnection(
-              jdbcConfig.get("jdbc_url").asText(),
-              jdbcConfig.get("username").asText(),
-              jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null);
-      ResultSet resultSet = conn.createStatement().executeQuery(String.format("SELECT COUNT(1) AS COUNT FROM ALL_TABLES WHERE TABLE_NAME = '%s'", getFullyQualifiedTableName(TABLE_NAME)));
-      resultSet.next();
-      int result = resultSet.getInt("COUNT");
-      if (result > 0) {
-        database.execute(connection -> {
-          connection.createStatement().execute(String.format("DROP TABLE %s", getFullyQualifiedTableName(TABLE_NAME)));
-        });
-      }
+      executeOracleStatement(String.format("DROP TABLE %s", getFullyQualifiedTableName(TABLE_NAME)));
     }
 
     database.execute(connection -> {
@@ -233,16 +222,17 @@ public abstract class JdbcSourceStandardTest {
     if (getDriverClass().toLowerCase().contains("mysql")) {
       return;
     }
-    if (getDriverClass().toLowerCase().contains("oracle")) {
-      return;
-    }
 
     // add table and data to a separate schema.
     database.execute(connection -> {
       connection.createStatement().execute(
           String.format("CREATE TABLE %s(id VARCHAR(200), name VARCHAR(200))", JdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
-      connection.createStatement().execute(String.format("INSERT INTO %s(id, name) VALUES ('1','picard'),  ('2', 'crusher'), ('3', 'vash')",
-          JdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
+      connection.createStatement().execute(String.format("INSERT INTO %s(id, name) VALUES (1,'picard')",
+              JdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
+      connection.createStatement().execute(String.format("INSERT INTO %s(id, name) VALUES (2, 'crusher')",
+              JdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
+      connection.createStatement().execute(String.format("INSERT INTO %s(id, name) VALUES (3, 'vash')",
+              JdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
     });
 
     final AirbyteCatalog actual = source.discover(config);
@@ -683,7 +673,9 @@ public abstract class JdbcSourceStandardTest {
     return JdbcUtils.getFullyQualifiedTableName(getDefaultSchemaName(), tableName);
   }
 
-  private void createSchemas() throws SQLException {
+  public void executeOracleStatement(String query) throws SQLException { }
+
+  public void createSchemas() throws SQLException {
     if (supportsSchemas()) {
       for (String schemaName : TEST_SCHEMAS) {
         if (getDriverClass().toLowerCase().contains("oracle")) {
