@@ -63,7 +63,7 @@ public class CatalogHelpers {
   }
 
   public static ConfiguredAirbyteStream createConfiguredAirbyteStream(String streamName, List<Field> fields) {
-    return new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName(streamName).withJsonSchema(fieldsToJsonSchema(fields)));
+    return new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName(streamName).withJsonSchema(fieldsToJsonSchema(fields))).withSyncMode(SyncMode.FULL_REFRESH);
   }
 
   public static ConfiguredAirbyteStream createIncrementalConfiguredAirbyteStream(
