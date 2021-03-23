@@ -78,7 +78,7 @@ class ScheduleJobPredicateTest {
   @Test
   public void testScheduleNotReady() {
     when(job.getStatus()).thenReturn(JobStatus.SUCCEEDED);
-    when(job.getUpdatedAtInSecond()).thenReturn(now.minus(Duration.ofDays(1)).getEpochSecond());
+    when(job.getStartedAtInSecond()).thenReturn(Optional.of(now.minus(Duration.ofDays(1)).getEpochSecond()));
 
     assertFalse(scheduleJobPredicate.test(Optional.of(job), SCHEDULE));
   }
@@ -91,7 +91,7 @@ class ScheduleJobPredicateTest {
               names = {"PENDING", "RUNNING", "INCOMPLETE"})
   public void testShouldScheduleBasedOnPreviousJobStatus(JobStatus status) {
     when(job.getStatus()).thenReturn(status);
-    when(job.getUpdatedAtInSecond()).thenReturn(now.minus(Duration.ofDays(2)).getEpochSecond());
+    when(job.getStartedAtInSecond()).thenReturn(Optional.of(now.minus(Duration.ofDays(2)).getEpochSecond()));
 
     assertTrue(scheduleJobPredicate.test(Optional.of(job), SCHEDULE), "job status: " + status.toString());
   }
@@ -102,7 +102,7 @@ class ScheduleJobPredicateTest {
               names = {"FAILED", "SUCCEEDED", "CANCELLED"})
   public void testScheduleShouldNotScheduleBasedOnPreviousJobStatus(JobStatus status) {
     when(job.getStatus()).thenReturn(status);
-    when(job.getUpdatedAtInSecond()).thenReturn(now.minus(Duration.ofDays(2)).getEpochSecond());
+    when(job.getStartedAtInSecond()).thenReturn(Optional.of(now.minus(Duration.ofDays(2)).getEpochSecond()));
 
     assertFalse(scheduleJobPredicate.test(Optional.of(job), SCHEDULE), "job status: " + status.toString());
   }
