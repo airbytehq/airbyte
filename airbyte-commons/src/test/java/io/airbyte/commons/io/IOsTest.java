@@ -90,6 +90,13 @@ class IOsTest {
   }
 
   @Test
+  void testInputStream() {
+    assertThrows(RuntimeException.class, () -> {
+      IOs.inputStream(Path.of("idontexist"));
+    });
+  }
+
+  @Test
   void testSilentClose() throws IOException {
     Closeable closeable = Mockito.mock(Closeable.class);
 

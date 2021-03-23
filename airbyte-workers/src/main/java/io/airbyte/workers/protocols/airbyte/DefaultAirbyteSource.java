@@ -113,4 +113,17 @@ public class DefaultAirbyteSource implements AirbyteSource {
     }
   }
 
+  @Override
+  public void cancel() throws Exception {
+    LOGGER.info("Attempting to cancel source process...");
+
+    if (tapProcess == null) {
+      LOGGER.info("Source process no longer exists, cancellation is a no-op.");
+    } else {
+      LOGGER.info("Source process exists, cancelling...");
+      WorkerUtils.cancelProcess(tapProcess);
+      LOGGER.info("Cancelled source process!");
+    }
+  }
+
 }

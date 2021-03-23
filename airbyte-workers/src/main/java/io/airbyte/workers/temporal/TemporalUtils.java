@@ -46,6 +46,8 @@ public class TemporalUtils {
 
   public static final RetryOptions NO_RETRY = RetryOptions.newBuilder().setMaximumAttempts(1).build();
 
+  public static final String DEFAULT_NAMESPACE = "default";
+
   @FunctionalInterface
   public interface TemporalJobCreator<T extends Serializable> {
 

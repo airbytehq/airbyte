@@ -119,7 +119,7 @@ public class JobConverter {
         .createdAt(metadata.getCreatedAt())
         .endedAt(metadata.getEndedAt())
         .succeeded(metadata.isSucceeded())
-        .logs(metadata.getLogPath().map(JobConverter::getLogRead).orElse(null));
+        .logs(JobConverter.getLogRead(metadata.getLogPath()));
   }
 
 }
