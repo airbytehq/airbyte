@@ -25,6 +25,7 @@
 package io.airbyte.workers.temporal;
 
 import java.util.Objects;
+import java.util.Optional;
 
 public class TemporalResponse<T> {
 
@@ -48,8 +49,13 @@ public class TemporalResponse<T> {
     return metadata.isSucceeded();
   }
 
-  public T getOutput() {
-    return output;
+  /**
+   * Returns the output of the Temporal job.
+   *
+   * @return The output of the Temporal job. Empty if no output or if the job failed.
+   */
+  public Optional<T> getOutput() {
+    return Optional.ofNullable(output);
   }
 
   public JobMetadata getMetadata() {

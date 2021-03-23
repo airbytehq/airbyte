@@ -90,7 +90,7 @@ public class TemporalWorkerRunFactory {
 
   private OutputAndStatus<JobOutput> toOutputAndStatus(TemporalResponse<StandardSyncOutput> response) {
     final JobStatus status = response.isSuccess() ? JobStatus.SUCCEEDED : JobStatus.FAILED;
-    return new OutputAndStatus<>(status, new JobOutput().withSync(response.getOutput()));
+    return new OutputAndStatus<>(status, new JobOutput().withSync(response.getOutput().orElse(null)));
   }
 
 }

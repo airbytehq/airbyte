@@ -56,7 +56,7 @@ public class SynchronousResponse<T> {
         configId,
         createdAt,
         endedAt);
-    return new SynchronousResponse<>(temporalResponse.getOutput(), metadata);
+    return new SynchronousResponse<>(temporalResponse.getOutput().orElse(null), metadata);
   }
 
   public SynchronousResponse(final T output, final SynchronousJobMetadata metadata) {

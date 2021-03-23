@@ -27,7 +27,6 @@ package io.airbyte.workers.temporal;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -100,7 +99,8 @@ class TemporalClientTest {
       final TemporalResponse<String> response = temporalClient.execute(JOB_RUN_CONFIG, supplier);
 
       assertNotNull(response);
-      assertEquals("hello", response.getOutput());
+      assertTrue(response.getOutput().isPresent());
+      assertEquals("hello", response.getOutput().get());
       assertTrue(response.getMetadata().isSucceeded());
       assertEquals(logPath, response.getMetadata().getLogPath());
     }
@@ -114,7 +114,7 @@ class TemporalClientTest {
       final TemporalResponse<String> response = temporalClient.execute(JOB_RUN_CONFIG, supplier);
 
       assertNotNull(response);
-      assertNull(response.getOutput());
+      assertFalse(response.getOutput().isPresent());
       assertFalse(response.getMetadata().isSucceeded());
       assertEquals(logPath, response.getMetadata().getLogPath());
     }
