@@ -1101,29 +1101,6 @@ paths:
           description: Job not found
         "422":
           $ref: "#/components/responses/InvalidInput"
-  /v1/jobs/cancel:
-    post:
-      tags:
-        - jobs
-      summary: Cancels a job
-      operationId: cancelJob
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/JobIdRequestBody"
-        required: true
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/JobInfoRead"
-        "404":
-          description: Job not found
-        "422":
-          $ref: "#/components/responses/InvalidInput"
   /v1/health:
     get:
       tags:

@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback } from "react";
 import { Formik } from "formik";
 import { JSONSchema7 } from "json-schema";
 
@@ -16,19 +16,19 @@ import { FormRoot } from "./FormRoot";
 
 type ServiceFormProps = {
   formType: "source" | "destination";
+  dropDownData: Array<DropDownRow.IDataItem>;
   onSubmit: (values: ServiceFormValues) => void;
   onRetest?: (values: ServiceFormValues) => void;
   specifications?: JSONSchema7;
   isLoading?: boolean;
   isEditMode?: boolean;
+  onDropDownSelect?: (id: string) => void;
   allowChangeConnector?: boolean;
   formValues?: Partial<ServiceFormValues>;
   hasSuccess?: boolean;
   additionBottomControls?: React.ReactNode;
   errorMessage?: React.ReactNode;
   successMessage?: React.ReactNode;
-  dropDownData: Array<DropDownRow.IDataItem>;
-  onDropDownSelect?: (id: string) => void;
   documentationUrl?: string;
 };
 
@@ -39,24 +39,11 @@ const FormikPatch: React.FC = () => {
 
 const ServiceForm: React.FC<ServiceFormProps> = (props) => {
   const { specifications, formValues, onSubmit, isLoading, onRetest } = props;
-  const jsonSchema: JSONSchema7 = useMemo(
-    () => ({
-      type: "object",
-      properties: {
-        name: { type: "string" },
-        serviceType: { type: "string" },
-        ...Object.fromEntries(
-          Object.entries({
-            connectionConfiguration: isLoading ? null : specifications,
-          }).filter(([, v]) => !!v)
-        ),
-      },
-      required: ["name", "serviceType"],
-    }),
-    [isLoading, specifications]
+  const { formFields, initialValues } = useBuildForm(
+    isLoading,
+    formValues,
+    specifications
   );
-
-  const { formFields, initialValues } = useBuildForm(jsonSchema, formValues);
 
   const { uiWidgetsInfo, setUiWidgetsInfo } = useBuildUiWidgets(
     formFields,
@@ -65,7 +52,7 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
 
   const validationSchema = useConstructValidationSchema(
     uiWidgetsInfo,
-    jsonSchema
+    specifications
   );
 
   const onFormSubmit = useCallback(

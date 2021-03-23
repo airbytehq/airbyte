@@ -25,6 +25,7 @@
 package io.airbyte.scheduler.client;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobConfig.ConfigType;
@@ -37,11 +38,10 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.JobTracker;
 import io.airbyte.scheduler.JobTracker.JobState;
 import io.airbyte.workers.temporal.TemporalClient;
-import io.airbyte.workers.temporal.TemporalResponse;
+import io.airbyte.workers.temporal.TemporalJobException;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.UUID;
-import java.util.function.Function;
 
 public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerClient {
 
@@ -54,7 +54,8 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
   }
 
   @Override
-  public SynchronousResponse<StandardCheckConnectionOutput> createSourceCheckConnectionJob(final SourceConnection source, final String dockerImage) {
+  public SynchronousResponse<StandardCheckConnectionOutput> createSourceCheckConnectionJob(final SourceConnection source, final String dockerImage)
+      throws IOException {
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
         .withConnectionConfiguration(source.getConfiguration())
         .withDockerImage(dockerImage);
@@ -68,7 +69,8 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
 
   @Override
   public SynchronousResponse<StandardCheckConnectionOutput> createDestinationCheckConnectionJob(final DestinationConnection destination,
-                                                                                                final String dockerImage) {
+                                                                                                final String dockerImage)
+      throws IOException {
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
         .withConnectionConfiguration(destination.getConfiguration())
         .withDockerImage(dockerImage);
@@ -81,7 +83,7 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
   }
 
   @Override
-  public SynchronousResponse<AirbyteCatalog> createDiscoverSchemaJob(final SourceConnection source, final String dockerImage) {
+  public SynchronousResponse<AirbyteCatalog> createDiscoverSchemaJob(final SourceConnection source, final String dockerImage) throws IOException {
     final JobDiscoverCatalogConfig jobDiscoverCatalogConfig = new JobDiscoverCatalogConfig()
         .withConnectionConfiguration(source.getConfiguration())
         .withDockerImage(dockerImage);
@@ -108,29 +110,35 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
   @VisibleForTesting
   <T> SynchronousResponse<T> execute(ConfigType configType,
                                      UUID configId,
-                                     Function<UUID, TemporalResponse<T>> executor,
+                                     CheckedFunction<UUID, T, TemporalJobException> executor,
                                      UUID jobTrackerId) {
     final long createdAt = Instant.now().toEpochMilli();
+    T operationOutput = null;
+    TemporalJobException exception = null;
     final UUID jobId = UUID.randomUUID();
     try {
       track(jobId, configType, jobTrackerId, JobState.STARTED, null);
-      final TemporalResponse<T> operationOutput = executor.apply(jobId);
-      JobState outputState = operationOutput.getMetadata().isSucceeded() ? JobState.SUCCEEDED : JobState.FAILED;
-      track(jobId, configType, jobTrackerId, outputState, operationOutput.getOutput().orElse(null));
-      final long endedAt = Instant.now().toEpochMilli();
-
-      return SynchronousResponse.fromTemporalResponse(
-          operationOutput,
-          jobId,
-          configType,
-          configId,
-          createdAt,
-          endedAt);
-    } catch (RuntimeException e) {
-      // todo handle null.
-      track(jobId, configType, jobTrackerId, JobState.FAILED, null);
+      operationOutput = executor.apply(jobId);
+      track(jobId, configType, jobTrackerId, JobState.SUCCEEDED, operationOutput);
+    } catch (TemporalJobException e) {
+      exception = e;
+      track(jobId, configType, jobTrackerId, JobState.FAILED, operationOutput);
+    } catch (Exception e) {
+      track(jobId, configType, jobTrackerId, JobState.FAILED, operationOutput);
       throw e;
     }
+    final long endedAt = Instant.now().toEpochMilli();
+
+    final SynchronousJobMetadata metadata = new SynchronousJobMetadata(
+        jobId,
+        configType,
+        configId,
+        createdAt,
+        endedAt,
+        exception == null,
+        exception != null ? exception.getLogPath() : null);
+
+    return new SynchronousResponse<>(operationOutput, metadata);
   }
 
   private <T> void track(UUID jobId, ConfigType configType, UUID jobTrackerId, JobState jobState, T value) {
