@@ -39,6 +39,14 @@ const AllConnectionsStatusCell: React.FC<AllConnectionsStatusCellProps> = ({
     [connectEntities]
   );
 
+  const empty = useMemo(
+    () =>
+      connectEntities.filter(
+        (entity) => entity.lastSyncStatus === Status.EMPTY
+      ),
+    [connectEntities]
+  );
+
   // TODO: add error status
 
   if (!connectEntities.length) {
@@ -50,6 +58,7 @@ const AllConnectionsStatusCell: React.FC<AllConnectionsStatusCellProps> = ({
       {active.length ? <StatusIcon success value={active.length} /> : null}
       {inactive.length ? <StatusIcon inactive value={inactive.length} /> : null}
       {failed.length ? <StatusIcon value={failed.length} /> : null}
+      {empty.length ? <StatusIcon empty value={empty.length} /> : null}
     </>
   );
 };

@@ -97,7 +97,7 @@ export const getConnectionSyncStatus = (
   lastSyncStatus: string | null
 ): string | null => {
   if (status === ConnectionStatus.INACTIVE) return ConnectionStatus.INACTIVE;
-  if (!lastSyncStatus) return null;
+  if (!lastSyncStatus) return ConnectionStatus.EMPTY;
   if (lastSyncStatus === Status.FAILED) return ConnectionStatus.FAILED;
 
   return ConnectionStatus.ACTIVE;

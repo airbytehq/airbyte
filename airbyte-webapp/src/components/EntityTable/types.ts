@@ -30,6 +30,7 @@ enum Status {
   ACTIVE = "active",
   INACTIVE = "inactive",
   FAILED = "failed",
+  EMPTY = "empty",
 }
 
 export type { ITableDataItem, EntityTableDataItem };

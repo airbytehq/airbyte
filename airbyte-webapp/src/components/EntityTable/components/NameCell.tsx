@@ -35,6 +35,7 @@ const NameCell: React.FC<IProps> = ({ value, enabled, status }) => {
     <Content>
       {status ? (
         <StatusIcon
+          empty={status === Status.EMPTY}
           success={status === Status.ACTIVE}
           inactive={status === Status.INACTIVE}
         />
