@@ -40,6 +40,7 @@ import org.testcontainers.containers.OracleContainer;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 
 class OracleJdbcStandardSourceTest extends JdbcSourceStandardTest {
   private static final Logger LOGGER = LoggerFactory.getLogger(OracleSource.class);
@@ -48,14 +49,17 @@ class OracleJdbcStandardSourceTest extends JdbcSourceStandardTest {
   private JsonNode config;
 
   @BeforeAll
-  static void init() {
+  static void init() throws SQLException {
     ORACLE_DB = new OracleContainer("epiclabs/docker-oracle-xe-11g");
     ORACLE_DB.start();
 
-
-    // alter session to receive date yyyy-mm-dd
-    // create user public to insert data
-  }
+    Connection conn = DriverManager.getConnection(
+            ORACLE_DB.getJdbcUrl(),
+            ORACLE_DB.getUsername(),
+            ORACLE_DB.getPassword()
+    );
+  //  conn.createStatement().execute("ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD'");
+ }
 
   @BeforeEach
   public void setup() throws Exception {
@@ -73,7 +77,7 @@ class OracleJdbcStandardSourceTest extends JdbcSourceStandardTest {
 
   @Override
   public boolean supportsSchemas() {
-    return false;
+    return true;
   }
 
   @Override

@@ -46,8 +46,8 @@ import org.testcontainers.containers.OracleContainer;
 
 public class OracleSourceStandardTest extends StandardSourceTest {
 
-  private static final String STREAM_NAME = "SYSTEM.ID_AND_NAME";
-  private static final String STREAM_NAME2 = "SYSTEM.STARSHIPS";
+  private static final String STREAM_NAME = "JDBC_SPACE.ID_AND_NAME";
+  private static final String STREAM_NAME2 = "JDBC_SPACE.STARSHIPS";
 
   private OracleContainer container;
   private JsonNode config;
@@ -74,14 +74,17 @@ public class OracleSourceStandardTest extends StandardSourceTest {
             "oracle.jdbc.driver.OracleDriver");
 
     database.execute(connection -> {
+      connection.createStatement().execute("CREATE USER JDBC_SPACE IDENTIFIED BY JDBC_SPACE DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS");
+
 //      connection.createStatement().execute("CREATE TABLE id_and_name(id NUMERIC(20, 10), name VARCHAR(200), power BINARY_DOUBLE)");
 //      connection.createStatement().execute("INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', BINARY_DOUBLE_INFINITY)");
 //      connection.createStatement().execute("INSERT INTO id_and_name (id, name, power) VALUES (2, 'vegeta', 9000.1)");
 //      connection.createStatement().execute("INSERT INTO id_and_name (id, name, power) VALUES (NULL, 'piccolo', -BINARY_DOUBLE_INFINITY)");
-      connection.createStatement().execute("CREATE TABLE starships(id INTEGER, name VARCHAR(200))");
-      connection.createStatement().execute("INSERT INTO starships (id, name) VALUES (1,'enterprise-d')");
-      connection.createStatement().execute("INSERT INTO starships (id, name) VALUES (2, 'defiant')");
-      connection.createStatement().execute("INSERT INTO starships (id, name) VALUES (3, 'yamato')");
+
+      connection.createStatement().execute("CREATE TABLE JDBC_SPACE.starships(id INTEGER, name VARCHAR(200))");
+      connection.createStatement().execute("INSERT INTO JDBC_SPACE.starships (id, name) VALUES (1,'enterprise-d')");
+      connection.createStatement().execute("INSERT INTO JDBC_SPACE.starships (id, name) VALUES (2, 'defiant')");
+      connection.createStatement().execute("INSERT INTO JDBC_SPACE.starships (id, name) VALUES (3, 'yamato')");
     });
 
     database.close();

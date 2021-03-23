@@ -31,6 +31,8 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.spy;
 
+import java.math.BigDecimal;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
@@ -87,8 +89,8 @@ import org.junit.jupiter.api.Test;
 // 4. Then implement the abstract methods documented below.
 public abstract class JdbcSourceStandardTest {
 
-  private static final String SCHEMA_NAME = "SYSTEM";
-  private static final String SCHEMA_NAME2 = "SYSTEM";
+  private static final String SCHEMA_NAME = "JDBC_INTEGRATION_TEST";
+  private static final String SCHEMA_NAME2 = "JDBC_INTEGRATION_TEST2";
   private static final Set<String> TEST_SCHEMAS = ImmutableSet.of(SCHEMA_NAME, SCHEMA_NAME2);
 
   private static final String TABLE_NAME = "ID_AND_NAME";
@@ -163,8 +165,9 @@ public abstract class JdbcSourceStandardTest {
     }
 
     database.execute(connection -> {
+      connection.createStatement().execute("ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD'");
      connection.createStatement()
-          .execute(String.format("CREATE TABLE %s(ID INTEGER, NAME VARCHAR(200), UPDATED_AT VARCHAR(12))", getFullyQualifiedTableName(TABLE_NAME)));
+          .execute(String.format("CREATE TABLE %s(ID INTEGER, NAME VARCHAR(200), UPDATED_AT DATE)", getFullyQualifiedTableName(TABLE_NAME)));
       connection.createStatement().execute(
           String.format("INSERT INTO %s(id, name, updated_at) VALUES (1,'picard', '2004-10-19')", getFullyQualifiedTableName(TABLE_NAME)));
       connection.createStatement().execute(
@@ -177,8 +180,6 @@ public abstract class JdbcSourceStandardTest {
   public void tearDown() throws SQLException {
     dropSchemas();
   }
-
-
 
   @Test
   void testSpec() throws Exception {
@@ -290,35 +291,35 @@ public abstract class JdbcSourceStandardTest {
         new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(getConfiguredCatalog().getStreams().get(0)));
     final List<AirbyteMessage> expectedMessages = new ArrayList<>(getTestMessages());
 
-//    for (int i = 2; i < 10; i++) {
-//      final int iFinal = i;
-//      final String streamName2 = streamName + i;
-//      database.execute(connection -> {
-//        connection.createStatement()
-//            .execute(String.format("CREATE TABLE %s(id INTEGER, name VARCHAR(200))", getFullyQualifiedTableName(TABLE_NAME + iFinal)));
-//        connection.createStatement().execute(String.format("INSERT INTO %s(id, name) VALUES (1,'picard')",
-//            getFullyQualifiedTableName(TABLE_NAME + iFinal)));
-//        connection.createStatement().execute(String.format("INSERT INTO %s(id, name) VALUES (2, 'crusher')",
-//                getFullyQualifiedTableName(TABLE_NAME + iFinal)));
-//        connection.createStatement().execute(String.format("INSERT INTO %s(id, name) VALUES (3, 'vash')",
-//                getFullyQualifiedTableName(TABLE_NAME + iFinal)));
-//      });
-//
-//      catalog.getStreams().add(CatalogHelpers.createConfiguredAirbyteStream(
-//          streamName2,
-//          Field.of("ID", JsonSchemaPrimitive.NUMBER),
-//          Field.of("NAME", JsonSchemaPrimitive.STRING)));
-//
-//      final List<AirbyteMessage> secondStreamExpectedMessages = getTestMessages()
-//          .stream()
-//          .map(Jsons::clone)
-//          .peek(m -> {
-//            m.getRecord().setStream(streamName2);
-//            ((ObjectNode) m.getRecord().getData()).remove("UPDATED_AT");
-//          })
-//          .collect(Collectors.toList());
-//      expectedMessages.addAll(secondStreamExpectedMessages);
-//    }
+    for (int i = 2; i < 10; i++) {
+      final int iFinal = i;
+      final String streamName2 = streamName + i;
+      database.execute(connection -> {
+        connection.createStatement()
+            .execute(String.format("CREATE TABLE %s(id INTEGER, name VARCHAR(200))", getFullyQualifiedTableName(TABLE_NAME + iFinal)));
+        connection.createStatement().execute(String.format("INSERT INTO %s(id, name) VALUES (1,'picard')",
+            getFullyQualifiedTableName(TABLE_NAME + iFinal)));
+        connection.createStatement().execute(String.format("INSERT INTO %s(id, name) VALUES (2, 'crusher')",
+                getFullyQualifiedTableName(TABLE_NAME + iFinal)));
+        connection.createStatement().execute(String.format("INSERT INTO %s(id, name) VALUES (3, 'vash')",
+                getFullyQualifiedTableName(TABLE_NAME + iFinal)));
+      });
+
+      catalog.getStreams().add(CatalogHelpers.createConfiguredAirbyteStream(
+          streamName2,
+          Field.of("ID", JsonSchemaPrimitive.NUMBER),
+          Field.of("NAME", JsonSchemaPrimitive.STRING)));
+
+      final List<AirbyteMessage> secondStreamExpectedMessages = getTestMessages()
+          .stream()
+          .map(Jsons::clone)
+          .peek(m -> {
+            m.getRecord().setStream(streamName2);
+            ((ObjectNode) m.getRecord().getData()).remove("UPDATED_AT");
+          })
+          .collect(Collectors.toList());
+      expectedMessages.addAll(secondStreamExpectedMessages);
+    }
 
     final List<AirbyteMessage> actualMessages = MoreIterators.toList(source.read(config, catalog, null));
 
@@ -428,8 +429,8 @@ public abstract class JdbcSourceStandardTest {
   void testIncrementalTimestampCheckCursor() throws Exception {
     incrementalCursorCheck(
         "UPDATED_AT",
-        "2005-10-18",
-        "2006-10-19",
+        "2005-10-18T00:00:00Z",
+        "2006-10-19T00:00:00Z",
         Lists.newArrayList(getTestMessages().get(1), getTestMessages().get(2)));
   }
 
@@ -474,10 +475,10 @@ public abstract class JdbcSourceStandardTest {
     final List<AirbyteMessage> expectedMessages = new ArrayList<>();
     expectedMessages.add(new AirbyteMessage().withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage().withStream(streamName)
-            .withData(Jsons.jsonNode(ImmutableMap.of("ID", 4, "NAME", "riker", "UPDATED_AT", "2006-10-19T00:00:00Z")))));
+            .withData(Jsons.jsonNode(ImmutableMap.of("ID", BigDecimal.valueOf(4), "NAME", "riker", "UPDATED_AT", "2006-10-19T00:00:00Z")))));
     expectedMessages.add(new AirbyteMessage().withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage().withStream(streamName)
-            .withData(Jsons.jsonNode(ImmutableMap.of("ID", 5, "NAME", "data", "UPDATED_AT", "2006-10-19T00:00:00Z")))));
+            .withData(Jsons.jsonNode(ImmutableMap.of("ID", BigDecimal.valueOf(5), "NAME", "data", "UPDATED_AT", "2006-10-19T00:00:00Z")))));
     expectedMessages.add(new AirbyteMessage()
         .withType(Type.STATE)
         .withState(new AirbyteStateMessage()
@@ -642,13 +643,13 @@ public abstract class JdbcSourceStandardTest {
     return Lists.newArrayList(
         new AirbyteMessage().withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName)
-                .withData(Jsons.jsonNode(ImmutableMap.of("ID", 1, "NAME", "picard", "UPDATED_AT", "2004-10-19")))),
+                .withData(Jsons.jsonNode(ImmutableMap.of("ID", new BigDecimal(1), "NAME", "picard", "UPDATED_AT", "2004-10-19T00:00:00Z")))),
         new AirbyteMessage().withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName)
-                .withData(Jsons.jsonNode(ImmutableMap.of("ID", 2, "NAME", "crusher", "UPDATED_AT", "2005-10-19")))),
+                .withData(Jsons.jsonNode(ImmutableMap.of("ID", new BigDecimal(2), "NAME", "crusher", "UPDATED_AT", "2005-10-19T00:00:00Z")))),
         new AirbyteMessage().withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName)
-                .withData(Jsons.jsonNode(ImmutableMap.of("ID", 3, "NAME", "vash", "UPDATED_AT", "2006-10-19")))));
+                .withData(Jsons.jsonNode(ImmutableMap.of("ID", new BigDecimal(3), "NAME", "vash", "UPDATED_AT", "2006-10-19T00:00:00Z")))));
   }
 
   private ConfiguredAirbyteStream createTableWithSpaces() throws SQLException {
@@ -685,8 +686,13 @@ public abstract class JdbcSourceStandardTest {
   private void createSchemas() throws SQLException {
     if (supportsSchemas()) {
       for (String schemaName : TEST_SCHEMAS) {
-        final String dropSchemaQuery = String.format("CREATE SCHEMA %s;", schemaName);
-        database.execute(connection -> connection.createStatement().execute(dropSchemaQuery));
+        if (getDriverClass().toLowerCase().contains("oracle")) {
+          final String SchemaQuery = String.format("CREATE USER %s IDENTIFIED BY %s DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS", schemaName, schemaName);
+          database.execute(connection -> connection.createStatement().execute(SchemaQuery));
+        } else {
+          final String SchemaQuery = String.format("CREATE SCHEMA %s;", schemaName);
+          database.execute(connection -> connection.createStatement().execute(SchemaQuery));
+        }
       }
     }
   }
