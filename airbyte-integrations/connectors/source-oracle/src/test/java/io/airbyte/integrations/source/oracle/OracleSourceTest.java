@@ -64,15 +64,15 @@ class OracleSourceTest {
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
       CatalogHelpers.createAirbyteStream(
           STREAM_NAME,
-          Field.of("ID", JsonSchemaPrimitive.NUMBER),
-          Field.of("NAME", JsonSchemaPrimitive.STRING),
-          Field.of("POWER", JsonSchemaPrimitive.NUMBER))
+          Field.of("id", JsonSchemaPrimitive.NUMBER),
+          Field.of("name", JsonSchemaPrimitive.STRING),
+          Field.of("power", JsonSchemaPrimitive.NUMBER))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))));
   private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
   private static final Set<AirbyteMessage> ASCII_MESSAGES = Sets.newHashSet(
-          createRecord(STREAM_NAME, map("ID", new BigDecimal("2.0"), "NAME", "vegeta", "POWER", "9000.1")),
-          createRecord(STREAM_NAME, map( "NAME", "piccolo", "POWER", "-Infinity")),
-          createRecord(STREAM_NAME, map("ID", new BigDecimal("1.0"), "NAME", "goku", "POWER", "Infinity")));
+          createRecord(STREAM_NAME, map("id", new BigDecimal("2.0"), "name", "vegeta", "power", "9000.1")),
+          createRecord(STREAM_NAME, map( "id", null, "name", "piccolo", "POWER", "-Infinity")),
+          createRecord(STREAM_NAME, map("id", new BigDecimal("1.0"), "name", "goku", "power", "Infinity")));
 
   private static OracleContainer ORACLE_DB;
 
