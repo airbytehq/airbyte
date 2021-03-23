@@ -246,8 +246,8 @@ As an example from the hubspot source, we could have the following tables with n
 | :--- | :--- | :--- |
 | Original Stream Name | companies | deals |
 | Json path to the nested column | `companies/property_engagements_last_meeting_booked_campaign` | `deals/properties/engagements_last_meeting_booked_medium` |
-| Final table name of expanded nested column on BigQuery | companies\_2e8\_property\_engag<span style="color:red">ements\_last\_meeting\_bo</span>oked\_campaign | deals\_prop<span style="color:red">erties</span>\_6e6\_engagements\_l<span style="color:red">ast\_meeting\_</span>booked\_medium |
-| Final table name of expanded nested column on Postgres | companies\_2e8\_property\_engag<span style="color:blue">\_\_</span>oked\_campaign | deals\_prop\_6e6\_engagements\_l<span style="color:blue">\_\_</span>booked\_medium |
+| Final table name of expanded nested column on BigQuery | companies\_2e8\_property\_engag<strong style="color:red">ements\_last\_meeting\_bo</strong>oked\_campaign | deals\_prop<strong style="color:red">erties</strong>\_6e6\_engagements\_l<strong style="color:red">ast\_meeting\_</strong>booked\_medium |
+| Final table name of expanded nested column on Postgres | companies\_2e8\_property\_engag<strong style="color:blue">\_\_</strong>oked\_campaign | deals\_prop\_6e6\_engagements\_l<strong style="color:blue">\_\_</strong>booked\_medium |
 
 Note that all the choices made by Normalization as described in this documentation page in terms of naming could be overriden by your own custom choices. 
 To do so, you can follow the following tutorial 
