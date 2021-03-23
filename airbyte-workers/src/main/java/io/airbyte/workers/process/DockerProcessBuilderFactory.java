@@ -89,7 +89,6 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
             "docker",
             "run",
             "--rm",
-            "--init",
             "-i",
             "-v",
             String.format("%s:%s", workspaceMountSource, DATA_MOUNT_DESTINATION),

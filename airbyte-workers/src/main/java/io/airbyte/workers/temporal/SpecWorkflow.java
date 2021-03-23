@@ -24,13 +24,11 @@
 
 package io.airbyte.workers.temporal;
 
-import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.DefaultGetSpecWorker;
-import io.airbyte.workers.Worker;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessBuilderFactory;
@@ -42,13 +40,12 @@ import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.function.Supplier;
 
 @WorkflowInterface
 public interface SpecWorkflow {
 
   @WorkflowMethod
-  ConnectorSpecification run(JobRunConfig jobRunConfig, IntegrationLauncherConfig launcherConfig);
+  ConnectorSpecification run(JobRunConfig jobRunConfig, IntegrationLauncherConfig launcherConfig) throws TemporalJobException;
 
   class WorkflowImpl implements SpecWorkflow {
 
@@ -59,7 +56,7 @@ public interface SpecWorkflow {
     private final SpecActivity activity = Workflow.newActivityStub(SpecActivity.class, options);
 
     @Override
-    public ConnectorSpecification run(JobRunConfig jobRunConfig, IntegrationLauncherConfig launcherConfig) {
+    public ConnectorSpecification run(JobRunConfig jobRunConfig, IntegrationLauncherConfig launcherConfig) throws TemporalJobException {
       return activity.run(jobRunConfig, launcherConfig);
     }
 
@@ -69,7 +66,7 @@ public interface SpecWorkflow {
   interface SpecActivity {
 
     @ActivityMethod
-    ConnectorSpecification run(JobRunConfig jobRunConfig, IntegrationLauncherConfig launcherConfig);
+    ConnectorSpecification run(JobRunConfig jobRunConfig, IntegrationLauncherConfig launcherConfig) throws TemporalJobException;
 
   }
 
@@ -83,29 +80,15 @@ public interface SpecWorkflow {
       this.workspaceRoot = workspaceRoot;
     }
 
-    public ConnectorSpecification run(JobRunConfig jobRunConfig, IntegrationLauncherConfig launcherConfig) {
-      final Supplier<JobGetSpecConfig> inputSupplier = () -> new JobGetSpecConfig().withDockerImage(launcherConfig.getDockerImage());
+    public ConnectorSpecification run(JobRunConfig jobRunConfig, IntegrationLauncherConfig launcherConfig) throws TemporalJobException {
+      return new TemporalAttemptExecution<>(workspaceRoot, jobRunConfig, (jobRoot) -> {
 
-      final TemporalAttemptExecution<JobGetSpecConfig, ConnectorSpecification> temporalAttemptExecution = new TemporalAttemptExecution<>(
-          workspaceRoot,
-          jobRunConfig,
-          getWorkerFactory(launcherConfig),
-          inputSupplier,
-          new CancellationHandler.TemporalCancellationHandler());
+        final IntegrationLauncher integrationLauncher =
+            new AirbyteIntegrationLauncher(launcherConfig.getJobId(), launcherConfig.getAttemptId().intValue(), launcherConfig.getDockerImage(), pbf);
 
-      return temporalAttemptExecution.get();
-    }
-
-    private CheckedSupplier<Worker<JobGetSpecConfig, ConnectorSpecification>, Exception> getWorkerFactory(IntegrationLauncherConfig launcherConfig) {
-      return () -> {
-        final IntegrationLauncher integrationLauncher = new AirbyteIntegrationLauncher(
-            launcherConfig.getJobId(),
-            launcherConfig.getAttemptId().intValue(),
-            launcherConfig.getDockerImage(),
-            pbf);
-
-        return new DefaultGetSpecWorker(integrationLauncher);
-      };
+        final JobGetSpecConfig jobGetSpecConfig = new JobGetSpecConfig().withDockerImage(launcherConfig.getDockerImage());
+        return new DefaultGetSpecWorker(integrationLauncher).run(jobGetSpecConfig, jobRoot);
+      }).get();
     }
 
   }

@@ -25,7 +25,6 @@
 package io.airbyte.scheduler.client;
 
 import io.airbyte.config.JobConfig.ConfigType;
-import io.airbyte.workers.temporal.JobMetadata;
 import java.nio.file.Path;
 import java.util.Objects;
 import java.util.Optional;
@@ -42,22 +41,6 @@ public class SynchronousJobMetadata {
   private final boolean succeeded;
 
   private final Path logPath;
-
-  public static SynchronousJobMetadata fromJobMetadata(JobMetadata jobMetadata,
-                                                       UUID id,
-                                                       ConfigType configType,
-                                                       UUID configId,
-                                                       long createdAt,
-                                                       long endedAt) {
-    return new SynchronousJobMetadata(
-        id,
-        configType,
-        configId,
-        createdAt,
-        endedAt,
-        jobMetadata.isSucceeded(),
-        jobMetadata.getLogPath());
-  }
 
   public SynchronousJobMetadata(final UUID id,
                                 final ConfigType configType,
@@ -99,8 +82,10 @@ public class SynchronousJobMetadata {
     return succeeded;
   }
 
-  public Path getLogPath() {
-    return logPath;
+  // todo (cgardens) - this should always be present.
+  // only present if there was an error.
+  public Optional<Path> getLogPath() {
+    return Optional.ofNullable(logPath);
   }
 
   @Override

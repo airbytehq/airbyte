@@ -38,6 +38,7 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobCheckConnectionConfig;
@@ -50,13 +51,11 @@ import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.JobTracker;
 import io.airbyte.scheduler.JobTracker.JobState;
-import io.airbyte.workers.temporal.JobMetadata;
 import io.airbyte.workers.temporal.TemporalClient;
-import io.airbyte.workers.temporal.TemporalResponse;
+import io.airbyte.workers.temporal.TemporalJobException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.UUID;
-import java.util.function.Function;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -67,7 +66,6 @@ import org.junit.jupiter.api.Test;
 // execution exception cases again.
 class DefaultSynchronousSchedulerClientTest {
 
-  private static final Path LOG_PATH = Path.of("/tmp");
   private static final String DOCKER_IMAGE = "foo/bar";
   private static final UUID UUID1 = UUID.randomUUID();
   private static final UUID UUID2 = UUID.randomUUID();
@@ -95,25 +93,19 @@ class DefaultSynchronousSchedulerClientTest {
     schedulerClient = new DefaultSynchronousSchedulerClient(temporalClient, jobTracker);
   }
 
-  private static JobMetadata createMetadata(boolean succeeded) {
-    return new JobMetadata(
-        succeeded,
-        LOG_PATH);
-  }
-
   @Nested
   @DisplayName("Test execute method.")
   class ExecuteSynchronousJob {
 
     @SuppressWarnings("unchecked")
     @Test
-    void testExecuteJobSuccess() {
+    void testExecute() throws TemporalJobException {
       final UUID configId = UUID.randomUUID();
       final UUID jobTrackingId = UUID.randomUUID();
-      final Function<UUID, TemporalResponse<String>> function = mock(Function.class);
-      when(function.apply(any(UUID.class))).thenReturn(new TemporalResponse<>("hello", createMetadata(true)));
+      final CheckedFunction<UUID, String, TemporalJobException> checkedFunction = mock(CheckedFunction.class);
+      when(checkedFunction.apply(any(UUID.class))).thenReturn("hello");
 
-      final SynchronousResponse<String> response = schedulerClient.execute(ConfigType.DISCOVER_SCHEMA, configId, function, jobTrackingId);
+      final SynchronousResponse<String> response = schedulerClient.execute(ConfigType.DISCOVER_SCHEMA, configId, checkedFunction, jobTrackingId);
 
       assertNotNull(response);
       assertEquals("hello", response.getOutput());
@@ -121,7 +113,7 @@ class DefaultSynchronousSchedulerClientTest {
       assertTrue(response.getMetadata().getConfigId().isPresent());
       assertEquals(configId, response.getMetadata().getConfigId().get());
       assertTrue(response.getMetadata().isSucceeded());
-      assertEquals(LOG_PATH, response.getMetadata().getLogPath());
+      assertTrue(response.getMetadata().getLogPath().isEmpty());
 
       verify(jobTracker).trackDiscover(any(UUID.class), eq(jobTrackingId), eq(JobState.STARTED));
       verify(jobTracker).trackDiscover(any(UUID.class), eq(jobTrackingId), eq(JobState.SUCCEEDED));
@@ -129,13 +121,13 @@ class DefaultSynchronousSchedulerClientTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    void testExecuteJobFailure() {
+    void testExecuteTemporalJobException() throws TemporalJobException {
       final UUID configId = UUID.randomUUID();
       final UUID jobTrackingId = UUID.randomUUID();
-      final Function<UUID, TemporalResponse<String>> function = mock(Function.class);
-      when(function.apply(any(UUID.class))).thenReturn(new TemporalResponse<>(null, createMetadata(false)));
+      final CheckedFunction<UUID, String, TemporalJobException> checkedFunction = mock(CheckedFunction.class);
+      when(checkedFunction.apply(any(UUID.class))).thenThrow(new TemporalJobException(Path.of("/tmp")));
 
-      final SynchronousResponse<String> response = schedulerClient.execute(ConfigType.DISCOVER_SCHEMA, configId, function, jobTrackingId);
+      final SynchronousResponse<String> response = schedulerClient.execute(ConfigType.DISCOVER_SCHEMA, configId, checkedFunction, jobTrackingId);
 
       assertNotNull(response);
       assertNull(response.getOutput());
@@ -143,7 +135,7 @@ class DefaultSynchronousSchedulerClientTest {
       assertTrue(response.getMetadata().getConfigId().isPresent());
       assertEquals(configId, response.getMetadata().getConfigId().get());
       assertFalse(response.getMetadata().isSucceeded());
-      assertEquals(LOG_PATH, response.getMetadata().getLogPath());
+      assertTrue(response.getMetadata().getLogPath().isPresent());
 
       verify(jobTracker).trackDiscover(any(UUID.class), eq(jobTrackingId), eq(JobState.STARTED));
       verify(jobTracker).trackDiscover(any(UUID.class), eq(jobTrackingId), eq(JobState.FAILED));
@@ -151,13 +143,13 @@ class DefaultSynchronousSchedulerClientTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    void testExecuteRuntimeException() {
+    void testExecuteRuntimeException() throws TemporalJobException {
       final UUID configId = UUID.randomUUID();
       final UUID jobTrackingId = UUID.randomUUID();
-      final Function<UUID, TemporalResponse<String>> function = mock(Function.class);
-      when(function.apply(any(UUID.class))).thenThrow(new RuntimeException());
+      final CheckedFunction<UUID, String, TemporalJobException> checkedFunction = mock(CheckedFunction.class);
+      when(checkedFunction.apply(any(UUID.class))).thenThrow(new RuntimeException());
 
-      assertThrows(RuntimeException.class, () -> schedulerClient.execute(ConfigType.DISCOVER_SCHEMA, configId, function, jobTrackingId));
+      assertThrows(RuntimeException.class, () -> schedulerClient.execute(ConfigType.DISCOVER_SCHEMA, configId, checkedFunction, jobTrackingId));
 
       verify(jobTracker).trackDiscover(any(UUID.class), eq(jobTrackingId), eq(JobState.STARTED));
       verify(jobTracker).trackDiscover(any(UUID.class), eq(jobTrackingId), eq(JobState.FAILED));
@@ -170,53 +162,49 @@ class DefaultSynchronousSchedulerClientTest {
   class TestJobCreation {
 
     @Test
-    void testCreateSourceCheckConnectionJob() {
+    void testCreateSourceCheckConnectionJob() throws IOException, TemporalJobException {
       final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
           .withConnectionConfiguration(SOURCE_CONNECTION.getConfiguration())
           .withDockerImage(DOCKER_IMAGE);
 
-      final StandardCheckConnectionOutput mockOutput = mock(StandardCheckConnectionOutput.class);
-      when(temporalClient.submitCheckConnection(any(UUID.class), eq(0), eq(jobCheckConnectionConfig)))
-          .thenReturn(new TemporalResponse<>(mockOutput, createMetadata(true)));
+      StandardCheckConnectionOutput mockOutput = mock(StandardCheckConnectionOutput.class);
+      when(temporalClient.submitCheckConnection(any(UUID.class), eq(0), eq(jobCheckConnectionConfig))).thenReturn(mockOutput);
       final SynchronousResponse<StandardCheckConnectionOutput> response =
           schedulerClient.createSourceCheckConnectionJob(SOURCE_CONNECTION, DOCKER_IMAGE);
       assertEquals(mockOutput, response.getOutput());
     }
 
     @Test
-    void testCreateDestinationCheckConnectionJob() {
+    void testCreateDestinationCheckConnectionJob() throws IOException, TemporalJobException {
       final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
           .withConnectionConfiguration(DESTINATION_CONNECTION.getConfiguration())
           .withDockerImage(DOCKER_IMAGE);
 
-      final StandardCheckConnectionOutput mockOutput = mock(StandardCheckConnectionOutput.class);
-      when(temporalClient.submitCheckConnection(any(UUID.class), eq(0), eq(jobCheckConnectionConfig)))
-          .thenReturn(new TemporalResponse<>(mockOutput, createMetadata(true)));
+      StandardCheckConnectionOutput mockOutput = mock(StandardCheckConnectionOutput.class);
+      when(temporalClient.submitCheckConnection(any(UUID.class), eq(0), eq(jobCheckConnectionConfig))).thenReturn(mockOutput);
       final SynchronousResponse<StandardCheckConnectionOutput> response =
           schedulerClient.createDestinationCheckConnectionJob(DESTINATION_CONNECTION, DOCKER_IMAGE);
       assertEquals(mockOutput, response.getOutput());
     }
 
     @Test
-    void testCreateDiscoverSchemaJob() {
+    void testCreateDiscoverSchemaJob() throws IOException, TemporalJobException {
       final JobDiscoverCatalogConfig jobDiscoverCatalogConfig = new JobDiscoverCatalogConfig()
           .withConnectionConfiguration(SOURCE_CONNECTION.getConfiguration())
           .withDockerImage(DOCKER_IMAGE);
 
-      final AirbyteCatalog mockOutput = mock(AirbyteCatalog.class);
-      when(temporalClient.submitDiscoverSchema(any(UUID.class), eq(0), eq(jobDiscoverCatalogConfig)))
-          .thenReturn(new TemporalResponse<>(mockOutput, createMetadata(true)));
+      AirbyteCatalog mockOutput = mock(AirbyteCatalog.class);
+      when(temporalClient.submitDiscoverSchema(any(UUID.class), eq(0), eq(jobDiscoverCatalogConfig))).thenReturn(mockOutput);
       final SynchronousResponse<AirbyteCatalog> response = schedulerClient.createDiscoverSchemaJob(SOURCE_CONNECTION, DOCKER_IMAGE);
       assertEquals(mockOutput, response.getOutput());
     }
 
     @Test
-    void testCreateGetSpecJob() throws IOException {
+    void testCreateGetSpecJob() throws IOException, TemporalJobException {
       final JobGetSpecConfig jobSpecConfig = new JobGetSpecConfig().withDockerImage(DOCKER_IMAGE);
 
-      final ConnectorSpecification mockOutput = mock(ConnectorSpecification.class);
-      when(temporalClient.submitGetSpec(any(UUID.class), eq(0), eq(jobSpecConfig)))
-          .thenReturn(new TemporalResponse<>(mockOutput, createMetadata(true)));
+      ConnectorSpecification mockOutput = mock(ConnectorSpecification.class);
+      when(temporalClient.submitGetSpec(any(UUID.class), eq(0), eq(jobSpecConfig))).thenReturn(mockOutput);
       final SynchronousResponse<ConnectorSpecification> response = schedulerClient.createGetSpecJob(DOCKER_IMAGE);
       assertEquals(mockOutput, response.getOutput());
     }

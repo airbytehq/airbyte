@@ -91,14 +91,6 @@ public class IOs {
     }
   }
 
-  public static InputStream inputStream(final Path path) {
-    try {
-      return Files.newInputStream(path);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
   public static void silentClose(final Closeable closeable) {
     try {
       closeable.close();

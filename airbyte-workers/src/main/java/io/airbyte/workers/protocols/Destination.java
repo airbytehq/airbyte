@@ -40,6 +40,4 @@ public interface Destination<T> extends CheckedConsumer<T, Exception>, AutoClose
   @Override
   void close() throws Exception;
 
-  void cancel() throws Exception;
-
 }

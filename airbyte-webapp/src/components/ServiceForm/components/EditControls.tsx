@@ -2,7 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 
-import { Button } from "components";
+import Button from "components/Button";
 import { useServiceForm } from "../serviceFormContext";
 import TestingConnectionSpinner from "./TestingConnectionSpinner";
 import TestingConnectionSuccess from "./TestingConnectionSuccess";
@@ -41,7 +41,7 @@ const EditControls: React.FC<IProps> = ({
   successMessage,
   errorMessage,
 }) => {
-  const { unfinishedFlows } = useServiceForm();
+  const { unfinishedSecrets } = useServiceForm();
 
   if (isSubmitting) {
     return <TestingConnectionSpinner />;
@@ -67,7 +67,7 @@ const EditControls: React.FC<IProps> = ({
               isSubmitting ||
               !isValid ||
               !dirty ||
-              Object.keys(unfinishedFlows).length > 0
+              Object.keys(unfinishedSecrets).length > 0
             }
           >
             <FormattedMessage id="form.saveChangesAndTest" />

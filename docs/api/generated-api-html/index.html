@@ -261,7 +261,6 @@ font-style: italic;
   </ul>
   <h4><a href="#Jobs">Jobs</a></h4>
   <ul>
-  <li><a href="#cancelJob"><code><span class="http-method">post</span> /v1/jobs/cancel</code></a></li>
   <li><a href="#getJobInfo"><code><span class="http-method">post</span> /v1/jobs/get</code></a></li>
   <li><a href="#listJobsFor"><code><span class="http-method">post</span> /v1/jobs/list</code></a></li>
   </ul>
@@ -1903,94 +1902,6 @@ font-style: italic;
   </div> <!-- method -->
   <hr/>
   <h1><a name="Jobs">Jobs</a></h1>
-  <div class="method"><a name="cancelJob"/>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/jobs/cancel</code></pre></div>
-    <div class="method-summary">Cancels a job (<span class="nickname">cancelJob</span>)</div>
-    <div class="method-notes"></div>
-
-
-    <h3 class="field-label">Consumes</h3>
-    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
-    <ul>
-      <li><code>application/json</code></li>
-    </ul>
-
-    <h3 class="field-label">Request body</h3>
-    <div class="field-items">
-      <div class="param">JobIdRequestBody <a href="#JobIdRequestBody">JobIdRequestBody</a> (required)</div>
-
-      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
-
-    </div>  <!-- field-items -->
-
-
-
-
-    <h3 class="field-label">Return type</h3>
-    <div class="return-type">
-      <a href="#JobInfoRead">JobInfoRead</a>
-      
-    </div>
-
-    <!--Todo: process Response Object and its headers, schema, examples -->
-
-    <h3 class="field-label">Example data</h3>
-    <div class="example-data-content-type">Content-Type: application/json</div>
-    <pre class="example"><code>{
-  "job" : {
-    "createdAt" : 6,
-    "configId" : "configId",
-    "id" : 0,
-    "updatedAt" : 1
-  },
-  "attempts" : [ {
-    "attempt" : {
-      "createdAt" : 5,
-      "bytesSynced" : 9,
-      "endedAt" : 7,
-      "id" : 5,
-      "recordsSynced" : 3,
-      "updatedAt" : 2
-    },
-    "logs" : {
-      "logLines" : [ "logLines", "logLines" ]
-    }
-  }, {
-    "attempt" : {
-      "createdAt" : 5,
-      "bytesSynced" : 9,
-      "endedAt" : 7,
-      "id" : 5,
-      "recordsSynced" : 3,
-      "updatedAt" : 2
-    },
-    "logs" : {
-      "logLines" : [ "logLines", "logLines" ]
-    }
-  } ]
-}</code></pre>
-
-    <h3 class="field-label">Produces</h3>
-    This API call produces the following media types according to the <span class="header">Accept</span> request header;
-    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
-    <ul>
-      <li><code>application/json</code></li>
-    </ul>
-
-    <h3 class="field-label">Responses</h3>
-    <h4 class="field-label">200</h4>
-    Successful operation
-        <a href="#JobInfoRead">JobInfoRead</a>
-    <h4 class="field-label">404</h4>
-    Job not found
-        <a href="#"></a>
-    <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
-  </div> <!-- method -->
-  <hr/>
   <div class="method"><a name="getJobInfo"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>

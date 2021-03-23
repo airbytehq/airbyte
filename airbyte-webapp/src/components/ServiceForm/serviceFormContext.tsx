@@ -13,9 +13,9 @@ type Context = {
   documentationUrl?: string;
   widgetsInfo: WidgetConfigMap;
   setUiWidgetsInfo: (path: string, value: Record<string, unknown>) => void;
-  unfinishedFlows: Record<string, { startValue: string; id: number | string }>;
-  addUnfinishedFlow: (key: string, info?: Record<string, unknown>) => void;
-  removeUnfinishedFlow: (key: string) => void;
+  unfinishedSecrets: Record<string, { startValue: string }>;
+  addUnfinishedSecret: (key: string, info?: Record<string, unknown>) => void;
+  removeUnfinishedSecret: (key: string) => void;
   resetUiFormProgress: () => void;
 };
 
@@ -23,10 +23,10 @@ const context: Context = {
   formType: "source",
   dropDownData: [],
   widgetsInfo: {},
+  unfinishedSecrets: {},
   setUiWidgetsInfo: (_path: string, _value: Record<string, unknown>) => ({}),
-  unfinishedFlows: {},
-  addUnfinishedFlow: (_key: string, _info?: Record<string, unknown>) => ({}),
-  removeUnfinishedFlow: (_key: string) => ({}),
+  addUnfinishedSecret: (_key: string, _info?: Record<string, unknown>) => ({}),
+  removeUnfinishedSecret: (_key: string) => ({}),
   resetUiFormProgress: () => ({}),
 };
 
@@ -46,7 +46,7 @@ const ServiceFormContextProvider: React.FC<{
   setUiWidgetsInfo: (path: string, value: Record<string, unknown>) => void;
 }> = ({ children, widgetsInfo, setUiWidgetsInfo, ...props }) => {
   const ctx = useMemo<Context>(() => {
-    const unfinishedFlows = widgetsInfo["_common.unfinishedFlows"] ?? {};
+    const unfinishedSecrets = widgetsInfo["_common.unfinishedSecrets"] ?? {};
     return {
       widgetsInfo,
       setUiWidgetsInfo,
@@ -56,21 +56,21 @@ const ServiceFormContextProvider: React.FC<{
       onChangeServiceType: props.onChangeServiceType,
       dropDownData: props.dropDownData,
       documentationUrl: props.documentationUrl,
-      unfinishedFlows: unfinishedFlows,
-      addUnfinishedFlow: (path, info) =>
-        setUiWidgetsInfo("_common.unfinishedFlows", {
-          ...unfinishedFlows,
+      unfinishedSecrets,
+      addUnfinishedSecret: (path, info) =>
+        setUiWidgetsInfo("_common.unfinishedSecrets", {
+          ...unfinishedSecrets,
           [path]: info ?? {},
         }),
-      removeUnfinishedFlow: (path: string) =>
+      removeUnfinishedSecret: (path: string) =>
         setUiWidgetsInfo(
-          "_common.unfinishedFlows",
+          "_common.unfinishedSecrets",
           Object.fromEntries(
-            Object.entries(unfinishedFlows).filter(([key]) => key !== path)
+            Object.entries(unfinishedSecrets).filter(([key]) => key !== path)
           )
         ),
       resetUiFormProgress: () => {
-        setUiWidgetsInfo("_common.unfinishedFlows", {});
+        setUiWidgetsInfo("_common.unfinishedSecrets", {});
       },
     };
   }, [props, widgetsInfo, setUiWidgetsInfo]);

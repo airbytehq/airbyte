@@ -13,11 +13,11 @@ jobs:
   integration_test:
     runs-on: ubuntu-latest
     steps:
-      - name: Search for valid connector name format
+      - name: Search for valid integration name format
         id: regex
         uses: AsasInnab/regex-action@v1
         with:
-          regex_pattern: '^((connectors|bases)/)?[a-zA-Z0-9-_]+$'
+          regex_pattern: '^[a-zA-Z0-9-_]+$'
           regex_flags: 'i' # required to be set for this plugin
           search_string: ${{ github.event.inputs.connector }}
       - name: Validate input workflow format
@@ -53,7 +53,6 @@ jobs:
           FACEBOOK_MARKETING_TEST_INTEGRATION_CREDS: ${{ secrets.FACEBOOK_MARKETING_TEST_INTEGRATION_CREDS }}
           FACEBOOK_MARKETING_API_TEST_INTEGRATION_CREDS: ${{ secrets.FACEBOOK_MARKETING_API_TEST_INTEGRATION_CREDS }}
           FRESHDESK_TEST_CREDS: ${{ secrets.FRESHDESK_TEST_CREDS }}
-          GITLAB_INTEGRATION_TEST_CREDS: ${{ secrets.GITLAB_INTEGRATION_TEST_CREDS }}
           GH_INTEGRATION_TEST_CREDS: ${{ secrets.GH_INTEGRATION_TEST_CREDS }}
           GOOGLE_ANALYTICS_TEST_CREDS: ${{ secrets.GOOGLE_ANALYTICS_TEST_CREDS }}
           GOOGLE_ANALYTICS_TEST_TRACKING_ID: ${{ secrets.GOOGLE_ANALYTICS_TEST_TRACKING_ID }}

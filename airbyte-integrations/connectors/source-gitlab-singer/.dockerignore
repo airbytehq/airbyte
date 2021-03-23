@@ -1,6 +1,0 @@
-*
-!Dockerfile
-!Dockerfile.test
-!source_gitlab_singer
-!setup.py
-!secrets

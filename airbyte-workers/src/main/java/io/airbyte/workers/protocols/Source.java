@@ -39,6 +39,4 @@ public interface Source<T> extends AutoCloseable {
   @Override
   void close() throws Exception;
 
-  void cancel() throws Exception;
-
 }

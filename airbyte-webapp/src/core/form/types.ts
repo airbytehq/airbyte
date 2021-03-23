@@ -4,20 +4,22 @@ export type FormBaseItem = {
   _type: "formItem";
   type: JSONSchema7TypeName;
   fieldKey: string;
-  path: string;
+  fieldName: string;
   isRequired: boolean;
   isSecret?: boolean;
   title?: string;
   multiline?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  meta?: { [key: string]: any };
 } & Partial<JSONSchema7>;
 
 type FormGroupItem = {
   _type: "formGroup";
-  path: string;
+  jsonSchema: JSONSchema7;
+  fieldName: string;
   fieldKey: string;
   isRequired: boolean;
   title?: string;
-  jsonSchema: JSONSchema7;
   properties: FormBlock[];
   isLoading?: boolean;
   description?: string;
@@ -27,34 +29,16 @@ type FormGroupItem = {
 
 type FormConditionItem = {
   _type: "formCondition";
-  path: string;
+  fieldName: string;
   fieldKey: string;
   isRequired: boolean;
-  title?: string;
   conditions: { [key: string]: FormGroupItem | FormBaseItem };
-};
-
-type FormObjectArrayItem = {
-  _type: "objectArray";
-  path: string;
-  fieldKey: string;
-  isRequired: boolean;
   title?: string;
-  properties: FormBlock;
 };
 
-type FormBlock =
-  | FormGroupItem
-  | FormBaseItem
-  | FormConditionItem
-  | FormObjectArrayItem;
+type FormBlock = FormGroupItem | FormBaseItem | FormConditionItem;
 
-export type {
-  FormBlock,
-  FormConditionItem,
-  FormGroupItem,
-  FormObjectArrayItem,
-};
+export type { FormBlock, FormConditionItem, FormGroupItem };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type WidgetConfig = { [key: string]: any };
