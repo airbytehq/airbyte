@@ -16,6 +16,13 @@ jobs:
         run: ./tools/bin/ci_integration_workflow_launcher.sh
         env:
           GITHUB_TOKEN: ${{ secrets.SLASH_COMMAND_PAT }}
+  launch_e2e_frontend_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+      - name: Run End-to-End Frontend Tests
+        run: ./tools/bin/e2e_test.sh
   build:
     runs-on: ubuntu-latest
     steps:
@@ -100,9 +107,6 @@ jobs:
       - name: Run End-to-End Acceptance Tests
         if: success() && github.ref == 'refs/heads/master'
         run: ./tools/bin/acceptance_test.sh
-
-      - name: Run End-to-End Frontend Tests
-        run: ./tools/bin/e2e_test.sh
 
       - name: Push Core Docker Images
         if: success() && github.ref == 'refs/heads/master'
