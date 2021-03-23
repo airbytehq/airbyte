@@ -327,6 +327,10 @@ public class SchedulerHandler {
       checkConnectionRead
           .status(Enums.convertTo(response.getOutput().getStatus(), StatusEnum.class))
           .message(response.getOutput().getMessage());
+    } else {
+      checkConnectionRead
+          .status(StatusEnum.FAILED)
+          .message("Check Connection Failed!");
     }
 
     return checkConnectionRead;
