@@ -152,7 +152,7 @@ class API:
 
         if response.status_code == 403:
             raise HubspotAccessDenied(message, response=response)
-        elif response.status_code == 401:
+        elif response.status_code in (401, 530):
             raise HubspotInvalidAuth(message, response=response)
         elif response.status_code == 429:
             retry_after = response.headers.get("Retry-After")

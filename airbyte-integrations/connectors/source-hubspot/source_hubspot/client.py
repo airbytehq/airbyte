@@ -39,7 +39,7 @@ from source_hubspot.api import (
     SubscriptionChangeStream,
     WorkflowStream,
 )
-from source_hubspot.errors import HubspotError
+from requests import HTTPError
 
 
 class Client(BaseClient):
@@ -102,7 +102,7 @@ class Client(BaseClient):
 
         try:
             _ = self._apis["contacts"].properties
-        except HubspotError as error:
+        except HTTPError as error:
             alive = False
             error_msg = repr(error)
 
