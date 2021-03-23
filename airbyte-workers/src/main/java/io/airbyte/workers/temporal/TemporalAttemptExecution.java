@@ -27,12 +27,14 @@ package io.airbyte.workers.temporal;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedSupplier;
+import io.airbyte.commons.io.IOs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
+import io.temporal.activity.Activity;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -56,6 +58,8 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements CheckedSupplier<
   private static final Logger LOGGER = LoggerFactory.getLogger(TemporalAttemptExecution.class);
   private static final Duration HEARTBEAT_INTERVAL = Duration.ofSeconds(10);
 
+  public static String WORKFLOW_ID_FILENAME = "WORKFLOW_ID";
+
   private final Path jobRoot;
   private final CheckedSupplier<Worker<INPUT, OUTPUT>, Exception> workerSupplier;
   private final Supplier<INPUT> inputSupplier;
@@ -63,13 +67,15 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements CheckedSupplier<
   private final BiConsumer<Path, String> mdcSetter;
   private final CheckedConsumer<Path, IOException> jobRootDirCreator;
   private final CancellationHandler cancellationHandler;
+  private final Supplier<String> workflowIdProvider;
 
   public TemporalAttemptExecution(Path workspaceRoot,
                                   JobRunConfig jobRunConfig,
                                   CheckedSupplier<Worker<INPUT, OUTPUT>, Exception> workerSupplier,
                                   Supplier<INPUT> inputSupplier,
                                   CancellationHandler cancellationHandler) {
-    this(workspaceRoot, jobRunConfig, workerSupplier, inputSupplier, WorkerUtils::setJobMdc, Files::createDirectories, cancellationHandler);
+    this(workspaceRoot, jobRunConfig, workerSupplier, inputSupplier, WorkerUtils::setJobMdc, Files::createDirectories, cancellationHandler,
+        () -> Activity.getExecutionContext().getInfo().getWorkflowId());
   }
 
   @VisibleForTesting
@@ -79,7 +85,8 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements CheckedSupplier<
                            Supplier<INPUT> inputSupplier,
                            BiConsumer<Path, String> mdcSetter,
                            CheckedConsumer<Path, IOException> jobRootDirCreator,
-                           CancellationHandler cancellationHandler) {
+                           CancellationHandler cancellationHandler,
+                           Supplier<String> workflowIdProvider) {
     this.jobRoot = WorkerUtils.getJobRoot(workspaceRoot, jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
     this.workerSupplier = workerSupplier;
     this.inputSupplier = inputSupplier;
@@ -87,6 +94,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements CheckedSupplier<
     this.mdcSetter = mdcSetter;
     this.jobRootDirCreator = jobRootDirCreator;
     this.cancellationHandler = cancellationHandler;
+    this.workflowIdProvider = workflowIdProvider;
   }
 
   @Override
@@ -96,6 +104,10 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements CheckedSupplier<
 
       LOGGER.info("Executing worker wrapper. Airbyte version: {}", new EnvConfigs().getAirbyteVersionOrWarning());
       jobRootDirCreator.accept(jobRoot);
+
+      final String workflowId = workflowIdProvider.get();
+      final Path workflowIdFile = jobRoot.getParent().resolve(WORKFLOW_ID_FILENAME);
+      IOs.writeFile(workflowIdFile, workflowId);
 
       final Worker<INPUT, OUTPUT> worker = workerSupplier.get();
       final CompletableFuture<OUTPUT> outputFuture = new CompletableFuture<>();
