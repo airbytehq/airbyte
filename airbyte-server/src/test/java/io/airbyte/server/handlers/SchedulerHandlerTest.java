@@ -72,7 +72,6 @@ import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.client.SynchronousJobMetadata;
 import io.airbyte.scheduler.client.SynchronousResponse;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
-import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.helpers.ConnectionHelpers;
@@ -82,7 +81,6 @@ import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URI;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.UUID;
@@ -130,7 +128,6 @@ class SchedulerHandlerTest {
   private ConfigurationUpdate configurationUpdate;
   private JsonSchemaValidator jsonSchemaValidator;
   private SpecFetcher specFetcher;
-  private JobPersistence jobPersistence;
 
   @BeforeEach
   void setup() {
@@ -146,10 +143,9 @@ class SchedulerHandlerTest {
     schedulerJobClient = spy(SchedulerJobClient.class);
     synchronousSchedulerClient = mock(SynchronousSchedulerClient.class);
     configRepository = mock(ConfigRepository.class);
-    jobPersistence = mock(JobPersistence.class);
 
     schedulerHandler = new SchedulerHandler(configRepository, schedulerJobClient, synchronousSchedulerClient, configurationUpdate,
-        jsonSchemaValidator, specFetcher, jobPersistence, mock(Path.class));
+        jsonSchemaValidator, specFetcher);
   }
 
   @Test

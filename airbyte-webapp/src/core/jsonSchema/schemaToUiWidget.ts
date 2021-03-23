@@ -15,7 +15,7 @@ import { FormBlock } from "core/form/types";
  */
 export const jsonSchemaToUiWidget = (
   jsonSchema: JSONSchema7Definition,
-  key = "",
+  key: string,
   path: string = key,
   parentSchema?: JSONSchema7Definition
 ): FormBlock => {
@@ -25,7 +25,7 @@ export const jsonSchemaToUiWidget = (
   if (typeof jsonSchema === "boolean") {
     return {
       _type: "formItem",
-      path: key,
+      fieldName: key,
       fieldKey: key,
       type: "null",
       isRequired,
@@ -45,25 +45,9 @@ export const jsonSchemaToUiWidget = (
 
     return {
       _type: "formCondition",
-      path: path || key,
+      fieldName: path || key,
       fieldKey: key,
       conditions,
-      isRequired,
-    };
-  }
-
-  if (
-    jsonSchema.type === "array" &&
-    typeof jsonSchema.items === "object" &&
-    !Array.isArray(jsonSchema.items) &&
-    jsonSchema.items.type === "object"
-  ) {
-    return {
-      ...pickDefaultFields(jsonSchema),
-      _type: "objectArray",
-      path: path || key,
-      fieldKey: key,
-      properties: jsonSchemaToUiWidget(jsonSchema.items, key, path),
       isRequired,
     };
   }
@@ -72,14 +56,14 @@ export const jsonSchemaToUiWidget = (
     const properties = Object.entries(
       jsonSchema.properties
     ).map(([k, schema]) =>
-      jsonSchemaToUiWidget(schema, k, path ? `${path}.${k}` : k, jsonSchema)
+      jsonSchemaToUiWidget(schema, k, `${path}.${k}`, jsonSchema)
     );
 
     return {
       ...pickDefaultFields(jsonSchema),
       _type: "formGroup",
       jsonSchema,
-      path: path || key,
+      fieldName: path || key,
       fieldKey: key,
       properties,
       isRequired,
@@ -89,7 +73,7 @@ export const jsonSchemaToUiWidget = (
   return {
     ...pickDefaultFields(jsonSchema),
     _type: "formItem",
-    path: path || key,
+    fieldName: path || key,
     fieldKey: key,
     isRequired,
     isSecret: (jsonSchema as { airbyte_secret: boolean }).airbyte_secret,
@@ -119,10 +103,5 @@ const pickDefaultFields = (schema: JSONSchema7): Partial<JSONSchema7> => ({
   description: schema.description,
   pattern: schema.pattern,
   title: schema.title,
-  enum:
-    typeof schema.items === "object" &&
-    !Array.isArray(schema.items) &&
-    schema.items.enum
-      ? schema.items.enum
-      : schema.enum,
+  enum: schema.enum,
 });

@@ -99,10 +99,8 @@ public class ServerApp {
 
     ConfigurationApiFactory.setSchedulerJobClient(new DefaultSchedulerJobClient(jobPersistence, new DefaultJobCreator(jobPersistence)));
     final JobTracker jobTracker = new JobTracker(configRepository);
-    final TemporalClient temporalClient = TemporalClient.production(configs.getWorkspaceRoot());
-
-    ConfigurationApiFactory
-        .setSynchronousSchedulerClient(new SpecCachingSynchronousSchedulerClient(new DefaultSynchronousSchedulerClient(temporalClient, jobTracker)));
+    ConfigurationApiFactory.setSynchronousSchedulerClient(
+        new SpecCachingSynchronousSchedulerClient(new DefaultSynchronousSchedulerClient(TemporalClient.production(), jobTracker)));
     ConfigurationApiFactory.setConfigRepository(configRepository);
     ConfigurationApiFactory.setJobPersistence(jobPersistence);
     ConfigurationApiFactory.setConfigs(configs);

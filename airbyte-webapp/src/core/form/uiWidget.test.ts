@@ -6,7 +6,7 @@ const formItems: FormBlock[] = [
   {
     _type: "formGroup",
     fieldKey: "key",
-    path: "key",
+    fieldName: "key",
     isRequired: true,
     jsonSchema: {
       type: "object",
@@ -39,21 +39,21 @@ const formItems: FormBlock[] = [
       {
         _type: "formItem",
         fieldKey: "start_date",
-        path: "key.start_date",
+        fieldName: "key.start_date",
         isRequired: true,
         type: "string",
       },
       {
         _type: "formCondition",
         fieldKey: "credentials",
-        path: "key.credentials",
+        fieldName: "key.credentials",
         isRequired: true,
         conditions: {
           "api key": {
             title: "api key",
             _type: "formGroup",
             fieldKey: "credentials",
-            path: "key.credentials",
+            fieldName: "key.credentials",
             isRequired: false,
             jsonSchema: {
               title: "api key",
@@ -64,7 +64,7 @@ const formItems: FormBlock[] = [
               {
                 _type: "formItem",
                 fieldKey: "api_key",
-                path: "key.credentials.api_key",
+                fieldName: "key.credentials.api_key",
                 isRequired: true,
                 type: "string",
               },
@@ -74,7 +74,7 @@ const formItems: FormBlock[] = [
             title: "oauth",
             _type: "formGroup",
             fieldKey: "credentials",
-            path: "key.credentials",
+            fieldName: "key.credentials",
             isRequired: false,
             jsonSchema: {
               title: "oauth",
@@ -91,7 +91,7 @@ const formItems: FormBlock[] = [
                 _type: "formItem",
                 examples: ["https://api.hubspot.com/"],
                 fieldKey: "redirect_uri",
-                path: "key.credentials.redirect_uri",
+                fieldName: "key.credentials.redirect_uri",
                 isRequired: true,
                 type: "string",
               },

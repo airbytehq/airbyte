@@ -24,10 +24,7 @@
 
 package io.airbyte.scheduler.client;
 
-import io.airbyte.config.JobConfig.ConfigType;
-import io.airbyte.workers.temporal.TemporalResponse;
 import java.util.Objects;
-import java.util.UUID;
 
 public class SynchronousResponse<T> {
 
@@ -40,23 +37,6 @@ public class SynchronousResponse<T> {
 
   public static <T> SynchronousResponse<T> success(T output, SynchronousJobMetadata metadata) {
     return new SynchronousResponse<>(output, metadata);
-  }
-
-  public static <T> SynchronousResponse<T> fromTemporalResponse(TemporalResponse<T> temporalResponse,
-                                                                UUID id,
-                                                                ConfigType configType,
-                                                                UUID configId,
-                                                                long createdAt,
-                                                                long endedAt) {
-
-    final SynchronousJobMetadata metadata = SynchronousJobMetadata.fromJobMetadata(
-        temporalResponse.getMetadata(),
-        id,
-        configType,
-        configId,
-        createdAt,
-        endedAt);
-    return new SynchronousResponse<>(temporalResponse.getOutput().orElse(null), metadata);
   }
 
   public SynchronousResponse(final T output, final SynchronousJobMetadata metadata) {

@@ -1,4 +1,6 @@
 import React from "react";
+import { useField } from "formik";
+
 import { ControlLabels } from "components/LabeledControl";
 import { FormBaseItem } from "core/form/types";
 
@@ -6,30 +8,23 @@ import { LabelMessage } from "./LabelMessage";
 
 type LabelMessageProps = {
   property: FormBaseItem;
-  error: string | undefined;
-  touched: boolean;
 };
 
-const Label: React.FC<LabelMessageProps> = ({
-  property,
-  error,
-  touched,
-  children,
-}) => {
+const Label: React.FC<LabelMessageProps> = ({ property, children }) => {
+  const [, meta] = useField(property.fieldName);
+
   const labelText = property.title || property.fieldKey;
   const labelRequiredAppendix = property.isRequired ? " *" : "";
   const label = `${labelText}${labelRequiredAppendix}`;
 
-  const displayError = !!error && touched;
+  const displayError = !!meta.error && meta.touched;
 
   return (
     <ControlLabels
       labelAdditionLength={0}
       error={displayError}
       label={label}
-      message={
-        <LabelMessage property={property} error={error} touched={touched} />
-      }
+      message={<LabelMessage property={property} />}
     >
       {children}
     </ControlLabels>

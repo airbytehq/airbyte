@@ -89,7 +89,7 @@ public abstract class JdbcSourceStandardTest {
 
   private static final String TABLE_NAME = "id_and_name";
   private static final String TABLE_NAME_WITHOUT_PK = "id_and_name_without_pk";
-  private static final String TABLE_NAME_COMPOSITE_PK = "full_name_composite_pk";
+  private static final String TABLE_NAME_FULL_NAMES = "full_names";
 
   private JsonNode config;
   private JdbcDatabase database;
@@ -164,11 +164,11 @@ public abstract class JdbcSourceStandardTest {
       connection.createStatement()
           .execute(
               String.format("CREATE TABLE %s(first_name VARCHAR(200), last_name VARCHAR(200), updated_at DATE, PRIMARY KEY (first_name, last_name));",
-                  getFullyQualifiedTableName(TABLE_NAME_COMPOSITE_PK)));
+                  getFullyQualifiedTableName(TABLE_NAME_FULL_NAMES)));
       connection.createStatement().execute(
           String.format(
               "INSERT INTO %s(first_name, last_name, updated_at) VALUES ('first' ,'picard', '2004-10-19'),  ('second', 'crusher', '2005-10-19'), ('third', 'vash', '2006-10-19');",
-              getFullyQualifiedTableName(TABLE_NAME_COMPOSITE_PK)));
+              getFullyQualifiedTableName(TABLE_NAME_FULL_NAMES)));
     });
   }
 
@@ -627,7 +627,7 @@ public abstract class JdbcSourceStandardTest {
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(Collections.emptyList()),
         CatalogHelpers.createAirbyteStream(
-            defaultNamespace + "." + TABLE_NAME_COMPOSITE_PK,
+            defaultNamespace + "." + TABLE_NAME_FULL_NAMES,
             Field.of("first_name", JsonSchemaPrimitive.STRING),
             Field.of("last_name", JsonSchemaPrimitive.STRING),
             Field.of("updated_at", JsonSchemaPrimitive.STRING))
