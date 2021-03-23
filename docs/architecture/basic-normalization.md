@@ -236,7 +236,9 @@ However, in the rare cases where these limits should be reached, Basic Normaliza
 
 As an example from the hubspot source, we could have the following tables with nested columns:
 
-| Original Stream Name | Json path to the nested column  | Final table name of expanded nested column on BigQuery | Final table name of expanded nested column on Postgres |
-| :--- | :--- | :--- | :--- |
-| `companies` | `companies/property_engagements_last_meeting_booked_campaign` | `companies_2e8_property_engagements_last_meeting_booked_campaign` | `companies_2e8_property_engag__oked_campaign` |  
-| `deals` | `deals/properties/engagements_last_meeting_booked_medium` | `deals_properties_6e6_engagements_last_meeting_booked_medium` | `deals_prop_6e6_engagements_l__booked_medium` |
+| Description | Example 1 | Example 2 |
+| :--- | :--- | :--- |
+| Original Stream Name | `companies` | `deals` |
+| Json path to the nested column | `companies/property_engagements_last_meeting_booked_campaign` | `deals/properties/engagements_last_meeting_booked_medium` |
+| Final table name of expanded nested column on BigQuery |`companies_2e8_property_engagements_last_meeting_booked_campaign` | `deals_properties_6e6_engagements_last_meeting_booked_medium` |
+| Final table name of expanded nested column on Postgres |`companies_2e8_property_engag__oked_campaign` | `deals_prop_6e6_engagements_l__booked_medium` |
