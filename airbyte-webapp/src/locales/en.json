@@ -2,7 +2,7 @@
   "webapp.cannotReachServer": "Cannot reach server. The server may still be starting up.",
 
   "sidebar.sources": "Sources",
-  "sidebar.destination": "Destination",
+  "sidebar.destinations": "Destinations",
   "sidebar.admin": "Admin",
   "sidebar.help": "Help",
   "sidebar.docs": "Docs",
