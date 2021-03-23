@@ -35,14 +35,11 @@ import io.airbyte.db.jdbc.PostgresJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-
-import java.sql.PreparedStatement;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,11 +78,12 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(JsonNode config) throws Exception {
     final List<CheckedConsumer<JdbcDatabase, Exception>> checkOperations = new ArrayList<>(super.getCheckOperations(config));
 
-    if(!config.get("replication_slot").isNull()) {
+    if (!config.get("replication_method").isNull() && !config.get("replication_method").get("replication_slot").isNull()) {
       checkOperations.add(database -> database.query(connection -> {
         LOGGER.info("Attempting to find the named replication slot.");
-        final String sql = String.format("SELECT slot_name, plugin, database FROM pg_replication_slots WHERE slot_name = %s AND plugin = %s AND database = %s",
-                JdbcUtils.enquoteIdentifier(connection, config.get("replication_slot").asText()),
+        final String sql =
+            String.format("SELECT slot_name, plugin, database FROM pg_replication_slots WHERE slot_name = %s AND plugin = %s AND database = %s",
+                JdbcUtils.enquoteIdentifier(connection, config.get("replication_method").get("replication_slot").asText()),
                 JdbcUtils.enquoteIdentifier(connection, "pgoutput"),
                 JdbcUtils.enquoteIdentifier(connection, config.get("database").asText()));
 
@@ -98,7 +96,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
 
   @Override
   public AutoCloseableIterator<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception {
-    if(config.get("replication_slot").isNull()) {
+    if (config.get("replication_method").isNull() || config.get("replication_method").get("replication_slot").isNull()) {
       return super.read(config, catalog, state);
     } else {
       throw new RuntimeException("todo: implement cdc. Easy!");
