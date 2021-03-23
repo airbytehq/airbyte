@@ -22,8 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from base_python_test import DefaultStandardSourceTest
+import sys
 
+from base_python.entrypoint import launch
+from source_gitlab_singer import SourceGitlabSinger
 
-class SourceFileStandardTest(DefaultStandardSourceTest):
-    pass
+if __name__ == "__main__":
+    source = SourceGitlabSinger()
+    launch(source, sys.argv[1:])

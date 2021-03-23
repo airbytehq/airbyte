@@ -27,6 +27,7 @@ import time
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from functools import partial
+from http import HTTPStatus
 from typing import Any, Callable, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
 
 import backoff
@@ -34,6 +35,9 @@ import pendulum as pendulum
 import requests
 from base_python.entrypoint import logger
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout
+
+# we got this when provided API Token has incorrect format
+CLOUDFLARE_ORIGIN_DNS_ERROR = 530
 
 
 def retry_connection_handler(**kwargs):
@@ -47,7 +51,7 @@ def retry_connection_handler(**kwargs):
     def giveup_handler(exc):
         if isinstance(exc, (HubspotInvalidAuth, HubspotAccessDenied)):
             return True
-        return exc.response is not None and 400 <= exc.response.status_code < 500
+        return exc.response is not None and HTTPStatus.BAD_REQUEST <= exc.response.status_code < HTTPStatus.INTERNAL_SERVER_ERROR
 
     return backoff.on_exception(
         backoff.expo,
@@ -107,7 +111,7 @@ class API:
         }
 
         resp = requests.post(self.BASE_URL + "/oauth/v1/token", data=payload)
-        if resp.status_code == 403:
+        if resp.status_code == HTTPStatus.FORBIDDEN:
             raise HubspotInvalidAuth(resp.content, response=resp)
 
         resp.raise_for_status()
@@ -147,21 +151,21 @@ class API:
     def _parse_and_handle_errors(response) -> Union[MutableMapping[str, Any], List[MutableMapping[str, Any]]]:
         """Handle response"""
         message = "Unknown error"
-        if response.headers.get("content-type") == "application/json;charset=utf-8" and response.status_code != 200:
+        if response.headers.get("content-type") == "application/json;charset=utf-8" and response.status_code != HTTPStatus.OK:
             message = response.json().get("message")
 
-        if response.status_code == 403:
+        if response.status_code == HTTPStatus.FORBIDDEN:
             raise HubspotAccessDenied(message, response=response)
-        elif response.status_code == 401:
+        elif response.status_code in (HTTPStatus.UNAUTHORIZED, CLOUDFLARE_ORIGIN_DNS_ERROR):
             raise HubspotInvalidAuth(message, response=response)
-        elif response.status_code == 429:
+        elif response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
             retry_after = response.headers.get("Retry-After")
             raise HubspotRateLimited(
                 f"429 Rate Limit Exceeded: API rate-limit has been reached until {retry_after} seconds."
                 " See https://developers.hubspot.com/docs/api/usage-details",
                 response=response,
             )
-        elif response.status_code in (502, 504):
+        elif response.status_code in (HTTPStatus.BAD_GATEWAY, HTTPStatus.SERVICE_UNAVAILABLE):
             raise HubspotTimeout(message, response=response)
         else:
             response.raise_for_status()

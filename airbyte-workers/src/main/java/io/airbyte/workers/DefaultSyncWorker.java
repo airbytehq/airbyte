@@ -145,7 +145,29 @@ public class DefaultSyncWorker implements SyncWorker {
 
   @Override
   public void cancel() {
+    LOGGER.info("Cancelling sync worker...");
     cancelled.set(true);
+
+    LOGGER.info("Cancelling source...");
+    try {
+      source.cancel();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
+    LOGGER.info("Cancelling destination...");
+    try {
+      destination.cancel();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
+    LOGGER.info("Cancelling normalization runner...");
+    try {
+      normalizationRunner.close();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 
 }
