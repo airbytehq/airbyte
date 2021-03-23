@@ -70,10 +70,10 @@ class TemporalAttemptExecutionTest {
 
     execution = mock(CheckedSupplier.class);
     mdcSetter = mock(BiConsumer.class);
-    jobRootDirCreator = mock(CheckedConsumer.class);
+    jobRootDirCreator = Files::createDirectories;
 
     attemptExecution = new TemporalAttemptExecution<>(workspaceRoot, JOB_RUN_CONFIG, execution, () -> "", mdcSetter, jobRootDirCreator,
-        mock(CancellationHandler.class));
+        mock(CancellationHandler.class), () -> "workflow_id");
   }
 
   @Test
@@ -87,9 +87,9 @@ class TemporalAttemptExecutionTest {
     final String actual = attemptExecution.get();
 
     assertEquals(expected, actual);
+
     verify(execution).get();
     verify(mdcSetter, atLeast(2)).accept(jobRoot, JOB_ID);
-    verify(jobRootDirCreator).accept(jobRoot);
   }
 
   @Test
@@ -102,7 +102,6 @@ class TemporalAttemptExecutionTest {
 
     verify(execution).get();
     verify(mdcSetter).accept(jobRoot, JOB_ID);
-    verify(jobRootDirCreator).accept(jobRoot);
   }
 
   @Test
@@ -115,7 +114,6 @@ class TemporalAttemptExecutionTest {
 
     verify(execution).get();
     verify(mdcSetter).accept(jobRoot, JOB_ID);
-    verify(jobRootDirCreator).accept(jobRoot);
   }
 
   @Test
@@ -129,7 +127,6 @@ class TemporalAttemptExecutionTest {
 
     verify(execution).get();
     verify(mdcSetter).accept(jobRoot, JOB_ID);
-    verify(jobRootDirCreator).accept(jobRoot);
   }
 
 }
