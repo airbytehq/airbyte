@@ -89,7 +89,7 @@ CREATE TABLE "cars" (
     "_airbyte_normalized_at" TIMESTAMP_WITH_TIMEZONE,
 
     "make" VARCHAR,
-    "model" VARCHAR,
+    "model" VARCHAR
 );
 
 CREATE TABLE "limited_editions" (
@@ -122,7 +122,7 @@ CREATE TABLE "cars" (
     "_airbyte_normalized_at" TIMESTAMP_WITH_TIMEZONE,
 
     "make" VARCHAR,
-    "model" VARCHAR,
+    "model" VARCHAR
 );
 
 CREATE TABLE "limited_editions" (
@@ -156,7 +156,7 @@ CREATE TABLE "cars" (
     "_airbyte_normalized_at" TIMESTAMP_WITH_TIMEZONE,
 
     "make" VARCHAR,
-    "model" VARCHAR,
+    "model" VARCHAR
 );
 
 CREATE TABLE "powertrain_specs" (
@@ -170,3 +170,73 @@ CREATE TABLE "powertrain_specs" (
 );
 ```
 
+### Naming Collisions for un-nested objects 
+
+When extracting nested objects or arrays, the Basic Normalization process needs to figure out new names for the expanded tables.
+
+For example, if we had a `cars` table where a nested column `cars` refers to other similar cars. 
+
+```javascript
+{
+  "make": "alfa romeo",
+  "model": "4C coupe",
+  "cars": [
+    { "make": "audi", "model": "A7" },
+    { "make" : "lotus" , "model":  "elise" }
+    { "make" : "chevrolet" , "model":  "mustang" }
+  ]
+}
+```
+
+The expanded table would have a conflict in terms of naming since both are named `cars`.
+To resolve this sort of name collisions and ensure a more consistent naming scheme, Basic Normalization is choosing the expanded name as follows:
+- `cars` for the original parent table
+- `cars_da3_cars` for the expanded nested columns following this naming scheme in 3 parts: `<Parent prefix>_<Hash>_<nested column name>`
+
+1. Parent prefix: The entire json path string with '_' characters used as delimiters to reach the parent table name
+2. Hash: Hash of the entire json path to reach the nested column reduced to 3 characters. This is to make sure we have a unique name (in case part of the name gets truncated, see below)
+3. Nested column name: name of the column being expanded into its own table
+
+By following this strategy, nested columns should "never" collide with other table names. 
+If it does, an exception will probably be thrown either by the normalization process or by DBT that runs afterward.
+
+```sql
+CREATE TABLE "cars" (
+    "_airbyte_cars_hashid" VARCHAR,
+    "_airbyte_emitted_at" TIMESTAMP_WITH_TIMEZONE,
+    "_airbyte_normalized_at" TIMESTAMP_WITH_TIMEZONE,
+
+    "make" VARCHAR,
+    "model" VARCHAR
+);
+
+CREATE TABLE "cars_da3_cars" (
+    "_airbyte_cars_hashid" VARCHAR,
+    "_airbyte_cars_foreign_hashid" VARCHAR,
+    "_airbyte_emitted_at" TIMESTAMP_WITH_TIMEZONE,
+    "_airbyte_normalized_at" TIMESTAMP_WITH_TIMEZONE,
+
+    "make" VARCHAR,
+    "model" VARCHAR
+);
+```
+
+### Naming limitations & truncation
+
+Note that destinations have limitations in terms of identifiers naming, especially on the number of characters that is used.
+For instance, on Postgres the documentation states:
+
+>  NAMEDATALEN-1 bytes of an identifier; longer names can be written in commands, but they will be truncated. By default, NAMEDATALEN is 64 so the maximum identifier length is 63 bytes
+
+Other modern data warehouses have much higher limits in terms of authorized name lengths so this should not be affecting us that often.
+However, in the rare cases where these limits should be reached, Basic Normalization will have to resort to fallback rules as follows:
+1. No Truncate if under destination's character limits
+2. Truncate only the `Parent prefix` to fit into destination's character limits
+3. Truncate the `Parent prefix` to at least the 10 first characters, then truncate the nested column name starting in the middle to preserve prefix/suffix substrings intact (whenever a truncate in the middle is made, two '__' characters are also inserted to denote where it happened) to fit into destination's character limits 
+
+As an example from the hubspot source, we could have the following tables with nested columns:
+
+| Original Stream Name | Json path to the nested column  | Final table name of expanded nested column on BigQuery | Final table name of expanded nested column on Postgres |
+| :--- | :--- | :--- | :--- |
+| `companies` | `companies/property_engagements_last_meeting_booked_campaign` | `companies_2e8_property_engagements_last_meeting_booked_campaign` | `companies_2e8_property_engag__oked_campaign` |  
+| `deals` | `deals/properties/engagements_last_meeting_booked_medium` | `deals_properties_6e6_engagements_last_meeting_booked_medium` | `deals_prop_6e6_engagements_l__booked_medium` |
