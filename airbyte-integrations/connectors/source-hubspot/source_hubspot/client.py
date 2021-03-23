@@ -26,6 +26,7 @@ from typing import Any, Iterator, Mapping, Tuple
 
 from airbyte_protocol import AirbyteStream
 from base_python import BaseClient
+from requests import HTTPError
 from source_hubspot.api import (
     API,
     CampaignStream,
@@ -39,7 +40,6 @@ from source_hubspot.api import (
     SubscriptionChangeStream,
     WorkflowStream,
 )
-from requests import HTTPError
 
 
 class Client(BaseClient):
