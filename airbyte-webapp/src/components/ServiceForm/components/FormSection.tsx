@@ -29,7 +29,7 @@ const ConditionControls = styled.div`
 const ConditionSection: React.FC<{
   formField: FormConditionItem;
   path?: string;
-}> = ({ formField }) => {
+}> = ({ formField, path }) => {
   const { widgetsInfo, setUiWidgetsInfo } = useServiceForm();
 
   const currentlySelectedCondition = widgetsInfo[formField.path]?.selectedItem;
@@ -60,6 +60,8 @@ const ConditionSection: React.FC<{
       <ConditionControls>
         <FormSection
           blocks={formField.conditions[currentlySelectedCondition]}
+          path={path}
+          skipAppend
         />
       </ConditionControls>
     </GroupControls>
