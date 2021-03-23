@@ -174,7 +174,7 @@ CREATE TABLE "powertrain_specs" (
 
 When extracting nested objects or arrays, the Basic Normalization process needs to figure out new names for the expanded tables.
 
-For example, if we had a `cars` table where a nested column `cars` refers to other similar cars. 
+For example, if we had a `cars` table with a nested column `cars` containing an object whose schema is identical to the parent table. 
 
 ```javascript
 {
@@ -189,7 +189,7 @@ For example, if we had a `cars` table where a nested column `cars` refers to oth
 ```
 
 The expanded table would have a conflict in terms of naming since both are named `cars`.
-To resolve this sort of name collisions and ensure a more consistent naming scheme, Basic Normalization is choosing the expanded name as follows:
+To avoid name collisions and ensure a more consistent naming scheme, Basic Normalization chooses the expanded name as follows:
 - `cars` for the original parent table
 - `cars_da3_cars` for the expanded nested columns following this naming scheme in 3 parts: `<Parent prefix>_<Hash>_<nested column name>`
 
@@ -223,13 +223,13 @@ CREATE TABLE "cars_da3_cars" (
 
 ### Naming limitations & truncation
 
-Note that destinations have limitations in terms of identifiers naming, especially on the number of characters that is used.
-For instance, on Postgres the documentation states:
+Note that different destinations have various naming limitations, most commonly on how long names can be.
+For instance, the Postgres documentation states:
 
 >  NAMEDATALEN-1 bytes of an identifier; longer names can be written in commands, but they will be truncated. By default, NAMEDATALEN is 64 so the maximum identifier length is 63 bytes
 
-Other modern data warehouses have much higher limits in terms of authorized name lengths so this should not be affecting us that often.
-However, in the rare cases where these limits should be reached, Basic Normalization will have to resort to fallback rules as follows:
+Most modern data warehouses have name lengths limits on the longer side, so this should not affect us that often.
+However, in the rare cases where these limits are reached, Basic Normalization will fallback to the following rules:
 1. No Truncate if under destination's character limits
 2. Truncate only the `Parent prefix` to fit into destination's character limits
 3. Truncate the `Parent prefix` to at least the 10 first characters, then truncate the nested column name starting in the middle to preserve prefix/suffix substrings intact (whenever a truncate in the middle is made, two '__' characters are also inserted to denote where it happened) to fit into destination's character limits 
