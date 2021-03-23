@@ -133,7 +133,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
                           final FileTtlManager archiveTtlManager) {
     final SpecFetcher specFetcher = new SpecFetcher(synchronousSchedulerClient);
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
-    schedulerHandler = new SchedulerHandler(configRepository, schedulerJobClient, synchronousSchedulerClient);
+    schedulerHandler =
+        new SchedulerHandler(configRepository, schedulerJobClient, synchronousSchedulerClient, jobPersistence, configs.getWorkspaceRoot());
     final DockerImageValidator dockerImageValidator = new DockerImageValidator(synchronousSchedulerClient);
     sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, synchronousSchedulerClient);
     connectionsHandler = new ConnectionsHandler(configRepository);
@@ -394,6 +395,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public SourceDiscoverSchemaRead executeSourceDiscoverSchema(@Valid SourceCoreConfig sourceCreate) {
     return execute(() -> schedulerHandler.discoverSchemaForSourceFromSourceCreate(sourceCreate));
+  }
+
+  @Override
+  public JobInfoRead cancelJob(@Valid JobIdRequestBody jobIdRequestBody) {
+    return execute(() -> schedulerHandler.cancelJob(jobIdRequestBody));
   }
 
   // JOB HISTORY

@@ -64,11 +64,6 @@ const SourceSettings: React.FC<IProps> = ({
     }
   };
 
-  // values: {
-  //   name: string;
-  //   serviceType: string;
-  //   connectionConfiguration?: ConnectionConfiguration;
-  // }
   const onRetest = async (values: {
     name: string;
     serviceType: string;
