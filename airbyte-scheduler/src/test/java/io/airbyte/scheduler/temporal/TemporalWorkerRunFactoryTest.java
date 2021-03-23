@@ -36,12 +36,14 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
+import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.scheduler.Job;
 import io.airbyte.scheduler.worker_run.TemporalWorkerRunFactory;
 import io.airbyte.scheduler.worker_run.WorkerRun;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.temporal.TemporalClient;
+import io.airbyte.workers.temporal.TemporalResponse;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -70,15 +72,20 @@ class TemporalWorkerRunFactoryTest {
     when(job.getAttemptsCount()).thenReturn(ATTEMPT_ID);
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   void testSync() throws Exception {
     when(job.getConfigType()).thenReturn(ConfigType.SYNC);
+    final TemporalResponse<StandardSyncOutput> mockResponse = mock(TemporalResponse.class);
+    when(temporalClient.submitSync(JOB_ID, ATTEMPT_ID, job.getConfig().getSync())).thenReturn(mockResponse);
+
     final WorkerRun workerRun = workerRunFactory.create(job);
     workerRun.call();
     verify(temporalClient).submitSync(JOB_ID, ATTEMPT_ID, job.getConfig().getSync());
     assertEquals(jobRoot, workerRun.getJobRoot());
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   void testResetConnection() throws Exception {
     final JobResetConnectionConfig resetConfig = new JobResetConnectionConfig()
@@ -93,6 +100,8 @@ class TemporalWorkerRunFactoryTest {
         .withConfiguredAirbyteCatalog(resetConfig.getConfiguredAirbyteCatalog());
     when(job.getConfigType()).thenReturn(ConfigType.RESET_CONNECTION);
     when(job.getConfig().getResetConnection()).thenReturn(resetConfig);
+    final TemporalResponse<StandardSyncOutput> mockResponse = mock(TemporalResponse.class);
+    when(temporalClient.submitSync(JOB_ID, ATTEMPT_ID, syncConfig)).thenReturn(mockResponse);
 
     final WorkerRun workerRun = workerRunFactory.create(job);
     workerRun.call();

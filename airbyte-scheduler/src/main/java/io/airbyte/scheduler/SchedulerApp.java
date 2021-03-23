@@ -99,7 +99,7 @@ public class SchedulerApp {
 
     final ExecutorService workerThreadPool = Executors.newFixedThreadPool(MAX_WORKERS, THREAD_FACTORY);
     final ScheduledExecutorService scheduledPool = Executors.newSingleThreadScheduledExecutor();
-    final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(TemporalClient.production(), workspaceRoot);
+    final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(TemporalClient.production(workspaceRoot), workspaceRoot);
     final JobRetrier jobRetrier = new JobRetrier(jobPersistence, Instant::now);
     final JobScheduler jobScheduler = new JobScheduler(jobPersistence, configRepository);
     final JobSubmitter jobSubmitter = new JobSubmitter(
