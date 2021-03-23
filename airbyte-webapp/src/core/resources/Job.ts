@@ -1,11 +1,12 @@
 import {
-  Resource,
   FetchOptions,
-  ReadShape,
-  SchemaDetail,
   MutateShape,
+  ReadShape,
+  Resource,
+  SchemaDetail,
 } from "rest-hooks";
 import BaseResource from "./BaseResource";
+import Status from "../statuses";
 
 export interface JobItem {
   id: number | string;
@@ -14,7 +15,7 @@ export interface JobItem {
   createdAt: number;
   startedAt: number;
   updatedAt: number;
-  status: string;
+  status: Status | null;
 }
 
 export interface Logs {
@@ -45,7 +46,7 @@ export default class JobResource extends BaseResource implements Job {
     createdAt: 0,
     startedAt: 0,
     updatedAt: 0,
-    status: "",
+    status: null,
   };
   readonly attempts: Attempt[] = [];
   readonly logsByAttempt: { [key: string]: Logs } = {};

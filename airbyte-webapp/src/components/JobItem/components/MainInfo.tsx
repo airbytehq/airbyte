@@ -103,9 +103,9 @@ const MainInfo: React.FC<IProps> = ({
   };
 
   const isNotCompleted =
-    job.status === Status.PENDING ||
-    job.status === Status.RUNNING ||
-    job.status === Status.INCOMPLETE;
+    job.status &&
+    [Status.PENDING, Status.RUNNING, Status.INCOMPLETE].includes(job.status);
+
   return (
     <MainView isOpen={isOpen} isFailed={isFailed} onClick={onExpand}>
       <Cell>
