@@ -72,7 +72,14 @@ public class ScheduleJobPredicate implements BiPredicate<Optional<Job>, Standard
     }
 
     final Job previousJob = previousJobOptional.get();
-    long nextRunStart = previousJob.getUpdatedAtInSecond() + ScheduleHelpers.getIntervalInSecond(standardSyncSchedule.getSchedule());
+
+    // if there is an active job, do not start a new one.
+    if (!JobStatus.TERMINAL_STATUSES.contains(previousJob.getStatus())) {
+      return false;
+    }
+
+    long prevRunStart = previousJob.getStartedAtInSecond().orElse(previousJob.getCreatedAtInSecond());
+    long nextRunStart = prevRunStart + ScheduleHelpers.getIntervalInSecond(standardSyncSchedule.getSchedule());
     return nextRunStart < timeSupplier.get().getEpochSecond();
   }
 

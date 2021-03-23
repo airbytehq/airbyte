@@ -1,0 +1,96 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "parentId": {
+      "type": ["null", "integer"]
+    },
+    "metaData": {
+      "type": "object",
+      "properties": {
+        "processing": {
+          "type": ["null", "string"]
+        },
+        "size": {
+          "type": ["null", "integer"]
+        },
+        "error": {
+          "type": ["null", "string"]
+        },
+        "lastProcessingStateChangeAt": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "lastSizeChangeAt": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        }
+      }
+    },
+    "dynamic": {
+      "type": ["null", "boolean"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "filters": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "filterFamily": {
+              "type": ["null", "string"]
+            },
+            "withinTimeMode": {
+              "type": ["null", "string"]
+            },
+            "checkPastVersions": {
+              "type": ["null", "boolean"]
+            },
+            "type": {
+              "type": ["null", "string"]
+            },
+            "property": {
+              "type": ["null", "string"]
+            },
+            "value": {
+              "type": ["null", "string"]
+            },
+            "operator": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    },
+    "portalId": {
+      "type": ["null", "integer"]
+    },
+    "createdAt": {
+      "type": "integer"
+    },
+    "listId": {
+      "type": ["null", "integer"]
+    },
+    "updatedAt": {
+      "type": "integer"
+    },
+    "internalListId": {
+      "type": ["null", "integer"]
+    },
+    "readOnly": {
+      "type": ["null", "boolean"]
+    },
+    "deleteable": {
+      "type": ["null", "boolean"]
+    },
+    "listType": {
+      "type": ["null", "string"]
+    },
+    "archived": {
+      "type": ["null", "boolean"]
+    }
+  }
+}
