@@ -34,10 +34,13 @@ import io.airbyte.commons.functional.CheckedConsumer;
  * of the transformed data to the final destination i.e. the technical system data is being written
  * to.
  *
- * Lifecycle: 1. Instantiate consumer. 2. start() to initialize any resources that need to be
- * created BEFORE the consumer consumes any messages. 3. Consumes ALL records via
- * {@link DestinationConsumer#accept(T)} 4. Always (on success or failure) finalize by calling
- * {@link DestinationConsumer#close()}
+ * Lifecycle:
+ * <li>1. Instantiate consumer.</li>
+ * <li>2. start() to initialize any resources that need to be created BEFORE the consumer consumes
+ * any messages.</li>
+ * <li>3. Consumes ALL records via {@link DestinationConsumer#accept(T)}</li>
+ * <li>4. Always (on success or failure) finalize by calling
+ * {@link DestinationConsumer#close()}</li>
  *
  * We encourage implementing this interface using the {@link FailureTrackingConsumer} class.
  */
