@@ -1,4 +1,10 @@
-import { Resource, FetchOptions, ReadShape, SchemaDetail } from "rest-hooks";
+import {
+  Resource,
+  FetchOptions,
+  ReadShape,
+  SchemaDetail,
+  MutateShape,
+} from "rest-hooks";
 import BaseResource from "./BaseResource";
 
 export interface JobItem {
@@ -90,6 +96,38 @@ export default class JobResource extends BaseResource implements Job {
           job: JobItem;
           attempts: { attempt: Attempt; logs: Logs }[];
         } = await this.fetch("post", `${this.url(params)}/get`, params);
+
+        const attemptsValue = jobResult.attempts.map(
+          (attemptItem) => attemptItem.attempt
+        );
+
+        return {
+          job: jobResult.job,
+          attempts: attemptsValue,
+          logsByAttempt: Object.fromEntries(
+            jobResult.attempts.map((attemptItem) => [
+              attemptItem.attempt.id,
+              attemptItem.logs,
+            ])
+          ),
+        };
+      },
+      schema: this,
+    };
+  }
+
+  static cancelShape<T extends typeof Resource>(
+    this: T
+  ): MutateShape<SchemaDetail<Job>> {
+    return {
+      ...super.partialUpdateShape(),
+      fetch: async (
+        params: Readonly<Record<string, string | number>>
+      ): Promise<Job> => {
+        const jobResult: {
+          job: JobItem;
+          attempts: { attempt: Attempt; logs: Logs }[];
+        } = await this.fetch("post", `${this.url(params)}/cancel`, params);
 
         const attemptsValue = jobResult.attempts.map(
           (attemptItem) => attemptItem.attempt
