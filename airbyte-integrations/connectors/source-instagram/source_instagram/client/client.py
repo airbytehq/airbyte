@@ -49,12 +49,12 @@ class Client(BaseClient):
         self._api = FacebookAdsApi.init(access_token=access_token)
         self._apis = {
             "media": MediaAPI(self),
+            "media_insights": MediaInsightsAPI(self),
             "stories": StoriesAPI(self),
+            "story_insights": StoriesInsightsAPI(self),
             "users": UsersAPI(self),
             "user_lifetime_insights": UserLifetimeInsightsAPI(self),
             "user_insights": UserInsightsAPI(self),
-            "media_insights": MediaInsightsAPI(self),
-            "story_insights": StoriesInsightsAPI(self),
         }
         super().__init__()
 

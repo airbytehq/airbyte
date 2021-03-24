@@ -2,6 +2,7 @@
 Thanks for contributing to Airbyte! Please complete the following items in order so we can review your PR.
 - [ ] Followed all the instructions in the locally generated checklist and your connector is functional & ready for review
 - [ ] Ran the standard test suite locally via `./gradlew :airbyte-integrations:connectors:source-<your_source_name>:standardSourceTestPython` and pasted the summarized output as a comment in this PR
+- [ ] Added the connector to the [connector health page](https://docs.airbyte.io/integrations/connector-health)
 
 ## Reviewer Pre-merge Checklist 
 - [ ] Finished iterating with the PR author on the code*

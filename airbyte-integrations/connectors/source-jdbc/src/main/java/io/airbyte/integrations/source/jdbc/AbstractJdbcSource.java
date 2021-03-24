@@ -57,6 +57,7 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -67,6 +68,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -163,30 +165,77 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
             .stream()
             .collect(Collectors.toMap(t -> String.format("%s.%s", t.getSchemaName(), t.getName()), Function.identity()));
 
-    final List<AutoCloseableIterator<AirbyteMessage>> iteratorList = new ArrayList<>();
-
-    for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
-      final String streamName = airbyteStream.getStream().getName();
-      if (!tableNameToTable.containsKey(streamName)) {
-        LOGGER.info("Skipping stream {} because it is not in the source", streamName);
-        continue;
-      }
-
-      final TableInfoInternal table = tableNameToTable.get(streamName);
-      final AutoCloseableIterator<AirbyteMessage> tableReadIterator = createReadIterator(
-          database,
-          airbyteStream,
-          table,
-          stateManager,
-          emittedAt);
-      iteratorList.add(tableReadIterator);
-    }
+    final List<AutoCloseableIterator<AirbyteMessage>> incrementalIterators =
+        getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
+    final List<AutoCloseableIterator<AirbyteMessage>> fullRefreshIterators =
+        getFullRefreshIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
+    final List<AutoCloseableIterator<AirbyteMessage>> iteratorList = Stream.of(incrementalIterators, fullRefreshIterators)
+        .flatMap(Collection::stream)
+        .collect(Collectors.toList());
 
     return AutoCloseableIterators.appendOnClose(AutoCloseableIterators.concatWithEagerClose(iteratorList), () -> {
       LOGGER.info("Closing database connection pool.");
       Exceptions.toRuntime(database::close);
       LOGGER.info("Closed database connection pool.");
     });
+  }
+
+  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(JdbcDatabase database,
+                                                                             ConfiguredAirbyteCatalog catalog,
+                                                                             Map<String, TableInfoInternal> tableNameToTable,
+                                                                             JdbcStateManager stateManager,
+                                                                             Instant emittedAt) {
+    return getSelectedIterators(
+        database,
+        catalog,
+        tableNameToTable,
+        stateManager,
+        emittedAt,
+        configuredStream -> configuredStream.getSyncMode().equals(SyncMode.INCREMENTAL));
+  }
+
+  public List<AutoCloseableIterator<AirbyteMessage>> getFullRefreshIterators(JdbcDatabase database,
+                                                                             ConfiguredAirbyteCatalog catalog,
+                                                                             Map<String, TableInfoInternal> tableNameToTable,
+                                                                             JdbcStateManager stateManager,
+                                                                             Instant emittedAt) {
+    return getSelectedIterators(
+        database,
+        catalog,
+        tableNameToTable,
+        stateManager,
+        emittedAt,
+        configuredStream -> configuredStream.getSyncMode().equals(SyncMode.FULL_REFRESH));
+  }
+
+  private List<AutoCloseableIterator<AirbyteMessage>> getSelectedIterators(JdbcDatabase database,
+                                                                           ConfiguredAirbyteCatalog catalog,
+                                                                           Map<String, TableInfoInternal> tableNameToTable,
+                                                                           JdbcStateManager stateManager,
+                                                                           Instant emittedAt,
+                                                                           Predicate<ConfiguredAirbyteStream> selector) {
+    final List<AutoCloseableIterator<AirbyteMessage>> iteratorList = new ArrayList<>();
+
+    for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
+      if (selector.test(airbyteStream)) {
+        final String streamName = airbyteStream.getStream().getName();
+        if (!tableNameToTable.containsKey(streamName)) {
+          LOGGER.info("Skipping stream {} because it is not in the source", streamName);
+          continue;
+        }
+
+        final TableInfoInternal table = tableNameToTable.get(streamName);
+        final AutoCloseableIterator<AirbyteMessage> tableReadIterator = createReadIterator(
+            database,
+            airbyteStream,
+            table,
+            stateManager,
+            emittedAt);
+        iteratorList.add(tableReadIterator);
+      }
+    }
+
+    return iteratorList;
   }
 
   private AutoCloseableIterator<AirbyteMessage> createReadIterator(JdbcDatabase database,

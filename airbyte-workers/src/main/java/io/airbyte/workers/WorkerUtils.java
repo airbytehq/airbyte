@@ -28,6 +28,7 @@ import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardTapConfig;
 import io.airbyte.config.StandardTargetConfig;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
+import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessBuilderFactory;
@@ -122,6 +123,14 @@ public class WorkerUtils {
   // once we are fully on temporal.
   public static Path getJobRoot(Path workspaceRoot, IntegrationLauncherConfig launcherConfig) {
     return getJobRoot(workspaceRoot, launcherConfig.getJobId(), Math.toIntExact(launcherConfig.getAttemptId()));
+  }
+
+  public static Path getJobRoot(Path workspaceRoot, JobRunConfig jobRunConfig) {
+    return getJobRoot(workspaceRoot, jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
+  }
+
+  public static Path getLogPath(Path jobRoot) {
+    return jobRoot.resolve(WorkerConstants.LOG_FILENAME);
   }
 
   public static Path getJobRoot(Path workspaceRoot, String jobId, long attemptId) {
