@@ -1,13 +1,14 @@
 import React from "react";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faTimes, faBan } from "@fortawesome/free-solid-svg-icons";
 
 import PauseIcon from "./components/Pause";
 
 type IProps = {
   success?: boolean;
   inactive?: boolean;
+  empty?: boolean;
   className?: string;
   big?: boolean;
   value?: string | number;
@@ -29,6 +30,8 @@ const Badge = styled.div<IProps>`
       ? props.theme.successColor
       : props.inactive
       ? props.theme.greyColor40
+      : props.empty
+      ? props.theme.attentionColor
       : props.theme.dangerColor};
   box-shadow: 0 1px 2px ${({ theme }) => theme.shadowColor};
   border-radius: ${({ value }) => (value ? "15px" : "50%")};
@@ -55,6 +58,8 @@ const StatusIcon: React.FC<IProps> = (props) => (
       <FontAwesomeIcon icon={faCheck} />
     ) : props.inactive ? (
       <PauseIcon />
+    ) : props.empty ? (
+      <FontAwesomeIcon icon={faBan} />
     ) : (
       <FontAwesomeIcon icon={faTimes} />
     )}

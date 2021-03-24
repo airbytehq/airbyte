@@ -8,6 +8,7 @@ type AllConnectionsStatusCellProps = {
     name: string;
     connector: string;
     status: string;
+    lastSyncStatus: string;
   }[];
 };
 
@@ -15,12 +16,34 @@ const AllConnectionsStatusCell: React.FC<AllConnectionsStatusCellProps> = ({
   connectEntities,
 }) => {
   const active = useMemo(
-    () => connectEntities.filter((entity) => entity.status === Status.ACTIVE),
+    () =>
+      connectEntities.filter(
+        (entity) => entity.lastSyncStatus === Status.ACTIVE
+      ),
     [connectEntities]
   );
 
   const inactive = useMemo(
-    () => connectEntities.filter((entity) => entity.status === Status.INACTIVE),
+    () =>
+      connectEntities.filter(
+        (entity) => entity.lastSyncStatus === Status.INACTIVE
+      ),
+    [connectEntities]
+  );
+
+  const failed = useMemo(
+    () =>
+      connectEntities.filter(
+        (entity) => entity.lastSyncStatus === Status.FAILED
+      ),
+    [connectEntities]
+  );
+
+  const empty = useMemo(
+    () =>
+      connectEntities.filter(
+        (entity) => entity.lastSyncStatus === Status.EMPTY
+      ),
     [connectEntities]
   );
 
@@ -34,6 +57,8 @@ const AllConnectionsStatusCell: React.FC<AllConnectionsStatusCellProps> = ({
     <>
       {active.length ? <StatusIcon success value={active.length} /> : null}
       {inactive.length ? <StatusIcon inactive value={inactive.length} /> : null}
+      {failed.length ? <StatusIcon value={failed.length} /> : null}
+      {empty.length ? <StatusIcon empty value={empty.length} /> : null}
     </>
   );
 };
