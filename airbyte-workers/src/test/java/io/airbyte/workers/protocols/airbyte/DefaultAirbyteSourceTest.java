@@ -47,6 +47,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.process.IntegrationLauncher;
@@ -73,6 +74,7 @@ class DefaultAirbyteSourceTest {
   private static final ConfiguredAirbyteCatalog CATALOG = new ConfiguredAirbyteCatalog()
       .withStreams(Collections.singletonList(
           new ConfiguredAirbyteStream()
+              .withSyncMode(SyncMode.FULL_REFRESH)
               .withStream(new AirbyteStream()
                   .withName("hudi:latest")
                   .withJsonSchema(CatalogHelpers.fieldsToJsonSchema(new Field(FIELD_NAME, Field.JsonSchemaPrimitive.STRING))))));

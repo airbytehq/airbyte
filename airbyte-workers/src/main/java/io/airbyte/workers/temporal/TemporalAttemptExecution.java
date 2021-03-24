@@ -31,7 +31,6 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.Worker;
-import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
 import io.temporal.activity.Activity;
@@ -53,7 +52,7 @@ import org.slf4j.LoggerFactory;
  * outputs are passed to the selected worker. It also makes sures that the outputs of the worker are
  * persisted to the db.
  */
-public class TemporalAttemptExecution<INPUT, OUTPUT> implements CheckedSupplier<OUTPUT, TemporalJobException> {
+public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TemporalAttemptExecution.class);
   private static final Duration HEARTBEAT_INTERVAL = Duration.ofSeconds(10);
@@ -98,7 +97,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements CheckedSupplier<
   }
 
   @Override
-  public OUTPUT get() throws TemporalJobException {
+  public OUTPUT get() {
     try {
       mdcSetter.accept(jobRoot, jobId);
 
@@ -125,10 +124,8 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements CheckedSupplier<
         LOGGER.info("Stopping cancellation check scheduling...");
         scheduledExecutor.shutdown();
       }
-    } catch (TemporalJobException e) {
-      throw e;
     } catch (Exception e) {
-      throw new TemporalJobException(jobRoot.resolve(WorkerConstants.LOG_FILENAME), e);
+      throw Activity.wrap(e);
     }
   }
 

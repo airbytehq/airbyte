@@ -25,27 +25,49 @@
 package io.airbyte.workers.temporal;
 
 import java.nio.file.Path;
+import java.util.Objects;
 
-public class TemporalJobException extends Exception {
+public class JobMetadata {
 
+  private final boolean succeeded;
   private final Path logPath;
 
-  public TemporalJobException(Path logPath) {
+  public JobMetadata(final boolean succeeded, final Path logPath) {
+    this.succeeded = succeeded;
     this.logPath = logPath;
   }
 
-  public TemporalJobException(Path logPath, Throwable cause) {
-    super(cause);
-    this.logPath = logPath;
-  }
-
-  public TemporalJobException(Path logPath, String message, Throwable cause) {
-    super(message, cause);
-    this.logPath = logPath;
+  public boolean isSucceeded() {
+    return succeeded;
   }
 
   public Path getLogPath() {
     return logPath;
+  }
+
+  @Override
+  public boolean equals(final Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    final JobMetadata that = (JobMetadata) o;
+    return succeeded == that.succeeded && Objects.equals(logPath, that.logPath);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(succeeded, logPath);
+  }
+
+  @Override
+  public String toString() {
+    return "JobMetadata{" +
+        "succeeded=" + succeeded +
+        ", logPath=" + logPath +
+        '}';
   }
 
 }

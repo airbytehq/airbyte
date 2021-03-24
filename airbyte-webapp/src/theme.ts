@@ -13,6 +13,7 @@ export const theme = {
 
   dangerColor: "#F74D58",
   dangerTransparentColor: "rgba(247, 77, 88, 0.1)",
+  attentionColor: "#FFBD2E",
   successColor: "#45E698",
   successColor10: "rgba(69, 230, 152, .1)",
   successColor20: "rgba(69, 230, 152, .2)",

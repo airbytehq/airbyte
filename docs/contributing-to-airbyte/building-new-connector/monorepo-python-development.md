@@ -1,8 +1,7 @@
-# Python Connectors
+# Monorepo Python Development
 
-Although we support any language to build connectors, many of them are developed in `python`.
-
-In order to provide the best developer experience, here are some instructions on how to configure your python project.
+This guide contains instructions on how to setup Python with Gradle within the Airbyte Monorepo. If you are a contributor working on one or two connectors, 
+this page is most likely not relevant to you. Instead, you should use your standard Python development flow.    
 
 ## Python Connector Development
 
