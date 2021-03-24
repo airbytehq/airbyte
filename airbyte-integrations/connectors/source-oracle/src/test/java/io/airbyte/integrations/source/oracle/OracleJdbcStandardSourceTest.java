@@ -102,6 +102,9 @@ class OracleJdbcStandardSourceTest extends JdbcSourceStandardTest {
 
   @AfterEach
   public void cleanDatabase() throws Exception {
+    // ORA-12519
+    // https://stackoverflow.com/questions/205160/what-can-cause-intermittent-ora-12519-tns-no-appropriate-handler-found-errors
+    // sleep for 1000
     executeOracleStatement(String.format("DROP TABLE %s", getFullyQualifiedTableName(TABLE_NAME)));
     executeOracleStatement(String.format("DROP TABLE %s", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_PK)));
     executeOracleStatement(String.format("DROP TABLE %s", getFullyQualifiedTableName(TABLE_NAME_COMPOSITE_PK)));
