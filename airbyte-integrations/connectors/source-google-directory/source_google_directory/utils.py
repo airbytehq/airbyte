@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-
 def rate_limit_handling(error):
     retried_cases = [
         (403, "quotaExceeded"),
