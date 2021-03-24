@@ -109,4 +109,17 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
     }
   }
 
+  @Override
+  public void cancel() throws Exception {
+    LOGGER.info("Attempting to cancel destination process...");
+
+    if (targetProcess == null) {
+      LOGGER.info("Target process no longer exists, cancellation is a no-op.");
+    } else {
+      LOGGER.info("Target process exists, cancelling...");
+      WorkerUtils.cancelProcess(targetProcess);
+      LOGGER.info("Cancelled destination process!");
+    }
+  }
+
 }

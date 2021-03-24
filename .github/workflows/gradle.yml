@@ -101,10 +101,6 @@ jobs:
         if: success() && github.ref == 'refs/heads/master'
         run: ./tools/bin/acceptance_test.sh
 
-      - name: Run End-to-End Frontend Tests
-        if: success() && github.ref == 'refs/heads/master'
-        run: ./tools/bin/e2e_test.sh
-
       - name: Push Core Docker Images
         if: success() && github.ref == 'refs/heads/master'
         run: |
@@ -162,6 +158,30 @@ jobs:
       - name: Run Docker End-to-End Acceptance Tests
         run: |
           ./tools/bin/acceptance_test.sh
+
+  launch_e2e_frontend_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+
+      - uses: actions/setup-java@v1
+        with:
+          java-version: '14'
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '14.7'
+
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.7'
+
+      - name: Build Core Docker Images and Run Tests
+        run: CORE_ONLY=true ./gradlew --no-daemon build --scan
+
+      - name: Run End-to-End Frontend Tests
+        run: ./tools/bin/e2e_test.sh
 # DISABLED UNTIL WE HAVE TEMPORAL ON KUBE
 #  test_kube:
 #    runs-on: ubuntu-latest
