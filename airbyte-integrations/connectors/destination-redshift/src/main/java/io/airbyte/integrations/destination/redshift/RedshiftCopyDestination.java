@@ -32,6 +32,7 @@ import com.amazonaws.services.s3.model.CreateBucketRequest;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
@@ -78,9 +79,8 @@ public class RedshiftCopyDestination implements Destination {
 
   @Override
   public ConnectorSpecification spec() throws Exception {
-    // TODO: implement
-    // this returns the spec
-    return null;
+    final String resourceString = MoreResources.readResource("spec.json");
+    return Jsons.deserialize(resourceString, ConnectorSpecification.class);
   }
 
   @Override

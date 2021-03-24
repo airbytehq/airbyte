@@ -25,50 +25,37 @@
 package io.airbyte.integrations.destination.redshift;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.DestinationConsumer;
-import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RedshiftDestination implements Destination {
+public class RedshiftInsertDestination extends AbstractJdbcDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftDestination.class);
 
-  public static void main(String[] args) throws Exception {
-    final Destination destination = new RedshiftDestination();
-    LOGGER.info("starting destination: {}", RedshiftDestination.class);
-    new IntegrationRunner(destination).run(args);
-    LOGGER.info("completed destination: {}", RedshiftDestination.class);
+  public static final String DRIVER_CLASS = "com.amazon.redshift.jdbc.Driver";
+
+  public RedshiftInsertDestination() {
+    super(DRIVER_CLASS, new RedshiftSQLNameTransformer(), new RedshiftSqlOperations());
   }
 
   @Override
-  public DestinationConsumer<AirbyteMessage> write(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
-    if (hasCopyConfigs()) {
-      return new RedshiftCopyDestination().write(config, catalog);
-    }
-    return new RedshiftInsertDestination().write(config, catalog);
+  public JsonNode toJdbcConfig(JsonNode redshiftConfig) {
+    final String schema = Optional.ofNullable(redshiftConfig.get("schema")).map(JsonNode::asText).orElse("public");
+
+    return Jsons.jsonNode(ImmutableMap.builder()
+        .put("username", redshiftConfig.get("username").asText())
+        .put("password", redshiftConfig.get("password").asText())
+        .put("jdbc_url", String.format("jdbc:redshift://%s:%s/%s",
+            redshiftConfig.get("host").asText(),
+            redshiftConfig.get("port").asText(),
+            redshiftConfig.get("database").asText()))
+        .put("schema", schema)
+        .build());
   }
 
-  @Override
-  public ConnectorSpecification spec() throws Exception {
-    return null;
-  }
-
-  @Override
-  public AirbyteConnectionStatus check(JsonNode config) throws Exception {
-    if (hasCopyConfigs()) {
-      return new RedshiftCopyDestination().check(config);
-    }
-    return new RedshiftInsertDestination().check(config);
-  }
-
-  public static boolean hasCopyConfigs() {
-    // TODO
-    return true;
-  }
 }
