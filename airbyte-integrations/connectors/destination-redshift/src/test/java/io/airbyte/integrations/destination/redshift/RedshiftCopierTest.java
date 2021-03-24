@@ -26,6 +26,7 @@ package io.airbyte.integrations.destination.redshift;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -171,24 +172,69 @@ public class RedshiftCopierTest {
     assertEquals(2, recordList.size());
   }
 
+  @Test
+  public void send100KTest() throws IOException, SQLException {
+    var now = System.currentTimeMillis();
+    var copier = new RedshiftCopier(TEST_BUCKET, RUN_FOLDER, SyncMode.FULL_REFRESH, SCHEMA_NAME, STREAM_NAME, s3Client, redshiftDb, S3_KEY_ID,
+        S3_KEY, S3_REGION);
+
+    for (int i = 0; i < 100_000; i++) {
+      var msg = getAirbyteRecordMessage();
+      copier.copy(msg);
+    }
+    copier.close(false);
+    var duration = System.currentTimeMillis() - now;
+
+    assertFalse(s3Client.doesObjectExist(TEST_BUCKET, RUN_FOLDER + "/" + STREAM_NAME));
+    var recordList = redshiftDb.bufferedResultSetQuery(
+        connection -> {
+          final String sql = "SELECT * FROM " + RAW_TABLE_NAME + ";";
+          return connection.prepareStatement(sql).executeQuery();
+        },
+        JdbcUtils::rowToJson);
+
+    assertEquals(100_000, recordList.size());
+    assertTrue(duration < 40_000); // on a 15-inch Macbook Pro 2017
+  }
+
+  @Test
+  public void send1MTest() throws IOException, SQLException {
+    var now = System.currentTimeMillis();
+    var copier = new RedshiftCopier(TEST_BUCKET, RUN_FOLDER, SyncMode.FULL_REFRESH, SCHEMA_NAME, STREAM_NAME, s3Client, redshiftDb, S3_KEY_ID,
+        S3_KEY, S3_REGION);
+
+    for (int i = 0; i < 1000_000; i++) {
+      var msg = getAirbyteRecordMessage();
+      copier.copy(msg);
+    }
+    copier.close(false);
+    var duration = System.currentTimeMillis() - now;
+
+    assertFalse(s3Client.doesObjectExist(TEST_BUCKET, RUN_FOLDER + "/" + STREAM_NAME));
+    var recordList = redshiftDb.bufferedResultSetQuery(
+        connection -> {
+          final String sql = "SELECT * FROM " + RAW_TABLE_NAME + ";";
+          return connection.prepareStatement(sql).executeQuery();
+        },
+        JdbcUtils::rowToJson);
+
+    assertEquals(1000_000, recordList.size());
+    System.out.println(duration);
+    assertTrue(duration < 60_000); // on a 15-inch Macbook Pro 2017
+  }
+
+
   private AirbyteRecordMessage getAirbyteRecordMessage() {
     var data = mapper.createObjectNode();
     data.put("field1", "testValue");
+    data.put("field2", "testValue");
+    data.put("field3", "testValue");
 
     var msg = new AirbyteRecordMessage();
     msg.setStream(STREAM_NAME);
     msg.setData(data);
     msg.setEmittedAt(System.currentTimeMillis());
     return msg;
-  }
-
-  @DisplayName("When sending larger amounts of data")
-  public class loadTest {
-
-    public void sendMediumTableTest() {}
-
-    public void sendLargeTableTest() {}
-
   }
 
 }
