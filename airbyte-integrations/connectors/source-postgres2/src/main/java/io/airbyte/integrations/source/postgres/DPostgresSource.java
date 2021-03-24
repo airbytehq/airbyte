@@ -26,13 +26,27 @@ package io.airbyte.integrations.source.postgres;
 
 import static java.lang.Thread.sleep;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.commons.util.AutoCloseableIterators;
 import io.debezium.engine.ChangeEvent;
 import io.debezium.engine.DebeziumEngine;
 import io.debezium.engine.format.Json;
+
+import java.io.Closeable;
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+
+import org.checkerframework.checker.units.qual.A;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,24 +104,68 @@ public class DPostgresSource {
 
     // https://debezium.io/blog/2020/02/25/lessons-learned-running-debezium-with-postgresql-on-rds/
 
-    // Create the engine with this configuration ...
-    try (DebeziumEngine<ChangeEvent<String, String>> engine = DebeziumEngine.create(Json.class)
-        .using(props)
-        .notifying(record -> {
-          LOGGER.info(record.toString());
-        }).build()) {
-      // Run the engine asynchronously ...
-      ExecutorService executor = Executors.newSingleThreadExecutor();
-      executor.execute(engine);
+    BlockingQueue<JsonNode> queue = new LinkedBlockingQueue<>();
+    AtomicReference<Throwable> thrownError = new AtomicReference<>();
+    AtomicBoolean completed = new AtomicBoolean(false);
+    ExecutorService executor = Executors.newSingleThreadExecutor();
 
-      while (true) {
-        sleep(5000);
-        // LOGGER.info("the mummy wakes");
+    // Create the engine with this configuration ...
+    try(AutoCloseableIterator<JsonNode> iterator = getIterator(props, queue, completed, thrownError, executor)) {
+      while(iterator.hasNext()) {
+        LOGGER.info("iterator.next() = " + iterator.next());
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+
+    // Do something else or wait for a signal or an event
+    // Engine is stopped when the main code is finished
+  }
+
+  // todo: https://debezium.io/documentation/reference/configuration/event-flattening.html
+
+  private static AutoCloseableIterator<JsonNode> getIterator(Properties props, BlockingQueue<JsonNode> queue, AtomicBoolean completed, AtomicReference<Throwable> thrownError, ExecutorService executor) {
+    DebeziumEngine<ChangeEvent<String, String>> engine = DebeziumEngine.create(Json.class)
+            .using(props)
+            .notifying(record -> {
+              try {
+                queue.add(Jsons.jsonNode(record)); // todo: better transformation function here
+              } catch (Exception e) {
+                thrownError.set(e);
+              }
+            })
+            .using((success, message, error) -> {
+              completed.set(true);
+              thrownError.set(error);
+            })
+            .build();
+
+    // Run the engine asynchronously ...
+    executor.execute(engine);
+
+    Iterator<JsonNode> delegateIterator = queue.iterator();
+
+    return new AutoCloseableIterator<>() {
+      @Override
+      public void close() throws Exception {
+        engine.close();
+        executor.shutdown();
+
+        if(thrownError.get() != null) {
+          throw new RuntimeException(thrownError.get());
+        }
       }
 
-      // Do something else or wait for a signal or an event
-    }
-    // Engine is stopped when the main code is finished
+      @Override
+      public boolean hasNext() {
+        return !completed.get() && delegateIterator.hasNext();
+      }
+
+      @Override
+      public JsonNode next() {
+        return delegateIterator.next();
+      }
+    };
   }
 
 }
