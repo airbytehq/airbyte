@@ -135,7 +135,7 @@ class OracleJdbcStandardSourceTest extends JdbcSourceStandardTest {
   }
 
   @Override
-  public void createSchemas() throws SQLException{
+  public void createSchemas() throws SQLException {
     // In Oracle, `CREATE USER` creates a schema.
     // See https://www.oratable.com/oracle-user-schema-difference/
     if (supportsSchemas()) {
