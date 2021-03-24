@@ -73,19 +73,21 @@ class OracleJdbcStandardSourceTest extends JdbcSourceStandardTest {
 
     SCHEMA_NAME = "JDBC_INTEGRATION_TEST";
     SCHEMA_NAME2 = "JDBC_INTEGRATION_TEST2";
+    SCHEMA_NAME3 = "JDBC_MULTI_TABLE";
+    SCHEMA_NAME4 = "JDBC_MULTI_TABLE_INCR";
+    SCHEMA_NAME5 = "SCHEMA_WITH_SPACE";
+    TEST_SCHEMAS = ImmutableSet.of(SCHEMA_NAME, SCHEMA_NAME2, SCHEMA_NAME3, SCHEMA_NAME4, SCHEMA_NAME5);
+
     TABLE_NAME = "ID_AND_NAME";
-    TABLE_NAME_WITH_SPACES = "ID AND NAME2";
+    TABLE_NAME_WITH_SPACES = "ID AND NAME";
     TABLE_NAME_WITHOUT_PK = "ID_AND_NAME_WITHOUT_PK";
     TABLE_NAME_COMPOSITE_PK = "FULL_NAME_COMPOSITE_PK";
     COL_ID = "ID";
     COL_NAME = "NAME";
     COL_UPDATED_AT = "UPDATED_AT";
-    COL_LAST_NAME = "LAST NAME";
-    COL_ID_VALUE_1 = new BigDecimal(1);
-    COL_ID_VALUE_2 = new BigDecimal(2);
-    COL_ID_VALUE_3 = new BigDecimal(3);
-    COL_ID_VALUE_4 = new BigDecimal(4);
-    COL_ID_VALUE_5 = new BigDecimal(5);
+    COL_FIRST_NAME = "FIRST_NAME";
+    COL_LAST_NAME = "LAST_NAME";
+    COL_LAST_NAME_WITH_SPACE = "LAST NAME";
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", ORACLE_DB.getHost())
@@ -101,7 +103,7 @@ class OracleJdbcStandardSourceTest extends JdbcSourceStandardTest {
   }
 
   @AfterEach
-  public void cleanDatabase() throws Exception {
+  public void tearDownOracle() throws Exception {
     // ORA-12519
     // https://stackoverflow.com/questions/205160/what-can-cause-intermittent-ora-12519-tns-no-appropriate-handler-found-errors
     // sleep for 1000
@@ -114,6 +116,7 @@ class OracleJdbcStandardSourceTest extends JdbcSourceStandardTest {
 
   @Override
   public boolean supportsSchemas() {
+    // See https://www.oratable.com/oracle-user-schema-difference/
     return true;
   }
 

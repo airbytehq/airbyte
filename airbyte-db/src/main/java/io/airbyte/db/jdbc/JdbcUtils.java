@@ -29,14 +29,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+
 import java.math.BigDecimal;
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.JDBCType;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -60,8 +55,8 @@ public class JdbcUtils {
    * Map records returned in a result set.
    *
    * @param resultSet the result set
-   * @param mapper function to make each record of the result set
-   * @param <T> type that each record will be mapped to
+   * @param mapper    function to make each record of the result set
+   * @param <T>       type that each record will be mapped to
    * @return stream of records that the result set is mapped to.
    */
   public static <T> Stream<T> toStream(ResultSet resultSet, CheckedFunction<ResultSet, T, SQLException> mapper) {
@@ -136,7 +131,8 @@ public class JdbcUtils {
       case BIGINT -> o.put(columnName, nullIfInvalid(() -> r.getLong(i)));
       case FLOAT, DOUBLE -> o.put(columnName, nullIfInvalid(() -> r.getDouble(i), Double::isFinite));
       case REAL -> o.put(columnName, nullIfInvalid(() -> r.getFloat(i), Float::isFinite));
-      case NUMERIC, DECIMAL -> o.put(columnName, nullIfInvalid(() -> r.getBigDecimal(i)));
+      case NUMERIC -> o.put(columnName, nullIfInvalid(() -> r.getInt(i)));
+      case DECIMAL -> o.put(columnName, nullIfInvalid(() -> r.getBigDecimal(i)));
       case CHAR, VARCHAR, LONGVARCHAR -> o.put(columnName, r.getString(i));
       case DATE -> o.put(columnName, toISO8601String(r.getDate(i)));
       case TIME -> o.put(columnName, toISO8601String(r.getTime(i)));
@@ -239,7 +235,7 @@ public class JdbcUtils {
    *
    * @param connection connection to jdbc database (gives access to proper quotes)
    * @param schemaName name of schema, if exists (CAN BE NULL)
-   * @param tableName name of the table
+   * @param tableName  name of the table
    * @return fully qualified table name, using db-specific quoted syntax
    * @throws SQLException throws if fails to pull correct quote character.
    */
@@ -252,7 +248,7 @@ public class JdbcUtils {
    * Create a fully qualified table name (including schema). e.g. public.my_table
    *
    * @param schemaName name of schema, if exists (CAN BE NULL)
-   * @param tableName name of the table
+   * @param tableName  name of the table
    * @return fully qualified table name
    */
   public static String getFullyQualifiedTableName(String schemaName, String tableName) {
@@ -283,7 +279,7 @@ public class JdbcUtils {
   /**
    * Given a database connection and identifiers, adds db-specific quoting to each identifier.
    *
-   * @param connection database connection
+   * @param connection  database connection
    * @param identifiers identifiers to quote
    * @return quoted identifiers
    * @throws SQLException throws if there are any issues fulling the quoting metadata from the db.
