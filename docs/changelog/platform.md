@@ -10,6 +10,12 @@ If you're interested in our progress on the Airbyte platform, please read below!
 
 * We now handle nested tables with the normalization steps. Check out the video below to see how it works. 
 
+## [03-22-2021 - 0.17.2](https://github.com/airbytehq/airbyte/releases/tag/v0.17.2-alpha)
+
+* Improved the speed of get spec, check connection, and discover schema by migrating to the Temporal workflow engine.
+* Exposed cancellation for sync jobs in the API (will be exposed in the UI in the next week!).
+* Bug fix: Fix issue where migration app was OOMing.
+
 ## [03-15-2021 - 0.17.1](https://github.com/airbytehq/airbyte/releases/tag/v0.17.1-alpha)
 
 * **Creating and deleting multiple workspaces** is now supported via the API. Thanks to [@Samuel Gordalina](https://github.com/gordalina) for contributing this feature!
