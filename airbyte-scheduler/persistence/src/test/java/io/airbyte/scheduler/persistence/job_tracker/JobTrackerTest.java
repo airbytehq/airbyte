@@ -68,6 +68,7 @@ class JobTrackerTest {
   private static final String DESTINATION_DEF_NAME = "bigquery";
   private static final long SYNC_START_TIME = 1000L;
   private static final long SYNC_END_TIME = 10000L;
+  private static final long SYNC_DURATION = 9L; // in sync between end and start time
   private static final long SYNC_BYTES_SYNC = 42L;
   private static final long SYNC_RECORDS_SYNC = 4L;
 
@@ -83,7 +84,7 @@ class JobTrackerTest {
       .put("attempt_completion_status", JobState.FAILED)
       .build();
   private static final ImmutableMap<String, Object> ATTEMPT_METADATA = ImmutableMap.<String, Object>builder()
-      .put("duration", SYNC_END_TIME - SYNC_START_TIME)
+      .put("duration", SYNC_DURATION)
       .put("volume_rows", SYNC_RECORDS_SYNC)
       .put("volume_mb", SYNC_BYTES_SYNC)
       .build();
