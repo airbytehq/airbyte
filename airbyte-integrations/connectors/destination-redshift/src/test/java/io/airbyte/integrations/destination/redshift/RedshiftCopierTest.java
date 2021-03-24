@@ -223,7 +223,6 @@ public class RedshiftCopierTest {
     assertTrue(duration < 60_000); // on a 15-inch Macbook Pro 2017
   }
 
-
   private AirbyteRecordMessage getAirbyteRecordMessage() {
     var data = mapper.createObjectNode();
     data.put("field1", "testValue");
