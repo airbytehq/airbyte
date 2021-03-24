@@ -40,6 +40,7 @@ import io.airbyte.protocol.models.SyncMode;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Properties;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -51,12 +52,12 @@ import org.junit.jupiter.api.Test;
     + "Intended to be a lighter-weight complement to the Docker integration tests. Fill in the appropriate blank variables to run.")
 public class RedshiftCopierTest {
 
-  // Fill in the empty variables before running.
-  private static final String S3_KEY_ID = "";
-  private static final String S3_KEY = "";
-  private static final String REDSHIFT_CONNECTION_STRING = "";
-  private static final String REDSHIFT_USER = "";
-  private static final String REDSHIFT_PASS = "";
+  // Either fill up these variables or fill up the config file before running.
+  private static String S3_KEY_ID = "";
+  private static String S3_KEY = "";
+  private static String REDSHIFT_CONNECTION_STRING = "";
+  private static String REDSHIFT_USER = "";
+  private static String REDSHIFT_PASS = "";
 
   private static final String S3_REGION = "us-west-2";
   private static final String TEST_BUCKET = "redshift-copier-test";
@@ -72,6 +73,7 @@ public class RedshiftCopierTest {
 
   @BeforeAll
   public static void setUp() {
+    readConfigFile();
     var awsCreds = new BasicAWSCredentials(S3_KEY_ID, S3_KEY);
     s3Client = AmazonS3ClientBuilder.standard()
         .withCredentials(new AWSStaticCredentialsProvider(awsCreds)).withRegion(S3_REGION)
@@ -82,6 +84,26 @@ public class RedshiftCopierTest {
     }
 
     redshiftDb = Databases.createRedshiftDatabase(REDSHIFT_USER, REDSHIFT_PASS, REDSHIFT_CONNECTION_STRING);
+  }
+
+  private static void readConfigFile() {
+    Properties prop = new Properties();
+    String propFileName = "config.properties";
+    var inputStream = RedshiftCopierTest.class.getClassLoader().getResourceAsStream(propFileName);
+    if (inputStream != null) {
+      try {
+        prop.load(inputStream);
+
+        S3_KEY_ID = prop.getProperty("s3.keyId");
+        S3_KEY = prop.getProperty("s3.accessKey");
+        REDSHIFT_CONNECTION_STRING = prop.getProperty("redshift.connString");
+        REDSHIFT_USER = prop.getProperty("redshift.user");
+        REDSHIFT_PASS = prop.getProperty("redshift.pass");
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+
   }
 
   @BeforeEach
