@@ -191,7 +191,7 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
         tableNameToTable,
         stateManager,
         emittedAt,
-        cac -> cac.getSyncMode().equals(SyncMode.INCREMENTAL));
+        configuredStream -> configuredStream.getSyncMode().equals(SyncMode.INCREMENTAL));
   }
 
   public List<AutoCloseableIterator<AirbyteMessage>> getFullRefreshIterators(JdbcDatabase database,
@@ -205,7 +205,7 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
         tableNameToTable,
         stateManager,
         emittedAt,
-        cac -> cac.getSyncMode().equals(SyncMode.FULL_REFRESH));
+        configuredStream -> configuredStream.getSyncMode().equals(SyncMode.FULL_REFRESH));
   }
 
   private List<AutoCloseableIterator<AirbyteMessage>> getSelectedIterators(JdbcDatabase database,
