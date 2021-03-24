@@ -35,6 +35,7 @@ import io.airbyte.integrations.source.jdbc.test.JdbcStressTest;
 
 import java.util.Optional;
 import java.util.Set;
+
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -67,12 +68,12 @@ class OracleStressTest extends JdbcStressTest {
     final String dbName = "db_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-            .put("host", ORACLE_DB.getHost())
-            .put("port", ORACLE_DB.getFirstMappedPort())
-            .put("sid", ORACLE_DB.getSid())
-            .put("username", ORACLE_DB.getUsername())
-            .put("password", ORACLE_DB.getPassword())
-            .build());
+        .put("host", ORACLE_DB.getHost())
+        .put("port", ORACLE_DB.getFirstMappedPort())
+        .put("sid", ORACLE_DB.getSid())
+        .put("username", ORACLE_DB.getUsername())
+        .put("password", ORACLE_DB.getPassword())
+        .build());
 
     super.setup();
   }
@@ -115,12 +116,12 @@ class OracleStressTest extends JdbcStressTest {
     @Override
     public JsonNode toJdbcConfig(JsonNode config) {
       final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-              .put("username", config.get("username").asText())
-              .put("jdbc_url", String.format("jdbc:oracle:thin:@//%s:%s/xe",
-                      config.get("host").asText(),
-                      config.get("port").asText(),
-                      config.get("sid").asText())
-              );
+          .put("username", config.get("username").asText())
+          .put("jdbc_url", String.format("jdbc:oracle:thin:@//%s:%s/xe",
+              config.get("host").asText(),
+              config.get("port").asText(),
+              config.get("sid").asText())
+          );
 
       if (config.has("password")) {
         configBuilder.put("password", config.get("password").asText());
