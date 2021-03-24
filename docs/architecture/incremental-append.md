@@ -1,4 +1,4 @@
-# Incremental Sync
+# Incremental - Append Sync
 
 ## Overview
 
@@ -88,36 +88,48 @@ Some sources cannot define the cursor without user input. For example, in the [p
 
 As demonstrated in the examples above, with **Incremental Append,** a record which was updated in the source will be appended to the destination rather than updated in-place. This means that if data in the source uses a primary key \(e.g: `user_id` in the `users` table\), then the destination will end up having multiple records with the same primary key value.
 
-However, some use cases require only the latest snapshot of the data. If you want the latest snapshot and are syncing to a destination that supports views, we recommend creating a view on your data which groups by the primary key and deduplicates by the largest `_airbyte_emitted_at` values. The `_airbyte_emitted_at` column is added by Airbyte to all records synced to the destination.
+However, some use cases require only the latest snapshot of the data.
+This is available by using other flavors of sync modes such as [Incremental - Dedupted Story](incremental-dedupted-story.md) instead.
 
-As an example, if you are syncing to a Postgres DB the `employees` table which, after a few syncs, has the following records:
+Note that in **Incremental Append**, the size of the data in your warehouse increases monotonically since an updated record in the source is appended to the destination rather than updated in-place.
 
-| `id` | `airbyte_emitted_at` | `age` |
-| :--- | :--- | :--- |
-| 1 | 1000 | 25 |
-| 2 | 1000 | 45 |
-| 1 | 2000 | 26 |
-| 3 | 2000 | 76 |
-
-The below query is one example of how to deduplicate records sharing a primary key using the `airbyte_emitted_at` column:
-
-```sql
-CREATE VIEW latest_employees_snapshot as (
-    SELECT * WHERE airbyte_emitted_at=max_emitted_at FROM (
-        SELECT *, MAX(airbyte_emitted_at) OVER (PARTITION BY id) as max_emitted_at FROM employees
-    ) 
-);
-```
-
-You can find more relevant SQL transformations you might need to do on your data in the [Connecting EL with T using SQL \(part 1/2\)](../tutorials/connecting-el-with-t-using-sql.md#simple-sql-query)
-
-Note that in **Incremental Append**, the size of the data in your warehouse increases monotonically since an updated record in the source is appended to the destination rather than updated in-place. If you only care about having the latest snapshot of your data, you may want to periodically run cleanup jobs which retain only the latest instance of each record, deduping by primary key.
+If you only care about having the latest snapshot of your data, you may want to look at other sync modes that will keep smaller copies of the replicated data or you can periodically run cleanup jobs which retain only the latest instance of each record.
 
 ## Inclusive Cursors
 
-When replicating data incrementally, Airbyte provides an at-least-once delivery guarantee. This means that it is acceptable for sources to re-send some data when run replicating incrementally. One case where this is particularly relevant is when a source's cursor is not very granular. For example, if a cursor field has the granularity of a day \(but not hours, seconds, etc\), then if that source is run twice in the same day, there is no way for the source to know which records that are that date were already replicated earlier that day. By convention, sources should prefer resending data if the cursor field is ambiguous.
+When replicating data incrementally, Airbyte provides an at-least-once delivery guarantee. This means that it is acceptable for sources to re-send some data when ran incrementally. One case where this is particularly relevant is when a source's cursor is not very granular. For example, if a cursor field has the granularity of a day \(but not hours, seconds, etc\), then if that source is run twice in the same day, there is no way for the source to know which records that are that date were already replicated earlier that day. By convention, sources should prefer resending data if the cursor field is ambiguous.
 
 ## Known Limitations
 
-When the source's schema changes, for example, when a column is added, renamed or deleted to an existing stream, the current behavior of **Incremental Append** is not able to handle such events yet. Therefore, it is recommended to trigger a [full refresh](full-refresh.md) to recreate at the destination the data with the new metadata included.
+Due to the use of a cursor column, if modifications to the underlying records are made without properly updating the cursor field, then the updated records won't be picked up by the **Incremental - Append** sync as expected.
+
+Let's say the following data already exists into our data warehouse.
+```javascript
+[
+    { "name": "Louis XVI", "deceased": false, "updated_at":  1754 },
+    { "name": "Marie Antoinette", "deceased": false, "updated_at":  1755 }
+]
+```
+
+In the next sync, the delta contains the following record:
+```javascript
+[
+    { "name": "Louis XVI", "deceased": true, "updated_at":  1754 },
+]
+```
+
+At the end of this incremental sync, the data warehouse would still contain data from the first sync because the delta record did not provide a valid value for the cursor field (greater than last sync's max value, `1754 < 1755`).
+```javascript
+[
+    { "name": "Louis XVI", "deceased": false, "updated_at":  1754 },
+    { "name": "Marie Antoinette", "deceased": false, "updated_at":  1755 }
+]
+```
+
+Similarly, if multiple modifications are made during the same day to the same records.
+If the frequency of the sync is not granular enough (for example, set for every 24h),
+then intermediate modifications to the data is not going to be detected.
+Only the state of the data of when the sync is running will be reflected in the destination.
+
+When the source's schema changes, for example, when a column is added, renamed or deleted to an existing stream, the current behavior of **Incremental Append** is not able to handle such events yet. Therefore, it is recommended to trigger a [Full refresh - Overwrite](full-refresh-overwrite.md) to recreate at the destination the data with the new metadata included.
 
