@@ -122,14 +122,14 @@ public class RedshiftCopierTest {
 
   @Test
   @DisplayName("Should wipe table before appending new data")
-  public void fullSyncTest() throws IOException, SQLException {
+  public void fullSyncTest() throws Exception {
     var copier = new RedshiftCopier(TEST_BUCKET, RUN_FOLDER, SyncMode.FULL_REFRESH, SCHEMA_NAME, STREAM_NAME, s3Client, redshiftDb, S3_KEY_ID,
         S3_KEY, S3_REGION);
 
     AirbyteRecordMessage msg = getAirbyteRecordMessage();
 
-    copier.copy(msg);
-    copier.close(false);
+    copier.uploadToS3(msg);
+    RedshiftCopier.closeAsOneTransaction(List.of(copier), false, redshiftDb);
 
     assertFalse(s3Client.doesObjectExist(TEST_BUCKET, RUN_FOLDER + "/" + STREAM_NAME));
 
@@ -145,7 +145,7 @@ public class RedshiftCopierTest {
 
   @Test
   @DisplayName("Should append data without wiping table")
-  public void incrementalTest() throws IOException, SQLException {
+  public void incrementalTest() throws Exception {
 
     var sqlOp = new RedshiftSqlOperations();
     sqlOp.createTableIfNotExists(redshiftDb, SCHEMA_NAME, RAW_TABLE_NAME);
@@ -156,8 +156,8 @@ public class RedshiftCopierTest {
 
     AirbyteRecordMessage msg = getAirbyteRecordMessage();
 
-    copier.copy(msg);
-    copier.close(false);
+    copier.uploadToS3(msg);
+    RedshiftCopier.closeAsOneTransaction(List.of(copier), false, redshiftDb);
 
     assertFalse(s3Client.doesObjectExist(TEST_BUCKET, RUN_FOLDER + "/" + STREAM_NAME));
 
@@ -168,21 +168,20 @@ public class RedshiftCopierTest {
         },
         JdbcUtils::rowToJson);
 
-    System.out.println(recordList);
     assertEquals(2, recordList.size());
   }
 
   @Test
-  public void send100KTest() throws IOException, SQLException {
+  public void send100KTest() throws Exception {
     var now = System.currentTimeMillis();
     var copier = new RedshiftCopier(TEST_BUCKET, RUN_FOLDER, SyncMode.FULL_REFRESH, SCHEMA_NAME, STREAM_NAME, s3Client, redshiftDb, S3_KEY_ID,
         S3_KEY, S3_REGION);
 
     for (int i = 0; i < 100_000; i++) {
       var msg = getAirbyteRecordMessage();
-      copier.copy(msg);
+      copier.uploadToS3(msg);
     }
-    copier.close(false);
+    RedshiftCopier.closeAsOneTransaction(List.of(copier), false, redshiftDb);
     var duration = System.currentTimeMillis() - now;
 
     assertFalse(s3Client.doesObjectExist(TEST_BUCKET, RUN_FOLDER + "/" + STREAM_NAME));
@@ -198,16 +197,16 @@ public class RedshiftCopierTest {
   }
 
   @Test
-  public void send1MTest() throws IOException, SQLException {
+  public void send1MTest() throws Exception {
     var now = System.currentTimeMillis();
     var copier = new RedshiftCopier(TEST_BUCKET, RUN_FOLDER, SyncMode.FULL_REFRESH, SCHEMA_NAME, STREAM_NAME, s3Client, redshiftDb, S3_KEY_ID,
         S3_KEY, S3_REGION);
 
     for (int i = 0; i < 1000_000; i++) {
       var msg = getAirbyteRecordMessage();
-      copier.copy(msg);
+      copier.uploadToS3(msg);
     }
-    copier.close(false);
+    RedshiftCopier.closeAsOneTransaction(List.of(copier), false, redshiftDb);
     var duration = System.currentTimeMillis() - now;
 
     assertFalse(s3Client.doesObjectExist(TEST_BUCKET, RUN_FOLDER + "/" + STREAM_NAME));
@@ -219,7 +218,6 @@ public class RedshiftCopierTest {
         JdbcUtils::rowToJson);
 
     assertEquals(1000_000, recordList.size());
-    System.out.println(duration);
     assertTrue(duration < 60_000); // on a 15-inch Macbook Pro 2017
   }
 

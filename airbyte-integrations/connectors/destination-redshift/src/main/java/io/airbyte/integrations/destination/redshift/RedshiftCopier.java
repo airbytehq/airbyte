@@ -31,7 +31,6 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
-import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.SyncMode;
 import java.io.IOException;
@@ -40,6 +39,7 @@ import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -50,6 +50,7 @@ public class RedshiftCopier {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftCopier.class);
   private static final NamingConventionTransformer NAMING_RESOLVER = new RedshiftSQLNameTransformer();
+  private static final RedshiftSqlOperations REDSHIFT_SQL_OPS = new RedshiftSqlOperations();
 
   private static final int DEFAULT_UPLOAD_THREADS = 10; // The S3 cli uses 10 threads by default.
   private static final int DEFAULT_QUEUE_CAPACITY = DEFAULT_UPLOAD_THREADS;
@@ -64,7 +65,7 @@ public class RedshiftCopier {
   private final String schemaName;
   private final String streamName;
   private final AmazonS3 s3Client;
-  private final JdbcDatabase database;
+  private final JdbcDatabase redshiftDb;
   private final String s3KeyId;
   private final String s3Key;
   private final String s3Region;
@@ -72,6 +73,7 @@ public class RedshiftCopier {
   private final StreamTransferManager multipartUploadManager;
   private final MultiPartOutputStream outputStream;
   private final CSVPrinter csvPrinter;
+  private final String tmpTableName;
 
   public RedshiftCopier(
                         String runFolder,
@@ -79,12 +81,12 @@ public class RedshiftCopier {
                         String schema,
                         String streamName,
                         AmazonS3 client,
-                        JdbcDatabase database,
+                        JdbcDatabase redshiftDb,
                         String s3KeyId,
                         String s3key,
                         String s3Region)
       throws IOException {
-    this(RedshiftCopyDestination.DEFAULT_AIRBYTE_STAGING_S3_BUCKET, runFolder, syncMode, schema, streamName, client, database, s3KeyId, s3key,
+    this(RedshiftCopyDestination.DEFAULT_AIRBYTE_STAGING_S3_BUCKET, runFolder, syncMode, schema, streamName, client, redshiftDb, s3KeyId, s3key,
         s3Region);
   }
 
@@ -96,7 +98,7 @@ public class RedshiftCopier {
                         String schema,
                         String streamName,
                         AmazonS3 client,
-                        JdbcDatabase database,
+                        JdbcDatabase redshiftDb,
                         String s3KeyId,
                         String s3key,
                         String s3Region)
@@ -107,11 +109,12 @@ public class RedshiftCopier {
     this.schemaName = schema;
     this.streamName = streamName;
     this.s3Client = client;
-    this.database = database;
+    this.redshiftDb = redshiftDb;
     this.s3KeyId = s3KeyId;
     this.s3Key = s3key;
     this.s3Region = s3Region;
 
+    this.tmpTableName = NAMING_RESOLVER.getTmpTableName(streamName);
     // The stream transfer manager lets us greedily stream into S3. The native AWS SDK does not
     // have support for streaming multipart uploads;
     // The alternative is first writing the entire output to disk before loading into S3. This is not
@@ -132,30 +135,39 @@ public class RedshiftCopier {
     this.csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT);
   }
 
-  public void copy(AirbyteRecordMessage message) throws IOException {
+  public static void closeAsOneTransaction(List<RedshiftCopier> copiers, boolean hasFailed, JdbcDatabase redshiftDb) throws Exception {
+    try {
+      StringBuilder mergeCopiersToFinalTableQuery = new StringBuilder();
+      for (var copier : copiers) {
+        var mergeQuery = copier.copyToRedshiftTmpTableAndPrepMergeToFinalTable(hasFailed);
+        mergeCopiersToFinalTableQuery.append(mergeQuery);
+      }
+      REDSHIFT_SQL_OPS.executeTransaction(redshiftDb, mergeCopiersToFinalTableQuery.toString());
+    } finally {
+      for (var copier : copiers) {
+        copier.removeS3FileAndDropTmpTable();
+      }
+    }
+  }
+
+  public void uploadToS3(AirbyteRecordMessage message) throws IOException {
     var id = UUID.randomUUID();
     var data = Jsons.serialize(message.getData());
     var emittedAt = Timestamp.from(Instant.ofEpochMilli(message.getEmittedAt()));
     csvPrinter.printRecord(id, data, emittedAt);
   }
 
-  public void close(boolean hasFailed) throws IOException {
-    // TODO (dchia): revisit error handling here
-    if (hasFailed) {
-      multipartUploadManager.abort();
-      return;
+  public void removeS3FileAndDropTmpTable() throws Exception {
+    var s3StagingFile = getPath(runFolder, streamName);
+    LOGGER.info("Begin cleaning s3 staging file {}.", s3StagingFile);
+    if (s3Client.doesObjectExist(s3BucketName, s3StagingFile)) {
+      s3Client.deleteObject(s3BucketName, s3StagingFile);
     }
-    closeS3WriteStreamAndUpload();
+    LOGGER.info("S3 staging file {} cleaned.", s3StagingFile);
 
-    var tmpTableName = NAMING_RESOLVER.getTmpTableName(streamName);
-    var sqlOp = new RedshiftSqlOperations();
-    try {
-      createTmpTableAndCopyS3FileInto(tmpTableName, sqlOp);
-      mergeIntoDestTableIncrementalOrFullRefresh(tmpTableName, sqlOp);
-      removeS3FileAndDropTmpTable(tmpTableName, sqlOp);
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
+    LOGGER.info("Begin cleaning {} tmp table in destination.", tmpTableName);
+    REDSHIFT_SQL_OPS.dropTableIfExists(redshiftDb, schemaName, tmpTableName);
+    LOGGER.info("{} tmp table in destination cleaned.", tmpTableName);
   }
 
   private static String getPath(String runFolder, String key) {
@@ -166,6 +178,16 @@ public class RedshiftCopier {
     return String.join("/", "s3:/", s3BucketName, runFolder, key);
   }
 
+  private String copyToRedshiftTmpTableAndPrepMergeToFinalTable(boolean hasFailed) throws Exception {
+    if (hasFailed) {
+      multipartUploadManager.abort();
+      return "";
+    }
+    closeS3WriteStreamAndUpload();
+    createTmpTableAndCopyS3FileInto();
+    return mergeIntoDestTableIncrementalOrFullRefreshQuery();
+  }
+
   private void closeS3WriteStreamAndUpload() throws IOException {
     LOGGER.info("Uploading remaining data for {} stream.", streamName);
     csvPrinter.close();
@@ -174,40 +196,29 @@ public class RedshiftCopier {
     LOGGER.info("All data for {} stream uploaded.", streamName);
   }
 
-  private void createTmpTableAndCopyS3FileInto(String tmpTableName, RedshiftSqlOperations sqlOp) throws SQLException {
+  private void createTmpTableAndCopyS3FileInto() throws SQLException {
     LOGGER.info("Preparing tmp table in destination for stream {}. tmp table name: {}.", streamName, tmpTableName);
-    sqlOp.createTableIfNotExists(database, schemaName, tmpTableName);
+    REDSHIFT_SQL_OPS.createTableIfNotExists(redshiftDb, schemaName, tmpTableName);
     LOGGER.info("Starting copy to tmp table {} in destination for stream {} .", tmpTableName, streamName);
-    sqlOp.copyS3CsvFileIntoTable(database, getFullS3Path(s3BucketName, runFolder, streamName), schemaName, tmpTableName, s3KeyId, s3Key, s3Region);
+    REDSHIFT_SQL_OPS.copyS3CsvFileIntoTable(redshiftDb, getFullS3Path(s3BucketName, runFolder, streamName), schemaName, tmpTableName, s3KeyId, s3Key,
+        s3Region);
     LOGGER.info("Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);
   }
 
-  private void mergeIntoDestTableIncrementalOrFullRefresh(String tmpTableName, SqlOperations sqlOp) throws Exception {
+  private String mergeIntoDestTableIncrementalOrFullRefreshQuery() throws Exception {
     LOGGER.info("Preparing tmp table {} in destination.", tmpTableName);
     var destTableName = NAMING_RESOLVER.getRawTableName(streamName);
-    sqlOp.createTableIfNotExists(database, schemaName, destTableName);
+    REDSHIFT_SQL_OPS.createTableIfNotExists(redshiftDb, schemaName, destTableName);
     LOGGER.info("Tmp table {} in destination prepared.", tmpTableName);
 
     LOGGER.info("Preparing to merge tmp table {} to dest table {} in destination.", tmpTableName, destTableName);
     var queries = new StringBuilder();
     if (syncMode.equals(SyncMode.FULL_REFRESH)) {
-      queries.append(sqlOp.truncateTableQuery(schemaName, destTableName));
+      queries.append(REDSHIFT_SQL_OPS.truncateTableQuery(schemaName, destTableName));
       LOGGER.info("FULL_REFRESH detected. Dest table {} truncated.", destTableName);
     }
-    queries.append(sqlOp.copyTableQuery(schemaName, tmpTableName, destTableName));
-    database.execute(queries.toString());
-    LOGGER.info("Merge into dest table {} complete.", destTableName);
-  }
-
-  private void removeS3FileAndDropTmpTable(String tmpTableName, SqlOperations sqlOp) throws Exception {
-    var s3StagingFile = getPath(runFolder, streamName);
-    LOGGER.info("Begin cleaning s3 staging file {}.", s3StagingFile);
-    s3Client.deleteObject(s3BucketName, getPath(runFolder, streamName));
-    LOGGER.info("S3 staging file {} cleaned.", s3StagingFile);
-
-    LOGGER.info("Begin cleaning {} tmp table in destination.", tmpTableName);
-    sqlOp.dropTableIfExists(database, schemaName, tmpTableName);
-    LOGGER.info("{} tmp table in destination cleaned.", tmpTableName);
+    queries.append(REDSHIFT_SQL_OPS.copyTableQuery(schemaName, tmpTableName, destTableName));
+    return queries.toString();
   }
 
 }

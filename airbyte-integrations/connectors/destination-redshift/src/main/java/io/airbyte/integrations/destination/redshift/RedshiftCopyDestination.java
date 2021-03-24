@@ -41,6 +41,7 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import java.util.ArrayList;
 import java.util.Map;
 
 /**
@@ -152,15 +153,19 @@ public class RedshiftCopyDestination implements Destination {
         }
 
         var tableName = message.getRecord().getStream();
-        tableNameToCopier.get(tableName).copy(message.getRecord());
+        tableNameToCopier.get(tableName).uploadToS3(message.getRecord());
       }
     }
 
+    /**
+     * Although 'close' suggests a focus on clean up, this method also loads S3 files into Redshift.
+     * First, move the files into temporary table, then merge the temporary tables with the final
+     * destination tables. Lastly, do actual clean up and best-effort remove the S3 files and temporary
+     * tables.
+     */
     @Override
     protected void close(boolean hasFailed) throws Exception {
-      for (var copier : tableNameToCopier.values()) {
-        copier.close(hasFailed);
-      }
+      RedshiftCopier.closeAsOneTransaction(new ArrayList<>(tableNameToCopier.values()), hasFailed, null);
     }
 
   }
