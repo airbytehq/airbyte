@@ -25,7 +25,7 @@ SOFTWARE.
 import operator
 from functools import partial, reduce
 from json.decoder import JSONDecodeError
-from typing import Mapping, Tuple
+from typing import Dict, Mapping, Tuple
 
 import requests
 from base_python import BaseClient
@@ -57,19 +57,36 @@ class Client(BaseClient):
         self.base_api_url = f"https://{domain}/rest/api/{self.API_VERSION}"
         super().__init__()
 
+    @staticmethod
+    def get_next_page(response: requests.Response, url: str, params: Dict):
+        next_page = None
+        response_data = response.json()
+        if "nextPage" in response_data:
+            next_page = response_data["nextPage"]
+        else:
+            if all(paging_metadata in response_data for paging_metadata in ("startAt", "maxResults", "total")):
+                start_at = response_data["startAt"]
+                max_results = response_data["maxResults"]
+                total = response_data["total"]
+                end_at = start_at + max_results
+                if not end_at > total:
+                    next_page = url
+                    params["startAt"] = end_at
+                    params["maxResults"] = max_results
+        return next_page, params
+
     def lists(self, name, url, params, func, **kwargs):
         next_page = None
+        request_params = params
         while True:
             if next_page:
-                response = requests.get(next_page, params=params, auth=self.auth)
+                response = requests.get(next_page, params=request_params, auth=self.auth)
             else:
-                response = requests.get(f"{self.base_api_url}{url}", params=params, auth=self.auth)
+                response = requests.get(f"{self.base_api_url}{url}", params=request_params, auth=self.auth)
             data = func(response.json())
             yield from data
-            # print(response.json())
-            if "nextPage" in response.json():
-                next_page = response.json()["nextPage"]
-            else:
+            next_page, request_params = self.get_next_page(response, f"{self.base_api_url}{url}", params)
+            if not next_page:
                 break
 
     def _enumerate_methods(self) -> Mapping[str, callable]:

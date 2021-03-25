@@ -157,7 +157,7 @@ public class ArchiveHandler {
 
   private Optional<UUID> getCurrentCustomerId() {
     try {
-      return Optional.of(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID).getCustomerId());
+      return Optional.of(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID, true).getCustomerId());
     } catch (Exception e) {
       // because this is used for tracking we prefer to log instead of killing the import.
       LOGGER.error("failed to fetch current customerId.", e);

@@ -1,4 +1,4 @@
-FROM airbyte/integration-base-singer:dev
+FROM airbyte/integration-base-singer:0.1.0
 
 # Bash is installed for more convenient debugging.
 ENV DEBIAN_FRONTEND noninteractive

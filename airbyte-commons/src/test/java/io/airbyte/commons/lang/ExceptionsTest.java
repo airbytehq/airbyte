@@ -51,6 +51,16 @@ class ExceptionsTest {
     assertEquals("goodbye", list.get(0));
   }
 
+  @Test
+  void testSwallow() {
+    Exceptions.swallow(() -> {
+      throw new RuntimeException();
+    });
+    Exceptions.swallow(() -> {
+      throw new Exception();
+    });
+  }
+
   private String callable(String input, boolean shouldThrow) throws IOException {
     if (shouldThrow) {
       throw new IOException();

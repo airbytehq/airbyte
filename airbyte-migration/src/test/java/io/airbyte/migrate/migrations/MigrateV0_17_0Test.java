@@ -102,7 +102,7 @@ class MigrateV0_17_0Test {
             Jsons.jsonNode(ImmutableMap.<String, String>builder().putAll(BIGQUERY_DESTINATION).put("dockerImageTag", "0.3.51").build()),
             Jsons.jsonNode(ImmutableMap.<String, String>builder().putAll(CUSTOM_DESTINATION).put("dockerImageTag", "0.1.42").build())),
         MigrationV0_17_0.STANDARD_SOURCE_DEFINITION_RESOURCE_ID, Stream.of(
-            Jsons.jsonNode(ImmutableMap.<String, String>builder().putAll(POSTGRES_SOURCE).put("dockerImageTag", "0.1.0").build()),
+            Jsons.jsonNode(ImmutableMap.<String, String>builder().putAll(POSTGRES_SOURCE).build()),
             Jsons.jsonNode(ImmutableMap.<String, String>builder().putAll(FILE_SOURCE).put("dockerImageTag", "My own custom version").build()),
             Jsons.jsonNode(ImmutableMap.<String, String>builder().putAll(CUSTOM_SOURCE).put("dockerImageTag", "dev").build()),
             Jsons.jsonNode(ImmutableMap.<String, String>builder().putAll(UNKNOWN_SOURCE).put("dockerImageTag", "0.1.0").build())));
@@ -116,7 +116,7 @@ class MigrateV0_17_0Test {
             Jsons.jsonNode(ImmutableMap.<String, String>builder().putAll(BIGQUERY_DESTINATION).put("dockerImageTag", "0.3.51").build()),
             Jsons.jsonNode(ImmutableMap.<String, String>builder().putAll(CUSTOM_DESTINATION).put("dockerImageTag", "0.1.42").build())),
         MigrationV0_17_0.STANDARD_SOURCE_DEFINITION_RESOURCE_ID, ImmutableList.of(
-            Jsons.jsonNode(ImmutableMap.<String, String>builder().putAll(POSTGRES_SOURCE).put("dockerImageTag", "0.2.0").build()),
+            Jsons.jsonNode(ImmutableMap.<String, String>builder().putAll(POSTGRES_SOURCE).build()),
             Jsons.jsonNode(ImmutableMap.<String, String>builder().putAll(FILE_SOURCE).put("dockerImageTag", "My own custom version").build()),
             Jsons.jsonNode(ImmutableMap.<String, String>builder().putAll(CUSTOM_SOURCE).put("dockerImageTag", "dev").build()),
             Jsons.jsonNode(ImmutableMap.<String, String>builder().putAll(UNKNOWN_SOURCE).put("dockerImageTag", "0.1.0").build())));

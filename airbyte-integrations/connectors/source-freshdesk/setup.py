@@ -33,7 +33,6 @@ MAIN_REQUIREMENTS = [
 ]
 
 TEST_REQUIREMENTS = [
-    "airbyte_python_test",
     "pytest==6.1.2",
     "requests_mock==1.8.0",
 ]

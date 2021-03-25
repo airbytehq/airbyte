@@ -32,7 +32,7 @@ const config: {
   version?: string;
 } = {
   ui: {
-    technicalSupport: "https://docs.airbyte.io/technical-support",
+    technicalSupport: "https://docs.airbyte.io/faq/technical-support",
     helpLink: "https://airbyte.io/community",
     slackLink: "https://slack.airbyte.io",
     docsLink: "https://docs.airbyte.io",

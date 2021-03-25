@@ -129,12 +129,11 @@ public class ConnectionsHandler {
   private Builder<String, Object> generateMetadata(final StandardSync standardSync, final StandardSyncSchedule standardSyncSchedule) {
     final Builder<String, Object> metadata = ImmutableMap.builder();
 
-    final UUID sourceConnectionId = standardSync.getSourceId();
-    final UUID destinationConnectionId = standardSync.getDestinationId();
+    final UUID connectionId = standardSync.getConnectionId();
     final StandardSourceDefinition sourceDefinition = configRepository
-        .getSourceDefinitionFromConnection(sourceConnectionId);
+        .getSourceDefinitionFromConnection(connectionId);
     final StandardDestinationDefinition destinationDefinition = configRepository
-        .getDestinationDefinitionFromConnection(destinationConnectionId);
+        .getDestinationDefinitionFromConnection(connectionId);
 
     metadata.put("connector_source", sourceDefinition.getName());
     metadata.put("connector_source_definition_id", sourceDefinition.getSourceDefinitionId());

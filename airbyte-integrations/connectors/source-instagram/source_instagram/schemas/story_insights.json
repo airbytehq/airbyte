@@ -1,0 +1,32 @@
+{
+  "type": "object",
+  "properties": {
+    "business_account_id": {
+      "type": ["null", "string"]
+    },
+    "page_id": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "exits": {
+      "type": ["null", "integer"]
+    },
+    "impressions": {
+      "type": ["null", "integer"]
+    },
+    "reach": {
+      "type": ["null", "integer"]
+    },
+    "replies": {
+      "type": ["null", "integer"]
+    },
+    "taps_forward": {
+      "type": ["null", "integer"]
+    },
+    "taps_back": {
+      "type": ["null", "integer"]
+    }
+  }
+}

@@ -50,7 +50,7 @@ public class DefaultSyncWorker implements SyncWorker {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSyncWorker.class);
 
-  private final long jobId;
+  private final String jobId;
   private final int attempt;
   private final Source<AirbyteMessage> source;
   private final Mapper<AirbyteMessage> mapper;
@@ -61,7 +61,7 @@ public class DefaultSyncWorker implements SyncWorker {
   private final AtomicBoolean cancelled;
 
   public DefaultSyncWorker(
-                           final long jobId,
+                           final String jobId,
                            final int attempt,
                            final Source<AirbyteMessage> source,
                            final Mapper<AirbyteMessage> mapper,
@@ -145,7 +145,29 @@ public class DefaultSyncWorker implements SyncWorker {
 
   @Override
   public void cancel() {
+    LOGGER.info("Cancelling sync worker...");
     cancelled.set(true);
+
+    LOGGER.info("Cancelling source...");
+    try {
+      source.cancel();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
+    LOGGER.info("Cancelling destination...");
+    try {
+      destination.cancel();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
+    LOGGER.info("Cancelling normalization runner...");
+    try {
+      normalizationRunner.close();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 
 }

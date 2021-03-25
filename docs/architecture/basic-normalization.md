@@ -89,7 +89,7 @@ CREATE TABLE "cars" (
     "_airbyte_normalized_at" TIMESTAMP_WITH_TIMEZONE,
 
     "make" VARCHAR,
-    "model" VARCHAR,
+    "model" VARCHAR
 );
 
 CREATE TABLE "limited_editions" (
@@ -122,7 +122,7 @@ CREATE TABLE "cars" (
     "_airbyte_normalized_at" TIMESTAMP_WITH_TIMEZONE,
 
     "make" VARCHAR,
-    "model" VARCHAR,
+    "model" VARCHAR
 );
 
 CREATE TABLE "limited_editions" (
@@ -156,7 +156,7 @@ CREATE TABLE "cars" (
     "_airbyte_normalized_at" TIMESTAMP_WITH_TIMEZONE,
 
     "make" VARCHAR,
-    "model" VARCHAR,
+    "model" VARCHAR
 );
 
 CREATE TABLE "powertrain_specs" (
@@ -170,3 +170,86 @@ CREATE TABLE "powertrain_specs" (
 );
 ```
 
+### Naming Collisions for un-nested objects 
+
+When extracting nested objects or arrays, the Basic Normalization process needs to figure out new names for the expanded tables.
+
+For example, if we had a `cars` table with a nested column `cars` containing an object whose schema is identical to the parent table. 
+
+```javascript
+{
+  "make": "alfa romeo",
+  "model": "4C coupe",
+  "cars": [
+    { "make": "audi", "model": "A7" },
+    { "make" : "lotus" , "model":  "elise" }
+    { "make" : "chevrolet" , "model":  "mustang" }
+  ]
+}
+```
+
+The expanded table would have a conflict in terms of naming since both are named `cars`.
+To avoid name collisions and ensure a more consistent naming scheme, Basic Normalization chooses the expanded name as follows:
+- `cars` for the original parent table
+- `cars_da3_cars` for the expanded nested columns following this naming scheme in 3 parts: `<Json path>_<Hash>_<nested column name>`
+
+1. Json path: The entire json path string with '_' characters used as delimiters to reach the table that contains the nested column name.
+2. Hash: Hash of the entire json path to reach the nested column reduced to 3 characters. This is to make sure we have a unique name (in case part of the name gets truncated, see below)
+3. Nested column name: name of the column being expanded into its own table.
+
+By following this strategy, nested columns should "never" collide with other table names. 
+If it does, an exception will probably be thrown either by the normalization process or by DBT that runs afterward.
+
+```sql
+CREATE TABLE "cars" (
+    "_airbyte_cars_hashid" VARCHAR,
+    "_airbyte_emitted_at" TIMESTAMP_WITH_TIMEZONE,
+    "_airbyte_normalized_at" TIMESTAMP_WITH_TIMEZONE,
+
+    "make" VARCHAR,
+    "model" VARCHAR
+);
+
+CREATE TABLE "cars_da3_cars" (
+    "_airbyte_cars_hashid" VARCHAR,
+    "_airbyte_cars_foreign_hashid" VARCHAR,
+    "_airbyte_emitted_at" TIMESTAMP_WITH_TIMEZONE,
+    "_airbyte_normalized_at" TIMESTAMP_WITH_TIMEZONE,
+
+    "make" VARCHAR,
+    "model" VARCHAR
+);
+```
+
+### Naming limitations & truncation
+
+Note that different destinations have various naming limitations, most commonly on how long names can be.
+For instance, the Postgres documentation states:
+
+> The system uses no more than NAMEDATALEN-1 bytes of an identifier; 
+> longer names can be written in commands, but they will be truncated. 
+> By default, NAMEDATALEN is 64 so the maximum identifier length is 63 bytes
+
+Most modern data warehouses have name lengths limits on the longer side, so this should not affect us that often.
+Basic Normalization will fallback to the following rules:
+
+1. No Truncate if under destination's character limits
+
+However, in the rare cases where these limits are reached:
+
+2. Truncate only the `Json path` to fit into destination's character limits
+3. Truncate the `Json path` to at least the 10 first characters, then truncate the nested column name starting in the middle to preserve prefix/suffix substrings intact (whenever a truncate in the middle is made, two '__' characters are also inserted to denote where it happened) to fit into destination's character limits 
+
+As an example from the hubspot source, we could have the following tables with nested columns:
+
+| Description | Example 1 | Example 2 |
+| :--- | :--- | :--- |
+| Original Stream Name | companies | deals |
+| Json path to the nested column | `companies/property_engagements_last_meeting_booked_campaign` | `deals/properties/engagements_last_meeting_booked_medium` |
+| Final table name of expanded nested column on BigQuery | companies\_2e8\_property\_engag<strong style="color:red">ements\_last\_meeting\_bo</strong>oked\_campaign | deals\_prop<strong style="color:red">erties</strong>\_6e6\_engagements\_l<strong style="color:red">ast\_meeting\_</strong>booked\_medium |
+| Final table name of expanded nested column on Postgres | companies\_2e8\_property\_engag<strong style="color:blue">\_\_</strong>oked\_campaign | deals\_prop\_6e6\_engagements\_l<strong style="color:blue">\_\_</strong>booked\_medium |
+
+Note that all the choices made by Normalization as described in this documentation page in terms of naming could be overriden by your own custom choices. 
+To do so, you can follow the following tutorial 
+- to build a [custom SQL view](../tutorials/connecting-el-with-t-using-sql.md) with your own naming conventions
+- to export, edit and run [custom DBT normalization](../tutorials/connecting-el-with-t-using-dbt.md) yourself

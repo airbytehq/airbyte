@@ -31,12 +31,5 @@ setup(
     author_email="contact@airbyte.io",
     packages=find_packages(),
     package_data={"": ["*.json"]},
-    install_requires=[
-        "tap-exchangeratesapi==0.1.1",
-        "base-python",
-        "airbyte-protocol",
-    ],
-    setup_requires=["pytest-runner"],
-    tests_require=["pytest"],
-    extras_require={"main": ["base-singer"], "tests": ["airbyte_python_test", "pytest"]},
+    install_requires=["tap-exchangeratesapi==0.1.1", "base-python", "airbyte-protocol", "pytest==6.1.2"],
 )

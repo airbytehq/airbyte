@@ -46,14 +46,14 @@ class HealthCheckHandlerTest {
     final HealthCheckHandler healthCheckHandler = new HealthCheckHandler(configRepository);
 
     // check db healthy
-    when(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID)).thenReturn(new StandardWorkspace());
+    when(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID, true)).thenReturn(new StandardWorkspace());
     assertEquals(new HealthCheckRead().db(true), healthCheckHandler.health());
 
     // check db unhealthy
-    when(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID)).thenReturn(null);
+    when(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID, true)).thenReturn(null);
     assertEquals(new HealthCheckRead().db(false), healthCheckHandler.health());
 
-    doThrow(IOException.class).when(configRepository).getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID);
+    doThrow(IOException.class).when(configRepository).getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID, false);
     assertEquals(new HealthCheckRead().db(false), healthCheckHandler.health());
   }
 
