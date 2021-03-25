@@ -62,6 +62,7 @@ class WorkspacesHandlerTest {
   private StandardWorkspace workspace;
   private WorkspacesHandler workspacesHandler;
 
+  @SuppressWarnings("unchecked")
   @BeforeEach
   void setUp() {
     configRepository = mock(ConfigRepository.class);
