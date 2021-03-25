@@ -28,18 +28,40 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.lang.CloseableQueue;
+import io.airbyte.commons.lang.Queues;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.PostgresJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.integrations.source.jdbc.JdbcStateManager;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Stream;
+
+import io.debezium.engine.ChangeEvent;
+import io.debezium.engine.DebeziumEngine;
+import io.debezium.engine.format.Json;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,12 +117,103 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public AutoCloseableIterator<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception {
-    if (config.get("replication_method").isNull() || config.get("replication_method").get("replication_slot").isNull()) {
-      return super.read(config, catalog, state);
+  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(JsonNode config,
+                                                                             JdbcDatabase database,
+                                                                             ConfiguredAirbyteCatalog catalog,
+                                                                             Map<String, TableInfoInternal> tableNameToTable,
+                                                                             JdbcStateManager stateManager,
+                                                                             Instant emittedAt) {
+    if(isCdc(config)) {
+      AtomicReference<Throwable> thrownError = new AtomicReference<>();
+      AtomicBoolean completed = new AtomicBoolean(false);
+      ExecutorService executor = Executors.newSingleThreadExecutor();
+      CloseableLinkedBlockingQueue queue = new CloseableLinkedBlockingQueue(executor::shutdown);
+
+      DebeziumEngine<ChangeEvent<String, String>> engine = DebeziumEngine.create(Json.class)
+              .using(getDebeziumProperties(config))
+              .notifying(record -> {
+                try {
+                  System.out.println("record = " + record);
+                  JsonNode node = Jsons.jsonNode(ImmutableMap.of("key", record.key() != null ? record.key() : "null", "value", record.value(), "destination", record.destination())); // todo: better transformation function here
+                  System.out.println("node = " + node);
+                  queue.add(node);
+                } catch (Exception e) {
+                  System.out.println("error");
+                  thrownError.set(e);
+                }
+              })
+            .using((success, message, error) -> {
+              System.out.println("completed!");
+              completed.set(true);
+              thrownError.set(error);
+            })
+            .build();
+
+      // Run the engine asynchronously ...
+      executor.execute(engine);
+
+      final Stream<JsonNode> jsonStream = Queues.toStream(queue);
+      final AutoCloseableIterator<JsonNode> jsonIterator = AutoCloseableIterators.fromStream(jsonStream);
+      final AutoCloseableIterator<AirbyteMessage> messageIterator = AutoCloseableIterators.transform(jsonIterator, r -> new AirbyteMessage()
+              .withType(AirbyteMessage.Type.RECORD)
+              .withRecord(new AirbyteRecordMessage()
+                      .withStream("single_stream") // todo: refactor this
+                      .withEmittedAt(emittedAt.toEpochMilli())
+                      .withData(r)));
+
+      return Collections.singletonList(messageIterator);
     } else {
-      throw new RuntimeException("todo: implement cdc. Easy!");
+      return super.getIncrementalIterators(config, database, catalog, tableNameToTable, stateManager, emittedAt);
     }
+  }
+
+  // todo: make this use catalog as well
+  // todo: make this use the state for the files as well
+  protected static Properties getDebeziumProperties(JsonNode config) {
+    final Properties props = new Properties();
+    props.setProperty("name", "engine");
+    props.setProperty("plugin.name", "pgoutput");
+    props.setProperty("connector.class", "io.debezium.connector.postgresql.PostgresConnector");
+    props.setProperty("offset.storage", "org.apache.kafka.connect.storage.FileOffsetBackingStore");
+    props.setProperty("offset.storage.file.filename", "/tmp/offsets-" + RandomStringUtils.randomAlphabetic(5) + ".dat");
+    props.setProperty("offset.flush.interval.ms", "1000"); // todo: make this longer
+
+    // https://debezium.io/documentation/reference/configuration/avro.html
+    props.setProperty("key.converter.schemas.enable", "false");
+    props.setProperty("value.converter.schemas.enable", "false");
+
+    // https://debezium.io/documentation/reference/configuration/event-flattening.html
+    props.setProperty("delete.handling.mode", "rewrite");
+    props.setProperty("drop.tombstones", "false");
+    props.setProperty("transforms.unwrap.type", "io.debezium.transforms.ExtractNewRecordState");
+
+    // props.setProperty("table.include.list", "public.id_and_name"); // todo
+    props.setProperty("database.include.list", config.get("database").asText());
+    props.setProperty("name", "orders-postgres-connector");
+    props.setProperty("include_schema_changes", "true");
+    props.setProperty("database.server.name", "orders"); // todo
+    props.setProperty("database.hostname", "localhost");
+    props.setProperty("database.port", config.get("port").asText());
+    props.setProperty("database.user", config.get("username").asText());
+
+    if (config.has("password")) {
+      props.setProperty("database.password", config.get("password").asText());
+    }
+
+    props.setProperty("database.dbname", config.get("database").asText());
+    props.setProperty("database.history", "io.debezium.relational.history.FileDatabaseHistory"); // todo: any reason not to use in memory version and
+    // reload from
+    props.setProperty("database.history.file.filename", "/tmp/debezium/dbhistory-" + RandomStringUtils.randomAlphabetic(5) +".dat");
+
+    props.setProperty("slot.name", config.get("replication_method").get("replication_slot").asText());
+
+    props.setProperty("snapshot.mode", "exported"); // can use never if we want to manage full refreshes ourselves
+
+    return props;
+  }
+
+  private static boolean isCdc(JsonNode config) {
+    return !config.get("replication_method").isNull() && !config.get("replication_method").get("replication_slot").isNull();
   }
 
   public static void main(String[] args) throws Exception {

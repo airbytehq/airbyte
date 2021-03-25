@@ -181,9 +181,9 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
             .collect(Collectors.toMap(t -> String.format("%s.%s", t.getSchemaName(), t.getName()), Function.identity()));
 
     final List<AutoCloseableIterator<AirbyteMessage>> incrementalIterators =
-        getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
+        getIncrementalIterators(config, database, catalog, tableNameToTable, stateManager, emittedAt);
     final List<AutoCloseableIterator<AirbyteMessage>> fullRefreshIterators =
-        getFullRefreshIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
+        getFullRefreshIterators(config, database, catalog, tableNameToTable, stateManager, emittedAt);
     final List<AutoCloseableIterator<AirbyteMessage>> iteratorList = Stream.of(incrementalIterators, fullRefreshIterators)
         .flatMap(Collection::stream)
         .collect(Collectors.toList());
@@ -195,7 +195,8 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
     });
   }
 
-  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(JdbcDatabase database,
+  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(JsonNode config,
+                                                                             JdbcDatabase database,
                                                                              ConfiguredAirbyteCatalog catalog,
                                                                              Map<String, TableInfoInternal> tableNameToTable,
                                                                              JdbcStateManager stateManager,
@@ -209,7 +210,8 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
         configuredStream -> configuredStream.getSyncMode().equals(SyncMode.INCREMENTAL));
   }
 
-  public List<AutoCloseableIterator<AirbyteMessage>> getFullRefreshIterators(JdbcDatabase database,
+  public List<AutoCloseableIterator<AirbyteMessage>> getFullRefreshIterators(JsonNode config,
+                                                                             JdbcDatabase database,
                                                                              ConfiguredAirbyteCatalog catalog,
                                                                              Map<String, TableInfoInternal> tableNameToTable,
                                                                              JdbcStateManager stateManager,
@@ -495,7 +497,7 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
         .collect(Collectors.toList());
   }
 
-  private static AutoCloseableIterator<AirbyteMessage> getMessageIterator(AutoCloseableIterator<JsonNode> recordIterator,
+  public static AutoCloseableIterator<AirbyteMessage> getMessageIterator(AutoCloseableIterator<JsonNode> recordIterator,
                                                                           String streamName,
                                                                           long emittedAt) {
     return AutoCloseableIterators.transform(recordIterator, r -> new AirbyteMessage()
