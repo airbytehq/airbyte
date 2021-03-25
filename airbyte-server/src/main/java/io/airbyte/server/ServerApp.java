@@ -98,7 +98,7 @@ public class ServerApp {
     Map<String, String> mdc = MDC.getCopyOfContextMap();
 
     ConfigurationApiFactory.setSchedulerJobClient(new DefaultSchedulerJobClient(jobPersistence, new DefaultJobCreator(jobPersistence)));
-    final JobTracker jobTracker = new JobTracker(configRepository);
+    final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence);
     final TemporalClient temporalClient = TemporalClient.production(configs.getWorkspaceRoot());
 
     ConfigurationApiFactory
