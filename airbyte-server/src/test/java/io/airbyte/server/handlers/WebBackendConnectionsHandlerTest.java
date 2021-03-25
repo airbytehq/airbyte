@@ -24,7 +24,7 @@
 
 package io.airbyte.server.handlers;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -96,7 +96,6 @@ class WebBackendConnectionsHandlerTest {
   private WebBackendConnectionsHandler wbHandler;
 
   private SourceRead sourceRead;
-  private DestinationRead destinationRead;
   private ConnectionRead connectionRead;
   private WbConnectionRead expected;
   private WbConnectionRead expectedWithNewSchema;
@@ -116,7 +115,7 @@ class WebBackendConnectionsHandlerTest {
 
     final StandardDestinationDefinition destinationDefinition = DestinationDefinitionHelpers.generateDestination();
     final DestinationConnection destination = DestinationHelpers.generateDestination(UUID.randomUUID());
-    destinationRead = DestinationHelpers.getDestinationRead(destination, destinationDefinition);
+    DestinationRead destinationRead = DestinationHelpers.getDestinationRead(destination, destinationDefinition);
 
     final StandardSync standardSync = ConnectionHelpers.generateSyncWithSourceId(source.getSourceId());
     connectionRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync);
@@ -165,7 +164,8 @@ class WebBackendConnectionsHandlerTest {
         .schedule(connectionRead.getSchedule())
         .source(sourceRead)
         .destination(destinationRead)
-        .lastSync(now.getEpochSecond())
+        .latestSyncJobCreatedAt(now.getEpochSecond())
+        .latestSyncJobStatus(JobStatus.SUCCEEDED)
         .isSyncing(false);
 
     final AirbyteCatalog modifiedCatalog = ConnectionHelpers.generateBasicApiCatalog();
@@ -186,7 +186,8 @@ class WebBackendConnectionsHandlerTest {
         .schedule(expected.getSchedule())
         .source(expected.getSource())
         .destination(expected.getDestination())
-        .lastSync(expected.getLastSync())
+        .latestSyncJobCreatedAt(expected.getLatestSyncJobCreatedAt())
+        .latestSyncJobStatus(expected.getLatestSyncJobStatus())
         .isSyncing(expected.getIsSyncing());
 
     when(schedulerHandler.resetConnection(any())).thenReturn(new JobInfoRead().job(new JobRead().status(JobStatus.SUCCEEDED)));
