@@ -49,6 +49,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 import org.apache.kafka.common.utils.CloseableIterator;
 import org.checkerframework.checker.units.qual.A;
@@ -115,7 +116,7 @@ public class DPostgresSource {
     ExecutorService executor = Executors.newSingleThreadExecutor();
 
     // Create the engine with this configuration ...
-    try(AutoCloseableIterator<JsonNode> iterator = getIterator(props, queue, completed, thrownError, executor)) {
+    try(AutoCloseableIterator<JsonNode> iterator = getIterator(props, queue, completed, thrownError, executor, record -> false)) {
       while(iterator.hasNext()) {
         LOGGER.info("iterator.next() = " + iterator.next());
       }
@@ -129,10 +130,20 @@ public class DPostgresSource {
 
   // todo: https://debezium.io/documentation/reference/configuration/event-flattening.html
 
-  private static AutoCloseableIterator<JsonNode> getIterator(Properties props, BlockingQueue<JsonNode> queue, AtomicBoolean completed, AtomicReference<Throwable> thrownError, ExecutorService executor) {
+  private static AutoCloseableIterator<JsonNode> getIterator(Properties props,
+      BlockingQueue<JsonNode> queue,
+      AtomicBoolean completed,
+      AtomicReference<Throwable> thrownError,
+      ExecutorService executor,
+      Predicate<ChangeEvent<String, String>> maxLsnPredicate) {
     DebeziumEngine<ChangeEvent<String, String>> engine = DebeziumEngine.create(Json.class)
             .using(props)
             .notifying(record -> {
+              if(maxLsnPredicate.test(record)) {
+                completed.set(true);
+                return;
+              }
+
               try {
                 queue.add(Jsons.jsonNode(record)); // todo: better transformation function here
               } catch (Exception e) {
