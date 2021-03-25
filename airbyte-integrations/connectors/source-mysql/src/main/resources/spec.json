@@ -31,6 +31,10 @@
         "description": "Password associated with the username.",
         "type": "string",
         "airbyte_secret": true
+      },
+      "jdbc_url_params": {
+        "description": "Additional Parameters to pass to the jdbc url string when connecting to the database",
+        "type": "string"
       }
     }
   }
