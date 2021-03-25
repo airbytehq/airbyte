@@ -333,6 +333,9 @@ class MediaInsightsAPI(MediaAPI):
                     # the user's account was converted to a business account from a personal account
                     if error.api_error_subcode() == 2108006:
                         logger.error(f"Insights error for business_account_id {ig_account.get('id')}: {error.body()}")
+
+                        # We receive all Media starting from the last one, and if on the next Media we get an Insight error,
+                        # then no reason to make inquiries for each Media further, since they were published even earlier.
                         break
                     raise error
 
