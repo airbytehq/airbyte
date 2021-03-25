@@ -33,16 +33,21 @@ import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.config.JobConfig.ConfigType;
+import io.airbyte.config.JobOutput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSyncSchedule;
+import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.Job;
+import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -58,15 +63,17 @@ public class JobTracker {
   public static final String MESSAGE_NAME = "Connector Jobs";
 
   private final ConfigRepository configRepository;
+  private final JobPersistence jobPersistence;
   private final TrackingClient trackingClient;
 
-  public JobTracker(ConfigRepository configRepository) {
-    this(configRepository, TrackingClientSingleton.get());
+  public JobTracker(ConfigRepository configRepository, JobPersistence jobPersistence) {
+    this(configRepository, jobPersistence, TrackingClientSingleton.get());
   }
 
   @VisibleForTesting
-  JobTracker(ConfigRepository configRepository, TrackingClient trackingClient) {
+  JobTracker(ConfigRepository configRepository, JobPersistence jobPersistence, TrackingClient trackingClient) {
     this.configRepository = configRepository;
+    this.jobPersistence = jobPersistence;
     this.trackingClient = trackingClient;
   }
 
@@ -113,12 +120,13 @@ public class JobTracker {
       final UUID destinationDefinitionId = configRepository.getDestinationDefinitionFromConnection(connectionId).getDestinationDefinitionId();
 
       final ImmutableMap<String, Object> jobMetadata = generateJobMetadata(String.valueOf(jobId), configType, job.getAttemptsCount());
+      final ImmutableMap<String, Object> jobAttemptMetadata = generateJobAttemptMetadata(job.getId(), jobState);
       final ImmutableMap<String, Object> sourceDefMetadata = generateSourceDefinitionMetadata(sourceDefinitionId);
       final ImmutableMap<String, Object> destinationDefMetadata = generateDestinationDefinitionMetadata(destinationDefinitionId);
       final ImmutableMap<String, Object> syncMetadata = generateSyncMetadata(connectionId);
       final ImmutableMap<String, Object> stateMetadata = generateStateMetadata(jobState);
 
-      track(MoreMaps.merge(jobMetadata, sourceDefMetadata, destinationDefMetadata, syncMetadata, stateMetadata));
+      track(MoreMaps.merge(jobMetadata, jobAttemptMetadata, sourceDefMetadata, destinationDefMetadata, syncMetadata, stateMetadata));
     });
   }
 
@@ -202,6 +210,25 @@ public class JobTracker {
     metadata.put("job_id", jobId);
     metadata.put("attempt_id", attempt);
 
+    return metadata.build();
+  }
+
+  private ImmutableMap<String, Object> generateJobAttemptMetadata(long jobId, JobState jobState) throws IOException {
+    final Builder<String, Object> metadata = ImmutableMap.builder();
+    final Job job = jobPersistence.getJob(jobId);
+    if (jobState != JobState.STARTED && job != null) {
+      final List<Attempt> attempts = job.getAttempts();
+      if (attempts != null && !attempts.isEmpty()) {
+        final Attempt lastAttempt = attempts.get(attempts.size() - 1);
+        if (lastAttempt.getOutput() != null && lastAttempt.getOutput().isPresent()) {
+          final JobOutput jobOutput = lastAttempt.getOutput().get();
+          final StandardSyncSummary syncSummary = jobOutput.getSync().getStandardSyncSummary();
+          metadata.put("duration", Math.round((syncSummary.getEndTime() - syncSummary.getStartTime()) / 1000.0));
+          metadata.put("volume_mb", syncSummary.getBytesSynced());
+          metadata.put("volume_rows", syncSummary.getRecordsSynced());
+        }
+      }
+    }
     return metadata.build();
   }
 
