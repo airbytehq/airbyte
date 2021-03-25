@@ -29,7 +29,6 @@ import static java.lang.Thread.sleep;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.AbstractIterator;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.lang.CloseableQueue;
 import io.airbyte.commons.stream.MoreStreams;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
@@ -37,10 +36,8 @@ import io.debezium.engine.ChangeEvent;
 import io.debezium.engine.DebeziumEngine;
 import io.debezium.engine.format.Json;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
@@ -50,9 +47,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import java.util.function.Predicate;
-import java.util.stream.Stream;
-import org.apache.kafka.common.utils.CloseableIterator;
-import org.checkerframework.checker.units.qual.A;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -135,15 +129,10 @@ public class DPostgresSource {
       AtomicBoolean completed,
       AtomicReference<Throwable> thrownError,
       ExecutorService executor,
-      Predicate<ChangeEvent<String, String>> maxLsnPredicate) {
+      Predicate<ChangeEvent<String, String>> hasReachedLsnPredicate) {
     DebeziumEngine<ChangeEvent<String, String>> engine = DebeziumEngine.create(Json.class)
             .using(props)
             .notifying(record -> {
-              if(maxLsnPredicate.test(record)) {
-                completed.set(true);
-                return;
-              }
-
               try {
                 queue.add(Jsons.jsonNode(record)); // todo: better transformation function here
               } catch (Exception e) {
@@ -159,7 +148,30 @@ public class DPostgresSource {
     // Run the engine asynchronously ...
     executor.execute(engine);
 
-    return AutoCloseableIterators.fromIterator(MoreStreams.toStream(queue).iterator(), () -> {
+    // retains the blocking behavior on hasNext (unlike Queue#iterator)
+    final Iterator<JsonNode> queueIterator = MoreStreams.toStream(queue).iterator();
+
+    final AbstractIterator<JsonNode> iterator = new AbstractIterator<>() {
+      private boolean hasReachedLsn = false;
+
+      @Override
+      protected JsonNode computeNext() {
+        // if we have reached the lsn we stop, otherwise we have the potential to wait indefinitely for the next value.
+        if(!hasReachedLsn && queueIterator.hasNext()) {
+          final JsonNode next = queueIterator.next();
+          // todo fix this cast. the record passed to this iterator has to include the lsn somewhere. it can either be the full change event or some smaller object that just includes the lsn.
+          // we guarantee that this will always eventually return true, because we pick an LSN that already exists when we start the sync.
+          if(hasReachedLsnPredicate.test((ChangeEvent<String, String>) next)) {
+            hasReachedLsn = true;
+          }
+          return next;
+        } else {
+          return endOfData();
+        }
+      }
+    };
+
+    return AutoCloseableIterators.fromIterator(iterator, () -> {
       engine.close();
       executor.shutdown();
 
