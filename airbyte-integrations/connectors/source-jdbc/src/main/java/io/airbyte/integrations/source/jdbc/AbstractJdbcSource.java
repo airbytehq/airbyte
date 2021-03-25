@@ -126,7 +126,7 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (Exception e) {
-      LOGGER.debug("Exception while checking connection: ", e);
+      LOGGER.info("Exception while checking connection: ", e);
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
           .withMessage("Could not connect with provided configuration.");

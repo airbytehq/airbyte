@@ -42,26 +42,10 @@
         "airbyte_secret": true,
         "order": 4
       },
-      "replication_method": {
-        "title": "Replication Method",
+      "replication_slot": {
+        "type": "string",
         "description": "How to replicate data from Postgres.",
-        "order": 5,
-        "oneOf": [
-          {
-            "title": "Standard",
-            "properties": {}
-          },
-          {
-            "title": "Logical (WAL/CDC)",
-            "properties": {
-              "replication_slot": {
-                "title": "Logical Replication Slot",
-                "description": "A pgoutput logical replication slot. Logical replication uses the Postgres write-ahead log (WAL) to detect inserts, updates, and deletes. This needs to be configured on the source database itself. Only available on Postgres 10 and above. Read the <a href=\"https://docs.airbyte.io/integrations/sources/postgres\">Postgres Source docs</a> for more information.",
-                "type": "string"
-              }
-            }
-          }
-        ]
+        "order": 5
       }
     }
   }

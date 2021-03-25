@@ -103,6 +103,7 @@ public class IntegrationRunner {
         final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null));
         try (messageIterator) {
           messageIterator.forEachRemaining(v -> {
+            LOGGER.info("peeking at message: " + v);
             stdoutConsumer.accept(Jsons.serialize(v));
           });
         }

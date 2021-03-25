@@ -100,14 +100,18 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(JsonNode config) throws Exception {
     final List<CheckedConsumer<JdbcDatabase, Exception>> checkOperations = new ArrayList<>(super.getCheckOperations(config));
 
-    if (!config.get("replication_method").isNull() && !config.get("replication_method").get("replication_slot").isNull()) {
+    if (isCdc(config)) {
       checkOperations.add(database -> database.query(connection -> {
-        LOGGER.info("Attempting to find the named replication slot.");
+        final String replicationSlot = config.get("replication_slot").asText();
+        // todo: we can't use enquoteIdentifier since this isn't an identifier, it's a value. fix this to prevent sql injection
         final String sql =
-            String.format("SELECT slot_name, plugin, database FROM pg_replication_slots WHERE slot_name = %s AND plugin = %s AND database = %s",
-                JdbcUtils.enquoteIdentifier(connection, config.get("replication_method").get("replication_slot").asText()),
-                JdbcUtils.enquoteIdentifier(connection, "pgoutput"),
-                JdbcUtils.enquoteIdentifier(connection, config.get("database").asText()));
+            String.format("SELECT slot_name, plugin, database FROM pg_replication_slots WHERE slot_name = '%s' AND plugin = '%s' AND database = '%s'",
+                replicationSlot,
+                "pgoutput",
+                config.get("database").asText());
+
+
+        LOGGER.info("Attempting to find the named replication slot using the query: " + sql);
 
         return connection.prepareStatement(sql);
       }, JdbcUtils::rowToJson));
@@ -205,7 +209,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
     // reload from
     props.setProperty("database.history.file.filename", "/tmp/debezium/dbhistory-" + RandomStringUtils.randomAlphabetic(5) +".dat");
 
-    props.setProperty("slot.name", config.get("replication_method").get("replication_slot").asText());
+    props.setProperty("slot.name", config.get("replication_slot").asText());
 
     props.setProperty("snapshot.mode", "exported"); // can use never if we want to manage full refreshes ourselves
 
@@ -213,7 +217,8 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   }
 
   private static boolean isCdc(JsonNode config) {
-    return !config.get("replication_method").isNull() && !config.get("replication_method").get("replication_slot").isNull();
+    LOGGER.info("isCdc config: " + config);
+    return !(config.get("replication_slot") == null);
   }
 
   public static void main(String[] args) throws Exception {
