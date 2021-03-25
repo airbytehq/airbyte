@@ -27,7 +27,10 @@ package io.airbyte.integrations.source.postgres;
 import static java.lang.Thread.sleep;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.AbstractIterator;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.lang.CloseableQueue;
+import io.airbyte.commons.stream.MoreStreams;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.debezium.engine.ChangeEvent;
@@ -46,6 +49,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import java.util.stream.Stream;
+import org.apache.kafka.common.utils.CloseableIterator;
 import org.checkerframework.checker.units.qual.A;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -143,29 +148,14 @@ public class DPostgresSource {
     // Run the engine asynchronously ...
     executor.execute(engine);
 
-    Iterator<JsonNode> delegateIterator = queue.iterator();
+    return AutoCloseableIterators.fromIterator(MoreStreams.toStream(queue).iterator(), () -> {
+      engine.close();
+      executor.shutdown();
 
-    return new AutoCloseableIterator<>() {
-      @Override
-      public void close() throws Exception {
-        engine.close();
-        executor.shutdown();
-
-        if(thrownError.get() != null) {
-          throw new RuntimeException(thrownError.get());
-        }
+      if(thrownError.get() != null) {
+        throw new RuntimeException(thrownError.get());
       }
-
-      @Override
-      public boolean hasNext() {
-        return !completed.get() && delegateIterator.hasNext();
-      }
-
-      @Override
-      public JsonNode next() {
-        return delegateIterator.next();
-      }
-    };
+    });
   }
 
 }
