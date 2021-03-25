@@ -24,6 +24,7 @@
 
 package io.airbyte.commons.lang;
 
+import java.util.Queue;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.Consumer;
@@ -40,7 +41,7 @@ public class Queues {
    * @param <T> type provided by the queue
    * @return stream interface on top of the queue.
    */
-  public static <T> Stream<T> toStream(CloseableQueue<T> queue) {
+  public static <T> Stream<T> toStream(Queue<T> queue) {
     return StreamSupport.stream(new Spliterators.AbstractSpliterator<>(Long.MAX_VALUE, Spliterator.ORDERED) {
 
       @Override

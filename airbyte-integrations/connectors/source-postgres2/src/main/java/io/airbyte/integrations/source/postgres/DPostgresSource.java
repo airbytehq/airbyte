@@ -24,9 +24,12 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import static java.lang.Thread.sleep;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.AbstractIterator;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.lang.Queues;
 import io.airbyte.commons.stream.MoreStreams;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
@@ -51,6 +54,7 @@ public class DPostgresSource {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DPostgresSource.class);
 
+  @SuppressWarnings("ConstantConditions")
   public static void main(String[] args) throws IOException, InterruptedException {
 
     // Define the configuration for the Debezium Engine with MySQL connector...
@@ -60,7 +64,7 @@ public class DPostgresSource {
     props.setProperty("plugin.name", "pgoutput");
     props.setProperty("connector.class", "io.debezium.connector.postgresql.PostgresConnector");
     props.setProperty("offset.storage", "org.apache.kafka.connect.storage.FileOffsetBackingStore");
-    props.setProperty("offset.storage.file.filename", "/tmp/offsets2.dat");
+    props.setProperty("offset.storage.file.filename", "/tmp/offsets4.dat");
     props.setProperty("offset.flush.interval.ms", "60000");
     /* begin connector properties */
     // .with("database.server.name", "orders")
@@ -117,11 +121,18 @@ public class DPostgresSource {
             .flatMap(value -> Optional.ofNullable(value.get("source")))
             .flatMap(source -> Optional.ofNullable(source.get("lsn").asText()))
             // replace 10L with actual pre select lsn.
-            .map(lsn -> Long.parseLong(lsn) >= 10L)
+            .map(lsn -> {
+              LOGGER.info("lsn was {}", lsn);
+              return false;
+//              return Long.parseLong(lsn) >= 10L;
+            })
             .orElse(false))) {
+
+      LOGGER.info("entering loop");
       while (iterator.hasNext()) {
         LOGGER.info("iterator.next() = " + iterator.next());
       }
+      LOGGER.info("exiting loop");
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -142,6 +153,7 @@ public class DPostgresSource {
         .using(props)
         .notifying(record -> {
           try {
+            LOGGER.info("record - {}", record);
             queue.add(Jsons.jsonNode(record)); // todo: better transformation function here
           } catch (Exception e) {
             thrownError.set(e);
@@ -157,7 +169,15 @@ public class DPostgresSource {
     executor.execute(engine);
 
     // retains the blocking behavior on hasNext (unlike Queue#iterator)
-    final Iterator<JsonNode> queueIterator = MoreStreams.toStream(queue).iterator();
+    try {
+      sleep(5000);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+    final Iterator<JsonNode> queueIterator = Queues.toStream(queue).iterator();
+//    final Iterator<JsonNode> queueIterator2 = Queues.toStream(queue).iterator();
+
+    LOGGER.info("wait");
 
     final AbstractIterator<JsonNode> iterator = new AbstractIterator<>() {
 
@@ -167,8 +187,18 @@ public class DPostgresSource {
       protected JsonNode computeNext() {
         // if we have reached the lsn we stop, otherwise we have the potential to wait indefinitely for the
         // next value.
-        if (!hasReachedLsn && queueIterator.hasNext()) {
+        if (!hasReachedLsn) {
+          while(!queueIterator.hasNext()) {
+            LOGGER.info("sleeping.");
+            try {
+              sleep(5000);
+            } catch (InterruptedException e) {
+              throw new RuntimeException(e);
+            }
+          }
+
           final JsonNode next = queueIterator.next();
+          LOGGER.info("next {}", next);
           // todo fix this cast. the record passed to this iterator has to include the lsn somewhere. it can
           // either be the full change event or some smaller object that just includes the lsn.
           // we guarantee that this will always eventually return true, because we pick an LSN that already
