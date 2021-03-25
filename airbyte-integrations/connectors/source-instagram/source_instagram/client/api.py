@@ -38,11 +38,13 @@ from .common import retry_pattern
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 
 
-# This function removes the _nc_rid parameter from the video url and ccb from profile_picture_url for users.
-# _nc_rid is generated every time a new one and ccb can change its value, and tests fail when checking for identity.
-# This does not spoil the link, it remains correct and by clicking on it you can view the video or see picture.
 def clear_video_url(record_data: dict = None):
-    if record_data.get("media_type") == "VIDEO":
+    """
+    This function removes the _nc_rid parameter from the video url and ccb from profile_picture_url for users.
+    _nc_rid is generated every time a new one and ccb can change its value, and tests fail when checking for identity.
+    This does not spoil the link, it remains correct and by clicking on it you can view the video or see picture.
+    """
+    if record_data.get("media_type") == "VIDEO" and record_data.get("media_url"):
         end_of_string = record_data["media_url"].find("&_nc_rid=")
         if end_of_string != -1:
             record_data["media_url"] = record_data["media_url"][:end_of_string]
@@ -177,6 +179,7 @@ class UserInsightsAPI(IncrementalStreamAPI):
     def __init__(self, api):
         super().__init__(api=api)
         self._state = {}
+        self._end_date = pendulum.now()
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         for account in self._api.accounts:
@@ -206,9 +209,8 @@ class UserInsightsAPI(IncrementalStreamAPI):
 
     def _params(self, account_id: str) -> Iterator[List]:
         buffered_start_date = self._state[account_id]
-        end_date = pendulum.now()
 
-        while buffered_start_date <= end_date:
+        while buffered_start_date <= self._end_date:
             params_list = []
             for period, metrics in self.METRICS_BY_PERIOD.items():
                 params_list.append(
@@ -304,16 +306,21 @@ class MediaInsightsAPI(MediaAPI):
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         for account in self._api.accounts:
-            media = self._get_media(account["instagram_business_account"], {"limit": self.result_return_limit}, ["media_type"])
+            ig_account = account["instagram_business_account"]
+            media = self._get_media(ig_account, {"limit": self.result_return_limit}, ["media_type"])
             for ig_media in media:
-                yield {
-                    **{
-                        "id": ig_media.get("id"),
-                        "page_id": account["page_id"],
-                        "business_account_id": account["instagram_business_account"].get("id"),
-                    },
-                    **{record.get("name"): record.get("values")[0]["value"] for record in self._get_insights(ig_media)},
-                }
+                try:
+                    yield {
+                        **{
+                            "id": ig_media.get("id"),
+                            "page_id": account["page_id"],
+                            "business_account_id": ig_account.get("id"),
+                        },
+                        **{record.get("name"): record.get("values")[0]["value"] for record in self._get_insights(ig_media)},
+                    }
+                except FacebookRequestError as error:
+                    logger.error(f"Insights error for business_account_id {ig_account.get('id')}: {error.body()}")
+                    break
 
     @backoff_policy
     def _get_insights(self, item) -> Iterator[Any]:
@@ -328,13 +335,7 @@ class MediaInsightsAPI(MediaAPI):
         else:
             metrics = self.MEDIA_METRICS
 
-        # An error might occur if the media was posted before the most recent time that
-        # the user's account was converted to a business account from a personal account
-        try:
-            return item.get_insights(params={"metric": metrics})
-        except FacebookRequestError as error:
-            logger.error(f"Insights error: {error.body()}")
-            raise error
+        return item.get_insights(params={"metric": metrics})
 
 
 class StoriesInsightsAPI(StoriesAPI):
