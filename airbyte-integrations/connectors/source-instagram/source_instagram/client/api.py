@@ -319,6 +319,8 @@ class MediaInsightsAPI(MediaAPI):
                         **{record.get("name"): record.get("values")[0]["value"] for record in self._get_insights(ig_media)},
                     }
                 except FacebookRequestError as error:
+                    # An error might occur if the media was posted before the most recent time that
+                    # the user's account was converted to a business account from a personal account
                     logger.error(f"Insights error for business_account_id {ig_account.get('id')}: {error.body()}")
                     break
 
