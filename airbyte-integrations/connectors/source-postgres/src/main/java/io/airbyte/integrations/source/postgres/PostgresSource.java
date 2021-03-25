@@ -195,8 +195,8 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
     props.setProperty("database.include.list", config.get("database").asText());
     props.setProperty("name", "orders-postgres-connector");
     props.setProperty("include_schema_changes", "true");
-    props.setProperty("database.server.name", "orders"); // todo
-    props.setProperty("database.hostname", "localhost");
+    // props.setProperty("database.server.name", "orders"); // todo
+    props.setProperty("database.hostname", config.get("host").asText());
     props.setProperty("database.port", config.get("port").asText());
     props.setProperty("database.user", config.get("username").asText());
 

@@ -34,17 +34,13 @@ import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.SQLDialect;
@@ -144,10 +140,6 @@ class PostgresSourceCdcTest {
         SQLDialect.POSTGRES);
   }
 
-  private JsonNode getConfig(PostgreSQLContainer<?> psqlDb) {
-    return getConfig(psqlDb, psqlDb.getDatabaseName());
-  }
-
   @Test
   public void testIt() throws Exception {
     final PostgresSource source = new PostgresSource();
@@ -165,26 +157,6 @@ class PostgresSourceCdcTest {
       System.out.println("it said it had next");
       System.out.println("read.next() = " + read.next());
     }
-  }
-
-  private static AirbyteMessage createRecord(String stream, Map<Object, Object> data) {
-    return new AirbyteMessage().withType(Type.RECORD).withRecord(new AirbyteRecordMessage().withData(Jsons.jsonNode(data)).withStream(stream));
-  }
-
-  private static Map<Object, Object> map(Object... entries) {
-    if (entries.length % 2 != 0) {
-      throw new IllegalArgumentException("Entries must have even length");
-    }
-
-    return new HashMap<>() {
-
-      {
-        for (int i = 0; i < entries.length; i++) {
-          put(entries[i++], entries[i]);
-        }
-      }
-
-    };
   }
 
 }
