@@ -57,7 +57,7 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
-class PostgresSourceTestCdc {
+class PostgresSourceCdcTest {
 
   private static final String STREAM_NAME = "public.id_and_name";
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
