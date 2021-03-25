@@ -21,14 +21,13 @@ const Arrow = styled(FontAwesomeIcon)<{ isOpen?: boolean }>`
   vertical-align: sub;
 `;
 
-type IProps = {
+type ExpandFieldCellProps = {
   isItemOpen?: boolean;
-  children?: React.ReactNode;
   onExpand?: () => void;
   tooltipItems?: string[];
 };
 
-const ExpandFieldCell: React.FC<IProps> = ({
+const ExpandFieldCell: React.FC<ExpandFieldCellProps> = ({
   onExpand,
   children,
   isItemOpen,

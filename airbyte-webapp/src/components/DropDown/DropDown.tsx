@@ -13,18 +13,13 @@ type DropdownProps = {
   disabled?: boolean;
   hasFilter?: boolean;
   fullText?: boolean;
-  placeholder?: string;
   filterPlaceholder?: string;
-  value?: string;
-  data: IDataItem[];
-  onSelect?: (item: IDataItem) => void;
   withButton?: boolean;
   withBorder?: boolean;
   error?: boolean;
   textButton?: string;
   className?: string;
-  groupBy?: string;
-};
+} & DropdownList.DropdownListProps;
 
 const StyledDropdownList = styled(DropdownList)<{
   disabled?: boolean;

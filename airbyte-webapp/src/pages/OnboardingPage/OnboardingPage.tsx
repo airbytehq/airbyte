@@ -33,11 +33,11 @@ const Content = styled.div<{ big?: boolean }>`
   justify-content: space-between;
   align-items: center;
   min-height: 100%;
+  overflow: hidden;
 `;
 
 const Main = styled.div`
   width: 100%;
-  overflow: hidden;
 `;
 
 const Img = styled.img`

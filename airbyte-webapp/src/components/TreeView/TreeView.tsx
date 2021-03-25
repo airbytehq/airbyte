@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo } from "react";
 
-import TreeViewRow from "./components/TreeViewRow";
+import { TreeViewSection } from "./components/TreeViewSection";
 import { SyncSchema, AirbyteStreamConfiguration } from "core/domain/catalog";
 
 type IProps = {
@@ -43,15 +43,15 @@ const TreeView: React.FC<IProps> = ({ schema, onChangeSchema }) => {
   );
 
   return (
-    <div>
+    <>
       {sortedSchema.streams.map((streamNode) => (
-        <TreeViewRow
+        <TreeViewSection
           key={streamNode.stream.name}
           streamNode={streamNode}
           updateItem={onUpdateItem}
         />
       ))}
-    </div>
+    </>
   );
 };
 

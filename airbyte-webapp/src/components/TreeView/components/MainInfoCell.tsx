@@ -6,7 +6,7 @@ import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import { Cell } from "components/SimpleTableComponents";
 import { CheckBox } from "components/CheckBox";
 
-type IProps = {
+type MainInfoCellProps = {
   label: string;
   hideCheckbox?: boolean;
   isItemHasChildren?: boolean;
@@ -50,7 +50,7 @@ const ItemLable = styled.span`
   cursor: default;
 `;
 
-const MainInfoCell: React.FC<IProps> = ({
+const MainInfoCell: React.FC<MainInfoCellProps> = ({
   isItemChecked,
   isItemHasChildren,
   isItemOpen,

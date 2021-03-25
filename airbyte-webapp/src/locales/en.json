@@ -164,6 +164,15 @@
   "destinations.newDestinationTitle": "New destination",
   "destinations.destinationSetUp": "Set up the destination",
 
+  "connection.stream.syncMode": "{syncMode} - {destinationSyncMode}",
+
+  "destinationSyncMode.append": "Append",
+  "destinationSyncMode.append_dedup": "Dedupted + story",
+  "destinationSyncMode.overwrite": "Overwrite",
+
+  "syncMode.full_refresh": "Full refresh",
+  "syncMode.incremental": "Incremental",
+
   "connection.warningUpdateSchema": "WARNING! Updating the schema will delete all the data for this connection in your destination and start syncing from scratch.",
   "connection.fromTo": "{source} → {destination}",
   "connection.connectionSettings": "Connection settings",
