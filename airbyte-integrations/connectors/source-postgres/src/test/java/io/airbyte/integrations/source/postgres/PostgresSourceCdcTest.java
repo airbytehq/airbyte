@@ -158,8 +158,12 @@ class PostgresSourceCdcTest {
   public void testIt() throws Exception {
     final PostgresSource source = new PostgresSource();
     final ConfiguredAirbyteCatalog configuredCatalog =
-        CONFIGURED_CATALOG.withStreams(CONFIGURED_CATALOG.getStreams().stream().filter(s -> s.getStream().getName().equals(STREAM_NAME)).collect(
-            Collectors.toList()));
+        CONFIGURED_CATALOG.withStreams(CONFIGURED_CATALOG.getStreams()
+            .stream()
+            .filter(s -> s.getStream().getName().equals(STREAM_NAME))
+            .collect(Collectors.toList()));
+    // coerce to incremental so it uses CDC.
+    configuredCatalog.getStreams().forEach(s -> s.setSyncMode(SyncMode.INCREMENTAL));
 
     final AutoCloseableIterator<AirbyteMessage> read = source.read(getConfig(PSQL_DB, dbName), configuredCatalog, null);
 

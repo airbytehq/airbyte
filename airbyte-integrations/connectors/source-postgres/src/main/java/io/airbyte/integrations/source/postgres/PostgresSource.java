@@ -132,22 +132,22 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
           .using(getDebeziumProperties(config))
           .notifying(record -> {
             try {
-              System.out.println("record = " + record);
+              LOGGER.info("record = " + record);
               JsonNode node = Jsons.jsonNode(
                   ImmutableMap.of("key", record.key() != null ? record.key() : "null", "value", record.value(), "destination", record.destination())); // todo:
                                                                                                                                                        // better
                                                                                                                                                        // transformation
                                                                                                                                                        // function
                                                                                                                                                        // here
-              System.out.println("node = " + node);
+              LOGGER.info("node = " + node);
               queue.add(node);
             } catch (Exception e) {
-              System.out.println("error");
+              LOGGER.info("error");
               thrownError.set(e);
             }
           })
           .using((success, message, error) -> {
-            System.out.println("completed!");
+            LOGGER.info("completed!");
             completed.set(true);
             thrownError.set(error);
           })
