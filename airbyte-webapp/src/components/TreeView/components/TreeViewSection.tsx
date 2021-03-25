@@ -23,30 +23,12 @@ import { SyncSettingsCell } from "./SyncSettingsCell";
 import { TreeRowWrapper } from "./TreeRowWrapper";
 import ExpandFieldCell from "./ExpandFieldCell";
 import { OverflowCell } from "./OverflowCell";
-import { equal } from "../../../utils/objects";
+import { equal } from "utils/objects";
+import { Rows } from "./Rows";
 
 const StyledRadioButton = styled(RadioButton)`
   vertical-align: middle;
 `;
-
-const Rows: React.FC<{
-  fields: SyncSchemaField[];
-  depth: number;
-  children: (field: SyncSchemaField, depth: number) => React.ReactNode;
-}> = (props) => (
-  <>
-    {props.fields.map((field) => (
-      <>
-        {props.children(field, props.depth)}
-        {field.fields && (
-          <Rows fields={field.fields} depth={props.depth}>
-            {props.children}
-          </Rows>
-        )}
-      </>
-    ))}
-  </>
-);
 
 const supportedModes: [SyncMode, DestinationSyncMode][] = [
   [SyncMode.FullRefresh, DestinationSyncMode.Overwrite],
@@ -163,7 +145,7 @@ const TreeViewSection: React.FC<TreeViewRowProps> = ({
   const showPk = stream.sourceDefinedPrimaryKey.length === 0;
   const showCursor = !stream.sourceDefinedCursor;
 
-  const pkKeyItems = config.primaryKey.map((k) => k.join(","));
+  const pkKeyItems = config.primaryKey.map((k) => k.join("."));
 
   return (
     <>
@@ -192,7 +174,7 @@ const TreeViewSection: React.FC<TreeViewRowProps> = ({
         <Cell>
           {hasCursor && (
             <ExpandFieldCell onExpand={onExpand} isItemOpen={isRowExpanded}>
-              {config.cursorField?.join(".")}
+              {config.cursorField.join(".")}
             </ExpandFieldCell>
           )}
         </Cell>
