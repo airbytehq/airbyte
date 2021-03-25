@@ -1101,6 +1101,29 @@ paths:
           description: Job not found
         "422":
           $ref: "#/components/responses/InvalidInput"
+  /v1/jobs/cancel:
+    post:
+      tags:
+        - jobs
+      summary: Cancels a job
+      operationId: cancelJob
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JobIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobInfoRead"
+        "404":
+          description: Job not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
   /v1/health:
     get:
       tags:
@@ -1356,7 +1379,7 @@ components:
       type: object
       required:
         - sourceDefinitionId
-        - connectionSpecification
+        - jobInfo
       properties:
         sourceDefinitionId:
           $ref: "#/components/schemas/SourceDefinitionId"
@@ -1364,6 +1387,8 @@ components:
           type: string
         connectionSpecification:
           $ref: "#/components/schemas/SourceDefinitionSpecification"
+        jobInfo:
+          $ref: "#/components/schemas/SynchronousJobRead"
     # SOURCE
     SourceId:
       type: string
@@ -1472,7 +1497,7 @@ components:
         catalog:
           $ref: "#/components/schemas/AirbyteCatalog"
         jobInfo:
-          $ref: "#/components/schemas/JobInfoRead"
+          $ref: "#/components/schemas/SynchronousJobRead"
     # DESTINATION DEFINITION
     DestinationDefinitionId:
       type: string
@@ -1548,7 +1573,7 @@ components:
       type: object
       required:
         - destinationDefinitionId
-        - connectionSpecification
+        - jobInfo
       properties:
         destinationDefinitionId:
           $ref: "#/components/schemas/DestinationDefinitionId"
@@ -1556,6 +1581,8 @@ components:
           type: string
         connectionSpecification:
           $ref: "#/components/schemas/DestinationDefinitionSpecification"
+        jobInfo:
+          $ref: "#/components/schemas/SynchronousJobRead"
     # DESTINATION
     DestinationId:
       type: string
@@ -1957,7 +1984,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AttemptRead"
-
     JobStatus:
       type: string
       enum:
@@ -2041,6 +2067,33 @@ components:
           type: array
           items:
             type: string
+    SynchronousJobRead:
+      type: object
+      required:
+        - id
+        - configType
+        - createdAt
+        - endedAt
+        - succeeded
+      properties:
+        id:
+          type: string
+          format: uuid
+        configType:
+          $ref: "#/components/schemas/JobConfigType"
+        configId:
+          description: only present if a config id was provided.
+          type: string
+        createdAt:
+          type: integer
+          format: int64
+        endedAt:
+          type: integer
+          format: int64
+        succeeded:
+          type: boolean
+        logs:
+          $ref: "#/components/schemas/LogRead"
     # Health
     HealthCheckRead:
       type: object
@@ -2064,7 +2117,7 @@ components:
         message:
           type: string
         jobInfo:
-          $ref: "#/components/schemas/JobInfoRead"
+          $ref: "#/components/schemas/SynchronousJobRead"
     # Web Backend
     WbConnectionRead:
       type: object
@@ -2099,10 +2152,12 @@ components:
           $ref: "#/components/schemas/SourceRead"
         destination:
           $ref: "#/components/schemas/DestinationRead"
-        lastSync:
-          description: epoch time of last sync. null if no sync has taken place.
+        latestSyncJobCreatedAt:
+          description: epoch time of the latest sync job. null if no sync job has taken place.
           type: integer
           format: int64
+        latestSyncJobStatus:
+          $ref: "#/components/schemas/JobStatus"
         isSyncing:
           type: boolean
     WbConnectionReadList:

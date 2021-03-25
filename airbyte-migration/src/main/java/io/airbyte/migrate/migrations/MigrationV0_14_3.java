@@ -27,6 +27,7 @@ package io.airbyte.migrate.migrations;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreIterators;
@@ -101,21 +102,19 @@ public class MigrationV0_14_3 extends BaseMigration implements Migration {
               // sync mode enum is identical in Schema and ConfiguredCatalog.
               .map(JsonNode::asText)
               .collect(Collectors.toList());
-          final Map<String, JsonNode> airbyteStream = ImmutableMap.<String, JsonNode>builder()
-              // catalog fields
-              .put("name", stream.get("name"))
-              .put("supported_sync_modes", Jsons.jsonNode(supportedSyncModes))
-              .put("json_schema", fieldsToJsonSchema(stream.get("fields")))
-              .put("source_defined_cursor", stream.get("sourceDefinedCursor"))
-              .put("default_cursor_field", stream.get("defaultCursorField"))
-              .build();
+          // catalog fields
+          final Map<String, JsonNode> airbyteStream = Maps.newHashMap();
+          airbyteStream.put("name", stream.get("name"));
+          airbyteStream.put("supported_sync_modes", Jsons.jsonNode(supportedSyncModes));
+          airbyteStream.put("json_schema", fieldsToJsonSchema(stream.get("fields")));
+          airbyteStream.put("source_defined_cursor", stream.get("sourceDefinedCursor"));
+          airbyteStream.put("default_cursor_field", stream.get("defaultCursorField"));
           // configured catalog fields
-          return (Map<String, JsonNode>) ImmutableMap.<String, JsonNode>builder()
-              .put("stream", Jsons.jsonNode(airbyteStream))
-              // sync mode enum is identical in Schema and ConfiguredCatalog.
-              .put("sync_mode", Jsons.jsonNode(stream.get("syncMode").asText()))
-              .put("cursor_field", stream.get("cursorField"))
-              .build();
+          final Map<String, JsonNode> catalog = Maps.newHashMap();
+          catalog.put("stream", Jsons.jsonNode(airbyteStream));
+          catalog.put("sync_mode", Jsons.jsonNode(stream.get("syncMode").asText()));
+          catalog.put("cursor_field", stream.get("cursorField"));
+          return catalog;
         })
         .collect(Collectors.toList());
 

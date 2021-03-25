@@ -8,7 +8,7 @@ import { SyncSchemaField } from "./models";
 export function toInnerModel(
   result: SourceDiscoverSchemaRead
 ): SourceDiscoverSchemaRead {
-  if (result.jobInfo?.job?.status === Status.FAILED || !result.catalog) {
+  if (result.jobInfo?.status === Status.FAILED || !result.catalog) {
     // @ts-ignore address this case
     const e = new NetworkError(result);
     // Generate error with failed status and received logs

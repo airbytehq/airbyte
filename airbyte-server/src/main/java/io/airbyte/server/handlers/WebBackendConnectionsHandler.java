@@ -41,6 +41,7 @@ import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.JobConfigType;
 import io.airbyte.api.model.JobInfoRead;
 import io.airbyte.api.model.JobListRequestBody;
+import io.airbyte.api.model.JobRead;
 import io.airbyte.api.model.JobReadList;
 import io.airbyte.api.model.JobStatus;
 import io.airbyte.api.model.JobWithAttemptsRead;
@@ -62,6 +63,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 
 public class WebBackendConnectionsHandler {
 
@@ -96,18 +98,29 @@ public class WebBackendConnectionsHandler {
   }
 
   private WbConnectionRead buildWbConnectionRead(ConnectionRead connectionRead) throws ConfigNotFoundException, IOException, JsonValidationException {
-    final SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody()
-        .sourceId(connectionRead.getSourceId());
-    final SourceRead source = sourceHandler.getSource(sourceIdRequestBody);
+    final SourceRead source = getSourceRead(connectionRead);
+    final DestinationRead destination = getDestinationRead(connectionRead);
+    final WbConnectionRead wbConnectionRead = getWbConnectionRead(connectionRead, source, destination);
 
+    final JobReadList syncJobReadList = getSyncJobs(connectionRead);
+    Predicate<JobRead> hasRunningJob = (JobRead job) -> !TERMINAL_STATUSES.contains(job.getStatus());
+    wbConnectionRead.setIsSyncing(syncJobReadList.getJobs().stream().map(JobWithAttemptsRead::getJob).anyMatch(hasRunningJob));
+    setLatestSyncJobProperties(wbConnectionRead, syncJobReadList);
+    return wbConnectionRead;
+  }
+
+  private SourceRead getSourceRead(ConnectionRead connectionRead) throws JsonValidationException, IOException, ConfigNotFoundException {
+    final SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody().sourceId(connectionRead.getSourceId());
+    return sourceHandler.getSource(sourceIdRequestBody);
+  }
+
+  private DestinationRead getDestinationRead(ConnectionRead connectionRead) throws JsonValidationException, IOException, ConfigNotFoundException {
     final DestinationIdRequestBody destinationIdRequestBody = new DestinationIdRequestBody().destinationId(connectionRead.getDestinationId());
-    final DestinationRead destination = destinationHandler.getDestination(destinationIdRequestBody);
+    return destinationHandler.getDestination(destinationIdRequestBody);
+  }
 
-    final JobListRequestBody jobListRequestBody = new JobListRequestBody()
-        .configId(connectionRead.getConnectionId().toString())
-        .configTypes(Collections.singletonList(JobConfigType.SYNC));
-
-    final WbConnectionRead wbConnectionRead = new WbConnectionRead()
+  private WbConnectionRead getWbConnectionRead(ConnectionRead connectionRead, SourceRead source, DestinationRead destination) {
+    return new WbConnectionRead()
         .connectionId(connectionRead.getConnectionId())
         .sourceId(connectionRead.getSourceId())
         .destinationId(connectionRead.getDestinationId())
@@ -118,14 +131,21 @@ public class WebBackendConnectionsHandler {
         .schedule(connectionRead.getSchedule())
         .source(source)
         .destination(destination);
+  }
 
-    final JobReadList jobReadList = jobHistoryHandler.listJobsFor(jobListRequestBody);
-    wbConnectionRead.setIsSyncing(jobReadList.getJobs()
-        .stream().map(JobWithAttemptsRead::getJob)
-        .anyMatch(job -> job.getStatus() != JobStatus.FAILED && job.getStatus() != JobStatus.SUCCEEDED && job.getStatus() != JobStatus.CANCELLED));
-    jobReadList.getJobs().stream().map(JobWithAttemptsRead::getJob).findFirst().ifPresent(job -> wbConnectionRead.setLastSync(job.getCreatedAt()));
+  private JobReadList getSyncJobs(ConnectionRead connectionRead) throws IOException {
+    final JobListRequestBody jobListRequestBody = new JobListRequestBody()
+        .configId(connectionRead.getConnectionId().toString())
+        .configTypes(Collections.singletonList(JobConfigType.SYNC));
+    return jobHistoryHandler.listJobsFor(jobListRequestBody);
+  }
 
-    return wbConnectionRead;
+  private void setLatestSyncJobProperties(WbConnectionRead wbConnectionRead, JobReadList syncJobReadList) {
+    syncJobReadList.getJobs().stream().map(JobWithAttemptsRead::getJob).findFirst()
+        .ifPresent(job -> {
+          wbConnectionRead.setLatestSyncJobCreatedAt(job.getCreatedAt());
+          wbConnectionRead.setLatestSyncJobStatus(job.getStatus());
+        });
   }
 
   public WbConnectionRead webBackendGetConnection(WebBackendConnectionRequestBody webBackendConnectionRequestBody)

@@ -84,7 +84,7 @@ import org.slf4j.LoggerFactory;
 
 public abstract class TestDestination {
 
-  private static final long JOB_ID = 0L;
+  private static final String JOB_ID = "0";
   private static final int JOB_ATTEMPT = 0;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TestDestination.class);

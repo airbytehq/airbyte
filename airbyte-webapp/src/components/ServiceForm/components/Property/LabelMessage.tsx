@@ -1,17 +1,16 @@
 import React from "react";
-import { useField } from "formik";
 import { FormattedMessage } from "react-intl";
 
-import TextWithHTML from "components/TextWithHTML";
+import { TextWithHTML } from "components";
 import { FormBaseItem } from "core/form/types";
 
 type IProps = {
   property: FormBaseItem;
+  error: string | undefined;
+  touched: boolean;
 };
 
-const LabelMessage: React.FC<IProps> = ({ property }) => {
-  const [, meta] = useField(property.fieldName);
-
+const LabelMessage: React.FC<IProps> = ({ property, error, touched }) => {
   const constructExamples = () => {
     if (!property.examples) {
       return null;
@@ -26,14 +25,11 @@ const LabelMessage: React.FC<IProps> = ({ property }) => {
     );
   };
 
-  const displayError = !!meta.error && meta.touched;
+  const displayError = !!error && touched;
 
   const errorMessage =
-    displayError && meta.error === "form.pattern.error" ? (
-      <FormattedMessage
-        id={meta.error}
-        values={{ pattern: property.pattern }}
-      />
+    displayError && error === "form.pattern.error" ? (
+      <FormattedMessage id={error} values={{ pattern: property.pattern }} />
     ) : null;
 
   const message = property.description ? (

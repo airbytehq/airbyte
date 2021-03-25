@@ -53,6 +53,7 @@ type SourceService = {
   }) => Promise<Source>;
   checkSourceConnection: (checkSourceConnectionPayload: {
     sourceId: string;
+    values?: ValuesProps;
   }) => Promise<Scheduler>;
   createSource: (createSourcePayload: {
     values: ValuesProps;
@@ -162,7 +163,20 @@ const useSource = (): SourceService => {
   };
 
   const checkSourceConnection = useCallback(
-    async ({ sourceId }: { sourceId: string }) => {
+    async ({
+      sourceId,
+      values,
+    }: {
+      sourceId: string;
+      values?: ValuesProps;
+    }) => {
+      if (values) {
+        return await sourceCheckConnectionShape({
+          connectionConfiguration: values.connectionConfiguration,
+          name: values.name,
+          sourceId: sourceId,
+        });
+      }
       return await sourceCheckConnectionShape({
         sourceId,
       });
