@@ -27,7 +27,6 @@ package io.airbyte.integrations.source.postgres;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.AutoCloseableIterator;
@@ -43,11 +42,9 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.SQLDialect;
@@ -59,6 +56,7 @@ import org.testcontainers.utility.MountableFile;
 
 class PostgresSourceCdcTest {
 
+  private static final String SLOT_NAME = "debezium_slot";
   private static final String STREAM_NAME = "public.id_and_name";
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
       CatalogHelpers.createAirbyteStream(
@@ -82,14 +80,6 @@ class PostgresSourceCdcTest {
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
           .withSourceDefinedPrimaryKey(List.of(List.of("first_name"), List.of("last_name")))));
   private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
-  private static final Set<AirbyteMessage> ASCII_MESSAGES = Sets.newHashSet(
-      createRecord(STREAM_NAME, map("id", new BigDecimal("1.0"), "name", "goku", "power", null)),
-      createRecord(STREAM_NAME, map("id", new BigDecimal("2.0"), "name", "vegeta", "power", 9000.1)),
-      createRecord(STREAM_NAME, map("id", null, "name", "piccolo", "power", null)));
-
-  private static final Set<AirbyteMessage> UTF8_MESSAGES = Sets.newHashSet(
-      createRecord(STREAM_NAME, ImmutableMap.of("id", 1, "name", "\u2013 someutfstring")),
-      createRecord(STREAM_NAME, ImmutableMap.of("id", 2, "name", "\u2215")));
 
   private static PostgreSQLContainer<?> PSQL_DB;
 
@@ -97,7 +87,9 @@ class PostgresSourceCdcTest {
 
   @BeforeAll
   static void init() {
-    PSQL_DB = new PostgreSQLContainer<>("postgres:13-alpine");
+    PSQL_DB = new PostgreSQLContainer<>("postgres:13-alpine")
+        .withCopyFileToContainer(MountableFile.forClasspathResource("logicalpostgresql.conf"), "/etc/postgresql/postgresql.conf")
+        .withCommand("postgres -c config_file=/etc/postgresql/postgresql.conf");
     PSQL_DB.start();
   }
 
@@ -112,6 +104,8 @@ class PostgresSourceCdcTest {
     final JsonNode config = getConfig(PSQL_DB, dbName);
     final Database database = getDatabaseFromConfig(config);
     database.query(ctx -> {
+      ctx.execute("SELECT pg_create_logical_replication_slot('" + SLOT_NAME + "', 'pgoutput');");
+
       ctx.fetch("CREATE TABLE id_and_name(id NUMERIC(20, 10), name VARCHAR(200), power double precision, PRIMARY KEY (id));");
       ctx.fetch("CREATE INDEX i1 ON id_and_name (id);");
       ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
@@ -134,7 +128,7 @@ class PostgresSourceCdcTest {
         .put("database", dbName)
         .put("username", psqlDb.getUsername())
         .put("password", psqlDb.getPassword())
-        .put("replication_slot", "debezium")
+        .put("replication_slot", SLOT_NAME)
         .build());
   }
 
