@@ -33,6 +33,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Databases;
+import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
 import io.airbyte.integrations.destination.StandardNameTransformer;
@@ -42,6 +43,7 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -66,36 +68,16 @@ public class RedshiftCopyDestination {
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftCopyDestination.class);
 
   public DestinationConsumer<AirbyteMessage> write(JsonNode config, ConfiguredAirbyteCatalog catalog) {
-    var redshiftRegion = extractRegionFromRedshiftUrl("");
-    AmazonS3 s3 = getAmazonS3(redshiftRegion, "as", "s");
-
-    return new RedshiftCopyDestinationConsumer(s3, redshiftRegion, catalog);
-  }
-
-  private AmazonS3 getAmazonS3(String redshiftRegion, String accessKeyId, String secretKey) {
-    var awsCreds = new BasicAWSCredentials(accessKeyId, secretKey);
-
-    var client = AmazonS3ClientBuilder.standard()
-        .withCredentials(new AWSStaticCredentialsProvider(awsCreds)).withRegion(redshiftRegion)
-        .build();
-    return client;
+    return new RedshiftCopyDestinationConsumer(config, catalog);
   }
 
   public AirbyteConnectionStatus check(JsonNode config) {
-    System.out.println("_--------- COPY DESTINATION CHECK");
-    System.out.println("---------- config: " + config);
-
     try {
       var outputTableName = "_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", "");
       attemptWriteAndDeleteS3Object(config, outputTableName);
 
       var outputSchema = namingResolver.getIdentifier(config.get("schema").asText());
-      var jdbcConfig = RedshiftInsertDestination.getJdbcConfig(config);
-      var database = Databases.createJdbcDatabase(
-          jdbcConfig.get("username").asText(),
-          jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
-          jdbcConfig.get("jdbc_url").asText(),
-          RedshiftInsertDestination.DRIVER_CLASS);
+      JdbcDatabase database = getRedshift(config);
       AbstractJdbcDestination.attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, new RedshiftSqlOperations());
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
@@ -108,14 +90,29 @@ public class RedshiftCopyDestination {
   }
 
   private void attemptWriteAndDeleteS3Object(JsonNode config, String outputTableName) {
-    var s3Region = config.get("s3_region").asText();
+    var s3 = getAmazonS3(config);
     var s3Bucket = config.get("s3_staging_bucket").asText();
-    var accessKeyId = config.get("access_key_id").asText();
-    var secretAccessKey = config.get("secret_access_key").asText();
-
-    var s3 = getAmazonS3(s3Region, accessKeyId, secretAccessKey);
     s3.putObject(s3Bucket, outputTableName, "check-content");
     s3.deleteObject(s3Bucket, outputTableName);
+  }
+
+  private static AmazonS3 getAmazonS3(JsonNode config) {
+    var s3Region = config.get("s3_region").asText();
+    var accessKeyId = config.get("access_key_id").asText();
+    var secretAccessKey = config.get("secret_access_key").asText();
+    var awsCreds = new BasicAWSCredentials(accessKeyId, secretAccessKey);
+    return AmazonS3ClientBuilder.standard()
+        .withCredentials(new AWSStaticCredentialsProvider(awsCreds)).withRegion(s3Region)
+        .build();
+  }
+
+  private static JdbcDatabase getRedshift(JsonNode config) {
+    var jdbcConfig = RedshiftInsertDestination.getJdbcConfig(config);
+    return Databases.createJdbcDatabase(
+        jdbcConfig.get("username").asText(),
+        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
+        jdbcConfig.get("jdbc_url").asText(),
+        RedshiftInsertDestination.DRIVER_CLASS);
   }
 
   /**
@@ -132,39 +129,47 @@ public class RedshiftCopyDestination {
 
   private static class RedshiftCopyDestinationConsumer extends FailureTrackingConsumer<AirbyteMessage> {
 
-    private final AmazonS3 client;
+    private final JsonNode config;
     private final ConfiguredAirbyteCatalog catalog;
-    private final String redshiftRegion;
-    private Map<String, RedshiftCopier> tableNameToCopier;
+    private final JdbcDatabase redshiftDb;
+    private final AmazonS3 s3Client;
+    private final Map<String, RedshiftCopier> streamNameToCopier;
 
-    public RedshiftCopyDestinationConsumer(AmazonS3 client, String redshiftRegion, ConfiguredAirbyteCatalog catalog) {
-      this.client = client;
+    public RedshiftCopyDestinationConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) {
+      this.config = config;
       this.catalog = catalog;
-      this.redshiftRegion = redshiftRegion;
+      this.redshiftDb = getRedshift(config);
+      this.s3Client = getAmazonS3(config);
+      this.streamNameToCopier = new HashMap<>();
     }
 
     @Override
     protected void startTracked() throws Exception {
-      // write to bucket
+      var runFolder = UUID.randomUUID().toString();
       for (var stream : catalog.getStreams()) {
         var streamName = stream.getStream().getName();
-        var tableName = namingResolver.getRawTableName(streamName);
-        var tmpTableName = namingResolver.getTmpTableName(streamName);
+        var syncMode = stream.getSyncMode();
+        var schema = config.get("schema").asText();
+        var s3Region = config.get("s3_region").asText();
+        var accessKeyId = config.get("access_key_id").asText();
+        var secretAccessKey = config.get("secret_access_key").asText();
+        var copier = new RedshiftCopier(runFolder, syncMode, schema, streamName, s3Client, redshiftDb, accessKeyId, secretAccessKey, s3Region);
 
+        streamNameToCopier.put(streamName, copier);
       }
     }
 
     @Override
     protected void acceptTracked(AirbyteMessage message) throws Exception {
       if (message.getType() == AirbyteMessage.Type.RECORD) {
-        if (tableNameToCopier.containsKey(message.getRecord().getStream())) {
+        var streamName = message.getRecord().getStream();
+        if (!streamNameToCopier.containsKey(streamName)) {
           throw new IllegalArgumentException(
               String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
                   Jsons.serialize(catalog), Jsons.serialize(message)));
         }
 
-        var tableName = message.getRecord().getStream();
-        tableNameToCopier.get(tableName).uploadToS3(message.getRecord());
+        streamNameToCopier.get(streamName).uploadToS3(message.getRecord());
       }
     }
 
@@ -176,7 +181,7 @@ public class RedshiftCopyDestination {
      */
     @Override
     protected void close(boolean hasFailed) throws Exception {
-      RedshiftCopier.closeAsOneTransaction(new ArrayList<>(tableNameToCopier.values()), hasFailed, null);
+      RedshiftCopier.closeAsOneTransaction(new ArrayList<>(streamNameToCopier.values()), hasFailed, redshiftDb);
     }
 
   }
