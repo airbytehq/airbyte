@@ -139,10 +139,12 @@ public class DPostgresSource {
             .using(props)
             .notifying(record -> {
               try {
-                JsonNode node = Jsons.jsonNode(ImmutableMap.of("key", record.key(), "value", record.value(), "destination", record.destination())); // todo: better transformation function here
+                System.out.println("record = " + record);
+                JsonNode node = Jsons.jsonNode(ImmutableMap.of("key", record.key() != null ? record.key() : "null", "value", record.value(), "destination", record.destination())); // todo: better transformation function here
                 System.out.println("node = " + node);
                 queue.add(node);
               } catch (Exception e) {
+                System.out.println("error");
                 thrownError.set(e);
               }
             })

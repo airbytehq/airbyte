@@ -128,8 +128,9 @@ class DPostgresSourceTest {
             });
 
             System.out.println("Starting iteration...");
-            while(iterator.hasNext()) {
-                System.out.println("iterator.next() = " + iterator.next());
+            JsonNode node;
+            while((node = queue.poll()) != null) {
+                System.out.println("iterator.next() = " + node);
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
