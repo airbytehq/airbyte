@@ -134,6 +134,7 @@ class PostgresSourceCdcTest {
         .put("database", dbName)
         .put("username", psqlDb.getUsername())
         .put("password", psqlDb.getPassword())
+        .put("replication_slot", "debezium")
         .build());
   }
 
