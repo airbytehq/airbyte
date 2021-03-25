@@ -39,7 +39,7 @@ type UpdateAllButtonProps = {
   hasSuccess: boolean;
 };
 
-const UpdateAllButton: React.FC<UpdateAllButtonProps> = ({
+const UpgradeAllButton: React.FC<UpdateAllButtonProps> = ({
   onUpdate,
   isLoading,
   hasError,
@@ -57,15 +57,17 @@ const UpdateAllButton: React.FC<UpdateAllButtonProps> = ({
         isLoading={isLoading}
         wasActive={hasSuccess}
       >
-        <TryArrow icon={faRedoAlt} />
         {hasSuccess ? (
-          <FormattedMessage id="admin.updating" />
+          <FormattedMessage id="admin.upgraded" />
         ) : (
-          <FormattedMessage id="admin.updateAll" />
+          <>
+            <TryArrow icon={faRedoAlt} />
+            <FormattedMessage id="admin.upgradeAll" />
+          </>
         )}
       </UpdateButton>
     </UpdateButtonContent>
   );
 };
 
-export default UpdateAllButton;
+export default UpgradeAllButton;

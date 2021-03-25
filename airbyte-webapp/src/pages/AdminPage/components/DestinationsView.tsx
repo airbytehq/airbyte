@@ -13,7 +13,7 @@ import config from "config";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 import { DestinationResource } from "core/resources/Destination";
 import { DestinationDefinition } from "core/resources/DestinationDefinition";
-import UpdateAllButton from "./UpdateAllButton";
+import UpgradeAllButton from "./UpgradeAllButton";
 import useNotification from "components/hooks/services/useNotification";
 
 const DestinationsView: React.FC = () => {
@@ -163,7 +163,7 @@ const DestinationsView: React.FC = () => {
           <Title bold>
             <FormattedMessage id="admin.manageDestination" />
             {(hasNewDestinationVersion || successUpdate) && (
-              <UpdateAllButton
+              <UpgradeAllButton
                 isLoading={loading}
                 hasError={!!error && !loading}
                 hasSuccess={successUpdate}
@@ -180,7 +180,7 @@ const DestinationsView: React.FC = () => {
           <FormattedMessage id="admin.availableDestinations" />
           {(hasNewDestinationVersion || successUpdate) &&
             !usedDestinationDefinitions.length && (
-              <UpdateAllButton
+              <UpgradeAllButton
                 isLoading={loading}
                 hasError={!!error && !loading}
                 hasSuccess={successUpdate}

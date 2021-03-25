@@ -250,8 +250,8 @@
   "admin.logs": "Logs",
   "admin.downloadServerLogs": "Download Server Logs",
   "admin.downloadSchedulerLogs": "Download Scheduler Logs",
-  "admin.updateAll": "Update all",
-  "admin.updating": "Updating!",
+  "admin.upgradeAll": "Upgrade all",
+  "admin.upgraded": "Upgraded!",
 
   "demo.message.title": "This demo is read-only",
   "demo.message.body": "You cannot add or edit any connectors. You will see error messages on purpose if you try to do so."

@@ -14,7 +14,7 @@ import SourceDefinitionResource, {
   SourceDefinition,
 } from "core/resources/SourceDefinition";
 import { SourceResource } from "core/resources/Source";
-import UpdateAllButton from "./UpdateAllButton";
+import UpgradeAllButton from "./UpgradeAllButton";
 import useNotification from "components/hooks/services/useNotification";
 
 const SourcesView: React.FC = () => {
@@ -159,7 +159,7 @@ const SourcesView: React.FC = () => {
           <Title bold>
             <FormattedMessage id="admin.manageSource" />
             {(hasNewSourceVersion || successUpdate) && (
-              <UpdateAllButton
+              <UpgradeAllButton
                 isLoading={loading}
                 hasError={!!error && !loading}
                 hasSuccess={successUpdate}
@@ -176,7 +176,7 @@ const SourcesView: React.FC = () => {
           <FormattedMessage id="admin.availableSource" />
           {(hasNewSourceVersion || successUpdate) &&
             !usedSourcesDefinitions.length && (
-              <UpdateAllButton
+              <UpgradeAllButton
                 isLoading={loading}
                 hasError={!!error && !loading}
                 hasSuccess={successUpdate}
