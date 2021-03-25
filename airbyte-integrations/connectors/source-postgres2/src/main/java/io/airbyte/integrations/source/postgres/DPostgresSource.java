@@ -24,8 +24,6 @@
 
 package io.airbyte.integrations.source.postgres;
 
-import static java.lang.Thread.sleep;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.AbstractIterator;
 import io.airbyte.commons.json.Jsons;
@@ -35,9 +33,9 @@ import io.airbyte.commons.util.AutoCloseableIterators;
 import io.debezium.engine.ChangeEvent;
 import io.debezium.engine.DebeziumEngine;
 import io.debezium.engine.format.Json;
-
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
@@ -45,7 +43,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-
 import java.util.function.Predicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -110,8 +107,19 @@ public class DPostgresSource {
     ExecutorService executor = Executors.newSingleThreadExecutor();
 
     // Create the engine with this configuration ...
-    try(AutoCloseableIterator<JsonNode> iterator = getIterator(props, queue, completed, thrownError, executor, record -> false)) {
-      while(iterator.hasNext()) {
+    try (AutoCloseableIterator<JsonNode> iterator = getIterator(
+        props,
+        queue,
+        completed,
+        thrownError,
+        executor,
+        record -> Optional.ofNullable(record.get("value"))
+            .flatMap(value -> Optional.ofNullable(value.get("source")))
+            .flatMap(source -> Optional.ofNullable(source.get("lsn").asText()))
+            // replace 10L with actual pre select lsn.
+            .map(lsn -> Long.parseLong(lsn) >= 10L)
+            .orElse(false))) {
+      while (iterator.hasNext()) {
         LOGGER.info("iterator.next() = " + iterator.next());
       }
     } catch (Exception e) {
@@ -125,25 +133,25 @@ public class DPostgresSource {
   // todo: https://debezium.io/documentation/reference/configuration/event-flattening.html
 
   private static AutoCloseableIterator<JsonNode> getIterator(Properties props,
-      BlockingQueue<JsonNode> queue,
-      AtomicBoolean completed,
-      AtomicReference<Throwable> thrownError,
-      ExecutorService executor,
-      Predicate<ChangeEvent<String, String>> hasReachedLsnPredicate) {
+                                                             BlockingQueue<JsonNode> queue,
+                                                             AtomicBoolean completed,
+                                                             AtomicReference<Throwable> thrownError,
+                                                             ExecutorService executor,
+                                                             Predicate<JsonNode> hasReachedLsnPredicate) {
     DebeziumEngine<ChangeEvent<String, String>> engine = DebeziumEngine.create(Json.class)
-            .using(props)
-            .notifying(record -> {
-              try {
-                queue.add(Jsons.jsonNode(record)); // todo: better transformation function here
-              } catch (Exception e) {
-                thrownError.set(e);
-              }
-            })
-            .using((success, message, error) -> {
-              completed.set(true);
-              thrownError.set(error);
-            })
-            .build();
+        .using(props)
+        .notifying(record -> {
+          try {
+            queue.add(Jsons.jsonNode(record)); // todo: better transformation function here
+          } catch (Exception e) {
+            thrownError.set(e);
+          }
+        })
+        .using((success, message, error) -> {
+          completed.set(true);
+          thrownError.set(error);
+        })
+        .build();
 
     // Run the engine asynchronously ...
     executor.execute(engine);
@@ -152,16 +160,20 @@ public class DPostgresSource {
     final Iterator<JsonNode> queueIterator = MoreStreams.toStream(queue).iterator();
 
     final AbstractIterator<JsonNode> iterator = new AbstractIterator<>() {
+
       private boolean hasReachedLsn = false;
 
       @Override
       protected JsonNode computeNext() {
-        // if we have reached the lsn we stop, otherwise we have the potential to wait indefinitely for the next value.
-        if(!hasReachedLsn && queueIterator.hasNext()) {
+        // if we have reached the lsn we stop, otherwise we have the potential to wait indefinitely for the
+        // next value.
+        if (!hasReachedLsn && queueIterator.hasNext()) {
           final JsonNode next = queueIterator.next();
-          // todo fix this cast. the record passed to this iterator has to include the lsn somewhere. it can either be the full change event or some smaller object that just includes the lsn.
-          // we guarantee that this will always eventually return true, because we pick an LSN that already exists when we start the sync.
-          if(hasReachedLsnPredicate.test((ChangeEvent<String, String>) next)) {
+          // todo fix this cast. the record passed to this iterator has to include the lsn somewhere. it can
+          // either be the full change event or some smaller object that just includes the lsn.
+          // we guarantee that this will always eventually return true, because we pick an LSN that already
+          // exists when we start the sync.
+          if (hasReachedLsnPredicate.test(next)) {
             hasReachedLsn = true;
           }
           return next;
@@ -169,13 +181,14 @@ public class DPostgresSource {
           return endOfData();
         }
       }
+
     };
 
     return AutoCloseableIterators.fromIterator(iterator, () -> {
       engine.close();
       executor.shutdown();
 
-      if(thrownError.get() != null) {
+      if (thrownError.get() != null) {
         throw new RuntimeException(thrownError.get());
       }
     });
