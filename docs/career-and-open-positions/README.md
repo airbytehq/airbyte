@@ -52,9 +52,14 @@ Once all of this done, we will discuss the process internally and get back to yo
 
 ## **Our Benefits**
 
-* Unlimited vacations
-* Health insurance: we let you choose the insurance of your choice and cover $500 for you + $200 for any dependents. This will evolve with time, especially after our Series A.
-* 401k
+* **Flexible work environment as fully remote** - we don’t look at when you log in, log out or how much time you work. We trust you, it’s the only way remote can actually work. 
+* **Unlimited vacation policy** with mandatory minimum time off - so you can fit work around your life.
+* **Coworking space stipend** - we provide everyone with $200/month to use on a coworking space of their choice, if any.
+* **Very generous parental leave** (for both parents, after one year spent with the company) - so those raising families can do so while still working for us.
+* **Open book policy** - we reimburse books that employees want to purchase for their professional and career development. 
+* **Continuous learning / training policy** - we sponsor the conferences and training programs you feel would add to your development in the company. 
+* **Health insurance** for those from countries that do not provide this freely. Through Savvy in the US, which means you can choose the insurance you want and will receive a stipend from the company. 
+* **401k** for the US employees. 
+* **Sponsored visas** for those who need them
 * We'll give you a corporate card for expenses. Our philosophy is Freedom & Responsibiility. We trust you, just do what's best for the company.
-* We're strong believers in growth, as individuals and as a team. So anything that can help you grow can be expensed - for instance, free books.
 
