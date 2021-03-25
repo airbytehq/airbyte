@@ -498,8 +498,8 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
   }
 
   public static AutoCloseableIterator<AirbyteMessage> getMessageIterator(AutoCloseableIterator<JsonNode> recordIterator,
-                                                                          String streamName,
-                                                                          long emittedAt) {
+                                                                         String streamName,
+                                                                         long emittedAt) {
     return AutoCloseableIterators.transform(recordIterator, r -> new AirbyteMessage()
         .withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage()
