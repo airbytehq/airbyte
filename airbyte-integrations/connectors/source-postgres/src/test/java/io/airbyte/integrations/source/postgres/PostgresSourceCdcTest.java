@@ -24,6 +24,8 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import static java.lang.Thread.sleep;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -41,6 +43,9 @@ import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.SQLDialect;
@@ -170,6 +175,34 @@ class PostgresSourceCdcTest {
         System.out.println("read.next() = " + read.next());
       }
     }
+  }
+
+  @Test
+  void testQueues() {
+    final LinkedBlockingQueue<Integer> integers = new LinkedBlockingQueue<>();
+
+    ExecutorService pollThread = Executors.newSingleThreadExecutor();
+    pollThread.execute(() -> {
+      while(true) {
+        System.out.println("polling");
+        System.out.println("integers.poll() = " + integers.poll());
+      }
+    });
+
+    ExecutorService enqueueThread = Executors.newSingleThreadExecutor();
+    enqueueThread.execute(() -> {
+      int i =  0;
+      while(true) {
+        try {
+          sleep(2000);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+        integers.add(i += 1);
+      }
+    });
+
+
   }
 
 }
