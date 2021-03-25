@@ -84,7 +84,7 @@ class PostgresSourceCdcTest {
   @BeforeAll
   static void init() {
     PSQL_DB = new PostgreSQLContainer<>("postgres:13-alpine")
-        .withCopyFileToContainer(MountableFile.forClasspathResource("logicalpostgresql.conf"), "/etc/postgresql/postgresql.conf")
+        .withCopyFileToContainer(MountableFile.forClasspathResource("postgresql.conf"), "/etc/postgresql/postgresql.conf")
         .withCommand("postgres -c config_file=/etc/postgresql/postgresql.conf");
     PSQL_DB.start();
   }
@@ -102,22 +102,24 @@ class PostgresSourceCdcTest {
     database.query(ctx -> {
       ctx.execute("SELECT pg_create_logical_replication_slot('" + SLOT_NAME + "', 'pgoutput');");
 
+      // need to re-add record that has -infinity.
       ctx.fetch("CREATE TABLE id_and_name(id NUMERIC(20, 10), name VARCHAR(200), power double precision, PRIMARY KEY (id));");
       ctx.fetch("CREATE INDEX i1 ON id_and_name (id);");
-      ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
+      ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1);");
 
       ctx.fetch("CREATE TABLE id_and_name2(id NUMERIC(20, 10), name VARCHAR(200), power double precision);");
-      ctx.fetch("INSERT INTO id_and_name2 (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
+      ctx.fetch("INSERT INTO id_and_name2 (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1);");
 
       ctx.fetch("CREATE TABLE names(first_name VARCHAR(200), last_name VARCHAR(200), power double precision, PRIMARY KEY (first_name, last_name));");
       ctx.fetch(
-          "INSERT INTO names (first_name, last_name, power) VALUES ('san', 'goku', 'Infinity'),  ('prince', 'vegeta', 9000.1), ('piccolo', 'junior', '-Infinity');");
+          "INSERT INTO names (first_name, last_name, power) VALUES ('san', 'goku', 'Infinity'),  ('prince', 'vegeta', 9000.1);");
       return null;
     });
     database.close();
   }
 
   private JsonNode getConfig(PostgreSQLContainer<?> psqlDb, String dbName) {
+    System.out.println("psqlDb.getFirstMappedPort() = " + psqlDb.getFirstMappedPort());
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", psqlDb.getHost())
         .put("port", psqlDb.getFirstMappedPort())
@@ -126,6 +128,14 @@ class PostgresSourceCdcTest {
         .put("password", psqlDb.getPassword())
         .put("replication_slot", SLOT_NAME)
         .build());
+    // return Jsons.jsonNode(ImmutableMap.builder()
+    // .put("host", "localhost")
+    // .put("port", 5432)
+    // .put("database", "debezium_test")
+    // .put("username", "postgres")
+    // .put("password", "")
+    // .put("replication_slot", SLOT_NAME)
+    // .build());
   }
 
   private Database getDatabaseFromConfig(JsonNode config) {
@@ -153,9 +163,12 @@ class PostgresSourceCdcTest {
 
     final AutoCloseableIterator<AirbyteMessage> read = source.read(getConfig(PSQL_DB, dbName), configuredCatalog, null);
 
-    while (read.hasNext()) {
-      System.out.println("it said it had next");
-      System.out.println("read.next() = " + read.next());
+    long startMillis = System.currentTimeMillis();
+    while (read.hasNext() || startMillis - System.currentTimeMillis() < 10000) {
+      if (read.hasNext()) {
+        System.out.println("it said it had next");
+        System.out.println("read.next() = " + read.next());
+      }
     }
   }
 
