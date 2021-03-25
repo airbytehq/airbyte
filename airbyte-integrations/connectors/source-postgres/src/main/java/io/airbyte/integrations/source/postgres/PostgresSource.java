@@ -35,6 +35,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Queues;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
+import io.airbyte.db.PostgresUtils;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.PostgresJdbcStreamingQueryConfiguration;
@@ -48,12 +49,15 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.debezium.engine.ChangeEvent;
 import io.debezium.engine.DebeziumEngine;
 import io.debezium.engine.format.Json;
+import java.lang.reflect.Method;
+import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -62,6 +66,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.kafka.connect.data.Struct;
+import org.apache.kafka.connect.source.SourceRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -120,6 +126,14 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
     return checkOperations;
   }
 
+  private static String getLsn(JdbcDatabase database) {
+    try {
+      return PostgresUtils.getLsn(database);
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   @Override
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(JsonNode config,
                                                                              JdbcDatabase database,
@@ -128,6 +142,30 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
                                                                              JdbcStateManager stateManager,
                                                                              Instant emittedAt) {
     if (isCdc(config)) {
+      final String targetLsn = getLsn(database);
+      LOGGER.info("identified target lsn: " + targetLsn);
+      final Predicate<JsonNode> hasReachedLsnPredicate = (record) -> Optional.ofNullable(record.get("value"))
+          .flatMap(value -> Optional.ofNullable(Jsons.deserialize(value.asText()).get("source")))
+          .flatMap(source -> Optional.ofNullable(source.get("lsn").asText()))
+          .map(lsn -> {
+            LOGGER.info("lsn was {}", lsn);
+            // target lsn has the slash syntax that we get when querying postgres raw.
+            // the lsn from debezium has the slash removed.
+            // todo (cgardens) - wrap lsn so it isn't so ad hoc.
+            // return false;
+
+            // if target lsn is greater than found lsn, continue
+            if (PostgresUtils.lsnToLong(targetLsn) > Long.parseLong(lsn)) {
+              return false;
+            } else {
+              // if not snapshot or is snapshot but last record in snapshot.
+              return !record.get("isSnapshot").asBoolean() || (record.get("isSnapshot").asBoolean() && record.get("isLastInSnapshot").asBoolean());
+            }
+
+            // return PostgresUtils.lsnToLong(targetLsn) < Long.parseLong(lsn);
+            // return PostgresUtils.lsnToLong(targetLsn) <= PostgresUtils.lsnToLong(lsn);
+          })
+          .orElse(false);
       AtomicReference<Throwable> thrownError = new AtomicReference<>();
       AtomicBoolean completed = new AtomicBoolean(false);
       ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -139,6 +177,28 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
             try {
               final AirbyteMessage message = convertChangeEvent(record, emittedAt);
               queue.add(message);
+//              final Method sourceRecordMethod = record.getClass().getMethod("sourceRecord");
+//              sourceRecordMethod.setAccessible(true);
+//              final SourceRecord sourceRecord = (SourceRecord) sourceRecordMethod.invoke(record);
+//              final Boolean isSnapshot = "true".equals(((Struct) sourceRecord.value()).getStruct("source").getString("snapshot"))
+//                  || "last".equals(((Struct) sourceRecord.value()).getStruct("source").getString("snapshot"));
+//              final Boolean isLastInSnapshot = "last".equals(((Struct) sourceRecord.value()).getStruct("source").getString("snapshot"));
+//
+//              LOGGER.info("record = " + record);
+//              final JsonNode node = Jsons.jsonNode(
+//                  ImmutableMap.<String, Object>builder()
+//                      .put("key", record.key() != null ? record.key() : "null")
+//                      .put("value", record.value())
+//                      .put("isSnapshot", isSnapshot)
+//                      .put("isLastInSnapshot", isLastInSnapshot)
+//                      .put("destination", record.destination())
+//                      .build()); // todo:
+              // better
+              // transformation
+              // function
+              // here
+//              LOGGER.info("node = " + node);
+//              queue.add(node);
             } catch (Exception e) {
               LOGGER.info("error: " + e);
               thrownError.set(e);
@@ -154,8 +214,6 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
       // Run the engine asynchronously ...
       executor.execute(engine);
 
-      // todo - this obviously needs to actually do something.
-      final Predicate<Object> hasReachedLsnPredicate = (r) -> false;
       final Iterator<AirbyteMessage> queueIterator = Queues.toStream(queue).iterator();
       final AbstractIterator<AirbyteMessage> iterator = new AbstractIterator<>() {
 
@@ -181,7 +239,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
             // either be the full change event or some smaller object that just includes the lsn.
             // we guarantee that this will always eventually return true, because we pick an LSN that already
             // exists when we start the sync.
-            if (hasReachedLsnPredicate.test(next)) {
+            if (hasReachedLsnPredicate.test(Jsons.jsonNode(next))) {
               hasReachedLsn = true;
             }
             return next;
