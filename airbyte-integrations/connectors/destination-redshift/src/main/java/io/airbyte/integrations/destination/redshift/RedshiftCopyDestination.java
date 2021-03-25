@@ -1,3 +1,4 @@
+
 /*
  * MIT License
  *
@@ -28,22 +29,23 @@ import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.CreateBucketRequest;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.integrations.base.Destination;
+import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.FailureTrackingConsumer;
-import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.StandardNameTransformer;
+import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConnectorSpecification;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A more efficient Redshift Destination than the sql-based {@link RedshiftDestination}. Instead of
@@ -56,44 +58,64 @@ import java.util.Map;
  * single file approach is orders of magnitude faster than batch inserting and 'good-enough' for
  * now.
  */
-public class RedshiftCopyDestination implements Destination {
+public class RedshiftCopyDestination {
 
   // TODO: figure out a way to consistently randomise this bucket
   public static String DEFAULT_AIRBYTE_STAGING_S3_BUCKET = "airbyte.staging";
   private static final StandardNameTransformer namingResolver = new StandardNameTransformer();
+  private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftCopyDestination.class);
 
-  /**
-   * This flow does not currently let users configure a staging bucket.
-   */
-  @Override
   public DestinationConsumer<AirbyteMessage> write(JsonNode config, ConfiguredAirbyteCatalog catalog) {
     var redshiftRegion = extractRegionFromRedshiftUrl("");
-    var awsCreds = new BasicAWSCredentials("", "");
+    AmazonS3 s3 = getAmazonS3(redshiftRegion, "as", "s");
+
+    return new RedshiftCopyDestinationConsumer(s3, redshiftRegion, catalog);
+  }
+
+  private AmazonS3 getAmazonS3(String redshiftRegion, String accessKeyId, String secretKey) {
+    var awsCreds = new BasicAWSCredentials(accessKeyId, secretKey);
 
     var client = AmazonS3ClientBuilder.standard()
         .withCredentials(new AWSStaticCredentialsProvider(awsCreds)).withRegion(redshiftRegion)
         .build();
-
-    return new RedshiftCopyDestinationConsumer(client, redshiftRegion, catalog);
+    return client;
   }
 
-  @Override
-  public ConnectorSpecification spec() throws Exception {
-    final String resourceString = MoreResources.readResource("spec.json");
-    return Jsons.deserialize(resourceString, ConnectorSpecification.class);
+  public AirbyteConnectionStatus check(JsonNode config) {
+    System.out.println("_--------- COPY DESTINATION CHECK");
+    System.out.println("---------- config: " + config);
+
+    try {
+      var outputTableName = "_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", "");
+      attemptWriteAndDeleteS3Object(config, outputTableName);
+
+      var outputSchema = namingResolver.getIdentifier(config.get("schema").asText());
+      var jdbcConfig = RedshiftInsertDestination.getJdbcConfig(config);
+      var database = Databases.createJdbcDatabase(
+          jdbcConfig.get("username").asText(),
+          jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
+          jdbcConfig.get("jdbc_url").asText(),
+          RedshiftInsertDestination.DRIVER_CLASS);
+      AbstractJdbcDestination.attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, new RedshiftSqlOperations());
+
+      return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
+    } catch (Exception e) {
+      LOGGER.debug("Exception while checking connection: ", e);
+      return new AirbyteConnectionStatus()
+          .withStatus(Status.FAILED)
+          .withMessage("Could not connect with provided configuration. \n" + e.getMessage());
+    }
   }
 
-  @Override
-  public AirbyteConnectionStatus check(JsonNode config) throws Exception {
-    // TODO: implement
-    // this should check the config is correct;
-    // 1. S3 credentials are present
-    // - should be able to create and destroy bucket
-    // - should be able to write and delete object
-    // 2. Redshift credentials are present
-    // - should be able to create, rename and delete table
-    // - should be able to write records
-    return null;
+  private void attemptWriteAndDeleteS3Object(JsonNode config, String outputTableName) {
+    var s3Region = config.get("s3_region").asText();
+    var s3Bucket = config.get("s3_staging_bucket").asText();
+    var accessKeyId = config.get("access_key_id").asText();
+    var secretAccessKey = config.get("secret_access_key").asText();
+
+    var s3 = getAmazonS3(s3Region, accessKeyId, secretAccessKey);
+    s3.putObject(s3Bucket, outputTableName, "check-content");
+    s3.deleteObject(s3Bucket, outputTableName);
   }
 
   /**
@@ -106,15 +128,6 @@ public class RedshiftCopyDestination implements Destination {
     // TODO: validate the url?
     var split = url.split("\\.");
     return split[2];
-  }
-
-  @VisibleForTesting
-  static void createS3StagingBucketIfNeeded(AmazonS3 client, String region) {
-    var stagingBucketMissing = !client.doesBucketExistV2(DEFAULT_AIRBYTE_STAGING_S3_BUCKET);
-    if (stagingBucketMissing) {
-      var createBucketRequest = new CreateBucketRequest(DEFAULT_AIRBYTE_STAGING_S3_BUCKET, region);
-      client.createBucket(createBucketRequest);
-    }
   }
 
   private static class RedshiftCopyDestinationConsumer extends FailureTrackingConsumer<AirbyteMessage> {
@@ -132,8 +145,6 @@ public class RedshiftCopyDestination implements Destination {
 
     @Override
     protected void startTracked() throws Exception {
-      createS3StagingBucketIfNeeded(client, redshiftRegion);
-
       // write to bucket
       for (var stream : catalog.getStreams()) {
         var streamName = stream.getStream().getName();
@@ -168,10 +179,6 @@ public class RedshiftCopyDestination implements Destination {
       RedshiftCopier.closeAsOneTransaction(new ArrayList<>(tableNameToCopier.values()), hasFailed, null);
     }
 
-  }
-
-  public static void main(String[] args) throws Exception {
-    new IntegrationRunner(new RedshiftCopyDestination()).run(args);
   }
 
 }

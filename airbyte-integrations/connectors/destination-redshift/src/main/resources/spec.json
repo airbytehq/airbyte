@@ -45,6 +45,34 @@
         "description": "Whether or not to normalize the data in the destination. See <a href=\"https://docs.airbyte.io/architecture/basic-normalization\">basic normalization</a> for more details.",
         "title": "Basic Normalization",
         "examples": [true, false]
+      },
+      "access_key_id": {
+        "type": "string",
+        "description": "",
+        "title": "S3 Key Id",
+        "examples": [""]
+      },
+      "secret_access_key": {
+        "type": "string",
+        "description": "",
+        "title": "S3 Access Key",
+        "examples": [
+          ""
+        ]
+      },
+      "s3_region": {
+        "type": "string",
+        "description": "",
+        "title": "S3 Staging Bucket Region",
+        "examples": [""]
+      },
+      "s3_staging_bucket": {
+        "type": "string",
+        "description": "",
+        "title": "S3 Staging Bucket",
+        "examples": [
+          ""
+        ]
       }
     }
   }

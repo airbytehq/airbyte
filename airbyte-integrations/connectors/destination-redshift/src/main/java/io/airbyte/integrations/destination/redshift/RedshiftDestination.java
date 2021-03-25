@@ -25,6 +25,8 @@
 package io.airbyte.integrations.destination.redshift;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
@@ -48,7 +50,7 @@ public class RedshiftDestination implements Destination {
 
   @Override
   public DestinationConsumer<AirbyteMessage> write(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
-    if (hasCopyConfigs()) {
+    if (hasCopyConfigs(config)) {
       return new RedshiftCopyDestination().write(config, catalog);
     }
     return new RedshiftInsertDestination().write(config, catalog);
@@ -56,19 +58,19 @@ public class RedshiftDestination implements Destination {
 
   @Override
   public ConnectorSpecification spec() throws Exception {
-    return null;
+    final String resourceString = MoreResources.readResource("spec.json");
+    return Jsons.deserialize(resourceString, ConnectorSpecification.class);
   }
 
   @Override
   public AirbyteConnectionStatus check(JsonNode config) throws Exception {
-    if (hasCopyConfigs()) {
+    if (hasCopyConfigs(config)) {
       return new RedshiftCopyDestination().check(config);
     }
     return new RedshiftInsertDestination().check(config);
   }
 
-  public static boolean hasCopyConfigs() {
-    // TODO
-    return true;
+  public static boolean hasCopyConfigs(JsonNode config) {
+    return config.has("secret_access_key") ;
   }
 }

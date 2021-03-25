@@ -25,14 +25,12 @@
 package io.airbyte.integrations.destination.redshift;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.amazonaws.services.s3.AmazonS3;
 import java.io.IOException;
 import java.net.ServerSocket;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 @DisplayName("Redshift Desintation Efficient Upload")
@@ -47,30 +45,6 @@ public class RedshiftCopyDestinationTest {
   void setUp() {
     s3Port = InMemLocalS3.setUpLocalS3AndGetPort();
     client = InMemLocalS3.getLocalS3Client(s3Port, DEFAULT_REGION);
-  }
-
-  @Nested
-  @DisplayName("When creating staging bucket")
-  class createStagingBucket {
-
-    @Test
-    @DisplayName("Should not create if bucket is already present")
-    void doNotCreateIfPresentTest() {
-      client.createBucket(RedshiftCopyDestination.DEFAULT_AIRBYTE_STAGING_S3_BUCKET);
-
-      // the s3 client will error out when sending a CreateBucketRequest for an existing bucket; a lack of
-      // exception means the test is passing
-      RedshiftCopyDestination.createS3StagingBucketIfNeeded(client, DEFAULT_REGION);
-    }
-
-    @Test
-    @DisplayName("Should create if bucket is not present")
-    void createIfNotPresentTest() {
-      RedshiftCopyDestination.createS3StagingBucketIfNeeded(client, DEFAULT_REGION);
-
-      assertTrue(client.doesBucketExistV2(RedshiftCopyDestination.DEFAULT_AIRBYTE_STAGING_S3_BUCKET));
-    }
-
   }
 
   @Test
