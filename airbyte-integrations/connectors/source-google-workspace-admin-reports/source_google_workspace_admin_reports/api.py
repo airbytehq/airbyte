@@ -23,11 +23,14 @@ SOFTWARE.
 """
 
 import json
+import socket
 from abc import ABC, abstractmethod
+from datetime import datetime
 from functools import partial
 from typing import Callable, Dict, Iterator, Sequence
 
 import backoff
+import pytz
 from google.oauth2 import service_account
 from googleapiclient.discovery import Resource, build
 from googleapiclient.errors import HttpError as GoogleApiHttpError
@@ -42,6 +45,7 @@ class API:
         self._creds = None
         self._credentials_json = credentials_json
         self._admin_email = email
+        self._resource = None
 
     def _load_account_info(self) -> Dict:
         account_info = json.loads(self._credentials_json)
@@ -62,19 +66,21 @@ class API:
         service = self._construct_resource()
         return getattr(service, name)
 
-    @backoff.on_exception(backoff.expo, GoogleApiHttpError, max_tries=7, giveup=rate_limit_handling)
+    @backoff.on_exception(backoff.expo, (GoogleApiHttpError, socket.timeout), max_tries=7, giveup=rate_limit_handling)
     def get(self, name: str, params: Dict = None) -> Dict:
-        resource = self._get_resource(name)
-        response = resource().list(**params).execute()
+        if not self._resource:
+            self._resource = self._get_resource(name)
+        response = self._resource().list(**params).execute()
         return response
 
 
 class StreamAPI(ABC):
-    results_per_page = 200
+    results_per_page = 100
 
     def __init__(self, api: API, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._api = api
+        self._end_time = datetime.utcnow().replace(tzinfo=pytz.UTC).isoformat()
 
     def _api_get(self, resource: str, params: Dict = None):
         return self._api.get(resource, params=params)
@@ -105,11 +111,16 @@ class ActivitiesAPI(StreamAPI):
     application_name = None
 
     def get_params(self) -> Dict:
-        params = {"userKey": "all", "applicationName": self.application_name}
+        params = {
+            "userKey": "all",
+            "applicationName": self.application_name,
+            # "startTime": "2021-03-18T00:00:00.000Z",
+            "endTime": self._end_time,
+        }
         return params
 
     def process_response(self, response: Dict) -> Iterator[dict]:
-        return response["items"]
+        return response.get("items", [])
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         params = self.get_params()

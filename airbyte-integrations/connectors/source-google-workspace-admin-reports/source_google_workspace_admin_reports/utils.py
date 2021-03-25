@@ -22,10 +22,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from googleapiclient.errors import HttpError
+
 
 def rate_limit_handling(error):
     retried_cases = [
         (503,),
     ]
 
-    return (error.resp.status,) not in retried_cases
+    if error.__class__ == HttpError:
+        return (error.resp.status,) not in retried_cases
+    return False
