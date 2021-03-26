@@ -1583,6 +1583,10 @@ components:
           $ref: "#/components/schemas/DestinationDefinitionSpecification"
         jobInfo:
           $ref: "#/components/schemas/SynchronousJobRead"
+        supportedSyncModes:
+          type: array
+          items:
+            $ref: "#/components/schemas/DestinationSyncMode"
     # DESTINATION
     DestinationId:
       type: string

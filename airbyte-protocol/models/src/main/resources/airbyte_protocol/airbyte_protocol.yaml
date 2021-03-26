@@ -209,6 +209,8 @@ definitions:
       - connectionSpecification
     additionalProperties: true
     properties:
+      # todo - split ConnectorSpecification into general vs connector type sections of properties
+      # General Properties (Common to all connectors)
       # todo (cgardens) - prefer snake case for field names.
       documentationUrl:
         type: string
@@ -222,6 +224,14 @@ definitions:
         description: ConnectorDefinition specific blob. Must be a valid JSON string.
         type: object
         existingJavaType: com.fasterxml.jackson.databind.JsonNode
+      # Connector Type Properties (Common to all connectors from same type)
+      # Source Connectors Properties
       supportsIncremental:
         description: If the connector supports incremental mode or not.
         type: boolean
+      # Destination Connectors Properties
+      supported_destination_sync_modes:
+        description: List of destination sync modes supported by the connector
+        type: array
+        items:
+          "$ref": "#/definitions/DestinationSyncMode"
