@@ -30,6 +30,7 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
+import io.airbyte.integrations.destination.redshift.RedshiftCopyDestination.S3Config;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -71,6 +72,11 @@ public class RedshiftDestination implements Destination {
   }
 
   public static boolean hasCopyConfigs(JsonNode config) {
-    return config.has("s3_configuration");
+     if (S3Config.isPresent(config)) {
+        LOGGER.info("Using Redshift COPY strategy.");
+        return true;
+     }
+     LOGGER.info("Using Redshift INSERT strategy.");
+     return false;
   }
 }

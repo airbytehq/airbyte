@@ -42,9 +42,13 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import java.sql.SQLException;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,8 +66,6 @@ import org.slf4j.LoggerFactory;
  */
 public class RedshiftCopyDestination {
 
-  // TODO: figure out a way to consistently randomise this bucket
-  public static String DEFAULT_AIRBYTE_STAGING_S3_BUCKET = "airbyte.staging";
   private static final StandardNameTransformer namingResolver = new StandardNameTransformer();
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftCopyDestination.class);
 
@@ -74,7 +76,8 @@ public class RedshiftCopyDestination {
   public AirbyteConnectionStatus check(JsonNode config) {
     try {
       var outputTableName = "_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", "");
-      attemptWriteAndDeleteS3Object(config, outputTableName);
+      var s3Config = new S3Config(config);
+      attemptWriteAndDeleteS3Object(s3Config, outputTableName);
 
       var outputSchema = namingResolver.getIdentifier(config.get("schema").asText());
       JdbcDatabase database = getRedshift(config);
@@ -89,17 +92,17 @@ public class RedshiftCopyDestination {
     }
   }
 
-  private void attemptWriteAndDeleteS3Object(JsonNode config, String outputTableName) {
-    var s3 = getAmazonS3(config);
-    var s3Bucket = config.get("s3_staging_bucket").asText();
+  private void attemptWriteAndDeleteS3Object(S3Config s3Config, String outputTableName) {
+    var s3 = getAmazonS3(s3Config);
+    var s3Bucket = s3Config.bucketName;
     s3.putObject(s3Bucket, outputTableName, "check-content");
     s3.deleteObject(s3Bucket, outputTableName);
   }
 
-  private static AmazonS3 getAmazonS3(JsonNode config) {
-    var s3Region = config.get("s3_region").asText();
-    var accessKeyId = config.get("access_key_id").asText();
-    var secretAccessKey = config.get("secret_access_key").asText();
+  private static AmazonS3 getAmazonS3(S3Config s3Config) {
+    var s3Region = s3Config.region;
+    var accessKeyId = s3Config.accessKeyId;
+    var secretAccessKey = s3Config.secretAccessKey;
     var awsCreds = new BasicAWSCredentials(accessKeyId, secretAccessKey);
     return AmazonS3ClientBuilder.standard()
         .withCredentials(new AWSStaticCredentialsProvider(awsCreds)).withRegion(s3Region)
@@ -129,17 +132,19 @@ public class RedshiftCopyDestination {
 
   private static class RedshiftCopyDestinationConsumer extends FailureTrackingConsumer<AirbyteMessage> {
 
-    private final JsonNode config;
     private final ConfiguredAirbyteCatalog catalog;
     private final JdbcDatabase redshiftDb;
+    private final String schema;
+    private final S3Config s3Config;
     private final AmazonS3 s3Client;
     private final Map<String, RedshiftCopier> streamNameToCopier;
 
     public RedshiftCopyDestinationConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) {
-      this.config = config;
       this.catalog = catalog;
       this.redshiftDb = getRedshift(config);
-      this.s3Client = getAmazonS3(config);
+      this.schema = config.get("schema").asText();
+      this.s3Config = new S3Config(config);
+      this.s3Client = getAmazonS3(s3Config);
       this.streamNameToCopier = new HashMap<>();
     }
 
@@ -149,11 +154,7 @@ public class RedshiftCopyDestination {
       for (var stream : catalog.getStreams()) {
         var streamName = stream.getStream().getName();
         var syncMode = stream.getSyncMode();
-        var schema = config.get("schema").asText();
-        var s3Region = config.get("s3_region").asText();
-        var accessKeyId = config.get("access_key_id").asText();
-        var secretAccessKey = config.get("secret_access_key").asText();
-        var copier = new RedshiftCopier(runFolder, syncMode, schema, streamName, s3Client, redshiftDb, accessKeyId, secretAccessKey, s3Region);
+        var copier = new RedshiftCopier(s3Config.bucketName, runFolder, syncMode, schema, streamName, s3Client, redshiftDb, s3Config.accessKeyId, s3Config.secretAccessKey, s3Config.region);
 
         streamNameToCopier.put(streamName, copier);
       }
@@ -182,6 +183,59 @@ public class RedshiftCopyDestination {
     @Override
     protected void close(boolean hasFailed) throws Exception {
       RedshiftCopier.closeAsOneTransaction(new ArrayList<>(streamNameToCopier.values()), hasFailed, redshiftDb);
+    }
+  }
+
+  public static class S3Config {
+    public String bucketName;
+    public String region;
+    public String accessKeyId;
+    public String secretAccessKey;
+
+    public S3Config(JsonNode config) {
+      this.bucketName = config.get("s3_bucket_name").asText();
+      this.region = config.get("s3_bucket_region").asText();
+      this.accessKeyId = config.get("access_key_id").asText();
+      this.secretAccessKey = config.get("secret_access_key").asText();
+    }
+
+    public static boolean isPresent(JsonNode config) {
+      var bucketNode = config.get("s3_bucket_name");
+      var regionNode = config.get("s3_bucket_region");
+      var accessKeyIdNode = config.get("access_key_id");
+      var secretAccessKeyNode = config.get("secret_access_key");
+
+      var emptyRegion = regionNode == null || regionNode.asText().equals("");
+
+      if (bucketNode == null && emptyRegion && accessKeyIdNode == null && secretAccessKeyNode == null ) {
+        return false;
+      }
+
+      if (bucketNode == null || regionNode == null || accessKeyIdNode == null || secretAccessKeyNode == null ) {
+        throw new RuntimeException("Error: Partially missing S3 Configuration.");
+      }
+      return true;
+    }
+  }
+
+
+  public static void main(String[] args) throws SQLException {
+    JdbcDatabase localPostgres = Databases.createJdbcDatabase("postgres", "password", "jdbc:postgresql://localhost:2000/postgres", "org.postgresql.Driver");
+    var rand = new Random();
+    for (int i = 0; i < 1000_000; i+=1000) {
+      var query = new StringBuilder();
+      for (int y = 0; y < 1000; y++) {
+        var code = UUID.randomUUID();
+        var title = UUID.randomUUID().toString();
+        var did = rand.nextInt();
+        var date = Date.from(Instant.now());
+        var kind = UUID.randomUUID().toString();
+        var len = rand.nextInt();
+
+        query.append(String.format("insert into films_1mil values ('%s', '%s', '%s', '%s', '%s', '%s');\n",
+            code, title, did, date, kind, len));
+      }
+      localPostgres.execute(query.toString());
     }
 
   }

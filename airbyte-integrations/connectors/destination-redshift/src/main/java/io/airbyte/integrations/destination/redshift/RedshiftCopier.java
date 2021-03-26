@@ -27,7 +27,6 @@ package io.airbyte.integrations.destination.redshift;
 import alex.mojaki.s3upload.MultiPartOutputStream;
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.services.s3.AmazonS3;
-import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
@@ -75,22 +74,6 @@ public class RedshiftCopier {
   private final CSVPrinter csvPrinter;
   private final String tmpTableName;
 
-  public RedshiftCopier(
-                        String runFolder,
-                        SyncMode syncMode,
-                        String schema,
-                        String streamName,
-                        AmazonS3 client,
-                        JdbcDatabase redshiftDb,
-                        String s3KeyId,
-                        String s3key,
-                        String s3Region)
-      throws IOException {
-    this(RedshiftCopyDestination.DEFAULT_AIRBYTE_STAGING_S3_BUCKET, runFolder, syncMode, schema, streamName, client, redshiftDb, s3KeyId, s3key,
-        s3Region);
-  }
-
-  @VisibleForTesting
   public RedshiftCopier(
                         String s3BucketName,
                         String runFolder,
