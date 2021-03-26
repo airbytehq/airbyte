@@ -192,10 +192,18 @@ public class WebBackendConnectionsHandler {
         else
           outputStreamConfig.setSyncMode(discoveredStreamConfig.getSyncMode());
 
-        if (originalStreamConfig.getCursorField().size() > 0)
+        if (originalStreamConfig.getCursorField().size() > 0) {
           outputStreamConfig.setCursorField(originalStreamConfig.getCursorField());
-        else
+        } else {
           outputStreamConfig.setCursorField(discoveredStreamConfig.getCursorField());
+        }
+
+        outputStreamConfig.setDestinationSyncMode(originalStreamConfig.getDestinationSyncMode());
+        if (originalStreamConfig.getPrimaryKey().size() > 0) {
+          outputStreamConfig.setPrimaryKey(originalStreamConfig.getPrimaryKey());
+        } else {
+          outputStreamConfig.setPrimaryKey(discoveredStreamConfig.getPrimaryKey());
+        }
 
         outputStreamConfig.setAliasName(originalStreamConfig.getAliasName());
         outputStreamConfig.setSelected(originalStreamConfig.getSelected());

@@ -24,7 +24,7 @@
 
 package io.airbyte.integrations.destination;
 
-import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream.DestinationSyncMode;
 
 public class WriteConfig {
 
@@ -32,9 +32,9 @@ public class WriteConfig {
   private final String outputNamespaceName;
   private final String tmpTableName;
   private final String outputTableName;
-  private final SyncMode syncMode;
+  private final DestinationSyncMode syncMode;
 
-  public WriteConfig(String streamName, String outputNamespaceName, String tmpTableName, String outputTableName, SyncMode syncMode) {
+  public WriteConfig(String streamName, String outputNamespaceName, String tmpTableName, String outputTableName, DestinationSyncMode syncMode) {
     this.streamName = streamName;
     this.outputNamespaceName = outputNamespaceName;
     this.tmpTableName = tmpTableName;
@@ -58,7 +58,7 @@ public class WriteConfig {
     return outputTableName;
   }
 
-  public SyncMode getSyncMode() {
+  public DestinationSyncMode getSyncMode() {
     return syncMode;
   }
 

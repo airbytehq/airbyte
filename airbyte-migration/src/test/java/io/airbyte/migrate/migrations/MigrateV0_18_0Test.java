@@ -25,6 +25,7 @@
 package io.airbyte.migrate.migrations;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -33,8 +34,10 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.functional.ListConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.migrate.Migration;
 import io.airbyte.migrate.MigrationTestUtils;
 import io.airbyte.migrate.MigrationUtils;
+import io.airbyte.migrate.Migrations;
 import io.airbyte.migrate.ResourceId;
 import io.airbyte.migrate.ResourceType;
 import java.io.IOException;
@@ -44,15 +47,22 @@ import java.util.UUID;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 
-class MigrateV0_14_13Test {
+class MigrateV0_18_0Test {
 
   private static final ResourceId SYNC_RESOURCE_ID = ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC");
 
   @Test
   void testMigration() throws IOException {
-    // construct a sync object. in this migration we swap our schema for catalog, so we will use this as
+    final Migration migration = Migrations.MIGRATIONS
+        .stream()
+        .filter(m -> m instanceof MigrationV0_18_0)
+        .findAny()
+        .orElse(null);
+    assertNotNull(migration);
+
+    // construct a sync object. in this migration we modify the catalog, so we will use this as
     // a base.
-    final JsonNode syncWithoutSchema = Jsons.jsonNode(ImmutableMap.<String, String>builder()
+    final JsonNode syncWithoutCatalog = Jsons.jsonNode(ImmutableMap.<String, String>builder()
         .put("sourceId", UUID.randomUUID().toString())
         .put("destinationId", UUID.randomUUID().toString())
         .put("connectionId", UUID.randomUUID().toString())
@@ -60,23 +70,22 @@ class MigrateV0_14_13Test {
         .put("status", "active")
         .build());
 
-    // sync with schema
-    final JsonNode schema = Jsons.deserialize(MoreResources.readResource("migrations/migrationV0_14_3/example_input_schema.json"));
-    final JsonNode syncWithSchema = Jsons.clone(syncWithoutSchema);
-    ((ObjectNode) syncWithSchema).set("schema", schema);
+    // input Catalog
+    final JsonNode inputCatalog = Jsons.deserialize(MoreResources.readResource("migrations/migrationV0_18_0/example_input_catalog.json"));
+    final JsonNode syncInputCatalog = Jsons.clone(syncWithoutCatalog);
+    ((ObjectNode) syncInputCatalog).set("catalog", inputCatalog);
 
-    // sync with catalog
-    final JsonNode configuredCatalog = Jsons.deserialize(MoreResources.readResource("migrations/migrationV0_14_3/example_output_schema.json"));
-    final JsonNode syncWithCatalog = Jsons.clone(syncWithoutSchema);
-    ((ObjectNode) syncWithCatalog).set("catalog", configuredCatalog);
+    // Output Catalog
+    final JsonNode outputCatalog = Jsons.deserialize(MoreResources.readResource("migrations/migrationV0_18_0/example_output_catalog.json"));
+    final JsonNode syncOutputCatalog = Jsons.clone(syncWithoutCatalog);
+    ((ObjectNode) syncOutputCatalog).set("catalog", outputCatalog);
 
-    final Map<ResourceId, Stream<JsonNode>> records = ImmutableMap.of(SYNC_RESOURCE_ID, Stream.of(syncWithSchema));
+    final Map<ResourceId, Stream<JsonNode>> records = ImmutableMap.of(SYNC_RESOURCE_ID, Stream.of(syncInputCatalog));
 
-    final MigrationV0_14_3 migration = new MigrationV0_14_3(new MigrationV0_14_0());
     final Map<ResourceId, ListConsumer<JsonNode>> outputConsumer = MigrationTestUtils.createOutputConsumer(migration.getOutputSchema().keySet());
     migration.migrate(records, MigrationUtils.mapRecordConsumerToConsumer(outputConsumer));
 
-    final Map<ResourceId, List<JsonNode>> expectedOutputOverrides = ImmutableMap.of(SYNC_RESOURCE_ID, ImmutableList.of(syncWithCatalog));
+    final Map<ResourceId, List<JsonNode>> expectedOutputOverrides = ImmutableMap.of(SYNC_RESOURCE_ID, ImmutableList.of(syncOutputCatalog));
     final Map<ResourceId, List<JsonNode>> expectedOutput =
         MigrationTestUtils.createExpectedOutput(migration.getOutputSchema().keySet(), expectedOutputOverrides);
 

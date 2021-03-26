@@ -274,10 +274,12 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
           cursorOptional.orElse(null),
           cursorType),
           airbyteMessageIterator);
-    } else if (airbyteStream.getSyncMode() == SyncMode.FULL_REFRESH || airbyteStream.getSyncMode() == null) {
+    } else if (airbyteStream.getSyncMode() == SyncMode.FULL_REFRESH) {
       iterator = getFullRefreshStream(database, streamName, selectedDatabaseFields, table, emittedAt);
+    } else if (airbyteStream.getSyncMode() == null) {
+      throw new IllegalArgumentException(String.format("%s requires a source sync mode", AbstractJdbcSource.class));
     } else {
-      throw new IllegalArgumentException(String.format("%s does not support sync mode: %s.", airbyteStream.getSyncMode(), AbstractJdbcSource.class));
+      throw new IllegalArgumentException(String.format("%s does not support sync mode: %s.", AbstractJdbcSource.class, airbyteStream.getSyncMode()));
     }
 
     final AtomicLong recordCount = new AtomicLong();
