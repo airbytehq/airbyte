@@ -137,17 +137,8 @@ public class ConnectionsHandler {
 
     metadata.put("connector_source", sourceDefinition.getName());
     metadata.put("connector_source_definition_id", sourceDefinition.getSourceDefinitionId());
-    final String[] sourceImageTag = sourceDefinition.getDockerImageTag().split(":");
-    if (sourceImageTag.length > 1) {
-      metadata.put("connector_source_version", sourceImageTag[1]);
-    }
-
     metadata.put("connector_destination", destinationDefinition.getName());
     metadata.put("connector_destination_definition_id", destinationDefinition.getDestinationDefinitionId());
-    final String[] destinationImageTag = destinationDefinition.getDockerImageTag().split(":");
-    if (destinationImageTag.length > 1) {
-      metadata.put("connector_destination_version", destinationImageTag[1]);
-    }
 
     final String frequencyString;
     if (standardSyncSchedule.getManual()) {
