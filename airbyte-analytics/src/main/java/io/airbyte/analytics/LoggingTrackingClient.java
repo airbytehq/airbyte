@@ -60,7 +60,8 @@ public class LoggingTrackingClient implements TrackingClient {
     LOGGER.info("track. version: {}, userId: {}, action: {}, metadata: {}",
         identitySupplier.get().getAirbyteVersion(),
         identitySupplier.get().getCustomerId(),
-        action, metadata);
+        action,
+        metadata);
   }
 
 }
