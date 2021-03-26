@@ -57,7 +57,11 @@ public class LoggingTrackingClient implements TrackingClient {
 
   @Override
   public void track(String action, Map<String, Object> metadata) {
-    LOGGER.info("track. userId: {} action: {}, metadata: {}", identitySupplier.get().getCustomerId(), action, metadata);
+    LOGGER.info("track. version: {}, userId: {}, action: {}, metadata: {}",
+        identitySupplier.get().getAirbyteVersion(),
+        identitySupplier.get().getCustomerId(),
+        action,
+        metadata);
   }
 
 }
