@@ -45,6 +45,7 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import java.io.IOException;
@@ -238,7 +239,10 @@ public class DefaultJobCreatorTest {
   void testCreateResetConnectionJob() throws IOException {
     final ConfiguredAirbyteCatalog expectedCatalog = STANDARD_SYNC.getCatalog();
     expectedCatalog.getStreams()
-        .forEach(configuredAirbyteStream -> configuredAirbyteStream.setSyncMode(io.airbyte.protocol.models.SyncMode.FULL_REFRESH));
+        .forEach(configuredAirbyteStream -> {
+          configuredAirbyteStream.setSyncMode(io.airbyte.protocol.models.SyncMode.FULL_REFRESH);
+          configuredAirbyteStream.setDestinationSyncMode(DestinationSyncMode.OVERWRITE);
+        });
 
     final JobResetConnectionConfig JobResetConnectionConfig = new JobResetConnectionConfig()
         .withPrefix(STANDARD_SYNC.getPrefix())
@@ -264,7 +268,10 @@ public class DefaultJobCreatorTest {
   void testCreateResetConnectionJobEnsureNoQueuing() throws IOException {
     final ConfiguredAirbyteCatalog expectedCatalog = STANDARD_SYNC.getCatalog();
     expectedCatalog.getStreams()
-        .forEach(configuredAirbyteStream -> configuredAirbyteStream.setSyncMode(io.airbyte.protocol.models.SyncMode.FULL_REFRESH));
+        .forEach(configuredAirbyteStream -> {
+          configuredAirbyteStream.setSyncMode(io.airbyte.protocol.models.SyncMode.FULL_REFRESH);
+          configuredAirbyteStream.setDestinationSyncMode(DestinationSyncMode.OVERWRITE);
+        });
 
     final JobResetConnectionConfig JobResetConnectionConfig = new JobResetConnectionConfig()
         .withPrefix(STANDARD_SYNC.getPrefix())

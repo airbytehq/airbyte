@@ -53,6 +53,7 @@ import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream.DestinationSyncMode;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
@@ -183,7 +184,10 @@ class JdbcDestinationTest {
   @Test
   void testWriteIncremental() throws Exception {
     final ConfiguredAirbyteCatalog catalog = Jsons.clone(CATALOG);
-    catalog.getStreams().forEach(stream -> stream.withSyncMode(SyncMode.INCREMENTAL));
+    catalog.getStreams().forEach(stream -> {
+      stream.withSyncMode(SyncMode.INCREMENTAL);
+      stream.withDestinationSyncMode(DestinationSyncMode.APPEND);
+    });
 
     final JdbcDestination destination = new JdbcDestination();
     final DestinationConsumer<AirbyteMessage> consumer = destination.write(config, catalog);
