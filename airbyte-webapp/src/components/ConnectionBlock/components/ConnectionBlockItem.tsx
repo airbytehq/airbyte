@@ -27,11 +27,11 @@ const Name = styled.div`
   margin-left: 6px;
 `;
 
-const Item: React.FC<IProps> = (props) => (
+const ConnectionBlockItem: React.FC<IProps> = (props) => (
   <Content>
     <ImageBlock img={props.img} />
     <Name>{props.name}</Name>
   </Content>
 );
 
-export default Item;
+export { ConnectionBlockItem };
