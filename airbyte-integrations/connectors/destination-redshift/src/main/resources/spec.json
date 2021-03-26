@@ -49,7 +49,7 @@
       "s3_bucket_name" : {
         "title": "S3 Bucket Name",
         "type": "string",
-        "description": "The name of the staging S3 bucket to use if utilising a copy strategy.",
+        "description": "The name of the staging S3 bucket to use if utilising a COPY strategy. COPY is recommended for production workloads for better speed and scalability. See <a href=\"https://docs.aws.amazon.com/redshift/latest/dg/c_loading-data-best-practices.html\">AWS docs</a> for more details.",
         "examples": ["airbyte.staging"]
       },
       "s3_bucket_region": {
@@ -61,10 +61,12 @@
       },
       "access_key_id": {
         "type": "string",
+        "description": "The Access Key Id granting allow one to access the above S3 staging bucket. Airbyte requires Read and Write permissions to the given bucket.",
         "title": "S3 Key Id"
       },
       "secret_access_key": {
         "type": "string",
+        "description": "The corresponding secret to the above access key id.",
         "title": "S3 Access Key"
       }
     }
