@@ -64,8 +64,8 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream.DestinationSyncMode;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.protocol.models.SyncMode;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -231,7 +231,7 @@ public class BigQueryDestination implements Destination {
           .setFormatOptions(FormatOptions.json()).build(); // new-line delimited json.
 
       final TableDataWriteChannel writer = bigquery.writer(JobId.of(UUID.randomUUID().toString()), writeChannelConfiguration);
-      final WriteDisposition syncMode = getWriteDisposition(stream.getSyncMode());
+      final WriteDisposition syncMode = getWriteDisposition(stream.getDestinationSyncMode());
 
       writeConfigs.put(stream.getStream().getName(),
           new WriteConfig(TableId.of(schemaName, tableName), TableId.of(schemaName, tmpTableName), writer, syncMode));
@@ -242,13 +242,18 @@ public class BigQueryDestination implements Destination {
     return new RecordConsumer(bigquery, writeConfigs, catalog);
   }
 
-  private static WriteDisposition getWriteDisposition(SyncMode syncMode) {
-    if (syncMode == null || syncMode == SyncMode.FULL_REFRESH) {
-      return WriteDisposition.WRITE_TRUNCATE;
-    } else if (syncMode == SyncMode.INCREMENTAL) {
-      return WriteDisposition.WRITE_APPEND;
-    } else {
-      throw new IllegalStateException("Unrecognized sync mode: " + syncMode);
+  private static WriteDisposition getWriteDisposition(DestinationSyncMode syncMode) {
+    if (syncMode == null) {
+      throw new IllegalStateException("Undefined destination sync mode");
+    }
+    switch (syncMode) {
+      case OVERWRITE -> {
+        return WriteDisposition.WRITE_TRUNCATE;
+      }
+      case APPEND, APPEND_DEDUP -> {
+        return WriteDisposition.WRITE_APPEND;
+      }
+      default -> throw new IllegalStateException("Unrecognized destination sync mode: " + syncMode);
     }
   }
 

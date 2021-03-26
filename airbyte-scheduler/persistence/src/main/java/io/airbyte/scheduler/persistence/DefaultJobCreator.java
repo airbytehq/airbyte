@@ -35,6 +35,7 @@ import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream.DestinationSyncMode;
 import io.airbyte.protocol.models.SyncMode;
 import java.io.IOException;
 import java.util.Optional;
@@ -124,7 +125,7 @@ public class DefaultJobCreator implements JobCreator {
   }
 
   // Strategy:
-  // 1. Set all streams to full refresh.
+  // 1. Set all streams to full refresh - overwrite.
   // 2. Create a job where the source emits no records.
   // 3. Run a sync from the empty source to the destination. This will overwrite all data for each
   // stream in the destination.
@@ -134,7 +135,10 @@ public class DefaultJobCreator implements JobCreator {
   public Optional<Long> createResetConnectionJob(DestinationConnection destination, StandardSync standardSync, String destinationDockerImage)
       throws IOException {
     final ConfiguredAirbyteCatalog configuredAirbyteCatalog = standardSync.getCatalog();
-    configuredAirbyteCatalog.getStreams().forEach(configuredAirbyteStream -> configuredAirbyteStream.setSyncMode(SyncMode.FULL_REFRESH));
+    configuredAirbyteCatalog.getStreams().forEach(configuredAirbyteStream -> {
+      configuredAirbyteStream.setSyncMode(SyncMode.FULL_REFRESH);
+      configuredAirbyteStream.setDestinationSyncMode(DestinationSyncMode.OVERWRITE);
+    });
 
     final JobResetConnectionConfig resetConnectionConfig = new JobResetConnectionConfig()
         .withPrefix(standardSync.getPrefix())
