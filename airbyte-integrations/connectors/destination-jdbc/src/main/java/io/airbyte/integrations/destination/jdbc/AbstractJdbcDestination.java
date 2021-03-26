@@ -81,7 +81,11 @@ public abstract class AbstractJdbcDestination implements Destination {
     }
   }
 
-  public static void attemptSQLCreateAndDropTableOperations(String outputSchema, JdbcDatabase database, NamingConventionTransformer namingResolver, SqlOperations sqlOps) throws Exception {
+  public static void attemptSQLCreateAndDropTableOperations(String outputSchema,
+                                                            JdbcDatabase database,
+                                                            NamingConventionTransformer namingResolver,
+                                                            SqlOperations sqlOps)
+      throws Exception {
     // attempt to get metadata from the database as a cheap way of seeing if we can connect.
     database.bufferedResultSetQuery(conn -> conn.getMetaData().getCatalogs(), JdbcUtils::rowToJson);
 

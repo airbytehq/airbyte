@@ -72,11 +72,12 @@ public class RedshiftDestination implements Destination {
   }
 
   public static boolean hasCopyConfigs(JsonNode config) {
-     if (S3Config.isPresent(config)) {
-        LOGGER.info("Using Redshift COPY strategy.");
-        return true;
-     }
-     LOGGER.info("Using Redshift INSERT strategy.");
-     return false;
+    if (S3Config.isPresent(config)) {
+      LOGGER.info("Using Redshift COPY strategy.");
+      return true;
+    }
+    LOGGER.info("Using Redshift INSERT strategy.");
+    return false;
   }
+
 }

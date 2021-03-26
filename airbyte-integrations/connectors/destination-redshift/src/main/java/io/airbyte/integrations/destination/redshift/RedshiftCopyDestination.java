@@ -1,4 +1,3 @@
-
 /*
  * MIT License
  *
@@ -42,13 +41,9 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import java.sql.SQLException;
-import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -154,7 +149,8 @@ public class RedshiftCopyDestination {
       for (var stream : catalog.getStreams()) {
         var streamName = stream.getStream().getName();
         var syncMode = stream.getSyncMode();
-        var copier = new RedshiftCopier(s3Config.bucketName, runFolder, syncMode, schema, streamName, s3Client, redshiftDb, s3Config.accessKeyId, s3Config.secretAccessKey, s3Config.region);
+        var copier = new RedshiftCopier(s3Config.bucketName, runFolder, syncMode, schema, streamName, s3Client, redshiftDb, s3Config.accessKeyId,
+            s3Config.secretAccessKey, s3Config.region);
 
         streamNameToCopier.put(streamName, copier);
       }
@@ -184,9 +180,11 @@ public class RedshiftCopyDestination {
     protected void close(boolean hasFailed) throws Exception {
       RedshiftCopier.closeAsOneTransaction(new ArrayList<>(streamNameToCopier.values()), hasFailed, redshiftDb);
     }
+
   }
 
   public static class S3Config {
+
     public String bucketName;
     public String region;
     public String accessKeyId;
@@ -207,35 +205,14 @@ public class RedshiftCopyDestination {
 
       var emptyRegion = regionNode == null || regionNode.asText().equals("");
 
-      if (bucketNode == null && emptyRegion && accessKeyIdNode == null && secretAccessKeyNode == null ) {
+      if (bucketNode == null && emptyRegion && accessKeyIdNode == null && secretAccessKeyNode == null) {
         return false;
       }
 
-      if (bucketNode == null || regionNode == null || accessKeyIdNode == null || secretAccessKeyNode == null ) {
+      if (bucketNode == null || regionNode == null || accessKeyIdNode == null || secretAccessKeyNode == null) {
         throw new RuntimeException("Error: Partially missing S3 Configuration.");
       }
       return true;
-    }
-  }
-
-
-  public static void main(String[] args) throws SQLException {
-    JdbcDatabase localPostgres = Databases.createJdbcDatabase("postgres", "password", "jdbc:postgresql://localhost:2000/postgres", "org.postgresql.Driver");
-    var rand = new Random();
-    for (int i = 0; i < 1000_000; i+=1000) {
-      var query = new StringBuilder();
-      for (int y = 0; y < 1000; y++) {
-        var code = UUID.randomUUID();
-        var title = UUID.randomUUID().toString();
-        var did = rand.nextInt();
-        var date = Date.from(Instant.now());
-        var kind = UUID.randomUUID().toString();
-        var len = rand.nextInt();
-
-        query.append(String.format("insert into films_1mil values ('%s', '%s', '%s', '%s', '%s', '%s');\n",
-            code, title, did, date, kind, len));
-      }
-      localPostgres.execute(query.toString());
     }
 
   }
