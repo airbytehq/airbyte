@@ -18,6 +18,12 @@ export type PreferencesFormProps = {
     securityUpdates: boolean;
   }) => void;
   isEdit?: boolean;
+  values?: {
+    email?: string;
+    anonymousDataCollection: boolean;
+    news: boolean;
+    securityUpdates: boolean;
+  };
 };
 
 const ButtonContainer = styled.div`
@@ -54,16 +60,17 @@ const preferencesValidationSchema = yup.object().shape({
 const PreferencesForm: React.FC<PreferencesFormProps> = ({
   onSubmit,
   isEdit,
+  values,
 }) => {
   const formatMessage = useIntl().formatMessage;
 
   return (
     <Formik
       initialValues={{
-        email: "",
-        anonymousDataCollection: false,
-        news: false,
-        securityUpdates: false,
+        email: values?.email || "",
+        anonymousDataCollection: values?.anonymousDataCollection || false,
+        news: values?.news || false,
+        securityUpdates: values?.securityUpdates || false,
       }}
       validateOnBlur={true}
       validateOnChange={false}
@@ -132,8 +139,17 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
               {({ field }: FieldProps<string>) => (
                 <LabeledToggle
                   {...field}
-                  disabled={!values.email}
+                  disabled={!values.email && !isEdit}
                   label={<FormattedMessage id="preferences.anonymizeData" />}
+                  onChange={(event) => {
+                    handleChange(event);
+                    if (isEdit) {
+                      onSubmit({
+                        ...values,
+                        anonymousDataCollection: !values.anonymousDataCollection,
+                      });
+                    }
+                  }}
                 />
               )}
             </Field>
@@ -146,11 +162,20 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
               {({ field }: FieldProps<string>) => (
                 <LabeledToggle
                   {...field}
-                  disabled={!values.email}
+                  disabled={!values.email && !isEdit}
                   label={<FormattedMessage id="preferences.featureUpdates" />}
                   message={
                     <FormattedMessage id="preferences.unsubscribeAnyTime" />
                   }
+                  onChange={(event) => {
+                    handleChange(event);
+                    if (isEdit) {
+                      onSubmit({
+                        ...values,
+                        news: !values.news,
+                      });
+                    }
+                  }}
                 />
               )}
             </Field>
@@ -163,8 +188,17 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
               {({ field }: FieldProps<string>) => (
                 <LabeledToggle
                   {...field}
-                  disabled={!values.email}
+                  disabled={!values.email && !isEdit}
                   label={<FormattedMessage id="preferences.securityUpdates" />}
+                  onChange={(event) => {
+                    handleChange(event);
+                    if (isEdit) {
+                      onSubmit({
+                        ...values,
+                        securityUpdates: !values.securityUpdates,
+                      });
+                    }
+                  }}
                 />
               )}
             </Field>

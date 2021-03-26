@@ -15,22 +15,28 @@ const Content = styled.div`
 `;
 
 const AccountSettings: React.FC = () => {
-  const { workspace } = useWorkspace();
-  console.log(workspace);
+  const { workspace, updatePreferences } = useWorkspace();
 
-  const onSubmit = (data: {
-    email: string;
+  const onSubmit = async (data: {
     anonymousDataCollection: boolean;
     news: boolean;
     securityUpdates: boolean;
   }) => {
-    console.log(data);
+    await updatePreferences(data);
   };
 
   return (
     <SettingsCard title={<FormattedMessage id="settings.accountSettings" />}>
       <Content>
-        <PreferencesForm onSubmit={onSubmit} isEdit />
+        <PreferencesForm
+          onSubmit={onSubmit}
+          isEdit
+          values={{
+            anonymousDataCollection: workspace.anonymousDataCollection,
+            news: workspace.news,
+            securityUpdates: workspace.securityUpdates,
+          }}
+        />
       </Content>
     </SettingsCard>
   );
