@@ -18,16 +18,22 @@ export const SpinAnimation = keyframes`
 const SymbolSpinner = styled(FontAwesomeIcon)<IProps>`
   display: inline-block;
   font-size: 18px;
-  position: relative;
+  position: absolute;
+  left: 50%;
   animation: ${SpinAnimation} 1.5s linear 0s infinite;
   color: ${({ theme }) => theme.primaryColor};
-  margin: -1px 0 -3px;
+  margin: -1px 0 -3px -9px;
 `;
 
 const ButtonView = styled(Button)<IProps>`
   pointer-events: none;
   background: ${({ theme }) => theme.primaryColor25};
   border-color: transparent;
+  position: relative;
+`;
+
+const Invisible = styled.div`
+  color: rgba(255, 255, 255, 0);
 `;
 
 const LoadingButton: React.FC<IProps> = (props) => {
@@ -35,7 +41,10 @@ const LoadingButton: React.FC<IProps> = (props) => {
     return (
       <ButtonView {...props}>
         {props.isLoading ? (
-          <SymbolSpinner icon={faCircleNotch} />
+          <>
+            <SymbolSpinner icon={faCircleNotch} />
+            <Invisible>{props.children}</Invisible>
+          </>
         ) : (
           props.children
         )}{" "}

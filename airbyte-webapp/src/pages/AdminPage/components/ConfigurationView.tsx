@@ -10,6 +10,7 @@ import Link from "components/Link";
 import ImportConfigurationModal from "./ImportConfigurationModal";
 import DeploymentService from "core/resources/DeploymentService";
 import LogsContent from "./LogsContent";
+import LoadingButton from "components/Button/LoadingButton";
 
 const Content = styled.div`
   max-width: 813px;
@@ -76,18 +77,18 @@ const ConfigurationView: React.FC = () => {
     }
   });
 
-  const onExport = async () => {
+  const [{ loading: loadingExport }, onExport] = useAsyncFn(async () => {
     const file = await DeploymentService.exportDeployment();
     window.location.assign(file);
-  };
+  }, []);
 
   return (
     <Content>
       <ControlContent title={<FormattedMessage id="admin.export" />}>
         <ButtonContent>
-          <Button onClick={onExport}>
+          <LoadingButton onClick={onExport} isLoading={loadingExport}>
             <FormattedMessage id="admin.exportConfiguration" />
-          </Button>
+          </LoadingButton>
           <Text>
             <FormattedMessage
               id="admin.exportConfigurationText"
