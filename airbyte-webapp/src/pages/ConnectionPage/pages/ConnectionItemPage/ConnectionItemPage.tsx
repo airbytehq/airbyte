@@ -65,6 +65,7 @@ const ConnectionItemPage: React.FC = () => {
       <SettingsView
         onAfterSaveSchema={onAfterSaveSchema}
         connectionId={connection.connectionId}
+        frequencyText={frequency?.text}
       />
     );
   };

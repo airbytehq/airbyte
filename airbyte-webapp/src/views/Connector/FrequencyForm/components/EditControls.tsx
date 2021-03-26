@@ -2,8 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 
-import Button from "components/Button";
-import Spinner from "components/Spinner";
+import { Button, Spinner } from "components";
 
 type IProps = {
   isSubmitting: boolean;

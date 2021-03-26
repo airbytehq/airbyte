@@ -21,6 +21,7 @@ export const theme = {
   shadowColor: "rgba(0, 0, 0, 0.25)",
 
   textColor: "#1A1A21",
+  textColor90: "rgba(26,26,33, .9)",
   greyColor80: "#353542",
   greyColor70: "#555461",
   greyColor60: "#6B6B75",
