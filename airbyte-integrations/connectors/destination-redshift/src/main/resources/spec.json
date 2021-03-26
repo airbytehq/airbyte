@@ -46,33 +46,26 @@
         "title": "Basic Normalization",
         "examples": [true, false]
       },
+      "s3_bucket_name" : {
+        "title": "S3 Bucket Name",
+        "type": "string",
+        "description": "The name of the staging S3 bucket to use if utilising a copy strategy.",
+        "examples": ["airbyte.staging"]
+      },
+      "s3_bucket_region": {
+        "title": "S3 Bucket Region",
+        "type": "string",
+        "default": "",
+        "description": "The region of the S3 staging bucket to use if utilising a copy strategy.",
+        "enum": ["","us-east-1", "us-east-2", "us-west-1", "us-west-2", "af-south-1", "ap-east-1", "ap-south-1", "ap-northeast-1", "ap-northeast-2", "ap-northeast-3", "ap-southeast-1", "ap-southeast-2", "ap-northeast-1", "ca-central-1", "cn-north-1", "cn-northwest-1", "eu-west-1", "eu-west-2", "eu-west-3","eu-south-1", "eu-north-1", "sa-east-1", "me-south-1"]
+      },
       "access_key_id": {
         "type": "string",
-        "description": "",
-        "title": "S3 Key Id",
-        "examples": [""]
+        "title": "S3 Key Id"
       },
       "secret_access_key": {
         "type": "string",
-        "description": "",
-        "title": "S3 Access Key",
-        "examples": [
-          ""
-        ]
-      },
-      "s3_region": {
-        "type": "string",
-        "description": "",
-        "title": "S3 Staging Bucket Region",
-        "examples": [""]
-      },
-      "s3_staging_bucket": {
-        "type": "string",
-        "description": "",
-        "title": "S3 Staging Bucket",
-        "examples": [
-          ""
-        ]
+        "title": "S3 Access Key"
       }
     }
   }

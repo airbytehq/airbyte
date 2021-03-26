@@ -71,6 +71,6 @@ public class RedshiftDestination implements Destination {
   }
 
   public static boolean hasCopyConfigs(JsonNode config) {
-    return config.has("secret_access_key") ;
+    return config.has("s3_configuration");
   }
 }
