@@ -185,7 +185,10 @@ public class JobTracker {
     final StandardDestinationDefinition destinationDefinition = configRepository.getStandardDestinationDefinition(destinationDefinitionId);
     metadata.put("connector_destination", destinationDefinition.getName());
     metadata.put("connector_destination_definition_id", destinationDefinition.getDestinationDefinitionId());
-
+    final String[] imageTag = destinationDefinition.getDockerImageTag().split(":");
+    if (imageTag.length > 1) {
+      metadata.put("connector_destination_version", imageTag[1]);
+    }
     return metadata.build();
   }
 
@@ -196,7 +199,10 @@ public class JobTracker {
     final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(sourceDefinitionId);
     metadata.put("connector_source", sourceDefinition.getName());
     metadata.put("connector_source_definition_id", sourceDefinition.getSourceDefinitionId());
-
+    final String[] imageTag = sourceDefinition.getDockerImageTag().split(":");
+    if (imageTag.length > 1) {
+      metadata.put("connector_source_version", imageTag[1]);
+    }
     return metadata.build();
   }
 

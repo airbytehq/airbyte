@@ -66,6 +66,7 @@ class JobTrackerTest {
   private static final UUID CONNECTION_ID = UUID.randomUUID();
   private static final String SOURCE_DEF_NAME = "postgres";
   private static final String DESTINATION_DEF_NAME = "bigquery";
+  public static final String CONNECTOR_VERSION = "test";
   private static final long SYNC_START_TIME = 1000L;
   private static final long SYNC_END_TIME = 10000L;
   private static final long SYNC_DURATION = 9L; // in sync between end and start time
@@ -111,10 +112,14 @@ class JobTrackerTest {
         .put("attempt_id", 0)
         .put("connector_source", SOURCE_DEF_NAME)
         .put("connector_source_definition_id", UUID1)
+        .put("connector_source_version", CONNECTOR_VERSION)
         .build();
 
     when(configRepository.getStandardSourceDefinition(UUID1))
-        .thenReturn(new StandardSourceDefinition().withSourceDefinitionId(UUID1).withName(SOURCE_DEF_NAME));
+        .thenReturn(new StandardSourceDefinition()
+            .withSourceDefinitionId(UUID1)
+            .withName(SOURCE_DEF_NAME)
+            .withDockerImageTag(SOURCE_DEF_NAME + ":" + CONNECTOR_VERSION));
 
     assertCheckConnCorrectMessageForEachState((jobState, output) -> jobTracker.trackCheckConnectionSource(JOB_ID, UUID1, jobState, output), metadata);
   }
@@ -127,10 +132,14 @@ class JobTrackerTest {
         .put("attempt_id", 0)
         .put("connector_destination", DESTINATION_DEF_NAME)
         .put("connector_destination_definition_id", UUID2)
+        .put("connector_destination_version", CONNECTOR_VERSION)
         .build();
 
     when(configRepository.getStandardDestinationDefinition(UUID2))
-        .thenReturn(new StandardDestinationDefinition().withDestinationDefinitionId(UUID2).withName(DESTINATION_DEF_NAME));
+        .thenReturn(new StandardDestinationDefinition()
+            .withDestinationDefinitionId(UUID2)
+            .withName(DESTINATION_DEF_NAME)
+            .withDockerImageTag(DESTINATION_DEF_NAME + ":" + CONNECTOR_VERSION));
 
     assertCheckConnCorrectMessageForEachState((jobState, output) -> jobTracker.trackCheckConnectionDestination(JOB_ID, UUID2, jobState, output),
         metadata);
@@ -144,10 +153,14 @@ class JobTrackerTest {
         .put("attempt_id", 0)
         .put("connector_source", SOURCE_DEF_NAME)
         .put("connector_source_definition_id", UUID1)
+        .put("connector_source_version", CONNECTOR_VERSION)
         .build();
 
     when(configRepository.getStandardSourceDefinition(UUID1))
-        .thenReturn(new StandardSourceDefinition().withSourceDefinitionId(UUID1).withName(SOURCE_DEF_NAME));
+        .thenReturn(new StandardSourceDefinition()
+            .withSourceDefinitionId(UUID1)
+            .withName(SOURCE_DEF_NAME)
+            .withDockerImageTag(SOURCE_DEF_NAME + ":" + CONNECTOR_VERSION));
 
     assertCorrectMessageForEachState((jobState) -> jobTracker.trackDiscover(JOB_ID, UUID1, jobState), metadata);
   }
@@ -209,14 +222,26 @@ class JobTrackerTest {
 
   private Job getJobMock(ConfigType configType, long jobId) throws ConfigNotFoundException, IOException, JsonValidationException {
     when(configRepository.getSourceDefinitionFromConnection(CONNECTION_ID))
-        .thenReturn(new StandardSourceDefinition().withSourceDefinitionId(UUID1).withName(SOURCE_DEF_NAME));
+        .thenReturn(new StandardSourceDefinition()
+            .withSourceDefinitionId(UUID1)
+            .withName(SOURCE_DEF_NAME)
+            .withDockerImageTag(SOURCE_DEF_NAME + ":" + CONNECTOR_VERSION));
     when(configRepository.getDestinationDefinitionFromConnection(CONNECTION_ID))
-        .thenReturn(new StandardDestinationDefinition().withDestinationDefinitionId(UUID2).withName(DESTINATION_DEF_NAME));
+        .thenReturn(new StandardDestinationDefinition()
+            .withDestinationDefinitionId(UUID2)
+            .withName(DESTINATION_DEF_NAME)
+            .withDockerImageTag(DESTINATION_DEF_NAME + ":" + CONNECTOR_VERSION));
 
     when(configRepository.getStandardSourceDefinition(UUID1))
-        .thenReturn(new StandardSourceDefinition().withSourceDefinitionId(UUID1).withName(SOURCE_DEF_NAME));
+        .thenReturn(new StandardSourceDefinition()
+            .withSourceDefinitionId(UUID1)
+            .withName(SOURCE_DEF_NAME)
+            .withDockerImageTag(SOURCE_DEF_NAME + ":" + CONNECTOR_VERSION));
     when(configRepository.getStandardDestinationDefinition(UUID2))
-        .thenReturn(new StandardDestinationDefinition().withDestinationDefinitionId(UUID2).withName(DESTINATION_DEF_NAME));
+        .thenReturn(new StandardDestinationDefinition()
+            .withDestinationDefinitionId(UUID2)
+            .withName(DESTINATION_DEF_NAME)
+            .withDockerImageTag(DESTINATION_DEF_NAME + ":" + CONNECTOR_VERSION));
 
     final Job job = mock(Job.class);
     when(job.getId()).thenReturn(jobId);
@@ -253,8 +278,10 @@ class JobTrackerTest {
         .put("connection_id", CONNECTION_ID)
         .put("connector_source", SOURCE_DEF_NAME)
         .put("connector_source_definition_id", UUID1)
+        .put("connector_source_version", CONNECTOR_VERSION)
         .put("connector_destination", DESTINATION_DEF_NAME)
         .put("connector_destination_definition_id", UUID2)
+        .put("connector_destination_version", CONNECTOR_VERSION)
         .build();
   }
 
