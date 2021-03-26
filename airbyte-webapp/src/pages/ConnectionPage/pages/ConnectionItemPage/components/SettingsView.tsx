@@ -10,7 +10,7 @@ import useConnection, {
   useConnectionLoad,
 } from "components/hooks/services/useConnectionHook";
 import DeleteBlock from "components/DeleteBlock";
-import FrequencyForm from "components/FrequencyForm";
+import FrequencyForm from "views/Connector/FrequencyForm";
 import { SyncSchema } from "core/domain/catalog";
 import { equal } from "utils/objects";
 import ResetDataModal from "components/ResetDataModal";

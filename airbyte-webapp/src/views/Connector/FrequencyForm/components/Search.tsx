@@ -6,7 +6,7 @@ import { faSearch } from "@fortawesome/free-solid-svg-icons";
 
 import { CheckBox, Input } from "components";
 
-type IProps = {
+type SearchProps = {
   onCheckAll: () => void;
   onSearch: (value: string) => void;
   hasSelectedItem: boolean;
@@ -40,7 +40,7 @@ const SearchContent = styled.div`
   }
 `;
 
-const Search: React.FC<IProps> = ({
+const Search: React.FC<SearchProps> = ({
   onCheckAll,
   hasSelectedItem,
   onSearch,

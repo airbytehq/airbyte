@@ -19,6 +19,7 @@ type DropdownProps = {
   error?: boolean;
   textButton?: string;
   className?: string;
+  name?: string;
 } & DropdownList.DropdownListProps;
 
 const StyledDropdownList = styled(DropdownList)<{
@@ -187,6 +188,7 @@ const DropDown: React.FC<DropdownProps> = (props) => {
 
   return (
     <StyledDropdownList
+      data-test-id={props.name}
       error={props.error}
       withBorder={props.withBorder}
       containerClassName={className}

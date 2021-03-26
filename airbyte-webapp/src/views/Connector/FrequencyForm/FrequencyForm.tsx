@@ -4,22 +4,20 @@ import styled from "styled-components";
 import * as yup from "yup";
 import { Field, FieldProps, Form, Formik } from "formik";
 
-import BottomBlock from "./components/BottomBlock";
-import Connector from "./components/Connector";
-import Label from "../Label";
-import SchemaView from "./components/SchemaView";
-import { IDataItem } from "../DropDown/components/ListItem";
-import EditControls from "./components/EditControls";
 import { SyncSchema } from "core/domain/catalog";
-import ResetDataModal from "../ResetDataModal";
-import { equal } from "utils/objects";
-import { useFrequencyDropdownData, useInitialSchema } from "./useInitialSchema";
-import { ControlLabels } from "components/LabeledControl";
-import DropDown from "../DropDown";
-import { ModalTypes } from "components/ResetDataModal/types";
-import Input from "components/Input";
 import { Source } from "core/resources/Source";
 import { Destination } from "core/resources/Destination";
+import ResetDataModal from "components/ResetDataModal";
+import { ModalTypes } from "components/ResetDataModal/types";
+import { equal } from "utils/objects";
+
+import { Label, ControlLabels, Input, DropDown, DropDownRow } from "components";
+
+import BottomBlock from "./components/BottomBlock";
+import Connector from "./components/Connector";
+import SchemaView from "./components/SchemaView";
+import EditControls from "./components/EditControls";
+import { useFrequencyDropdownData, useInitialSchema } from "./useInitialSchema";
 
 type IProps = {
   className?: string;
@@ -35,7 +33,7 @@ type IProps = {
     schema: SyncSchema;
   }) => void;
   onReset?: (connectionId?: string) => void;
-  onDropDownSelect?: (item: IDataItem) => void;
+  onDropDownSelect?: (item: DropDownRow.IDataItem) => void;
   onCancel?: () => void;
   editSchemeMode?: boolean;
   frequencyValue?: string;

@@ -5,7 +5,7 @@ import styled from "styled-components";
 import LoadingSchema from "components/LoadingSchema";
 import ContentCard from "components/ContentCard";
 import { JobsLogItem } from "components/JobItem";
-import FrequencyForm from "components/FrequencyForm";
+import FrequencyForm from "views/Connector/FrequencyForm";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 
 import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
