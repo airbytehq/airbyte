@@ -10,22 +10,19 @@ import Label from "components/Label";
 import LabeledToggle from "components/LabeledToggle";
 import config from "config";
 
-export type IProps = {
+export type PreferencesFormProps = {
   onSubmit: (data: {
     email: string;
     anonymousDataCollection: boolean;
     news: boolean;
     securityUpdates: boolean;
   }) => void;
+  isEdit?: boolean;
 };
 
 const ButtonContainer = styled.div`
   text-align: center;
   margin-top: 38px;
-`;
-
-const MainForm = styled(Form)`
-  margin-top: 47px;
 `;
 
 const FormItem = styled.div`
@@ -54,7 +51,10 @@ const preferencesValidationSchema = yup.object().shape({
   email: yup.string().email("form.email.error"),
 });
 
-const PreferencesForm: React.FC<IProps> = ({ onSubmit }) => {
+const PreferencesForm: React.FC<PreferencesFormProps> = ({
+  onSubmit,
+  isEdit,
+}) => {
   const formatMessage = useIntl().formatMessage;
 
   return (
@@ -74,41 +74,44 @@ const PreferencesForm: React.FC<IProps> = ({ onSubmit }) => {
       }}
     >
       {({ isSubmitting, values, handleChange, setFieldValue, resetForm }) => (
-        <MainForm>
-          <FormItem>
-            <Field name="email">
-              {({ field, meta }: FieldProps<string>) => (
-                <LabeledInput
-                  {...field}
-                  label={<FormattedMessage id="form.emailOptional" />}
-                  placeholder={formatMessage({
-                    id: "form.email.placeholder",
-                  })}
-                  type="text"
-                  error={!!meta.error && meta.touched}
-                  message={
-                    meta.touched &&
-                    meta.error &&
-                    formatMessage({ id: meta.error })
-                  }
-                  onChange={(event) => {
-                    handleChange(event);
-                    if (
-                      field.value.length === 0 &&
-                      event.target.value.length > 0
-                    ) {
-                      setFieldValue("securityUpdates", true);
-                    } else if (
-                      field.value.length > 0 &&
-                      event.target.value.length === 0
-                    ) {
-                      resetForm();
+        <Form>
+          {!isEdit && (
+            <FormItem>
+              <Field name="email">
+                {({ field, meta }: FieldProps<string>) => (
+                  <LabeledInput
+                    {...field}
+                    label={<FormattedMessage id="form.emailOptional" />}
+                    placeholder={formatMessage({
+                      id: "form.email.placeholder",
+                    })}
+                    type="text"
+                    error={!!meta.error && meta.touched}
+                    message={
+                      meta.touched &&
+                      meta.error &&
+                      formatMessage({ id: meta.error })
                     }
-                  }}
-                />
-              )}
-            </Field>
-          </FormItem>
+                    onChange={(event) => {
+                      handleChange(event);
+                      if (
+                        field.value.length === 0 &&
+                        event.target.value.length > 0
+                      ) {
+                        setFieldValue("securityUpdates", true);
+                      } else if (
+                        field.value.length > 0 &&
+                        event.target.value.length === 0
+                      ) {
+                        resetForm();
+                      }
+                    }}
+                  />
+                )}
+              </Field>
+            </FormItem>
+          )}
+
           <Subtitle>
             <FormattedMessage id="preferences.anonymizeUsage" />
           </Subtitle>
@@ -166,12 +169,14 @@ const PreferencesForm: React.FC<IProps> = ({ onSubmit }) => {
               )}
             </Field>
           </FormItem>
-          <ButtonContainer>
-            <BigButton type="submit" disabled={isSubmitting}>
-              <FormattedMessage id={"form.continue"} />
-            </BigButton>
-          </ButtonContainer>
-        </MainForm>
+          {!isEdit && (
+            <ButtonContainer>
+              <BigButton type="submit" disabled={isSubmitting}>
+                <FormattedMessage id={"form.continue"} />
+              </BigButton>
+            </ButtonContainer>
+          )}
+        </Form>
       )}
     </Formik>
   );

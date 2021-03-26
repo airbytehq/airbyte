@@ -7,6 +7,7 @@
   "sidebar.help": "Help",
   "sidebar.docs": "Docs",
   "sidebar.slack": "Slack",
+  "sidebar.settings": "Settings",
 
   "form.continue": "Continue",
   "form.emailOptional": "Your email (optional)",
@@ -250,6 +251,8 @@
   "admin.logs": "Logs",
   "admin.downloadServerLogs": "Download Server Logs",
   "admin.downloadSchedulerLogs": "Download Scheduler Logs",
+
+  "settings.accountSettings": "Account Settings",
 
   "demo.message.title": "This demo is read-only",
   "demo.message.body": "You cannot add or edit any connectors. You will see error messages on purpose if you try to do so."

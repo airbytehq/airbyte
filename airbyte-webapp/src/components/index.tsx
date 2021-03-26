@@ -14,3 +14,5 @@ export * from "./Link";
 export * from "./TextWithHTML";
 export * from "./TextArea";
 export * from "./ArrayOfObjectsEditor";
+export * from "./ContentCard";
+export * from "./PreferencesForm";
