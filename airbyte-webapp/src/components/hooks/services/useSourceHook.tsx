@@ -28,7 +28,7 @@ export const useSourceDefinitionSpecificationLoad = (
 ): {
   isLoading: boolean;
   error?: Error;
-  sourceDefinitionSpecification: SourceDefinitionSpecification | undefined;
+  sourceDefinitionSpecification?: SourceDefinitionSpecification;
 } => {
   const {
     loading: isLoading,
