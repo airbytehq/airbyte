@@ -9,6 +9,7 @@ import LabeledInput from "components/LabeledInput";
 import Label from "components/Label";
 import LabeledToggle from "components/LabeledToggle";
 import config from "config";
+import Feedback from "./components/Feedback";
 
 export type PreferencesFormProps = {
   onSubmit: (data: {
@@ -23,6 +24,11 @@ export type PreferencesFormProps = {
     anonymousDataCollection: boolean;
     news: boolean;
     securityUpdates: boolean;
+  };
+  feedback?: {
+    anonymousDataCollection?: string;
+    news?: string;
+    securityUpdates?: string;
   };
 };
 
@@ -61,6 +67,7 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
   onSubmit,
   isEdit,
   values,
+  feedback,
 }) => {
   const formatMessage = useIntl().formatMessage;
 
@@ -139,9 +146,14 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
               {({ field }: FieldProps<string>) => (
                 <LabeledToggle
                   {...field}
+                  message={
+                    feedback?.anonymousDataCollection && (
+                      <Feedback feedback={feedback.anonymousDataCollection} />
+                    )
+                  }
                   disabled={!values.email && !isEdit}
                   label={<FormattedMessage id="preferences.anonymizeData" />}
-                  onChange={(event) => {
+                  onChange={(event: React.ChangeEvent) => {
                     handleChange(event);
                     if (isEdit) {
                       onSubmit({
@@ -165,7 +177,10 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
                   disabled={!values.email && !isEdit}
                   label={<FormattedMessage id="preferences.featureUpdates" />}
                   message={
-                    <FormattedMessage id="preferences.unsubscribeAnyTime" />
+                    <>
+                      <FormattedMessage id="preferences.unsubscribeAnyTime" />
+                      {feedback?.news && <Feedback feedback={feedback.news} />}
+                    </>
                   }
                   onChange={(event) => {
                     handleChange(event);
@@ -188,6 +203,11 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
               {({ field }: FieldProps<string>) => (
                 <LabeledToggle
                   {...field}
+                  message={
+                    feedback?.securityUpdates && (
+                      <Feedback feedback={feedback.securityUpdates} />
+                    )
+                  }
                   disabled={!values.email && !isEdit}
                   label={<FormattedMessage id="preferences.securityUpdates" />}
                   onChange={(event) => {

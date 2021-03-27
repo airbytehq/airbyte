@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
@@ -16,13 +16,23 @@ const Content = styled.div`
 
 const AccountSettings: React.FC = () => {
   const { workspace, updatePreferences } = useWorkspace();
+  const [feedback, setFeedback] = useState({});
 
   const onSubmit = async (data: {
     anonymousDataCollection: boolean;
     news: boolean;
     securityUpdates: boolean;
   }) => {
+    const editField =
+      data.securityUpdates !== workspace.securityUpdates
+        ? "securityUpdates"
+        : data.news !== workspace.news
+        ? "news"
+        : "anonymousDataCollection";
+
+    setFeedback({ ...feedback, [editField]: "loading" });
     await updatePreferences(data);
+    setFeedback({ ...feedback, [editField]: "success" });
   };
 
   return (
@@ -31,6 +41,7 @@ const AccountSettings: React.FC = () => {
         <PreferencesForm
           onSubmit={onSubmit}
           isEdit
+          feedback={feedback}
           values={{
             anonymousDataCollection: workspace.anonymousDataCollection,
             news: workspace.news,
