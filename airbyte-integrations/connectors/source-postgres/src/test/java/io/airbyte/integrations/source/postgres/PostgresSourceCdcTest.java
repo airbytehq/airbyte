@@ -24,24 +24,36 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
+
+import java.io.IOException;
+import java.time.Instant;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import io.debezium.engine.ChangeEvent;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.BeforeAll;
@@ -49,6 +61,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
+
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class PostgresSourceCdcTest {
 
@@ -163,6 +180,18 @@ class PostgresSourceCdcTest {
 
     final AutoCloseableIterator<AirbyteMessage> read = source.read(getConfig(PSQL_DB, dbName), configuredCatalog, null);
 
+    Thread.sleep(5000);
+    final JsonNode config = getConfig(PSQL_DB, dbName);
+    final Database database = getDatabaseFromConfig(config);
+    database.query(ctx -> {
+      ctx.fetch(
+              "UPDATE names SET power = 10000.2 WHERE first_name = 'san';");
+      ctx.fetch(
+              "DELETE FROM names WHERE first_name = 'san';");
+      return null;
+    });
+    database.close();
+
     long startMillis = System.currentTimeMillis();
     while (read.hasNext() || startMillis - System.currentTimeMillis() < 10000) {
       if (read.hasNext()) {
@@ -171,5 +200,53 @@ class PostgresSourceCdcTest {
       }
     }
   }
+
+  @Test
+  public void testConvertChangeEvent() throws IOException {
+    final String stream = "names";
+    final Instant emittedAt = Instant.now();
+    ChangeEvent<String, String> insertChangeEvent = mockChangeEvent("insert_change_event.json");
+    ChangeEvent<String, String> updateChangeEvent = mockChangeEvent("update_change_event.json");
+    ChangeEvent<String, String> deleteChangeEvent = mockChangeEvent("delete_change_event.json");
+
+    final AirbyteMessage actualInsert = PostgresSource.convertChangeEvent(insertChangeEvent, emittedAt);
+    final AirbyteMessage actualUpdate = PostgresSource.convertChangeEvent(updateChangeEvent, emittedAt);
+    final AirbyteMessage actualDelete = PostgresSource.convertChangeEvent(deleteChangeEvent, emittedAt);
+
+    final AirbyteMessage expectedInsert = createAirbyteMessage(stream, emittedAt, "insert_message.json");
+    final AirbyteMessage expectedUpdate = createAirbyteMessage(stream, emittedAt, "update_message.json");
+    final AirbyteMessage expectedDelete = createAirbyteMessage(stream, emittedAt, "delete_message.json");
+
+    deepCompare(expectedInsert, actualInsert);
+    deepCompare(expectedUpdate, actualUpdate);
+    deepCompare(expectedDelete, actualDelete);
+  }
+
+  private static ChangeEvent<String, String> mockChangeEvent(String resourceName) throws IOException {
+    final ChangeEvent<String, String> mocked = mock(ChangeEvent.class);
+    final String resource = MoreResources.readResource(resourceName);
+    when(mocked.value()).thenReturn(resource);
+
+    return mocked;
+  }
+
+  private static AirbyteMessage createAirbyteMessage(String stream, Instant emittedAt, String resourceName) throws IOException {
+    final String data = MoreResources.readResource(resourceName);
+
+    final AirbyteRecordMessage recordMessage = new AirbyteRecordMessage()
+            .withStream(stream)
+            .withData(Jsons.deserialize(data))
+            .withEmittedAt(emittedAt.toEpochMilli());
+
+    return new AirbyteMessage()
+            .withType(AirbyteMessage.Type.RECORD)
+            .withRecord(recordMessage);
+  }
+
+  private static void deepCompare(Object expected, Object actual) throws JsonProcessingException {
+    ObjectMapper objectMapper = new ObjectMapper();
+    assertEquals(objectMapper.readTree(Jsons.serialize(expected)), objectMapper.readTree(Jsons.serialize(actual)));
+  }
+
 
 }
