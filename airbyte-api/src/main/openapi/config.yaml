@@ -1887,10 +1887,12 @@ components:
       description: the mutable part of the stream to configure the destination
       type: object
       additionalProperties: false
+      required:
+        - syncMode
+        - destinationSyncMode
       properties:
         syncMode:
           $ref: "#/components/schemas/SyncMode"
-          default: full_refresh
         cursorField:
           description: Path to the field that will be used to determine if a record is new or modified since the last sync. This field is REQUIRED if `sync_mode` is `incremental`. Otherwise it is ignored.
           type: array
@@ -1898,7 +1900,6 @@ components:
             type: string
         destinationSyncMode:
           $ref: "#/components/schemas/DestinationSyncMode"
-          default: append
         primaryKey:
           description: Paths to the fields that will be used as primary key. This field is REQUIRED if `destination_sync_mode` is `*_dedup`. Otherwise it is ignored.
           type: array
@@ -2152,10 +2153,12 @@ components:
           $ref: "#/components/schemas/SourceRead"
         destination:
           $ref: "#/components/schemas/DestinationRead"
-        lastSync:
-          description: epoch time of last sync. null if no sync has taken place.
+        latestSyncJobCreatedAt:
+          description: epoch time of the latest sync job. null if no sync job has taken place.
           type: integer
           format: int64
+        latestSyncJobStatus:
+          $ref: "#/components/schemas/JobStatus"
         isSyncing:
           type: boolean
     WbConnectionReadList:
@@ -2178,7 +2181,7 @@ components:
         - append
         - overwrite
         #- upsert_dedup # TODO chris: SCD Type 1 can be implemented later
-        - append_dedup # SCD Type 2
+        - append_dedup # SCD Type 1 & 2
     AirbyteArchive:
       type: string
       format: binary

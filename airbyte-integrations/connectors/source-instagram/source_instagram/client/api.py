@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import re
+import urllib.parse as urlparse
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterator, List, Optional, Sequence
 
@@ -38,16 +38,28 @@ from .common import retry_pattern
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 
 
-# This function removes the _nc_rid parameter from the video url and ccb from profile_picture_url for users.
-# _nc_rid is generated every time a new one and ccb can change its value, and tests fail when checking for identity.
-# This does not spoil the link, it remains correct and by clicking on it you can view the video or see picture.
-def clear_video_url(record_data: dict = None):
-    if record_data.get("media_type") == "VIDEO":
-        end_of_string = record_data["media_url"].find("&_nc_rid=")
-        if end_of_string != -1:
-            record_data["media_url"] = record_data["media_url"][:end_of_string]
+def clear_url(record_data: dict = None):
+    """
+    This function removes the _nc_rid parameter from the video url and ccb from profile_picture_url for users.
+    _nc_rid is generated every time a new one and ccb can change its value, and tests fail when checking for identity.
+    This does not spoil the link, it remains correct and by clicking on it you can view the video or see picture.
+    """
+
+    def clear_query_params(url):
+        parsed_url = urlparse.urlparse(url)
+        res_query = []
+        for q in parsed_url.query.split("&"):
+            key, value = q.split("=")
+            if key not in ["_nc_rid", "ccb"]:
+                res_query.append(f"{key}={value}")
+
+        parse_result = parsed_url._replace(query="&".join(res_query))
+        return urlparse.urlunparse(parse_result)
+
+    if record_data.get("media_type") == "VIDEO" and record_data.get("media_url"):
+        record_data["media_url"] = clear_query_params(record_data["media_url"])
     elif record_data.get("profile_picture_url"):
-        record_data["profile_picture_url"] = "".join(re.split("ccb=.{1,5}&", record_data["profile_picture_url"]))
+        record_data["profile_picture_url"] = clear_query_params(record_data["profile_picture_url"])
     return record_data
 
 
@@ -117,7 +129,7 @@ class UsersAPI(StreamAPI):
         for account in self._api.accounts:
             yield {
                 **{"page_id": account["page_id"]},
-                **clear_video_url(self._extend_record(account["instagram_business_account"], fields=self.filter_input_fields(fields))),
+                **clear_url(self._extend_record(account["instagram_business_account"], fields=self.filter_input_fields(fields))),
             }
 
     @backoff_policy
@@ -177,6 +189,7 @@ class UserInsightsAPI(IncrementalStreamAPI):
     def __init__(self, api):
         super().__init__(api=api)
         self._state = {}
+        self._end_date = pendulum.now()
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         for account in self._api.accounts:
@@ -206,9 +219,8 @@ class UserInsightsAPI(IncrementalStreamAPI):
 
     def _params(self, account_id: str) -> Iterator[List]:
         buffered_start_date = self._state[account_id]
-        end_date = pendulum.now()
 
-        while buffered_start_date <= end_date:
+        while buffered_start_date <= self._end_date:
             params_list = []
             for period, metrics in self.METRICS_BY_PERIOD.items():
                 params_list.append(
@@ -249,7 +261,7 @@ class MediaAPI(StreamAPI):
                 record_data = record.export_all_data()
                 if record_data.get("children"):
                     record_data["children"] = [
-                        clear_video_url(self._get_single_record(child_record["id"], children_fields).export_all_data())
+                        clear_url(self._get_single_record(child_record["id"], children_fields).export_all_data())
                         for child_record in record.get("children")["data"]
                     ]
                 record_data.update(
@@ -258,7 +270,7 @@ class MediaAPI(StreamAPI):
                         "business_account_id": account["instagram_business_account"].get("id"),
                     }
                 )
-                yield clear_video_url(record_data)
+                yield clear_url(record_data)
 
     @backoff_policy
     def _get_media(self, instagram_user: IGUser, params: dict = None, fields: Sequence[str] = None) -> Iterator[Any]:
@@ -287,7 +299,7 @@ class StoriesAPI(StreamAPI):
                         "business_account_id": account["instagram_business_account"].get("id"),
                     }
                 )
-                yield clear_video_url(record_data)
+                yield clear_url(record_data)
 
     @backoff_policy
     def _get_stories(self, instagram_user: IGUser, params: dict, fields: Sequence[str] = None) -> Iterator[Any]:
@@ -304,16 +316,28 @@ class MediaInsightsAPI(MediaAPI):
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         for account in self._api.accounts:
-            media = self._get_media(account["instagram_business_account"], {"limit": self.result_return_limit}, ["media_type"])
+            ig_account = account["instagram_business_account"]
+            media = self._get_media(ig_account, {"limit": self.result_return_limit}, ["media_type"])
             for ig_media in media:
-                yield {
-                    **{
-                        "id": ig_media.get("id"),
-                        "page_id": account["page_id"],
-                        "business_account_id": account["instagram_business_account"].get("id"),
-                    },
-                    **{record.get("name"): record.get("values")[0]["value"] for record in self._get_insights(ig_media)},
-                }
+                try:
+                    yield {
+                        **{
+                            "id": ig_media.get("id"),
+                            "page_id": account["page_id"],
+                            "business_account_id": ig_account.get("id"),
+                        },
+                        **{record.get("name"): record.get("values")[0]["value"] for record in self._get_insights(ig_media)},
+                    }
+                except FacebookRequestError as error:
+                    # An error might occur if the media was posted before the most recent time that
+                    # the user's account was converted to a business account from a personal account
+                    if error.api_error_subcode() == 2108006:
+                        logger.error(f"Insights error for business_account_id {ig_account.get('id')}: {error.body()}")
+
+                        # We receive all Media starting from the last one, and if on the next Media we get an Insight error,
+                        # then no reason to make inquiries for each Media further, since they were published even earlier.
+                        break
+                    raise error
 
     @backoff_policy
     def _get_insights(self, item) -> Iterator[Any]:
@@ -328,13 +352,7 @@ class MediaInsightsAPI(MediaAPI):
         else:
             metrics = self.MEDIA_METRICS
 
-        # An error might occur if the media was posted before the most recent time that
-        # the user's account was converted to a business account from a personal account
-        try:
-            return item.get_insights(params={"metric": metrics})
-        except FacebookRequestError as error:
-            logger.error(f"Insights error: {error.body()}")
-            raise error
+        return item.get_insights(params={"metric": metrics})
 
 
 class StoriesInsightsAPI(StoriesAPI):

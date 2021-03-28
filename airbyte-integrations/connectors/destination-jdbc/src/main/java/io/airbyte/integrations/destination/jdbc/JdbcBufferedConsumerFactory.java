@@ -38,7 +38,7 @@ import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStre
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer.RecordWriter;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream.DestinationSyncMode;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -84,7 +84,10 @@ public class JdbcBufferedConsumerFactory {
       final String schemaName = namingResolver.getIdentifier(config.get("schema").asText());
       final String tableName = Names.concatQuotedNames("_airbyte_raw_", namingResolver.getIdentifier(streamName));
       final String tmpTableName = Names.concatQuotedNames("_airbyte_" + now.toEpochMilli() + "_", tableName);
-      final SyncMode syncMode = stream.getSyncMode() != null ? stream.getSyncMode() : SyncMode.FULL_REFRESH;
+      final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
+      if (syncMode == null) {
+        throw new IllegalStateException("Undefined destination sync mode");
+      }
       return new WriteConfig(streamName, schemaName, tmpTableName, tableName, syncMode);
     }).collect(Collectors.toList());
   }
@@ -138,8 +141,9 @@ public class JdbcBufferedConsumerFactory {
 
           sqlOperations.createTableIfNotExists(database, schemaName, dstTableName);
           switch (writeConfig.getSyncMode()) {
-            case FULL_REFRESH -> queries.append(sqlOperations.truncateTableQuery(schemaName, dstTableName));
-            case INCREMENTAL -> {}
+            case OVERWRITE -> queries.append(sqlOperations.truncateTableQuery(schemaName, dstTableName));
+            case APPEND -> {}
+            case APPEND_DEDUP -> {}
             default -> throw new IllegalStateException("Unrecognized sync mode: " + writeConfig.getSyncMode());
           }
           queries.append(sqlOperations.copyTableQuery(schemaName, srcTableName, dstTableName));

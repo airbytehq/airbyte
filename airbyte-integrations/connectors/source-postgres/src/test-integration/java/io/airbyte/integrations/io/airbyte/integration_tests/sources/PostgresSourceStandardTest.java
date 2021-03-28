@@ -35,6 +35,7 @@ import io.airbyte.integrations.standardtest.source.StandardSourceTest;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream.DestinationSyncMode;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
@@ -113,6 +114,7 @@ public class PostgresSourceStandardTest extends StandardSourceTest {
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
             .withCursorField(Lists.newArrayList("id"))
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
                 STREAM_NAME,
                 Field.of("id", JsonSchemaPrimitive.NUMBER),
@@ -121,6 +123,7 @@ public class PostgresSourceStandardTest extends StandardSourceTest {
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
             .withCursorField(Lists.newArrayList("id"))
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
                 STREAM_NAME2,
                 Field.of("id", JsonSchemaPrimitive.NUMBER),

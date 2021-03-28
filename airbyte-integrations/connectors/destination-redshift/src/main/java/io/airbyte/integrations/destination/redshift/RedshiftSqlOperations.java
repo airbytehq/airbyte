@@ -73,4 +73,24 @@ public class RedshiftSqlOperations extends DefaultSqlOperations implements SqlOp
     SqlOperationsUtils.insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, database, records);
   }
 
+  public void copyS3CsvFileIntoTable(JdbcDatabase database,
+                                     String s3FileLocation,
+                                     String schema,
+                                     String tableName,
+                                     String s3KeyId,
+                                     String s3Key,
+                                     String s3Region)
+      throws SQLException {
+    final var copyQuery = String.format(
+        "COPY %s.%s FROM '%s'\n"
+            + "CREDENTIALS 'aws_access_key_id=%s;aws_secret_access_key=%s'\n"
+            + "CSV REGION '%s' TIMEFORMAT 'auto';\n",
+        schema, tableName,
+        s3FileLocation,
+        s3KeyId, s3Key,
+        s3Region);
+
+    database.execute(copyQuery);
+  }
+
 }

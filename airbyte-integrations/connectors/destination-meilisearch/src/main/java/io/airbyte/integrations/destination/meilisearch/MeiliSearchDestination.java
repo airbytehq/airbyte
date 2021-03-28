@@ -44,7 +44,7 @@ import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream.DestinationSyncMode;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -119,8 +119,11 @@ public class MeiliSearchDestination extends BaseConnector implements Destination
     final Map<String, Index> map = new HashMap<>();
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final String indexName = getIndexName(stream);
-
-      if (stream.getSyncMode() == SyncMode.FULL_REFRESH && indexExists(client, indexName)) {
+      final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
+      if (syncMode == null) {
+        throw new IllegalStateException("Undefined destination sync mode");
+      }
+      if (syncMode == DestinationSyncMode.OVERWRITE && indexExists(client, indexName)) {
         client.deleteIndex(indexName);
       }
 

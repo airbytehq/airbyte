@@ -127,7 +127,7 @@ const SideBar: React.FC = () => {
             <MenuItem to={Routes.Destination} activeClassName="active">
               <Destination />
               <Text>
-                <FormattedMessage id="sidebar.destination" />
+                <FormattedMessage id="sidebar.destinations" />
               </Text>
             </MenuItem>
           </li>
