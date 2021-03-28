@@ -12,12 +12,13 @@ Check out our [Roadmap for Core](https://github.com/airbytehq/airbyte/milestones
 
 We understand that we're not "production-ready" for a lot of companies yet. In the end, we just got started in July 2020, so we're at the beginning of the journey. Here is a highlight of the main features we are planning on releasing in the next few months:
 
-* Our declarative interface (CLI)
+* Our declarative interface (CLI), using Terraform
 * CDC \(change data capture\) support 
 * Credential and secrets vaulting \([\#837](https://github.com/airbytehq/airbyte/issues/837)\)
 * OAuth support for connector configuration \([\#768](https://github.com/airbytehq/airbyte/issues/768)\)
 * Adapt automatically to sources' schema changes
 * Low-code framework to build new connectors
+* Support of data lakes
 * Deeper DBT integration
 * Webhook connector
 
