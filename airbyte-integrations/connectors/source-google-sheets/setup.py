@@ -37,7 +37,7 @@ setup(
         "requests",
         "google-auth-httplib2",
         "google-api-python-client",
-        "PyYAML==5.3.1",
+        "PyYAML==5.4",
         "pydantic==1.6.1",
         "pytest==6.1.2",
     ],

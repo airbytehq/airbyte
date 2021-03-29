@@ -8,7 +8,7 @@ import {
   SyncSchemaStream,
 } from "core/domain/catalog";
 import FrequencyConfig from "data/FrequencyConfig.json";
-import { IDataItem } from "../DropDown/components/ListItem";
+import { DropDownRow } from "components/DropDown";
 
 // get cursorField if it is empty and syncMode is INCREMENTAL
 function getDefaultCursorField(streamNode: SyncSchemaStream): string[] {
@@ -77,7 +77,7 @@ const useInitialSchema = (schema: SyncSchema): SyncSchema => {
   return initialSchema;
 };
 
-const useFrequencyDropdownData = (): IDataItem[] => {
+const useFrequencyDropdownData = (): DropDownRow.IDataItem[] => {
   const formatMessage = useIntl().formatMessage;
 
   const dropdownData = useMemo(

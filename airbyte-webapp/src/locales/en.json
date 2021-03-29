@@ -2,7 +2,7 @@
   "webapp.cannotReachServer": "Cannot reach server. The server may still be starting up.",
 
   "sidebar.sources": "Sources",
-  "sidebar.destination": "Destination",
+  "sidebar.destinations": "Destinations",
   "sidebar.admin": "Admin",
   "sidebar.help": "Help",
   "sidebar.docs": "Docs",
@@ -32,6 +32,8 @@
   "form.dataType": "Data type",
   "form.cleanedName": "Cleaned name",
   "form.syncSettings": "Sync settings",
+  "form.primaryKey": "Primary key",
+  "form.cursorField": "Cursor field",
   "form.dataSync": "Select the data you want to sync",
   "form.dataSync.message": "Don’t worry! You’ll be able to change this later on.",
   "form.cancel": "Cancel",
@@ -76,6 +78,9 @@
   "form.prefix": "Namespace Prefix",
   "form.prefix.message": "Where to replicate your data to in your destination",
   "form.prefix.placeholder": "/configured-setting",
+  "form.nameSearch": "Search name",
+  "form.sourceConnector": "Source connector",
+  "form.destinationConnector": "Destination connector",
   "form.addItems": "Add",
   "form.items": "Items",
 
@@ -159,6 +164,15 @@
   "destinations.newDestinationTitle": "New destination",
   "destinations.destinationSetUp": "Set up the destination",
 
+  "connection.stream.syncMode": "{syncMode} - {destinationSyncMode}",
+
+  "destinationSyncMode.append": "Append",
+  "destinationSyncMode.append_dedup": "Dedupted + story",
+  "destinationSyncMode.overwrite": "Overwrite",
+
+  "syncMode.full_refresh": "Full refresh",
+  "syncMode.incremental": "Incremental",
+
   "connection.warningUpdateSchema": "WARNING! Updating the schema will delete all the data for this connection in your destination and start syncing from scratch.",
   "connection.fromTo": "{source} → {destination}",
   "connection.connectionSettings": "Connection settings",
@@ -170,7 +184,7 @@
   "connection.destinationTestAgain": "Test destination connection again",
   "connection.sourceTestAgain": "Test source connection again",
   "connection.resetData": "Reset your data",
-  "connection.updateSchema": "Update Schema",
+  "connection.updateSchema": "Update latest source schema",
   "connection.updateSchemaText": "WARNING! Updating the schema will delete all the data for this connection in your destination and start syncing from scratch. Are you sure you want to do this?",
 
   "tables.sourceIsValidating": "Validating the source",
@@ -250,6 +264,8 @@
   "admin.logs": "Logs",
   "admin.downloadServerLogs": "Download Server Logs",
   "admin.downloadSchedulerLogs": "Download Scheduler Logs",
+  "admin.upgradeAll": "Upgrade all",
+  "admin.upgraded": "Upgraded!",
 
   "demo.message.title": "This demo is read-only",
   "demo.message.body": "You cannot add or edit any connectors. You will see error messages on purpose if you try to do so."

@@ -2,9 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 
-import Button from "components/Button";
-import Spinner from "components/Spinner";
-import StatusIcon from "components/StatusIcon";
+import { Button, Spinner, StatusIcon } from "components";
 
 type IProps = {
   isSubmitting: boolean;
