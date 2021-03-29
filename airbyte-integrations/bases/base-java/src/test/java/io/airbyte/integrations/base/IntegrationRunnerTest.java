@@ -197,12 +197,12 @@ class IntegrationRunnerTest {
     final IntegrationConfig intConfig = IntegrationConfig.write(configPath, configuredCatalogPath);
     final DestinationConsumer<AirbyteMessage> destinationConsumerMock = mock(DestinationConsumer.class);
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
-    when(destination.write(CONFIG, CONFIGURED_CATALOG)).thenReturn(destinationConsumerMock);
+    when(destination.getConsumer(CONFIG, CONFIGURED_CATALOG)).thenReturn(destinationConsumerMock);
 
     final IntegrationRunner runner = spy(new IntegrationRunner(cliParser, stdoutConsumer, destination, null));
     runner.run(ARGS);
 
-    verify(destination).write(CONFIG, CONFIGURED_CATALOG);
+    verify(destination).getConsumer(CONFIG, CONFIGURED_CATALOG);
   }
 
   @SuppressWarnings("unchecked")

@@ -111,7 +111,7 @@ public class IntegrationRunner {
       case WRITE -> {
         final JsonNode config = parseConfig(parsed.getConfigPath());
         final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
-        final DestinationConsumer<AirbyteMessage> consumer = destination.write(config, catalog);
+        final DestinationConsumer<AirbyteMessage> consumer = destination.getConsumer(config, catalog);
         consumeWriteStream(consumer);
       }
       default -> throw new IllegalStateException("Unexpected value: " + parsed.getCommand());

@@ -65,7 +65,7 @@ public class RedshiftCopyDestination implements Destination {
    * This flow does not currently let users configure a staging bucket.
    */
   @Override
-  public DestinationConsumer<AirbyteMessage> write(JsonNode config, ConfiguredAirbyteCatalog catalog) {
+  public DestinationConsumer<AirbyteMessage> getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) {
     var redshiftRegion = extractRegionFromRedshiftUrl("");
     var awsCreds = new BasicAWSCredentials("", "");
 

@@ -41,6 +41,6 @@ public interface Destination extends Integration {
    *         will always be called once regardless of success or failure.
    * @throws Exception - any exception.
    */
-  DestinationConsumer<AirbyteMessage> write(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception;
+  DestinationConsumer<AirbyteMessage> getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception;
 
 }
