@@ -50,6 +50,18 @@ const Title = styled.div`
   align-items: center;
 `;
 
+const Message = styled.div`
+  margin: -5px 0 13px;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 15px;
+  color: ${({ theme }) => theme.greyColor40};
+`;
+
+const Note = styled.span`
+  color: ${({ theme }) => theme.dangerColor};
+`;
+
 type FormValues = {
   frequency: string;
   prefix: string;
@@ -137,13 +149,8 @@ const SettingsView: React.FC<IProps> = ({
   };
 
   const onSubmitResetModal = async () => {
-    if (activeUpdatingSchemaMode) {
-      setIsUpdateModalOpen(false);
-      await onSubmit(currentValues);
-    } else {
-      setActiveUpdatingSchemaMode(true);
-      setIsUpdateModalOpen(false);
-    }
+    setIsUpdateModalOpen(false);
+    await onSubmit(currentValues);
   };
 
   const onSubmitForm = async (values: FormValues) => {
@@ -158,13 +165,20 @@ const SettingsView: React.FC<IProps> = ({
   const UpdateSchemaButton = () => {
     if (!activeUpdatingSchemaMode) {
       return (
-        <Button onClick={() => setIsUpdateModalOpen(true)}>
+        <Button onClick={() => setActiveUpdatingSchemaMode(true)} type="button">
           <TryArrow icon={faRedoAlt} />
           <FormattedMessage id="connection.updateSchema" />
         </Button>
       );
     }
-    return null;
+    return (
+      <Message>
+        <FormattedMessage id="form.toSaveSchema" />{" "}
+        <Note>
+          <FormattedMessage id="form.noteStartSync" />
+        </Note>
+      </Message>
+    );
   };
 
   return (
