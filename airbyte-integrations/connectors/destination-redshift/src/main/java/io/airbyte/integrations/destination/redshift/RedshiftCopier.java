@@ -59,7 +59,7 @@ public class RedshiftCopier {
   private static final int PART_SIZE_MB = 10;
 
   private final String s3BucketName;
-  private final String runFolder;
+  private final String stagingFolder;
   private final SyncMode syncMode;
   private final String schemaName;
   private final String streamName;
@@ -76,7 +76,7 @@ public class RedshiftCopier {
 
   public RedshiftCopier(
                         String s3BucketName,
-                        String runFolder,
+                        String stagingFolder,
                         SyncMode syncMode,
                         String schema,
                         String streamName,
@@ -87,7 +87,7 @@ public class RedshiftCopier {
                         String s3Region)
       throws IOException {
     this.s3BucketName = s3BucketName;
-    this.runFolder = runFolder;
+    this.stagingFolder = stagingFolder;
     this.syncMode = syncMode;
     this.schemaName = schema;
     this.streamName = streamName;
@@ -106,7 +106,7 @@ public class RedshiftCopier {
     // configured part size.
     // Memory consumption is queue capacity * part size = 10 * 10 = 100 MB at current configurations.
     this.multipartUploadManager =
-        new StreamTransferManager(s3BucketName, getPath(runFolder, streamName), client)
+        new StreamTransferManager(s3BucketName, getPath(stagingFolder, streamName), client)
             .numUploadThreads(DEFAULT_UPLOAD_THREADS)
             .queueCapacity(DEFAULT_QUEUE_CAPACITY)
             .partSize(PART_SIZE_MB);
@@ -141,7 +141,7 @@ public class RedshiftCopier {
   }
 
   public void removeS3FileAndDropTmpTable() throws Exception {
-    var s3StagingFile = getPath(runFolder, streamName);
+    var s3StagingFile = getPath(stagingFolder, streamName);
     LOGGER.info("Begin cleaning s3 staging file {}.", s3StagingFile);
     if (s3Client.doesObjectExist(s3BucketName, s3StagingFile)) {
       s3Client.deleteObject(s3BucketName, s3StagingFile);
@@ -183,7 +183,7 @@ public class RedshiftCopier {
     LOGGER.info("Preparing tmp table in destination for stream {}. tmp table name: {}.", streamName, tmpTableName);
     REDSHIFT_SQL_OPS.createTableIfNotExists(redshiftDb, schemaName, tmpTableName);
     LOGGER.info("Starting copy to tmp table {} in destination for stream {} .", tmpTableName, streamName);
-    REDSHIFT_SQL_OPS.copyS3CsvFileIntoTable(redshiftDb, getFullS3Path(s3BucketName, runFolder, streamName), schemaName, tmpTableName, s3KeyId, s3Key,
+    REDSHIFT_SQL_OPS.copyS3CsvFileIntoTable(redshiftDb, getFullS3Path(s3BucketName, stagingFolder, streamName), schemaName, tmpTableName, s3KeyId, s3Key,
         s3Region);
     LOGGER.info("Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);
   }

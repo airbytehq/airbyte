@@ -87,12 +87,14 @@
       "access_key_id": {
         "type": "string",
         "description": "The Access Key Id granting allow one to access the above S3 staging bucket. Airbyte requires Read and Write permissions to the given bucket.",
-        "title": "S3 Key Id"
+        "title": "S3 Key Id",
+        "airbyte_secret": true
       },
       "secret_access_key": {
         "type": "string",
         "description": "The corresponding secret to the above access key id.",
-        "title": "S3 Access Key"
+        "title": "S3 Access Key",
+        "airbyte_secret": true
       }
     }
   }

@@ -120,7 +120,6 @@ public class RedshiftCopyDestination {
    */
   @VisibleForTesting
   static String extractRegionFromRedshiftUrl(String url) {
-    // TODO: validate the url?
     var split = url.split("\\.");
     return split[2];
   }
@@ -145,11 +144,11 @@ public class RedshiftCopyDestination {
 
     @Override
     protected void startTracked() throws Exception {
-      var runFolder = UUID.randomUUID().toString();
+      var stagingFolder = UUID.randomUUID().toString();
       for (var stream : catalog.getStreams()) {
         var streamName = stream.getStream().getName();
         var syncMode = stream.getSyncMode();
-        var copier = new RedshiftCopier(s3Config.bucketName, runFolder, syncMode, schema, streamName, s3Client, redshiftDb, s3Config.accessKeyId,
+        var copier = new RedshiftCopier(s3Config.bucketName, stagingFolder, syncMode, schema, streamName, s3Client, redshiftDb, s3Config.accessKeyId,
             s3Config.secretAccessKey, s3Config.region);
 
         streamNameToCopier.put(streamName, copier);
@@ -185,10 +184,10 @@ public class RedshiftCopyDestination {
 
   public static class S3Config {
 
-    public String bucketName;
-    public String region;
-    public String accessKeyId;
-    public String secretAccessKey;
+    public final String bucketName;
+    public final String region;
+    public final String accessKeyId;
+    public final String secretAccessKey;
 
     public S3Config(JsonNode config) {
       this.bucketName = config.get("s3_bucket_name").asText();
@@ -203,6 +202,7 @@ public class RedshiftCopyDestination {
       var accessKeyIdNode = config.get("access_key_id");
       var secretAccessKeyNode = config.get("secret_access_key");
 
+      // Since region is a Json schema enum with an empty string default, we consider the empty string an unset field.
       var emptyRegion = regionNode == null || regionNode.asText().equals("");
 
       if (bucketNode == null && emptyRegion && accessKeyIdNode == null && secretAccessKeyNode == null) {
