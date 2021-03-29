@@ -39,21 +39,21 @@ import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.config.StandardDiscoverCatalogInput;
-import io.airbyte.config.StandardDiscoverCatalogOutput;
-import io.airbyte.config.StandardGetSpecOutput;
 import io.airbyte.config.StandardTapConfig;
 import io.airbyte.config.State;
+import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream.DestinationSyncMode;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
 import io.airbyte.workers.DefaultDiscoverCatalogWorker;
 import io.airbyte.workers.DefaultGetSpecWorker;
-import io.airbyte.workers.OutputAndStatus;
+import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
@@ -98,7 +98,7 @@ public abstract class StandardSourceTest {
   private Set<String> IMAGES_TO_SKIP_SECOND_INCREMENTAL_READ = Sets.newHashSet(
       "airbyte/source-intercom-singer",
       "airbyte/source-exchangeratesapi-singer",
-      "airbyte/source-hubspot-singer",
+      "airbyte/source-hubspot",
       "airbyte/source-marketo-singer",
       "airbyte/source-twilio-singer",
       "airbyte/source-mixpanel-singer",
@@ -107,7 +107,7 @@ public abstract class StandardSourceTest {
       "airbyte/source-salesforce-singer",
       "airbyte/source-stripe-singer",
       "airbyte/source-github-singer",
-      "airbyte/source-hubspot-singer");
+      "airbyte/source-gitlab-singer");
 
   /**
    * Name of the docker image that the tests will run against.
@@ -205,10 +205,7 @@ public abstract class StandardSourceTest {
    */
   @Test
   public void testGetSpec() throws Exception {
-    final OutputAndStatus<StandardGetSpecOutput> output = runSpec();
-    assertTrue(output.getOutput().isPresent(), "Expected spec not to be empty");
-    assertEquals(getSpec(), output.getOutput().get().getSpecification(),
-        "Expected spec output by integration to be equal to spec provided by test runner");
+    assertEquals(getSpec(), runSpec(), "Expected spec output by integration to be equal to spec provided by test runner");
   }
 
   /**
@@ -217,9 +214,7 @@ public abstract class StandardSourceTest {
    */
   @Test
   public void testCheckConnection() throws Exception {
-    final OutputAndStatus<StandardCheckConnectionOutput> output = runCheck();
-    assertTrue(output.getOutput().isPresent(), "Expected check connection to succeed when using provided credentials.");
-    assertEquals(Status.SUCCEEDED, output.getOutput().get().getStatus(), "Expected check connection operation to succeed");
+    assertEquals(Status.SUCCEEDED, runCheck().getStatus(), "Expected check connection operation to succeed");
   }
 
   // /**
@@ -239,11 +234,9 @@ public abstract class StandardSourceTest {
    */
   @Test
   public void testDiscover() throws Exception {
-    final OutputAndStatus<StandardDiscoverCatalogOutput> output = runDiscover();
-    assertTrue(output.getOutput().isPresent(), "Expected discover to produce a catalog");
     // the worker validates that it is a valid catalog, so we do not need to validate again (as long as
     // we use the worker, which we will not want to do long term).
-    assertNotNull(output.getOutput().get().getCatalog(), "Expected discover to produce a catalog");
+    assertNotNull(runDiscover(), "Expected discover to produce a catalog");
   }
 
   /**
@@ -386,6 +379,7 @@ public abstract class StandardSourceTest {
     for (ConfiguredAirbyteStream configuredStream : clone.getStreams()) {
       if (configuredStream.getStream().getSupportedSyncModes().contains(FULL_REFRESH)) {
         configuredStream.setSyncMode(FULL_REFRESH);
+        configuredStream.setDestinationSyncMode(DestinationSyncMode.OVERWRITE);
       }
     }
     return clone;
@@ -401,17 +395,17 @@ public abstract class StandardSourceTest {
     return false;
   }
 
-  private OutputAndStatus<StandardGetSpecOutput> runSpec() {
+  private ConnectorSpecification runSpec() throws WorkerException {
     return new DefaultGetSpecWorker(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), pbf))
         .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot);
   }
 
-  private OutputAndStatus<StandardCheckConnectionOutput> runCheck() throws Exception {
+  private StandardCheckConnectionOutput runCheck() throws Exception {
     return new DefaultCheckConnectionWorker(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), pbf))
         .run(new StandardCheckConnectionInput().withConnectionConfiguration(getConfig()), jobRoot);
   }
 
-  private OutputAndStatus<StandardDiscoverCatalogOutput> runDiscover() throws Exception {
+  private AirbyteCatalog runDiscover() throws Exception {
     return new DefaultDiscoverCatalogWorker(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), pbf))
         .run(new StandardDiscoverCatalogInput().withConnectionConfiguration(getConfig()), jobRoot);
   }

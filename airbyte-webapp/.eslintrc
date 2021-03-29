@@ -1,26 +1,37 @@
 {
-  "extends": "react-app",
+  "extends": [
+    "react-app",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:jest/recommended",
+    "prettier",
+    "prettier/react",
+    "prettier/@typescript-eslint",
+    "plugin:prettier/recommended"
+  ],
   "plugins": [
+    "react",
+    "@typescript-eslint",
     "prettier"
   ],
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
   "rules": {
-    "prettier/prettier": "error"
-  }
-  //  env: {
-  //    browser: false,
-  //    es2020: true
-  //  },
-  //  extends: [
-  //    "eslint:recommended",
-  //    "plugin:@typescript-eslint/recommended",
-  //    "prettier/@typescript-eslint"
-  //  ],
-  //  parser: "@typescript-eslint/parser",
-  //  parserOptions: {
-  //    ecmaVersion: 11,
-  //    sourceType: "module"
-  //  },
-  //  plugins: [
-  //    "@typescript-eslint"
-  //  ]
+    "prettier/prettier": "error",
+    "@typescript-eslint/ban-ts-comment": [
+      "warn",
+      {
+        "ts-ignore": "allow-with-description",
+        "ts-expect-error": "allow-with-description"
+      }
+    ],
+    "@typescript-eslint/ban-types": [
+      "warn"
+    ]
+  },
+  "parser": "@typescript-eslint/parser"
 }

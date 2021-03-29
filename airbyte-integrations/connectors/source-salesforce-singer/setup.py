@@ -32,13 +32,11 @@ setup(
     packages=find_packages(),
     package_data={"": ["*.json"]},
     install_requires=[
-        "tap-salesforce==1.4.34",
-        "requests",
         "airbyte-protocol",
         "base-python",
         "base-singer",
+        "pytest==6.1.2",
+        "requests",
+        "tap-salesforce==1.4.34",
     ],
-    setup_requires=["pytest-runner"],
-    tests_require=["pytest"],
-    extras_require={"main": ["base-singer"], "tests": ["airbyte_python_test", "pytest"]},
 )

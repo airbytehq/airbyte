@@ -40,7 +40,8 @@ public class CatalogConverter {
         .jsonSchema(stream.getJsonSchema())
         .supportedSyncModes(Enums.convertListTo(stream.getSupportedSyncModes(), io.airbyte.api.model.SyncMode.class))
         .sourceDefinedCursor(stream.getSourceDefinedCursor())
-        .defaultCursorField(stream.getDefaultCursorField());
+        .defaultCursorField(stream.getDefaultCursorField())
+        .sourceDefinedPrimaryKey(stream.getSourceDefinedPrimaryKey());
   }
 
   private static io.airbyte.protocol.models.AirbyteStream toProtocol(final io.airbyte.api.model.AirbyteStream stream) {
@@ -49,7 +50,8 @@ public class CatalogConverter {
         .withJsonSchema(stream.getJsonSchema())
         .withSupportedSyncModes(Enums.convertListTo(stream.getSupportedSyncModes(), io.airbyte.protocol.models.SyncMode.class))
         .withSourceDefinedCursor(stream.getSourceDefinedCursor())
-        .withDefaultCursorField(stream.getDefaultCursorField());
+        .withDefaultCursorField(stream.getDefaultCursorField())
+        .withSourceDefinedPrimaryKey(stream.getSourceDefinedPrimaryKey());
   }
 
   public static io.airbyte.api.model.AirbyteCatalog toApi(final io.airbyte.protocol.models.AirbyteCatalog catalog) {
@@ -63,13 +65,15 @@ public class CatalogConverter {
             .collect(Collectors.toList()));
   }
 
-  private static io.airbyte.api.model.AirbyteStreamConfiguration generateDefaultConfiguration(final io.airbyte.api.model.AirbyteStream s) {
+  private static io.airbyte.api.model.AirbyteStreamConfiguration generateDefaultConfiguration(final io.airbyte.api.model.AirbyteStream stream) {
     io.airbyte.api.model.AirbyteStreamConfiguration result = new io.airbyte.api.model.AirbyteStreamConfiguration()
-        .aliasName(Names.toAlphanumericAndUnderscore(s.getName()))
-        .cursorField(s.getDefaultCursorField())
+        .aliasName(Names.toAlphanumericAndUnderscore(stream.getName()))
+        .cursorField(stream.getDefaultCursorField())
+        .destinationSyncMode(io.airbyte.api.model.DestinationSyncMode.APPEND)
+        .primaryKey(stream.getSourceDefinedPrimaryKey())
         .selected(true);
-    if (s.getSupportedSyncModes().size() > 0)
-      result.setSyncMode(s.getSupportedSyncModes().get(0));
+    if (stream.getSupportedSyncModes().size() > 0)
+      result.setSyncMode(stream.getSupportedSyncModes().get(0));
     else
       result.setSyncMode(io.airbyte.api.model.SyncMode.INCREMENTAL);
     return result;
@@ -82,6 +86,8 @@ public class CatalogConverter {
           final io.airbyte.api.model.AirbyteStreamConfiguration configuration = new io.airbyte.api.model.AirbyteStreamConfiguration()
               .syncMode(Enums.convertTo(configuredStream.getSyncMode(), io.airbyte.api.model.SyncMode.class))
               .cursorField(configuredStream.getCursorField())
+              .destinationSyncMode(Enums.convertTo(configuredStream.getDestinationSyncMode(), io.airbyte.api.model.DestinationSyncMode.class))
+              .primaryKey(configuredStream.getPrimaryKey())
               .aliasName(Names.toAlphanumericAndUnderscore(configuredStream.getStream().getName()))
               .selected(true);
           return new io.airbyte.api.model.AirbyteStreamAndConfiguration()
@@ -99,7 +105,10 @@ public class CatalogConverter {
         .map(s -> new io.airbyte.protocol.models.ConfiguredAirbyteStream()
             .withStream(toProtocol(s.getStream()))
             .withSyncMode(Enums.convertTo(s.getConfig().getSyncMode(), io.airbyte.protocol.models.SyncMode.class))
-            .withCursorField(s.getConfig().getCursorField()))
+            .withCursorField(s.getConfig().getCursorField())
+            .withDestinationSyncMode(Enums.convertTo(s.getConfig().getDestinationSyncMode(),
+                io.airbyte.protocol.models.ConfiguredAirbyteStream.DestinationSyncMode.class))
+            .withPrimaryKey(s.getConfig().getPrimaryKey()))
         .collect(Collectors.toList());
     return new io.airbyte.protocol.models.ConfiguredAirbyteCatalog()
         .withStreams(streams);

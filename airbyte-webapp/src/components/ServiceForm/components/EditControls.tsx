@@ -2,45 +2,33 @@ import React from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 
-import Button from "../../Button";
-import Spinner from "../../Spinner";
-import { useWidgetInfo } from "../uiWidgetContext";
+import { Button } from "components";
+import { useServiceForm } from "../serviceFormContext";
+import TestingConnectionSpinner from "./TestingConnectionSpinner";
+import TestingConnectionSuccess from "./TestingConnectionSuccess";
+import TestingConnectionError from "./TestingConnectionError";
 
 type IProps = {
   isSubmitting: boolean;
   isValid: boolean;
   dirty: boolean;
   resetForm: () => void;
+  onRetest?: () => void;
+  formType: "source" | "destination";
   successMessage?: React.ReactNode;
   errorMessage?: React.ReactNode;
 };
 
 const Controls = styled.div`
   margin-top: 34px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
 `;
 
 const ButtonContainer = styled.span`
   margin-left: 10px;
-`;
-
-const Success = styled(ButtonContainer)`
-  color: ${({ theme }) => theme.successColor};
-  font-size: 14px;
-  line-height: 17px;
-`;
-
-const Error = styled(Success)`
-  color: ${({ theme }) => theme.dangerColor};
-  max-width: 68%;
-  display: inline-block;
-  vertical-align: middle;
-`;
-
-const SpinnerContainer = styled.div`
-  margin: -13px 0 0 10px;
-  display: inline-block;
-  position: relative;
-  top: 10px;
 `;
 
 const EditControls: React.FC<IProps> = ({
@@ -48,53 +36,60 @@ const EditControls: React.FC<IProps> = ({
   isValid,
   dirty,
   resetForm,
+  formType,
+  onRetest,
   successMessage,
-  errorMessage
+  errorMessage,
 }) => {
-  const { unfinishedSecrets } = useWidgetInfo();
+  const { unfinishedFlows } = useServiceForm();
 
+  if (isSubmitting) {
+    return <TestingConnectionSpinner />;
+  }
   const showStatusMessage = () => {
-    if (isSubmitting) {
-      return (
-        <SpinnerContainer>
-          <Spinner small />
-        </SpinnerContainer>
-      );
-    }
     if (errorMessage) {
-      return <Error>{errorMessage}</Error>;
+      return <TestingConnectionError errorMessage={errorMessage} />;
     }
-    if (successMessage && !dirty) {
-      return <Success>{successMessage}</Success>;
+    if (successMessage) {
+      return <TestingConnectionSuccess />;
     }
     return null;
   };
 
   return (
-    <Controls>
-      <Button
-        type="submit"
-        disabled={
-          isSubmitting ||
-          !isValid ||
-          !dirty ||
-          Object.keys(unfinishedSecrets).length > 0
-        }
-      >
-        <FormattedMessage id="form.saveChanges" />
-      </Button>
-      <ButtonContainer>
-        <Button
-          type="button"
-          secondary
-          disabled={isSubmitting || !isValid || !dirty}
-          onClick={resetForm}
-        >
-          <FormattedMessage id="form.cancel" />
-        </Button>
-      </ButtonContainer>
+    <>
       {showStatusMessage()}
-    </Controls>
+      <Controls>
+        <div>
+          <Button
+            type="submit"
+            disabled={
+              isSubmitting ||
+              !isValid ||
+              !dirty ||
+              Object.keys(unfinishedFlows).length > 0
+            }
+          >
+            <FormattedMessage id="form.saveChangesAndTest" />
+          </Button>
+          <ButtonContainer>
+            <Button
+              type="button"
+              secondary
+              disabled={isSubmitting || !isValid || !dirty}
+              onClick={resetForm}
+            >
+              <FormattedMessage id="form.cancel" />
+            </Button>
+          </ButtonContainer>
+        </div>
+        {onRetest && (
+          <Button type="button" onClick={onRetest} disabled={!isValid}>
+            <FormattedMessage id={`form.${formType}Retest`} />
+          </Button>
+        )}
+      </Controls>
+    </>
   );
 };
 

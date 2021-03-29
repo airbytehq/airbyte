@@ -43,7 +43,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultNormalizationRunner.class);
 
-  public static final String NORMALIZATION_IMAGE_NAME = "airbyte/normalization:0.1.13";
+  public static final String NORMALIZATION_IMAGE_NAME = "airbyte/normalization:0.1.15";
 
   private final DestinationType destinationType;
   private final ProcessBuilderFactory pbf;
@@ -63,15 +63,15 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
   }
 
   @Override
-  public boolean normalize(long jobId, int attempt, Path jobRoot, JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
-    IOs.writeFile(jobRoot, WorkerConstants.TARGET_CONFIG_JSON_FILENAME, Jsons.serialize(config));
-    IOs.writeFile(jobRoot, WorkerConstants.CATALOG_JSON_FILENAME, Jsons.serialize(catalog));
+  public boolean normalize(String jobId, int attempt, Path jobRoot, JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
+    IOs.writeFile(jobRoot, WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME, Jsons.serialize(config));
+    IOs.writeFile(jobRoot, WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME, Jsons.serialize(catalog));
 
     try {
       process = pbf.create(jobId, attempt, jobRoot, NORMALIZATION_IMAGE_NAME, "run",
           "--integration-type", destinationType.toString().toLowerCase(),
-          "--config", WorkerConstants.TARGET_CONFIG_JSON_FILENAME,
-          "--catalog", WorkerConstants.CATALOG_JSON_FILENAME).start();
+          "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
+          "--catalog", WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME).start();
 
       LineGobbler.gobble(process.getInputStream(), LOGGER::info);
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);

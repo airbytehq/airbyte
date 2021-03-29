@@ -3,7 +3,7 @@ import styled from "styled-components";
 
 import { IDataItem } from "./ListItem";
 import Text from "./Text";
-import ImageBlock from "../../ImageBlock";
+import ImageBlock from "components/ImageBlock";
 
 export type IProps = {
   item: IDataItem;

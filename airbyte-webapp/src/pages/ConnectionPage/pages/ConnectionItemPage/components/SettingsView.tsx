@@ -1,28 +1,33 @@
 import React, { useCallback, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
 
-import ContentCard from "../../../../../components/ContentCard";
-import FrequencyConfig from "../../../../../data/FrequencyConfig.json";
+import ContentCard from "components/ContentCard";
+import FrequencyConfig from "data/FrequencyConfig.json";
 import useConnection, {
-  useConnectionLoad
-} from "../../../../../components/hooks/services/useConnectionHook";
-import DeleteBlock from "../../../../../components/DeleteBlock";
-import FrequencyForm from "../../../../../components/FrequencyForm";
-import { SyncSchema } from "../../../../../core/domain/catalog";
-import { equal } from "../../../../../utils/objects";
-import ResetDataModal from "../../../../../components/ResetDataModal";
-import { ModalTypes } from "../../../../../components/ResetDataModal/types";
-import Button from "../../../../../components/Button";
-import LoadingSchema from "../../../../../components/LoadingSchema";
+  useConnectionLoad,
+} from "components/hooks/services/useConnectionHook";
+import DeleteBlock from "components/DeleteBlock";
+import FrequencyForm from "views/Connector/FrequencyForm";
+import { SyncSchema } from "core/domain/catalog";
+import { equal } from "utils/objects";
+import ResetDataModal from "components/ResetDataModal";
+import { ModalTypes } from "components/ResetDataModal/types";
+import Button from "components/Button";
+import LoadingSchema from "components/LoadingSchema";
+import EnabledControl from "./EnabledControl";
 
 type IProps = {
   onAfterSaveSchema: () => void;
   connectionId: string;
+  frequencyText?: string;
 };
 
 const Content = styled.div`
-  max-width: 813px;
+  max-width: 1140px;
+  overflow-x: hidden;
   margin: 18px auto;
 `;
 
@@ -34,9 +39,27 @@ const TitleContainer = styled.div<{ hasButton: boolean }>`
   margin: ${({ hasButton }) => (hasButton ? "-5px 0" : 0)};
 `;
 
+const TryArrow = styled(FontAwesomeIcon)`
+  margin: 0 10px -1px 0;
+  font-size: 14px;
+`;
+
+const Title = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+type FormValues = {
+  frequency: string;
+  prefix: string;
+  schema: SyncSchema;
+};
+
 const SettingsView: React.FC<IProps> = ({
   onAfterSaveSchema,
-  connectionId
+  connectionId,
+  frequencyText,
 }) => {
   const [isModalOpen, setIsUpdateModalOpen] = useState(false);
   const [activeUpdatingSchemaMode, setActiveUpdatingSchemaMode] = useState(
@@ -45,15 +68,16 @@ const SettingsView: React.FC<IProps> = ({
   const formatMessage = useIntl().formatMessage;
   const [saved, setSaved] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [currentValues, setCurrentValues] = useState<{
-    frequency: string;
-    schema: SyncSchema;
-  }>({ frequency: "", schema: { streams: [] } });
+  const [currentValues, setCurrentValues] = useState<FormValues>({
+    frequency: "",
+    prefix: "",
+    schema: { streams: [] },
+  });
   const [errorMessage, setErrorMessage] = useState("");
   const {
     updateConnection,
     deleteConnection,
-    resetConnection
+    resetConnection,
   } = useConnection();
 
   const { connection, isLoadingConnection } = useConnectionLoad(
@@ -68,41 +92,17 @@ const SettingsView: React.FC<IProps> = ({
 
   const onReset = useCallback(() => resetConnection(connectionId), [
     resetConnection,
-    connectionId
+    connectionId,
   ]);
 
   const schedule =
     connection &&
-    FrequencyConfig.find(item => equal(connection.schedule, item.config));
+    FrequencyConfig.find((item) => equal(connection.schedule, item.config));
 
-  const onSubmitResetModal = async () => {
-    if (activeUpdatingSchemaMode) {
-      setIsUpdateModalOpen(false);
-      await onSubmit(currentValues);
-    } else {
-      onSubmitModal();
-    }
-  };
-
-  const onSubmitForm = async (values: {
-    frequency: string;
-    schema: SyncSchema;
-  }) => {
-    if (activeUpdatingSchemaMode) {
-      setCurrentValues(values);
-      setIsUpdateModalOpen(true);
-    } else {
-      await onSubmit(values);
-    }
-  };
-
-  const onSubmit = async (values: {
-    frequency: string;
-    schema: SyncSchema;
-  }) => {
+  const onSubmit = async (values: FormValues) => {
     setIsLoading(true);
     const frequencyData = FrequencyConfig.find(
-      item => item.value === values.frequency
+      (item) => item.value === values.frequency
     );
     const initialSyncSchema = connection?.syncCatalog;
 
@@ -112,7 +112,8 @@ const SettingsView: React.FC<IProps> = ({
         syncCatalog: values.schema,
         status: connection?.status || "",
         schedule: frequencyData?.config || null,
-        withRefreshedCatalog: activeUpdatingSchemaMode
+        prefix: values.prefix,
+        withRefreshedCatalog: activeUpdatingSchemaMode,
       });
 
       setSaved(true);
@@ -127,7 +128,7 @@ const SettingsView: React.FC<IProps> = ({
       setErrorMessage(
         e.message ||
           formatMessage({
-            id: "form.someError"
+            id: "form.someError",
           })
       );
     } finally {
@@ -135,15 +136,30 @@ const SettingsView: React.FC<IProps> = ({
     }
   };
 
-  const onSubmitModal = () => {
-    setActiveUpdatingSchemaMode(true);
-    setIsUpdateModalOpen(false);
+  const onSubmitResetModal = async () => {
+    if (activeUpdatingSchemaMode) {
+      setIsUpdateModalOpen(false);
+      await onSubmit(currentValues);
+    } else {
+      setActiveUpdatingSchemaMode(true);
+      setIsUpdateModalOpen(false);
+    }
   };
 
-  const endControl = () => {
+  const onSubmitForm = async (values: FormValues) => {
+    if (activeUpdatingSchemaMode) {
+      setCurrentValues(values);
+      setIsUpdateModalOpen(true);
+    } else {
+      await onSubmit(values);
+    }
+  };
+
+  const UpdateSchemaButton = () => {
     if (!activeUpdatingSchemaMode) {
       return (
         <Button onClick={() => setIsUpdateModalOpen(true)}>
+          <TryArrow icon={faRedoAlt} />
           <FormattedMessage id="connection.updateSchema" />
         </Button>
       );
@@ -155,10 +171,17 @@ const SettingsView: React.FC<IProps> = ({
     <Content>
       <ContentCard
         title={
-          <TitleContainer hasButton={!activeUpdatingSchemaMode}>
-            <FormattedMessage id="connection.connectionSettings" />{" "}
-            {endControl()}
-          </TitleContainer>
+          <Title>
+            <TitleContainer hasButton={!activeUpdatingSchemaMode}>
+              <FormattedMessage id="connection.connectionSettings" />{" "}
+            </TitleContainer>
+            {!connection ? null : (
+              <EnabledControl
+                connection={connection}
+                frequencyText={frequencyText}
+              />
+            )}
+          </Title>
         }
       >
         {!isLoadingConnection && connection ? (
@@ -168,6 +191,7 @@ const SettingsView: React.FC<IProps> = ({
             onSubmit={onSubmitForm}
             onReset={onReset}
             frequencyValue={schedule?.value}
+            prefixValue={connection.prefix}
             errorMessage={errorMessage}
             successMessage={
               saved && <FormattedMessage id="form.changesSaved" />
@@ -175,6 +199,9 @@ const SettingsView: React.FC<IProps> = ({
             onCancel={() => setActiveUpdatingSchemaMode(false)}
             editSchemeMode={activeUpdatingSchemaMode}
             isLoading={isLoading}
+            additionalSchemaControl={UpdateSchemaButton()}
+            source={connection.source}
+            destination={connection.destination}
           />
         ) : (
           <LoadingSchema />

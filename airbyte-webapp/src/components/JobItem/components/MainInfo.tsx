@@ -2,19 +2,22 @@ import React from "react";
 import {
   FormattedMessage,
   FormattedDateParts,
-  FormattedTimeParts
+  FormattedTimeParts,
 } from "react-intl";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
 
-import { JobItem as JobApiItem, Attempt } from "../../../core/resources/Job";
-import { Row, Cell } from "../../SimpleTableComponents";
-import StatusIcon from "../../StatusIcon";
+import { JobItem as JobApiItem, Attempt } from "core/resources/Job";
+import { JobInfo } from "core/resources/Scheduler";
+import { Row, Cell } from "components/SimpleTableComponents";
+import { Button, StatusIcon } from "components";
 import AttemptDetails from "./AttemptDetails";
+import Status from "core/statuses";
+import useJob from "components/hooks/services/useJob";
 
 type IProps = {
-  job: JobApiItem;
+  job: JobApiItem | JobInfo;
   attempts: Attempt[];
   isOpen?: boolean;
   onExpand: () => void;
@@ -55,6 +58,12 @@ const AttemptCount = styled.div`
   color: ${({ theme }) => theme.dangerColor};
 `;
 
+const CancelButton = styled(Button)`
+  margin-right: 10px;
+  padding: 3px 7px;
+  z-index: 1;
+`;
+
 const Arrow = styled.div<{
   isOpen?: boolean;
   isFailed?: boolean;
@@ -84,8 +93,19 @@ const MainInfo: React.FC<IProps> = ({
   isOpen,
   onExpand,
   isFailed,
-  shortInfo
+  shortInfo,
 }) => {
+  const { cancelJob } = useJob();
+
+  const onCancelJob = (event: React.SyntheticEvent) => {
+    event.stopPropagation();
+    cancelJob(job.id);
+  };
+
+  const isNotCompleted =
+    job.status &&
+    [Status.PENDING, Status.RUNNING, Status.INCOMPLETE].includes(job.status);
+
   return (
     <MainView isOpen={isOpen} isFailed={isFailed} onClick={onExpand}>
       <Cell>
@@ -102,12 +122,17 @@ const MainInfo: React.FC<IProps> = ({
         </Title>
       </Cell>
       <Cell>
+        {!shortInfo && isNotCompleted && (
+          <CancelButton secondary onClick={onCancelJob}>
+            <FormattedMessage id="form.cancel" />
+          </CancelButton>
+        )}
         <FormattedTimeParts
           value={job.createdAt * 1000}
           hour="numeric"
           minute="2-digit"
         >
-          {parts => (
+          {(parts) => (
             <span>{`${parts[0].value}:${parts[2].value}${parts[4].value} `}</span>
           )}
         </FormattedTimeParts>
@@ -116,7 +141,7 @@ const MainInfo: React.FC<IProps> = ({
           month="2-digit"
           day="2-digit"
         >
-          {parts => <span>{`${parts[0].value}/${parts[2].value}`}</span>}
+          {(parts) => <span>{`${parts[0].value}/${parts[2].value}`}</span>}
         </FormattedDateParts>
         {attempts.length > 1 ? (
           <AttemptCount>

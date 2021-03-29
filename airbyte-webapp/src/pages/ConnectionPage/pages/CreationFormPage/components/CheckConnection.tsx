@@ -2,12 +2,12 @@ import React from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 
-import Spinner from "../../../../../components/Spinner";
-import { H4 } from "../../../../../components/Titles";
-import StatusIcon from "../../../../../components/StatusIcon";
-import Button from "../../../../../components/Button";
-import Link from "../../../../../components/Link";
-import { createFormErrorMessage } from "../../../../../utils/errorStatusMessage";
+import Spinner from "components/Spinner";
+import { H4 } from "components/Titles";
+import StatusIcon from "components/StatusIcon";
+import Button from "components/Button";
+import Link from "components/Link";
+import { createFormErrorMessage } from "utils/errorStatusMessage";
 
 type IProps = {
   isLoading?: boolean;
@@ -49,7 +49,7 @@ const CheckConnection: React.FC<IProps> = ({
   type,
   error,
   retry,
-  linkToSettings
+  linkToSettings,
 }) => {
   if (error) {
     const errorMessage = createFormErrorMessage({ status: error });

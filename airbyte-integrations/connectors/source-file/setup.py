@@ -34,7 +34,7 @@ MAIN_REQUIREMENTS = [
     "paramiko==2.7.2",
     "s3fs==0.5.2",
     "smart-open[all]==4.1.2",
-    "lxml==4.6.2",
+    "lxml==4.6.3",
     "html5lib==1.1",
     "beautifulsoup4==4.9.3",
     "pyarrow==3.0.0",
@@ -43,7 +43,6 @@ MAIN_REQUIREMENTS = [
 ]
 
 TEST_REQUIREMENTS = [
-    "airbyte-python-test",
     "boto3==1.16.57",
     "pytest==6.1.2",
     "pytest-docker==0.10.1",
@@ -57,13 +56,7 @@ setup(
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
     package_data={"": ["*.json"]},
-    setup_requires=["pytest-runner"],
-    tests_require=["pytest"],
     extras_require={
-        # Dependencies required by the main package but not integration tests should go in main. Deps required by
-        # integration tests but not the main package go in integration_tests. Deps required by both should go in
-        # install_requires.
-        "main": [],
         "tests": TEST_REQUIREMENTS,
     },
 )

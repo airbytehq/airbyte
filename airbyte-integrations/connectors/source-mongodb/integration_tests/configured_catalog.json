@@ -1,0 +1,69 @@
+{
+  "streams": [
+    {
+      "sync_mode": "incremental",
+      "cursor_field": ["bucket_end_date"],
+      "stream": {
+        "name": "transactions",
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "json_schema": {
+          "properties": {
+            "_id": {
+              "type": "string"
+            },
+            "account_id": {
+              "type": "integer"
+            },
+            "transaction_count": {
+              "type": "integer"
+            },
+            "bucket_start_date": {
+              "type": "string"
+            },
+            "bucket_end_date": {
+              "type": "string"
+            },
+            "transactions": {
+              "type": "array"
+            }
+          }
+        }
+      }
+    },
+    {
+      "sync_mode": "full_refresh",
+      "stream": {
+        "name": "customers",
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "json_schema": {
+          "properties": {
+            "_id": {
+              "type": "string"
+            },
+            "username": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "address": {
+              "type": "string"
+            },
+            "birthdate": {
+              "type": "string"
+            },
+            "active": {
+              "type": "boolean"
+            },
+            "accounts": {
+              "type": "array"
+            },
+            "tier_and_details": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -30,3 +30,7 @@ Charles was a senior backend engineer at rideOS. Previous to that, he was a seni
 Chris is a data veteran with experience in the Silicon Valley, Spain, Germany and France. He was the head of data of Comet and responsible for growing their data team in addition to building their infrastructure.  
 [**LinkedIn**](https://www.linkedin.com/in/christopheduong/) **\|** [**Twitter**](https://twitter.com/ChristopheDuong)
 
+## **Davin Chia**
+
+Davin was a staff engineer and tech lead on LiveRamp's Real Time team. 
+[**LinkedIn**](https://www.linkedin.com/in/davin-chia/) **\|** [**GitHub**](https://github.com/davinchia) **\|** [**Twitter**](https://twitter.com/davin_chia)

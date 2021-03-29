@@ -25,6 +25,7 @@
 package io.airbyte.integrations.standardtest.destination;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -40,7 +41,6 @@ import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
-import io.airbyte.config.StandardGetSpecOutput;
 import io.airbyte.config.StandardTargetConfig;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -48,10 +48,11 @@ import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream.DestinationSyncMode;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
 import io.airbyte.workers.DefaultGetSpecWorker;
-import io.airbyte.workers.OutputAndStatus;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.normalization.NormalizationRunner;
@@ -84,7 +85,7 @@ import org.slf4j.LoggerFactory;
 
 public abstract class TestDestination {
 
-  private static final long JOB_ID = 0L;
+  private static final String JOB_ID = "0";
   private static final int JOB_ATTEMPT = 0;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TestDestination.class);
@@ -147,12 +148,11 @@ public abstract class TestDestination {
    *
    * @return - a boolean.
    */
-  protected boolean implementsIncremental() {
-    final OutputAndStatus<StandardGetSpecOutput> output = runSpec();
-    assertTrue(output.getOutput().isPresent());
-    final StandardGetSpecOutput spec = output.getOutput().get();
-    if (spec.getSpecification().getSupportsIncremental() != null) {
-      return spec.getSpecification().getSupportsIncremental();
+  protected boolean implementsIncremental() throws WorkerException {
+    final ConnectorSpecification spec = runSpec();
+    assertNotNull(spec);
+    if (spec.getSupportsIncremental() != null) {
+      return spec.getSupportsIncremental();
     } else {
       return false;
     }
@@ -223,9 +223,8 @@ public abstract class TestDestination {
    * Verify that when the integrations returns a valid spec.
    */
   @Test
-  public void testGetSpec() {
-    final OutputAndStatus<StandardGetSpecOutput> output = runSpec();
-    assertTrue(output.getOutput().isPresent());
+  public void testGetSpec() throws WorkerException {
+    assertNotNull(runSpec());
   }
 
   /**
@@ -234,9 +233,7 @@ public abstract class TestDestination {
    */
   @Test
   public void testCheckConnection() throws Exception {
-    final OutputAndStatus<StandardCheckConnectionOutput> output = runCheck(getConfig());
-    assertTrue(output.getOutput().isPresent());
-    assertEquals(Status.SUCCEEDED, output.getOutput().get().getStatus());
+    assertEquals(Status.SUCCEEDED, runCheck(getConfig()).getStatus());
   }
 
   /**
@@ -245,9 +242,7 @@ public abstract class TestDestination {
    */
   @Test
   public void testCheckConnectionInvalidCredentials() throws Exception {
-    final OutputAndStatus<StandardCheckConnectionOutput> output = runCheck(getFailCheckConfig());
-    assertTrue(output.getOutput().isPresent());
-    assertEquals(Status.FAILED, output.getOutput().get().getStatus());
+    assertEquals(Status.FAILED, runCheck(getFailCheckConfig()).getStatus());
   }
 
   private static class DataArgumentsProvider implements ArgumentsProvider {
@@ -298,7 +293,10 @@ public abstract class TestDestination {
     final AirbyteCatalog catalog =
         Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
-    configuredCatalog.getStreams().forEach(s -> s.withSyncMode(SyncMode.INCREMENTAL));
+    configuredCatalog.getStreams().forEach(s -> {
+      s.withSyncMode(SyncMode.INCREMENTAL);
+      s.withDestinationSyncMode(DestinationSyncMode.APPEND);
+    });
     final List<AirbyteMessage> firstSyncMessages = MoreResources.readResource(messagesFilename).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
     runSync(getConfig(), firstSyncMessages, configuredCatalog);
@@ -365,12 +363,12 @@ public abstract class TestDestination {
     assertSameMessages(secondSyncMessages, retrieveRecordsForCatalog(catalog));
   }
 
-  private OutputAndStatus<StandardGetSpecOutput> runSpec() {
+  private ConnectorSpecification runSpec() throws WorkerException {
     return new DefaultGetSpecWorker(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), pbf))
         .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot);
   }
 
-  private OutputAndStatus<StandardCheckConnectionOutput> runCheck(JsonNode config) {
+  private StandardCheckConnectionOutput runCheck(JsonNode config) throws WorkerException {
     return new DefaultCheckConnectionWorker(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), pbf))
         .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot);
   }

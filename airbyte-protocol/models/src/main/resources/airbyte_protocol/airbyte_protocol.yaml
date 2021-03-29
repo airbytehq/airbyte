@@ -12,7 +12,7 @@ properties:
 definitions:
   AirbyteMessage:
     type: object
-    additionalProperties: false
+    additionalProperties: true
     required:
       - type
     properties:
@@ -45,7 +45,7 @@ definitions:
         "$ref": "#/definitions/AirbyteStateMessage"
   AirbyteRecordMessage:
     type: object
-    additionalProperties: false
+    additionalProperties: true
     required:
       - stream
       - data
@@ -63,7 +63,7 @@ definitions:
         type: integer
   AirbyteStateMessage:
     type: object
-    additionalProperties: false
+    additionalProperties: true
     required:
       - data
     properties:
@@ -73,7 +73,7 @@ definitions:
         existingJavaType: com.fasterxml.jackson.databind.JsonNode
   AirbyteLogMessage:
     type: object
-    additionalProperties: false
+    additionalProperties: true
     required:
       - level
       - message
@@ -94,7 +94,7 @@ definitions:
   AirbyteConnectionStatus:
     description: Airbyte connection status
     type: object
-    additionalProperties: false
+    additionalProperties: true
     required:
       - status
     properties:
@@ -108,7 +108,7 @@ definitions:
   AirbyteCatalog:
     description: Airbyte stream schema catalog
     type: object
-    additionalProperties: false
+    additionalProperties: true
     required:
       - streams
     properties:
@@ -118,7 +118,7 @@ definitions:
           "$ref": "#/definitions/AirbyteStream"
   AirbyteStream:
     type: object
-    additionalProperties: false
+    additionalProperties: true
     required:
       - name
       - json_schema
@@ -137,17 +137,24 @@ definitions:
         items:
           "$ref": "#/definitions/SyncMode"
       source_defined_cursor:
-        description: If the source defines the cursor field, then it does any other cursor field inputs will be ignored. If it does not either the user_provided one is used or as a backup the default one is used.
+        description: If the source defines the cursor field, then any other cursor field inputs will be ignored. If it does not, either the user_provided one is used, or the default one is used as a backup.
         type: boolean
       default_cursor_field:
         description: Path to the field that will be used to determine if a record is new or modified since the last sync. If not provided by the source, the end user will have to specify the comparable themselves.
         type: array
         items:
           type: string
+      source_defined_primary_key:
+        description: If the source defines the primary key, paths to the fields that will be used as a primary key. If not provided by the source, the end user will have to specify the primary key themselves.
+        type: array
+        items:
+          type: array
+          items:
+            type: string
   ConfiguredAirbyteCatalog:
     description: Airbyte stream schema catalog
     type: object
-    additionalProperties: false
+    additionalProperties: true
     required:
       - streams
     properties:
@@ -157,9 +164,11 @@ definitions:
           "$ref": "#/definitions/ConfiguredAirbyteStream"
   ConfiguredAirbyteStream:
     type: object
-    additionalProperties: false
+    additionalProperties: true
     required:
       - stream
+      - sync_mode
+      - destination_sync_mode
     properties:
       stream:
         "$ref": "#/definitions/AirbyteStream"
@@ -171,17 +180,34 @@ definitions:
         type: array
         items:
           type: string
+      destination_sync_mode:
+        "$ref": "#/definitions/DestinationSyncMode"
+        default: append
+      primary_key:
+        description: Paths to the fields that will be used as primary key. This field is REQUIRED if `destination_sync_mode` is `*_dedup`. Otherwise it is ignored.
+        type: array
+        items:
+          type: array
+          items:
+            type: string
   SyncMode:
     type: string
     enum:
       - full_refresh
       - incremental
+  DestinationSyncMode:
+    type: string
+    enum:
+      - append
+      - overwrite
+      #- upsert_dedup # TODO chris: SCD Type 1 can be implemented later
+      - append_dedup # SCD Type 1 & 2
   ConnectorSpecification:
     description: Specification of a connector (source/destination)
     type: object
     required:
       - connectionSpecification
-    additionalProperties: false
+    additionalProperties: true
     properties:
       # todo (cgardens) - prefer snake case for field names.
       documentationUrl:

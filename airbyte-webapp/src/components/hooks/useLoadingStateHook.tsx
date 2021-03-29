@@ -1,12 +1,22 @@
 import { useState } from "react";
 
-const useLoadingStateHook = () => {
+const useLoadingStateHook = (): {
+  isLoading: boolean;
+  startAction: ({
+    action,
+    feedbackAction,
+  }: {
+    action: () => void;
+    feedbackAction?: () => void;
+  }) => Promise<void>;
+  showFeedback: boolean;
+} => {
   const [isLoading, setIsLoading] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
 
   const startAction = async ({
     action,
-    feedbackAction
+    feedbackAction,
   }: {
     action: () => void;
     feedbackAction?: () => void;

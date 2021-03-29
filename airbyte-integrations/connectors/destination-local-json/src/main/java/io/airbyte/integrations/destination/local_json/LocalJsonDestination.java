@@ -40,8 +40,8 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream.DestinationSyncMode;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.protocol.models.SyncMode;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
@@ -101,13 +101,16 @@ public class LocalJsonDestination implements Destination {
       final String streamName = stream.getStream().getName();
       final Path finalPath = destinationDir.resolve(namingResolver.getRawTableName(streamName) + ".jsonl");
       final Path tmpPath = destinationDir.resolve(namingResolver.getTmpTableName(streamName) + ".jsonl");
-
-      final boolean isIncremental = stream.getSyncMode() == SyncMode.INCREMENTAL;
-      if (isIncremental && finalPath.toFile().exists()) {
+      final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
+      if (syncMode == null) {
+        throw new IllegalStateException("Undefined destination sync mode");
+      }
+      final boolean isAppendMode = syncMode != DestinationSyncMode.OVERWRITE;
+      if (isAppendMode && finalPath.toFile().exists()) {
         Files.copy(finalPath, tmpPath, StandardCopyOption.REPLACE_EXISTING);
       }
 
-      final Writer writer = new FileWriter(tmpPath.toFile(), isIncremental);
+      final Writer writer = new FileWriter(tmpPath.toFile(), isAppendMode);
       writeConfigs.put(stream.getStream().getName(), new WriteConfig(writer, tmpPath, finalPath));
     }
 

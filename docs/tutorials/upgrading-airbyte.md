@@ -10,6 +10,7 @@ All minor and major version releases requiring updating the data that Airbyte st
 
 {% hint style="info" %}
 If you inadvertently upgrade to a version of Airbyte that is not compatible with your data, the docker containers will not start up and will log an error stating the incompatibility. In these cases, you should downgrade to the previous version that worked and follow the steps below.
+On the other hand, if you don't mind losing your current Airbyte configuration or have never setup any proper connections yet, you can skip the migrating operations and jump directly to step 5 below.
 {% endhint %}
 
 ## Upgrading \(Docker\)
@@ -33,47 +34,46 @@ If you inadvertently upgrade to a version of Airbyte that is not compatible with
    docker run --rm -v <path to directory containing downloaded airbyte_archive.tar.gz>:/config airbyte/migration:<version you are upgrading to> --\
    --input /config/airbyte_archive.tar.gz\
    --output <path to where migrated archive will be written (should end in .tar.gz)>\
-   --target-version <version you are migrating to>
+   --target-version <version you are migrating to or empty for latest>
    ```
 
 Here's an example of what might look like with the values filled in. It assumes that the downloaded `airbyte_archive.tar.gz` is in `/tmp`.
 
 ```bash
-docker run --rm -v /tmp:/config airbyte/migration:0.15.0-alpha --\
+docker run --rm -v /tmp:/config airbyte/migration:0.17.3-alpha --\
   --input /config/airbyte_archive.tar.gz\
-  --output /config/airbyte_archive_migrated.tar.gz\
-  --target-version 0.15.0-alpha
+  --output /config/airbyte_archive_migrated.tar.gz
 ```
 
 {% hint style="info" %}
 It may seem confusing that you need to specify the target version twice. The version passed as `--target-version` specifies the version to which the data will be migrated. Specifying the target version in the docker container tag makes sure that you are pulling an image that at least has the migration for the version you want. Technically the version used in the docker tag can be equal to or greater than the version you are upgrading to. For the simplicity of this tutorial we have them match.
 {% endhint %}
 
-1. Turn off Airbyte fully.
+5. Turn off Airbyte fully.
 
    ```text
    docker-compose down
    ```
 
-2. Delete the existing Airbyte docker volumes. _Note: Make sure you have already exported your data \(step 3\). This command is going to delete your data in Docker!_
+6. Delete the existing Airbyte docker volumes. _Note: Make sure you have already exported your data \(step 3\). This command is going to delete your data in Docker!_
 
    ```bash
    docker volume rm $(docker volume ls -q | grep airbyte)
    ```
 
-3. Upgrade the docker instance to new version.
+7. Upgrade the docker instance to new version.
 
    i. If you are running Airbyte from a cloned version of the Airbyte repo and want to use the current most recent stable version, just `git pull`.
 
    ii. If you are running Airbyte from a `.env`, edit the `VERSION` field in that file to be the desired version.
 
-4. Bring Airbyte back online.
+8. Bring Airbyte back online.
 
    ```text
    docker-compose up
    ```
 
-5. Complete Preferences section. In the subsequent setup page click "Skip Onboarding". Navigate to the Admin page in the UI. Then go to the Configuration Tab. Click Import. This will prompt you to upload the migrated archive to Airbyte. After this completes, your upgraded Airbyte instance will now be running with all of your original configuration.
+9. Complete Preferences section. In the subsequent setup page click "Skip Onboarding". Navigate to the Admin page in the UI. Then go to the Configuration Tab. Click Import. This will prompt you to upload the migrated archive to Airbyte. After this completes, your upgraded Airbyte instance will now be running with all of your original configuration.
 
 This step will throw an exception if the data you are trying to upload does not match the version of Airbyte that is running.
 

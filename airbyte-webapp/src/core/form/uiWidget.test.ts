@@ -1,72 +1,116 @@
 import { FormBlock } from "./types";
 import { buildPathInitialState } from "./uiWidget";
-import { jsonSchemaToUiWidget } from "../jsonSchema/schemaToUiWidget";
+import { jsonSchemaToUiWidget } from "core/jsonSchema/schemaToUiWidget";
 
 const formItems: FormBlock[] = [
   {
     _type: "formGroup",
     fieldKey: "key",
-    fieldName: "key",
+    path: "key",
     isRequired: true,
+    jsonSchema: {
+      type: "object",
+      required: ["start_date", "credentials"],
+      properties: {
+        start_date: { type: "string" },
+        credentials: {
+          type: "object",
+          oneOf: [
+            {
+              title: "api key",
+              required: ["api_key"],
+              properties: { api_key: { type: "string" } },
+            },
+            {
+              title: "oauth",
+              required: ["redirect_uri"],
+              properties: {
+                redirect_uri: {
+                  type: "string",
+                  examples: ["https://api.hubspot.com/"],
+                },
+              },
+            },
+          ],
+        },
+      },
+    },
     properties: [
       {
         _type: "formItem",
         fieldKey: "start_date",
-        fieldName: "key.start_date",
+        path: "key.start_date",
         isRequired: true,
-        type: "string"
+        type: "string",
       },
       {
         _type: "formCondition",
         fieldKey: "credentials",
-        fieldName: "key.credentials",
+        path: "key.credentials",
         isRequired: true,
         conditions: {
           "api key": {
             title: "api key",
             _type: "formGroup",
             fieldKey: "credentials",
-            fieldName: "key.credentials",
+            path: "key.credentials",
             isRequired: false,
+            jsonSchema: {
+              title: "api key",
+              required: ["api_key"],
+              properties: { api_key: { type: "string" } },
+            },
             properties: [
               {
                 _type: "formItem",
                 fieldKey: "api_key",
-                fieldName: "key.credentials.api_key",
+                path: "key.credentials.api_key",
                 isRequired: true,
-                type: "string"
-              }
-            ]
+                type: "string",
+              },
+            ],
           },
           oauth: {
             title: "oauth",
             _type: "formGroup",
             fieldKey: "credentials",
-            fieldName: "key.credentials",
+            path: "key.credentials",
             isRequired: false,
+            jsonSchema: {
+              title: "oauth",
+              required: ["redirect_uri"],
+              properties: {
+                redirect_uri: {
+                  type: "string",
+                  examples: ["https://api.hubspot.com/"],
+                },
+              },
+            },
             properties: [
               {
                 _type: "formItem",
                 examples: ["https://api.hubspot.com/"],
                 fieldKey: "redirect_uri",
-                fieldName: "key.credentials.redirect_uri",
+                path: "key.credentials.redirect_uri",
                 isRequired: true,
-                type: "string"
-              }
-            ]
-          }
-        }
-      }
-    ]
-  }
+                type: "string",
+              },
+            ],
+          },
+        },
+      },
+    ],
+  },
 ];
 
 test("should select first key by default", () => {
   const uiWidgetState = buildPathInitialState(formItems, {});
   expect(uiWidgetState).toEqual({
     "key.credentials": {
-      selectedItem: "api key"
-    }
+      selectedItem: "api key",
+    },
+    "key.credentials.api_key": {},
+    "key.start_date": {},
   });
 });
 
@@ -76,16 +120,18 @@ test("should select key selected in default values", () => {
     {
       key: {
         credentials: {
-          redirect_uri: "value"
-        }
-      }
+          redirect_uri: "value",
+        },
+      },
     },
     {}
   );
   expect(uiWidgetState).toEqual({
     "key.credentials": {
-      selectedItem: "oauth"
-    }
+      selectedItem: "oauth",
+    },
+    "key.credentials.redirect_uri": {},
+    "key.start_date": {},
   });
 });
 
@@ -102,15 +148,22 @@ test("should select correct key for enum", () => {
     {
       key: {
         provider: {
-          storage: "GCS"
-        }
-      }
+          storage: "GCS",
+        },
+      },
     },
     {}
   );
   expect(uiWidgetState).toEqual({
+    "key.dataset_name": {},
+    "key.format": {},
     "key.provider": {
-      selectedItem: "GCS: Google Cloud Storage"
-    }
+      selectedItem: "GCS: Google Cloud Storage",
+    },
+    "key.provider.reader_impl": {},
+    "key.provider.service_account_json": {},
+    "key.provider.storage": {},
+    "key.reader_options": {},
+    "key.url": {},
   });
 });

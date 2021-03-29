@@ -87,7 +87,7 @@ class TrackingClientSingletonTest {
   void testGetTrackingIdentityInitialSetupNotComplete() throws JsonValidationException, IOException, ConfigNotFoundException {
     final StandardWorkspace workspace = new StandardWorkspace().withCustomerId(UUID.randomUUID());
 
-    when(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID)).thenReturn(workspace);
+    when(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID, true)).thenReturn(workspace);
 
     final TrackingIdentity actual = TrackingClientSingleton.getTrackingIdentity(configRepository, AIRBYTE_VERSION);
     final TrackingIdentity expected = new TrackingIdentity(AIRBYTE_VERSION, workspace.getCustomerId(), null, null, null, null);
@@ -104,7 +104,7 @@ class TrackingClientSingletonTest {
         .withNews(true)
         .withSecurityUpdates(true);
 
-    when(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID)).thenReturn(workspace);
+    when(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID, true)).thenReturn(workspace);
 
     final TrackingIdentity actual = TrackingClientSingleton.getTrackingIdentity(configRepository, AIRBYTE_VERSION);
     final TrackingIdentity expected = new TrackingIdentity(AIRBYTE_VERSION, workspace.getCustomerId(), workspace.getEmail(), false, true, true);
@@ -121,7 +121,7 @@ class TrackingClientSingletonTest {
         .withNews(true)
         .withSecurityUpdates(true);
 
-    when(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID)).thenReturn(workspace);
+    when(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID, true)).thenReturn(workspace);
 
     final TrackingIdentity actual = TrackingClientSingleton.getTrackingIdentity(configRepository, AIRBYTE_VERSION);
     final TrackingIdentity expected = new TrackingIdentity(AIRBYTE_VERSION, workspace.getCustomerId(), null, true, true, true);

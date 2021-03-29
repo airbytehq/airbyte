@@ -30,7 +30,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import AnyUrl, BaseModel, Field
+from pydantic import AnyUrl, BaseModel, Extra, Field
 
 
 class Type(Enum):
@@ -43,6 +43,9 @@ class Type(Enum):
 
 
 class AirbyteRecordMessage(BaseModel):
+    class Config:
+        extra = Extra.allow
+
     stream: str = Field(..., description="the name of the stream for this record")
     data: Dict[str, Any] = Field(..., description="the record data")
     emitted_at: int = Field(
@@ -52,6 +55,9 @@ class AirbyteRecordMessage(BaseModel):
 
 
 class AirbyteStateMessage(BaseModel):
+    class Config:
+        extra = Extra.allow
+
     data: Dict[str, Any] = Field(..., description="the state data")
 
 
@@ -65,6 +71,9 @@ class Level(Enum):
 
 
 class AirbyteLogMessage(BaseModel):
+    class Config:
+        extra = Extra.allow
+
     level: Level = Field(..., description="the type of logging")
     message: str = Field(..., description="the log message")
 
@@ -75,6 +84,9 @@ class Status(Enum):
 
 
 class AirbyteConnectionStatus(BaseModel):
+    class Config:
+        extra = Extra.allow
+
     status: Status
     message: Optional[str] = None
 
@@ -84,7 +96,16 @@ class SyncMode(Enum):
     incremental = "incremental"
 
 
+class DestinationSyncMode(Enum):
+    append = "append"
+    overwrite = "overwrite"
+    append_dedup = "append_dedup"
+
+
 class ConnectorSpecification(BaseModel):
+    class Config:
+        extra = Extra.allow
+
     documentationUrl: Optional[AnyUrl] = None
     changelogUrl: Optional[AnyUrl] = None
     connectionSpecification: Dict[str, Any] = Field(
@@ -95,37 +116,61 @@ class ConnectorSpecification(BaseModel):
 
 
 class AirbyteStream(BaseModel):
+    class Config:
+        extra = Extra.allow
+
     name: str = Field(..., description="Stream's name.")
     json_schema: Dict[str, Any] = Field(..., description="Stream schema using Json Schema specs.")
     supported_sync_modes: Optional[List[SyncMode]] = None
     source_defined_cursor: Optional[bool] = Field(
         None,
-        description="If the source defines the cursor field, then it does any other cursor field inputs will be ignored. If it does not either the user_provided one is used or as a backup the default one is used.",
+        description="If the source defines the cursor field, then any other cursor field inputs will be ignored. If it does not, either the user_provided one is used, or the default one is used as a backup.",
     )
     default_cursor_field: Optional[List[str]] = Field(
         None,
         description="Path to the field that will be used to determine if a record is new or modified since the last sync. If not provided by the source, the end user will have to specify the comparable themselves.",
     )
+    source_defined_primary_key: Optional[List[str]] = Field(
+        None,
+        description="If the source defines the primary key, paths to the fields that will be used as a primary key. If not provided by the source, the end user will have to specify the primary key themselves.",
+    )
 
 
 class ConfiguredAirbyteStream(BaseModel):
+    class Config:
+        extra = Extra.allow
+
     stream: AirbyteStream
-    sync_mode: Optional[SyncMode] = "full_refresh"
+    sync_mode: SyncMode
     cursor_field: Optional[List[str]] = Field(
         None,
         description="Path to the field that will be used to determine if a record is new or modified since the last sync. This field is REQUIRED if `sync_mode` is `incremental`. Otherwise it is ignored.",
     )
+    destination_sync_mode: DestinationSyncMode
+    primary_key: Optional[List[str]] = Field(
+        None,
+        description="Paths to the fields that will be used as primary key. This field is REQUIRED if `destination_sync_mode` is `*_dedup`. Otherwise it is ignored.",
+    )
 
 
 class AirbyteCatalog(BaseModel):
+    class Config:
+        extra = Extra.allow
+
     streams: List[AirbyteStream]
 
 
 class ConfiguredAirbyteCatalog(BaseModel):
+    class Config:
+        extra = Extra.allow
+
     streams: List[ConfiguredAirbyteStream]
 
 
 class AirbyteMessage(BaseModel):
+    class Config:
+        extra = Extra.allow
+
     type: Type = Field(..., description="Message type")
     log: Optional[AirbyteLogMessage] = Field(
         None,

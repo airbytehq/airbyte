@@ -1,35 +1,32 @@
-import config from "../../config";
-
-interface SegmentAnalytics {
-  page: (name?: string) => void;
-  reset: () => void;
-  alias: (newId: string) => void;
-  track: (name: string, properties: any) => void;
-  identify: (traits: any, userId?: string) => void;
-  group: (organisationId: string, traits: any) => void;
-}
+import config from "config";
+import { SegmentAnalytics } from "./types";
 
 export class AnalyticsService {
   private static getAnalytics = (): SegmentAnalytics | undefined =>
-    (window as any).analytics;
+    window.analytics;
 
-  static alias = (newId: string) =>
+  static alias = (newId: string): void =>
     AnalyticsService.getAnalytics()?.alias?.(newId);
 
-  static page = (name: string) => AnalyticsService.getAnalytics()?.page?.(name);
+  static page = (name: string): void =>
+    AnalyticsService.getAnalytics()?.page?.(name);
 
-  static reset = () => AnalyticsService.getAnalytics()?.reset?.();
+  static reset = (): void => AnalyticsService.getAnalytics()?.reset?.();
 
-  static track = (name: string, properties: any) =>
+  static track = (name: string, properties: Record<string, unknown>): void =>
     AnalyticsService.getAnalytics()?.track?.(name, {
       user_id: config.ui.workspaceId,
       ...properties,
-      airbyte_version: config.version
+      airbyte_version: config.version,
     });
 
-  static identify = (userId: string, traits: any = {}) =>
-    AnalyticsService.getAnalytics()?.identify?.(userId, traits);
+  static identify = (
+    userId: string,
+    traits: Record<string, unknown> = {}
+  ): void => AnalyticsService.getAnalytics()?.identify?.(userId, traits);
 
-  static group = (organisationId: string, traits: any = {}) =>
-    AnalyticsService.getAnalytics()?.group?.(organisationId, traits);
+  static group = (
+    organisationId: string,
+    traits: Record<string, unknown> = {}
+  ): void => AnalyticsService.getAnalytics()?.group?.(organisationId, traits);
 }

@@ -1,4 +1,6 @@
-import { Resource } from "rest-hooks";
+import { MutateShape, ReadShape, Resource, SchemaDetail } from "rest-hooks";
+
+import { ConnectionConfiguration } from "core/domain/connection";
 import BaseResource from "./BaseResource";
 
 export interface Destination {
@@ -7,45 +9,50 @@ export interface Destination {
   destinationName: string;
   workspaceId: string;
   destinationDefinitionId: string;
-  connectionConfiguration: any; // TODO: fix type
+  connectionConfiguration: ConnectionConfiguration;
 }
 
-export default class DestinationResource extends BaseResource
-  implements Destination {
+export class DestinationResource extends BaseResource implements Destination {
   readonly destinationId: string = "";
   readonly name: string = "";
   readonly destinationName: string = "";
   readonly workspaceId: string = "";
   readonly destinationDefinitionId: string = "";
-  readonly connectionConfiguration: any = [];
+  readonly connectionConfiguration: ConnectionConfiguration = {};
 
-  pk() {
+  pk(): string {
     return this.destinationId?.toString();
   }
 
   static urlRoot = "destinations";
 
-  static listShape<T extends typeof Resource>(this: T) {
+  static listShape<T extends typeof Resource>(
+    this: T
+  ): ReadShape<SchemaDetail<{ destinations: Destination[] }>> {
     return {
       ...super.listShape(),
-      schema: { destinations: [this] }
+      schema: { destinations: [this] },
     };
   }
 
-  static detailShape<T extends typeof Resource>(this: T) {
+  static detailShape<T extends typeof Resource>(
+    this: T
+  ): ReadShape<SchemaDetail<Destination>> {
     return {
       ...super.detailShape(),
-      schema: this
+      schema: this,
     };
   }
 
-  static recreateShape<T extends typeof Resource>(this: T) {
+  static recreateShape<T extends typeof Resource>(
+    this: T
+  ): MutateShape<SchemaDetail<Destination>> {
     return {
       ...super.updateShape(),
       fetch: async (
         _: Readonly<Record<string, string | number>>,
-        body: Readonly<object>
-      ): Promise<any> => {
+        body: Record<string, unknown>
+      ): Promise<Destination> => {
         const response = await this.fetch(
           "post",
           `${super.rootUrl()}web_backend/destinations/recreate`,
@@ -53,7 +60,9 @@ export default class DestinationResource extends BaseResource
         );
         return response;
       },
-      schema: this
+      schema: this,
     };
   }
 }
+
+export default DestinationResource;

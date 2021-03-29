@@ -13,8 +13,8 @@ const TextWithHTML: React.FC<IProps> = ({ text }) => {
 
   const sanitizedHtmlText = sanitizeHtml(text, {
     transformTags: {
-      a: sanitizeHtml.simpleTransform("a", { target: "_blank" })
-    }
+      a: sanitizeHtml.simpleTransform("a", { target: "_blank" }),
+    },
   });
 
   return (

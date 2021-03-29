@@ -25,6 +25,7 @@
 package io.airbyte.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -247,6 +248,18 @@ class DestinationHandlerTest {
     assertEquals(expectedDestinationRead, actualDestinationRead);
     verify(secretsProcessor)
         .maskSecrets(destinationConnection.getConfiguration(), destinationDefinitionSpecificationRead.getConnectionSpecification());
+  }
+
+  @Test
+  void testGetDeletedDestination() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final UUID destinationId = destinationConnection.getDestinationId();
+    final DestinationIdRequestBody destinationIdRequestBody = new DestinationIdRequestBody().destinationId(destinationId);
+    final DestinationConnection deleted = DestinationHelpers.generateDestination(destinationId, true);
+
+    when(configRepository.getDestinationConnection(destinationId))
+        .thenReturn(deleted);
+
+    assertThrows(ConfigNotFoundException.class, () -> destinationHandler.getDestination(destinationIdRequestBody));
   }
 
   @Test

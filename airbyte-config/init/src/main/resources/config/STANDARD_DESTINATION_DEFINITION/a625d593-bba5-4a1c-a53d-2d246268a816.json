@@ -2,6 +2,6 @@
   "destinationDefinitionId": "a625d593-bba5-4a1c-a53d-2d246268a816",
   "name": "Local JSON",
   "dockerRepository": "airbyte/destination-local-json",
-  "dockerImageTag": "0.1.4",
+  "dockerImageTag": "0.2.2",
   "documentationUrl": "https://docs.airbyte.io/integrations/destinations/local-json"
 }

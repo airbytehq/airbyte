@@ -33,14 +33,11 @@ setup(
     install_requires=[
         "airbyte-protocol==0.0.0",
         "base-python==0.0.0",
-        "facebook_business==9.0.1",
+        "facebook_business==10.0.0",
         "backoff==1.10.0",
         "pendulum==1.2.0",
         "cached_property==1.5.2",
+        "pytest==6.1.2",
     ],
     package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
-    tests_require=["pytest==6.1.2"],
-    extras_require={
-        "tests": ["airbyte_python_test==0.0.0", "pytest==6.1.2"],
-    },
 )

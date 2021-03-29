@@ -26,7 +26,6 @@ package io.airbyte.workers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -49,6 +48,7 @@ import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
 import io.airbyte.workers.protocols.airbyte.AirbyteMessageTracker;
 import io.airbyte.workers.protocols.airbyte.AirbyteMessageUtils;
 import io.airbyte.workers.protocols.airbyte.AirbyteSource;
+import io.airbyte.workers.protocols.airbyte.NamespacingMapper;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -58,7 +58,7 @@ import org.junit.jupiter.api.Test;
 
 class DefaultSyncWorkerTest {
 
-  private static final long JOB_ID = 0L;
+  private static final String JOB_ID = "0";
   private static final int JOB_ATTEMPT = 0;
   private static final Path WORKSPACE_ROOT = Path.of("workspaces/10");
   private static final String STREAM_NAME = "user_preferences";
@@ -69,6 +69,7 @@ class DefaultSyncWorkerTest {
   private Path jobRoot;
   private Path normalizationRoot;
   private AirbyteSource tap;
+  private NamespacingMapper mapper;
   private AirbyteDestination target;
   private StandardSyncInput syncInput;
   private StandardTapConfig tapConfig;
@@ -88,11 +89,15 @@ class DefaultSyncWorkerTest {
     targetConfig = WorkerUtils.syncToTargetConfig(syncInput);
 
     tap = mock(AirbyteSource.class);
+    mapper = mock(NamespacingMapper.class);
     target = mock(AirbyteDestination.class);
     normalizationRunner = mock(NormalizationRunner.class);
 
     when(tap.isFinished()).thenReturn(false, false, false, true);
     when(tap.attemptRead()).thenReturn(Optional.of(RECORD_MESSAGE1), Optional.empty(), Optional.of(RECORD_MESSAGE2));
+    when(mapper.mapCatalog(targetConfig.getCatalog())).thenReturn(targetConfig.getCatalog());
+    when(mapper.mapMessage(RECORD_MESSAGE1)).thenReturn(RECORD_MESSAGE1);
+    when(mapper.mapMessage(RECORD_MESSAGE2)).thenReturn(RECORD_MESSAGE2);
     when(normalizationRunner.normalize(JOB_ID, JOB_ATTEMPT, normalizationRoot, targetConfig.getDestinationConnectionConfiguration(),
         targetConfig.getCatalog()))
             .thenReturn(true);
@@ -101,10 +106,9 @@ class DefaultSyncWorkerTest {
   @Test
   void test() throws Exception {
     final DefaultSyncWorker defaultSyncWorker =
-        new DefaultSyncWorker(JOB_ID, JOB_ATTEMPT, tap, target, new AirbyteMessageTracker(), normalizationRunner);
-    final OutputAndStatus<StandardSyncOutput> run = defaultSyncWorker.run(syncInput, jobRoot);
+        new DefaultSyncWorker(JOB_ID, JOB_ATTEMPT, tap, mapper, target, new AirbyteMessageTracker(), normalizationRunner);
 
-    assertEquals(JobStatus.SUCCEEDED, run.getStatus());
+    defaultSyncWorker.run(syncInput, jobRoot);
 
     verify(tap).start(tapConfig, jobRoot);
     verify(target).start(targetConfig, jobRoot);
@@ -120,32 +124,30 @@ class DefaultSyncWorkerTest {
 
   @SuppressWarnings("unchecked")
   @Test
-  void testPopulatesSyncSummary() {
+  void testPopulatesSyncSummary() throws WorkerException {
     final MessageTracker<AirbyteMessage> messageTracker = mock(MessageTracker.class);
     final JsonNode expectedState = Jsons.jsonNode(ImmutableMap.of("updated_at", 10L));
     when(messageTracker.getRecordCount()).thenReturn(12L);
     when(messageTracker.getBytesCount()).thenReturn(100L);
     when(messageTracker.getOutputState()).thenReturn(Optional.of(expectedState));
 
-    final DefaultSyncWorker defaultSyncWorker = new DefaultSyncWorker(JOB_ID, JOB_ATTEMPT, tap, target, messageTracker, normalizationRunner);
-    final OutputAndStatus<StandardSyncOutput> actual = defaultSyncWorker.run(syncInput, jobRoot);
+    final DefaultSyncWorker defaultSyncWorker = new DefaultSyncWorker(JOB_ID, JOB_ATTEMPT, tap, mapper, target, messageTracker, normalizationRunner);
+    final StandardSyncOutput actual = defaultSyncWorker.run(syncInput, jobRoot);
     final StandardSyncOutput expectedSyncOutput = new StandardSyncOutput()
         .withStandardSyncSummary(new StandardSyncSummary()
             .withRecordsSynced(12L)
             .withBytesSynced(100L)
             .withStatus(Status.COMPLETED))
         .withState(new State().withState(expectedState));
-    final OutputAndStatus<StandardSyncOutput> expected = new OutputAndStatus<>(JobStatus.SUCCEEDED, expectedSyncOutput);
 
     // good enough to verify that times are present.
-    assertTrue(actual.getOutput().isPresent());
-    assertNotNull(actual.getOutput().get().getStandardSyncSummary().getStartTime());
-    assertNotNull(actual.getOutput().get().getStandardSyncSummary().getEndTime());
+    assertNotNull(actual.getStandardSyncSummary().getStartTime());
+    assertNotNull(actual.getStandardSyncSummary().getEndTime());
     // remove times so we can do the rest of the object <> object comparison.
-    actual.getOutput().get().getStandardSyncSummary().withStartTime(null);
-    actual.getOutput().get().getStandardSyncSummary().withEndTime(null);
+    actual.getStandardSyncSummary().withStartTime(null);
+    actual.getStandardSyncSummary().withEndTime(null);
 
-    assertEquals(expected, actual);
+    assertEquals(expectedSyncOutput, actual);
   }
 
 }

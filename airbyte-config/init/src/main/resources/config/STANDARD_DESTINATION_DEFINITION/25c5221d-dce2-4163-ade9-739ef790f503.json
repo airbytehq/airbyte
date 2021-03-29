@@ -2,6 +2,6 @@
   "destinationDefinitionId": "25c5221d-dce2-4163-ade9-739ef790f503",
   "name": "Postgres",
   "dockerRepository": "airbyte/destination-postgres",
-  "dockerImageTag": "0.1.16",
+  "dockerImageTag": "0.2.3",
   "documentationUrl": "https://docs.airbyte.io/integrations/destinations/postgres"
 }

@@ -25,6 +25,6 @@
 package io.airbyte.workers;
 
 import io.airbyte.config.StandardDiscoverCatalogInput;
-import io.airbyte.config.StandardDiscoverCatalogOutput;
+import io.airbyte.protocol.models.AirbyteCatalog;
 
-public interface DiscoverCatalogWorker extends Worker<StandardDiscoverCatalogInput, StandardDiscoverCatalogOutput> {}
+public interface DiscoverCatalogWorker extends Worker<StandardDiscoverCatalogInput, AirbyteCatalog> {}

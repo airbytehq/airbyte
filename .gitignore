@@ -2,6 +2,7 @@
 .idea
 *.iml
 build
+out
 .DS_Store
 data
 .dockerversions

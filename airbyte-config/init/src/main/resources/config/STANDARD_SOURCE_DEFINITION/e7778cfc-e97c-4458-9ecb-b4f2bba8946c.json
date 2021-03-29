@@ -2,6 +2,6 @@
   "sourceDefinitionId": "e7778cfc-e97c-4458-9ecb-b4f2bba8946c",
   "name": "Facebook Marketing",
   "dockerRepository": "airbyte/source-facebook-marketing",
-  "dockerImageTag": "0.1.4",
+  "dockerImageTag": "0.2.1",
   "documentationUrl": "https://hub.docker.com/r/airbyte/source-facebook-marketing"
 }
