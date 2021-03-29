@@ -205,7 +205,7 @@ public class BigQueryDestination implements Destination {
    * @return consumer that writes singer messages to the database.
    */
   @Override
-  public DestinationConsumer<AirbyteMessage> getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) {
+  public DestinationConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) {
     final BigQuery bigquery = getBigQuery(config);
     Map<String, WriteConfig> writeConfigs = new HashMap<>();
     final String datasetId = config.get(CONFIG_DATASET_ID).asText();
@@ -291,7 +291,7 @@ public class BigQueryDestination implements Destination {
     }
   }
 
-  public static class RecordConsumer extends FailureTrackingConsumer<AirbyteMessage> implements DestinationConsumer<AirbyteMessage> {
+  public static class RecordConsumer extends FailureTrackingConsumer implements DestinationConsumer {
 
     private final BigQuery bigquery;
     private final Map<String, WriteConfig> writeConfigs;

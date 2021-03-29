@@ -156,7 +156,7 @@ class JdbcDestinationTest {
   @Test
   void testWriteSuccess() throws Exception {
     final JdbcDestination destination = new JdbcDestination();
-    final DestinationConsumer<AirbyteMessage> consumer = destination.getConsumer(config, CATALOG);
+    final DestinationConsumer consumer = destination.getConsumer(config, CATALOG);
 
     consumer.start();
     consumer.accept(MESSAGE_USERS1);
@@ -190,7 +190,7 @@ class JdbcDestinationTest {
     });
 
     final JdbcDestination destination = new JdbcDestination();
-    final DestinationConsumer<AirbyteMessage> consumer = destination.getConsumer(config, catalog);
+    final DestinationConsumer consumer = destination.getConsumer(config, catalog);
 
     consumer.start();
     consumer.accept(MESSAGE_USERS1);
@@ -200,7 +200,7 @@ class JdbcDestinationTest {
     consumer.accept(MESSAGE_STATE);
     consumer.close();
 
-    final DestinationConsumer<AirbyteMessage> consumer2 = destination.getConsumer(config, catalog);
+    final DestinationConsumer consumer2 = destination.getConsumer(config, catalog);
 
     final AirbyteMessage messageUser3 = new AirbyteMessage().withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
@@ -232,7 +232,7 @@ class JdbcDestinationTest {
   void testWriteNewSchema() throws Exception {
     JsonNode newConfig = createConfig("new_schema");
     final JdbcDestination destination = new JdbcDestination();
-    final DestinationConsumer<AirbyteMessage> consumer = destination.getConsumer(newConfig, CATALOG);
+    final DestinationConsumer consumer = destination.getConsumer(newConfig, CATALOG);
 
     consumer.start();
     consumer.accept(MESSAGE_USERS1);
@@ -270,7 +270,7 @@ class JdbcDestinationTest {
     doThrow(new RuntimeException()).when(spiedMessage).getRecord();
 
     final JdbcDestination destination = new JdbcDestination();
-    final DestinationConsumer<AirbyteMessage> consumer = spy(destination.getConsumer(config, CATALOG));
+    final DestinationConsumer consumer = spy(destination.getConsumer(config, CATALOG));
 
     assertThrows(RuntimeException.class, () -> consumer.accept(spiedMessage));
     consumer.start();

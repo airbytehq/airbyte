@@ -24,6 +24,7 @@
 
 package io.airbyte.integrations.base;
 
+import io.airbyte.protocol.models.AirbyteMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +40,7 @@ import org.slf4j.LoggerFactory;
  * Though not necessary, we highly encourage using this class when implementing destinations. See
  * child classes for examples.
  */
-public abstract class FailureTrackingConsumer<T> implements DestinationConsumer<T> {
+public abstract class FailureTrackingConsumer implements DestinationConsumer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FailureTrackingConsumer.class);
 
@@ -57,10 +58,10 @@ public abstract class FailureTrackingConsumer<T> implements DestinationConsumer<
     }
   }
 
-  protected abstract void acceptTracked(T t) throws Exception;
+  protected abstract void acceptTracked(AirbyteMessage t) throws Exception;
 
   @Override
-  public void accept(T t) throws Exception {
+  public void accept(AirbyteMessage t) throws Exception {
     try {
       acceptTracked(t);
     } catch (Exception e) {

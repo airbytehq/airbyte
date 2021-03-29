@@ -25,10 +25,13 @@
 package io.airbyte.integrations.base;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
+import io.airbyte.protocol.models.AirbyteMessage;
 import org.junit.jupiter.api.Test;
 
 class FailureTrackingConsumerTest {
@@ -57,7 +60,9 @@ class FailureTrackingConsumerTest {
   @Test
   void testAcceptNoFailure() throws Exception {
     final TestConsumer consumer = spy(new TestConsumer());
-    consumer.accept("");
+
+    final AirbyteMessage msg = mock(AirbyteMessage.class);
+    consumer.accept(msg);
     consumer.close();
 
     verify(consumer).close(false);
@@ -66,16 +71,17 @@ class FailureTrackingConsumerTest {
   @Test
   void testAcceptWithFailure() throws Exception {
     final TestConsumer consumer = spy(new TestConsumer());
-    doThrow(new RuntimeException()).when(consumer).acceptTracked("");
+    final AirbyteMessage msg = mock(AirbyteMessage.class);
+    doThrow(new RuntimeException()).when(consumer).acceptTracked(any());
 
     // verify the exception still gets thrown.
-    assertThrows(RuntimeException.class, () -> consumer.accept(""));
+    assertThrows(RuntimeException.class, () -> consumer.accept(msg));
     consumer.close();
 
     verify(consumer).close(true);
   }
 
-  static class TestConsumer extends FailureTrackingConsumer<String> {
+  static class TestConsumer extends FailureTrackingConsumer {
 
     @Override
     protected void startTracked() {
@@ -83,7 +89,7 @@ class FailureTrackingConsumerTest {
     }
 
     @Override
-    protected void acceptTracked(String s) {
+    protected void acceptTracked(AirbyteMessage s) {
 
     }
 

@@ -91,7 +91,7 @@ public class LocalJsonDestination implements Destination {
    * @throws IOException - exception throw in manipulating the filesystem.
    */
   @Override
-  public DestinationConsumer<AirbyteMessage> getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) throws IOException {
+  public DestinationConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) throws IOException {
     final Path destinationDir = getDestinationPath(config);
 
     FileUtils.forceMkdir(destinationDir.toFile());
@@ -142,7 +142,7 @@ public class LocalJsonDestination implements Destination {
    * successfully, it moves the tmp files to files named by their respective stream. If there are any
    * failures, nothing is written.
    */
-  private static class JsonConsumer extends FailureTrackingConsumer<AirbyteMessage> {
+  private static class JsonConsumer extends FailureTrackingConsumer {
 
     private final Map<String, WriteConfig> writeConfigs;
     private final ConfiguredAirbyteCatalog catalog;

@@ -72,7 +72,7 @@ import org.slf4j.LoggerFactory;
 // recordWriter.
 // 7. execute user-provided onClose code.
 
-public class BufferedStreamConsumer extends FailureTrackingConsumer<AirbyteMessage> implements DestinationConsumer<AirbyteMessage> {
+public class BufferedStreamConsumer extends FailureTrackingConsumer implements DestinationConsumer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BufferedStreamConsumer.class);
   private static final long THREAD_DELAY_MILLIS = 500L;

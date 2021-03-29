@@ -36,7 +36,6 @@ import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStre
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer.OnCloseFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer.OnStartFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer.RecordWriter;
-import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream.DestinationSyncMode;
 import java.time.Instant;
@@ -60,11 +59,11 @@ public class JdbcBufferedConsumerFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcBufferedConsumerFactory.class);
 
-  public static DestinationConsumer<AirbyteMessage> create(JdbcDatabase database,
-                                                           SqlOperations sqlOperations,
-                                                           NamingConventionTransformer namingResolver,
-                                                           JsonNode config,
-                                                           ConfiguredAirbyteCatalog catalog) {
+  public static DestinationConsumer create(JdbcDatabase database,
+                                           SqlOperations sqlOperations,
+                                           NamingConventionTransformer namingResolver,
+                                           JsonNode config,
+                                           ConfiguredAirbyteCatalog catalog) {
     final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog);
 
     return new BufferedStreamConsumer(

@@ -195,7 +195,7 @@ class IntegrationRunnerTest {
   @Test
   void testWrite() throws Exception {
     final IntegrationConfig intConfig = IntegrationConfig.write(configPath, configuredCatalogPath);
-    final DestinationConsumer<AirbyteMessage> destinationConsumerMock = mock(DestinationConsumer.class);
+    final DestinationConsumer destinationConsumerMock = mock(DestinationConsumer.class);
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
     when(destination.getConsumer(CONFIG, CONFIGURED_CATALOG)).thenReturn(destinationConsumerMock);
 
@@ -222,7 +222,7 @@ class IntegrationRunnerTest {
             .withEmittedAt(EMITTED_AT));
     System.setIn(new ByteArrayInputStream((Jsons.serialize(singerMessage1) + "\n" + Jsons.serialize(singerMessage2)).getBytes()));
 
-    final DestinationConsumer<AirbyteMessage> destinationConsumerMock = mock(DestinationConsumer.class);
+    final DestinationConsumer destinationConsumerMock = mock(DestinationConsumer.class);
     IntegrationRunner.consumeWriteStream(destinationConsumerMock);
 
     InOrder inOrder = inOrder(destinationConsumerMock);
@@ -248,7 +248,7 @@ class IntegrationRunnerTest {
             .withEmittedAt(EMITTED_AT));
     System.setIn(new ByteArrayInputStream((Jsons.serialize(singerMessage1) + "\n" + Jsons.serialize(singerMessage2)).getBytes()));
 
-    final DestinationConsumer<AirbyteMessage> destinationConsumerMock = mock(DestinationConsumer.class);
+    final DestinationConsumer destinationConsumerMock = mock(DestinationConsumer.class);
     doThrow(new IOException("error")).when(destinationConsumerMock).accept(singerMessage1);
 
     assertThrows(IOException.class, () -> IntegrationRunner.consumeWriteStream(destinationConsumerMock));
