@@ -119,7 +119,7 @@ public class RedshiftCopyDestination {
    * Although unlikely, might break if the url schema changes.
    */
   @VisibleForTesting
-  private static String extractRegionFromRedshiftUrl(String url) {
+  static String extractRegionFromRedshiftUrl(String url) {
     var split = url.split("\\.");
     return split[2];
   }
