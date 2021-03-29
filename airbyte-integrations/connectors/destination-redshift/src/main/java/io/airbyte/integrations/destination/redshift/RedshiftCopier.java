@@ -46,9 +46,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class is meant to represent all the required operations to replicate an {@link io.airbyte.protocol.models.AirbyteStream} into Redshift using the Copy
- * strategy. The data is streamed into a staging S3 bucket in multiple parts. This file is then loaded into a Redshift temporary table via a Copy statement,
- * before being moved into the final destination table. The staging files and temporary tables are best-effort cleaned up. A single S3 file is currently
+ * This class is meant to represent all the required operations to replicate an
+ * {@link io.airbyte.protocol.models.AirbyteStream} into Redshift using the Copy strategy. The data
+ * is streamed into a staging S3 bucket in multiple parts. This file is then loaded into a Redshift
+ * temporary table via a Copy statement, before being moved into the final destination table. The
+ * staging files and temporary tables are best-effort cleaned up. A single S3 file is currently
  * sufficiently performant.
  */
 public class RedshiftCopier {
