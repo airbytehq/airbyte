@@ -47,12 +47,10 @@ import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.debezium.engine.ChangeEvent;
 import io.debezium.engine.DebeziumEngine;
-import io.debezium.engine.RecordChangeEvent;
 import io.debezium.engine.format.Json;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -64,7 +62,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.kafka.connect.source.SourceRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -271,17 +268,17 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
     final String streamName = source.get("table").asText();
 
     final AirbyteRecordMessage airbyteRecordMessage = new AirbyteRecordMessage()
-            .withStream(streamName)
-            .withEmittedAt(emittedAt.toEpochMilli())
-            .withData(data);
+        .withStream(streamName)
+        .withEmittedAt(emittedAt.toEpochMilli())
+        .withData(data);
 
     return new AirbyteMessage()
-            .withType(AirbyteMessage.Type.RECORD)
-            .withRecord(airbyteRecordMessage);
+        .withType(AirbyteMessage.Type.RECORD)
+        .withRecord(airbyteRecordMessage);
   }
 
   public static JsonNode formatDebeziumData(JsonNode before, JsonNode after, JsonNode source) {
-    final ObjectNode base = (ObjectNode)(after.isNull() ? before : after);
+    final ObjectNode base = (ObjectNode) (after.isNull() ? before : after);
 
     long transactionMillis = source.get("ts_ms").asLong();
     long lsn = source.get("lsn").asLong();
@@ -289,10 +286,10 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
     base.put("_ab_cdc_updated_at", transactionMillis);
     base.put("_ab_cdc_lsn", lsn);
 
-    if(after.isNull()) {
+    if (after.isNull()) {
       base.put("_ab_cdc_deleted_at", transactionMillis);
     } else {
-      base.put("_ab_cdc_deleted_at", (Long)null);
+      base.put("_ab_cdc_deleted_at", (Long) null);
     }
 
     return base;
@@ -304,4 +301,5 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", PostgresSource.class);
   }
+
 }

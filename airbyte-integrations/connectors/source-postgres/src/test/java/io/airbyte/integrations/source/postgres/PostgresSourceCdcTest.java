@@ -24,15 +24,16 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.db.Database;
@@ -46,14 +47,11 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
-
+import io.debezium.engine.ChangeEvent;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import io.debezium.engine.ChangeEvent;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.BeforeAll;
@@ -61,11 +59,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
-
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class PostgresSourceCdcTest {
 
@@ -185,9 +178,9 @@ class PostgresSourceCdcTest {
     final Database database = getDatabaseFromConfig(config);
     database.query(ctx -> {
       ctx.fetch(
-              "UPDATE names SET power = 10000.2 WHERE first_name = 'san';");
+          "UPDATE names SET power = 10000.2 WHERE first_name = 'san';");
       ctx.fetch(
-              "DELETE FROM names WHERE first_name = 'san';");
+          "DELETE FROM names WHERE first_name = 'san';");
       return null;
     });
     database.close();
@@ -234,19 +227,18 @@ class PostgresSourceCdcTest {
     final String data = MoreResources.readResource(resourceName);
 
     final AirbyteRecordMessage recordMessage = new AirbyteRecordMessage()
-            .withStream(stream)
-            .withData(Jsons.deserialize(data))
-            .withEmittedAt(emittedAt.toEpochMilli());
+        .withStream(stream)
+        .withData(Jsons.deserialize(data))
+        .withEmittedAt(emittedAt.toEpochMilli());
 
     return new AirbyteMessage()
-            .withType(AirbyteMessage.Type.RECORD)
-            .withRecord(recordMessage);
+        .withType(AirbyteMessage.Type.RECORD)
+        .withRecord(recordMessage);
   }
 
   private static void deepCompare(Object expected, Object actual) throws JsonProcessingException {
     ObjectMapper objectMapper = new ObjectMapper();
     assertEquals(objectMapper.readTree(Jsons.serialize(expected)), objectMapper.readTree(Jsons.serialize(actual)));
   }
-
 
 }

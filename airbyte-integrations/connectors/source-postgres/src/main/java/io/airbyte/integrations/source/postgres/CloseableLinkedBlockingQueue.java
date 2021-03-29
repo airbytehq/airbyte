@@ -24,10 +24,8 @@
 
 package io.airbyte.integrations.source.postgres;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.lang.CloseableQueue;
 import io.airbyte.protocol.models.AirbyteMessage;
-
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class CloseableLinkedBlockingQueue extends LinkedBlockingQueue<AirbyteMessage> implements CloseableQueue<AirbyteMessage> {
