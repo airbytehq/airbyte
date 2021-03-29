@@ -32,6 +32,7 @@ import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.redshift.RedshiftCopyDestination.S3Config;
 import io.airbyte.integrations.standardtest.destination.TestDestination;
 import java.nio.file.Path;
 import java.sql.SQLException;
@@ -42,7 +43,12 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.JSONFormat;
 import org.jooq.JSONFormat.RecordFormat;
 
-public class RedshiftIntegrationTest extends TestDestination {
+/**
+ * Integration test testing the {@link RedshiftInsertDestination}. As the Redshift test credentials
+ * contain S3 credentials by default, we remove these credentials in the {@link #getStaticConfig()}
+ * method.
+ */
+public class RedshiftInsertIntegrationTest extends TestDestination {
 
   private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
   // config from which to create / delete schemas.
@@ -62,7 +68,8 @@ public class RedshiftIntegrationTest extends TestDestination {
   }
 
   private static JsonNode getStaticConfig() {
-    return Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
+    var original = Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
+    return S3Config.purge(original);
   }
 
   @Override

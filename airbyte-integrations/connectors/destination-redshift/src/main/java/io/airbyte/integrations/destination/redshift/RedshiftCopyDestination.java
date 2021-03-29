@@ -29,6 +29,7 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Databases;
@@ -214,6 +215,18 @@ public class RedshiftCopyDestination {
         throw new RuntimeException("Error: Partially missing S3 Configuration.");
       }
       return true;
+    }
+
+    /**
+     * Convenince method for removing all S3 related configurations field. Mainly used during testing.
+     */
+    public static JsonNode purge(JsonNode config) {
+      var original = (ObjectNode) Jsons.clone(config);
+      original.remove("s3_bucket_name");
+      original.remove("s3_bucket_region");
+      original.remove("access_key_id");
+      original.remove("secret_access_key");
+      return original;
     }
 
   }
