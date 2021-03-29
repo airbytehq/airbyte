@@ -83,6 +83,8 @@
   "form.destinationConnector": "Destination connector",
   "form.addItems": "Add",
   "form.items": "Items",
+  "form.toSaveSchema": "To save the new schema, click on Save changes.",
+  "form.noteStartSync": "Note that it will delete all the data in your destination and start syncing from scratch. ",
 
   "preferences.title": "Specify your preferences",
   "preferences.anonymizeUsage": "Anonymize usage data collection",
