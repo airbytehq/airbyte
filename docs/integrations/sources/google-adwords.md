@@ -37,9 +37,9 @@ This guide will provide information as if starting from scratch. Please skip ove
 * Create an Adwords MANAGER Account. Here are [Google's instruction](https://ads.google.com/home/tools/manager-accounts/) on how to create one.
 * You should now have two Google Ads accounts: a normal account and a manager account. Link the Manager account to the normal account following [Google's documentation](https://support.google.com/google-ads/answer/7459601).
 * Apply for a developer token on your Manager account. This token allows you to access your data from the Google Ads API. Here are [Google's instructions](https://developers.google.com/google-ads/api/docs/first-call/dev-token). The docs are a little unclear on this point, but you will _not_ be able to access your data via the Google Ads API until this token is approved. You cannot use a test developer token, it has to be at least a basic developer token. It usually takes Google 24 hours to respond to these applications.
+  * Do not mention Airbyte in your application. Google currently mistakes Airbyte for a 3rd-party tool and will decline your request. See [issue 1981](https://github.com/airbytehq/airbyte/issues/1981) for more information.
   * This is the value you will use in the `developer_token` field.
 * Fetch your `client_id`, `client_secret`, and `refresh_token`. Google provides [instructions](https://developers.google.com/adwords/api/docs/guides/first-api-call#set_up_oauth2_authentication) on how to do this.
 * Select your `customer_ids`. The `customer_ids` refer to the id of each of your Google Ads accounts. This is the 10 digit number in the top corner of the page when you are in google ads ui. The source will only pull data from the accounts for which you provide an id. If you are having trouble finding it, check out [Google's instructions](https://support.google.com/google-ads/answer/1704344).
 
 Wow! That was a lot of steps. We are working on making the OAuth flow for all of our connectors simpler \(allowing you to skip needing to get a `developer_token` and a `refresh_token` which are the most painful / time-consuming steps in this walkthrough\).
-
