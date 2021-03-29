@@ -26,50 +26,16 @@ package io.airbyte.integrations.destination.redshift;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.amazonaws.services.s3.AmazonS3;
-import java.io.IOException;
-import java.net.ServerSocket;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @DisplayName("Redshift Desintation Efficient Upload")
 public class RedshiftCopyDestinationTest {
-
-  private final static String DEFAULT_REGION = "us-west-2";
-
-  private int s3Port;
-  private AmazonS3 client;
-
-  @BeforeEach
-  void setUp() {
-    s3Port = InMemLocalS3.setUpLocalS3AndGetPort();
-    client = InMemLocalS3.getLocalS3Client(s3Port, DEFAULT_REGION);
-  }
-
   @Test
   @DisplayName("Should correctly extract region from Redshift url")
   void extractRegionFromRedshiftUrlTest() {
     var region = RedshiftCopyDestination.extractRegionFromRedshiftUrl("redshift-cluster-1.c5lzdndklo9c.us-east-2.redshift.amazonaws.com");
     assertEquals("us-east-2", region);
-  }
-
-  private int findFreeLocalPort() {
-    for (int i = 49152; i < 65535; i++) {
-      if (isLocalPortFree(i)) {
-        return i;
-      }
-    }
-    throw new RuntimeException("no available port");
-  }
-
-  private boolean isLocalPortFree(int port) {
-    try {
-      new ServerSocket(port).close();
-      return true;
-    } catch (IOException e) {
-      return false;
-    }
   }
 
 }

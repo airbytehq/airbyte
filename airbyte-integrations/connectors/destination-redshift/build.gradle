@@ -28,7 +28,6 @@ dependencies {
 
     testImplementation project(':airbyte-test-utils')
 
-    testImplementation 'io.findify:s3mock_2.13:0.2.6'
     testImplementation 'org.apache.commons:commons-text:1.9'
     testImplementation 'org.apache.commons:commons-lang3:3.11'
     testImplementation 'org.apache.commons:commons-dbcp2:2.7.0'
