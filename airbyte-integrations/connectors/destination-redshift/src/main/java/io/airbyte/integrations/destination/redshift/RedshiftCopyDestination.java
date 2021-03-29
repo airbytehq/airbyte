@@ -65,7 +65,7 @@ public class RedshiftCopyDestination {
   private static final StandardNameTransformer namingResolver = new StandardNameTransformer();
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftCopyDestination.class);
 
-  public DestinationConsumer write(JsonNode config, ConfiguredAirbyteCatalog catalog) {
+  public DestinationConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) {
     return new RedshiftCopyDestinationConsumer(config, catalog);
   }
 

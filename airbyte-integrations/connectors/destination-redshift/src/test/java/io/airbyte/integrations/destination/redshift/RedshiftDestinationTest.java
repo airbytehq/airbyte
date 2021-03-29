@@ -45,7 +45,7 @@ public class RedshiftDestinationTest {
   @DisplayName("When given S3 credentials should use COPY")
   public void useCopyStrategyTest() throws Exception {
     var copyMock = mock(RedshiftCopyDestination.class);
-    when(copyMock.write(any(), any())).thenReturn(mock(RedshiftCopyDestinationConsumer.class));
+    when(copyMock.getConsumer(any(), any())).thenReturn(mock(RedshiftCopyDestinationConsumer.class));
     var insertMock = mock(RedshiftInsertDestination.class);
     var redshiftDest = new RedshiftDestination(copyMock, insertMock);
 
@@ -56,8 +56,8 @@ public class RedshiftDestinationTest {
     stubConfig.put("secret_access_key", "test key");
     var catalogMock = mock(ConfiguredAirbyteCatalog.class);
 
-    redshiftDest.write(stubConfig, catalogMock);
-    verify(copyMock, times(1)).write(any(), any());
+    redshiftDest.getConsumer(stubConfig, catalogMock);
+    verify(copyMock, times(1)).getConsumer(any(), any());
 
   }
 
@@ -72,7 +72,7 @@ public class RedshiftDestinationTest {
     var stubConfig = mapper.createObjectNode();
     var catalogMock = mock(ConfiguredAirbyteCatalog.class);
 
-    redshiftDest.write(stubConfig, catalogMock);
+    redshiftDest.getConsumer(stubConfig, catalogMock);
     verify(insertMock, times(1)).getConsumer(any(), any());
   }
 

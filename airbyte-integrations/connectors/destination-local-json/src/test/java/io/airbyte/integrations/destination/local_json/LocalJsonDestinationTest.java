@@ -160,7 +160,7 @@ class LocalJsonDestinationTest {
 
   @Test
   void testWriteSuccess() throws Exception {
-    final DestinationConsumer<AirbyteMessage> consumer = getDestination().getConsumer(config, CATALOG);
+    final DestinationConsumer consumer = getDestination().getConsumer(config, CATALOG);
 
     consumer.accept(MESSAGE_USERS1);
     consumer.accept(MESSAGE_TASKS1);
@@ -199,7 +199,7 @@ class LocalJsonDestinationTest {
     final AirbyteMessage spiedMessage = spy(MESSAGE_USERS1);
     doThrow(new RuntimeException()).when(spiedMessage).getRecord();
 
-    final DestinationConsumer<AirbyteMessage> consumer = spy(getDestination().getConsumer(config, CATALOG));
+    final DestinationConsumer consumer = spy(getDestination().getConsumer(config, CATALOG));
 
     assertThrows(RuntimeException.class, () -> consumer.accept(spiedMessage));
     consumer.accept(MESSAGE_USERS2);
