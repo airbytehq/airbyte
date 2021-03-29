@@ -43,7 +43,8 @@ import io.airbyte.protocol.models.AirbyteMessage;
  * <li>4. Always (on success or failure) finalize by calling
  * {@link DestinationConsumer#close()}</li>
  *
- * We encourage implementing this interface using the {@link FailureTrackingConsumer} class.
+ * We encourage implementing this interface using the {@link FailureTrackingDestinationConsumer}
+ * class.
  */
 public interface DestinationConsumer extends CheckedConsumer<AirbyteMessage, Exception>, AutoCloseable {
 

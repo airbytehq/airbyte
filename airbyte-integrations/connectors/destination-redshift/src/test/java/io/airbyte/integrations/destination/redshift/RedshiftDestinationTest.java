@@ -66,14 +66,14 @@ public class RedshiftDestinationTest {
   public void useInsertStrategyTest() throws Exception {
     var copyMock = mock(RedshiftCopyDestination.class);
     var insertMock = mock(RedshiftInsertDestination.class);
-    when(insertMock.write(any(), any())).thenReturn(mock(RedshiftCopyDestinationConsumer.class));
+    when(insertMock.getConsumer(any(), any())).thenReturn(mock(RedshiftCopyDestinationConsumer.class));
     var redshiftDest = new RedshiftDestination(copyMock, insertMock);
 
     var stubConfig = mapper.createObjectNode();
     var catalogMock = mock(ConfiguredAirbyteCatalog.class);
 
     redshiftDest.write(stubConfig, catalogMock);
-    verify(insertMock, times(1)).write(any(), any());
+    verify(insertMock, times(1)).getConsumer(any(), any());
   }
 
 }

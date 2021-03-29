@@ -40,9 +40,9 @@ import org.slf4j.LoggerFactory;
  * Though not necessary, we highly encourage using this class when implementing destinations. See
  * child classes for examples.
  */
-public abstract class FailureTrackingConsumer implements DestinationConsumer {
+public abstract class FailureTrackingDestinationConsumer implements DestinationConsumer {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(FailureTrackingConsumer.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(FailureTrackingDestinationConsumer.class);
 
   private boolean hasFailed = false;
 

@@ -35,7 +35,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.DestinationConsumer;
-import io.airbyte.integrations.base.FailureTrackingConsumer;
+import io.airbyte.integrations.base.FailureTrackingDestinationConsumer;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
@@ -68,7 +68,6 @@ public class RedshiftCopyDestination {
   public DestinationConsumer write(JsonNode config, ConfiguredAirbyteCatalog catalog) {
     return new RedshiftCopyDestinationConsumer(config, catalog);
   }
-
 
   public AirbyteConnectionStatus check(JsonNode config) {
     try {
@@ -126,8 +125,7 @@ public class RedshiftCopyDestination {
     return split[2];
   }
 
-  static class RedshiftCopyDestinationConsumer extends FailureTrackingConsumer {
-
+  static class RedshiftCopyDestinationConsumer extends FailureTrackingDestinationConsumer {
 
     private final ConfiguredAirbyteCatalog catalog;
     private final JdbcDatabase redshiftDb;
