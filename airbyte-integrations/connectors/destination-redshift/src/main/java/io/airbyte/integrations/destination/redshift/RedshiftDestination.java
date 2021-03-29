@@ -25,6 +25,7 @@
 package io.airbyte.integrations.destination.redshift;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.Destination;
@@ -42,6 +43,9 @@ public class RedshiftDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftDestination.class);
 
+  private final RedshiftInsertDestination insert;
+  private final RedshiftCopyDestination copy;
+
   public static void main(String[] args) throws Exception {
     final Destination destination = new RedshiftDestination();
     LOGGER.info("starting destination: {}", RedshiftDestination.class);
@@ -49,12 +53,22 @@ public class RedshiftDestination implements Destination {
     LOGGER.info("completed destination: {}", RedshiftDestination.class);
   }
 
+  public RedshiftDestination() {
+    this(new RedshiftCopyDestination(), new RedshiftInsertDestination());
+  }
+
+  @VisibleForTesting
+  public RedshiftDestination(RedshiftCopyDestination copy, RedshiftInsertDestination insert) {
+    this.copy = copy;
+    this.insert = insert;
+  }
+
   @Override
   public DestinationConsumer<AirbyteMessage> write(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
     if (hasCopyConfigs(config)) {
-      return new RedshiftCopyDestination().write(config, catalog);
+      return copy.write(config, catalog);
     }
-    return new RedshiftInsertDestination().write(config, catalog);
+    return insert.write(config, catalog);
   }
 
   @Override
@@ -66,9 +80,9 @@ public class RedshiftDestination implements Destination {
   @Override
   public AirbyteConnectionStatus check(JsonNode config) throws Exception {
     if (hasCopyConfigs(config)) {
-      return new RedshiftCopyDestination().check(config);
+      return copy.check(config);
     }
-    return new RedshiftInsertDestination().check(config);
+    return insert.check(config);
   }
 
   public static boolean hasCopyConfigs(JsonNode config) {

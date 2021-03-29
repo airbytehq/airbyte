@@ -31,6 +31,7 @@ import org.junit.jupiter.api.Test;
 
 @DisplayName("Redshift Desintation Efficient Upload")
 public class RedshiftCopyDestinationTest {
+
   @Test
   @DisplayName("Should correctly extract region from Redshift url")
   void extractRegionFromRedshiftUrlTest() {

@@ -119,12 +119,12 @@ public class RedshiftCopyDestination {
    * Although unlikely, might break if the url schema changes.
    */
   @VisibleForTesting
-  static String extractRegionFromRedshiftUrl(String url) {
+  private static String extractRegionFromRedshiftUrl(String url) {
     var split = url.split("\\.");
     return split[2];
   }
 
-  private static class RedshiftCopyDestinationConsumer extends FailureTrackingConsumer<AirbyteMessage> {
+  static class RedshiftCopyDestinationConsumer extends FailureTrackingConsumer<AirbyteMessage> {
 
     private final ConfiguredAirbyteCatalog catalog;
     private final JdbcDatabase redshiftDb;
@@ -202,7 +202,8 @@ public class RedshiftCopyDestination {
       var accessKeyIdNode = config.get("access_key_id");
       var secretAccessKeyNode = config.get("secret_access_key");
 
-      // Since region is a Json schema enum with an empty string default, we consider the empty string an unset field.
+      // Since region is a Json schema enum with an empty string default, we consider the empty string an
+      // unset field.
       var emptyRegion = regionNode == null || regionNode.asText().equals("");
 
       if (bucketNode == null && emptyRegion && accessKeyIdNode == null && secretAccessKeyNode == null) {
