@@ -119,7 +119,7 @@ class JobTrackerTest {
         .thenReturn(new StandardSourceDefinition()
             .withSourceDefinitionId(UUID1)
             .withName(SOURCE_DEF_NAME)
-            .withDockerImageTag(SOURCE_DEF_NAME + ":" + CONNECTOR_VERSION));
+            .withDockerImageTag(CONNECTOR_VERSION));
 
     assertCheckConnCorrectMessageForEachState((jobState, output) -> jobTracker.trackCheckConnectionSource(JOB_ID, UUID1, jobState, output), metadata);
   }
@@ -139,7 +139,7 @@ class JobTrackerTest {
         .thenReturn(new StandardDestinationDefinition()
             .withDestinationDefinitionId(UUID2)
             .withName(DESTINATION_DEF_NAME)
-            .withDockerImageTag(DESTINATION_DEF_NAME + ":" + CONNECTOR_VERSION));
+            .withDockerImageTag(CONNECTOR_VERSION));
 
     assertCheckConnCorrectMessageForEachState((jobState, output) -> jobTracker.trackCheckConnectionDestination(JOB_ID, UUID2, jobState, output),
         metadata);
@@ -160,7 +160,7 @@ class JobTrackerTest {
         .thenReturn(new StandardSourceDefinition()
             .withSourceDefinitionId(UUID1)
             .withName(SOURCE_DEF_NAME)
-            .withDockerImageTag(SOURCE_DEF_NAME + ":" + CONNECTOR_VERSION));
+            .withDockerImageTag(CONNECTOR_VERSION));
 
     assertCorrectMessageForEachState((jobState) -> jobTracker.trackDiscover(JOB_ID, UUID1, jobState), metadata);
   }
@@ -225,23 +225,23 @@ class JobTrackerTest {
         .thenReturn(new StandardSourceDefinition()
             .withSourceDefinitionId(UUID1)
             .withName(SOURCE_DEF_NAME)
-            .withDockerImageTag(SOURCE_DEF_NAME + ":" + CONNECTOR_VERSION));
+            .withDockerImageTag(CONNECTOR_VERSION));
     when(configRepository.getDestinationDefinitionFromConnection(CONNECTION_ID))
         .thenReturn(new StandardDestinationDefinition()
             .withDestinationDefinitionId(UUID2)
             .withName(DESTINATION_DEF_NAME)
-            .withDockerImageTag(DESTINATION_DEF_NAME + ":" + CONNECTOR_VERSION));
+            .withDockerImageTag(CONNECTOR_VERSION));
 
     when(configRepository.getStandardSourceDefinition(UUID1))
         .thenReturn(new StandardSourceDefinition()
             .withSourceDefinitionId(UUID1)
             .withName(SOURCE_DEF_NAME)
-            .withDockerImageTag(SOURCE_DEF_NAME + ":" + CONNECTOR_VERSION));
+            .withDockerImageTag(CONNECTOR_VERSION));
     when(configRepository.getStandardDestinationDefinition(UUID2))
         .thenReturn(new StandardDestinationDefinition()
             .withDestinationDefinitionId(UUID2)
             .withName(DESTINATION_DEF_NAME)
-            .withDockerImageTag(DESTINATION_DEF_NAME + ":" + CONNECTOR_VERSION));
+            .withDockerImageTag(CONNECTOR_VERSION));
 
     final Job job = mock(Job.class);
     when(job.getId()).thenReturn(jobId);
