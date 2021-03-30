@@ -86,8 +86,6 @@ class OracleJdbcStandardSourceTest extends JdbcSourceStandardTest {
         .put("password", ORACLE_DB.getPassword())
         .build());
 
-    executeOracleStatement("alter system set processes=3000 scope=spfile");
-
     super.setup();
   }
 
