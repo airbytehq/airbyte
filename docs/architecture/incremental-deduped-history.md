@@ -1,10 +1,16 @@
-# Incremental - Append Sync
+# Incremental - Deduped History Sync
 
 ## Overview
 
-Airbyte supports syncing data in **Incremental Append** mode i.e: syncing only replicate _new_ or _modified_ data. This prevents re-fetching data that you have already replicated from a source.
+Airbyte supports syncing data in **Incremental Deduped History** mode i.e:
+1. **Incremental** means syncing only replicate _new_ or _modified_ data. This prevents re-fetching data that you have already replicated from a source.
+2. **Deduped** means that data in the final table will be unique per primary key (unlike [Append modes](incremental-append.md)). This is determined by sorting the data using the cursor field and keeping only the latest de-duplicated data row. In dimensional data warehouse jargon defined by Ralph Kimball, this is referred as a Slowly Changing Dimension (SCD) table of type 1.
+3. **History** means that an additional intermediate table is created in which data is being continuously appended to (with duplicates exactly like [Append modes](incremental-append.md)). With the use of primary key fields, it is identifying effective `start` and `end` dates of each row of a record. In dimensional data warehouse jargon, this is referred as a Slowly Changing Dimension (SCD) table of type 2.
 
-In this flavor of incremental, records in the warehouse destination will never be deleted or mutated. A copy of each new or updated record is _appended_ to the data in the warehouse. This means you can find multiple copies of the same record in the destination warehouse. We provide an "at least once" guarantee of replicating each record that is present when the sync runs.
+- In this flavor of incremental, records in the warehouse destination will never be deleted in the history tables \(named with a `_scd` suffix\), but might not exist in the final table.
+A copy of each new or updated record is _appended_ to the history data in the warehouse. Only the `end` date column is mutated when a new version of the same record is inserted to denote effective date ranges of a row. This means you can find multiple copies of the same record in the destination warehouse.  We provide an "at least once" guarantee of replicating each record that is present when the sync runs.
+
+- On the other hand, records in the final destination can potentially be deleted as they are de-duplicated. You should not find multiple copies of the same primary key as these should be unique in that table.
 
 ## Definitions
 
@@ -14,13 +20,16 @@ A `cursor field` is the _field_ or _column_ in the data where that cursor can be
 
 We will refer to the set of records that the source identifies as being new or updated as a `delta`.
 
+A `primary key` is one or multiple (called `composite primary keys`) _fields_ or _columns_ that is used to identify the unique entities of a table. Only one row per primary key value is permitted in a database table. In the data warehouse, just like in [incremental - Append](incremental-append.md), multiple rows for the same primary key can be found in the history table. The unique records per primary key behavior is mirrored in the final table with **incremental deduped** sync mode. The primary key is then used to refer to the entity which values should be updated.
+
 ## Rules
 
-As mentioned above, the delta from a sync will be _appended_ to the existing data in the data warehouse. Incremental will never delete or mutate existing records. Let's walk through a few examples.
+As mentioned above, the delta from a sync will be _appended_ to the existing history data in the data warehouse. In addition, it will update the associated record in the final table.
+Let's walk through a few examples.
 
 ### Newly Created Record
 
-Assume that `updated_at` is our `cursor_field`. Let's say the following data already exists into our data warehouse.
+Assume that `updated_at` is our `cursor_field` and `name` is the `primary_key`. Let's say the following data already exists into our data warehouse.
 
 ```javascript
 [
@@ -58,12 +67,24 @@ Let's assume that our warehouse contains all the data that it did at the end of 
 
 The output we expect to see in the warehouse is as follows:
 
+In the history table:
 ```javascript
 [
-    { "name": "Louis XVI", "deceased": false, "updated_at":  1754 },
-    { "name": "Marie Antoinette", "deceased": false, "updated_at":  1755 },
-    { "name": "Louis XVII", "deceased": false, "updated_at": 1785 },
+    { "name": "Louis XVI", "deceased": false, "updated_at":  1754, "start_at": 1754, "end_at": 1793 },
+    { "name": "Louis XVI", "deceased": true, "updated_at": 1793, "start_at": 1793, "end_at": NULL },
+
+    { "name": "Louis XVII", "deceased": false, "updated_at": 1785, "start_at": 1785, "end_at": NULL }
+
+    { "name": "Marie Antoinette", "deceased": false, "updated_at":  1755, "start_at": 1755, "end_at": 1793 },
+    { "name": "Marie Antoinette", "deceased": true, "updated_at": 1793, "start_at: 1793, "end_at": NULL }
+]
+```
+
+In the final de-duplicated table:
+```javascript
+[
     { "name": "Louis XVI", "deceased": true, "updated_at": 1793 },
+    { "name": "Louis XVII", "deceased": false, "updated_at": 1785 },
     { "name": "Marie Antoinette", "deceased": true, "updated_at": 1793 }
 ]
 ```
@@ -84,16 +105,24 @@ Some sources cannot define the cursor without user input. For example, in the [p
 
 \(You can find a more technical details about the configuration data model [here](catalog.md)\).
 
-## Getting the Latest Snapshot of data
+## Source-Defined Primary key
 
-As demonstrated in the examples above, with **Incremental Append,** a record which was updated in the source will be appended to the destination rather than updated in-place. This means that if data in the source uses a primary key \(e.g: `user_id` in the `users` table\), then the destination will end up having multiple records with the same primary key value.
+Some sources are able to determine the primary key that they use without any user input. For example, in the \(JDBC\) Database sources, primary key can be defined in the table's metadata.
 
-However, some use cases require only the latest snapshot of the data.
-This is available by using other flavors of sync modes such as [Incremental - Deduped History](incremental-deduped-history.md) instead.
+## User-Defined Primary key
 
-Note that in **Incremental Append**, the size of the data in your warehouse increases monotonically since an updated record in the source is appended to the destination rather than updated in-place.
+Some sources cannot define the cursor without user input or the user may want to specify their own primary key on the destination that is different from the source definitions. In these cases, select the column in the sync settings dropdown that should be used as the `primary key` or `composite primary keys`.
 
-If you only care about having the latest snapshot of your data, you may want to look at other sync modes that will keep smaller copies of the replicated data or you can periodically run cleanup jobs which retain only the latest instance of each record.
+![](../.gitbook/assets/primary_key_user_defined.png)
+
+In this example, we selected both the `campaigns.id` and `campaigns.name` as the composite primary key of our `campaigns` table.
+
+Note that in **Incremental Deduped History**, the size of the data in your warehouse increases monotonically since an updated record in the source is appended to the destination history table rather than updated in-place as it is done with the final table.
+If you only care about having the latest snapshot of your data, you may want to periodically run cleanup jobs which retain only the latest instance of each record in the history tables.
+
+## Inclusive Cursors
+
+When replicating data incrementally, Airbyte provides an at-least-once delivery guarantee. This means that it is acceptable for sources to re-send some data when run replicating incrementally. One case where this is particularly relevant is when a source's cursor is not very granular. For example, if a cursor field has the granularity of a day \(but not hours, seconds, etc\), then if that source is run twice in the same day, there is no way for the source to know which records that are that date were already replicated earlier that day. By convention, sources should prefer resending data if the cursor field is ambiguous.
 
 ## Inclusive Cursors
 
