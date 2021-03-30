@@ -31,7 +31,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream.DestinationSyncMode;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
@@ -68,7 +68,7 @@ public class RedshiftCopier {
 
   private final String s3BucketName;
   private final String stagingFolder;
-  private final SyncMode syncMode;
+  private final DestinationSyncMode destSyncMode;
   private final String schemaName;
   private final String streamName;
   private final AmazonS3 s3Client;
@@ -85,7 +85,7 @@ public class RedshiftCopier {
   public RedshiftCopier(
                         String s3BucketName,
                         String stagingFolder,
-                        SyncMode syncMode,
+                        DestinationSyncMode destSyncMode,
                         String schema,
                         String streamName,
                         AmazonS3 client,
@@ -96,7 +96,7 @@ public class RedshiftCopier {
       throws IOException {
     this.s3BucketName = s3BucketName;
     this.stagingFolder = stagingFolder;
-    this.syncMode = syncMode;
+    this.destSyncMode = destSyncMode;
     this.schemaName = schema;
     this.streamName = streamName;
     this.s3Client = client;
@@ -205,9 +205,9 @@ public class RedshiftCopier {
 
     LOGGER.info("Preparing to merge tmp table {} to dest table {} in destination.", tmpTableName, destTableName);
     var queries = new StringBuilder();
-    if (syncMode.equals(SyncMode.FULL_REFRESH)) {
+    if (destSyncMode.equals(DestinationSyncMode.OVERWRITE)) {
       queries.append(REDSHIFT_SQL_OPS.truncateTableQuery(schemaName, destTableName));
-      LOGGER.info("FULL_REFRESH detected. Dest table {} truncated.", destTableName);
+      LOGGER.info("Destination OVERWRITE mode detected. Dest table {} truncated.", destTableName);
     }
     queries.append(REDSHIFT_SQL_OPS.copyTableQuery(schemaName, tmpTableName, destTableName));
     return queries.toString();
