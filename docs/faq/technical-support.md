@@ -44,7 +44,7 @@ If the above workaround does not fix your problem, please report it [here](https
 
 ## Your incremental connection is not working
 
-Our current version of incremental is [append](../architecture/incremental.md). It works from a cursor field. So you need to check which cursor field you're using and if it's well populated in every record in your table.
+Our current version of incremental is [append](../architecture/incremental-append.md). It works from a cursor field. So you need to check which cursor field you're using and if it's well populated in every record in your table.
 
 If this is true, then, there are still several things to check:
 

@@ -51,7 +51,7 @@ Here's the outline of what we'll do to build our connector:
 
 Once we've completed the above steps, we will have built a functioning connector. Then, we'll add some optional functionality:
 
-* Support [incremental sync](../architecture/incremental.md)
+* Support [incremental sync](../architecture/incremental-append.md)
 * Add custom integration tests
 
 ### 1. Bootstrap the connector package
