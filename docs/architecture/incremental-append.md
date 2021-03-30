@@ -132,11 +132,11 @@ At the end of the second incremental sync, the data warehouse would still contai
 
 Similarly, if multiple modifications are made during the same day to the same records.
 If the frequency of the sync is not granular enough (for example, set for every 24h),
-then intermediate modifications to the data is not going to be detected and emitted.
+then intermediate modifications to the data are not going to be detected and emitted.
 Only the state of the data of when the sync is running will be reflected in the destination.
 
 Those concerns could be solved by using a different sync mode based on binary logs, Write-Ahead-Logs \(WAL\), or also called **Incremental - Change Data Capture**. \(coming to Airbyte in the near future\).
 
-When the source's schema changes, for example, when a column is added, renamed or deleted to an existing stream, the current behavior of **Incremental** is not able to handle such events yet. Therefore, it is recommended to trigger a [Full refresh - Overwrite](full-refresh-overwrite.md) to recreate at the destination the data with the new metadata included.
+The current behavior of **Incremental** is not able to handle when the source's schema changes, for example, when a column is added, renamed or deleted to an existing stream,such events yet. It is recommended to trigger a [Full refresh - Overwrite](full-refresh-overwrite.md) to correctly replicate the data to the destination with the new schema changes.
 
 If you are not satisfied with how transformations are applied on top of the appended data, you can find more relevant SQL transformations you might need to do on your data in the [Connecting EL with T using SQL \(part 1/2\)](../tutorials/connecting-el-with-t-using-sql.md#simple-sql-query)
