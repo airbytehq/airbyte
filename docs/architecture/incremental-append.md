@@ -101,7 +101,7 @@ When replicating data incrementally, Airbyte provides an at-least-once delivery 
 
 ## Known Limitations
 
-Due to the use of a cursor column, if modifications to the underlying records are made without properly updating the cursor field, then the updated records won't be picked up by the **Incremental** sync as expected because the source connectors is extracting delta rows using a SQL query looking like:
+Due to the use of a cursor column, if modifications to the underlying records are made without properly updating the cursor field, then the updated records won't be picked up by the **Incremental** sync as expected since the source connectors extract delta rows using a SQL query looking like:
 
 ```sql
 select * from table where cursor_field > 'last_sync_max_cursor_field_value'
@@ -115,14 +115,14 @@ Let's say the following data already exists into our data warehouse.
 ]
 ```
 
-In the next sync, the delta applied to the source data contains the following record:
+At the start of the next sync, the source data contains the following new record:
 ```javascript
 [
     { "name": "Louis XVI", "deceased": true, "updated_at":  1754 },
 ]
 ```
 
-At the end of this incremental sync, the data warehouse would still contain data from the first sync because the delta record did not provide a valid value for the cursor field (the cursor field is not greater than last sync's max value, `1754 < 1755`), so it is not emitted by the source as a new or modified record.
+At the end of the second incremental sync, the data warehouse would still contain data from the first sync because the delta record did not provide a valid value for the cursor field (the cursor field is not greater than last sync's max value, `1754 < 1755`), so it is not emitted by the source as a new or modified record.
 ```javascript
 [
     { "name": "Louis XVI", "deceased": false, "updated_at":  1754 },
