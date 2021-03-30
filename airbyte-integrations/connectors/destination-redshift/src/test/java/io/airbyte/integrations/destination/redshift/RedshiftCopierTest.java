@@ -179,8 +179,9 @@ public class RedshiftCopierTest {
     sqlOp.createTableIfNotExists(redshiftDb, SCHEMA_NAME, RAW_TABLE_NAME);
     sqlOp.insertRecords(redshiftDb, List.of(getAirbyteRecordMessage()).stream(), SCHEMA_NAME, RAW_TABLE_NAME);
 
-    var copier = new RedshiftCopier(TEST_BUCKET, RUN_FOLDER, DestinationSyncMode.APPEND_DEDUP, SCHEMA_NAME, STREAM_NAME, s3Client, redshiftDb, S3_KEY_ID,
-        S3_KEY, S3_REGION);
+    var copier =
+        new RedshiftCopier(TEST_BUCKET, RUN_FOLDER, DestinationSyncMode.APPEND_DEDUP, SCHEMA_NAME, STREAM_NAME, s3Client, redshiftDb, S3_KEY_ID,
+            S3_KEY, S3_REGION);
 
     AirbyteRecordMessage msg = getAirbyteRecordMessage();
 
