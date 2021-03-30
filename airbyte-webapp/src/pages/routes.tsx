@@ -10,6 +10,7 @@ import SourcesPage from "./SourcesPage";
 import DestinationPage from "./DestinationPage";
 import PreferencesPage from "./PreferencesPage";
 import OnboardingPage from "./OnboardingPage";
+import ConnectionPage from "./ConnectionPage";
 import AdminPage from "./AdminPage";
 import LoadingPage from "../components/LoadingPage";
 import MainView from "../components/MainView";
@@ -26,6 +27,7 @@ export enum Routes {
   Preferences = "/preferences",
   Onboarding = "/onboarding",
 
+  Connections = "/connections",
   Destination = "/destination",
   Source = "/source",
   Connection = "/connection",
@@ -98,6 +100,9 @@ const MainViewRoutes = () => {
           </Route>
           <Route path={Routes.Admin}>
             <AdminPage />
+          </Route>
+          <Route path={Routes.Connections}>
+            <ConnectionPage />
           </Route>
           <Route exact path={Routes.Root}>
             <SourcesPage />

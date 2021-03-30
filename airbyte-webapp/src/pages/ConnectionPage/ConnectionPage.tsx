@@ -7,6 +7,7 @@ import LoadingPage from "components/LoadingPage";
 import ConnectionItemPage from "./pages/ConnectionItemPage";
 import CreationFormPage from "./pages/CreationFormPage";
 import useRouter from "components/hooks/useRouterHook";
+import AllConnectionsPage from "./pages/AllConnectionsPage";
 
 const FallbackRootRedirector = () => <Redirect to={Routes.Root} />;
 
@@ -18,13 +19,18 @@ const ConnectionPage: React.FC = () => {
       <Switch>
         <Route
           path={[
+            `${Routes.Connections}${Routes.ConnectionNew}`,
             `${Routes.Source}${Routes.ConnectionNew}`,
             `${Routes.Destination}${Routes.ConnectionNew}`,
           ]}
         >
           <CreationFormPage
             type={
-              location.pathname === `${Routes.Source}${Routes.ConnectionNew}`
+              location.pathname ===
+              `${Routes.Connections}${Routes.ConnectionNew}`
+                ? "connection"
+                : location.pathname ===
+                  `${Routes.Source}${Routes.ConnectionNew}`
                 ? "destination"
                 : "source"
             }
@@ -32,6 +38,7 @@ const ConnectionPage: React.FC = () => {
         </Route>
         <Route
           path={[
+            `${Routes.Connections}/:id`,
             `${Routes.Source}${Routes.Connection}/:id`,
             `${Routes.Destination}${Routes.Connection}/:id`,
           ]}
@@ -39,6 +46,9 @@ const ConnectionPage: React.FC = () => {
           <ErrorBoundary fallbackComponent={FallbackRootRedirector}>
             <ConnectionItemPage />
           </ErrorBoundary>
+        </Route>
+        <Route path={Routes.Connections}>
+          <AllConnectionsPage />
         </Route>
         <Redirect to={Routes.Root} />
       </Switch>

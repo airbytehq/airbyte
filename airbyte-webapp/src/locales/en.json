@@ -7,6 +7,7 @@
   "sidebar.help": "Help",
   "sidebar.docs": "Docs",
   "sidebar.slack": "Slack",
+  "sidebar.connections": "Connections",
 
   "form.continue": "Continue",
   "form.emailOptional": "Your email (optional)",
@@ -188,6 +189,8 @@
   "connection.resetData": "Reset your data",
   "connection.updateSchema": "Update latest source schema",
   "connection.updateSchemaText": "WARNING! Updating the schema will delete all the data for this connection in your destination and start syncing from scratch. Are you sure you want to do this?",
+  "connection.newConnection": "+ new connection",
+  "connection.newConnectionTitle": "New connection",
 
   "tables.sourceIsValidating": "Validating the source",
   "tables.sourceIsValidatingBefore": "before you add a new destination",

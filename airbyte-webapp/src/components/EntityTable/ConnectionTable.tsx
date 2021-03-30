@@ -18,7 +18,7 @@ const Content = styled.div`
 
 type IProps = {
   data: ITableDataItem[];
-  entity: "source" | "destination";
+  entity: "source" | "destination" | "connection";
   onClickRow?: (data: ITableDataItem) => void;
   onChangeStatus: (id: string) => void;
   onSync: (id: string) => void;
@@ -34,7 +34,12 @@ const ConnectionTable: React.FC<IProps> = ({
   const columns = React.useMemo(
     () => [
       {
-        Header: <FormattedMessage id={`tables.${entity}ConnectionToName`} />,
+        Header:
+          entity === "connection" ? (
+            <FormattedMessage id="tables.destinationConnectionToName" />
+          ) : (
+            <FormattedMessage id={`tables.${entity}ConnectionToName`} />
+          ),
         headerHighlighted: true,
         accessor: "entityName",
         customWidth: 40,
@@ -43,11 +48,17 @@ const ConnectionTable: React.FC<IProps> = ({
             value={cell.value}
             enabled={row.original.enabled}
             status={row.original.lastSyncStatus}
+            icon={entity === "connection"}
           />
         ),
       },
       {
-        Header: <FormattedMessage id="tables.connector" />,
+        Header:
+          entity === "connection" ? (
+            <FormattedMessage id="tables.sourceConnectionToName" />
+          ) : (
+            <FormattedMessage id="tables.connector" />
+          ),
         accessor: "connectorName",
         Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
           <ConnectorCell value={cell.value} enabled={row.original.enabled} />
