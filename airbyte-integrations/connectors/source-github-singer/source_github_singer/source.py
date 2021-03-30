@@ -23,12 +23,10 @@ SOFTWARE.
 """
 
 import json
-import sys
 from typing import Dict, List
 
 import requests
 from airbyte_protocol import AirbyteConnectionStatus, Status, SyncMode
-from base_python import AirbyteLogger
 from base_singer import SingerSource, SyncModeInfo
 
 
