@@ -21,6 +21,8 @@ services:
       - POSTGRES_DB=db-${DATABASE_DB}
     volumes:
       - db:/var/lib/postgresql/data
+    ports:
+      - 5433:5432
   seed:
     image: airbyte/seed:${VERSION}
     container_name: airbyte-data-seed
@@ -45,6 +47,7 @@ services:
       - TRACKING_STRATEGY=${TRACKING_STRATEGY}
       - AIRBYTE_VERSION=${VERSION}
       - AIRBYTE_ROLE=${AIRBYTE_ROLE:-}
+      - TEMPORAL_HOST=${TEMPORAL_HOST}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - workspace:${WORKSPACE_ROOT}
@@ -65,6 +68,7 @@ services:
       - AIRBYTE_VERSION=${VERSION}
       - AIRBYTE_ROLE=${AIRBYTE_ROLE:-}
       - WORKSPACE_ROOT=${WORKSPACE_ROOT}
+      - TEMPORAL_HOST=${TEMPORAL_HOST}
     ports:
       - 8001:8001
     volumes:
