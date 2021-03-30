@@ -74,7 +74,6 @@ import io.temporal.api.workflowservice.v1.RequestCancelWorkflowExecutionRequest;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 public class SchedulerHandler {
 
@@ -249,10 +248,7 @@ public class SchedulerHandler {
     final ConnectorSpecification spec = response.getOutput();
     return new DestinationDefinitionSpecificationRead()
         .jobInfo(JobConverter.getSynchronousJobRead(response))
-        .supportedDestinationSyncModes(spec.getSupportedDestinationSyncModes()
-            .stream()
-            .map(m -> Enums.convertTo(m, DestinationSyncMode.class))
-            .collect(Collectors.toList()))
+        .supportedDestinationSyncModes(Enums.convertListTo(spec.getSupportedDestinationSyncModes(), DestinationSyncMode.class))
         .connectionSpecification(spec.getConnectionSpecification())
         .documentationUrl(spec.getDocumentationUrl().toString())
         .destinationDefinitionId(destinationDefinitionId);
