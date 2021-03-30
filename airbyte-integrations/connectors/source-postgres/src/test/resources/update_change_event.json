@@ -1,0 +1,25 @@
+{
+  "before": null,
+  "after": {
+    "first_name": "san",
+    "last_name": "goku",
+    "power": 10000.2
+  },
+  "source": {
+    "version": "1.4.2.Final",
+    "connector": "postgresql",
+    "name": "orders",
+    "ts_ms": 1616775646881,
+    "snapshot": false,
+    "db": "db_lwfoyffqvx",
+    "schema": "public",
+    "table": "names",
+    "txId": 497,
+    "lsn": 23012216,
+    "xmin": null
+  },
+  "op": "u",
+  "ts_ms": 1616775646929,
+  "transaction": null,
+  "destination": "orders.public.names"
+}
