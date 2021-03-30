@@ -84,10 +84,16 @@ class StreamAPI(ABC):
         instance.load_next_page()
 
     @backoff_policy
-    def get_instance_cursor(self, ig_user: IGUser, attribute: str, params: dict = None, fields: Sequence[str] = None) -> Cursor:
-        return getattr(ig_user, attribute)(params=params, fields=fields)
+    def get_instance_cursor(self, ig_user: IGUser, method_name: str, params: dict = None, fields: Sequence[str] = None) -> Cursor:
+        return getattr(ig_user, method_name)(params=params, fields=fields)
 
-    def pagination(self, instance: Cursor) -> Iterator[Any]:
+    def pagination(self, ig_user: IGUser, method_name: str, params: dict = None, fields: Sequence[str] = None) -> Iterator[Any]:
+        """
+        To implement pagination, we use private variables of the Cursor class.
+
+        todo: Should be careful when updating the library version.
+        """
+        instance = self.get_instance_cursor(ig_user, method_name, params, fields)
         yield from instance._queue
         next_page = not instance._finished_iteration
         while next_page:
@@ -287,9 +293,7 @@ class MediaAPI(StreamAPI):
                 yield clear_url(record_data)
 
     def _get_media(self, instagram_user: IGUser, params: dict = None, fields: Sequence[str] = None) -> Iterator[Any]:
-        media = self.get_instance_cursor(instagram_user, "get_media", params=params, fields=fields)
-        for media_obj in self.pagination(media):
-            yield media_obj
+        yield from self.pagination(instagram_user, "get_media", params=params, fields=fields)
 
     @backoff_policy
     def _get_single_record(self, media_id: str, fields: Sequence[str] = None) -> IGMedia:
@@ -313,9 +317,7 @@ class StoriesAPI(StreamAPI):
                 yield clear_url(record_data)
 
     def _get_stories(self, instagram_user: IGUser, params: dict, fields: Sequence[str] = None) -> Iterator[Any]:
-        stories = self.get_instance_cursor(instagram_user, "get_stories", params=params, fields=fields)
-        for story_obj in self.pagination(stories):
-            yield story_obj
+        yield from self.pagination(instagram_user, "get_stories", params=params, fields=fields)
 
 
 class MediaInsightsAPI(MediaAPI):

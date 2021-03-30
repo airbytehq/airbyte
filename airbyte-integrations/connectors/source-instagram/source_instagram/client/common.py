@@ -27,8 +27,6 @@ import sys
 import backoff
 from base_python.entrypoint import logger
 
-INSTAGRAM_UNKNOWN_ERROR_CODE = 99
-
 
 class InstagramAPIException(Exception):
     """General class for all API errors"""
@@ -41,7 +39,7 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
         logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} more seconds then retrying...")
 
     def should_retry_api_error(exc):
-        return exc.api_transient_error() or exc.api_error_subcode() == INSTAGRAM_UNKNOWN_ERROR_CODE
+        return exc.api_transient_error()
 
     return backoff.on_exception(
         backoff_type,
