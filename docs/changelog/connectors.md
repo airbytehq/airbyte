@@ -12,6 +12,14 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 
 Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/3) to see what we're currently working on
 
+## 03/29/2021
+
+* We started measuring throughput of connectors. This will help us improve that point for all connectors. 
+* **Redshift**: implemented Copy strategy to improve its throughput. 
+* **Instagram**: bugfix an issue which caused media and media_insights streams to stop syncing prematurely.
+* Support NCHAR and NVCHAR types in SQL-based database sources.
+* Add the ability to specify a custom JDBC parameters for the MySQL source connector.
+
 ## 03/22/2021
 
 * 2 new source connectors: **[Gitlab](https://docs.airbyte.io/integrations/sources/gitlab)** and **[Airbyte-native Hubspot](https://docs.airbyte.io/integrations/sources/hubspot)**
