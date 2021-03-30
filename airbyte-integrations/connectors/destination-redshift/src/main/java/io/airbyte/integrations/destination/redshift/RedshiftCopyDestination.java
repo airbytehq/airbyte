@@ -148,7 +148,10 @@ public class RedshiftCopyDestination {
       var stagingFolder = UUID.randomUUID().toString();
       for (var stream : catalog.getStreams()) {
         var streamName = stream.getStream().getName();
-        var syncMode = stream.getSyncMode();
+        var syncMode = stream.getDestinationSyncMode();
+        if (stream.getDestinationSyncMode() == null) {
+          throw new IllegalStateException("Undefined destination sync mode.");
+        }
         var copier = new RedshiftCopier(s3Config.bucketName, stagingFolder, syncMode, schema, streamName, s3Client, redshiftDb, s3Config.accessKeyId,
             s3Config.secretAccessKey, s3Config.region);
 

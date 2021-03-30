@@ -37,7 +37,7 @@ import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream.DestinationSyncMode;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
@@ -61,7 +61,7 @@ public class RedshiftCopierTest {
   private static String REDSHIFT_PASS = "";
 
   private static final String S3_REGION = "us-west-2";
-  private static final String TEST_BUCKET = "redshift-copier-test";
+  private static final String TEST_BUCKET = "airbyte-redshift-integration-tests";
   private static final String RUN_FOLDER = "test-folder";
   private static final String SCHEMA_NAME = "public";
   private static final String STREAM_NAME = "redshift_copier_test";
@@ -122,8 +122,8 @@ public class RedshiftCopierTest {
 
   @Test
   @DisplayName("Should wipe table before appending new data")
-  public void fullSyncTest() throws Exception {
-    var copier = new RedshiftCopier(TEST_BUCKET, RUN_FOLDER, SyncMode.FULL_REFRESH, SCHEMA_NAME, STREAM_NAME, s3Client, redshiftDb, S3_KEY_ID,
+  public void destSyncModeOverwriteTest() throws Exception {
+    var copier = new RedshiftCopier(TEST_BUCKET, RUN_FOLDER, DestinationSyncMode.OVERWRITE, SCHEMA_NAME, STREAM_NAME, s3Client, redshiftDb, S3_KEY_ID,
         S3_KEY, S3_REGION);
 
     AirbyteRecordMessage msg = getAirbyteRecordMessage();
@@ -145,13 +145,13 @@ public class RedshiftCopierTest {
 
   @Test
   @DisplayName("Should append data without wiping table")
-  public void incrementalTest() throws Exception {
+  public void destSyncModeAppendTest() throws Exception {
 
     var sqlOp = new RedshiftSqlOperations();
     sqlOp.createTableIfNotExists(redshiftDb, SCHEMA_NAME, RAW_TABLE_NAME);
     sqlOp.insertRecords(redshiftDb, List.of(getAirbyteRecordMessage()).stream(), SCHEMA_NAME, RAW_TABLE_NAME);
 
-    var copier = new RedshiftCopier(TEST_BUCKET, RUN_FOLDER, SyncMode.INCREMENTAL, SCHEMA_NAME, STREAM_NAME, s3Client, redshiftDb, S3_KEY_ID,
+    var copier = new RedshiftCopier(TEST_BUCKET, RUN_FOLDER, DestinationSyncMode.APPEND, SCHEMA_NAME, STREAM_NAME, s3Client, redshiftDb, S3_KEY_ID,
         S3_KEY, S3_REGION);
 
     AirbyteRecordMessage msg = getAirbyteRecordMessage();
@@ -174,7 +174,7 @@ public class RedshiftCopierTest {
   @Test
   public void send100KTest() throws Exception {
     var now = System.currentTimeMillis();
-    var copier = new RedshiftCopier(TEST_BUCKET, RUN_FOLDER, SyncMode.FULL_REFRESH, SCHEMA_NAME, STREAM_NAME, s3Client, redshiftDb, S3_KEY_ID,
+    var copier = new RedshiftCopier(TEST_BUCKET, RUN_FOLDER, DestinationSyncMode.OVERWRITE, SCHEMA_NAME, STREAM_NAME, s3Client, redshiftDb, S3_KEY_ID,
         S3_KEY, S3_REGION);
 
     for (int i = 0; i < 100_000; i++) {
@@ -199,10 +199,10 @@ public class RedshiftCopierTest {
   @Test
   public void send1MTest() throws Exception {
     var now = System.currentTimeMillis();
-    var copier = new RedshiftCopier(TEST_BUCKET, RUN_FOLDER, SyncMode.FULL_REFRESH, SCHEMA_NAME, STREAM_NAME, s3Client, redshiftDb, S3_KEY_ID,
+    var copier = new RedshiftCopier(TEST_BUCKET, RUN_FOLDER, DestinationSyncMode.OVERWRITE, SCHEMA_NAME, STREAM_NAME, s3Client, redshiftDb, S3_KEY_ID,
         S3_KEY, S3_REGION);
 
-    for (int i = 0; i < 1000_000; i++) {
+    for (int i = 0; i < 1_000_000; i++) {
       var msg = getAirbyteRecordMessage();
       copier.uploadToS3(msg);
     }
