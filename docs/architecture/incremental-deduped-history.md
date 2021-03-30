@@ -3,6 +3,7 @@
 ## Overview
 
 Airbyte supports syncing data in **Incremental Deduped History** mode i.e:
+
 1. **Incremental** means syncing only replicate _new_ or _modified_ data. This prevents re-fetching data that you have already replicated from a source.
 2. **Deduped** means that data in the final table will be unique per primary key (unlike [Append modes](incremental-append.md)). This is determined by sorting the data using the cursor field and keeping only the latest de-duplicated data row. In dimensional data warehouse jargon defined by Ralph Kimball, this is referred as a Slowly Changing Dimension (SCD) table of type 1.
 3. **History** means that an additional intermediate table is created in which data is being continuously appended to (with duplicates exactly like [Append modes](incremental-append.md)). With the use of primary key fields, it is identifying effective `start` and `end` dates of each row of a record. In dimensional data warehouse jargon, this is referred as a Slowly Changing Dimension (SCD) table of type 2.
