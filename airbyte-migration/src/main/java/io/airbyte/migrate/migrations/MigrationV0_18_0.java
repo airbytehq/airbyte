@@ -51,7 +51,8 @@ import org.slf4j.LoggerFactory;
  *
  * The primaryKey column is filled if available from the stream if defined by source
  *
- * Additionally, this migration updates the JSON Schema for StandardWorkspace with a new field 'tombstone' introduced in 0.17.1
+ * Additionally, this migration updates the JSON Schema for StandardWorkspace with a new field
+ * 'tombstone' introduced in 0.17.1
  */
 public class MigrationV0_18_0 extends BaseMigration implements Migration {
 
