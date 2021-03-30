@@ -25,6 +25,7 @@
 package io.airbyte.integrations.base;
 
 import io.airbyte.commons.functional.CheckedConsumer;
+import io.airbyte.protocol.models.AirbyteMessage;
 
 /**
  * Interface for the destination's consumption of incoming records wrapped in an
@@ -38,18 +39,19 @@ import io.airbyte.commons.functional.CheckedConsumer;
  * <li>1. Instantiate consumer.</li>
  * <li>2. start() to initialize any resources that need to be created BEFORE the consumer consumes
  * any messages.</li>
- * <li>3. Consumes ALL records via {@link DestinationConsumer#accept(T)}</li>
+ * <li>3. Consumes ALL records via {@link AirbyteMessageConsumer#accept(AirbyteMessage)}</li>
  * <li>4. Always (on success or failure) finalize by calling
- * {@link DestinationConsumer#close()}</li>
+ * {@link AirbyteMessageConsumer#close()}</li>
  *
- * We encourage implementing this interface using the {@link FailureTrackingConsumer} class.
+ * We encourage implementing this interface using the {@link FailureTrackingAirbyteMessageConsumer}
+ * class.
  */
-public interface DestinationConsumer<T> extends CheckedConsumer<T, Exception>, AutoCloseable {
+public interface AirbyteMessageConsumer extends CheckedConsumer<AirbyteMessage, Exception>, AutoCloseable {
 
   void start() throws Exception;
 
   @Override
-  void accept(T message) throws Exception;
+  void accept(AirbyteMessage message) throws Exception;
 
   @Override
   void close() throws Exception;
