@@ -38,8 +38,8 @@ public interface Destination extends Integration {
    * @param catalog - schema of the incoming messages.
    * @return Consumer that accepts message. The {@link AirbyteMessageConsumer#accept(AirbyteMessage)}
    *         will be called n times where n is the number of messages.
-   *         {@link AirbyteMessageConsumer#close()} will always be called once regardless of success or
-   *         failure.
+   *         {@link AirbyteMessageConsumer#close()} will always be called once regardless of success
+   *         or failure.
    * @throws Exception - any exception.
    */
   AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception;

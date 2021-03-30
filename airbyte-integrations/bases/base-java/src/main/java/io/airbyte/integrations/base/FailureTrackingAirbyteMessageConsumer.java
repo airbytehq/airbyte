@@ -30,8 +30,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Minimal abstract class intended to provide a consistent structure to classes seeking to implement
- * the {@link AirbyteMessageConsumer} interface. The original interface methods are wrapped in generic
- * exception handlers - any exception is caught and logged.
+ * the {@link AirbyteMessageConsumer} interface. The original interface methods are wrapped in
+ * generic exception handlers - any exception is caught and logged.
  *
  * Two methods are intended for extension: - startTracked: Wraps set up of necessary
  * infrastructure/configuration before message consumption. - acceptTracked: Wraps actual processing

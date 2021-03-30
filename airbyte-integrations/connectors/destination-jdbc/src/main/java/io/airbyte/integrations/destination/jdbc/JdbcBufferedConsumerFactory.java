@@ -60,10 +60,10 @@ public class JdbcBufferedConsumerFactory {
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcBufferedConsumerFactory.class);
 
   public static AirbyteMessageConsumer create(JdbcDatabase database,
-                                           SqlOperations sqlOperations,
-                                           NamingConventionTransformer namingResolver,
-                                           JsonNode config,
-                                           ConfiguredAirbyteCatalog catalog) {
+                                              SqlOperations sqlOperations,
+                                              NamingConventionTransformer namingResolver,
+                                              JsonNode config,
+                                              ConfiguredAirbyteCatalog catalog) {
     final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog);
 
     return new BufferedStreamConsumer(
