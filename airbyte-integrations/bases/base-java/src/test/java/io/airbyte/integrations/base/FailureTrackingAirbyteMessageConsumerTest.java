@@ -30,8 +30,11 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import org.junit.jupiter.api.Test;
 
 class FailureTrackingAirbyteMessageConsumerTest {
@@ -72,6 +75,7 @@ class FailureTrackingAirbyteMessageConsumerTest {
   void testAcceptWithFailure() throws Exception {
     final TestConsumer consumer = spy(new TestConsumer());
     final AirbyteMessage msg = mock(AirbyteMessage.class);
+    when(msg.getType()).thenReturn(Type.RECORD);
     doThrow(new RuntimeException()).when(consumer).acceptTracked(any());
 
     // verify the exception still gets thrown.
@@ -89,7 +93,7 @@ class FailureTrackingAirbyteMessageConsumerTest {
     }
 
     @Override
-    protected void acceptTracked(AirbyteMessage s) {
+    protected void acceptTracked(AirbyteRecordMessage s) {
 
     }
 
