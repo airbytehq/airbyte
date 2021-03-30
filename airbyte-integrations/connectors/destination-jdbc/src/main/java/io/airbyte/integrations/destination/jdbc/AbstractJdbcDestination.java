@@ -30,8 +30,8 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
@@ -109,7 +109,7 @@ public abstract class AbstractJdbcDestination implements Destination {
   public abstract JsonNode toJdbcConfig(JsonNode config);
 
   @Override
-  public DestinationConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) {
+  public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) {
     return JdbcBufferedConsumerFactory.create(getDatabase(config), sqlOperations, namingResolver, config, catalog);
   }
 

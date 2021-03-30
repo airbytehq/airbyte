@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Minimal abstract class intended to provide a consistent structure to classes seeking to implement
- * the {@link DestinationConsumer} interface. The original interface methods are wrapped in generic
+ * the {@link AirbyteMessageConsumer} interface. The original interface methods are wrapped in generic
  * exception handlers - any exception is caught and logged.
  *
  * Two methods are intended for extension: - startTracked: Wraps set up of necessary
@@ -40,9 +40,9 @@ import org.slf4j.LoggerFactory;
  * Though not necessary, we highly encourage using this class when implementing destinations. See
  * child classes for examples.
  */
-public abstract class FailureTrackingDestinationConsumer implements DestinationConsumer {
+public abstract class FailureTrackingAirbyteMessageConsumer implements AirbyteMessageConsumer {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(FailureTrackingDestinationConsumer.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(FailureTrackingAirbyteMessageConsumer.class);
 
   private boolean hasFailed = false;
 

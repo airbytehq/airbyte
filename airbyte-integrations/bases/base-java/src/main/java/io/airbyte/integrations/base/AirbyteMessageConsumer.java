@@ -39,14 +39,14 @@ import io.airbyte.protocol.models.AirbyteMessage;
  * <li>1. Instantiate consumer.</li>
  * <li>2. start() to initialize any resources that need to be created BEFORE the consumer consumes
  * any messages.</li>
- * <li>3. Consumes ALL records via {@link DestinationConsumer#accept(AirbyteMessage)}</li>
+ * <li>3. Consumes ALL records via {@link AirbyteMessageConsumer#accept(AirbyteMessage)}</li>
  * <li>4. Always (on success or failure) finalize by calling
- * {@link DestinationConsumer#close()}</li>
+ * {@link AirbyteMessageConsumer#close()}</li>
  *
- * We encourage implementing this interface using the {@link FailureTrackingDestinationConsumer}
+ * We encourage implementing this interface using the {@link FailureTrackingAirbyteMessageConsumer}
  * class.
  */
-public interface DestinationConsumer extends CheckedConsumer<AirbyteMessage, Exception>, AutoCloseable {
+public interface AirbyteMessageConsumer extends CheckedConsumer<AirbyteMessage, Exception>, AutoCloseable {
 
   void start() throws Exception;
 

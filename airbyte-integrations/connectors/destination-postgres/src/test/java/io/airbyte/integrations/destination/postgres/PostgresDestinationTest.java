@@ -39,7 +39,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
-import io.airbyte.integrations.base.DestinationConsumer;
+import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
@@ -159,7 +159,7 @@ class PostgresDestinationTest {
   @Test
   void testWriteSuccess() throws Exception {
     final PostgresDestination destination = new PostgresDestination();
-    final DestinationConsumer consumer = destination.getConsumer(config, CATALOG);
+    final AirbyteMessageConsumer consumer = destination.getConsumer(config, CATALOG);
 
     consumer.start();
     consumer.accept(MESSAGE_USERS1);
@@ -193,7 +193,7 @@ class PostgresDestinationTest {
     });
 
     final PostgresDestination destination = new PostgresDestination();
-    final DestinationConsumer consumer = destination.getConsumer(config, catalog);
+    final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog);
 
     consumer.start();
     consumer.accept(MESSAGE_USERS1);
@@ -203,7 +203,7 @@ class PostgresDestinationTest {
     consumer.accept(MESSAGE_STATE);
     consumer.close();
 
-    final DestinationConsumer consumer2 = destination.getConsumer(config, catalog);
+    final AirbyteMessageConsumer consumer2 = destination.getConsumer(config, catalog);
 
     final AirbyteMessage messageUser3 = new AirbyteMessage().withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
@@ -242,7 +242,7 @@ class PostgresDestinationTest {
         .put("database", container.getDatabaseName())
         .build());
     final PostgresDestination destination = new PostgresDestination();
-    final DestinationConsumer consumer = destination.getConsumer(newConfig, CATALOG);
+    final AirbyteMessageConsumer consumer = destination.getConsumer(newConfig, CATALOG);
 
     consumer.start();
     consumer.accept(MESSAGE_USERS1);
@@ -280,7 +280,7 @@ class PostgresDestinationTest {
     doThrow(new RuntimeException()).when(spiedMessage).getRecord();
 
     final PostgresDestination destination = new PostgresDestination();
-    final DestinationConsumer consumer = spy(destination.getConsumer(config, CATALOG));
+    final AirbyteMessageConsumer consumer = spy(destination.getConsumer(config, CATALOG));
 
     consumer.start();
     assertThrows(RuntimeException.class, () -> consumer.accept(spiedMessage));

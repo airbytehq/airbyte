@@ -28,9 +28,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.DestinationConsumer;
-import io.airbyte.integrations.base.FailureTrackingDestinationConsumer;
+import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
@@ -91,7 +91,7 @@ public class CsvDestination implements Destination {
    * @throws IOException - exception throw in manipulating the filesystem.
    */
   @Override
-  public DestinationConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) throws IOException {
+  public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) throws IOException {
     final Path destinationDir = getDestinationPath(config);
 
     FileUtils.forceMkdir(destinationDir.toFile());
@@ -147,7 +147,7 @@ public class CsvDestination implements Destination {
    * successfully, it moves the tmp files to files named by their respective stream. If there are any
    * failures, nothing is written.
    */
-  private static class CsvConsumer extends FailureTrackingDestinationConsumer {
+  private static class CsvConsumer extends FailureTrackingAirbyteMessageConsumer {
 
     private final Map<String, WriteConfig> writeConfigs;
     private final ConfiguredAirbyteCatalog catalog;

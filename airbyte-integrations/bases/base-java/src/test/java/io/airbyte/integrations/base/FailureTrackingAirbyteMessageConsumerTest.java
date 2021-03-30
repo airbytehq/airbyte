@@ -34,7 +34,7 @@ import static org.mockito.Mockito.verify;
 import io.airbyte.protocol.models.AirbyteMessage;
 import org.junit.jupiter.api.Test;
 
-class FailureTrackingDestinationConsumerTest {
+class FailureTrackingAirbyteMessageConsumerTest {
 
   @Test
   void testStartNoFailure() throws Exception {
@@ -81,7 +81,7 @@ class FailureTrackingDestinationConsumerTest {
     verify(consumer).close(true);
   }
 
-  static class TestConsumer extends FailureTrackingDestinationConsumer {
+  static class TestConsumer extends FailureTrackingAirbyteMessageConsumer {
 
     @Override
     protected void startTracked() {

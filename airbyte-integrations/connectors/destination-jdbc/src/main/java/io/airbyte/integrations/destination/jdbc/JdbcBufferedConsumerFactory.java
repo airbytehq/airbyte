@@ -29,7 +29,7 @@ import com.google.common.base.Preconditions;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.text.Names;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.base.DestinationConsumer;
+import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.WriteConfig;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
@@ -59,7 +59,7 @@ public class JdbcBufferedConsumerFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcBufferedConsumerFactory.class);
 
-  public static DestinationConsumer create(JdbcDatabase database,
+  public static AirbyteMessageConsumer create(JdbcDatabase database,
                                            SqlOperations sqlOperations,
                                            NamingConventionTransformer namingResolver,
                                            JsonNode config,

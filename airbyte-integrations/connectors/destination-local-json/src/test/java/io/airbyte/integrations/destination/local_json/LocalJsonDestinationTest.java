@@ -39,7 +39,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.integrations.base.DestinationConsumer;
+import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
@@ -160,7 +160,7 @@ class LocalJsonDestinationTest {
 
   @Test
   void testWriteSuccess() throws Exception {
-    final DestinationConsumer consumer = getDestination().getConsumer(config, CATALOG);
+    final AirbyteMessageConsumer consumer = getDestination().getConsumer(config, CATALOG);
 
     consumer.accept(MESSAGE_USERS1);
     consumer.accept(MESSAGE_TASKS1);
@@ -199,7 +199,7 @@ class LocalJsonDestinationTest {
     final AirbyteMessage spiedMessage = spy(MESSAGE_USERS1);
     doThrow(new RuntimeException()).when(spiedMessage).getRecord();
 
-    final DestinationConsumer consumer = spy(getDestination().getConsumer(config, CATALOG));
+    final AirbyteMessageConsumer consumer = spy(getDestination().getConsumer(config, CATALOG));
 
     assertThrows(RuntimeException.class, () -> consumer.accept(spiedMessage));
     consumer.accept(MESSAGE_USERS2);

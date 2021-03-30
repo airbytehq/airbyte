@@ -34,8 +34,8 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.base.DestinationConsumer;
-import io.airbyte.integrations.base.FailureTrackingDestinationConsumer;
+import io.airbyte.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
@@ -65,7 +65,7 @@ public class RedshiftCopyDestination {
   private static final StandardNameTransformer namingResolver = new StandardNameTransformer();
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftCopyDestination.class);
 
-  public DestinationConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) {
+  public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) {
     return new RedshiftCopyDestinationConsumer(config, catalog);
   }
 
@@ -125,7 +125,7 @@ public class RedshiftCopyDestination {
     return split[2];
   }
 
-  static class RedshiftCopyDestinationConsumer extends FailureTrackingDestinationConsumer {
+  static class RedshiftCopyDestinationConsumer extends FailureTrackingAirbyteMessageConsumer {
 
     private final ConfiguredAirbyteCatalog catalog;
     private final JdbcDatabase redshiftDb;

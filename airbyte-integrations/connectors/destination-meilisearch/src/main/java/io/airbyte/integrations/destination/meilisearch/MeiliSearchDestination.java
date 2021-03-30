@@ -33,8 +33,8 @@ import io.airbyte.commons.functional.CheckedBiConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.text.Names;
 import io.airbyte.integrations.BaseConnector;
+import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
@@ -102,7 +102,7 @@ public class MeiliSearchDestination extends BaseConnector implements Destination
   }
 
   @Override
-  public DestinationConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
+  public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
     final Client client = getClient(config);
     final Map<String, Index> indexNameToIndex = createIndices(catalog, client);
 
