@@ -161,6 +161,10 @@ class PostgresSourceCdcTest {
     // coerce to incremental so it uses CDC.
     configuredCatalog.getStreams().forEach(s -> s.setSyncMode(SyncMode.INCREMENTAL));
 
+    AirbyteCatalog catalog = source.discover(getConfig(PSQL_DB, dbName));
+
+    System.out.println("catalog = " + catalog);
+
     final AutoCloseableIterator<AirbyteMessage> read = source.read(getConfig(PSQL_DB, dbName), configuredCatalog, null);
 
     long startMillis = System.currentTimeMillis();
