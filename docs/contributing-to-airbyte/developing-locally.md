@@ -82,10 +82,6 @@ VERSION=dev docker-compose up
 ./gradlew :airbyte-tests:acceptanceTests
 ```
 
-## Develop on individual applications
-
-The easiest way to develop on one of Airbyte's modules is to spin up the whole Airbyte system on your workstation, and shutdown the module you want to work on.
-
 ### Develop on `airbyte-webapp`
 
 * Spin up Airbyte locally so the UI can make requests against the local API.
@@ -101,50 +97,6 @@ docker-compose stop webapp
 cd airbyte-webapp
 npm install
 npm start
-```
-
-* Happy Hacking!
-
-### Develop on `airbyte-server` \(APIs\)
-
-* Spin up Airbyte locally.
-* Stop the `server`.
-
-```bash
-docker-compose stop server
-```
-
-* Run the `server` with the command line. It will build and start a `server` with the current state of the code. You can also start the `server` from your IDE if you need to use a debugger.
-
-```bash
-./gradlew :airbyte-server:run
-```
-
-* Make sure everything is working by testing out a call to the API.
-
-```bash
-curl -H "Content-Type: application/json"\
- -X POST localhost:8001/api/v1/workspaces/get\
- -d '{ "workspaceId": "5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6" }'
-```
-
-* Happy Hacking!
-
-_Note: We namespace most API calls with a workspace id. For now there is only ever one workspace that is hardcoded to the id used in this example. If you ever need a workspace id, just use this one._
-
-### Develop on `airbyte-scheduler`
-
-* Spin up Airbyte locally.
-* Stop the `scheduler`.
-
-```bash
-docker-compose stop scheduler
-```
-
-* Run the `scheduler` with the command line. It will build and start a `scheduler` with the current state of the code. You can also start the `scheduler`from your IDE if you need to use a debugger.
-
-```bash
-./gradlew :airbyte-scheduler:app:run
 ```
 
 * Happy Hacking!
