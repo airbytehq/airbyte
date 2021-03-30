@@ -31,11 +31,11 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceStandardTest;
 import java.math.BigDecimal;
+import java.sql.*;
 import org.junit.jupiter.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.OracleContainer;
-import java.sql.*;
 
 class OracleJdbcStandardSourceTest extends JdbcSourceStandardTest {
 
@@ -102,7 +102,6 @@ class OracleJdbcStandardSourceTest extends JdbcSourceStandardTest {
     Thread.sleep(1000);
   }
 
-
   @Override
   public boolean supportsSchemas() {
     // See https://www.oratable.com/oracle-user-schema-difference/
@@ -138,8 +137,7 @@ class OracleJdbcStandardSourceTest extends JdbcSourceStandardTest {
         executeOracleStatement(
             String.format(
                 "CREATE USER %s IDENTIFIED BY password DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS",
-                schemaName)
-        );
+                schemaName));
       }
     }
   }
@@ -148,8 +146,7 @@ class OracleJdbcStandardSourceTest extends JdbcSourceStandardTest {
     Connection conn = DriverManager.getConnection(
         ORACLE_DB.getJdbcUrl(),
         ORACLE_DB.getUsername(),
-        ORACLE_DB.getPassword()
-    );
+        ORACLE_DB.getPassword());
     try (Statement stmt = conn.createStatement()) {
       stmt.execute(query);
     } catch (SQLException e) {
@@ -196,4 +193,5 @@ class OracleJdbcStandardSourceTest extends JdbcSourceStandardTest {
 
     return false;
   }
+
 }

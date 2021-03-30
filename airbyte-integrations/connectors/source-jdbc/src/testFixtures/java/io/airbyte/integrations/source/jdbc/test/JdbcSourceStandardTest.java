@@ -56,6 +56,7 @@ import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream.DestinationSyncMode;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
@@ -97,11 +98,6 @@ public abstract class JdbcSourceStandardTest {
   public static String TABLE_NAME_WITHOUT_PK = "id_and_name_without_pk";
   public static String TABLE_NAME_COMPOSITE_PK = "full_name_composite_pk";
 
-  public JsonNode config;
-  public JdbcDatabase database;
-  public AbstractJdbcSource source;
-  public static String streamName;
-
   public static String COL_ID = "id";
   public static String COL_NAME = "name";
   public static String COL_UPDATED_AT = "updated_at";
@@ -114,12 +110,17 @@ public abstract class JdbcSourceStandardTest {
   public static Number ID_VALUE_4 = 4;
   public static Number ID_VALUE_5 = 5;
 
+  public JsonNode config;
+  public JdbcDatabase database;
+  public AbstractJdbcSource source;
+  public static String streamName;
+
   /**
-   * These tests write records without specifying a namespace (schema name). They will be written
-   * into whatever the default schema is for the database. When they are discovered they will be
-   * namespaced by the schema name (e.g. <default-schema-name>.<table_name>). Thus the source needs
-   * to tell the tests what that default schema name is. If the database does not support schemas,
-   * then database name should used instead.
+   * These tests write records without specifying a namespace (schema name). They will be written into
+   * whatever the default schema is for the database. When they are discovered they will be namespaced
+   * by the schema name (e.g. <default-schema-name>.<table_name>). Thus the source needs to tell the
+   * tests what that default schema name is. If the database does not support schemas, then database
+   * name should used instead.
    *
    * @return name that will be used to namespace the record.
    */
@@ -225,8 +226,7 @@ public abstract class JdbcSourceStandardTest {
   void testSpec() throws Exception {
     final ConnectorSpecification actual = source.spec();
     final String resourceString = MoreResources.readResource("spec.json");
-    final ConnectorSpecification expected = Jsons
-        .deserialize(resourceString, ConnectorSpecification.class);
+    final ConnectorSpecification expected = Jsons.deserialize(resourceString, ConnectorSpecification.class);
 
     assertEquals(expected, actual);
   }
@@ -234,8 +234,7 @@ public abstract class JdbcSourceStandardTest {
   @Test
   void testCheckSuccess() throws Exception {
     final AirbyteConnectionStatus actual = source.check(config);
-    final AirbyteConnectionStatus expected = new AirbyteConnectionStatus()
-        .withStatus(Status.SUCCEEDED);
+    final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     assertEquals(expected, actual);
   }
 
@@ -255,22 +254,18 @@ public abstract class JdbcSourceStandardTest {
     assertEquals(getCatalog(getDefaultNamespace()).getStreams().size(), actual.getStreams().size());
     actual.getStreams().forEach(actualStream -> {
       final Optional<AirbyteStream> expectedStream =
-          getCatalog(getDefaultNamespace()).getStreams().stream()
-              .filter(stream -> stream.getName().equals(actualStream.getName())).findAny();
-      assertTrue(expectedStream.isPresent(),
-          String.format("Unexpected stream %s", actualStream.getName()));
+          getCatalog(getDefaultNamespace()).getStreams().stream().filter(stream -> stream.getName().equals(actualStream.getName())).findAny();
+      assertTrue(expectedStream.isPresent(), String.format("Unexpected stream %s", actualStream.getName()));
       assertEquals(expectedStream.get(), actualStream);
     });
   }
 
-  private AirbyteCatalog filterOutOtherSchemas(AirbyteCatalog catalog,
-      Set<String> discoverySchema) {
+  private AirbyteCatalog filterOutOtherSchemas(AirbyteCatalog catalog, Set<String> discoverySchema) {
     if (supportsSchemas()) {
       final AirbyteCatalog filteredCatalog = Jsons.clone(catalog);
       filteredCatalog.setStreams(filteredCatalog.getStreams()
           .stream()
-          .filter(streamName -> discoverySchema.stream()
-              .anyMatch(schemaName -> streamName.getName().startsWith(schemaName)))
+          .filter(streamName -> discoverySchema.stream().anyMatch(schemaName -> streamName.getName().startsWith(schemaName)))
           .collect(Collectors.toList()));
       return filteredCatalog;
     } else {
@@ -526,6 +521,7 @@ public abstract class JdbcSourceStandardTest {
     configuredCatalog.getStreams().forEach(airbyteStream -> {
       airbyteStream.setSyncMode(SyncMode.INCREMENTAL);
       airbyteStream.setCursorField(Lists.newArrayList(COL_ID));
+      airbyteStream.setDestinationSyncMode(DestinationSyncMode.APPEND);
     });
 
     final JdbcState state = new JdbcState()
@@ -605,6 +601,7 @@ public abstract class JdbcSourceStandardTest {
     configuredCatalog.getStreams().forEach(airbyteStream -> {
       airbyteStream.setSyncMode(SyncMode.INCREMENTAL);
       airbyteStream.setCursorField(Lists.newArrayList(COL_ID));
+      airbyteStream.setDestinationSyncMode(DestinationSyncMode.APPEND);
     });
 
     final JdbcState state = new JdbcState()
@@ -664,21 +661,21 @@ public abstract class JdbcSourceStandardTest {
 
   // when initial and final cursor fields are the same.
   private void incrementalCursorCheck(
-      String cursorField,
-      String initialCursorValue,
-      String endCursorValue,
-      List<AirbyteMessage> expectedRecordMessages)
+                                      String cursorField,
+                                      String initialCursorValue,
+                                      String endCursorValue,
+                                      List<AirbyteMessage> expectedRecordMessages)
       throws Exception {
     incrementalCursorCheck(cursorField, cursorField, initialCursorValue, endCursorValue,
         expectedRecordMessages);
   }
 
   private void incrementalCursorCheck(
-      String initialCursorField,
-      String cursorField,
-      String initialCursorValue,
-      String endCursorValue,
-      List<AirbyteMessage> expectedRecordMessages)
+                                      String initialCursorField,
+                                      String cursorField,
+                                      String initialCursorValue,
+                                      String endCursorValue,
+                                      List<AirbyteMessage> expectedRecordMessages)
       throws Exception {
     incrementalCursorCheck(initialCursorField, cursorField, initialCursorValue, endCursorValue,
         expectedRecordMessages,
@@ -686,15 +683,16 @@ public abstract class JdbcSourceStandardTest {
   }
 
   private void incrementalCursorCheck(
-      String initialCursorField,
-      String cursorField,
-      String initialCursorValue,
-      String endCursorValue,
-      List<AirbyteMessage> expectedRecordMessages,
-      ConfiguredAirbyteStream airbyteStream)
+                                      String initialCursorField,
+                                      String cursorField,
+                                      String initialCursorValue,
+                                      String endCursorValue,
+                                      List<AirbyteMessage> expectedRecordMessages,
+                                      ConfiguredAirbyteStream airbyteStream)
       throws Exception {
     airbyteStream.setSyncMode(SyncMode.INCREMENTAL);
     airbyteStream.setCursorField(Lists.newArrayList(cursorField));
+    airbyteStream.setDestinationSyncMode(DestinationSyncMode.APPEND);
 
     final JdbcState state = new JdbcState()
         .withStreams(Lists.newArrayList(new JdbcStreamState()
@@ -725,7 +723,7 @@ public abstract class JdbcSourceStandardTest {
 
   // get catalog and perform a defensive copy.
   private ConfiguredAirbyteCatalog getConfiguredCatalogWithOneStream(
-      final String defaultNamespace) {
+                                                                     final String defaultNamespace) {
     final ConfiguredAirbyteCatalog catalog = CatalogHelpers
         .toDefaultConfiguredCatalog(getCatalog(defaultNamespace));
     // Filter to only keep the main stream name as configured stream

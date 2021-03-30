@@ -32,7 +32,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
-import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -49,14 +48,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
-import org.testcontainers.containers.OracleContainer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
+import org.testcontainers.containers.OracleContainer;
 
 class OracleSourceTest {
 
@@ -70,9 +66,9 @@ class OracleSourceTest {
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))));
   private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
   private static final Set<AirbyteMessage> ASCII_MESSAGES = Sets.newHashSet(
-          createRecord(STREAM_NAME, map("id", new BigDecimal("2.0"), "name", "vegeta", "power", "9000.1")),
-          createRecord(STREAM_NAME, map( "id", null, "name", "piccolo", "POWER", "-Infinity")),
-          createRecord(STREAM_NAME, map("id", new BigDecimal("1.0"), "name", "goku", "power", "Infinity")));
+      createRecord(STREAM_NAME, map("id", new BigDecimal("2.0"), "name", "vegeta", "power", "9000.1")),
+      createRecord(STREAM_NAME, map("id", null, "name", "piccolo", "POWER", "-Infinity")),
+      createRecord(STREAM_NAME, map("id", new BigDecimal("1.0"), "name", "goku", "power", "Infinity")));
 
   private static OracleContainer ORACLE_DB;
 
@@ -88,20 +84,20 @@ class OracleSourceTest {
   @BeforeEach
   void setup() throws Exception {
     config = Jsons.jsonNode(ImmutableMap.builder()
-            .put("host", ORACLE_DB.getHost())
-            .put("port", ORACLE_DB.getFirstMappedPort())
-            .put("sid", ORACLE_DB.getSid())
-            .put("username", ORACLE_DB.getUsername())
-            .put("password", ORACLE_DB.getPassword())
-            .build());
+        .put("host", ORACLE_DB.getHost())
+        .put("port", ORACLE_DB.getFirstMappedPort())
+        .put("sid", ORACLE_DB.getSid())
+        .put("username", ORACLE_DB.getUsername())
+        .put("password", ORACLE_DB.getPassword())
+        .build());
 
     JdbcDatabase database = Databases.createJdbcDatabase(config.get("username").asText(),
-            config.get("password").asText(),
-            String.format("jdbc:oracle:thin:@//%s:%s/%s",
-                    config.get("host").asText(),
-                    config.get("port").asText(),
-                    config.get("sid").asText()),
-            "oracle.jdbc.driver.OracleDriver");
+        config.get("password").asText(),
+        String.format("jdbc:oracle:thin:@//%s:%s/%s",
+            config.get("host").asText(),
+            config.get("port").asText(),
+            config.get("sid").asText()),
+        "oracle.jdbc.driver.OracleDriver");
 
     database.execute(connection -> {
       connection.createStatement().execute("CREATE USER JDBC_SPACE IDENTIFIED BY JDBC_SPACE DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS");
@@ -116,22 +112,22 @@ class OracleSourceTest {
 
   private JdbcDatabase getDatabaseFromConfig(JsonNode config) {
     return Databases.createJdbcDatabase(config.get("username").asText(),
-            config.get("password").asText(),
-            String.format("jdbc:oracle:thin:@//%s:%s/%s",
-                    config.get("host").asText(),
-                    config.get("port").asText(),
-                    config.get("sid").asText()),
-            "oracle.jdbc.driver.OracleDriver");
+        config.get("password").asText(),
+        String.format("jdbc:oracle:thin:@//%s:%s/%s",
+            config.get("host").asText(),
+            config.get("port").asText(),
+            config.get("sid").asText()),
+        "oracle.jdbc.driver.OracleDriver");
   }
 
   private JsonNode getConfig(OracleContainer oracleDb) {
     return Jsons.jsonNode(ImmutableMap.builder()
-            .put("host", oracleDb.getHost())
-            .put("port", oracleDb.getFirstMappedPort())
-            .put("sid", oracleDb.getSid())
-            .put("username", oracleDb.getUsername())
-            .put("password", oracleDb.getPassword())
-            .build());
+        .put("host", oracleDb.getHost())
+        .put("port", oracleDb.getFirstMappedPort())
+        .put("sid", oracleDb.getSid())
+        .put("username", oracleDb.getUsername())
+        .put("password", oracleDb.getPassword())
+        .build());
   }
 
   @AfterAll
@@ -148,7 +144,7 @@ class OracleSourceTest {
   }
 
   @Test
-  void  testReadSuccess() throws Exception {
+  void testReadSuccess() throws Exception {
     final Set<AirbyteMessage> actualMessages = MoreIterators.toSet(new OracleSource().read(getConfig(ORACLE_DB), CONFIGURED_CATALOG, null));
     setEmittedAtToNull(actualMessages);
 

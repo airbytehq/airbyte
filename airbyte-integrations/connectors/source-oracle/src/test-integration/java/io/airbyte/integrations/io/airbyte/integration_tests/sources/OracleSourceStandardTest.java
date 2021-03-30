@@ -58,20 +58,20 @@ public class OracleSourceStandardTest extends StandardSourceTest {
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-            .put("host", container.getHost())
-            .put("port", container.getFirstMappedPort())
-            .put("sid", container.getSid())
-            .put("username", container.getUsername())
-            .put("password", container.getPassword())
-            .build());
+        .put("host", container.getHost())
+        .put("port", container.getFirstMappedPort())
+        .put("sid", container.getSid())
+        .put("username", container.getUsername())
+        .put("password", container.getPassword())
+        .build());
 
     JdbcDatabase database = Databases.createJdbcDatabase(config.get("username").asText(),
-            config.get("password").asText(),
-            String.format("jdbc:oracle:thin:@//%s:%s/%s",
-                    config.get("host").asText(),
-                    config.get("port").asText(),
-                    config.get("sid").asText()),
-            "oracle.jdbc.driver.OracleDriver");
+        config.get("password").asText(),
+        String.format("jdbc:oracle:thin:@//%s:%s/%s",
+            config.get("host").asText(),
+            config.get("port").asText(),
+            config.get("sid").asText()),
+        "oracle.jdbc.driver.OracleDriver");
 
     database.execute(connection -> {
       connection.createStatement().execute("CREATE USER JDBC_SPACE IDENTIFIED BY JDBC_SPACE DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS");
@@ -118,7 +118,7 @@ public class OracleSourceStandardTest extends StandardSourceTest {
                 STREAM_NAME,
                 Field.of("ID", JsonSchemaPrimitive.NUMBER),
                 Field.of("NAME", JsonSchemaPrimitive.STRING),
-                    Field.of("POWER", JsonSchemaPrimitive.NUMBER))
+                Field.of("POWER", JsonSchemaPrimitive.NUMBER))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)

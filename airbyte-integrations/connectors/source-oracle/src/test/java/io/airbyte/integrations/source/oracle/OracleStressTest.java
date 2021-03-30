@@ -32,10 +32,8 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcStressTest;
-
 import java.util.Optional;
 import java.util.Set;
-
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -120,8 +118,7 @@ class OracleStressTest extends JdbcStressTest {
           .put("jdbc_url", String.format("jdbc:oracle:thin:@//%s:%s/xe",
               config.get("host").asText(),
               config.get("port").asText(),
-              config.get("sid").asText())
-          );
+              config.get("sid").asText()));
 
       if (config.has("password")) {
         configBuilder.put("password", config.get("password").asText());

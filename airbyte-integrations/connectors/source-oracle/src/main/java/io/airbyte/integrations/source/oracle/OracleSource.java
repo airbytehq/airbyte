@@ -34,12 +34,10 @@ import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.sql.DriverManager;
 
 public class OracleSource extends AbstractJdbcSource implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(OracleSource.class);
-
 
   static final String DRIVER_CLASS = "oracle.jdbc.OracleDriver";
 
@@ -54,8 +52,7 @@ public class OracleSource extends AbstractJdbcSource implements Source {
         .put("jdbc_url", String.format("jdbc:oracle:thin:@//%s:%s/xe",
             config.get("host").asText(),
             config.get("port").asText(),
-            config.get("sid").asText())
-        );
+            config.get("sid").asText()));
 
     if (config.has("password")) {
       configBuilder.put("password", config.get("password").asText());
