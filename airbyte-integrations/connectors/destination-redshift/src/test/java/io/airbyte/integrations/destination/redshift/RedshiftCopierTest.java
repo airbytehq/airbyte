@@ -121,7 +121,7 @@ public class RedshiftCopierTest {
   }
 
   @Test
-  @DisplayName("Should wipe table before appending new data")
+  @DisplayName("When OVERWRITE should wipe table before appending new data")
   public void destSyncModeOverwriteTest() throws Exception {
     var copier = new RedshiftCopier(TEST_BUCKET, RUN_FOLDER, DestinationSyncMode.OVERWRITE, SCHEMA_NAME, STREAM_NAME, s3Client, redshiftDb, S3_KEY_ID,
         S3_KEY, S3_REGION);
@@ -144,7 +144,7 @@ public class RedshiftCopierTest {
   }
 
   @Test
-  @DisplayName("Should append data without wiping table")
+  @DisplayName("When APPEND should append data without wiping table")
   public void destSyncModeAppendTest() throws Exception {
 
     var sqlOp = new RedshiftSqlOperations();
@@ -152,6 +152,34 @@ public class RedshiftCopierTest {
     sqlOp.insertRecords(redshiftDb, List.of(getAirbyteRecordMessage()).stream(), SCHEMA_NAME, RAW_TABLE_NAME);
 
     var copier = new RedshiftCopier(TEST_BUCKET, RUN_FOLDER, DestinationSyncMode.APPEND, SCHEMA_NAME, STREAM_NAME, s3Client, redshiftDb, S3_KEY_ID,
+        S3_KEY, S3_REGION);
+
+    AirbyteRecordMessage msg = getAirbyteRecordMessage();
+
+    copier.uploadToS3(msg);
+    RedshiftCopier.closeAsOneTransaction(List.of(copier), false, redshiftDb);
+
+    assertFalse(s3Client.doesObjectExist(TEST_BUCKET, RUN_FOLDER + "/" + STREAM_NAME));
+
+    var recordList = redshiftDb.bufferedResultSetQuery(
+        connection -> {
+          final String sql = "SELECT * FROM " + RAW_TABLE_NAME + ";";
+          return connection.prepareStatement(sql).executeQuery();
+        },
+        JdbcUtils::rowToJson);
+
+    assertEquals(2, recordList.size());
+  }
+
+  @Test
+  @DisplayName("When APPEND_DEDUP should append data without wiping table")
+  public void destSyncModeAppendDedupTest() throws Exception {
+
+    var sqlOp = new RedshiftSqlOperations();
+    sqlOp.createTableIfNotExists(redshiftDb, SCHEMA_NAME, RAW_TABLE_NAME);
+    sqlOp.insertRecords(redshiftDb, List.of(getAirbyteRecordMessage()).stream(), SCHEMA_NAME, RAW_TABLE_NAME);
+
+    var copier = new RedshiftCopier(TEST_BUCKET, RUN_FOLDER, DestinationSyncMode.APPEND_DEDUP, SCHEMA_NAME, STREAM_NAME, s3Client, redshiftDb, S3_KEY_ID,
         S3_KEY, S3_REGION);
 
     AirbyteRecordMessage msg = getAirbyteRecordMessage();
