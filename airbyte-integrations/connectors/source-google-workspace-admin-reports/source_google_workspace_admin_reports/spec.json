@@ -15,6 +15,12 @@
       "email": {
         "type": "string",
         "description": "The email of the user, which has permissions to access the Google Workspace Admin APIs."
+      },
+      "lookback": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 180,
+        "description": "Sets the range of time shown in the report. Reports API allow to set timespan less or equal 180 days. In another case it will restrict it."
       }
     }
   }

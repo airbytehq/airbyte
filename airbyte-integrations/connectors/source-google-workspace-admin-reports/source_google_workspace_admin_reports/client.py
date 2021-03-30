@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Any, Mapping, Tuple
+from typing import Any, Mapping, Optional, Tuple
 
 from base_python import BaseClient
 
@@ -30,8 +30,8 @@ from .api import API, AdminAPI, DriveAPI, LoginsAPI, MobileAPI, OAuthTokensAPI
 
 
 class Client(BaseClient):
-    def __init__(self, credentials_json: str, email: str):
-        self._api = API(credentials_json, email)
+    def __init__(self, credentials_json: str, email: str, lookback: Optional[int] = None):
+        self._api = API(credentials_json, email, lookback)
         self._apis = {
             "admin": AdminAPI(self._api),
             "drive": DriveAPI(self._api),

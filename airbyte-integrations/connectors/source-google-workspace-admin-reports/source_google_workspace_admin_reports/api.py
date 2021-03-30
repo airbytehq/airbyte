@@ -25,9 +25,9 @@ SOFTWARE.
 import json
 import socket
 from abc import ABC, abstractmethod
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import partial
-from typing import Callable, Dict, Iterator, Sequence
+from typing import Callable, Dict, Iterator, Optional, Sequence
 
 import backoff
 import pytz
@@ -41,11 +41,12 @@ SCOPES = ["https://www.googleapis.com/auth/admin.reports.audit.readonly", "https
 
 
 class API:
-    def __init__(self, credentials_json: str, email: str):
+    def __init__(self, credentials_json: str, email: str, lookback: Optional[int] = None):
         self._creds = None
         self._credentials_json = credentials_json
         self._admin_email = email
         self._resource = None
+        self.lookback = lookback
 
     def _load_account_info(self) -> Dict:
         account_info = json.loads(self._credentials_json)
@@ -80,7 +81,10 @@ class StreamAPI(ABC):
     def __init__(self, api: API, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._api = api
-        self._end_time = datetime.utcnow().replace(tzinfo=pytz.UTC).isoformat()
+        self._start_time = None
+        if self._api.lookback:
+            base_start_time = datetime.utcnow() - timedelta(self._api.lookback)
+            self._start_time = base_start_time.replace(tzinfo=pytz.UTC).isoformat()
 
     def _api_get(self, resource: str, params: Dict = None):
         return self._api.get(resource, params=params)
@@ -114,9 +118,12 @@ class ActivitiesAPI(StreamAPI):
         params = {
             "userKey": "all",
             "applicationName": self.application_name,
-            # "startTime": "2021-03-18T00:00:00.000Z",
-            "endTime": self._end_time,
+            "endTime": "2021-03-25T00:00:00.000Z",
         }
+
+        if self._start_time:
+            params["startTime"] = self._start_time
+
         return params
 
     def process_response(self, response: Dict) -> Iterator[dict]:
