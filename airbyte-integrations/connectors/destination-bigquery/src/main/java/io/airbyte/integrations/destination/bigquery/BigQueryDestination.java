@@ -53,9 +53,9 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.DestinationConsumer;
-import io.airbyte.integrations.base.FailureTrackingConsumer;
+import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
@@ -205,7 +205,7 @@ public class BigQueryDestination implements Destination {
    * @return consumer that writes singer messages to the database.
    */
   @Override
-  public DestinationConsumer<AirbyteMessage> write(JsonNode config, ConfiguredAirbyteCatalog catalog) {
+  public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) {
     final BigQuery bigquery = getBigQuery(config);
     Map<String, WriteConfig> writeConfigs = new HashMap<>();
     final String datasetId = config.get(CONFIG_DATASET_ID).asText();
@@ -291,7 +291,7 @@ public class BigQueryDestination implements Destination {
     }
   }
 
-  public static class RecordConsumer extends FailureTrackingConsumer<AirbyteMessage> implements DestinationConsumer<AirbyteMessage> {
+  public static class RecordConsumer extends FailureTrackingAirbyteMessageConsumer {
 
     private final BigQuery bigquery;
     private final Map<String, WriteConfig> writeConfigs;

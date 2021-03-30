@@ -33,8 +33,7 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.CloseableQueue;
 import io.airbyte.commons.lang.Queues;
-import io.airbyte.integrations.base.DestinationConsumer;
-import io.airbyte.integrations.base.FailureTrackingConsumer;
+import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -72,7 +71,7 @@ import org.slf4j.LoggerFactory;
 // recordWriter.
 // 7. execute user-provided onClose code.
 
-public class BufferedStreamConsumer extends FailureTrackingConsumer<AirbyteMessage> implements DestinationConsumer<AirbyteMessage> {
+public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsumer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BufferedStreamConsumer.class);
   private static final long THREAD_DELAY_MILLIS = 500L;
