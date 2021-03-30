@@ -117,8 +117,7 @@ const TreeViewSection: React.FC<TreeViewRowProps> = ({
   );
 
   const onPkSelect = (field: SyncSchemaField) => {
-    const path = field.name.split(".");
-    const pkPath = path.slice(1, path.length);
+    const pkPath = field.name.replace(`${stream.name}.`, "").split(".");
 
     if (pkPaths.has(field.name)) {
       updateItem(streamId, {
@@ -132,8 +131,7 @@ const TreeViewSection: React.FC<TreeViewRowProps> = ({
   const selectedCursorPath = `${stream.name}.${config.cursorField.join(".")}`;
 
   const onCursorSelect = (field: SyncSchemaField) => {
-    const path = field.name.split(".");
-    const cursorPath = path.slice(1, path.length);
+    const cursorPath = field.name.replace(`${stream.name}.`, "").split(".");
 
     updateItem(streamId, { cursorField: cursorPath });
   };
