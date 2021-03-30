@@ -249,7 +249,7 @@ public class SchedulerHandler {
     final ConnectorSpecification spec = response.getOutput();
     return new DestinationDefinitionSpecificationRead()
         .jobInfo(JobConverter.getSynchronousJobRead(response))
-        .supportedSyncModes(spec.getSupportedDestinationSyncModes()
+        .supportedDestinationSyncModes(spec.getSupportedDestinationSyncModes()
             .stream()
             .map(m -> Enums.convertTo(m, DestinationSyncMode.class))
             .collect(Collectors.toList()))
