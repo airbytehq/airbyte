@@ -29,9 +29,14 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
-
 import java.math.BigDecimal;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.JDBCType;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -131,8 +136,7 @@ public class JdbcUtils {
       case BIGINT -> o.put(columnName, nullIfInvalid(() -> r.getLong(i)));
       case FLOAT, DOUBLE -> o.put(columnName, nullIfInvalid(() -> r.getDouble(i), Double::isFinite));
       case REAL -> o.put(columnName, nullIfInvalid(() -> r.getFloat(i), Float::isFinite));
-      case NUMERIC -> o.put(columnName, nullIfInvalid(() -> r.getInt(i)));
-      case DECIMAL -> o.put(columnName, nullIfInvalid(() -> r.getBigDecimal(i)));
+      case DECIMAL, NUMERIC -> o.put(columnName, nullIfInvalid(() -> r.getBigDecimal(i)));
       case CHAR, VARCHAR, LONGVARCHAR -> o.put(columnName, r.getString(i));
       case DATE -> o.put(columnName, toISO8601String(r.getDate(i)));
       case TIME -> o.put(columnName, toISO8601String(r.getTime(i)));
