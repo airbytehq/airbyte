@@ -41,10 +41,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.StandardTapConfig;
 import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import io.airbyte.workers.WorkerConstants;
@@ -57,7 +55,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Assertions;
@@ -70,12 +67,9 @@ class DefaultAirbyteSourceTest {
   private static final String STREAM_NAME = "user_preferences";
   private static final String FIELD_NAME = "favorite_color";
 
-  private static final ConfiguredAirbyteCatalog CATALOG = new ConfiguredAirbyteCatalog()
-      .withStreams(Collections.singletonList(
-          new ConfiguredAirbyteStream()
-              .withStream(new AirbyteStream()
-                  .withName("hudi:latest")
-                  .withJsonSchema(CatalogHelpers.fieldsToJsonSchema(new Field(FIELD_NAME, Field.JsonSchemaPrimitive.STRING))))));
+  private static final ConfiguredAirbyteCatalog CATALOG = CatalogHelpers.createConfiguredAirbyteCatalog(
+      "hudi:latest",
+      Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING));
 
   private static final StandardTapConfig TAP_CONFIG = new StandardTapConfig()
       .withState(new State().withState(Jsons.jsonNode(ImmutableMap.of("checkpoint", "the future."))))

@@ -3,10 +3,15 @@
 A connection is a configuration for syncing data between a source and a destination. To setup a connection, a user must configure things such such as:
 
 * A catalog selection: which [streams and fields](catalog.md) to replicate from the source
-* Sync mode: Whether streams should be replicated using [Full Refresh](full-refresh.md) or [Incremental](incremental.md) syncs
+* Sync mode: Whether streams should be replicated using:
+  * [Full Refresh Overwrite](full-refresh-overwrite.md): Sync the whole stream and replace data in destination by overwriting it.
+  * [Full Refresh Append](full-refresh-append.md): Sync the whole stream and append data in destination.
+  * [Incremental Append](incremental-append.md): Sync new records from stream and append data in destination.
+  * [Incremental Deduped History](incremental-deduped-history.md): Sync new records from stream and append data in destination, also provides a deduplicated view mirroring the state of the stream in the source.
 * Sync schedule: when to trigger a sync of the data
 
-For information about catalog selections and sync modes, see [AirbyteCatalog & ConfiguredAirbyteCatalog](catalog.md) and [Full Refresh](full-refresh.md) and [Incremental](incremental.md). Sync schedules are explained below.
+Sync schedules are explained below. 
+For information about catalog selections, see [AirbyteCatalog & ConfiguredAirbyteCatalog](catalog.md).
 
 ## Sync schedules
 

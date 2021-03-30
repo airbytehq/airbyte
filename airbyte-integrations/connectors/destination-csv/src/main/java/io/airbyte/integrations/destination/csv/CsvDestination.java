@@ -28,9 +28,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.DestinationConsumer;
-import io.airbyte.integrations.base.FailureTrackingConsumer;
+import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
@@ -39,8 +39,8 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream.DestinationSyncMode;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.protocol.models.SyncMode;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -91,7 +91,7 @@ public class CsvDestination implements Destination {
    * @throws IOException - exception throw in manipulating the filesystem.
    */
   @Override
-  public DestinationConsumer<AirbyteMessage> write(JsonNode config, ConfiguredAirbyteCatalog catalog) throws IOException {
+  public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) throws IOException {
     final Path destinationDir = getDestinationPath(config);
 
     FileUtils.forceMkdir(destinationDir.toFile());
@@ -105,12 +105,16 @@ public class CsvDestination implements Destination {
       final Path finalPath = destinationDir.resolve(tableName + ".csv");
       CSVFormat csvFormat = CSVFormat.DEFAULT.withHeader(JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
           JavaBaseConstants.COLUMN_NAME_DATA);
-      final boolean isIncremental = stream.getSyncMode() == SyncMode.INCREMENTAL;
-      if (isIncremental && finalPath.toFile().exists()) {
+      final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
+      if (syncMode == null) {
+        throw new IllegalStateException("Undefined destination sync mode");
+      }
+      final boolean isAppendMode = syncMode != DestinationSyncMode.OVERWRITE;
+      if (isAppendMode && finalPath.toFile().exists()) {
         Files.copy(finalPath, tmpPath, StandardCopyOption.REPLACE_EXISTING);
         csvFormat = csvFormat.withSkipHeaderRecord();
       }
-      final FileWriter fileWriter = new FileWriter(tmpPath.toFile(), isIncremental);
+      final FileWriter fileWriter = new FileWriter(tmpPath.toFile(), isAppendMode);
       final CSVPrinter printer = new CSVPrinter(fileWriter, csvFormat);
       writeConfigs.put(stream.getStream().getName(), new WriteConfig(printer, tmpPath, finalPath));
     }
@@ -143,7 +147,7 @@ public class CsvDestination implements Destination {
    * successfully, it moves the tmp files to files named by their respective stream. If there are any
    * failures, nothing is written.
    */
-  private static class CsvConsumer extends FailureTrackingConsumer<AirbyteMessage> implements DestinationConsumer<AirbyteMessage> {
+  private static class CsvConsumer extends FailureTrackingAirbyteMessageConsumer {
 
     private final Map<String, WriteConfig> writeConfigs;
     private final ConfiguredAirbyteCatalog catalog;

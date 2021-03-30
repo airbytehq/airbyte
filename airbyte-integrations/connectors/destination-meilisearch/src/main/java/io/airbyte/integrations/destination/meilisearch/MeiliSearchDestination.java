@@ -33,18 +33,17 @@ import io.airbyte.commons.functional.CheckedBiConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.text.Names;
 import io.airbyte.integrations.BaseConnector;
+import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
-import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream.DestinationSyncMode;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -103,7 +102,7 @@ public class MeiliSearchDestination extends BaseConnector implements Destination
   }
 
   @Override
-  public DestinationConsumer<AirbyteMessage> write(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
+  public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
     final Client client = getClient(config);
     final Map<String, Index> indexNameToIndex = createIndices(catalog, client);
 
@@ -119,8 +118,11 @@ public class MeiliSearchDestination extends BaseConnector implements Destination
     final Map<String, Index> map = new HashMap<>();
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final String indexName = getIndexName(stream);
-
-      if (stream.getSyncMode() == SyncMode.FULL_REFRESH && indexExists(client, indexName)) {
+      final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
+      if (syncMode == null) {
+        throw new IllegalStateException("Undefined destination sync mode");
+      }
+      if (syncMode == DestinationSyncMode.OVERWRITE && indexExists(client, indexName)) {
         client.deleteIndex(indexName);
       }
 

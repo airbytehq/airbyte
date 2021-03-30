@@ -69,8 +69,8 @@ public class CatalogConverter {
     io.airbyte.api.model.AirbyteStreamConfiguration result = new io.airbyte.api.model.AirbyteStreamConfiguration()
         .aliasName(Names.toAlphanumericAndUnderscore(stream.getName()))
         .cursorField(stream.getDefaultCursorField())
-        .primaryKey(stream.getSourceDefinedPrimaryKey())
         .destinationSyncMode(io.airbyte.api.model.DestinationSyncMode.APPEND)
+        .primaryKey(stream.getSourceDefinedPrimaryKey())
         .selected(true);
     if (stream.getSupportedSyncModes().size() > 0)
       result.setSyncMode(stream.getSupportedSyncModes().get(0));
@@ -86,8 +86,8 @@ public class CatalogConverter {
           final io.airbyte.api.model.AirbyteStreamConfiguration configuration = new io.airbyte.api.model.AirbyteStreamConfiguration()
               .syncMode(Enums.convertTo(configuredStream.getSyncMode(), io.airbyte.api.model.SyncMode.class))
               .cursorField(configuredStream.getCursorField())
-              .primaryKey(configuredStream.getPrimaryKey())
               .destinationSyncMode(Enums.convertTo(configuredStream.getDestinationSyncMode(), io.airbyte.api.model.DestinationSyncMode.class))
+              .primaryKey(configuredStream.getPrimaryKey())
               .aliasName(Names.toAlphanumericAndUnderscore(configuredStream.getStream().getName()))
               .selected(true);
           return new io.airbyte.api.model.AirbyteStreamAndConfiguration()
@@ -106,9 +106,9 @@ public class CatalogConverter {
             .withStream(toProtocol(s.getStream()))
             .withSyncMode(Enums.convertTo(s.getConfig().getSyncMode(), io.airbyte.protocol.models.SyncMode.class))
             .withCursorField(s.getConfig().getCursorField())
-            .withPrimaryKey(s.getConfig().getPrimaryKey())
             .withDestinationSyncMode(Enums.convertTo(s.getConfig().getDestinationSyncMode(),
-                io.airbyte.protocol.models.ConfiguredAirbyteStream.DestinationSyncMode.class)))
+                io.airbyte.protocol.models.ConfiguredAirbyteStream.DestinationSyncMode.class))
+            .withPrimaryKey(s.getConfig().getPrimaryKey()))
         .collect(Collectors.toList());
     return new io.airbyte.protocol.models.ConfiguredAirbyteCatalog()
         .withStreams(streams);

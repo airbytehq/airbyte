@@ -39,7 +39,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
-import io.airbyte.integrations.base.DestinationConsumer;
+import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
@@ -53,6 +53,7 @@ import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream.DestinationSyncMode;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
@@ -155,7 +156,7 @@ class JdbcDestinationTest {
   @Test
   void testWriteSuccess() throws Exception {
     final JdbcDestination destination = new JdbcDestination();
-    final DestinationConsumer<AirbyteMessage> consumer = destination.write(config, CATALOG);
+    final AirbyteMessageConsumer consumer = destination.getConsumer(config, CATALOG);
 
     consumer.start();
     consumer.accept(MESSAGE_USERS1);
@@ -183,10 +184,13 @@ class JdbcDestinationTest {
   @Test
   void testWriteIncremental() throws Exception {
     final ConfiguredAirbyteCatalog catalog = Jsons.clone(CATALOG);
-    catalog.getStreams().forEach(stream -> stream.withSyncMode(SyncMode.INCREMENTAL));
+    catalog.getStreams().forEach(stream -> {
+      stream.withSyncMode(SyncMode.INCREMENTAL);
+      stream.withDestinationSyncMode(DestinationSyncMode.APPEND);
+    });
 
     final JdbcDestination destination = new JdbcDestination();
-    final DestinationConsumer<AirbyteMessage> consumer = destination.write(config, catalog);
+    final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog);
 
     consumer.start();
     consumer.accept(MESSAGE_USERS1);
@@ -196,7 +200,7 @@ class JdbcDestinationTest {
     consumer.accept(MESSAGE_STATE);
     consumer.close();
 
-    final DestinationConsumer<AirbyteMessage> consumer2 = destination.write(config, catalog);
+    final AirbyteMessageConsumer consumer2 = destination.getConsumer(config, catalog);
 
     final AirbyteMessage messageUser3 = new AirbyteMessage().withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
@@ -228,7 +232,7 @@ class JdbcDestinationTest {
   void testWriteNewSchema() throws Exception {
     JsonNode newConfig = createConfig("new_schema");
     final JdbcDestination destination = new JdbcDestination();
-    final DestinationConsumer<AirbyteMessage> consumer = destination.write(newConfig, CATALOG);
+    final AirbyteMessageConsumer consumer = destination.getConsumer(newConfig, CATALOG);
 
     consumer.start();
     consumer.accept(MESSAGE_USERS1);
@@ -266,7 +270,7 @@ class JdbcDestinationTest {
     doThrow(new RuntimeException()).when(spiedMessage).getRecord();
 
     final JdbcDestination destination = new JdbcDestination();
-    final DestinationConsumer<AirbyteMessage> consumer = spy(destination.write(config, CATALOG));
+    final AirbyteMessageConsumer consumer = spy(destination.getConsumer(config, CATALOG));
 
     assertThrows(RuntimeException.class, () -> consumer.accept(spiedMessage));
     consumer.start();

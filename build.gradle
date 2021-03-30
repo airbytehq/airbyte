@@ -99,16 +99,16 @@ allprojects {
 
     afterEvaluate { project ->
         def composeDeps = [
-                "airbyte-config:init",
-                "airbyte-db",
-                "airbyte-migration",
-                "airbyte-scheduler",
-                "airbyte-server",
-                "airbyte-webapp",
+                ":airbyte-config:init",
+                ":airbyte-db",
+                ":airbyte-migration",
+                ":airbyte-scheduler:app",
+                ":airbyte-server",
+                ":airbyte-webapp",
         ].toSet().asImmutable()
 
-        if (project.name in composeDeps) {
-            composeBuild.dependsOn(project.tasks.assemble)
+        if (project.getPath() in composeDeps) {
+            composeBuild.dependsOn(project.getPath() + ':assemble')
         }
     }
 }

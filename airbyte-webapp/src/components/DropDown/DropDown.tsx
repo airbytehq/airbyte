@@ -13,18 +13,14 @@ type DropdownProps = {
   disabled?: boolean;
   hasFilter?: boolean;
   fullText?: boolean;
-  placeholder?: string;
   filterPlaceholder?: string;
-  value?: string;
-  data: IDataItem[];
-  onSelect?: (item: IDataItem) => void;
   withButton?: boolean;
   withBorder?: boolean;
   error?: boolean;
   textButton?: string;
   className?: string;
-  groupBy?: string;
-};
+  name?: string;
+} & DropdownList.DropdownListProps;
 
 const StyledDropdownList = styled(DropdownList)<{
   disabled?: boolean;
@@ -192,6 +188,7 @@ const DropDown: React.FC<DropdownProps> = (props) => {
 
   return (
     <StyledDropdownList
+      data-test-id={props.name}
       error={props.error}
       withBorder={props.withBorder}
       containerClassName={className}

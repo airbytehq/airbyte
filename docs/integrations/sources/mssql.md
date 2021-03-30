@@ -2,7 +2,7 @@
 
 ## Overview
 
-The MSSQL source supports Full Refresh and [Incremental - Append](../../architecture/incremental.md) syncs.
+The MSSQL source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
 ### Resulting schema
 

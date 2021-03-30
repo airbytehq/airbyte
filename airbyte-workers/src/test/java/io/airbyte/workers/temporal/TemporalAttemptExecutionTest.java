@@ -55,7 +55,6 @@ class TemporalAttemptExecutionTest {
 
   private CheckedSupplier<Worker<String, String>, Exception> execution;
   private BiConsumer<Path, String> mdcSetter;
-  private CheckedConsumer<Path, IOException> jobRootDirCreator;
 
   private TemporalAttemptExecution<String, String> attemptExecution;
 
@@ -64,20 +63,25 @@ class TemporalAttemptExecutionTest {
   void setup() throws IOException {
     final Path workspaceRoot = Files.createTempDirectory(Path.of("/tmp"), "temporal_attempt_execution_test");
     jobRoot = workspaceRoot.resolve(JOB_ID).resolve(String.valueOf(ATTEMPT_ID));
-    jobRoot = workspaceRoot.resolve(String.valueOf(JOB_ID)).resolve(String.valueOf(ATTEMPT_ID));
 
     execution = mock(CheckedSupplier.class);
     mdcSetter = mock(BiConsumer.class);
-    jobRootDirCreator = Files::createDirectories;
+    final CheckedConsumer<Path, IOException> jobRootDirCreator = Files::createDirectories;
 
-    attemptExecution = new TemporalAttemptExecution<>(workspaceRoot, JOB_RUN_CONFIG, execution, () -> "", mdcSetter, jobRootDirCreator,
+    attemptExecution = new TemporalAttemptExecution<>(
+        workspaceRoot,
+        JOB_RUN_CONFIG, execution,
+        () -> "",
+        mdcSetter,
+        jobRootDirCreator,
         mock(CancellationHandler.class), () -> "workflow_id");
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   void testSuccessfulSupplierRun() throws Exception {
     final String expected = "louis XVI";
-    Worker<String, String> worker = mock(Worker.class);
+    final Worker<String, String> worker = mock(Worker.class);
     when(worker.run(any(), any())).thenReturn(expected);
 
     when(execution.get()).thenAnswer((Answer<Worker<String, String>>) invocation -> worker);

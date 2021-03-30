@@ -38,13 +38,13 @@ import io.airbyte.config.persistence.DefaultConfigPersistence;
 import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
-import io.airbyte.scheduler.JobTracker;
 import io.airbyte.scheduler.client.DefaultSchedulerJobClient;
 import io.airbyte.scheduler.client.DefaultSynchronousSchedulerClient;
 import io.airbyte.scheduler.client.SpecCachingSynchronousSchedulerClient;
 import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.server.apis.ConfigurationApi;
 import io.airbyte.server.errors.InvalidInputExceptionMapper;
 import io.airbyte.server.errors.InvalidJsonExceptionMapper;
@@ -98,7 +98,7 @@ public class ServerApp {
     Map<String, String> mdc = MDC.getCopyOfContextMap();
 
     ConfigurationApiFactory.setSchedulerJobClient(new DefaultSchedulerJobClient(jobPersistence, new DefaultJobCreator(jobPersistence)));
-    final JobTracker jobTracker = new JobTracker(configRepository);
+    final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence);
     final TemporalClient temporalClient = TemporalClient.production(configs.getWorkspaceRoot());
 
     ConfigurationApiFactory
