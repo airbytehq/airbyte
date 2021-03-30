@@ -89,7 +89,7 @@ Some sources cannot define the cursor without user input. For example, in the [p
 As demonstrated in the examples above, with **Incremental Append,** a record which was updated in the source will be appended to the destination rather than updated in-place. This means that if data in the source uses a primary key \(e.g: `user_id` in the `users` table\), then the destination will end up having multiple records with the same primary key value.
 
 However, some use cases require only the latest snapshot of the data.
-This is available by using other flavors of sync modes such as [Incremental - Dedupted Story](incremental-dedupted-story.md) instead.
+This is available by using other flavors of sync modes such as [Incremental - Deduped History](incremental-deduped-history.md) instead.
 
 Note that in **Incremental Append**, the size of the data in your warehouse increases monotonically since an updated record in the source is appended to the destination rather than updated in-place.
 
@@ -101,7 +101,11 @@ When replicating data incrementally, Airbyte provides an at-least-once delivery 
 
 ## Known Limitations
 
-Due to the use of a cursor column, if modifications to the underlying records are made without properly updating the cursor field, then the updated records won't be picked up by the **Incremental - Append** sync as expected.
+Due to the use of a cursor column, if modifications to the underlying records are made without properly updating the cursor field, then the updated records won't be picked up by the **Incremental** sync as expected because the source connectors is extracting delta rows using a SQL query looking like:
+
+```sql
+select * from table where cursor_field > 'last_sync_max_cursor_field_value'
+```
 
 Let's say the following data already exists into our data warehouse.
 ```javascript
@@ -111,14 +115,14 @@ Let's say the following data already exists into our data warehouse.
 ]
 ```
 
-In the next sync, the delta contains the following record:
+In the next sync, the delta applied to the source data contains the following record:
 ```javascript
 [
     { "name": "Louis XVI", "deceased": true, "updated_at":  1754 },
 ]
 ```
 
-At the end of this incremental sync, the data warehouse would still contain data from the first sync because the delta record did not provide a valid value for the cursor field (greater than last sync's max value, `1754 < 1755`).
+At the end of this incremental sync, the data warehouse would still contain data from the first sync because the delta record did not provide a valid value for the cursor field (the cursor field is not greater than last sync's max value, `1754 < 1755`), so it is not emitted by the source as a new or modified record.
 ```javascript
 [
     { "name": "Louis XVI", "deceased": false, "updated_at":  1754 },
@@ -128,8 +132,11 @@ At the end of this incremental sync, the data warehouse would still contain data
 
 Similarly, if multiple modifications are made during the same day to the same records.
 If the frequency of the sync is not granular enough (for example, set for every 24h),
-then intermediate modifications to the data is not going to be detected.
+then intermediate modifications to the data is not going to be detected and emitted.
 Only the state of the data of when the sync is running will be reflected in the destination.
 
-When the source's schema changes, for example, when a column is added, renamed or deleted to an existing stream, the current behavior of **Incremental Append** is not able to handle such events yet. Therefore, it is recommended to trigger a [Full refresh - Overwrite](full-refresh-overwrite.md) to recreate at the destination the data with the new metadata included.
+Those concerns could be solved by using a different sync mode based on binary logs, Write-Ahead-Logs \(WAL\), or also called **Incremental - Change Data Capture**. \(coming to Airbyte in the near future\).
 
+When the source's schema changes, for example, when a column is added, renamed or deleted to an existing stream, the current behavior of **Incremental** is not able to handle such events yet. Therefore, it is recommended to trigger a [Full refresh - Overwrite](full-refresh-overwrite.md) to recreate at the destination the data with the new metadata included.
+
+If you are not satisfied with how transformations are applied on top of the appended data, you can find more relevant SQL transformations you might need to do on your data in the [Connecting EL with T using SQL \(part 1/2\)](../tutorials/connecting-el-with-t-using-sql.md#simple-sql-query)

@@ -84,7 +84,7 @@
     * [Full Refresh - Overwrite](architecture/full-refresh-overwrite.md)
     * [Full Refresh - Append](architecture/full-refresh-append.md)
     * [Incremental Sync - Append](architecture/incremental-append.md)
-    * [Incremental Sync - Dedupted Story](architecture/incremental-dedupted-story.md)    
+    * [Incremental Sync - Deduped History](architecture/incremental-deduped-history.md)
   * [High-level View](architecture/high-level-view.md)
   * [Workers & Jobs](architecture/jobs.md)
   * [Technical Stack](architecture/tech-stack.md)
