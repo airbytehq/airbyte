@@ -65,7 +65,7 @@ export CPPFLAGS="-I/usr/local/opt/openssl/include"
 
 ```bash
 ./gradlew build
-docker-compose --env-file .env.dev -f docker-compose.yaml -f docker-compose.dev.yaml up
+VERSION=dev docker-compose up
 ```
 
 The build will take a few minutes. Once it completes, Airbyte compiled at current git revision will be running in `dev` mode in your environment.
@@ -144,7 +144,7 @@ docker-compose stop scheduler
 * Run the `scheduler` with the command line. It will build and start a `scheduler` with the current state of the code. You can also start the `scheduler`from your IDE if you need to use a debugger.
 
 ```bash
-./gradlew :airbyte-scheduler:run
+./gradlew :airbyte-scheduler:app:run
 ```
 
 * Happy Hacking!
@@ -154,8 +154,8 @@ docker-compose stop scheduler
 The Configuration API caches connector specifications. This is done to avoid needing to run docker everytime one is needed in the UI. Without this caching, the UI crawls. If you update the specification of a connector and you need to clear this cache so the API / UI pick up the change. You have two options: 1. Go to the Admin page in the UI and update the version of the connector. Updating to the same version will for the cache to clear for that connector. 1. Restart the server
 
 ```bash
-        docker-compose --env-file .env.dev -f docker-compose.yaml -f docker-compose.dev.yaml down -v
-        docker-compose --env-file .env.dev -f docker-compose.yaml -f docker-compose.dev.yaml up
+VERSION=dev docker-compose down -v
+VERSION=dev docker-compose up
 ```
 
 ### Resetting the Airbyte developer environment
@@ -165,7 +165,7 @@ Sometimes you'll want to reset the data in your local environment. One common ca
 * Delete the datastore volumes in docker
 
   ```bash
-    docker-compose --env-file .env.dev -f docker-compose.yaml -f docker-compose.dev.yaml down -v
+    VERSION=dev docker-compose down -v
   ```
 
 * Remove the data on disk
@@ -179,7 +179,7 @@ Sometimes you'll want to reset the data in your local environment. One common ca
 
   ```bash
    ./gradlew build
-   docker-compose --env-file .env.dev -f docker-compose.yaml -f docker-compose.dev.yaml up -V
+   VERSION=dev docker-compose up -V
   ```
 
 ## Troubleshooting
