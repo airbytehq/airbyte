@@ -16,33 +16,31 @@ const Content = styled.div`
 
 const AccountSettings: React.FC = () => {
   const { workspace, updatePreferences } = useWorkspace();
-  const [feedback, setFeedback] = useState({});
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   const onSubmit = async (data: {
+    email: string;
     anonymousDataCollection: boolean;
     news: boolean;
     securityUpdates: boolean;
   }) => {
-    const editField =
-      data.securityUpdates !== workspace.securityUpdates
-        ? "securityUpdates"
-        : data.news !== workspace.news
-        ? "news"
-        : "anonymousDataCollection";
-
-    setFeedback({ ...feedback, [editField]: "loading" });
+    setErrorMessage("");
+    setSuccessMessage("");
     await updatePreferences(data);
-    setFeedback({ ...feedback, [editField]: "success" });
+    setSuccessMessage("YES");
   };
 
   return (
     <SettingsCard title={<FormattedMessage id="settings.accountSettings" />}>
       <Content>
         <PreferencesForm
+          errorMessage={errorMessage}
+          successMessage={successMessage}
           onSubmit={onSubmit}
           isEdit
-          feedback={feedback}
           values={{
+            email: workspace.email,
             anonymousDataCollection: workspace.anonymousDataCollection,
             news: workspace.news,
             securityUpdates: workspace.securityUpdates,

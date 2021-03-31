@@ -9,7 +9,7 @@ import LabeledInput from "components/LabeledInput";
 import Label from "components/Label";
 import LabeledToggle from "components/LabeledToggle";
 import config from "config";
-import Feedback from "./components/Feedback";
+import EditControls from "./components/EditControls";
 
 export type PreferencesFormProps = {
   onSubmit: (data: {
@@ -25,11 +25,8 @@ export type PreferencesFormProps = {
     news: boolean;
     securityUpdates: boolean;
   };
-  feedback?: {
-    anonymousDataCollection?: string;
-    news?: string;
-    securityUpdates?: string;
-  };
+  successMessage?: React.ReactNode;
+  errorMessage?: React.ReactNode;
 };
 
 const ButtonContainer = styled.div`
@@ -67,7 +64,8 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
   onSubmit,
   isEdit,
   values,
-  feedback,
+  successMessage,
+  errorMessage,
 }) => {
   const formatMessage = useIntl().formatMessage;
 
@@ -87,45 +85,50 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
         onSubmit(values);
       }}
     >
-      {({ isSubmitting, values, handleChange, setFieldValue, resetForm }) => (
+      {({
+        isSubmitting,
+        values,
+        handleChange,
+        setFieldValue,
+        resetForm,
+        isValid,
+        dirty,
+      }) => (
         <Form>
-          {!isEdit && (
-            <FormItem>
-              <Field name="email">
-                {({ field, meta }: FieldProps<string>) => (
-                  <LabeledInput
-                    {...field}
-                    label={<FormattedMessage id="form.emailOptional" />}
-                    placeholder={formatMessage({
-                      id: "form.email.placeholder",
-                    })}
-                    type="text"
-                    error={!!meta.error && meta.touched}
-                    message={
-                      meta.touched &&
-                      meta.error &&
-                      formatMessage({ id: meta.error })
+          <FormItem>
+            <Field name="email">
+              {({ field, meta }: FieldProps<string>) => (
+                <LabeledInput
+                  {...field}
+                  label={<FormattedMessage id="form.emailOptional" />}
+                  placeholder={formatMessage({
+                    id: "form.email.placeholder",
+                  })}
+                  type="text"
+                  error={!!meta.error && meta.touched}
+                  message={
+                    meta.touched &&
+                    meta.error &&
+                    formatMessage({ id: meta.error })
+                  }
+                  onChange={(event) => {
+                    handleChange(event);
+                    if (
+                      field.value.length === 0 &&
+                      event.target.value.length > 0
+                    ) {
+                      setFieldValue("securityUpdates", true);
+                    } else if (
+                      field.value.length > 0 &&
+                      event.target.value.length === 0
+                    ) {
+                      resetForm();
                     }
-                    onChange={(event) => {
-                      handleChange(event);
-                      if (
-                        field.value.length === 0 &&
-                        event.target.value.length > 0
-                      ) {
-                        setFieldValue("securityUpdates", true);
-                      } else if (
-                        field.value.length > 0 &&
-                        event.target.value.length === 0
-                      ) {
-                        resetForm();
-                      }
-                    }}
-                  />
-                )}
-              </Field>
-            </FormItem>
-          )}
-
+                  }}
+                />
+              )}
+            </Field>
+          </FormItem>
           <Subtitle>
             <FormattedMessage id="preferences.anonymizeUsage" />
           </Subtitle>
@@ -146,22 +149,8 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
               {({ field }: FieldProps<string>) => (
                 <LabeledToggle
                   {...field}
-                  message={
-                    feedback?.anonymousDataCollection && (
-                      <Feedback feedback={feedback.anonymousDataCollection} />
-                    )
-                  }
-                  disabled={!values.email && !isEdit}
+                  disabled={!values.email}
                   label={<FormattedMessage id="preferences.anonymizeData" />}
-                  onChange={(event: React.ChangeEvent) => {
-                    handleChange(event);
-                    if (isEdit) {
-                      onSubmit({
-                        ...values,
-                        anonymousDataCollection: !values.anonymousDataCollection,
-                      });
-                    }
-                  }}
                 />
               )}
             </Field>
@@ -174,23 +163,11 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
               {({ field }: FieldProps<string>) => (
                 <LabeledToggle
                   {...field}
-                  disabled={!values.email && !isEdit}
+                  disabled={!values.email}
                   label={<FormattedMessage id="preferences.featureUpdates" />}
                   message={
-                    <>
-                      <FormattedMessage id="preferences.unsubscribeAnyTime" />
-                      {feedback?.news && <Feedback feedback={feedback.news} />}
-                    </>
+                    <FormattedMessage id="preferences.unsubscribeAnyTime" />
                   }
-                  onChange={(event) => {
-                    handleChange(event);
-                    if (isEdit) {
-                      onSubmit({
-                        ...values,
-                        news: !values.news,
-                      });
-                    }
-                  }}
                 />
               )}
             </Field>
@@ -203,27 +180,22 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
               {({ field }: FieldProps<string>) => (
                 <LabeledToggle
                   {...field}
-                  message={
-                    feedback?.securityUpdates && (
-                      <Feedback feedback={feedback.securityUpdates} />
-                    )
-                  }
-                  disabled={!values.email && !isEdit}
+                  disabled={!values.email}
                   label={<FormattedMessage id="preferences.securityUpdates" />}
-                  onChange={(event) => {
-                    handleChange(event);
-                    if (isEdit) {
-                      onSubmit({
-                        ...values,
-                        securityUpdates: !values.securityUpdates,
-                      });
-                    }
-                  }}
                 />
               )}
             </Field>
           </FormItem>
-          {!isEdit && (
+          {isEdit ? (
+            <EditControls
+              isSubmitting={isSubmitting}
+              isValid={isValid}
+              dirty={dirty}
+              resetForm={resetForm}
+              successMessage={successMessage}
+              errorMessage={errorMessage}
+            />
+          ) : (
             <ButtonContainer>
               <BigButton type="submit" disabled={isSubmitting}>
                 <FormattedMessage id={"form.continue"} />

@@ -5,6 +5,7 @@ export interface Workspace {
   workspaceId: string;
   customerId: string;
   name: string;
+  email: string;
   slug: string;
   initialSetupComplete: boolean;
   anonymousDataCollection: boolean;
@@ -18,6 +19,7 @@ export default class WorkspaceResource
   implements Workspace {
   readonly workspaceId: string = "";
   readonly customerId: string = "";
+  readonly email: string = "";
   readonly name: string = "";
   readonly slug: string = "";
   readonly initialSetupComplete: boolean = false;
