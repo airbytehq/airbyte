@@ -101,7 +101,7 @@ class OracleSourceTest {
 
     database.execute(connection -> {
       connection.createStatement().execute("CREATE USER JDBC_SPACE IDENTIFIED BY JDBC_SPACE DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS");
-      connection.createStatement().execute("CREATE TABLE JDBC_SPACE.id_and_name(id NUMERIC(20, 10), name VARCHAR(200), power BINARY_DOUBLE)");
+      connection.createStatement().execute("CREATE TABLE JDBC_SPACE.id_and_name(id NUMERIC(20, 0), name VARCHAR(200), power BINARY_DOUBLE)");
       connection.createStatement().execute("INSERT INTO JDBC_SPACE.id_and_name (id, name, power) VALUES (1,'goku', BINARY_DOUBLE_INFINITY)");
       connection.createStatement().execute("INSERT INTO JDBC_SPACE.id_and_name (id, name, power) VALUES (2, 'vegeta', 9000.1)");
       connection.createStatement().execute("INSERT INTO JDBC_SPACE.id_and_name (id, name, power) VALUES (NULL, 'piccolo', -BINARY_DOUBLE_INFINITY)");

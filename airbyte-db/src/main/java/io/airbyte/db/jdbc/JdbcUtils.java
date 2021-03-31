@@ -136,7 +136,7 @@ public class JdbcUtils {
       case BIGINT -> o.put(columnName, nullIfInvalid(() -> r.getLong(i)));
       case FLOAT, DOUBLE -> o.put(columnName, nullIfInvalid(() -> r.getDouble(i), Double::isFinite));
       case REAL -> o.put(columnName, nullIfInvalid(() -> r.getFloat(i), Float::isFinite));
-      case DECIMAL, NUMERIC -> o.put(columnName, nullIfInvalid(() -> r.getBigDecimal(i)));
+      case NUMERIC, DECIMAL -> o.put(columnName, nullIfInvalid(() -> r.getBigDecimal(i)));
       case CHAR, VARCHAR, LONGVARCHAR -> o.put(columnName, r.getString(i));
       case DATE -> o.put(columnName, toISO8601String(r.getDate(i)));
       case TIME -> o.put(columnName, toISO8601String(r.getTime(i)));
