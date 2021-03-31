@@ -16,8 +16,8 @@ const Content = styled.div`
 
 const AccountSettings: React.FC = () => {
   const { workspace, updatePreferences } = useWorkspace();
-  const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState<React.ReactNode>(null);
+  const [successMessage, setSuccessMessage] = useState<React.ReactNode>(null);
 
   const onSubmit = async (data: {
     email: string;
@@ -25,10 +25,14 @@ const AccountSettings: React.FC = () => {
     news: boolean;
     securityUpdates: boolean;
   }) => {
-    setErrorMessage("");
-    setSuccessMessage("");
-    await updatePreferences(data);
-    setSuccessMessage("YES");
+    setErrorMessage(null);
+    setSuccessMessage(null);
+    try {
+      await updatePreferences(data);
+      setSuccessMessage(<FormattedMessage id="form.changesSaved" />);
+    } catch (e) {
+      setErrorMessage(<FormattedMessage id="form.someError" />);
+    }
   };
 
   return (
