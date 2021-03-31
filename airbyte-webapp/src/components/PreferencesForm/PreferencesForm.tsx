@@ -19,7 +19,7 @@ export type PreferencesFormProps = {
     securityUpdates: boolean;
   }) => void;
   isEdit?: boolean;
-  values?: {
+  preferencesValues?: {
     email?: string;
     anonymousDataCollection: boolean;
     news: boolean;
@@ -63,7 +63,7 @@ const preferencesValidationSchema = yup.object().shape({
 const PreferencesForm: React.FC<PreferencesFormProps> = ({
   onSubmit,
   isEdit,
-  values,
+  preferencesValues,
   successMessage,
   errorMessage,
 }) => {
@@ -72,10 +72,11 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
   return (
     <Formik
       initialValues={{
-        email: values?.email || "",
-        anonymousDataCollection: values?.anonymousDataCollection || false,
-        news: values?.news || false,
-        securityUpdates: values?.securityUpdates || false,
+        email: preferencesValues?.email || "",
+        anonymousDataCollection:
+          preferencesValues?.anonymousDataCollection || false,
+        news: preferencesValues?.news || false,
+        securityUpdates: preferencesValues?.securityUpdates || false,
       }}
       validateOnBlur={true}
       validateOnChange={false}
@@ -122,6 +123,7 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
                       event.target.value.length === 0
                     ) {
                       resetForm();
+                      setFieldValue("email", "");
                     }
                   }}
                 />

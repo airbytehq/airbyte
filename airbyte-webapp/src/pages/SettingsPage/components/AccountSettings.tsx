@@ -43,7 +43,7 @@ const AccountSettings: React.FC = () => {
           successMessage={successMessage}
           onSubmit={onSubmit}
           isEdit
-          values={{
+          preferencesValues={{
             email: workspace.email,
             anonymousDataCollection: workspace.anonymousDataCollection,
             news: workspace.news,
