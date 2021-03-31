@@ -32,7 +32,8 @@
         "default_cursor_field": ["datetime"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["datetime"]
+      "cursor_field": ["datetime"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -57,7 +58,9 @@
           "additionalProperties": false
         },
         "supported_sync_modes": ["full_refresh"]
-      }
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     }
   ]
 }

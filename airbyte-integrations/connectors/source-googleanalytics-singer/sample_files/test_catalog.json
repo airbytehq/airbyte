@@ -52,7 +52,8 @@
         "source_defined_cursor": true
       },
       "sync_mode": "incremental",
-      "cursor_field": ["report_start_date"]
+      "cursor_field": ["report_start_date"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -115,7 +116,8 @@
         "source_defined_cursor": true
       },
       "sync_mode": "incremental",
-      "cursor_field": ["report_start_date"]
+      "cursor_field": ["report_start_date"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -169,7 +171,8 @@
         "source_defined_cursor": true
       },
       "sync_mode": "incremental",
-      "cursor_field": ["report_start_date"]
+      "cursor_field": ["report_start_date"],
+      "destination_sync_mode": "append"
     }
   ]
 }
