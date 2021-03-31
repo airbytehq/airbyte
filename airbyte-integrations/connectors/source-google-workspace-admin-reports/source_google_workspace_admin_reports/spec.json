@@ -20,7 +20,7 @@
         "type": "integer",
         "minimum": 0,
         "maximum": 180,
-        "description": "Sets the range of time shown in the report. Reports API allow to set timespan less or equal 180 days. In another case it will restrict it."
+        "description": "Sets the range of time shown in the report. Reports API allows from up to 180 days ago. "
       }
     }
   }
