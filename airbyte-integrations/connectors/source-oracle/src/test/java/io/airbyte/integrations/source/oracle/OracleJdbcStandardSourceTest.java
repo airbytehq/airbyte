@@ -28,11 +28,19 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceStandardTest;
 import java.math.BigDecimal;
-import java.sql.*;
-import org.junit.jupiter.api.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.OracleContainer;
@@ -56,11 +64,7 @@ class OracleJdbcStandardSourceTest extends JdbcSourceStandardTest {
 
     SCHEMA_NAME = "JDBC_INTEGRATION_TEST1";
     SCHEMA_NAME2 = "JDBC_INTEGRATION_TEST2";
-    SCHEMA_NAME3 = "JDBC_MULTI_TABLE";
-    SCHEMA_NAME4 = "JDBC_MULTI_TABLE_INCR";
-    SCHEMA_NAME5 = "SCHEMA_WITH_SPACE";
-    TEST_SCHEMAS = ImmutableSet
-        .of(SCHEMA_NAME, SCHEMA_NAME2, SCHEMA_NAME3, SCHEMA_NAME4, SCHEMA_NAME5);
+    TEST_SCHEMAS = ImmutableSet.of(SCHEMA_NAME, SCHEMA_NAME2);
 
     TABLE_NAME = "ID_AND_NAME";
     TABLE_NAME_WITH_SPACES = "ID AND NAME";
@@ -86,6 +90,9 @@ class OracleJdbcStandardSourceTest extends JdbcSourceStandardTest {
         .put("password", ORACLE_DB.getPassword())
         .build());
 
+    // Because Oracle doesn't let me create database easily I need to clean up
+    cleanUpTables();
+
     super.setup();
   }
 
@@ -101,6 +108,23 @@ class OracleJdbcStandardSourceTest extends JdbcSourceStandardTest {
         String.format("DROP TABLE %s", getFullyQualifiedTableName(TABLE_NAME_COMPOSITE_PK)));
     Thread.sleep(1000);
   }
+
+  void cleanUpTables() throws SQLException {
+    Connection conn = DriverManager.getConnection(
+        ORACLE_DB.getJdbcUrl(),
+        ORACLE_DB.getUsername(),
+        ORACLE_DB.getPassword());
+    for (String schemaName : TEST_SCHEMAS) {
+      ResultSet resultSet = conn.createStatement().executeQuery(String.format("SELECT TABLE_NAME FROM ALL_TABLES WHERE OWNER = '%s'", schemaName));
+      while (resultSet.next()) {
+        String tableName = resultSet.getString("TABLE_NAME");
+        String tableNameProcessed = tableName.contains(" ") ? JdbcUtils
+            .enquoteIdentifier(conn, tableName) : tableName;
+        conn.createStatement().executeQuery(String.format("DROP TABLE %s.%s", schemaName, tableNameProcessed));
+        }
+      }
+    }
+
 
   @Override
   public boolean supportsSchemas() {
