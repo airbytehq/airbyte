@@ -86,9 +86,10 @@ class BaseSource(Source):
         for configured_stream in catalog.streams:
             try:
                 yield from self._read_stream(logger=logger, client=client, configured_stream=configured_stream, state=total_state)
-            # TODO: test stream fail
-            except Exception:
+                
+            except Exception as error:
                 logger.exception(f"Encountered an exception while reading stream {self.name}")
+                return AirbyteConnectionStatus(status=Status.FAILED, message=str(error))
 
         logger.info(f"Finished syncing {self.name}")
 
