@@ -109,6 +109,12 @@ public abstract class StandardSourceTest {
       "airbyte/source-hubspot-singer");
 
   /**
+   * FIXME: Some sources can't guarantee that there will be no events between two sequential sync
+   */
+  private Set<String> IMAGES_TO_SKIP_IDENTICAL_FULL_REFRESHES = Sets.newHashSet(
+      "airbyte/source-google-workspace-admin-reports");
+
+  /**
    * Name of the docker image that the tests will run against.
    *
    * @return docker image name
@@ -267,6 +273,10 @@ public abstract class StandardSourceTest {
    */
   @Test
   public void testIdenticalFullRefreshes() throws Exception {
+    if (IMAGES_TO_SKIP_IDENTICAL_FULL_REFRESHES.contains(getImageName().split(":")[0])) {
+      return;
+    }
+
     final ConfiguredAirbyteCatalog configuredCatalog = withFullRefreshSyncModes(getConfiguredCatalog());
     final List<AirbyteRecordMessage> recordMessagesFirstRun = filterRecords(runRead(configuredCatalog));
     final List<AirbyteRecordMessage> recordMessagesSecondRun = filterRecords(runRead(configuredCatalog));
