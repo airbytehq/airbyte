@@ -36,13 +36,7 @@ const ConnectionPage: React.FC = () => {
             }
           />
         </Route>
-        <Route
-          path={[
-            `${Routes.Connections}/:id`,
-            `${Routes.Source}${Routes.Connection}/:id`,
-            `${Routes.Destination}${Routes.Connection}/:id`,
-          ]}
-        >
+        <Route path={`${Routes.Connections}/:id`}>
           <ErrorBoundary fallbackComponent={FallbackRootRedirector}>
             <ConnectionItemPage />
           </ErrorBoundary>

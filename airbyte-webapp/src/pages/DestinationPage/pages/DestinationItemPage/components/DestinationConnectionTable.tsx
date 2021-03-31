@@ -45,7 +45,7 @@ const DestinationConnectionTable: React.FC<IProps> = ({ connections }) => {
   );
 
   const clickRow = (source: ITableDataItem) =>
-    push(`${Routes.Destination}${Routes.Connection}/${source.connectionId}`);
+    push(`${Routes.Connections}/${source.connectionId}`);
 
   return (
     <ConnectionTable
