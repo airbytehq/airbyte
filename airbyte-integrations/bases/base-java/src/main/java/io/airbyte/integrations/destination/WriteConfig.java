@@ -24,7 +24,7 @@
 
 package io.airbyte.integrations.destination;
 
-import io.airbyte.protocol.models.ConfiguredAirbyteStream.DestinationSyncMode;
+import io.airbyte.protocol.models.DestinationSyncMode;
 
 public class WriteConfig {
 
