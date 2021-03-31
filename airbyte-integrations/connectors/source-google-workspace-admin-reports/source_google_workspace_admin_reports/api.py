@@ -115,10 +115,7 @@ class ActivitiesAPI(StreamAPI):
     application_name = None
 
     def get_params(self) -> Dict:
-        params = {
-            "userKey": "all",
-            "applicationName": self.application_name
-        }
+        params = {"userKey": "all", "applicationName": self.application_name}
 
         if self._start_time:
             params["startTime"] = self._start_time
