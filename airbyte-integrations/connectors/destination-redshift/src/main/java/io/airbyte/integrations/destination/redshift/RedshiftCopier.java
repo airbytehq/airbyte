@@ -27,12 +27,11 @@ package io.airbyte.integrations.destination.redshift;
 import alex.mojaki.s3upload.MultiPartOutputStream;
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.services.s3.AmazonS3;
-import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
@@ -46,6 +45,14 @@ import org.apache.commons.csv.CSVPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * This class is meant to represent all the required operations to replicate an
+ * {@link io.airbyte.protocol.models.AirbyteStream} into Redshift using the Copy strategy. The data
+ * is streamed into a staging S3 bucket in multiple parts. This file is then loaded into a Redshift
+ * temporary table via a Copy statement, before being moved into the final destination table. The
+ * staging files and temporary tables are best-effort cleaned up. A single S3 file is currently
+ * sufficiently performant.
+ */
 public class RedshiftCopier {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftCopier.class);
@@ -60,8 +67,8 @@ public class RedshiftCopier {
   private static final int PART_SIZE_MB = 10;
 
   private final String s3BucketName;
-  private final String runFolder;
-  private final SyncMode syncMode;
+  private final String stagingFolder;
+  private final DestinationSyncMode destSyncMode;
   private final String schemaName;
   private final String streamName;
   private final AmazonS3 s3Client;
@@ -76,25 +83,9 @@ public class RedshiftCopier {
   private final String tmpTableName;
 
   public RedshiftCopier(
-                        String runFolder,
-                        SyncMode syncMode,
-                        String schema,
-                        String streamName,
-                        AmazonS3 client,
-                        JdbcDatabase redshiftDb,
-                        String s3KeyId,
-                        String s3key,
-                        String s3Region)
-      throws IOException {
-    this(RedshiftCopyDestination.DEFAULT_AIRBYTE_STAGING_S3_BUCKET, runFolder, syncMode, schema, streamName, client, redshiftDb, s3KeyId, s3key,
-        s3Region);
-  }
-
-  @VisibleForTesting
-  public RedshiftCopier(
                         String s3BucketName,
-                        String runFolder,
-                        SyncMode syncMode,
+                        String stagingFolder,
+                        DestinationSyncMode destSyncMode,
                         String schema,
                         String streamName,
                         AmazonS3 client,
@@ -104,8 +95,8 @@ public class RedshiftCopier {
                         String s3Region)
       throws IOException {
     this.s3BucketName = s3BucketName;
-    this.runFolder = runFolder;
-    this.syncMode = syncMode;
+    this.stagingFolder = stagingFolder;
+    this.destSyncMode = destSyncMode;
     this.schemaName = schema;
     this.streamName = streamName;
     this.s3Client = client;
@@ -123,7 +114,7 @@ public class RedshiftCopier {
     // configured part size.
     // Memory consumption is queue capacity * part size = 10 * 10 = 100 MB at current configurations.
     this.multipartUploadManager =
-        new StreamTransferManager(s3BucketName, getPath(runFolder, streamName), client)
+        new StreamTransferManager(s3BucketName, getPath(stagingFolder, streamName), client)
             .numUploadThreads(DEFAULT_UPLOAD_THREADS)
             .queueCapacity(DEFAULT_QUEUE_CAPACITY)
             .partSize(PART_SIZE_MB);
@@ -158,7 +149,7 @@ public class RedshiftCopier {
   }
 
   public void removeS3FileAndDropTmpTable() throws Exception {
-    var s3StagingFile = getPath(runFolder, streamName);
+    var s3StagingFile = getPath(stagingFolder, streamName);
     LOGGER.info("Begin cleaning s3 staging file {}.", s3StagingFile);
     if (s3Client.doesObjectExist(s3BucketName, s3StagingFile)) {
       s3Client.deleteObject(s3BucketName, s3StagingFile);
@@ -200,7 +191,8 @@ public class RedshiftCopier {
     LOGGER.info("Preparing tmp table in destination for stream {}. tmp table name: {}.", streamName, tmpTableName);
     REDSHIFT_SQL_OPS.createTableIfNotExists(redshiftDb, schemaName, tmpTableName);
     LOGGER.info("Starting copy to tmp table {} in destination for stream {} .", tmpTableName, streamName);
-    REDSHIFT_SQL_OPS.copyS3CsvFileIntoTable(redshiftDb, getFullS3Path(s3BucketName, runFolder, streamName), schemaName, tmpTableName, s3KeyId, s3Key,
+    REDSHIFT_SQL_OPS.copyS3CsvFileIntoTable(redshiftDb, getFullS3Path(s3BucketName, stagingFolder, streamName), schemaName, tmpTableName, s3KeyId,
+        s3Key,
         s3Region);
     LOGGER.info("Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);
   }
@@ -213,9 +205,9 @@ public class RedshiftCopier {
 
     LOGGER.info("Preparing to merge tmp table {} to dest table {} in destination.", tmpTableName, destTableName);
     var queries = new StringBuilder();
-    if (syncMode.equals(SyncMode.FULL_REFRESH)) {
+    if (destSyncMode.equals(DestinationSyncMode.OVERWRITE)) {
       queries.append(REDSHIFT_SQL_OPS.truncateTableQuery(schemaName, destTableName));
-      LOGGER.info("FULL_REFRESH detected. Dest table {} truncated.", destTableName);
+      LOGGER.info("Destination OVERWRITE mode detected. Dest table {} truncated.", destTableName);
     }
     queries.append(REDSHIFT_SQL_OPS.copyTableQuery(schemaName, tmpTableName, destTableName));
     return queries.toString();

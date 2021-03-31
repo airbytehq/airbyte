@@ -67,6 +67,9 @@
         <Logger name="io.netty" level="INFO" />
         <Logger name="io.grpc" level="INFO" />
         <Logger name="io.temporal" level="INFO" />
+        <Logger name="org.apache" level="WARN" />
+        <Logger name="httpclient" level="WARN" />
+        <Logger name="com.amazonaws" level="WARN" />
 
     </Loggers>
 

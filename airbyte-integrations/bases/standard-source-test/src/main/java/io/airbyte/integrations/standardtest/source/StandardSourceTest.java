@@ -49,6 +49,7 @@ import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
 import io.airbyte.workers.DefaultDiscoverCatalogWorker;
 import io.airbyte.workers.DefaultGetSpecWorker;
@@ -378,6 +379,7 @@ public abstract class StandardSourceTest {
     for (ConfiguredAirbyteStream configuredStream : clone.getStreams()) {
       if (configuredStream.getStream().getSupportedSyncModes().contains(FULL_REFRESH)) {
         configuredStream.setSyncMode(FULL_REFRESH);
+        configuredStream.setDestinationSyncMode(DestinationSyncMode.OVERWRITE);
       }
     }
     return clone;

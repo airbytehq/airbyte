@@ -4,6 +4,9 @@ import { H5 } from "components";
 const Title = styled(H5)`
   color: ${({ theme }) => theme.darkPrimaryColor};
   margin-bottom: 19px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 `;
 
 const Block = styled.div`

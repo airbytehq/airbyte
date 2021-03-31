@@ -23,9 +23,9 @@ import Version from "components/Version";
 import { JobInfo } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
 
-const Content = styled.div`
+const Content = styled.div<{ big?: boolean }>`
   width: 100%;
-  max-width: 813px;
+  max-width: ${({ big }) => (big ? 1140 : 813)}px;
   margin: 0 auto;
   padding: 33px 0 13px;
   display: flex;
@@ -33,6 +33,11 @@ const Content = styled.div`
   justify-content: space-between;
   align-items: center;
   min-height: 100%;
+  overflow: hidden;
+`;
+
+const Main = styled.div`
+  width: 100%;
 `;
 
 const Img = styled.img`
@@ -215,8 +220,8 @@ const OnboardingPage: React.FC = () => {
   };
 
   return (
-    <Content>
-      <div>
+    <Content big={currentStep === StepsTypes.SET_UP_CONNECTION}>
+      <Main>
         <Img src="/welcome.svg" height={132} />
         <MainTitle center>
           <FormattedMessage id="onboarding.title" />
@@ -237,7 +242,7 @@ const OnboardingPage: React.FC = () => {
           <PlayIcon icon={faPlay} />
           <FormattedMessage id="onboarding.tutorial" />
         </TutorialLink>
-      </div>
+      </Main>
       <Version />
     </Content>
   );

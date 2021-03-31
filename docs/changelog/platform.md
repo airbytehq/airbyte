@@ -10,6 +10,14 @@ If you're interested in our progress on the Airbyte platform, please read below!
 
 * We now handle nested tables with the normalization steps. Check out the video below to see how it works. 
 
+## [03-29-2021 - 0.18.1](https://github.com/airbytehq/airbyte/releases/tag/v0.18.1-alpha)
+
+* Surface the health of each connection so that a user can spot any problems at a glance. 
+* Added support for deduplicating records in the destination using a primary key using incremental dedupe -  
+* A source’s extraction mode (incremental, full refresh) is now decoupled from the destination’s write mode -- so you can repeatedly append full refreshes to get repeated snapshots of data in your source.
+* New “Upgrade all” button in Admin to upgrade all your connectors at once 
+* New “Cancel job” button in Connections Status page when a sync job is running, so you can stop never-ending processes.
+
 ## [03-22-2021 - 0.17.2](https://github.com/airbytehq/airbyte/releases/tag/v0.17.2-alpha)
 
 * Improved the speed of get spec, check connection, and discover schema by migrating to the Temporal workflow engine.
@@ -136,7 +144,7 @@ If you're interested in our progress on the Airbyte platform, please read below!
 * **Incremental - Append"**
   * We now allow sources to replicate only new or modified data. This enables to avoid re-fetching data that you have already replicated from a source.
   * The delta from a sync will be _appended_ to the existing data in the data warehouse.
-  * Here are [all the details of this feature](../architecture/incremental.md).
+  * Here are [all the details of this feature](../architecture/incremental-append.md).
   * It has been released for 15 connectors, including Postgres, MySQL, Intercom, Zendesk, Stripe, Twilio, Marketo, Shopify, GitHub, and all the destination connectors. We will expand it to all the connectors in the next couple of weeks.
 * **Other features:**
   * Improve interface for writing python sources \(should make writing new python sources easier and clearer\).

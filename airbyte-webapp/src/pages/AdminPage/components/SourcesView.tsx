@@ -2,6 +2,7 @@ import React, { useCallback, useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { CellProps } from "react-table";
 import { useFetcher, useResource } from "rest-hooks";
+import { useAsyncFn } from "react-use";
 
 import Table from "components/Table";
 import ConnectorCell from "./ConnectorCell";
@@ -13,8 +14,11 @@ import SourceDefinitionResource, {
   SourceDefinition,
 } from "core/resources/SourceDefinition";
 import { SourceResource } from "core/resources/Source";
+import UpgradeAllButton from "./UpgradeAllButton";
+import useNotification from "components/hooks/services/useNotification";
 
 const SourcesView: React.FC = () => {
+  const [successUpdate, setSuccessUpdate] = useState(false);
   const formatMessage = useIntl().formatMessage;
   const { sources } = useResource(SourceResource.listShape(), {
     workspaceId: config.ui.workspaceId,
@@ -29,6 +33,8 @@ const SourcesView: React.FC = () => {
   const updateSourceDefinition = useFetcher(
     SourceDefinitionResource.updateShape()
   );
+
+  const { hasNewSourceVersion } = useNotification();
 
   const [feedbackList, setFeedbackList] = useState<Record<string, string>>({});
   const onUpdateVersion = useCallback(
@@ -135,12 +141,31 @@ const SourcesView: React.FC = () => {
     return Array.from(sourceDefinitionMap.values());
   }, [sources, sourceDefinitions]);
 
+  const { updateAllSourceVersions } = useNotification();
+
+  const [{ loading, error }, onUpdate] = useAsyncFn(async () => {
+    setSuccessUpdate(false);
+    await updateAllSourceVersions();
+    setSuccessUpdate(true);
+    setTimeout(() => {
+      setSuccessUpdate(false);
+    }, 2000);
+  }, [updateAllSourceVersions]);
+
   return (
     <>
       {usedSourcesDefinitions.length ? (
         <Block>
           <Title bold>
             <FormattedMessage id="admin.manageSource" />
+            {(hasNewSourceVersion || successUpdate) && (
+              <UpgradeAllButton
+                isLoading={loading}
+                hasError={!!error && !loading}
+                hasSuccess={successUpdate}
+                onUpdate={onUpdate}
+              />
+            )}
           </Title>
           <Table columns={columns} data={usedSourcesDefinitions} />
         </Block>
@@ -149,6 +174,15 @@ const SourcesView: React.FC = () => {
       <Block>
         <Title bold>
           <FormattedMessage id="admin.availableSource" />
+          {(hasNewSourceVersion || successUpdate) &&
+            !usedSourcesDefinitions.length && (
+              <UpgradeAllButton
+                isLoading={loading}
+                hasError={!!error && !loading}
+                hasSuccess={successUpdate}
+                onUpdate={onUpdate}
+              />
+            )}
         </Title>
         <Table columns={columns} data={sourceDefinitions} />
       </Block>

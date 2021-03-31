@@ -30,12 +30,11 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.DestinationConsumer;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
-import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.io.IOException;
@@ -68,18 +67,10 @@ public abstract class AbstractJdbcDestination implements Destination {
 
   @Override
   public AirbyteConnectionStatus check(JsonNode config) {
+
     try (final JdbcDatabase database = getDatabase(config)) {
-      // attempt to get metadata from the database as a cheap way of seeing if we can connect.
-      database.bufferedResultSetQuery(conn -> conn.getMetaData().getCatalogs(), JdbcUtils::rowToJson);
-
-      // verify we have write permissions on the target schema by creating a table with a random name,
-      // then dropping that table
       String outputSchema = namingResolver.getIdentifier(config.get("schema").asText());
-      String outputTableName = "_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", "");
-      sqlOperations.createSchemaIfNotExists(database, outputSchema);
-      sqlOperations.createTableIfNotExists(database, outputSchema, outputTableName);
-      sqlOperations.dropTableIfExists(database, outputSchema, outputTableName);
-
+      attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, sqlOperations);
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (Exception e) {
       LOGGER.debug("Exception while checking connection: ", e);
@@ -87,6 +78,22 @@ public abstract class AbstractJdbcDestination implements Destination {
           .withStatus(Status.FAILED)
           .withMessage("Could not connect with provided configuration. \n" + e.getMessage());
     }
+  }
+
+  public static void attemptSQLCreateAndDropTableOperations(String outputSchema,
+                                                            JdbcDatabase database,
+                                                            NamingConventionTransformer namingResolver,
+                                                            SqlOperations sqlOps)
+      throws Exception {
+    // attempt to get metadata from the database as a cheap way of seeing if we can connect.
+    database.bufferedResultSetQuery(conn -> conn.getMetaData().getCatalogs(), JdbcUtils::rowToJson);
+
+    // verify we have write permissions on the target schema by creating a table with a random name,
+    // then dropping that table
+    String outputTableName = "_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", "");
+    sqlOps.createSchemaIfNotExists(database, outputSchema);
+    sqlOps.createTableIfNotExists(database, outputSchema, outputTableName);
+    sqlOps.dropTableIfExists(database, outputSchema, outputTableName);
   }
 
   protected JdbcDatabase getDatabase(JsonNode config) {
@@ -102,7 +109,7 @@ public abstract class AbstractJdbcDestination implements Destination {
   public abstract JsonNode toJdbcConfig(JsonNode config);
 
   @Override
-  public DestinationConsumer<AirbyteMessage> write(JsonNode config, ConfiguredAirbyteCatalog catalog) {
+  public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) {
     return JdbcBufferedConsumerFactory.create(getDatabase(config), sqlOperations, namingResolver, config, catalog);
   }
 

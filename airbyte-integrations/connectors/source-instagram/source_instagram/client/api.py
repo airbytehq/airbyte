@@ -31,11 +31,12 @@ import pendulum
 from base_python.entrypoint import logger
 from facebook_business.adobjects.igmedia import IGMedia
 from facebook_business.adobjects.iguser import IGUser
+from facebook_business.api import Cursor
 from facebook_business.exceptions import FacebookRequestError
 
 from .common import retry_pattern
 
-backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
+backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=7, factor=5)
 
 
 def clear_url(record_data: dict = None):
@@ -77,6 +78,28 @@ class StreamAPI(ABC):
 
     def filter_input_fields(self, fields: Sequence[str] = None):
         return list(set(fields) - set(self.non_object_fields))
+
+    @backoff_policy
+    def load_next_page(self, instance: Cursor):
+        instance.load_next_page()
+
+    @backoff_policy
+    def get_instance_cursor(self, ig_user: IGUser, method_name: str, params: dict = None, fields: Sequence[str] = None) -> Cursor:
+        return getattr(ig_user, method_name)(params=params, fields=fields)
+
+    def pagination(self, ig_user: IGUser, method_name: str, params: dict = None, fields: Sequence[str] = None) -> Iterator[Any]:
+        """
+        To implement pagination, we use private variables of the Cursor class.
+
+        todo: Should be careful when updating the library version.
+        """
+        instance = self.get_instance_cursor(ig_user, method_name, params, fields)
+        yield from instance._queue
+        next_page = not instance._finished_iteration
+        while next_page:
+            self.load_next_page(instance)
+            yield from instance._queue
+            next_page = not instance._finished_iteration
 
 
 class IncrementalStreamAPI(StreamAPI, ABC):
@@ -251,9 +274,6 @@ class MediaAPI(StreamAPI):
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         children_fields = self.filter_input_fields(list(set(fields) - set(self.INVALID_CHILDREN_FIELDS)))
         for account in self._api.accounts:
-            # We get the Cursor object with the specified amount of Media (in our case, it is value of result_return_limit).
-            # And we begin to iterate over it, and when the Cursor reaches the last Media and reads it,
-            # then inside the facebook_businness Cursor is implemented in such a way that it pulls up the next {value of result_return_limit} Media (if they exist, of course).
             media = self._get_media(
                 account["instagram_business_account"], {"limit": self.result_return_limit}, self.filter_input_fields(fields)
             )
@@ -272,13 +292,8 @@ class MediaAPI(StreamAPI):
                 )
                 yield clear_url(record_data)
 
-    @backoff_policy
     def _get_media(self, instagram_user: IGUser, params: dict = None, fields: Sequence[str] = None) -> Iterator[Any]:
-        """
-        This is necessary because the functions that call this endpoint return
-        a generator, whose calls need decorated with a backoff.
-        """
-        return instagram_user.get_media(params=params, fields=fields)
+        yield from self.pagination(instagram_user, "get_media", params=params, fields=fields)
 
     @backoff_policy
     def _get_single_record(self, media_id: str, fields: Sequence[str] = None) -> IGMedia:
@@ -301,13 +316,8 @@ class StoriesAPI(StreamAPI):
                 )
                 yield clear_url(record_data)
 
-    @backoff_policy
     def _get_stories(self, instagram_user: IGUser, params: dict, fields: Sequence[str] = None) -> Iterator[Any]:
-        """
-        This is necessary because the functions that call this endpoint return
-        a generator, whose calls need decorated with a backoff.
-        """
-        return instagram_user.get_stories(params=params, fields=fields)
+        yield from self.pagination(instagram_user, "get_stories", params=params, fields=fields)
 
 
 class MediaInsightsAPI(MediaAPI):

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This tutorial will assume that you already have a working source. If you do not, feel free to refer to the [Building a Toy Connector](toy-connector.md) tutorial. This tutorial will build directly off the example from that article. We will also assume that you have a basic understanding of how Airbyte's Incremental-Append replication strategy works. We have a brief explanation of it [here](../architecture/incremental.md).
+This tutorial will assume that you already have a working source. If you do not, feel free to refer to the [Building a Toy Connector](toy-connector.md) tutorial. This tutorial will build directly off the example from that article. We will also assume that you have a basic understanding of how Airbyte's Incremental-Append replication strategy works. We have a brief explanation of it [here](../architecture/incremental-append.md).
 
 ## Update Catalog in `discover`
 
@@ -116,5 +116,5 @@ def to_datetime(date):
         return None
 ```
 
-That's all you need to do to add incremental functionality to the stock ticker Source. Incremental definitely requires more configurability than full refresh, so your implementation may deviate slightly depending on whether your cursor field is source defined or user-defined. If you think you are running into one of those cases, check out our [incremental](../architecture/incremental.md) documentation for more information on different types of configuration.
+That's all you need to do to add incremental functionality to the stock ticker Source. Incremental definitely requires more configurability than full refresh, so your implementation may deviate slightly depending on whether your cursor field is source defined or user-defined. If you think you are running into one of those cases, check out our [incremental](../architecture/incremental-append.md) documentation for more information on different types of configuration.
 
