@@ -37,7 +37,7 @@ import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStre
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer.OnStartFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer.RecordWriter;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream.DestinationSyncMode;
+import io.airbyte.protocol.models.DestinationSyncMode;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
