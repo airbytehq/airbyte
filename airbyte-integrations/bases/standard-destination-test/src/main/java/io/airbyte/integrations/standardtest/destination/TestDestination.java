@@ -49,6 +49,7 @@ import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
 import io.airbyte.workers.DefaultGetSpecWorker;
@@ -84,7 +85,7 @@ import org.slf4j.LoggerFactory;
 
 public abstract class TestDestination {
 
-  private static final long JOB_ID = 0L;
+  private static final String JOB_ID = "0";
   private static final int JOB_ATTEMPT = 0;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TestDestination.class);
@@ -292,7 +293,10 @@ public abstract class TestDestination {
     final AirbyteCatalog catalog =
         Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
-    configuredCatalog.getStreams().forEach(s -> s.withSyncMode(SyncMode.INCREMENTAL));
+    configuredCatalog.getStreams().forEach(s -> {
+      s.withSyncMode(SyncMode.INCREMENTAL);
+      s.withDestinationSyncMode(DestinationSyncMode.APPEND);
+    });
     final List<AirbyteMessage> firstSyncMessages = MoreResources.readResource(messagesFilename).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
     runSync(getConfig(), firstSyncMessages, configuredCatalog);

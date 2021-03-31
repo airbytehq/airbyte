@@ -3,15 +3,16 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { useFetcher } from "rest-hooks";
 
-import { Button } from "components";
 import LogsResource from "core/resources/Logs";
+import { useAsyncFn } from "react-use";
+import LoadingButton from "components/Button/LoadingButton";
 
 const Content = styled.div`
   padding: 29px 0 27px;
   text-align: center;
 `;
 
-const LogsButton = styled(Button)`
+const LogsButton = styled(LoadingButton)`
   margin: 0 15px;
 `;
 
@@ -29,12 +30,29 @@ const LogsContent: React.FC = () => {
     document.body.removeChild(element);
   };
 
+  const [
+    { loading: serverLogsLoading },
+    downloadServerLogs,
+  ] = useAsyncFn(async () => {
+    await downloadLogs("server");
+  }, [downloadLogs]);
+
+  const [
+    { loading: schedulerLogsLoading },
+    downloadSchedulerLogs,
+  ] = useAsyncFn(async () => {
+    await downloadLogs("scheduler");
+  }, [downloadLogs]);
+
   return (
     <Content>
-      <LogsButton onClick={() => downloadLogs("server")}>
+      <LogsButton onClick={downloadServerLogs} isLoading={serverLogsLoading}>
         <FormattedMessage id="admin.downloadServerLogs" />
       </LogsButton>
-      <LogsButton onClick={() => downloadLogs("scheduler")}>
+      <LogsButton
+        onClick={downloadSchedulerLogs}
+        isLoading={schedulerLogsLoading}
+      >
         <FormattedMessage id="admin.downloadSchedulerLogs" />
       </LogsButton>
     </Content>

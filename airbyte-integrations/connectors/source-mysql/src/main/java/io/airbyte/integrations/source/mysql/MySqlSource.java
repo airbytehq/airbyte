@@ -46,13 +46,18 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
 
   @Override
   public JsonNode toJdbcConfig(JsonNode config) {
+    final StringBuilder jdbc_url = new StringBuilder(String.format("jdbc:mysql://%s:%s/%s",
+        config.get("host").asText(),
+        config.get("port").asText(),
+        config.get("database").asText()));
+    // see MySqlJdbcStreamingQueryConfiguration for more context on why useCursorFetch=true is needed.
+    jdbc_url.append("?useCursorFetch=true");
+    if (config.get("jdbc_url_params") != null && !config.get("jdbc_url_params").isEmpty()) {
+      jdbc_url.append("&").append(config.get("jdbc_url_params"));
+    }
     ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put("username", config.get("username").asText())
-        // see MySqlJdbcStreamingQueryConfiguration for more context on why useCursorFetch=true is needed.
-        .put("jdbc_url", String.format("jdbc:mysql://%s:%s/%s?useCursorFetch=true",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()));
+        .put("jdbc_url", jdbc_url.toString());
 
     if (config.has("password")) {
       configBuilder.put("password", config.get("password").asText());

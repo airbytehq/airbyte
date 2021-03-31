@@ -28,6 +28,7 @@ import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardTapConfig;
 import io.airbyte.config.StandardTargetConfig;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
+import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessBuilderFactory;
@@ -124,18 +125,22 @@ public class WorkerUtils {
     return getJobRoot(workspaceRoot, launcherConfig.getJobId(), Math.toIntExact(launcherConfig.getAttemptId()));
   }
 
-  public static Path getJobRoot(Path workspaceRoot, long jobId, long attemptId) {
+  public static Path getJobRoot(Path workspaceRoot, JobRunConfig jobRunConfig) {
+    return getJobRoot(workspaceRoot, jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
+  }
+
+  public static Path getLogPath(Path jobRoot) {
+    return jobRoot.resolve(WorkerConstants.LOG_FILENAME);
+  }
+
+  public static Path getJobRoot(Path workspaceRoot, String jobId, long attemptId) {
     return getJobRoot(workspaceRoot, jobId, Math.toIntExact(attemptId));
   }
 
-  public static Path getJobRoot(Path workspaceRoot, long jobId, int attemptId) {
+  public static Path getJobRoot(Path workspaceRoot, String jobId, int attemptId) {
     return workspaceRoot
         .resolve(String.valueOf(jobId))
         .resolve(String.valueOf(attemptId));
-  }
-
-  public static void setJobMdc(Path jobRoot, long jobId) {
-    setJobMdc(jobRoot, String.valueOf(jobId));
   }
 
   public static void setJobMdc(Path jobRoot, String jobId) {

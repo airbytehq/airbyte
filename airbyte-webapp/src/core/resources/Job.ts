@@ -1,14 +1,21 @@
-import { Resource, FetchOptions, ReadShape, SchemaDetail } from "rest-hooks";
+import {
+  FetchOptions,
+  MutateShape,
+  ReadShape,
+  Resource,
+  SchemaDetail,
+} from "rest-hooks";
 import BaseResource from "./BaseResource";
+import Status from "../statuses";
 
 export interface JobItem {
-  id: number;
+  id: number | string;
   configType: string;
   configId: string;
   createdAt: number;
   startedAt: number;
   updatedAt: number;
-  status: string;
+  status: Status | null;
 }
 
 export interface Logs {
@@ -39,7 +46,7 @@ export default class JobResource extends BaseResource implements Job {
     createdAt: 0,
     startedAt: 0,
     updatedAt: 0,
-    status: "",
+    status: null,
   };
   readonly attempts: Attempt[] = [];
   readonly logsByAttempt: { [key: string]: Logs } = {};
@@ -90,6 +97,38 @@ export default class JobResource extends BaseResource implements Job {
           job: JobItem;
           attempts: { attempt: Attempt; logs: Logs }[];
         } = await this.fetch("post", `${this.url(params)}/get`, params);
+
+        const attemptsValue = jobResult.attempts.map(
+          (attemptItem) => attemptItem.attempt
+        );
+
+        return {
+          job: jobResult.job,
+          attempts: attemptsValue,
+          logsByAttempt: Object.fromEntries(
+            jobResult.attempts.map((attemptItem) => [
+              attemptItem.attempt.id,
+              attemptItem.logs,
+            ])
+          ),
+        };
+      },
+      schema: this,
+    };
+  }
+
+  static cancelShape<T extends typeof Resource>(
+    this: T
+  ): MutateShape<SchemaDetail<Job>> {
+    return {
+      ...super.partialUpdateShape(),
+      fetch: async (
+        params: Readonly<Record<string, string | number>>
+      ): Promise<Job> => {
+        const jobResult: {
+          job: JobItem;
+          attempts: { attempt: Attempt; logs: Logs }[];
+        } = await this.fetch("post", `${this.url(params)}/cancel`, params);
 
         const attemptsValue = jobResult.attempts.map(
           (attemptItem) => attemptItem.attempt

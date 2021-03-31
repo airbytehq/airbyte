@@ -29,7 +29,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream.DestinationSyncMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -63,21 +62,26 @@ public class CatalogHelpers {
   }
 
   public static ConfiguredAirbyteStream createConfiguredAirbyteStream(String streamName, List<Field> fields) {
-    return new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName(streamName).withJsonSchema(fieldsToJsonSchema(fields)));
+    return new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName(streamName).withJsonSchema(fieldsToJsonSchema(fields)))
+        .withSyncMode(SyncMode.FULL_REFRESH).withDestinationSyncMode(DestinationSyncMode.OVERWRITE);
   }
 
   public static ConfiguredAirbyteStream createIncrementalConfiguredAirbyteStream(
                                                                                  String streamName,
                                                                                  SyncMode syncMode,
+                                                                                 DestinationSyncMode destinationSyncMode,
                                                                                  String cursorFieldName,
+                                                                                 List<String> primaryKeys,
                                                                                  Field... fields) {
-    return createIncrementalConfiguredAirbyteStream(streamName, syncMode, cursorFieldName, Arrays.asList(fields));
+    return createIncrementalConfiguredAirbyteStream(streamName, syncMode, destinationSyncMode, cursorFieldName, primaryKeys, Arrays.asList(fields));
   }
 
   public static ConfiguredAirbyteStream createIncrementalConfiguredAirbyteStream(
                                                                                  String streamName,
                                                                                  SyncMode syncMode,
+                                                                                 DestinationSyncMode destinationSyncMode,
                                                                                  String cursorFieldName,
+                                                                                 List<String> primaryKeys,
                                                                                  List<Field> fields) {
     return new ConfiguredAirbyteStream()
         .withStream(new AirbyteStream()
@@ -85,7 +89,9 @@ public class CatalogHelpers {
             .withSupportedSyncModes(Collections.singletonList(syncMode))
             .withJsonSchema(fieldsToJsonSchema(fields)))
         .withSyncMode(syncMode)
-        .withCursorField(Collections.singletonList(cursorFieldName));
+        .withCursorField(Collections.singletonList(cursorFieldName))
+        .withDestinationSyncMode(destinationSyncMode)
+        .withPrimaryKey(primaryKeys.stream().map(Collections::singletonList).collect(Collectors.toList()));
   }
 
   /**
@@ -108,7 +114,7 @@ public class CatalogHelpers {
         .withStream(stream)
         .withSyncMode(SyncMode.FULL_REFRESH)
         .withCursorField(new ArrayList<>())
-        .withDestinationSyncMode(DestinationSyncMode.APPEND)
+        .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
         .withPrimaryKey(new ArrayList<>());
   }
 

@@ -7,7 +7,7 @@ import { Status } from "../types";
 type IProps = {
   value: string;
   enabled?: boolean;
-  status?: string;
+  status?: string | null;
 };
 
 const Content = styled.div`
@@ -35,6 +35,7 @@ const NameCell: React.FC<IProps> = ({ value, enabled, status }) => {
     <Content>
       {status ? (
         <StatusIcon
+          empty={status === Status.EMPTY}
           success={status === Status.ACTIVE}
           inactive={status === Status.INACTIVE}
         />

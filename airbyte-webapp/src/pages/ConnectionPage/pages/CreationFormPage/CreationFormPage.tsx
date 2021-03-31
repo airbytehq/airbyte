@@ -150,11 +150,13 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
         />
       }
     >
-      <FormPageContent>
-        <ConnectionBlock
-          itemFrom={source ? { name: source.name } : undefined}
-          itemTo={destination ? { name: destination.name } : undefined}
-        />
+      <FormPageContent big={currentStep === StepsTypes.CREATE_CONNECTION}>
+        {currentStep !== StepsTypes.CREATE_CONNECTION && (
+          <ConnectionBlock
+            itemFrom={source ? { name: source.name } : undefined}
+            itemTo={destination ? { name: destination.name } : undefined}
+          />
+        )}
         {renderStep()}
       </FormPageContent>
     </MainPageWithScroll>

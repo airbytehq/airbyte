@@ -43,7 +43,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.integrations.base.DestinationConsumer;
+import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.StandardNameTransformer;
@@ -216,7 +216,7 @@ class BigQueryDestinationTest {
   @Test
   void testWriteSuccess() throws Exception {
     final BigQueryDestination destination = new BigQueryDestination();
-    final DestinationConsumer<AirbyteMessage> consumer = destination.write(config, CATALOG);
+    final AirbyteMessageConsumer consumer = destination.getConsumer(config, CATALOG);
 
     consumer.accept(MESSAGE_USERS1);
     consumer.accept(MESSAGE_TASKS1);
@@ -248,7 +248,7 @@ class BigQueryDestinationTest {
     final AirbyteMessage spiedMessage = spy(MESSAGE_USERS1);
     doThrow(new RuntimeException()).when(spiedMessage).getRecord();
 
-    final DestinationConsumer<AirbyteMessage> consumer = spy(new BigQueryDestination().write(config, CATALOG));
+    final AirbyteMessageConsumer consumer = spy(new BigQueryDestination().getConsumer(config, CATALOG));
 
     assertThrows(RuntimeException.class, () -> consumer.accept(spiedMessage));
     consumer.accept(MESSAGE_USERS2);

@@ -37,6 +37,10 @@ public class Databases {
     return createDatabase(username, password, jdbcConnectionString, "org.postgresql.Driver", SQLDialect.POSTGRES);
   }
 
+  public static JdbcDatabase createRedshiftDatabase(String username, String password, String jdbcConnectionString) {
+    return createJdbcDatabase(username, password, jdbcConnectionString, "com.amazon.redshift.jdbc.Driver");
+  }
+
   public static Database createDatabase(final String username,
                                         final String password,
                                         final String jdbcConnectionString,

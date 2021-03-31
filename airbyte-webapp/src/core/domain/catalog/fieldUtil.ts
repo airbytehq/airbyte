@@ -8,7 +8,7 @@ import { SyncSchemaField } from "./models";
 export function toInnerModel(
   result: SourceDiscoverSchemaRead
 ): SourceDiscoverSchemaRead {
-  if (result.jobInfo?.job?.status === Status.FAILED || !result.catalog) {
+  if (result.jobInfo?.status === Status.FAILED || !result.catalog) {
     // @ts-ignore address this case
     const e = new NetworkError(result);
     // Generate error with failed status and received logs
@@ -23,6 +23,14 @@ export function toInnerModel(
 
 export const traverseSchemaToField = (
   jsonSchema: JSONSchema7Definition,
+  key: string
+): SyncSchemaField[] => {
+  // For the top level we should not insert an extra object
+  return traverseJsonSchemaProperties(jsonSchema, key)[0].fields ?? [];
+};
+
+const traverseJsonSchemaProperties = (
+  jsonSchema: JSONSchema7Definition,
   key: string,
   path: string = key
 ): SyncSchemaField[] => {
@@ -34,7 +42,7 @@ export const traverseSchemaToField = (
   if (jsonSchema.properties) {
     fields = Object.entries(jsonSchema.properties)
       .flatMap(([k, schema]) =>
-        traverseSchemaToField(schema, k, `${path}.${k}`)
+        traverseJsonSchemaProperties(schema, k, `${path}.${k}`)
       )
       .flat(2);
   }

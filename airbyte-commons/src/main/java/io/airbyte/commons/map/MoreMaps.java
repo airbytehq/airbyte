@@ -30,13 +30,15 @@ import java.util.Map;
 
 public class MoreMaps {
 
-  public static <K, V> Map<K, V> merge(Map<K, V> map1, Map<K, V> map2) {
-    Preconditions.checkNotNull(map1);
-    Preconditions.checkNotNull(map2);
-
+  @SafeVarargs
+  public static <K, V> Map<K, V> merge(Map<K, V>... maps) {
     final Map<K, V> outputMap = new HashMap<>();
-    outputMap.putAll(map1);
-    outputMap.putAll(map2);
+
+    for (Map<K, V> map : maps) {
+      Preconditions.checkNotNull(map);
+      outputMap.putAll(map);
+    }
+
     return outputMap;
   }
 

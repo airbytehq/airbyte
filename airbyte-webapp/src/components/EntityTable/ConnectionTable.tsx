@@ -42,7 +42,7 @@ const ConnectionTable: React.FC<IProps> = ({
           <NameCell
             value={cell.value}
             enabled={row.original.enabled}
-            status={row.original.status}
+            status={row.original.lastSyncStatus}
           />
         ),
       },

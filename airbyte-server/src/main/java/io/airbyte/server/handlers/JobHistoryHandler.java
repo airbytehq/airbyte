@@ -35,7 +35,7 @@ import io.airbyte.api.model.JobWithAttemptsRead;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.stream.MoreStreams;
 import io.airbyte.config.JobConfig;
-import io.airbyte.scheduler.Job;
+import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.converters.JobConverter;
 import java.io.IOException;

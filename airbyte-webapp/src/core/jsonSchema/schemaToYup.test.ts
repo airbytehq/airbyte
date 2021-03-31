@@ -33,6 +33,12 @@ test("should build schema for simple case", () => {
         type: "string",
         description: "Password associated with the username.",
       },
+      reports: {
+        type: "array",
+        items: {
+          type: "string",
+        },
+      },
     },
     additionalProperties: false,
   };
@@ -46,6 +52,7 @@ test("should build schema for simple case", () => {
     is_field_no_default: yup.boolean().required("form.empty.error"),
     dbname: yup.string().trim().required("form.empty.error"),
     password: yup.string().trim(),
+    reports: yup.array().of(yup.string().trim()),
   });
 
   expect(JSON.stringify(yupSchema)).toEqual(JSON.stringify(expectedSchema));

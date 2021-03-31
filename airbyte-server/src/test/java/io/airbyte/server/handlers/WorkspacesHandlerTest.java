@@ -62,6 +62,7 @@ class WorkspacesHandlerTest {
   private StandardWorkspace workspace;
   private WorkspacesHandler workspacesHandler;
 
+  @SuppressWarnings("unchecked")
   @BeforeEach
   void setUp() {
     configRepository = mock(ConfigRepository.class);
@@ -102,6 +103,7 @@ class WorkspacesHandlerTest {
 
     final WorkspaceCreate workspaceCreate = new WorkspaceCreate()
         .name("new workspace")
+        .email("test@airbyte.io")
         .news(false)
         .anonymousDataCollection(false)
         .securityUpdates(false);
@@ -110,6 +112,7 @@ class WorkspacesHandlerTest {
     final WorkspaceRead expectedRead = new WorkspaceRead()
         .workspaceId(uuid)
         .customerId(uuid)
+        .email("test@airbyte.io")
         .name("new workspace")
         .slug("new-workspace")
         .initialSetupComplete(false)
@@ -161,6 +164,7 @@ class WorkspacesHandlerTest {
     final WorkspaceRead workspaceRead = new WorkspaceRead()
         .workspaceId(workspace.getWorkspaceId())
         .customerId(workspace.getCustomerId())
+        .email("test@airbyte.io")
         .name("test workspace")
         .slug("default")
         .initialSetupComplete(false)
@@ -181,6 +185,7 @@ class WorkspacesHandlerTest {
     final WorkspaceRead workspaceRead = new WorkspaceRead()
         .workspaceId(workspace.getWorkspaceId())
         .customerId(workspace.getCustomerId())
+        .email("test@airbyte.io")
         .name(workspace.getName())
         .slug(workspace.getSlug())
         .initialSetupComplete(workspace.getInitialSetupComplete())
@@ -225,6 +230,7 @@ class WorkspacesHandlerTest {
     final WorkspaceRead expectedWorkspaceRead = new WorkspaceRead()
         .workspaceId(workspace.getWorkspaceId())
         .customerId(workspace.getCustomerId())
+        .email("test@airbyte.io")
         .name("test workspace")
         .slug("default")
         .initialSetupComplete(true)

@@ -10,6 +10,37 @@ If you're interested in our progress on the Airbyte platform, please read below!
 
 * We now handle nested tables with the normalization steps. Check out the video below to see how it works. 
 
+## [03-29-2021 - 0.18.1](https://github.com/airbytehq/airbyte/releases/tag/v0.18.1-alpha)
+
+* Surface the health of each connection so that a user can spot any problems at a glance. 
+* Added support for deduplicating records in the destination using a primary key using incremental dedupe -  
+* A source’s extraction mode (incremental, full refresh) is now decoupled from the destination’s write mode -- so you can repeatedly append full refreshes to get repeated snapshots of data in your source.
+* New “Upgrade all” button in Admin to upgrade all your connectors at once 
+* New “Cancel job” button in Connections Status page when a sync job is running, so you can stop never-ending processes.
+
+## [03-22-2021 - 0.17.2](https://github.com/airbytehq/airbyte/releases/tag/v0.17.2-alpha)
+
+* Improved the speed of get spec, check connection, and discover schema by migrating to the Temporal workflow engine.
+* Exposed cancellation for sync jobs in the API (will be exposed in the UI in the next week!).
+* Bug fix: Fix issue where migration app was OOMing.
+
+## [03-15-2021 - 0.17.1](https://github.com/airbytehq/airbyte/releases/tag/v0.17.1-alpha)
+
+* **Creating and deleting multiple workspaces** is now supported via the API. Thanks to [@Samuel Gordalina](https://github.com/gordalina) for contributing this feature!
+* Normalization now supports numeric types with precision greater than 32 bits
+* Normalization now supports union data types
+* Support longform text inputs in the UI for cases where you need to preserve formatting on connector inputs like .pem keys
+* Expose the latest available connector versions in the API
+* Airflow: published a new [tutorial](https://docs.airbyte.io/tutorials/using-the-airflow-airbyte-operator) for how to use the Airbyte operator. Thanks [@Marcos Marx](https://github.com/marcosmarxm) for writing the tutorial! 
+* Connector Contributions: All connectors now describe how to contribute to them without having to touch Airbyte’s monorepo build system -- just work on the connector in your favorite dev setup!
+
+
+## [03-08-2021 - 0.17](https://github.com/airbytehq/airbyte/releases/tag/v0.17.0-alpha)
+
+* Integration with Airflow is here. Thanks to @Marcos Marx, you can now run Airbyte jobs from Airflow directly. A tutorial is on the way and should be coming this week!
+* Add a prefix for tables, so that tables with the same name don't clobber each other in the destination
+
+
 ## [03-01-2021 - 0.16](https://github.com/airbytehq/airbyte/milestone/22?closed=1)
 
 * We made some progress to address **nested tables in our normalization.**
@@ -113,7 +144,7 @@ If you're interested in our progress on the Airbyte platform, please read below!
 * **Incremental - Append"**
   * We now allow sources to replicate only new or modified data. This enables to avoid re-fetching data that you have already replicated from a source.
   * The delta from a sync will be _appended_ to the existing data in the data warehouse.
-  * Here are [all the details of this feature](../architecture/incremental.md).
+  * Here are [all the details of this feature](../architecture/incremental-append.md).
   * It has been released for 15 connectors, including Postgres, MySQL, Intercom, Zendesk, Stripe, Twilio, Marketo, Shopify, GitHub, and all the destination connectors. We will expand it to all the connectors in the next couple of weeks.
 * **Other features:**
   * Improve interface for writing python sources \(should make writing new python sources easier and clearer\).

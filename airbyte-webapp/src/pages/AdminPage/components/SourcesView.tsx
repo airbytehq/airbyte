@@ -2,23 +2,27 @@ import React, { useCallback, useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { CellProps } from "react-table";
 import { useFetcher, useResource } from "rest-hooks";
+import { useAsyncFn } from "react-use";
 
 import Table from "components/Table";
 import ConnectorCell from "./ConnectorCell";
 import ImageCell from "./ImageCell";
 import VersionCell from "./VersionCell";
-import ConnectionResource from "core/resources/Connection";
 import config from "config";
-import { Block, Title, FormContentTitle } from "./PageComponents";
-import SourceDefinitionResource from "core/resources/SourceDefinition";
-import { Source } from "core/resources/Source";
+import { Block, FormContentTitle, Title } from "./PageComponents";
+import SourceDefinitionResource, {
+  SourceDefinition,
+} from "core/resources/SourceDefinition";
+import { SourceResource } from "core/resources/Source";
+import UpgradeAllButton from "./UpgradeAllButton";
+import useNotification from "components/hooks/services/useNotification";
 
 const SourcesView: React.FC = () => {
+  const [successUpdate, setSuccessUpdate] = useState(false);
   const formatMessage = useIntl().formatMessage;
-  const { connections } = useResource(ConnectionResource.listShape(), {
+  const { sources } = useResource(SourceResource.listShape(), {
     workspaceId: config.ui.workspaceId,
   });
-
   const { sourceDefinitions } = useResource(
     SourceDefinitionResource.listShape(),
     {
@@ -26,11 +30,13 @@ const SourcesView: React.FC = () => {
     }
   );
 
-  const [feedbackList, setFeedbackList] = useState<Record<string, string>>({});
-
   const updateSourceDefinition = useFetcher(
     SourceDefinitionResource.updateShape()
   );
+
+  const { hasNewSourceVersion } = useNotification();
+
+  const [feedbackList, setFeedbackList] = useState<Record<string, string>>({});
   const onUpdateVersion = useCallback(
     async ({ id, version }: { id: string; version: string }) => {
       try {
@@ -43,15 +49,12 @@ const SourcesView: React.FC = () => {
         );
         setFeedbackList({ ...feedbackList, [id]: "success" });
       } catch (e) {
-        const message =
-          e.status === 422
-            ? formatMessage({
-                id: "form.imageCannotFound",
-              })
-            : formatMessage({
-                id: "form.someError",
-              });
-        setFeedbackList({ ...feedbackList, [id]: message });
+        const messageId =
+          e.status === 422 ? "form.imageCannotFound" : "form.someError";
+        setFeedbackList({
+          ...feedbackList,
+          [id]: formatMessage({ id: messageId }),
+        });
       }
     },
     [feedbackList, formatMessage, updateSourceDefinition]
@@ -63,8 +66,19 @@ const SourcesView: React.FC = () => {
         Header: <FormattedMessage id="admin.connectors" />,
         accessor: "name",
         customWidth: 25,
-        Cell: ({ cell }: CellProps<never>) => (
-          <ConnectorCell connectorName={cell.value} />
+        Cell: ({
+          cell,
+          row,
+        }: CellProps<{
+          latestDockerImageTag: string;
+          dockerImageTag: string;
+        }>) => (
+          <ConnectorCell
+            connectorName={cell.value}
+            hasUpdate={
+              row.original.latestDockerImageTag !== row.original.dockerImageTag
+            }
+          />
         ),
       },
       {
@@ -79,19 +93,31 @@ const SourcesView: React.FC = () => {
         ),
       },
       {
+        Header: <FormattedMessage id="admin.currentVersion" />,
+        accessor: "dockerImageTag",
+        customWidth: 10,
+      },
+      {
         Header: (
           <FormContentTitle>
-            <FormattedMessage id="admin.tag" />
+            <FormattedMessage id="admin.changeTo" />
           </FormContentTitle>
         ),
-        accessor: "dockerImageTag",
+        accessor: "latestDockerImageTag",
         collapse: true,
-        Cell: ({ cell, row }: CellProps<{ sourceDefinitionId: string }>) => (
+        Cell: ({
+          cell,
+          row,
+        }: CellProps<{
+          sourceDefinitionId: string;
+          dockerImageTag: string;
+        }>) => (
           <VersionCell
             version={cell.value}
             id={row.original.sourceDefinitionId}
             onChange={onUpdateVersion}
             feedback={feedbackList[row.original.sourceDefinitionId]}
+            currentVersion={row.original.dockerImageTag}
           />
         ),
       },
@@ -99,44 +125,64 @@ const SourcesView: React.FC = () => {
     [feedbackList, onUpdateVersion]
   );
 
-  const usedSources = useMemo<Source[]>(() => {
-    const allSources = connections.map((item) => {
-      const sourceInfo = sourceDefinitions.find(
-        (source) =>
-          source.sourceDefinitionId === item.source?.sourceDefinitionId
+  const usedSourcesDefinitions = useMemo<SourceDefinition[]>(() => {
+    const sourceDefinitionMap = new Map<string, SourceDefinition>();
+    sources.forEach((source) => {
+      const sourceDestination = sourceDefinitions.find(
+        (sourceDefinition) =>
+          sourceDefinition.sourceDefinitionId === source.sourceDefinitionId
       );
-      return {
-        name: item.source?.sourceName,
-        sourceDefinitionId: item.source?.sourceDefinitionId || "",
-        dockerRepository: sourceInfo?.dockerRepository,
-        dockerImageTag: sourceInfo?.dockerImageTag,
-        documentationUrl: sourceInfo?.documentationUrl,
-        feedback: "",
-      };
+
+      if (sourceDestination) {
+        sourceDefinitionMap.set(source?.sourceDefinitionId, sourceDestination);
+      }
     });
 
-    const uniqSources = allSources.reduce(
-      (map, item) => ({ ...map, [item.sourceDefinitionId]: item }),
-      {}
-    );
+    return Array.from(sourceDefinitionMap.values());
+  }, [sources, sourceDefinitions]);
 
-    return Object.values(uniqSources);
-  }, [connections, sourceDefinitions]);
+  const { updateAllSourceVersions } = useNotification();
+
+  const [{ loading, error }, onUpdate] = useAsyncFn(async () => {
+    setSuccessUpdate(false);
+    await updateAllSourceVersions();
+    setSuccessUpdate(true);
+    setTimeout(() => {
+      setSuccessUpdate(false);
+    }, 2000);
+  }, [updateAllSourceVersions]);
 
   return (
     <>
-      {connections.length ? (
+      {usedSourcesDefinitions.length ? (
         <Block>
           <Title bold>
             <FormattedMessage id="admin.manageSource" />
+            {(hasNewSourceVersion || successUpdate) && (
+              <UpgradeAllButton
+                isLoading={loading}
+                hasError={!!error && !loading}
+                hasSuccess={successUpdate}
+                onUpdate={onUpdate}
+              />
+            )}
           </Title>
-          <Table columns={columns} data={usedSources} />
+          <Table columns={columns} data={usedSourcesDefinitions} />
         </Block>
       ) : null}
 
       <Block>
         <Title bold>
           <FormattedMessage id="admin.availableSource" />
+          {(hasNewSourceVersion || successUpdate) &&
+            !usedSourcesDefinitions.length && (
+              <UpgradeAllButton
+                isLoading={loading}
+                hasError={!!error && !loading}
+                hasSuccess={successUpdate}
+                onUpdate={onUpdate}
+              />
+            )}
         </Title>
         <Table columns={columns} data={sourceDefinitions} />
       </Block>
