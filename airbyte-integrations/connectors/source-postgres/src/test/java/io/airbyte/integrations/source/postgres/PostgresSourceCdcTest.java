@@ -24,6 +24,8 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -41,7 +43,6 @@ import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.BeforeAll;
@@ -54,6 +55,8 @@ class PostgresSourceCdcTest {
 
   private static final String SLOT_NAME = "debezium_slot";
   private static final String STREAM_NAME = "public.id_and_name";
+  private static final String STREAM_NAME2 = "public.id_,something";
+  private static final String STREAM_NAME3 = "public.naMéS";
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
       CatalogHelpers.createAirbyteStream(
           STREAM_NAME,
@@ -63,13 +66,13 @@ class PostgresSourceCdcTest {
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
           .withSourceDefinedPrimaryKey(List.of(List.of("id"))),
       CatalogHelpers.createAirbyteStream(
-          STREAM_NAME + "2",
+          STREAM_NAME2,
           Field.of("id", JsonSchemaPrimitive.NUMBER),
           Field.of("name", JsonSchemaPrimitive.STRING),
           Field.of("power", JsonSchemaPrimitive.NUMBER))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)),
       CatalogHelpers.createAirbyteStream(
-          "public.names",
+          STREAM_NAME3,
           Field.of("first_name", JsonSchemaPrimitive.STRING),
           Field.of("last_name", JsonSchemaPrimitive.STRING),
           Field.of("power", JsonSchemaPrimitive.NUMBER))
@@ -106,13 +109,13 @@ class PostgresSourceCdcTest {
       ctx.fetch("CREATE TABLE id_and_name(id NUMERIC(20, 10), name VARCHAR(200), power double precision, PRIMARY KEY (id));");
       ctx.fetch("CREATE INDEX i1 ON id_and_name (id);");
       ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1);");
+      ctx.fetch("CREATE TABLE \"id_,something\"(id NUMERIC(20, 10), name VARCHAR(200), power double precision);");
+      ctx.fetch("INSERT INTO \"id_,something\" (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1);");
 
-      ctx.fetch("CREATE TABLE id_and_name2(id NUMERIC(20, 10), name VARCHAR(200), power double precision);");
-      ctx.fetch("INSERT INTO id_and_name2 (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1);");
-
-      ctx.fetch("CREATE TABLE names(first_name VARCHAR(200), last_name VARCHAR(200), power double precision, PRIMARY KEY (first_name, last_name));");
       ctx.fetch(
-          "INSERT INTO names (first_name, last_name, power) VALUES ('san', 'goku', 'Infinity'),  ('prince', 'vegeta', 9000.1);");
+          "CREATE TABLE \"naMéS\"(first_name VARCHAR(200), last_name VARCHAR(200), power double precision, PRIMARY KEY (first_name, last_name));");
+      ctx.fetch(
+          "INSERT INTO \"naMéS\" (first_name, last_name, power) VALUES ('san', 'goku', 'Infinity'),  ('prince', 'vegeta', 9000.1);");
       return null;
     });
     database.close();
@@ -153,11 +156,7 @@ class PostgresSourceCdcTest {
   @Test
   public void testIt() throws Exception {
     final PostgresSource source = new PostgresSource();
-    final ConfiguredAirbyteCatalog configuredCatalog =
-        CONFIGURED_CATALOG.withStreams(CONFIGURED_CATALOG.getStreams()
-            .stream()
-            .filter(s -> s.getStream().getName().equals(STREAM_NAME))
-            .collect(Collectors.toList()));
+    final ConfiguredAirbyteCatalog configuredCatalog = CONFIGURED_CATALOG;
     // coerce to incremental so it uses CDC.
     configuredCatalog.getStreams().forEach(s -> s.setSyncMode(SyncMode.INCREMENTAL));
 
@@ -170,6 +169,14 @@ class PostgresSourceCdcTest {
         System.out.println("read.next() = " + read.next());
       }
     }
+  }
+
+  @Test
+  public void testWhitelistCreation() {
+    final String expectedWhitelist = "public.id_and_name,public.id_\\,something,public.naMéS";
+    final String actualWhitelist = PostgresSource.getTableWhitelist(CONFIGURED_CATALOG);
+
+    assertEquals(expectedWhitelist, actualWhitelist);
   }
 
 }
