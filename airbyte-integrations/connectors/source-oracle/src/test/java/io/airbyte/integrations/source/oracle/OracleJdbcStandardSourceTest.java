@@ -47,7 +47,7 @@ import org.testcontainers.containers.OracleContainer;
 
 class OracleJdbcStandardSourceTest extends JdbcSourceStandardTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(OracleSource.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(OracleJdbcStandardSourceTest.class);
   private static OracleContainer ORACLE_DB;
 
   @BeforeAll
@@ -197,6 +197,8 @@ class OracleJdbcStandardSourceTest extends JdbcSourceStandardTest {
   }
 
   public static boolean ignoreSQLException(String sqlState) {
+    // This only ignore cases where other databases won't raise errors
+    // Drop table, schema etc or try to recreate a table;
     if (sqlState == null) {
       LOGGER.info("The SQL state is not defined!");
       return false;
