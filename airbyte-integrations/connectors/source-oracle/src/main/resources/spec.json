@@ -1,0 +1,41 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/oracle",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Oracle Source Spec",
+    "type": "object",
+    "required": ["host", "port", "sid", "username"],
+    "additionalProperties": false,
+    "properties": {
+      "host": {
+        "title": "Host",
+        "description": "Hostname of the database.",
+        "type": "string"
+      },
+      "port": {
+        "title": "Port",
+        "description": "Port of the database.",
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 65536,
+        "default": 1521,
+        "examples": ["1521"]
+      },
+      "sid": {
+        "title": "SID (Oracle System Identifier)",
+        "type": "string"
+      },
+      "username": {
+        "title": "User",
+        "description": "Username to use to access the database.",
+        "type": "string"
+      },
+      "password": {
+        "title": "Password",
+        "description": "Password associated with the username.",
+        "type": "string",
+        "airbyte_secret": true
+      }
+    }
+  }
+}
