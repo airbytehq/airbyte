@@ -12,6 +12,7 @@ import NameCell from "./components/NameCell";
 import SortButton from "./components/SortButton";
 import FrequencyCell from "./components/FrequencyCell";
 import StatusCell from "./components/StatusCell";
+import ConnectionSettingsCell from "./components/ConnectionSettingsCell";
 import { ITableDataItem, SortOrderEnum } from "./types";
 import useRouter from "components/hooks/useRouterHook";
 
@@ -150,6 +151,7 @@ const ConnectionTable: React.FC<IProps> = ({
       {
         Header: <FormattedMessage id="tables.enabled" />,
         accessor: "enabled",
+        customWidth: 1,
         Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
           <StatusCell
             enabled={cell.value}
@@ -161,8 +163,16 @@ const ConnectionTable: React.FC<IProps> = ({
           />
         ),
       },
+      {
+        Header: "",
+        accessor: "connectionId",
+        customWidth: 1,
+        Cell: ({ cell }: CellProps<ITableDataItem>) => (
+          <ConnectionSettingsCell id={cell.value} />
+        ),
+      },
     ],
-    [entity, onChangeStatus, onSync]
+    [entity, onChangeStatus, onSync, onSortClick, sortBy, sortOrder]
   );
 
   return (

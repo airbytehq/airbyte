@@ -35,6 +35,7 @@ export enum Routes {
   SourceNew = "/new-source",
   DestinationNew = "/new-destination",
   Admin = "/admin",
+  Settings = "/settings",
   Root = "/",
 }
 
