@@ -22,23 +22,24 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.source.postgres;
+package io.airbyte.db;
 
-import io.airbyte.commons.lang.CloseableQueue;
-import io.airbyte.protocol.models.AirbyteMessage;
-import java.util.concurrent.LinkedBlockingQueue;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.base.Preconditions;
+import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
+import java.sql.SQLException;
+import java.util.List;
 
-public class CloseableLinkedBlockingQueue extends LinkedBlockingQueue<AirbyteMessage> implements CloseableQueue<AirbyteMessage> {
+public class PostgresUtils {
 
-  private final Runnable onClose;
+  public static PgLsn getLsn(JdbcDatabase database) throws SQLException {
+    // pg version > 9.
+    final List<JsonNode> jsonNodes = database
+        .bufferedResultSetQuery(conn -> conn.createStatement().executeQuery("SELECT pg_current_wal_lsn()"), JdbcUtils::rowToJson);
 
-  public CloseableLinkedBlockingQueue(Runnable onClose) {
-    this.onClose = onClose;
-  }
-
-  @Override
-  public void close() throws Exception {
-    onClose.run();
+    Preconditions.checkState(jsonNodes.size() == 1);
+    return PgLsn.fromPgString(jsonNodes.get(0).get("pg_current_wal_lsn").asText());
   }
 
 }
