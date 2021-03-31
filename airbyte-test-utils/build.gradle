@@ -4,5 +4,4 @@ plugins {
 
 dependencies {
     implementation 'org.testcontainers:postgresql:1.15.1'
-    implementation 'org.testcontainers:oracle-xe:1.15.2'
 }
