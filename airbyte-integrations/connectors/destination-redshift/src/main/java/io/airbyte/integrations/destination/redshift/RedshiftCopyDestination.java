@@ -40,7 +40,7 @@ import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
-import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -160,17 +160,15 @@ public class RedshiftCopyDestination {
     }
 
     @Override
-    protected void acceptTracked(AirbyteMessage message) throws Exception {
-      if (message.getType() == AirbyteMessage.Type.RECORD) {
-        var streamName = message.getRecord().getStream();
-        if (!streamNameToCopier.containsKey(streamName)) {
-          throw new IllegalArgumentException(
-              String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
-                  Jsons.serialize(catalog), Jsons.serialize(message)));
-        }
-
-        streamNameToCopier.get(streamName).uploadToS3(message.getRecord());
+    protected void acceptTracked(AirbyteRecordMessage message) throws Exception {
+      var streamName = message.getStream();
+      if (!streamNameToCopier.containsKey(streamName)) {
+        throw new IllegalArgumentException(
+            String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
+                Jsons.serialize(catalog), Jsons.serialize(message)));
       }
+
+      streamNameToCopier.get(streamName).uploadToS3(message);
     }
 
     /**
