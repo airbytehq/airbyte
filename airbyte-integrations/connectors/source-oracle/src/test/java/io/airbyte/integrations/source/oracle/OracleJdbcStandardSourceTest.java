@@ -120,7 +120,7 @@ class OracleJdbcStandardSourceTest extends JdbcSourceStandardTest {
         String tableName = resultSet.getString("TABLE_NAME");
         String tableNameProcessed = tableName.contains(" ") ? JdbcUtils
             .enquoteIdentifier(conn, tableName) : tableName;
-        conn.createStatement().executeQuery(String.format("DROP TABLE3 %s.%s", schemaName, tableNameProcessed));
+        conn.createStatement().executeQuery(String.format("DROP TABLE %s.%s", schemaName, tableNameProcessed));
       }
     }
   }
