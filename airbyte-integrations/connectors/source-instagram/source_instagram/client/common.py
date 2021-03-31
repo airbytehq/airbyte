@@ -40,8 +40,10 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
         logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} more seconds then retrying...")
 
     def should_retry_api_error(exc):
-        if exc.http_status() == status_codes.TOO_MANY_REQUESTS or (
-            exc.http_status() == status_codes.FORBIDDEN and exc.api_error_message() == "(#4) Application request limit reached"
+        if (
+            exc.http_status() == status_codes.TOO_MANY_REQUESTS
+            or (exc.http_status() == status_codes.FORBIDDEN and exc.api_error_message() == "(#4) Application request limit reached")
+            or exc.api_transient_error()
         ):
             return True
         return False
