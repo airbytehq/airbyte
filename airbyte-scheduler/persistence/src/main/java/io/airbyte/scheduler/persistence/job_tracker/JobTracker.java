@@ -229,10 +229,12 @@ public class JobTracker {
         final Attempt lastAttempt = attempts.get(attempts.size() - 1);
         if (lastAttempt.getOutput() != null && lastAttempt.getOutput().isPresent()) {
           final JobOutput jobOutput = lastAttempt.getOutput().get();
-          final StandardSyncSummary syncSummary = jobOutput.getSync().getStandardSyncSummary();
-          metadata.put("duration", Math.round((syncSummary.getEndTime() - syncSummary.getStartTime()) / 1000.0));
-          metadata.put("volume_mb", syncSummary.getBytesSynced());
-          metadata.put("volume_rows", syncSummary.getRecordsSynced());
+          if (jobOutput.getSync() != null) {
+            final StandardSyncSummary syncSummary = jobOutput.getSync().getStandardSyncSummary();
+            metadata.put("duration", Math.round((syncSummary.getEndTime() - syncSummary.getStartTime()) / 1000.0));
+            metadata.put("volume_mb", syncSummary.getBytesSynced());
+            metadata.put("volume_rows", syncSummary.getRecordsSynced());
+          }
         }
       }
     }
