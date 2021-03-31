@@ -30,11 +30,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.concurrency.CloseableLinkedBlockingQueue;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Queues;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
+import io.airbyte.db.PgLsn;
 import io.airbyte.db.PostgresUtils;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
@@ -49,6 +51,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.debezium.engine.ChangeEvent;
 import io.debezium.engine.DebeziumEngine;
 import io.debezium.engine.format.Json;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.time.Instant;
@@ -126,12 +129,77 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
     return checkOperations;
   }
 
-  private static String getLsn(JdbcDatabase database) {
+  private static PgLsn getLsn(JdbcDatabase database) {
     try {
       return PostgresUtils.getLsn(database);
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  enum SnapshotMetadata {
+    TRUE,
+    FALSE,
+    LAST
+  }
+
+  private PgLsn extractLsn(ChangeEvent<String, String> event) {
+    return Optional.ofNullable(event.value())
+        .flatMap(value -> Optional.ofNullable(Jsons.deserialize(value).get("source")))
+        .flatMap(source -> Optional.ofNullable(source.get("lsn").asText()))
+        .map(Long::parseLong)
+        .map(PgLsn::fromLong)
+        .orElseThrow(() -> new IllegalStateException("Could not find LSN"));
+  }
+
+  private SnapshotMetadata getSnapshotMetadata(ChangeEvent<String, String> event) {
+    try {
+      final Method sourceRecordMethod = event.getClass().getMethod("sourceRecord");
+      sourceRecordMethod.setAccessible(true);
+      final SourceRecord sourceRecord = (SourceRecord) sourceRecordMethod.invoke(event);
+      final String snapshot = ((Struct) sourceRecord.value()).getStruct("source").getString("snapshot");
+      // the snapshot field is an enum of true, false, and last.
+      return SnapshotMetadata.valueOf(snapshot.toUpperCase());
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private Predicate<ChangeEvent<String, String>> getTerminationPredicate(JdbcDatabase database) {
+    final PgLsn targetLsn = getLsn(database);
+    LOGGER.info("identified target lsn: " + targetLsn);
+
+    return (event) -> {
+      final PgLsn eventLsn = extractLsn(event);
+      final SnapshotMetadata snapshotMetadata = getSnapshotMetadata(event);
+
+      if (targetLsn.compareTo(eventLsn) > 0) {
+        return false;
+      } else {
+        // if not snapshot or is snapshot but last record in snapshot.
+        return SnapshotMetadata.TRUE != snapshotMetadata;
+      }
+    };
+  }
+
+  private static class DebeziumPayload {
+
+    private final ChangeEvent<String, String> changeEvent;
+    private final AirbyteMessage message;
+
+    public DebeziumPayload(final ChangeEvent<String, String> changeEvent, final AirbyteMessage recordMessage) {
+      this.changeEvent = changeEvent;
+      this.message = recordMessage;
+    }
+
+    public ChangeEvent<String, String> getChangeEvent() {
+      return changeEvent;
+    }
+
+    public AirbyteMessage getMessage() {
+      return message;
+    }
+
   }
 
   @Override
@@ -142,63 +210,18 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
                                                                              JdbcStateManager stateManager,
                                                                              Instant emittedAt) {
     if (isCdc(config)) {
-      final String targetLsn = getLsn(database);
-      LOGGER.info("identified target lsn: " + targetLsn);
-      final Predicate<JsonNode> hasReachedLsnPredicate = (record) -> Optional.ofNullable(record.get("value"))
-          .flatMap(value -> Optional.ofNullable(Jsons.deserialize(value.asText()).get("source")))
-          .flatMap(source -> Optional.ofNullable(source.get("lsn").asText()))
-          .map(lsn -> {
-            LOGGER.info("lsn was {}", lsn);
-            // target lsn has the slash syntax that we get when querying postgres raw.
-            // the lsn from debezium has the slash removed.
-            // todo (cgardens) - wrap lsn so it isn't so ad hoc.
-            // return false;
-
-            // if target lsn is greater than found lsn, continue
-            if (PostgresUtils.lsnToLong(targetLsn) > Long.parseLong(lsn)) {
-              return false;
-            } else {
-              // if not snapshot or is snapshot but last record in snapshot.
-              return !record.get("isSnapshot").asBoolean() || (record.get("isSnapshot").asBoolean() && record.get("isLastInSnapshot").asBoolean());
-            }
-
-            // return PostgresUtils.lsnToLong(targetLsn) < Long.parseLong(lsn);
-            // return PostgresUtils.lsnToLong(targetLsn) <= PostgresUtils.lsnToLong(lsn);
-          })
-          .orElse(false);
+      final Predicate<ChangeEvent<String, String>> hasReachedLsnPredicate = getTerminationPredicate(database);
       AtomicReference<Throwable> thrownError = new AtomicReference<>();
       AtomicBoolean completed = new AtomicBoolean(false);
       ExecutorService executor = Executors.newSingleThreadExecutor();
-      CloseableLinkedBlockingQueue queue = new CloseableLinkedBlockingQueue(executor::shutdown);
+      final CloseableLinkedBlockingQueue<DebeziumPayload> queue = new CloseableLinkedBlockingQueue<>(executor::shutdown);
 
       DebeziumEngine<ChangeEvent<String, String>> engine = DebeziumEngine.create(Json.class)
           .using(getDebeziumProperties(config))
-          .notifying(record -> {
+          .notifying(event -> {
             try {
-              final AirbyteMessage message = convertChangeEvent(record, emittedAt);
-              queue.add(message);
-//              final Method sourceRecordMethod = record.getClass().getMethod("sourceRecord");
-//              sourceRecordMethod.setAccessible(true);
-//              final SourceRecord sourceRecord = (SourceRecord) sourceRecordMethod.invoke(record);
-//              final Boolean isSnapshot = "true".equals(((Struct) sourceRecord.value()).getStruct("source").getString("snapshot"))
-//                  || "last".equals(((Struct) sourceRecord.value()).getStruct("source").getString("snapshot"));
-//              final Boolean isLastInSnapshot = "last".equals(((Struct) sourceRecord.value()).getStruct("source").getString("snapshot"));
-//
-//              LOGGER.info("record = " + record);
-//              final JsonNode node = Jsons.jsonNode(
-//                  ImmutableMap.<String, Object>builder()
-//                      .put("key", record.key() != null ? record.key() : "null")
-//                      .put("value", record.value())
-//                      .put("isSnapshot", isSnapshot)
-//                      .put("isLastInSnapshot", isLastInSnapshot)
-//                      .put("destination", record.destination())
-//                      .build()); // todo:
-              // better
-              // transformation
-              // function
-              // here
-//              LOGGER.info("node = " + node);
-//              queue.add(node);
+              final AirbyteMessage message = convertChangeEvent(event, emittedAt);
+              queue.add(new DebeziumPayload(event, message));
             } catch (Exception e) {
               LOGGER.info("error: " + e);
               thrownError.set(e);
@@ -214,13 +237,13 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
       // Run the engine asynchronously ...
       executor.execute(engine);
 
-      final Iterator<AirbyteMessage> queueIterator = Queues.toStream(queue).iterator();
-      final AbstractIterator<AirbyteMessage> iterator = new AbstractIterator<>() {
+      final Iterator<DebeziumPayload> queueIterator = Queues.toStream(queue).iterator();
+      final AbstractIterator<DebeziumPayload> iterator = new AbstractIterator<>() {
 
         private boolean hasReachedLsn = false;
 
         @Override
-        protected AirbyteMessage computeNext() {
+        protected DebeziumPayload computeNext() {
           // if we have reached the lsn we stop, otherwise we have the potential to wait indefinitely for the
           // next value.
           if (!hasReachedLsn) {
@@ -233,13 +256,13 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
               }
             }
 
-            final AirbyteMessage next = queueIterator.next();
+            final DebeziumPayload next = queueIterator.next();
             LOGGER.info("next {}", next);
             // todo fix this cast. the record passed to this iterator has to include the lsn somewhere. it can
             // either be the full change event or some smaller object that just includes the lsn.
             // we guarantee that this will always eventually return true, because we pick an LSN that already
             // exists when we start the sync.
-            if (hasReachedLsnPredicate.test(Jsons.jsonNode(next))) {
+            if (hasReachedLsnPredicate.test(next.getChangeEvent())) {
               hasReachedLsn = true;
             }
             return next;
@@ -250,7 +273,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
 
       };
 
-      final AutoCloseableIterator<AirbyteMessage> messageIterator = AutoCloseableIterators.fromIterator(iterator, () -> {
+      final AutoCloseableIterator<DebeziumPayload> payloadIterator = AutoCloseableIterators.fromIterator(iterator, () -> {
         engine.close();
         executor.shutdown();
 
@@ -258,6 +281,8 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
           throw new RuntimeException(thrownError.get());
         }
       });
+
+      final AutoCloseableIterator<AirbyteMessage> messageIterator = AutoCloseableIterators.transform(payloadIterator, DebeziumPayload::getMessage);
 
       return Collections.singletonList(messageIterator);
     } else {

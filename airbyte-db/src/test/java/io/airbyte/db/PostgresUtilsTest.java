@@ -47,15 +47,6 @@ import org.testcontainers.utility.MountableFile;
 
 class PostgresUtilsTest {
 
-  private static final Map<String, Long> TEST_LSNS = ImmutableMap.<String, Long>builder()
-      .put("0/15E7A10", 22968848L)
-      .put("0/15E7B08", 22969096L)
-      .put("16/15E7B08", 94512249608L)
-      .put("16/FFFFFFFF", 98784247807L)
-      .put("7FFFFFFF/FFFFFFFF", Long.MAX_VALUE)
-      .put("0/0", 0L)
-      .build();
-
   private static PostgreSQLContainer<?> PSQL_DB;
 
   private BasicDataSource dataSource;
@@ -108,31 +99,19 @@ class PostgresUtilsTest {
   void testGetLsn() throws SQLException {
     final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
 
-    final String lsn1 = PostgresUtils.getLsn(database);
+    final PgLsn lsn1 = PostgresUtils.getLsn(database);
     assertNotNull(lsn1);
-    assertTrue(PostgresUtils.lsnToLong(lsn1) > 0);
+    assertTrue(lsn1.asLong() > 0);
 
     database.execute(connection -> {
       connection.createStatement().execute("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
     });
 
-    final String lsn2 = PostgresUtils.getLsn(database);
+    final PgLsn lsn2 = PostgresUtils.getLsn(database);
     assertNotNull(lsn2);
-    assertTrue(PostgresUtils.lsnToLong(lsn2) > 0);
+    assertTrue(lsn2.asLong() > 0);
 
-    assertTrue(PostgresUtils.compareLsns(lsn1, lsn2) < 0, "returned lsns are not ascending.");
-  }
-
-  @Test
-  void testLsnToLong() {
-    TEST_LSNS.forEach(
-        (key, value) -> assertEquals(value, PostgresUtils.lsnToLong(key), String.format("Conversion failed. lsn: %s long value: %s", key, value)));
-  }
-
-  @Test
-  void testLongToLsn() {
-    TEST_LSNS.forEach(
-        (key, value) -> assertEquals(key, PostgresUtils.longToLsn(value), String.format("Conversion failed. lsn: %s long value: %s", key, value)));
+    assertTrue(lsn1.compareTo(lsn2) < 0, "returned lsns are not ascending.");
   }
 
 }

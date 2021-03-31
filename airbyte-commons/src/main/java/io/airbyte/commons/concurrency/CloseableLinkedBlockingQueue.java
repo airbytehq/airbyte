@@ -22,13 +22,12 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.source.postgres;
+package io.airbyte.commons.concurrency;
 
 import io.airbyte.commons.lang.CloseableQueue;
-import io.airbyte.protocol.models.AirbyteMessage;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class CloseableLinkedBlockingQueue extends LinkedBlockingQueue<AirbyteMessage> implements CloseableQueue<AirbyteMessage> {
+public class CloseableLinkedBlockingQueue<T> extends LinkedBlockingQueue<T> implements CloseableQueue<T> {
 
   private final Runnable onClose;
 
