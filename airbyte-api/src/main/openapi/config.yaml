@@ -1257,6 +1257,9 @@ components:
           $ref: "#/components/schemas/WorkspaceId"
         customerId:
           $ref: "#/components/schemas/CustomerId"
+        email:
+          type: string
+          format: email
         name:
           type: string
         slug:

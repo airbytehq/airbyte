@@ -178,11 +178,11 @@ public class WorkspacesHandler {
     return buildWorkspaceRead(workspace);
   }
 
-  private WorkspaceRead buildWorkspaceRead(StandardWorkspace workspace)
-      throws ConfigNotFoundException, IOException, JsonValidationException {
+  private WorkspaceRead buildWorkspaceRead(StandardWorkspace workspace) {
     return new WorkspaceRead()
         .workspaceId(workspace.getWorkspaceId())
         .customerId(workspace.getCustomerId())
+        .email(workspace.getEmail())
         .name(workspace.getName())
         .slug(workspace.getSlug())
         .initialSetupComplete(workspace.getInitialSetupComplete())
