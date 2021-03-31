@@ -112,7 +112,7 @@ class PostgresSourceCdcTest {
     final JsonNode config = getConfig(PSQL_DB, dbName);
     database = getDatabaseFromConfig(config);
     database.query(ctx -> {
-      ctx.execute("SELECT pg_create_logical_replication_slot('" + SLOT_NAME + "', 'pgoutput');");
+      // ctx.execute("SELECT pg_create_logical_replication_slot('" + SLOT_NAME + "', 'pgoutput');");
 
       // need to re-add record that has -infinity.
       ctx.execute("CREATE TABLE id_and_name(id NUMERIC(20, 10), name VARCHAR(200), power double precision, PRIMARY KEY (id));");
@@ -182,14 +182,14 @@ class PostgresSourceCdcTest {
     Thread.sleep(5000);
     final JsonNode config = getConfig(PSQL_DB, dbName);
     final Database database = getDatabaseFromConfig(config);
-    database.query(ctx -> {
-      ctx.fetch(
-          "UPDATE names SET power = 10000.2 WHERE first_name = 'san';");
-      ctx.fetch(
-          "DELETE FROM names WHERE first_name = 'san';");
-      return null;
-    });
-    database.close();
+    // database.query(ctx -> {
+    // ctx.fetch(
+    // "UPDATE names SET power = 10000.2 WHERE first_name = 'san';");
+    // ctx.fetch(
+    // "DELETE FROM names WHERE first_name = 'san';");
+    // return null;
+    // });
+    // database.close();
 
     long startMillis = System.currentTimeMillis();
     final AtomicInteger i = new AtomicInteger(10);
