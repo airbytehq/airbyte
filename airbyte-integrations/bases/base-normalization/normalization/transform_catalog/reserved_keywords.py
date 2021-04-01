@@ -124,6 +124,7 @@ BIGQUERY = {
 }
 
 # https://docs.aws.amazon.com/redshift/latest/dg/r_pg_keywords.html
+# Some additional keywords not supported by redshift are missing from their docs...
 REDSHIFT = {
     "AES128",
     "AES256",
@@ -159,6 +160,7 @@ REDSHIFT = {
     "CURRENT_TIMESTAMP",
     "CURRENT_USER",
     "CURRENT_USER_ID",
+    "DATETIME",
     "DEFAULT",
     "DEFERRABLE",
     "DEFLATE",
@@ -263,6 +265,7 @@ REDSHIFT = {
     "TEXT255",
     "TEXT32K",
     "THEN",
+    "TIME",
     "TIMESTAMP",
     "TO",
     "TOP",
