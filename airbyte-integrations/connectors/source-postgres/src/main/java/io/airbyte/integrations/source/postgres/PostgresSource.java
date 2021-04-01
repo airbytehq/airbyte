@@ -360,6 +360,12 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
     return !(config.get("replication_slot") == null);
   }
 
+  /*
+   * It isn't possible to recreate the state of the original database unless we include extra
+   * information (like an oid) when using logical replication. By limiting to Full Refresh when we
+   * don't have a primary key we dodge the problem for now. As a work around a CDC and non-CDC source
+   * could be configured if there's a need to replicate a large non-PK table.
+   */
   private static AirbyteStream removeIncrementalWithoutPk(AirbyteStream stream) {
     if (stream.getSourceDefinedPrimaryKey().isEmpty()) {
       stream.getSupportedSyncModes().remove(SyncMode.INCREMENTAL);
