@@ -45,9 +45,12 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.JdbcStateManager;
+import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.SyncMode;
 import io.debezium.engine.ChangeEvent;
 import io.debezium.engine.DebeziumEngine;
 import io.debezium.engine.format.Json;
@@ -68,6 +71,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.kafka.connect.data.Struct;
 import org.apache.kafka.connect.source.SourceRecord;
@@ -103,6 +107,22 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   @Override
   public Set<String> getExcludedInternalSchemas() {
     return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");
+  }
+
+  @Override
+  public AirbyteCatalog discover(JsonNode config) throws Exception {
+    AirbyteCatalog catalog = super.discover(config);
+
+    if (isCdc(config)) {
+      final List<AirbyteStream> streams = catalog.getStreams().stream()
+          .map(PostgresSource::removeIncrementalWithoutPk)
+          .map(PostgresSource::addCdcMetadataColumns)
+          .collect(Collectors.toList());
+
+      catalog.setStreams(streams);
+    }
+
+    return catalog;
   }
 
   @Override
@@ -338,6 +358,32 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   private static boolean isCdc(JsonNode config) {
     LOGGER.info("isCdc config: " + config);
     return !(config.get("replication_slot") == null);
+  }
+
+  /*
+   * It isn't possible to recreate the state of the original database unless we include extra
+   * information (like an oid) when using logical replication. By limiting to Full Refresh when we
+   * don't have a primary key we dodge the problem for now. As a work around a CDC and non-CDC source
+   * could be configured if there's a need to replicate a large non-PK table.
+   */
+  private static AirbyteStream removeIncrementalWithoutPk(AirbyteStream stream) {
+    if (stream.getSourceDefinedPrimaryKey().isEmpty()) {
+      stream.getSupportedSyncModes().remove(SyncMode.INCREMENTAL);
+    }
+
+    return stream;
+  }
+
+  private static AirbyteStream addCdcMetadataColumns(AirbyteStream stream) {
+    ObjectNode jsonSchema = (ObjectNode) stream.getJsonSchema();
+    ObjectNode properties = (ObjectNode) jsonSchema.get("properties");
+
+    final JsonNode numberType = Jsons.jsonNode(ImmutableMap.of("type", "number"));
+    properties.set("_ab_cdc_lsn", numberType);
+    properties.set("_ab_cdc_updated_at", numberType);
+    properties.set("_ab_cdc_deleted_at", numberType);
+
+    return stream;
   }
 
   public static AirbyteMessage convertChangeEvent(ChangeEvent<String, String> event, Instant emittedAt) {

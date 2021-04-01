@@ -58,10 +58,14 @@ import org.jooq.SQLDialect;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
 class PostgresSourceCdcTest {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSourceCdcTest.class);
 
   private static final String SLOT_NAME = "debezium_slot";
   private static final String STREAM_NAME = "public.id_and_name";
@@ -135,7 +139,6 @@ class PostgresSourceCdcTest {
   }
 
   private JsonNode getConfig(PostgreSQLContainer<?> psqlDb, String dbName) {
-    System.out.println("psqlDb.getFirstMappedPort() = " + psqlDb.getFirstMappedPort());
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", psqlDb.getHost())
         .put("port", psqlDb.getFirstMappedPort())
@@ -144,14 +147,6 @@ class PostgresSourceCdcTest {
         .put("password", psqlDb.getPassword())
         .put("replication_slot", SLOT_NAME)
         .build());
-    // return Jsons.jsonNode(ImmutableMap.builder()
-    // .put("host", "localhost")
-    // .put("port", 5432)
-    // .put("database", "debezium_test")
-    // .put("username", "postgres")
-    // .put("password", "")
-    // .put("replication_slot", SLOT_NAME)
-    // .build());
   }
 
   private Database getDatabaseFromConfig(JsonNode config) {
@@ -176,6 +171,10 @@ class PostgresSourceCdcTest {
             .collect(Collectors.toList()));
     // coerce to incremental so it uses CDC.
     configuredCatalog.getStreams().forEach(s -> s.setSyncMode(SyncMode.INCREMENTAL));
+
+    AirbyteCatalog catalog = source.discover(getConfig(PSQL_DB, dbName));
+
+    LOGGER.info("catalog = " + catalog);
 
     final AutoCloseableIterator<AirbyteMessage> read = source.read(getConfig(PSQL_DB, dbName), configuredCatalog, null);
 
