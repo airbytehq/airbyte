@@ -2,6 +2,7 @@
   "streams": [
     {
       "sync_mode": "incremental",
+      "destination_sync_mode": "append",
       "cursor_field": ["bucket_end_date"],
       "stream": {
         "name": "transactions",
@@ -32,6 +33,7 @@
     },
     {
       "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
       "stream": {
         "name": "customers",
         "supported_sync_modes": ["full_refresh", "incremental"],

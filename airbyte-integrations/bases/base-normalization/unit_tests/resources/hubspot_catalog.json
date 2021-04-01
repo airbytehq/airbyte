@@ -43,7 +43,8 @@
         "default_cursor_field": ["startTimestamp"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["startTimestamp"]
+      "cursor_field": ["startTimestamp"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -105,7 +106,8 @@
         "default_cursor_field": ["startTimestamp"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["startTimestamp"]
+      "cursor_field": ["startTimestamp"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -226,7 +228,8 @@
         "default_cursor_field": ["updatedAt"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["updatedAt"]
+      "cursor_field": ["updatedAt"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -262,7 +265,8 @@
         "default_cursor_field": ["updatedAt"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["updatedAt"]
+      "cursor_field": ["updatedAt"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -304,7 +308,8 @@
         "default_cursor_field": ["updatedAt"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["updatedAt"]
+      "cursor_field": ["updatedAt"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -351,7 +356,8 @@
         "default_cursor_field": []
       },
       "sync_mode": "full_refresh",
-      "cursor_field": []
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -412,7 +418,8 @@
         "default_cursor_field": ["updatedAt"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["updatedAt"]
+      "cursor_field": ["updatedAt"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -5472,7 +5479,8 @@
         "default_cursor_field": ["versionTimestamp"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["versionTimestamp"]
+      "cursor_field": ["versionTimestamp"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -8391,7 +8399,8 @@
         "default_cursor_field": ["hs_lastmodifieddate"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["hs_lastmodifieddate"]
+      "cursor_field": ["hs_lastmodifieddate"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -10848,7 +10857,8 @@
         "default_cursor_field": ["hs_lastmodifieddate"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["hs_lastmodifieddate"]
+      "cursor_field": ["hs_lastmodifieddate"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -10882,7 +10892,8 @@
         "default_cursor_field": []
       },
       "sync_mode": "full_refresh",
-      "cursor_field": []
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -10994,7 +11005,8 @@
         "default_cursor_field": ["lastUpdated"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["lastUpdated"]
+      "cursor_field": ["lastUpdated"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -11012,7 +11024,8 @@
         "default_cursor_field": []
       },
       "sync_mode": "full_refresh",
-      "cursor_field": []
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite"
     }
   ]
 }
