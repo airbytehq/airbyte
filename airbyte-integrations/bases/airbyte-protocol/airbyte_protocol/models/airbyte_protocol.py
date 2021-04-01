@@ -139,7 +139,7 @@ class AirbyteStream(BaseModel):
     )
     namespace: Optional[str] = Field(
         None,
-        description="Optional Source-defined namespace. Used by a JDBC destination to determine what schema to write to. Airbyte streams from the same sources should have the same namespaces.",
+        description="Optional Source-defined namespace. Currently only used by JDBC destinations to determine what schema to write to. Airbyte streams from the same sources should have the same namespace.",
     )
 
 
