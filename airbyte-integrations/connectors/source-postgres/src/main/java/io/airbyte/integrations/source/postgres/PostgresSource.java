@@ -50,6 +50,7 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
 import io.debezium.engine.ChangeEvent;
 import io.debezium.engine.DebeziumEngine;
@@ -73,6 +74,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.codehaus.plexus.util.StringUtils;
 import org.apache.kafka.connect.data.Struct;
 import org.apache.kafka.connect.source.SourceRecord;
 import org.slf4j.Logger;
@@ -237,7 +239,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
       final CloseableLinkedBlockingQueue<DebeziumPayload> queue = new CloseableLinkedBlockingQueue<>(executor::shutdown);
 
       DebeziumEngine<ChangeEvent<String, String>> engine = DebeziumEngine.create(Json.class)
-          .using(getDebeziumProperties(config))
+          .using(getDebeziumProperties(config, catalog))
           .notifying(event -> {
             try {
               final AirbyteMessage message = convertChangeEvent(event, emittedAt);
@@ -312,7 +314,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
 
   // todo: make this use catalog as well
   // todo: make this use the state for the files as well
-  protected static Properties getDebeziumProperties(JsonNode config) {
+  protected static Properties getDebeziumProperties(JsonNode config, ConfiguredAirbyteCatalog catalog) {
     final Properties props = new Properties();
     props.setProperty("name", "engine");
     props.setProperty("plugin.name", "pgoutput");
@@ -330,7 +332,8 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
     props.setProperty("drop.tombstones", "false");
     props.setProperty("transforms.unwrap.type", "io.debezium.transforms.ExtractNewRecordState");
 
-    // props.setProperty("table.include.list", "public.id_and_name"); // todo
+    final String tableWhitelist = getTableWhitelist(catalog);
+    props.setProperty("table.include.list", tableWhitelist);
     props.setProperty("database.include.list", config.get("database").asText());
     props.setProperty("name", "orders-postgres-connector");
     props.setProperty("include_schema_changes", "true");
@@ -353,6 +356,16 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
     props.setProperty("snapshot.mode", "exported"); // can use never if we want to manage full refreshes ourselves
 
     return props;
+  }
+
+  protected static String getTableWhitelist(ConfiguredAirbyteCatalog catalog) {
+    return catalog.getStreams().stream()
+        .map(ConfiguredAirbyteStream::getStream)
+        .map(AirbyteStream::getName)
+        // debezium needs commas escaped to split properly
+        .map(x -> StringUtils.escape(x, new char[] {','}, "\\,"))
+        .collect(Collectors.joining(","));
+
   }
 
   private static boolean isCdc(JsonNode config) {
