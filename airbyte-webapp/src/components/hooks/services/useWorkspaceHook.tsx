@@ -12,6 +12,12 @@ const useWorkspace = (): {
     news: boolean;
     securityUpdates: boolean;
   }) => Promise<void>;
+  updatePreferences: (data: {
+    email?: string;
+    anonymousDataCollection: boolean;
+    news: boolean;
+    securityUpdates: boolean;
+  }) => Promise<void>;
   finishOnboarding: (skipStep?: string) => Promise<void>;
 } => {
   const updateWorkspace = useFetcher(WorkspaceResource.updateShape());
@@ -56,10 +62,28 @@ const useWorkspace = (): {
     );
   };
 
+  const updatePreferences = async (data: {
+    email?: string;
+    anonymousDataCollection: boolean;
+    news: boolean;
+    securityUpdates: boolean;
+  }) => {
+    await updateWorkspace(
+      {},
+      {
+        workspaceId: config.ui.workspaceId,
+        initialSetupComplete: workspace.initialSetupComplete,
+        displaySetupWizard: workspace.displaySetupWizard,
+        ...data,
+      }
+    );
+  };
+
   return {
     workspace,
     finishOnboarding,
     setInitialSetupConfig,
+    updatePreferences,
   };
 };
 
