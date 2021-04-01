@@ -134,7 +134,9 @@
             }
           }
         }
-      }
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -205,7 +207,8 @@
         "default_cursor_field": []
       },
       "sync_mode": "incremental",
-      "cursor_field": []
+      "cursor_field": [],
+      "destination_sync_mode": "append"
     }
   ]
 }
