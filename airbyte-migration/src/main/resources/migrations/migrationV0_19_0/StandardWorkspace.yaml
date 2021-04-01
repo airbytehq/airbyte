@@ -40,5 +40,5 @@ properties:
       configuration is permanently off.
     type: boolean
   failureNotificationsWebhook:
-    description: When a connection sync fails, post data to this Webhook URL
+    description: Webhook URL where to post data to when a connection sync fails.
     type: string

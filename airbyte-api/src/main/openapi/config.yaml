@@ -1237,6 +1237,8 @@ components:
           type: boolean
         securityUpdates:
           type: boolean
+        failureNotificationsWebhook:
+          type: string
     WorkspaceIdRequestBody:
       type: object
       required:
@@ -1274,6 +1276,8 @@ components:
           type: boolean
         securityUpdates:
           type: boolean
+        failureNotificationsWebhook:
+          type: string
     WorkspaceUpdate:
       type: object
       required:
@@ -1298,6 +1302,8 @@ components:
           type: boolean
         securityUpdates:
           type: boolean
+        failureNotificationsWebhook:
+          type: string
     # SLUG
     SlugRequestBody:
       type: object

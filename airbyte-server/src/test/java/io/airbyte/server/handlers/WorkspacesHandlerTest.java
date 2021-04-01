@@ -54,6 +54,7 @@ import org.junit.jupiter.api.Test;
 
 class WorkspacesHandlerTest {
 
+  public static final String FAILURE_NOTIFICATION_WEBHOOK = "http://notify.me/onfailure";
   private ConfigRepository configRepository;
   private ConnectionsHandler connectionsHandler;
   private DestinationHandler destinationHandler;
@@ -88,7 +89,8 @@ class WorkspacesHandlerTest {
         .withNews(false)
         .withAnonymousDataCollection(false)
         .withSecurityUpdates(false)
-        .withTombstone(false);
+        .withTombstone(false)
+        .withFailureNotificationsWebhook(FAILURE_NOTIFICATION_WEBHOOK);
   }
 
   @Test
@@ -106,7 +108,8 @@ class WorkspacesHandlerTest {
         .email("test@airbyte.io")
         .news(false)
         .anonymousDataCollection(false)
-        .securityUpdates(false);
+        .securityUpdates(false)
+        .failureNotificationsWebhook(FAILURE_NOTIFICATION_WEBHOOK);
 
     final WorkspaceRead actualRead = workspacesHandler.createWorkspace(workspaceCreate);
     final WorkspaceRead expectedRead = new WorkspaceRead()
@@ -119,7 +122,8 @@ class WorkspacesHandlerTest {
         .displaySetupWizard(false)
         .news(false)
         .anonymousDataCollection(false)
-        .securityUpdates(false);
+        .securityUpdates(false)
+        .failureNotificationsWebhook(FAILURE_NOTIFICATION_WEBHOOK);
 
     assertEquals(expectedRead, actualRead);
   }
@@ -171,7 +175,8 @@ class WorkspacesHandlerTest {
         .displaySetupWizard(true)
         .news(false)
         .anonymousDataCollection(false)
-        .securityUpdates(false);
+        .securityUpdates(false)
+        .failureNotificationsWebhook(FAILURE_NOTIFICATION_WEBHOOK);
 
     assertEquals(workspaceRead, workspacesHandler.getWorkspace(workspaceIdRequestBody));
   }
@@ -192,7 +197,8 @@ class WorkspacesHandlerTest {
         .displaySetupWizard(workspace.getDisplaySetupWizard())
         .news(workspace.getNews())
         .anonymousDataCollection(workspace.getAnonymousDataCollection())
-        .securityUpdates(workspace.getSecurityUpdates());
+        .securityUpdates(workspace.getSecurityUpdates())
+        .failureNotificationsWebhook(workspace.getFailureNotificationsWebhook());
 
     assertEquals(workspaceRead, workspacesHandler.getWorkspaceBySlug(slugRequestBody));
   }
@@ -206,7 +212,8 @@ class WorkspacesHandlerTest {
         .securityUpdates(false)
         .news(false)
         .initialSetupComplete(true)
-        .displaySetupWizard(false);
+        .displaySetupWizard(false)
+        .failureNotificationsWebhook("updated");
 
     final StandardWorkspace expectedWorkspace = new StandardWorkspace()
         .withWorkspaceId(workspace.getWorkspaceId())
@@ -219,7 +226,8 @@ class WorkspacesHandlerTest {
         .withNews(false)
         .withInitialSetupComplete(true)
         .withDisplaySetupWizard(false)
-        .withTombstone(false);
+        .withTombstone(false)
+        .withFailureNotificationsWebhook("updated");
 
     when(configRepository.getStandardWorkspace(workspace.getWorkspaceId(), false))
         .thenReturn(workspace)
@@ -237,7 +245,8 @@ class WorkspacesHandlerTest {
         .displaySetupWizard(false)
         .news(false)
         .anonymousDataCollection(true)
-        .securityUpdates(false);
+        .securityUpdates(false)
+        .failureNotificationsWebhook("updated");
 
     verify(configRepository).writeStandardWorkspace(expectedWorkspace);
 

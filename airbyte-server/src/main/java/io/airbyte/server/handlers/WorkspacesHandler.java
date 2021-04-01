@@ -92,7 +92,8 @@ public class WorkspacesHandler {
         .withNews(news != null ? news : false)
         .withSecurityUpdates(securityUpdates != null ? securityUpdates : false)
         .withDisplaySetupWizard(false)
-        .withTombstone(false);
+        .withTombstone(false)
+        .withFailureNotificationsWebhook(workspaceCreate.getFailureNotificationsWebhook());
 
     if (!Strings.isNullOrEmpty(email)) {
       workspace.withEmail(email);
@@ -163,7 +164,8 @@ public class WorkspacesHandler {
         .withDisplaySetupWizard(workspaceUpdate.getDisplaySetupWizard())
         .withAnonymousDataCollection(workspaceUpdate.getAnonymousDataCollection())
         .withNews(workspaceUpdate.getNews())
-        .withSecurityUpdates(workspaceUpdate.getSecurityUpdates());
+        .withSecurityUpdates(workspaceUpdate.getSecurityUpdates())
+        .withFailureNotificationsWebhook(workspaceUpdate.getFailureNotificationsWebhook());
 
     configRepository.writeStandardWorkspace(persistedWorkspace);
 
@@ -189,7 +191,8 @@ public class WorkspacesHandler {
         .displaySetupWizard(workspace.getDisplaySetupWizard())
         .anonymousDataCollection(workspace.getAnonymousDataCollection())
         .news(workspace.getNews())
-        .securityUpdates(workspace.getSecurityUpdates());
+        .securityUpdates(workspace.getSecurityUpdates())
+        .failureNotificationsWebhook(workspace.getFailureNotificationsWebhook());
   }
 
 }

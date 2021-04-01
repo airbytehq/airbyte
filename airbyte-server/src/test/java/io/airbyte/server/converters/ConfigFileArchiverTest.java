@@ -75,7 +75,8 @@ public class ConfigFileArchiverTest {
         .withName("test workspace")
         .withSlug("default")
         .withInitialSetupComplete(false)
-        .withTombstone(false);
+        .withTombstone(false)
+        .withFailureNotificationsWebhook("http://notify.me/onfailure");
   }
 
   @Test
