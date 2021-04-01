@@ -21,7 +21,9 @@
             }
           }
         }
-      }
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -44,7 +46,9 @@
             }
           }
         }
-      }
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     }
   ]
 }
