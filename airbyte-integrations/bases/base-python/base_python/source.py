@@ -87,9 +87,9 @@ class BaseSource(Source):
             try:
                 yield from self._read_stream(logger=logger, client=client, configured_stream=configured_stream, state=total_state)
                 
-            except Exception as error:
+            except Exception:
                 logger.exception(f"Encountered an exception while reading stream {self.name}")
-                raise AirbyteConnectionStatus(status=Status.FAILED, message=str(error))
+                raise
 
         logger.info(f"Finished syncing {self.name}")
 
