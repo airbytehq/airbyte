@@ -151,6 +151,9 @@ definitions:
           type: array
           items:
             type: string
+      namespace:
+        description: Optional Source-defined namespace. Used by a JDBC destination to determine what schema to write to. Airbyte streams from the same sources should have the same namespaces.
+        type: string
   ConfiguredAirbyteCatalog:
     description: Airbyte stream schema catalog
     type: object
