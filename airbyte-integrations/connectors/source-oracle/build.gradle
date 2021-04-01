@@ -35,3 +35,7 @@ dependencies {
 test{
     environment "TZ", "UTC"
 }
+
+integrationTest {
+    environment "TZ", "UTC"
+}
