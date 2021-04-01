@@ -70,6 +70,7 @@ import org.jooq.JSONFormat;
 import org.jooq.JSONFormat.RecordFormat;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 
@@ -260,6 +261,35 @@ class JdbcDestinationTest {
         .collect(Collectors.toList()));
 
     assertThrows(RuntimeException.class, () -> recordRetriever(NAMING_TRANSFORMER.getRawTableName(USERS_STREAM_NAME)));
+  }
+
+  @Test
+  @DisplayName("Should use Airbyte Stream Namespace as schema if it is present")
+  void testUseAirbyteStreamNamespaceIfNotNull() throws Exception {
+    final String srcNamespace = "source_namespace";
+    JsonNode newConfig = createConfig("default_schema");
+    final JdbcDestination destination = new JdbcDestination();
+    CATALOG.getStreams().forEach(stream -> stream.getStream().setNamespace(srcNamespace));
+
+    final AirbyteMessageConsumer consumer = destination.getConsumer(newConfig, CATALOG);
+    consumer.start();
+    consumer.accept(MESSAGE_USERS1);
+    consumer.accept(MESSAGE_TASKS1);
+    consumer.accept(MESSAGE_USERS2);
+    consumer.accept(MESSAGE_TASKS2);
+    consumer.accept(MESSAGE_STATE);
+    consumer.close();
+
+    String streamName = srcNamespace + "." + NAMING_TRANSFORMER.getRawTableName(USERS_STREAM_NAME);
+    Set<JsonNode> usersActual = recordRetriever(streamName);
+    final Set<JsonNode> expectedUsersJson = Sets.newHashSet(MESSAGE_USERS1.getRecord().getData(), MESSAGE_USERS2.getRecord().getData());
+    assertEquals(expectedUsersJson, usersActual);
+
+    streamName = srcNamespace + "." + NAMING_TRANSFORMER.getRawTableName(TASKS_STREAM_NAME);
+    Set<JsonNode> tasksActual = recordRetriever(streamName);
+    final Set<JsonNode> expectedTasksJson = Sets.newHashSet(MESSAGE_TASKS1.getRecord().getData(), MESSAGE_TASKS2.getRecord().getData());
+    assertEquals(expectedTasksJson, tasksActual);
+
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored")
