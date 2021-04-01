@@ -114,6 +114,7 @@ class OracleJdbcStandardSourceTest extends JdbcSourceStandardTest {
         ORACLE_DB.getJdbcUrl(),
         ORACLE_DB.getUsername(),
         ORACLE_DB.getPassword());
+    conn.createStatement().executeQuery("ALTER SESSION SET TIME_ZONE = '00:00'");
     for (String schemaName : TEST_SCHEMAS) {
       ResultSet resultSet = conn.createStatement().executeQuery(String.format("SELECT TABLE_NAME FROM ALL_TABLES WHERE OWNER = '%s'", schemaName));
       while (resultSet.next()) {
