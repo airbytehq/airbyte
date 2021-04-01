@@ -89,7 +89,7 @@ class BaseSource(Source):
                 
             except Exception as error:
                 logger.exception(f"Encountered an exception while reading stream {self.name}")
-                return AirbyteConnectionStatus(status=Status.FAILED, message=str(error))
+                raise
 
         logger.info(f"Finished syncing {self.name}")
 
