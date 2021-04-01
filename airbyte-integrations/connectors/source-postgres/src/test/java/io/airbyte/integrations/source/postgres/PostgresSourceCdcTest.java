@@ -127,8 +127,9 @@ class PostgresSourceCdcTest {
       // need to re-add record that has -infinity.
 
       ctx.fetch("CREATE TABLE id_and_name(id NUMERIC(20, 10), name VARCHAR(200), power double precision, PRIMARY KEY (id));");
-      ctx.fetch("CREATE INDEX i1 ON id_and_name (id);");
-      ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1);");
+      ctx.execute("CREATE INDEX i1 ON id_and_name (id);");
+      ctx.execute("begin; INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1); commit;");
+
       ctx.fetch("CREATE TABLE \"id_,something\"(id NUMERIC(20, 10), name VARCHAR(200), power double precision);");
       ctx.fetch("INSERT INTO \"id_,something\" (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1);");
 
@@ -136,9 +137,7 @@ class PostgresSourceCdcTest {
           "CREATE TABLE \"naMéS\"(first_name VARCHAR(200), last_name VARCHAR(200), power double precision, PRIMARY KEY (first_name, last_name));");
       ctx.fetch(
           "INSERT INTO \"naMéS\" (first_name, last_name, power) VALUES ('san', 'goku', 'Infinity'),  ('prince', 'vegeta', 9000.1);");
-      ctx.execute("CREATE TABLE id_and_name(id NUMERIC(20, 10), name VARCHAR(200), power double precision, PRIMARY KEY (id));");
-      ctx.execute("CREATE INDEX i1 ON id_and_name (id);");
-      ctx.execute("begin; INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1); commit;");
+
 
       return null;
     });
