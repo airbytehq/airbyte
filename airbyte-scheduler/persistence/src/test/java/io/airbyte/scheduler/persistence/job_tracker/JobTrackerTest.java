@@ -94,6 +94,7 @@ class JobTrackerTest {
 
   private JobPersistence jobPersistence;
   private TrackingClient trackingClient;
+  private NotificationClient notificationClient;
   private JobTracker jobTracker;
 
   @BeforeEach
@@ -101,7 +102,8 @@ class JobTrackerTest {
     configRepository = mock(ConfigRepository.class);
     jobPersistence = mock(JobPersistence.class);
     trackingClient = mock(TrackingClient.class);
-    jobTracker = new JobTracker(configRepository, jobPersistence, trackingClient);
+    notificationClient = mock(NotificationClient.class);
+    jobTracker = new JobTracker(configRepository, jobPersistence, trackingClient, notificationClient);
   }
 
   @Test
