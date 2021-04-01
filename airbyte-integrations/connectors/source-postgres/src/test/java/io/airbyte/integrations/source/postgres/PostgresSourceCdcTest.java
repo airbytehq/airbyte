@@ -74,7 +74,7 @@ class PostgresSourceCdcTest {
   private static final String SLOT_NAME = "debezium_slot";
   private static final String STREAM_NAME = "public.id_and_name";
   private static final String STREAM_NAME2 = "public.id_,something";
-  private static final String STREAM_NAME3 = "public.naMéS";
+  private static final String STREAM_NAME3 = "public.n\"aMéS";
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
       CatalogHelpers.createAirbyteStream(
           STREAM_NAME,
@@ -134,9 +134,9 @@ class PostgresSourceCdcTest {
       ctx.fetch("INSERT INTO \"id_,something\" (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1);");
 
       ctx.fetch(
-          "CREATE TABLE \"naMéS\"(first_name VARCHAR(200), last_name VARCHAR(200), power double precision, PRIMARY KEY (first_name, last_name));");
+          "CREATE TABLE \"n\"\"aMéS\"(first_name VARCHAR(200), last_name VARCHAR(200), power double precision, PRIMARY KEY (first_name, last_name));");
       ctx.fetch(
-          "INSERT INTO \"naMéS\" (first_name, last_name, power) VALUES ('san', 'goku', 'Infinity'),  ('prince', 'vegeta', 9000.1);");
+          "INSERT INTO \"n\"\"aMéS\"(first_name, last_name, power) VALUES ('san', 'goku', 'Infinity'),  ('prince', 'vegeta', 9000.1);");
 
 
       return null;
