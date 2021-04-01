@@ -48,8 +48,8 @@ import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream.DestinationSyncMode;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
 import io.airbyte.workers.DefaultDiscoverCatalogWorker;
 import io.airbyte.workers.DefaultGetSpecWorker;
@@ -108,6 +108,12 @@ public abstract class StandardSourceTest {
       "airbyte/source-stripe-singer",
       "airbyte/source-github-singer",
       "airbyte/source-gitlab-singer");
+
+  /**
+   * FIXME: Some sources can't guarantee that there will be no events between two sequential sync
+   */
+  private Set<String> IMAGES_TO_SKIP_IDENTICAL_FULL_REFRESHES = Sets.newHashSet(
+      "airbyte/source-google-workspace-admin-reports");
 
   /**
    * Name of the docker image that the tests will run against.
@@ -268,6 +274,10 @@ public abstract class StandardSourceTest {
    */
   @Test
   public void testIdenticalFullRefreshes() throws Exception {
+    if (IMAGES_TO_SKIP_IDENTICAL_FULL_REFRESHES.contains(getImageName().split(":")[0])) {
+      return;
+    }
+
     final ConfiguredAirbyteCatalog configuredCatalog = withFullRefreshSyncModes(getConfiguredCatalog());
     final List<AirbyteRecordMessage> recordMessagesFirstRun = filterRecords(runRead(configuredCatalog));
     final List<AirbyteRecordMessage> recordMessagesSecondRun = filterRecords(runRead(configuredCatalog));

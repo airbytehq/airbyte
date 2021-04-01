@@ -42,10 +42,11 @@ import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream.DestinationSyncMode;
+import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
+import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -70,7 +71,11 @@ public abstract class JdbcStressTest {
   // this will get rounded down to the nearest 1000th.
   private static final long TOTAL_RECORDS = 10_000_000L;
   private static final int BATCH_SIZE = 1000;
-  private static final String TABLE_NAME = "id_and_name";
+  public static String TABLE_NAME = "id_and_name";
+  public static String COL_ID = "id";
+  public static String COL_NAME = "name";
+  public static String COL_ID_TYPE = "BIGINT";
+  public static String INSERT_STATEMENT = "(%s,'picard-%s')";
 
   private static String streamName;
 
@@ -125,7 +130,8 @@ public abstract class JdbcStressTest {
         jdbcConfig.get("jdbc_url").asText(),
         getDriverClass());
 
-    database.execute(connection -> connection.createStatement().execute("CREATE TABLE id_and_name(id BIGINT, name VARCHAR(200));"));
+    database.execute(connection -> connection.createStatement().execute(
+        String.format("CREATE TABLE id_and_name(id %s, name VARCHAR(200))", COL_ID_TYPE)));
     final long batchCount = TOTAL_RECORDS / BATCH_SIZE;
     LOGGER.info("writing {} batches of {}", batchCount, BATCH_SIZE);
     for (int i = 0; i < batchCount; i++) {
@@ -134,9 +140,10 @@ public abstract class JdbcStressTest {
       final List<String> insert = new ArrayList<>();
       for (int j = 0; j < BATCH_SIZE; j++) {
         int recordNumber = (i * BATCH_SIZE) + j;
-        insert.add(String.format("(%s,'picard-%s')", recordNumber, recordNumber));
+        insert.add(String.format(INSERT_STATEMENT, recordNumber, recordNumber));
       }
-      final String sql = String.format("INSERT INTO id_and_name (id, name) VALUES %s;", Strings.join(insert, ", "));
+
+      final String sql = prepareInsertStatement(insert);
       database.execute(connection -> connection.createStatement().execute(sql));
     }
 
@@ -166,8 +173,8 @@ public abstract class JdbcStressTest {
     final long actualCount = MoreStreams.toStream(read)
         .filter(m -> m.getType() == Type.RECORD)
         .peek(m -> {
-          if (m.getRecord().getData().get("id").asLong() % 100000 == 0) {
-            LOGGER.info("reading batch: " + m.getRecord().getData().get("id").asLong() / 1000);
+          if (m.getRecord().getData().get(COL_ID).asLong() % 100000 == 0) {
+            LOGGER.info("reading batch: " + m.getRecord().getData().get(COL_ID).asLong() / 1000);
           }
         })
         .peek(m -> assertExpectedMessage(m))
@@ -182,13 +189,18 @@ public abstract class JdbcStressTest {
 
   // each is roughly 106 bytes.
   private void assertExpectedMessage(AirbyteMessage actualMessage) {
-    final long recordNumber = actualMessage.getRecord().getData().get("id").asLong();
+    long recordNumber = actualMessage.getRecord().getData().get(COL_ID).asLong();
     bitSet.set((int) recordNumber);
     actualMessage.getRecord().setEmittedAt(null);
 
+    Number expectedRecordNumber =
+        getDriverClass().toLowerCase().contains("oracle") ? new BigDecimal(recordNumber)
+            : recordNumber;
+
     final AirbyteMessage expectedMessage = new AirbyteMessage().withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage().withStream(streamName)
-            .withData(Jsons.jsonNode(ImmutableMap.of("id", recordNumber, "name", "picard-" + recordNumber))));
+            .withData(Jsons.jsonNode(
+                ImmutableMap.of(COL_ID, expectedRecordNumber, COL_NAME, "picard-" + recordNumber))));
     assertEquals(expectedMessage, actualMessage);
   }
 
@@ -199,7 +211,7 @@ public abstract class JdbcStressTest {
   private static ConfiguredAirbyteCatalog getConfiguredCatalogIncremental() {
     return new ConfiguredAirbyteCatalog()
         .withStreams(Collections.singletonList(new ConfiguredAirbyteStream().withStream(getCatalog().getStreams().get(0))
-            .withCursorField(Collections.singletonList("id"))
+            .withCursorField(Collections.singletonList(COL_ID))
             .withSyncMode(SyncMode.INCREMENTAL)
             .withDestinationSyncMode(DestinationSyncMode.APPEND)));
   }
@@ -207,9 +219,16 @@ public abstract class JdbcStressTest {
   private static AirbyteCatalog getCatalog() {
     return new AirbyteCatalog().withStreams(Lists.newArrayList(CatalogHelpers.createAirbyteStream(
         streamName,
-        Field.of("id", JsonSchemaPrimitive.NUMBER),
-        Field.of("name", JsonSchemaPrimitive.STRING))
+        Field.of(COL_ID, JsonSchemaPrimitive.NUMBER),
+        Field.of(COL_NAME, JsonSchemaPrimitive.STRING))
         .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))));
+  }
+
+  private String prepareInsertStatement(List<String> inserts) {
+    if (getDriverClass().toLowerCase().contains("oracle")) {
+      return String.format("INSERT ALL %s SELECT * FROM dual", Strings.join(inserts, " "));
+    }
+    return String.format("INSERT INTO id_and_name (id, name) VALUES %s", Strings.join(inserts, ", "));
   }
 
 }

@@ -107,7 +107,7 @@ public class CatalogConverter {
             .withSyncMode(Enums.convertTo(s.getConfig().getSyncMode(), io.airbyte.protocol.models.SyncMode.class))
             .withCursorField(s.getConfig().getCursorField())
             .withDestinationSyncMode(Enums.convertTo(s.getConfig().getDestinationSyncMode(),
-                io.airbyte.protocol.models.ConfiguredAirbyteStream.DestinationSyncMode.class))
+                io.airbyte.protocol.models.DestinationSyncMode.class))
             .withPrimaryKey(s.getConfig().getPrimaryKey()))
         .collect(Collectors.toList());
     return new io.airbyte.protocol.models.ConfiguredAirbyteCatalog()

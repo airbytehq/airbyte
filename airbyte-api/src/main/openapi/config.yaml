@@ -1257,6 +1257,9 @@ components:
           $ref: "#/components/schemas/WorkspaceId"
         customerId:
           $ref: "#/components/schemas/CustomerId"
+        email:
+          type: string
+          format: email
         name:
           type: string
         slug:
@@ -1583,6 +1586,10 @@ components:
           $ref: "#/components/schemas/DestinationDefinitionSpecification"
         jobInfo:
           $ref: "#/components/schemas/SynchronousJobRead"
+        supportedDestinationSyncModes:
+          type: array
+          items:
+            $ref: "#/components/schemas/DestinationSyncMode"
     # DESTINATION
     DestinationId:
       type: string

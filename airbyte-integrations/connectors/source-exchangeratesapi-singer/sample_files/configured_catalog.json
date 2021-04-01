@@ -116,7 +116,8 @@
         "default_cursor_field": ["date"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["date"]
+      "cursor_field": ["date"],
+      "destination_sync_mode": "append"
     }
   ]
 }

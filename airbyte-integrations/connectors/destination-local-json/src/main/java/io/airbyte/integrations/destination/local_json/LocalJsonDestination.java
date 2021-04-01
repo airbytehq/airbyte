@@ -37,11 +37,11 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
-import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream.DestinationSyncMode;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
@@ -159,23 +159,21 @@ public class LocalJsonDestination implements Destination {
     }
 
     @Override
-    protected void acceptTracked(AirbyteMessage message) throws Exception {
+    protected void acceptTracked(AirbyteRecordMessage message) throws Exception {
 
       // ignore other message types.
-      if (message.getType() == AirbyteMessage.Type.RECORD) {
-        if (!writeConfigs.containsKey(message.getRecord().getStream())) {
-          throw new IllegalArgumentException(
-              String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
-                  Jsons.serialize(catalog), Jsons.serialize(message)));
-        }
-
-        final Writer writer = writeConfigs.get(message.getRecord().getStream()).getWriter();
-        writer.write(Jsons.serialize(ImmutableMap.of(
-            JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID(),
-            JavaBaseConstants.COLUMN_NAME_EMITTED_AT, message.getRecord().getEmittedAt(),
-            JavaBaseConstants.COLUMN_NAME_DATA, message.getRecord().getData())));
-        writer.write(System.lineSeparator());
+      if (!writeConfigs.containsKey(message.getStream())) {
+        throw new IllegalArgumentException(
+            String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
+                Jsons.serialize(catalog), Jsons.serialize(message)));
       }
+
+      final Writer writer = writeConfigs.get(message.getStream()).getWriter();
+      writer.write(Jsons.serialize(ImmutableMap.of(
+          JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID(),
+          JavaBaseConstants.COLUMN_NAME_EMITTED_AT, message.getEmittedAt(),
+          JavaBaseConstants.COLUMN_NAME_DATA, message.getData())));
+      writer.write(System.lineSeparator());
     }
 
     @Override
