@@ -11,6 +11,7 @@ import DestinationPage from "./DestinationPage";
 import PreferencesPage from "./PreferencesPage";
 import OnboardingPage from "./OnboardingPage";
 import AdminPage from "./AdminPage";
+import SettingsPage from "./SettingsPage";
 import LoadingPage from "../components/LoadingPage";
 import MainView from "../components/MainView";
 import config from "../config";
@@ -33,6 +34,7 @@ export enum Routes {
   SourceNew = "/new-source",
   DestinationNew = "/new-destination",
   Admin = "/admin",
+  Settings = "/settings",
   Root = "/",
 }
 
@@ -73,6 +75,9 @@ const getPageName = (pathname: string) => {
   if (pathname === Routes.Admin) {
     return "Admin Page";
   }
+  if (pathname === Routes.Settings) {
+    return "Settings Page";
+  }
 
   return "";
 };
@@ -98,6 +103,9 @@ const MainViewRoutes = () => {
           </Route>
           <Route path={Routes.Admin}>
             <AdminPage />
+          </Route>
+          <Route path={Routes.Settings}>
+            <SettingsPage />
           </Route>
           <Route exact path={Routes.Root}>
             <SourcesPage />

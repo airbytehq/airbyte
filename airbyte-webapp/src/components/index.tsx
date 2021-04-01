@@ -16,3 +16,5 @@ export * from "./TextArea";
 export * from "./CheckBox";
 export * from "./RadioButton";
 export * from "./ArrayOfObjectsEditor";
+export * from "./ContentCard";
+export * from "./PreferencesForm";

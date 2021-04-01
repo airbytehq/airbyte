@@ -3,10 +3,15 @@ import { FormattedMessage } from "react-intl";
 
 import { PageViewContainer } from "../../components/CenteredPageComponents";
 import { H1 } from "components/Titles";
-import PreferencesForm from "./components/PreferencesForm";
+import { PreferencesForm } from "components";
 import config from "../../config";
 import { AnalyticsService } from "../../core/analytics/AnalyticsService";
 import useWorkspace from "../../components/hooks/services/useWorkspaceHook";
+import styled from "styled-components";
+
+const Title = styled(H1)`
+  margin-bottom: 47px;
+`;
 
 const PreferencesPage: React.FC = () => {
   useEffect(() => {
@@ -34,9 +39,9 @@ const PreferencesPage: React.FC = () => {
 
   return (
     <PageViewContainer>
-      <H1 center>
+      <Title center>
         <FormattedMessage id={"preferences.title"} />
-      </H1>
+      </Title>
       <PreferencesForm onSubmit={onSubmit} />
     </PageViewContainer>
   );
