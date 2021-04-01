@@ -81,11 +81,13 @@ Once you've finished iterating on the changes to a connector as specified in its
    ```
 
 4. Submit a PR containing the changes you made.
-5. One of Airbyte maintainers will review the change and publish the new version of the connector to Docker hub:
+5. One of Airbyte maintainers will review the change and publish the new version of the connector to Docker hub. Triggering tests and publishing connectors can be done by leaving a comment on the PR with the following format (the PR must be from the Airbyte repo, not a fork):  
 
    ```text
-   ./tools/integrations/manage.sh publish airbyte-integrations/connectors/<connector-name>
+   # to run integration tests for the connector
+   /test connector=(connectors|bases)/<connector_name> 
+   # to run integration tests and publish the connector
+   /publish connector=(connectors|bases)/<connector_name>
    ```
 
 6. The new version of the connector is now available for everyone who uses it. Thank you!
-
