@@ -13,6 +13,7 @@ abstract class AirbyteRequestService {
     const response = await fetch(url, {
       method: "POST",
       body: body ? JSON.stringify(body) : undefined,
+      credentials: "include",
       ...options,
     });
 
