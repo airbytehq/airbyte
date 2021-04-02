@@ -87,12 +87,12 @@ In the final de-duplicated table:
     { "name": "Louis XVI", "deceased": true, "updated_at": 1793 },
     { "name": "Louis XVII", "deceased": false, "updated_at": 1785 },
     { "name": "Marie Antoinette", "deceased": true, "updated_at": 1793 }
-]
+] 
 ```
 
 ## Source-Defined Cursor
 
-Some sources are able to determine the cursor that they use without any user input. For example, in the [exchange rates source](../integrations/sources/exchangeratesapi-io.md), the source knows that the date field should be used to determine the last record that was synced. In these cases, simply select the incremental option in the UI.
+Some sources are able to determine the cursor that they use without any user input. For example, in the [exchange rates source](../integrations/sources/exchangeratesapi.md), the source knows that the date field should be used to determine the last record that was synced. In these cases, simply select the incremental option in the UI.
 
 ![](../.gitbook/assets/incremental_source_defined.png)
 
