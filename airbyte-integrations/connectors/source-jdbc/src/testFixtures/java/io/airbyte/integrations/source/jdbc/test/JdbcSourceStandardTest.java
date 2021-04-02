@@ -43,6 +43,7 @@ import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.integrations.source.jdbc.models.CdcState;
 import io.airbyte.integrations.source.jdbc.models.JdbcState;
 import io.airbyte.integrations.source.jdbc.models.JdbcStreamState;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -467,7 +468,9 @@ public abstract class JdbcSourceStandardTest {
                 .withStreams(Lists.newArrayList(new JdbcStreamState()
                     .withStreamName(streamName)
                     .withCursorField(ImmutableList.of("id"))
-                    .withCursor("5")))))));
+                    .withCursor("5")))
+                .withCdc(false)
+                .withCdcState(new CdcState())))));
 
     setEmittedAtToNull(actualMessagesSecondSync);
 
@@ -525,7 +528,9 @@ public abstract class JdbcSourceStandardTest {
                         .withCursor("3"),
                     new JdbcStreamState()
                         .withStreamName(streamName2)
-                        .withCursorField(ImmutableList.of("id"))))))));
+                        .withCursorField(ImmutableList.of("id"))))
+                .withCdc(false)
+                .withCdcState(new CdcState())))));
     expectedMessagesFirstSync.addAll(secondStreamExpectedMessages);
     expectedMessagesFirstSync.add(new AirbyteMessage()
         .withType(Type.STATE)
@@ -539,7 +544,9 @@ public abstract class JdbcSourceStandardTest {
                     new JdbcStreamState()
                         .withStreamName(streamName2)
                         .withCursorField(ImmutableList.of("id"))
-                        .withCursor("3")))))));
+                        .withCursor("3")))
+                .withCdc(false)
+                .withCdcState(new CdcState())))));
     setEmittedAtToNull(actualMessagesFirstSync);
 
     assertEquals(expectedMessagesFirstSync, actualMessagesFirstSync);
@@ -597,7 +604,9 @@ public abstract class JdbcSourceStandardTest {
                 .withStreams(Lists.newArrayList(new JdbcStreamState()
                     .withStreamName(airbyteStream.getStream().getName())
                     .withCursorField(ImmutableList.of(cursorField))
-                    .withCursor(endCursorValue)))))));
+                    .withCursor(endCursorValue)))
+                .withCdc(false)
+                .withCdcState(new CdcState())))));
 
     assertEquals(expectedMessages, actualMessages);
   }

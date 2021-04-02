@@ -25,12 +25,10 @@
 package io.airbyte.integrations.source.postgres;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
@@ -52,11 +50,10 @@ import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import io.debezium.engine.ChangeEvent;
 import java.io.IOException;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
-
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.BeforeAll;
@@ -137,7 +134,6 @@ class PostgresSourceCdcTest {
           "CREATE TABLE \"n\"\"aMéS\"(first_name VARCHAR(200), last_name VARCHAR(200), power double precision, PRIMARY KEY (first_name, last_name));");
       ctx.fetch(
           "INSERT INTO \"n\"\"aMéS\"(first_name, last_name, power) VALUES ('san', 'goku', 'Infinity'),  ('prince', 'vegeta', 9000.1);");
-
 
       return null;
     });
@@ -229,6 +225,53 @@ class PostgresSourceCdcTest {
     final String actualWhitelist = PostgresSource.getTableWhitelist(CONFIGURED_CATALOG);
 
     assertEquals(expectedWhitelist, actualWhitelist);
+  }
+
+  @Test
+  public void testItState() throws Exception {
+    final PostgresSource source = new PostgresSource();
+    final ConfiguredAirbyteCatalog configuredCatalog =
+        CONFIGURED_CATALOG.withStreams(CONFIGURED_CATALOG.getStreams()
+            .stream()
+            .filter(s -> s.getStream().getName().equals(STREAM_NAME))
+            .collect(Collectors.toList()));
+    // coerce to incremental so it uses CDC.
+    configuredCatalog.getStreams().forEach(s -> s.setSyncMode(SyncMode.INCREMENTAL));
+
+    final AutoCloseableIterator<AirbyteMessage> read1 = source.read(getConfig(PSQL_DB, dbName), configuredCatalog, null);
+
+    Thread.sleep(5000);
+    final JsonNode config = getConfig(PSQL_DB, dbName);
+    final Database database = getDatabaseFromConfig(config);
+
+    // strategy run it once. then run it again with the state and verify no duplicate records are sent.
+    final List<AirbyteMessage> messages1 = new ArrayList<>();
+    while (read1.hasNext()) {
+      messages1.add(read1.next());
+    }
+    final AirbyteMessage stateMessage = messages1.get(messages1.size() - 1);
+
+    final AtomicInteger i = new AtomicInteger(10);
+    while (i.get() < 20) {
+      final int iValue = i.incrementAndGet();
+      database.query(ctx -> {
+        ctx.execute(
+            String.format("begin; INSERT INTO id_and_name (id, name, power) VALUES (%s,'goku%s', 'Infinity'); commit;",
+                iValue, iValue, iValue, iValue));
+        return null;
+      });
+    }
+
+    final AutoCloseableIterator<AirbyteMessage> read2 = source.read(config, configuredCatalog, stateMessage.getState().getData());
+    final List<AirbyteMessage> messages2 = new ArrayList<>();
+    while (read2.hasNext()) {
+      final AirbyteMessage el = read2.next();
+      messages2.add(el);
+      System.out.println("it said it had next");
+      System.out.println("read.next() = " + el);
+    }
+
+    assertEquals(11, messages2.size());
   }
 
   @Test
