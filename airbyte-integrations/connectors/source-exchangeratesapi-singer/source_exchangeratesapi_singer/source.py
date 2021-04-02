@@ -32,7 +32,7 @@ from base_singer import SingerSource, SyncModeInfo
 class SourceExchangeRatesApiSinger(SingerSource):
     def check(self, logger, config_path) -> AirbyteConnectionStatus:
         try:
-            code = urllib.request.urlopen("https://api.exchangeratesapi.io/").getcode()
+            code = urllib.request.urlopen("https://api.ratesapi.io/").getcode()
             logger.info(f"Ping response code: {code}")
             return AirbyteConnectionStatus(status=Status.SUCCEEDED if (code == 200) else Status.FAILED)
         except Exception as e:
