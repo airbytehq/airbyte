@@ -98,7 +98,7 @@ public class BigQueryStandardTest extends TestDestination {
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv testEnv, String streamName) throws Exception {
+  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv testEnv, String streamName, String namespace) throws Exception {
     String tableName = namingResolver.getIdentifier(streamName);
     return retrieveRecordsFromTable(testEnv, tableName);
   }

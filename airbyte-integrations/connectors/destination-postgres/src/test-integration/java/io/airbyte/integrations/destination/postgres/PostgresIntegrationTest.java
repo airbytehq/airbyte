@@ -89,7 +89,7 @@ public class PostgresIntegrationTest extends TestDestination {
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv env, String streamName)
+  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv env, String streamName, String namespace)
       throws Exception {
     String tableName = namingResolver.getIdentifier(streamName);
     // Temporarily disabling the behavior of the ExtendedNameTransformer, see (issue #1785) so we don't
