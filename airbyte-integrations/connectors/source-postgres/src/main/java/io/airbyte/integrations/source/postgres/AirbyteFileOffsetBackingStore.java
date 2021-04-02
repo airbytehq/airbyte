@@ -22,10 +22,11 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.source.jdbc;
+package io.airbyte.integrations.source.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.jdbc.models.CdcState;
 import java.io.EOFException;
@@ -72,12 +73,16 @@ public class AirbyteFileOffsetBackingStore {
     this.offsetFilePath = offsetFilePath;
   }
 
+  public Path getOffsetFilePath() {
+    return offsetFilePath;
+  }
+
   public CdcState read() {
     final Map<ByteBuffer, ByteBuffer> raw = load();
 
     final Map<String, String> mappedAsStrings = raw.entrySet().stream().collect(Collectors.toMap(
-        e -> e.getKey() != null ? new String(e.getKey().array(), StandardCharsets.UTF_8) : null,
-        e -> e.getValue() != null ? new String(e.getValue().array(), StandardCharsets.UTF_8) : null));
+        e -> byteBufferToString(e.getKey()),
+        e -> byteBufferToString(e.getValue())));
     final JsonNode asJson = Jsons.jsonNode(mappedAsStrings);
 
     LOGGER.info("debezium state: {}", asJson);
@@ -90,11 +95,21 @@ public class AirbyteFileOffsetBackingStore {
     final Map<String, String> mapAsString =
         cdcState != null && cdcState.getState() != null ? Jsons.object(cdcState.getState(), Map.class) : Collections.emptyMap();
     final Map<ByteBuffer, ByteBuffer> mappedAsStrings = mapAsString.entrySet().stream().collect(Collectors.toMap(
-        e -> e.getKey() != null ? ByteBuffer.wrap(e.getKey().getBytes(StandardCharsets.UTF_8)) : null,
-        e -> e.getValue() != null ? ByteBuffer.wrap(e.getValue().getBytes(StandardCharsets.UTF_8)) : null));
+        e -> stringToByteBuffer(e.getKey()),
+        e -> stringToByteBuffer(e.getValue())));
 
     FileUtils.deleteQuietly(DEFAULT_OFFSET_STORAGE_PATH.toFile());
     save(mappedAsStrings);
+  }
+
+  private static String byteBufferToString(ByteBuffer byteBuffer) {
+    Preconditions.checkNotNull(byteBuffer);
+    return new String(byteBuffer.array(), StandardCharsets.UTF_8);
+  }
+
+  private static ByteBuffer stringToByteBuffer(String s) {
+    Preconditions.checkNotNull(s);
+    return ByteBuffer.wrap(s.getBytes(StandardCharsets.UTF_8));
   }
 
   /**

@@ -10,8 +10,6 @@ properties:
 definitions:
   JdbcState:
     type: object
-    required:
-      - streams
     properties:
       cdc:
         type: boolean

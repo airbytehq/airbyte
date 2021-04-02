@@ -182,6 +182,10 @@ public class JdbcStateManager {
     }
   }
 
+  public JdbcCdcStateManager getCdcStateManager() {
+    return cdcStateManager;
+  }
+
   public AirbyteStateMessage emit() {
     return toState();
   }
@@ -196,7 +200,7 @@ public class JdbcStateManager {
                 .withCursorField(e.getValue().getCursorField() == null ? Collections.emptyList() : Lists.newArrayList(e.getValue().getCursorField()))
                 .withCursor(e.getValue().getCursor()))
             .collect(Collectors.toList()))
-        .withCdcState(cdcStateManager.toState());
+        .withCdcState(cdcStateManager.getCdcState());
 
     return new AirbyteStateMessage().withData(Jsons.jsonNode(jdbcState));
   }

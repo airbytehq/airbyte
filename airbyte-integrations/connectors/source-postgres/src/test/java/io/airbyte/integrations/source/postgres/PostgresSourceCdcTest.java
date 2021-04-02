@@ -25,12 +25,10 @@
 package io.airbyte.integrations.source.postgres;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
@@ -54,10 +52,8 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.BeforeAll;
@@ -138,7 +134,6 @@ class PostgresSourceCdcTest {
           "CREATE TABLE \"n\"\"aMéS\"(first_name VARCHAR(200), last_name VARCHAR(200), power double precision, PRIMARY KEY (first_name, last_name));");
       ctx.fetch(
           "INSERT INTO \"n\"\"aMéS\"(first_name, last_name, power) VALUES ('san', 'goku', 'Infinity'),  ('prince', 'vegeta', 9000.1);");
-
 
       return null;
     });
@@ -232,6 +227,7 @@ class PostgresSourceCdcTest {
     assertEquals(expectedWhitelist, actualWhitelist);
   }
 
+  @Test
   public void testItState() throws Exception {
     final PostgresSource source = new PostgresSource();
     final ConfiguredAirbyteCatalog configuredCatalog =

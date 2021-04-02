@@ -46,23 +46,24 @@ import io.airbyte.db.jdbc.PostgresJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.jdbc.AirbyteFileOffsetBackingStore;
 import io.airbyte.integrations.source.jdbc.JdbcStateManager;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
 import io.debezium.engine.ChangeEvent;
 import io.debezium.engine.DebeziumEngine;
 import io.debezium.engine.format.Json;
-import io.debezium.engine.spi.OffsetCommitPolicy.AlwaysCommitOffsetPolicy;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -78,12 +79,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.codehaus.plexus.util.StringUtils;
 import org.apache.kafka.connect.data.Struct;
 import org.apache.kafka.connect.source.SourceRecord;
+import org.codehaus.plexus.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -236,6 +237,20 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
 
   }
 
+  private AirbyteFileOffsetBackingStore initializeState(JdbcStateManager stateManager) {
+    final Path cdcWorkingDir;
+    try {
+      cdcWorkingDir = Files.createTempDirectory(Path.of("/tmp"), "cdc");
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    final Path cdcOffsetFilePath = cdcWorkingDir.resolve("offset.dat");
+
+    final AirbyteFileOffsetBackingStore offsetManager = new AirbyteFileOffsetBackingStore(cdcOffsetFilePath);
+    offsetManager.persist(stateManager.getCdcStateManager().getCdcState());
+    return offsetManager;
+  }
+
   @Override
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(JsonNode config,
                                                                              JdbcDatabase database,
@@ -244,6 +259,11 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
                                                                              JdbcStateManager stateManager,
                                                                              Instant emittedAt) {
     if (isCdc(config)) {
+      // State works differently in CDC than it does in convention incremental. The state is written to an
+      // offset file that debezium reads from. Then once all records are replicated, we read back that
+      // offset file (which will have been updated by debezium) and set it in the state. There is no
+      // incremental updating of the state structs in the CDC impl.
+      final AirbyteFileOffsetBackingStore offsetManager = initializeState(stateManager);
 
       final Predicate<ChangeEvent<String, String>> hasReachedLsnPredicate = getTerminationPredicate(database, stateManager);
       AtomicReference<Throwable> thrownError = new AtomicReference<>();
@@ -252,8 +272,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
       final CloseableLinkedBlockingQueue<DebeziumPayload> queue = new CloseableLinkedBlockingQueue<>(executor::shutdown);
 
       DebeziumEngine<ChangeEvent<String, String>> engine = DebeziumEngine.create(Json.class)
-          .using(getDebeziumProperties(config, catalog))
-          .using(new AlwaysCommitOffsetPolicy())
+          .using(getDebeziumProperties(config, catalog, offsetManager))
           .notifying(event -> {
             try {
               final AirbyteMessage message = convertChangeEvent(event, emittedAt);
@@ -327,6 +346,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
       // our goal is to get the state at the time this supplier is called (i.e. after all message records
       // have been produced)
       final Supplier<AirbyteMessage> stateMessageSupplier = () -> {
+        stateManager.getCdcStateManager().setCdcState(offsetManager.read());
         final AirbyteStateMessage stateMessage = stateManager.emit();
         return new AirbyteMessage().withType(Type.STATE).withState(stateMessage);
       };
@@ -348,13 +368,15 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
 
   // todo: make this use catalog as well
   // todo: make this use the state for the files as well
-  protected static Properties getDebeziumProperties(JsonNode config, ConfiguredAirbyteCatalog catalog) {
+  protected static Properties getDebeziumProperties(JsonNode config,
+                                                    ConfiguredAirbyteCatalog catalog,
+                                                    AirbyteFileOffsetBackingStore airbyteFileOffsetBackingStore) {
     final Properties props = new Properties();
     props.setProperty("name", "engine");
     props.setProperty("plugin.name", "pgoutput");
     props.setProperty("connector.class", "io.debezium.connector.postgresql.PostgresConnector");
     props.setProperty("offset.storage", "org.apache.kafka.connect.storage.FileOffsetBackingStore");
-    props.setProperty("offset.storage.file.filename", AirbyteFileOffsetBackingStore.DEFAULT_OFFSET_STORAGE_PATH.toString());
+    props.setProperty("offset.storage.file.filename", airbyteFileOffsetBackingStore.getOffsetFilePath().toString());
     props.setProperty("offset.flush.interval.ms", "1000"); // todo: make this longer
 
     // https://debezium.io/documentation/reference/configuration/avro.html

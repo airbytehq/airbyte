@@ -25,6 +25,7 @@
 package io.airbyte.integrations.source.jdbc;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.jdbc.models.CdcState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,34 +34,32 @@ public class JdbcCdcStateManager {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcStateManager.class);
 
-  private final CdcState initialSerialized;
-  private final AirbyteFileOffsetBackingStore offsetStore;
+  private final CdcState initialState;
 
-  public JdbcCdcStateManager(CdcState serialized) {
-    this(serialized, new AirbyteFileOffsetBackingStore());
-  }
+  private CdcState currentState;
 
   @VisibleForTesting
-  JdbcCdcStateManager(CdcState serialized, AirbyteFileOffsetBackingStore offsetStore) {
-    this.offsetStore = offsetStore;
-    this.initialSerialized = serialized;
+  JdbcCdcStateManager(CdcState serialized) {
+    this.initialState = serialized;
+    this.currentState = serialized;
 
     LOGGER.info("Initialized CDC state with: {}", serialized);
-    initializeOffsetStore(initialSerialized != null ? initialSerialized : null);
+  }
+
+  public void setCdcState(CdcState state) {
+    this.currentState = state;
   }
 
   public CdcState getCdcState() {
-    return offsetStore.read();
+    return currentState != null ? Jsons.clone(currentState) : null;
   }
 
-  public void initializeOffsetStore(CdcState cdcState) {
-    offsetStore.persist(cdcState);
-  }
-
-  public CdcState toState() {
-    final CdcState cdcState = getCdcState();
-    // LOGGER.info("initial CDC State: {}. current CDC State: {}", initialSerialized, cdcState);
-    return cdcState;
+  @Override
+  public String toString() {
+    return "JdbcCdcStateManager{" +
+        "initialState=" + initialState +
+        ", currentState=" + currentState +
+        '}';
   }
 
 }
