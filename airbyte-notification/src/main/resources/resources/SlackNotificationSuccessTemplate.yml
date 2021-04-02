@@ -1,0 +1,6 @@
+text: |
+  Hey!
+
+  Your connection <connector_source>:<connector_source_version> to <connector_destination>:<connector_destination_version> just finished successfully!
+
+  You can access its logs here: <log_url>

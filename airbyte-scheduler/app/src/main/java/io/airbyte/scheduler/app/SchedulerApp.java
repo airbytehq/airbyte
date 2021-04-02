@@ -41,6 +41,7 @@ import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.scheduler.persistence.job_tracker.JobNotifier;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.KubeProcessBuilderFactory;
@@ -109,7 +110,7 @@ public class SchedulerApp {
         workerThreadPool,
         jobPersistence,
         temporalWorkerRunFactory,
-        new JobTracker(configRepository, jobPersistence));
+        new JobTracker(configRepository, jobPersistence, new JobNotifier(configRepository)));
 
     Map<String, String> mdc = MDC.getCopyOfContextMap();
 

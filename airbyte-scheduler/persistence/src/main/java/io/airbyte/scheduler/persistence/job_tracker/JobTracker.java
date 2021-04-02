@@ -66,18 +66,18 @@ public class JobTracker {
   private final ConfigRepository configRepository;
   private final JobPersistence jobPersistence;
   private final TrackingClient trackingClient;
-  private final NotificationClient notificationClient;
+  private final JobNotifier jobNotifier;
 
-  public JobTracker(ConfigRepository configRepository, JobPersistence jobPersistence) {
-    this(configRepository, jobPersistence, TrackingClientSingleton.get(), new SlackNotificationClient(configRepository));
+  public JobTracker(ConfigRepository configRepository, JobPersistence jobPersistence, JobNotifier jobNotifier) {
+    this(configRepository, jobPersistence, TrackingClientSingleton.get(), jobNotifier);
   }
 
   @VisibleForTesting
-  JobTracker(ConfigRepository configRepository, JobPersistence jobPersistence, TrackingClient trackingClient, NotificationClient notificationClient) {
+  JobTracker(ConfigRepository configRepository, JobPersistence jobPersistence, TrackingClient trackingClient, JobNotifier jobNotifier) {
     this.configRepository = configRepository;
     this.jobPersistence = jobPersistence;
     this.trackingClient = trackingClient;
-    this.notificationClient = notificationClient;
+    this.jobNotifier = jobNotifier;
   }
 
   public void trackCheckConnectionSource(UUID jobId, UUID sourceDefinitionId, JobState jobState, StandardCheckConnectionOutput output) {
@@ -131,11 +131,7 @@ public class JobTracker {
 
       final Map<String, Object> metadata =
           MoreMaps.merge(jobMetadata, jobAttemptMetadata, sourceDefMetadata, destinationDefMetadata, syncMetadata, stateMetadata);
-      if (jobState.equals(JobState.FAILED)) {
-        Exceptions.swallow(() -> {
-          notificationClient.notifyFailure(MESSAGE_NAME, metadata);
-        });
-      }
+      jobNotifier.notifyJobCompletion(jobState, metadata);
       track(metadata);
     });
   }

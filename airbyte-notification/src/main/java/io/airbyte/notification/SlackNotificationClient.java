@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.scheduler.persistence.job_tracker;
+package io.airbyte.notification;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
@@ -31,11 +31,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.yaml.Yamls;
-import io.airbyte.config.StandardWorkspace;
-import io.airbyte.config.persistence.ConfigNotFoundException;
-import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.PersistenceConstants;
-import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.config.Notification;
+import io.airbyte.config.Notification.NotificationType;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -69,32 +66,31 @@ public class SlackNotificationClient implements NotificationClient {
   private final HttpClient httpClient = HttpClient.newBuilder()
       .version(HttpClient.Version.HTTP_2)
       .build();
-  private final ConfigRepository configRepository;
+  private final Notification config;
 
-  public SlackNotificationClient(ConfigRepository configRepository) {
-    this.configRepository = configRepository;
+  public SlackNotificationClient(final Notification config) {
+    this.config = config;
   }
 
   @Override
-  public void notifyFailure(String action, Map<String, Object> metadata)
-      throws ConfigNotFoundException, IOException, JsonValidationException, InterruptedException {
-    metadata = MoreMaps.merge(metadata, generateMetadata(metadata));
-    final StandardWorkspace workspace = configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID, true);
-    final String webhook = workspace.getFailureNotificationsWebhook();
-    if (!Strings.isEmpty(webhook)) {
-      final String data = generateData(metadata);
-      final HttpRequest request = HttpRequest.newBuilder()
-          .POST(HttpRequest.BodyPublishers.ofString(data))
-          .uri(URI.create(webhook))
-          .header("Content-Type", "application/json")
-          .build();
-      final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-      LOGGER.info("Failure notification ({}): {}", response.statusCode(), response.body());
+  public boolean notifyJobSuccess(final Map<String, Object> jobData) throws IOException, InterruptedException {
+    if (config.getOnSuccess()) {
+      return notify(renderJobData(jobData, "SlackNotificationSuccessTemplate.yml"));
     }
+    return true;
   }
 
-  private static String generateData(Map<String, Object> metadata) throws IOException {
-    final JsonNode template = Yamls.deserialize(MoreResources.readResource("SlackNotificationTemplate.yml"));
+  @Override
+  public boolean notifyJobFailure(final Map<String, Object> jobData) throws IOException, InterruptedException {
+    if (config.getOnFailure()) {
+      return notify(renderJobData(jobData, "SlackNotificationFailureTemplate.yml"));
+    }
+    return true;
+  }
+
+  private static String renderJobData(final Map<String, Object> jobData, final String templateFile) throws IOException {
+    final Map<String, Object> metadata = MoreMaps.merge(jobData, generateMetadata(jobData));
+    final JsonNode template = Yamls.deserialize(MoreResources.readResource(templateFile));
     String data = Jsons.toPrettyString(template);
     for (Entry<String, Object> entry : metadata.entrySet()) {
       final String key = "<" + entry.getKey() + ">";
@@ -105,11 +101,36 @@ public class SlackNotificationClient implements NotificationClient {
     return data;
   }
 
-  private static Map<String, Object> generateMetadata(Map<String, Object> jobData) {
+  private static Map<String, Object> generateMetadata(final Map<String, Object> jobData) {
     final Builder<String, Object> metadata = ImmutableMap.builder();
     // TODO: Get the correct url to this airbyte instance
     metadata.put("log_url", "http://localhost:8000/source/connection/" + jobData.get("connection_id"));
     return metadata.build();
+  }
+
+  private boolean notify(final String data) throws IOException, InterruptedException {
+    if (config.getNotificationType().equals(NotificationType.SLACK)) {
+      final String webhookUrl = config.getWebhook();
+      if (!Strings.isEmpty(webhookUrl)) {
+        final HttpRequest request = HttpRequest.newBuilder()
+            .POST(HttpRequest.BodyPublishers.ofString(data))
+            .uri(URI.create(webhookUrl))
+            .header("Content-Type", "application/json")
+            .build();
+        final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        LOGGER.info("Successful notification ({}): {}", response.statusCode(), response.body());
+        return isSuccessfulHttpResponse(response.statusCode());
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Use an integer division to check successful HTTP status codes (i.e., those from 200-299), not
+   * just 200. https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
+   */
+  private static boolean isSuccessfulHttpResponse(int httpStatusCode) {
+    return httpStatusCode / 100 != 2;
   }
 
 }

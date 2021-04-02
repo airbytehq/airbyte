@@ -22,16 +22,15 @@
  * SOFTWARE.
  */
 
-package io.airbyte.scheduler.persistence.job_tracker;
+package io.airbyte.notification;
 
-import io.airbyte.config.persistence.ConfigNotFoundException;
-import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.Map;
 
 public interface NotificationClient {
 
-  void notifyFailure(String action, Map<String, Object> metadata)
-      throws ConfigNotFoundException, IOException, JsonValidationException, InterruptedException;
+  boolean notifyJobSuccess(Map<String, Object> metadata) throws IOException, InterruptedException;
+
+  boolean notifyJobFailure(Map<String, Object> metadata) throws IOException, InterruptedException;
 
 }
