@@ -4,7 +4,7 @@
 
 The exchange rates integration is a toy integration to demonstrate how Airbyte works with a very simple source.
 
-It pulls all its data from [https://exchangeratesapi.io/](https://exchangeratesapi.io/)
+It pulls all its data from [https://ratesapi.io/](https://ratesapi.io/)
 
 #### Output schema
 
