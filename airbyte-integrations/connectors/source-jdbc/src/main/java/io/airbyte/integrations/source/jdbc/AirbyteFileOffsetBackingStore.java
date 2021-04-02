@@ -80,7 +80,7 @@ public class AirbyteFileOffsetBackingStore {
         e -> e.getValue() != null ? new String(e.getValue().array(), StandardCharsets.UTF_8) : null));
     final JsonNode asJson = Jsons.jsonNode(mappedAsStrings);
 
-    LOGGER.info("debezium state. {}", asJson);
+    LOGGER.info("debezium state: {}", asJson);
 
     return new CdcState().withState(asJson);
   }
