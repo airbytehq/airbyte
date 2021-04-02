@@ -31,6 +31,8 @@ import static org.mockito.Mockito.when;
 
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.Notification;
+import io.airbyte.config.Notification.NotificationType;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
@@ -76,7 +78,11 @@ public class ConfigFileArchiverTest {
         .withSlug("default")
         .withInitialSetupComplete(false)
         .withTombstone(false)
-        .withFailureNotificationsWebhook("http://notify.me/onfailure");
+        .withNotifications(List.of(new Notification()
+            .withNotificationType(NotificationType.SLACK)
+            .withWebhook("http://airbyte.notifications")
+            .withOnFailure(true)
+            .withOnSuccess(false)));
   }
 
   @Test
