@@ -11,6 +11,7 @@ module "airbyte-instance" {
   default-sg = var.default-sg
   instance-size = var.instance-size
   key-name = var.key-name
+  ami_id = var.ami-id
 }
 
 module "public-lb" {
