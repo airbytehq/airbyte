@@ -59,6 +59,7 @@ import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.client.SynchronousResponse;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.scheduler.models.Job;
+import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.converters.CatalogConverter;
 import io.airbyte.server.converters.ConfigurationUpdate;
@@ -85,12 +86,14 @@ public class SchedulerHandler {
   private final JsonSchemaValidator jsonSchemaValidator;
   private final JobPersistence jobPersistence;
   private final Path workspaceRoot;
+  private final JobNotifier jobNotifier;
 
   public SchedulerHandler(ConfigRepository configRepository,
                           SchedulerJobClient schedulerJobClient,
                           SynchronousSchedulerClient synchronousSchedulerClient,
                           JobPersistence jobPersistence,
-                          Path workspaceRoot) {
+                          Path workspaceRoot,
+                          JobNotifier jobNotifier) {
     this(
         configRepository,
         schedulerJobClient,
@@ -99,7 +102,8 @@ public class SchedulerHandler {
         new JsonSchemaValidator(),
         new SpecFetcher(synchronousSchedulerClient),
         jobPersistence,
-        workspaceRoot);
+        workspaceRoot,
+        jobNotifier);
   }
 
   @VisibleForTesting
@@ -110,7 +114,8 @@ public class SchedulerHandler {
                    JsonSchemaValidator jsonSchemaValidator,
                    SpecFetcher specFetcher,
                    JobPersistence jobPersistence,
-                   Path workspaceRoot) {
+                   Path workspaceRoot,
+                   JobNotifier jobNotifier) {
     this.configRepository = configRepository;
     this.schedulerJobClient = schedulerJobClient;
     this.synchronousSchedulerClient = synchronousSchedulerClient;
@@ -119,6 +124,7 @@ public class SchedulerHandler {
     this.specFetcher = specFetcher;
     this.jobPersistence = jobPersistence;
     this.workspaceRoot = workspaceRoot;
+    this.jobNotifier = jobNotifier;
   }
 
   public CheckConnectionRead checkSourceConnectionFromSourceId(SourceIdRequestBody sourceIdRequestBody)
@@ -317,8 +323,9 @@ public class SchedulerHandler {
         .build();
 
     TemporalUtils.TEMPORAL_SERVICE.blockingStub().requestCancelWorkflowExecution(cancelRequest);
-
-    return JobConverter.getJobInfoRead(jobPersistence.getJob(jobId));
+    final Job job = jobPersistence.getJob(jobId);
+    jobNotifier.failJob("job was cancelled", job);
+    return JobConverter.getJobInfoRead(job);
   }
 
   private CheckConnectionRead reportConnectionStatus(final SynchronousResponse<StandardCheckConnectionOutput> response) {

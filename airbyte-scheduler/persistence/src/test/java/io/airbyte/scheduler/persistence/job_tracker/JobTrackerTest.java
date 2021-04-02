@@ -101,8 +101,7 @@ class JobTrackerTest {
     configRepository = mock(ConfigRepository.class);
     jobPersistence = mock(JobPersistence.class);
     trackingClient = mock(TrackingClient.class);
-    final JobNotifier jobNotifier = mock(JobNotifier.class);
-    jobTracker = new JobTracker(configRepository, jobPersistence, trackingClient, jobNotifier);
+    jobTracker = new JobTracker(configRepository, jobPersistence, trackingClient);
   }
 
   @Test

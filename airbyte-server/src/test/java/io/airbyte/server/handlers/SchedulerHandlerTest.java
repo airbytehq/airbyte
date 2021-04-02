@@ -72,6 +72,7 @@ import io.airbyte.scheduler.client.SynchronousResponse;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
+import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.server.converters.SpecFetcher;
@@ -130,7 +131,6 @@ class SchedulerHandlerTest {
   private ConfigurationUpdate configurationUpdate;
   private JsonSchemaValidator jsonSchemaValidator;
   private SpecFetcher specFetcher;
-  private JobPersistence jobPersistence;
 
   @BeforeEach
   void setup() {
@@ -146,10 +146,11 @@ class SchedulerHandlerTest {
     schedulerJobClient = spy(SchedulerJobClient.class);
     synchronousSchedulerClient = mock(SynchronousSchedulerClient.class);
     configRepository = mock(ConfigRepository.class);
-    jobPersistence = mock(JobPersistence.class);
+    final JobPersistence jobPersistence = mock(JobPersistence.class);
+    final JobNotifier jobNotifier = mock(JobNotifier.class);
 
     schedulerHandler = new SchedulerHandler(configRepository, schedulerJobClient, synchronousSchedulerClient, configurationUpdate,
-        jsonSchemaValidator, specFetcher, jobPersistence, mock(Path.class));
+        jsonSchemaValidator, specFetcher, jobPersistence, mock(Path.class), jobNotifier);
   }
 
   @Test

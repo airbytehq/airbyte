@@ -79,6 +79,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
 import io.airbyte.scheduler.client.SchedulerJobClient;
+import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.KnownException;
@@ -134,7 +135,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     final SpecFetcher specFetcher = new SpecFetcher(synchronousSchedulerClient);
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
     schedulerHandler =
-        new SchedulerHandler(configRepository, schedulerJobClient, synchronousSchedulerClient, jobPersistence, configs.getWorkspaceRoot());
+        new SchedulerHandler(configRepository, schedulerJobClient, synchronousSchedulerClient, jobPersistence, configs.getWorkspaceRoot(),
+            new JobNotifier(configRepository));
     final DockerImageValidator dockerImageValidator = new DockerImageValidator(synchronousSchedulerClient);
     sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, synchronousSchedulerClient);
     connectionsHandler = new ConnectionsHandler(configRepository);

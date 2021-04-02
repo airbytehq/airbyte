@@ -40,8 +40,8 @@ import io.airbyte.scheduler.app.worker_run.TemporalWorkerRunFactory;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
+import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
-import io.airbyte.scheduler.persistence.job_tracker.JobNotifier;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.workers.process.DockerProcessBuilderFactory;
 import io.airbyte.workers.process.KubeProcessBuilderFactory;
@@ -104,19 +104,20 @@ public class SchedulerApp {
     final ExecutorService workerThreadPool = Executors.newFixedThreadPool(MAX_WORKERS, THREAD_FACTORY);
     final ScheduledExecutorService scheduledPool = Executors.newSingleThreadScheduledExecutor();
     final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(TemporalClient.production(workspaceRoot), workspaceRoot);
-    final JobRetrier jobRetrier = new JobRetrier(jobPersistence, Instant::now);
+    final JobNotifier jobNotifier = new JobNotifier(configRepository);
+    final JobRetrier jobRetrier = new JobRetrier(jobPersistence, Instant::now, jobNotifier);
     final JobScheduler jobScheduler = new JobScheduler(jobPersistence, configRepository);
     final JobSubmitter jobSubmitter = new JobSubmitter(
         workerThreadPool,
         jobPersistence,
         temporalWorkerRunFactory,
-        new JobTracker(configRepository, jobPersistence, new JobNotifier(configRepository)));
+        new JobTracker(configRepository, jobPersistence));
 
     Map<String, String> mdc = MDC.getCopyOfContextMap();
 
     // We cancel jobs that where running before the restart. They are not being monitored by the worker
     // anymore.
-    cleanupZombies(jobPersistence);
+    cleanupZombies(jobPersistence, jobNotifier);
 
     scheduledPool.scheduleWithFixedDelay(
         () -> {
@@ -141,8 +142,9 @@ public class SchedulerApp {
     Runtime.getRuntime().addShutdownHook(new GracefulShutdownHandler(Duration.ofSeconds(GRACEFUL_SHUTDOWN_SECONDS), workerThreadPool, scheduledPool));
   }
 
-  private void cleanupZombies(JobPersistence jobPersistence) throws IOException {
+  private void cleanupZombies(JobPersistence jobPersistence, JobNotifier jobNotifier) throws IOException {
     for (Job zombieJob : jobPersistence.listJobsWithStatus(JobStatus.RUNNING)) {
+      jobNotifier.failJob("zombie job was cancelled", zombieJob);
       jobPersistence.cancelJob(zombieJob.getId());
     }
   }

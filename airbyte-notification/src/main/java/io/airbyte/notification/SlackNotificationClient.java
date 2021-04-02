@@ -73,17 +73,9 @@ public class SlackNotificationClient implements NotificationClient {
   }
 
   @Override
-  public boolean notifyJobSuccess(final Map<String, Object> jobData) throws IOException, InterruptedException {
-    if (config.getOnSuccess()) {
-      return notify(renderJobData(jobData, "SlackNotificationSuccessTemplate.yml"));
-    }
-    return true;
-  }
-
-  @Override
   public boolean notifyJobFailure(final Map<String, Object> jobData) throws IOException, InterruptedException {
     if (config.getOnFailure()) {
-      return notify(renderJobData(jobData, "SlackNotificationFailureTemplate.yml"));
+      return notify(renderJobData(jobData, "failure_slack_notification_template.yml"));
     }
     return true;
   }

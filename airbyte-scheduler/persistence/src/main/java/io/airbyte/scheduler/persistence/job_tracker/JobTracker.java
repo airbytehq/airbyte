@@ -66,18 +66,16 @@ public class JobTracker {
   private final ConfigRepository configRepository;
   private final JobPersistence jobPersistence;
   private final TrackingClient trackingClient;
-  private final JobNotifier jobNotifier;
 
-  public JobTracker(ConfigRepository configRepository, JobPersistence jobPersistence, JobNotifier jobNotifier) {
-    this(configRepository, jobPersistence, TrackingClientSingleton.get(), jobNotifier);
+  public JobTracker(ConfigRepository configRepository, JobPersistence jobPersistence) {
+    this(configRepository, jobPersistence, TrackingClientSingleton.get());
   }
 
   @VisibleForTesting
-  JobTracker(ConfigRepository configRepository, JobPersistence jobPersistence, TrackingClient trackingClient, JobNotifier jobNotifier) {
+  JobTracker(ConfigRepository configRepository, JobPersistence jobPersistence, TrackingClient trackingClient) {
     this.configRepository = configRepository;
     this.jobPersistence = jobPersistence;
     this.trackingClient = trackingClient;
-    this.jobNotifier = jobNotifier;
   }
 
   public void trackCheckConnectionSource(UUID jobId, UUID sourceDefinitionId, JobState jobState, StandardCheckConnectionOutput output) {
@@ -131,7 +129,6 @@ public class JobTracker {
 
       final Map<String, Object> metadata =
           MoreMaps.merge(jobMetadata, jobAttemptMetadata, sourceDefMetadata, destinationDefMetadata, syncMetadata, stateMetadata);
-      jobNotifier.notifyJobCompletion(jobState, metadata);
       track(metadata);
     });
   }

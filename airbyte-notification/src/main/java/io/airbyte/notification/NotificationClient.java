@@ -29,8 +29,6 @@ import java.util.Map;
 
 public interface NotificationClient {
 
-  boolean notifyJobSuccess(Map<String, Object> metadata) throws IOException, InterruptedException;
-
   boolean notifyJobFailure(Map<String, Object> metadata) throws IOException, InterruptedException;
 
 }
