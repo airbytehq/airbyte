@@ -1,6 +1,13 @@
-connector_image: airbyte/source-hubspot:0.1.0
+connector_image: airbyte/source-hubspot:dev
 tests:
-  -
-    core: []
-    incremental: []
-    full_refresh: []
+  core:
+    - config_path: "secrets/config.json"
+      invalid_config_path: "secrets/invalid_config.json"
+      spec_path: "source_hubspot/spec.json"
+      configured_catalog_path: "sample_files/configured_catalog.json"
+    - config_path: "secrets/config.json"
+      invalid_config_path: "secrets/invalid_config.json"
+      spec_path: "source_hubspot/spec.json"
+      configured_catalog_path: "sample_files/configured_catalog.json"
+  incremental: []
+  full_refresh: []

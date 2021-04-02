@@ -24,37 +24,48 @@ SOFTWARE.
 
 from collections import Counter
 
+import inflection as inflection
+import pytest
 from airbyte_protocol import Type, Status, ConnectorSpecification
 from .utils import full_refresh_only_catalog, ConnectorRunner
 
 
-class TestBaseInterface:
-    def test_check(self, config, docker_runner: ConnectorRunner):
-        output = docker_runner.call_check(config=config)
+@pytest.mark.usefixtures("inputs")
+class BaseTest:
+
+    @classmethod
+    def config_key(cls):
+        class_name = cls.__name__
+        if class_name.startswith("Test"):
+            class_name = class_name[len("Test"):]
+        return inflection.underscore(class_name)
+
+
+class TestCore(BaseTest):
+    def test_check(self, connector_config, docker_runner: ConnectorRunner):
+        output = docker_runner.call_check(config=connector_config)
         con_messages = [message for message in output if message.type == Type.CONNECTION_STATUS]
 
         assert len(con_messages) == 1, "Connection status message should be emitted exactly once"
         assert con_messages[0].connectionStatus.status == Status.SUCCEEDED
 
-    def test_discover(self, config, catalog, docker_runner: ConnectorRunner):
-        output = docker_runner.call_discover(config=config)
+    def test_discover(self, connector_config, catalog, docker_runner: ConnectorRunner):
+        output = docker_runner.call_discover(config=connector_config)
         catalog_messages = [message for message in output if message.type == Type.CATALOG]
 
         assert len(catalog_messages) == 1, "Catalog message should be emitted exactly once"
-        assert catalog_messages[0].catalog == catalog, "Catalog should match the one that was provided"
+        # assert catalog_messages[0].catalog == catalog, "Catalog should match the one that was provided"
 
-    def test_spec(self, spec_path, docker_runner: ConnectorRunner):
+    def test_spec(self, connector_spec, docker_runner: ConnectorRunner):
         output = docker_runner.call_spec()
         spec_messages = [message for message in output if message.type == Type.SPEC]
-
-        spec = ConnectorSpecification.parse_file(spec_path)
 
         assert len(spec_messages) == 1, "Spec message should be emitted exactly once"
         # assert spec_messages[0].spec == spec, "Spec should be equal to the one in spec.json file"
 
-    def test_read(self, config, configured_catalog, docker_runner: ConnectorRunner):
+    def test_read(self, connector_config, configured_catalog, docker_runner: ConnectorRunner):
         configured_catalog = full_refresh_only_catalog(configured_catalog)
-        output = docker_runner.call_read(config, configured_catalog)
+        output = docker_runner.call_read(connector_config, configured_catalog)
         records = [message.record for message in output if message.type == Type.RECORD]
         counter = Counter(record.stream for record in records)
 
@@ -63,3 +74,11 @@ class TestBaseInterface:
         streams_without_records = all_streams - streams_with_records
 
         assert not streams_without_records, f"all streams should return some records, streams without records: {streams_without_records}"
+
+
+class TestFullRefresh(BaseTest):
+    pass
+
+
+class TestIncremental(BaseTest):
+    pass

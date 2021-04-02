@@ -27,28 +27,29 @@ from pydantic import BaseModel, Field
 
 
 class CoreConfig(BaseModel):
-    config_path: Field(str, default="secrets/config.json",  description="Path to a JSON object representing a valid connector configuration")
-    invalid_config_path: Field(str, default="secrets/invalid_config.json", description="Path to a JSON object representing an invalid connector configuration")
-    spec_path: Field(str, description="Path to a JSON object representing the spec expected to be output by this connector")
-    configured_catalog_path: Field(str, description="TODO")
+    config_path: str = Field(description="Path to a JSON object representing a valid connector configuration")
+    invalid_config_path: str = Field(description="Path to a JSON object representing an invalid connector configuration")
+    spec_path: str = Field(description="Path to a JSON object representing the spec expected to be output by this connector")
+    configured_catalog_path: str = Field(description="TODO")
 
 
 class FullRefreshConfig(BaseModel):
-    config_path: Field(str, description="Path to a JSON object representing a valid connector configuration")
-    configured_catalog_path: Field(str, description="TODO")
+    config_path: str = Field(description="Path to a JSON object representing a valid connector configuration")
+    configured_catalog_path: str = Field(description="TODO")
 
 
 class IncrementalConfig(BaseModel):
-    config_path: Field(str, description="Path to a JSON object representing a valid connector configuration")
-    configured_catalog_path: Field(str, description="TODO")
+    config_path: str = Field(description="Path to a JSON object representing a valid connector configuration")
+    configured_catalog_path: str = Field(description="TODO")
 
 
 class TestConfig(BaseModel):
-    core: Optional[CoreConfig]
-    full_refresh: Optional[FullRefreshConfig]
-    incremental: Optional[IncrementalConfig]
+    core: Optional[List[CoreConfig]]
+    full_refresh: Optional[List[FullRefreshConfig]]
+    incremental: Optional[List[IncrementalConfig]]
 
 
 class Config(BaseModel):
     connector_image: str
-    tests: List[TestConfig]
+    base_path: Optional[str]
+    tests: TestConfig

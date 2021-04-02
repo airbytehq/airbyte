@@ -28,6 +28,9 @@ MAIN_REQUIREMENTS = [
     "airbyte-protocol",
     "docker==4.4.4",
     "PyYAML==5.3.1",
+    "inflection==0.5.1",
+    "pydantic==1.6.1",
+    "pytest==6.1.2",
 ]
 
 setuptools.setup(
