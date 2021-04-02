@@ -47,10 +47,15 @@ import org.apache.kafka.connect.util.SafeObjectInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * This class handles reading and writing a debezium offset file. In many cases it is duplicating
+ * logic in debezium because that logic is not exposed in the public API. We mostly treat the
+ * contents of this state file like a black box. We know it is a Map<ByteBuffer, Bytebuffer>. We
+ * deserialize it to a Map<String, String> so that the state file can be human readable. If we ever
+ * discover that any of the contents of these offset files is not string serializable we will likely
+ * have to drop the human readability support and just base64 encode it.
+ */
 public class AirbyteFileOffsetBackingStore {
-
-  private static final String DEBEZIUM_KEY = "debezium_key";
-  private static final String DEBEZIUM_VALUE = "debezium_debezium_value";
 
   public static final Path DEFAULT_OFFSET_STORAGE_PATH = Path.of("/tmp/offset.dat");
 
@@ -70,7 +75,6 @@ public class AirbyteFileOffsetBackingStore {
   public CdcState read() {
     final Map<ByteBuffer, ByteBuffer> raw = load();
 
-    // may need to base64 encode this.
     final Map<String, String> mappedAsStrings = raw.entrySet().stream().collect(Collectors.toMap(
         e -> e.getKey() != null ? new String(e.getKey().array(), StandardCharsets.UTF_8) : null,
         e -> e.getValue() != null ? new String(e.getValue().array(), StandardCharsets.UTF_8) : null));
@@ -94,7 +98,8 @@ public class AirbyteFileOffsetBackingStore {
   }
 
   /**
-   * See {@link FileOffsetBackingStore#load}
+   * See {@link FileOffsetBackingStore#load} - logic is mostly borrowed from here. duplicated because
+   * this method is not public.
    */
   @SuppressWarnings("unchecked")
   private Map<ByteBuffer, ByteBuffer> load() {
@@ -121,7 +126,8 @@ public class AirbyteFileOffsetBackingStore {
   }
 
   /**
-   * See {@link FileOffsetBackingStore#save}
+   * See {@link FileOffsetBackingStore#save} - logic is mostly borrowed from here. duplicated because
+   * this method is not public.
    */
   private void save(Map<ByteBuffer, ByteBuffer> data) {
     try (ObjectOutputStream os = new ObjectOutputStream(Files.newOutputStream(offsetFilePath))) {
