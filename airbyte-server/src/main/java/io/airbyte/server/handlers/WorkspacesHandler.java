@@ -38,6 +38,7 @@ import io.airbyte.api.model.WorkspaceUpdate;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.server.converters.NotificationConverter;
 import io.airbyte.server.errors.KnownException;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -93,7 +94,7 @@ public class WorkspacesHandler {
         .withSecurityUpdates(securityUpdates != null ? securityUpdates : false)
         .withDisplaySetupWizard(false)
         .withTombstone(false)
-        .withFailureNotificationsWebhook(workspaceCreate.getFailureNotificationsWebhook());
+        .withNotifications(NotificationConverter.toConfig(workspaceCreate.getNotifications()));
 
     if (!Strings.isNullOrEmpty(email)) {
       workspace.withEmail(email);
@@ -165,7 +166,7 @@ public class WorkspacesHandler {
         .withAnonymousDataCollection(workspaceUpdate.getAnonymousDataCollection())
         .withNews(workspaceUpdate.getNews())
         .withSecurityUpdates(workspaceUpdate.getSecurityUpdates())
-        .withFailureNotificationsWebhook(workspaceUpdate.getFailureNotificationsWebhook());
+        .withNotifications(NotificationConverter.toConfig(workspaceUpdate.getNotifications()));
 
     configRepository.writeStandardWorkspace(persistedWorkspace);
 
@@ -192,7 +193,7 @@ public class WorkspacesHandler {
         .anonymousDataCollection(workspace.getAnonymousDataCollection())
         .news(workspace.getNews())
         .securityUpdates(workspace.getSecurityUpdates())
-        .failureNotificationsWebhook(workspace.getFailureNotificationsWebhook());
+        .notifications(NotificationConverter.toApi(workspace.getNotifications()));
   }
 
 }

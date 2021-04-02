@@ -3972,13 +3972,21 @@ font-style: italic;
   "displaySetupWizard" : true,
   "news" : true,
   "initialSetupComplete" : true,
-  "failureNotificationsWebhook" : "failureNotificationsWebhook",
   "anonymousDataCollection" : true,
   "customerId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "name" : "name",
   "email" : "email",
   "slug" : "slug",
   "securityUpdates" : true,
+  "notifications" : [ {
+    "webhook" : "webhook",
+    "onFailure" : true,
+    "onSuccess" : true
+  }, {
+    "webhook" : "webhook",
+    "onFailure" : true,
+    "onSuccess" : true
+  } ],
   "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
 
@@ -4079,13 +4087,21 @@ font-style: italic;
   "displaySetupWizard" : true,
   "news" : true,
   "initialSetupComplete" : true,
-  "failureNotificationsWebhook" : "failureNotificationsWebhook",
   "anonymousDataCollection" : true,
   "customerId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "name" : "name",
   "email" : "email",
   "slug" : "slug",
   "securityUpdates" : true,
+  "notifications" : [ {
+    "webhook" : "webhook",
+    "onFailure" : true,
+    "onSuccess" : true
+  }, {
+    "webhook" : "webhook",
+    "onFailure" : true,
+    "onSuccess" : true
+  } ],
   "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
 
@@ -4147,13 +4163,21 @@ font-style: italic;
   "displaySetupWizard" : true,
   "news" : true,
   "initialSetupComplete" : true,
-  "failureNotificationsWebhook" : "failureNotificationsWebhook",
   "anonymousDataCollection" : true,
   "customerId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "name" : "name",
   "email" : "email",
   "slug" : "slug",
   "securityUpdates" : true,
+  "notifications" : [ {
+    "webhook" : "webhook",
+    "onFailure" : true,
+    "onSuccess" : true
+  }, {
+    "webhook" : "webhook",
+    "onFailure" : true,
+    "onSuccess" : true
+  } ],
   "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
 
@@ -4215,13 +4239,21 @@ font-style: italic;
   "displaySetupWizard" : true,
   "news" : true,
   "initialSetupComplete" : true,
-  "failureNotificationsWebhook" : "failureNotificationsWebhook",
   "anonymousDataCollection" : true,
   "customerId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "name" : "name",
   "email" : "email",
   "slug" : "slug",
   "securityUpdates" : true,
+  "notifications" : [ {
+    "webhook" : "webhook",
+    "onFailure" : true,
+    "onSuccess" : true
+  }, {
+    "webhook" : "webhook",
+    "onFailure" : true,
+    "onSuccess" : true
+  } ],
   "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
 
@@ -4293,6 +4325,8 @@ font-style: italic;
     <li><a href="#LogRead"><code>LogRead</code> - </a></li>
     <li><a href="#LogType"><code>LogType</code> - </a></li>
     <li><a href="#LogsRequestBody"><code>LogsRequestBody</code> - </a></li>
+    <li><a href="#Notification"><code>Notification</code> - </a></li>
+    <li><a href="#NotificationType"><code>NotificationType</code> - </a></li>
     <li><a href="#SlugRequestBody"><code>SlugRequestBody</code> - </a></li>
     <li><a href="#SourceCoreConfig"><code>SourceCoreConfig</code> - </a></li>
     <li><a href="#SourceCreate"><code>SourceCreate</code> - </a></li>
@@ -4697,6 +4731,22 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="Notification"><code>Notification</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">notificationType </div><div class="param-desc"><span class="param-type"><a href="#NotificationType">NotificationType</a></span>  </div>
+<div class="param">webhook (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">onFailure (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">onSuccess (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="NotificationType"><code>NotificationType</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+          </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="SlugRequestBody"><code>SlugRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -4917,7 +4967,7 @@ font-style: italic;
 <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">news (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">securityUpdates (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
-<div class="param">failureNotificationsWebhook (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">notifications (optional)</div><div class="param-desc"><span class="param-type"><a href="#Notification">array[Notification]</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -4941,7 +4991,7 @@ font-style: italic;
 <div class="param">anonymousDataCollection (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">news (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">securityUpdates (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
-<div class="param">failureNotificationsWebhook (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">notifications (optional)</div><div class="param-desc"><span class="param-type"><a href="#Notification">array[Notification]</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -4955,7 +5005,7 @@ font-style: italic;
 <div class="param">anonymousDataCollection </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">news </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">securityUpdates </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
-<div class="param">failureNotificationsWebhook (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">notifications (optional)</div><div class="param-desc"><span class="param-type"><a href="#Notification">array[Notification]</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   </body>
