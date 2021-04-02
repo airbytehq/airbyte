@@ -10,10 +10,18 @@ properties:
 definitions:
   JdbcState:
     type: object
-    additionalProperties: false
     required:
       - streams
     properties:
+      cdc:
+        type: boolean
+      cdc_state:
+        type: object
+        properties:
+          state:
+            description: json representation of debezium state.
+            type: object
+            existingJavaType: com.fasterxml.jackson.databind.JsonNode
       streams:
         description: "State for each stream."
         type: array

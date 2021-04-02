@@ -36,6 +36,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Queues;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
+import io.airbyte.commons.util.CompositeIterator;
+import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.PgLsn;
 import io.airbyte.db.PostgresUtils;
 import io.airbyte.db.jdbc.JdbcDatabase;
@@ -44,17 +46,21 @@ import io.airbyte.db.jdbc.PostgresJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.integrations.source.jdbc.AirbyteFileOffsetBackingStore;
 import io.airbyte.integrations.source.jdbc.JdbcStateManager;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
 import io.debezium.engine.ChangeEvent;
 import io.debezium.engine.DebeziumEngine;
 import io.debezium.engine.format.Json;
+import io.debezium.engine.spi.OffsetCommitPolicy.AlwaysCommitOffsetPolicy;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.SQLException;
@@ -73,6 +79,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.function.Supplier;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.codehaus.plexus.util.StringUtils;
 import org.apache.kafka.connect.data.Struct;
@@ -180,6 +187,11 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
       sourceRecordMethod.setAccessible(true);
       final SourceRecord sourceRecord = (SourceRecord) sourceRecordMethod.invoke(event);
       final String snapshot = ((Struct) sourceRecord.value()).getStruct("source").getString("snapshot");
+
+      if (snapshot == null) {
+        return null;
+      }
+
       // the snapshot field is an enum of true, false, and last.
       return SnapshotMetadata.valueOf(snapshot.toUpperCase());
     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
@@ -187,17 +199,17 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
     }
   }
 
-  private Predicate<ChangeEvent<String, String>> getTerminationPredicate(JdbcDatabase database) {
+  private Predicate<ChangeEvent<String, String>> getTerminationPredicate(JdbcDatabase database, JdbcStateManager stateManager) {
     final PgLsn targetLsn = getLsn(database);
     LOGGER.info("identified target lsn: " + targetLsn);
 
     return (event) -> {
       final PgLsn eventLsn = extractLsn(event);
-      final SnapshotMetadata snapshotMetadata = getSnapshotMetadata(event);
 
       if (targetLsn.compareTo(eventLsn) > 0) {
         return false;
       } else {
+        final SnapshotMetadata snapshotMetadata = getSnapshotMetadata(event);
         // if not snapshot or is snapshot but last record in snapshot.
         return SnapshotMetadata.TRUE != snapshotMetadata;
       }
@@ -232,7 +244,8 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
                                                                              JdbcStateManager stateManager,
                                                                              Instant emittedAt) {
     if (isCdc(config)) {
-      final Predicate<ChangeEvent<String, String>> hasReachedLsnPredicate = getTerminationPredicate(database);
+
+      final Predicate<ChangeEvent<String, String>> hasReachedLsnPredicate = getTerminationPredicate(database, stateManager);
       AtomicReference<Throwable> thrownError = new AtomicReference<>();
       AtomicBoolean completed = new AtomicBoolean(false);
       ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -240,6 +253,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
 
       DebeziumEngine<ChangeEvent<String, String>> engine = DebeziumEngine.create(Json.class)
           .using(getDebeziumProperties(config, catalog))
+          .using(new AlwaysCommitOffsetPolicy())
           .notifying(event -> {
             try {
               final AirbyteMessage message = convertChangeEvent(event, emittedAt);
@@ -263,6 +277,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
       final AbstractIterator<DebeziumPayload> iterator = new AbstractIterator<>() {
 
         private boolean hasReachedLsn = false;
+        private int sleepCount = 0;
 
         @Override
         protected DebeziumPayload computeNext() {
@@ -270,7 +285,10 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
           // next value.
           if (!hasReachedLsn) {
             while (!queueIterator.hasNext()) {
-              LOGGER.info("sleeping.");
+              if (sleepCount > 5) {
+                return endOfData();
+              }
+              LOGGER.info("sleeping. count: {}", sleepCount++);
               try {
                 sleep(5000);
               } catch (InterruptedException e) {
@@ -306,7 +324,23 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
 
       final AutoCloseableIterator<AirbyteMessage> messageIterator = AutoCloseableIterators.transform(payloadIterator, DebeziumPayload::getMessage);
 
-      return Collections.singletonList(messageIterator);
+      // our goal is to get the state at the time this supplier is called (i.e. after all message records
+      // have been produced)
+      final Supplier<AirbyteMessage> stateMessageSupplier = () -> {
+        final AirbyteStateMessage stateMessage = stateManager.emit();
+        return new AirbyteMessage().withType(Type.STATE).withState(stateMessage);
+      };
+
+      // wrap the supplier in an iterator so that we can concat it to the message iterator.
+      final Iterator<AirbyteMessage> stateMessageIterator = MoreIterators.singletonIteratorFromSupplier(stateMessageSupplier);
+
+      // this structure guarantees that the debezium engine will be closed, before we attempt to emit the
+      // state file. we want this so that we have a guarantee that the debezium offset file (which we use
+      // to produce the state file) is up-to-date.
+      final CompositeIterator<AirbyteMessage> messageIteratorWithStateDecorator = AutoCloseableIterators
+          .concatWithEagerClose(messageIterator, AutoCloseableIterators.fromIterator(stateMessageIterator));
+
+      return Collections.singletonList(messageIteratorWithStateDecorator);
     } else {
       return super.getIncrementalIterators(config, database, catalog, tableNameToTable, stateManager, emittedAt);
     }
@@ -320,7 +354,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
     props.setProperty("plugin.name", "pgoutput");
     props.setProperty("connector.class", "io.debezium.connector.postgresql.PostgresConnector");
     props.setProperty("offset.storage", "org.apache.kafka.connect.storage.FileOffsetBackingStore");
-    props.setProperty("offset.storage.file.filename", "/tmp/offsets-" + RandomStringUtils.randomAlphabetic(5) + ".dat");
+    props.setProperty("offset.storage.file.filename", AirbyteFileOffsetBackingStore.DEFAULT_OFFSET_STORAGE_PATH.toString());
     props.setProperty("offset.flush.interval.ms", "1000"); // todo: make this longer
 
     // https://debezium.io/documentation/reference/configuration/avro.html

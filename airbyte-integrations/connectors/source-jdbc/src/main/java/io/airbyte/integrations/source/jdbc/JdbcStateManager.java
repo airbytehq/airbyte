@@ -54,12 +54,16 @@ public class JdbcStateManager {
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcStateManager.class);
 
   private final Map<String, CursorInfo> streamNameToCursorInfo;
+  private Boolean isCdc;
+  private final JdbcCdcStateManager cdcStateManager;
 
   public static JdbcState emptyState() {
     return new JdbcState();
   }
 
   public JdbcStateManager(JdbcState serialized, ConfiguredAirbyteCatalog catalog) {
+    this.cdcStateManager = new JdbcCdcStateManager(serialized.getCdcState());
+    this.isCdc = serialized.getCdc();
     streamNameToCursorInfo = new ImmutableMap.Builder<String, CursorInfo>().putAll(createCursorInfoMap(serialized, catalog)).build();
   }
 
@@ -160,22 +164,39 @@ public class JdbcStateManager {
   }
 
   synchronized public AirbyteStateMessage updateAndEmit(String streamName, String cursor) {
-    final Optional<CursorInfo> cursorInfo = getCursorInfo(streamName);
-    Preconditions.checkState(cursorInfo.isPresent(), "Could not find cursor information for stream: " + streamName);
-    cursorInfo.get().setCursor(cursor);
+    // cdc file gets updated by debezium so the "update" part is a no op.
+    if (!isCdc) {
+      final Optional<CursorInfo> cursorInfo = getCursorInfo(streamName);
+      Preconditions.checkState(cursorInfo.isPresent(), "Could not find cursor information for stream: " + streamName);
+      cursorInfo.get().setCursor(cursor);
+    }
 
+    return toState();
+  }
+
+  public void setIsCdc(boolean isCdc) {
+    if (this.isCdc == null) {
+      this.isCdc = isCdc;
+    } else {
+      Preconditions.checkState(this.isCdc == isCdc, "attempt to set cdc to {}, but is already set to {}.", isCdc, this.isCdc);
+    }
+  }
+
+  public AirbyteStateMessage emit() {
     return toState();
   }
 
   private AirbyteStateMessage toState() {
     final JdbcState jdbcState = new JdbcState()
+        .withCdc(isCdc)
         .withStreams(streamNameToCursorInfo.entrySet().stream()
             .sorted(Entry.comparingByKey()) // sort by stream name for sanity.
             .map(e -> new JdbcStreamState()
                 .withStreamName(e.getKey())
                 .withCursorField(e.getValue().getCursorField() == null ? Collections.emptyList() : Lists.newArrayList(e.getValue().getCursorField()))
                 .withCursor(e.getValue().getCursor()))
-            .collect(Collectors.toList()));
+            .collect(Collectors.toList()))
+        .withCdcState(cdcStateManager.toState());
 
     return new AirbyteStateMessage().withData(Jsons.jsonNode(jdbcState));
   }

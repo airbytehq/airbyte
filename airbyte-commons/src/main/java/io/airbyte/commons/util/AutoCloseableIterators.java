@@ -131,6 +131,11 @@ public class AutoCloseableIterators {
     return new DefaultAutoCloseableIterator<>(iteratorCreator.apply(autoCloseableIterator), autoCloseableIterator::close);
   }
 
+  @SafeVarargs
+  public static <T> CompositeIterator<T> concatWithEagerClose(AutoCloseableIterator<T>... iterators) {
+    return concatWithEagerClose(List.of(iterators));
+  }
+
   public static <T> CompositeIterator<T> concatWithEagerClose(List<AutoCloseableIterator<T>> iterators) {
     return new CompositeIterator<>(iterators);
   }

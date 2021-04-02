@@ -167,8 +167,9 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
 
   @Override
   public AutoCloseableIterator<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception {
-    final JdbcStateManager stateManager =
-        new JdbcStateManager(state == null ? JdbcStateManager.emptyState() : Jsons.object(state, JdbcState.class), catalog);
+    final JdbcStateManager stateManager = new JdbcStateManager(
+        state == null ? JdbcStateManager.emptyState() : Jsons.object(state, JdbcState.class),
+        catalog);
     final Instant emittedAt = Instant.now();
 
     final JdbcDatabase database = createDatabase(config);

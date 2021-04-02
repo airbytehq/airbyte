@@ -25,6 +25,9 @@ dependencies {
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-protocol:models')
 
+    implementation 'io.debezium:debezium-embedded:1.4.2.Final'
+    implementation 'io.debezium:debezium-api:1.4.2.Final'
+    implementation 'io.debezium:debezium-connector-postgres:1.4.2.Final'
     implementation 'org.apache.commons:commons-lang3:3.11'
 
     testImplementation project(':airbyte-test-utils')
