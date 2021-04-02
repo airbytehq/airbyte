@@ -72,7 +72,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;
@@ -223,7 +222,6 @@ public abstract class TestDestination {
    * Verify that when the integrations returns a valid spec.
    */
   @Test
-  @Disabled
   public void testGetSpec() throws WorkerException {
     assertNotNull(runSpec());
   }
@@ -267,7 +265,6 @@ public abstract class TestDestination {
    * Verify that the integration overwrites the first sync with the second sync.
    */
   @Test
-  @Disabled
   public void testSecondSync() throws Exception {
     final AirbyteCatalog catalog =
         Jsons.deserialize(MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile), AirbyteCatalog.class);
@@ -295,7 +292,6 @@ public abstract class TestDestination {
    * append records to the datastore instead of overwriting the previous run.
    */
   @Test
-  @Disabled
   public void testIncrementalSync() throws Exception {
     if (!implementsIncremental()) {
       LOGGER.info("Destination's spec.json does not include '\"supportsIncremental\" ; true'");
@@ -361,8 +357,8 @@ public abstract class TestDestination {
     final AirbyteCatalog catalog =
         Jsons.deserialize(MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile), AirbyteCatalog.class);
     final String namespace = "foo";
+    catalog.getStreams().forEach(stream -> stream.setNamespace(namespace));
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
-    configuredCatalog.getStreams().forEach(stream -> stream.getStream().setNamespace(namespace));
 
     final List<AirbyteMessage> messages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
