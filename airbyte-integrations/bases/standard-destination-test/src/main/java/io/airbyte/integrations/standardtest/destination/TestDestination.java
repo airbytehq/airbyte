@@ -71,14 +71,10 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -130,7 +126,7 @@ public abstract class TestDestination {
    * @return All of the records in the destination at the time this method is invoked.
    * @throws Exception - can throw any exception, test framework will handle.
    */
-  protected abstract List<JsonNode> retrieveRecords(TestDestinationEnv testEnv, String streamName) throws Exception;
+  protected abstract List<JsonNode> retrieveRecords(TestDestinationEnv testEnv, String streamName, String namespace) throws Exception;
 
   /**
    * Override to return true to if the destination implements basic normalization and it should be
@@ -159,10 +155,10 @@ public abstract class TestDestination {
   }
 
   /**
-   * Same idea as {@link #retrieveRecords(TestDestinationEnv, String)}. Except this method should pull
-   * records from the table that contains the normalized records and convert them back into the data
-   * as it would appear in an {@link AirbyteRecordMessage}. Only need to override this method if
-   * {@link #implementsBasicNormalization} returns true.
+   * Same idea as {@link #retrieveRecords(TestDestinationEnv, String, String)}. Except this method
+   * should pull records from the table that contains the normalized records and convert them back
+   * into the data as it would appear in an {@link AirbyteRecordMessage}. Only need to override this
+   * method if {@link #implementsBasicNormalization} returns true.
    *
    * @param testEnv - information about the test environment.
    * @param streamName - name of the stream for which we are retrieving records.
@@ -245,20 +241,6 @@ public abstract class TestDestination {
     assertEquals(Status.FAILED, runCheck(getFailCheckConfig()).getStatus());
   }
 
-  private static class DataArgumentsProvider implements ArgumentsProvider {
-
-    @Override
-    public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
-      return Stream.of(
-          Arguments.of("exchange_rate_messages.txt", "exchange_rate_catalog.json"),
-          Arguments.of("edge_case_messages.txt", "edge_case_catalog.json")
-      // todo - need to use the new protocol to capture this.
-      // Arguments.of("stripe_messages.txt", "stripe_schema.json")
-      );
-    }
-
-  }
-
   /**
    * Verify that the integration successfully writes records. Tests a wide variety of messages and
    * schemas (aspirationally, anyway).
@@ -270,6 +252,7 @@ public abstract class TestDestination {
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
     final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+
     runSync(getConfig(), messages, configuredCatalog);
 
     assertSameMessages(messages, retrieveRecordsForCatalog(catalog));
@@ -345,9 +328,9 @@ public abstract class TestDestination {
   @Test
   public void testSecondSync() throws Exception {
     final AirbyteCatalog catalog =
-        Jsons.deserialize(MoreResources.readResource("exchange_rate_catalog.json"), AirbyteCatalog.class);
+        Jsons.deserialize(MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile), AirbyteCatalog.class);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
-    final List<AirbyteMessage> firstSyncMessages = MoreResources.readResource("exchange_rate_messages.txt").lines()
+    final List<AirbyteMessage> firstSyncMessages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
     runSync(getConfig(), firstSyncMessages, configuredCatalog);
 
@@ -361,6 +344,22 @@ public abstract class TestDestination {
                 .build()))));
     runSync(getConfig(), secondSyncMessages, configuredCatalog);
     assertSameMessages(secondSyncMessages, retrieveRecordsForCatalog(catalog));
+  }
+
+  @Test
+  void testSyncUsesAirbyteStreamNamespaceIfNotNull() throws Exception {
+    final AirbyteCatalog catalog =
+        Jsons.deserialize(MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile), AirbyteCatalog.class);
+    final String namespace = "test-namespace";
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+    configuredCatalog.getStreams().forEach(stream -> stream.getStream().setNamespace(namespace));
+
+    final List<AirbyteMessage> messages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+
+    runSync(getConfig(), messages, configuredCatalog);
+
+    assertSameMessages(messages, retrieveRecordsForCatalog(catalog));
   }
 
   private ConnectorSpecification runSpec() throws WorkerException {
@@ -408,7 +407,7 @@ public abstract class TestDestination {
   }
 
   private List<AirbyteRecordMessage> retrieveRecordsForCatalog(AirbyteCatalog catalog) throws Exception {
-    return retrieveRecordsForCatalog(streamName -> retrieveRecords(testEnv, streamName), catalog);
+    return retrieveRecordsForCatalog(streamName -> retrieveRecords(testEnv, streamName, null), catalog);
   }
 
   private List<AirbyteRecordMessage> retrieveRecordsForCatalog(CheckedFunction<String, List<JsonNode>, Exception> retriever, AirbyteCatalog catalog)

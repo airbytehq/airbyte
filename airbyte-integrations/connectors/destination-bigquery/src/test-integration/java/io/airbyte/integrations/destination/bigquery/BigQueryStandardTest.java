@@ -104,7 +104,7 @@ public class BigQueryStandardTest extends TestDestination {
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
+  protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName, String namespace) throws Exception {
     return retrieveRecordsFromTable(env, namingResolver.getRawTableName(streamName))
         .stream()
         .map(node -> node.get(JavaBaseConstants.COLUMN_NAME_DATA).asText())

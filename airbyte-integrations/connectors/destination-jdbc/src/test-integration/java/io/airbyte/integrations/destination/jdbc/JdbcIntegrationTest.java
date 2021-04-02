@@ -78,7 +78,7 @@ public class JdbcIntegrationTest extends TestDestination {
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
+  protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName, String namespace) throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName))
         .stream()
         .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))

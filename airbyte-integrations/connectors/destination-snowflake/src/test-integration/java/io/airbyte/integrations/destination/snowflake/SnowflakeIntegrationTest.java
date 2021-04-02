@@ -69,7 +69,7 @@ public class SnowflakeIntegrationTest extends TestDestination {
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
+  protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName, String namespace) throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName))
         .stream()
         .map(j -> Jsons.deserialize(j.get(JavaBaseConstants.COLUMN_NAME_DATA.toUpperCase()).asText()))
