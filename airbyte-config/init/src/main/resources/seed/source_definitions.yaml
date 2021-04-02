@@ -198,3 +198,8 @@
   dockerRepository: airbyte/source-google-workspace-admin-reports
   dockerImageTag: 0.1.0
   documentationUrl: https://hub.docker.com/r/airbyte/source-google-workspace-admin-reports
+- sourceDefinitionId: d1aa448b-7c54-498e-ad95-263cbebcd2db
+  name: Tempo
+  dockerRepository: airbyte/source-tempo
+  dockerImageTag: 0.2.1
+  documentationUrl: https://hub.docker.com/r/airbyte/source-tempo
