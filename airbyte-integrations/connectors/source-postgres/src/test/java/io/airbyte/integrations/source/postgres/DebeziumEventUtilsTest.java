@@ -49,9 +49,9 @@ class DebeziumEventUtilsTest {
     ChangeEvent<String, String> updateChangeEvent = mockChangeEvent("update_change_event.json");
     ChangeEvent<String, String> deleteChangeEvent = mockChangeEvent("delete_change_event.json");
 
-    final AirbyteMessage actualInsert = DebeziumEventUtils.convertChangeEvent(insertChangeEvent, emittedAt);
-    final AirbyteMessage actualUpdate = DebeziumEventUtils.convertChangeEvent(updateChangeEvent, emittedAt);
-    final AirbyteMessage actualDelete = DebeziumEventUtils.convertChangeEvent(deleteChangeEvent, emittedAt);
+    final AirbyteMessage actualInsert = DebeziumEventUtils.toAirbyteMessage(insertChangeEvent, emittedAt);
+    final AirbyteMessage actualUpdate = DebeziumEventUtils.toAirbyteMessage(updateChangeEvent, emittedAt);
+    final AirbyteMessage actualDelete = DebeziumEventUtils.toAirbyteMessage(deleteChangeEvent, emittedAt);
 
     final AirbyteMessage expectedInsert = createAirbyteMessage(stream, emittedAt, "insert_message.json");
     final AirbyteMessage expectedUpdate = createAirbyteMessage(stream, emittedAt, "update_message.json");

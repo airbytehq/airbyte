@@ -185,17 +185,16 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
       publisher.start(queue);
 
       // handle state machine around pub/sub logic.
-      final AutoCloseableIterator<ChangeEvent<String, String>> eventIterator = new DebeziumRecordConsumer(
+      final AutoCloseableIterator<ChangeEvent<String, String>> eventIterator = new DebeziumRecordIterator(
           queue,
           targetLsn,
           publisher::hasClosed,
-          publisher::close,
-          emittedAt);
+          publisher::close);
 
       // convert to airbyte message.
       final AutoCloseableIterator<AirbyteMessage> messageIterator = AutoCloseableIterators.transform(
           eventIterator,
-          (event) -> DebeziumEventUtils.convertChangeEvent(event, emittedAt));
+          (event) -> DebeziumEventUtils.toAirbyteMessage(event, emittedAt));
 
       // our goal is to get the state at the time this supplier is called (i.e. after all message records
       // have been produced)

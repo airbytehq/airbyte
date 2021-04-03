@@ -33,7 +33,6 @@ import io.airbyte.db.PgLsn;
 import io.debezium.engine.ChangeEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -44,19 +43,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The record consumer is responsible for 1. making sure every record produced by the record
- * publisher is processed 2. signalling to the record publisher when it is time for it to stop
- * producing records. It emits this signal either when the publisher had not produced a new record
- * for a long time or when it has processed at least all of the records that were present in the
- * database when the source was started. Because the publisher might publish more records between
- * the consumer sending this signal and the publisher acutally shutting down, the consumer must stay
- * alive as long as the publisher is not closed or if there are any new records for it to process
- * (even if the publisher is closed).
+ * The record iterator is the consumer (in the producer / consumer relationship with debezium) is
+ * responsible for 1. making sure every record produced by the record publisher is processed 2.
+ * signalling to the record publisher when it is time for it to stop producing records. It emits
+ * this signal either when the publisher had not produced a new record for a long time or when it
+ * has processed at least all of the records that were present in the database when the source was
+ * started. Because the publisher might publish more records between the consumer sending this
+ * signal and the publisher acutally shutting down, the consumer must stay alive as long as the
+ * publisher is not closed or if there are any new records for it to process (even if the publisher
+ * is closed).
  */
-public class DebeziumRecordConsumer extends AbstractIterator<ChangeEvent<String, String>>
+public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String, String>>
     implements AutoCloseableIterator<ChangeEvent<String, String>> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(DebeziumRecordConsumer.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(DebeziumRecordIterator.class);
 
   private static final TimeUnit SLEEP_TIME_UNIT = TimeUnit.SECONDS;
   private static final int SLEEP_TIME_AMOUNT = 5;
@@ -65,18 +65,15 @@ public class DebeziumRecordConsumer extends AbstractIterator<ChangeEvent<String,
   private final PgLsn targetLsn;
   private final Supplier<Boolean> publisherStatusSupplier;
   private final VoidCallable requestClose;
-  private final Instant emittedAt;
 
-  public DebeziumRecordConsumer(LinkedBlockingQueue<ChangeEvent<String, String>> queue,
+  public DebeziumRecordIterator(LinkedBlockingQueue<ChangeEvent<String, String>> queue,
                                 PgLsn targetLsn,
                                 Supplier<Boolean> publisherStatusSupplier,
-                                VoidCallable requestClose,
-                                Instant emittedAt) {
+                                VoidCallable requestClose) {
     this.queue = queue;
     this.targetLsn = targetLsn;
     this.publisherStatusSupplier = publisherStatusSupplier;
     this.requestClose = requestClose;
-    this.emittedAt = emittedAt;
   }
 
   @Override

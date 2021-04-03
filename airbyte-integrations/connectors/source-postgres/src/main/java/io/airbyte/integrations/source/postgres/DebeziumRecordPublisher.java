@@ -55,6 +55,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
   private final AirbyteFileOffsetBackingStore offsetManager;
 
   private final AtomicBoolean hasClosed;
+  private final AtomicBoolean isClosing;
   private final AtomicReference<Throwable> thrownError;
 
   public DebeziumRecordPublisher(JsonNode config, ConfiguredAirbyteCatalog catalog, AirbyteFileOffsetBackingStore offsetManager) {
@@ -62,6 +63,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
     this.catalog = catalog;
     this.offsetManager = offsetManager;
     this.hasClosed = new AtomicBoolean(false);
+    this.isClosing = new AtomicBoolean(false);
     this.thrownError = new AtomicReference<>();
     this.executor = Executors.newSingleThreadExecutor();
   }
@@ -85,8 +87,8 @@ public class DebeziumRecordPublisher implements AutoCloseable {
     return hasClosed.get();
   }
 
-  public synchronized void close() throws Exception {
-    if (!hasClosed.get()) {
+  public void close() throws Exception {
+    if (isClosing.compareAndSet(false, true)) {
       // consumers should assume records can be produced until engine has closed.
       if (engine != null) {
         engine.close();

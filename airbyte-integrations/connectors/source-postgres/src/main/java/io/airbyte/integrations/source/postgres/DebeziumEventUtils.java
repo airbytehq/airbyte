@@ -34,7 +34,7 @@ import java.time.Instant;
 
 public class DebeziumEventUtils {
 
-  public static AirbyteMessage convertChangeEvent(ChangeEvent<String, String> event, Instant emittedAt) {
+  public static AirbyteMessage toAirbyteMessage(ChangeEvent<String, String> event, Instant emittedAt) {
     final JsonNode debeziumRecord = Jsons.deserialize(event.value());
     final JsonNode before = debeziumRecord.get("before");
     final JsonNode after = debeziumRecord.get("after");
@@ -54,6 +54,7 @@ public class DebeziumEventUtils {
         .withRecord(airbyteRecordMessage);
   }
 
+  // warning mutates input args.
   private static JsonNode formatDebeziumData(JsonNode before, JsonNode after, JsonNode source) {
     final ObjectNode base = (ObjectNode) (after.isNull() ? before : after);
 
