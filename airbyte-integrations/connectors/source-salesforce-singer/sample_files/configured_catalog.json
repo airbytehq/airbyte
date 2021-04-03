@@ -320,7 +320,8 @@
         "default_cursor_field": ["SystemModstamp"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["SystemModstamp"]
+      "cursor_field": ["SystemModstamp"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -600,7 +601,8 @@
         "default_cursor_field": ["SystemModstamp"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["SystemModstamp"]
+      "cursor_field": ["SystemModstamp"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -779,7 +781,8 @@
         "default_cursor_field": ["SystemModstamp"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["SystemModstamp"]
+      "cursor_field": ["SystemModstamp"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -952,7 +955,8 @@
         "default_cursor_field": ["SystemModstamp"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["SystemModstamp"]
+      "cursor_field": ["SystemModstamp"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -1280,7 +1284,8 @@
         "default_cursor_field": ["SystemModstamp"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["SystemModstamp"]
+      "cursor_field": ["SystemModstamp"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -1475,7 +1480,8 @@
         "default_cursor_field": ["SystemModstamp"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["SystemModstamp"]
+      "cursor_field": ["SystemModstamp"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -1563,7 +1569,8 @@
         "default_cursor_field": ["SystemModstamp"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["SystemModstamp"]
+      "cursor_field": ["SystemModstamp"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -1656,7 +1663,8 @@
         "default_cursor_field": ["SystemModstamp"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["SystemModstamp"]
+      "cursor_field": ["SystemModstamp"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -1709,7 +1717,8 @@
         "default_cursor_field": ["CreatedDate"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["CreatedDate"]
+      "cursor_field": ["CreatedDate"],
+      "destination_sync_mode": "append"
     }
   ]
 }

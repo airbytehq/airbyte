@@ -24,7 +24,7 @@
     * [Appstore](integrations/sources/appstore.md)
     * [Braintree](integrations/sources/braintree.md)
     * [Drift](integrations/sources/drift.md)
-    * [Exchange Rates API](integrations/sources/exchangeratesapi-io.md)
+    * [Exchange Rates API](integrations/sources/exchangeratesapi.md)
     * [Facebook Marketing](integrations/sources/facebook-marketing.md)
     * [Files](integrations/sources/file.md)
     * [Freshdesk](integrations/sources/freshdesk.md)
