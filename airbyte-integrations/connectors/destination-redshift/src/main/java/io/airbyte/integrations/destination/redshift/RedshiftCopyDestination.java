@@ -150,13 +150,12 @@ public class RedshiftCopyDestination {
           throw new IllegalStateException("Undefined destination sync mode.");
         }
         var stream = configuredStream.getStream();
-        var streamName = namingResolver.convertStreamName(stream.getName());
+        var streamName = stream.getName();
         var syncMode = configuredStream.getDestinationSyncMode();
         var schema =
             stream.getNamespace() != null ? namingResolver.convertStreamName(stream.getNamespace()) : namingResolver.convertStreamName(defaultSchema);
         var copier = new RedshiftCopier(s3Config.bucketName, stagingFolder, syncMode, schema, streamName, s3Client, redshiftDb, s3Config.accessKeyId,
             s3Config.secretAccessKey, s3Config.region);
-
         streamNameToCopier.put(streamName, copier);
       }
     }
