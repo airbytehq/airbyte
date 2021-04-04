@@ -23,10 +23,11 @@
         "type": "string"
       },
       "schema": {
-        "description": "Unless specifically configured, the usual value for this field is \"public\".",
+        "description": "The default schema tables are written to if the source does not specify a schema. The usual value for this field is \"public\".",
         "type": "string",
         "examples": ["public"],
-        "default": "public"
+        "default": "public",
+        "title": "Default Schema"
       }
     }
   }
