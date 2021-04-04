@@ -35,7 +35,6 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
@@ -187,7 +186,8 @@ public class RedshiftCopier {
     LOGGER.info("All data for {} stream uploaded.", streamName);
   }
 
-  private void createTmpTableAndCopyS3FileInto() throws SQLException {
+  private void createTmpTableAndCopyS3FileInto() throws Exception {
+    REDSHIFT_SQL_OPS.createSchemaIfNotExists(redshiftDb, schemaName);
     LOGGER.info("Preparing tmp table in destination for stream: {}, schema: {}, tmp table name: {}.", streamName, schemaName, tmpTableName);
     REDSHIFT_SQL_OPS.createTableIfNotExists(redshiftDb, schemaName, tmpTableName);
     LOGGER.info("Starting copy to tmp table: {} in destination for stream: {}, schema: {}, .", tmpTableName, streamName, schemaName);
