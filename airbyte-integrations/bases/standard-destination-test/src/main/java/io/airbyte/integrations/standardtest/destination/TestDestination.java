@@ -129,10 +129,11 @@ public abstract class TestDestination {
    */
   protected abstract List<JsonNode> retrieveRecords(TestDestinationEnv testEnv, String streamName, String namespace) throws Exception;
 
-
   /**
-   * Returns a destination's default schema. The default implementation assumes this corresponds to the configuration's 'schema' field, as this is
-   * how most of our destinations implement this. Destinations are free to appropriately override this. The return value is used to assert correctness.
+   * Returns a destination's default schema. The default implementation assumes this corresponds to
+   * the configuration's 'schema' field, as this is how most of our destinations implement this.
+   * Destinations are free to appropriately override this. The return value is used to assert
+   * correctness.
    *
    * If not applicable, Destinations are free to ignore this.
    *
@@ -435,8 +436,6 @@ public abstract class TestDestination {
     for (final AirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getName();
       final String schema = stream.getNamespace() != null ? stream.getNamespace() : defaultSchema;
-      System.out.println("==========");
-      System.out.println(schema);
       List<AirbyteRecordMessage> msgList = retrieveRecords(testEnv, streamName, schema)
           .stream()
           .map(data -> new AirbyteRecordMessage().withStream(streamName).withData(data))

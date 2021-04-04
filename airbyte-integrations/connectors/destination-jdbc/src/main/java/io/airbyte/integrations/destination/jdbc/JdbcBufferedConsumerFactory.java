@@ -117,7 +117,6 @@ public class JdbcBufferedConsumerFactory {
       LOGGER.info("Preparing tmp tables in destination started for {} streams", writeConfigs.size());
       for (final WriteConfig writeConfig : writeConfigs) {
         final String schemaName = writeConfig.getOutputSchemaName();
-        LOGGER.info("----------- output schema name: {}", schemaName);
         final String tmpTableName = writeConfig.getTmpTableName();
         LOGGER.info("Preparing tmp table in destination started for stream {}. schema: {}, tmp table name: {}", writeConfig.getStreamName(),
             schemaName, tmpTableName);
