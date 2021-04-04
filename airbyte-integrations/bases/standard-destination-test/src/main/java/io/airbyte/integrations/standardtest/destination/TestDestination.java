@@ -129,6 +129,23 @@ public abstract class TestDestination {
    */
   protected abstract List<JsonNode> retrieveRecords(TestDestinationEnv testEnv, String streamName, String namespace) throws Exception;
 
+
+  /**
+   * Returns a destination's default schema. The default implementation assumes this corresponds to the configuration's 'schema' field, as this is
+   * how most of our destinations implement this. Destinations are free to appropriately override this. The return value is used to assert correctness.
+   *
+   * If not applicable, Destinations are free to ignore this.
+   *
+   * @param config - integration-specific configuration returned by {@link #getConfig()}.
+   * @return the default schema, if applicatble.
+   */
+  protected String getDefaultSchema(JsonNode config) throws Exception {
+    if (config.get("schema") == null) {
+      return null;
+    }
+    return config.get("schema").asText();
+  }
+
   /**
    * Detects if a destination implements incremental mode from the spec.json that should include
    * 'supportsIncremental' = true
@@ -257,8 +274,9 @@ public abstract class TestDestination {
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
 
     final JsonNode config = getConfig();
+    final String defaultSchema = getDefaultSchema(config);
     runSync(config, messages, configuredCatalog);
-    retrieveRawRecordsAndAssertSameMessages(catalog, messages, config);
+    retrieveRawRecordsAndAssertSameMessages(catalog, messages, defaultSchema);
   }
 
   /**
@@ -284,7 +302,8 @@ public abstract class TestDestination {
                 .build()))));
 
     runSync(config, secondSyncMessages, configuredCatalog);
-    retrieveRawRecordsAndAssertSameMessages(catalog, secondSyncMessages, config);
+    final String defaultSchema = getDefaultSchema(config);
+    retrieveRawRecordsAndAssertSameMessages(catalog, secondSyncMessages, defaultSchema);
   }
 
   /**
@@ -325,7 +344,8 @@ public abstract class TestDestination {
     expectedMessagesAfterSecondSync.addAll(firstSyncMessages);
     expectedMessagesAfterSecondSync.addAll(secondSyncMessages);
 
-    retrieveRawRecordsAndAssertSameMessages(catalog, expectedMessagesAfterSecondSync, config);
+    final String defaultSchema = getDefaultSchema(config);
+    retrieveRawRecordsAndAssertSameMessages(catalog, expectedMessagesAfterSecondSync, defaultSchema);
   }
 
   /**
@@ -347,7 +367,7 @@ public abstract class TestDestination {
     final JsonNode config = getConfigWithBasicNormalization();
     runSync(config, messages, configuredCatalog);
 
-    final String defaultSchema = config.get("schema") != null ? config.get("schema").asText() : null;
+    String defaultSchema = getDefaultSchema(config);
     final List<AirbyteRecordMessage> actualMessages = retrieveNormalizedRecords(catalog, defaultSchema);
     assertSameMessages(messages, actualMessages, true);
   }
@@ -364,8 +384,9 @@ public abstract class TestDestination {
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
 
     final JsonNode config = getConfig();
+    final String defaultSchema = getDefaultSchema(config);
     runSync(config, messages, configuredCatalog);
-    retrieveRawRecordsAndAssertSameMessages(catalog, messages, config);
+    retrieveRawRecordsAndAssertSameMessages(catalog, messages, defaultSchema);
   }
 
   private ConnectorSpecification runSpec() throws WorkerException {
@@ -408,14 +429,14 @@ public abstract class TestDestination {
     runner.close();
   }
 
-  private void retrieveRawRecordsAndAssertSameMessages(AirbyteCatalog catalog, List<AirbyteMessage> messages, JsonNode config) throws Exception {
-    String defaultSchema = config.get("schema") != null ? config.get("schema").asText() : null;
-
+  private void retrieveRawRecordsAndAssertSameMessages(AirbyteCatalog catalog, List<AirbyteMessage> messages, String defaultSchema) throws Exception {
     final List<AirbyteRecordMessage> actualMessages = new ArrayList<>();
 
     for (final AirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getName();
       final String schema = stream.getNamespace() != null ? stream.getNamespace() : defaultSchema;
+      System.out.println("==========");
+      System.out.println(schema);
       List<AirbyteRecordMessage> msgList = retrieveRecords(testEnv, streamName, schema)
           .stream()
           .map(data -> new AirbyteRecordMessage().withStream(streamName).withData(data))
