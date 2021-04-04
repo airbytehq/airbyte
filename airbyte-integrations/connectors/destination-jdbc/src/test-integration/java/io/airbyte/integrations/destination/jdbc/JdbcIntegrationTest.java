@@ -114,11 +114,11 @@ public class JdbcIntegrationTest extends TestDestination {
     return result;
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(String tableName, String namespace) throws SQLException {
+  private List<JsonNode> retrieveRecordsFromTable(String tableName, String schema) throws SQLException {
     return Databases.createPostgresDatabase(db.getUsername(), db.getPassword(),
         db.getJdbcUrl()).query(
             ctx -> ctx
-                .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", namespace, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+                .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schema, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
                 .stream()
                 .map(r -> r.formatJSON(JSON_FORMAT))
                 .map(Jsons::deserialize)

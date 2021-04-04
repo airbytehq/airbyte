@@ -70,7 +70,7 @@ public class SnowflakeIntegrationTest extends TestDestination {
 
   @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName, String namespace) throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName))
+    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namingResolver.getIdentifier(namespace))
         .stream()
         .map(j -> Jsons.deserialize(j.get(JavaBaseConstants.COLUMN_NAME_DATA.toUpperCase()).asText()))
         .collect(Collectors.toList());
@@ -84,13 +84,14 @@ public class SnowflakeIntegrationTest extends TestDestination {
   @Override
   protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv testEnv, String streamName, String namespace) throws Exception {
     String tableName = namingResolver.getIdentifier(streamName);
+    String schema = namingResolver.getIdentifier(namespace);
     // Temporarily disabling the behavior of the ExtendedNameTransformer, see (issue #1785) so we don't
     // use quoted names
     // if (!tableName.startsWith("\"")) {
     // // Currently, Normalization always quote tables identifiers
     // tableName = "\"" + tableName + "\"";
     // }
-    return retrieveRecordsFromTable(tableName);
+    return retrieveRecordsFromTable(tableName, schema);
   }
 
   @Override
@@ -106,10 +107,10 @@ public class SnowflakeIntegrationTest extends TestDestination {
     return result;
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(String tableName) throws SQLException, InterruptedException {
+  private List<JsonNode> retrieveRecordsFromTable(String tableName, String schema) throws SQLException, InterruptedException {
     return SnowflakeDatabase.getDatabase(getConfig()).bufferedResultSetQuery(
         connection -> connection.createStatement()
-            .executeQuery(String.format("SELECT * FROM %s ORDER BY %s ASC;", tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT)),
+            .executeQuery(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schema, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT)),
         JdbcUtils::rowToJson);
   }
 

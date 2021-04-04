@@ -356,7 +356,7 @@ public abstract class TestDestination {
   void testSyncUsesAirbyteStreamNamespaceIfNotNull() throws Exception {
     final AirbyteCatalog catalog =
         Jsons.deserialize(MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile), AirbyteCatalog.class);
-    final String namespace = "foo";
+    final String namespace = "sourcenamespace";
     catalog.getStreams().forEach(stream -> stream.setNamespace(namespace));
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
 
