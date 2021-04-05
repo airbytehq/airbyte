@@ -146,7 +146,13 @@ class ActivitiesAPI(IncrementalStreamAPI):
         return params
 
     def process_response(self, response: Dict) -> Iterator[dict]:
-        return response.get("items", [])
+        activities = response.get("items", [])
+        for activity in activities:
+            activity_id = activity.get("id", {})
+            if "time" in activity_id:
+                # place time property in top level
+                activity["time"] = activity_id["time"]
+            yield activity
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         params = self.get_params()
