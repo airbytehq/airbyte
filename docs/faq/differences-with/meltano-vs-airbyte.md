@@ -1,7 +1,6 @@
 # Meltano vs Airbyte
 
-We wrote an article, “[The State of Open-Source Data Integration and ETL](https://airbyte.io/articles/data-engineering-thoughts/the-state-of-open-source-data-integration-and-etl/),” in which we list and compare all ETL-related open-source projects, including Meltano and Airbyte. Don’t hesitate to check it out for more detailed arguments. As a summary, here are the differences:
-![](https://airbyte.io/wp-content/uploads/2020/10/Landscape-of-open-source-data-integration-platforms-4.png)
+We wrote an article, “[The State of Open-Source Data Integration and ETL](https://airbyte.io/articles/data-engineering-thoughts/the-state-of-open-source-data-integration-and-etl/),” in which we list and compare all ETL-related open-source projects, including Meltano and Airbyte. Don’t hesitate to check it out for more detailed arguments. As a summary, here are the differences: ![](https://airbyte.io/wp-content/uploads/2020/10/Landscape-of-open-source-data-integration-platforms-4.png)
 
 ## **Meltano:**
 
@@ -25,6 +24,7 @@ In contrast, Airbyte is a company fully committed to the open-source MIT project
 * **Airbyte integrates with your data stack and your needs:** Airflow, Kubernetes, DBT, etc. Its normalization is optional, it gives you a basic version that works out of the box, but also allows you to use DBT to do more complicated things.
 
 ## **Other noteworthy differences:**
+
 * In terms of community, Meltano's Slack community got 430 new members in the last 6 months, while Airbyte got 800. 
 * The difference in velocity in terms of feature progress is easily measurable as both are open-source projects. Meltano closes about 30 issues per month, while Airbyte closes about 120. 
 
