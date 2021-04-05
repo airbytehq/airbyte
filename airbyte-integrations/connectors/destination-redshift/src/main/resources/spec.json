@@ -95,7 +95,7 @@
         "type": "string",
         "description": "The corresponding secret to the above access key id.",
         "title": "S3 Access Key",
-        "airbyte_secret": true
+        "airbyte_secret": false
       }
     }
   }
