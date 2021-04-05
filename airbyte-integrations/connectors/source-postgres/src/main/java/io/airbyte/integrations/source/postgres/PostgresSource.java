@@ -44,7 +44,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   public PostgresSource() {
     super(DRIVER_CLASS, new PostgresJdbcStreamingQueryConfiguration());
   }
-  // ?sslmode=require
+
   @Override
   public JsonNode toJdbcConfig(JsonNode config) {
 

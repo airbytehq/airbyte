@@ -152,6 +152,7 @@ class PostgresSourceTest {
         .put("database", dbName)
         .put("username", psqlDb.getUsername())
         .put("password", psqlDb.getPassword())
+        .put("ssl", false)
         .build());
   }
 
