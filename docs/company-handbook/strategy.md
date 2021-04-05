@@ -28,7 +28,7 @@ There are a few key differentiating aspects to our strategy:
 
 ### **Seed Q1 2021**
 
-We raised $5.2M in a seed round with Accel, YCombinator, and some prominent business angels (co-founder of Segment, of LiveRamp, former GM at Cloudera, etc.). It gives us a runway until enf of 2022. We will focus on the community edition until the Series-A. The metrics we will display to investors will be on adoption, deployments, and external contributions.
+We raised $5.2M in a seed round with Accel, YCombinator, and some prominent business angels \(co-founder of Segment, of LiveRamp, former GM at Cloudera, etc.\). It gives us a runway until enf of 2022. We will focus on the community edition until the Series-A. The metrics we will display to investors will be on adoption, deployments, and external contributions.
 
 It is completely fine for us not to present any revenues before the Series-A.
 

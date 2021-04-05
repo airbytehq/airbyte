@@ -1,6 +1,6 @@
-# Full Refresh - Overwrite Sync
+# Full Refresh - Overwrite
 
-This readme describes Airbyte conventions around the "full refresh - Overwrite" concept. 
+This readme describes Airbyte conventions around the "full refresh - Overwrite" concept.
 
 On the nth sync of a full refresh connection:
 

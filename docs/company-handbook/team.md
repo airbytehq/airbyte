@@ -32,5 +32,5 @@ Chris is a data veteran with experience in the Silicon Valley, Spain, Germany an
 
 ## **Davin Chia**
 
-Davin was a staff engineer and tech lead on LiveRamp's Real Time team. 
-[**LinkedIn**](https://www.linkedin.com/in/davin-chia/) **\|** [**GitHub**](https://github.com/davinchia) **\|** [**Twitter**](https://twitter.com/davin_chia)
+Davin was a staff engineer and tech lead on LiveRamp's Real Time team. [**LinkedIn**](https://www.linkedin.com/in/davin-chia/) **\|** [**GitHub**](https://github.com/davinchia) **\|** [**Twitter**](https://twitter.com/davin_chia)
+
