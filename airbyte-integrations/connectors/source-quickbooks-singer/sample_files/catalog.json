@@ -1,0 +1,163 @@
+{
+  "streams": [
+    {
+      "stream": {
+      "name": "accounts",
+      "json_schema": {
+        "properties": {
+          "CurrentBalanceWithSubAccounts": {
+            "format": "singer.decimal",
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "AcctNum": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "AccountSubType": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "Classification": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "CurrencyRef": {
+            "properties": {
+              "name": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "value": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              }
+            },
+            "type": [
+              "null",
+              "object"
+            ]
+          },
+          "Name": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "FullyQualifiedName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "Id": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "AccountType": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "MetaData": {
+            "properties": {
+              "CreateTime": {
+                "format": "date-time",
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "LastUpdatedTime": {
+                "format": "date-time",
+                "type": [
+                  "null",
+                  "string"
+                ]
+              }
+            },
+            "type": [
+              "null",
+              "object"
+            ]
+          },
+          "CurrentBalance": {
+            "format": "singer.decimal",
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "Active": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          },
+          "domain": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "SubAccount": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          },
+          "ParentRef": {
+            "properties": {
+              "value": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              }
+            },
+            "type": [
+              "null",
+              "object"
+            ]
+          },
+          "SyncToken": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "type": [
+          "null",
+          "object"
+        ]
+      },
+      "supported_sync_modes": [
+        "incremental"
+      ],
+      "source_defined_cursor": true,
+      "default_cursor_field": [
+        "MetaData"
+      ]
+    },
+      "sync_mode": "incremental",
+      "cursor_field": ["MetaData"],
+      "destination_sync_mode": "append"
+    }
+  ]
+}
