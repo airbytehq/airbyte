@@ -80,7 +80,7 @@ class DefaultJdbcStressTest extends JdbcStressTest {
     System.out.println("config = " + config);
 
     final String initScriptName = "init_" + dbName.concat(".sql");
-    MoreResources.writeResource(initScriptName, "CREATE DATABASE " + dbName + ";");
+    MoreResources.writeToTmpFile(initScriptName, "CREATE DATABASE " + dbName + ";");
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource(initScriptName), PSQL_DB);
 
     super.setup();

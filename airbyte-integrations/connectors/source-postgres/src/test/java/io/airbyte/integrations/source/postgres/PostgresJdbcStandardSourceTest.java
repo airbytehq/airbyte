@@ -63,7 +63,7 @@ class PostgresJdbcStandardSourceTest extends JdbcSourceStandardTest {
         .build());
 
     final var initScriptName = "init_" + dbName.concat(".sql");
-    final var initDbScript = MoreResources.writeResource(initScriptName, "CREATE DATABASE " + dbName + ";");
+    final var initDbScript = MoreResources.writeToTmpFile(initScriptName, "CREATE DATABASE " + dbName + ";");
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(initDbScript), PSQL_DB);
 
     super.setup();

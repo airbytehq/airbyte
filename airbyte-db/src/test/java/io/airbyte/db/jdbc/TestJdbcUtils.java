@@ -80,8 +80,8 @@ public class TestJdbcUtils {
     final JsonNode config = getConfig(PSQL_DB, dbName);
 
     final String initScriptName = "init_" + dbName.concat(".sql");
-    MoreResources.writeResource(initScriptName, "CREATE DATABASE " + dbName + ";");
-    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource(initScriptName), PSQL_DB);
+    final String initDbScript = MoreResources.writeToTmpFile(initScriptName, "CREATE DATABASE " + dbName + ";");
+    PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(initDbScript), PSQL_DB);
 
     dataSource = new BasicDataSource();
     dataSource.setDriverClassName("org.postgresql.Driver");

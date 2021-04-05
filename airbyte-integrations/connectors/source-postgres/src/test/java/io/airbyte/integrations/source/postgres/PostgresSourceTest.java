@@ -116,7 +116,7 @@ class PostgresSourceTest {
     dbName = "db_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
 
     final String initScriptName = "init_" + dbName.concat(".sql");
-    final String initDbScript = MoreResources.writeResource(initScriptName, "CREATE DATABASE " + dbName + ";");
+    final String initDbScript = MoreResources.writeToTmpFile(initScriptName, "CREATE DATABASE " + dbName + ";");
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(initDbScript), PSQL_DB);
 
     final JsonNode config = getConfig(PSQL_DB, dbName);

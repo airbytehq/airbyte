@@ -24,10 +24,12 @@
 
 package io.airbyte.commons.resources;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.Sets;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
@@ -59,10 +61,10 @@ class MoreResourcesTest {
   }
 
   @Test
-  void testWriteResource() throws IOException {
+  void testWriteToTmpFile() throws IOException {
     final String contents = "something to remember";
-    MoreResources.writeResource("file.txt", contents);
-    assertEquals(contents, MoreResources.readResource("file.txt"));
+    final String filePath = MoreResources.writeToTmpFile("file.txt", contents);
+    assertEquals(contents, Files.readString(Path.of(filePath)));
   }
 
 }

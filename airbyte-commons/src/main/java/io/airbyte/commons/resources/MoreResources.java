@@ -82,7 +82,7 @@ public class MoreResources {
   }
 
   @SuppressWarnings("UnstableApiUsage")
-  public static String writeResource(String filename, String contents) {
+  public static String writeToTmpFile(String filename, String contents) {
     final Path source = Paths.get("/tmp", UUID.randomUUID().toString());
     try {
       Files.deleteIfExists(source.resolve(filename));
