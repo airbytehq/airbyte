@@ -71,3 +71,17 @@ Depending on your Docker network configuration, you may not be able to connect t
 
 If you are running into connection refused errors when running Airbyte via Docker Compose on Mac, try using `host.docker.internal` as the host. On Linux, you may have to modify `docker-compose.yml` and add a host that maps to your local machine using [`extra_hosts`](https://docs.docker.com/compose/compose-file/compose-file-v3/#extra_hosts).
 
+## **Can I disable analytics in Airbyte?**
+
+Yes you can, giving our users the choice of what can be tracked is of the utmost importance to us.
+
+We instrumented some parts of Airbyte for the following reasons:
+- measure usage of features & connectors
+- collect connector telemetry to measure stability
+- reach out to our users if they opt-in
+
+However, if you need to disable the telemetry you just need modify the `.env` file and define the two following environment variables:
+```
+TRACKING_STRATEGY=logging
+PAPERCUPS_STORYTIME=disabled
+```
