@@ -139,7 +139,9 @@ class IncrementalStreamAPI(StreamAPI, ABC):
         params = params or {}
         cursor = None
         for record in super().read(getter, params):
-            cursor = pendulum.parse(record[self.state_pk])
+            "Report API return records from newest to oldest"
+            if not cursor:
+                cursor = pendulum.parse(record[self.state_pk])
             yield record
 
         if cursor:
