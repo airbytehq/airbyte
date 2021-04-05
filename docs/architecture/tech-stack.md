@@ -9,6 +9,11 @@
 * Unit & E2E testing: [JUnit 5](https://junit.org/junit5)
 * Orchestration: [Temporal](https://temporal.io)
 
+## Connectors
+Connectors can be written in any language. However the most common languages are: 
+* Python 3.7.9
+* Java 14
+
 ## **Frontend**
 
 * [Node.js 14](https://nodejs.org/en/)
