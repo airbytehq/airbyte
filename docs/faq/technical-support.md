@@ -7,13 +7,14 @@ description: Common issues and their workarounds
 ## `docker.errors.DockerException: Error while fetching server API version`
 
 If you see the following error:
-```
+
+```text
 docker.errors.DockerException: Error while fetching server API
 version: ('Connection aborted.', FileNotFoundError(2, 'No such file or
 directory'))
 ```
 
-It usually means that Docker isn't running on your machine (and a running Docker daemon is required to run Airbyte). An easy way to verify this is to run `docker ps`, which will show `Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?` if the Docker daemon is not running on your machine.
+It usually means that Docker isn't running on your machine \(and a running Docker daemon is required to run Airbyte\). An easy way to verify this is to run `docker ps`, which will show `Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?` if the Docker daemon is not running on your machine.
 
 ## Airbyte is stuck while loading required configuration parameters for my connector
 
@@ -44,7 +45,7 @@ If the above workaround does not fix your problem, please report it [here](https
 
 ## Your incremental connection is not working
 
-Our current version of incremental is [append](../architecture/incremental-append.md). It works from a cursor field. So you need to check which cursor field you're using and if it's well populated in every record in your table.
+Our current version of incremental is [append](../architecture/connections/incremental-append.md). It works from a cursor field. So you need to check which cursor field you're using and if it's well populated in every record in your table.
 
 If this is true, then, there are still several things to check:
 
