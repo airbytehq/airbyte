@@ -139,7 +139,7 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
               Optional.ofNullable(config.get("database")).map(JsonNode::asText),
               Optional.ofNullable(config.get("schema")).map(JsonNode::asText))
                   .stream()
-                  .map(t -> CatalogHelpers.createAirbyteStream(t.getName(), t.getFields())
+                  .map(t -> CatalogHelpers.createAirbyteStream(t.getName(), t.getSchemaName(), t.getFields())
                       .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
                       .withSourceDefinedPrimaryKey(t.getPrimaryKeys()
                           .stream()
@@ -351,7 +351,7 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
               .collect(Collectors.toList());
           final String streamName = JdbcUtils.getFullyQualifiedTableName(t.getSchemaName(), t.getName());
           final List<String> primaryKeys = tablePrimaryKeys.getOrDefault(streamName, Collections.emptyList());
-          return new TableInfo(streamName, fields, primaryKeys);
+          return new TableInfo(streamName, t.getSchemaName(), fields, primaryKeys);
         })
         .collect(Collectors.toList());
   }
@@ -561,20 +561,29 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
         jdbcStreamingQueryConfiguration);
   }
 
+  /**
+   * This class encapsulates all externally relevant Table information.
+   */
   protected static class TableInfo {
 
     private final String name;
+    private final String schemaName;
     private final List<Field> fields;
     private final List<String> primaryKeys;
 
-    public TableInfo(String name, List<Field> fields, List<String> primaryKeys) {
+    public TableInfo(String name, String schemaName, List<Field> fields, List<String> primaryKeys) {
       this.name = name;
+      this.schemaName = schemaName;
       this.fields = fields;
       this.primaryKeys = primaryKeys;
     }
 
     public String getName() {
       return name;
+    }
+
+    public String getSchemaName() {
+      return schemaName;
     }
 
     public List<Field> getFields() {
@@ -587,6 +596,10 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
 
   }
 
+  /**
+   * The following two classes are internal data structures to ease managing tables. Any external
+   * informatio should be revealed by the {@link TableInfo} class.
+   */
   protected static class TableInfoInternal {
 
     private final String schemaName;

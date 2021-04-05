@@ -52,7 +52,7 @@ class PostgresJdbcStandardSourceTest extends JdbcSourceStandardTest {
 
   @BeforeEach
   public void setup() throws Exception {
-    final String dbName = "db_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
+    final var dbName = "db_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", PSQL_DB.getHost())
@@ -62,9 +62,9 @@ class PostgresJdbcStandardSourceTest extends JdbcSourceStandardTest {
         .put("password", PSQL_DB.getPassword())
         .build());
 
-    final String initScriptName = "init_" + dbName.concat(".sql");
-    MoreResources.writeResource(initScriptName, "CREATE DATABASE " + dbName + ";");
-    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource(initScriptName), PSQL_DB);
+    final var initScriptName = "init_" + dbName.concat(".sql");
+    final var initDbScript = MoreResources.writeResource(initScriptName, "CREATE DATABASE " + dbName + ";");
+    PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(initDbScript), PSQL_DB);
 
     super.setup();
   }

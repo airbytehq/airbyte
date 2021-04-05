@@ -65,10 +65,12 @@ import org.testcontainers.utility.MountableFile;
 
 class PostgresSourceTest {
 
-  private static final String STREAM_NAME = "public.id_and_name";
+  private static final String SCHEMA_NAME = "public";
+  private static final String STREAM_NAME = SCHEMA_NAME + ".id_and_name";
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
       CatalogHelpers.createAirbyteStream(
           STREAM_NAME,
+          SCHEMA_NAME,
           Field.of("id", JsonSchemaPrimitive.NUMBER),
           Field.of("name", JsonSchemaPrimitive.STRING),
           Field.of("power", JsonSchemaPrimitive.NUMBER))
@@ -76,12 +78,14 @@ class PostgresSourceTest {
           .withSourceDefinedPrimaryKey(List.of(List.of("id"))),
       CatalogHelpers.createAirbyteStream(
           STREAM_NAME + "2",
+          SCHEMA_NAME,
           Field.of("id", JsonSchemaPrimitive.NUMBER),
           Field.of("name", JsonSchemaPrimitive.STRING),
           Field.of("power", JsonSchemaPrimitive.NUMBER))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)),
       CatalogHelpers.createAirbyteStream(
           "public.names",
+          SCHEMA_NAME,
           Field.of("first_name", JsonSchemaPrimitive.STRING),
           Field.of("last_name", JsonSchemaPrimitive.STRING),
           Field.of("power", JsonSchemaPrimitive.NUMBER))
@@ -112,8 +116,8 @@ class PostgresSourceTest {
     dbName = "db_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
 
     final String initScriptName = "init_" + dbName.concat(".sql");
-    MoreResources.writeResource(initScriptName, "CREATE DATABASE " + dbName + ";");
-    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource(initScriptName), PSQL_DB);
+    final String initDbScript = MoreResources.writeResource(initScriptName, "CREATE DATABASE " + dbName + ";");
+    PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(initDbScript), PSQL_DB);
 
     final JsonNode config = getConfig(PSQL_DB, dbName);
     final Database database = getDatabaseFromConfig(config);
