@@ -77,6 +77,7 @@ class API:
 
 
 class StreamAPI(ABC):
+    name = ""
     results_per_page = 100
 
     def __init__(self, api: API, *args, **kwargs):
@@ -133,6 +134,17 @@ class IncrementalStreamAPI(StreamAPI, ABC):
         super().__init__(*args, **kwargs)
         self._state = None
 
+    def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
+        """Update cursor(state)"""
+        params = params or {}
+        cursor = None
+        for record in super().read(getter, params):
+            cursor = pendulum.parse(record[self.state_pk])
+            yield record
+
+        if cursor:
+            self._state = cursor
+
 
 class ActivitiesAPI(IncrementalStreamAPI):
     application_name = None
@@ -160,20 +172,25 @@ class ActivitiesAPI(IncrementalStreamAPI):
 
 
 class AdminAPI(ActivitiesAPI):
+    name = "Admin"
     application_name = "admin"
 
 
 class DriveAPI(ActivitiesAPI):
+    name = "Drive"
     application_name = "drive"
 
 
 class LoginsAPI(ActivitiesAPI):
+    name = "Logins"
     application_name = "login"
 
 
 class MobileAPI(ActivitiesAPI):
+    name = "Mobile"
     application_name = "mobile"
 
 
 class OAuthTokensAPI(ActivitiesAPI):
+    name = "OAuth Tokens"
     application_name = "token"
