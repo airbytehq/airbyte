@@ -73,7 +73,7 @@ If you are running into connection refused errors when running Airbyte via Docke
 
 ## **Can I disable analytics in Airbyte?**
 
-Yes you can, giving our users the choice of what can be tracked is of the utmost importance to us.
+Yes you can control what can be send outside of Airbyte for analytics purposes.
 
 We instrumented some parts of Airbyte for the following reasons:
 - measure usage of Airbyte
