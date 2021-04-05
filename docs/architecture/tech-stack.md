@@ -1,6 +1,6 @@
 # Technical Stack
 
-## Airybte Core Backend
+## Airbyte Core Backend
 
 * Java 14
 * Framework: [Jersey](https://eclipse-ee4j.github.io/jersey/)
@@ -26,4 +26,3 @@ Connectors can be written in any language. However the most common languages are
 * Containerization: [Docker](https://www.docker.com/) and [Docker Compose](https://docs.docker.com/compose/)
 * Linter \(Frontend\): [Prettier](https://prettier.io/)
 * Formatter \(Backend\): [Spotless](https://github.com/diffplug/spotless)
-
