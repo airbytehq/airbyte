@@ -15,6 +15,7 @@
   * [Save and Search Through Your Slack History on a Free Slack Plan](tutorials/slack-history.md)
   * [Upgrading Airbyte](tutorials/upgrading-airbyte.md)
   * [Using the Airflow Airbyte Operator](tutorials/using-the-airflow-airbyte-operator.md)
+  * [Visualizing the Time Spent by Your Team in Zoom Calls](tutorials/zoom-activity-dashboard.md)
 * [Changelog](changelog/README.md)
   * [Platform](changelog/platform.md)
   * [Connectors](changelog/connectors.md)
