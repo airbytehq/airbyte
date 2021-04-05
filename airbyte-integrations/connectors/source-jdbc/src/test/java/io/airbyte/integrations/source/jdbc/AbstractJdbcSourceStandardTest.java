@@ -73,8 +73,8 @@ class AbstractJdbcSourceStandardTest extends JdbcSourceStandardTest {
         .build());
 
     final String initScriptName = "init_" + dbName.concat(".sql");
-    MoreResources.writeResource(initScriptName, "CREATE DATABASE " + dbName + ";");
-    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource(initScriptName), PSQL_DB);
+    final var iniSqlFile = MoreResources.writeResource(initScriptName, "CREATE DATABASE " + dbName + ";");
+    PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(iniSqlFile), PSQL_DB);
 
     super.setup();
   }
