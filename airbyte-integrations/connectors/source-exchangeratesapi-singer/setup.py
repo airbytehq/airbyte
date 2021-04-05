@@ -31,5 +31,10 @@ setup(
     author_email="contact@airbyte.io",
     packages=find_packages(),
     package_data={"": ["*.json"]},
-    install_requires=["tap-exchangeratesapi==0.1.1", "base-python", "airbyte-protocol", "pytest==6.1.2"],
+    install_requires=[
+        "tap-exchangeratesapi @ https://github.com/airbytehq/tap-exchangeratesapi/tarball/v0.1.1-patched",
+        "base-python",
+        "airbyte-protocol",
+        "pytest==6.1.2",
+    ],
 )

@@ -9,23 +9,29 @@ import LabeledInput from "components/LabeledInput";
 import Label from "components/Label";
 import LabeledToggle from "components/LabeledToggle";
 import config from "config";
+import EditControls from "./components/EditControls";
 
-export type IProps = {
+export type PreferencesFormProps = {
   onSubmit: (data: {
     email: string;
     anonymousDataCollection: boolean;
     news: boolean;
     securityUpdates: boolean;
   }) => void;
+  isEdit?: boolean;
+  preferencesValues?: {
+    email?: string;
+    anonymousDataCollection: boolean;
+    news: boolean;
+    securityUpdates: boolean;
+  };
+  successMessage?: React.ReactNode;
+  errorMessage?: React.ReactNode;
 };
 
 const ButtonContainer = styled.div`
   text-align: center;
   margin-top: 38px;
-`;
-
-const MainForm = styled(Form)`
-  margin-top: 47px;
 `;
 
 const FormItem = styled.div`
@@ -54,27 +60,41 @@ const preferencesValidationSchema = yup.object().shape({
   email: yup.string().email("form.email.error"),
 });
 
-const PreferencesForm: React.FC<IProps> = ({ onSubmit }) => {
+const PreferencesForm: React.FC<PreferencesFormProps> = ({
+  onSubmit,
+  isEdit,
+  preferencesValues,
+  successMessage,
+  errorMessage,
+}) => {
   const formatMessage = useIntl().formatMessage;
 
   return (
     <Formik
       initialValues={{
-        email: "",
-        anonymousDataCollection: false,
-        news: false,
-        securityUpdates: false,
+        email: preferencesValues?.email || "",
+        anonymousDataCollection:
+          preferencesValues?.anonymousDataCollection || false,
+        news: preferencesValues?.news || false,
+        securityUpdates: preferencesValues?.securityUpdates || false,
       }}
       validateOnBlur={true}
       validateOnChange={false}
       validationSchema={preferencesValidationSchema}
-      onSubmit={async (values, { setSubmitting }) => {
-        setSubmitting(false);
-        onSubmit(values);
+      onSubmit={async (values) => {
+        await onSubmit(values);
       }}
     >
-      {({ isSubmitting, values, handleChange, setFieldValue, resetForm }) => (
-        <MainForm>
+      {({
+        isSubmitting,
+        values,
+        handleChange,
+        setFieldValue,
+        resetForm,
+        isValid,
+        dirty,
+      }) => (
+        <Form>
           <FormItem>
             <Field name="email">
               {({ field, meta }: FieldProps<string>) => (
@@ -103,6 +123,7 @@ const PreferencesForm: React.FC<IProps> = ({ onSubmit }) => {
                       event.target.value.length === 0
                     ) {
                       resetForm();
+                      setFieldValue("email", "");
                     }
                   }}
                 />
@@ -166,12 +187,23 @@ const PreferencesForm: React.FC<IProps> = ({ onSubmit }) => {
               )}
             </Field>
           </FormItem>
-          <ButtonContainer>
-            <BigButton type="submit" disabled={isSubmitting}>
-              <FormattedMessage id={"form.continue"} />
-            </BigButton>
-          </ButtonContainer>
-        </MainForm>
+          {isEdit ? (
+            <EditControls
+              isSubmitting={isSubmitting}
+              isValid={isValid}
+              dirty={dirty}
+              resetForm={resetForm}
+              successMessage={successMessage}
+              errorMessage={errorMessage}
+            />
+          ) : (
+            <ButtonContainer>
+              <BigButton type="submit" disabled={isSubmitting}>
+                <FormattedMessage id={"form.continue"} />
+              </BigButton>
+            </ButtonContainer>
+          )}
+        </Form>
       )}
     </Formik>
   );
