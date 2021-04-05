@@ -27,9 +27,10 @@ import socket
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from functools import partial
-from typing import Callable, Dict, Iterator, Optional, Sequence
+from typing import Any, Callable, Dict, Iterator, Mapping, Optional, Sequence
 
 import backoff
+import pendulum
 import pytz
 from google.oauth2 import service_account
 from googleapiclient.discovery import Resource, build
@@ -111,7 +112,29 @@ class StreamAPI(ABC):
                 break
 
 
-class ActivitiesAPI(StreamAPI):
+class IncrementalStreamAPI(StreamAPI, ABC):
+    """Stream that supports state and incremental read"""
+
+    state_pk = "time"
+
+    @property
+    def state(self) -> Optional[Mapping[str, Any]]:
+        """Current state, if wasn't set return None"""
+        if self._state:
+            return {self.state_pk: str(self._state)}
+        return None
+
+    @state.setter
+    def state(self, value):
+        self._state = pendulum.parse(value[self.state_pk])
+        self._start_time = self._state.isoformat()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._state = None
+
+
+class ActivitiesAPI(IncrementalStreamAPI):
     application_name = None
 
     def get_params(self) -> Dict:

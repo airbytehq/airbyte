@@ -38,6 +38,7 @@ setup(
         "google-auth-httplib2==0.1.0",
         "google-auth-oauthlib==0.4.3",
         "backoff==1.10.0",
+        "pendulum==2.1.2",
     ],
     package_data={"": ["*.json", "schemas/*.json"]},
 )
