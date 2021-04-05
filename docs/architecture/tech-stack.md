@@ -1,12 +1,13 @@
 # Technical Stack
 
-## Backend
+## Airybte Core Backend
 
 * Java 14
 * Framework: [Jersey](https://eclipse-ee4j.github.io/jersey/)
 * API: [OAS3](https://www.openapis.org/)
 * Databases: [PostgreSQL](https://www.postgresql.org/)
 * Unit & E2E testing: [JUnit 5](https://junit.org/junit5)
+* Orchestration: [Temporal](https://temporal.io)
 
 ## **Frontend**
 
