@@ -76,9 +76,11 @@ If you are running into connection refused errors when running Airbyte via Docke
 Yes you can, giving our users the choice of what can be tracked is of the utmost importance to us.
 
 We instrumented some parts of Airbyte for the following reasons:
+- measure usage of Airbyte
 - measure usage of features & connectors
 - collect connector telemetry to measure stability
 - reach out to our users if they opt-in
+- ...
 
 However, if you need to disable the telemetry you just need modify the `.env` file and define the two following environment variables:
 ```
