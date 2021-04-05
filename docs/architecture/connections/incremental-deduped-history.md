@@ -1,15 +1,14 @@
-# Incremental - Deduped History Sync
+# Incremental Sync - Deduped History
 
 ## Overview
 
 Airbyte supports syncing data in **Incremental Deduped History** mode i.e:
 
 1. **Incremental** means syncing only replicate _new_ or _modified_ data. This prevents re-fetching data that you have already replicated from a source.
-2. **Deduped** means that data in the final table will be unique per primary key (unlike [Append modes](incremental-append.md)). This is determined by sorting the data using the cursor field and keeping only the latest de-duplicated data row. In dimensional data warehouse jargon defined by Ralph Kimball, this is referred as a Slowly Changing Dimension (SCD) table of type 1.
-3. **History** means that an additional intermediate table is created in which data is being continuously appended to (with duplicates exactly like [Append modes](incremental-append.md)). With the use of primary key fields, it is identifying effective `start` and `end` dates of each row of a record. In dimensional data warehouse jargon, this is referred as a Slowly Changing Dimension (SCD) table of type 2.
+2. **Deduped** means that data in the final table will be unique per primary key \(unlike [Append modes](incremental-append.md)\). This is determined by sorting the data using the cursor field and keeping only the latest de-duplicated data row. In dimensional data warehouse jargon defined by Ralph Kimball, this is referred as a Slowly Changing Dimension \(SCD\) table of type 1.
+3. **History** means that an additional intermediate table is created in which data is being continuously appended to \(with duplicates exactly like [Append modes](incremental-append.md)\). With the use of primary key fields, it is identifying effective `start` and `end` dates of each row of a record. In dimensional data warehouse jargon, this is referred as a Slowly Changing Dimension \(SCD\) table of type 2.
 
-In this flavor of incremental, records in the warehouse destination will never be deleted in the history tables \(named with a `_scd` suffix\), but might not exist in the final table.
-A copy of each new or updated record is _appended_ to the history data in the warehouse. Only the `end` date column is mutated when a new version of the same record is inserted to denote effective date ranges of a row. This means you can find multiple copies of the same record in the destination warehouse.  We provide an "at least once" guarantee of replicating each record that is present when the sync runs.
+In this flavor of incremental, records in the warehouse destination will never be deleted in the history tables \(named with a `_scd` suffix\), but might not exist in the final table. A copy of each new or updated record is _appended_ to the history data in the warehouse. Only the `end` date column is mutated when a new version of the same record is inserted to denote effective date ranges of a row. This means you can find multiple copies of the same record in the destination warehouse. We provide an "at least once" guarantee of replicating each record that is present when the sync runs.
 
 On the other hand, records in the final destination can potentially be deleted as they are de-duplicated. You should not find multiple copies of the same primary key as these should be unique in that table.
 
@@ -21,12 +20,11 @@ A `cursor field` is the _field_ or _column_ in the data where that cursor can be
 
 We will refer to the set of records that the source identifies as being new or updated as a `delta`.
 
-A `primary key` is one or multiple (called `composite primary keys`) _fields_ or _columns_ that is used to identify the unique entities of a table. Only one row per primary key value is permitted in a database table. In the data warehouse, just like in [incremental - Append](incremental-append.md), multiple rows for the same primary key can be found in the history table. The unique records per primary key behavior is mirrored in the final table with **incremental deduped** sync mode. The primary key is then used to refer to the entity which values should be updated.
+A `primary key` is one or multiple \(called `composite primary keys`\) _fields_ or _columns_ that is used to identify the unique entities of a table. Only one row per primary key value is permitted in a database table. In the data warehouse, just like in [incremental - Append](incremental-append.md), multiple rows for the same primary key can be found in the history table. The unique records per primary key behavior is mirrored in the final table with **incremental deduped** sync mode. The primary key is then used to refer to the entity which values should be updated.
 
 ## Rules
 
-As mentioned above, the delta from a sync will be _appended_ to the existing history data in the data warehouse. In addition, it will update the associated record in the final table.
-Let's walk through a few examples.
+As mentioned above, the delta from a sync will be _appended_ to the existing history data in the data warehouse. In addition, it will update the associated record in the final table. Let's walk through a few examples.
 
 ### Newly Created Record
 
@@ -69,6 +67,7 @@ Let's assume that our warehouse contains all the data that it did at the end of 
 The output we expect to see in the warehouse is as follows:
 
 In the history table:
+
 ```javascript
 [
     { "name": "Louis XVI", "deceased": false, "updated_at":  1754, "start_at": 1754, "end_at": 1793 },
@@ -82,29 +81,30 @@ In the history table:
 ```
 
 In the final de-duplicated table:
+
 ```javascript
 [
     { "name": "Louis XVI", "deceased": true, "updated_at": 1793 },
     { "name": "Louis XVII", "deceased": false, "updated_at": 1785 },
     { "name": "Marie Antoinette", "deceased": true, "updated_at": 1793 }
-] 
+]
 ```
 
 ## Source-Defined Cursor
 
-Some sources are able to determine the cursor that they use without any user input. For example, in the [exchange rates source](../integrations/sources/exchangeratesapi.md), the source knows that the date field should be used to determine the last record that was synced. In these cases, simply select the incremental option in the UI.
+Some sources are able to determine the cursor that they use without any user input. For example, in the [exchange rates source](../../integrations/sources/exchangeratesapi.md), the source knows that the date field should be used to determine the last record that was synced. In these cases, simply select the incremental option in the UI.
 
-![](../.gitbook/assets/incremental_source_defined.png)
+![](../../.gitbook/assets/incremental_source_defined.png)
 
-\(You can find a more technical details about the configuration data model [here](catalog.md)\).
+\(You can find a more technical details about the configuration data model [here](../catalog.md)\).
 
 ## User-Defined Cursor
 
-Some sources cannot define the cursor without user input. For example, in the [postgres source](../integrations/sources/postgres.md), the user needs to choose which column in a database table they want to use as the `cursor field`. In these cases, select the column in the sync settings dropdown that should be used as the `cursor field`.
+Some sources cannot define the cursor without user input. For example, in the [postgres source](../../integrations/sources/postgres.md), the user needs to choose which column in a database table they want to use as the `cursor field`. In these cases, select the column in the sync settings dropdown that should be used as the `cursor field`.
 
-![](../.gitbook/assets/incremental_user_defined.png)
+![](../../.gitbook/assets/incremental_user_defined.png)
 
-\(You can find a more technical details about the configuration data model [here](catalog.md)\).
+\(You can find a more technical details about the configuration data model [here](../catalog.md)\).
 
 ## Source-Defined Primary key
 
@@ -114,12 +114,11 @@ Some sources are able to determine the primary key that they use without any use
 
 Some sources cannot define the cursor without user input or the user may want to specify their own primary key on the destination that is different from the source definitions. In these cases, select the column in the sync settings dropdown that should be used as the `primary key` or `composite primary keys`.
 
-![](../.gitbook/assets/primary_key_user_defined.png)
+![](../../.gitbook/assets/primary_key_user_defined.png)
 
 In this example, we selected both the `campaigns.id` and `campaigns.name` as the composite primary key of our `campaigns` table.
 
-Note that in **Incremental Deduped History**, the size of the data in your warehouse increases monotonically since an updated record in the source is appended to the destination history table rather than updated in-place as it is done with the final table.
-If you only care about having the latest snapshot of your data, you may want to periodically run cleanup jobs which retain only the latest instance of each record in the history tables.
+Note that in **Incremental Deduped History**, the size of the data in your warehouse increases monotonically since an updated record in the source is appended to the destination history table rather than updated in-place as it is done with the final table. If you only care about having the latest snapshot of your data, you may want to periodically run cleanup jobs which retain only the latest instance of each record in the history tables.
 
 ## Inclusive Cursors
 
@@ -138,6 +137,7 @@ select * from table where cursor_field > 'last_sync_max_cursor_field_value'
 ```
 
 Let's say the following data already exists into our data warehouse.
+
 ```javascript
 [
     { "name": "Louis XVI", "deceased": false, "updated_at":  1754 },
@@ -146,13 +146,15 @@ Let's say the following data already exists into our data warehouse.
 ```
 
 At the start of the next sync, the source data contains the following new record:
+
 ```javascript
 [
     { "name": "Louis XVI", "deceased": true, "updated_at":  1754 },
 ]
 ```
 
-At the end of the second incremental sync, the data warehouse would still contain data from the first sync because the delta record did not provide a valid value for the cursor field (the cursor field is not greater than last sync's max value, `1754 < 1755`), so it is not emitted by the source as a new or modified record.
+At the end of the second incremental sync, the data warehouse would still contain data from the first sync because the delta record did not provide a valid value for the cursor field \(the cursor field is not greater than last sync's max value, `1754 < 1755`\), so it is not emitted by the source as a new or modified record.
+
 ```javascript
 [
     { "name": "Louis XVI", "deceased": false, "updated_at":  1754 },
@@ -160,13 +162,11 @@ At the end of the second incremental sync, the data warehouse would still contai
 ]
 ```
 
-Similarly, if multiple modifications are made during the same day to the same records.
-If the frequency of the sync is not granular enough (for example, set for every 24h),
-then intermediate modifications to the data are not going to be detected and emitted.
-Only the state of data at the time the sync runs will be reflected in the destination.
+Similarly, if multiple modifications are made during the same day to the same records. If the frequency of the sync is not granular enough \(for example, set for every 24h\), then intermediate modifications to the data are not going to be detected and emitted. Only the state of data at the time the sync runs will be reflected in the destination.
 
 Those concerns could be solved by using a different sync mode based on binary logs, Write-Ahead-Logs \(WAL\), or also called **Incremental - Change Data Capture**. \(coming to Airbyte in the near future\).
 
 The current behavior of **Incremental** is not able to handle source schema changes yet, for example, when a column is added, renamed or deleted from an existing table etc. It is recommended to trigger a [Full refresh - Overwrite](full-refresh-overwrite.md) to correctly replicate the data to the destination with the new schema changes.
 
-If you are not satisfied with how transformations are applied on top of the appended data, you can find more relevant SQL transformations you might need to do on your data in the [Connecting EL with T using SQL \(part 1/2\)](../tutorials/connecting-el-with-t-using-sql.md#simple-sql-query)
+If you are not satisfied with how transformations are applied on top of the appended data, you can find more relevant SQL transformations you might need to do on your data in the [Connecting EL with T using SQL \(part 1/2\)](../../tutorials/connecting-el-with-t-using-sql.md#simple-sql-query)
+

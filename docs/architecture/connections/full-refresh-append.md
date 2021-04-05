@@ -1,4 +1,4 @@
-# Full Refresh - Append Sync
+# Full Refresh - Append
 
 This readme describes Airbyte conventions around the "full refresh - Append" concept.
 
@@ -31,8 +31,7 @@ data in the destination _after_ the nth sync:
 | Java |
 | Ruby |
 
-This could be useful when we are interested to know about deletion of data in the source.
-This is possible if we also consider the date, or the batch id from which the data was written to the destination:
+This could be useful when we are interested to know about deletion of data in the source. This is possible if we also consider the date, or the batch id from which the data was written to the destination:
 
 new data at the n+1th sync:
 
@@ -56,3 +55,4 @@ data in the destination _after_ the n+1th sync:
 ## In the future
 
 We will consider making a better detection of deletions in the source, especially with `Incremental`, and `Change Data Capture` based sync modes for example.
+
