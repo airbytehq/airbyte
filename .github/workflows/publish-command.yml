@@ -13,23 +13,6 @@ jobs:
   publish_image:
     runs-on: ubuntu-latest
     steps:
-      - name: Search for valid connector name format
-        id: regex
-        uses: AsasInnab/regex-action@v1
-        with:
-          regex_pattern: '^(connectors|bases)/[a-zA-Z0-9-_]+$'
-          regex_flags: 'i' # required to be set for this plugin
-          search_string: ${{ github.event.inputs.connector }}
-      - name: Validate input workflow format
-        if: steps.regex.outputs.first_match != github.event.inputs.connector
-        run: echo "The connector provided has an invalid format!" && exit 1
-      - name: Link comment to workflow run
-        if: github.event.inputs.comment-id
-        uses: peter-evans/create-or-update-comment@v1
-        with:
-          comment-id: ${{ github.event.inputs.comment-id }}
-          body: |
-            > :clock2: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
       - name: Checkout Airbyte
         uses: actions/checkout@v2
       - uses: actions/setup-java@v1
@@ -42,8 +25,6 @@ jobs:
         with:
           python-version: '3.7'
       - run: |
-          ./tools/integrations/manage.sh publish airbyte-integrations/${{ github.event.inputs.connector }}
-        name: publish ${{ github.event.inputs.connector }}
+          ./tools/integrations/manage.sh publish airbyte-integrations/oracle-source
+        name: publish oracle-source
         id: publish
-        env:
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
