@@ -28,6 +28,7 @@ import com.google.common.base.Preconditions;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.function.Function;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,6 +49,7 @@ public class EnvConfigs implements Configs {
   public static final String DATABASE_USER = "DATABASE_USER";
   public static final String DATABASE_PASSWORD = "DATABASE_PASSWORD";
   public static final String DATABASE_URL = "DATABASE_URL";
+  public static final String WEBAPP_URL = "WEBAPP_URL";
   private static final String MINIMUM_WORKSPACE_RETENTION_DAYS = "MINIMUM_WORKSPACE_RETENTION_DAYS";
   private static final String MAXIMUM_WORKSPACE_RETENTION_DAYS = "MAXIMUM_WORKSPACE_RETENTION_DAYS";
   private static final String MAXIMUM_WORKSPACE_SIZE_MB = "MAXIMUM_WORKSPACE_SIZE_MB";
@@ -111,6 +113,17 @@ public class EnvConfigs implements Configs {
   @Override
   public String getDatabaseUrl() {
     return getEnsureEnv(DATABASE_URL);
+  }
+
+  @Override
+  public String getWebappUrl() {
+    final String webappUrl = getEnv.apply(WEBAPP_URL);
+    if (!Strings.isEmpty(webappUrl)) {
+      return webappUrl;
+    }
+
+    LOGGER.info(WEBAPP_URL + " not found, defaulting to: http://localhost:8000/");
+    return "http://localhost:8000/";
   }
 
   @Override

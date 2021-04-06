@@ -84,17 +84,20 @@ public class SchedulerApp {
   private final JobPersistence jobPersistence;
   private final ConfigRepository configRepository;
   private final JobCleaner jobCleaner;
+  private final JobNotifier jobNotifier;
 
   public SchedulerApp(Path workspaceRoot,
                       ProcessBuilderFactory pbf,
                       JobPersistence jobPersistence,
                       ConfigRepository configRepository,
-                      JobCleaner jobCleaner) {
+                      JobCleaner jobCleaner,
+                      JobNotifier jobNotifier) {
     this.workspaceRoot = workspaceRoot;
     this.pbf = pbf;
     this.jobPersistence = jobPersistence;
     this.configRepository = configRepository;
     this.jobCleaner = jobCleaner;
+    this.jobNotifier = jobNotifier;
   }
 
   public void start() throws IOException {
@@ -104,7 +107,6 @@ public class SchedulerApp {
     final ExecutorService workerThreadPool = Executors.newFixedThreadPool(MAX_WORKERS, THREAD_FACTORY);
     final ScheduledExecutorService scheduledPool = Executors.newSingleThreadScheduledExecutor();
     final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(TemporalClient.production(workspaceRoot), workspaceRoot);
-    final JobNotifier jobNotifier = new JobNotifier(configRepository);
     final JobRetrier jobRetrier = new JobRetrier(jobPersistence, Instant::now, jobNotifier);
     final JobScheduler jobScheduler = new JobScheduler(jobPersistence, configRepository);
     final JobSubmitter jobSubmitter = new JobSubmitter(
@@ -188,6 +190,7 @@ public class SchedulerApp {
         configs.getWorkspaceRetentionConfig(),
         workspaceRoot,
         jobPersistence);
+    final JobNotifier jobNotifier = new JobNotifier(configs.getWebappUrl(), configRepository);
 
     TrackingClientSingleton.initialize(
         configs.getTrackingStrategy(),
@@ -210,7 +213,7 @@ public class SchedulerApp {
     }
 
     LOGGER.info("Launching scheduler...");
-    new SchedulerApp(workspaceRoot, pbf, jobPersistence, configRepository, jobCleaner).start();
+    new SchedulerApp(workspaceRoot, pbf, jobPersistence, configRepository, jobCleaner, jobNotifier).start();
   }
 
 }

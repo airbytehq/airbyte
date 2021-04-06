@@ -52,9 +52,11 @@ public class JobNotifier {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JobNotifier.class);
 
+  private final String connectionPageUrl;
   private final ConfigRepository configRepository;
 
-  public JobNotifier(ConfigRepository configRepository) {
+  public JobNotifier(String webappUrl, ConfigRepository configRepository) {
+    this.connectionPageUrl = String.format("%s/source/connection/", webappUrl);
     this.configRepository = configRepository;
   }
 
@@ -82,9 +84,9 @@ public class JobNotifier {
     }
   }
 
-  private static NotificationClient getNotificationClient(final Notification notification) {
+  private NotificationClient getNotificationClient(final Notification notification) {
     if (notification.getNotificationType() == NotificationType.SLACK) {
-      return new SlackNotificationClient(notification.getSlackConfiguration());
+      return new SlackNotificationClient(connectionPageUrl, notification.getSlackConfiguration());
     } else {
       throw new IllegalArgumentException("Unknown notification type:" + notification.getNotificationType());
     }

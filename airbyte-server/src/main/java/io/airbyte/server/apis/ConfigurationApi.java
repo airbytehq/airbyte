@@ -136,7 +136,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
     schedulerHandler =
         new SchedulerHandler(configRepository, schedulerJobClient, synchronousSchedulerClient, jobPersistence, configs.getWorkspaceRoot(),
-            new JobNotifier(configRepository));
+            new JobNotifier(configs.getWebappUrl(), configRepository));
     final DockerImageValidator dockerImageValidator = new DockerImageValidator(synchronousSchedulerClient);
     sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, synchronousSchedulerClient);
     connectionsHandler = new ConnectionsHandler(configRepository);

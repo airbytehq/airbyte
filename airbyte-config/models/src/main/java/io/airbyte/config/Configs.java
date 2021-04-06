@@ -46,6 +46,8 @@ public interface Configs {
 
   String getDatabaseUrl();
 
+  String getWebappUrl();
+
   String getWorkspaceDockerMount();
 
   String getLocalDockerMount();
