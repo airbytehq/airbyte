@@ -70,8 +70,8 @@ public class TestDefaultJdbcDatabase {
     config = getConfig(PSQL_DB, dbName);
 
     final String initScriptName = "init_" + dbName.concat(".sql");
-    MoreResources.writeResource(initScriptName, "CREATE DATABASE " + dbName + ";");
-    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource(initScriptName), PSQL_DB);
+    final String tmpFilePath = MoreResources.writeTmpFile(initScriptName, "CREATE DATABASE " + dbName + ";");
+    PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), PSQL_DB);
 
     final JdbcDatabase database = getDatabaseFromConfig(config);
     database.execute(connection -> {

@@ -38,6 +38,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 public class MoreResources {
@@ -81,12 +82,15 @@ public class MoreResources {
   }
 
   @SuppressWarnings("UnstableApiUsage")
-  public static void writeResource(String filename, String contents) {
-    final Path source = Paths.get(Resources.getResource("").getPath());
+  public static String writeTmpFile(String filename, String contents) {
+    final Path source = Paths.get("/tmp", UUID.randomUUID().toString());
     try {
-      Files.deleteIfExists(source.resolve(filename));
-      Files.createFile(source.resolve(filename));
-      IOs.writeFile(Path.of(Resources.getResource(filename).getPath()), contents);
+      Path tmpFile = source.resolve(filename);
+      Files.deleteIfExists(tmpFile);
+      Files.createDirectory(source);
+      Files.createFile(tmpFile);
+      IOs.writeFile(tmpFile, contents);
+      return tmpFile.toString();
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
