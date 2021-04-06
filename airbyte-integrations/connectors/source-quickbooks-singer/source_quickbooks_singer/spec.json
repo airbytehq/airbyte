@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Source Quickbooks Singer Spec",
     "type": "object",
-    "required": ["client_id", "client_secret", "refresh_token", "start_date", "sandbox"],
+    "required": ["client_id", "client_secret", "refresh_token", "realm_id", "user_agent", "start_date", "sandbox"],
     "additionalProperties": false,
     "properties": {
       "client_id": {
@@ -20,6 +20,15 @@
         "description": "A token used when refreshing the access token.",
         "type": "string",
         "airbyte_secret": true
+      },
+      "realm_id": {
+        "description": "Labeled Company ID. The Make API Calls panel is populated with the realm id and the current access token",
+        "type": "string",
+        "airbyte_secret": true
+      },
+      "user_agent": {
+        "type": "string",
+        "description": "Process and email for API logging purposes. Example: tap-quickbooks <api_user_email@your_company.com>"
       },
       "start_date": {
         "description": "The default value to use if no bookmark exists for an endpoint (rfc3339 date string) E.g, 2021-03-20T00:00:00Z",

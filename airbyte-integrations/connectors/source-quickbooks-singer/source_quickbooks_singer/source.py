@@ -24,24 +24,68 @@ SOFTWARE.
 
 import json
 
-from airbyte_protocol import AirbyteConnectionStatus
 from base_python import AirbyteLogger
-from base_singer import BaseSingerSource, Status
+from base_singer import BaseSingerSource
+from requests_oauthlib import OAuth2Session
+from tap_quickbooks.client import SANDBOX_ENDPOINT_BASE, PROD_ENDPOINT_BASE, TOKEN_REFRESH_URL, Quickbooks5XXException, \
+    QuickbooksAuthenticationError, Quickbooks4XXException
 
 
 class SourceQuickbooksSinger(BaseSingerSource):
     tap_cmd = "tap-quickbooks"
     tap_name = "Quickbooks API"
-    api_error = None
+    api_error = Exception
+
+    def _write_config(self, token):
+        logger = AirbyteLogger()
+        logger.info("Credentials Refreshed")
 
     def try_connect(self, logger: AirbyteLogger, config: json):
-        pass
+        token = {
+            'refresh_token': config['refresh_token'],
+            'token_type': 'Bearer',
+            'access_token': "wrong",
+            'expires_in': '-30'
+        }
+        extra = {
+            'client_id': config['client_id'],
+            'client_secret': config['client_secret']
+        }
 
-    # def read_cmd(self, logger: AirbyteLogger, config_path: str, catalog_path: str, state_path: str = None) -> str:
-    #     """
-    #     Return the string commands to invoke the tap with the right configuration options to read data from the source
-    #     """
-    #     config_option = f"--config {config_path}"
-    #     properties_option = f"--catalog {catalog_path}"
-    #     state_option = f"--state {state_path}" if state_path else ""
-    #     return f"{self.TAP_CMD} {config_option} {properties_option} {state_option}"
+        sandbox = False
+        if config.get('sandbox') in ['true', 'True', True]:
+            sandbox = True
+
+        user_agent = config['user_agent']
+        realm_id = config['realm_id']
+        session = OAuth2Session(config['client_id'],
+                                token=token,
+                                auto_refresh_url=TOKEN_REFRESH_URL,
+                                auto_refresh_kwargs=extra,
+                                token_updater=self._write_config)
+
+        endpoint = f'/v3/company/{realm_id}/query'
+        params = {"query": "SELECT * FROM CompanyInfo"}
+        headers = {
+            'Accept': 'application/json',
+            'User-Agent': user_agent
+        }
+
+        if sandbox:
+            full_url = SANDBOX_ENDPOINT_BASE + endpoint
+        else:
+            full_url = PROD_ENDPOINT_BASE + endpoint
+
+        response = session.request("GET", full_url, headers=headers, params=params)
+
+        if response.status_code >= 500:
+            raise Quickbooks5XXException(response.text)
+        elif response.status_code in (401, 403):
+            raise QuickbooksAuthenticationError(response.text)
+        elif response.status_code >= 400:
+            raise Quickbooks4XXException(response.text)
+
+
+
+
+
