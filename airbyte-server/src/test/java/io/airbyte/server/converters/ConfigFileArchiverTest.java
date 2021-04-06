@@ -33,6 +33,7 @@ import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.Notification;
 import io.airbyte.config.Notification.NotificationType;
+import io.airbyte.config.SlackNotificationConfiguration;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
@@ -80,9 +81,9 @@ public class ConfigFileArchiverTest {
         .withTombstone(false)
         .withNotifications(List.of(new Notification()
             .withNotificationType(NotificationType.SLACK)
-            .withWebhook("http://airbyte.notifications")
-            .withOnFailure(true)
-            .withOnSuccess(false)));
+            .withSlackConfiguration(new SlackNotificationConfiguration()
+                .withWebhook("http://airbyte.notifications")
+                .withOnFailure(true))));
   }
 
   @Test
