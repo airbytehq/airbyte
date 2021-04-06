@@ -23,7 +23,7 @@
         "type": "string"
       },
       "schema": {
-        "description": "The default schema tables are written to if the source does not specify a schema. The usual value for this field is \"public\".",
+        "description": "The default schema tables are written to if the source does not specify a namespace. The usual value for this field is \"public\".",
         "type": "string",
         "examples": ["public"],
         "default": "public",

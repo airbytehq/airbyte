@@ -43,7 +43,7 @@
         "title": "Database"
       },
       "schema": {
-        "description": "The default Snowflake schema tables are written to if the source does not specify a schema.",
+        "description": "The default Snowflake schema tables are written to if the source does not specify a namespace.",
         "examples": ["AIRBYTE_SCHEMA"],
         "type": "string",
         "title": "Default Schema"

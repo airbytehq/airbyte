@@ -40,7 +40,7 @@
         "title": "Database"
       },
       "schema": {
-        "description": "The default schema tables are written to if the source does not specify a schema. Unless specifically configured, the usual value for this field is \"public\".",
+        "description": "The default schema tables are written to if the source does not specify a namespace. Unless specifically configured, the usual value for this field is \"public\".",
         "type": "string",
         "examples": ["public"],
         "default": "public",
