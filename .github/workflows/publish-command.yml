@@ -25,6 +25,6 @@ jobs:
         with:
           python-version: '3.7'
       - run: |
-          ./tools/integrations/manage.sh publish airbyte-integrations/source-oracle
+          ./tools/integrations/manage.sh publish airbyte-integrations/connectors/source-oracle
         name: publish oracle-source
         id: publish
