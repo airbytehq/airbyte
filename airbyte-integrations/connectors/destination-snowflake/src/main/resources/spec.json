@@ -39,7 +39,7 @@
         "type": "string"
       },
       "schema": {
-        "description": "The Snowflake schema you created for Airbyte to sync data into.",
+        "description": "The default Snowflake schema tables are written to if the source does not specify a namespace.",
         "examples": ["AIRBYTE_SCHEMA"],
         "type": "string"
       },

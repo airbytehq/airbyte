@@ -112,8 +112,12 @@ public class RedshiftCopyIntegrationTest extends TestDestination {
     return result;
   }
 
+//<<<<<<< HEAD
   private List<JsonNode> retrieveRecordsFromTable(String tableName) throws SQLException {
     final String schemaName = config.get("schema").asText();
+////=======
+//  private List<JsonNode> retrieveRecordsFromTable(String tableName, String schemaName) throws SQLException {
+////>>>>>>> 9243310e (Add Namespace Field. (#2704))
     return getDatabase().query(
         ctx -> ctx
             .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
