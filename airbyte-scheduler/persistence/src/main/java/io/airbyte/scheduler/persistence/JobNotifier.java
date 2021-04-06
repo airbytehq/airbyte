@@ -84,7 +84,7 @@ public class JobNotifier {
 
   private static NotificationClient getNotificationClient(final Notification notification) {
     if (notification.getNotificationType() == NotificationType.SLACK) {
-      return new SlackNotificationClient(notification);
+      return new SlackNotificationClient(notification.getSlackConfiguration());
     } else {
       throw new IllegalArgumentException("Unknown notification type:" + notification.getNotificationType());
     }

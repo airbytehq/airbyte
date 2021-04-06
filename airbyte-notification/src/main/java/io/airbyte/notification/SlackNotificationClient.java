@@ -31,8 +31,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.yaml.Yamls;
-import io.airbyte.config.Notification;
-import io.airbyte.config.Notification.NotificationType;
+import io.airbyte.config.SlackNotificationConfiguration;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -66,9 +65,9 @@ public class SlackNotificationClient implements NotificationClient {
   private final HttpClient httpClient = HttpClient.newBuilder()
       .version(HttpClient.Version.HTTP_2)
       .build();
-  private final Notification config;
+  private final SlackNotificationConfiguration config;
 
-  public SlackNotificationClient(final Notification config) {
+  public SlackNotificationClient(final SlackNotificationConfiguration config) {
     this.config = config;
   }
 
@@ -101,18 +100,16 @@ public class SlackNotificationClient implements NotificationClient {
   }
 
   private boolean notify(final String data) throws IOException, InterruptedException {
-    if (config.getNotificationType().equals(NotificationType.SLACK)) {
-      final String webhookUrl = config.getWebhook();
-      if (!Strings.isEmpty(webhookUrl)) {
-        final HttpRequest request = HttpRequest.newBuilder()
-            .POST(HttpRequest.BodyPublishers.ofString(data))
-            .uri(URI.create(webhookUrl))
-            .header("Content-Type", "application/json")
-            .build();
-        final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-        LOGGER.info("Successful notification ({}): {}", response.statusCode(), response.body());
-        return isSuccessfulHttpResponse(response.statusCode());
-      }
+    final String webhookUrl = config.getWebhook();
+    if (!Strings.isEmpty(webhookUrl)) {
+      final HttpRequest request = HttpRequest.newBuilder()
+          .POST(HttpRequest.BodyPublishers.ofString(data))
+          .uri(URI.create(webhookUrl))
+          .header("Content-Type", "application/json")
+          .build();
+      final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+      LOGGER.info("Successful notification ({}): {}", response.statusCode(), response.body());
+      return isSuccessfulHttpResponse(response.statusCode());
     }
     return false;
   }
