@@ -112,8 +112,6 @@ public class RedshiftCopyIntegrationTest extends TestDestination {
   }
 
   private List<JsonNode> retrieveRecordsFromTable(String tableName, String schemaName) throws SQLException {
-    System.out.println("Retrieving record:");
-    System.out.println("tablename: " + tableName);
     return getDatabase().query(
         ctx -> ctx
             .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
