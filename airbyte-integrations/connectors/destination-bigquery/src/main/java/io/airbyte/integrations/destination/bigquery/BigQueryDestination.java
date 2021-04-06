@@ -208,20 +208,15 @@ public class BigQueryDestination implements Destination {
   public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) {
     final BigQuery bigquery = getBigQuery(config);
     Map<String, WriteConfig> writeConfigs = new HashMap<>();
-    final String datasetId = config.get(CONFIG_DATASET_ID).asText();
     Set<String> schemaSet = new HashSet<>();
 
     // create tmp tables if not exist
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getStream().getName();
-      final String schemaName = namingResolver.getIdentifier(datasetId);
+      final String schemaName = getSchema(config, stream);
       final String tableName = namingResolver.getRawTableName(streamName);
       final String tmpTableName = namingResolver.getTmpTableName(streamName);
-      if (!schemaSet.contains(schemaName)) {
-        createSchemaTable(bigquery, schemaName);
-        schemaSet.add(schemaName);
-      }
-      createTable(bigquery, schemaName, tmpTableName);
+      createSchemaAndTableIfNeeded(bigquery, schemaSet, schemaName, tmpTableName);
 
       // https://cloud.google.com/bigquery/docs/loading-data-local#loading_data_from_a_local_data_source
       final WriteChannelConfiguration writeChannelConfiguration = WriteChannelConfiguration
@@ -233,13 +228,30 @@ public class BigQueryDestination implements Destination {
       final TableDataWriteChannel writer = bigquery.writer(JobId.of(UUID.randomUUID().toString()), writeChannelConfiguration);
       final WriteDisposition syncMode = getWriteDisposition(stream.getDestinationSyncMode());
 
-      writeConfigs.put(stream.getStream().getName(),
-          new WriteConfig(TableId.of(schemaName, tableName), TableId.of(schemaName, tmpTableName), writer, syncMode));
+      writeConfigs.put(streamName, new WriteConfig(TableId.of(schemaName, tableName), TableId.of(schemaName, tmpTableName), writer, syncMode));
     }
 
     // write to tmp tables
     // if success copy delete main table if exists. rename tmp tables to real tables.
     return new RecordConsumer(bigquery, writeConfigs, catalog);
+  }
+
+  private static String getSchema(JsonNode config, ConfiguredAirbyteStream stream) {
+    final String defaultSchema = config.get(CONFIG_DATASET_ID).asText();
+    final String srcNamespace = stream.getStream().getNamespace();
+    if (srcNamespace == null) {
+      return defaultSchema;
+    }
+
+    return srcNamespace;
+  }
+
+  private void createSchemaAndTableIfNeeded(BigQuery bigquery, Set<String> schemaSet, String schemaName, String tmpTableName) {
+    if (!schemaSet.contains(schemaName)) {
+      createSchemaTable(bigquery, schemaName);
+      schemaSet.add(schemaName);
+    }
+    createTable(bigquery, schemaName, tmpTableName);
   }
 
   private static WriteDisposition getWriteDisposition(DestinationSyncMode syncMode) {

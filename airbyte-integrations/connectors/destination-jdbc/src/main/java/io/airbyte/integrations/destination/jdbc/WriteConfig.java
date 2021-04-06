@@ -22,21 +22,24 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination;
+package io.airbyte.integrations.destination.jdbc;
 
 import io.airbyte.protocol.models.DestinationSyncMode;
 
+/**
+ * Write configuration POJO for all destinations extending {@link AbstractJdbcDestination}.
+ */
 public class WriteConfig {
 
   private final String streamName;
-  private final String outputNamespaceName;
+  private final String outputSchemaName;
   private final String tmpTableName;
   private final String outputTableName;
   private final DestinationSyncMode syncMode;
 
-  public WriteConfig(String streamName, String outputNamespaceName, String tmpTableName, String outputTableName, DestinationSyncMode syncMode) {
+  public WriteConfig(String streamName, String outputSchemaName, String tmpTableName, String outputTableName, DestinationSyncMode syncMode) {
     this.streamName = streamName;
-    this.outputNamespaceName = outputNamespaceName;
+    this.outputSchemaName = outputSchemaName;
     this.tmpTableName = tmpTableName;
     this.outputTableName = outputTableName;
     this.syncMode = syncMode;
@@ -50,8 +53,8 @@ public class WriteConfig {
     return tmpTableName;
   }
 
-  public String getOutputNamespaceName() {
-    return outputNamespaceName;
+  public String getOutputSchemaName() {
+    return outputSchemaName;
   }
 
   public String getOutputTableName() {
