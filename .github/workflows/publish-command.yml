@@ -29,4 +29,4 @@ jobs:
         env:
           TZ: UTC
         run: |
-          ./tools/integrations/manage.sh publish airbyte-integrations/connectors/source-oracle
+          ./tools/integrations/manage.sh build airbyte-integrations/connectors/source-oracle
