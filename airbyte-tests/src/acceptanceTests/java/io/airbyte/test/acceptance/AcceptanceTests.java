@@ -283,6 +283,7 @@ public class AcceptanceTests {
         .build());
     final AirbyteStream stream = new AirbyteStream()
         .name(STREAM_NAME)
+        .namespace("public")
         .jsonSchema(jsonSchema)
         .defaultCursorField(Collections.emptyList())
         .sourceDefinedPrimaryKey(Collections.emptyList())
