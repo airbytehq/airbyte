@@ -73,7 +73,7 @@ If you are running into connection refused errors when running Airbyte via Docke
 
 ## **Can I disable analytics in Airbyte?**
 
-Yes you can control what can be send outside of Airbyte for analytics purposes.
+Yes, you can control what's sent outside of Airbyte for analytics purposes.
 
 We instrumented some parts of Airbyte for the following reasons:
 - measure usage of Airbyte
@@ -82,7 +82,7 @@ We instrumented some parts of Airbyte for the following reasons:
 - reach out to our users if they opt-in
 - ...
 
-However, if you need to disable the telemetry you just need modify the `.env` file and define the two following environment variables:
+To disable telemetry, modify the `.env` file and define the two following environment variables:
 ```
 TRACKING_STRATEGY=logging
 PAPERCUPS_STORYTIME=disabled
