@@ -58,6 +58,7 @@
     * [Slack](integrations/sources/slack.md)
     * [Stripe](integrations/sources/stripe.md)
     * [Twilio](integrations/sources/twilio.md)
+    * [Zendesk Talk](integrations/sources/zendesk-talk.md)
     * [Zendesk Support](integrations/sources/zendesk-support.md)
     * [Zoom](integrations/sources/zoom.md)
   * [Destinations](integrations/destinations/README.md)
