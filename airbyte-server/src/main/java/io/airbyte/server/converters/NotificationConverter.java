@@ -37,9 +37,13 @@ public class NotificationConverter {
   private static io.airbyte.config.Notification toConfig(final io.airbyte.api.model.Notification notification) {
     return new io.airbyte.config.Notification()
         .withNotificationType(Enums.convertTo(notification.getNotificationType(), io.airbyte.config.Notification.NotificationType.class))
-        .withOnFailure(notification.getOnFailure())
-        .withOnSuccess(notification.getOnSuccess())
-        .withWebhook(notification.getWebhook());
+        .withSlackConfiguration(toConfig(notification.getSlackConfiguration()));
+  }
+
+  private static io.airbyte.config.SlackNotificationConfiguration toConfig(final io.airbyte.api.model.SlackNotificationConfiguration notification) {
+    return new io.airbyte.config.SlackNotificationConfiguration()
+        .withWebhook(notification.getWebhook())
+        .withOnFailure(notification.getOnFailure());
   }
 
   public static List<io.airbyte.api.model.Notification> toApi(final List<io.airbyte.config.Notification> notifications) {
@@ -49,9 +53,13 @@ public class NotificationConverter {
   private static io.airbyte.api.model.Notification toApi(final io.airbyte.config.Notification notification) {
     return new io.airbyte.api.model.Notification()
         .notificationType(Enums.convertTo(notification.getNotificationType(), io.airbyte.api.model.NotificationType.class))
-        .onFailure(notification.getOnFailure())
-        .onSuccess(notification.getOnSuccess())
-        .webhook(notification.getWebhook());
+        .slackConfiguration(toApi(notification.getSlackConfiguration()));
+  }
+
+  private static io.airbyte.api.model.SlackNotificationConfiguration toApi(final io.airbyte.config.SlackNotificationConfiguration notification) {
+    return new io.airbyte.api.model.SlackNotificationConfiguration()
+        .webhook(notification.getWebhook())
+        .onFailure(notification.getOnFailure());
   }
 
 }

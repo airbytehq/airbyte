@@ -3979,13 +3979,15 @@ font-style: italic;
   "slug" : "slug",
   "securityUpdates" : true,
   "notifications" : [ {
-    "webhook" : "webhook",
-    "onFailure" : true,
-    "onSuccess" : true
+    "slackConfiguration" : {
+      "webhook" : "webhook",
+      "onFailure" : true
+    }
   }, {
-    "webhook" : "webhook",
-    "onFailure" : true,
-    "onSuccess" : true
+    "slackConfiguration" : {
+      "webhook" : "webhook",
+      "onFailure" : true
+    }
   } ],
   "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
@@ -4094,13 +4096,15 @@ font-style: italic;
   "slug" : "slug",
   "securityUpdates" : true,
   "notifications" : [ {
-    "webhook" : "webhook",
-    "onFailure" : true,
-    "onSuccess" : true
+    "slackConfiguration" : {
+      "webhook" : "webhook",
+      "onFailure" : true
+    }
   }, {
-    "webhook" : "webhook",
-    "onFailure" : true,
-    "onSuccess" : true
+    "slackConfiguration" : {
+      "webhook" : "webhook",
+      "onFailure" : true
+    }
   } ],
   "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
@@ -4170,13 +4174,15 @@ font-style: italic;
   "slug" : "slug",
   "securityUpdates" : true,
   "notifications" : [ {
-    "webhook" : "webhook",
-    "onFailure" : true,
-    "onSuccess" : true
+    "slackConfiguration" : {
+      "webhook" : "webhook",
+      "onFailure" : true
+    }
   }, {
-    "webhook" : "webhook",
-    "onFailure" : true,
-    "onSuccess" : true
+    "slackConfiguration" : {
+      "webhook" : "webhook",
+      "onFailure" : true
+    }
   } ],
   "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
@@ -4246,13 +4252,15 @@ font-style: italic;
   "slug" : "slug",
   "securityUpdates" : true,
   "notifications" : [ {
-    "webhook" : "webhook",
-    "onFailure" : true,
-    "onSuccess" : true
+    "slackConfiguration" : {
+      "webhook" : "webhook",
+      "onFailure" : true
+    }
   }, {
-    "webhook" : "webhook",
-    "onFailure" : true,
-    "onSuccess" : true
+    "slackConfiguration" : {
+      "webhook" : "webhook",
+      "onFailure" : true
+    }
   } ],
   "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
@@ -4327,6 +4335,7 @@ font-style: italic;
     <li><a href="#LogsRequestBody"><code>LogsRequestBody</code> - </a></li>
     <li><a href="#Notification"><code>Notification</code> - </a></li>
     <li><a href="#NotificationType"><code>NotificationType</code> - </a></li>
+    <li><a href="#SlackNotificationConfiguration"><code>SlackNotificationConfiguration</code> - </a></li>
     <li><a href="#SlugRequestBody"><code>SlugRequestBody</code> - </a></li>
     <li><a href="#SourceCoreConfig"><code>SourceCoreConfig</code> - </a></li>
     <li><a href="#SourceCreate"><code>SourceCreate</code> - </a></li>
@@ -4735,9 +4744,7 @@ font-style: italic;
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">notificationType </div><div class="param-desc"><span class="param-type"><a href="#NotificationType">NotificationType</a></span>  </div>
-<div class="param">webhook (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">onFailure (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
-<div class="param">onSuccess (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">slackConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#SlackNotificationConfiguration">SlackNotificationConfiguration</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -4745,6 +4752,14 @@ font-style: italic;
     <div class='model-description'></div>
     <div class="field-items">
           </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="SlackNotificationConfiguration"><code>SlackNotificationConfiguration</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">webhook </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">onFailure (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+    </div>  <!-- field-items -->
   </div>
   <div class="model">
     <h3><a name="SlugRequestBody"><code>SlugRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>

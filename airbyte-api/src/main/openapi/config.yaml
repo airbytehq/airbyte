@@ -1250,12 +1250,19 @@ components:
         # the jsonschema2pojo does not seem to support it yet: https://github.com/joelittlejohn/jsonschema2pojo/issues/392
         notificationType:
           $ref: "#/components/schemas/NotificationType"
+        slackConfiguration:
+          $ref: "#/components/schemas/SlackNotificationConfiguration"
+    SlackNotificationConfiguration:
+      type: object
+      required:
+        - webhook
+      properties:
         webhook:
           type: string
         onFailure:
           type: boolean
-        onSuccess:
-          type: boolean
+        #onSuccess:
+        #  type: boolean
     NotificationType:
       type: string
       enum:
