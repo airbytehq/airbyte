@@ -24,7 +24,9 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: '3.7'
-      - run: |
-          ./tools/integrations/manage.sh publish airbyte-integrations/connectors/source-oracle
-        name: publish oracle-source
+      - name: publish oracle-source
         id: publish
+        env:
+          TZ: UTC
+        run: |
+          ./tools/integrations/manage.sh publish airbyte-integrations/connectors/source-oracle
