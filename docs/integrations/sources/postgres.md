@@ -116,6 +116,7 @@ Please read the [CDC docs](../../architecture/cdc.md) for an overview of how Air
 * If you need a record of deletions and can accept the limitations posted below, you should to use CDC for Postgres.
 * If your data set is small and you just want snapshot of your table in the destination, consider using Full Refresh replication for your table instead of CDC.
 * If the limitations prevent you from using CDC and your goal is to maintain a snapshot of your table in the destination, consider using non-CDC incremental and occasionally reset the data and re-sync.
+* If your table has a primary key but doesn't have a reasonable cursor field for incremental syncing (i.e. `updated_at`), CDC allows you to sync your table incrementally.
 
 ### CDC Limitations
 * Make sure to read our [CDC docs](../../architecture/cdc.md) to see limitations that impact all databases using CDC replication.
