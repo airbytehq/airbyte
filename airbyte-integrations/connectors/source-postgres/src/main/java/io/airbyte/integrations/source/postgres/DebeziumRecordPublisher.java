@@ -25,9 +25,11 @@
 package io.airbyte.integrations.source.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.SyncMode;
 import io.debezium.engine.ChangeEvent;
 import io.debezium.engine.DebeziumEngine;
 import io.debezium.engine.format.Json;
@@ -72,9 +74,17 @@ public class DebeziumRecordPublisher implements AutoCloseable {
     engine = DebeziumEngine.create(Json.class)
         .using(getDebeziumProperties(config, catalog, offsetManager))
         .using(new AlwaysCommitOffsetPolicy())
-        .notifying(queue::add)
+        .notifying(e -> {
+          // debezium outputs a tombstone event that has a value of null. this is an artifact of how it
+          // interacts with kafka. we want to ignore it.
+          // more on the tombstone:
+          // https://debezium.io/documentation/reference/configuration/event-flattening.html
+          if (e.value() != null) {
+            queue.add(e);
+          }
+        })
         .using((success, message, error) -> {
-          LOGGER.info("completed!");
+          LOGGER.info("Debezium engine shutdown.");
           thrownError.set(error);
         })
         .build();
@@ -109,56 +119,58 @@ public class DebeziumRecordPublisher implements AutoCloseable {
   // todo: make this use the state for the files as well
   protected static Properties getDebeziumProperties(JsonNode config, ConfiguredAirbyteCatalog catalog, AirbyteFileOffsetBackingStore offsetManager) {
     final Properties props = new Properties();
+
+    // debezium engine configuration
     props.setProperty("name", "engine");
     props.setProperty("plugin.name", "pgoutput");
     props.setProperty("connector.class", "io.debezium.connector.postgresql.PostgresConnector");
     props.setProperty("offset.storage", "org.apache.kafka.connect.storage.FileOffsetBackingStore");
     props.setProperty("offset.storage.file.filename", offsetManager.getOffsetFilePath().toString());
     props.setProperty("offset.flush.interval.ms", "1000"); // todo: make this longer
+    props.setProperty("snapshot.mode", "exported"); // can use never if we want to manage full refreshes ourselves
 
     // https://debezium.io/documentation/reference/configuration/avro.html
     props.setProperty("key.converter.schemas.enable", "false");
     props.setProperty("value.converter.schemas.enable", "false");
 
-    // https://debezium.io/documentation/reference/configuration/event-flattening.html
-    props.setProperty("delete.handling.mode", "rewrite");
-    props.setProperty("drop.tombstones", "false");
-    props.setProperty("transforms.unwrap.type", "io.debezium.transforms.ExtractNewRecordState");
-
-    final String tableWhitelist = getTableWhitelist(catalog);
-    props.setProperty("table.include.list", tableWhitelist);
-    props.setProperty("database.include.list", config.get("database").asText());
+    // debezium names
     props.setProperty("name", "orders-postgres-connector");
-    props.setProperty("include_schema_changes", "true");
     props.setProperty("database.server.name", "orders"); // todo
+
+    // db connection configuration
     props.setProperty("database.hostname", config.get("host").asText());
     props.setProperty("database.port", config.get("port").asText());
     props.setProperty("database.user", config.get("username").asText());
+    props.setProperty("database.dbname", config.get("database").asText());
 
     if (config.has("password")) {
       props.setProperty("database.password", config.get("password").asText());
     }
 
-    props.setProperty("database.dbname", config.get("database").asText());
-    props.setProperty("database.history", "io.debezium.relational.history.FileDatabaseHistory"); // todo: any reason not to use in memory version and
-    // reload from
-    props.setProperty("database.history.file.filename", "/tmp/debezium/dbhistory-" + RandomStringUtils.randomAlphabetic(5) + ".dat");
-
     props.setProperty("slot.name", config.get("replication_slot").asText());
 
-    props.setProperty("snapshot.mode", "exported"); // can use never if we want to manage full refreshes ourselves
+    // table selection
+    final String tableWhitelist = getTableWhitelist(catalog);
+    props.setProperty("table.include.list", tableWhitelist);
+    props.setProperty("database.include.list", config.get("database").asText());
+
+    // todo (cgardens) do these properties do anything for us?
+    // reload from
+    props.setProperty("database.history", "io.debezium.relational.history.FileDatabaseHistory"); // todo: any reason not to use in memory version and
+    props.setProperty("database.history.file.filename", "/tmp/debezium/dbhistory-" + RandomStringUtils.randomAlphabetic(5) + ".dat");
 
     return props;
   }
 
+  @VisibleForTesting
   protected static String getTableWhitelist(ConfiguredAirbyteCatalog catalog) {
     return catalog.getStreams().stream()
+        .filter(s -> s.getSyncMode() == SyncMode.INCREMENTAL)
         .map(ConfiguredAirbyteStream::getStream)
         .map(AirbyteStream::getName)
         // debezium needs commas escaped to split properly
         .map(x -> StringUtils.escape(x, new char[] {','}, "\\,"))
         .collect(Collectors.joining(","));
-
   }
 
 }
