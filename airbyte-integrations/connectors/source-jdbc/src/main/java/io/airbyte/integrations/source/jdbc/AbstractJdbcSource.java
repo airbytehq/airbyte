@@ -134,10 +134,7 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
   public AirbyteCatalog discover(JsonNode config) throws Exception {
     try (final JdbcDatabase database = createDatabase(config)) {
       return new AirbyteCatalog()
-          .withStreams(getTables(
-              database,
-              Optional.ofNullable(config.get("database")).map(JsonNode::asText),
-              Optional.ofNullable(config.get("schema")).map(JsonNode::asText))
+          .withStreams(getTables(database, Optional.ofNullable(config.get("database")).map(JsonNode::asText))
                   .stream()
                   .map(t -> CatalogHelpers.createAirbyteStream(t.getName(), t.getSchemaName(), t.getFields())
                       .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
@@ -158,10 +155,7 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
 
     final JdbcDatabase database = createDatabase(config);
 
-    final Map<String, TableInfoInternal> tableNameToTable = discoverInternal(
-        database,
-        Optional.ofNullable(config.get("database")).map(JsonNode::asText),
-        Optional.ofNullable(config.get("schema")).map(JsonNode::asText))
+    final Map<String, TableInfoInternal> tableNameToTable = discoverInternal(database, Optional.ofNullable(config.get("database")).map(JsonNode::asText))
             .stream()
             .collect(Collectors.toMap(t -> String.format("%s.%s", t.getSchemaName(), t.getName()), Function.identity()));
 
@@ -332,12 +326,9 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
   }
 
   @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-  private List<TableInfo> getTables(final JdbcDatabase database,
-                                    final Optional<String> databaseOptional,
-                                    final Optional<String> schemaOptional)
-      throws Exception {
-    final List<TableInfoInternal> tableInfos = discoverInternal(database, databaseOptional, schemaOptional);
-    final Map<String, List<String>> tablePrimaryKeys = discoverPrimaryKeys(database, databaseOptional, schemaOptional, tableInfos);
+  private List<TableInfo> getTables(final JdbcDatabase database, final Optional<String> databaseOptional) throws Exception {
+    final List<TableInfoInternal> tableInfos = discoverInternal(database, databaseOptional);
+    final Map<String, List<String>> tablePrimaryKeys = discoverPrimaryKeys(database, databaseOptional, tableInfos);
     return tableInfos.stream()
         .map(t -> {
           // some databases return multiple copies of the same record for a column (e.g. redshift) because
@@ -365,14 +356,11 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
    * making repeated queries to the DB, we try to get all primary keys without specifying a table
    * first, if it doesn't work, we retry one table at a time.
    */
-  private Map<String, List<String>> discoverPrimaryKeys(JdbcDatabase database,
-                                                        Optional<String> databaseOptional,
-                                                        Optional<String> schemaOptional,
-                                                        List<TableInfoInternal> tableInfos) {
+  private Map<String, List<String>> discoverPrimaryKeys(JdbcDatabase database, Optional<String> databaseOptional, List<TableInfoInternal> tableInfos) {
     try {
       // Get all primary keys without specifying a table name
       final Map<String, List<String>> tablePrimaryKeys = aggregatePrimateKeys(database.bufferedResultSetQuery(
-          conn -> conn.getMetaData().getPrimaryKeys(databaseOptional.orElse(null), schemaOptional.orElse(null), null),
+          conn -> conn.getMetaData().getPrimaryKeys(databaseOptional.orElse(null), null, null),
           r -> {
             final String schemaName =
                 r.getObject(JDBC_COLUMN_SCHEMA_NAME) != null ? r.getString(JDBC_COLUMN_SCHEMA_NAME) : r.getString(JDBC_COLUMN_DATABASE_NAME);
@@ -437,13 +425,11 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
   }
 
   @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-  private List<TableInfoInternal> discoverInternal(final JdbcDatabase database,
-                                                   final Optional<String> databaseOptional,
-                                                   final Optional<String> schemaOptional)
+  private List<TableInfoInternal> discoverInternal(final JdbcDatabase database, final Optional<String> databaseOptional)
       throws Exception {
     final Set<String> internalSchemas = new HashSet<>(getExcludedInternalSchemas());
     return database.bufferedResultSetQuery(
-        conn -> conn.getMetaData().getColumns(databaseOptional.orElse(null), schemaOptional.orElse(null), null, null),
+        conn -> conn.getMetaData().getColumns(databaseOptional.orElse(null), null, null, null),
         resultSet -> Jsons.jsonNode(ImmutableMap.<String, Object>builder()
             // we always want a namespace, if we cannot get a schema, use db name.
             .put(INTERNAL_SCHEMA_NAME,
