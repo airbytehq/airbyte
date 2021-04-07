@@ -30,6 +30,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
+import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.Databases;
@@ -45,6 +46,7 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -133,17 +135,14 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
   @Override
   public AirbyteCatalog discover(JsonNode config) throws Exception {
     try (final JdbcDatabase database = createDatabase(config)) {
-      return new AirbyteCatalog()
-          .withStreams(getTables(database, Optional.ofNullable(config.get("database")).map(JsonNode::asText))
-              .stream()
-              .map(t -> CatalogHelpers.createAirbyteStream(t.getName(), t.getSchemaName(), t.getFields())
-                  .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-                  .withSourceDefinedPrimaryKey(t.getPrimaryKeys()
-                      .stream()
-                      .filter(Objects::nonNull)
-                      .map(Collections::singletonList)
-                      .collect(Collectors.toList())))
-              .collect(Collectors.toList()));
+      Optional<String> databaseName = Optional.ofNullable(config.get("database")).map(JsonNode::asText);
+      List<AirbyteStream> streams = getTables(database, databaseName).stream()
+          .map(tableInfo ->
+              CatalogHelpers.createAirbyteStream(tableInfo.getName(), tableInfo.getSchemaName(), tableInfo.getFields())
+              .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+              .withSourceDefinedPrimaryKey(Strings.boxToListofList(tableInfo.getPrimaryKeys())))
+          .collect(Collectors.toList());
+      return new AirbyteCatalog().withStreams(streams);
     }
   }
 
@@ -329,7 +328,7 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
   @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
   private List<TableInfo> getTables(final JdbcDatabase database, final Optional<String> databaseOptional) throws Exception {
     final List<TableInfoInternal> tableInfos = discoverInternal(database, databaseOptional);
-    final Map<String, List<String>> tablePrimaryKeys = discoverPrimaryKeys(database, databaseOptional, tableInfos);
+    final Map<String, List<String>> fullyQualifiedTableNameToPrimaryKeys = discoverPrimaryKeys(database, databaseOptional, tableInfos);
     return tableInfos.stream()
         .map(t -> {
           // some databases return multiple copies of the same record for a column (e.g. redshift) because
@@ -341,9 +340,10 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
               .map(f -> Field.of(f.getColumnName(), JdbcUtils.getType(f.getColumnType())))
               .distinct()
               .collect(Collectors.toList());
-          final String streamName = JdbcUtils.getFullyQualifiedTableName(t.getSchemaName(), t.getName());
-          final List<String> primaryKeys = tablePrimaryKeys.getOrDefault(streamName, Collections.emptyList());
-          return new TableInfo(streamName, t.getSchemaName(), fields, primaryKeys);
+          final String fullyQualifiedTableName =  JdbcUtils.getFullyQualifiedTableName(t.getSchemaName(), t.getName());
+          final List<String> primaryKeys = fullyQualifiedTableNameToPrimaryKeys.getOrDefault(fullyQualifiedTableName, Collections.emptyList());
+
+          return new TableInfo(t.getName(), t.getSchemaName(), fields, primaryKeys);
         })
         .collect(Collectors.toList());
   }

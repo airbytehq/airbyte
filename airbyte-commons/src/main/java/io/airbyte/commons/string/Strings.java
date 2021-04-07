@@ -25,6 +25,9 @@
 package io.airbyte.commons.string;
 
 import com.google.common.collect.Streams;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class Strings {
@@ -33,6 +36,11 @@ public class Strings {
     return Streams.stream(iterable)
         .map(Object::toString)
         .collect(Collectors.joining(separator));
+  }
+
+  public static List<List<String>> boxToListofList(List<String> list) {
+    var nonNullEntries = list.stream().filter(Objects::nonNull);
+    return nonNullEntries.map(Collections::singletonList).collect(Collectors.toList());
   }
 
 }
