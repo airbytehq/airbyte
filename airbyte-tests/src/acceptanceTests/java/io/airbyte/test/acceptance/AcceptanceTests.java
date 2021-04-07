@@ -68,6 +68,7 @@ import io.airbyte.api.client.model.LogsRequestBody;
 import io.airbyte.api.client.model.SourceCreate;
 import io.airbyte.api.client.model.SourceDefinitionIdRequestBody;
 import io.airbyte.api.client.model.SourceDefinitionSpecificationRead;
+import io.airbyte.api.client.model.SourceDefinitionUpdate;
 import io.airbyte.api.client.model.SourceIdRequestBody;
 import io.airbyte.api.client.model.SourceRead;
 import io.airbyte.api.client.model.SyncMode;
@@ -270,6 +271,12 @@ public class AcceptanceTests {
   @Test
   @Order(5)
   public void testDiscoverSourceSchema() throws ApiException {
+    // TODO(davin): Temporary use the dev image for schema tests. This will be removed once the version
+    // is released.
+    var update = new SourceDefinitionUpdate()
+        .sourceDefinitionId(UUID.fromString("decd338e-5647-4c0b-adf4-da0e75f5a750"))
+        .dockerImageTag("dev");
+    apiClient.getSourceDefinitionApi().updateSourceDefinition(update);
     final UUID sourceId = createPostgresSource().getSourceId();
 
     final AirbyteCatalog actual = discoverSourceSchema(sourceId);
@@ -283,6 +290,7 @@ public class AcceptanceTests {
         .build());
     final AirbyteStream stream = new AirbyteStream()
         .name(STREAM_NAME)
+        .namespace("public")
         .jsonSchema(jsonSchema)
         .defaultCursorField(Collections.emptyList())
         .sourceDefinedPrimaryKey(Collections.emptyList())
