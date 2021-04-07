@@ -174,5 +174,9 @@ az postgres server restart --resource-group group --name server
 
 Finally, [follow the rest of steps above](#setting-up-cdc-for-postgres).
 
+### Setting up CDC on Google CloudSQL
+
+Unfortunately, logical replication is not configurable for Google CloudSQL. You can indicate your support for this feature on the [Google Issue Tracker](https://issuetracker.google.com/issues/120274585).
+
 ### Setting up CDC on other platforms
 If you encounter one of those not listed below, please consider [contributing to our docs](https://github.com/airbytehq/airbyte/tree/master/docs) and providing setup instructions.
