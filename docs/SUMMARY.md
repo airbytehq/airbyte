@@ -86,6 +86,7 @@
   * [Incremental Sync](architecture/incremental.md)
   * [Workers & Jobs](architecture/jobs.md)
   * [Technical Stack](architecture/tech-stack.md)
+  * [Change Data Capture (CDC)](architecture/cdc.md)
 * [Contributing to Airbyte](contributing-to-airbyte/README.md)
   * [Code of Conduct](contributing-to-airbyte/code-of-conduct.md)
   * [Developing Locally](contributing-to-airbyte/developing-locally.md)
