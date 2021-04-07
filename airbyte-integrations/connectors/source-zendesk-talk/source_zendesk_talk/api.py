@@ -87,7 +87,7 @@ class API:
 
         return response.json()
 
-    @retry_pattern(backoff.expo, max_tries=3, factor=3)
+    @retry_pattern(backoff.expo, max_tries=4, factor=5)
     def get(self, url: str, domain_inclusion=False, params=None) -> Union[MutableMapping[str, Any], List[MutableMapping[str, Any]]]:
         response = self._session.get(url if domain_inclusion else self.BASE_URL + url, params=params or {})
         return self._parse_and_handle_errors(response)
@@ -271,7 +271,8 @@ class CallsStream(Stream):
     data_field = "calls"
 
     def list(self, fields) -> Iterable:
-        yield from self.read(partial(self._api.get, url=self.url, params={"start_time": int(self._start_date.timestamp())}))
+        params = {"start_time": int(self._start_date.timestamp())}
+        yield from self.read(partial(self._api.get, url=self.url, params=params))
 
 
 class CallLegsStream(Stream):
@@ -283,4 +284,5 @@ class CallLegsStream(Stream):
     data_field = "legs"
 
     def list(self, fields) -> Iterable:
-        yield from self.read(partial(self._api.get, url=self.url, params={"start_time": int(self._start_date.timestamp())}))
+        params = {"start_time": int(self._start_date.timestamp())}
+        yield from self.read(partial(self._api.get, url=self.url, params=params))

@@ -25,31 +25,34 @@ SOFTWARE.
 import json
 from pathlib import Path
 
+import pytest
 from airbyte_protocol import ConfiguredAirbyteCatalog, Type
 from base_python import AirbyteLogger
 from source_zendesk_talk.source import SourceZendeskTalk
 
 BASE_DIRECTORY = Path(__file__).resolve().parent.parent
-config = json.loads(open(f"{BASE_DIRECTORY}/secrets/config.json", "r").read())
 
 
-class TestInstagramSource:
-    def test_insights_streams_outputs_records(self):
+@pytest.fixture(name="config_credentials")
+def config_credentials_fixture():
+    return json.loads(open(f"{BASE_DIRECTORY}/secrets/config.json", "r").read())
+
+
+@pytest.fixture(name="configured_catalog")
+def configured_catalog_fixture():
+    return ConfiguredAirbyteCatalog.parse_raw(
+        open(f"{BASE_DIRECTORY}/sample_files/configured_catalog_activities_overview.json", "r").read()
+    )
+
+
+class TestZendeskTalkSource:
+    def test_streams_outputs_records(self, config_credentials, configured_catalog):
         """
-        Using standard tests is unreliable for Agent Aivities and Agent Overview streams,
+        Using standard tests is unreliable for Agent Activities and Agent Overview streams,
         because the data there changes in real-time, therefore additional pytests are used.
         """
-        catalog = self._read_catalog(f"{BASE_DIRECTORY}/sample_files/configured_catalog_activities_overview.json")
-        self._run_sync_test(config, catalog)
-
-    @staticmethod
-    def _read_catalog(path):
-        return ConfiguredAirbyteCatalog.parse_raw(open(path, "r").read())
-
-    @staticmethod
-    def _run_sync_test(conf, catalog):
         records = []
-        for message in SourceZendeskTalk().read(AirbyteLogger(), conf, catalog):
+        for message in SourceZendeskTalk().read(AirbyteLogger(), config_credentials, configured_catalog):
             if message.type == Type.RECORD:
                 records.append(message)
 

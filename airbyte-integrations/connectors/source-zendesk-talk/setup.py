@@ -32,7 +32,7 @@ MAIN_REQUIREMENTS = [
     "requests==2.25.1",
 ]
 
-TEST_REQUIREMENTS = ["pytest"]
+TEST_REQUIREMENTS = ["pytest", "requests_mock==1.8.0"]
 
 
 setup(
