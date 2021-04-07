@@ -75,8 +75,6 @@ class JdbcSourceStressTest extends JdbcStressTest {
         .put("password", PSQL_DB.getPassword())
         .build());
 
-    System.out.println("config = " + config);
-
     final String initScriptName = "init_" + dbName.concat(".sql");
     final String tmpFilePath = IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), PSQL_DB);
