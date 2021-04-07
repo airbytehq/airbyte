@@ -135,15 +135,15 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
     try (final JdbcDatabase database = createDatabase(config)) {
       return new AirbyteCatalog()
           .withStreams(getTables(database, Optional.ofNullable(config.get("database")).map(JsonNode::asText))
-                  .stream()
-                  .map(t -> CatalogHelpers.createAirbyteStream(t.getName(), t.getSchemaName(), t.getFields())
-                      .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-                      .withSourceDefinedPrimaryKey(t.getPrimaryKeys()
-                          .stream()
-                          .filter(Objects::nonNull)
-                          .map(Collections::singletonList)
-                          .collect(Collectors.toList())))
-                  .collect(Collectors.toList()));
+              .stream()
+              .map(t -> CatalogHelpers.createAirbyteStream(t.getName(), t.getSchemaName(), t.getFields())
+                  .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+                  .withSourceDefinedPrimaryKey(t.getPrimaryKeys()
+                      .stream()
+                      .filter(Objects::nonNull)
+                      .map(Collections::singletonList)
+                      .collect(Collectors.toList())))
+              .collect(Collectors.toList()));
     }
   }
 
@@ -155,7 +155,8 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
 
     final JdbcDatabase database = createDatabase(config);
 
-    final Map<String, TableInfoInternal> tableNameToTable = discoverInternal(database, Optional.ofNullable(config.get("database")).map(JsonNode::asText))
+    final Map<String, TableInfoInternal> tableNameToTable =
+        discoverInternal(database, Optional.ofNullable(config.get("database")).map(JsonNode::asText))
             .stream()
             .collect(Collectors.toMap(t -> String.format("%s.%s", t.getSchemaName(), t.getName()), Function.identity()));
 
@@ -356,7 +357,9 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
    * making repeated queries to the DB, we try to get all primary keys without specifying a table
    * first, if it doesn't work, we retry one table at a time.
    */
-  private Map<String, List<String>> discoverPrimaryKeys(JdbcDatabase database, Optional<String> databaseOptional, List<TableInfoInternal> tableInfos) {
+  private Map<String, List<String>> discoverPrimaryKeys(JdbcDatabase database,
+                                                        Optional<String> databaseOptional,
+                                                        List<TableInfoInternal> tableInfos) {
     try {
       // Get all primary keys without specifying a table name
       final Map<String, List<String>> tablePrimaryKeys = aggregatePrimateKeys(database.bufferedResultSetQuery(
