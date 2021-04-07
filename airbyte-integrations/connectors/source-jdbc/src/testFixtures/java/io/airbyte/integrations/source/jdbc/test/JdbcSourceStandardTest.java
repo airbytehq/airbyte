@@ -636,7 +636,7 @@ public abstract class JdbcSourceStandardTest {
                         .withCursor("3"),
                     new JdbcStreamState()
                         .withStreamName(streamName2)
-                        .withCursorField(ImmutableList.of(COL_ID)))
+                        .withCursorField(ImmutableList.of(COL_ID))))
                 .withCdc(false)
                 .withCdcState(new CdcState())))));
 

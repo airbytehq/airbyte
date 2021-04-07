@@ -64,8 +64,8 @@ class IOsTest {
 
     assertEquals(path.resolve("file"), filePath);
     assertEquals("abc", IOs.readFile(path, "file"));
- }
-  
+  }
+
   @Test
   public void testWriteFileToRandomDir() throws IOException {
     final String contents = "something to remember";

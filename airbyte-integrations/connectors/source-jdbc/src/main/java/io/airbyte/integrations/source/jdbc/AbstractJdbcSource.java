@@ -607,7 +607,7 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
    * The following two classes are internal data structures to ease managing tables. Any external
    * information should be revealed through the {@link TableInfo} class.
    */
-  static class TableInfoInternal {
+  public static class TableInfoInternal {
 
     private final String schemaName;
     private final String name;
