@@ -1,4 +1,4 @@
-FROM airbyte/base-airbyte-protocol-python:dev
+FROM airbyte/base-airbyte-protocol-python:0.1.1
 COPY --from=airbyte/integration-base:dev /airbyte /airbyte
 
 WORKDIR /airbyte/base_python_code
@@ -14,5 +14,5 @@ ENV AIRBYTE_READ_CMD "base-python read"
 
 ENTRYPOINT ["/airbyte/base.sh"]
 
-LABEL io.airbyte.version=0.1.0
+LABEL io.airbyte.version=0.1.1
 LABEL io.airbyte.name=airbyte/integration-base-python

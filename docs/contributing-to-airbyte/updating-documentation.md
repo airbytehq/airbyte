@@ -19,3 +19,4 @@ All our docs are stored in the `docs` directory. You can use other files as exam
 If you're adding new files, don't forget to update `docs/SUMMARY.md`.
 
 Once you're satisfied with your changes just follow the regular PR process.
+

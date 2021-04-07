@@ -7,6 +7,7 @@
   "sidebar.help": "Help",
   "sidebar.docs": "Docs",
   "sidebar.slack": "Slack",
+  "sidebar.settings": "Settings",
 
   "form.continue": "Continue",
   "form.emailOptional": "Your email (optional)",
@@ -75,8 +76,8 @@
   "form.edit": "Edit",
   "form.done": "Done",
   "form.examples": "(e.g. {examples})",
-  "form.prefix": "Namespace Prefix",
-  "form.prefix.message": "Where to replicate your data to in your destination",
+  "form.prefix": "Table Prefix",
+  "form.prefix.message": "Prefix to prefix all destination tables created as part of this connection. Useful for identifying tables on a per-connection basis.",
   "form.prefix.placeholder": "/configured-setting",
   "form.nameSearch": "Search name",
   "form.sourceConnector": "Source connector",
@@ -268,6 +269,9 @@
   "admin.downloadSchedulerLogs": "Download Scheduler Logs",
   "admin.upgradeAll": "Upgrade all",
   "admin.upgraded": "Upgraded!",
+
+  "settings.accountSettings": "Account Settings",
+  "settings.changeSaved": "change saved!",
 
   "demo.message.title": "This demo is read-only",
   "demo.message.body": "You cannot add or edit any connectors. You will see error messages on purpose if you try to do so."

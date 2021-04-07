@@ -7,13 +7,14 @@ description: Common issues and their workarounds
 ## `docker.errors.DockerException: Error while fetching server API version`
 
 If you see the following error:
-```
+
+```text
 docker.errors.DockerException: Error while fetching server API
 version: ('Connection aborted.', FileNotFoundError(2, 'No such file or
 directory'))
 ```
 
-It usually means that Docker isn't running on your machine (and a running Docker daemon is required to run Airbyte). An easy way to verify this is to run `docker ps`, which will show `Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?` if the Docker daemon is not running on your machine.
+It usually means that Docker isn't running on your machine \(and a running Docker daemon is required to run Airbyte\). An easy way to verify this is to run `docker ps`, which will show `Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?` if the Docker daemon is not running on your machine.
 
 ## Airbyte is stuck while loading required configuration parameters for my connector
 
@@ -44,7 +45,7 @@ If the above workaround does not fix your problem, please report it [here](https
 
 ## Your incremental connection is not working
 
-Our current version of incremental is [append](../architecture/incremental-append.md). It works from a cursor field. So you need to check which cursor field you're using and if it's well populated in every record in your table.
+Our current version of incremental is [append](../architecture/connections/incremental-append.md). It works from a cursor field. So you need to check which cursor field you're using and if it's well populated in every record in your table.
 
 If this is true, then, there are still several things to check:
 
@@ -70,3 +71,19 @@ Depending on your Docker network configuration, you may not be able to connect t
 
 If you are running into connection refused errors when running Airbyte via Docker Compose on Mac, try using `host.docker.internal` as the host. On Linux, you may have to modify `docker-compose.yml` and add a host that maps to your local machine using [`extra_hosts`](https://docs.docker.com/compose/compose-file/compose-file-v3/#extra_hosts).
 
+## **Can I disable analytics in Airbyte?**
+
+Yes, you can control what's sent outside of Airbyte for analytics purposes.
+
+We instrumented some parts of Airbyte for the following reasons:
+- measure usage of Airbyte
+- measure usage of features & connectors
+- collect connector telemetry to measure stability
+- reach out to our users if they opt-in
+- ...
+
+To disable telemetry, modify the `.env` file and define the two following environment variables:
+```
+TRACKING_STRATEGY=logging
+PAPERCUPS_STORYTIME=disabled
+```

@@ -32,7 +32,8 @@ cmd_build() {
   echo "Building $path"
   ./gradlew "$(_to_gradle_path "$path" clean)"
   ./gradlew "$(_to_gradle_path "$path" build)"
-  ./gradlew "$(_to_gradle_path "$path" integrationTest)"
+
+  [[ "$path" =~ ^airbyte-integrations/bases* ]] || ./gradlew "$(_to_gradle_path "$path" integrationTest)"
 }
 
 cmd_publish() {

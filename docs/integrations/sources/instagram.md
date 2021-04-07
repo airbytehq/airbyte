@@ -68,12 +68,13 @@ Follow the [Instagram documentation](https://www.facebook.com/business/help/1492
 
 To work with the Instagram connector, you need to generate an Access Token with the following permissions:
 
-* [instagram_basic](https://developers.facebook.com/docs/permissions/reference/instagram_basic)
-* [instagram_manage_insights](https://developers.facebook.com/docs/permissions/reference/instagram_manage_insights)
-* [pages_show_list](https://developers.facebook.com/docs/permissions/reference/pages_show_list)
-* [pages_read_engagement](https://developers.facebook.com/docs/permissions/reference/pages_read_engagement)
+* [instagram\_basic](https://developers.facebook.com/docs/permissions/reference/instagram_basic)
+* [instagram\_manage\_insights](https://developers.facebook.com/docs/permissions/reference/instagram_manage_insights)
+* [pages\_show\_list](https://developers.facebook.com/docs/permissions/reference/pages_show_list)
+* [pages\_read\_engagement](https://developers.facebook.com/docs/permissions/reference/pages_read_engagement)
 * [Instagram Public Content Access](https://developers.facebook.com/docs/apps/features-reference/instagram-public-content-access)
 
 More details how to get a User's Access Token you can find in the following docs: [Access Tokens](https://developers.facebook.com/docs/facebook-login/access-tokens/#usertokens) and [User and Page Access Tokens](https://developers.facebook.com/docs/pages/access-tokens)
 
 With the Instagram Account ID and API access token, you should be ready to start pulling data from the Facebook Instagram API. Head to the Airbyte UI to setup your source connector!
+
