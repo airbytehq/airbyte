@@ -8,7 +8,7 @@ In this article, we will show you how you can understand how much your team leve
 
 Here is what we will cover:
 
-* Step 1: Setting up data replication from Zoom to a PostgreSQL database using the Airbyte Zoom connector
+1. Replicating data from Zoom to a PostgreSQL database Airbyte
 * Step 2: Connecting the PostgreSQL database to Tableau
 * Step 3: Creating charts in Tableau with Zoom data
 
