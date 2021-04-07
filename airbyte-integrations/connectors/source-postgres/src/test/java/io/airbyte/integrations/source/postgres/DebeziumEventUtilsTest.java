@@ -28,8 +28,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -43,7 +41,7 @@ class DebeziumEventUtilsTest {
 
   @Test
   public void testConvertChangeEvent() throws IOException {
-    final String stream = "names";
+    final String stream = "public.names";
     final Instant emittedAt = Instant.now();
     ChangeEvent<String, String> insertChangeEvent = mockChangeEvent("insert_change_event.json");
     ChangeEvent<String, String> updateChangeEvent = mockChangeEvent("update_change_event.json");
@@ -83,9 +81,8 @@ class DebeziumEventUtilsTest {
         .withRecord(recordMessage);
   }
 
-  private static void deepCompare(Object expected, Object actual) throws JsonProcessingException {
-    ObjectMapper objectMapper = new ObjectMapper();
-    assertEquals(objectMapper.readTree(Jsons.serialize(expected)), objectMapper.readTree(Jsons.serialize(actual)));
+  private static void deepCompare(Object expected, Object actual) {
+    assertEquals(Jsons.deserialize(Jsons.serialize(expected)), Jsons.deserialize(Jsons.serialize(actual)));
   }
 
 }

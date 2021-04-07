@@ -396,7 +396,8 @@ class PostgresSourceCdcTest {
 
     assertExpectedRecords(Collections.emptySet(), recordMessages2);
     assertExpectedStateMessages(stateMessages2);
-  
+  }
+
   @Test
   void testReadWithoutReplicationSlot() throws SQLException {
     final String fullReplicationSlot = SLOT_NAME_BASE + "_" + dbName;
