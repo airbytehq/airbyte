@@ -64,7 +64,7 @@ Select **JWT** as the app you want to build and click on the **Create** button o
 
 Next, click on the **Create** button on the modal.
 
-You will then be taken to the **App Information** page of the app you just created. Fill in the required information \(at the very least\).
+You will then be taken to the **App Information** page of the app you just created. Fill in the required information.
 
 ![](../.gitbook/assets/06_app-information.png)
 
