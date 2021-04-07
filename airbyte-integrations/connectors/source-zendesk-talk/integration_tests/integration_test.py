@@ -35,14 +35,13 @@ BASE_DIRECTORY = Path(__file__).resolve().parent.parent
 
 @pytest.fixture(name="config_credentials")
 def config_credentials_fixture():
-    return json.loads(open(f"{BASE_DIRECTORY}/secrets/config.json", "r").read())
+    with open(str(BASE_DIRECTORY / "secrets/config.json"), "r") as f:
+        return json.load(f)
 
 
 @pytest.fixture(name="configured_catalog")
 def configured_catalog_fixture():
-    return ConfiguredAirbyteCatalog.parse_raw(
-        open(f"{BASE_DIRECTORY}/sample_files/configured_catalog_activities_overview.json", "r").read()
-    )
+    return ConfiguredAirbyteCatalog.parse_file(BASE_DIRECTORY / "sample_files/configured_catalog_activities_overview.json")
 
 
 class TestZendeskTalkSource:
