@@ -271,7 +271,8 @@ public class AcceptanceTests {
   @Test
   @Order(5)
   public void testDiscoverSourceSchema() throws ApiException {
-    //TODO(davin): Temporary use the dev image for schema tests. This will be removed once the version is released.
+    // TODO(davin): Temporary use the dev image for schema tests. This will be removed once the version
+    // is released.
     var update = new SourceDefinitionUpdate()
         .sourceDefinitionId(UUID.fromString("decd338e-5647-4c0b-adf4-da0e75f5a750"))
         .dockerImageTag("dev");
