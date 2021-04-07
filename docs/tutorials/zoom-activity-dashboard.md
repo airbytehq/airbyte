@@ -94,7 +94,7 @@ And you will be taken to the page to add your destination.
 
 ![](../.gitbook/assets/10_destination.png)
 
-For our destination, we will be using a PostgreSQL, since Tableau supports PostgreSQL as a data source. Click on the **add destination** button, and then in the drop down click on **+ add a new destination**.  In the page that presents itself, add the destination name and choose the Postgres destination.
+For our destination, we will be using a PostgreSQL database, since Tableau supports PostgreSQL as a data source. Click on the **add destination** button, and then in the drop down click on **+ add a new destination**.  In the page that presents itself, add the destination name and choose the Postgres destination.
 
 ![](../.gitbook/assets/11_choose-postgres-destination.png)
 
