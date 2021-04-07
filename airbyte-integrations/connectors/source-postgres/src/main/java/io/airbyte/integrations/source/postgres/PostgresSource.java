@@ -140,7 +140,8 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
         }, JdbcUtils::rowToJson).collect(toList());
 
         if (matchingSlots.size() != 1) {
-          throw new RuntimeException("Replication slot doesn't exist! Please read the docs and add a replication slot to your database.");
+          throw new RuntimeException("Expected exactly one replication slot but found " + matchingSlots.size()
+              + ". Please read the docs and add a replication slot to your database.");
         }
 
       });
