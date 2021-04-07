@@ -66,6 +66,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -409,8 +410,9 @@ public abstract class TestDestination {
     configuredCatalog.getStreams().forEach(s -> {
       s.withSyncMode(SyncMode.INCREMENTAL);
       s.withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP);
-      s.withCursorField(List.of("_airbyte_emitted_at"));
-      s.withPrimaryKey(List.of(List.of("date")));
+      s.withCursorField(Collections.emptyList());
+      // use composite primary key of various types (string, float)
+      s.withPrimaryKey(List.of(List.of("currency"), List.of("date"), List.of("NZD")));
     });
 
     final List<AirbyteMessage> firstSyncMessages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
@@ -418,15 +420,29 @@ public abstract class TestDestination {
     final JsonNode config = getConfigWithBasicNormalization();
     runSync(config, firstSyncMessages, configuredCatalog);
 
-    final List<AirbyteMessage> secondSyncMessages = Lists.newArrayList(new AirbyteMessage()
-        .withRecord(new AirbyteRecordMessage()
-            .withStream(catalog.getStreams().get(0).getName())
-            .withEmittedAt(Instant.now().toEpochMilli())
-            .withData(Jsons.jsonNode(ImmutableMap.builder()
-                .put("date", "2020-09-01T00:00:00Z")
-                .put("HKD", 10)
-                .put("NZD", 700)
-                .build()))));
+    final List<AirbyteMessage> secondSyncMessages = Lists.newArrayList(
+        new AirbyteMessage()
+            .withType(Type.RECORD)
+            .withRecord(new AirbyteRecordMessage()
+                .withStream(catalog.getStreams().get(0).getName())
+                .withEmittedAt(Instant.now().toEpochMilli())
+                .withData(Jsons.jsonNode(ImmutableMap.builder()
+                    .put("currency", "EUR")
+                    .put("date", "2020-09-01T00:00:00Z")
+                    .put("HKD", 10.5)
+                    .put("NZD", 1.14)
+                    .build()))),
+        new AirbyteMessage()
+            .withType(Type.RECORD)
+            .withRecord(new AirbyteRecordMessage()
+                .withStream(catalog.getStreams().get(0).getName())
+                .withEmittedAt(Instant.now().toEpochMilli() + 100L)
+                .withData(Jsons.jsonNode(ImmutableMap.builder()
+                    .put("currency", "USD")
+                    .put("date", "2020-09-01T00:00:00Z")
+                    .put("HKD", 5.4)
+                    .put("NZD", 1.14)
+                    .build()))));
     runSync(config, secondSyncMessages, configuredCatalog);
 
     final List<AirbyteMessage> expectedMessagesAfterSecondSync = new ArrayList<>();
@@ -437,7 +453,9 @@ public abstract class TestDestination {
         .stream()
         .filter(message -> message.getType() == Type.RECORD && message.getRecord() != null)
         .collect(Collectors.toMap(
-            message -> message.getRecord().getData().get("date").asText(),
+            message -> message.getRecord().getData().get("currency").asText() +
+                message.getRecord().getData().get("date").asText() +
+                message.getRecord().getData().get("NZD").asText(),
             message -> message,
             // keep only latest emitted record message per primary key/cursor
             (a, b) -> a.getRecord().getEmittedAt() > b.getRecord().getEmittedAt() ? a : b));
@@ -446,7 +464,9 @@ public abstract class TestDestination {
         .stream()
         .filter(message -> message.getType() == Type.RECORD && message.getRecord() != null)
         .filter(message -> {
-          final String key = message.getRecord().getData().get("date").asText();
+          final String key = message.getRecord().getData().get("currency").asText() +
+              message.getRecord().getData().get("date").asText() +
+              message.getRecord().getData().get("NZD").asText();
           return message.getRecord().getEmittedAt().equals(latestMessagesOnly.get(key).getRecord().getEmittedAt());
         }).collect(Collectors.toList());
 
