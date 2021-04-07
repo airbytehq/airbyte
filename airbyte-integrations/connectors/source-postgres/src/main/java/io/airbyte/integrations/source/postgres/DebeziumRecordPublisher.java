@@ -41,7 +41,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.codehaus.plexus.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -115,8 +114,6 @@ public class DebeziumRecordPublisher implements AutoCloseable {
     }
   }
 
-  // todo: make this use catalog as well
-  // todo: make this use the state for the files as well
   protected static Properties getDebeziumProperties(JsonNode config, ConfiguredAirbyteCatalog catalog, AirbyteFileOffsetBackingStore offsetManager) {
     final Properties props = new Properties();
 
@@ -127,15 +124,15 @@ public class DebeziumRecordPublisher implements AutoCloseable {
     props.setProperty("offset.storage", "org.apache.kafka.connect.storage.FileOffsetBackingStore");
     props.setProperty("offset.storage.file.filename", offsetManager.getOffsetFilePath().toString());
     props.setProperty("offset.flush.interval.ms", "1000"); // todo: make this longer
-    props.setProperty("snapshot.mode", "exported"); // can use never if we want to manage full refreshes ourselves
+    props.setProperty("snapshot.mode", "exported");
 
     // https://debezium.io/documentation/reference/configuration/avro.html
     props.setProperty("key.converter.schemas.enable", "false");
     props.setProperty("value.converter.schemas.enable", "false");
 
     // debezium names
-    props.setProperty("name", "orders-postgres-connector");
-    props.setProperty("database.server.name", "orders"); // todo
+    props.setProperty("name", config.get("database").asText());
+    props.setProperty("database.server.name", config.get("database").asText());
 
     // db connection configuration
     props.setProperty("database.hostname", config.get("host").asText());
@@ -153,11 +150,6 @@ public class DebeziumRecordPublisher implements AutoCloseable {
     final String tableWhitelist = getTableWhitelist(catalog);
     props.setProperty("table.include.list", tableWhitelist);
     props.setProperty("database.include.list", config.get("database").asText());
-
-    // todo (cgardens) do these properties do anything for us?
-    // reload from
-    props.setProperty("database.history", "io.debezium.relational.history.FileDatabaseHistory"); // todo: any reason not to use in memory version and
-    props.setProperty("database.history.file.filename", "/tmp/debezium/dbhistory-" + RandomStringUtils.randomAlphabetic(5) + ".dat");
 
     return props;
   }
