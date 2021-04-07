@@ -24,6 +24,8 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import static java.util.stream.Collectors.toList;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
@@ -64,7 +66,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -111,7 +112,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
       final List<AirbyteStream> streams = catalog.getStreams().stream()
           .map(PostgresSource::removeIncrementalWithoutPk)
           .map(PostgresSource::addCdcMetadataColumns)
-          .collect(Collectors.toList());
+          .collect(toList());
 
       catalog.setStreams(streams);
     }
@@ -124,20 +125,28 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
     final List<CheckedConsumer<JdbcDatabase, Exception>> checkOperations = new ArrayList<>(super.getCheckOperations(config));
 
     if (isCdc(config)) {
-      checkOperations.add(database -> database.query(connection -> {
-        final String replicationSlot = config.get("replication_slot").asText();
-        // todo: we can't use enquoteIdentifier since this isn't an identifier, it's a value. fix this to
-        // prevent sql injection
-        final String sql =
-            String.format("SELECT slot_name, plugin, database FROM pg_replication_slots WHERE slot_name = '%s' AND plugin = '%s' AND database = '%s'",
-                replicationSlot,
-                "pgoutput",
-                config.get("database").asText());
+      checkOperations.add(database -> {
+        List<JsonNode> matchingSlots = database.query(connection -> {
+          final String replicationSlot = config.get("replication_slot").asText();
+          // todo: we can't use enquoteIdentifier since this isn't an identifier, it's a value. fix this to
+          // prevent sql injection
+          final String sql =
+              String.format(
+                  "SELECT slot_name, plugin, database FROM pg_replication_slots WHERE slot_name = '%s' AND plugin = '%s' AND database = '%s'",
+                  replicationSlot,
+                  "pgoutput",
+                  config.get("database").asText());
 
-        LOGGER.info("Attempting to find the named replication slot using the query: " + sql);
+          LOGGER.info("Attempting to find the named replication slot using the query: " + sql);
 
-        return connection.prepareStatement(sql);
-      }, JdbcUtils::rowToJson));
+          return connection.prepareStatement(sql);
+        }, JdbcUtils::rowToJson).collect(toList());
+
+        if (matchingSlots.size() != 1) {
+          throw new RuntimeException("Replication slot doesn't exist! Please read the docs and add a replication slot to your database.");
+        }
+
+      });
     }
 
     return checkOperations;
@@ -145,10 +154,11 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
 
   @Override
   public AutoCloseableIterator<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception {
-    // this check is used to ensure that have the pgoutput slot available so Debezium won't attempt to create it.
+    // this check is used to ensure that have the pgoutput slot available so Debezium won't attempt to
+    // create it.
     final AirbyteConnectionStatus check = check(config);
 
-    if(check.getStatus().equals(AirbyteConnectionStatus.Status.FAILED)) {
+    if (check.getStatus().equals(AirbyteConnectionStatus.Status.FAILED)) {
       throw new RuntimeException("Unable establish a connection: " + check.getMessage());
     }
 
