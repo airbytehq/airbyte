@@ -43,6 +43,7 @@ import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.JdbcStateManager;
 import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteStateMessage;
@@ -138,6 +139,18 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
     }
 
     return checkOperations;
+  }
+
+  @Override
+  public AutoCloseableIterator<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception {
+    // this check is used to ensure that have the pgoutput slot available so Debezium won't attempt to create it.
+    final AirbyteConnectionStatus check = check(config);
+
+    if(check.getStatus().equals(AirbyteConnectionStatus.Status.FAILED)) {
+      throw new RuntimeException("Unable establish a connection: " + check.getMessage());
+    }
+
+    return super.read(config, catalog, state);
   }
 
   private static PgLsn getLsn(JdbcDatabase database) {
