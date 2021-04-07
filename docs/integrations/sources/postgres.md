@@ -123,6 +123,8 @@ Please read the [CDC docs](../../architecture/cdc.md) for an overview of how Air
 * Airbyte requires a replication slot configured only for its use. Only one source should be configured that uses this replication slot. Instructions on how to set up a replication slot can be found below.
 * Log-based replication only works for master instances of Postgres.
 * Using logical replication increases disk space used on the database server. The additional data is stored until it is consumed.
+    * We recommend setting frequent syncs for CDC in order to ensure that this data doesn't fill up your disk space.
+    * If you stop syncing a CDC-configured Postgres instance to Airbyte, you should delete the replication slot. Otherwise, it may fill up your disk space.
 
 ### Setting up CDC for Postgres
 
