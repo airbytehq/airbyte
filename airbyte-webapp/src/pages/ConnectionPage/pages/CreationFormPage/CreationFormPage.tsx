@@ -17,11 +17,12 @@ import SourceResource from "core/resources/Source";
 import DestinationResource from "core/resources/Destination";
 
 type IProps = {
-  type: "source" | "destination";
+  type: "source" | "destination" | "connection";
 };
 
 export enum StepsTypes {
   CREATE_ENTITY = "createEntity",
+  CREATE_CONNECTOR = "createConnector",
   CREATE_CONNECTION = "createConnection",
 }
 
@@ -50,21 +51,37 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
       : null
   );
 
-  const steps = [
-    {
-      id: StepsTypes.CREATE_ENTITY,
-      name:
-        type === "destination" ? (
-          <FormattedMessage id={"onboarding.createDestination"} />
-        ) : (
-          <FormattedMessage id={"onboarding.createSource"} />
-        ),
-    },
-    {
-      id: StepsTypes.CREATE_CONNECTION,
-      name: <FormattedMessage id={"onboarding.setUpConnection"} />,
-    },
-  ];
+  const steps =
+    type === "connection"
+      ? [
+          {
+            id: StepsTypes.CREATE_ENTITY,
+            name: <FormattedMessage id={"onboarding.createSource"} />,
+          },
+          {
+            id: StepsTypes.CREATE_CONNECTOR,
+            name: <FormattedMessage id={"onboarding.createDestination"} />,
+          },
+          {
+            id: StepsTypes.CREATE_CONNECTION,
+            name: <FormattedMessage id={"onboarding.setUpConnection"} />,
+          },
+        ]
+      : [
+          {
+            id: StepsTypes.CREATE_ENTITY,
+            name:
+              type === "destination" ? (
+                <FormattedMessage id={"onboarding.createDestination"} />
+              ) : (
+                <FormattedMessage id={"onboarding.createSource"} />
+              ),
+          },
+          {
+            id: StepsTypes.CREATE_CONNECTION,
+            name: <FormattedMessage id={"onboarding.setUpConnection"} />,
+          },
+        ];
   const [currentStep, setCurrentStep] = useState(StepsTypes.CREATE_ENTITY);
   const [currentEntityStep, setCurrentEntityStep] = useState(
     EntityStepsTypes.SOURCE
@@ -73,30 +90,41 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
   const afterSubmitConnection = () => {
     if (type === "destination") {
       push(`${Routes.Source}/${source?.sourceId}`);
-    } else {
+    } else if (type === "source") {
       push(`${Routes.Destination}/${destination?.destinationId}`);
+    } else {
+      push(`${Routes.Connections}`);
     }
   };
 
   const renderStep = () => {
-    if (currentStep === StepsTypes.CREATE_ENTITY) {
+    if (
+      currentStep === StepsTypes.CREATE_ENTITY ||
+      currentStep === StepsTypes.CREATE_CONNECTOR
+    ) {
       if (currentEntityStep === EntityStepsTypes.SOURCE) {
         if (location.state?.sourceId) {
           return (
             <CreateEntityView
               type="source"
-              afterSuccess={() =>
-                setCurrentEntityStep(EntityStepsTypes.DESTINATION)
-              }
+              afterSuccess={() => {
+                setCurrentEntityStep(EntityStepsTypes.DESTINATION);
+                if (type === "connection") {
+                  setCurrentStep(StepsTypes.CREATE_CONNECTOR);
+                }
+              }}
             />
           );
         }
 
         return (
           <SourceForm
-            afterSubmit={() =>
-              setCurrentEntityStep(EntityStepsTypes.DESTINATION)
-            }
+            afterSubmit={() => {
+              setCurrentEntityStep(EntityStepsTypes.DESTINATION);
+              if (type === "connection") {
+                setCurrentStep(StepsTypes.CREATE_CONNECTOR);
+              }
+            }}
           />
         );
       } else if (currentEntityStep === EntityStepsTypes.DESTINATION) {
@@ -138,7 +166,9 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
         <PageTitle
           withLine
           title={
-            type === "destination" ? (
+            type === "connection" ? (
+              <FormattedMessage id="connection.newConnectionTitle" />
+            ) : type === "destination" ? (
               <FormattedMessage id="destinations.newDestinationTitle" />
             ) : (
               <FormattedMessage id="sources.newSourceTitle" />
@@ -151,12 +181,13 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
       }
     >
       <FormPageContent big={currentStep === StepsTypes.CREATE_CONNECTION}>
-        {currentStep !== StepsTypes.CREATE_CONNECTION && (
-          <ConnectionBlock
-            itemFrom={source ? { name: source.name } : undefined}
-            itemTo={destination ? { name: destination.name } : undefined}
-          />
-        )}
+        {currentStep !== StepsTypes.CREATE_CONNECTION &&
+          (!!source || !!destination) && (
+            <ConnectionBlock
+              itemFrom={source ? { name: source.name } : undefined}
+              itemTo={destination ? { name: destination.name } : undefined}
+            />
+          )}
         {renderStep()}
       </FormPageContent>
     </MainPageWithScroll>
