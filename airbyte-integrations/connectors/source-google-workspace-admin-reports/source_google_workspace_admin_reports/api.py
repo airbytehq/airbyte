@@ -32,6 +32,7 @@ from typing import Any, Callable, Dict, Iterator, Mapping, Optional, Sequence
 import backoff
 import pendulum
 import pytz
+from base_python.entrypoint import logger
 from google.oauth2 import service_account
 from googleapiclient.discovery import Resource, build
 from googleapiclient.errors import HttpError as GoogleApiHttpError
@@ -151,6 +152,7 @@ class IncrementalStreamAPI(StreamAPI, ABC):
         if cursor:
             new_state = max(cursor, self._state) if self._state else cursor
             if new_state != self._state:
+                logger.info(f"Advancing bookmark for {self.name} stream from {self._state} to {new_state}")
                 self._state = new_state
 
 
