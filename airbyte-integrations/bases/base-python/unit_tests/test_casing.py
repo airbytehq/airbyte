@@ -22,18 +22,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import setuptools
+import pytest
+from base_python.sdk.utils.casing import camel_to_snake
 
-setuptools.setup(
-    name="base-python",
-    description="Contains machinery to make it easy to write an integration in python.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    url="https://github.com/airbytehq/airbyte",
-    packages=setuptools.find_packages(),
-    package_data={"": ["models/yaml/*.yaml"]},
-    install_requires=["PyYAML==5.4", "pydantic==1.6.1", "airbyte-protocol", "jsonschema==2.6.0", "requests==2.25.1", "backoff==1.10.0", "pytest"],
-    entry_points={
-        "console_scripts": ["base-python=base_python.entrypoint:main"],
-    },
+
+@pytest.mark.parametrize(
+    ("camel_cased", "snake_cased"),
+    [
+        ["HTTPStream", "http_stream"],
+        ["already_snake", "already_snake"],
+        ["ProperCased", "proper_cased"],
+        ["camelCased", "camel_cased"],
+        ["veryVeryLongCamelCasedName", "very_very_long_camel_cased_name"],
+        ["throw2NumbersH3re", "throw2_numbers_h3re"]
+    ]
 )
+def test_camel_to_snake(camel_cased, snake_cased):
+    assert camel_to_snake(camel_cased) == snake_cased

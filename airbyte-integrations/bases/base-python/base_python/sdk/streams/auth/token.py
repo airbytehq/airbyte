@@ -22,35 +22,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from base_python.catalog_helpers import CatalogHelper
-from base_python.client import BaseClient
-from base_python.integration import AirbyteSpec, Destination, Integration, Source
-from base_python.logger import AirbyteLogger
-from base_python.sdk.abstract_source import AbstractSource
+from typing import Any, Mapping
 
-# Separate the SDK imports so they can be moved somewhere else more easily
 from base_python.sdk.streams.auth.core import HttpAuthenticator
-from base_python.sdk.streams.auth.token import TokenAuthenticator
-from base_python.sdk.streams.core import Stream
-from base_python.sdk.streams.http import HttpStream
-from base_python.source import BaseSource
 
-# Must be the last one because the way we load the connector module creates a circular
-# dependency and models might not have been loaded yet
-from base_python.entrypoint import AirbyteEntrypoint  # noqa isort:skip
 
-__all__ = [
-    "AirbyteLogger",
-    "AirbyteSpec",
-    "AbstractSource",
-    "BaseClient",
-    "BaseSource",
-    "CatalogHelper",
-    "Destination",
-    "HttpAuthenticator",
-    "HttpStream",
-    "Integration",
-    "Source",
-    "Stream",
-    "TokenAuthenticator",
-]
+class TokenAuthenticator(HttpAuthenticator):
+    def __init__(self, token: str, auth_method: str = "Bearer", auth_header: str = "Authorization"):
+        self.auth_method = auth_method
+        self.auth_header = auth_header
+        self._token = token
+
+    def get_auth_header(self) -> Mapping[str, Any]:
+        return {self.auth_header: f"{self.auth_method} {self._token}"}
