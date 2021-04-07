@@ -146,16 +146,20 @@ This slot **must** use `pgoutput`.
 After providing the name of this slot when configuring the source, you should be ready to sync data with CDC!
 
 ### Setting up CDC on Bare Metal, VMs (EC2/GCE/etc), Docker, etc.
-Three settings must be configured in the `postgresql.conf` file for your database:
+Some settings must be configured in the `postgresql.conf` file for your database. A custom file can be specified when running postgres with the `-c` flag. For example `postgres -c config_file=/etc/postgresql/postgresql.conf` runs Postgres with the config file at `/etc/postgresql/postgresql.conf`. 
+
+If you are syncing data from a server using the `postgres` Docker image, you will need to mount a file and change the command to run Postgres with the set config file. If you're just testing CDC behavior, you may want to use a modified version of a [sample `postgresql.conf`](https://github.com/postgres/postgres/blob/master/src/backend/utils/misc/postgresql.conf.sample).
+
+* `wal_level` is the type of coding used within the Postgres write-ahead log. This must be set to `logical` for Airbyte CDC.
+* `max_wal_senders` is the maximum number of processes used for handling WAL changes. This must be at least one.
+* `max_replication_slots` is the maximum number of replication slots that are allowed to stream WAL changes. This must one if Airbyte will be the only service reading subscribing to WAL changes or more if other services are also reading from the WAL.
+
+Here is what these settings would look like in `postgresql.conf`:
 ```
 wal_level = logical             
 max_wal_senders = 1             
 max_replication_slots = 1
 ```
-
-* `wal_level` is the type of coding used within the Postgres write-ahead log. This must be set to `logical` for Airbyte CDC.
-* `max_wal_senders` is the maximum number of processes used for handling WAL changes. This must be at least one.
-* `max_replication_slots` is the maximum number of replication slots that are allowed to stream WAL changes. This must one if Airbyte will be the only service reading subscribing to WAL changes or more if other services are also reading from the WAL.
 
 After setting these values you will need to restart your instance.
 
