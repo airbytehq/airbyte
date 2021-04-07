@@ -31,7 +31,7 @@ setup(
     author_email="contact@airbyte.io",
     packages=find_packages(),
     install_requires=[
-        "tap-mixpanel @ https://github.com/vitaliizazmic/tap-mixpanel/tarball/annotations_date_range",
+        "tap-mixpanel @ https://github.com/airbytehq/tap-mixpanel/tarball/v1.2.1-airbyte",
         "airbyte-protocol",
         "base-python",
         "base-singer",
