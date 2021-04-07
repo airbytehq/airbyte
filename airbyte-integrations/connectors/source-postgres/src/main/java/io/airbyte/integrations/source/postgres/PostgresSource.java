@@ -49,7 +49,6 @@ import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
 import io.debezium.engine.ChangeEvent;
 import java.io.IOException;
@@ -66,7 +65,6 @@ import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import org.codehaus.plexus.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,6 +73,10 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSource.class);
 
   static final String DRIVER_CLASS = "org.postgresql.Driver";
+
+  public static final String CDC_LSN = "_ab_cdc_lsn";
+  public static final String CDC_UPDATED_AT = "_ab_cdc_updated_at";
+  public static final String CDC_DELETED_AT = "_ab_cdc_deleted_at";
 
   public PostgresSource() {
     super(DRIVER_CLASS, new PostgresJdbcStreamingQueryConfiguration());
@@ -232,16 +234,6 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
     }
   }
 
-  protected static String getTableWhitelist(ConfiguredAirbyteCatalog catalog) {
-    return catalog.getStreams().stream()
-        .map(ConfiguredAirbyteStream::getStream)
-        .map(AirbyteStream::getName)
-        // debezium needs commas escaped to split properly
-        .map(x -> StringUtils.escape(x, new char[] {','}, "\\,"))
-        .collect(Collectors.joining(","));
-
-  }
-
   private static boolean isCdc(JsonNode config) {
     LOGGER.info("isCdc config: " + config);
     return !(config.get("replication_slot") == null);
@@ -266,9 +258,9 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
     ObjectNode properties = (ObjectNode) jsonSchema.get("properties");
 
     final JsonNode numberType = Jsons.jsonNode(ImmutableMap.of("type", "number"));
-    properties.set("_ab_cdc_lsn", numberType);
-    properties.set("_ab_cdc_updated_at", numberType);
-    properties.set("_ab_cdc_deleted_at", numberType);
+    properties.set(CDC_LSN, numberType);
+    properties.set(CDC_UPDATED_AT, numberType);
+    properties.set(CDC_DELETED_AT, numberType);
 
     return stream;
   }

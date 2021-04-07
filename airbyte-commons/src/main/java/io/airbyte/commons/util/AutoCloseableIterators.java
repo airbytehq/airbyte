@@ -73,6 +73,15 @@ public class AutoCloseableIterators {
   }
 
   /**
+   * Consumes entire iterator and collect it into a list. Then it closes the iterator.
+   */
+  public static <T> List<T> toListAndClose(AutoCloseableIterator<T> iterator) throws Exception {
+    try (iterator) {
+      return MoreIterators.toList(iterator);
+    }
+  }
+
+  /**
    * Returns a {@link AutoCloseableIterator} that will call the provided supplier ONE time when
    * {@link AutoCloseableIterator#hasNext()} is called the first time. The supplier returns a stream
    * that will be exposed as an iterator.
