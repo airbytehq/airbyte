@@ -21,25 +21,3 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-
-import setuptools
-
-MAIN_REQUIREMENTS = [
-    "airbyte-protocol",
-    "docker==4.4.4",
-    "PyYAML==5.3.1",
-    "inflection==0.5.1",
-    "pydantic==1.6.1",
-    "pytest==6.1.2",
-]
-
-setuptools.setup(
-    name="standard-test",
-    description="Contains classes for running integration tests.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    url="https://github.com/airbytehq/airbyte",
-    packages=setuptools.find_packages(),
-    install_requires=MAIN_REQUIREMENTS,
-    entry_points={"pytest11": ["pytest-airbyte = standard_test.plugin"]},
-)

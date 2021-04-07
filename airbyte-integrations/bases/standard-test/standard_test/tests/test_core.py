@@ -24,24 +24,26 @@ SOFTWARE.
 
 from collections import Counter
 
-import inflection as inflection
 import pytest
-from airbyte_protocol import Type, Status, ConnectorSpecification
-from .utils import full_refresh_only_catalog, ConnectorRunner
+from airbyte_protocol import ConnectorSpecification, Status, Type
+from docker.errors import ContainerError
+
+from standard_test.base import BaseTest
+from standard_test.connector_runner import ConnectorRunner
+from standard_test.utils import full_refresh_only_catalog
 
 
-@pytest.mark.usefixtures("inputs")
-class BaseTest:
+class TestSpec(BaseTest):
+    def test_spec(self, connector_spec: ConnectorSpecification, docker_runner: ConnectorRunner):
+        output = docker_runner.call_spec()
+        spec_messages = [message for message in output if message.type == Type.SPEC]
 
-    @classmethod
-    def config_key(cls):
-        class_name = cls.__name__
-        if class_name.startswith("Test"):
-            class_name = class_name[len("Test"):]
-        return inflection.underscore(class_name)
+        assert len(spec_messages) == 1, "Spec message should be emitted exactly once"
+        if connector_spec:
+            assert spec_messages[0].spec == connector_spec, "Spec should be equal to the one in spec.json file"
 
 
-class TestCore(BaseTest):
+class TestConnection(BaseTest):
     def test_check(self, connector_config, docker_runner: ConnectorRunner):
         output = docker_runner.call_check(config=connector_config)
         con_messages = [message for message in output if message.type == Type.CONNECTION_STATUS]
@@ -49,21 +51,26 @@ class TestCore(BaseTest):
         assert len(con_messages) == 1, "Connection status message should be emitted exactly once"
         assert con_messages[0].connectionStatus.status == Status.SUCCEEDED
 
+    def test_check_with_invalid_config(self, invalid_connector_config, docker_runner: ConnectorRunner):
+        with pytest.raises(ContainerError) as err:
+            docker_runner.call_check(config=invalid_connector_config)
+
+        assert err.value.exit_status != 0, "Connector should exit with error code"
+        assert "Traceback" in err.value.stderr.decode("utf-8"), "Connector should print exception"
+
+
+class TestDiscovery(BaseTest):
     def test_discover(self, connector_config, catalog, docker_runner: ConnectorRunner):
         output = docker_runner.call_discover(config=connector_config)
         catalog_messages = [message for message in output if message.type == Type.CATALOG]
 
         assert len(catalog_messages) == 1, "Catalog message should be emitted exactly once"
-        # assert catalog_messages[0].catalog == catalog, "Catalog should match the one that was provided"
+        if catalog:
+            assert catalog_messages[0].catalog == catalog, "Catalog should match the one that was provided"
 
-    def test_spec(self, connector_spec, docker_runner: ConnectorRunner):
-        output = docker_runner.call_spec()
-        spec_messages = [message for message in output if message.type == Type.SPEC]
 
-        assert len(spec_messages) == 1, "Spec message should be emitted exactly once"
-        # assert spec_messages[0].spec == spec, "Spec should be equal to the one in spec.json file"
-
-    def test_read(self, connector_config, configured_catalog, docker_runner: ConnectorRunner):
+class TestBasicRead(BaseTest):
+    def test_read(self, connector_config, configured_catalog, validate_output_from_all_streams, docker_runner: ConnectorRunner):
         configured_catalog = full_refresh_only_catalog(configured_catalog)
         output = docker_runner.call_read(connector_config, configured_catalog)
         records = [message.record for message in output if message.type == Type.RECORD]
@@ -73,12 +80,9 @@ class TestCore(BaseTest):
         streams_with_records = set(counter.keys())
         streams_without_records = all_streams - streams_with_records
 
-        assert not streams_without_records, f"all streams should return some records, streams without records: {streams_without_records}"
+        assert records, "At least one record should be read using provided catalog"
 
-
-class TestFullRefresh(BaseTest):
-    pass
-
-
-class TestIncremental(BaseTest):
-    pass
+        if validate_output_from_all_streams:
+            assert (
+                not streams_without_records
+            ), f"All streams should return some records, streams without records: {streams_without_records}"

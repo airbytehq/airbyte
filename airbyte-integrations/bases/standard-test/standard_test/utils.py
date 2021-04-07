@@ -22,94 +22,34 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import json
-import logging
 from pathlib import Path
-from typing import Optional, Mapping, Iterable
 
-from airbyte_protocol import AirbyteMessage, ConfiguredAirbyteCatalog, SyncMode
-import docker
+import pytest
+from yaml import load
+
+try:
+    from yaml import CLoader as Loader
+except ImportError:
+    from yaml import Loader
+
+from airbyte_protocol import ConfiguredAirbyteCatalog, SyncMode
+
+from standard_test.config import Config
 
 
-class ConnectorRunner:
-    def __init__(self, name: str, volume: Path):
-        self._name = name
-        self._client = docker.from_env()
-        self._runs = 0
-        self._volume_base = volume
+def load_config(path: str) -> Config:
+    """Function to load test config, avoid duplication of code in places where we can't use fixture"""
+    path = Path(path) / "standard_test_config.yml"
+    if not path.exists():
+        pytest.fail(f"config file {path.absolute()} does not exist")
 
-    def _prepare_volumes(self, config: Optional[Mapping], state: Optional[Mapping], catalog: Optional[ConfiguredAirbyteCatalog]):
-        input_path = self._volume_base / f"run_{self._runs}" / "input"
-        output_path = self._volume_base / f"run_{self._runs}" / "output"
-        input_path.mkdir(parents=True)
-        output_path.mkdir(parents=True)
-        # print(input_path, output_path)
-
-        if config:
-            with open(str(input_path / "tap_config.json"), "w") as outfile:
-                json.dump(config, outfile)
-
-        if state:
-            with open(str(input_path / "state.json"), "w") as outfile:
-                json.dump(state, outfile)
-
-        if catalog:
-            with open(str(input_path / "catalog.json"), "w") as outfile:
-                outfile.write(catalog.json())
-
-        volumes = {
-            str(input_path): {
-                "bind": "/data",
-                # "mode": "ro",
-            },
-            str(output_path): {
-                "bind": "/local",
-                "mode": "rw",
-            }
-        }
-        return volumes
-
-    def call_spec(self):
-        cmd = "spec"
-        output = list(self.run(cmd=cmd))
-        return output
-
-    def call_check(self, config):
-        cmd = "check --config tap_config.json"
-        output = list(self.run(cmd=cmd, config=config))
-        return output
-
-    def call_discover(self, config):
-        cmd = "discover --config tap_config.json"
-        output = list(self.run(cmd=cmd, config=config))
-        return output
-
-    def call_read(self, config, catalog):
-        cmd = "read --config tap_config.json --catalog catalog.json"
-        output = list(self.run(cmd=cmd, config=config, catalog=catalog))
-        return output
-
-    def call_read_with_state(self, config, catalog, state):
-        cmd = "read --config tap_config.json --catalog catalog.json --state state.json"
-        output = list(self.run(cmd=cmd, config=config, catalog=catalog, state=state))
-        return output
-
-    def run(self, cmd, config=None, state=None, catalog=None) -> Iterable[AirbyteMessage]:
-        self._runs += 1
-        volumes = self._prepare_volumes(config, state, catalog)
-        logs = self._client.containers.run(
-            image=self._name,
-            command=cmd,
-            working_dir="/data",
-            volumes=volumes,
-            network="host",
-        )
-        for line in logs.decode("utf-8").splitlines():
-            logging.info(AirbyteMessage.parse_raw(line).type)
-            yield AirbyteMessage.parse_raw(line)
+    with open(str(path), "r") as file:
+        data = load(file, Loader=Loader)
+        return Config.parse_obj(data)
 
 
 def full_refresh_only_catalog(configured_catalog: ConfiguredAirbyteCatalog):
+    """Transform provided catalog to catalog with all streams configured to use Full Refresh sync (when possible)"""
     streams = []
     for stream in configured_catalog.streams:
         if SyncMode.full_refresh in stream.stream.supported_sync_modes:
@@ -121,6 +61,7 @@ def full_refresh_only_catalog(configured_catalog: ConfiguredAirbyteCatalog):
 
 
 def incremental_only_catalog(configured_catalog: ConfiguredAirbyteCatalog):
+    """Transform provided catalog to catalog with all streams configured to use Incremental sync (when possible)"""
     streams = []
     for stream in configured_catalog.streams:
         if SyncMode.incremental in stream.stream.supported_sync_modes:
