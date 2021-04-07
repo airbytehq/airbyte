@@ -22,18 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import setuptools
+from .source import SourceStripe
 
-setuptools.setup(
-    name="base-python",
-    description="Contains machinery to make it easy to write an integration in python.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    url="https://github.com/airbytehq/airbyte",
-    packages=setuptools.find_packages(),
-    package_data={"": ["models/yaml/*.yaml"]},
-    install_requires=["PyYAML==5.4", "pydantic==1.6.1", "airbyte-protocol", "jsonschema==2.6.0", "requests==2.25.1", "backoff==1.10.0", "pytest"],
-    entry_points={
-        "console_scripts": ["base-python=base_python.entrypoint:main"],
-    },
-)
+__all__ = [
+    "SourceStripe"
+]

@@ -22,18 +22,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import setuptools
+from abc import ABC, abstractmethod
+from typing import Any, Mapping
 
-setuptools.setup(
-    name="base-python",
-    description="Contains machinery to make it easy to write an integration in python.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    url="https://github.com/airbytehq/airbyte",
-    packages=setuptools.find_packages(),
-    package_data={"": ["models/yaml/*.yaml"]},
-    install_requires=["PyYAML==5.4", "pydantic==1.6.1", "airbyte-protocol", "jsonschema==2.6.0", "requests==2.25.1", "backoff==1.10.0", "pytest"],
-    entry_points={
-        "console_scripts": ["base-python=base_python.entrypoint:main"],
-    },
-)
+
+class HttpAuthenticator(ABC):
+    @abstractmethod
+    def get_auth_header(self) -> Mapping[str, Any]:
+        """
+        :return: A dictionary containing all the necessary headers to authenticate.
+        """
+
+
+class NoAuth(HttpAuthenticator):
+    def get_auth_header(self) -> Mapping[str, Any]:
+        return {}

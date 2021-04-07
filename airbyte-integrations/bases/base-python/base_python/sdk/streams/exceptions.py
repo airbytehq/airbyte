@@ -22,18 +22,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import setuptools
+import requests
 
-setuptools.setup(
-    name="base-python",
-    description="Contains machinery to make it easy to write an integration in python.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    url="https://github.com/airbytehq/airbyte",
-    packages=setuptools.find_packages(),
-    package_data={"": ["models/yaml/*.yaml"]},
-    install_requires=["PyYAML==5.4", "pydantic==1.6.1", "airbyte-protocol", "jsonschema==2.6.0", "requests==2.25.1", "backoff==1.10.0", "pytest"],
-    entry_points={
-        "console_scripts": ["base-python=base_python.entrypoint:main"],
-    },
-)
+
+class BaseBackoffException(requests.exceptions.HTTPError):
+    pass
+
+
+class UserDefinedBackoffException(BaseBackoffException):
+    """
+    An exception that exposes how long it attempted to backoff
+    """
+
+    def __init__(self, backoff: int, request: requests.PreparedRequest, response: requests.Response):
+        """
+        :param backoff: how long to backoff in seconds
+        :param request: the request that triggered this backoff exception
+        :param response: the response that triggered the backoff exception
+        """
+        self.backoff = backoff
+        super().__init__(request=request, response=response)
+
+
+class DefaultBackoffException(BaseBackoffException):
+    pass
