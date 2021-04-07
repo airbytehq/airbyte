@@ -31,8 +31,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.stream.MoreStreams;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
@@ -80,8 +80,8 @@ public class TestJdbcUtils {
     final JsonNode config = getConfig(PSQL_DB, dbName);
 
     final String initScriptName = "init_" + dbName.concat(".sql");
-    MoreResources.writeResource(initScriptName, "CREATE DATABASE " + dbName + ";");
-    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource(initScriptName), PSQL_DB);
+    final String tmpFilePath = IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
+    PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), PSQL_DB);
 
     dataSource = new BasicDataSource();
     dataSource.setDriverClassName("org.postgresql.Driver");

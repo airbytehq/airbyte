@@ -116,22 +116,22 @@ Here are a list of examples of possible file inputs:
 
 | Dataset Name | Storage | URL | Reader Impl | Service Account | Description |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| epidemiology | HTTPS | [https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv](https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv) | | | [COVID-19 Public dataset](https://console.cloud.google.com/marketplace/product/bigquery-public-datasets/covid19-public-data-program?filter=solution-type:dataset&id=7d6cc408-53c8-4485-a187-b8cb9a5c0b56) on BigQuery |
+| epidemiology | HTTPS | [https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv](https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv) |  |  | [COVID-19 Public dataset](https://console.cloud.google.com/marketplace/product/bigquery-public-datasets/covid19-public-data-program?filter=solution-type:dataset&id=7d6cc408-53c8-4485-a187-b8cb9a5c0b56) on BigQuery |
 | hr\_and\_financials | GCS | gs://airbyte-vault/financial.csv | smart\_open or gcfs | {"type": "service\_account", "private\_key\_id": "XXXXXXXX", ...} | data from a private bucket, a service account is necessary |
-| landsat\_index | GCS | gcp-public-data-landsat/index.csv.gz | smart\_open | | Using smart\_open, we don't need to specify the compression \(note the gs:// is optional too, same for other providers\) |
+| landsat\_index | GCS | gcp-public-data-landsat/index.csv.gz | smart\_open |  | Using smart\_open, we don't need to specify the compression \(note the gs:// is optional too, same for other providers\) |
 
 Examples with reader options:
 
 | Dataset Name | Storage | URL | Reader Impl | Reader Options | Description |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | landsat\_index | GCS | gs://gcp-public-data-landsat/index.csv.gz | GCFS | {"compression": "gzip"} | Additional reader options to specify a compression option to `read_csv` |
-| GDELT | S3 | s3://gdelt-open-data/events/20190914.export.csv | | {"sep": "\t", "header": null} | Here is TSV data separated by tabs without header row from [AWS Open Data](https://registry.opendata.aws/gdelt/) |
-| server\_logs | local | /local/logs.log | | {"sep": ";"} | After making sure a local text file exists at `/tmp/airbyte_local/logs.log` with logs file from some server that are delimited by ';' delimiters |
+| GDELT | S3 | s3://gdelt-open-data/events/20190914.export.csv |  | {"sep": "\t", "header": null} | Here is TSV data separated by tabs without header row from [AWS Open Data](https://registry.opendata.aws/gdelt/) |
+| server\_logs | local | /local/logs.log |  | {"sep": ";"} | After making sure a local text file exists at `/tmp/airbyte_local/logs.log` with logs file from some server that are delimited by ';' delimiters |
 
 Example for SFTP:
 
 | Dataset Name | Storage | User | Password | Host | URL | Reader Options | Description |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | 
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | Test Rebext | SFTP | demo | password | test.rebext.net | /pub/example/readme.txt | {"sep": "\r\n", "header": null, "names": \["text"\], "engine": "python"} | We use `python` engine for `read_csv` in order to handle delimiter of more than 1 character while providing our own column names. |
 
 Please see \(or add\) more at `airbyte-integrations/connectors/source-file/integration_tests/integration_source_test.py` for further usages examples.

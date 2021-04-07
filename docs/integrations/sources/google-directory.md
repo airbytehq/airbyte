@@ -37,16 +37,18 @@ This connector attempts to back off gracefully when it hits Directory API's rate
 ## Getting started
 
 ### Requirements
+
 * Credentials to a Google Service Account with delegated Domain Wide Authority
 * Email address of the workspace admin which created the Service Account
 
 ### Create a Service Account with delegated domain wide authority
-Follow the Google Documentation for performing [Domain Wide Delegation of Authority](https://developers.google.com/admin-sdk/directory/v1/guides/delegation) to create a Service account with delegated domain wide authority. This account must be created by an administrator of the Google Workspace. 
-Please make sure to grant the following OAuth scopes to the service user: 
+
+Follow the Google Documentation for performing [Domain Wide Delegation of Authority](https://developers.google.com/admin-sdk/directory/v1/guides/delegation) to create a Service account with delegated domain wide authority. This account must be created by an administrator of the Google Workspace. Please make sure to grant the following OAuth scopes to the service user:
 
 1. `https://www.googleapis.com/auth/admin.directory.user.readonly`
 2. `https://www.googleapis.com/auth/admin.directory.group.readonly`
 
-At the end of this process, you should have JSON credentials to this Google Service Account. 
+At the end of this process, you should have JSON credentials to this Google Service Account.
 
-You should now be ready to use the Google Directory connector in Airbyte. 
+You should now be ready to use the Google Directory connector in Airbyte.
+

@@ -80,8 +80,8 @@ public class RedshiftInsertIntegrationTest extends TestDestination {
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName))
+  protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName, String namespace) throws Exception {
+    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
         .map(j -> Jsons.deserialize(j.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
         .collect(Collectors.toList());
@@ -93,13 +93,13 @@ public class RedshiftInsertIntegrationTest extends TestDestination {
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv testEnv, String streamName) throws Exception {
+  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv testEnv, String streamName, String namespace) throws Exception {
     String tableName = namingResolver.getIdentifier(streamName);
     if (!tableName.startsWith("\"")) {
       // Currently, Normalization always quote tables identifiers
       tableName = "\"" + tableName + "\"";
     }
-    return retrieveRecordsFromTable(tableName);
+    return retrieveRecordsFromTable(tableName, namespace);
   }
 
   @Override
@@ -115,8 +115,7 @@ public class RedshiftInsertIntegrationTest extends TestDestination {
     return result;
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(String tableName) throws SQLException {
-    final String schemaName = config.get("schema").asText();
+  private List<JsonNode> retrieveRecordsFromTable(String tableName, String schemaName) throws SQLException {
     return getDatabase().query(
         ctx -> ctx
             .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))

@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "object": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "integer"
+    },
+    "created": {
+      "type": "integer"
+    },
+    "credit_note": {
+      "type": "string"
+    },
+    "currency": {
+      "type": "string"
+    },
+    "customer": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "ending_balance": {
+      "type": "integer"
+    },
+    "invoice": {
+      "type": "string"
+    },
+    "livemode": {
+      "type": "boolean"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "type": {
+      "type": "string"
+    }
+  }
+}

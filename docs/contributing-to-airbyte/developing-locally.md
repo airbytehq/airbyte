@@ -39,6 +39,7 @@ This will build all the code and run all the unit tests.
 `./gradlew build` creates all the necessary artifacts \(Webapp, Jars and Docker images\) so that you can run Airbyte locally. Since this builds everything, it can take some time.
 
 To compile and build just the core systems:
+
 ```bash
 CORE_ONLY=1 ./gradlew build
 ```
@@ -46,12 +47,9 @@ CORE_ONLY=1 ./gradlew build
 {% hint style="info" %}
 Gradle will use all CPU cores by default. If Gradle uses too much/too little CPU, tuning the number of CPU cores it uses to better suit a dev's need can help.
 
-Adjust this by either, 
-1. Setting an env var: `export GRADLE_OPTS="-Dorg.gradle.workers.max=3"`.
-2. Setting a cli option: `./gradlew build --max-workers 3`
-3. Setting the `org.gradle.workers.max` property in the `gradle.properties` file.
+Adjust this by either, 1. Setting an env var: `export GRADLE_OPTS="-Dorg.gradle.workers.max=3"`. 2. Setting a cli option: `./gradlew build --max-workers 3` 3. Setting the `org.gradle.workers.max` property in the `gradle.properties` file.
 
-A good rule of thumb is to set this to (# of cores - 1).
+A good rule of thumb is to set this to \(\# of cores - 1\).
 {% endhint %}
 
 {% hint style="info" %}
@@ -188,10 +186,11 @@ Sometimes you'll want to reset the data in your local environment. One common ca
 
 ### `gradlew Could not target platform: 'Java SE 14' using tool chain: 'JDK 8 (1.8)'.`
 
-Somehow gradle didn't pick up the right java version for some reason.
-Find the install version and set the `JAVA_HOME` environment to point to the JDK folder.
+Somehow gradle didn't pick up the right java version for some reason. Find the install version and set the `JAVA_HOME` environment to point to the JDK folder.
 
 For example:
-```
+
+```text
 env JAVA_HOME=/usr/lib/jvm/java-14-openjdk ./gradlew  :airbyte-integrations:connectors:your-connector-dir:build
 ```
+

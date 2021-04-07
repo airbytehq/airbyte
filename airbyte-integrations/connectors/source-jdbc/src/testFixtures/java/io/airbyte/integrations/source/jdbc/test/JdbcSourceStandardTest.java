@@ -246,10 +246,11 @@ public abstract class JdbcSourceStandardTest {
   @Test
   void testDiscover() throws Exception {
     final AirbyteCatalog actual = filterOutOtherSchemas(source.discover(config));
-    assertEquals(getCatalog(getDefaultNamespace()).getStreams().size(), actual.getStreams().size());
+    AirbyteCatalog expected = getCatalog(getDefaultNamespace());
+    assertEquals(expected.getStreams().size(), actual.getStreams().size());
     actual.getStreams().forEach(actualStream -> {
       final Optional<AirbyteStream> expectedStream =
-          getCatalog(getDefaultNamespace()).getStreams().stream().filter(stream -> stream.getName().equals(actualStream.getName())).findAny();
+          expected.getStreams().stream().filter(stream -> stream.getName().equals(actualStream.getName())).findAny();
       assertTrue(expectedStream.isPresent(), String.format("Unexpected stream %s", actualStream.getName()));
       assertEquals(expectedStream.get(), actualStream);
     });
@@ -297,6 +298,7 @@ public abstract class JdbcSourceStandardTest {
     final AirbyteCatalog expected = getCatalog(getDefaultNamespace());
     expected.getStreams().add(CatalogHelpers
         .createAirbyteStream(JdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME),
+            SCHEMA_NAME2,
             Field.of(COL_ID, JsonSchemaPrimitive.STRING),
             Field.of(COL_NAME, JsonSchemaPrimitive.STRING))
         .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)));
@@ -729,6 +731,7 @@ public abstract class JdbcSourceStandardTest {
     return new AirbyteCatalog().withStreams(Lists.newArrayList(
         CatalogHelpers.createAirbyteStream(
             defaultNamespace + "." + TABLE_NAME,
+            defaultNamespace,
             Field.of(COL_ID, JsonSchemaPrimitive.NUMBER),
             Field.of(COL_NAME, JsonSchemaPrimitive.STRING),
             Field.of(COL_UPDATED_AT, JsonSchemaPrimitive.STRING))
@@ -736,6 +739,7 @@ public abstract class JdbcSourceStandardTest {
             .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))),
         CatalogHelpers.createAirbyteStream(
             defaultNamespace + "." + TABLE_NAME_WITHOUT_PK,
+            defaultNamespace,
             Field.of(COL_ID, JsonSchemaPrimitive.NUMBER),
             Field.of(COL_NAME, JsonSchemaPrimitive.STRING),
             Field.of(COL_UPDATED_AT, JsonSchemaPrimitive.STRING))
@@ -743,6 +747,7 @@ public abstract class JdbcSourceStandardTest {
             .withSourceDefinedPrimaryKey(Collections.emptyList()),
         CatalogHelpers.createAirbyteStream(
             defaultNamespace + "." + TABLE_NAME_COMPOSITE_PK,
+            defaultNamespace,
             Field.of(COL_FIRST_NAME, JsonSchemaPrimitive.STRING),
             Field.of(COL_LAST_NAME, JsonSchemaPrimitive.STRING),
             Field.of(COL_UPDATED_AT, JsonSchemaPrimitive.STRING))
