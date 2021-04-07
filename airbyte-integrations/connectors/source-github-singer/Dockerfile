@@ -1,4 +1,4 @@
-FROM airbyte/integration-base-singer:0.1.0
+FROM airbyte/integration-base-singer:0.1.1
 
 RUN apt-get update && apt-get install -y \
     bash \
@@ -8,7 +8,7 @@ ENV CODE_PATH="source_github_singer"
 ENV AIRBYTE_IMPL_MODULE="source_github_singer"
 ENV AIRBYTE_IMPL_PATH="SourceGithubSinger"
 
-LABEL io.airbyte.version=0.2.0
+LABEL io.airbyte.version=0.2.2
 LABEL io.airbyte.name=airbyte/source-github-singer
 
 WORKDIR /airbyte/integration_code

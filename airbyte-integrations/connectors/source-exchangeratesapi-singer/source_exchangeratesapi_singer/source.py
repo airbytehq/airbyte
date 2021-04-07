@@ -22,9 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import urllib.request
 from typing import Dict
 
+import requests
 from airbyte_protocol import AirbyteConnectionStatus, Status, SyncMode
 from base_singer import SingerSource, SyncModeInfo
 
@@ -32,7 +32,7 @@ from base_singer import SingerSource, SyncModeInfo
 class SourceExchangeRatesApiSinger(SingerSource):
     def check(self, logger, config_path) -> AirbyteConnectionStatus:
         try:
-            code = urllib.request.urlopen("https://api.exchangeratesapi.io/").getcode()
+            code = requests.get("https://api.ratesapi.io/").status_code
             logger.info(f"Ping response code: {code}")
             return AirbyteConnectionStatus(status=Status.SUCCEEDED if (code == 200) else Status.FAILED)
         except Exception as e:

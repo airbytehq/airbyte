@@ -171,7 +171,8 @@
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
-      "cursor_field": []
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -324,7 +325,8 @@
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
-      "cursor_field": []
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -404,7 +406,8 @@
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
-      "cursor_field": []
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -436,7 +439,8 @@
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
-      "cursor_field": []
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -1008,7 +1012,8 @@
         "source_defined_cursor": false
       },
       "sync_mode": "incremental",
-      "cursor_field": []
+      "cursor_field": [],
+      "destination_sync_mode": "append"
     }
   ]
 }

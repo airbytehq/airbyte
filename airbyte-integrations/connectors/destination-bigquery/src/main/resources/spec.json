@@ -1,6 +1,7 @@
 {
   "documentationUrl": "https://docs.airbyte.io/integrations/destinations/bigquery",
   "supportsIncremental": true,
+  "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"],
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "BigQuery Destination Spec",
@@ -15,8 +16,8 @@
       },
       "dataset_id": {
         "type": "string",
-        "description": "The BigQuery dataset id that will house replicated tables.",
-        "title": "Dataset ID"
+        "description": "Default BigQuery Dataset ID tables are replicated to if the source does not specify a namespace.",
+        "title": "Default Dataset ID"
       },
       "credentials_json": {
         "type": "string",

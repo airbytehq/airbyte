@@ -36,11 +36,12 @@ public interface Destination extends Integration {
    * @param config - integration-specific configuration object as json. e.g. { "username": "airbyte",
    *        "password": "super secure" }
    * @param catalog - schema of the incoming messages.
-   * @return Consumer that accepts message. The {@link DestinationConsumer#accept(Object)} will be
-   *         called n times where n is the number of messages. {@link DestinationConsumer#close()}
-   *         will always be called once regardless of success or failure.
+   * @return Consumer that accepts message. The {@link AirbyteMessageConsumer#accept(AirbyteMessage)}
+   *         will be called n times where n is the number of messages.
+   *         {@link AirbyteMessageConsumer#close()} will always be called once regardless of success
+   *         or failure.
    * @throws Exception - any exception.
    */
-  DestinationConsumer<AirbyteMessage> write(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception;
+  AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception;
 
 }

@@ -64,6 +64,13 @@ class IOsTest {
 
     assertEquals(path.resolve("file"), filePath);
     assertEquals("abc", IOs.readFile(path, "file"));
+ }
+  
+  @Test
+  public void testWriteFileToRandomDir() throws IOException {
+    final String contents = "something to remember";
+    final String tmpFilePath = IOs.writeFileToRandomTmpDir("file.txt", contents);
+    assertEquals(contents, Files.readString(Path.of(tmpFilePath)));
   }
 
   @Test

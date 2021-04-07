@@ -1,4 +1,4 @@
-FROM airbyte/base-python-test:dev
+FROM airbyte/base-python-test:0.1.1
 
 RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*

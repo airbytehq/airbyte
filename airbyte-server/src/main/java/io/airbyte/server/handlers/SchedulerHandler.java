@@ -32,6 +32,7 @@ import io.airbyte.api.model.DestinationCoreConfig;
 import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.DestinationDefinitionSpecificationRead;
 import io.airbyte.api.model.DestinationIdRequestBody;
+import io.airbyte.api.model.DestinationSyncMode;
 import io.airbyte.api.model.DestinationUpdate;
 import io.airbyte.api.model.JobIdRequestBody;
 import io.airbyte.api.model.JobInfoRead;
@@ -247,6 +248,7 @@ public class SchedulerHandler {
     final ConnectorSpecification spec = response.getOutput();
     return new DestinationDefinitionSpecificationRead()
         .jobInfo(JobConverter.getSynchronousJobRead(response))
+        .supportedDestinationSyncModes(Enums.convertListTo(spec.getSupportedDestinationSyncModes(), DestinationSyncMode.class))
         .connectionSpecification(spec.getConnectionSpecification())
         .documentationUrl(spec.getDocumentationUrl().toString())
         .destinationDefinitionId(destinationDefinitionId);

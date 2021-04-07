@@ -1,8 +1,8 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/exchangeratesapi-io",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/ratesapi-io",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "exchangeratesapi.io Source Spec",
+    "title": "ratesapi.io Source Spec",
     "type": "object",
     "required": ["start_date", "base"],
     "additionalProperties": false,

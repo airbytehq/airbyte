@@ -31,7 +31,7 @@ setup(
     author_email="contact@airbyte.io",
     packages=find_packages(),
     install_requires=[
-        "tap-github @ https://github.com/airbytehq/tap-github/tarball/v1.9.3-airbyte",
+        "tap-github @ https://github.com/airbytehq/tap-github/tarball/v1.9.4-airbyte",
         "requests==2.20.0",
         "airbyte-protocol",
         "base-singer",

@@ -793,7 +793,8 @@
         "default_cursor_field": ["create_time"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["create_time"]
+      "cursor_field": ["create_time"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -1159,7 +1160,8 @@
         "default_cursor_field": ["date_created"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["date_created"]
+      "cursor_field": ["date_created"],
+      "destination_sync_mode": "append"
     }
   ]
 }

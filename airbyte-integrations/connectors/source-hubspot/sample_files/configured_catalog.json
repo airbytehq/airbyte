@@ -100,7 +100,8 @@
         "default_cursor_field": null
       },
       "sync_mode": "full_refresh",
-      "cursor_field": null
+      "cursor_field": null,
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -517,7 +518,8 @@
         "default_cursor_field": null
       },
       "sync_mode": "full_refresh",
-      "cursor_field": null
+      "cursor_field": null,
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -623,7 +625,8 @@
         "default_cursor_field": null
       },
       "sync_mode": "full_refresh",
-      "cursor_field": null
+      "cursor_field": null,
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -3551,7 +3554,8 @@
         "default_cursor_field": null
       },
       "sync_mode": "full_refresh",
-      "cursor_field": null
+      "cursor_field": null,
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -3631,7 +3635,8 @@
         "default_cursor_field": null
       },
       "sync_mode": "full_refresh",
-      "cursor_field": null
+      "cursor_field": null,
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -3990,7 +3995,8 @@
         "default_cursor_field": null
       },
       "sync_mode": "full_refresh",
-      "cursor_field": null
+      "cursor_field": null,
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -4118,7 +4124,8 @@
         "default_cursor_field": ["created"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["created"]
+      "cursor_field": ["created"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -4767,7 +4774,8 @@
         "default_cursor_field": null
       },
       "sync_mode": "full_refresh",
-      "cursor_field": null
+      "cursor_field": null,
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -5055,7 +5063,8 @@
         "default_cursor_field": null
       },
       "sync_mode": "full_refresh",
-      "cursor_field": null
+      "cursor_field": null,
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -5214,7 +5223,8 @@
         "default_cursor_field": null
       },
       "sync_mode": "full_refresh",
-      "cursor_field": null
+      "cursor_field": null,
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -5297,7 +5307,8 @@
         "default_cursor_field": null
       },
       "sync_mode": "full_refresh",
-      "cursor_field": null
+      "cursor_field": null,
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -5417,7 +5428,8 @@
         "default_cursor_field": null
       },
       "sync_mode": "full_refresh",
-      "cursor_field": null
+      "cursor_field": null,
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -5675,7 +5687,8 @@
         "default_cursor_field": null
       },
       "sync_mode": "full_refresh",
-      "cursor_field": null
+      "cursor_field": null,
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -5740,7 +5753,8 @@
         "default_cursor_field": ["timestamp"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["timestamp"]
+      "cursor_field": ["timestamp"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -5992,7 +6006,8 @@
         "default_cursor_field": null
       },
       "sync_mode": "full_refresh",
-      "cursor_field": null
+      "cursor_field": null,
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -6049,7 +6064,8 @@
         "default_cursor_field": null
       },
       "sync_mode": "full_refresh",
-      "cursor_field": null
+      "cursor_field": null,
+      "destination_sync_mode": "overwrite"
     }
   ]
 }

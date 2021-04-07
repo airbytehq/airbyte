@@ -1,167 +1,167 @@
 - sourceDefinitionId: 9fed261d-d107-47fd-8c8b-323023db6e20
   name: Exchange Rates Api
   dockerRepository: airbyte/source-exchangeratesapi-singer
-  dockerImageTag: 0.2.0
-  documentationUrl: https://hub.docker.com/r/airbyte/integration-singer-exchangeratesapi_io-source
+  dockerImageTag: 0.2.2
+  documentationUrl: https://hub.docker.com/r/airbyte/source-exchangeratesapi-singer
 - sourceDefinitionId: 778daa7c-feaf-4db6-96f3-70fd645acc77
   name: File
   dockerRepository: airbyte/source-file
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   documentationUrl: https://hub.docker.com/r/airbyte/source-file
 - sourceDefinitionId: fdc8b827-3257-4b33-83cc-106d234c34d4
   name: Google Adwords
   dockerRepository: airbyte/source-google-adwords-singer
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   documentationUrl: https://hub.docker.com/r/airbyte/source-google-adwords
 - sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
   name: GitHub
   dockerRepository: airbyte/source-github-singer
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.2
   documentationUrl: https://hub.docker.com/r/airbyte/source-github-singer
 - sourceDefinitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
   name: Microsoft SQL Server (MSSQL)
   dockerRepository: airbyte/source-mssql
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.2.3
   documentationUrl: https://hub.docker.com/r/airbyte/source-mssql
 - sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   name: Postgres
   dockerRepository: airbyte/source-postgres
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.2.3
   documentationUrl: https://hub.docker.com/r/airbyte/source-postgres
 - sourceDefinitionId: cd42861b-01fc-4658-a8ab-5d11d0510f01
   name: Recurly
   dockerRepository: airbyte/source-recurly
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   documentationUrl: https://hub.docker.com/r/airbyte/source-recurly
 - sourceDefinitionId: fbb5fbe2-16ad-4cf4-af7d-ff9d9c316c87
   name: Sendgrid
   dockerRepository: airbyte/source-sendgrid
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   documentationUrl: https://hub.docker.com/r/airbyte/source-sendgrid
 - sourceDefinitionId: 9e0556f4-69df-4522-a3fb-03264d36b348
   name: Marketo
   dockerRepository: airbyte/source-marketo-singer
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   documentationUrl: https://hub.docker.com/r/airbyte/source-marketo-singer
 - sourceDefinitionId: 71607ba1-c0ac-4799-8049-7f4b90dd50f7
   name: Google Sheets
   dockerRepository: airbyte/source-google-sheets
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   documentationUrl: https://hub.docker.com/repository/docker/airbyte/source-google-sheets
 - sourceDefinitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
   name: MySQL
   dockerRepository: airbyte/source-mysql
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.2.4
   documentationUrl: https://docs.airbyte.io/integrations/sources/mysql
 - sourceDefinitionId: 2470e835-feaf-4db6-96f3-70fd645acc77
   name: Salesforce
   dockerRepository: airbyte/source-salesforce-singer
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   documentationUrl: https://hub.docker.com/r/airbyte/source-salesforce-singer
 - sourceDefinitionId: e094cb9a-26de-4645-8761-65c0c425d1de
   name: Stripe
   dockerRepository: airbyte/source-stripe-singer
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   documentationUrl: https://hub.docker.com/r/airbyte/integration-singer-stripe-source
 - sourceDefinitionId: b03a9f3e-22a5-11eb-adc1-0242ac120002
   name: Mailchimp
   dockerRepository: airbyte/source-mailchimp
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   documentationUrl: https://hub.docker.com/r/airbyte/source-mailchimp
 - sourceDefinitionId: 39f092a6-8c87-4f6f-a8d9-5cef45b7dbe1
   name: Google Analytics
   dockerRepository: airbyte/source-googleanalytics-singer
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.2.3
   documentationUrl: https://hub.docker.com/r/airbyte/source-googleanalytics-singer
 - sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
   name: Facebook Marketing
   dockerRepository: airbyte/source-facebook-marketing
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.2.2
   documentationUrl: https://hub.docker.com/r/airbyte/source-facebook-marketing
 - sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   name: Hubspot
   dockerRepository: airbyte/source-hubspot
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://https://docs.airbyte.io/integrations/sources/hubspot
 - sourceDefinitionId: b1892b11-788d-44bd-b9ec-3a436f7b54ce
   name: Shopify
   dockerRepository: airbyte/source-shopify-singer
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   documentationUrl: https://hub.docker.com/r/airbyte/source-shopify-singer
 - sourceDefinitionId: 9845d17a-45f1-4070-8a60-50914b1c8e2b
   name: HTTP Request
   dockerRepository: airbyte/source-http-request
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.2.2
   documentationUrl: https://hub.docker.com/repository/docker/airbyte/source-http-request
 - sourceDefinitionId: e87ffa8e-a3b5-f69c-9076-6011339de1f6
   name: Redshift
   dockerRepository: airbyte/source-redshift
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.2.3
   documentationUrl: https://hub.docker.com/repository/docker/airbyte/source-redshift
 - sourceDefinitionId: 932e6363-d006-4464-a9f5-102b82e07c06
   name: Twilio
   dockerRepository: airbyte/source-twilio-singer
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.2.2
   documentationUrl: https://hub.docker.com/r/airbyte/source-twilio-singer
 - sourceDefinitionId: ec4b9503-13cb-48ab-a4ab-6ade4be46567
   name: Freshdesk
   dockerRepository: airbyte/source-freshdesk
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   documentationUrl: https://hub.docker.com/r/airbyte/source-freshdesk
 - sourceDefinitionId: 396e4ca3-8a97-4b85-aa4e-c9d8c2d5f992
   name: Braintree
   dockerRepository: airbyte/source-braintree-singer
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   documentationUrl: https://hub.docker.com/r/airbyte/source-braintree-singer
 - sourceDefinitionId: 41375467-61ae-4204-8e38-e2b8b7365f23
   name: Slack
   dockerRepository: airbyte/source-slack-singer
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   documentationUrl: https://hub.docker.com/repository/docker/airbyte/source-slack-singer
 - sourceDefinitionId: 59f1e50a-331f-4f09-b3e8-2e8d4d355f44
   name: Greenhouse
   dockerRepository: airbyte/source-greenhouse
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   documentationUrl: https://https://docs.airbyte.io/integrations/sources/greenhouse
 - sourceDefinitionId: d29764f8-80d7-4dd7-acbe-1a42005ee5aa
   name: Zendesk Support
   dockerRepository: airbyte/source-zendesk-support-singer
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   documentationUrl: https://hub.docker.com/r/airbyte/source-zendesk-support-singer
 - sourceDefinitionId: d8313939-3782-41b0-be29-b3ca20d8dd3a
   name: Intercom
   dockerRepository: airbyte/source-intercom-singer
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   documentationUrl: https://hub.docker.com/r/airbyte/source-intercom-singer
 - sourceDefinitionId: 68e63de2-bb83-4c7e-93fa-a8a9051e3993
   name: Jira
   dockerRepository: airbyte/source-jira
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.2.2
   documentationUrl: https://hub.docker.com/r/airbyte/source-jira
 - sourceDefinitionId: 859e501d-2b67-471f-91bb-1c801414d28f
   name: Mixpanel
   dockerRepository: airbyte/source-mixpanel-singer
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.2
   documentationUrl: https://hub.docker.com/r/airbyte/source-mixpanel-singer
 - sourceDefinitionId: aea2fd0d-377d-465e-86c0-4fdc4f688e51
   name: Zoom
   dockerRepository: airbyte/source-zoom-singer
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   documentationUrl: https://hub.docker.com/r/airbyte/source-zoom-singer
 - sourceDefinitionId: eaf50f04-21dd-4620-913b-2a83f5635227
   name: Microsoft teams
   dockerRepository: airbyte/source-microsoft-teams
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   documentationUrl: https://hub.docker.com/r/airbyte/source-microsoft-teams
 - sourceDefinitionId: 445831eb-78db-4b1f-8f1f-0d96ad8739e2
   name: Drift
   dockerRepository: airbyte/source-drift
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   documentationUrl: https://hub.docker.com/r/airbyte/source-drift
 - sourceDefinitionId: 00405b19-9768-4e0c-b1ae-9fc2ee2b2a8c
   name: Looker
   dockerRepository: airbyte/source-looker
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   documentationUrl: https://hub.docker.com/r/airbyte/source-looker
 - sourceDefinitionId: ed799e2b-2158-4c66-8da4-b40fe63bc72a
   name: Plaid
@@ -171,7 +171,7 @@
 - sourceDefinitionId: 2af123bf-0aaf-4e0d-9784-cb497f23741a
   name: Appstore
   dockerRepository: airbyte/source-appstore-singer
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   documentationUrl: https://hub.docker.com/r/airbyte/source-appstore-singer
 - sourceDefinitionId: 487b930d-7f6a-43ce-8bac-46e6b2de0a55
   name: Mongo DB
@@ -181,15 +181,25 @@
 - sourceDefinitionId: d19ae824-e289-4b14-995a-0632eb46d246
   name: Google Directory
   dockerRepository: airbyte/source-google-directory
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.2
   documentationUrl: https://hub.docker.com/r/airbyte/source-google-directory
 - sourceDefinitionId: 6acf6b55-4f1e-4fca-944e-1a3caef8aba8
   name: Instagram
   dockerRepository: airbyte/source-instagram
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.4
   documentationUrl: https://hub.docker.com/r/airbyte/source-instagram
 - sourceDefinitionId: 5e6175e5-68e1-4c17-bff9-56103bbb0d80
   name: Gitlab
   dockerRepository: airbyte/source-gitlab-singer
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://hub.docker.com/r/airbyte/source-gitlab-singer
+- sourceDefinitionId: ed9dfefa-1bbc-419d-8c5e-4d78f0ef6734
+  name: Google Workspace Admin Reports
+  dockerRepository: airbyte/source-google-workspace-admin-reports
+  dockerImageTag: 0.1.2
+  documentationUrl: https://hub.docker.com/r/airbyte/source-google-workspace-admin-reports
+- sourceDefinitionId: d1aa448b-7c54-498e-ad95-263cbebcd2db
+  name: Tempo
+  dockerRepository: airbyte/source-tempo
+  dockerImageTag: 0.2.2
+  documentationUrl: https://hub.docker.com/r/airbyte/source-tempo

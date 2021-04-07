@@ -39,6 +39,7 @@ const ConditionSection: React.FC<{
   return (
     <GroupControls
       key={`form-field-group-${formField.fieldKey}`}
+      description={formField.description}
       title={
         <>
           {label ? <GroupLabel>{label}:</GroupLabel> : null}
@@ -86,6 +87,7 @@ const ArraySection: React.FC<{
     <GroupControls
       key={`form-variable-fields-${formField?.fieldKey}`}
       title={formField.title || formField.fieldKey}
+      description={formField.description}
     >
       <SectionContainer>
         <FieldArray
