@@ -134,9 +134,14 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
                           final FileTtlManager archiveTtlManager) {
     final SpecFetcher specFetcher = new SpecFetcher(synchronousSchedulerClient);
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
-    schedulerHandler =
-        new SchedulerHandler(configRepository, schedulerJobClient, synchronousSchedulerClient, jobPersistence, configs.getWorkspaceRoot(),
-            new JobNotifier(configs.getWebappUrl(), configRepository));
+    final JobNotifier jobNotifier = new JobNotifier(configs.getWebappUrl(), configRepository);
+    schedulerHandler = new SchedulerHandler(
+        configRepository,
+        schedulerJobClient,
+        synchronousSchedulerClient,
+        jobPersistence,
+        configs.getWorkspaceRoot(),
+        jobNotifier);
     final DockerImageValidator dockerImageValidator = new DockerImageValidator(synchronousSchedulerClient);
     sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, synchronousSchedulerClient);
     connectionsHandler = new ConnectionsHandler(configRepository);

@@ -25,10 +25,16 @@
 package io.airbyte.notification;
 
 import java.io.IOException;
-import java.util.Map;
 
 public interface NotificationClient {
 
-  boolean notifyJobFailure(Map<String, Object> metadata) throws IOException, InterruptedException;
+  boolean notifyJobFailure(
+                           String sourceConnector,
+                           String destinationConnector,
+                           String jobDescription,
+                           String logUrl)
+      throws IOException, InterruptedException;
+
+  boolean notify(String message) throws IOException, InterruptedException;
 
 }

@@ -127,9 +127,7 @@ public class JobTracker {
       final ImmutableMap<String, Object> syncMetadata = generateSyncMetadata(connectionId);
       final ImmutableMap<String, Object> stateMetadata = generateStateMetadata(jobState);
 
-      final Map<String, Object> metadata =
-          MoreMaps.merge(jobMetadata, jobAttemptMetadata, sourceDefMetadata, destinationDefMetadata, syncMetadata, stateMetadata);
-      track(metadata);
+      track(MoreMaps.merge(jobMetadata, jobAttemptMetadata, sourceDefMetadata, destinationDefMetadata, syncMetadata, stateMetadata));
     });
   }
 

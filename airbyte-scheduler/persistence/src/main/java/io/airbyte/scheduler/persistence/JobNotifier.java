@@ -24,9 +24,6 @@
 
 package io.airbyte.scheduler.persistence;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
-import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.config.Notification;
 import io.airbyte.config.Notification.NotificationType;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -42,9 +39,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Map;
 import java.util.UUID;
-import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,12 +47,34 @@ public class JobNotifier {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JobNotifier.class);
 
+  public static final String NOTIFICATION_TEST_MESSAGE = "Hello World! This is a test trying to send a message from Airbyte...";
+
   private final String connectionPageUrl;
   private final ConfigRepository configRepository;
 
   public JobNotifier(String webappUrl, ConfigRepository configRepository) {
-    this.connectionPageUrl = String.format("%s/source/connection/", webappUrl);
+    if (webappUrl.endsWith("/")) {
+      this.connectionPageUrl = String.format("%ssource/connection/", webappUrl);
+    } else {
+      this.connectionPageUrl = String.format("%s/source/connection/", webappUrl);
+    }
     this.configRepository = configRepository;
+  }
+
+  public boolean sendTestNotifications(final StandardWorkspace workspace) {
+    boolean hasFailure = false;
+    for (Notification notification : workspace.getNotifications()) {
+      final NotificationClient notificationClient = getNotificationClient(notification);
+      try {
+        if (!notificationClient.notify(NOTIFICATION_TEST_MESSAGE)) {
+          hasFailure = true;
+        }
+      } catch (InterruptedException | IOException e) {
+        LOGGER.error("Failed to notify: {} due to {}", notification, e);
+        hasFailure = true;
+      }
+    }
+    return !hasFailure;
   }
 
   public void failJob(final String reason, final Job job) {
@@ -65,84 +82,49 @@ public class JobNotifier {
     final UUID sourceDefinitionId = configRepository.getSourceDefinitionFromConnection(connectionId).getSourceDefinitionId();
     final UUID destinationDefinitionId = configRepository.getDestinationDefinitionFromConnection(connectionId).getDestinationDefinitionId();
     try {
-      final ImmutableMap<String, Object> sourceDefMetadata = generateSourceDefinitionMetadata(sourceDefinitionId);
-      final ImmutableMap<String, Object> destinationDefMetadata = generateDestinationDefinitionMetadata(destinationDefinitionId);
-      final ImmutableMap<String, Object> jobMetadata = generateJobMetadata(reason, job);
-      final Map<String, Object> metadata = MoreMaps.merge(sourceDefMetadata, destinationDefMetadata, jobMetadata);
+      final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(sourceDefinitionId);
+      final StandardDestinationDefinition destinationDefinition = configRepository.getStandardDestinationDefinition(destinationDefinitionId);
+      final Instant jobStartedDate = Instant.ofEpochSecond(job.getStartedAtInSecond().orElse(job.getCreatedAtInSecond()));
+      final Instant jobUpdatedDate = Instant.ofEpochSecond(job.getUpdatedAtInSecond());
+      final Duration duration = Duration.between(jobStartedDate, jobUpdatedDate);
+      final String durationString = formatDurationPart(duration.toDaysPart(), "day")
+          + formatDurationPart(duration.toHoursPart(), "hour")
+          + formatDurationPart(duration.toMinutesPart(), "minute")
+          + formatDurationPart(duration.toSecondsPart(), "second");
+      final String sourceConnector = String.format("%s version %s", sourceDefinition.getName(), sourceDefinition.getDockerImageTag());
+      final String destinationConnector = String.format("%s version %s", destinationDefinition.getName(), destinationDefinition.getDockerImageTag());
+      final String jobDescription = String.format("sync started at %s, running for%s, as the %s.", jobStartedDate, durationString, reason);
+      final String logUrl = connectionPageUrl + connectionId.toString();
       final StandardWorkspace workspace = configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID, true);
-
       for (Notification notification : workspace.getNotifications()) {
         final NotificationClient notificationClient = getNotificationClient(notification);
         try {
-          notificationClient.notifyJobFailure(metadata);
+          if (!notificationClient.notifyJobFailure(sourceConnector, destinationConnector, jobDescription, logUrl)) {
+            LOGGER.warn("Failed to successfully notify: {}", notification);
+          }
         } catch (InterruptedException | IOException e) {
-          LOGGER.error("Failed to notify: {} due to {}", notification, e);
+          LOGGER.error("Failed to notify: {} due to an exception", notification, e);
         }
       }
     } catch (JsonValidationException | IOException | ConfigNotFoundException e) {
-      LOGGER.error("Unable to read Workspace configuration");
+      LOGGER.error("Unable to read configuration:", e);
     }
   }
 
-  private NotificationClient getNotificationClient(final Notification notification) {
+  protected NotificationClient getNotificationClient(final Notification notification) {
     if (notification.getNotificationType() == NotificationType.SLACK) {
-      return new SlackNotificationClient(connectionPageUrl, notification.getSlackConfiguration());
+      return new SlackNotificationClient(notification.getSlackConfiguration());
     } else {
       throw new IllegalArgumentException("Unknown notification type:" + notification.getNotificationType());
     }
   }
 
-  private ImmutableMap<String, Object> generateDestinationDefinitionMetadata(UUID destinationDefinitionId)
-      throws ConfigNotFoundException, IOException, JsonValidationException {
-    final Builder<String, Object> metadata = ImmutableMap.builder();
-
-    final StandardDestinationDefinition destinationDefinition = configRepository.getStandardDestinationDefinition(destinationDefinitionId);
-    metadata.put("connector_destination", destinationDefinition.getName());
-    metadata.put("connector_destination_definition_id", destinationDefinition.getDestinationDefinitionId());
-    final String imageTag = destinationDefinition.getDockerImageTag();
-    if (!Strings.isEmpty(imageTag)) {
-      metadata.put("connector_destination_version", imageTag);
-    }
-    return metadata.build();
-  }
-
-  private ImmutableMap<String, Object> generateSourceDefinitionMetadata(UUID sourceDefinitionId)
-      throws ConfigNotFoundException, IOException, JsonValidationException {
-    final Builder<String, Object> metadata = ImmutableMap.builder();
-
-    final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(sourceDefinitionId);
-    metadata.put("connector_source", sourceDefinition.getName());
-    metadata.put("connector_source_definition_id", sourceDefinition.getSourceDefinitionId());
-    final String imageTag = sourceDefinition.getDockerImageTag();
-    if (!Strings.isEmpty(imageTag)) {
-      metadata.put("connector_source_version", imageTag);
-    }
-    return metadata.build();
-  }
-
-  private static ImmutableMap<String, Object> generateJobMetadata(final String reason, final Job job)
-      throws ConfigNotFoundException, IOException, JsonValidationException {
-    final UUID connectionId = UUID.fromString(job.getScope());
-    final Builder<String, Object> metadata = ImmutableMap.builder();
-    metadata.put("connection_id", connectionId);
-    metadata.put("failure_reason", reason);
-    final Instant jobStartedDate = Instant.ofEpochSecond(job.getStartedAtInSecond().orElse(job.getCreatedAtInSecond()));
-    metadata.put("started_at", jobStartedDate);
-    final Instant jobUpdatedDate = Instant.ofEpochSecond(job.getUpdatedAtInSecond());
-    final Duration duration = Duration.between(jobStartedDate, jobUpdatedDate);
-    final String durationString = formatDurationPart(duration.toDaysPart(), "day")
-        + formatDurationPart(duration.toHoursPart(), "hour")
-        + formatDurationPart(duration.toMinutesPart(), "minute")
-        + formatDurationPart(duration.toSecondsPart(), "second");
-    metadata.put("duration", durationString);
-    return metadata.build();
-  }
-
   private static String formatDurationPart(long durationPart, String timeUnit) {
     if (durationPart == 1) {
-      return String.format("%s %s", durationPart, timeUnit);
+      return String.format(" %s %s", durationPart, timeUnit);
     } else if (durationPart > 1) {
-      return String.format("%s %ss", durationPart, timeUnit);
+      // Use plural timeUnit
+      return String.format(" %s %ss", durationPart, timeUnit);
     }
     return "";
   }

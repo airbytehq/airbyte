@@ -24,21 +24,13 @@
 
 package io.airbyte.notification;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.commons.yaml.Yamls;
 import io.airbyte.config.SlackNotificationConfiguration;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.Map;
-import java.util.Map.Entry;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,10 +44,6 @@ import org.slf4j.LoggerFactory;
  * the API that we are posting to (and we can write multi-line strings more easily).
  *
  * For example, slack API expects some text message in the { "text" : "Hello World" } field...
- *
- * It is also a template as the content of the message can be customized with basic variables that
- * are built in the metadata map. The templating is very basic for now: it is just looking for keys
- * from the metadata map surrounded by '<' '>' characters in the string
  */
 public class SlackNotificationClient implements NotificationClient {
 
@@ -65,45 +53,34 @@ public class SlackNotificationClient implements NotificationClient {
       .version(HttpClient.Version.HTTP_2)
       .build();
   private final SlackNotificationConfiguration config;
-  private final String connectionPageUrl;
 
-  public SlackNotificationClient(final String connectionPageUrl, final SlackNotificationConfiguration config) {
-    this.connectionPageUrl = connectionPageUrl;
+  public SlackNotificationClient(final SlackNotificationConfiguration config) {
     this.config = config;
   }
 
   @Override
-  public boolean notifyJobFailure(final Map<String, Object> jobData) throws IOException, InterruptedException {
-    if (config.getOnFailure()) {
-      return notify(renderJobData(jobData, "failure_slack_notification_template.yml"));
-    }
-    return true;
+  public boolean notifyJobFailure(String sourceConnector, String destinationConnector, String jobDescription, String logUrl)
+      throws IOException, InterruptedException {
+    return notify(renderJobData(
+        "failure_slack_notification_template.txt",
+        sourceConnector,
+        destinationConnector,
+        jobDescription,
+        logUrl));
   }
 
-  private String renderJobData(final Map<String, Object> jobData, final String templateFile) throws IOException {
-    final Map<String, Object> metadata = MoreMaps.merge(jobData, generateMetadata(jobData));
-    final JsonNode template = Yamls.deserialize(MoreResources.readResource(templateFile));
-    String data = Jsons.toPrettyString(template);
-    for (Entry<String, Object> entry : metadata.entrySet()) {
-      final String key = "<" + entry.getKey() + ">";
-      if (data.contains(key)) {
-        data = data.replaceAll(key, entry.getValue().toString());
-      }
-    }
-    return data;
+  private String renderJobData(String templateFile, String sourceConnector, String destinationConnector, String jobDescription, String logUrl)
+      throws IOException {
+    final String template = MoreResources.readResource(templateFile);
+    return String.format(template, sourceConnector, destinationConnector, jobDescription, logUrl);
   }
 
-  private Map<String, Object> generateMetadata(final Map<String, Object> jobData) {
-    final Builder<String, Object> metadata = ImmutableMap.builder();
-    metadata.put("log_url", connectionPageUrl + jobData.get("connection_id"));
-    return metadata.build();
-  }
-
-  private boolean notify(final String data) throws IOException, InterruptedException {
+  @Override
+  public boolean notify(final String message) throws IOException, InterruptedException {
     final String webhookUrl = config.getWebhook();
     if (!Strings.isEmpty(webhookUrl)) {
       final HttpRequest request = HttpRequest.newBuilder()
-          .POST(HttpRequest.BodyPublishers.ofString(data))
+          .POST(HttpRequest.BodyPublishers.ofString(String.format("{ \"text\": \"%s\"}", message)))
           .uri(URI.create(webhookUrl))
           .header("Content-Type", "application/json")
           .build();
