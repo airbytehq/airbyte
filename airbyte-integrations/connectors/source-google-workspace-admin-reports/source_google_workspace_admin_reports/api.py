@@ -77,7 +77,6 @@ class API:
 
 
 class StreamAPI(ABC):
-    name = ""
     results_per_page = 100
 
     def __init__(self, api: API, *args, **kwargs):
@@ -87,6 +86,11 @@ class StreamAPI(ABC):
         if self._api.lookback:
             base_start_time = datetime.utcnow() - timedelta(self._api.lookback)
             self._start_time = base_start_time.replace(tzinfo=pytz.UTC).isoformat()
+
+    @property
+    @abstractmethod
+    def name(self):
+        """Name of the stream"""
 
     def _api_get(self, resource: str, params: Dict = None):
         return self._api.get(resource, params=params)
@@ -145,7 +149,9 @@ class IncrementalStreamAPI(StreamAPI, ABC):
             yield record
 
         if cursor:
-            self._state = cursor
+            new_state = max(cursor, self._state) if self._state else cursor
+            if new_state != self._state:
+                self._state = new_state
 
 
 class ActivitiesAPI(IncrementalStreamAPI):

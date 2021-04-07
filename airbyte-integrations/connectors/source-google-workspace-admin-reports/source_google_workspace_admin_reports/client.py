@@ -26,7 +26,7 @@ from typing import Any, Mapping, Optional, Tuple
 
 from base_python import BaseClient
 
-from .api import API, AdminAPI, DriveAPI, LoginsAPI, MobileAPI, OAuthTokensAPI
+from .api import API, AdminAPI, DriveAPI, LoginsAPI, MobileAPI, OAuthTokensAPI, IncrementalStreamAPI
 
 
 class Client(BaseClient):
@@ -43,7 +43,7 @@ class Client(BaseClient):
 
     def stream_has_state(self, name: str) -> bool:
         """Tell if stream supports incremental sync"""
-        return hasattr(self._apis[name], "state")
+        return isinstance(self._apis[name], IncrementalStreamAPI)
 
     def get_stream_state(self, name: str) -> Any:
         """Get state of stream with corresponding name"""
