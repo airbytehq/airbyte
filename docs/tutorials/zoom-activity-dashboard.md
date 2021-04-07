@@ -10,7 +10,7 @@ Here is what we will cover:
 
 1. Replicating data from Zoom to a PostgreSQL database Airbyte
 2. Connecting the PostgreSQL database to Tableau
-* Step 3: Creating charts in Tableau with Zoom data
+3. Creating charts in Tableau with Zoom data
 
 We will produce the following charts in Tableau:
 
