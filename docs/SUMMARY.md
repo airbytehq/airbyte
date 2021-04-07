@@ -34,6 +34,7 @@
     * [Google Analytics](integrations/sources/googleanalytics.md)
     * [Google Directory](integrations/sources/google-directory.md)
     * [Google Sheets](integrations/sources/google-sheets.md)
+    * [Google Workspace Admin Reports](integrations/sources/google-workspace-admin-reports)
     * [Greenhouse](integrations/sources/greenhouse.md)
     * [HTTP Request](integrations/sources/http-request.md)
     * [Hubspot](integrations/sources/hubspot.md)
