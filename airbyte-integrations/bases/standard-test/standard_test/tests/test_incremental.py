@@ -21,9 +21,26 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-
+from airbyte_protocol import Type
 from standard_test import BaseTest
+from standard_test.connector_runner import ConnectorRunner
+from standard_test.utils import incremental_only_catalog
 
 
 class TestIncremental(BaseTest):
-    pass
+    def test_sequential_reads(self, connector_config, configured_catalog, docker_runner: ConnectorRunner):
+        configured_catalog = incremental_only_catalog(configured_catalog)
+        output = docker_runner.call_read(connector_config, configured_catalog)
+
+        records_1 = [message.record for message in output if message.type == Type.RECORD]
+        states = [message.state for message in output if message.type == Type.STATE]
+
+        assert states, "Should produce at least one state"
+
+        latest_state = states[-1].data
+        output = docker_runner.call_read_with_state(connector_config, configured_catalog, state=latest_state)
+
+        records_2 = [message.record for message in output if message.type == Type.RECORD]
+        states = [message.state for message in output if message.type == Type.STATE]
+
+        assert records_1 == records_2, "TODO"

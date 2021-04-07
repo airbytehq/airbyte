@@ -21,9 +21,20 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+from airbyte_protocol import Type
 
 from standard_test.base import BaseTest
+from standard_test.connector_runner import ConnectorRunner
+from standard_test.utils import full_refresh_only_catalog
 
 
 class TestFullRefresh(BaseTest):
-    pass
+    def test_sequential_reads(self, connector_config, configured_catalog, docker_runner: ConnectorRunner):
+        configured_catalog = full_refresh_only_catalog(configured_catalog)
+        output = docker_runner.call_read(connector_config, configured_catalog)
+        records_1 = [message.record for message in output if message.type == Type.RECORD]
+
+        output = docker_runner.call_read(connector_config, configured_catalog)
+        records_2 = [message.record for message in output if message.type == Type.RECORD]
+
+        assert records_1 == records_2, "When two full refreshes are run, they are either equal or one of them is a strict subset of the other"

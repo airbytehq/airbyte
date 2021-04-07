@@ -30,7 +30,6 @@ from docker.errors import ContainerError
 
 from standard_test.base import BaseTest
 from standard_test.connector_runner import ConnectorRunner
-from standard_test.utils import full_refresh_only_catalog
 
 
 class TestSpec(BaseTest):
@@ -50,6 +49,13 @@ class TestConnection(BaseTest):
 
         assert len(con_messages) == 1, "Connection status message should be emitted exactly once"
         assert con_messages[0].connectionStatus.status == Status.SUCCEEDED
+
+    def test_check_without_network(self, connector_config, docker_runner: ConnectorRunner):
+        output = docker_runner.call_check(config=connector_config, network_disabled=True)
+        con_messages = [message for message in output if message.type == Type.CONNECTION_STATUS]
+
+        assert len(con_messages) == 1, "Connection status message should be emitted exactly once"
+        assert con_messages[0].connectionStatus.status == Status.FAILED
 
     def test_check_with_invalid_config(self, invalid_connector_config, docker_runner: ConnectorRunner):
         with pytest.raises(ContainerError) as err:
@@ -71,7 +77,6 @@ class TestDiscovery(BaseTest):
 
 class TestBasicRead(BaseTest):
     def test_read(self, connector_config, configured_catalog, validate_output_from_all_streams, docker_runner: ConnectorRunner):
-        configured_catalog = full_refresh_only_catalog(configured_catalog)
         output = docker_runner.call_read(connector_config, configured_catalog)
         records = [message.record for message in output if message.type == Type.RECORD]
         counter = Counter(record.stream for record in records)
