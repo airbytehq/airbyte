@@ -1,14 +1,17 @@
-# Mongodb 
+# Mongo DB
 
 The MongoDB source supports Full Refresh and Incremental sync strategies.
 
-## Resulting schema 
+## Resulting schema
+
 MongoDB does not have anything like table definition, thus we have to define column types from actual attributes and their values. Discover phase have two steps:
 
 ### Step 1. Find all unique properties
+
 Connector runs the map-reduce command which returns all unique document props in the collection. Map-reduce approach should be sufficient even for large clusters.
 
 ### Step 2. Determine property types
+
 For each property found, connector selects 10k documents from the collection where this property is not empty. If all the selected values have the same type - connector will set appropriate type to the property. In all other cases connector will fallback to `string` type.
 
 ## Features
@@ -20,12 +23,14 @@ For each property found, connector selects 10k documents from the collection whe
 | Replicate Incremental Deletes | No |
 
 ### Full Refresh sync
+
 Works as usual full refresh sync.
 
 ### Incremental sync
+
 Cursor field can not be nested. Currently only top level document properties are supported.
 
-Cursor should **never** be blank. In case cursor is blank - the incremental sync results might be unpredictable and will totally rely on MongoDB comparison algorithm. 
+Cursor should **never** be blank. In case cursor is blank - the incremental sync results might be unpredictable and will totally rely on MongoDB comparison algorithm.
 
 Only `datetime` and `integer` cursor types are supported. Cursor type is determined based on the cursor field name:
 
@@ -33,13 +38,14 @@ Only `datetime` and `integer` cursor types are supported. Cursor type is determi
 * `integer` - otherwise
 
 ## Getting started
+
 This guide describes in details how you can configure MongoDB for integration with Airbyte.
 
 ### Create users
 
 Run `mongo` shell, switch to `admin` database and create a `READ_ONLY_USER`. `READ_ONLY_USER` will be used for Airbyte integration. Please make sure that user has read-only privileges.
 
-```js
+```javascript
 mongo
 use admin;
 db.createUser({user: "READ_ONLY_USER", pwd: "READ_ONLY_PASSWORD", roles: [{role: "read", db: "TARGET_DATABASE"}]}
@@ -69,6 +75,7 @@ The last line will enable MongoDB security. Now only authenticated users will be
 
 ### Configure firewall
 
-Make sure that MongoDB is accessible from external servers. Specific commands will depend on the firewall you are using (UFW/iptables/AWS/etc). Please refer to appropriate documentation.
+Make sure that MongoDB is accessible from external servers. Specific commands will depend on the firewall you are using \(UFW/iptables/AWS/etc\). Please refer to appropriate documentation.
 
 Your `READ_ONLY_USER` should now be ready for use with Airbyte.
+

@@ -25,7 +25,6 @@
 package io.airbyte.integrations.source.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.jdbc.models.CdcState;
@@ -43,7 +42,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.apache.kafka.connect.errors.ConnectException;
-import org.apache.kafka.connect.storage.FileOffsetBackingStore;
 import org.apache.kafka.connect.util.SafeObjectInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,18 +56,11 @@ import org.slf4j.LoggerFactory;
  */
 public class AirbyteFileOffsetBackingStore {
 
-  public static final Path DEFAULT_OFFSET_STORAGE_PATH = Path.of("/tmp/offset.dat");
-
   private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteFileOffsetBackingStore.class);
 
   private final Path offsetFilePath;
 
-  public AirbyteFileOffsetBackingStore() {
-    this(DEFAULT_OFFSET_STORAGE_PATH);
-  }
-
-  @VisibleForTesting
-  AirbyteFileOffsetBackingStore(final Path offsetFilePath) {
+  public AirbyteFileOffsetBackingStore(final Path offsetFilePath) {
     this.offsetFilePath = offsetFilePath;
   }
 
@@ -98,7 +89,7 @@ public class AirbyteFileOffsetBackingStore {
         e -> stringToByteBuffer(e.getKey()),
         e -> stringToByteBuffer(e.getValue())));
 
-    FileUtils.deleteQuietly(DEFAULT_OFFSET_STORAGE_PATH.toFile());
+    FileUtils.deleteQuietly(offsetFilePath.toFile());
     save(mappedAsStrings);
   }
 
@@ -113,8 +104,8 @@ public class AirbyteFileOffsetBackingStore {
   }
 
   /**
-   * See {@link FileOffsetBackingStore#load} - logic is mostly borrowed from here. duplicated because
-   * this method is not public.
+   * See FileOffsetBackingStore#load - logic is mostly borrowed from here. duplicated because this
+   * method is not public.
    */
   @SuppressWarnings("unchecked")
   private Map<ByteBuffer, ByteBuffer> load() {
@@ -141,8 +132,8 @@ public class AirbyteFileOffsetBackingStore {
   }
 
   /**
-   * See {@link FileOffsetBackingStore#save} - logic is mostly borrowed from here. duplicated because
-   * this method is not public.
+   * See FileOffsetBackingStore#save - logic is mostly borrowed from here. duplicated because this
+   * method is not public.
    */
   private void save(Map<ByteBuffer, ByteBuffer> data) {
     try (ObjectOutputStream os = new ObjectOutputStream(Files.newOutputStream(offsetFilePath))) {

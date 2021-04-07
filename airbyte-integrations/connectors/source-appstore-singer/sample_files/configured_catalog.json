@@ -2,6 +2,7 @@
   "streams": [
     {
       "sync_mode": "incremental",
+      "destination_sync_mode": "append",
       "stream": {
         "name": "sales_report",
         "supported_sync_modes": ["incremental"],
@@ -111,6 +112,7 @@
     },
     {
       "sync_mode": "incremental",
+      "destination_sync_mode": "append",
       "stream": {
         "name": "subscriber_report",
         "supported_sync_modes": ["incremental"],
@@ -214,6 +216,7 @@
     },
     {
       "sync_mode": "incremental",
+      "destination_sync_mode": "append",
       "stream": {
         "name": "subscription_event_report",
         "supported_sync_modes": ["incremental"],
@@ -323,6 +326,7 @@
     },
     {
       "sync_mode": "incremental",
+      "destination_sync_mode": "append",
       "stream": {
         "name": "subscription_report",
         "supported_sync_modes": ["incremental"],

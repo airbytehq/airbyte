@@ -2,6 +2,7 @@ import React, { useCallback, useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useFetcher, useResource } from "rest-hooks";
 import { CellProps } from "react-table";
+import { useAsyncFn } from "react-use";
 
 import { Block, Title, FormContentTitle } from "./PageComponents";
 import Table from "components/Table";
@@ -12,8 +13,11 @@ import config from "config";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 import { DestinationResource } from "core/resources/Destination";
 import { DestinationDefinition } from "core/resources/DestinationDefinition";
+import UpgradeAllButton from "./UpgradeAllButton";
+import useNotification from "components/hooks/services/useNotification";
 
 const DestinationsView: React.FC = () => {
+  const [successUpdate, setSuccessUpdate] = useState(false);
   const formatMessage = useIntl().formatMessage;
   const { destinationDefinitions } = useResource(
     DestinationDefinitionResource.listShape(),
@@ -30,6 +34,8 @@ const DestinationsView: React.FC = () => {
   const updateDestinationDefinition = useFetcher(
     DestinationDefinitionResource.updateShape()
   );
+
+  const { hasNewDestinationVersion } = useNotification();
 
   const onUpdateVersion = useCallback(
     async ({ id, version }: { id: string; version: string }) => {
@@ -139,12 +145,31 @@ const DestinationsView: React.FC = () => {
     return Array.from(destinationDefinitionMap.values());
   }, [destinations, destinationDefinitions]);
 
+  const { updateAllDestinationVersions } = useNotification();
+
+  const [{ loading, error }, onUpdate] = useAsyncFn(async () => {
+    setSuccessUpdate(false);
+    await updateAllDestinationVersions();
+    setSuccessUpdate(true);
+    setTimeout(() => {
+      setSuccessUpdate(false);
+    }, 2000);
+  }, [updateAllDestinationVersions]);
+
   return (
     <>
       {usedDestinationDefinitions.length ? (
         <Block>
           <Title bold>
             <FormattedMessage id="admin.manageDestination" />
+            {(hasNewDestinationVersion || successUpdate) && (
+              <UpgradeAllButton
+                isLoading={loading}
+                hasError={!!error && !loading}
+                hasSuccess={successUpdate}
+                onUpdate={onUpdate}
+              />
+            )}
           </Title>
           <Table columns={columns} data={usedDestinationDefinitions} />
         </Block>
@@ -153,6 +178,15 @@ const DestinationsView: React.FC = () => {
       <Block>
         <Title bold>
           <FormattedMessage id="admin.availableDestinations" />
+          {(hasNewDestinationVersion || successUpdate) &&
+            !usedDestinationDefinitions.length && (
+              <UpgradeAllButton
+                isLoading={loading}
+                hasError={!!error && !loading}
+                hasSuccess={successUpdate}
+                onUpdate={onUpdate}
+              />
+            )}
         </Title>
         <Table columns={columns} data={destinationDefinitions} />
       </Block>

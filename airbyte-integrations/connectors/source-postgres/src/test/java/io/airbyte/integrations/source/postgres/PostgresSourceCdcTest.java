@@ -74,6 +74,7 @@ import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -200,6 +201,7 @@ class PostgresSourceCdcTest {
   }
 
   @Test
+  @DisplayName("On the first First sync, produces returns records that exist in the database.")
   void testExistingData() throws Exception {
     final AutoCloseableIterator<AirbyteMessage> read = source.read(getConfig(PSQL_DB, dbName), CONFIGURED_CATALOG, null);
     final List<AirbyteMessage> actualRecords = AutoCloseableIterators.toListAndClose(read);
@@ -212,6 +214,7 @@ class PostgresSourceCdcTest {
   }
 
   @Test
+  @DisplayName("When a record is deleted, produces a deletion record.")
   void testDelete() throws Exception {
     final AutoCloseableIterator<AirbyteMessage> read1 = source.read(getConfig(PSQL_DB, dbName), CONFIGURED_CATALOG, null);
     final List<AirbyteMessage> actualRecords1 = AutoCloseableIterators.toListAndClose(read1);
@@ -238,8 +241,39 @@ class PostgresSourceCdcTest {
     assertNotNull(recordMessages2.get(0).getData().get(PostgresSource.CDC_DELETED_AT));
   }
 
+  @Test
+  @DisplayName("When a record is updated, produces an update record.")
+  void testUpdate() throws Exception {
+    final String updatedModel = "Explorer";
+    final AutoCloseableIterator<AirbyteMessage> read1 = source.read(getConfig(PSQL_DB, dbName), CONFIGURED_CATALOG, null);
+    final List<AirbyteMessage> actualRecords1 = AutoCloseableIterators.toListAndClose(read1);
+    final List<AirbyteStateMessage> stateMessages1 = extractStateMessages(actualRecords1);
+
+    assertExpectedStateMessages(stateMessages1);
+
+    database.query(ctx -> {
+      ctx.execute(String.format("UPDATE %s SET %s = '%s' WHERE %s = %s", MODELS_STREAM_NAME, COL_MODEL, updatedModel, COL_ID, 11));
+      return null;
+    });
+
+    final JsonNode state = stateMessages1.get(0).getData();
+    final AutoCloseableIterator<AirbyteMessage> read2 = source.read(getConfig(PSQL_DB, dbName), CONFIGURED_CATALOG, state);
+    final List<AirbyteMessage> actualRecords2 = AutoCloseableIterators.toListAndClose(read2);
+    final List<AirbyteRecordMessage> recordMessages2 = new ArrayList<>(extractRecordMessages(actualRecords2));
+    final List<AirbyteStateMessage> stateMessages2 = extractStateMessages(actualRecords2);
+
+    assertExpectedStateMessages(stateMessages2);
+    assertEquals(1, recordMessages2.size());
+    assertEquals(11, recordMessages2.get(0).getData().get(COL_ID).asInt());
+    assertEquals(updatedModel, recordMessages2.get(0).getData().get(COL_MODEL).asText());
+    assertNotNull(recordMessages2.get(0).getData().get(PostgresSource.CDC_LSN));
+    assertNotNull(recordMessages2.get(0).getData().get(PostgresSource.CDC_UPDATED_AT));
+    assertTrue(recordMessages2.get(0).getData().get(PostgresSource.CDC_DELETED_AT).isNull());
+  }
+
   @SuppressWarnings({"BusyWait", "CodeBlock2Expr"})
   @Test
+  @DisplayName("Verify that when data is inserted into the database while a sync is happening and after the first sync, it all gets replicated.")
   void testRecordsProducedDuringAndAfterSync() throws Exception {
     final int recordsToCreate = 20;
     final AtomicInteger recordsCreated = new AtomicInteger();
@@ -283,6 +317,7 @@ class PostgresSourceCdcTest {
   }
 
   @Test
+  @DisplayName("When both incremental CDC and full refresh are configured for different streams in a sync, the data is replicated as expected.")
   void testCdcAndFullRefreshInSameSync() throws Exception {
     final ConfiguredAirbyteCatalog configuredCatalog = Jsons.clone(CONFIGURED_CATALOG);
     // set make stream to full refresh.
@@ -321,6 +356,46 @@ class PostgresSourceCdcTest {
         Streams.concat(MAKE_RECORDS.stream(), Stream.of(fiatRecord, puntoRecord)).collect(Collectors.toSet()),
         recordMessages2,
         Collections.singleton(MODELS_STREAM_NAME));
+  }
+
+  @Test
+  @DisplayName("When no records exist, no records are returned.")
+  void testNoData() throws Exception {
+    database.query(ctx -> {
+      ctx.execute(String.format("DELETE FROM %s", MAKES_STREAM_NAME));
+      return null;
+    });
+
+    database.query(ctx -> {
+      ctx.execute(String.format("DELETE FROM %s", MODELS_STREAM_NAME));
+      return null;
+    });
+
+    final AutoCloseableIterator<AirbyteMessage> read = source.read(getConfig(PSQL_DB, dbName), CONFIGURED_CATALOG, null);
+    final List<AirbyteMessage> actualRecords = AutoCloseableIterators.toListAndClose(read);
+
+    final Set<AirbyteRecordMessage> recordMessages = extractRecordMessages(actualRecords);
+    final List<AirbyteStateMessage> stateMessages = extractStateMessages(actualRecords);
+
+    assertExpectedRecords(Collections.emptySet(), recordMessages);
+    assertExpectedStateMessages(stateMessages);
+  }
+
+  @Test
+  @DisplayName("When no changes have been made to the database since the previous sync, no records are returned.")
+  void testNoDataOnSecondSync() throws Exception {
+    final AutoCloseableIterator<AirbyteMessage> read1 = source.read(getConfig(PSQL_DB, dbName), CONFIGURED_CATALOG, null);
+    final List<AirbyteMessage> actualRecords1 = AutoCloseableIterators.toListAndClose(read1);
+    final JsonNode state = extractStateMessages(actualRecords1).get(0).getData();
+
+    final AutoCloseableIterator<AirbyteMessage> read2 = source.read(getConfig(PSQL_DB, dbName), CONFIGURED_CATALOG, state);
+    final List<AirbyteMessage> actualRecords2 = AutoCloseableIterators.toListAndClose(read2);
+
+    final Set<AirbyteRecordMessage> recordMessages2 = extractRecordMessages(actualRecords2);
+    final List<AirbyteStateMessage> stateMessages2 = extractStateMessages(actualRecords2);
+
+    assertExpectedRecords(Collections.emptySet(), recordMessages2);
+    assertExpectedStateMessages(stateMessages2);
   }
 
   @Test

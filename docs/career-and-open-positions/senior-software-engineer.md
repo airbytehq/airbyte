@@ -24,7 +24,7 @@ We love Java, Python, Node, K8s, Docker... but in the end, it doesn't matter: we
 * Proficiency writing production-quality code, preferably in Java, Kotlin or Python.
 * Familiarity with scalability.
 * Excellent communication skills.
-* You share [our values](https://docs.airbyte.io/company-handbook/culture-and-values)
+* You share [our values](https://handbook.airbyte.io/company/culture-and-values)
 
 ## **Great-to-haves**
 
@@ -38,11 +38,10 @@ Wherever you want!
 
 ## **Perks!!!**
 
-* **Work with great people** with weekly team events
 * **Flexible work environment as fully remote** - we don’t look at when you log in, log out or how much time you work. We trust you, it’s the only way remote can actually work. 
-* **Unlimited vacation policy** with mandatory minimum time off - so you can fit work around your life.
-* **Coworking space stipend** - we provide everyone with $200/month to use on a coworking space of their choice, if any.
-* **Very generous parental leave** (for both parents, after one year spent with the company) - so those raising families can do so while still working for us.
+* **[Unlimited vacation policy](https://handbook.airbyte.io/people/time-off)** with mandatory minimum time off - so you can fit work around your life.
+* **[Co-working space stipend](https://handbook.airbyte.io/people/expense-policy#work-space)** - we provide everyone with $200/month to use on a coworking space of their choice, if any.
+* **[Parental leave](https://handbook.airbyte.io/people/time-off#parental-leave)** \(for both parents, after one year spent with the company\) - so those raising families can do so while still working for us.
 * **Open book policy** - we reimburse books that employees want to purchase for their professional and career development. 
 * **Continuous learning / training policy** - we sponsor the conferences and training programs you feel would add to your development in the company. 
 * **Health insurance** for those from countries that do not provide this freely. Through Savvy in the US, which means you can choose the insurance you want and will receive a stipend from the company. 
@@ -54,9 +53,9 @@ Wherever you want!
 
 We are an open company, we are opinionated and public about how we think!
 
-* Our [company handbook](https://docs.airbyte.io/company-handbook),
-* Our [culture & values](https://docs.airbyte.io/company-handbook/culture-and-values),
-* Our [strategy](https://docs.airbyte.io/company-handbook/strategy),
+* Our [company handbook](https://handbook.airbyte.io/),
+* Our [culture & values](https://handbook.airbyte.io/company/culture-and-values),
+* Our [strategy](https://handbook.airbyte.io/strategy/strategy),
 * Our [roadmap](https://docs.airbyte.io/roadmap),
 * The [future of data integration](https://airbyte.io/articles/data-engineering-thoughts/why-the-future-of-etl-is-not-elt-but-el/)
 

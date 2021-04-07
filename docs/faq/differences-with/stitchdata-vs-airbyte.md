@@ -2,6 +2,8 @@
 
 We wrote an article, “[Open-source vs. Commercial Software: How to Solve the Data Integration Problem](https://airbyte.io/articles/data-engineering-thoughts/open-source-vs-commercial-software-how-to-better-solve-data-integration/),” in which we describe the pros and cons of StitchData’s commercial approach and Airbyte’s open-source approach. Don’t hesitate to check it out for more detailed arguments. As a summary, here are the differences:
 
+![](https://airbyte.io/wp-content/uploads/2020/10/Open-source-vs-commercial-approach-2048x1843.png)
+
 ## StitchData:
 
 * **Limited deprecating connectors:** Stitch only supports 150 connectors. Talend has stopped investing in StitchData and its connectors. And on Singer, each connector is its own open-source project. So you never know the quality of a tap or target until you have actually used it. There is no guarantee whatsoever about what you’ll get.
@@ -23,4 +25,5 @@ We wrote an article, “[Open-source vs. Commercial Software: How to Solve the D
 * **Debugging autonomy:** if you experience any connector issue, you won’t need to wait for Fivetran’s customer support team to get back to you, if you can fix the issue fast yourself. 
 * **Your data stays in your cloud.** Have full control over your data, and the costs of your data transfers.
 * **No more security and privacy compliance, as self-hosted and open-sourced \(MIT\).** Any team can directly address their integration needs.
+* **Premium support directly on our Slack for free**. Our time to resolution is about 3-4 hours in average. 
 

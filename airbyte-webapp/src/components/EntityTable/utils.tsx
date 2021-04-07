@@ -71,15 +71,21 @@ export function getEntityTableData<
 
 export const getConnectionTableData = (
   connections: Connection[],
-  type: "source" | "destination"
+  type: "source" | "destination" | "connection"
 ): ITableDataItem[] => {
   const connectType = type === "source" ? "destination" : "source";
 
   return connections.map((connection) => ({
     connectionId: connection.connectionId,
-    entityName: connection[connectType]?.name || "",
-    // @ts-ignore conditional types are not supported here
-    connectorName: connection[connectType]?.[`${connectType}Name`] || "",
+    entityName:
+      type === "connection"
+        ? `${connection.source?.sourceName} - ${connection.source?.name}`
+        : connection[connectType]?.name || "",
+    connectorName:
+      type === "connection"
+        ? `${connection.destination?.destinationName} - ${connection.destination?.name}`
+        : // @ts-ignore conditional types are not supported here
+          connection[connectType]?.[`${connectType}Name`] || "",
     lastSync: connection.latestSyncJobCreatedAt,
     enabled: connection.status === ConnectionStatus.ACTIVE,
     schedule: connection.schedule,

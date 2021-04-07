@@ -103,7 +103,6 @@ public class IntegrationRunner {
         final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null));
         try (messageIterator) {
           messageIterator.forEachRemaining(v -> {
-            LOGGER.info("peeking at message: " + v);
             stdoutConsumer.accept(Jsons.serialize(v));
           });
         }
@@ -112,7 +111,7 @@ public class IntegrationRunner {
       case WRITE -> {
         final JsonNode config = parseConfig(parsed.getConfigPath());
         final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
-        final DestinationConsumer<AirbyteMessage> consumer = destination.write(config, catalog);
+        final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog);
         consumeWriteStream(consumer);
       }
       default -> throw new IllegalStateException("Unexpected value: " + parsed.getCommand());
@@ -122,7 +121,7 @@ public class IntegrationRunner {
   }
 
   @VisibleForTesting
-  static void consumeWriteStream(DestinationConsumer<AirbyteMessage> consumer) throws Exception {
+  static void consumeWriteStream(AirbyteMessageConsumer consumer) throws Exception {
     final Scanner input = new Scanner(System.in);
     try (consumer) {
       consumer.start();

@@ -22,6 +22,10 @@ variable "instance-size" {
   type = string
 }
 
+variable "ami-id" {
+  type = string
+}
+
 variable "key-name" {
   type = string
 }

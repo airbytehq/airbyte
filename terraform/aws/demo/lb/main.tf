@@ -120,6 +120,7 @@ resource "aws_lb_listener_rule" "allow-read-api" {
     path_pattern {
       values = [
         "/api/v1/*/list",
+        "/api/v1/*/list_latest",
         "/api/v1/*/get",
         "/api/v1/*/get_by_slug",
         "/api/v1/*/health",
