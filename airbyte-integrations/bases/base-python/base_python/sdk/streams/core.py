@@ -1,10 +1,34 @@
+"""
+MIT License
+
+Copyright (c) 2020 Airbyte
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+"""
+
 import inspect
 import math
 from abc import ABC, abstractmethod
-from typing import Mapping, Any, Iterable, List, Union, MutableMapping
+from typing import Any, Iterable, List, Mapping, MutableMapping, Union
 
-from airbyte_protocol import AirbyteStream, SyncMode, ConfiguredAirbyteStream
 import base_python.sdk.utils.casing as casing
+from airbyte_protocol import AirbyteStream, ConfiguredAirbyteStream, SyncMode
 from base_python.logger import AirbyteLogger
 from base_python.schema_helpers import ResourceSchemaLoader
 
@@ -27,7 +51,9 @@ class Stream(ABC):
         return casing.camel_to_snake(self.__class__.__name__)
 
     @abstractmethod
-    def read_stream(self, configured_stream: ConfiguredAirbyteStream, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
+    def read_stream(
+        self, configured_stream: ConfiguredAirbyteStream, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Mapping[str, Any]]:
         """
         This method should be overridden by subclasses
 
@@ -48,11 +74,7 @@ class Stream(ABC):
         return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema(self.name)
 
     def as_airbyte_stream(self) -> AirbyteStream:
-        stream = AirbyteStream(
-            name=self.name,
-            json_schema=dict(self.get_json_schema()),
-            supported_sync_modes=[SyncMode.full_refresh]
-        )
+        stream = AirbyteStream(name=self.name, json_schema=dict(self.get_json_schema()), supported_sync_modes=[SyncMode.full_refresh])
 
         if self.supports_incremental:
             stream.source_defined_cursor = self.source_defined_cursor

@@ -1,21 +1,43 @@
+"""
+MIT License
+
+Copyright (c) 2020 Airbyte
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+"""
+
 import copy
-import requests
-
 from abc import ABC, abstractmethod
-from typing import Mapping, Iterable, Any, Optional, MutableMapping
+from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
+import requests
 from airbyte_protocol import ConfiguredAirbyteStream
 from base_python.sdk.streams.auth.core import HttpAuthenticator, NoAuth
-from base_python.sdk.streams.exceptions import DefaultBackoffException, UserDefinedBackoffException
-from base_python.sdk.streams.rate_limiting import user_defined_backoff_handler, default_backoff_handler
-
 from base_python.sdk.streams.core import Stream
+from base_python.sdk.streams.exceptions import DefaultBackoffException, UserDefinedBackoffException
+from base_python.sdk.streams.rate_limiting import default_backoff_handler, user_defined_backoff_handler
 
 
 class HttpStream(Stream, ABC):
     source_defined_cursor = True  # Most HTTP streams use a source defined cursor (i.e: the user can't configure it like on a SQL table)
 
-    def __init__(self, authenticator: HttpAuthenticator = NoAuth(), parent_stream: 'HttpStream' = None):
+    def __init__(self, authenticator: HttpAuthenticator = NoAuth(), parent_stream: "HttpStream" = None):
         self._authenticator = authenticator
         self._parent_stream = parent_stream
         self._session = requests.Session()
@@ -67,22 +89,22 @@ class HttpStream(Stream, ABC):
 
     @abstractmethod
     def path(
-            self,
-            stream_state: Mapping[str, Any],
-            request_configuration: Optional[Mapping] = None,
-            next_page_token: Mapping[str, Any] = None,
-            parent_stream_record: Mapping = None
+        self,
+        stream_state: Mapping[str, Any],
+        request_configuration: Optional[Mapping] = None,
+        next_page_token: Mapping[str, Any] = None,
+        parent_stream_record: Mapping = None,
     ) -> str:
         """
         Returns the URL path for the API endpoint e.g: if you wanted to hit https://myapi.com/v1/some_entity then this should return "some_entity"
         """
 
     def request_params(
-            self,
-            stream_state: Mapping[str, Any],
-            request_configuration: Optional[Mapping] = None,
-            next_page_token: Mapping[str, Any] = None,
-            parent_stream_record: Mapping = None
+        self,
+        stream_state: Mapping[str, Any],
+        request_configuration: Optional[Mapping] = None,
+        next_page_token: Mapping[str, Any] = None,
+        parent_stream_record: Mapping = None,
     ) -> MutableMapping[str, Any]:
         """
         Override this method to define the query parameters that should be set on an outgoing HTTP request given the inputs.
@@ -92,11 +114,11 @@ class HttpStream(Stream, ABC):
         return {}
 
     def request_headers(
-            self,
-            stream_state: Mapping[str, Any],
-            request_configuration: Optional[Mapping] = None,
-            next_page_token: Mapping[str, Any] = None,
-            parent_stream_record: Mapping = None
+        self,
+        stream_state: Mapping[str, Any],
+        request_configuration: Optional[Mapping] = None,
+        next_page_token: Mapping[str, Any] = None,
+        parent_stream_record: Mapping = None,
     ) -> Mapping[str, Any]:
         """
         Override to return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method.
@@ -104,11 +126,11 @@ class HttpStream(Stream, ABC):
         return {}
 
     def request_body_json(
-            self,
-            stream_state: Mapping[str, Any],
-            request_configuration: Optional[Mapping] = None,
-            next_page_token: Mapping[str, Any] = None,
-            parent_stream_record: Mapping = None
+        self,
+        stream_state: Mapping[str, Any],
+        request_configuration: Optional[Mapping] = None,
+        next_page_token: Mapping[str, Any] = None,
+        parent_stream_record: Mapping = None,
     ) -> Optional[Mapping]:
         """
         TODO make this possible to do for non-JSON APIs
@@ -117,10 +139,7 @@ class HttpStream(Stream, ABC):
         return None
 
     def parse_response(
-            self,
-            response: requests.Response,
-            stream_state: Mapping[str, Any] = None,
-            request_configuration: Optional[Mapping] = None
+        self, response: requests.Response, stream_state: Mapping[str, Any] = None, request_configuration: Optional[Mapping] = None
     ) -> Iterable[Mapping]:
         """
         Parses the raw response object into a list of records.
@@ -158,16 +177,13 @@ class HttpStream(Stream, ABC):
         """
         return None
 
-    def _create_prepared_request(self, path: str, headers: Mapping = None, params: Mapping = None, json: Any = None) -> requests.PreparedRequest:
-        args = {
-            'method': self.http_method,
-            'url': self.url_base + path,
-            'headers': headers,
-            'params': params
-        }
+    def _create_prepared_request(
+        self, path: str, headers: Mapping = None, params: Mapping = None, json: Any = None
+    ) -> requests.PreparedRequest:
+        args = {"method": self.http_method, "url": self.url_base + path, "headers": headers, "params": params}
 
         if self.http_method.upper() == "POST":
-            args['body'] = json
+            args["body"] = json
 
         return requests.Request(**args).prepare()
 
@@ -212,12 +228,12 @@ class HttpStream(Stream, ABC):
         :return:
         """
 
-        args = {'stream_state': stream_state}
+        args = {"stream_state": stream_state}
         if parent_stream_record:
-            args['parent_stream_record'] = parent_stream_record
+            args["parent_stream_record"] = parent_stream_record
 
         for request_configuration in self.request_configurations(**copy.deepcopy(args)):
-            args['request_configuration'] = request_configuration
+            args["request_configuration"] = request_configuration
             pagination_complete = False
 
             while not pagination_complete:
@@ -225,7 +241,7 @@ class HttpStream(Stream, ABC):
                     path=self.path(**args),
                     headers=dict(self.request_headers(**args), **self.authenticator.get_auth_header()),
                     params=self.request_params(**args),
-                    json=self.request_body_json(**args)
+                    json=self.request_body_json(**args),
                 )
 
                 response = self._send_request(request)
@@ -233,14 +249,16 @@ class HttpStream(Stream, ABC):
 
                 next_page_token = self.next_page_token(response)
                 if next_page_token:
-                    args['next_page_token'] = next_page_token
+                    args["next_page_token"] = next_page_token
                 else:
                     pagination_complete = True
 
         # Always return an empty generator just in case no records were ever yielded
         yield from []
 
-    def read_stream(self, configured_stream: ConfiguredAirbyteStream, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
+    def read_stream(
+        self, configured_stream: ConfiguredAirbyteStream, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Mapping[str, Any]]:
         # TODO this can be made more efficient if syncs are sequenced so that each API endpoint is called exactly once. Right now parent streams are
         # re-read for the benefit of syncing the child stream.
         stream_state = stream_state or {}

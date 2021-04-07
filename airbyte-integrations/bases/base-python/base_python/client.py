@@ -23,13 +23,13 @@ SOFTWARE.
 """
 
 import inspect
-
 from abc import ABC, abstractmethod
 from typing import Any, Callable, Dict, Generator, List, Mapping, Tuple
 
 from airbyte_protocol import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, SyncMode
 
 from .schema_helpers import ResourceSchemaLoader
+
 
 def package_name_from_class(cls: object) -> str:
     """Find the package name given a class name"""
@@ -68,7 +68,7 @@ class BaseClient(StreamStateMixin, ABC):
         methods = inspect.getmembers(self.__class__, predicate=inspect.isfunction)
         for name, method in methods:
             if name.startswith(prefix):
-                mapping[name[len(prefix):]] = getattr(self, name)
+                mapping[name[len(prefix) :]] = getattr(self, name)
 
         return mapping
 
