@@ -2,12 +2,14 @@ import React from "react";
 import styled from "styled-components";
 
 import StatusIcon from "components/StatusIcon";
+import ImageBlock from "components/ImageBlock";
 import { Status } from "../types";
 
 type IProps = {
   value: string;
   enabled?: boolean;
   status?: string | null;
+  icon?: boolean;
 };
 
 const Content = styled.div`
@@ -30,7 +32,11 @@ const Space = styled.div`
   opacity: 0;
 `;
 
-const NameCell: React.FC<IProps> = ({ value, enabled, status }) => {
+const Image = styled(ImageBlock)`
+  margin-right: 6px;
+`;
+
+const NameCell: React.FC<IProps> = ({ value, enabled, status, icon }) => {
   return (
     <Content>
       {status ? (
@@ -42,6 +48,7 @@ const NameCell: React.FC<IProps> = ({ value, enabled, status }) => {
       ) : (
         <Space />
       )}
+      {icon && <Image small />}
       <Name enabled={enabled}>{value}</Name>
     </Content>
   );
