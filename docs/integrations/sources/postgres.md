@@ -120,7 +120,7 @@ Please read the [CDC docs](../../architecture/cdc.md) for an overview of how Air
 ### CDC Limitations
 * Make sure to read our [CDC docs](../../architecture/cdc.md) to see limitations that impact all databases using CDC replication.
 * CDC is only available for Postgres 10+.
-* Airbyte requires a replication slot configured only for its use. Only one source should be configured that uses this replication slot.
+* Airbyte requires a replication slot configured only for its use. Only one source should be configured that uses this replication slot. Instructions on how to set up a replication slot can be found below.
 * Log-based replication only works for master instances of Postgres.
 * Using logical replication increases disk space used on the database server. The additional data is stored until it is consumed.
 
