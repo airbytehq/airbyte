@@ -148,21 +148,24 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
 
   @Override
   public AutoCloseableIterator<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception {
+    System.out.println("========== read");
+    System.out.println(catalog);
+
     final JdbcStateManager stateManager =
         new JdbcStateManager(state == null ? JdbcStateManager.emptyState() : Jsons.object(state, JdbcState.class), catalog);
     final Instant emittedAt = Instant.now();
 
     final JdbcDatabase database = createDatabase(config);
 
-    final Map<String, TableInfoInternal> tableNameToTable =
+    final Map<String, TableInfoInternal> fullyQualifiedTableNameToInfo =
         discoverInternal(database, Optional.ofNullable(config.get("database")).map(JsonNode::asText))
             .stream()
             .collect(Collectors.toMap(t -> String.format("%s.%s", t.getSchemaName(), t.getName()), Function.identity()));
 
     final List<AutoCloseableIterator<AirbyteMessage>> incrementalIterators =
-        getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
+        getIncrementalIterators(database, catalog, fullyQualifiedTableNameToInfo, stateManager, emittedAt);
     final List<AutoCloseableIterator<AirbyteMessage>> fullRefreshIterators =
-        getFullRefreshIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
+        getFullRefreshIterators(database, catalog, fullyQualifiedTableNameToInfo, stateManager, emittedAt);
     final List<AutoCloseableIterator<AirbyteMessage>> iteratorList = Stream.of(incrementalIterators, fullRefreshIterators)
         .flatMap(Collection::stream)
         .collect(Collectors.toList());
@@ -212,13 +215,14 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
 
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
       if (selector.test(airbyteStream)) {
-        final String streamName = airbyteStream.getStream().getName();
-        if (!tableNameToTable.containsKey(streamName)) {
-          LOGGER.info("Skipping stream {} because it is not in the source", streamName);
+        final AirbyteStream stream = airbyteStream.getStream();
+        final String fullyQualifiedTableName = JdbcUtils.getFullyQualifiedTableName(stream.getNamespace(), stream.getName());
+        if (!tableNameToTable.containsKey(fullyQualifiedTableName)) {
+          LOGGER.info("Skipping stream {} because it is not in the source", fullyQualifiedTableName);
           continue;
         }
 
-        final TableInfoInternal table = tableNameToTable.get(streamName);
+        final TableInfoInternal table = tableNameToTable.get(fullyQualifiedTableName);
         final AutoCloseableIterator<AirbyteMessage> tableReadIterator = createReadIterator(
             database,
             airbyteStream,

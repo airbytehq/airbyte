@@ -44,6 +44,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 
 public class JdbcIntegrationTest extends StandardSourceTest {
 
+  private static final String SCHEMA_NAME = "public";
   private static final String STREAM_NAME = "public.id_and_name";
   private PostgreSQLContainer<?> container;
   private Database database;
@@ -100,6 +101,7 @@ public class JdbcIntegrationTest extends StandardSourceTest {
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
     return CatalogHelpers.createConfiguredAirbyteCatalog(
         STREAM_NAME,
+        SCHEMA_NAME,
         Field.of("id", JsonSchemaPrimitive.NUMBER),
         Field.of("name", JsonSchemaPrimitive.STRING));
   }

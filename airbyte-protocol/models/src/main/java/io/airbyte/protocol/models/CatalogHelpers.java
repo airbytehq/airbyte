@@ -61,27 +61,17 @@ public class CatalogHelpers {
     return new AirbyteStream().withName(streamName).withNamespace(schemaName).withJsonSchema(fieldsToJsonSchema(fields));
   }
 
-  public static ConfiguredAirbyteCatalog createConfiguredAirbyteCatalog(String streamName, Field... fields) {
-    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(createConfiguredAirbyteStream(streamName, fields)));
+  public static ConfiguredAirbyteCatalog createConfiguredAirbyteCatalog(String streamName, String schemaName, Field... fields) {
+    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(createConfiguredAirbyteStream(streamName, schemaName, fields)));
   }
 
-  public static ConfiguredAirbyteStream createConfiguredAirbyteStream(String streamName, Field... fields) {
-    return createConfiguredAirbyteStream(streamName, Arrays.asList(fields));
+  public static ConfiguredAirbyteStream createConfiguredAirbyteStream(String streamName, String schemaName, Field... fields) {
+    return createConfiguredAirbyteStream(streamName, schemaName, Arrays.asList(fields));
   }
 
-  public static ConfiguredAirbyteStream createConfiguredAirbyteStream(String streamName, List<Field> fields) {
-    return new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName(streamName).withJsonSchema(fieldsToJsonSchema(fields)))
+  public static ConfiguredAirbyteStream createConfiguredAirbyteStream(String streamName, String schemaName, List<Field> fields) {
+    return new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName(streamName).withNamespace(schemaName).withJsonSchema(fieldsToJsonSchema(fields)))
         .withSyncMode(SyncMode.FULL_REFRESH).withDestinationSyncMode(DestinationSyncMode.OVERWRITE);
-  }
-
-  public static ConfiguredAirbyteStream createIncrementalConfiguredAirbyteStream(
-                                                                                 String streamName,
-                                                                                 SyncMode syncMode,
-                                                                                 DestinationSyncMode destinationSyncMode,
-                                                                                 String cursorFieldName,
-                                                                                 List<String> primaryKeys,
-                                                                                 Field... fields) {
-    return createIncrementalConfiguredAirbyteStream(streamName, syncMode, destinationSyncMode, cursorFieldName, primaryKeys, Arrays.asList(fields));
   }
 
   public static ConfiguredAirbyteStream createIncrementalConfiguredAirbyteStream(
