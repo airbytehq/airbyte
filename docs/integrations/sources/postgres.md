@@ -99,7 +99,7 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA <schema_name> GRANT SELECT ON TABLES TO airby
 
 #### 3. Set up CDC \(Optional\)
 
-Please read the section on CDC below for more information.
+Please read [the section on CDC below](#setting-up-cdc-for-postgres) for more information.
 
 #### 4. That's it!
 
