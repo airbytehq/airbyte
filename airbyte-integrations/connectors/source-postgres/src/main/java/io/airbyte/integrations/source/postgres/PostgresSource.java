@@ -56,6 +56,7 @@ import io.debezium.engine.ChangeEvent;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -127,19 +128,15 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
     if (isCdc(config)) {
       checkOperations.add(database -> {
         List<JsonNode> matchingSlots = database.query(connection -> {
-          final String replicationSlot = config.get("replication_slot").asText();
-          // todo: we can't use enquoteIdentifier since this isn't an identifier, it's a value. fix this to
-          // prevent sql injection
-          final String sql =
-              String.format(
-                  "SELECT slot_name, plugin, database FROM pg_replication_slots WHERE slot_name = '%s' AND plugin = '%s' AND database = '%s'",
-                  replicationSlot,
-                  "pgoutput",
-                  config.get("database").asText());
+          final String sql = "SELECT * FROM pg_replication_slots WHERE slot_name = ? AND plugin = ? AND database = ?";
+          PreparedStatement ps = connection.prepareStatement(sql);
+          ps.setString(1, config.get("replication_slot").asText());
+          ps.setString(2, "pgoutput");
+          ps.setString(3, config.get("database").asText());
 
-          LOGGER.info("Attempting to find the named replication slot using the query: " + sql);
+          LOGGER.info("Attempting to find the named replication slot using the query: " + ps.toString());
 
-          return connection.prepareStatement(sql);
+          return ps;
         }, JdbcUtils::rowToJson).collect(toList());
 
         if (matchingSlots.size() != 1) {
