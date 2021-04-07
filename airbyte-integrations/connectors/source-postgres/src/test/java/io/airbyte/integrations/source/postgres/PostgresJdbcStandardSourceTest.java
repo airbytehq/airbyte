@@ -26,8 +26,8 @@ package io.airbyte.integrations.source.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceStandardTest;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
@@ -63,7 +63,7 @@ class PostgresJdbcStandardSourceTest extends JdbcSourceStandardTest {
         .build());
 
     final String initScriptName = "init_" + dbName.concat(".sql");
-    final String tmpFilePath = MoreResources.writeTmpFile(initScriptName, "CREATE DATABASE " + dbName + ";");
+    final String tmpFilePath = IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), PSQL_DB);
 
     super.setup();

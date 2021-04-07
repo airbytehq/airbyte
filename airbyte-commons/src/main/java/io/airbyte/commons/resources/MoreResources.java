@@ -26,7 +26,6 @@ package io.airbyte.commons.resources;
 
 import com.google.common.base.Preconditions;
 import com.google.common.io.Resources;
-import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.lang.Exceptions;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -36,9 +35,7 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collections;
-import java.util.UUID;
 import java.util.stream.Stream;
 
 public class MoreResources {
@@ -77,21 +74,6 @@ public class MoreResources {
       }
 
     } catch (URISyntaxException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  @SuppressWarnings("UnstableApiUsage")
-  public static String writeTmpFile(String filename, String contents) {
-    final Path source = Paths.get("/tmp", UUID.randomUUID().toString());
-    try {
-      Path tmpFile = source.resolve(filename);
-      Files.deleteIfExists(tmpFile);
-      Files.createDirectory(source);
-      Files.createFile(tmpFile);
-      IOs.writeFile(tmpFile, contents);
-      return tmpFile.toString();
-    } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }

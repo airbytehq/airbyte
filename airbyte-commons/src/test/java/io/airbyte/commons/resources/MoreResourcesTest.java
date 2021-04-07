@@ -29,7 +29,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.Sets;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
@@ -58,13 +57,6 @@ class MoreResourcesTest {
             .map(Path::getFileName)
             .map(Path::toString)
             .collect(Collectors.toSet()));
-  }
-
-  @Test
-  void testWriteTmpFile() throws IOException {
-    final String contents = "something to remember";
-    final String tmpFilePath = MoreResources.writeTmpFile("file.txt", contents);
-    assertEquals(contents, Files.readString(Path.of(tmpFilePath)));
   }
 
 }
