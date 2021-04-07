@@ -42,7 +42,7 @@ public class DebeziumEventUtils {
 
     final JsonNode data = formatDebeziumData(before, after, source);
 
-    final String streamName = source.get("table").asText();
+    final String streamName = source.get("schema").asText() + "." + source.get("table").asText();
 
     final AirbyteRecordMessage airbyteRecordMessage = new AirbyteRecordMessage()
         .withStream(streamName)

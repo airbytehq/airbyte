@@ -148,7 +148,10 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
         .flatMap(source -> Optional.ofNullable(source.get("lsn").asText()))
         .map(Long::parseLong)
         .map(PgLsn::fromLong)
-        .orElseThrow(() -> new IllegalStateException("Could not find LSN"));
+        .orElseThrow(() -> {
+          System.out.println("event = " + event);
+          return new IllegalStateException("Could not find LSN");
+        });
   }
 
   private void requestClose() {

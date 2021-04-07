@@ -72,6 +72,12 @@ public class AutoCloseableIterators {
     return new DefaultAutoCloseableIterator<>(stream.iterator(), stream::close);
   }
 
+  public static <T> List<T> toList(AutoCloseableIterator<T> iterator) throws Exception {
+    try (iterator) {
+      return MoreIterators.toList(iterator);
+    }
+  }
+
   /**
    * Returns a {@link AutoCloseableIterator} that will call the provided supplier ONE time when
    * {@link AutoCloseableIterator#hasNext()} is called the first time. The supplier returns a stream

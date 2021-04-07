@@ -25,9 +25,11 @@
 package io.airbyte.integrations.source.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.SyncMode;
 import io.debezium.engine.ChangeEvent;
 import io.debezium.engine.DebeziumEngine;
 import io.debezium.engine.format.Json;
@@ -74,7 +76,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
         .using(new AlwaysCommitOffsetPolicy())
         .notifying(queue::add)
         .using((success, message, error) -> {
-          LOGGER.info("completed!");
+          LOGGER.info("Debezium engine shutdown.");
           thrownError.set(error);
         })
         .build();
@@ -121,7 +123,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
     props.setProperty("value.converter.schemas.enable", "false");
 
     // https://debezium.io/documentation/reference/configuration/event-flattening.html
-    props.setProperty("delete.handling.mode", "rewrite");
+    // props.setProperty("delete.handling.mode", "rewrite");
     props.setProperty("drop.tombstones", "false");
     props.setProperty("transforms.unwrap.type", "io.debezium.transforms.ExtractNewRecordState");
 
@@ -151,14 +153,15 @@ public class DebeziumRecordPublisher implements AutoCloseable {
     return props;
   }
 
+  @VisibleForTesting
   protected static String getTableWhitelist(ConfiguredAirbyteCatalog catalog) {
     return catalog.getStreams().stream()
+        .filter(s -> s.getSyncMode() == SyncMode.INCREMENTAL)
         .map(ConfiguredAirbyteStream::getStream)
         .map(AirbyteStream::getName)
         // debezium needs commas escaped to split properly
         .map(x -> StringUtils.escape(x, new char[] {','}, "\\,"))
         .collect(Collectors.joining(","));
-
   }
 
 }
