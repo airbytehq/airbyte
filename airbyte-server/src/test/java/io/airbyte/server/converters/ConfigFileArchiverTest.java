@@ -82,8 +82,7 @@ public class ConfigFileArchiverTest {
         .withNotifications(List.of(new Notification()
             .withNotificationType(NotificationType.SLACK)
             .withSlackConfiguration(new SlackNotificationConfiguration()
-                .withWebhook("http://airbyte.notifications")
-                .withOnFailure(true))));
+                .withWebhook("http://airbyte.notifications"))));
   }
 
   @Test

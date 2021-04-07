@@ -102,16 +102,14 @@ class WorkspacesHandlerTest {
     return new Notification()
         .withNotificationType(NotificationType.SLACK)
         .withSlackConfiguration(new SlackNotificationConfiguration()
-            .withWebhook(FAILURE_NOTIFICATION_WEBHOOK)
-            .withOnFailure(true));
+            .withWebhook(FAILURE_NOTIFICATION_WEBHOOK));
   }
 
   private io.airbyte.api.model.Notification generateApiNotification() {
     return new io.airbyte.api.model.Notification()
         .notificationType(io.airbyte.api.model.NotificationType.SLACK)
         .slackConfiguration(new io.airbyte.api.model.SlackNotificationConfiguration()
-            .webhook(FAILURE_NOTIFICATION_WEBHOOK)
-            .onFailure(true));
+            .webhook(FAILURE_NOTIFICATION_WEBHOOK));
   }
 
   @Test

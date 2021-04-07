@@ -42,8 +42,7 @@ public class NotificationConverter {
 
   private static io.airbyte.config.SlackNotificationConfiguration toConfig(final io.airbyte.api.model.SlackNotificationConfiguration notification) {
     return new io.airbyte.config.SlackNotificationConfiguration()
-        .withWebhook(notification.getWebhook())
-        .withOnFailure(notification.getOnFailure());
+        .withWebhook(notification.getWebhook());
   }
 
   public static List<io.airbyte.api.model.Notification> toApi(final List<io.airbyte.config.Notification> notifications) {
@@ -58,8 +57,7 @@ public class NotificationConverter {
 
   private static io.airbyte.api.model.SlackNotificationConfiguration toApi(final io.airbyte.config.SlackNotificationConfiguration notification) {
     return new io.airbyte.api.model.SlackNotificationConfiguration()
-        .webhook(notification.getWebhook())
-        .onFailure(notification.getOnFailure());
+        .webhook(notification.getWebhook());
   }
 
 }
