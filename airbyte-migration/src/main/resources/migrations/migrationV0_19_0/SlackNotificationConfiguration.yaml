@@ -10,7 +10,3 @@ additionalProperties: false
 properties:
   webhook:
     type: string
-  onFailure:
-    type: boolean
-  #onSuccess:
-  #  type: boolean
