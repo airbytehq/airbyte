@@ -35,6 +35,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
@@ -84,6 +85,7 @@ class PostgresSourceCdcTest {
   private static final String SLOT_NAME_BASE = "debezium_slot";
   private static final String MAKES_STREAM_NAME = "public.makes";
   private static final String MODELS_STREAM_NAME = "public.models";
+  private static final Set<String> STREAM_NAMES = Sets.newHashSet(MAKES_STREAM_NAME, MODELS_STREAM_NAME);
   private static final String COL_ID = "id";
   private static final String COL_MAKE = "make";
   private static final String COL_MAKE_ID = "make_id";
@@ -234,6 +236,7 @@ class PostgresSourceCdcTest {
     assertNotNull(recordMessages2.get(0).getData().get(PostgresSource.CDC_DELETED_AT));
   }
 
+  @SuppressWarnings({"BusyWait", "CodeBlock2Expr"})
   @Test
   void testRecordsProducedDuringAndAfterSync() throws Exception {
     final int recordsToCreate = 20;
@@ -351,13 +354,19 @@ class PostgresSourceCdcTest {
 
   private static void assertExpectedRecords(Set<JsonNode> expectedRecords, Set<AirbyteRecordMessage> actualRecords) {
     // assume all streams are cdc.
-    assertExpectedRecords(expectedRecords, actualRecords, actualRecords.stream().map(AirbyteRecordMessage::getStream).collect(Collectors.toSet()));
+    assertExpectedRecords(
+        expectedRecords,
+        actualRecords,
+        actualRecords.stream().map(AirbyteRecordMessage::getStream).collect(Collectors.toSet()));
   }
 
   private static void assertExpectedRecords(Set<JsonNode> expectedRecords, Set<AirbyteRecordMessage> actualRecords, Set<String> cdcStreams) {
     final Set<JsonNode> actualData = actualRecords
         .stream()
         .map(recordMessage -> {
+          assertTrue(STREAM_NAMES.contains(recordMessage.getStream()));
+          assertNotNull(recordMessage.getEmittedAt());
+
           final JsonNode data = recordMessage.getData();
 
           if (cdcStreams.contains(recordMessage.getStream())) {
