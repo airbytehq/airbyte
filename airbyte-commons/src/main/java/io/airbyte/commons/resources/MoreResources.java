@@ -48,6 +48,11 @@ public class MoreResources {
     return Resources.toString(resource, StandardCharsets.UTF_8);
   }
 
+  public static byte[] readBytes(String name) throws IOException {
+    URL resource = Resources.getResource(name);
+    return Resources.toByteArray(resource);
+  }
+
   /**
    * This class is a bit of a hack. Might have unexpected behavior.
    *
