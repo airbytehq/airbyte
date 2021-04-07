@@ -1,7 +1,6 @@
 # Monorepo Python Development
 
-This guide contains instructions on how to setup Python with Gradle within the Airbyte Monorepo. If you are a contributor working on one or two connectors, 
-this page is most likely not relevant to you. Instead, you should use your standard Python development flow.    
+This guide contains instructions on how to setup Python with Gradle within the Airbyte Monorepo. If you are a contributor working on one or two connectors, this page is most likely not relevant to you. Instead, you should use your standard Python development flow.
 
 ## Python Connector Development
 

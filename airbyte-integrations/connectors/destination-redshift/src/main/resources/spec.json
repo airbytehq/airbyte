@@ -11,7 +11,8 @@
     "properties": {
       "host": {
         "description": "Host Endpoint of the Redshift Cluster (must include the cluster-id, region and end with .redshift.amazonaws.com)",
-        "type": "string"
+        "type": "string",
+        "title": "Host"
       },
       "port": {
         "description": "Port of the database.",
@@ -19,26 +20,31 @@
         "minimum": 0,
         "maximum": 65536,
         "default": 5439,
-        "examples": ["5439"]
+        "examples": ["5439"],
+        "title": "Port"
       },
       "username": {
         "description": "Username to use to access the database.",
-        "type": "string"
+        "type": "string",
+        "title": "Username"
       },
       "password": {
         "description": "Password associated with the username.",
         "type": "string",
-        "airbyte_secret": true
+        "airbyte_secret": true,
+        "title": "Password"
       },
       "database": {
         "description": "Name of the database.",
-        "type": "string"
+        "type": "string",
+        "title": "Database"
       },
       "schema": {
-        "description": "Unless specifically configured, the usual value for this field is \"public\".",
+        "description": "The default schema tables are written to if the source does not specify a namespace. Unless specifically configured, the usual value for this field is \"public\".",
         "type": "string",
         "examples": ["public"],
-        "default": "public"
+        "default": "public",
+        "title": "Default Schema"
       },
       "basic_normalization": {
         "type": "boolean",

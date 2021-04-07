@@ -133,9 +133,13 @@ class AirbyteStream(BaseModel):
         None,
         description="Path to the field that will be used to determine if a record is new or modified since the last sync. If not provided by the source, the end user will have to specify the comparable themselves.",
     )
-    source_defined_primary_key: Optional[List[str]] = Field(
+    source_defined_primary_key: Optional[List[List[str]]] = Field(
         None,
         description="If the source defines the primary key, paths to the fields that will be used as a primary key. If not provided by the source, the end user will have to specify the primary key themselves.",
+    )
+    namespace: Optional[str] = Field(
+        None,
+        description="Optional Source-defined namespace. Currently only used by JDBC destinations to determine what schema to write to. Airbyte streams from the same sources should have the same namespace.",
     )
 
 
@@ -150,7 +154,7 @@ class ConfiguredAirbyteStream(BaseModel):
         description="Path to the field that will be used to determine if a record is new or modified since the last sync. This field is REQUIRED if `sync_mode` is `incremental`. Otherwise it is ignored.",
     )
     destination_sync_mode: DestinationSyncMode
-    primary_key: Optional[List[str]] = Field(
+    primary_key: Optional[List[List[str]]] = Field(
         None,
         description="Paths to the fields that will be used as primary key. This field is REQUIRED if `destination_sync_mode` is `*_dedup`. Otherwise it is ignored.",
     )

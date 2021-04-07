@@ -24,7 +24,7 @@ To run this tutorial, you'll need:
 * Docker, Python, and Java with the versions listed in the [tech stack section](../architecture/tech-stack.md).
 * The `requests` Python package installed via `pip install requests` \(or `pip3` if `pip` is linked to a Python2 installation on your system\)
 
-**A note on running Python**: all the commands below assume that `python` points to a version of python 3. Verify this by running
+**A note on running Python**: all the commands below assume that `python` points to a version of python 3.7. Verify this by running
 
 ```bash
 $ python --version
@@ -51,7 +51,7 @@ Here's the outline of what we'll do to build our connector:
 
 Once we've completed the above steps, we will have built a functioning connector. Then, we'll add some optional functionality:
 
-* Support [incremental sync](../architecture/incremental-append.md)
+* Support [incremental sync](../architecture/connections/incremental-append.md)
 * Add custom integration tests
 
 ### 1. Bootstrap the connector package
