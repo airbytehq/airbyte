@@ -8,7 +8,7 @@ In this article, we will show you how you can understand how much your team leve
 
 Here is what we will cover:
 
-1. Replicating data from Zoom to a PostgreSQL database Airbyte
+1. Replicating data from Zoom to a PostgreSQL database, using Airbyte
 2. Connecting the PostgreSQL database to Tableau
 3. Creating charts in Tableau with Zoom data
 
@@ -38,7 +38,7 @@ This will start up Airbyte on `localhost:8000`; open that address in your browse
 
 ![](../.gitbook/assets/01_airbyte-dashboard.png)
 
-In the top right corner of the Airbyte dashboard, click on the **+ new source** button to add a new Airbyte source. In the screen to set up the new source, enter the source name \(we will use airbyte-zoom\) and select **Zoom** as source type.
+If you haven't gone through the onboarding yet, you will be prompted to connect a source and a destination. Then just follow the instructions. If you've gone through it, then you will see the screenshot above. In the top right corner of the Airbyte dashboard, click on the **+ new source** button to add a new Airbyte source. In the screen to set up the new source, enter the source name \(we will use airbyte-zoom\) and select **Zoom** as source type.
 
 Choosing Zoom as **source type** will cause Airbyte to display the configuration parameters needed to set up the Zoom source.
 
