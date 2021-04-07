@@ -1,0 +1,68 @@
+{
+  "type": "object",
+  "properties": {
+    "created": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date-time"
+    },
+    "data": {
+      "type": [
+        "null",
+        "object"
+      ],
+      "properties": {}
+    },
+    "id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "api_version": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "object": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "livemode": {
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "pending_webhooks": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "request": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "type": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "updated": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date-time"
+    }
+  }
+}

@@ -28,3 +28,4 @@ crash.log
 *.tfstate
 *.tfstate.backup
 *.lock.hcl
+venv
