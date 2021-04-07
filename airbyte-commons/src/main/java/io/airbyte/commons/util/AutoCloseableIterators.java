@@ -72,7 +72,10 @@ public class AutoCloseableIterators {
     return new DefaultAutoCloseableIterator<>(stream.iterator(), stream::close);
   }
 
-  public static <T> List<T> toList(AutoCloseableIterator<T> iterator) throws Exception {
+  /**
+   * Consumes entire iterator and collect it into a list. Then it closes the iterator.
+   */
+  public static <T> List<T> toListAndClose(AutoCloseableIterator<T> iterator) throws Exception {
     try (iterator) {
       return MoreIterators.toList(iterator);
     }

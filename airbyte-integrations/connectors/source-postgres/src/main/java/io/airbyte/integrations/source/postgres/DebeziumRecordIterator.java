@@ -24,6 +24,7 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.AbstractIterator;
 import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.json.Jsons;
@@ -143,15 +144,21 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
   }
 
   private PgLsn extractLsn(ChangeEvent<String, String> event) {
+    if (event.value() == null) {
+      System.out.println("event = " + event);
+    }
+    final JsonNode debeziumRecord = Jsons.deserialize(event.value());
+    final String op = debeziumRecord.get("op").asText();
+    if (op.equals("d")) {
+      System.out.println("op = " + op);
+    }
+
     return Optional.ofNullable(event.value())
         .flatMap(value -> Optional.ofNullable(Jsons.deserialize(value).get("source")))
         .flatMap(source -> Optional.ofNullable(source.get("lsn").asText()))
         .map(Long::parseLong)
         .map(PgLsn::fromLong)
-        .orElseThrow(() -> {
-          System.out.println("event = " + event);
-          return new IllegalStateException("Could not find LSN");
-        });
+        .orElseThrow(() -> new IllegalStateException("Could not find LSN"));
   }
 
   private void requestClose() {

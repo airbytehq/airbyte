@@ -39,8 +39,9 @@ public class DebeziumEventUtils {
     final JsonNode before = debeziumRecord.get("before");
     final JsonNode after = debeziumRecord.get("after");
     final JsonNode source = debeziumRecord.get("source");
+    final String op = debeziumRecord.get("op").asText();
 
-    final JsonNode data = formatDebeziumData(before, after, source);
+    final JsonNode data = formatDebeziumData(before, after, source, op);
 
     final String streamName = source.get("schema").asText() + "." + source.get("table").asText();
 
@@ -55,7 +56,10 @@ public class DebeziumEventUtils {
   }
 
   // warning mutates input args.
-  private static JsonNode formatDebeziumData(JsonNode before, JsonNode after, JsonNode source) {
+  private static JsonNode formatDebeziumData(JsonNode before, JsonNode after, JsonNode source, final String op) {
+    if (op.equals("d")) {
+      System.out.println("before = " + before);
+    }
     final ObjectNode base = (ObjectNode) (after.isNull() ? before : after);
 
     long transactionMillis = source.get("ts_ms").asLong();

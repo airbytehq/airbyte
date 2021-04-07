@@ -54,7 +54,9 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executors;
@@ -79,7 +81,7 @@ class PostgresSourceCdcTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSourceCdcTest.class);
 
-  private static final String SLOT_NAME = "debezium_slot";
+  private static final String SLOT_NAME_BASE = "debezium_slot";
   private static final String MAKES_STREAM_NAME = "public.makes";
   private static final String MODELS_STREAM_NAME = "public.models";
   private static final String COL_ID = "id";
@@ -177,7 +179,7 @@ class PostgresSourceCdcTest {
         .put("database", dbName)
         .put("username", psqlDb.getUsername())
         .put("password", psqlDb.getPassword())
-        .put("replication_slot", SLOT_NAME)
+        .put("replication_slot", SLOT_NAME_BASE + "_" + dbName)
         .build());
   }
 
@@ -196,7 +198,7 @@ class PostgresSourceCdcTest {
   @Test
   void testExistingData() throws Exception {
     final AutoCloseableIterator<AirbyteMessage> read = source.read(getConfig(PSQL_DB, dbName), CONFIGURED_CATALOG, null);
-    final List<AirbyteMessage> actualRecords = AutoCloseableIterators.toList(read);
+    final List<AirbyteMessage> actualRecords = AutoCloseableIterators.toListAndClose(read);
 
     final Set<AirbyteRecordMessage> recordMessages = extractRecordMessages(actualRecords);
     final List<AirbyteStateMessage> stateMessages = extractStateMessages(actualRecords);
@@ -208,7 +210,7 @@ class PostgresSourceCdcTest {
   @Test
   void testDelete() throws Exception {
     final AutoCloseableIterator<AirbyteMessage> read1 = source.read(getConfig(PSQL_DB, dbName), CONFIGURED_CATALOG, null);
-    final List<AirbyteMessage> actualRecords1 = AutoCloseableIterators.toList(read1);
+    final List<AirbyteMessage> actualRecords1 = AutoCloseableIterators.toListAndClose(read1);
     final List<AirbyteStateMessage> stateMessages1 = extractStateMessages(actualRecords1);
 
     assertExpectedStateMessages(stateMessages1);
@@ -220,15 +222,16 @@ class PostgresSourceCdcTest {
 
     final JsonNode state = stateMessages1.get(0).getData();
     final AutoCloseableIterator<AirbyteMessage> read2 = source.read(getConfig(PSQL_DB, dbName), CONFIGURED_CATALOG, state);
-    final List<AirbyteMessage> actualRecords2 = AutoCloseableIterators.toList(read2);
+    final List<AirbyteMessage> actualRecords2 = AutoCloseableIterators.toListAndClose(read2);
+    final List<AirbyteRecordMessage> recordMessages2 = new ArrayList<>(extractRecordMessages(actualRecords2));
     final List<AirbyteStateMessage> stateMessages2 = extractStateMessages(actualRecords2);
 
     assertExpectedStateMessages(stateMessages2);
-    assertEquals(1, actualRecords2.size());
-    assertEquals(11, actualRecords2.get(0).getRecord().getData().get(COL_ID).asInt());
-    assertNotNull(actualRecords2.get(0).getRecord().getData().get(PostgresSource.CDC_LSN));
-    assertNotNull(actualRecords2.get(0).getRecord().getData().get(PostgresSource.CDC_UPDATED_AT));
-    assertNotNull(actualRecords2.get(0).getRecord().getData().get(PostgresSource.CDC_DELETED_AT));
+    assertEquals(1, recordMessages2.size());
+    assertEquals(11, recordMessages2.get(0).getData().get(COL_ID).asInt());
+    assertNotNull(recordMessages2.get(0).getData().get(PostgresSource.CDC_LSN));
+    assertNotNull(recordMessages2.get(0).getData().get(PostgresSource.CDC_UPDATED_AT));
+    assertNotNull(recordMessages2.get(0).getData().get(PostgresSource.CDC_DELETED_AT));
   }
 
   @Test
@@ -250,7 +253,7 @@ class PostgresSourceCdcTest {
     }, 0, 500, TimeUnit.MILLISECONDS);
 
     final AutoCloseableIterator<AirbyteMessage> read1 = source.read(getConfig(PSQL_DB, dbName), CONFIGURED_CATALOG, null);
-    final List<AirbyteMessage> actualRecords1 = AutoCloseableIterators.toList(read1);
+    final List<AirbyteMessage> actualRecords1 = AutoCloseableIterators.toListAndClose(read1);
     assertExpectedStateMessages(extractStateMessages(actualRecords1));
 
     while (recordsCreated.get() != recordsToCreate) {
@@ -261,7 +264,7 @@ class PostgresSourceCdcTest {
 
     final JsonNode state = extractStateMessages(actualRecords1).get(0).getData();
     final AutoCloseableIterator<AirbyteMessage> read2 = source.read(getConfig(PSQL_DB, dbName), CONFIGURED_CATALOG, state);
-    final List<AirbyteMessage> actualRecords2 = AutoCloseableIterators.toList(read2);
+    final List<AirbyteMessage> actualRecords2 = AutoCloseableIterators.toListAndClose(read2);
 
     assertExpectedStateMessages(extractStateMessages(actualRecords2));
 
@@ -281,7 +284,7 @@ class PostgresSourceCdcTest {
     configuredCatalog.getStreams().get(0).setSyncMode(SyncMode.FULL_REFRESH);
 
     final AutoCloseableIterator<AirbyteMessage> read1 = source.read(getConfig(PSQL_DB, dbName), configuredCatalog, null);
-    final List<AirbyteMessage> actualRecords1 = AutoCloseableIterators.toList(read1);
+    final List<AirbyteMessage> actualRecords1 = AutoCloseableIterators.toListAndClose(read1);
 
     final Set<AirbyteRecordMessage> recordMessages1 = extractRecordMessages(actualRecords1);
     final List<AirbyteStateMessage> stateMessages1 = extractStateMessages(actualRecords1);
@@ -302,7 +305,7 @@ class PostgresSourceCdcTest {
 
     final JsonNode state = extractStateMessages(actualRecords1).get(0).getData();
     final AutoCloseableIterator<AirbyteMessage> read2 = source.read(getConfig(PSQL_DB, dbName), configuredCatalog, state);
-    final List<AirbyteMessage> actualRecords2 = AutoCloseableIterators.toList(read2);
+    final List<AirbyteMessage> actualRecords2 = AutoCloseableIterators.toListAndClose(read2);
 
     final Set<AirbyteRecordMessage> recordMessages2 = extractRecordMessages(actualRecords2);
     final List<AirbyteStateMessage> stateMessages2 = extractStateMessages(actualRecords2);
@@ -326,14 +329,15 @@ class PostgresSourceCdcTest {
   }
 
   private Set<AirbyteRecordMessage> extractRecordMessages(List<AirbyteMessage> messages) {
-    final Set<AirbyteRecordMessage> collect = messages
+    final List<AirbyteRecordMessage> recordMessageList = messages
         .stream()
         .filter(r -> r.getType() == Type.RECORD).map(AirbyteMessage::getRecord)
-        .collect(Collectors.toSet());
+        .collect(Collectors.toList());
+    final Set<AirbyteRecordMessage> recordMessageSet = new HashSet<>(recordMessageList);
 
-    assertEquals(messages.size(), collect.size(), "Expected no duplicates in airbyte record message output for a single sync.");
+    assertEquals(recordMessageList.size(), recordMessageSet.size(), "Expected no duplicates in airbyte record message output for a single sync.");
 
-    return collect;
+    return recordMessageSet;
   }
 
   private List<AirbyteStateMessage> extractStateMessages(List<AirbyteMessage> messages) {
@@ -360,9 +364,6 @@ class PostgresSourceCdcTest {
             assertNotNull(data.get(PostgresSource.CDC_LSN));
             assertNotNull(data.get(PostgresSource.CDC_UPDATED_AT));
           } else {
-            if (data.get((PostgresSource.CDC_LSN)) != null) {
-              System.out.println("data = " + data);
-            }
             assertNull(data.get(PostgresSource.CDC_LSN));
             assertNull(data.get(PostgresSource.CDC_UPDATED_AT));
             assertNull(data.get(PostgresSource.CDC_DELETED_AT));
