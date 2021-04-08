@@ -250,7 +250,9 @@ public abstract class JdbcSourceStandardTest {
     assertEquals(expected.getStreams().size(), actual.getStreams().size());
     actual.getStreams().forEach(actualStream -> {
       final Optional<AirbyteStream> expectedStream =
-          expected.getStreams().stream().filter(stream -> stream.getNamespace().equals(actualStream.getNamespace()) && stream.getName().equals(actualStream.getName())).findAny();
+          expected.getStreams().stream()
+              .filter(stream -> stream.getNamespace().equals(actualStream.getNamespace()) && stream.getName().equals(actualStream.getName()))
+              .findAny();
       assertTrue(expectedStream.isPresent(), String.format("Unexpected stream %s", actualStream.getName()));
       assertEquals(expectedStream.get(), actualStream);
     });

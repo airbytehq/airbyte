@@ -137,8 +137,7 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
     try (final JdbcDatabase database = createDatabase(config)) {
       Optional<String> databaseName = Optional.ofNullable(config.get("database")).map(JsonNode::asText);
       List<AirbyteStream> streams = getTables(database, databaseName).stream()
-          .map(tableInfo ->
-              CatalogHelpers.createAirbyteStream(tableInfo.getName(), tableInfo.getSchemaName(), tableInfo.getFields())
+          .map(tableInfo -> CatalogHelpers.createAirbyteStream(tableInfo.getName(), tableInfo.getSchemaName(), tableInfo.getFields())
               .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
               .withSourceDefinedPrimaryKey(Strings.boxToListofList(tableInfo.getPrimaryKeys())))
           .collect(Collectors.toList());
@@ -148,9 +147,6 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
 
   @Override
   public AutoCloseableIterator<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception {
-    System.out.println("========== read");
-    System.out.println(catalog);
-
     final JdbcStateManager stateManager =
         new JdbcStateManager(state == null ? JdbcStateManager.emptyState() : Jsons.object(state, JdbcState.class), catalog);
     final Instant emittedAt = Instant.now();
@@ -212,7 +208,6 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
                                                                            Instant emittedAt,
                                                                            Predicate<ConfiguredAirbyteStream> selector) {
     final List<AutoCloseableIterator<AirbyteMessage>> iteratorList = new ArrayList<>();
-
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
       if (selector.test(airbyteStream)) {
         final AirbyteStream stream = airbyteStream.getStream();
@@ -344,7 +339,7 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
               .map(f -> Field.of(f.getColumnName(), JdbcUtils.getType(f.getColumnType())))
               .distinct()
               .collect(Collectors.toList());
-          final String fullyQualifiedTableName =  JdbcUtils.getFullyQualifiedTableName(t.getSchemaName(), t.getName());
+          final String fullyQualifiedTableName = JdbcUtils.getFullyQualifiedTableName(t.getSchemaName(), t.getName());
           final List<String> primaryKeys = fullyQualifiedTableNameToPrimaryKeys.getOrDefault(fullyQualifiedTableName, Collections.emptyList());
 
           return new TableInfo(t.getName(), t.getSchemaName(), fields, primaryKeys);
