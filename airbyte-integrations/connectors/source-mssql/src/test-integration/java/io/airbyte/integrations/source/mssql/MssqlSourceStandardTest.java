@@ -47,7 +47,7 @@ import org.testcontainers.containers.MSSQLServerContainer;
 public class MssqlSourceStandardTest extends StandardSourceTest {
 
   private static final String SCHEMA_NAME = "dbo";
-  private static final String STREAM_NAME = "dbo.id_and_name";
+  private static final String STREAM_NAME = "id_and_name";
   private static MSSQLServerContainer<?> db;
   private JsonNode config;
 
