@@ -50,6 +50,7 @@
     * [Mixpanel](integrations/sources/mixpanel.md)
     * [Mongo DB](integrations/sources/mongodb.md)
     * [MySQL](integrations/sources/mysql.md)
+    * [Oracle DB](integrations/sources/oracle.md)
     * [Plaid](integrations/sources/plaid.md)
     * [Postgres](integrations/sources/postgres.md)
     * [Recurly](integrations/sources/recurly.md)
