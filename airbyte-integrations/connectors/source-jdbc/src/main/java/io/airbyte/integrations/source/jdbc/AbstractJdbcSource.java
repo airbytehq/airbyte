@@ -201,7 +201,8 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
         configuredStream -> configuredStream.getSyncMode().equals(SyncMode.FULL_REFRESH));
   }
 
-  //TODO(dchia): Refactor the following functions and objects so they better operate around a Table abstraction. Currently have indexes and strings hardcoded all around making code brittle.
+  // TODO(dchia): Refactor the following functions and objects so they better operate around a Table
+  // abstraction. Currently have indexes and strings hardcoded all around making code brittle.
   private List<AutoCloseableIterator<AirbyteMessage>> getSelectedIterators(JdbcDatabase database,
                                                                            ConfiguredAirbyteCatalog catalog,
                                                                            Map<String, TableInfoInternal> tableNameToTable,

@@ -71,16 +71,22 @@ public class RedshiftStandardSourceTest extends StandardSourceTest {
 
     schemaName = ("integration_test_" + RandomStringUtils.randomAlphanumeric(5)).toLowerCase();
     final String createSchemaQuery = String.format("CREATE SCHEMA %s", schemaName);
-    database.execute(connection -> { connection.createStatement().execute(createSchemaQuery);});
+    database.execute(connection -> {
+      connection.createStatement().execute(createSchemaQuery);
+    });
 
     streamName = "customer";
-    final String fqTableName = JdbcUtils.getFullyQualifiedTableName(schemaName,streamName);
+    final String fqTableName = JdbcUtils.getFullyQualifiedTableName(schemaName, streamName);
     String createTestTable =
         String.format("CREATE TABLE IF NOT EXISTS %s (c_custkey INTEGER, c_name VARCHAR(16), c_nation VARCHAR(16));\n", fqTableName);
-    database.execute(connection -> { connection.createStatement().execute(createTestTable);});
-    
+    database.execute(connection -> {
+      connection.createStatement().execute(createTestTable);
+    });
+
     String insertTestData = String.format("insert into %s values (1, 'Chris', 'France');\n", fqTableName);
-    database.execute(connection -> { connection.createStatement().execute(insertTestData);});
+    database.execute(connection -> {
+      connection.createStatement().execute(insertTestData);
+    });
   }
 
   @Override
