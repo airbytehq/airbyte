@@ -66,7 +66,7 @@ import org.testcontainers.utility.MountableFile;
 class PostgresSourceTest {
 
   private static final String SCHEMA_NAME = "public";
-  private static final String STREAM_NAME = SCHEMA_NAME + ".id_and_name";
+  private static final String STREAM_NAME = "id_and_name";
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
       CatalogHelpers.createAirbyteStream(
           STREAM_NAME,
@@ -84,7 +84,7 @@ class PostgresSourceTest {
           Field.of("power", JsonSchemaPrimitive.NUMBER))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)),
       CatalogHelpers.createAirbyteStream(
-          "public.names",
+          "names",
           SCHEMA_NAME,
           Field.of("first_name", JsonSchemaPrimitive.STRING),
           Field.of("last_name", JsonSchemaPrimitive.STRING),

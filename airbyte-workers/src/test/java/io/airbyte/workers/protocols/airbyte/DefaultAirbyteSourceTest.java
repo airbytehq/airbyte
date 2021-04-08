@@ -69,6 +69,7 @@ class DefaultAirbyteSourceTest {
 
   private static final ConfiguredAirbyteCatalog CATALOG = CatalogHelpers.createConfiguredAirbyteCatalog(
       "hudi:latest",
+      "default",
       Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING));
 
   private static final StandardTapConfig TAP_CONFIG = new StandardTapConfig()
@@ -76,7 +77,7 @@ class DefaultAirbyteSourceTest {
       .withSourceConnectionConfiguration(Jsons.jsonNode(Map.of(
           "apiKey", "123",
           "region", "us-east")))
-      .withCatalog(CatalogHelpers.createConfiguredAirbyteCatalog("hudi:latest", Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING)));
+      .withCatalog(CatalogHelpers.createConfiguredAirbyteCatalog("hudi:latest", "default", Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING)));
 
   private static final List<AirbyteMessage> MESSAGES = Lists.newArrayList(
       AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue"),
