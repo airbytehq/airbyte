@@ -98,14 +98,20 @@ public class BigQueryStandardTest extends TestDestination {
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv testEnv, String streamName) throws Exception {
-    String tableName = namingResolver.getIdentifier(streamName);
-    return retrieveRecordsFromTable(testEnv, tableName);
+  protected String getDefaultSchema(JsonNode config) {
+    return config.get(CONFIG_DATASET_ID).asText();
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
-    return retrieveRecordsFromTable(env, namingResolver.getRawTableName(streamName))
+  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv testEnv, String streamName, String namespace) throws Exception {
+    String tableName = namingResolver.getIdentifier(streamName);
+    String schema = namingResolver.getIdentifier(namespace);
+    return retrieveRecordsFromTable(tableName, schema);
+  }
+
+  @Override
+  protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName, String namespace) throws Exception {
+    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namingResolver.getIdentifier(namespace))
         .stream()
         .map(node -> node.get(JavaBaseConstants.COLUMN_NAME_DATA).asText())
         .map(Jsons::deserialize)
@@ -120,11 +126,11 @@ public class BigQueryStandardTest extends TestDestination {
     return result;
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(TestDestinationEnv env, String tableName) throws InterruptedException {
+  private List<JsonNode> retrieveRecordsFromTable(String tableName, String schema) throws InterruptedException {
     final QueryJobConfiguration queryConfig =
         QueryJobConfiguration
             .newBuilder(
-                String.format("SELECT * FROM `%s`.`%s` order by %s asc;", dataset.getDatasetId().getDataset(), tableName,
+                String.format("SELECT * FROM `%s`.`%s` order by %s asc;", schema, tableName,
                     JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
             .setUseLegacySql(false).build();
 

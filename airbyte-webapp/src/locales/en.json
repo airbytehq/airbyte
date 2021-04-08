@@ -7,6 +7,8 @@
   "sidebar.help": "Help",
   "sidebar.docs": "Docs",
   "sidebar.slack": "Slack",
+  "sidebar.connections": "Connections",
+  "sidebar.settings": "Settings",
 
   "form.continue": "Continue",
   "form.emailOptional": "Your email (optional)",
@@ -75,9 +77,9 @@
   "form.edit": "Edit",
   "form.done": "Done",
   "form.examples": "(e.g. {examples})",
-  "form.prefix": "Namespace Prefix",
-  "form.prefix.message": "Where to replicate your data to in your destination",
-  "form.prefix.placeholder": "/configured-setting",
+  "form.prefix": "Table Prefix",
+  "form.prefix.message": "Prefix to prefix all destination tables created as part of this connection. Useful for identifying tables on a per-connection basis and namespacing streams from different sources so they do not overwrite each other.",
+  "form.prefix.placeholder": "prefix-",
   "form.nameSearch": "Search name",
   "form.sourceConnector": "Source connector",
   "form.destinationConnector": "Destination connector",
@@ -188,6 +190,8 @@
   "connection.resetData": "Reset your data",
   "connection.updateSchema": "Update latest source schema",
   "connection.updateSchemaText": "WARNING! Updating the schema will delete all the data for this connection in your destination and start syncing from scratch. Are you sure you want to do this?",
+  "connection.newConnection": "+ new connection",
+  "connection.newConnectionTitle": "New connection",
 
   "tables.sourceIsValidating": "Validating the source",
   "tables.sourceIsValidatingBefore": "before you add a new destination",
@@ -268,6 +272,9 @@
   "admin.downloadSchedulerLogs": "Download Scheduler Logs",
   "admin.upgradeAll": "Upgrade all",
   "admin.upgraded": "Upgraded!",
+
+  "settings.accountSettings": "Account Settings",
+  "settings.changeSaved": "change saved!",
 
   "demo.message.title": "This demo is read-only",
   "demo.message.body": "You cannot add or edit any connectors. You will see error messages on purpose if you try to do so."

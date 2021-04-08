@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+import { Label, TextWithHTML } from "components";
 
 const GroupTitle = styled.div`
   margin-top: -23px;
@@ -24,12 +25,18 @@ const FormGroup = styled.div`
 
 type GroupControlsProps = {
   title: React.ReactNode;
+  description?: string;
 };
 
-const GroupControls: React.FC<GroupControlsProps> = ({ title, children }) => {
+const GroupControls: React.FC<GroupControlsProps> = ({
+  title,
+  description,
+  children,
+}) => {
   return (
     <FormGroup>
       <GroupTitle>{title}</GroupTitle>
+      {description && <Label message={<TextWithHTML text={description} />} />}
       {children}
     </FormGroup>
   );
