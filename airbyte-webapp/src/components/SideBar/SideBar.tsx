@@ -13,6 +13,7 @@ import { NavLink } from "react-router-dom";
 
 import Link from "../Link";
 import Source from "./components/Source";
+import Connections from "./components/Connections";
 import Version from "../Version";
 import Destination from "./components/Destination";
 import { Routes } from "pages/routes";
@@ -112,6 +113,14 @@ const SideBar: React.FC = () => {
           <img src="/simpleLogo.svg" alt="logo" height={33} width={33} />
         </Link>
         <Menu>
+          <li>
+            <MenuItem to={Routes.Connections} activeClassName="active">
+              <Connections />
+              <Text>
+                <FormattedMessage id="sidebar.connections" />
+              </Text>
+            </MenuItem>
+          </li>
           <li>
             <MenuItem
               to={Routes.Root}

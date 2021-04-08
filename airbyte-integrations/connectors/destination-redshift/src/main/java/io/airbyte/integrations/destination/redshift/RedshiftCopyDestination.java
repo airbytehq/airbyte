@@ -36,7 +36,6 @@ import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
-import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
@@ -62,7 +61,7 @@ import org.slf4j.LoggerFactory;
  */
 public class RedshiftCopyDestination {
 
-  private static final StandardNameTransformer namingResolver = new StandardNameTransformer();
+  private static final RedshiftSQLNameTransformer namingResolver = new RedshiftSQLNameTransformer();
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftCopyDestination.class);
 
   public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) {
@@ -75,7 +74,7 @@ public class RedshiftCopyDestination {
       var s3Config = new S3Config(config);
       attemptWriteAndDeleteS3Object(s3Config, outputTableName);
 
-      var outputSchema = namingResolver.getIdentifier(config.get("schema").asText());
+      var outputSchema = namingResolver.convertStreamName(config.get("schema").asText());
       JdbcDatabase database = getRedshift(config);
       AbstractJdbcDestination.attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, new RedshiftSqlOperations());
 
@@ -128,8 +127,8 @@ public class RedshiftCopyDestination {
   static class RedshiftCopyDestinationConsumer extends FailureTrackingAirbyteMessageConsumer {
 
     private final ConfiguredAirbyteCatalog catalog;
+    private final String defaultSchema;
     private final JdbcDatabase redshiftDb;
-    private final String schema;
     private final S3Config s3Config;
     private final AmazonS3 s3Client;
     private final Map<String, RedshiftCopier> streamNameToCopier;
@@ -137,7 +136,7 @@ public class RedshiftCopyDestination {
     public RedshiftCopyDestinationConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) {
       this.catalog = catalog;
       this.redshiftDb = getRedshift(config);
-      this.schema = config.get("schema").asText();
+      this.defaultSchema = config.get("schema").asText();
       this.s3Config = new S3Config(config);
       this.s3Client = getAmazonS3(s3Config);
       this.streamNameToCopier = new HashMap<>();
@@ -146,15 +145,17 @@ public class RedshiftCopyDestination {
     @Override
     protected void startTracked() throws Exception {
       var stagingFolder = UUID.randomUUID().toString();
-      for (var stream : catalog.getStreams()) {
-        var streamName = stream.getStream().getName();
-        var syncMode = stream.getDestinationSyncMode();
-        if (stream.getDestinationSyncMode() == null) {
+      for (var configuredStream : catalog.getStreams()) {
+        if (configuredStream.getDestinationSyncMode() == null) {
           throw new IllegalStateException("Undefined destination sync mode.");
         }
+        var stream = configuredStream.getStream();
+        var streamName = stream.getName();
+        var syncMode = configuredStream.getDestinationSyncMode();
+        var schema =
+            stream.getNamespace() != null ? namingResolver.convertStreamName(stream.getNamespace()) : namingResolver.convertStreamName(defaultSchema);
         var copier = new RedshiftCopier(s3Config.bucketName, stagingFolder, syncMode, schema, streamName, s3Client, redshiftDb, s3Config.accessKeyId,
             s3Config.secretAccessKey, s3Config.region);
-
         streamNameToCopier.put(streamName, copier);
       }
     }

@@ -233,11 +233,6 @@ class StreamProcessor(object):
         for field in self.properties.keys():
             if not is_airbyte_column(field):
                 fields.append(field)
-            if self.destination_sync_mode.value == DestinationSyncMode.append_dedup.value:
-                # When deduping, some airbyte columns could be used as special cursor or primary key columns
-                if field in self.cursor_field[0] or field in [f[0] for f in self.primary_key if len(f) == 1]:
-                    if field not in fields:
-                        fields.append(field)
         result = {}
         field_names = set()
         for field in fields:
@@ -501,13 +496,16 @@ from {{ from_table }}
         return sql
 
     def get_cursor_field(self, column_names: Dict[str, Tuple[str, str]]) -> str:
-        if self.cursor_field and len(self.cursor_field) == 1:
-            return column_names[self.cursor_field[0]][0]
-        else:
-            if self.cursor_field:
-                raise ValueError(f"Unsupported nested cursor field {'.'.join(self.cursor_field)} for stream {self.stream_name}")
+        if not self.cursor_field:
+            return "_airbyte_emitted_at"
+        elif len(self.cursor_field) == 1:
+            if not is_airbyte_column(self.cursor_field[0]):
+                return column_names[self.cursor_field[0]][0]
             else:
-                raise ValueError(f"No cursor field specified for stream {self.stream_name}")
+                # using an airbyte generated column
+                return self.cursor_field[0]
+        else:
+            raise ValueError(f"Unsupported nested cursor field {'.'.join(self.cursor_field)} for stream {self.stream_name}")
 
     def get_primary_key(self, column_names: Dict[str, Tuple[str, str]]) -> str:
         if self.primary_key and len(self.primary_key) > 0:
@@ -517,7 +515,20 @@ from {{ from_table }}
 
     def get_primary_key_from_path(self, column_names: Dict[str, Tuple[str, str]], path: List[str]) -> str:
         if path and len(path) == 1:
-            return column_names[path[0]][0]
+            field = path[0]
+            if not is_airbyte_column(field):
+                if "type" in self.properties[field]:
+                    property_type = self.properties[field]["type"]
+                else:
+                    property_type = "object"
+                if is_number(property_type) or is_boolean(property_type) or is_array(property_type) or is_object(property_type):
+                    # some destinations don't handle float columns (or other types) as primary keys, turn everything to string
+                    return f"cast({self.safe_cast_to_string(field, self.properties[field], column_names[field][1])} as {jinja_call('dbt_utils.type_string()')})"
+                else:
+                    return field
+            else:
+                # using an airbyte generated column
+                return f"cast({field} as {jinja_call('dbt_utils.type_string()')})"
         else:
             if path:
                 raise ValueError(f"Unsupported nested path {'.'.join(path)} for stream {self.stream_name}")
