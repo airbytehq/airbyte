@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
@@ -38,32 +38,41 @@ const SchemaView: React.FC<IProps> = ({
   onChangeSchema,
   additionalControl,
 }) => {
+  const [searchString, setSearchString] = useState("");
   const hasSelectedItem = useMemo(
-    () => schema.streams.some((streamNode) => streamNode.config.selected),
-    [schema.streams]
+    () =>
+      schema.streams.some(
+        (streamNode) =>
+          streamNode.config.selected &&
+          streamNode.stream.name
+            .toLowerCase()
+            .includes(searchString.toLowerCase())
+      ),
+    [schema.streams, searchString]
   );
 
   const onCheckAll = useCallback(() => {
     const allSelectedValues = !hasSelectedItem;
 
     const newSchema = schema.streams.map((streamNode) => {
-      return {
-        ...streamNode,
-        config: { ...streamNode.config, selected: allSelectedValues },
-      };
-    });
+      if (
+        streamNode.stream.name
+          .toLowerCase()
+          .includes(searchString.toLowerCase())
+      ) {
+        return {
+          ...streamNode,
+          config: { ...streamNode.config, selected: allSelectedValues },
+        };
+      }
 
+      return streamNode;
+    });
     onChangeSchema({ streams: newSchema });
-  }, [hasSelectedItem, onChangeSchema, schema.streams]);
+  }, [hasSelectedItem, onChangeSchema, schema.streams, searchString]);
 
   const onSearch = useCallback((value: string) => {
-    // TODO: add search func
-    console.log(value);
-    // setCurrentSchema({
-    //   streams: schema.streams.filter((stream) =>
-    //     stream.stream.name.toLowerCase().includes(value.toLowerCase())
-    //   ),
-    // });
+    setSearchString(value);
   }, []);
 
   return (
@@ -99,7 +108,11 @@ const SchemaView: React.FC<IProps> = ({
         </LightCell>
       </SchemaHeader>
       <TreeViewContainer>
-        <TreeView schema={schema} onChangeSchema={onChangeSchema} />
+        <TreeView
+          schema={schema}
+          onChangeSchema={onChangeSchema}
+          filter={searchString}
+        />
       </TreeViewContainer>
     </>
   );

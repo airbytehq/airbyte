@@ -45,6 +45,8 @@ export const jsonSchemaToUiWidget = (
 
     return {
       _type: "formCondition",
+      title: jsonSchema.title,
+      description: jsonSchema.description,
       path: path || key,
       fieldKey: key,
       conditions,

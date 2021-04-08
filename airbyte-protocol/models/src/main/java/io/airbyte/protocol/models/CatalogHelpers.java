@@ -49,8 +49,16 @@ public class CatalogHelpers {
     return createAirbyteStream(streamName, Arrays.asList(fields));
   }
 
+  public static AirbyteStream createAirbyteStream(String streamName, String schemaName, Field... fields) {
+    return createAirbyteStream(streamName, schemaName, Arrays.asList(fields));
+  }
+
   public static AirbyteStream createAirbyteStream(String streamName, List<Field> fields) {
     return new AirbyteStream().withName(streamName).withJsonSchema(fieldsToJsonSchema(fields));
+  }
+
+  public static AirbyteStream createAirbyteStream(String streamName, String schemaName, List<Field> fields) {
+    return new AirbyteStream().withName(streamName).withNamespace(schemaName).withJsonSchema(fieldsToJsonSchema(fields));
   }
 
   public static ConfiguredAirbyteCatalog createConfiguredAirbyteCatalog(String streamName, Field... fields) {
