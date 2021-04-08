@@ -37,4 +37,4 @@ class TestFullRefresh(BaseTest):
         output = docker_runner.call_read(connector_config, configured_catalog)
         records_2 = [message.record for message in output if message.type == Type.RECORD]
 
-        assert records_1 == records_2, "When two full refreshes are run, they are either equal or one of them is a strict subset of the other"
+        assert not (set(records_1) - set(records_2)), "The two sequal reads should produce either equal set of records or one of them is a strict subset of the other"

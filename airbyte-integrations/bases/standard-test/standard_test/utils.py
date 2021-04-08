@@ -23,6 +23,7 @@ SOFTWARE.
 """
 
 from pathlib import Path
+from typing import List, Iterable
 
 import pytest
 from yaml import load
@@ -32,7 +33,7 @@ try:
 except ImportError:
     from yaml import Loader
 
-from airbyte_protocol import ConfiguredAirbyteCatalog, SyncMode
+from airbyte_protocol import ConfiguredAirbyteCatalog, SyncMode, AirbyteMessage
 
 from standard_test.config import Config
 
@@ -70,3 +71,8 @@ def incremental_only_catalog(configured_catalog: ConfiguredAirbyteCatalog):
 
     configured_catalog.streams = streams
     return configured_catalog
+
+
+def filter_output(records: Iterable[AirbyteMessage], type_) -> List[AirbyteMessage]:
+    """Filter messages to match specific type"""
+    return list(filter(lambda x: x.type == type_, records))

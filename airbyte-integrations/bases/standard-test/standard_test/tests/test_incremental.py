@@ -21,10 +21,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
 from airbyte_protocol import Type
 from standard_test import BaseTest
 from standard_test.connector_runner import ConnectorRunner
-from standard_test.utils import incremental_only_catalog
+from standard_test.utils import incremental_only_catalog, filter_output
 
 
 class TestIncremental(BaseTest):
@@ -32,15 +33,23 @@ class TestIncremental(BaseTest):
         configured_catalog = incremental_only_catalog(configured_catalog)
         output = docker_runner.call_read(connector_config, configured_catalog)
 
-        records_1 = [message.record for message in output if message.type == Type.RECORD]
-        states = [message.state for message in output if message.type == Type.STATE]
+        records_1 = filter_output(output, type_=Type.RECORD)
+        states_1 = filter_output(output, type_=Type.STATE)
 
-        assert states, "Should produce at least one state"
+        assert states_1, "Should produce at least one state"
+        assert records_1, "Should produce at least one record"
 
-        latest_state = states[-1].data
+        latest_state = states_1[-1].data
+        output = docker_runner.call_read_with_state(connector_config, configured_catalog, state={})
+        records_2 = filter_output(output, type_=Type.RECORD)
+        states_2 = filter_output(output, type_=Type.STATE)
+
+        assert states_1 == states_2, "Empty state should has same result as no state"
+        assert records_1 == records_2, "Empty state should has same result as no state"
+
         output = docker_runner.call_read_with_state(connector_config, configured_catalog, state=latest_state)
+        records_3 = filter_output(output, type_=Type.RECORD)
+        states_3 = filter_output(output, type_=Type.STATE)
 
-        records_2 = [message.record for message in output if message.type == Type.RECORD]
-        states = [message.state for message in output if message.type == Type.STATE]
-
-        assert records_1 == records_2, "TODO"
+        assert not records_3, "There should be no records after second incremental read"
+        assert states_1 == states_3, "State should not change if we pass the latest state"
