@@ -47,6 +47,8 @@ import io.airbyte.workers.process.KubeProcessBuilderFactory;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalPool;
+import io.airbyte.workers.temporal.TemporalUtils;
+import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -83,26 +85,33 @@ public class SchedulerApp {
   private final JobPersistence jobPersistence;
   private final ConfigRepository configRepository;
   private final JobCleaner jobCleaner;
+  private final TemporalClient temporalClient;
+  private final WorkflowServiceStubs temporalService;
 
   public SchedulerApp(Path workspaceRoot,
                       ProcessBuilderFactory pbf,
                       JobPersistence jobPersistence,
                       ConfigRepository configRepository,
-                      JobCleaner jobCleaner) {
+                      JobCleaner jobCleaner,
+                      TemporalClient temporalClient,
+                      WorkflowServiceStubs temporalService) {
     this.workspaceRoot = workspaceRoot;
     this.pbf = pbf;
     this.jobPersistence = jobPersistence;
     this.configRepository = configRepository;
     this.jobCleaner = jobCleaner;
+    this.temporalClient = temporalClient;
+    this.temporalService = temporalService;
+
   }
 
   public void start() throws IOException {
-    final TemporalPool temporalPool = new TemporalPool(workspaceRoot, pbf);
+    final TemporalPool temporalPool = new TemporalPool(temporalService, workspaceRoot, pbf);
     temporalPool.run();
 
     final ExecutorService workerThreadPool = Executors.newFixedThreadPool(MAX_WORKERS, THREAD_FACTORY);
     final ScheduledExecutorService scheduledPool = Executors.newSingleThreadScheduledExecutor();
-    final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(TemporalClient.production(workspaceRoot), workspaceRoot);
+    final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(temporalClient, workspaceRoot);
     final JobRetrier jobRetrier = new JobRetrier(jobPersistence, Instant::now);
     final JobScheduler jobScheduler = new JobScheduler(jobPersistence, configRepository);
     final JobSubmitter jobSubmitter = new JobSubmitter(
@@ -170,6 +179,9 @@ public class SchedulerApp {
     final Path workspaceRoot = configs.getWorkspaceRoot();
     LOGGER.info("workspaceRoot = " + workspaceRoot);
 
+    final String temporalHost = configs.getTemporalHost();
+    LOGGER.info("temporalHost = " + temporalHost);
+
     LOGGER.info("Creating DB connection pool...");
     final Database database = Databases.createPostgresDatabase(
         configs.getDatabaseUser(),
@@ -206,8 +218,11 @@ public class SchedulerApp {
       throw new IllegalStateException("Unable to retrieve Airbyte Version, aborting...");
     }
 
+    final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(temporalHost);
+    final TemporalClient temporalClient = TemporalClient.production(temporalHost, workspaceRoot);
+
     LOGGER.info("Launching scheduler...");
-    new SchedulerApp(workspaceRoot, pbf, jobPersistence, configRepository, jobCleaner).start();
+    new SchedulerApp(workspaceRoot, pbf, jobPersistence, configRepository, jobCleaner, temporalClient, temporalService).start();
   }
 
 }
