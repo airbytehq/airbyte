@@ -38,7 +38,7 @@ This Source is capable of syncing the following core Streams:
 | Feature | Supported?\(Yes/No\) | Notes |
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
-| Incremental - Append Sync | No |  |
+| Incremental | No |  |
 
 ### Performance considerations
 
@@ -56,7 +56,6 @@ The Zendesk connector should not run into Zendesk API limitations under normal u
 
 ### Setup guide
 
-Generate a API access token using the [Zendesk support](https://support.zendesk.com/hc/en-us/articles/226022787-Generating-a-new-API-token-)
+Generate a API access token as described in [Zendesk docs](https://support.zendesk.com/hc/en-us/articles/226022787-Generating-a-new-API-token-)
 
 We recommend creating a restricted, read-only key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access.
-
