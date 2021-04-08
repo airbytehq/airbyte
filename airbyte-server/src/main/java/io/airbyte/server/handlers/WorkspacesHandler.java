@@ -38,6 +38,7 @@ import io.airbyte.api.model.WorkspaceUpdate;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.server.converters.NotificationConverter;
 import io.airbyte.server.errors.KnownException;
 import io.airbyte.validation.json.JsonValidationException;
@@ -54,25 +55,29 @@ public class WorkspacesHandler {
   private final SourceHandler sourceHandler;
   private final Supplier<UUID> uuidSupplier;
   private final Slugify slugify;
+  private final JobNotifier jobNotifier;
 
   public WorkspacesHandler(final ConfigRepository configRepository,
                            final ConnectionsHandler connectionsHandler,
                            final DestinationHandler destinationHandler,
-                           final SourceHandler sourceHandler) {
-    this(configRepository, connectionsHandler, destinationHandler, sourceHandler, UUID::randomUUID);
+                           final SourceHandler sourceHandler,
+                           final JobNotifier jobNotifier) {
+    this(configRepository, connectionsHandler, destinationHandler, sourceHandler, UUID::randomUUID, jobNotifier);
   }
 
   public WorkspacesHandler(final ConfigRepository configRepository,
                            final ConnectionsHandler connectionsHandler,
                            final DestinationHandler destinationHandler,
                            final SourceHandler sourceHandler,
-                           final Supplier<UUID> uuidSupplier) {
+                           final Supplier<UUID> uuidSupplier,
+                           final JobNotifier jobNotifier) {
     this.configRepository = configRepository;
     this.connectionsHandler = connectionsHandler;
     this.destinationHandler = destinationHandler;
     this.sourceHandler = sourceHandler;
     this.uuidSupplier = uuidSupplier;
     this.slugify = new Slugify();
+    this.jobNotifier = jobNotifier;
   }
 
   public WorkspaceRead createWorkspace(final WorkspaceCreate workspaceCreate)
@@ -174,6 +179,14 @@ public class WorkspacesHandler {
     TrackingClientSingleton.get().identify();
 
     return buildWorkspaceReadFromId(workspaceUpdate.getWorkspaceId());
+  }
+
+  public WorkspaceRead tryWorkspaceNotification(WorkspaceIdRequestBody workspaceIdRequestBody)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    final UUID workspaceId = workspaceIdRequestBody.getWorkspaceId();
+    final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, false);
+    jobNotifier.sendTestNotifications(workspace);
+    return buildWorkspaceRead(workspace);
   }
 
   private WorkspaceRead buildWorkspaceReadFromId(UUID workspaceId) throws ConfigNotFoundException, IOException, JsonValidationException {

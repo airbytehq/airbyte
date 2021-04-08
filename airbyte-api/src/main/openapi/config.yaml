@@ -165,6 +165,29 @@ paths:
           description: Workspace not found
         "422":
           $ref: "#/components/responses/InvalidInput"
+  /v1/workspaces/trynotification:
+    post:
+      tags:
+        - workspace
+      summary: Try sending notifications of workspace by ID
+      operationId: tryWorkspaceNotification
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkspaceRead"
+        "404":
+          description: Workspace not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
   /v1/source_definitions/create:
     post:
       tags:

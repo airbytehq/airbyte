@@ -70,6 +70,7 @@ public class JobNotifier {
       final NotificationClient notificationClient = getNotificationClient(notification);
       try {
         if (!notificationClient.notify(NOTIFICATION_TEST_MESSAGE)) {
+          LOGGER.warn("Failed to notify: {}", notification);
           hasFailure = true;
         }
       } catch (InterruptedException | IOException e) {

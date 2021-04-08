@@ -47,6 +47,7 @@ import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.PersistenceConstants;
+import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.server.converters.NotificationConverter;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -67,6 +68,7 @@ class WorkspacesHandlerTest {
   private Supplier<UUID> uuidSupplier;
   private StandardWorkspace workspace;
   private WorkspacesHandler workspacesHandler;
+  private JobNotifier jobNotifier;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -77,7 +79,8 @@ class WorkspacesHandlerTest {
     sourceHandler = mock(SourceHandler.class);
     uuidSupplier = mock(Supplier.class);
     workspace = generateWorkspace();
-    workspacesHandler = new WorkspacesHandler(configRepository, connectionsHandler, destinationHandler, sourceHandler, uuidSupplier);
+    jobNotifier = mock(JobNotifier.class);
+    workspacesHandler = new WorkspacesHandler(configRepository, connectionsHandler, destinationHandler, sourceHandler, uuidSupplier, jobNotifier);
   }
 
   private StandardWorkspace generateWorkspace() {
@@ -275,6 +278,29 @@ class WorkspacesHandlerTest {
     verify(configRepository).writeStandardWorkspace(expectedWorkspace);
 
     assertEquals(expectedWorkspaceRead, actualWorkspaceRead);
+  }
+
+  @Test
+  void testTryWorkspaceNotification() throws JsonValidationException, ConfigNotFoundException, IOException {
+    when(configRepository.getStandardWorkspace(workspace.getWorkspaceId(), false))
+        .thenReturn(workspace);
+
+    final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody().workspaceId(workspace.getWorkspaceId());
+
+    final WorkspaceRead workspaceRead = new WorkspaceRead()
+        .workspaceId(workspace.getWorkspaceId())
+        .customerId(workspace.getCustomerId())
+        .email("test@airbyte.io")
+        .name("test workspace")
+        .slug("default")
+        .initialSetupComplete(false)
+        .displaySetupWizard(true)
+        .news(false)
+        .anonymousDataCollection(false)
+        .securityUpdates(false)
+        .notifications(List.of(generateApiNotification()));
+
+    assertEquals(workspaceRead, workspacesHandler.tryWorkspaceNotification(workspaceIdRequestBody));
   }
 
 }
