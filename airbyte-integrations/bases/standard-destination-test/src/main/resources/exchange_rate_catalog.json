@@ -4,6 +4,9 @@
       "name": "exchange_rate",
       "json_schema": {
         "properties": {
+          "currency": {
+            "type": "string"
+          },
           "date": {
             "type": "string"
           },

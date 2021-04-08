@@ -137,6 +137,10 @@ class AirbyteStream(BaseModel):
         None,
         description="If the source defines the primary key, paths to the fields that will be used as a primary key. If not provided by the source, the end user will have to specify the primary key themselves.",
     )
+    namespace: Optional[str] = Field(
+        None,
+        description="Optional Source-defined namespace. Currently only used by JDBC destinations to determine what schema to write to. Airbyte streams from the same sources should have the same namespace.",
+    )
 
 
 class ConfiguredAirbyteStream(BaseModel):

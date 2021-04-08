@@ -1888,6 +1888,9 @@ components:
             type: array
             items:
               type: string
+        namespace:
+          type: string
+          description: Optional Source-defined namespace. Airbyte streams from the same sources should have the same namespace. Currently only used by JDBC destinations to determine what schema to write to.
     StreamJsonSchema:
       type: object
     AirbyteStreamConfiguration:

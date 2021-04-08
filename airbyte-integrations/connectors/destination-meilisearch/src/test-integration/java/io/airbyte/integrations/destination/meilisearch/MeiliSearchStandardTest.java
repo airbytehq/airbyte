@@ -93,7 +93,7 @@ public class MeiliSearchStandardTest extends TestDestination {
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
+  protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName, String namespace) throws Exception {
     final Index index = meiliSearchClient.index(Names.toAlphanumericAndUnderscore(streamName));
     final String responseString = index.getDocuments();
     final JsonNode response = Jsons.deserialize(responseString);
