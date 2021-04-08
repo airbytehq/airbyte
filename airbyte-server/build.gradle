@@ -47,10 +47,15 @@ rootProject.file('.env.dev').withInputStream { env.load(it) }
 
 run {
     // default for running on local machine.
-    environment "CONFIG_ROOT", "${env.DEV_ROOT}/data"
-    environment "WORKSPACE_ROOT", "${env.DEV_ROOT}/workspace"
-    environment "VERSION", env.VERSION
     environment "DATABASE_USER", env.DATABASE_USER
     environment "DATABASE_PASSWORD", env.DATABASE_PASSWORD
-    environment "DATABASE_URL", "jdbc:postgresql://localhost:5432/airbyte"
+    // we map the docker pg db to port 5433 so it does not conflict with other pg instances.
+    environment "DATABASE_URL", "jdbc:postgresql://localhost:5433/${env.DATABASE_DB}"
+    environment "WORKSPACE_ROOT", env.WORKSPACE_ROOT
+    environment "CONFIG_ROOT", "/tmp/airbyte_config"
+    environment "TRACKING_STRATEGY", env.TRACKING_STRATEGY
+    environment "AIRBYTE_VERSION", env.VERSION
+    environment "AIRBYTE_ROLE", System.getenv('AIRBYTE_ROLE')
+    environment "TEMPORAL_HOST", "localhost:7233"
+
 }
