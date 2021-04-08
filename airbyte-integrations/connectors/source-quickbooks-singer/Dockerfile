@@ -1,7 +1,7 @@
 FROM airbyte/integration-base-singer:0.1.1
 
 # Bash is installed for more convenient debugging.
-RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y bash -y gcc && rm -rf /var/lib/apt/lists/*
 
 ENV CODE_PATH="source_quickbooks_singer"
 ENV AIRBYTE_IMPL_MODULE="source_quickbooks_singer"
