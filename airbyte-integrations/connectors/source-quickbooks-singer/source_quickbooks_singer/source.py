@@ -27,8 +27,14 @@ import json
 from base_python import AirbyteLogger
 from base_singer import BaseSingerSource
 from requests_oauthlib import OAuth2Session
-from tap_quickbooks.client import SANDBOX_ENDPOINT_BASE, PROD_ENDPOINT_BASE, TOKEN_REFRESH_URL, Quickbooks5XXException, \
-    QuickbooksAuthenticationError, Quickbooks4XXException
+from tap_quickbooks.client import (
+    PROD_ENDPOINT_BASE,
+    SANDBOX_ENDPOINT_BASE,
+    TOKEN_REFRESH_URL,
+    Quickbooks4XXException,
+    Quickbooks5XXException,
+    QuickbooksAuthenticationError,
+)
 
 
 class SourceQuickbooksSinger(BaseSingerSource):
@@ -41,35 +47,26 @@ class SourceQuickbooksSinger(BaseSingerSource):
         logger.info("Credentials Refreshed")
 
     def try_connect(self, logger: AirbyteLogger, config: json):
-        token = {
-            'refresh_token': config['refresh_token'],
-            'token_type': 'Bearer',
-            'access_token': "wrong",
-            'expires_in': '-30'
-        }
-        extra = {
-            'client_id': config['client_id'],
-            'client_secret': config['client_secret']
-        }
+        token = {"refresh_token": config["refresh_token"], "token_type": "Bearer", "access_token": "wrong", "expires_in": "-30"}
+        extra = {"client_id": config["client_id"], "client_secret": config["client_secret"]}
 
         sandbox = False
-        if config.get('sandbox') in ['true', 'True', True]:
+        if config.get("sandbox") in ["true", "True", True]:
             sandbox = True
 
-        user_agent = config['user_agent']
-        realm_id = config['realm_id']
-        session = OAuth2Session(config['client_id'],
-                                token=token,
-                                auto_refresh_url=TOKEN_REFRESH_URL,
-                                auto_refresh_kwargs=extra,
-                                token_updater=self._write_config)
+        user_agent = config["user_agent"]
+        realm_id = config["realm_id"]
+        session = OAuth2Session(
+            config["client_id"],
+            token=token,
+            auto_refresh_url=TOKEN_REFRESH_URL,
+            auto_refresh_kwargs=extra,
+            token_updater=self._write_config,
+        )
 
-        endpoint = f'/v3/company/{realm_id}/query'
+        endpoint = f"/v3/company/{realm_id}/query"
         params = {"query": "SELECT * FROM CompanyInfo"}
-        headers = {
-            'Accept': 'application/json',
-            'User-Agent': user_agent
-        }
+        headers = {"Accept": "application/json", "User-Agent": user_agent}
 
         if sandbox:
             full_url = SANDBOX_ENDPOINT_BASE + endpoint
@@ -84,8 +81,3 @@ class SourceQuickbooksSinger(BaseSingerSource):
             raise QuickbooksAuthenticationError(response.text)
         elif response.status_code >= 400:
             raise Quickbooks4XXException(response.text)
-
-
-
-
-
