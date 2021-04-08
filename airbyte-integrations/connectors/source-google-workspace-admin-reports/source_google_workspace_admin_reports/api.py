@@ -27,10 +27,12 @@ import socket
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from functools import partial
-from typing import Callable, Dict, Iterator, Optional, Sequence
+from typing import Any, Callable, Dict, Iterator, Mapping, Optional, Sequence
 
 import backoff
+import pendulum
 import pytz
+from base_python.entrypoint import logger
 from google.oauth2 import service_account
 from googleapiclient.discovery import Resource, build
 from googleapiclient.errors import HttpError as GoogleApiHttpError
@@ -86,6 +88,11 @@ class StreamAPI(ABC):
             base_start_time = datetime.utcnow() - timedelta(self._api.lookback)
             self._start_time = base_start_time.replace(tzinfo=pytz.UTC).isoformat()
 
+    @property
+    @abstractmethod
+    def name(self):
+        """Name of the stream"""
+
     def _api_get(self, resource: str, params: Dict = None):
         return self._api.get(resource, params=params)
 
@@ -111,7 +118,45 @@ class StreamAPI(ABC):
                 break
 
 
-class ActivitiesAPI(StreamAPI):
+class IncrementalStreamAPI(StreamAPI, ABC):
+    """Stream that supports state and incremental read"""
+
+    state_pk = "time"
+
+    @property
+    def state(self) -> Optional[Mapping[str, Any]]:
+        """Current state, if wasn't set return None"""
+        if self._state:
+            return {self.state_pk: str(self._state)}
+        return None
+
+    @state.setter
+    def state(self, value):
+        self._state = pendulum.parse(value[self.state_pk])
+        self._start_time = self._state.isoformat()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._state = None
+
+    def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
+        """Update cursor(state)"""
+        params = params or {}
+        cursor = None
+        for record in super().read(getter, params):
+            "Report API return records from newest to oldest"
+            if not cursor:
+                cursor = pendulum.parse(record[self.state_pk])
+            yield record
+
+        if cursor:
+            new_state = max(cursor, self._state) if self._state else cursor
+            if new_state != self._state:
+                logger.info(f"Advancing bookmark for {self.name} stream from {self._state} to {new_state}")
+                self._state = new_state
+
+
+class ActivitiesAPI(IncrementalStreamAPI):
     application_name = None
 
     def get_params(self) -> Dict:
@@ -123,7 +168,13 @@ class ActivitiesAPI(StreamAPI):
         return params
 
     def process_response(self, response: Dict) -> Iterator[dict]:
-        return response.get("items", [])
+        activities = response.get("items", [])
+        for activity in activities:
+            activity_id = activity.get("id", {})
+            if "time" in activity_id:
+                # place time property in top level
+                activity["time"] = activity_id["time"]
+            yield activity
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         params = self.get_params()
@@ -131,20 +182,25 @@ class ActivitiesAPI(StreamAPI):
 
 
 class AdminAPI(ActivitiesAPI):
+    name = "Admin"
     application_name = "admin"
 
 
 class DriveAPI(ActivitiesAPI):
+    name = "Drive"
     application_name = "drive"
 
 
 class LoginsAPI(ActivitiesAPI):
+    name = "Logins"
     application_name = "login"
 
 
 class MobileAPI(ActivitiesAPI):
+    name = "Mobile"
     application_name = "mobile"
 
 
 class OAuthTokensAPI(ActivitiesAPI):
+    name = "OAuth Tokens"
     application_name = "token"
