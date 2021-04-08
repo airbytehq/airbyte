@@ -324,9 +324,11 @@ public abstract class JdbcSourceStandardTest {
 
   @Test
   void testReadOneColumn() throws Exception {
+    System.out.println(streamName);
+    System.out.println(SCHEMA_NAME);
     final ConfiguredAirbyteCatalog catalog = CatalogHelpers
-        .createConfiguredAirbyteCatalog(streamName, SCHEMA_NAME, Field.of(COL_ID, JsonSchemaPrimitive.NUMBER));
-
+        .createConfiguredAirbyteCatalog(streamName, getDefaultNamespace(), Field.of(COL_ID, JsonSchemaPrimitive.NUMBER));
+    System.out.println(catalog);
     final List<AirbyteMessage> actualMessages = MoreIterators
         .toList(source.read(config, catalog, null));
 
@@ -369,7 +371,7 @@ public abstract class JdbcSourceStandardTest {
       });
       catalog.getStreams().add(CatalogHelpers.createConfiguredAirbyteStream(
           streamName2,
-          SCHEMA_NAME,
+          getDefaultNamespace(),
           Field.of(COL_ID, JsonSchemaPrimitive.NUMBER),
           Field.of(COL_NAME, JsonSchemaPrimitive.STRING)));
 
@@ -594,7 +596,7 @@ public abstract class JdbcSourceStandardTest {
         getDefaultNamespace());
     configuredCatalog.getStreams().add(CatalogHelpers.createConfiguredAirbyteStream(
         streamName2,
-        SCHEMA_NAME,
+        getDefaultNamespace(),
         Field.of(COL_ID, JsonSchemaPrimitive.NUMBER),
         Field.of(COL_NAME, JsonSchemaPrimitive.STRING)));
     configuredCatalog.getStreams().forEach(airbyteStream -> {
@@ -803,7 +805,7 @@ public abstract class JdbcSourceStandardTest {
 
     return CatalogHelpers.createConfiguredAirbyteStream(
         streamName2,
-        SCHEMA_NAME,
+        getDefaultNamespace(),
         Field.of(COL_ID, JsonSchemaPrimitive.NUMBER),
         Field.of(COL_LAST_NAME_WITH_SPACE, JsonSchemaPrimitive.STRING));
   }
