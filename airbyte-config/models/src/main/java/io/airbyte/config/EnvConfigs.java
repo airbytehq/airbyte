@@ -116,12 +116,12 @@ public class EnvConfigs implements Configs {
 
   @Override
   public String getWorkspaceDockerMount() {
-    return getEnvOrDefault(WORKSPACE_DOCKER_MOUNT, WORKSPACE_ROOT);
+    return getEnvOrDefault(WORKSPACE_DOCKER_MOUNT, getWorkspaceRoot().toString());
   }
 
   @Override
   public String getLocalDockerMount() {
-    return getEnvOrDefault(LOCAL_DOCKER_MOUNT, LOCAL_ROOT);
+    return getEnvOrDefault(LOCAL_DOCKER_MOUNT, getLocalRoot().toString());
   }
 
   @Override
