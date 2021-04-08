@@ -30,6 +30,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.redshift.RedshiftSource;
 import io.airbyte.integrations.standardtest.source.StandardSourceTest;
 import io.airbyte.protocol.models.CatalogHelpers;
@@ -57,9 +58,6 @@ public class RedshiftStandardSourceTest extends StandardSourceTest {
 
   @Override
   protected void setup(TestDestinationEnv testEnv) throws Exception {
-    schemaName = ("integration_test_" + RandomStringUtils.randomAlphanumeric(5)).toLowerCase();
-    final String createSchemaQuery = String.format("CREATE SCHEMA %s", schemaName);
-    streamName = schemaName + ".customer";
     config = getStaticConfig();
 
     database = Databases.createJdbcDatabase(
@@ -71,15 +69,18 @@ public class RedshiftStandardSourceTest extends StandardSourceTest {
             config.get("database").asText()),
         RedshiftSource.DRIVER_CLASS);
 
-    database.execute(connection -> connection.createStatement().execute(createSchemaQuery));
+    schemaName = ("integration_test_" + RandomStringUtils.randomAlphanumeric(5)).toLowerCase();
+    final String createSchemaQuery = String.format("CREATE SCHEMA %s", schemaName);
+    database.execute(connection -> { connection.createStatement().execute(createSchemaQuery);});
+
+    streamName = "customer";
+    final String fqTableName = JdbcUtils.getFullyQualifiedTableName(schemaName,streamName);
     String createTestTable =
-        String.format("CREATE TABLE IF NOT EXISTS %s (c_custkey INTEGER, c_name VARCHAR(16), c_nation VARCHAR(16));\n", streamName);
-    database.execute(connection -> connection.createStatement().execute(createTestTable));
-    String insertTestData = String.format("insert into %s values (1, 'Chris', 'France');\n", streamName);
-    database.execute(connection -> {
-      connection.createStatement().execute(insertTestData);
-      System.out.println("more to be done.");
-    });
+        String.format("CREATE TABLE IF NOT EXISTS %s (c_custkey INTEGER, c_name VARCHAR(16), c_nation VARCHAR(16));\n", fqTableName);
+    database.execute(connection -> { connection.createStatement().execute(createTestTable);});
+    
+    String insertTestData = String.format("insert into %s values (1, 'Chris', 'France');\n", fqTableName);
+    database.execute(connection -> { connection.createStatement().execute(insertTestData);});
   }
 
   @Override
@@ -107,6 +108,7 @@ public class RedshiftStandardSourceTest extends StandardSourceTest {
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
     return CatalogHelpers.createConfiguredAirbyteCatalog(
         streamName,
+        schemaName,
         Field.of("c_custkey", Field.JsonSchemaPrimitive.NUMBER),
         Field.of("c_name", Field.JsonSchemaPrimitive.STRING),
         Field.of("c_nation", Field.JsonSchemaPrimitive.STRING));
