@@ -44,17 +44,17 @@ import org.slf4j.LoggerFactory;
  * Additionally, this migration updates the JSON Schema for StandardWorkspace with a new optional
  * field 'failureNotificationsWebhook' introduced in issue #1689
  */
-public class MigrationV0_19_0 extends BaseMigration implements Migration {
+public class MigrationV0_20_0 extends BaseMigration implements Migration {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(MigrationV0_19_0.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(MigrationV0_20_0.class);
 
   private static final ResourceId STANDARD_WORKSPACE_RESOURCE_ID = ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_WORKSPACE");
 
-  private static final String MIGRATION_VERSION = "0.19.0-alpha";
+  private static final String MIGRATION_VERSION = "0.20.0-alpha";
 
   private final Migration previousMigration;
 
-  public MigrationV0_19_0(Migration previousMigration) {
+  public MigrationV0_20_0(Migration previousMigration) {
     super(previousMigration);
     this.previousMigration = previousMigration;
   }
@@ -69,7 +69,7 @@ public class MigrationV0_19_0 extends BaseMigration implements Migration {
     final Map<ResourceId, JsonNode> outputSchema = new HashMap<>(previousMigration.getOutputSchema());
     try {
       outputSchema.put(STANDARD_WORKSPACE_RESOURCE_ID,
-          Jsons.jsonNode(MoreResources.readResource("migrations/migrationV0_19_0/StandardWorkspace.yaml")));
+          Jsons.jsonNode(MoreResources.readResource("migrations/migrationV0_20_0/StandardWorkspace.yaml")));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
