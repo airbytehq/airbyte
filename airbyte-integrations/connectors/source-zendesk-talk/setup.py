@@ -41,9 +41,6 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=MAIN_REQUIREMENTS,
+    install_requires=MAIN_REQUIREMENTS + TEST_REQUIREMENTS,
     package_data={"": ["*.json", "schemas/*.json"]},
-    extras_require={
-        "tests": TEST_REQUIREMENTS,
-    },
 )
