@@ -26,6 +26,7 @@ package io.airbyte.integrations.source.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -36,11 +37,16 @@ import io.debezium.engine.format.Json;
 import io.debezium.engine.spi.OffsetCommitPolicy.AlwaysCommitOffsetPolicy;
 import java.util.Properties;
 import java.util.Queue;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+
+import io.debezium.util.VariableLatch;
 import org.codehaus.plexus.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +64,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
   private final AtomicBoolean hasClosed;
   private final AtomicBoolean isClosing;
   private final AtomicReference<Throwable> thrownError;
+  private final CountDownLatch engineLatch;
 
   public DebeziumRecordPublisher(JsonNode config, ConfiguredAirbyteCatalog catalog, AirbyteFileOffsetBackingStore offsetManager) {
     this.config = config;
@@ -67,6 +74,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
     this.isClosing = new AtomicBoolean(false);
     this.thrownError = new AtomicReference<>();
     this.executor = Executors.newSingleThreadExecutor();
+    this.engineLatch = new CountDownLatch(1);
   }
 
   public void start(Queue<ChangeEvent<String, String>> queue) {
@@ -85,6 +93,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
         .using((success, message, error) -> {
           LOGGER.info("Debezium engine shutdown.");
           thrownError.set(error);
+          engineLatch.countDown();
         })
         .build();
 
@@ -103,10 +112,15 @@ public class DebeziumRecordPublisher implements AutoCloseable {
         engine.close();
       }
 
-      // announce closure only engine is off.
-      hasClosed.set(true);
+      // wait for closure before shutting down executor service
+      engineLatch.await(5, TimeUnit.MINUTES);
 
+      // shut down and await for thread to actually go down
       executor.shutdown();
+      executor.awaitTermination(5, TimeUnit.MINUTES);
+
+      // after the engine is completely off, we can mark this as closed
+      hasClosed.set(true);
 
       if (thrownError.get() != null) {
         throw new RuntimeException(thrownError.get());
@@ -150,6 +164,9 @@ public class DebeziumRecordPublisher implements AutoCloseable {
     final String tableWhitelist = getTableWhitelist(catalog);
     props.setProperty("table.include.list", tableWhitelist);
     props.setProperty("database.include.list", config.get("database").asText());
+
+    // recommended when using pgoutput
+    props.setProperty("publication.autocreate.mode", "filtered");
 
     return props;
   }
