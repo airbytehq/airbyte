@@ -167,8 +167,7 @@ class IncrementalStream(Stream, ABC):
 
     @state.setter
     def state(self, value):
-        # Add 1 second so that when getting records are not duplicated with existing ones
-        self._state = pendulum.parse(value[self.state_pk]).add(seconds=1)
+        self._state = pendulum.parse(value[self.state_pk])
         self._start_date = max(self._state, self._start_date)
 
     def __init__(self, *args, **kwargs):
