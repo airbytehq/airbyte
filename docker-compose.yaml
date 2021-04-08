@@ -21,8 +21,6 @@ services:
       - POSTGRES_DB=db-${DATABASE_DB}
     volumes:
       - db:/var/lib/postgresql/data
-    ports:
-      - 5433:5432
   seed:
     image: airbyte/seed:${VERSION}
     container_name: airbyte-data-seed
