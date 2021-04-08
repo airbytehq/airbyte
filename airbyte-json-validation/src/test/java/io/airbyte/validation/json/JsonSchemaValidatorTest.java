@@ -132,14 +132,27 @@ class JsonSchemaValidatorTest {
 //  }
 
   @Test
-  void test3() throws JsonValidationException {
+  void test3() {
     final Path schemaPath = Path.of("/Users/charles/code/airbyte/airbyte-integrations/connectors/source-postgres/src/main/resources/spec.json");
 //    final Path objectPath = Path.of("/Users/charles/code/airbyte/airbyte-integrations/connectors/source-postgres/src/main/resources/object.json");
-    final String objectString = "{  \"password\" : \"**********\",  \"username\" : \"fbwiigwttroxfr\",  \"database\" : \"df2398b8h9cmec\",  \"port\" : 5432,  \"host\" : \"ec2-184-72-235-80.compute-1.amazonaws.com\",  \"replication_method\" : {    \"replication_slot\" : \"ewq\"  }}";
+//    final String objectString = "{  \"password\" : \"**********\",  \"username\" : \"fbwiigwttroxfr\",  \"database\" : \"df2398b8h9cmec\",  \"port\" : 5432,  \"host\" : \"ec2-184-72-235-80.compute-1.amazonaws.com\",  \"replication_method\" : {    \"replication_slot\" : \"ewq\"  }}";
     final JsonNode schema = JsonSchemaValidator.getSchema(schemaPath.toFile());
-    final JsonNode object = Jsons.deserialize(objectString);
+//    final JsonNode object = Jsons.deserialize(objectString);
 
-    new JsonSchemaValidator().ensure(schema, object);
+    final JsonNode connectionSpecification = schema.get("connectionSpecification");
+    // missing database
+    assertFalse(new JsonSchemaValidator().test(connectionSpecification, Jsons.deserialize("{  \"password\" : \"**********\",  \"username\" : \"fbwiigwttroxfr\",  \"port\" : 5432,  \"host\" : \"ec2-184-72-235-80.compute-1.amazonaws.com\",  \"replication_method\" : {    \"replication_slot\" : \"ewq\"  }}")));
+    // replication_method with replication slot
+    assertTrue(new JsonSchemaValidator().test(connectionSpecification, Jsons.deserialize("{  \"password\" : \"**********\",  \"username\" : \"fbwiigwttroxfr\",  \"database\" : \"df2398b8h9cmec\",  \"port\" : 5432,  \"host\" : \"ec2-184-72-235-80.compute-1.amazonaws.com\",  \"replication_method\" : {    \"replication_slot\" : \"ewq\"  }}")));
+    // replication_method with empty object
+    assertTrue(new JsonSchemaValidator().test(connectionSpecification, Jsons.deserialize("{  \"password\" : \"**********\",  \"username\" : \"fbwiigwttroxfr\",  \"database\" : \"df2398b8h9cmec\",  \"port\" : 5432,  \"host\" : \"ec2-184-72-235-80.compute-1.amazonaws.com\",  \"replication_method\" : {}}")));
+    // replication_method not set
+    assertFalse(new JsonSchemaValidator().test(connectionSpecification, Jsons.deserialize("{  \"password\" : \"**********\",  \"username\" : \"fbwiigwttroxfr\",  \"database\" : \"df2398b8h9cmec\",  \"port\" : 5432,  \"host\" : \"ec2-184-72-235-80.compute-1.amazonaws.com\"}")));
+    // replication_method with replication slot set to an int
+    assertFalse(new JsonSchemaValidator().test(connectionSpecification, Jsons.deserialize("{  \"password\" : \"**********\",  \"username\" : \"fbwiigwttroxfr\",  \"database\" : \"df2398b8h9cmec\",  \"port\" : 5432,  \"host\" : \"ec2-184-72-235-80.compute-1.amazonaws.com\",  \"replication_method\" : {    \"replication_slot\" : 3  }}")));
+    // replication_method with replication slot set to null
+    // todo (cgardens) - i would expect this to return false but it returns true.
+    assertTrue(new JsonSchemaValidator().test(connectionSpecification, Jsons.deserialize("{  \"password\" : \"**********\",  \"username\" : \"fbwiigwttroxfr\",  \"database\" : \"df2398b8h9cmec\",  \"port\" : 5432,  \"host\" : \"ec2-184-72-235-80.compute-1.amazonaws.com\",  \"replication_method\" : {    \"replication_slot\" : null  }}")));
   }
 
 }
