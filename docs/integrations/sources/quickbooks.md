@@ -10,34 +10,34 @@ This source wraps the [Singer Quickbooks Tap](https://github.com/singer-io/tap-q
 
 This Source is capable of syncing the following [Streams](https://developer.intuit.com/app/developer/qbo/docs/api/accounting/most-commonly-used/account):
 
-* Accounts
-* BillPayments
-* Budgets
-* Bills
-* Classes
-* CreditMemos
-* Customers
-* Departments
-* Deposits
-* Employees
-* Estimates
-* Invoices
-* Items
-* JournalEntries
-* Payments
-* PaymentMethods
-* Purchases
-* PurchaseOrders
-* RefundReceipts
-* SalesReceipts
-* TaxAgencies
-* TaxCodes
-* TaxRates
-* Terms
-* TimeActivities
-* Transfers
-* VendorCredits
-* Vendors
+* [Accounts](https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/account)
+* [BillPayments](https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/billpayment)
+* [Budgets](https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/budget)
+* [Bills](https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/bill)
+* [Classes](https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/class)
+* [CreditMemos](https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/creditmemo)
+* [Customers](https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/customer)
+* [Departments](https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/department)
+* [Deposits](https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/deposit)
+* [Employees](https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/employee)
+* [Estimates](https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/estimate)
+* [Invoices](https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/invoice)
+* [Items](https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/item)
+* [JournalEntries](https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/journalentry)
+* [Payments](https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/payment)
+* [PaymentMethods](https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/paymentmethod)
+* [Purchases](https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/purchase)
+* [PurchaseOrders](https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/purchaseorder)
+* [RefundReceipts](https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/refundreceipt)
+* [SalesReceipts](https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/salesreceipt)
+* [TaxAgencies](https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/taxagency)
+* [TaxCodes](https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/taxcode)
+* [TaxRates](https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/taxrate)
+* [Terms](https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/term)
+* [TimeActivities](https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/timeactivity)
+* [Transfers](https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/transfer)
+* [VendorCredits](https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/vendorcredit)
+* [Vendors](https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/vendor)
 
 ### Data type mapping
 
