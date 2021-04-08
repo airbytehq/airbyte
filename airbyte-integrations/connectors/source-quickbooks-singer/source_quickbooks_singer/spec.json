@@ -4,7 +4,15 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Source Quickbooks Singer Spec",
     "type": "object",
-    "required": ["client_id", "client_secret", "refresh_token", "realm_id", "user_agent", "start_date", "sandbox"],
+    "required": [
+      "client_id",
+      "client_secret",
+      "refresh_token",
+      "realm_id",
+      "user_agent",
+      "start_date",
+      "sandbox"
+    ],
     "additionalProperties": false,
     "properties": {
       "client_id": {
