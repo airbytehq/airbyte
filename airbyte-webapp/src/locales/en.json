@@ -77,7 +77,7 @@
   "form.done": "Done",
   "form.examples": "(e.g. {examples})",
   "form.prefix": "Table Prefix",
-  "form.prefix.message": "Prefix to prefix all destination tables created as part of this connection. Useful for identifying tables on a per-connection basis and namespacing streams from different souces so they do not clobber each other.",
+  "form.prefix.message": "Prefix to prefix all destination tables created as part of this connection. Useful for identifying tables on a per-connection basis and namespacing streams from different sources so they do not overwrite each other.",
   "form.prefix.placeholder": "prefix-",
   "form.nameSearch": "Search name",
   "form.sourceConnector": "Source connector",
