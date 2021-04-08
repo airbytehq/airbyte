@@ -28,7 +28,8 @@ from pathlib import Path
 from typing import Optional
 
 import pytest
-from airbyte_protocol import AirbyteCatalog, ConfiguredAirbyteCatalog, ConnectorSpecification
+from airbyte_protocol import (AirbyteCatalog, ConfiguredAirbyteCatalog,
+                              ConnectorSpecification)
 
 from standard_test.connector_runner import ConnectorRunner
 from standard_test.utils import load_config

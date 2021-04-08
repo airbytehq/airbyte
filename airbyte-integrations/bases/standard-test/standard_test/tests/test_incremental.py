@@ -23,9 +23,10 @@ SOFTWARE.
 """
 
 from airbyte_protocol import Type
+
 from standard_test import BaseTest
 from standard_test.connector_runner import ConnectorRunner
-from standard_test.utils import incremental_only_catalog, filter_output
+from standard_test.utils import filter_output, incremental_only_catalog
 
 
 class TestIncremental(BaseTest):

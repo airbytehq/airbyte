@@ -23,7 +23,7 @@ SOFTWARE.
 """
 
 from pathlib import Path
-from typing import List, Iterable
+from typing import Iterable, List
 
 import pytest
 from yaml import load
@@ -33,7 +33,7 @@ try:
 except ImportError:
     from yaml import Loader
 
-from airbyte_protocol import ConfiguredAirbyteCatalog, SyncMode, AirbyteMessage
+from airbyte_protocol import AirbyteMessage, ConfiguredAirbyteCatalog, SyncMode
 
 from standard_test.config import Config
 
