@@ -38,6 +38,7 @@ import io.airbyte.api.model.WorkspaceUpdate;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.server.converters.NotificationConverter;
 import io.airbyte.server.errors.KnownException;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -92,7 +93,8 @@ public class WorkspacesHandler {
         .withNews(news != null ? news : false)
         .withSecurityUpdates(securityUpdates != null ? securityUpdates : false)
         .withDisplaySetupWizard(false)
-        .withTombstone(false);
+        .withTombstone(false)
+        .withNotifications(NotificationConverter.toConfig(workspaceCreate.getNotifications()));
 
     if (!Strings.isNullOrEmpty(email)) {
       workspace.withEmail(email);
@@ -163,7 +165,8 @@ public class WorkspacesHandler {
         .withDisplaySetupWizard(workspaceUpdate.getDisplaySetupWizard())
         .withAnonymousDataCollection(workspaceUpdate.getAnonymousDataCollection())
         .withNews(workspaceUpdate.getNews())
-        .withSecurityUpdates(workspaceUpdate.getSecurityUpdates());
+        .withSecurityUpdates(workspaceUpdate.getSecurityUpdates())
+        .withNotifications(NotificationConverter.toConfig(workspaceUpdate.getNotifications()));
 
     configRepository.writeStandardWorkspace(persistedWorkspace);
 
@@ -189,7 +192,8 @@ public class WorkspacesHandler {
         .displaySetupWizard(workspace.getDisplaySetupWizard())
         .anonymousDataCollection(workspace.getAnonymousDataCollection())
         .news(workspace.getNews())
-        .securityUpdates(workspace.getSecurityUpdates());
+        .securityUpdates(workspace.getSecurityUpdates())
+        .notifications(NotificationConverter.toApi(workspace.getNotifications()));
   }
 
 }
