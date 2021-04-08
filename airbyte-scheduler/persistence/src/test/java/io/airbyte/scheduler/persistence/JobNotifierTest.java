@@ -24,62 +24,120 @@
 
 package io.airbyte.scheduler.persistence;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.airbyte.config.JobConfig;
+import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.Notification;
 import io.airbyte.config.Notification.NotificationType;
 import io.airbyte.config.SlackNotificationConfiguration;
+import io.airbyte.config.StandardDestinationDefinition;
+import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.notification.NotificationClient;
+import io.airbyte.scheduler.models.Job;
+import io.airbyte.scheduler.models.JobStatus;
+import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 
 class JobNotifierTest {
 
   private static final String WEBAPP_URL = "http://localhost:8000";
+  private static final Instant NOW = Instant.now();
+  private static final String TEST_DOCKER_REPO = "airbyte/test-image";
+  private static final String TEST_DOCKER_TAG = "0.1.0";
+
   private ConfigRepository configRepository;
   private JobNotifier jobNotifier;
+  private NotificationClient notificationClient;
 
   @BeforeEach
   void setup() {
     configRepository = mock(ConfigRepository.class);
-    jobNotifier = new JobNotifier(WEBAPP_URL, configRepository);
+    jobNotifier = spy(new JobNotifier(WEBAPP_URL, configRepository));
+    notificationClient = mock(NotificationClient.class);
+    when(jobNotifier.getNotificationClient(getSlackNotification())).thenReturn(notificationClient);
   }
 
   @Test
   void testSendTestNotifications() throws IOException, InterruptedException {
-    final StandardWorkspace workspace = getWorkspace();
-    final JobNotifier notifier = spy(new JobNotifier(WEBAPP_URL, configRepository));
-    final NotificationClient notificationClient = mock(NotificationClient.class);
-
     when(notificationClient.notify(anyString())).thenReturn(true);
-    when(notifier.getNotificationClient(workspace.getNotifications().get(0))).thenReturn(notificationClient);
+    assertTrue(jobNotifier.sendTestNotifications(getWorkspace()));
+    verify(notificationClient).notify(JobNotifier.NOTIFICATION_TEST_MESSAGE);
+  }
 
-    assertTrue(notifier.sendTestNotifications(workspace));
+  @Test
+  void testFailJob() throws IOException, InterruptedException, JsonValidationException, ConfigNotFoundException {
+    final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
+        .withName("source-test")
+        .withDockerRepository(TEST_DOCKER_REPO)
+        .withDockerImageTag(TEST_DOCKER_TAG)
+        .withSourceDefinitionId(UUID.randomUUID());
+    final StandardDestinationDefinition destinationDefinition = new StandardDestinationDefinition()
+        .withName("destination-test")
+        .withDockerRepository(TEST_DOCKER_REPO)
+        .withDockerImageTag(TEST_DOCKER_TAG)
+        .withDestinationDefinitionId(UUID.randomUUID());
+    when(configRepository.getSourceDefinitionFromConnection(any())).thenReturn(sourceDefinition);
+    when(configRepository.getDestinationDefinitionFromConnection(any())).thenReturn(destinationDefinition);
+    when(configRepository.getStandardSourceDefinition(any())).thenReturn(sourceDefinition);
+    when(configRepository.getStandardDestinationDefinition(any())).thenReturn(destinationDefinition);
+    when(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID, true)).thenReturn(getWorkspace());
+    when(notificationClient.notifyJobFailure(anyString(), anyString(), anyString(), anyString())).thenReturn(true);
 
-    final ArgumentCaptor<String> message = ArgumentCaptor.forClass(String.class);
-    verify(notificationClient).notify(message.capture());
-    assertEquals(JobNotifier.NOTIFICATION_TEST_MESSAGE, message.getValue());
+    final Job job = createJob();
+    jobNotifier.failJob("JobNotifierTest was running", job);
+    final DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL).withZone(ZoneId.systemDefault());
+    verify(notificationClient).notifyJobFailure(
+        "source-test version 0.1.0",
+        "destination-test version 0.1.0",
+        String.format("sync started on %s, running for 1 day 10 hours 17 minutes 36 seconds, as the JobNotifierTest was running.",
+            formatter.format(Instant.ofEpochSecond(job.getStartedAtInSecond().get()))),
+        "http://localhost:8000/source/connection/" + job.getScope());
   }
 
   private static StandardWorkspace getWorkspace() {
     return new StandardWorkspace()
         .withCustomerId(UUID.randomUUID())
-        .withNotifications(List.of(new Notification()
-            .withNotificationType(NotificationType.SLACK)
-            .withSlackConfiguration(new SlackNotificationConfiguration()
-                .withWebhook("http://random.webhook.url"))));
+        .withNotifications(List.of(getSlackNotification()));
+  }
+
+  private static Job createJob() {
+    return new Job(
+        10L,
+        ConfigType.SYNC,
+        UUID.randomUUID().toString(),
+        new JobConfig(),
+        Collections.emptyList(),
+        JobStatus.FAILED,
+        NOW.getEpochSecond(),
+        NOW.getEpochSecond(),
+        NOW.getEpochSecond() + 123456L);
+  }
+
+  private static Notification getSlackNotification() {
+    return new Notification()
+        .withNotificationType(NotificationType.SLACK)
+        .withSlackConfiguration(new SlackNotificationConfiguration()
+            .withWebhook("http://random.webhook.url"));
   }
 
 }

@@ -24,6 +24,9 @@
 
 package io.airbyte.notification;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.SlackNotificationConfiguration;
 import java.io.IOException;
@@ -79,14 +82,21 @@ public class SlackNotificationClient implements NotificationClient {
   public boolean notify(final String message) throws IOException, InterruptedException {
     final String webhookUrl = config.getWebhook();
     if (!Strings.isEmpty(webhookUrl)) {
+      final ImmutableMap<String, String> body = new Builder<String, String>()
+          .put("text", message)
+          .build();
       final HttpRequest request = HttpRequest.newBuilder()
-          .POST(HttpRequest.BodyPublishers.ofString(String.format("{ \"text\": \"%s\"}", message)))
+          .POST(HttpRequest.BodyPublishers.ofString(Jsons.serialize(body)))
           .uri(URI.create(webhookUrl))
           .header("Content-Type", "application/json")
           .build();
       final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-      LOGGER.info("Successful notification ({}): {}", response.statusCode(), response.body());
-      return isSuccessfulHttpResponse(response.statusCode());
+      if (isSuccessfulHttpResponse(response.statusCode())) {
+        LOGGER.info("Successful notification ({}): {}", response.statusCode(), response.body());
+        return true;
+      } else {
+        LOGGER.warn("Failed to deliver notification ({}): {}", response.statusCode(), response.body());
+      }
     }
     return false;
   }
@@ -96,7 +106,7 @@ public class SlackNotificationClient implements NotificationClient {
    * just 200. https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
    */
   private static boolean isSuccessfulHttpResponse(int httpStatusCode) {
-    return httpStatusCode / 100 != 2;
+    return httpStatusCode / 100 == 2;
   }
 
 }

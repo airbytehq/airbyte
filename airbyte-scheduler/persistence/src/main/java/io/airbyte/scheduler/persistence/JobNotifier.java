@@ -39,6 +39,9 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,6 +88,7 @@ public class JobNotifier {
       final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(sourceDefinitionId);
       final StandardDestinationDefinition destinationDefinition = configRepository.getStandardDestinationDefinition(destinationDefinitionId);
       final Instant jobStartedDate = Instant.ofEpochSecond(job.getStartedAtInSecond().orElse(job.getCreatedAtInSecond()));
+      final DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL).withZone(ZoneId.systemDefault());
       final Instant jobUpdatedDate = Instant.ofEpochSecond(job.getUpdatedAtInSecond());
       final Duration duration = Duration.between(jobStartedDate, jobUpdatedDate);
       final String durationString = formatDurationPart(duration.toDaysPart(), "day")
@@ -93,9 +97,11 @@ public class JobNotifier {
           + formatDurationPart(duration.toSecondsPart(), "second");
       final String sourceConnector = String.format("%s version %s", sourceDefinition.getName(), sourceDefinition.getDockerImageTag());
       final String destinationConnector = String.format("%s version %s", destinationDefinition.getName(), destinationDefinition.getDockerImageTag());
-      final String jobDescription = String.format("sync started at %s, running for%s, as the %s.", jobStartedDate, durationString, reason);
+      final String jobDescription =
+          String.format("sync started on %s, running for%s, as the %s.", formatter.format(jobStartedDate), durationString, reason);
       final String logUrl = connectionPageUrl + connectionId.toString();
       final StandardWorkspace workspace = configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID, true);
+
       for (Notification notification : workspace.getNotifications()) {
         final NotificationClient notificationClient = getNotificationClient(notification);
         try {
