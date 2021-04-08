@@ -81,6 +81,10 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcSource.class);
 
+  public static final String CDC_LSN = "_ab_cdc_lsn";
+  public static final String CDC_UPDATED_AT = "_ab_cdc_updated_at";
+  public static final String CDC_DELETED_AT = "_ab_cdc_deleted_at";
+
   private static final String JDBC_COLUMN_DATABASE_NAME = "TABLE_CAT";
   private static final String JDBC_COLUMN_SCHEMA_NAME = "TABLE_SCHEM";
   private static final String JDBC_COLUMN_TABLE_NAME = "TABLE_NAME";

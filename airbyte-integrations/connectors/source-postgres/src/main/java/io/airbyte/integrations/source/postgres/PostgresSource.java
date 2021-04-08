@@ -76,10 +76,6 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
 
   static final String DRIVER_CLASS = "org.postgresql.Driver";
 
-  public static final String CDC_LSN = "_ab_cdc_lsn";
-  public static final String CDC_UPDATED_AT = "_ab_cdc_updated_at";
-  public static final String CDC_DELETED_AT = "_ab_cdc_deleted_at";
-
   public PostgresSource() {
     super(DRIVER_CLASS, new PostgresJdbcStreamingQueryConfiguration());
   }
