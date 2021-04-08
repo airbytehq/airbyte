@@ -36,6 +36,7 @@ import io.airbyte.commons.json.Jsons;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 
 class JsonSchemaValidatorTest {
@@ -118,6 +119,27 @@ class JsonSchemaValidatorTest {
     assertFalse(JsonSchemaValidator.getSchema(schemaFile, "InnerObject").get("properties").has("field1"));
     // non-existent object
     assertNull(JsonSchemaValidator.getSchema(schemaFile, "NonExistentObject"));
+  }
+
+//  @Test
+//  void test2() throws JsonValidationException {
+//    final Path schemaPath = Path.of("/Users/charles/code/airbyte/airbyte-integrations/connectors/source-postgres/src/main/resources/spec.json");
+//    final Path objectPath = Path.of("/Users/charles/code/airbyte/airbyte-integrations/connectors/source-postgres/src/main/resources/object.json");
+//    final JsonNode schema = JsonSchemaValidator.getSchema(schemaPath.toFile());
+//    final JsonNode object = Jsons.deserialize(IOs.readFile(objectPath));
+//
+//    new JsonSchemaValidator().ensure(schema, object);
+//  }
+
+  @Test
+  void test3() throws JsonValidationException {
+    final Path schemaPath = Path.of("/Users/charles/code/airbyte/airbyte-integrations/connectors/source-postgres/src/main/resources/spec.json");
+//    final Path objectPath = Path.of("/Users/charles/code/airbyte/airbyte-integrations/connectors/source-postgres/src/main/resources/object.json");
+    final String objectString = "{  \"password\" : \"**********\",  \"username\" : \"fbwiigwttroxfr\",  \"database\" : \"df2398b8h9cmec\",  \"port\" : 5432,  \"host\" : \"ec2-184-72-235-80.compute-1.amazonaws.com\",  \"replication_method\" : {    \"replication_slot\" : \"ewq\"  }}";
+    final JsonNode schema = JsonSchemaValidator.getSchema(schemaPath.toFile());
+    final JsonNode object = Jsons.deserialize(objectString);
+
+    new JsonSchemaValidator().ensure(schema, object);
   }
 
 }
