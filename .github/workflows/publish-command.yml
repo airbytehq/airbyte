@@ -90,6 +90,7 @@ jobs:
         id: publish
         env:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          TZ: UTC
       - name: Add Success Comment
         if: github.event.inputs.comment-id && success()
         uses: peter-evans/create-or-update-comment@v1
