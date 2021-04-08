@@ -80,6 +80,7 @@ import io.airbyte.server.helpers.DestinationHelpers;
 import io.airbyte.server.helpers.SourceHelpers;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
+import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
@@ -148,8 +149,16 @@ class SchedulerHandlerTest {
     configRepository = mock(ConfigRepository.class);
     jobPersistence = mock(JobPersistence.class);
 
-    schedulerHandler = new SchedulerHandler(configRepository, schedulerJobClient, synchronousSchedulerClient, configurationUpdate,
-        jsonSchemaValidator, specFetcher, jobPersistence, mock(Path.class));
+    schedulerHandler = new SchedulerHandler(
+        configRepository,
+        schedulerJobClient,
+        synchronousSchedulerClient,
+        configurationUpdate,
+        jsonSchemaValidator,
+        specFetcher,
+        jobPersistence,
+        mock(Path.class),
+        mock(WorkflowServiceStubs.class));
   }
 
   @Test
