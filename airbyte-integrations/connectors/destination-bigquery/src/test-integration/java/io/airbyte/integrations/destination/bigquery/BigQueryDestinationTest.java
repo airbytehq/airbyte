@@ -138,7 +138,8 @@ class BigQueryDestinationTest {
     String datesetId = "airbyte_tests_" + RandomStringUtils.randomAlphanumeric(8);
 
     catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-        CatalogHelpers.createConfiguredAirbyteStream(USERS_STREAM_NAME, datesetId, io.airbyte.protocol.models.Field.of("name", JsonSchemaPrimitive.STRING),
+        CatalogHelpers.createConfiguredAirbyteStream(USERS_STREAM_NAME, datesetId,
+            io.airbyte.protocol.models.Field.of("name", JsonSchemaPrimitive.STRING),
             io.airbyte.protocol.models.Field
                 .of("id", JsonSchemaPrimitive.STRING)),
         CatalogHelpers.createConfiguredAirbyteStream(TASKS_STREAM_NAME, datesetId, Field.of("goal", JsonSchemaPrimitive.STRING))));
