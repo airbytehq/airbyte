@@ -176,7 +176,7 @@ public abstract class TestDestination {
   protected boolean implementsAppendDedup() throws WorkerException {
     final ConnectorSpecification spec = runSpec();
     assertNotNull(spec);
-    if (spec.getSupportedDestinationSyncModes() != null) {
+    if (implementsBasicNormalization() && spec.getSupportedDestinationSyncModes() != null) {
       return spec.getSupportedDestinationSyncModes().contains(DestinationSyncMode.APPEND_DEDUP);
     } else {
       return false;
