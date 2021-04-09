@@ -166,6 +166,7 @@ class PostgresSourceCdcTest {
     database = getDatabaseFromConfig(config);
     database.query(ctx -> {
       ctx.execute("SELECT pg_create_logical_replication_slot('" + fullReplicationSlot + "', 'pgoutput');");
+      ctx.execute("CREATE PUBLICATION airbyte_publication FOR ALL TABLES;");
       ctx.fetch(String.format("CREATE TABLE %s(%s INTEGER, %s VARCHAR(200), PRIMARY KEY (%s));", MAKES_STREAM_NAME, COL_ID, COL_MAKE, COL_ID));
       ctx.fetch(String.format("CREATE TABLE %s(%s INTEGER, %s INTEGER, %s VARCHAR(200), PRIMARY KEY (%s));",
           MODELS_STREAM_NAME, COL_ID, COL_MAKE_ID, COL_MODEL, COL_ID));

@@ -47,6 +47,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import io.debezium.util.VariableLatch;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.codehaus.plexus.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -159,6 +160,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
     }
 
     props.setProperty("slot.name", config.get("replication_slot").asText());
+    props.setProperty("publication.name", "airbyte_publication"); // todo: allow as configured input
 
     // table selection
     final String tableWhitelist = getTableWhitelist(catalog);
@@ -166,7 +168,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
     props.setProperty("database.include.list", config.get("database").asText());
 
     // recommended when using pgoutput
-    props.setProperty("publication.autocreate.mode", "filtered");
+    props.setProperty("publication.autocreate.mode", "disabled");
 
     return props;
   }
