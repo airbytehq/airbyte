@@ -103,7 +103,7 @@ class JobNotifierTest {
         "destination-test version 0.1.0",
         String.format("sync started on %s, running for 1 day 10 hours 17 minutes 36 seconds, as the JobNotifierTest was running.",
             formatter.format(Instant.ofEpochSecond(job.getStartedAtInSecond().get()))),
-        "http://localhost:8000/source/connection/" + job.getScope());
+        "http://localhost:8000/connections/" + job.getScope());
   }
 
   private static StandardWorkspace getWorkspace() {
