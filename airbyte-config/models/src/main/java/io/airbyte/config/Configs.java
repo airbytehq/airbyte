@@ -46,6 +46,8 @@ public interface Configs {
 
   String getDatabaseUrl();
 
+  String getWebappUrl();
+
   String getWorkspaceDockerMount();
 
   String getLocalDockerMount();
@@ -57,6 +59,8 @@ public interface Configs {
   WorkerEnvironment getWorkerEnvironment();
 
   WorkspaceRetentionConfig getWorkspaceRetentionConfig();
+
+  String getTemporalHost();
 
   enum TrackingStrategy {
     SEGMENT,

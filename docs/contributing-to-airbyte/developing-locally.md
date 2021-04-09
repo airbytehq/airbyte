@@ -65,7 +65,7 @@ export CPPFLAGS="-I/usr/local/opt/openssl/include"
 
 ```bash
 ./gradlew build
-docker-compose --env-file .env.dev -f docker-compose.yaml -f docker-compose.dev.yaml up
+VERSION=dev docker-compose up
 ```
 
 The build will take a few minutes. Once it completes, Airbyte compiled at current git revision will be running in `dev` mode in your environment.
@@ -81,10 +81,6 @@ To run acceptance \(end-to-end\) tests, you must have the Airbyte running locall
 VERSION=dev docker-compose up
 ./gradlew :airbyte-tests:acceptanceTests
 ```
-
-## Develop on individual applications
-
-The easiest way to develop on one of Airbyte's modules is to spin up the whole Airbyte system on your workstation, and shutdown the module you want to work on.
 
 ### Develop on `airbyte-webapp`
 
@@ -105,57 +101,13 @@ npm start
 
 * Happy Hacking!
 
-### Develop on `airbyte-server` \(APIs\)
-
-* Spin up Airbyte locally.
-* Stop the `server`.
-
-```bash
-docker-compose stop server
-```
-
-* Run the `server` with the command line. It will build and start a `server` with the current state of the code. You can also start the `server` from your IDE if you need to use a debugger.
-
-```bash
-./gradlew :airbyte-server:run
-```
-
-* Make sure everything is working by testing out a call to the API.
-
-```bash
-curl -H "Content-Type: application/json"\
- -X POST localhost:8001/api/v1/workspaces/get\
- -d '{ "workspaceId": "5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6" }'
-```
-
-* Happy Hacking!
-
-_Note: We namespace most API calls with a workspace id. For now there is only ever one workspace that is hardcoded to the id used in this example. If you ever need a workspace id, just use this one._
-
-### Develop on `airbyte-scheduler`
-
-* Spin up Airbyte locally.
-* Stop the `scheduler`.
-
-```bash
-docker-compose stop scheduler
-```
-
-* Run the `scheduler` with the command line. It will build and start a `scheduler` with the current state of the code. You can also start the `scheduler`from your IDE if you need to use a debugger.
-
-```bash
-./gradlew :airbyte-scheduler:run
-```
-
-* Happy Hacking!
-
 ### Connector Specification Caching
 
 The Configuration API caches connector specifications. This is done to avoid needing to run docker everytime one is needed in the UI. Without this caching, the UI crawls. If you update the specification of a connector and you need to clear this cache so the API / UI pick up the change. You have two options: 1. Go to the Admin page in the UI and update the version of the connector. Updating to the same version will for the cache to clear for that connector. 1. Restart the server
 
 ```bash
-        docker-compose --env-file .env.dev -f docker-compose.yaml -f docker-compose.dev.yaml down -v
-        docker-compose --env-file .env.dev -f docker-compose.yaml -f docker-compose.dev.yaml up
+VERSION=dev docker-compose down -v
+VERSION=dev docker-compose up
 ```
 
 ### Resetting the Airbyte developer environment
@@ -165,7 +117,7 @@ Sometimes you'll want to reset the data in your local environment. One common ca
 * Delete the datastore volumes in docker
 
   ```bash
-    docker-compose --env-file .env.dev -f docker-compose.yaml -f docker-compose.dev.yaml down -v
+    VERSION=dev docker-compose down -v
   ```
 
 * Remove the data on disk
@@ -179,7 +131,7 @@ Sometimes you'll want to reset the data in your local environment. One common ca
 
   ```bash
    ./gradlew build
-   docker-compose --env-file .env.dev -f docker-compose.yaml -f docker-compose.dev.yaml up -V
+   VERSION=dev docker-compose up -V
   ```
 
 ## Troubleshooting

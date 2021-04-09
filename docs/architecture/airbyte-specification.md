@@ -185,9 +185,9 @@ read(Config, AirbyteCatalog, State) -> Stream<AirbyteMessage>
 The first argument passed to the image must be the command \(e.g. `spec`, `check`, `write`\). Additional arguments can be passed after the command. Note: The system running the container will handle mounting the appropriate paths so that the config files are available to the container. This code snippet does not include that logic.
 
 ```text
-docker run --rm -i <source-image-name> spec
-docker run --rm -i <source-image-name> check --config <config-file-path>
-cat <&0 | docker run --rm -i <source-image-name> write --config <config-file-path> --catalog <catalog-file-path>
+docker run --rm -i <destination-image-name> spec
+docker run --rm -i <destination-image-name> check --config <config-file-path>
+cat <&0 | docker run --rm -i <destination-image-name> write --config <config-file-path> --catalog <catalog-file-path>
 ```
 
 The `write` command will consume `AirbyteMessage`s from stdin.

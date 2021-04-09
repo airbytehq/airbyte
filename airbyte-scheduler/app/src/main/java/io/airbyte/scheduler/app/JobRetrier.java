@@ -26,6 +26,7 @@ package io.airbyte.scheduler.app;
 
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
+import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import java.io.IOException;
 import java.time.Instant;
@@ -44,10 +45,12 @@ public class JobRetrier implements Runnable {
 
   private final JobPersistence persistence;
   private final Supplier<Instant> timeSupplier;
+  private final JobNotifier jobNotifier;
 
-  public JobRetrier(JobPersistence jobPersistence, Supplier<Instant> timeSupplier) {
+  public JobRetrier(JobPersistence jobPersistence, Supplier<Instant> timeSupplier, JobNotifier jobNotifier) {
     this.persistence = jobPersistence;
     this.timeSupplier = timeSupplier;
+    this.jobNotifier = jobNotifier;
   }
 
   @Override
@@ -103,6 +106,7 @@ public class JobRetrier implements Runnable {
 
   private void failJob(Job job) {
     try {
+      jobNotifier.failJob("max retry limit was reached", job);
       persistence.failJob(job.getId());
     } catch (IOException e) {
       throw new RuntimeException("failed to update status for job: " + job.getId(), e);

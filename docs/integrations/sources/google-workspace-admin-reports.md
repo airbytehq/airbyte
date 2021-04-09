@@ -1,4 +1,4 @@
-# Google Workspace > Admin SDK > Reports API
+# Google Workspace Admin Reports API
 
 ## Overview
 

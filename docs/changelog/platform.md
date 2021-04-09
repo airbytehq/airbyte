@@ -10,13 +10,19 @@ If you're interested in our progress on the Airbyte platform, please read below!
 
 * We now handle nested tables with the normalization steps. Check out the video below to see how it works. 
 
+## [04-07-2021 - 0.19.0](https://github.com/airbytehq/airbyte/releases/tag/v0.19.0-alpha)
+
+* New **Connections** page where you can see the list of all your connections and their statuses. 
+* New **Settings** page to update your preferences.
+* Bugfix where very large schemas caused schema discovery to fail.
+
 ## [03-29-2021 - 0.18.1](https://github.com/airbytehq/airbyte/releases/tag/v0.18.1-alpha)
 
-* Surface the health of each connection so that a user can spot any problems at a glance. 
+* Surface the **health of each connection** so that a user can spot any problems at a glance. 
 * Added support for deduplicating records in the destination using a primary key using incremental dedupe -  
 * A source’s extraction mode \(incremental, full refresh\) is now decoupled from the destination’s write mode -- so you can repeatedly append full refreshes to get repeated snapshots of data in your source.
-* New “Upgrade all” button in Admin to upgrade all your connectors at once 
-* New “Cancel job” button in Connections Status page when a sync job is running, so you can stop never-ending processes.
+* New **Upgrade all** button in Admin to upgrade all your connectors at once 
+* New **Cancel** job button in Connections Status page when a sync job is running, so you can stop never-ending processes.
 
 ## [03-22-2021 - 0.17.2](https://github.com/airbytehq/airbyte/releases/tag/v0.17.2-alpha)
 
@@ -36,7 +42,7 @@ If you're interested in our progress on the Airbyte platform, please read below!
 
 ## [03-08-2021 - 0.17](https://github.com/airbytehq/airbyte/releases/tag/v0.17.0-alpha)
 
-* Integration with Airflow is here. Thanks to @Marcos Marx, you can now run Airbyte jobs from Airflow directly. A tutorial is on the way and should be coming this week!
+* **Integration with Airflow** is here. Thanks to @Marcos Marx, you can now run Airbyte jobs from Airflow directly. A tutorial is on the way and should be coming this week!
 * Add a prefix for tables, so that tables with the same name don't clobber each other in the destination
 
 ## [03-01-2021 - 0.16](https://github.com/airbytehq/airbyte/milestone/22?closed=1)
