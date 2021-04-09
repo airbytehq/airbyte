@@ -1,0 +1,22 @@
+{
+  "documentationUrl": "https://docs.airbyte.io",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Smartsheets Source Spec",
+    "type": "object",
+    "required": ["access_token", "spreadsheet_id"],
+    "additionalProperties": false,
+    "properties": {
+      "access_token": {
+        "title": "Access token",
+        "description": "Smartsheet API access token.",
+        "type": "string"
+      },
+      "spreadsheet_id": {
+        "title": "Spreadsheet ID",
+        "description": "ID of smartsheet to access.",
+        "type": "string"
+      }
+    }
+  }
+}
