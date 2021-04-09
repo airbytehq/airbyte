@@ -35,14 +35,19 @@ import java.util.UUID;
 
 public class TemporalUtils {
 
-  private static final WorkflowServiceStubsOptions TEMPORAL_OPTIONS = WorkflowServiceStubsOptions.newBuilder()
-      // todo move to env.
-      .setTarget("airbyte-temporal:7233")
-      .build();
+  public static WorkflowServiceStubs createTemporalService(String temporalHost) {
+    final WorkflowServiceStubsOptions options = WorkflowServiceStubsOptions.newBuilder()
+        // todo move to env.
+        .setTarget(temporalHost)
+        .build();
 
-  public static final WorkflowServiceStubs TEMPORAL_SERVICE = WorkflowServiceStubs.newInstance(TEMPORAL_OPTIONS);
+    return WorkflowServiceStubs.newInstance(options);
+  }
 
-  public static final WorkflowClient TEMPORAL_CLIENT = WorkflowClient.newInstance(TEMPORAL_SERVICE);
+  public static WorkflowClient createTemporalClient(String temporalHost) {
+    final WorkflowServiceStubs temporalService = createTemporalService(temporalHost);
+    return WorkflowClient.newInstance(temporalService);
+  }
 
   public static final RetryOptions NO_RETRY = RetryOptions.newBuilder().setMaximumAttempts(1).build();
 

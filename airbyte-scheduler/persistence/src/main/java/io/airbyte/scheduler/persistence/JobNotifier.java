@@ -64,23 +64,6 @@ public class JobNotifier {
     this.configRepository = configRepository;
   }
 
-  public boolean sendTestNotifications(final StandardWorkspace workspace) {
-    boolean hasFailure = false;
-    for (Notification notification : workspace.getNotifications()) {
-      final NotificationClient notificationClient = getNotificationClient(notification);
-      try {
-        if (!notificationClient.notify(NOTIFICATION_TEST_MESSAGE)) {
-          LOGGER.warn("Failed to notify: {}", notification);
-          hasFailure = true;
-        }
-      } catch (InterruptedException | IOException e) {
-        LOGGER.error("Failed to notify: {} due to {}", notification, e);
-        hasFailure = true;
-      }
-    }
-    return !hasFailure;
-  }
-
   public void failJob(final String reason, final Job job) {
     final UUID connectionId = UUID.fromString(job.getScope());
     final UUID sourceDefinitionId = configRepository.getSourceDefinitionFromConnection(connectionId).getSourceDefinitionId();

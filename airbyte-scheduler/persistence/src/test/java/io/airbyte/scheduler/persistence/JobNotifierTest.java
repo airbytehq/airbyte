@@ -24,7 +24,6 @@
 
 package io.airbyte.scheduler.persistence;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -75,13 +74,6 @@ class JobNotifierTest {
     jobNotifier = spy(new JobNotifier(WEBAPP_URL, configRepository));
     notificationClient = mock(NotificationClient.class);
     when(jobNotifier.getNotificationClient(getSlackNotification())).thenReturn(notificationClient);
-  }
-
-  @Test
-  void testSendTestNotifications() throws IOException, InterruptedException {
-    when(notificationClient.notify(anyString())).thenReturn(true);
-    assertTrue(jobNotifier.sendTestNotifications(getWorkspace()));
-    verify(notificationClient).notify(JobNotifier.NOTIFICATION_TEST_MESSAGE);
   }
 
   @Test

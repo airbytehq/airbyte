@@ -54,6 +54,8 @@ import io.airbyte.server.errors.NotFoundExceptionMapper;
 import io.airbyte.server.errors.UncaughtExceptionMapper;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.temporal.TemporalClient;
+import io.airbyte.workers.temporal.TemporalUtils;
+import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
@@ -99,10 +101,12 @@ public class ServerApp {
 
     ConfigurationApiFactory.setSchedulerJobClient(new DefaultSchedulerJobClient(jobPersistence, new DefaultJobCreator(jobPersistence)));
     final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence);
-    final TemporalClient temporalClient = TemporalClient.production(configs.getWorkspaceRoot());
+    final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(configs.getTemporalHost());
+    final TemporalClient temporalClient = TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot());
 
     ConfigurationApiFactory
         .setSynchronousSchedulerClient(new SpecCachingSynchronousSchedulerClient(new DefaultSynchronousSchedulerClient(temporalClient, jobTracker)));
+    ConfigurationApiFactory.setTemporalService(temporalService);
     ConfigurationApiFactory.setConfigRepository(configRepository);
     ConfigurationApiFactory.setJobPersistence(jobPersistence);
     ConfigurationApiFactory.setConfigs(configs);
