@@ -48,6 +48,7 @@ public class CatalogHelpers {
   }
 
   public static AirbyteStream createAirbyteStream(String streamName, Field... fields) {
+    // Namespace is null since not all sources set it.
     return createAirbyteStream(streamName, null, Arrays.asList(fields));
   }
 
