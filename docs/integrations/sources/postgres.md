@@ -126,6 +126,7 @@ Please read the [CDC docs](../../architecture/cdc.md) for an overview of how Air
 * Using logical replication increases disk space used on the database server. The additional data is stored until it is consumed.
     * We recommend setting frequent syncs for CDC in order to ensure that this data doesn't fill up your disk space.
     * If you stop syncing a CDC-configured Postgres instance to Airbyte, you should delete the replication slot. Otherwise, it may fill up your disk space.
+* Our CDC implementation uses at least once delivery for all change records.
 
 ### Setting up CDC for Postgres
 
@@ -134,16 +135,18 @@ Follow one of these guides to enable logical replication:
 * [AWS Postgres RDS or Aurora](#setting-up-cdc-on-aws-postgres-rds-or-aurora)
 * [Azure Database for Postgres](#setting-up-cdc-on-azure-database-for-postgres)
 
-Then, the Airbyte user for your instance needs to be granted `REPLICATION` and `LOGIN` permissions. Since we are using embedded Debezium under the hood for Postgres, we recommend reading the [permissioning section of the Debezium docs](https://debezium.io/documentation/reference/connectors/postgresql.html#postgresql-permissions) for more information on what is required.
+Then, the Airbyte user for your instance needs to be granted `REPLICATION` and `LOGIN` permissions. You can create a role with `CREATE ROLE <name> REPLICATION LOGIN;` and grant that role to a user. You still need to make sure the user can connect to the database, use the schema, and to use `SELECT` on tables (the same are required for non-CDC incremental syncs and all full refreshes).
 
-Finally, you will need to create a replication slot. Here is the query used to create a replication slot called `airbyte_slot`: 
+Next, you will need to create a replication slot. Here is the query used to create a replication slot called `airbyte_slot`: 
 ```
 SELECT pg_create_logical_replication_slot('airbyte_slot', 'pgoutput');`
 ```
 
 This slot **must** use `pgoutput`.
 
-After providing the name of this slot when configuring the source, you should be ready to sync data with CDC!
+Finally, you will need to run `CREATE PUBLICATION airbyte_publication FOR ALL TABLES;`. This publication name is customizable. If you prefer, you can create a publication only for specific tables using `CREATE PUBLICATION airbyte_publication FOR TABLE <tbl1, tbl2, tbl3>`, but you won't be able to sync from other tables using CDC, even if you select them in the UI.
+
+When configuring the source, select CDC and provide the replication slot and publication you just created. You should be ready to sync data with CDC!
 
 ### Setting up CDC on Bare Metal, VMs (EC2/GCE/etc), Docker, etc.
 Some settings must be configured in the `postgresql.conf` file for your database. You can find the location of this file using `psql -U postgres -c 'SHOW config_file'` withe the correct `psql` credentials specified. Alternatively, a custom file can be specified when running postgres with the `-c` flag. For example `postgres -c config_file=/etc/postgresql/postgresql.conf` runs Postgres with the config file at `/etc/postgresql/postgresql.conf`. 
