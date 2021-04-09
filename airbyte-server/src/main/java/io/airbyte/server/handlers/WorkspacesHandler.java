@@ -42,7 +42,6 @@ import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.notification.NotificationClient;
-import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.server.converters.NotificationConverter;
 import io.airbyte.server.errors.KnownException;
 import io.airbyte.validation.json.JsonValidationException;
@@ -183,7 +182,7 @@ public class WorkspacesHandler {
 
   public NotificationRead tryNotification(Notification notification) {
     try {
-      final NotificationClient notificationClient = JobNotifier.createNotificationClient(NotificationConverter.toConfig(notification));
+      final NotificationClient notificationClient = NotificationClient.createNotificationClient(NotificationConverter.toConfig(notification));
       final String message = String.format("Hello World! This is a test from Airbyte to try %s notification settings",
           notification.getNotificationType());
       if (notificationClient.notify(message)) {

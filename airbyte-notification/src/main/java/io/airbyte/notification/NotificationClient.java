@@ -24,6 +24,8 @@
 
 package io.airbyte.notification;
 
+import io.airbyte.config.Notification;
+import io.airbyte.config.Notification.NotificationType;
 import java.io.IOException;
 
 public interface NotificationClient {
@@ -36,5 +38,13 @@ public interface NotificationClient {
       throws IOException, InterruptedException;
 
   boolean notify(String message) throws IOException, InterruptedException;
+
+  static NotificationClient createNotificationClient(final Notification notification) {
+    if (notification.getNotificationType() == NotificationType.SLACK) {
+      return new SlackNotificationClient(notification.getSlackConfiguration());
+    } else {
+      throw new IllegalArgumentException("Unknown notification type:" + notification.getNotificationType());
+    }
+  }
 
 }
