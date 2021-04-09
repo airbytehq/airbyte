@@ -45,6 +45,7 @@ import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
+import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -81,9 +82,9 @@ import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
-class PostgresSourceCdcTest {
+class CdcPostgresSourceTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSourceCdcTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(CdcPostgresSourceTest.class);
 
   private static final String SLOT_NAME_BASE = "debezium_slot";
   private static final String MAKES_STREAM_NAME = "public.makes";
@@ -162,8 +163,8 @@ class PostgresSourceCdcTest {
     database.query(ctx -> {
       ctx.execute("SELECT pg_create_logical_replication_slot('" + fullReplicationSlot + "', 'pgoutput');");
       ctx.execute("CREATE PUBLICATION airbyte_publication FOR ALL TABLES;");
-      ctx.fetch(String.format("CREATE TABLE %s(%s INTEGER, %s VARCHAR(200), PRIMARY KEY (%s));", MAKES_STREAM_NAME, COL_ID, COL_MAKE, COL_ID));
-      ctx.fetch(String.format("CREATE TABLE %s(%s INTEGER, %s INTEGER, %s VARCHAR(200), PRIMARY KEY (%s));",
+      ctx.execute(String.format("CREATE TABLE %s(%s INTEGER, %s VARCHAR(200), PRIMARY KEY (%s));", MAKES_STREAM_NAME, COL_ID, COL_MAKE, COL_ID));
+      ctx.execute(String.format("CREATE TABLE %s(%s INTEGER, %s INTEGER, %s VARCHAR(200), PRIMARY KEY (%s));",
           MODELS_STREAM_NAME, COL_ID, COL_MAKE_ID, COL_MODEL, COL_ID));
 
       for (JsonNode recordJson : MAKE_RECORDS) {
@@ -237,9 +238,9 @@ class PostgresSourceCdcTest {
     assertExpectedStateMessages(stateMessages2);
     assertEquals(1, recordMessages2.size());
     assertEquals(11, recordMessages2.get(0).getData().get(COL_ID).asInt());
-    assertNotNull(recordMessages2.get(0).getData().get(PostgresSource.CDC_LSN));
-    assertNotNull(recordMessages2.get(0).getData().get(PostgresSource.CDC_UPDATED_AT));
-    assertNotNull(recordMessages2.get(0).getData().get(PostgresSource.CDC_DELETED_AT));
+    assertNotNull(recordMessages2.get(0).getData().get(AbstractJdbcSource.CDC_LSN));
+    assertNotNull(recordMessages2.get(0).getData().get(AbstractJdbcSource.CDC_UPDATED_AT));
+    assertNotNull(recordMessages2.get(0).getData().get(AbstractJdbcSource.CDC_DELETED_AT));
   }
 
   @Test
@@ -267,9 +268,9 @@ class PostgresSourceCdcTest {
     assertEquals(1, recordMessages2.size());
     assertEquals(11, recordMessages2.get(0).getData().get(COL_ID).asInt());
     assertEquals(updatedModel, recordMessages2.get(0).getData().get(COL_MODEL).asText());
-    assertNotNull(recordMessages2.get(0).getData().get(PostgresSource.CDC_LSN));
-    assertNotNull(recordMessages2.get(0).getData().get(PostgresSource.CDC_UPDATED_AT));
-    assertTrue(recordMessages2.get(0).getData().get(PostgresSource.CDC_DELETED_AT).isNull());
+    assertNotNull(recordMessages2.get(0).getData().get(AbstractJdbcSource.CDC_LSN));
+    assertNotNull(recordMessages2.get(0).getData().get(AbstractJdbcSource.CDC_UPDATED_AT));
+    assertTrue(recordMessages2.get(0).getData().get(AbstractJdbcSource.CDC_DELETED_AT).isNull());
   }
 
   @SuppressWarnings({"BusyWait", "CodeBlock2Expr"})
@@ -483,17 +484,17 @@ class PostgresSourceCdcTest {
           final JsonNode data = recordMessage.getData();
 
           if (cdcStreams.contains(recordMessage.getStream())) {
-            assertNotNull(data.get(PostgresSource.CDC_LSN));
-            assertNotNull(data.get(PostgresSource.CDC_UPDATED_AT));
+            assertNotNull(data.get(AbstractJdbcSource.CDC_LSN));
+            assertNotNull(data.get(AbstractJdbcSource.CDC_UPDATED_AT));
           } else {
-            assertNull(data.get(PostgresSource.CDC_LSN));
-            assertNull(data.get(PostgresSource.CDC_UPDATED_AT));
-            assertNull(data.get(PostgresSource.CDC_DELETED_AT));
+            assertNull(data.get(AbstractJdbcSource.CDC_LSN));
+            assertNull(data.get(AbstractJdbcSource.CDC_UPDATED_AT));
+            assertNull(data.get(AbstractJdbcSource.CDC_DELETED_AT));
           }
 
-          ((ObjectNode) data).remove(PostgresSource.CDC_LSN);
-          ((ObjectNode) data).remove(PostgresSource.CDC_UPDATED_AT);
-          ((ObjectNode) data).remove(PostgresSource.CDC_DELETED_AT);
+          ((ObjectNode) data).remove(AbstractJdbcSource.CDC_LSN);
+          ((ObjectNode) data).remove(AbstractJdbcSource.CDC_UPDATED_AT);
+          ((ObjectNode) data).remove(AbstractJdbcSource.CDC_DELETED_AT);
 
           return data;
         })

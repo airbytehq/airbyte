@@ -43,7 +43,6 @@ import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.jdbc.models.CdcState;
 import io.airbyte.integrations.source.jdbc.models.JdbcState;
 import io.airbyte.integrations.source.jdbc.models.JdbcStreamState;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -548,23 +547,24 @@ public abstract class JdbcSourceStandardTest {
     expectedMessages.add(new AirbyteMessage().withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage().withStream(streamName)
             .withData(Jsons.jsonNode(ImmutableMap
-                .of(COL_ID, ID_VALUE_4, COL_NAME, "riker", COL_UPDATED_AT,
-                    "2006-10-19T00:00:00Z")))));
+                .of(COL_ID, ID_VALUE_4,
+                    COL_NAME, "riker",
+                    COL_UPDATED_AT, "2006-10-19T00:00:00Z")))));
     expectedMessages.add(new AirbyteMessage().withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage().withStream(streamName)
             .withData(Jsons.jsonNode(ImmutableMap
-                .of(COL_ID, ID_VALUE_5, COL_NAME, "data", COL_UPDATED_AT,
-                    "2006-10-19T00:00:00Z")))));
+                .of(COL_ID, ID_VALUE_5,
+                    COL_NAME, "data",
+                    COL_UPDATED_AT, "2006-10-19T00:00:00Z")))));
     expectedMessages.add(new AirbyteMessage()
         .withType(Type.STATE)
         .withState(new AirbyteStateMessage()
             .withData(Jsons.jsonNode(new JdbcState()
+                .withCdc(false)
                 .withStreams(Lists.newArrayList(new JdbcStreamState()
                     .withStreamName(streamName)
                     .withCursorField(ImmutableList.of(COL_ID))
-                    .withCursor("5")))
-                .withCdc(false)
-                .withCdcState(new CdcState())))));
+                    .withCursor("5")))))));
 
     setEmittedAtToNull(actualMessagesSecondSync);
 
@@ -629,6 +629,7 @@ public abstract class JdbcSourceStandardTest {
         .withType(Type.STATE)
         .withState(new AirbyteStateMessage()
             .withData(Jsons.jsonNode(new JdbcState()
+                .withCdc(false)
                 .withStreams(Lists.newArrayList(
                     new JdbcStreamState()
                         .withStreamName(streamName)
@@ -636,15 +637,14 @@ public abstract class JdbcSourceStandardTest {
                         .withCursor("3"),
                     new JdbcStreamState()
                         .withStreamName(streamName2)
-                        .withCursorField(ImmutableList.of(COL_ID))))
-                .withCdc(false)
-                .withCdcState(new CdcState())))));
+                        .withCursorField(ImmutableList.of(COL_ID))))))));
 
     expectedMessagesFirstSync.addAll(secondStreamExpectedMessages);
     expectedMessagesFirstSync.add(new AirbyteMessage()
         .withType(Type.STATE)
         .withState(new AirbyteStateMessage()
             .withData(Jsons.jsonNode(new JdbcState()
+                .withCdc(false)
                 .withStreams(Lists.newArrayList(
                     new JdbcStreamState()
                         .withStreamName(streamName)
@@ -653,9 +653,7 @@ public abstract class JdbcSourceStandardTest {
                     new JdbcStreamState()
                         .withStreamName(streamName2)
                         .withCursorField(ImmutableList.of(COL_ID))
-                        .withCursor("3")))
-                .withCdc(false)
-                .withCdcState(new CdcState())))));
+                        .withCursor("3")))))));
 
     setEmittedAtToNull(actualMessagesFirstSync);
 
@@ -716,12 +714,11 @@ public abstract class JdbcSourceStandardTest {
         .withType(Type.STATE)
         .withState(new AirbyteStateMessage()
             .withData(Jsons.jsonNode(new JdbcState()
+                .withCdc(false)
                 .withStreams(Lists.newArrayList(new JdbcStreamState()
                     .withStreamName(airbyteStream.getStream().getName())
                     .withCursorField(ImmutableList.of(cursorField))
-                    .withCursor(endCursorValue)))
-                .withCdc(false)
-                .withCdcState(new CdcState())))));
+                    .withCursor(endCursorValue)))))));
 
     assertEquals(expectedMessages, actualMessages);
   }
@@ -772,18 +769,22 @@ public abstract class JdbcSourceStandardTest {
         new AirbyteMessage().withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName)
                 .withData(Jsons.jsonNode(ImmutableMap
-                    .of(COL_ID, ID_VALUE_1, COL_NAME, "picard", COL_UPDATED_AT,
-                        "2004-10-19T00:00:00Z")))),
+                    .of(COL_ID, ID_VALUE_1,
+                        COL_NAME, "picard",
+                        COL_UPDATED_AT, "2004-10-19T00:00:00Z")))),
         new AirbyteMessage().withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName)
                 .withData(Jsons.jsonNode(ImmutableMap
-                    .of(COL_ID, ID_VALUE_2, COL_NAME, "crusher", COL_UPDATED_AT,
+                    .of(COL_ID, ID_VALUE_2,
+                        COL_NAME, "crusher",
+                        COL_UPDATED_AT,
                         "2005-10-19T00:00:00Z")))),
         new AirbyteMessage().withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName)
                 .withData(Jsons.jsonNode(ImmutableMap
-                    .of(COL_ID, ID_VALUE_3, COL_NAME, "vash", COL_UPDATED_AT,
-                        "2006-10-19T00:00:00Z")))));
+                    .of(COL_ID, ID_VALUE_3,
+                        COL_NAME, "vash",
+                        COL_UPDATED_AT, "2006-10-19T00:00:00Z")))));
   }
 
   private ConfiguredAirbyteStream createTableWithSpaces() throws SQLException {
