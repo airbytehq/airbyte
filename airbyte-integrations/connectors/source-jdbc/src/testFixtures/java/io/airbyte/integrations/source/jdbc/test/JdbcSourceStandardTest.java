@@ -324,11 +324,8 @@ public abstract class JdbcSourceStandardTest {
 
   @Test
   void testReadOneColumn() throws Exception {
-    System.out.println(streamName);
-    System.out.println(SCHEMA_NAME);
     final ConfiguredAirbyteCatalog catalog = CatalogHelpers
         .createConfiguredAirbyteCatalog(streamName, getDefaultNamespace(), Field.of(COL_ID, JsonSchemaPrimitive.NUMBER));
-    System.out.println(catalog);
     final List<AirbyteMessage> actualMessages = MoreIterators
         .toList(source.read(config, catalog, null));
 

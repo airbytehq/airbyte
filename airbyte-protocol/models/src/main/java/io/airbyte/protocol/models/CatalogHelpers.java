@@ -52,25 +52,25 @@ public class CatalogHelpers {
     return createAirbyteStream(streamName, null, Arrays.asList(fields));
   }
 
-  public static AirbyteStream createAirbyteStream(String streamName, String schemaName, Field... fields) {
-    return createAirbyteStream(streamName, schemaName, Arrays.asList(fields));
+  public static AirbyteStream createAirbyteStream(String streamName, String namespace, Field... fields) {
+    return createAirbyteStream(streamName, namespace, Arrays.asList(fields));
   }
 
-  public static AirbyteStream createAirbyteStream(String streamName, String schemaName, List<Field> fields) {
-    return new AirbyteStream().withName(streamName).withNamespace(schemaName).withJsonSchema(fieldsToJsonSchema(fields));
+  public static AirbyteStream createAirbyteStream(String streamName, String namespace, List<Field> fields) {
+    return new AirbyteStream().withName(streamName).withNamespace(namespace).withJsonSchema(fieldsToJsonSchema(fields));
   }
 
-  public static ConfiguredAirbyteCatalog createConfiguredAirbyteCatalog(String streamName, String schemaName, Field... fields) {
-    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(createConfiguredAirbyteStream(streamName, schemaName, fields)));
+  public static ConfiguredAirbyteCatalog createConfiguredAirbyteCatalog(String streamName, String namespace, Field... fields) {
+    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(createConfiguredAirbyteStream(streamName, namespace, fields)));
   }
 
-  public static ConfiguredAirbyteStream createConfiguredAirbyteStream(String streamName, String schemaName, Field... fields) {
-    return createConfiguredAirbyteStream(streamName, schemaName, Arrays.asList(fields));
+  public static ConfiguredAirbyteStream createConfiguredAirbyteStream(String streamName, String namespace, Field... fields) {
+    return createConfiguredAirbyteStream(streamName, namespace, Arrays.asList(fields));
   }
 
-  public static ConfiguredAirbyteStream createConfiguredAirbyteStream(String streamName, String schemaName, List<Field> fields) {
+  public static ConfiguredAirbyteStream createConfiguredAirbyteStream(String streamName, String namespace, List<Field> fields) {
     return new ConfiguredAirbyteStream()
-        .withStream(new AirbyteStream().withName(streamName).withNamespace(schemaName).withJsonSchema(fieldsToJsonSchema(fields)))
+        .withStream(new AirbyteStream().withName(streamName).withNamespace(namespace).withJsonSchema(fieldsToJsonSchema(fields)))
         .withSyncMode(SyncMode.FULL_REFRESH).withDestinationSyncMode(DestinationSyncMode.OVERWRITE);
   }
 

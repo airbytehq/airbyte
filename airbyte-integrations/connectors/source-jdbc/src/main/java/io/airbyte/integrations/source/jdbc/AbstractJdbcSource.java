@@ -202,7 +202,7 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
   }
 
   // TODO(dchia): Refactor the following functions and objects so they better operate around a Table
-  // abstraction. Currently have indexes and strings hardcoded all around making code brittle.
+  // abstraction. Indexes and strings are currently hardcoded all around making code brittle.
   private List<AutoCloseableIterator<AirbyteMessage>> getSelectedIterators(JdbcDatabase database,
                                                                            ConfiguredAirbyteCatalog catalog,
                                                                            Map<String, TableInfoInternal> tableNameToTable,
@@ -344,7 +344,7 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
           final String fullyQualifiedTableName = JdbcUtils.getFullyQualifiedTableName(t.getSchemaName(), t.getName());
           final List<String> primaryKeys = fullyQualifiedTableNameToPrimaryKeys.getOrDefault(fullyQualifiedTableName, Collections.emptyList());
 
-          return new TableInfo(t.getName(), t.getSchemaName(), fields, primaryKeys);
+          return new TableInfo(t.getSchemaName(), t.getName(), fields, primaryKeys);
         })
         .collect(Collectors.toList());
   }
@@ -556,24 +556,24 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
    */
   protected static class TableInfo {
 
-    private final String name;
     private final String schemaName;
+    private final String name;
     private final List<Field> fields;
     private final List<String> primaryKeys;
 
-    public TableInfo(String name, String schemaName, List<Field> fields, List<String> primaryKeys) {
-      this.name = name;
+    public TableInfo(String schemaName, String name, List<Field> fields, List<String> primaryKeys) {
       this.schemaName = schemaName;
+      this.name = name;
       this.fields = fields;
       this.primaryKeys = primaryKeys;
     }
 
-    public String getName() {
-      return name;
-    }
-
     public String getSchemaName() {
       return schemaName;
+    }
+
+    public String getName() {
+      return name;
     }
 
     public List<Field> getFields() {
