@@ -72,7 +72,7 @@ public class CdcPostgresSourceStandardTest extends StandardSourceTest {
         .put("database", container.getDatabaseName())
         .put("username", container.getUsername())
         .put("password", container.getPassword())
-        .put("replication_slot", SLOT_NAME_BASE)
+        .put("replication_method", ImmutableMap.of("replication_slot", SLOT_NAME_BASE))
         .build());
 
     final Database database = Databases.createDatabase(

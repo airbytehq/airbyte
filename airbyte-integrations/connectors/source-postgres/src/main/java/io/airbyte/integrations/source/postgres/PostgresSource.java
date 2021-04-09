@@ -28,6 +28,7 @@ import static java.util.stream.Collectors.toList;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
@@ -206,8 +207,6 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
                                                                              JdbcStateManager stateManager,
                                                                              Instant emittedAt) {
     if (isCdc(config)) {
-      LOGGER.info("Using CDC");
-
       // State works differently in CDC than it does in convention incremental. The state is written to an
       // offset file that debezium reads from. Then once all records are replicated, we read back that
       // offset file (which will have been updated by debezium) and set it in the state. There is no
@@ -257,9 +256,14 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
     }
   }
 
-  private static boolean isCdc(JsonNode config) {
-    return config.hasNonNull("replication_method") && config.get("replication_method").hasNonNull("replication_slot")
-        && config.get("replication_method").hasNonNull("publication");
+  @VisibleForTesting
+  static boolean isCdc(JsonNode config) {
+    LOGGER.info("isCdc config: " + config);
+    final boolean isCdc = config.hasNonNull("replication_method") 
+      && config.get("replication_method").hasNonNull("replication_slot")
+      && config.get("replication_method").hasNonNull("publication");
+    LOGGER.info("using CDC: {}", isCdc);
+    return isCdc;
   }
 
   /*
