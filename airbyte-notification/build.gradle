@@ -1,0 +1,8 @@
+plugins {
+    id "java-library"
+}
+
+dependencies {
+    implementation project(':airbyte-config:models')
+    implementation project(':airbyte-json-validation')
+}

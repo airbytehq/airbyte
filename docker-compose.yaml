@@ -32,6 +32,7 @@ services:
     image: airbyte/scheduler:${VERSION}
     container_name: airbyte-scheduler
     environment:
+      - WEBAPP_URL=${WEBAPP_URL}
       - WAIT_BEFORE_HOSTS=5
       - WAIT_HOSTS_TIMEOUT=45
       - WAIT_HOSTS=db:5432
@@ -55,6 +56,7 @@ services:
     image: airbyte/server:${VERSION}
     container_name: airbyte-server
     environment:
+      - WEBAPP_URL=${WEBAPP_URL}
       - WAIT_BEFORE_HOSTS=5
       - WAIT_HOSTS_TIMEOUT=45
       - WAIT_HOSTS=db:5432
