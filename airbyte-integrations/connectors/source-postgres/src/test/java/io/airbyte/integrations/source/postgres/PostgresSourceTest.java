@@ -228,7 +228,9 @@ class PostgresSourceTest {
 
     assertFalse(PostgresSource.isCdc(config));
 
-    ((ObjectNode) config).set("replication_method", Jsons.jsonNode(ImmutableMap.of("replication_slot", "slot")));
+    ((ObjectNode) config).set("replication_method", Jsons.jsonNode(ImmutableMap.of(
+        "replication_slot", "slot",
+        "publication", "ab_pub")));
     assertTrue(PostgresSource.isCdc(config));
   }
 
