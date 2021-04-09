@@ -76,10 +76,6 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
 
   static final String DRIVER_CLASS = "org.postgresql.Driver";
 
-  public static final String CDC_LSN = "_ab_cdc_lsn";
-  public static final String CDC_UPDATED_AT = "_ab_cdc_updated_at";
-  public static final String CDC_DELETED_AT = "_ab_cdc_deleted_at";
-
   public PostgresSource() {
     super(DRIVER_CLASS, new PostgresJdbcStreamingQueryConfiguration());
   }
@@ -193,6 +189,8 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
                                                                              JdbcStateManager stateManager,
                                                                              Instant emittedAt) {
     if (isCdc(config)) {
+      LOGGER.info("Using CDC");
+
       // State works differently in CDC than it does in convention incremental. The state is written to an
       // offset file that debezium reads from. Then once all records are replicated, we read back that
       // offset file (which will have been updated by debezium) and set it in the state. There is no
