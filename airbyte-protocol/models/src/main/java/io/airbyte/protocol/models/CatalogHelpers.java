@@ -38,6 +38,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Helper class for Catalog and Stream related operations. Generally only used in tests.
+ */
 public class CatalogHelpers {
 
   public static AirbyteCatalog createAirbyteCatalog(String streamName, Field... fields) {
@@ -45,7 +48,7 @@ public class CatalogHelpers {
   }
 
   public static AirbyteStream createAirbyteStream(String streamName, Field... fields) {
-    return createAirbyteStream(streamName, null, Arrays.asList(fields));
+    return createAirbyteStream(streamName, "unused-namespace", Arrays.asList(fields));
   }
 
   public static AirbyteStream createAirbyteStream(String streamName, String schemaName, Field... fields) {
