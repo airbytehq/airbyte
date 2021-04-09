@@ -162,6 +162,7 @@ class CdcPostgresSourceTest {
     database = getDatabaseFromConfig(config);
     database.query(ctx -> {
       ctx.execute("SELECT pg_create_logical_replication_slot('" + fullReplicationSlot + "', 'pgoutput');");
+      ctx.execute("CREATE PUBLICATION airbyte_publication FOR ALL TABLES;");
       ctx.execute(String.format("CREATE TABLE %s(%s INTEGER, %s VARCHAR(200), PRIMARY KEY (%s));", MAKES_STREAM_NAME, COL_ID, COL_MAKE, COL_ID));
       ctx.execute(String.format("CREATE TABLE %s(%s INTEGER, %s INTEGER, %s VARCHAR(200), PRIMARY KEY (%s));",
           MODELS_STREAM_NAME, COL_ID, COL_MAKE_ID, COL_MODEL, COL_ID));
@@ -308,13 +309,38 @@ class CdcPostgresSourceTest {
 
     assertExpectedStateMessages(extractStateMessages(actualRecords2));
 
-    final Set<AirbyteRecordMessage> recordMessages1 = extractRecordMessages(actualRecords1);
-    final Set<AirbyteRecordMessage> recordMessages2 = extractRecordMessages(actualRecords2);
+    // sometimes there can be more than one of these at the end of the snapshot and just before the
+    // first incremental.
+    final Set<AirbyteRecordMessage> recordMessages1 = removeDuplicates(extractRecordMessages(actualRecords1));
+    final Set<AirbyteRecordMessage> recordMessages2 = removeDuplicates(extractRecordMessages(actualRecords2));
 
     final int recordsCreatedBeforeTestCount = MAKE_RECORDS.size() + MODEL_RECORDS.size();
     assertTrue(recordsCreatedBeforeTestCount < recordMessages1.size(), "Expected first sync to include records created while the test was running.");
     assertTrue(0 < recordMessages2.size(), "Expected records to be replicated in the second sync.");
+    LOGGER.info("recordsToCreate = " + recordsToCreate);
+    LOGGER.info("recordsCreatedBeforeTestCount = " + recordsCreatedBeforeTestCount);
+    LOGGER.info("recordMessages1.size() = " + recordMessages1.size());
+    LOGGER.info("recordMessages2.size() = " + recordMessages2.size());
     assertEquals(recordsToCreate + recordsCreatedBeforeTestCount, recordMessages1.size() + recordMessages2.size());
+  }
+
+  private static Set<AirbyteRecordMessage> removeDuplicates(Set<AirbyteRecordMessage> messages) {
+    final Set<JsonNode> existingDataRecordsWithoutUpdated = new HashSet<>();
+    final Set<AirbyteRecordMessage> output = new HashSet<>();
+
+    for (AirbyteRecordMessage message : messages) {
+      ObjectNode node = message.getData().deepCopy();
+      node.remove("_ab_cdc_updated_at");
+
+      if (existingDataRecordsWithoutUpdated.contains(node)) {
+        LOGGER.info("Removing duplicate node: " + node);
+      } else {
+        output.add(message);
+        existingDataRecordsWithoutUpdated.add(node);
+      }
+    }
+
+    return output;
   }
 
   @Test
