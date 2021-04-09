@@ -50,16 +50,14 @@ public class JobNotifier {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JobNotifier.class);
 
-  public static final String NOTIFICATION_TEST_MESSAGE = "Hello World! This is a test trying to send a message from Airbyte...";
-
   private final String connectionPageUrl;
   private final ConfigRepository configRepository;
 
   public JobNotifier(String webappUrl, ConfigRepository configRepository) {
     if (webappUrl.endsWith("/")) {
-      this.connectionPageUrl = String.format("%ssource/connection/", webappUrl);
+      this.connectionPageUrl = String.format("%sconnections/", webappUrl);
     } else {
-      this.connectionPageUrl = String.format("%s/source/connection/", webappUrl);
+      this.connectionPageUrl = String.format("%s/connections/", webappUrl);
     }
     this.configRepository = configRepository;
   }
