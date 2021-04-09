@@ -28,7 +28,6 @@ import com.google.common.base.Preconditions;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.function.Function;
-import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -118,13 +117,7 @@ public class EnvConfigs implements Configs {
 
   @Override
   public String getWebappUrl() {
-    final String webappUrl = getEnv.apply(WEBAPP_URL);
-    if (!Strings.isEmpty(webappUrl)) {
-      return webappUrl;
-    }
-
-    LOGGER.info(WEBAPP_URL + " not found, defaulting to: http://localhost:8000/");
-    return "http://localhost:8000/";
+    return getEnsureEnv(WEBAPP_URL);
   }
 
   @Override
