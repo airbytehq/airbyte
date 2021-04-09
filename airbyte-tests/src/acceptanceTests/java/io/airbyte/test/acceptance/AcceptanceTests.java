@@ -118,7 +118,7 @@ public class AcceptanceTests {
 
   private static final String OUTPUT_NAMESPACE = "output_";
   private static final String TABLE_NAME = "id_and_name";
-  private static final String STREAM_NAME = "public." + TABLE_NAME;
+  private static final String STREAM_NAME = TABLE_NAME;
   private static final String COLUMN_ID = "id";
   private static final String COLUMN_NAME = "name";
   private static final String COLUMN_NAME_DATA = "_airbyte_data";
