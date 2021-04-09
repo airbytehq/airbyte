@@ -130,13 +130,18 @@ Please read the [CDC docs](../../architecture/cdc.md) for an overview of how Air
 
 ### Setting up CDC for Postgres
 
+#### Enable logical replication
+
 Follow one of these guides to enable logical replication:
 * [Bare Metal, VMs (EC2/GCE/etc), Docker, etc.](#setting-up-cdc-on-bare-metal-vms-ec2gceetc-docker-etc)
 * [AWS Postgres RDS or Aurora](#setting-up-cdc-on-aws-postgres-rds-or-aurora)
 * [Azure Database for Postgres](#setting-up-cdc-on-azure-database-for-postgres)
 
-Then, the Airbyte user for your instance needs to be granted `REPLICATION` and `LOGIN` permissions. You can create a role with `CREATE ROLE <name> REPLICATION LOGIN;` and grant that role to a user. You still need to make sure the user can connect to the database, use the schema, and to use `SELECT` on tables (the same are required for non-CDC incremental syncs and all full refreshes).
+#### Add user-level permissions 
 
+We recommend using a user specifically for Airbyte's replication so you can minimize access. This Airbyte user for your instance needs to be granted `REPLICATION` and `LOGIN` permissions. You can create a role with `CREATE ROLE <name> REPLICATION LOGIN;` and grant that role to the user. You still need to make sure the user can connect to the database, use the schema, and to use `SELECT` on tables (the same are required for non-CDC incremental syncs and all full refreshes).
+
+#### Create replication slot
 Next, you will need to create a replication slot. Here is the query used to create a replication slot called `airbyte_slot`: 
 ```
 SELECT pg_create_logical_replication_slot('airbyte_slot', 'pgoutput');`
@@ -144,8 +149,13 @@ SELECT pg_create_logical_replication_slot('airbyte_slot', 'pgoutput');`
 
 This slot **must** use `pgoutput`.
 
-Finally, you will need to run `CREATE PUBLICATION airbyte_publication FOR ALL TABLES;`. This publication name is customizable. If you prefer, you can create a publication only for specific tables using `CREATE PUBLICATION airbyte_publication FOR TABLE <tbl1, tbl2, tbl3>`, but you won't be able to sync from other tables using CDC, even if you select them in the UI.
+#### Create publications and replication identities for tables
 
+For each table you want to replicate with CDC, you will need to run `CREATE PUBLICATION airbyte_publication FOR TABLES <tbl1, tbl2, tbl3>;`. This publication name is customizable. For each of these tables, you will need to run `ALTER TABLE tbl1 REPLICA IDENTITY DEFAULT;`. There are some limitations on running other `ALTER` commands between the creation of a publication for a table and adding the replica identity, so we recommending running the `CREATE PUBLICATION` and adding all relevant `REPLICATION IDENTITY` alterations soon after. Please refer to the [Postgres docs](https://www.postgresql.org/docs/10/sql-alterpublication.html) if you need to add or remove tables from your publication in the future.
+
+The UI currently allows selecting any tables for CDC. If a table is selected that is not part of the publication, it will not replicate even though it is selected. If a table is part of the publication but does not have a replication identity, that replication identity will be created automatically on the first run if the Airbyte user has the necessary permissions.
+
+#### Start syncing
 When configuring the source, select CDC and provide the replication slot and publication you just created. You should be ready to sync data with CDC!
 
 ### Setting up CDC on Bare Metal, VMs (EC2/GCE/etc), Docker, etc.
