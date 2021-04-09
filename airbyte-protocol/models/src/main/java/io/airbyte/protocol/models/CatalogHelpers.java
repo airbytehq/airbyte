@@ -31,7 +31,6 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -46,15 +45,11 @@ public class CatalogHelpers {
   }
 
   public static AirbyteStream createAirbyteStream(String streamName, Field... fields) {
-    return createAirbyteStream(streamName, Arrays.asList(fields));
+    return createAirbyteStream(streamName, null, Arrays.asList(fields));
   }
 
   public static AirbyteStream createAirbyteStream(String streamName, String schemaName, Field... fields) {
     return createAirbyteStream(streamName, schemaName, Arrays.asList(fields));
-  }
-
-  public static AirbyteStream createAirbyteStream(String streamName, List<Field> fields) {
-    return new AirbyteStream().withName(streamName).withJsonSchema(fieldsToJsonSchema(fields));
   }
 
   public static AirbyteStream createAirbyteStream(String streamName, String schemaName, List<Field> fields) {
@@ -73,24 +68,6 @@ public class CatalogHelpers {
     return new ConfiguredAirbyteStream()
         .withStream(new AirbyteStream().withName(streamName).withNamespace(schemaName).withJsonSchema(fieldsToJsonSchema(fields)))
         .withSyncMode(SyncMode.FULL_REFRESH).withDestinationSyncMode(DestinationSyncMode.OVERWRITE);
-  }
-
-  public static ConfiguredAirbyteStream createIncrementalConfiguredAirbyteStream(
-                                                                                 String streamName,
-                                                                                 SyncMode syncMode,
-                                                                                 DestinationSyncMode destinationSyncMode,
-                                                                                 String cursorFieldName,
-                                                                                 List<String> primaryKeys,
-                                                                                 List<Field> fields) {
-    return new ConfiguredAirbyteStream()
-        .withStream(new AirbyteStream()
-            .withName(streamName)
-            .withSupportedSyncModes(Collections.singletonList(syncMode))
-            .withJsonSchema(fieldsToJsonSchema(fields)))
-        .withSyncMode(syncMode)
-        .withCursorField(Collections.singletonList(cursorFieldName))
-        .withDestinationSyncMode(destinationSyncMode)
-        .withPrimaryKey(primaryKeys.stream().map(Collections::singletonList).collect(Collectors.toList()));
   }
 
   /**
