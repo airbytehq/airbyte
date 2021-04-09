@@ -30,6 +30,8 @@ import io.airbyte.workers.process.ProcessBuilderFactory;
 import io.temporal.api.namespace.v1.NamespaceInfo;
 import io.temporal.api.workflowservice.v1.DescribeNamespaceResponse;
 import io.temporal.api.workflowservice.v1.ListNamespacesRequest;
+import io.temporal.client.WorkflowClient;
+import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.worker.Worker;
 import io.temporal.worker.WorkerFactory;
 import java.nio.file.Path;
@@ -41,10 +43,12 @@ public class TemporalPool implements Runnable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TemporalPool.class);
 
+  private final WorkflowServiceStubs temporalService;
   private final Path workspaceRoot;
   private final ProcessBuilderFactory pbf;
 
-  public TemporalPool(Path workspaceRoot, ProcessBuilderFactory pbf) {
+  public TemporalPool(WorkflowServiceStubs temporalService, Path workspaceRoot, ProcessBuilderFactory pbf) {
+    this.temporalService = temporalService;
     this.workspaceRoot = workspaceRoot;
     this.pbf = pbf;
   }
@@ -53,7 +57,7 @@ public class TemporalPool implements Runnable {
   public void run() {
     waitForTemporalServerAndLog();
 
-    final WorkerFactory factory = WorkerFactory.newInstance(TemporalUtils.TEMPORAL_CLIENT);
+    final WorkerFactory factory = WorkerFactory.newInstance(WorkflowClient.newInstance(temporalService));
 
     final Worker specWorker = factory.newWorker(TemporalJobType.GET_SPEC.name());
     specWorker.registerWorkflowImplementationTypes(SpecWorkflow.WorkflowImpl.class);
@@ -74,10 +78,10 @@ public class TemporalPool implements Runnable {
     factory.start();
   }
 
-  private static void waitForTemporalServerAndLog() {
+  private void waitForTemporalServerAndLog() {
     LOGGER.info("Waiting for temporal server...");
 
-    while (!getNamespaces().contains("default")) {
+    while (!getNamespaces(temporalService).contains("default")) {
       LOGGER.warn("Waiting for default namespace to be initialized in temporal...");
       wait(2);
     }
@@ -96,8 +100,8 @@ public class TemporalPool implements Runnable {
     }
   }
 
-  private static Set<String> getNamespaces() {
-    return TemporalUtils.TEMPORAL_SERVICE.blockingStub()
+  private static Set<String> getNamespaces(WorkflowServiceStubs temporalService) {
+    return temporalService.blockingStub()
         .listNamespaces(ListNamespacesRequest.newBuilder().build())
         .getNamespacesList()
         .stream()
