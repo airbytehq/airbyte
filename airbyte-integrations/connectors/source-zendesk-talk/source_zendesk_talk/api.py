@@ -47,7 +47,7 @@ def retry_pattern(backoff_type, **wait_gen_kwargs):
 
     return backoff.on_exception(
         backoff_type,
-        ZendeskRateLimited,
+        (ZendeskRateLimited, ZendeskTimeout),
         jitter=None,
         on_backoff=sleep_on_ratelimit,
         on_giveup=log_giveup,
