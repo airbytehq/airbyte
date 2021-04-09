@@ -217,7 +217,7 @@ class WorkspacesHandlerTest {
         .news(workspace.getNews())
         .anonymousDataCollection(workspace.getAnonymousDataCollection())
         .securityUpdates(workspace.getSecurityUpdates())
-        .notifications(NotificationConverter.toApi(workspace.getNotifications()));
+        .notifications(NotificationConverter.toApiList(workspace.getNotifications()));
 
     assertEquals(workspaceRead, workspacesHandler.getWorkspaceBySlug(slugRequestBody));
   }
