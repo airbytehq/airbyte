@@ -135,22 +135,22 @@ class BigQueryDestinationTest {
         .build()
         .getService();
 
-    String datesetId = "airbyte_tests_" + RandomStringUtils.randomAlphanumeric(8);
+    final String datasetId = "airbyte_tests_" + RandomStringUtils.randomAlphanumeric(8);
 
     catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-        CatalogHelpers.createConfiguredAirbyteStream(USERS_STREAM_NAME, datesetId,
+        CatalogHelpers.createConfiguredAirbyteStream(USERS_STREAM_NAME, datasetId,
             io.airbyte.protocol.models.Field.of("name", JsonSchemaPrimitive.STRING),
             io.airbyte.protocol.models.Field
                 .of("id", JsonSchemaPrimitive.STRING)),
-        CatalogHelpers.createConfiguredAirbyteStream(TASKS_STREAM_NAME, datesetId, Field.of("goal", JsonSchemaPrimitive.STRING))));
+        CatalogHelpers.createConfiguredAirbyteStream(TASKS_STREAM_NAME, datasetId, Field.of("goal", JsonSchemaPrimitive.STRING))));
 
-    final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datesetId).build();
+    final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).build();
     dataset = bigquery.create(datasetInfo);
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(BigQueryDestination.CONFIG_PROJECT_ID, projectId)
         .put(BigQueryDestination.CONFIG_CREDS, credentialsJsonString)
-        .put(BigQueryDestination.CONFIG_DATASET_ID, datesetId)
+        .put(BigQueryDestination.CONFIG_DATASET_ID, datasetId)
         .build());
 
     tornDown = false;
