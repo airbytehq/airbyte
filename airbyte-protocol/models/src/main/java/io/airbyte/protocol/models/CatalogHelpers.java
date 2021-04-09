@@ -48,7 +48,7 @@ public class CatalogHelpers {
   }
 
   public static AirbyteStream createAirbyteStream(String streamName, Field... fields) {
-    return createAirbyteStream(streamName, "unused-namespace", Arrays.asList(fields));
+    return createAirbyteStream(streamName, null, Arrays.asList(fields));
   }
 
   public static AirbyteStream createAirbyteStream(String streamName, String schemaName, Field... fields) {
