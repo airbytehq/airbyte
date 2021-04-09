@@ -11,7 +11,6 @@ application {
 dependencies {
     implementation project(':airbyte-db')
     implementation project(':airbyte-integrations:bases:base-java')
-    implementation project(":airbyte-json-validation")
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-integrations:connectors:source-jdbc')
 
@@ -22,6 +21,7 @@ dependencies {
     implementation 'io.debezium:debezium-connector-postgres:1.4.2.Final'
 
     testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
+    testImplementation project(":airbyte-json-validation")
     testImplementation project(':airbyte-test-utils')
 
     testImplementation 'org.testcontainers:postgresql:1.15.1'
