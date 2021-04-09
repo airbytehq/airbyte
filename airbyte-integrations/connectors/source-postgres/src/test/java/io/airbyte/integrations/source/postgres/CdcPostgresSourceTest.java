@@ -185,7 +185,7 @@ class CdcPostgresSourceTest {
         .put("database", dbName)
         .put("username", psqlDb.getUsername())
         .put("password", psqlDb.getPassword())
-        .put("replication_slot", SLOT_NAME_BASE + "_" + dbName)
+        .put("replication_method", ImmutableMap.of("replication_slot", SLOT_NAME_BASE + "_" + dbName))
         .build());
   }
 

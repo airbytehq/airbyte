@@ -28,6 +28,7 @@ import static java.util.stream.Collectors.toList;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
@@ -126,7 +127,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
         List<JsonNode> matchingSlots = database.query(connection -> {
           final String sql = "SELECT * FROM pg_replication_slots WHERE slot_name = ? AND plugin = ? AND database = ?";
           PreparedStatement ps = connection.prepareStatement(sql);
-          ps.setString(1, config.get("replication_slot").asText());
+          ps.setString(1, config.get("replication_method").get("replication_slot").asText());
           ps.setString(2, "pgoutput");
           ps.setString(3, config.get("database").asText());
 
@@ -189,8 +190,6 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
                                                                              JdbcStateManager stateManager,
                                                                              Instant emittedAt) {
     if (isCdc(config)) {
-      LOGGER.info("Using CDC");
-
       // State works differently in CDC than it does in convention incremental. The state is written to an
       // offset file that debezium reads from. Then once all records are replicated, we read back that
       // offset file (which will have been updated by debezium) and set it in the state. There is no
@@ -240,9 +239,12 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
     }
   }
 
-  private static boolean isCdc(JsonNode config) {
+  @VisibleForTesting
+  static boolean isCdc(JsonNode config) {
     LOGGER.info("isCdc config: " + config);
-    return !(config.get("replication_slot") == null);
+    final boolean isCdc = config.get("replication_method") != null && config.get("replication_method").get("replication_slot") != null;
+    LOGGER.info("using CDC: {}", isCdc);
+    return isCdc;
   }
 
   /*
