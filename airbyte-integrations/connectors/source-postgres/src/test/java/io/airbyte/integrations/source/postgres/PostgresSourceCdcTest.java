@@ -320,6 +320,10 @@ class PostgresSourceCdcTest {
     final int recordsCreatedBeforeTestCount = MAKE_RECORDS.size() + MODEL_RECORDS.size();
     assertTrue(recordsCreatedBeforeTestCount < recordMessages1.size(), "Expected first sync to include records created while the test was running.");
     assertTrue(0 < recordMessages2.size(), "Expected records to be replicated in the second sync.");
+    LOGGER.info("recordsToCreate = " + recordsToCreate);
+    LOGGER.info("recordsCreatedBeforeTestCount = " + recordsCreatedBeforeTestCount);
+    LOGGER.info("recordMessages1.size() = " + recordMessages1.size());
+    LOGGER.info("recordMessages2.size() = " + recordMessages2.size());
     assertEquals(recordsToCreate + recordsCreatedBeforeTestCount, recordMessages1.size() + recordMessages2.size());
   }
 
