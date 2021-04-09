@@ -176,7 +176,7 @@ public abstract class TestDestination {
   protected boolean implementsAppendDedup() throws WorkerException {
     final ConnectorSpecification spec = runSpec();
     assertNotNull(spec);
-    if (implementsBasicNormalization() && spec.getSupportedDestinationSyncModes() != null) {
+    if (spec.getSupportedDestinationSyncModes() != null) {
       return spec.getSupportedDestinationSyncModes().contains(DestinationSyncMode.APPEND_DEDUP);
     } else {
       return false;
@@ -396,6 +396,9 @@ public abstract class TestDestination {
   /**
    * Verify that the integration successfully writes records successfully both raw and normalized and
    * run dedup transformations.
+   *
+   * Although this test assumes append-dedup requires normalization, and almost all our Destinations
+   * do so, this is not necessarily true. This explains {@link #implementsAppendDedup()}.
    */
   @Test
   public void testIncrementalDedupeSync() throws Exception {
