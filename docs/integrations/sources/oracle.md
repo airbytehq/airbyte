@@ -53,7 +53,7 @@ take feedback on preferred mappings.
 
 #### 1. Make sure your database is accessible from the machine running Airbyte
 
-This is dependent on your networking setup. The easiest way to verify if Airbyte is able to connect to your Postgres instance is via the check connection tool in the UI.
+This is dependent on your networking setup. The easiest way to verify if Airbyte is able to connect to your Oracle instance is via the check connection tool in the UI.
 
 #### 2. Create a dedicated read-only user with access to the relevant tables \(Recommended but optional\)
 
