@@ -164,7 +164,8 @@ public class AcceptanceTests {
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_init.sql"), sourcePsql);
 
     // TODO(davin): Temporary use the dev image for schema tests. This will be removed once the version
-    // is released. The namespace change requires source, destination and normalization to all use the namespace field.
+    // is released. The namespace change requires source, destination and normalization to all use the
+    // namespace field.
     final var updateSrc = new SourceDefinitionUpdate()
         .sourceDefinitionId(UUID.fromString("decd338e-5647-4c0b-adf4-da0e75f5a750")) // Postgres
         .dockerImageTag("dev");
